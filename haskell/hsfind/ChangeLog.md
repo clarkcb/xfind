@@ -1,3 +1,3 @@
-# Changelog for hssearch
+# Changelog for hsfind
 
 ## Unreleased changes

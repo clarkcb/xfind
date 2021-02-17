@@ -1,4 +1,4 @@
-package gosearch
+package gofind
 
 import (
 	"fmt"
@@ -9,7 +9,7 @@ import (
 )
 
 func getTestFileContents() (string, error) {
-	testFile := fmt.Sprintf("%s/shared/testFiles/testFile2.txt", XSEARCHPATH)
+	testFile := fmt.Sprintf("%s/shared/testFiles/testFile2.txt", XFINDPATH)
 	r, err1 := os.Open(testFile)
 	if err1 != nil {
 		return "", err1
@@ -21,290 +21,290 @@ func getTestFileContents() (string, error) {
 	return string(bytes), err2
 }
 
-func getSettings() *SearchSettings {
-	settings := GetDefaultSearchSettings()
-	settings.AddSearchPattern("Searcher")
+func getSettings() *FindSettings {
+	settings := GetDefaultFindSettings()
+	settings.AddFindPattern("Finder")
 	settings.StartPath = "."
 	return settings
 }
 
-func getSearcher() *Searcher {
+func getFinder() *Finder {
 	settings := getSettings()
-	return NewSearcher(settings)
+	return NewFinder(settings)
 }
 
 /*************************************************************
- * isSearchDir tests
+ * isFindDir tests
  *************************************************************/
 
-func TestIsSearchDir_SingleDot_True(t *testing.T) {
+func TestIsFindDir_SingleDot_True(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	d := "."
-	if !searcher.isSearchDir(&d) {
+	if !finder.isFindDir(&d) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchDir_DoubleDot_True(t *testing.T) {
+func TestIsFindDir_DoubleDot_True(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	d := ".."
-	if !searcher.isSearchDir(&d) {
+	if !finder.isFindDir(&d) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchDir_IsHidden_False(t *testing.T) {
+func TestIsFindDir_IsHidden_False(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	d := ".git"
-	if searcher.isSearchDir(&d) {
+	if finder.isFindDir(&d) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchDir_IsHiddenIncludeHidden_True(t *testing.T) {
+func TestIsFindDir_IsHiddenIncludeHidden_True(t *testing.T) {
 	settings := getSettings()
 	settings.ExcludeHidden = false
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	d := ".git"
-	if !searcher.isSearchDir(&d) {
+	if !finder.isFindDir(&d) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchDir_NoPatterns_True(t *testing.T) {
+func TestIsFindDir_NoPatterns_True(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	d := "/Users"
-	if !searcher.isSearchDir(&d) {
+	if !finder.isFindDir(&d) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchDir_MatchesInPattern_True(t *testing.T) {
+func TestIsFindDir_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
-	settings.AddInDirPattern("Search")
-	searcher := NewSearcher(settings)
-	d := "CsSearch"
-	if !searcher.isSearchDir(&d) {
+	settings.AddInDirPattern("Find")
+	finder := NewFinder(settings)
+	d := "CsFind"
+	if !finder.isFindDir(&d) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchDir_MatchesOutPattern_False(t *testing.T) {
+func TestIsFindDir_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
-	settings.AddOutDirPattern("Search")
-	searcher := NewSearcher(settings)
-	d := "CsSearch"
-	if searcher.isSearchDir(&d) {
+	settings.AddOutDirPattern("Find")
+	finder := NewFinder(settings)
+	d := "CsFind"
+	if finder.isFindDir(&d) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchDir_DoesNotMatchInPattern_False(t *testing.T) {
+func TestIsFindDir_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
-	settings.AddInDirPattern("SearchFiles")
-	searcher := NewSearcher(settings)
-	d := "CsSearch"
-	if searcher.isSearchDir(&d) {
+	settings.AddInDirPattern("FindFiles")
+	finder := NewFinder(settings)
+	d := "CsFind"
+	if finder.isFindDir(&d) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchDir_DoesNotMatchOutPattern_True(t *testing.T) {
+func TestIsFindDir_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
-	settings.AddOutDirPattern("SearchFiles")
-	searcher := NewSearcher(settings)
-	var d = "CsSearch"
-	if !searcher.isSearchDir(&d) {
+	settings.AddOutDirPattern("FindFiles")
+	finder := NewFinder(settings)
+	var d = "CsFind"
+	if !finder.isFindDir(&d) {
 		t.Errorf("expected true")
 	}
 }
 
 /*************************************************************
- * isSearchFile tests
+ * isFindFile tests
 *************************************************************/
 
-func TestIsSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
+func TestIsFindFile_NoExtensionsNoPatterns_True(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if !searcher.isSearchFile(&f) {
+	if !finder.isFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchFile_MatchesInExtension_True(t *testing.T) {
+func TestIsFindFile_MatchesInExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("cs")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if !searcher.isSearchFile(&f) {
+	if !finder.isFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
+func TestIsFindFile_DoesNotMatchInExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("java")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if searcher.isSearchFile(&f) {
+	if finder.isFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchFile_MatchesOutExtension_False(t *testing.T) {
+func TestIsFindFile_MatchesOutExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("cs")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if searcher.isSearchFile(&f) {
+	if finder.isFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
+func TestIsFindFile_DoesNotMatchOutExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("java")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if !searcher.isSearchFile(&f) {
+	if !finder.isFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchFile_MatchesInPattern_True(t *testing.T) {
+func TestIsFindFile_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
-	settings.AddInFilePattern("Search")
-	searcher := NewSearcher(settings)
-	f := "Searcher.cs"
-	if !searcher.isSearchFile(&f) {
+	settings.AddInFilePattern("Find")
+	finder := NewFinder(settings)
+	f := "Finder.cs"
+	if !finder.isFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
+func TestIsFindFile_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
-	settings.AddInFilePattern("Search")
-	searcher := NewSearcher(settings)
+	settings.AddInFilePattern("Find")
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if searcher.isSearchFile(&f) {
+	if finder.isFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchFile_MatchesOutPattern_False(t *testing.T) {
+func TestIsFindFile_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
-	settings.AddOutFilePattern("Search")
-	searcher := NewSearcher(settings)
-	f := "Searcher.cs"
-	if searcher.isSearchFile(&f) {
+	settings.AddOutFilePattern("Find")
+	finder := NewFinder(settings)
+	f := "Finder.cs"
+	if finder.isFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
+func TestIsFindFile_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
-	settings.AddOutFilePattern("Search")
-	searcher := NewSearcher(settings)
+	settings.AddOutFilePattern("Find")
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if !searcher.isSearchFile(&f) {
+	if !finder.isFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
 /*************************************************************
- * isArchiveSearchFile tests
+ * isArchiveFindFile tests
 *************************************************************/
 
-func TestIsArchiveSearchFile_NoExtensionsNoPatterns_True(t *testing.T) {
+func TestIsArchiveFindFile_NoExtensionsNoPatterns_True(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.isArchiveSearchFile(&f) {
+	if !finder.isArchiveFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsArchiveSearchFile_MatchesInExtension_True(t *testing.T) {
+func TestIsArchiveFindFile_MatchesInExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInArchiveExtension("zip")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.isArchiveSearchFile(&f) {
+	if !finder.isArchiveFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsArchiveSearchFile_DoesNotMatchInExtension_False(t *testing.T) {
+func TestIsArchiveFindFile_DoesNotMatchInExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInArchiveExtension("gz")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.isArchiveSearchFile(&f) {
+	if finder.isArchiveFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsArchiveSearchFile_MatchesOutExtension_False(t *testing.T) {
+func TestIsArchiveFindFile_MatchesOutExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutArchiveExtension("zip")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.isArchiveSearchFile(&f) {
+	if finder.isArchiveFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsArchiveSearchFile_DoesNotMatchOutExtension_True(t *testing.T) {
+func TestIsArchiveFindFile_DoesNotMatchOutExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutArchiveExtension("gz")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.isArchiveSearchFile(&f) {
+	if !finder.isArchiveFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsArchiveSearchFile_MatchesInPattern_True(t *testing.T) {
+func TestIsArchiveFindFile_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInArchiveFilePattern("arch")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.isArchiveSearchFile(&f) {
+	if !finder.isArchiveFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestIsArchiveSearchFile_DoesNotMatchInPattern_False(t *testing.T) {
+func TestIsArchiveFindFile_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInArchiveFilePattern("archives")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.isArchiveSearchFile(&f) {
+	if finder.isArchiveFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsArchiveSearchFile_MatchesOutPattern_False(t *testing.T) {
+func TestIsArchiveFindFile_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutArchiveFilePattern("arch")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.isArchiveSearchFile(&f) {
+	if finder.isArchiveFindFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestIsArchiveSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
+func TestIsArchiveFindFile_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutArchiveFilePattern("archives")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.isArchiveSearchFile(&f) {
+	if !finder.isArchiveFindFile(&f) {
 		t.Errorf("expected true")
 	}
 }
@@ -315,9 +315,9 @@ func TestIsArchiveSearchFile_DoesNotMatchOutPattern_True(t *testing.T) {
 
 func TestFilterFile_IsHidden_False(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := ".gitignore"
-	if searcher.filterFile(&f) {
+	if finder.filterFile(&f) {
 		t.Errorf("expected false")
 	}
 }
@@ -325,51 +325,51 @@ func TestFilterFile_IsHidden_False(t *testing.T) {
 func TestFilterFile_IsHiddenIncludeHidden_True(t *testing.T) {
 	settings := getSettings()
 	settings.ExcludeHidden = false
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := ".gitignore"
 	// fmt.Printf("isHidden(\"%s\"): %v\n", f, isHidden(f))
-	// fmt.Printf("isSearchFile(\"%s\"): %v\n", f, searcher.isSearchFile(&f))
-	if !searcher.filterFile(&f) {
+	// fmt.Printf("isFindFile(\"%s\"): %v\n", f, finder.isFindFile(&f))
+	if !finder.filterFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestFilterFile_ArchiveNoSearchArchives_False(t *testing.T) {
+func TestFilterFile_ArchiveNoFindArchives_False(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.filterFile(&f) {
+	if finder.filterFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
-func TestFilterFile_ArchiveSearchArchives_True(t *testing.T) {
+func TestFilterFile_ArchiveFindArchives_True(t *testing.T) {
 	settings := getSettings()
-	settings.SearchArchives = true
-	searcher := NewSearcher(settings)
+	settings.FindArchives = true
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.filterFile(&f) {
+	if !finder.filterFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestFilterFile_IsArchiveSearchFile_True(t *testing.T) {
+func TestFilterFile_IsArchiveFindFile_True(t *testing.T) {
 	settings := getSettings()
-	settings.SearchArchives = true
+	settings.FindArchives = true
 	settings.AddInArchiveExtension("zip")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if !searcher.filterFile(&f) {
+	if !finder.filterFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestFilterFile_NotIsArchiveSearchFile_False(t *testing.T) {
+func TestFilterFile_NotIsArchiveFindFile_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("zip")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.filterFile(&f) {
+	if finder.filterFile(&f) {
 		t.Errorf("expected false")
 	}
 }
@@ -377,38 +377,38 @@ func TestFilterFile_NotIsArchiveSearchFile_False(t *testing.T) {
 func TestFilterFile_ArchiveFileArchivesOnly_True(t *testing.T) {
 	settings := getSettings()
 	settings.ArchivesOnly = true
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "archive.zip"
-	if searcher.filterFile(&f) {
+	if finder.filterFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
 func TestFilterFile_NoExtensionsNoPatterns_True(t *testing.T) {
 	settings := getSettings()
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if !searcher.filterFile(&f) {
+	if !finder.filterFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestFilterFile_isSearchFile_True(t *testing.T) {
+func TestFilterFile_isFindFile_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("cs")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if !searcher.filterFile(&f) {
+	if !finder.filterFile(&f) {
 		t.Errorf("expected true")
 	}
 }
 
-func TestFilterFile_NotisSearchFile_False(t *testing.T) {
+func TestFilterFile_NotisFindFile_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("cs")
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if searcher.filterFile(&f) {
+	if finder.filterFile(&f) {
 		t.Errorf("expected false")
 	}
 }
@@ -416,25 +416,25 @@ func TestFilterFile_NotisSearchFile_False(t *testing.T) {
 func TestFilterFile_NonArchiveFileArchivesOnly_False(t *testing.T) {
 	settings := getSettings()
 	settings.ArchivesOnly = true
-	searcher := NewSearcher(settings)
+	finder := NewFinder(settings)
 	f := "FileUtil.cs"
-	if searcher.filterFile(&f) {
+	if finder.filterFile(&f) {
 		t.Errorf("expected false")
 	}
 }
 
 /*************************************************************
- * SearchTextReaderLines test
+ * FindTextReaderLines test
  *************************************************************/
-func TestSearchTextReaderLines(t *testing.T) {
+func TestFindTextReaderLines(t *testing.T) {
 	contents, err := getTestFileContents()
 	if err != nil {
 		t.Errorf("error from getTestFileContents()")
 		panic(err)
 	}
 	settings := getSettings()
-	searcher := NewSearcher(settings)
-	results := searcher.SearchTextReaderLines(strings.NewReader(contents))
+	finder := NewFinder(settings)
+	results := finder.FindTextReaderLines(strings.NewReader(contents))
 
 	if len(results) != 2 {
 		t.Errorf("len(results)=%d, expected=2", len(results))
@@ -476,16 +476,16 @@ func TestSearchTextReaderLines(t *testing.T) {
 }
 
 /*************************************************************
- * SearchMultiLineString test
+ * FindMultiLineString test
  *************************************************************/
-func TestSearchMultiLineString(t *testing.T) {
+func TestFindMultiLineString(t *testing.T) {
 	contents, err := getTestFileContents()
 	if err != nil {
 		t.Errorf("error from getTestFileContents()")
 	}
 	settings := getSettings()
-	searcher := NewSearcher(settings)
-	results := searcher.SearchMultiLineString(contents)
+	finder := NewFinder(settings)
+	results := finder.FindMultiLineString(contents)
 
 	if len(results) != 2 {
 		t.Errorf("len(results)=%d, expected=2", len(results))

@@ -1,4 +1,4 @@
-package gosearch
+package gofind
 
 const (
 	COLOR_RESET  = "\033[0m"

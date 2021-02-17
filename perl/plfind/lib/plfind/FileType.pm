@@ -6,7 +6,7 @@
 #
 ###############################################################################
 
-package plsearch::FileType;
+package plfind::FileType;
 
 use strict;
 use warnings;

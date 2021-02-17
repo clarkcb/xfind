@@ -1,8 +1,8 @@
 #import "common.h"
 #import "FileTypes.h"
-#import "SearchSettings.h"
+#import "FindSettings.h"
 
-@implementation SearchSettings
+@implementation FindSettings
 
 @synthesize archivesOnly = _archivesOnly;
 @synthesize debug = _debug;
@@ -22,12 +22,12 @@
         self.listFiles = false;
         self.listLines = false;
         self.maxLineLength = 150;
-        self.multiLineSearch = false;
+        self.multiLineFind = false;
         self.printResults = true;
         self.printUsage = false;
         self.printVersion = false;
         self.recursive = true;
-        self.searchArchives = false;
+        self.findArchives = false;
         self.startPath = [NSMutableString string];
         self.textFileEncoding = @"UTF-8";
         self.uniqueLines = false;
@@ -51,13 +51,13 @@
         self.outFileTypes = [[NSMutableArray alloc] init];
         self.outLinesAfterPatterns = [[NSMutableArray alloc] init];
         self.outLinesBeforePatterns = [[NSMutableArray alloc] init];
-        self.searchPatterns = [[NSMutableArray alloc] init];
+        self.findPatterns = [[NSMutableArray alloc] init];
     }
     return self;
 }
 
 - (NSString *) description {
-    NSMutableString *d = [[NSMutableString alloc] initWithString:@"SearchSettings("];
+    NSMutableString *d = [[NSMutableString alloc] initWithString:@"FindSettings("];
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
     [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
@@ -91,8 +91,8 @@
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
     [d appendFormat:@", recursive=%@", boolToNSString(self.recursive)];
-    [d appendFormat:@", searchArchives=%@", boolToNSString(self.searchArchives)];
-    [d appendFormat:@", searchPatterns=%@", arrayToNSString(self.searchPatterns)];
+    [d appendFormat:@", findArchives=%@", boolToNSString(self.findArchives)];
+    [d appendFormat:@", findPatterns=%@", arrayToNSString(self.findPatterns)];
     [d appendFormat:@", startPath=\"%@\"", self.startPath];
     [d appendFormat:@", textFileEncoding=\"%@\"", self.textFileEncoding];
     [d appendFormat:@", uniqueLines=%@", boolToNSString(self.uniqueLines)];
@@ -168,8 +168,8 @@
     [self addFileType:typeName toArr:self.outFileTypes];
 }
 
-- (void) addSearchPattern:(NSString *)pattern {
-    [self addPattern:pattern toArr:self.searchPatterns];
+- (void) addFindPattern:(NSString *)pattern {
+    [self addPattern:pattern toArr:self.findPatterns];
 }
 
 - (BOOL) archivesOnly {
@@ -179,7 +179,7 @@
 - (void)setArchivesOnly:(BOOL)b {
     _archivesOnly = b;
     if (b) {
-        [self setSearchArchives:b];
+        [self setFindArchives:b];
     }
 }
 

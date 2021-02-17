@@ -1,6 +1,6 @@
-#ifndef CPPSEARCH_CONFIG_H
-#define CPPSEARCH_CONFIG_H
+#ifndef CPPFIND_CONFIG_H
+#define CPPFIND_CONFIG_H
 
-#define XSEARCHPATH "/Users/cary/src/xsearch"
+#define XFINDPATH "/Users/cary/src/xfind"
 
-#endif //CPPSEARCH_CONFIG_H
+#endif //CPPFIND_CONFIG_H

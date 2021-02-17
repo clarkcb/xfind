@@ -1,10 +1,10 @@
 /*
- * searchoption.js
+ * findoption.js
  *
- * encapsulates a search option
+ * encapsulates a find option
  */
 
-class SearchOption {
+class FindOption {
     'use strict'
 
     constructor(shortarg, longarg, desc, func) {
@@ -21,4 +21,4 @@ class SearchOption {
     }
 }
 
-exports.SearchOption = SearchOption;
+exports.FindOption = FindOption;

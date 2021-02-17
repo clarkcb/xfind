@@ -2,62 +2,62 @@ package main
 
 import (
 	"fmt"
-	"gosearch/pkg/gosearch"
+	"gofind/pkg/gofind"
 	"os"
 )
 
-func errorAndExit(err error, searchOptions *gosearch.SearchOptions) {
+func errorAndExit(err error, findOptions *gofind.FindOptions) {
 	fmt.Printf("\nERROR: %s\n", err)
-	searchOptions.PrintUsage()
+	findOptions.PrintUsage()
 }
 
 func main() {
-	searchOptions := gosearch.NewSearchOptions()
-	settings, err := searchOptions.SearchSettingsFromArgs(os.Args[1:])
+	findOptions := gofind.NewFindOptions()
+	settings, err := findOptions.FindSettingsFromArgs(os.Args[1:])
 	if err != nil {
-		errorAndExit(err, searchOptions)
+		errorAndExit(err, findOptions)
 	}
 
 	if settings.PrintUsage {
-		searchOptions.PrintUsage()
+		findOptions.PrintUsage()
 	}
 
 	if settings.PrintVersion {
-		searchOptions.PrintVersion()
+		findOptions.PrintVersion()
 	}
 
 	if settings.Debug {
 		fmt.Printf("settings: %s\n", settings.String())
 	}
 
-	searcher := gosearch.NewSearcher(settings)
-	err = searcher.Search()
+	finder := gofind.NewFinder(settings)
+	err = finder.Find()
 	if err != nil {
-		errorAndExit(err, searchOptions)
+		errorAndExit(err, findOptions)
 	}
 
 	// if there are results and PrintResults is true then print them out
 	if settings.PrintResults {
 		fmt.Println()
-		searcher.PrintSearchResults()
+		finder.PrintFindResults()
 	}
 
 	if settings.ListDirs {
 		fmt.Println()
-		searcher.PrintDirCounts()
+		finder.PrintDirCounts()
 	}
 
 	if settings.ListFiles {
 		fmt.Println()
-		searcher.PrintFileCounts()
+		finder.PrintFileCounts()
 	}
 
 	if settings.ListLines {
 		fmt.Println()
 		if settings.UniqueLines {
-			searcher.PrintUniqueLineCounts()
+			finder.PrintUniqueLineCounts()
 		} else {
-			searcher.PrintLineCounts()
+			finder.PrintLineCounts()
 		}
 	}
 }

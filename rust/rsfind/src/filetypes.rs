@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::config::{Config, CONFIG_FILE_PATH};
 use crate::fileutil::FileUtil;
-use crate::searcherror::SearchError;
+use crate::finderror::FindError;
 use std::error::Error;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -36,15 +36,15 @@ pub struct JsonFileTypes {
 }
 
 impl FileTypes {
-    pub fn new() -> Result<FileTypes, SearchError> {
+    pub fn new() -> Result<FileTypes, FindError> {
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents: String = match fs::read_to_string(config.filetypes_path) {
             Ok(contents) => contents,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(FindError::new(error.description())),
         };
         let jft: JsonFileTypes = match serde_json::from_str(&contents) {
             Ok(deserialized) => deserialized,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(FindError::new(error.description())),
         };
         let mut filetypes = FileTypes {
             filetypemap: HashMap::new(),
@@ -137,7 +137,7 @@ impl FileTypes {
             || self.is_file_type("xml", filename)
     }
 
-    pub fn is_searchable_file(&self, filename: &str) -> bool {
+    pub fn is_findable_file(&self, filename: &str) -> bool {
         self.is_text_file(filename)
             || self.is_binary_file(filename)
             || self.is_archive_file(filename)
@@ -229,20 +229,20 @@ mod tests {
     }
 
     #[test]
-    fn get_file_type_searchable_file() {
+    fn get_file_type_findable_file() {
         let filetypes = FileTypes::new().ok().unwrap();
         let filename = "archive.zip";
-        assert!(filetypes.is_searchable_file(&filename));
+        assert!(filetypes.is_findable_file(&filename));
         let filename = "binary.exe";
-        assert!(filetypes.is_searchable_file(&filename));
+        assert!(filetypes.is_findable_file(&filename));
         let filename = "text.txt";
-        assert!(filetypes.is_searchable_file(&filename));
+        assert!(filetypes.is_findable_file(&filename));
         let filename = "code.rs";
-        assert!(filetypes.is_searchable_file(&filename));
+        assert!(filetypes.is_findable_file(&filename));
         let filename = "markup.xml";
-        assert!(filetypes.is_searchable_file(&filename));
+        assert!(filetypes.is_findable_file(&filename));
         let filename = "unknown.xyz";
-        assert!(!filetypes.is_searchable_file(&filename));
+        assert!(!filetypes.is_findable_file(&filename));
     }
 
     #[test]

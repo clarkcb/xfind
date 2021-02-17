@@ -4,6 +4,6 @@ SCRIPTPATH=$(readlink "${BASH_SOURCE[0]}")
 SCRIPTDIR=$(dirname "$SCRIPTPATH")
 PROJECTDIR=$(dirname "$SCRIPTDIR")
 PACKAGESPATH=$PROJECTDIR/.packages
-DARTSEARCHPATH=$SCRIPTDIR/dartsearch.dart
+DARTFINDPATH=$SCRIPTDIR/dartfind.dart
 
-dart --packages="$PACKAGESPATH" "$DARTSEARCHPATH" "$@"
+dart --packages="$PACKAGESPATH" "$DARTFINDPATH" "$@"

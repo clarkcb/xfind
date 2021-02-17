@@ -1,6 +1,6 @@
 //
-//  SearchSettings.swift
-//  swiftsearch
+//  FindSettings.swift
+//  swiftfind
 //
 //  Created by Cary Clark on 5/12/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -20,19 +20,19 @@ public enum DefaultSettings {
     public static let listFiles = false
     public static let listLines = false
     public static let maxLineLength = 150
-    public static let multiLineSearch = false
+    public static let multiLineFind = false
     public static let printResults = true
     public static let printUsage = false
     public static let printVersion = false
     public static let recursive = true
-    public static let searchArchives = false
+    public static let findArchives = false
     public static let startPath: String? = ""
     public static let textFileEncoding: String = "UTF-8"
     public static let uniqueLines = false
     public static let verbose = false
 }
 
-public class SearchSettings: CustomStringConvertible {
+public class FindSettings: CustomStringConvertible {
     private var _archivesOnly: Bool = DefaultSettings.archivesOnly
     public var colorize: Bool = DefaultSettings.colorize
     private var _debug: Bool = DefaultSettings.debug
@@ -44,12 +44,12 @@ public class SearchSettings: CustomStringConvertible {
     public var listFiles: Bool = DefaultSettings.listFiles
     public var listLines: Bool = DefaultSettings.listLines
     public var maxLineLength = DefaultSettings.maxLineLength
-    public var multiLineSearch: Bool = DefaultSettings.multiLineSearch
+    public var multiLineFind: Bool = DefaultSettings.multiLineFind
     public var printResults: Bool = DefaultSettings.printResults
     public var printUsage: Bool = DefaultSettings.printUsage
     public var printVersion: Bool = DefaultSettings.printVersion
     public var recursive: Bool = DefaultSettings.recursive
-    public var searchArchives: Bool = DefaultSettings.searchArchives
+    public var findArchives: Bool = DefaultSettings.findArchives
     public var startPath = DefaultSettings.startPath
     public var textFileEncoding = DefaultSettings.textFileEncoding
     public var uniqueLines: Bool = DefaultSettings.uniqueLines
@@ -73,7 +73,7 @@ public class SearchSettings: CustomStringConvertible {
     public var outFileTypes = [FileType]()
     public var outLinesAfterPatterns = [Regex]()
     public var outLinesBeforePatterns = [Regex]()
-    public var searchPatterns = [Regex]()
+    public var findPatterns = [Regex]()
 
     public init() {}
 
@@ -173,8 +173,8 @@ public class SearchSettings: CustomStringConvertible {
         outLinesBeforePatterns.append(Regex(pattern))
     }
 
-    public func addSearchPattern(_ pattern: String) {
-        searchPatterns.append(Regex(pattern))
+    public func addFindPattern(_ pattern: String) {
+        findPatterns.append(Regex(pattern))
     }
 
     public var archivesOnly: Bool {
@@ -184,7 +184,7 @@ public class SearchSettings: CustomStringConvertible {
         set {
             _archivesOnly = newValue
             if newValue {
-                searchArchives = newValue
+                findArchives = newValue
             }
         }
     }
@@ -202,7 +202,7 @@ public class SearchSettings: CustomStringConvertible {
     }
 
     public var description: String {
-        "SearchSettings(" +
+        "FindSettings(" +
             "archivesOnly=\(archivesOnly)" +
             ", colorize=\(colorize)" +
             ", debug=\(debug)" +
@@ -236,8 +236,8 @@ public class SearchSettings: CustomStringConvertible {
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +
-            ", searchArchives=\(searchArchives)" +
-            ", searchPatterns=\(arrayToString(searchPatterns))" +
+            ", findArchives=\(findArchives)" +
+            ", findPatterns=\(arrayToString(findPatterns))" +
             ", startPath=\"\(startPath!)\"" +
             ", textFileEncoding=\"\(textFileEncoding)\"" +
             ", uniqueLines=\(uniqueLines)" +

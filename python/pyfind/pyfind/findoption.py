@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# searchoption.py
+# findoption.py
 #
-# class SearchOption: encapsulates a (command-line) search option
+# class FindOption: encapsulates a (command-line) find option
 #
 ###############################################################################
 
 
-class SearchOption(object):
+class FindOption(object):
     """a class to encapsulate a specific command line option"""
 
     __slots__ = ['shortarg', 'longarg', 'desc', 'func']

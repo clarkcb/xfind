@@ -1,23 +1,23 @@
 ################################################################################
 #
-# searchoptions_test.rb
+# findoptions_test.rb
 #
-# Test the SearchOptions class
+# Test the FindOptions class
 #
 ################################################################################
 
-require_relative '../lib/rbsearch'
+require_relative '../lib/rbfind'
 require 'minitest/autorun'
 
-module RbSearch
+module RbFind
 
-  class SearchOptionsTest < Minitest::Test
+  class FindOptionsTest < Minitest::Test
     def setup
-      @searchoptions = RbSearch::SearchOptions.new
+      @findoptions = RbFind::FindOptions.new
     end
 
     def test_no_args
-      settings = @searchoptions.search_settings_from_args([])
+      settings = @findoptions.find_settings_from_args([])
       assert_equal(false, settings.archivesonly)
       assert_equal(false, settings.debug)
       assert_equal(true, settings.excludehidden)
@@ -28,12 +28,12 @@ module RbSearch
       assert_equal(false, settings.listfiles)
       assert_equal(false, settings.listlines)
       assert_equal(150, settings.maxlinelength)
-      assert_equal(false, settings.multilinesearch)
+      assert_equal(false, settings.multilineoption-REMOVE)
       assert_equal(true, settings.printresults)
       assert_equal(false, settings.printusage)
       assert_equal(false, settings.printversion)
       assert_equal(true, settings.recursive)
-      assert_equal(false, settings.searcharchives)
+      assert_equal(false, settings.findarchives)
       assert_equal(nil, settings.startpath)
       assert_equal(false, settings.uniquelines)
       assert_equal(false, settings.verbose)
@@ -51,53 +51,53 @@ module RbSearch
       assert(settings.out_filepatterns.empty?)
       assert(settings.out_linesafterpatterns.empty?)
       assert(settings.out_linesbeforepatterns.empty?)
-      assert(settings.searchpatterns.empty?)
+      assert(settings.findpatterns.empty?)
     end
 
     def test_valid_args
-      args = %w[-x py,rb -s Search .]
-      settings = @searchoptions.search_settings_from_args(args)
+      args = %w[-x py,rb -s Find .]
+      settings = @findoptions.find_settings_from_args(args)
       assert_equal('.', settings.startpath)
       assert_equal(2, settings.in_extensions.length)
       assert(settings.in_extensions.include?('py'))
       assert(settings.in_extensions.include?('rb'))
-      assert_equal(1, settings.searchpatterns.length)
-      assert_equal('Search', settings.searchpatterns.first.source)
+      assert_equal(1, settings.findpatterns.length)
+      assert_equal('Find', settings.findpatterns.first.source)
     end
 
     def test_archivesonly_arg
       args = ['--archivesonly']
-      settings = @searchoptions.search_settings_from_args(args)
+      settings = @findoptions.find_settings_from_args(args)
       assert(settings.archivesonly)
-      assert(settings.searcharchives)
+      assert(settings.findarchives)
     end
 
     def test_debug_arg
       args = ['--debug']
-      settings = @searchoptions.search_settings_from_args(args)
+      settings = @findoptions.find_settings_from_args(args)
       assert(settings.debug)
       assert(settings.verbose)
     end
 
     def test_missing_arg
-      args = %w[-x py,rb -s Search . -D]
-      assert_raises(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
+      args = %w[-x py,rb -s Find . -D]
+      assert_raises(FindError) { _settings = @findoptions.find_settings_from_args(args) }
     end
 
     def test_invalid_arg
-      args = %w[-x py,rb -s Search . -Q]
-      assert_raises(SearchError) { _settings = @searchoptions.search_settings_from_args(args) }
+      args = %w[-x py,rb -s Find . -Q]
+      assert_raises(FindError) { _settings = @findoptions.find_settings_from_args(args) }
     end
 
     def test_settings_from_json
-      settings = SearchSettings.new
+      settings = FindSettings.new
       json = <<~JSON
       {
-        "startpath": "~/src/xsearch/",
+        "startpath": "~/src/xfind/",
         "in-ext": ["js","ts"],
         "out-dirpattern": "node_module",
         "out-filepattern": ["temp"],
-        "searchpattern": "Searcher",
+        "findpattern": "Finder",
         "linesbefore": 2,
         "linesafter": 2,
         "debug": true,
@@ -105,7 +105,7 @@ module RbSearch
         "includehidden": true
       }
       JSON
-      @searchoptions.settings_from_json(json, settings)
+      @findoptions.settings_from_json(json, settings)
       assert(settings.debug)
       assert(settings.verbose)
     end

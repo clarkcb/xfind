@@ -12,38 +12,38 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from pysearch import FileType, SearchFile
+from pyfind import FileType, FindFile
 
 
-class SearchFileTest(unittest.TestCase):
+class FindFileTest(unittest.TestCase):
 
-    def test_searchfile_abs_path(self):
-        path = '/Users/cary/src/xsearch/python/pysearch'
-        filename = 'searchfile.py'
-        searchfile = SearchFile(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('/Users/cary/src/xsearch/python/pysearch/searchfile.py', searchfile.relativepath)
-        self.assertEqual('/Users/cary/src/xsearch/python/pysearch/searchfile.py', str(searchfile))
+    def test_findfile_abs_path(self):
+        path = '/Users/cary/src/xfind/python/pyfind'
+        filename = 'findfile.py'
+        findfile = FindFile(path=path, filename=filename, filetype=FileType.CODE)
+        self.assertEqual('/Users/cary/src/xfind/python/pyfind/findfile.py', findfile.relativepath)
+        self.assertEqual('/Users/cary/src/xfind/python/pyfind/findfile.py', str(findfile))
 
-    def test_searchfile_rel_path1(self):
+    def test_findfile_rel_path1(self):
         path = '.'
-        filename = 'searchfile.py'
-        searchfile = SearchFile(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('./searchfile.py', searchfile.relativepath)
-        self.assertEqual('./searchfile.py', str(searchfile))
+        filename = 'findfile.py'
+        findfile = FindFile(path=path, filename=filename, filetype=FileType.CODE)
+        self.assertEqual('./findfile.py', findfile.relativepath)
+        self.assertEqual('./findfile.py', str(findfile))
 
-    def test_searchfile_rel_path2(self):
+    def test_findfile_rel_path2(self):
         path = './'
-        filename = 'searchfile.py'
-        searchfile = SearchFile(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('./searchfile.py', searchfile.relativepath)
-        self.assertEqual('./searchfile.py', str(searchfile))
+        filename = 'findfile.py'
+        findfile = FindFile(path=path, filename=filename, filetype=FileType.CODE)
+        self.assertEqual('./findfile.py', findfile.relativepath)
+        self.assertEqual('./findfile.py', str(findfile))
 
-    def test_searchfile_rel_path3(self):
+    def test_findfile_rel_path3(self):
         path = '..'
-        filename = 'searchfile.py'
-        searchfile = SearchFile(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('../searchfile.py', searchfile.relativepath)
-        self.assertEqual('../searchfile.py', str(searchfile))
+        filename = 'findfile.py'
+        findfile = FindFile(path=path, filename=filename, filetype=FileType.CODE)
+        self.assertEqual('../findfile.py', findfile.relativepath)
+        self.assertEqual('../findfile.py', str(findfile))
 
 
 if __name__ == '__main__':

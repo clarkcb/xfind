@@ -1,20 +1,20 @@
-module HsSearch.SearchFile
-  ( SearchFile(..)
+module HsFind.FindFile
+  ( FindFile(..)
   , isArchiveFile
-  , isSearchableFile
+  , isFindableFile
   ) where
 
-import HsSearch.FileTypes
+import HsFind.FileTypes
 
 -- TODO: use this type with all file-based functions
-data SearchFile = SearchFile {
-                                searchFileContainers :: [FilePath]
-                              , searchFilePath :: FilePath
-                              , searchFileType :: FileType
+data FindFile = FindFile {
+                                findFileContainers :: [FilePath]
+                              , findFilePath :: FilePath
+                              , findFileType :: FileType
                               } deriving (Show, Eq)
 
-isArchiveFile :: SearchFile -> Bool
-isArchiveFile sf = searchFileType sf == Archive
+isArchiveFile :: FindFile -> Bool
+isArchiveFile sf = findFileType sf == Archive
 
-isSearchableFile :: SearchFile -> Bool
-isSearchableFile sf = isSearchableFileType (searchFileType sf)
+isFindableFile :: FindFile -> Bool
+isFindableFile sf = isFindableFileType (findFileType sf)

@@ -28,7 +28,7 @@ let get_extensions filetype_node =
   | None -> [];;
 
 let get_filetypes : (string list) StringMap.t =
-  let x = Xml.parse_file (Config.xsearchpath ^ "/shared/filetypes.xml") in
+  let x = Xml.parse_file (Config.xfindpath ^ "/shared/filetypes.xml") in
   let filetype_nodes = Xml.children x in
   let fts = List.map filetype_nodes
     ~f:(fun ft -> ((Xml.attrib ft "name"), (get_extensions ft))) in

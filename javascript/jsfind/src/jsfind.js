@@ -1,7 +1,7 @@
 /*
- * jssearch.js
+ * jsfind.js
  *
- * file search utility written in JavaScript + Node.js
+ * file find utility written in JavaScript + Node.js
  */
 
 "use strict";
@@ -9,18 +9,18 @@
 const path = require('path');
 
 const common = require('./common');
-const {Searcher} = require('./searcher');
-const {SearchError} = require('./searcherror');
-const {SearchOptions} = require('./searchoptions');
-const {SearchResultFormatter} = require('./searchresultformatter');
+const {Finder} = require('./finder');
+const {FindError} = require('./finderror');
+const {FindOptions} = require('./findoptions');
+const {FindResultFormatter} = require('./findresultformatter');
 
-function handleError(err, searchOptions) {
+function handleError(err, findOptions) {
     const errMsg = "ERROR: " + err.message;
     common.log('\n' + errMsg + '\n');
-    searchOptions.usageWithCode(1);
+    findOptions.usageWithCode(1);
 }
 
-function cmpSearchResults(r1, r2) {
+function cmpFindResults(r1, r2) {
     const pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
     if (pathCmp === 0) {
         const fileCmp = path.basename(r1.file.filename).localeCompare(path.basename(r2.file.filename));
@@ -35,11 +35,11 @@ function cmpSearchResults(r1, r2) {
     return pathCmp;
 }
 
-function printSearchResults(results, settings) {
+function printFindResults(results, settings) {
     // first sort the results
-    results.sort(cmpSearchResults);
-    const formatter = new SearchResultFormatter(settings);
-    common.log(`\nSearch results (${results.length}):`);
+    results.sort(cmpFindResults);
+    const formatter = new FindResultFormatter(settings);
+    common.log(`\nFind results (${results.length}):`);
     results.forEach(r => common.log(formatter.format(r)));
 }
 
@@ -89,13 +89,13 @@ function printMatchingLines(results, uniqueLines) {
     lines.forEach(l => common.log(l));
 }
 
-const searchMain = async () => {
-    const searchOptions = new SearchOptions();
+const findMain = async () => {
+    const findOptions = new FindOptions();
     const args = process.argv.slice(2);
 
-    searchOptions.settingsFromArgs(args, async (err, settings) => {
+    findOptions.settingsFromArgs(args, async (err, settings) => {
         if (err) {
-            handleError(err, searchOptions);
+            handleError(err, findOptions);
         }
 
         if (settings.debug)
@@ -103,7 +103,7 @@ const searchMain = async () => {
 
         if (settings.printUsage) {
             common.log('');
-            searchOptions.usage();
+            findOptions.usage();
         }
 
         if (settings.printVersion) {
@@ -112,11 +112,11 @@ const searchMain = async () => {
         }
 
         try {
-            const searcher = new Searcher(settings);
-            let results = await searcher.search();
+            const finder = new Finder(settings);
+            let results = await finder.find();
 
             if (settings.printResults) {
-                printSearchResults(results, settings);
+                printFindResults(results, settings);
             }
 
             if (settings.listDirs) {
@@ -130,12 +130,12 @@ const searchMain = async () => {
             }
 
         } catch (err2) {
-            handleError(err2, searchOptions);
+            handleError(err2, findOptions);
         }
     });
 };
 
 // node.js equivalent of python's if __name__ == '__main__'
 if (!module.parent) {
-    searchMain();
+    findMain();
 }

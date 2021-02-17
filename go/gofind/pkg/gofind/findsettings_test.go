@@ -1,9 +1,9 @@
-package gosearch
+package gofind
 
 import "testing"
 
-func TestDefaultSearchSettings(t *testing.T) {
-	settings := GetDefaultSearchSettings()
+func TestDefaultFindSettings(t *testing.T) {
+	settings := GetDefaultFindSettings()
 	if settings.ArchivesOnly ||
 		settings.Debug ||
 		!settings.ExcludeHidden ||
@@ -11,12 +11,12 @@ func TestDefaultSearchSettings(t *testing.T) {
 		settings.ListDirs ||
 		settings.ListFiles ||
 		settings.ListLines ||
-		settings.MultiLineSearch ||
+		settings.MultiLineFind ||
 		!settings.PrintResults ||
 		settings.PrintUsage ||
 		settings.PrintVersion ||
 		!settings.Recursive ||
-		settings.SearchArchives ||
+		settings.FindArchives ||
 		settings.UniqueLines ||
 		settings.Verbose {
 		t.Errorf("settings did not match defaults")
@@ -24,15 +24,15 @@ func TestDefaultSearchSettings(t *testing.T) {
 }
 
 func TestAddPattern(t *testing.T) {
-	settings := GetDefaultSearchSettings()
-	settings.AddSearchPattern("Searcher")
-	if settings.SearchPatterns.IsEmpty() {
-		t.Errorf("SearchPatterns should not be empty")
+	settings := GetDefaultFindSettings()
+	settings.AddFindPattern("Finder")
+	if settings.FindPatterns.IsEmpty() {
+		t.Errorf("FindPatterns should not be empty")
 	}
 }
 
 func TestAddExtensions(t *testing.T) {
-	settings := GetDefaultSearchSettings()
+	settings := GetDefaultFindSettings()
 	settings.AddInExtension("go,hs")
 	if len(settings.InExtensions) != 2 {
 		t.Errorf("InExtensions should have two elements")
@@ -40,18 +40,18 @@ func TestAddExtensions(t *testing.T) {
 }
 
 func TestSetArchivesOnly(t *testing.T) {
-	settings := GetDefaultSearchSettings()
+	settings := GetDefaultFindSettings()
 	settings.SetArchivesOnly(true)
 	if !settings.ArchivesOnly {
 		t.Errorf("ArchivesOnly should be true")
 	}
-	if !settings.SearchArchives {
-		t.Errorf("SearchArchives should be true")
+	if !settings.FindArchives {
+		t.Errorf("FindArchives should be true")
 	}
 }
 
 func TestSetDebug(t *testing.T) {
-	settings := GetDefaultSearchSettings()
+	settings := GetDefaultFindSettings()
 	settings.SetDebug(true)
 	if !settings.Debug {
 		t.Errorf("Debug should be true")

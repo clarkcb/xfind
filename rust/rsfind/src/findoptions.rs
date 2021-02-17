@@ -10,44 +10,44 @@ use serde_json::Value;
 use crate::common::log;
 use crate::config::{Config, CONFIG_FILE_PATH};
 use crate::filetypes::FileTypes;
-use crate::searcherror::SearchError;
-use crate::searchsettings::SearchSettings;
+use crate::finderror::FindError;
+use crate::findsettings::FindSettings;
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct SearchOption {
+pub struct FindOption {
     long: String,
     short: Option<String>,
     desc: String,
 }
 
-type ArgAction = Box<dyn Fn(&str, &mut SearchSettings) -> Result<(), SearchError>>;
-type FlagAction = Box<dyn Fn(bool, &mut SearchSettings) -> Result<(), SearchError>>;
+type ArgAction = Box<dyn Fn(&str, &mut FindSettings) -> Result<(), FindError>>;
+type FlagAction = Box<dyn Fn(bool, &mut FindSettings) -> Result<(), FindError>>;
 
-pub struct SearchOptions {
-    pub searchoptions: Vec<SearchOption>,
+pub struct FindOptions {
+    pub findoptions: Vec<FindOption>,
     pub version: String,
     pub arg_map: HashMap<String, ArgAction>,
     pub flag_map: HashMap<String, FlagAction>,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct JsonSearchOptions {
-    pub searchoptions: Vec<SearchOption>,
+pub struct JsonFindOptions {
+    pub findoptions: Vec<FindOption>,
 }
 
-impl SearchOptions {
-    pub fn new() -> Result<SearchOptions, SearchError> {
+impl FindOptions {
+    pub fn new() -> Result<FindOptions, FindError> {
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
-        let contents: String = match fs::read_to_string(config.searchoptions_path) {
+        let contents: String = match fs::read_to_string(config.findoptions_path) {
             Ok(contents) => contents,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(FindError::new(error.description())),
         };
-        let jso: JsonSearchOptions = match serde_json::from_str(&contents) {
+        let jso: JsonFindOptions = match serde_json::from_str(&contents) {
             Ok(deserialized) => deserialized,
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(FindError::new(error.description())),
         };
-        Ok(SearchOptions {
-            searchoptions: jso.searchoptions,
+        Ok(FindOptions {
+            findoptions: jso.findoptions,
             version: config.version.clone(),
             arg_map: get_arg_map(),
             flag_map: get_flag_map(),
@@ -56,7 +56,7 @@ impl SearchOptions {
 
     fn get_long_map(&self) -> HashMap<String, String> {
         let mut map = HashMap::new();
-        for so in self.searchoptions.iter() {
+        for so in self.findoptions.iter() {
             map.insert(so.long.to_string(), so.long.to_string());
             if so.short.is_some() {
                 map.insert(so.short.as_ref().unwrap().to_string(), so.long.to_string());
@@ -65,15 +65,15 @@ impl SearchOptions {
         map
     }
 
-    pub fn settings_from_file(&self, json_file: &str) -> Result<SearchSettings, SearchError> {
+    pub fn settings_from_file(&self, json_file: &str) -> Result<FindSettings, FindError> {
         match fs::read_to_string(json_file) {
             Ok(json) => self.settings_from_json(&json),
-            Err(error) => Err(SearchError::new(error.description())),
+            Err(error) => Err(FindError::new(error.description())),
         }
     }
 
-    pub fn settings_from_json(&self, json_string: &str) -> Result<SearchSettings, SearchError> {
-        let mut settings = SearchSettings::default();
+    pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
+        let mut settings = FindSettings::default();
         settings.print_results = true; // default to true when running from main
         match serde_json::from_str(json_string) {
             Ok(value) => {
@@ -81,7 +81,7 @@ impl SearchOptions {
                     return Err(error);
                 }
             },
-            Err(error) => return Err(SearchError::new(error.description())),
+            Err(error) => return Err(FindError::new(error.description())),
         }
         Ok(settings)
     }
@@ -90,8 +90,8 @@ impl SearchOptions {
         &self,
         name: &String,
         value: &Value,
-        settings: &mut SearchSettings,
-    ) -> Result<(), SearchError> {
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
         match value {
             Value::Array(values) => {
                 for v in values.iter() {
@@ -134,8 +134,8 @@ impl SearchOptions {
     fn settings_from_value(
         &self,
         value: &Value,
-        settings: &mut SearchSettings,
-    ) -> Result<(), SearchError> {
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
         match value {
             Value::Object(obj) => {
                 for (s, v) in obj.iter() {
@@ -152,9 +152,9 @@ impl SearchOptions {
     pub fn settings_from_args(
         &self,
         mut args: Iter<String>,
-    ) -> Result<SearchSettings, SearchError> {
+    ) -> Result<FindSettings, FindError> {
         args.next(); // the first arg is assumed to be the executable name/path
-        let mut settings = SearchSettings::default();
+        let mut settings = FindSettings::default();
         settings.print_results = true; // default to true when running from main
 
         let long_map = self.get_long_map();
@@ -173,7 +173,7 @@ impl SearchOptions {
                                 Err(error) => return Err(error),
                             },
                             None => {
-                                return Err(SearchError::new(
+                                return Err(FindError::new(
                                     format!("Missing value for option {}", &nextarg).as_str(),
                                 ));
                             }
@@ -185,7 +185,7 @@ impl SearchOptions {
                                 }
                             },
                             None => {
-                                return Err(SearchError::new(
+                                return Err(FindError::new(
                                     format!("Missing value for option {}", &nextarg).as_str(),
                                 ));
                             }
@@ -196,7 +196,7 @@ impl SearchOptions {
                             }
                         },
                         _ => {
-                            return Err(SearchError::new(
+                            return Err(FindError::new(
                                 format!("Invalid option: {}", &nextarg).as_str(),
                             ))
                         }
@@ -212,9 +212,9 @@ impl SearchOptions {
         Ok(settings)
     }
 
-    fn get_sort_opt_map(&self) -> HashMap<String, &SearchOption> {
-        let mut map = HashMap::with_capacity(self.searchoptions.len());
-        for so in self.searchoptions.iter() {
+    fn get_sort_opt_map(&self) -> HashMap<String, &FindOption> {
+        let mut map = HashMap::with_capacity(self.findoptions.len());
+        for so in self.findoptions.iter() {
             let sortkey = match &so.short {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
@@ -225,15 +225,15 @@ impl SearchOptions {
     }
 
     fn get_usage_string(&self) -> String {
-        let mut usage = String::from("\nUsage:\n rssearch [options] -s <searchpattern>");
+        let mut usage = String::from("\nUsage:\n rsfind [options] -s <findpattern>");
         usage.push_str(" <startpath>\n\nOptions:\n");
         let sort_opt_map = self.get_sort_opt_map();
-        let mut sortkeys: Vec<String> = Vec::with_capacity(self.searchoptions.len());
+        let mut sortkeys: Vec<String> = Vec::with_capacity(self.findoptions.len());
         for key in sort_opt_map.keys() {
             sortkeys.push(key.clone());
         }
         let mut maxlen: usize = 0;
-        for so in self.searchoptions.iter() {
+        for so in self.findoptions.iter() {
             let len = match &so.short {
                 Some(_) => so.long.len() + 4,
                 None => so.long.len() + 2,
@@ -265,22 +265,22 @@ impl SearchOptions {
     }
 
     pub fn print_version(&self) {
-        log(format!("xsearch version {}", self.version).as_str());
+        log(format!("xfind version {}", self.version).as_str());
     }
 
     fn apply_arg(
         &self,
         argname: &str,
         s: &str,
-        settings: &mut SearchSettings,
-    ) -> Result<(), SearchError> {
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
         match self.arg_map.get(argname) {
             Some(arg_fn) => match arg_fn(&s, settings) {
                 Ok(_) => return Ok(()),
                 Err(error) => return Err(error),
             },
             None => {
-                return Err(SearchError::new(
+                return Err(FindError::new(
                     format!("Invalid option: {}", argname).as_str(),
                 ))
             }
@@ -291,15 +291,15 @@ impl SearchOptions {
         &self,
         argname: &str,
         b: bool,
-        settings: &mut SearchSettings,
-    ) -> Result<(), SearchError> {
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
         match self.flag_map.get(argname) {
             Some(arg_fn) => match arg_fn(b, settings) {
                 Ok(_) => return Ok(()),
                 Err(error) => return Err(error),
             },
             None => {
-                return Err(SearchError::new(
+                return Err(FindError::new(
                     format!("Invalid option: {}", argname).as_str(),
                 ))
             }
@@ -311,142 +311,142 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
     let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(23);
     arg_map.insert(
         "encoding".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.text_file_encoding = s.to_string())
         }),
     );
     arg_map.insert(
         "in-archiveext".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_archive_extension(s.to_string()))
         }),
     );
     arg_map.insert(
         "in-archivefilepattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_archive_file_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "in-dirpattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_dir_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "in-ext".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_extension(s.to_string()))
         }),
     );
     arg_map.insert(
         "in-filepattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_file_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "in-filetype".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             let filetype = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_in_file_type(filetype))
         }),
     );
     arg_map.insert(
         "in-linesafterpattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_lines_after_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "in-linesbeforepattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_lines_before_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "linesafter".to_string(),
         Box::new(
-            |s: &str, settings: &mut SearchSettings| match s.parse::<usize>() {
+            |s: &str, settings: &mut FindSettings| match s.parse::<usize>() {
                 Ok(linesafter) => Ok(settings.lines_after = linesafter),
-                _ => return Err(SearchError::new("Invalid value for linesafter")),
+                _ => return Err(FindError::new("Invalid value for linesafter")),
             },
         ),
     );
     arg_map.insert(
         "linesaftertopattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_lines_after_to_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "linesafteruntilpattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_lines_after_until_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "linesbefore".to_string(),
         Box::new(
-            |s: &str, settings: &mut SearchSettings| match s.parse::<usize>() {
+            |s: &str, settings: &mut FindSettings| match s.parse::<usize>() {
                 Ok(linesbefore) => Ok(settings.lines_before = linesbefore),
-                _ => return Err(SearchError::new("Invalid value for linesbefore")),
+                _ => return Err(FindError::new("Invalid value for linesbefore")),
             },
         ),
     );
     arg_map.insert(
         "out-archiveext".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_archive_extension(s.to_string()))
         }),
     );
     arg_map.insert(
         "out-archivefilepattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_archive_file_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "out-dirpattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_dir_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "out-ext".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_extension(s.to_string()))
         }),
     );
     arg_map.insert(
         "out-filepattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_file_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "out-filetype".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             let filetype = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_out_file_type(filetype))
         }),
     );
     arg_map.insert(
         "out-linesafterpattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_lines_after_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
         "out-linesbeforepattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
+        Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_lines_before_pattern(s.to_string()))
         }),
     );
     arg_map.insert(
-        "searchpattern".to_string(),
-        Box::new(|s: &str, settings: &mut SearchSettings| {
-            Ok(settings.search_patterns.push(Regex::new(s).unwrap()))
+        "findpattern".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            Ok(settings.find_patterns.push(Regex::new(s).unwrap()))
         }),
     );
     arg_map
@@ -456,87 +456,87 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(19);
     flag_map.insert(
         "allmatches".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.first_match = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.first_match = !b)),
     );
     flag_map.insert(
         "archivesonly".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_archives_only(b))),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_archives_only(b))),
     );
     flag_map.insert(
         "colorize".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.colorize = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.colorize = b)),
     );
     flag_map.insert(
         "debug".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.set_debug(b))),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_debug(b))),
     );
     flag_map.insert(
         "excludehidden".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.exclude_hidden = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.exclude_hidden = b)),
     );
     flag_map.insert(
         "firstmatch".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.first_match = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.first_match = b)),
     );
     flag_map.insert(
         "help".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.print_usage = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.print_usage = b)),
     );
     flag_map.insert(
         "includehidden".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.exclude_hidden = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.exclude_hidden = !b)),
     );
     flag_map.insert(
         "listdirs".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.list_dirs = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.list_dirs = b)),
     );
     flag_map.insert(
         "listfiles".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.list_files = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.list_files = b)),
     );
     flag_map.insert(
         "listlines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.list_lines = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.list_lines = b)),
     );
     flag_map.insert(
-        "multilinesearch".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.multiline_search = b)),
+        "multilineoption-REMOVE".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.multiline_find = b)),
     );
     flag_map.insert(
         "nocolorize".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.colorize = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.colorize = !b)),
     );
     flag_map.insert(
         "noprintmatches".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.print_results = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.print_results = !b)),
     );
     flag_map.insert(
         "norecursive".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.recursive = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.recursive = !b)),
     );
     flag_map.insert(
         "printmatches".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.print_results = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.print_results = b)),
     );
     flag_map.insert(
         "recursive".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.recursive = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.recursive = b)),
     );
     flag_map.insert(
-        "searcharchives".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.search_archives = b)),
+        "findarchives".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.find_archives = b)),
     );
     flag_map.insert(
         "uniquelines".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.unique_lines = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.unique_lines = b)),
     );
     flag_map.insert(
         "verbose".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.verbose = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.verbose = b)),
     );
     flag_map.insert(
         "version".to_string(),
-        Box::new(|b: bool, settings: &mut SearchSettings| Ok(settings.print_version = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.print_version = b)),
     );
     flag_map
 }
@@ -553,7 +553,7 @@ mod tests {
 
     #[test]
     fn test_settings_from_args() {
-        let options = match SearchOptions::new() {
+        let options = match FindOptions::new() {
             Ok(options) => options,
             Err(error) => {
                 log(error.description());
@@ -561,10 +561,10 @@ mod tests {
                 process::exit(1);
             }
         };
-        assert!(!options.searchoptions.is_empty());
+        assert!(!options.findoptions.is_empty());
 
         let args: Vec<String> = vec![
-            "rssearch", "-x", "php,rs", "-D", "debug", "-f", "search", "-s", "Searcher", "-t",
+            "rsfind", "-x", "php,rs", "-D", "debug", "-f", "find", "-s", "Finder", "-t",
             "code", "--debug", ".",
         ]
         .into_iter()
@@ -584,12 +584,12 @@ mod tests {
         assert_eq!(settings.in_file_patterns.len(), 1);
         assert_eq!(
             settings.in_file_patterns[0].to_string(),
-            String::from("search")
+            String::from("find")
         );
-        assert_eq!(settings.search_patterns.len(), 1);
+        assert_eq!(settings.find_patterns.len(), 1);
         assert_eq!(
-            settings.search_patterns[0].to_string(),
-            String::from("Searcher")
+            settings.find_patterns[0].to_string(),
+            String::from("Finder")
         );
         assert_eq!(settings.in_file_types.len(), 1);
         assert_eq!(settings.in_file_types[0], FileType::Code);
@@ -600,7 +600,7 @@ mod tests {
 
     #[test]
     fn test_settings_from_json() {
-        let options = match SearchOptions::new() {
+        let options = match FindOptions::new() {
             Ok(options) => options,
             Err(error) => {
                 log(error.description());
@@ -608,7 +608,7 @@ mod tests {
                 process::exit(1);
             }
         };
-        assert!(!options.searchoptions.is_empty());
+        assert!(!options.findoptions.is_empty());
 
         let json = r#"
             {
@@ -620,8 +620,8 @@ mod tests {
               "linesbefore": 2,
               "out-dirpattern": "node_module",
               "out-filepattern": ["temp"],
-              "searchpattern": "Searcher",
-              "startpath": "~/src/xsearch/"
+              "findpattern": "Finder",
+              "startpath": "~/src/xfind/"
             }"#;
 
         match options.settings_from_json(&json.to_string()) {
@@ -644,12 +644,12 @@ mod tests {
                     settings.out_file_patterns[0].to_string(),
                     String::from("temp")
                 );
-                assert_eq!(settings.search_patterns.len(), 1);
+                assert_eq!(settings.find_patterns.len(), 1);
                 assert_eq!(
-                    settings.search_patterns[0].to_string(),
-                    String::from("Searcher")
+                    settings.find_patterns[0].to_string(),
+                    String::from("Finder")
                 );
-                assert_eq!(settings.startpath, String::from("~/src/xsearch/"));
+                assert_eq!(settings.startpath, String::from("~/src/xfind/"));
                 assert!(settings.verbose);
             },
             Err(error) => {
@@ -661,7 +661,7 @@ mod tests {
 
     #[test]
     fn test_settings_from_file() {
-        let options = match SearchOptions::new() {
+        let options = match FindOptions::new() {
             Ok(options) => options,
             Err(error) => {
                 log(error.description());
@@ -669,13 +669,13 @@ mod tests {
                 process::exit(1);
             }
         };
-        assert!(!options.searchoptions.is_empty());
+        assert!(!options.findoptions.is_empty());
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let path = Path::new(config.shared_path.as_str()).join("settings.json");
         let settings_file = path.to_str().unwrap();
 
-        let args: Vec<&str> = vec!["rssearch", "--settings-file", &settings_file];
+        let args: Vec<&str> = vec!["rsfind", "--settings-file", &settings_file];
         let args: Vec<String> = args.into_iter().map(|a| a.to_string()).collect();
         match options.settings_from_args(args.iter()) {
             Ok(settings) => {
@@ -694,12 +694,12 @@ mod tests {
                     settings.out_file_patterns[0].to_string(),
                     String::from("gulpfile")
                 );
-                assert_eq!(settings.search_patterns.len(), 1);
+                assert_eq!(settings.find_patterns.len(), 1);
                 assert_eq!(
-                    settings.search_patterns[0].to_string(),
-                    String::from("Searcher")
+                    settings.find_patterns[0].to_string(),
+                    String::from("Finder")
                 );
-                assert_eq!(settings.startpath, String::from("/Users/cary/src/xsearch/"));
+                assert_eq!(settings.startpath, String::from("/Users/cary/src/xfind/"));
                 assert!(settings.verbose);
             },
             Err(error) => {

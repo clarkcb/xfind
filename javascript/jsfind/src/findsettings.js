@@ -1,12 +1,12 @@
 /*
- * searchsettings.js
+ * findsettings.js
  *
- * represents the settings to use when performing the search
+ * represents the settings to use when performing the find
  */
 
 const {FileTypes} = require('./filetypes');
 
-class SearchSettings {
+class FindSettings {
     'use strict'
 
     constructor() {
@@ -31,7 +31,7 @@ class SearchSettings {
         this.listFiles = false;
         this.listLines = false;
         this.maxLineLength = 150;
-        this.multilineSearch = false;
+        this.multilineFind = false;
         this.outArchiveExtensions = [];
         this.outArchiveFilePatterns = [];
         this.outDirPatterns = [];
@@ -44,8 +44,8 @@ class SearchSettings {
         this.printUsage = false;
         this.printVersion = false;
         this.recursive = true;
-        this.searchArchives = false;
-        this.searchPatterns = [];
+        this.findArchives = false;
+        this.findPatterns = [];
         this.startPath = "";
         this.textFileEncoding = "utf-8";
         this.uniqueLines = false;
@@ -92,8 +92,8 @@ class SearchSettings {
         this.addPatterns(pattern, this.outFilePatterns);
     }
 
-    addSearchPatterns(pattern) {
-        this.addPatterns(pattern, this.searchPatterns);
+    addFindPatterns(pattern) {
+        this.addPatterns(pattern, this.findPatterns);
     }
 
     addInArchiveExtensions(ext) {
@@ -155,7 +155,7 @@ class SearchSettings {
 
     setArchivesOnly(b = true) {
         this.archivesOnly = b;
-        if (b) this.searchArchives = b;
+        if (b) this.findArchives = b;
     }
 
     setDebug(b = true) {
@@ -182,7 +182,7 @@ class SearchSettings {
     }
 
     toString() {
-        return 'SearchSettings(' +
+        return 'FindSettings(' +
             'archivesOnly=' + this.archivesOnly +
             ', colorize=' + this.colorize +
             ', debug=' + this.debug +
@@ -204,7 +204,7 @@ class SearchSettings {
             ', listFiles=' + this.listFiles +
             ', listLines=' + this.listLines +
             ', maxLineLength=' + this.maxLineLength +
-            ', multilineSearch=' + this.multilineSearch +
+            ', multilineFind=' + this.multilineFind +
             ', ' + this.listToString('outArchiveExtensions', this.outArchiveExtensions) +
             ', ' + this.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
             ', ' + this.listToString('outDirPatterns', this.outDirPatterns) +
@@ -216,8 +216,8 @@ class SearchSettings {
             ', printResults=' + this.printResults +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
-            ', searchArchives=' + this.searchArchives +
-            ', ' + this.listToString('searchPatterns', this.searchPatterns) +
+            ', findArchives=' + this.findArchives +
+            ', ' + this.listToString('findPatterns', this.findPatterns) +
             ', startPath="' + this.startPath + '"' +
             ', textFileEncoding="' + this.textFileEncoding + '"' +
             ', uniqueLines=' + this.uniqueLines +
@@ -226,4 +226,4 @@ class SearchSettings {
     }
 }
 
-exports.SearchSettings = SearchSettings;
+exports.FindSettings = FindSettings;

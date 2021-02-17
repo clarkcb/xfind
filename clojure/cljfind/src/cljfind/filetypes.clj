@@ -6,7 +6,7 @@
 ;;;
 ;;; ############################################################################
 
-(ns cljsearch.filetypes
+(ns cljfind.filetypes
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
@@ -15,7 +15,7 @@
   (:use [clojure.set :only (union)]
         [clojure.string :only (split lower-case)]
         [clojure.xml :only (parse)]
-        [cljsearch.fileutil :only (expand-path get-ext)]))
+        [cljfind.fileutil :only (expand-path get-ext)]))
 
 (def ARCHIVE "archive")
 (def BINARY "binary")
@@ -35,12 +35,12 @@
                   (union (get filetypemap TEXT)
                          (get filetypemap CODE)
                          (get filetypemap XML)))
-        searchablemap (hash-map "searchable"
+        findablemap (hash-map "findable"
                         (union (get filetypemap ARCHIVE)
                                (get filetypemap BINARY)
                                (get filetypemap TEXT)))
         ]
-  (merge filetypemap textmap searchablemap)))
+  (merge filetypemap textmap findablemap)))
 
 (defn get-filetypemap-from-json []
   (let [contents (slurp (io/resource "filetypes.json"))
@@ -52,11 +52,11 @@
                   (union (get filetypemap TEXT)
                          (get filetypemap CODE)
                          (get filetypemap XML)))
-        searchablemap (hash-map "searchable"
+        findablemap (hash-map "findable"
                         (union (get filetypemap ARCHIVE)
                                (get filetypemap BINARY)
                                (get filetypemap TEXT)))
-        fullmap (merge filetypemap textmap searchablemap)
+        fullmap (merge filetypemap textmap findablemap)
         ]
     fullmap))
 
@@ -80,8 +80,8 @@
 (defn code-file? [f]
   (contains? (get FILETYPEMAP CODE) (get-ext f)))
 
-(defn searchable-file? [f]
-  (contains? (get FILETYPEMAP "searchable") (get-ext f)))
+(defn findable-file? [f]
+  (contains? (get FILETYPEMAP "findable") (get-ext f)))
 
 (defn text-ext? [ext]
   (contains? (get FILETYPEMAP TEXT) ext))

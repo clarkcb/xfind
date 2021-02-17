@@ -1,9 +1,9 @@
 open Core.Std
 
-type searchOption = { long : string; short : string; desc : string }
+type findOption = { long : string; short : string; desc : string }
 
-val get_searchoptions : searchOption list
+val get_findoptions : findOption list
 
-val get_usage : searchOption list -> string
+val get_usage : findOption list -> string
 
-val settings_from_args : searchOption list -> string list -> (Searchsettings.t, string) Result.t
+val settings_from_args : findOption list -> string list -> (Findsettings.t, string) Result.t

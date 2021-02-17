@@ -1,9 +1,9 @@
 require_relative 'filetypes'
 
-module RbSearch
+module RbFind
 
-  # SearchSettings - encapsulates search settings
-  class SearchSettings
+  # FindSettings - encapsulates find settings
+  class FindSettings
 
     attr_reader :archivesonly
     attr_accessor :colorize
@@ -26,7 +26,7 @@ module RbSearch
     attr_accessor :listfiles
     attr_accessor :listlines
     attr_accessor :maxlinelength
-    attr_accessor :multilinesearch
+    attr_accessor :multilineoption-REMOVE
     attr_accessor :out_archiveextensions
     attr_accessor :out_archivefilepatterns
     attr_accessor :out_dirpatterns
@@ -39,8 +39,8 @@ module RbSearch
     attr_accessor :printusage
     attr_accessor :printversion
     attr_accessor :recursive
-    attr_accessor :searcharchives
-    attr_accessor :searchpatterns
+    attr_accessor :findarchives
+    attr_accessor :findpatterns
     attr_accessor :startpath
     attr_accessor :textfileencoding
     attr_accessor :uniquelines
@@ -58,12 +58,12 @@ module RbSearch
       @listfiles = false
       @listlines = false
       @maxlinelength = 150
-      @multilinesearch = false
+      @multilineoption-REMOVE = false
       @printresults = true
       @printusage = false
       @printversion = false
       @recursive = true
-      @searcharchives = false
+      @findarchives = false
       @startpath = nil
       @textfileencoding = 'utf-8'
       @uniquelines = false
@@ -87,7 +87,7 @@ module RbSearch
       @out_filetypes = []
       @out_linesafterpatterns = []
       @out_linesbeforepatterns = []
-      @searchpatterns = []
+      @findpatterns = []
     end
 
     def add_exts(exts, ext_set)
@@ -130,7 +130,7 @@ module RbSearch
 
     def archivesonly=(bool)
       @archivesonly = bool
-      @searcharchives = bool if bool
+      @findarchives = bool if bool
     end
 
     def debug=(bool)
@@ -139,7 +139,7 @@ module RbSearch
     end
 
     def to_s
-      s = 'SearchSettings('
+      s = 'FindSettings('
       s << "archivesonly: #{@archivesonly}"
       s << ", debug: #{@debug}"
       s << ", firstmatch: #{@firstmatch}"
@@ -160,7 +160,7 @@ module RbSearch
       s << ", listfiles: #{@listfiles}"
       s << ", listlines: #{@listlines}"
       s << ", maxlinelength: #{@maxlinelength}"
-      s << ", multilinesearch: #{@multilinesearch}"
+      s << ", multilineoption-REMOVE: #{@multilineoption-REMOVE}"
       s << ', ' + list_to_s('out_archiveextensions', @out_archiveextensions)
       s << ', ' + list_to_s('out_archivefilepatterns', @out_archivefilepatterns)
       s << ', ' + list_to_s('out_dirpatterns', @out_dirpatterns)
@@ -173,8 +173,8 @@ module RbSearch
       s << ", printusage: #{@printusage}"
       s << ", printversion: #{@printversion}"
       s << ", recursive: #{@recursive}"
-      s << ", searcharchives: #{@searcharchives}"
-      s << ', ' + list_to_s('searchpatterns', @searchpatterns)
+      s << ", findarchives: #{@findarchives}"
+      s << ', ' + list_to_s('findpatterns', @findpatterns)
       s << ", startpath: \"#{@startpath}\""
       s << ", textfileencoding: \"#{@textfileencoding}\""
       s << ", uniquelines: #{@uniquelines}"

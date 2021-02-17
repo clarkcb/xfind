@@ -1,7 +1,7 @@
 /*
- * searcher.js
+ * finder.js
  *
- * performs the searching based on the given SearchSettings instance
+ * performs the finding based on the given FindSettings instance
  */
 
 const assert = require('assert');
@@ -16,11 +16,11 @@ const common = require('./common');
 const {FileType} = require('./filetype');
 const {FileTypes} = require('./filetypes');
 const FileUtil = require('./fileutil');
-const {SearchError} = require('./searcherror');
-const {SearchFile} = require('./searchfile');
-const {SearchResult} = require('./searchresult');
+const {FindError} = require('./finderror');
+const {FindFile} = require('./findfile');
+const {FindResult} = require('./findresult');
 
-class Searcher {
+class Finder {
     'use strict'
 
     constructor(settings) {
@@ -43,15 +43,15 @@ class Searcher {
             const stat = fs.lstatSync(this.settings.startPath);
 
             if (stat.isDirectory()) {
-                assert.ok(this.isSearchDir(this.settings.startPath),
-                    'Startpath does not match search settings');
+                assert.ok(this.isFindDir(this.settings.startPath),
+                    'Startpath does not match find settings');
             } else if (stat.isFile()) {
                 assert.ok(this.filterFile(this.settings.startPath),
-                    'Startpath does not match search settings');
+                    'Startpath does not match find settings');
             } else {
-                assert.ok(false, 'Startpath not searchable file type');
+                assert.ok(false, 'Startpath not findable file type');
             }
-            assert.ok(this.settings.searchPatterns.length, 'No search patterns defined');
+            assert.ok(this.settings.findPatterns.length, 'No find patterns defined');
             assert.ok(this.supportedEncodings.indexOf(this.settings.textFileEncoding) > -1,
                 'Invalid encoding');
             assert.ok(this.settings.linesBefore > -1, 'Invalid linesbefore');
@@ -65,7 +65,7 @@ class Searcher {
             } else if (err.code === 'EACCES') {
                 msg = 'Startpath not readable';
             }
-            throw new SearchError(msg);
+            throw new FindError(msg);
         }
     }
 
@@ -74,14 +74,14 @@ class Searcher {
     }
 
     matchesAnyPattern(s, patterns) {
-        return patterns.some((p, i, arr) => s.search(p) > -1);
+        return patterns.some((p, i, arr) => s.find(p) > -1);
     }
 
     anyMatchesAnyPattern(ss, patterns) {
         return ss.some((s, i, arr) => this.matchesAnyPattern(s, patterns));
     }
 
-    isSearchDir(dir) {
+    isFindDir(dir) {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
@@ -102,7 +102,7 @@ class Searcher {
             this.settings.outDirPatterns));
     }
 
-    isSearchFile(file) {
+    isFindFile(file) {
         if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
             return false;
         }
@@ -124,7 +124,7 @@ class Searcher {
                 this.matchesAnyElement(filetype, this.settings.outFileTypes)));
     }
 
-    isArchiveSearchFile(file) {
+    isArchiveFindFile(file) {
         if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
             return false;
         }
@@ -145,28 +145,28 @@ class Searcher {
             this.matchesAnyPattern(file, this.settings.outArchiveFilePatterns));
     }
 
-    async getSearchFiles(startPath) {
-        let searchFiles = [];
+    async getFindFiles(startPath) {
+        let findFiles = [];
         try {
             let stats = await fsStatAsync(startPath);
             if (stats.isDirectory()) {
-                if (this.isSearchDir(startPath)) {
-                    searchFiles = await this.recGetSearchFiles(startPath);
+                if (this.isFindDir(startPath)) {
+                    findFiles = await this.recGetFindFiles(startPath);
                 } else {
-                    throw new SearchError("startPath does not match search criteria");
+                    throw new FindError("startPath does not match find criteria");
                 }
             } else if (stats.isFile()) {
                 const dirname = path.dirname(startPath) || '.';
-                if (this.isSearchDir(dirname) && this.filterFile(startPath)) {
+                if (this.isFindDir(dirname) && this.filterFile(startPath)) {
                     const filename = path.basename(startPath);
                     const filetype = this.filetypes.getFileType(filename);
-                    const sf = new SearchFile(dirname, filename, filetype);
-                    searchFiles.push(sf);
+                    const sf = new FindFile(dirname, filename, filetype);
+                    findFiles.push(sf);
                 } else {
-                    throw new SearchError("startPath does not match search criteria");
+                    throw new FindError("startPath does not match find criteria");
                 }
             }
-            return searchFiles;
+            return findFiles;
 
         } catch (err) {
             // common.log(err);
@@ -174,65 +174,65 @@ class Searcher {
         }
     }
 
-    async recGetSearchFiles(currentDir) {
-        let searchDirs = [];
-        let searchFiles = [];
+    async recGetFindFiles(currentDir) {
+        let findDirs = [];
+        let findFiles = [];
         let files = await fsReaddirAsync(currentDir);
         files.map(f => {
             return path.join(currentDir, f);
         }).forEach(f => {
             let stats = fs.statSync(f);
-            if (stats.isDirectory() && this.settings.recursive && this.isSearchDir(f)) {
-                searchDirs.push(f);
+            if (stats.isDirectory() && this.settings.recursive && this.isFindDir(f)) {
+                findDirs.push(f);
             } else if (stats.isFile() && this.filterFile(f)) {
                 const dirname = path.dirname(f) || '.';
                 const filename = path.basename(f);
                 const filetype = this.filetypes.getFileType(filename);
-                const sf = new SearchFile(dirname, filename, filetype);
-                searchFiles.push(sf);
+                const sf = new FindFile(dirname, filename, filetype);
+                findFiles.push(sf);
             }
         });
 
-        const subDirSearchFileArrays = await Promise.all(searchDirs.map(d => this.recGetSearchFiles(d)));
-        subDirSearchFileArrays.forEach(subDirSearchFiles => {
-            searchFiles = searchFiles.concat(subDirSearchFiles);
+        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFindFiles(d)));
+        subDirFindFileArrays.forEach(subDirFindFiles => {
+            findFiles = findFiles.concat(subDirFindFiles);
         });
-        return searchFiles;
+        return findFiles;
     }
 
     filterFile(f) {
         if (this.filetypes.isArchiveFile(f)) {
-            return (this.settings.searchArchives && this.isArchiveSearchFile(f));
+            return (this.settings.findArchives && this.isArchiveFindFile(f));
         }
-        return (!this.settings.archivesOnly && this.isSearchFile(f));
+        return (!this.settings.archivesOnly && this.isFindFile(f));
     }
 
-    async search() {
+    async find() {
         try {
-            // get the search files
-            let searchfiles = await this.getSearchFiles(this.settings.startPath);
+            // get the find files
+            let findfiles = await this.getFindFiles(this.settings.startPath);
 
             if (this.settings.verbose) {
-                let dirs = searchfiles.map(sf => sf.pathname);
+                let dirs = findfiles.map(sf => sf.pathname);
                 dirs = common.setFromArray(dirs);
                 dirs.sort();
-                common.log("\nDirectories to be searched " + `(${dirs.length}):`);
+                common.log("\nDirectories to be found " + `(${dirs.length}):`);
                 dirs.forEach(d => common.log(d));
 
-                common.log("\nFiles to be searched " + `(${searchfiles.length}):`);
-                searchfiles.forEach(sf => common.log(sf.relativePath()));
+                common.log("\nFiles to be found " + `(${findfiles.length}):`);
+                findfiles.forEach(sf => common.log(sf.relativePath()));
                 common.log("");
             }
 
-            // search the files
+            // find the files
             let results = [];
-            const searchFileResultsArrays = await Promise.all(searchfiles.map(sf => this.searchFile(sf)));
-            searchFileResultsArrays.forEach(searchFileResults => {
-                results = results.concat(searchFileResults);
+            const findFileResultsArrays = await Promise.all(findfiles.map(sf => this.findFile(sf)));
+            findFileResultsArrays.forEach(findFileResults => {
+                results = results.concat(findFileResults);
             });
 
             if (this.settings.verbose) {
-                common.log('Search complete.');
+                common.log('Find complete.');
             }
 
             return results;
@@ -242,16 +242,16 @@ class Searcher {
         }
     }
 
-    async searchFile(searchfile) {
+    async findFile(findfile) {
         let results = [];
-        switch (searchfile.filetype) {
+        switch (findfile.filetype) {
             case FileType.CODE:
             case FileType.TEXT:
             case FileType.XML:
-                results = await this.searchTextFile(searchfile);
+                results = await this.findTextFile(findfile);
                 break;
             case FileType.BINARY:
-                results = await this.searchBinaryFile(searchfile);
+                results = await this.findBinaryFile(findfile);
                 break;
             default:
                 // TODO: add message about unsupported filetype
@@ -260,22 +260,22 @@ class Searcher {
         return results;
     }
 
-    async searchBinaryFile(searchfile) {
+    async findBinaryFile(findfile) {
         if (this.settings.verbose) {
-            common.log(`Searching binary file: "${searchfile}"`);
+            common.log(`Finding binary file: "${findfile}"`);
         }
 
-        const contents = await FileUtil.getFileContentsAsync(searchfile.relativePath(), this.binaryEncoding);
+        const contents = await FileUtil.getFileContentsAsync(findfile.relativePath(), this.binaryEncoding);
         let results = [];
 
-        const searchPattern = pattern => {
+        const findPattern = pattern => {
             pattern = new RegExp(pattern.source, 'g');
             let patternResults = [];
             let match = pattern.exec(contents);
             while (match) {
-                patternResults.push(new SearchResult(
+                patternResults.push(new FindResult(
                     pattern,
-                    searchfile,
+                    findfile,
                     0,
                     match.index+1,
                     pattern.lastIndex+1,
@@ -290,31 +290,31 @@ class Searcher {
             return patternResults;
         }
 
-        const patternResultArrays = await Promise.all(this.settings.searchPatterns.map(p => searchPattern(p)));
+        const patternResultArrays = await Promise.all(this.settings.findPatterns.map(p => findPattern(p)));
         patternResultArrays.forEach(patternResults => {
             results = results.concat(patternResults);
         });
         return results;
     }
 
-    async searchTextFile(searchfile) {
+    async findTextFile(findfile) {
         if (this.settings.verbose) {
-            common.log(`Searching text file ${searchfile}`);
+            common.log(`Finding text file ${findfile}`);
         }
         let results;
-        if (this.settings.multilineSearch) {
-            results = await this.searchTextFileContents(searchfile);
+        if (this.settings.multilineFind) {
+            results = await this.findTextFileContents(findfile);
         } else {
-            results = await this.searchTextFileLines(searchfile);
+            results = await this.findTextFileLines(findfile);
         }
         return results;
     }
 
-    async searchTextFileContents(searchfile) {
-        const contents = await FileUtil.getFileContentsAsync(searchfile.relativePath(), this.settings.textFileEncoding);
-        let stringResults = await this.searchMultiLineString(contents);
+    async findTextFileContents(findfile) {
+        const contents = await FileUtil.getFileContentsAsync(findfile.relativePath(), this.settings.textFileEncoding);
+        let stringResults = await this.findMultiLineString(contents);
         return stringResults.map(r => {
-            return new SearchResult(r.pattern, searchfile, r.linenum, r.matchStartIndex, r.matchEndIndex, r.line,
+            return new FindResult(r.pattern, findfile, r.linenum, r.matchStartIndex, r.matchEndIndex, r.line,
                 r.linesBefore, r.linesAfter, this.settings.maxLineLength, this.settings.colorize);
         });
     }
@@ -360,7 +360,7 @@ class Searcher {
         return i + 1;
     }
 
-    async searchMultiLineString(s) {
+    async findMultiLineString(s) {
         let linesBefore = [];
         let linesAfter = [];
         let results = [];
@@ -369,7 +369,7 @@ class Searcher {
             let startLineIndices = [0].concat(newLineIndices.map(this.plusOne));
             let endLineIndices = newLineIndices.concat([s.length - 1]);
 
-            const searchPattern = pattern => {
+            const findPattern = pattern => {
                 pattern = new RegExp(pattern.source, 'g');
                 let patternResults = [];
                 let match = pattern.exec(s);
@@ -410,7 +410,7 @@ class Searcher {
                     let matchEndIndex = pattern.lastIndex - lineStartIndex + 1;
                     if ((this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
                         (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
-                        patternResults.push(new SearchResult(
+                        patternResults.push(new FindResult(
                             pattern,
                             '',
                             beforeLineCount + 1,
@@ -430,7 +430,7 @@ class Searcher {
                 return patternResults;
             }
 
-            const patternResultArrays = await Promise.all(this.settings.searchPatterns.map(p => searchPattern(p)));
+            const patternResultArrays = await Promise.all(this.settings.findPatterns.map(p => findPattern(p)));
             patternResultArrays.forEach(patternResults => {
                 results = results.concat(patternResults);
             });
@@ -456,17 +456,17 @@ class Searcher {
             this.settings.outLinesAfterPatterns);
     }
 
-    async searchTextFileLines(searchfile) {
-        let lines = FileUtil.getFileLines(searchfile.relativePath(), this.settings.textFileEncoding);
-        let linesResults = await this.searchLines(lines);
+    async findTextFileLines(findfile) {
+        let lines = FileUtil.getFileLines(findfile.relativePath(), this.settings.textFileEncoding);
+        let linesResults = await this.findLines(lines);
         return linesResults.map(r => {
-            return new SearchResult(r.pattern, searchfile, r.linenum, r.matchStartIndex, r.matchEndIndex, r.line,
+            return new FindResult(r.pattern, findfile, r.linenum, r.matchStartIndex, r.matchEndIndex, r.line,
                 r.linesBefore, r.linesAfter, this.settings.maxLineLength, this.settings.colorize);
         });
     }
 
     // return results so that filepath can be added to them
-    async searchLines(lines) {
+    async findLines(lines) {
         let linenum = 0;
         let pattern;
         let linesBefore = [];
@@ -474,7 +474,7 @@ class Searcher {
         let results = [];
         let patternResults = {};
         while (true) {
-            if (Object.keys(patternResults).length === this.settings.searchPatterns.length) {
+            if (Object.keys(patternResults).length === this.settings.findPatterns.length) {
                 break;
             }
             let line = "";
@@ -491,13 +491,13 @@ class Searcher {
                     linesAfter.push(lines.shift());
                 }
             }
-            this.settings.searchPatterns.forEach(p => {
+            this.settings.findPatterns.forEach(p => {
                 pattern = new RegExp(p.source, "g");
                 let match = pattern.exec(line);
                 while (match) {
                     if ((this.settings.linesBefore === 0 || this.linesBeforeMatch(linesBefore)) &&
                         (this.settings.linesAfter === 0 || this.linesAfterMatch(linesAfter))) {
-                        results.push(new SearchResult(
+                        results.push(new FindResult(
                             pattern,
                             '',
                             linenum,
@@ -527,4 +527,4 @@ class Searcher {
     }
 }
 
-exports.Searcher = Searcher;
+exports.Finder = Finder;

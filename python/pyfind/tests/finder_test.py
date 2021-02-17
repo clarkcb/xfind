@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ################################################################################
 #
-# searcher_test.py
+# finder_test.py
 #
-# Searcher testing
+# Finder testing
 #
 ################################################################################
 import os
@@ -12,15 +12,15 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from pysearch import FileType, Searcher, SearchFile, SearchSettings, SHAREDPATH
+from pyfind import FileType, Finder, FindFile, FindSettings, SHAREDPATH
 
 
-class SearcherTest(unittest.TestCase):
+class FinderTest(unittest.TestCase):
 
     def get_settings(self):
-        settings = SearchSettings()
+        settings = FindSettings()
         settings.startpath = '.'
-        settings.add_patterns('Searcher', 'searchpatterns')
+        settings.add_patterns('Finder', 'findpatterns')
         settings.debug = True
         return settings
 
@@ -28,273 +28,273 @@ class SearcherTest(unittest.TestCase):
         return os.path.join(SHAREDPATH, 'testFiles/testFile2.txt')
 
 ################################################################################
-# is_search_dir tests
+# is_find_dir tests
 ################################################################################
-    def test_is_search_dir_no_patterns(self):
+    def test_is_find_dir_no_patterns(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
-        dir = 'plsearch'
-        self.assertTrue(searcher.is_search_dir(dir))
+        finder = Finder(settings)
+        dir = 'plfind'
+        self.assertTrue(finder.is_find_dir(dir))
 
-    def test_is_search_dir_matches_in_pattern(self):
+    def test_is_find_dir_matches_in_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('plsearch', 'in_dirpatterns')
-        searcher = Searcher(settings)
-        dir = 'plsearch'
-        self.assertTrue(searcher.is_search_dir(dir))
+        settings.add_patterns('plfind', 'in_dirpatterns')
+        finder = Finder(settings)
+        dir = 'plfind'
+        self.assertTrue(finder.is_find_dir(dir))
 
-    def test_is_search_dir_no_match_in_pattern(self):
+    def test_is_find_dir_no_match_in_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('plsearch', 'in_dirpatterns')
-        searcher = Searcher(settings)
-        dir = 'pysearch'
-        self.assertFalse(searcher.is_search_dir(dir))
+        settings.add_patterns('plfind', 'in_dirpatterns')
+        finder = Finder(settings)
+        dir = 'pyfind'
+        self.assertFalse(finder.is_find_dir(dir))
 
-    def test_is_search_dir_matches_out_pattern(self):
+    def test_is_find_dir_matches_out_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('pysearch', 'out_dirpatterns')
-        searcher = Searcher(settings)
-        dir = 'pysearch'
-        self.assertFalse(searcher.is_search_dir(dir))
+        settings.add_patterns('pyfind', 'out_dirpatterns')
+        finder = Finder(settings)
+        dir = 'pyfind'
+        self.assertFalse(finder.is_find_dir(dir))
 
-    def test_is_search_dir_no_match_out_pattern(self):
+    def test_is_find_dir_no_match_out_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('pysearch', 'out_dirpatterns')
-        searcher = Searcher(settings)
-        dir = 'plsearch'
-        self.assertTrue(searcher.is_search_dir(dir))
+        settings.add_patterns('pyfind', 'out_dirpatterns')
+        finder = Finder(settings)
+        dir = 'plfind'
+        self.assertTrue(finder.is_find_dir(dir))
 
-    def test_is_search_dir_single_dot(self):
+    def test_is_find_dir_single_dot(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         dir = '.'
-        self.assertTrue(searcher.is_search_dir(dir))
+        self.assertTrue(finder.is_find_dir(dir))
 
-    def test_is_search_dir_double_dot(self):
+    def test_is_find_dir_double_dot(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         dir = '..'
-        self.assertTrue(searcher.is_search_dir(dir))
+        self.assertTrue(finder.is_find_dir(dir))
 
-    def test_is_search_dir_hidden_dir(self):
+    def test_is_find_dir_hidden_dir(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         dir = '.git'
-        self.assertFalse(searcher.is_search_dir(dir))
+        self.assertFalse(finder.is_find_dir(dir))
 
-    def test_is_search_dir_hidden_dir_include_hidden(self):
+    def test_is_find_dir_hidden_dir_include_hidden(self):
         settings = self.get_settings()
         settings.excludehidden = False
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         dir = '.git'
-        self.assertTrue(searcher.is_search_dir(dir))
+        self.assertTrue(finder.is_find_dir(dir))
 
 ################################################################################
-# is_search_file tests
+# is_find_file tests
 ################################################################################
-    def test_is_search_file_matches_by_default(self):
+    def test_is_find_file_matches_by_default(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(searcher.is_search_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertTrue(finder.is_find_file(f))
 
-    def test_is_search_file_matches_in_extension(self):
+    def test_is_find_file_matches_in_extension(self):
         settings = self.get_settings()
         settings.add_exts('pm', 'in_extensions')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(searcher.is_search_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertTrue(finder.is_find_file(f))
 
-    def test_is_search_file_no_match_in_extension(self):
+    def test_is_find_file_no_match_in_extension(self):
         settings = self.get_settings()
         settings.add_exts('pl', 'in_extensions')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertFalse(searcher.is_search_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertFalse(finder.is_find_file(f))
 
-    def test_is_search_file_matches_out_extension(self):
+    def test_is_find_file_matches_out_extension(self):
         settings = self.get_settings()
         settings.add_exts('pm', 'out_extensions')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertFalse(searcher.is_search_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertFalse(finder.is_find_file(f))
 
-    def test_is_search_file_no_match_out_extension(self):
+    def test_is_find_file_no_match_out_extension(self):
         settings = self.get_settings()
         settings.add_exts('py', 'out_extensions')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(searcher.is_search_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertTrue(finder.is_find_file(f))
 
-    def test_is_search_file_matches_in_pattern(self):
+    def test_is_find_file_matches_in_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('Search', 'in_filepatterns')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='Searcher.pm', filetype=FileType.CODE)
-        self.assertTrue(searcher.is_search_file(f))
+        settings.add_patterns('Find', 'in_filepatterns')
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='Finder.pm', filetype=FileType.CODE)
+        self.assertTrue(finder.is_find_file(f))
 
-    def test_is_search_file_no_match_in_pattern(self):
+    def test_is_find_file_no_match_in_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('Search', 'in_filepatterns')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertFalse(searcher.is_search_file(f))
+        settings.add_patterns('Find', 'in_filepatterns')
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertFalse(finder.is_find_file(f))
 
-    def test_is_search_file_matches_out_pattern(self):
+    def test_is_find_file_matches_out_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('Search', 'out_filepatterns')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='Searcher.pm', filetype=FileType.CODE)
-        self.assertFalse(searcher.is_search_file(f))
+        settings.add_patterns('Find', 'out_filepatterns')
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='Finder.pm', filetype=FileType.CODE)
+        self.assertFalse(finder.is_find_file(f))
 
-    def test_is_search_file_no_match_out_pattern(self):
+    def test_is_find_file_no_match_out_pattern(self):
         settings = self.get_settings()
-        settings.add_patterns('Search', 'out_filepatterns')
-        searcher = Searcher(settings)
-        f = SearchFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(searcher.is_search_file(f))
+        settings.add_patterns('Find', 'out_filepatterns')
+        finder = Finder(settings)
+        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
+        self.assertTrue(finder.is_find_file(f))
 
 ################################################################################
-# is__archive_search_file tests
+# is__archive_find_file tests
 ################################################################################
-    def test_is_archive_search_file_matches_by_default(self):
+    def test_is_archive_find_file_matches_by_default(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertTrue(searcher.is_archive_search_file(f))
+        self.assertTrue(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_matches_in_extension(self):
+    def test_is_archive_find_file_matches_in_extension(self):
         settings = self.get_settings()
         settings.add_exts('zip', 'in_archiveextensions')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertTrue(searcher.is_archive_search_file(f))
+        self.assertTrue(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_no_match_in_extension(self):
+    def test_is_archive_find_file_no_match_in_extension(self):
         settings = self.get_settings()
         settings.add_exts('gz', 'in_archiveextensions')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertFalse(searcher.is_archive_search_file(f))
+        self.assertFalse(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_matches_out_extension(self):
+    def test_is_archive_find_file_matches_out_extension(self):
         settings = self.get_settings()
         settings.add_exts('zip', 'out_archiveextensions')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertFalse(searcher.is_archive_search_file(f))
+        self.assertFalse(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_no_match_out_extension(self):
+    def test_is_archive_find_file_no_match_out_extension(self):
         settings = self.get_settings()
         settings.add_exts('gz', 'out_archiveextensions')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertTrue(searcher.is_archive_search_file(f))
+        self.assertTrue(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_matches_in_pattern(self):
+    def test_is_archive_find_file_matches_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('arch', 'in_archivefilepatterns')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertTrue(searcher.is_archive_search_file(f))
+        self.assertTrue(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_no_match_in_pattern(self):
+    def test_is_archive_find_file_no_match_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('archives', 'in_archivefilepatterns')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertFalse(searcher.is_archive_search_file(f))
+        self.assertFalse(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_matches_out_pattern(self):
+    def test_is_archive_find_file_matches_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('arch', 'out_archivefilepatterns')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertFalse(searcher.is_archive_search_file(f))
+        self.assertFalse(finder.is_archive_find_file(f))
 
-    def test_is_archive_search_file_no_match_out_pattern(self):
+    def test_is_archive_find_file_no_match_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('archives', 'out_archivefilepatterns')
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         f = 'archive.zip'
-        self.assertTrue(searcher.is_archive_search_file(f))
+        self.assertTrue(finder.is_archive_find_file(f))
 
 ################################################################################
 # filter_file tests
 ################################################################################
     def test_filter_file_matches_by_default(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertTrue(searcher.filter_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
+        self.assertTrue(finder.filter_file(f))
 
-    def test_filter_file_is_search_file(self):
+    def test_filter_file_is_find_file(self):
         settings = self.get_settings()
         settings.add_exts('pm', 'in_extensions')
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertTrue(searcher.filter_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
+        self.assertTrue(finder.filter_file(f))
 
-    def test_filter_file_not_is_search_file(self):
+    def test_filter_file_not_is_find_file(self):
         settings = self.get_settings()
         settings.add_exts('pl', 'in_extensions')
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertFalse(searcher.filter_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
+        self.assertFalse(finder.filter_file(f))
 
     def test_filter_file_is_hidden_file(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
-        self.assertFalse(searcher.filter_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
+        self.assertFalse(finder.filter_file(f))
 
     def test_filter_file_hidden_includehidden(self):
         settings = self.get_settings()
         settings.excludehidden = False
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
-        self.assertTrue(searcher.filter_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
+        self.assertTrue(finder.filter_file(f))
 
-    def test_filter_file_archive_no_searcharchives(self):
+    def test_filter_file_archive_no_findarchives(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
-        self.assertFalse(searcher.filter_file(f))
+        finder = Finder(settings)
+        f = FindFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
+        self.assertFalse(finder.filter_file(f))
 
-    def test_filter_file_archive_searcharchives(self):
+    def test_filter_file_archive_findarchives(self):
         settings = self.get_settings()
-        settings.searcharchives = 1
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
-        self.assertTrue(searcher.filter_file(f))
+        settings.findarchives = 1
+        finder = Finder(settings)
+        f = FindFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
+        self.assertTrue(finder.filter_file(f))
 
     def test_filter_file_archive_archivesonly(self):
         settings = self.get_settings()
         settings.archivesonly = True
-        settings.searcharchives = True
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
-        self.assertTrue(searcher.filter_file(f))
+        settings.findarchives = True
+        finder = Finder(settings)
+        f = FindFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
+        self.assertTrue(finder.filter_file(f))
 
     def test_filter_file_nonarchive_archivesonly(self):
         settings = self.get_settings()
         settings.archivesonly = True
-        settings.searcharchives = True
-        searcher = Searcher(settings)
-        f = SearchFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertFalse(searcher.filter_file(f))
+        settings.findarchives = True
+        finder = Finder(settings)
+        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
+        self.assertFalse(finder.filter_file(f))
 
 ################################################################################
-# search_lines tests
+# find_lines tests
 ################################################################################
-    def test_search_lines(self):
+    def test_find_lines(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         testfile = self.get_test_file()
         results = []
         try:
             fo = open(testfile, 'r')
-            results = searcher.search_line_iterator(fo)
+            results = finder.find_line_iterator(fo)
             fo.close()
         except IOError as e:
             print(('IOError: {0!s}'.format(e)))
@@ -311,17 +311,17 @@ class SearcherTest(unittest.TestCase):
         self.assertEqual(secondResult.match_end_index, 32)
 
 ################################################################################
-# search_multiline_string tests
+# find_multiline_string tests
 ################################################################################
-    def test_search_multiline_string(self):
+    def test_find_multiline_string(self):
         settings = self.get_settings()
-        searcher = Searcher(settings)
+        finder = Finder(settings)
         testfile = self.get_test_file()
         results = []
         try:
             fo = open(testfile, 'r')
             contents = fo.read()
-            results = searcher.search_multiline_string(contents)
+            results = finder.find_multiline_string(contents)
             fo.close()
         except IOError as e:
             print(('IOError: {0!s}'.format(e)))

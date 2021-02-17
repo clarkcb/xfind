@@ -1,6 +1,6 @@
 //
 //  color.h
-//  objcsearch
+//  objcfind
 //
 //  Created by Cary Clark on 10/15/20.
 //  Copyright © 2020 Cary Clark. All rights reserved.

@@ -1,6 +1,6 @@
 //
 //  FileUtilTests.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/18/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -10,7 +10,7 @@
 import Foundation
 import XCTest
 
-import swiftsearch
+import swiftfind
 
 class FileUtilTests: XCTestCase {
     override func setUp() {

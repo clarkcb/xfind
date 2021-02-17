@@ -13,7 +13,7 @@ const isWin = /^win/.test(process.platform);
 const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
 const HOME = process.env[HOME_NAME];
 
-exports.XSEARCHPATH = config.xsearchpath;
-exports.SHAREDPATH = exports.XSEARCHPATH + '/shared';
+exports.XFINDPATH = config.xfindpath;
+exports.SHAREDPATH = exports.XFINDPATH + '/shared';
 exports.FILETYPESJSONPATH = __dirname + '/../data/filetypes.json';
-exports.SEARCHOPTIONSJSONPATH = __dirname + '/../data/searchoptions.json';
+exports.FINDOPTIONSJSONPATH = __dirname + '/../data/findoptions.json';

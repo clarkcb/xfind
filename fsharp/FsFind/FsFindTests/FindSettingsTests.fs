@@ -1,18 +1,18 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open NUnit.Framework
-open FsSearch
+open FsFind
 
 [<TestFixture>]
-type SearchSettingTests () =
+type FindSettingTests () =
 
     [<SetUp>]
     member this.Setup () =
         ()
 
     [<Test>]
-    member this.GetNewSearchSettings_NoModifications_HasDefaultValues () =
-        let settings = SearchSettings.DefaultSettings
+    member this.GetNewFindSettings_NoModifications_HasDefaultValues () =
+        let settings = FindSettings.DefaultSettings
         Assert.IsFalse(settings.ArchivesOnly)
         Assert.IsTrue(settings.Colorize)
         Assert.IsFalse(settings.Debug)
@@ -24,46 +24,46 @@ type SearchSettingTests () =
         Assert.IsFalse(settings.ListFiles)
         Assert.IsFalse(settings.ListLines)
         Assert.AreEqual(settings.MaxLineLength, 150)
-        Assert.IsFalse(settings.MultiLineSearch)
+        Assert.IsFalse(settings.MultiLineFind)
         Assert.IsFalse(settings.PrintResults)
         Assert.IsFalse(settings.PrintUsage)
         Assert.IsFalse(settings.PrintVersion)
         Assert.IsTrue(settings.Recursive)
-        Assert.IsFalse(settings.SearchArchives)
+        Assert.IsFalse(settings.FindArchives)
         Assert.IsFalse(settings.UniqueLines)
         Assert.IsFalse(settings.Verbose)
         ()
 
     [<Test>]
-    member this.SearchSettings_AddExtensions_HasExtensions () =
-        let settings = SearchSettings.DefaultSettings
-        let settings = { settings with InExtensions = SearchSettings.AddExtensions "cs" settings.InExtensions }
+    member this.FindSettings_AddExtensions_HasExtensions () =
+        let settings = FindSettings.DefaultSettings
+        let settings = { settings with InExtensions = FindSettings.AddExtensions "cs" settings.InExtensions }
         Assert.AreEqual(1, settings.InExtensions.Length)
         Assert.AreEqual(".cs", settings.InExtensions.Head)
-        let settings = { settings with InExtensions = SearchSettings.AddExtensions "java,scala" settings.InExtensions }
+        let settings = { settings with InExtensions = FindSettings.AddExtensions "java,scala" settings.InExtensions }
         Assert.AreEqual(3, settings.InExtensions.Length)
         Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".java"))
         Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".scala"))
         ()
 
     [<Test>]
-    member this.SearchSettings_AddPatterns_HasPatterns () =
-        let settings = SearchSettings.DefaultSettings
-        let settings = { settings with SearchPatterns = SearchSettings.AddPattern "Search" settings.SearchPatterns }
-        Assert.AreEqual(1, settings.SearchPatterns.Length)
-        Assert.AreEqual("Search", settings.SearchPatterns.Head.ToString())
+    member this.FindSettings_AddPatterns_HasPatterns () =
+        let settings = FindSettings.DefaultSettings
+        let settings = { settings with FindPatterns = FindSettings.AddPattern "Find" settings.FindPatterns }
+        Assert.AreEqual(1, settings.FindPatterns.Length)
+        Assert.AreEqual("Find", settings.FindPatterns.Head.ToString())
         ()
 
     [<Test>]
-    member this.SearchSettings_SetArchivesOnly_HasSearchArchives () =
-        let settings = SearchSettings.SetArchivesOnly true SearchSettings.DefaultSettings 
+    member this.FindSettings_SetArchivesOnly_HasFindArchives () =
+        let settings = FindSettings.SetArchivesOnly true FindSettings.DefaultSettings 
         Assert.IsTrue(settings.ArchivesOnly)
-        Assert.IsTrue(settings.SearchArchives)
+        Assert.IsTrue(settings.FindArchives)
         ()
 
     [<Test>]
-    member this.SearchSettings_SetDebug_HasVerbose () =
-        let settings = SearchSettings.SetDebug true SearchSettings.DefaultSettings 
+    member this.FindSettings_SetDebug_HasVerbose () =
+        let settings = FindSettings.SetDebug true FindSettings.DefaultSettings 
         Assert.IsTrue(settings.Debug)
         Assert.IsTrue(settings.Verbose)
         ()

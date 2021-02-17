@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject}
@@ -23,7 +23,7 @@ object FileTypes {
   private val archive = "archive"
   private val binary = "binary"
   private val code = "code"
-  private val searchable = "searchable"
+  private val findable = "findable"
   private val text = "text"
   private val unknown = "unknown"
   private val xml = "xml"
@@ -54,7 +54,7 @@ object FileTypes {
 
       _fileTypeMap(text) = _fileTypeMap(text) ++ _fileTypeMap(code) ++
         _fileTypeMap(xml)
-      _fileTypeMap(searchable) = _fileTypeMap(text) ++ _fileTypeMap(binary) ++
+      _fileTypeMap(findable) = _fileTypeMap(text) ++ _fileTypeMap(binary) ++
         _fileTypeMap(archive)
       Map.empty[String, Set[String]] ++ _fileTypeMap
     } else {
@@ -107,8 +107,8 @@ object FileTypes {
     fileTypeMap(code).contains(FileUtil.getExtension(fileName))
   }
 
-  def isSearchableFile(fileName: String): Boolean = {
-    fileTypeMap(searchable).contains(FileUtil.getExtension(fileName))
+  def isFindableFile(fileName: String): Boolean = {
+    fileTypeMap(findable).contains(FileUtil.getExtension(fileName))
   }
 
   def isTextFile(fileName: String): Boolean = {
@@ -117,26 +117,26 @@ object FileTypes {
 
   def isUnknownFile(fileName: String): Boolean = {
     fileTypeMap(unknown).contains(FileUtil.getExtension(fileName)) ||
-      !fileTypeMap(searchable).contains(FileUtil.getExtension(fileName))
+      !fileTypeMap(findable).contains(FileUtil.getExtension(fileName))
   }
 
   def isXmlFile(fileName: String): Boolean = {
     fileTypeMap(xml).contains(FileUtil.getExtension(fileName))
   }
 
-  def isZipArchiveFile(sf: SearchFile): Boolean = {
+  def isZipArchiveFile(sf: FindFile): Boolean = {
     Set("zip", "jar", "war").contains(FileUtil.getExtension(sf))
   }
 
-  def isGzArchiveFile(sf: SearchFile): Boolean = {
+  def isGzArchiveFile(sf: FindFile): Boolean = {
     Set("gz", "tgz").contains(FileUtil.getExtension(sf))
   }
 
-  def isBz2ArchiveFile(sf: SearchFile): Boolean = {
+  def isBz2ArchiveFile(sf: FindFile): Boolean = {
     "bz2" == FileUtil.getExtension(sf)
   }
 
-  def isTarArchiveFile(sf: SearchFile): Boolean = {
+  def isTarArchiveFile(sf: FindFile): Boolean = {
     "tar" == FileUtil.getExtension(sf)
   }
 }

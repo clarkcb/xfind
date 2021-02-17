@@ -6,16 +6,16 @@ using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
 
-using SearchOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>;
+using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>;
 
-namespace CsSearch
+namespace CsFind
 {
-	public class SearchOptions
+	public class FindOptions
 	{
-		private readonly string _searchOptionsResource;
+		private readonly string _findOptionsResource;
 
-		private static readonly Dictionary<string, Action<string, SearchSettings>> ArgActionDictionary =
-			new Dictionary<string, Action<string,SearchSettings>>
+		private static readonly Dictionary<string, Action<string, FindSettings>> ArgActionDictionary =
+			new Dictionary<string, Action<string,FindSettings>>
 				{
 					{ "encoding", (s, settings) => settings.TextFileEncoding = s },
 					{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
@@ -39,12 +39,12 @@ namespace CsSearch
 					{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
 					{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
 					{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
-					{ "searchpattern", (s, settings) => settings.AddSearchPattern(s) },
+					{ "findpattern", (s, settings) => settings.AddFindPattern(s) },
 					{ "settings-file", SettingsFromFile },
 				};
 
-		private static readonly Dictionary<string, Action<bool, SearchSettings>> BoolFlagActionDictionary =
-			new Dictionary<string, Action<bool, SearchSettings>>
+		private static readonly Dictionary<string, Action<bool, FindSettings>> BoolFlagActionDictionary =
+			new Dictionary<string, Action<bool, FindSettings>>
 				{
 					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
 					{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
@@ -57,38 +57,38 @@ namespace CsSearch
 					{ "listdirs", (b, settings) => settings.ListDirs = b },
 					{ "listfiles", (b, settings) => settings.ListFiles = b },
 					{ "listlines", (b, settings) => settings.ListLines = b },
-					{ "multilinesearch", (b, settings) => settings.MultiLineSearch = b },
+					{ "multilineoption-REMOVE", (b, settings) => settings.MultiLineFind = b },
 					{ "nocolorize", (b, settings) => settings.Colorize = !b },
 					{ "noprintmatches", (b, settings) => settings.PrintResults = !b },
 					{ "norecursive", (b, settings) => settings.Recursive = !b },
-					{ "nosearcharchives", (b, settings) => settings.SearchArchives = !b },
+					{ "nofindarchives", (b, settings) => settings.FindArchives = !b },
 					{ "printmatches", (b, settings) => settings.PrintResults = b },
 					{ "recursive", (b, settings) => settings.Recursive = b },
-					{ "searcharchives", (b, settings) => settings.SearchArchives = b },
+					{ "findarchives", (b, settings) => settings.FindArchives = b },
 					{ "uniquelines", (b, settings) => settings.UniqueLines = b },
 					{ "verbose", (b, settings) => settings.Verbose = b },
 					{ "version", (b, settings) => settings.PrintVersion = b },
 				};
 
-		public List<SearchOption> Options { get; }
-		public Dictionary<string, SearchOption> ArgDictionary { get; }
-		public Dictionary<string, SearchOption> FlagDictionary { get; }
+		public List<FindOption> Options { get; }
+		public Dictionary<string, FindOption> ArgDictionary { get; }
+		public Dictionary<string, FindOption> FlagDictionary { get; }
 
-		public SearchOptions()
+		public FindOptions()
 		{
-			// _searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.xml");
-			_searchOptionsResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.searchoptions.json");
-			Options = new List<SearchOption>();
-			ArgDictionary = new Dictionary<string, SearchOption>();
-			FlagDictionary = new Dictionary<string, SearchOption>();
+			// _findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.findoptions.xml");
+			_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.findoptions.json");
+			Options = new List<FindOption>();
+			ArgDictionary = new Dictionary<string, FindOption>();
+			FlagDictionary = new Dictionary<string, FindOption>();
 			// SetOptionsFromXml();
 			SetOptionsFromJson();
 		}
 
 		private void SetOptionsFromJson()
 		{
-			var searchOptionsDict = JsonSerializer.Deserialize<SearchOptionsDictionary>(_searchOptionsResource);
-			var optionDicts = searchOptionsDict["searchoptions"];
+			var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(_findOptionsResource);
+			var optionDicts = findOptionsDict["findoptions"];
 			foreach (var optionDict in optionDicts)
 			{
 				var longArg = optionDict["long"];
@@ -96,7 +96,7 @@ namespace CsSearch
 				var desc = optionDict["desc"];
 				if (ArgActionDictionary.ContainsKey(longArg))
 				{
-					var option = new SearchArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
+					var option = new FindArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
 					Options.Add(option);
 					ArgDictionary.Add(longArg, option);
 					if (!string.IsNullOrWhiteSpace(shortArg))
@@ -106,7 +106,7 @@ namespace CsSearch
 				}
 				else if (BoolFlagActionDictionary.ContainsKey(longArg))
 				{
-					var option = new SearchFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
+					var option = new FindFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
 					Options.Add(option);
 					FlagDictionary.Add(longArg, option);
 					if (!string.IsNullOrWhiteSpace(shortArg))
@@ -119,15 +119,15 @@ namespace CsSearch
 
 		private void SetOptionsFromXml()
 		{
-			var doc = XDocument.Parse(_searchOptionsResource);
-			foreach (var f in doc.Descendants("searchoption"))
+			var doc = XDocument.Parse(_findOptionsResource);
+			foreach (var f in doc.Descendants("findoption"))
 			{
 				var longArg = f.Attributes("long").First().Value;
 				var shortArg = f.Attributes("short").First().Value;
 				var desc = f.Value.Trim();
 				if (ArgActionDictionary.ContainsKey(longArg))
 				{
-					var option = new SearchArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
+					var option = new FindArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
 					Options.Add(option);
 					ArgDictionary.Add(longArg, option);
 					if (!string.IsNullOrWhiteSpace(shortArg))
@@ -137,7 +137,7 @@ namespace CsSearch
 				}
 				else if (BoolFlagActionDictionary.ContainsKey(longArg))
 				{
-					var option = new SearchFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
+					var option = new FindFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
 					Options.Add(option);
 					FlagDictionary.Add(longArg, option);
 					if (!string.IsNullOrWhiteSpace(shortArg))
@@ -148,16 +148,16 @@ namespace CsSearch
 			}
 		}
 
-		private static void SettingsFromFile(string filePath, SearchSettings settings)
+		private static void SettingsFromFile(string filePath, FindSettings settings)
 		{
 			var fileInfo = new FileInfo(filePath);
 			if (!fileInfo.Exists)
-				throw new SearchException("Settings fie not found: " + filePath);
+				throw new FindException("Settings fie not found: " + filePath);
 			var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
 			SettingsFromJson(contents, settings);
 		}
 
-		public static void SettingsFromJson(string jsonString, SearchSettings settings)
+		public static void SettingsFromJson(string jsonString, FindSettings settings)
 		{
 			var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
 			foreach (var (key, value) in settingsDict)
@@ -167,7 +167,7 @@ namespace CsSearch
 			}
 		}
 
-		private static void ApplySetting(string arg, JsonElement obj, SearchSettings settings)
+		private static void ApplySetting(string arg, JsonElement obj, FindSettings settings)
 		{
 			switch (obj.ValueKind)
 			{
@@ -197,7 +197,7 @@ namespace CsSearch
 			}
 		}
 
-		private static void ApplySetting(string arg, string val, SearchSettings settings)
+		private static void ApplySetting(string arg, string val, FindSettings settings)
 		{
 			if (ArgActionDictionary.ContainsKey(arg))
 			{
@@ -209,11 +209,11 @@ namespace CsSearch
 			}
 			else
 			{
-				throw new SearchException("Invalid option: " + arg);
+				throw new FindException("Invalid option: " + arg);
 			}
 		}
 
-		private static void ApplySetting(string arg, bool val, SearchSettings settings)
+		private static void ApplySetting(string arg, bool val, FindSettings settings)
 		{
 			if (BoolFlagActionDictionary.ContainsKey(arg))
 			{
@@ -221,14 +221,14 @@ namespace CsSearch
 			}
 			else
 			{
-				throw new SearchException("Invalid option: " + arg);
+				throw new FindException("Invalid option: " + arg);
 			}
 		}
 
-		public SearchSettings SettingsFromArgs(IEnumerable<string> args)
+		public FindSettings SettingsFromArgs(IEnumerable<string> args)
 		{
 			// default to PrintResults = true since this is called from CLI functionality
-			var settings = new SearchSettings {PrintResults = true};
+			var settings = new FindSettings {PrintResults = true};
 			var queue = new Queue<string>(args);
 
 			while (queue.Count > 0)
@@ -245,37 +245,37 @@ namespace CsSearch
 					}
 					catch (InvalidOperationException e)
 					{
-						throw new SearchException(e.Message);
+						throw new FindException(e.Message);
 					}
 					if (string.IsNullOrWhiteSpace(s))
 					{
-						throw new SearchException("Invalid option: -");
+						throw new FindException("Invalid option: -");
 					}
 					if (ArgDictionary.ContainsKey(s))
 					{
 						try
 						{
-							((SearchArgOption)ArgDictionary[s]).Action(queue.Dequeue(), settings);
+							((FindArgOption)ArgDictionary[s]).Action(queue.Dequeue(), settings);
 						}
 						catch (InvalidOperationException e)
 						{
-							throw new SearchException(e.Message);
+							throw new FindException(e.Message);
 						}
 					}
 					else if (FlagDictionary.ContainsKey(s))
 					{
 						try
 						{
-							((SearchFlagOption)FlagDictionary[s]).Action(true, settings);
+							((FindFlagOption)FlagDictionary[s]).Action(true, settings);
 						}
 						catch (InvalidOperationException e)
 						{
-							throw new SearchException(e.Message);
+							throw new FindException(e.Message);
 						}
 					}
 					else
 					{
-						throw new SearchException("Invalid option: " + s);
+						throw new FindException("Invalid option: " + s);
 					}
 				}
 				else
@@ -296,7 +296,7 @@ namespace CsSearch
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("\nUsage:");
-			sb.AppendLine(" cssearch [options] -s <searchpattern> <startpath>\n");
+			sb.AppendLine(" csfind [options] -s <findpattern> <startpath>\n");
 			sb.AppendLine("Options:");
 			var optStrings = new List<string>();
 			var optDescs = new List<string>();

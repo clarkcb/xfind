@@ -1,6 +1,6 @@
 //
 //  StreamReader.swift
-//  swiftsearch
+//  swiftfind
 //
 //  from http://stackoverflow.com/questions/24581517/read-a-file-url-line-by-line-in-swift
 //

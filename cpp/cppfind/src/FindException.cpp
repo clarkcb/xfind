@@ -1,11 +1,11 @@
-#include "SearchException.h"
+#include "FindException.h"
 
-namespace cppsearch {
-    SearchException::SearchException(const std::string& message) {
+namespace cppfind {
+    FindException::FindException(const std::string& message) {
         m_message = message;
     }
 
-    const char *SearchException::what() const throw() {
+    const char *FindException::what() const throw() {
         return m_message.c_str();
     }
 }

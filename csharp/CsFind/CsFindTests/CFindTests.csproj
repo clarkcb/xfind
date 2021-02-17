@@ -11,9 +11,9 @@
 
     <Nullable>enable</Nullable>
 
-    <AssemblyName>CsSearchTests</AssemblyName>
+    <AssemblyName>CsFindTests</AssemblyName>
 
-    <RootNamespace>CsSearchTests</RootNamespace>
+    <RootNamespace>CsFindTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CsSearch\CsSearch.csproj" />
+    <ProjectReference Include="..\CsFind\CsFind.csproj" />
   </ItemGroup>
 
   <ItemGroup>

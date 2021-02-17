@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 /**
  * @author cary on 7/23/16.
@@ -11,6 +11,6 @@ fun logError(message: String) {
     println("ERROR: $message")
 }
 
-class SearchException(err: String) : Exception(err) {
+class FindException(err: String) : Exception(err) {
 
 }

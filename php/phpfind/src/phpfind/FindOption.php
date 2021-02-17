@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace phpsearch;
+namespace phpfind;
 
 /**
- * Class SearchOption
+ * Class FindOption
  *
  * @property string shortarg
  * @property string longarg
@@ -11,7 +11,7 @@ namespace phpsearch;
  * @property callable func
  * @property string sortarg
  */
-class SearchOption
+class FindOption
 {
     public function __construct(string $shortarg, string $longarg, string $desc, $func)
     {

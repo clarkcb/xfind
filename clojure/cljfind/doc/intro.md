@@ -1,3 +1,3 @@
-# Introduction to cljsearch
+# Introduction to cljfind
 
 TODO: write [great documentation](http://jacobian.org/writing/what-to-write/)

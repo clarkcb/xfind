@@ -1,22 +1,22 @@
 ################################################################################
 #
-# searcher_test.rb
+# finder_test.rb
 #
-# Searcher testing
+# Finder testing
 #
 ################################################################################
 
-require_relative '../lib/rbsearch'
+require_relative '../lib/rbfind'
 require 'minitest/autorun'
 
-module RbSearch
+module RbFind
 
-  class SearcherTest < Minitest::Test
+  class FinderTest < Minitest::Test
 
     def get_settings
-      settings = SearchSettings.new
+      settings = FindSettings.new
       settings.startpath = '.'
-      settings.add_pattern('Searcher', settings.searchpatterns)
+      settings.add_pattern('Finder', settings.findpatterns)
       settings
     end
 
@@ -26,222 +26,222 @@ module RbSearch
     end
 
     ################################################################################
-    # is_search_dir tests
+    # is_find_dir tests
     ################################################################################
-    def test_is_search_dir_no_patterns
+    def test_is_find_dir_no_patterns
       settings = get_settings
-      searcher = Searcher.new(settings)
-      dir = 'plsearch'
-      assert(searcher.search_dir?(dir))
+      finder = Finder.new(settings)
+      dir = 'plfind'
+      assert(finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_matches_in_pattern
+    def test_is_find_dir_matches_in_pattern
       settings = get_settings
-      settings.add_pattern('plsearch', settings.in_dirpatterns)
-      searcher = Searcher.new(settings)
-      dir = 'plsearch'
-      assert(searcher.search_dir?(dir))
+      settings.add_pattern('plfind', settings.in_dirpatterns)
+      finder = Finder.new(settings)
+      dir = 'plfind'
+      assert(finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_no_match_in_pattern
+    def test_is_find_dir_no_match_in_pattern
       settings = get_settings
-      settings.add_pattern('plsearch', settings.in_dirpatterns)
-      searcher = Searcher.new(settings)
-      dir = 'pysearch'
-      assert(!searcher.search_dir?(dir))
+      settings.add_pattern('plfind', settings.in_dirpatterns)
+      finder = Finder.new(settings)
+      dir = 'pyfind'
+      assert(!finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_matches_out_pattern
+    def test_is_find_dir_matches_out_pattern
       settings = get_settings
-      settings.add_pattern('pysearch', settings.out_dirpatterns)
-      searcher = Searcher.new(settings)
-      dir = 'pysearch'
-      assert(!searcher.search_dir?(dir))
+      settings.add_pattern('pyfind', settings.out_dirpatterns)
+      finder = Finder.new(settings)
+      dir = 'pyfind'
+      assert(!finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_no_match_out_pattern
+    def test_is_find_dir_no_match_out_pattern
       settings = get_settings
-      settings.add_pattern('pysearch', settings.out_dirpatterns)
-      searcher = Searcher.new(settings)
-      dir = 'plsearch'
-      assert(searcher.search_dir?(dir))
+      settings.add_pattern('pyfind', settings.out_dirpatterns)
+      finder = Finder.new(settings)
+      dir = 'plfind'
+      assert(finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_single_dot
+    def test_is_find_dir_single_dot
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       dir = '.'
-      assert(searcher.search_dir?(dir))
+      assert(finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_double_dot
+    def test_is_find_dir_double_dot
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       dir = '..'
-      assert(searcher.search_dir?(dir))
+      assert(finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_hidden_dir
+    def test_is_find_dir_hidden_dir
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       dir = '.git'
-      assert(!searcher.search_dir?(dir))
+      assert(!finder.find_dir?(dir))
     end
 
-    def test_is_search_dir_hidden_dir_include_hidden
+    def test_is_find_dir_hidden_dir_include_hidden
       settings = get_settings
       settings.excludehidden = false
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       dir = '.git'
-      assert(searcher.search_dir?(dir))
+      assert(finder.find_dir?(dir))
     end
 
     ################################################################################
-    # is_search_file tests
+    # is_find_file tests
     ################################################################################
-    def test_is_search_file_matches_by_default
+    def test_is_find_file_matches_by_default
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(searcher.search_file?(f))
+      assert(finder.find_file?(f))
     end
 
-    def test_is_search_file_matches_in_extension
+    def test_is_find_file_matches_in_extension
       settings = get_settings
       settings.add_exts('rb', settings.in_extensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(searcher.search_file?(f))
+      assert(finder.find_file?(f))
     end
 
-    def test_is_search_file_no_match_in_extension
+    def test_is_find_file_no_match_in_extension
       settings = get_settings
       settings.add_exts('py', settings.in_extensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(!searcher.search_file?(f))
+      assert(!finder.find_file?(f))
     end
 
-    def test_is_search_file_matches_out_extension
+    def test_is_find_file_matches_out_extension
       settings = get_settings
       settings.add_exts('rb', settings.out_extensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(!searcher.search_file?(f))
+      assert(!finder.find_file?(f))
     end
 
-    def test_is_search_file_no_match_out_extension
+    def test_is_find_file_no_match_out_extension
       settings = get_settings
       settings.add_exts('py', settings.out_extensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(searcher.search_file?(f))
+      assert(finder.find_file?(f))
     end
 
-    def test_is_search_file_matches_in_pattern
+    def test_is_find_file_matches_in_pattern
       settings = get_settings
-      settings.add_pattern('search', settings.in_filepatterns)
-      searcher = Searcher.new(settings)
-      f = 'searcher.rb'
-      assert(searcher.search_file?(f))
+      settings.add_pattern('find', settings.in_filepatterns)
+      finder = Finder.new(settings)
+      f = 'finder.rb'
+      assert(finder.find_file?(f))
     end
 
-    def test_is_search_file_no_match_in_pattern
+    def test_is_find_file_no_match_in_pattern
       settings = get_settings
-      settings.add_pattern('search', settings.in_filepatterns)
-      searcher = Searcher.new(settings)
+      settings.add_pattern('find', settings.in_filepatterns)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(!searcher.search_file?(f))
+      assert(!finder.find_file?(f))
     end
 
-    def test_is_search_file_matches_out_pattern
+    def test_is_find_file_matches_out_pattern
       settings = get_settings
-      settings.add_pattern('search', settings.out_filepatterns)
-      searcher = Searcher.new(settings)
-      f = 'searcher.rb'
-      assert(!searcher.search_file?(f))
+      settings.add_pattern('find', settings.out_filepatterns)
+      finder = Finder.new(settings)
+      f = 'finder.rb'
+      assert(!finder.find_file?(f))
     end
 
-    def test_is_search_file_no_match_out_pattern
+    def test_is_find_file_no_match_out_pattern
       settings = get_settings
-      settings.add_pattern('search', settings.out_filepatterns)
-      searcher = Searcher.new(settings)
+      settings.add_pattern('find', settings.out_filepatterns)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(searcher.search_file?(f))
+      assert(finder.find_file?(f))
     end
 
     ################################################################################
-    # is__archive_search_file tests
+    # is__archive_find_file tests
     ################################################################################
-    def test_is_archive_search_file_matches_by_default
+    def test_is_archive_find_file_matches_by_default
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.archive_search_file?(f))
+      assert(finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_matches_in_extension
+    def test_is_archive_find_file_matches_in_extension
       settings = get_settings
       settings.add_exts('zip', settings.in_archiveextensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.archive_search_file?(f))
+      assert(finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_no_match_in_extension
+    def test_is_archive_find_file_no_match_in_extension
       settings = get_settings
       settings.add_exts('gz', settings.in_archiveextensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(!searcher.archive_search_file?(f))
+      assert(!finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_matches_out_extension
+    def test_is_archive_find_file_matches_out_extension
       settings = get_settings
       settings.add_exts('zip', settings.out_archiveextensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(!searcher.archive_search_file?(f))
+      assert(!finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_no_match_out_extension
+    def test_is_archive_find_file_no_match_out_extension
       settings = get_settings
       settings.add_exts('gz', settings.out_archiveextensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.archive_search_file?(f))
+      assert(finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_matches_in_pattern
+    def test_is_archive_find_file_matches_in_pattern
       settings = get_settings
       settings.add_pattern('arch', settings.in_archivefilepatterns)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.archive_search_file?(f))
+      assert(finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_no_match_in_pattern
+    def test_is_archive_find_file_no_match_in_pattern
       settings = get_settings
       settings.add_pattern('archives', settings.in_archivefilepatterns)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(!searcher.archive_search_file?(f))
+      assert(!finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_matches_out_pattern
+    def test_is_archive_find_file_matches_out_pattern
       settings = get_settings
       settings.add_pattern('arch', settings.out_archivefilepatterns)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(!searcher.archive_search_file?(f))
+      assert(!finder.archive_find_file?(f))
     end
 
-    def test_is_archive_search_file_no_match_out_pattern
+    def test_is_archive_find_file_no_match_out_pattern
       settings = get_settings
       settings.add_pattern('archives', settings.out_archivefilepatterns)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.archive_search_file?(f))
+      assert(finder.archive_find_file?(f))
     end
 
     ################################################################################
@@ -249,85 +249,85 @@ module RbSearch
     ################################################################################
     def test_filter_file_matches_by_default
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(searcher.filter_file?(f))
+      assert(finder.filter_file?(f))
     end
 
-    def test_filter_file_is_search_file
+    def test_filter_file_is_find_file
       settings = get_settings
       settings.add_exts('rb', settings.in_extensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(searcher.filter_file?(f))
+      assert(finder.filter_file?(f))
     end
 
-    def test_filter_file_not_is_search_file
+    def test_filter_file_not_is_find_file
       settings = get_settings
       settings.add_exts('pl', settings.in_extensions)
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(!searcher.filter_file?(f))
+      assert(!finder.filter_file?(f))
     end
 
     def test_filter_file_is_hidden_file
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = '.gitignore'
-      assert(!searcher.filter_file?(f))
+      assert(!finder.filter_file?(f))
     end
 
     def test_filter_file_hidden_includehidden
       settings = get_settings
       settings.excludehidden = false
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = '.gitignore'
-      assert(searcher.filter_file?(f))
+      assert(finder.filter_file?(f))
     end
 
-    def test_filter_file_archive_no_searcharchives
+    def test_filter_file_archive_no_findarchives
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(!searcher.filter_file?(f))
+      assert(!finder.filter_file?(f))
     end
 
-    def test_filter_file_archive_searcharchives
+    def test_filter_file_archive_findarchives
       settings = get_settings
-      settings.searcharchives = 1
-      searcher = Searcher.new(settings)
+      settings.findarchives = 1
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.filter_file?(f))
+      assert(finder.filter_file?(f))
     end
 
     def test_filter_file_archive_archivesonly
       settings = get_settings
       settings.archivesonly = true
-      settings.searcharchives = true
-      searcher = Searcher.new(settings)
+      settings.findarchives = true
+      finder = Finder.new(settings)
       f = 'archive.zip'
-      assert(searcher.filter_file?(f))
+      assert(finder.filter_file?(f))
     end
 
     def test_filter_file_nonarchive_archivesonly
       settings = get_settings
       settings.archivesonly = true
-      settings.searcharchives = true
-      searcher = Searcher.new(settings)
+      settings.findarchives = true
+      finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(!searcher.filter_file?(f))
+      assert(!finder.filter_file?(f))
     end
 
     ################################################################################
-    # search_lines tests
+    # find_lines tests
     ################################################################################
-    def test_search_lines
+    def test_find_lines
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       testfile = get_test_file
       fo = File.open(testfile, mode: 'r:ISO-8859-1')
       contents = fo.read
-      results = searcher.search_multiline_string(contents)
+      results = finder.find_multiline_string(contents)
       assert_equal(results.size, 2)
 
       first_result = results[0]
@@ -344,15 +344,15 @@ module RbSearch
     end
 
     ################################################################################
-    # search_multiline_string tests
+    # find_multiline_string tests
     ################################################################################
-    def test_search_multiline_string
+    def test_find_multiline_string
       settings = get_settings
-      searcher = Searcher.new(settings)
+      finder = Finder.new(settings)
       testfile = get_test_file
       fo = File.open(testfile, mode: 'r:ISO-8859-1')
       line_iterator = fo.each_line
-      results = searcher.search_line_iterator(line_iterator)
+      results = finder.find_line_iterator(line_iterator)
       assert_equal(results.size, 2)
 
       first_result = results[0]

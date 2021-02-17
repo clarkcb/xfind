@@ -6,10 +6,10 @@
 #
 ################################################################################
 
-require_relative '../lib/rbsearch'
+require_relative '../lib/rbfind'
 require 'minitest/autorun'
 
-module RbSearch
+module RbFind
 
   class FileTypesTest < Minitest::Test
     def setup
@@ -41,9 +41,9 @@ module RbSearch
       assert_equal(@filetypes.get_filetype(filename), FileType::XML)
     end
 
-    def test_get_filetype_searchable_file
+    def test_get_filetype_findable_file
       filename = 'config.ini'
-      assert(@filetypes.searchable_file?(filename))
+      assert(@filetypes.findable_file?(filename))
     end
 
     def test_get_filetype_unknown_file

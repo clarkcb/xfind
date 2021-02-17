@@ -1,8 +1,8 @@
-#ifndef CPPSEARCH_SEARCHOPTION_H
-#define CPPSEARCH_SEARCHOPTION_H
+#ifndef CPPFIND_FINDOPTION_H
+#define CPPFIND_FINDOPTION_H
 
-namespace cppsearch {
-    class SearchOption {
+namespace cppfind {
+    class FindOption {
     private:
         const std::string* m_shortarg;
         std::string m_longarg;
@@ -10,7 +10,7 @@ namespace cppsearch {
         std::string m_sortarg;
 
     public:
-        SearchOption(const std::string* shortarg, const std::string& longarg, const std::string& description);
+        FindOption(const std::string* shortarg, const std::string& longarg, const std::string& description);
         const std::string* shortarg() const;
         std::string longarg() const;
         std::string description() const;
@@ -18,4 +18,4 @@ namespace cppsearch {
     };
 }
 
-#endif //CPPSEARCH_SEARCHOPTION_H
+#endif //CPPFIND_FINDOPTION_H

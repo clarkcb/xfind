@@ -1,19 +1,19 @@
-#ifndef CPPSEARCH_SEARCHPATTERN_H
-#define CPPSEARCH_SEARCHPATTERN_H
+#ifndef CPPFIND_FINDPATTERN_H
+#define CPPFIND_FINDPATTERN_H
 
 #include <regex>
 
-namespace cppsearch {
-    class SearchPattern {
+namespace cppfind {
+    class FindPattern {
     private:
         std::string m_pattern;
         std::regex m_regex;
 
     public:
-        explicit SearchPattern(const std::string& pattern);
+        explicit FindPattern(const std::string& pattern);
         std::string pattern() const;
         std::regex r() const;
     };
 }
 
-#endif //CPPSEARCH_SEARCHPATTERN_H
+#endif //CPPFIND_FINDPATTERN_H

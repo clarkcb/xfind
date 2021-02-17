@@ -1,247 +1,247 @@
 import 'dart:io';
 import 'dart:convert';
 
-import 'package:dartsearch/dartsearch.dart';
+import 'package:dartfind/dartfind.dart';
 import 'package:test/test.dart';
 
 void main() {
-  SearchSettings getSettings() {
-    var settings = SearchSettings();
+  FindSettings getSettings() {
+    var settings = FindSettings();
     settings.startPath = '.';
-    settings.addPattern('Searcher', settings.searchPatterns);
+    settings.addPattern('Finder', settings.findPatterns);
     return settings;
   }
 
   /***************************************************************************
-   * isSearchDir tests
+   * isFindDir tests
    **************************************************************************/
-  group('isSearchDir tests', () {
-    test('test isSearchDir single dot', () {
+  group('isFindDir tests', () {
+    test('test isFindDir single dot', () {
       var settings = getSettings();
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('.')), true);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('.')), true);
     });
 
-    test('test isSearchDir double dot', () {
+    test('test isFindDir double dot', () {
       var settings = getSettings();
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('..')), true);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('..')), true);
     });
 
-    test('test isSearchDir hidden dir', () {
+    test('test isFindDir hidden dir', () {
       var settings = getSettings();
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('.git')), false);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('.git')), false);
     });
 
-    test('test isSearchDir hidden dir includeHidden', () {
+    test('test isFindDir hidden dir includeHidden', () {
       var settings = getSettings();
       settings.excludeHidden = false;
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('.git')), true);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('.git')), true);
     });
 
-    test('test isSearchDir no patterns', () {
+    test('test isFindDir no patterns', () {
       var settings = getSettings();
       settings.excludeHidden = false;
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('/Users')), true);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('/Users')), true);
     });
 
-    test('test isSearchDir dir matches inDirPatterns', () {
+    test('test isFindDir dir matches inDirPatterns', () {
       var settings = getSettings();
-      settings.addPattern('Search', settings.inDirPatterns);
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), true);
+      settings.addPattern('Find', settings.inDirPatterns);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('./CsFind')), true);
     });
 
-    test('test isSearchDir dir does not match inDirPatterns', () {
+    test('test isFindDir dir does not match inDirPatterns', () {
       var settings = getSettings();
-      settings.addPattern('SearchFiles', settings.inDirPatterns);
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), false);
+      settings.addPattern('FindFiles', settings.inDirPatterns);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('./CsFind')), false);
     });
 
-    test('test isSearchDir dir matches outDirPatterns', () {
+    test('test isFindDir dir matches outDirPatterns', () {
       var settings = getSettings();
-      settings.addPattern('Search', settings.outDirPatterns);
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), false);
+      settings.addPattern('Find', settings.outDirPatterns);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('./CsFind')), false);
     });
 
-    test('test isSearchDir dir does not match outDirPatterns', () {
+    test('test isFindDir dir does not match outDirPatterns', () {
       var settings = getSettings();
-      settings.addPattern('SearchFiles', settings.outDirPatterns);
-      var searcher = Searcher(settings);
-      expect(searcher.isSearchDir(Directory('./CsSearch')), true);
+      settings.addPattern('FindFiles', settings.outDirPatterns);
+      var finder = Finder(settings);
+      expect(finder.isFindDir(Directory('./CsFind')), true);
     });
   });
 
   /***************************************************************************
-   * isSearchFile tests
+   * isFindFile tests
    **************************************************************************/
-  group('isSearchFile tests', () {
-    test('test isSearchFile no extensions no patterns', () {
+  group('isFindFile tests', () {
+    test('test isFindFile no extensions no patterns', () {
       var settings = getSettings();
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), true);
     });
 
-    test('test isSearchFile file extension matches inExtensions', () {
+    test('test isFindFile file extension matches inExtensions', () {
       var settings = getSettings();
       settings.addExtensions('cs', settings.inExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), true);
     });
 
-    test('test isSearchFile file extension does not match inExtensions', () {
+    test('test isFindFile file extension does not match inExtensions', () {
       var settings = getSettings();
       settings.addExtensions('java', settings.inExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), false);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), false);
     });
 
-    test('test isSearchFile file extension matches outExtensions', () {
+    test('test isFindFile file extension matches outExtensions', () {
       var settings = getSettings();
       settings.addExtensions('cs', settings.outExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), false);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), false);
     });
 
-    test('test isSearchFile file extension does not match outExtensions', () {
+    test('test isFindFile file extension does not match outExtensions', () {
       var settings = getSettings();
       settings.addExtensions('java', settings.outExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), true);
     });
 
-    test('test isSearchFile file name matches inFilePatterns', () {
+    test('test isFindFile file name matches inFilePatterns', () {
       var settings = getSettings();
-      settings.addPattern('Search', settings.inFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./Searcher.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), true);
+      settings.addPattern('Find', settings.inFilePatterns);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./Finder.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), true);
     });
 
-    test('test isSearchFile file name does not match inFilePatterns', () {
+    test('test isFindFile file name does not match inFilePatterns', () {
       var settings = getSettings();
-      settings.addPattern('Search', settings.inFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), false);
+      settings.addPattern('Find', settings.inFilePatterns);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), false);
     });
 
-    test('test isSearchFile file name matches outFilePatterns', () {
+    test('test isFindFile file name matches outFilePatterns', () {
       var settings = getSettings();
-      settings.addPattern('Search', settings.outFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./Searcher.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), false);
+      settings.addPattern('Find', settings.outFilePatterns);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./Finder.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), false);
     });
 
-    test('test isSearchFile file name does not match outFilePatterns', () {
+    test('test isFindFile file name does not match outFilePatterns', () {
       var settings = getSettings();
-      settings.addPattern('Search', settings.outFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('./FileUtil.cs'), FileType.code);
-      expect(searcher.isSearchFile(searchFile), true);
+      settings.addPattern('Find', settings.outFilePatterns);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('./FileUtil.cs'), FileType.code);
+      expect(finder.isFindFile(findFile), true);
     });
   });
 
   /***************************************************************************
-   * isArchiveSearchFile tests
+   * isArchiveFindFile tests
    **************************************************************************/
-  group('isArchiveSearchFile tests', () {
-    test('test isArchiveSearchFile no extensions no patterns', () {
+  group('isArchiveFindFile tests', () {
+    test('test isArchiveFindFile no extensions no patterns', () {
       var settings = getSettings();
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), true);
     });
 
-    test('test isArchiveSearchFile file extension matches inArchiveExtensions', () {
+    test('test isArchiveFindFile file extension matches inArchiveExtensions', () {
       var settings = getSettings();
       settings.addExtensions('zip', settings.inArchiveExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), true);
     });
 
-    test('test isArchiveSearchFile file extension does not match inArchiveExtensions', () {
+    test('test isArchiveFindFile file extension does not match inArchiveExtensions', () {
       var settings = getSettings();
       settings.addExtensions('gz', settings.inArchiveExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), false);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), false);
     });
 
-    test('test isArchiveSearchFile file extension matches outArchiveExtensions', () {
+    test('test isArchiveFindFile file extension matches outArchiveExtensions', () {
       var settings = getSettings();
       settings.addExtensions('zip', settings.outArchiveExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), false);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), false);
     });
 
-    test('test isArchiveSearchFile file extension does not match outArchiveExtensions', () {
+    test('test isArchiveFindFile file extension does not match outArchiveExtensions', () {
       var settings = getSettings();
       settings.addExtensions('gz', settings.outArchiveExtensions);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), true);
     });
 
-    test('test isArchiveSearchFile file name matches inArchiveFilePatterns', () {
+    test('test isArchiveFindFile file name matches inArchiveFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('arch', settings.inArchiveFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), true);
     });
 
-    test('test isArchiveSearchFile file name does not match inArchiveFilePatterns', () {
+    test('test isArchiveFindFile file name does not match inArchiveFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('archives', settings.inArchiveFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), false);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), false);
     });
 
-    test('test isArchiveSearchFile file name matches outArchiveFilePatterns', () {
+    test('test isArchiveFindFile file name matches outArchiveFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('arch', settings.outArchiveFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), false);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), false);
     });
 
-    test('test isArchiveSearchFile file name does not match outArchiveFilePatterns', () {
+    test('test isArchiveFindFile file name does not match outArchiveFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('archives', settings.outArchiveFilePatterns);
-      var searcher = Searcher(settings);
-      var searchFile = SearchFile(File('archive.zip'), FileType.archive);
-      expect(searcher.isArchiveSearchFile(searchFile), true);
+      var finder = Finder(settings);
+      var findFile = FindFile(File('archive.zip'), FileType.archive);
+      expect(finder.isArchiveFindFile(findFile), true);
     });
   });
 
   /***************************************************************************
-   * searchLineStream tests
+   * findLineStream tests
    **************************************************************************/
-  test('test searchLineStream testFile2.txt', () async {
+  test('test findLineStream testFile2.txt', () async {
     var settings = getSettings();
-    var searcher = Searcher(settings);
+    var finder = Finder(settings);
     var testFilePath = '$SHAREDPATH/testFiles/testFile2.txt';
     var inputStream = File(testFilePath).openRead();
     var results = [];
     try {
       var lineStream =
         utf8.decoder.bind(inputStream).transform(LineSplitter());
-      results = await searcher.searchLineStream(lineStream);
+      results = await finder.findLineStream(lineStream);
     } catch (e) {
       log(e.toString());
     }
@@ -260,15 +260,15 @@ void main() {
   });
 
   /***************************************************************************
-   * searchMultiLineString tests
+   * findMultiLineString tests
    **************************************************************************/
-  test('test searchMultiLineString testFile2.txt', () async {
+  test('test findMultiLineString testFile2.txt', () async {
     var settings = getSettings();
-    var searcher = Searcher(settings);
+    var finder = Finder(settings);
     var testFilePath = '$SHAREDPATH/testFiles/testFile2.txt';
 
     var contents = await File(testFilePath).readAsString();
-    var results = searcher.searchMultilineString(contents);
+    var results = finder.findMultilineString(contents);
 
     expect(results.length, 2);
 

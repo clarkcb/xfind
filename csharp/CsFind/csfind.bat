@@ -1,2 +1,2 @@
 @echo off
-%~dp0\CsSearch\bin\Release\netcoreapp3.1\CsSearch.dll %*
+%~dp0\CsFind\bin\Release\netcoreapp3.1\CsFind.dll %*

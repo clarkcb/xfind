@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-module RbSearch
+module RbFind
 
-  # SearchError - custom exception class
-  class SearchError < StandardError
-    def initialize(msg = 'Searcherror occurred')
+  # FindError - custom exception class
+  class FindError < StandardError
+    def initialize(msg = 'Finderror occurred')
       super(msg)
     end
   end

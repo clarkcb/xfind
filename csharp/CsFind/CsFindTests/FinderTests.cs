@@ -2,19 +2,19 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using CsSearch;
+using CsFind;
 using NUnit.Framework;
 
-namespace CsSearchTests
+namespace CsFindTests
 {
 	[TestFixture]
-	class SearcherTests
+	class FinderTests
 	{
 		private readonly FileTypes _fileTypes = new FileTypes();
 		
 		private static string GetTestFileContent()
 		{
-			return EmbeddedTestResource.GetResourceFileContents("CsSearchTests.Resources.testFile2.txt");
+			return EmbeddedTestResource.GetResourceFileContents("CsFindTests.Resources.testFile2.txt");
 		}
 
 		public static IEnumerable<string> GetTestFileLines()
@@ -26,300 +26,300 @@ namespace CsSearchTests
 			}
 		}
 
-		private static SearchSettings GetSettings()
+		private static FindSettings GetSettings()
 		{
-			var settings = new SearchSettings {StartPath = "."};
-			settings.AddSearchPattern("Searcher");
+			var settings = new FindSettings {StartPath = "."};
+			settings.AddFindPattern("Finder");
 			return settings;
 		}
 
 		/*************************************************************
-		 * IsSearchDirectory tests
+		 * IsFindDirectory tests
 		*************************************************************/
 		[Test]
-		public void TestIsSearchDirectory_SingleDot_True()
+		public void TestIsFindDirectory_SingleDot_True()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
-			Assert.True(searcher.IsSearchDirectory(new DirectoryInfo(".")));
+			var finder = new Finder(settings);
+			Assert.True(finder.IsFindDirectory(new DirectoryInfo(".")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_DoubleDot_True()
+		public void TestIsFindDirectory_DoubleDot_True()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
-			Assert.True(searcher.IsSearchDirectory(new DirectoryInfo("..")));
+			var finder = new Finder(settings);
+			Assert.True(finder.IsFindDirectory(new DirectoryInfo("..")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_IsHidden_False()
+		public void TestIsFindDirectory_IsHidden_False()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
-			Assert.False(searcher.IsSearchDirectory(new DirectoryInfo(".git")));
+			var finder = new Finder(settings);
+			Assert.False(finder.IsFindDirectory(new DirectoryInfo(".git")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_IsHiddenIncludeHidden_True()
+		public void TestIsFindDirectory_IsHiddenIncludeHidden_True()
 		{
 			var settings = GetSettings();
 			settings.ExcludeHidden = false;
-			var searcher = new Searcher(settings);
-			Assert.True(searcher.IsSearchDirectory(new DirectoryInfo(".git")));
+			var finder = new Finder(settings);
+			Assert.True(finder.IsFindDirectory(new DirectoryInfo(".git")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_NoPatterns_True()
+		public void TestIsFindDirectory_NoPatterns_True()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
-			Assert.True(searcher.IsSearchDirectory(new DirectoryInfo("/Users")));
+			var finder = new Finder(settings);
+			Assert.True(finder.IsFindDirectory(new DirectoryInfo("/Users")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_MatchesInPattern_True()
+		public void TestIsFindDirectory_MatchesInPattern_True()
 		{
 			var settings = GetSettings();
-			settings.AddInDirPattern("Search");
-			var searcher = new Searcher(settings);
-			Assert.True(searcher.IsSearchDirectory(new DirectoryInfo("CsSearch")));
+			settings.AddInDirPattern("Find");
+			var finder = new Finder(settings);
+			Assert.True(finder.IsFindDirectory(new DirectoryInfo("CsFind")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_MatchesOutPattern_False()
+		public void TestIsFindDirectory_MatchesOutPattern_False()
 		{
 			var settings = GetSettings();
-			settings.AddOutDirPattern("Search");
-			var searcher = new Searcher(settings);
-			Assert.False(searcher.IsSearchDirectory(new DirectoryInfo("CsSearch")));
+			settings.AddOutDirPattern("Find");
+			var finder = new Finder(settings);
+			Assert.False(finder.IsFindDirectory(new DirectoryInfo("CsFind")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_DoesNotMatchInPattern_False()
+		public void TestIsFindDirectory_DoesNotMatchInPattern_False()
 		{
 			var settings = GetSettings();
-			settings.AddInDirPattern("SearchFiles");
-			var searcher = new Searcher(settings);
-			Assert.False(searcher.IsSearchDirectory(new DirectoryInfo("CsSearch")));
+			settings.AddInDirPattern("FindFiles");
+			var finder = new Finder(settings);
+			Assert.False(finder.IsFindDirectory(new DirectoryInfo("CsFind")));
 		}
 
 		[Test]
-		public void TestIsSearchDirectory_DoesNotMatchOutPattern_True()
+		public void TestIsFindDirectory_DoesNotMatchOutPattern_True()
 		{
 			var settings = GetSettings();
-			settings.AddOutDirPattern("SearchFiles");
-			var searcher = new Searcher(settings);
-			var dir = new DirectoryInfo("CsSearch");
-			Assert.True(searcher.IsSearchDirectory(dir));
+			settings.AddOutDirPattern("FindFiles");
+			var finder = new Finder(settings);
+			var dir = new DirectoryInfo("CsFind");
+			Assert.True(finder.IsFindDirectory(dir));
 		}
 
 
 		/*************************************************************
-		 * IsSearchFile tests
+		 * IsFindFile tests
 		*************************************************************/
 
 		[Test]
-		public void TestIsSearchFile_NoExtensionsNoPatterns_True()
+		public void TestIsFindFile_NoExtensionsNoPatterns_True()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_MatchesInExtension_True()
+		public void TestIsFindFile_MatchesInExtension_True()
 		{
 			var settings = GetSettings();
 			settings.AddInExtension("cs");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_DoesNotMatchInExtension_False()
+		public void TestIsFindFile_DoesNotMatchInExtension_False()
 		{
 			var settings = GetSettings();
 			settings.AddInExtension("java");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsFindFile(sf));
 		}
 
 
 		[Test]
-		public void TestIsSearchFile_MatchesOutExtension_False()
+		public void TestIsFindFile_MatchesOutExtension_False()
 		{
 			var settings = GetSettings();
 			settings.AddOutExtension("cs");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_DoesNotMatchOutExtension_True()
+		public void TestIsFindFile_DoesNotMatchOutExtension_True()
 		{
 			var settings = GetSettings();
 			settings.AddOutExtension("java");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_MatchesInPattern_True()
+		public void TestIsFindFile_MatchesInPattern_True()
 		{
 			var settings = GetSettings();
-			settings.AddInFilePattern("Search");
-			var searcher = new Searcher(settings);
-			var file = new FileInfo("Searcher.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsSearchFile(sf));
+			settings.AddInFilePattern("Find");
+			var finder = new Finder(settings);
+			var file = new FileInfo("Finder.cs");
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_DoesNotMatchInPattern_False()
+		public void TestIsFindFile_DoesNotMatchInPattern_False()
 		{
 			var settings = GetSettings();
-			settings.AddInFilePattern("Search");
-			var searcher = new Searcher(settings);
+			settings.AddInFilePattern("Find");
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_MatchesOutPattern_False()
+		public void TestIsFindFile_MatchesOutPattern_False()
 		{
 			var settings = GetSettings();
-			settings.AddOutFilePattern("Search");
-			var searcher = new Searcher(settings);
-			var file = new FileInfo("Searcher.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsSearchFile(sf));
+			settings.AddOutFilePattern("Find");
+			var finder = new Finder(settings);
+			var file = new FileInfo("Finder.cs");
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsSearchFile_DoesNotMatchOutPattern_True()
+		public void TestIsFindFile_DoesNotMatchOutPattern_True()
 		{
 			var settings = GetSettings();
-			settings.AddOutFilePattern("Search");
-			var searcher = new Searcher(settings);
+			settings.AddOutFilePattern("Find");
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsFindFile(sf));
 		}
 
 
 		/*************************************************************
-		 * IsArchiveSearchFile tests
+		 * IsArchiveFindFile tests
 		*************************************************************/
 
 		[Test]
-		public void TestIsArchiveSearchFile_NoExtensionsNoPatterns_True()
+		public void TestIsArchiveFindFile_NoExtensionsNoPatterns_True()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_MatchesInExtension_True()
+		public void TestIsArchiveFindFile_MatchesInExtension_True()
 		{
 			var settings = GetSettings();
 			settings.AddInArchiveExtension("zip");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_DoesNotMatchInExtension_False()
+		public void TestIsArchiveFindFile_DoesNotMatchInExtension_False()
 		{
 			var settings = GetSettings();
 			settings.AddInArchiveExtension("gz");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsArchiveFindFile(sf));
 		}
 
 
 		[Test]
-		public void TestIsArchiveSearchFile_MatchesOutExtension_False()
+		public void TestIsArchiveFindFile_MatchesOutExtension_False()
 		{
 			var settings = GetSettings();
 			settings.AddOutArchiveExtension("zip");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_DoesNotMatchOutExtension_True()
+		public void TestIsArchiveFindFile_DoesNotMatchOutExtension_True()
 		{
 			var settings = GetSettings();
 			settings.AddOutArchiveExtension("gz");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_MatchesInPattern_True()
+		public void TestIsArchiveFindFile_MatchesInPattern_True()
 		{
 			var settings = GetSettings();
 			settings.AddInArchiveFilePattern("arch");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_DoesNotMatchInPattern_False()
+		public void TestIsArchiveFindFile_DoesNotMatchInPattern_False()
 		{
 			var settings = GetSettings();
 			settings.AddInArchiveFilePattern("archives");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_MatchesOutPattern_False()
+		public void TestIsArchiveFindFile_MatchesOutPattern_False()
 		{
 			var settings = GetSettings();
 			settings.AddOutArchiveFilePattern("arch");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.IsArchiveFindFile(sf));
 		}
 
 		[Test]
-		public void TestIsArchiveSearchFile_DoesNotMatchOutPattern_True()
+		public void TestIsArchiveFindFile_DoesNotMatchOutPattern_True()
 		{
 			var settings = GetSettings();
 			settings.AddOutArchiveFilePattern("archives");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.IsArchiveSearchFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.IsArchiveFindFile(sf));
 		}
 
 		/*************************************************************
@@ -330,10 +330,10 @@ namespace CsSearchTests
 		public void TestFilterFile_IsHidden_False()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo(".gitignore");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.FilterFile(sf));
 		}
 
 		[Test]
@@ -341,54 +341,54 @@ namespace CsSearchTests
 		{
 			var settings = GetSettings();
 			settings.ExcludeHidden = false;
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo(".gitignore");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.FilterFile(sf));
 		}
 
 		[Test]
-		public void TestFilterFile_ArchiveNoSearchArchives_False()
+		public void TestFilterFile_ArchiveNoFindArchives_False()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.FilterFile(sf));
 		}
 
 		[Test]
-		public void TestFilterFile_ArchiveSearchArchives_True()
+		public void TestFilterFile_ArchiveFindArchives_True()
 		{
 			var settings = GetSettings();
-			settings.SearchArchives = true;
-			var searcher = new Searcher(settings);
+			settings.FindArchives = true;
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.FilterFile(sf));
 		}
 
 		[Test]
-		public void TestFilterFile_IsArchiveSearchFile_True()
+		public void TestFilterFile_IsArchiveFindFile_True()
 		{
 			var settings = GetSettings();
-			settings.SearchArchives = true;
+			settings.FindArchives = true;
 			settings.AddInArchiveExtension("zip");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.FilterFile(sf));
 		}
 
 		[Test]
-		public void TestFilterFile_NotIsArchiveSearchFile_False()
+		public void TestFilterFile_NotIsArchiveFindFile_False()
 		{
 			var settings = GetSettings();
 			settings.AddOutExtension("zip");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.FilterFile(sf));
 		}
 
 		[Test]
@@ -396,10 +396,10 @@ namespace CsSearchTests
 		{
 			var settings = GetSettings();
 			settings.ArchivesOnly = true;
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.FilterFile(sf));
 		}
 
 
@@ -407,32 +407,32 @@ namespace CsSearchTests
 		public void TestFilterFile_NoExtensionsNoPatterns_True()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.FilterFile(sf));
 		}
 
 		[Test]
-		public void TestFilterFile_IsSearchFile_True()
+		public void TestFilterFile_IsFindFile_True()
 		{
 			var settings = GetSettings();
 			settings.AddInExtension("cs");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.True(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.True(finder.FilterFile(sf));
 		}
 
 		[Test]
-		public void TestFilterFile_NotIsSearchFile_False()
+		public void TestFilterFile_NotIsFindFile_False()
 		{
 			var settings = GetSettings();
 			settings.AddOutExtension("cs");
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.FilterFile(sf));
 		}
 
 		[Test]
@@ -440,23 +440,23 @@ namespace CsSearchTests
 		{
 			var settings = GetSettings();
 			settings.ArchivesOnly = true;
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var file = new FileInfo("FileUtil.cs");
-			var sf = new SearchFile(file, _fileTypes.GetFileType(file));
-			Assert.False(searcher.FilterFile(sf));
+			var sf = new FindFile(file, _fileTypes.GetFileType(file));
+			Assert.False(finder.FilterFile(sf));
 		}
 
 
 		/*************************************************************
-		 * SearchTextReaderLines test
+		 * FindTextReaderLines test
 		 *************************************************************/
 		[Test]
-		public void TestSearchTextReaderLines()
+		public void TestFindTextReaderLines()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var enumerableLines = GetTestFileLines();
-			var results = searcher.SearchLines(enumerableLines).ToList();
+			var results = finder.FindLines(enumerableLines).ToList();
 
 			Assert.True(results.Count == 2);
 
@@ -478,15 +478,15 @@ namespace CsSearchTests
 		}
 
 		/*************************************************************
-		 * SearchMultiLineString test
+		 * FindMultiLineString test
 		 *************************************************************/
 		[Test]
-		public void TestSearchMultiLineString()
+		public void TestFindMultiLineString()
 		{
 			var settings = GetSettings();
-			var searcher = new Searcher(settings);
+			var finder = new Finder(settings);
 			var contents = GetTestFileContent();
-			var results = searcher.SearchContents(contents).ToList();
+			var results = finder.FindContents(contents).ToList();
 
 			Assert.True(results.Count == 2);
 

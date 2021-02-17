@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 public enum FileType {
     UNKNOWN,

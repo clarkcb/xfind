@@ -1,7 +1,7 @@
 /*
- * searchsettings.ts
+ * findsettings.ts
  *
- * represents the settings to use when performing the search
+ * represents the settings to use when performing the find
  */
 
 "use strict";
@@ -9,7 +9,7 @@
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
 
-export class SearchSettings {
+export class FindSettings {
     archivesOnly = false;
     colorize = true;
     debug = false;
@@ -31,7 +31,7 @@ export class SearchSettings {
     listFiles = false;
     listLines = false;
     maxLineLength = 150;
-    multilineSearch = false;
+    multilineFind = false;
     outArchiveExtensions: string[] = [];
     outArchiveFilePatterns: RegExp[] = [];
     outDirPatterns: RegExp[] = [];
@@ -44,8 +44,8 @@ export class SearchSettings {
     printUsage = false;
     printVersion = false;
     recursive = true;
-    searchArchives = false;
-    searchPatterns: RegExp[] = [];
+    findArchives = false;
+    findPatterns: RegExp[] = [];
     startPath = "";
     textFileEncoding = "utf-8";
     uniqueLines = false;
@@ -60,11 +60,11 @@ export class SearchSettings {
     }
 
     public addInExtensions(ext: string|string[]): void {
-        SearchSettings.addExtensions(ext, this.inExtensions);
+        FindSettings.addExtensions(ext, this.inExtensions);
     }
 
     public addOutExtensions(ext: string|string[]): void {
-        SearchSettings.addExtensions(ext, this.outExtensions);
+        FindSettings.addExtensions(ext, this.outExtensions);
     }
 
     private static addFileTypes(filetypes: string|string[], arr: FileType[]): void {
@@ -77,11 +77,11 @@ export class SearchSettings {
     }
 
     public addInFileTypes(filetype: string|string[]): void {
-        SearchSettings.addFileTypes(filetype, this.inFileTypes);
+        FindSettings.addFileTypes(filetype, this.inFileTypes);
     }
 
     public addOutFileTypes(filetype: string|string[]): void {
-        SearchSettings.addFileTypes(filetype, this.outFileTypes);
+        FindSettings.addFileTypes(filetype, this.outFileTypes);
     }
 
     private static addPatterns(patterns: string|string[], arr: RegExp[]): void {
@@ -93,67 +93,67 @@ export class SearchSettings {
     }
 
     public addInDirPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.inDirPatterns);
+        FindSettings.addPatterns(pattern, this.inDirPatterns);
     }
 
     public addOutDirPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.outDirPatterns);
+        FindSettings.addPatterns(pattern, this.outDirPatterns);
     }
 
     public addInFilePatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.inFilePatterns);
+        FindSettings.addPatterns(pattern, this.inFilePatterns);
     }
 
     public addOutFilePatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.outFilePatterns);
+        FindSettings.addPatterns(pattern, this.outFilePatterns);
     }
 
-    public addSearchPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.searchPatterns);
+    public addFindPatterns(pattern: string|string[]): void {
+        FindSettings.addPatterns(pattern, this.findPatterns);
     }
 
     public addInArchiveExtensions(ext: string|string[]): void {
-        SearchSettings.addExtensions(ext, this.inArchiveExtensions);
+        FindSettings.addExtensions(ext, this.inArchiveExtensions);
     }
 
     public addOutArchiveExtensions(ext: string|string[]): void {
-        SearchSettings.addExtensions(ext, this.outArchiveExtensions);
+        FindSettings.addExtensions(ext, this.outArchiveExtensions);
     }
 
     public addInArchiveFilePatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.inArchiveFilePatterns);
+        FindSettings.addPatterns(pattern, this.inArchiveFilePatterns);
     }
     public addOutArchiveFilePatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.outArchiveFilePatterns);
+        FindSettings.addPatterns(pattern, this.outArchiveFilePatterns);
     }
 
     public addInLinesAfterPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.inLinesAfterPatterns);
+        FindSettings.addPatterns(pattern, this.inLinesAfterPatterns);
     }
 
     public addOutLinesAfterPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.outLinesAfterPatterns);
+        FindSettings.addPatterns(pattern, this.outLinesAfterPatterns);
     }
 
     public addInLinesBeforePatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.inLinesBeforePatterns);
+        FindSettings.addPatterns(pattern, this.inLinesBeforePatterns);
     }
 
     public addOutLinesBeforePatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.outLinesBeforePatterns);
+        FindSettings.addPatterns(pattern, this.outLinesBeforePatterns);
     }
 
     public addLinesAfterToPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.linesAfterToPatterns);
+        FindSettings.addPatterns(pattern, this.linesAfterToPatterns);
     }
 
     public addLinesAfterUntilPatterns(pattern: string|string[]): void {
-        SearchSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
+        FindSettings.addPatterns(pattern, this.linesAfterUntilPatterns);
     }
 
     public setArchivesOnly(b: boolean): void {
         this.archivesOnly = b;
-        if (b) this.searchArchives = b;
+        if (b) this.findArchives = b;
     }
 
     public setDebug(b: boolean): void {
@@ -180,42 +180,42 @@ export class SearchSettings {
     }
 
     public toString(): string {
-        return 'SearchSettings('
+        return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
             + ', colorize=' + this.colorize
             + ', debug=' + this.debug
             + ', excludeHidden=' + this.excludeHidden
             + ', firstMatch=' + this.firstMatch
-            + ', ' + SearchSettings.listToString('inArchiveExtensions', this.inArchiveExtensions)
-            + ', ' + SearchSettings.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
-            + ', ' + SearchSettings.listToString('inDirPatterns', this.inDirPatterns)
-            + ', ' + SearchSettings.listToString('inExtensions', this.inExtensions)
-            + ', ' + SearchSettings.listToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + SearchSettings.fileTypesToString('inFileTypes', this.inFileTypes)
-            + ', ' + SearchSettings.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns)
-            + ', ' + SearchSettings.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns)
+            + ', ' + FindSettings.listToString('inArchiveExtensions', this.inArchiveExtensions)
+            + ', ' + FindSettings.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', ' + FindSettings.listToString('inDirPatterns', this.inDirPatterns)
+            + ', ' + FindSettings.listToString('inExtensions', this.inExtensions)
+            + ', ' + FindSettings.listToString('inFilePatterns', this.inFilePatterns)
+            + ', ' + FindSettings.fileTypesToString('inFileTypes', this.inFileTypes)
+            + ', ' + FindSettings.listToString('inLinesAfterPatterns', this.inLinesAfterPatterns)
+            + ', ' + FindSettings.listToString('inLinesBeforePatterns', this.inLinesBeforePatterns)
             + ', linesAfter=' + this.linesAfter
-            + ', ' + SearchSettings.listToString('linesAfterToPatterns', this.linesAfterToPatterns)
-            + ', ' + SearchSettings.listToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns)
+            + ', ' + FindSettings.listToString('linesAfterToPatterns', this.linesAfterToPatterns)
+            + ', ' + FindSettings.listToString('linesAfterUntilPatterns', this.linesAfterUntilPatterns)
             + ', linesBefore=' + this.linesBefore
             + ', listDirs=' + this.listDirs
             + ', listFiles=' + this.listFiles
             + ', listLines=' + this.listLines
             + ', maxLineLength=' + this.maxLineLength
-            + ', multilineSearch=' + this.multilineSearch
-            + ', ' + SearchSettings.listToString('outArchiveExtensions', this.outArchiveExtensions)
-            + ', ' + SearchSettings.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
-            + ', ' + SearchSettings.listToString('outDirPatterns', this.outDirPatterns)
-            + ', ' + SearchSettings.listToString('outExtensions', this.outExtensions)
-            + ', ' + SearchSettings.listToString('outFilePatterns', this.outFilePatterns)
-            + ', ' + SearchSettings.fileTypesToString('outFileTypes', this.outFileTypes)
-            + ', ' + SearchSettings.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
-            + ', ' + SearchSettings.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
+            + ', multilineFind=' + this.multilineFind
+            + ', ' + FindSettings.listToString('outArchiveExtensions', this.outArchiveExtensions)
+            + ', ' + FindSettings.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
+            + ', ' + FindSettings.listToString('outDirPatterns', this.outDirPatterns)
+            + ', ' + FindSettings.listToString('outExtensions', this.outExtensions)
+            + ', ' + FindSettings.listToString('outFilePatterns', this.outFilePatterns)
+            + ', ' + FindSettings.fileTypesToString('outFileTypes', this.outFileTypes)
+            + ', ' + FindSettings.listToString('outLinesAfterPatterns', this.outLinesAfterPatterns)
+            + ', ' + FindSettings.listToString('outLinesBeforePatterns', this.outLinesBeforePatterns)
             + ', printResults=' + this.printResults
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive
-            + ', searchArchives=' + this.searchArchives
-            + ', ' + SearchSettings.listToString('searchPatterns', this.searchPatterns)
+            + ', findArchives=' + this.findArchives
+            + ', ' + FindSettings.listToString('findPatterns', this.findPatterns)
             + ', startPath="' + this.startPath + '"'
             + ', textFileEncoding="' + this.textFileEncoding + '"'
             + ', uniqueLines=' + this.uniqueLines

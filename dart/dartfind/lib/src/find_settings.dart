@@ -1,12 +1,12 @@
-import 'package:dartsearch/src/file_types.dart';
+import 'package:dartfind/src/file_types.dart';
 
-class SearchSettings {
+class FindSettings {
   bool _archivesOnly = false;
   bool get archivesOnly => _archivesOnly;
   set archivesOnly(bool value) {
     _archivesOnly = value;
     if (value) {
-      searchArchives = value;
+      findArchives = value;
     }
   }
   bool colorize = true;
@@ -40,7 +40,7 @@ class SearchSettings {
   bool listFiles  = false;
   bool listLines  = false;
   int maxLineLength  = 150;
-  bool multiLineSearch  = false;
+  bool multiLineFind  = false;
 
   var outArchiveExtensions = <String>{};
   var outArchiveFilePatterns = <Pattern>{};
@@ -57,9 +57,9 @@ class SearchSettings {
   bool printUsage  = false;
   bool printVersion  = false;
   bool recursive  = true;
-  bool searchArchives  = false;
+  bool findArchives  = false;
 
-  var searchPatterns = <Pattern>{};
+  var findPatterns = <Pattern>{};
 
   String startPath  = '';
   String textFileEncoding  = 'UTF-8';
@@ -90,7 +90,7 @@ class SearchSettings {
   }
 
   @override
-  String toString() => 'SearchSettings(archivesOnly: $archivesOnly'
+  String toString() => 'FindSettings(archivesOnly: $archivesOnly'
       ', colorize: $colorize'
       ', debug: $debug'
       ', excludeHidden: $excludeHidden'
@@ -111,7 +111,7 @@ class SearchSettings {
       ', listFiles: $listFiles'
       ', listLines: $listLines'
       ', maxLineLength: $maxLineLength'
-      ', multiLineSearch: $multiLineSearch'
+      ', multiLineFind: $multiLineFind'
       ', outArchiveExtensions: ${stringSetToString(outArchiveExtensions)}'
       ', outArchiveFilePatterns: ${patternSetToString(outArchiveFilePatterns)}'
       ', outDirPatterns: ${patternSetToString(outDirPatterns)}'
@@ -124,8 +124,8 @@ class SearchSettings {
       ', printUsage: $printUsage'
       ', printVersion: $printVersion'
       ', recursive: $recursive'
-      ', searchArchives: $searchArchives'
-      ', searchPatterns: ${patternSetToString(searchPatterns)}'
+      ', findArchives: $findArchives'
+      ', findPatterns: ${patternSetToString(findPatterns)}'
       ', startPath: "$startPath"'
       ', textFileEncoding: "$textFileEncoding"'
       ', uniqueLines: $uniqueLines'

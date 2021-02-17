@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace CsSearchTests
+namespace CsFindTests
 {
     public static class EmbeddedTestResource
     {

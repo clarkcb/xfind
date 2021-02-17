@@ -1,11 +1,11 @@
 module Main (main) where
 
-import HsSearch.FileTypesTest
-import HsSearch.FileUtilTest
-import HsSearch.SearcherTest
-import HsSearch.SearchOptionsTest
-import HsSearch.SearchResultTest
-import HsSearch.SearchSettingsTest
+import HsFind.FileTypesTest
+import HsFind.FileUtilTest
+import HsFind.FinderTest
+import HsFind.FindOptionsTest
+import HsFind.FindResultTest
+import HsFind.FindSettingsTest
 
 import Test.Framework
 import Test.Framework.Providers.HUnit
@@ -20,34 +20,34 @@ main = do
   -- FileUtil tests
   fileUtilTests <- getFileUtilTests
 
-  -- Searcher tests
-  isSearchDirTests <- getIsSearchDirTests
-  isSearchFileTests <- getIsSearchFileTests
-  isArchiveSearchFileTests <- getIsArchiveSearchFileTests
+  -- Finder tests
+  isFindDirTests <- getIsFindDirTests
+  isFindFileTests <- getIsFindFileTests
+  isArchiveFindFileTests <- getIsArchiveFindFileTests
   filterFileTests <- getFilterFileTests
-  searchLinesTests <- getSearchLinesTests
-  searchContentsTests <- getSearchContentsTests
+  findLinesTests <- getFindLinesTests
+  findContentsTests <- getFindContentsTests
 
-  -- SearchOptions tests
+  -- FindOptions tests
   settingsFromArgsTests <- getSettingsFromArgsTests
   settingsFromNoArgsTests <- getSettingsFromNoArgsTests
   archivesOnlyTests <- getArchivesOnlyTests
   debugTests <- getDebugTests
 
-  -- SearchResult tests
-  binaryFileSearchResultTests <- getBinaryFileSearchResultTests
-  singleLineSearchResultTests <- getSingleLineSearchResultTests
-  multiLineSearchResultTests <- getMultiLineSearchResultTests
+  -- FindResult tests
+  binaryFileFindResultTests <- getBinaryFileFindResultTests
+  singleLineFindResultTests <- getSingleLineFindResultTests
+  multiLineFindResultTests <- getMultiLineFindResultTests
 
-  -- SearchSettings tests
-  defaultSearchSettingsTests <- getDefaultSearchSettingsTests
+  -- FindSettings tests
+  defaultFindSettingsTests <- getDefaultFindSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
   defaultMain (fileTypeTests ++ fileTypeFromNameTests ++ fileUtilTests ++
-    isSearchDirTests ++ isSearchFileTests ++ isArchiveSearchFileTests ++
-    filterFileTests ++ searchLinesTests ++ searchContentsTests ++
+    isFindDirTests ++ isFindFileTests ++ isArchiveFindFileTests ++
+    filterFileTests ++ findLinesTests ++ findContentsTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
-    binaryFileSearchResultTests ++ singleLineSearchResultTests ++
-    multiLineSearchResultTests ++ 
-    defaultSearchSettingsTests ++ newExtensionsTests)
+    binaryFileFindResultTests ++ singleLineFindResultTests ++
+    multiLineFindResultTests ++ 
+    defaultFindSettingsTests ++ newExtensionsTests)

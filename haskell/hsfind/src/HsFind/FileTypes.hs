@@ -1,12 +1,12 @@
 {-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction, OverloadedStrings #-}
-module HsSearch.FileTypes
+module HsFind.FileTypes
   ( FileType(..)
   , JsonFileType(..)
   , getFileType
   , getFileTypes
   , getFileTypeForName
   , getJsonFileTypes
-  , isSearchableFileType
+  , isFindableFileType
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as BC
@@ -16,8 +16,8 @@ import Data.Text(pack, unpack, replace)
 import GHC.Generics
 import Data.Aeson
 
-import HsSearch.FileUtil (getExtension, normalizeExtension, getFileString)
-import HsSearch.Paths_hssearch (getDataFileName)
+import HsFind.FileUtil (getExtension, normalizeExtension, getFileString)
+import HsFind.Paths_hsfind (getDataFileName)
 
 data FileType = Unknown
               | Archive
@@ -27,11 +27,11 @@ data FileType = Unknown
               | Xml
   deriving (Show, Eq)
 
-searchableFileTypes :: [FileType]
-searchableFileTypes = [Archive, Binary, Code, Text, Xml]
+findableFileTypes :: [FileType]
+findableFileTypes = [Archive, Binary, Code, Text, Xml]
 
-isSearchableFileType :: FileType -> Bool
-isSearchableFileType t = t `elem` searchableFileTypes
+isFindableFileType :: FileType -> Bool
+isFindableFileType t = t `elem` findableFileTypes
 
 getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =

@@ -1,12 +1,12 @@
-#ifndef CPPSEARCH_SEARCHEXCEPTION_H
-#define CPPSEARCH_SEARCHEXCEPTION_H
+#ifndef CPPFIND_FINDEXCEPTION_H
+#define CPPFIND_FINDEXCEPTION_H
 
 #include <string>
 
-namespace cppsearch {
-    class SearchException : public std::exception {
+namespace cppfind {
+    class FindException : public std::exception {
     public:
-        explicit SearchException(const std::string& message);
+        explicit FindException(const std::string& message);
         const char *what() const throw();
 
     private:
@@ -14,4 +14,4 @@ namespace cppsearch {
     };
 }
 
-#endif //CPPSEARCH_SEARCHEXCEPTION_H
+#endif //CPPFIND_FINDEXCEPTION_H

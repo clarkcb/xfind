@@ -1,6 +1,6 @@
-package scalasearch
+package scalafind
 
-import scalasearch.FileType.FileType
+import scalafind.FileType.FileType
 
 import scala.util.matching.Regex
 
@@ -16,19 +16,19 @@ object DefaultSettings {
   val listFiles = false
   val listLines = false
   val maxLineLength = 150
-  var multiLineSearch = false
+  var multiLineFind = false
   var printResults = false
   var printUsage = false
   var printVersion = false
   var recursive = true
-  var searchArchives = false
+  var findArchives = false
   var startPath: Option[String] = None
   var textFileEncoding: String = "UTF-8"
   var uniqueLines = false
   var verbose = false
 }
 
-case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
+case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           colorize: Boolean = DefaultSettings.colorize,
                           debug: Boolean = DefaultSettings.debug,
                           excludeHidden: Boolean = DefaultSettings.excludeHidden,
@@ -49,7 +49,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           listFiles: Boolean = DefaultSettings.listFiles,
                           listLines: Boolean = DefaultSettings.listLines,
                           maxLineLength: Int = DefaultSettings.maxLineLength,
-                          multiLineSearch: Boolean = DefaultSettings.multiLineSearch,
+                          multiLineFind: Boolean = DefaultSettings.multiLineFind,
                           outArchiveExtensions: Set[String] = Set.empty[String],
                           outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                           outDirPatterns: Set[Regex] = Set.empty[Regex],
@@ -62,14 +62,14 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                           printUsage: Boolean = DefaultSettings.printUsage,
                           printVersion: Boolean = DefaultSettings.printVersion,
                           recursive: Boolean = DefaultSettings.recursive,
-                          var searchArchives: Boolean = DefaultSettings.searchArchives,
-                          searchPatterns: Set[Regex] = Set.empty[Regex],
+                          var findArchives: Boolean = DefaultSettings.findArchives,
+                          findPatterns: Set[Regex] = Set.empty[Regex],
                           startPath: Option[String] = DefaultSettings.startPath,
                           textFileEncoding: String = DefaultSettings.textFileEncoding,
                           uniqueLines: Boolean = DefaultSettings.uniqueLines,
                           var verbose: Boolean = DefaultSettings.verbose) {
 
-  searchArchives = archivesOnly || searchArchives
+  findArchives = archivesOnly || findArchives
   verbose = debug || verbose
 
   def hasLinesBefore: Boolean = {
@@ -97,7 +97,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
   }
 
   override def toString: String = {
-    "SearchSettings(" +
+    "FindSettings(" +
       "archivesOnly: " + archivesOnly +
       ", colorize: " + colorize +
       ", debug: " + debug +
@@ -115,7 +115,7 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", listFiles: " + listFiles +
       ", listLines: " + listLines +
       ", maxLineLength: " + maxLineLength +
-      ", multiLineSearch: " + multiLineSearch +
+      ", multiLineFind: " + multiLineFind +
       ", outArchiveExtensions: " + outArchiveExtensions +
       ", outArchiveFilePatterns: " + outArchiveFilePatterns +
       ", outDirPatterns: " + outDirPatterns +
@@ -126,8 +126,8 @@ case class SearchSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +
       ", recursive: " + recursive +
-      ", searchArchives: " + searchArchives +
-      ", searchPatterns: " + searchPatterns +
+      ", findArchives: " + findArchives +
+      ", findPatterns: " + findPatterns +
       ", startpath: " + startPath  +
       ", textFileEncoding: " + textFileEncoding  +
       ", uniqueLines: " + uniqueLines +

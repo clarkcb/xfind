@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 import org.scalatest.funsuite.AnyFunSuite
 

@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,7 +20,7 @@ public class FileTypesTest {
         assertTrue(fileTypes.isArchiveFile(file));
         assertFalse(fileTypes.isBinaryFile(file));
         assertFalse(fileTypes.isCodeFile(file));
-        assertTrue(fileTypes.isSearchableFile(file));
+        assertTrue(fileTypes.isFindableFile(file));
         assertFalse(fileTypes.isTextFile(file));
         assertFalse(fileTypes.isXmlFile(file));
         assertEquals(FileType.ARCHIVE, fileTypes.getFileType(file));
@@ -33,7 +33,7 @@ public class FileTypesTest {
         assertFalse(fileTypes.isArchiveFile(file));
         assertTrue(fileTypes.isBinaryFile(file));
         assertFalse(fileTypes.isCodeFile(file));
-        assertTrue(fileTypes.isSearchableFile(file));
+        assertTrue(fileTypes.isFindableFile(file));
         assertFalse(fileTypes.isTextFile(file));
         assertFalse(fileTypes.isXmlFile(file));
         assertEquals(FileType.BINARY, fileTypes.getFileType(file));
@@ -46,7 +46,7 @@ public class FileTypesTest {
         assertFalse(fileTypes.isArchiveFile(file));
         assertFalse(fileTypes.isBinaryFile(file));
         assertTrue(fileTypes.isCodeFile(file));
-        assertTrue(fileTypes.isSearchableFile(file));
+        assertTrue(fileTypes.isFindableFile(file));
         assertTrue(fileTypes.isTextFile(file));
         assertFalse(fileTypes.isXmlFile(file));
         assertEquals(FileType.CODE, fileTypes.getFileType(file));
@@ -59,7 +59,7 @@ public class FileTypesTest {
         assertFalse(fileTypes.isArchiveFile(file));
         assertFalse(fileTypes.isBinaryFile(file));
         assertFalse(fileTypes.isCodeFile(file));
-        assertTrue(fileTypes.isSearchableFile(file));
+        assertTrue(fileTypes.isFindableFile(file));
         assertTrue(fileTypes.isTextFile(file));
         assertFalse(fileTypes.isXmlFile(file));
         assertEquals(FileType.TEXT, fileTypes.getFileType(file));
@@ -72,7 +72,7 @@ public class FileTypesTest {
         assertFalse(fileTypes.isArchiveFile(file));
         assertFalse(fileTypes.isBinaryFile(file));
         assertFalse(fileTypes.isCodeFile(file));
-        assertTrue(fileTypes.isSearchableFile(file));
+        assertTrue(fileTypes.isFindableFile(file));
         assertTrue(fileTypes.isTextFile(file));
         assertTrue(fileTypes.isXmlFile(file));
         assertEquals(FileType.XML, fileTypes.getFileType(file));
@@ -84,7 +84,7 @@ public class FileTypesTest {
         assertEquals("zzz", FileUtil.getExtension(file));
         assertFalse(fileTypes.isArchiveFile(file));
         assertFalse(fileTypes.isBinaryFile(file));
-        assertFalse(fileTypes.isSearchableFile(file));
+        assertFalse(fileTypes.isFindableFile(file));
         assertFalse(fileTypes.isTextFile(file));
         assertFalse(fileTypes.isXmlFile(file));
         assertTrue(fileTypes.isUnknownFile(file));

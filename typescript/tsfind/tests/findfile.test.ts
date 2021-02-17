@@ -1,50 +1,50 @@
 /*
- * searchfile.test.js
+ * findfile.test.js
  *
- * Some tests of searchfile.js
+ * Some tests of findfile.js
  */
 
 import {FileType} from '../src/filetype';
-import {SearchFile} from '../src/searchfile';
+import {FindFile} from '../src/findfile';
 
-describe('testing searchfile', () => {
-    it('testSearchFileAbsPath', () => {
-        const pathname = '/Users/cary/src/xsearch/javascript/jssearch/src';
-        const filename = 'searchfile.js';
-        const searchfile = new SearchFile(pathname, filename, FileType.Code);
-        const expected = '/Users/cary/src/xsearch/javascript/jssearch/src/searchfile.js';
-        expect(searchfile.relativePath()).toEqual(expected);
+describe('testing findfile', () => {
+    it('testFindFileAbsPath', () => {
+        const pathname = '/Users/cary/src/xfind/javascript/jsfind/src';
+        const filename = 'findfile.js';
+        const findfile = new FindFile(pathname, filename, FileType.Code);
+        const expected = '/Users/cary/src/xfind/javascript/jsfind/src/findfile.js';
+        expect(findfile.relativePath()).toEqual(expected);
     });
 
-    it('testSearchFileTildePath', () => {
-        const pathname = '~/src/xsearch/javascript/jssearch/src';
-        const filename = 'searchfile.js';
-        const searchfile = new SearchFile(pathname, filename, FileType.Code);
-        const expected = '~/src/xsearch/javascript/jssearch/src/searchfile.js';
-        expect(searchfile.relativePath()).toEqual(expected);
+    it('testFindFileTildePath', () => {
+        const pathname = '~/src/xfind/javascript/jsfind/src';
+        const filename = 'findfile.js';
+        const findfile = new FindFile(pathname, filename, FileType.Code);
+        const expected = '~/src/xfind/javascript/jsfind/src/findfile.js';
+        expect(findfile.relativePath()).toEqual(expected);
     });
 
-    it('testSearchFileRelPath1', () => {
+    it('testFindFileRelPath1', () => {
         const pathname = '.';
-        const filename = 'searchfile.js';
-        const searchfile = new SearchFile(pathname, filename, FileType.Code);
-        const expected = './searchfile.js';
-        expect(searchfile.relativePath()).toEqual(expected);
+        const filename = 'findfile.js';
+        const findfile = new FindFile(pathname, filename, FileType.Code);
+        const expected = './findfile.js';
+        expect(findfile.relativePath()).toEqual(expected);
     });
 
-    it('testSearchFileRelPath2', () => {
+    it('testFindFileRelPath2', () => {
         const pathname = './';
-        const filename = 'searchfile.js';
-        const searchfile = new SearchFile(pathname, filename, FileType.Code);
-        const expected = './searchfile.js';
-        expect(searchfile.relativePath()).toEqual(expected);
+        const filename = 'findfile.js';
+        const findfile = new FindFile(pathname, filename, FileType.Code);
+        const expected = './findfile.js';
+        expect(findfile.relativePath()).toEqual(expected);
     });
 
-    it('testSearchFileRelPath3', () => {
+    it('testFindFileRelPath3', () => {
         const pathname = '..';
-        const filename = 'searchfile.js';
-        const searchfile = new SearchFile(pathname, filename, FileType.Code);
-        const expected = '../searchfile.js';
-        expect(searchfile.relativePath()).toEqual(expected);
+        const filename = 'findfile.js';
+        const findfile = new FindFile(pathname, filename, FileType.Code);
+        const expected = '../findfile.js';
+        expect(findfile.relativePath()).toEqual(expected);
     });
 });

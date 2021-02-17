@@ -1,12 +1,12 @@
-#ifndef CPPSEARCH_SEARCHSETTINGS_H
-#define CPPSEARCH_SEARCHSETTINGS_H
+#ifndef CPPFIND_FINDSETTINGS_H
+#define CPPFIND_FINDSETTINGS_H
 
 #include <cstdlib>
 #include "FileTypes.h"
-#include "SearchPattern.h"
+#include "FindPattern.h"
 
-namespace cppsearch {
-    class SearchSettings {
+namespace cppfind {
+    class FindSettings {
     private:
         bool m_archivesonly = false;
         bool m_colorize = true;
@@ -15,17 +15,17 @@ namespace cppsearch {
         bool m_firstmatch = false;
 
         std::vector<std::string> m_in_archiveextensions;
-        std::vector<SearchPattern*> m_in_archivefilepatterns;
-        std::vector<SearchPattern*> m_in_dirpatterns;
+        std::vector<FindPattern*> m_in_archivefilepatterns;
+        std::vector<FindPattern*> m_in_dirpatterns;
         std::vector<std::string> m_in_extensions;
-        std::vector<SearchPattern*> m_in_filepatterns;
+        std::vector<FindPattern*> m_in_filepatterns;
         std::vector<FileType> m_in_filetypes;
 
-        std::vector<SearchPattern*> m_in_linesafterpatterns;
-        std::vector<SearchPattern*> m_in_linesbeforepatterns;
+        std::vector<FindPattern*> m_in_linesafterpatterns;
+        std::vector<FindPattern*> m_in_linesbeforepatterns;
 
-        std::vector<SearchPattern*> m_linesaftertopatterns;
-        std::vector<SearchPattern*> m_linesafteruntilpatterns;
+        std::vector<FindPattern*> m_linesaftertopatterns;
+        std::vector<FindPattern*> m_linesafteruntilpatterns;
 
         unsigned int m_linesafter = 0;
         unsigned int m_linesbefore = 0;
@@ -33,25 +33,25 @@ namespace cppsearch {
         bool m_listfiles = false;
         bool m_listlines = false;
         size_t m_maxlinelength = 150;
-        bool m_multilinesearch = false;
+        bool m_multilineoption-REMOVE = false;
 
         std::vector<std::string> m_out_archiveextensions;
-        std::vector<SearchPattern*> m_out_archivefilepatterns;
-        std::vector<SearchPattern*> m_out_dirpatterns;
+        std::vector<FindPattern*> m_out_archivefilepatterns;
+        std::vector<FindPattern*> m_out_dirpatterns;
         std::vector<std::string> m_out_extensions;
-        std::vector<SearchPattern*> m_out_filepatterns;
+        std::vector<FindPattern*> m_out_filepatterns;
         std::vector<FileType> m_out_filetypes;
 
-        std::vector<SearchPattern*> m_out_linesafterpatterns;
-        std::vector<SearchPattern*> m_out_linesbeforepatterns;
+        std::vector<FindPattern*> m_out_linesafterpatterns;
+        std::vector<FindPattern*> m_out_linesbeforepatterns;
 
         bool m_printresults = false;
         bool m_printusage = false;
         bool m_printversion = false;
         bool m_recursive = true;
-        bool m_searcharchives = false;
+        bool m_findarchives = false;
 
-        std::vector<SearchPattern*> m_searchpatterns;
+        std::vector<FindPattern*> m_findpatterns;
         std::string* m_startpath;
 
         bool m_uniquelines = false;
@@ -59,13 +59,13 @@ namespace cppsearch {
 
         static std::string bool_to_string(bool b);
         static std::string string_vector_to_string(std::vector<std::string>* s);
-        static std::string searchpatterns_to_string(std::vector<SearchPattern*>* ps);
+        static std::string findpatterns_to_string(std::vector<FindPattern*>* ps);
 
-        static void add_pattern(const std::string& p, std::vector<SearchPattern*>* ps);
+        static void add_pattern(const std::string& p, std::vector<FindPattern*>* ps);
         static void add_extensions(const std::string& exts, std::vector<std::string>* extensions);
 
     public:
-        SearchSettings();
+        FindSettings();
         void add_in_archiveextension(const std::string& ext);
         void add_in_archivefilepattern(const std::string& pattern);
         void add_in_dirpattern(const std::string& pattern);
@@ -84,14 +84,14 @@ namespace cppsearch {
         void add_out_filetype(FileType filetype);
         void add_out_linesafterpattern(const std::string& pattern);
         void add_out_linesbeforepattern(const std::string& pattern);
-        void add_searchpattern(const std::string& searchpattern);
+        void add_findpattern(const std::string& findpattern);
 
         bool archivesonly() const;
         bool colorize() const;
         bool debug() const;
         bool excludehidden() const;
         bool firstmatch() const;
-        bool multilinesearch() const;
+        bool multilineoption-REMOVE() const;
         unsigned int linesafter() const;
         unsigned int linesbefore() const;
         bool listdirs() const;
@@ -102,28 +102,28 @@ namespace cppsearch {
         bool printusage() const;
         bool printversion() const;
         bool recursive() const;
-        bool searcharchives() const;
+        bool findarchives() const;
         std::string* startpath();
         bool uniquelines() const;
         bool verbose() const;
 
         std::vector<std::string>* in_archiveextensions();
-        std::vector<SearchPattern*>* in_archivefilepatterns();
-        std::vector<SearchPattern*>* in_dirpatterns();
+        std::vector<FindPattern*>* in_archivefilepatterns();
+        std::vector<FindPattern*>* in_dirpatterns();
         std::vector<std::string>* in_extensions();
-        std::vector<SearchPattern*>* in_filepatterns();
-        std::vector<SearchPattern*>* in_linesafterpatterns();
-        std::vector<SearchPattern*>* in_linesbeforepatterns();
+        std::vector<FindPattern*>* in_filepatterns();
+        std::vector<FindPattern*>* in_linesafterpatterns();
+        std::vector<FindPattern*>* in_linesbeforepatterns();
 
         std::vector<std::string>* out_archiveextensions();
-        std::vector<SearchPattern*>* out_archivefilepatterns();
-        std::vector<SearchPattern*>* out_dirpatterns();
+        std::vector<FindPattern*>* out_archivefilepatterns();
+        std::vector<FindPattern*>* out_dirpatterns();
         std::vector<std::string>* out_extensions();
-        std::vector<SearchPattern*>* out_filepatterns();
-        std::vector<SearchPattern*>* out_linesafterpatterns();
-        std::vector<SearchPattern*>* out_linesbeforepatterns();
+        std::vector<FindPattern*>* out_filepatterns();
+        std::vector<FindPattern*>* out_linesafterpatterns();
+        std::vector<FindPattern*>* out_linesbeforepatterns();
 
-        std::vector<SearchPattern*>* searchpatterns();
+        std::vector<FindPattern*>* findpatterns();
 
         // bool is_in_archiveextension(const std::string* ext);
         // bool is_in_extension(const std::string* ext);
@@ -136,7 +136,7 @@ namespace cppsearch {
         void debug(bool b);
         void excludehidden(bool b);
         void firstmatch(bool b);
-        void multilinesearch(bool b);
+        void multilineoption-REMOVE(bool b);
         void linesafter(unsigned int linecount);
         void linesbefore(unsigned int linecount);
         void listdirs(bool b);
@@ -147,7 +147,7 @@ namespace cppsearch {
         void printusage(bool b);
         void printversion(bool b);
         void recursive(bool b);
-        void searcharchives(bool b);
+        void findarchives(bool b);
         void startpath(std::string& startpath);
         void uniquelines(bool b);
         void verbose(bool b);
@@ -155,4 +155,4 @@ namespace cppsearch {
     };
 }
 
-#endif //CPPSEARCH_SEARCHSETTINGS_H
+#endif //CPPFIND_FINDSETTINGS_H

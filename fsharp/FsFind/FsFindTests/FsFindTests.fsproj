@@ -18,15 +18,15 @@
         <Compile Include="EmbeddedTestResource.fs" />
         <Compile Include="FileTypesTests.fs" />
         <Compile Include="FileUtilTests.fs" />
-        <Compile Include="SearcherTests.fs" />
-        <Compile Include="SearchFileTests.fs" />
-        <Compile Include="SearchOptionsTests.fs" />
-        <Compile Include="SearchResultTests.fs" />
-        <Compile Include="SearchSettingTests.fs" />
+        <Compile Include="FinderTests.fs" />
+        <Compile Include="FindFileTests.fs" />
+        <Compile Include="FindOptionsTests.fs" />
+        <Compile Include="FindResultTests.fs" />
+        <Compile Include="FindSettingTests.fs" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\FsSearch\FsSearch.fsproj" />
+      <ProjectReference Include="..\FsFind\FsFind.fsproj" />
     </ItemGroup>
 
 </Project>

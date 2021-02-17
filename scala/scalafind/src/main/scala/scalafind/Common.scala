@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 object Common {
   def log(message: String): Unit = {

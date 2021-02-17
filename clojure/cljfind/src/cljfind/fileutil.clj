@@ -6,12 +6,12 @@
 ;;;
 ;;; ############################################################################
 
-(ns cljsearch.fileutil
+(ns cljfind.fileutil
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
   (:use [clojure.string :only (split)]
-        [cljsearch.searchfile :only (new-search-file)]))
+        [cljfind.findfile :only (new-find-file)]))
 
 ; needs string argument and returns string
 (defn expand-path [f]

@@ -1,18 +1,18 @@
 import 'dart:convert' show json;
 import 'dart:io' show File;
 
-import 'package:dartsearch/src/common.dart';
-import 'package:dartsearch/src/config.dart' show SEARCHOPTIONSPATH;
-import 'package:dartsearch/src/file_types.dart';
-import 'package:dartsearch/src/search_exception.dart';
-import 'package:dartsearch/src/search_settings.dart';
+import 'package:dartfind/src/common.dart';
+import 'package:dartfind/src/config.dart' show FINDOPTIONSPATH;
+import 'package:dartfind/src/file_types.dart';
+import 'package:dartfind/src/find_exception.dart';
+import 'package:dartfind/src/find_settings.dart';
 
-class SearchOption {
+class FindOption {
   final String shortArg;
   final String longArg;
   final String desc;
 
-  const SearchOption(this.shortArg, this.longArg, this.desc);
+  const FindOption(this.shortArg, this.longArg, this.desc);
 
   String sortarg() {
     if (shortArg == null) {
@@ -31,22 +31,22 @@ class SearchOption {
   }
 }
 
-class SearchOptions {
-  var searchOptions = [];
+class FindOptions {
+  var findOptions = [];
   var stringArgMap = {};
   var boolArgMap = {};
   var longArgMap = {};
   Future ready;
 
-  SearchOptions() {
-    ready = loadSearchOptionsFromJson().then((f) => setMaps());
+  FindOptions() {
+    ready = loadFindOptionsFromJson().then((f) => setMaps());
   }
 
-  Future<void> loadSearchOptionsFromJson() async {
-    var contents = await File(SEARCHOPTIONSPATH).readAsString();
+  Future<void> loadFindOptionsFromJson() async {
+    var contents = await File(FINDOPTIONSPATH).readAsString();
     Map soMap = json.decode(contents);
-    if (soMap.containsKey('searchoptions')) {
-      var soList = soMap['searchoptions'] as List;
+    if (soMap.containsKey('findoptions')) {
+      var soList = soMap['findoptions'] as List;
       soList.forEach((so) {
         var longArg = (so as Map)['long'];
         longArgMap[longArg] = longArg;
@@ -56,63 +56,63 @@ class SearchOptions {
           shortArg = (so as Map)['short'];
           longArgMap[shortArg] = longArg;
         }
-        searchOptions.add(SearchOption(shortArg, longArg, desc));
+        findOptions.add(FindOption(shortArg, longArg, desc));
       });
     }
   }
 
   void setMaps() {
     stringArgMap = {
-      'encoding': (String s, SearchSettings ss) => ss.textFileEncoding = s,
-      'in-archiveext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.inArchiveExtensions),
-      'in-archivefilepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inArchiveFilePatterns),
-      'in-dirpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inDirPatterns),
-      'in-ext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.inExtensions),
-      'in-filepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inFilePatterns),
-      'in-filetype': (String s, SearchSettings ss) => ss.inFileTypes.add(FileTypes.fromName(s)),
-      'in-linesafterpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inLinesAfterPatterns),
-      'in-linesbeforepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.inLinesBeforePatterns),
-      'linesafter': (String s, SearchSettings ss) => ss.linesAfter = int.parse(s),
-      'linesaftertopattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.linesAfterToPatterns),
-      'linesafteruntilpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.linesAfterUntilPatterns),
-      'linesbefore': (String s, SearchSettings ss) => ss.linesBefore = int.parse(s),
-      'maxlinelength': (String s, SearchSettings ss) => ss.maxLineLength = int.parse(s),
-      'out-archiveext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.outArchiveExtensions),
-      'out-archivefilepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outArchiveFilePatterns),
-      'out-dirpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outDirPatterns),
-      'out-ext': (String s, SearchSettings ss) => ss.addExtensions(s, ss.outExtensions),
-      'out-filepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outFilePatterns),
-      'out-filetype': (String s, SearchSettings ss) => ss.outFileTypes.add(FileTypes.fromName(s)),
-      'out-linesafterpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outLinesAfterPatterns),
-      'out-linesbeforepattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.outLinesBeforePatterns),
-      'searchpattern': (String s, SearchSettings ss) => ss.addPattern(s, ss.searchPatterns),
-      'startpath': (String s, SearchSettings ss) => ss.startPath = s,
+      'encoding': (String s, FindSettings ss) => ss.textFileEncoding = s,
+      'in-archiveext': (String s, FindSettings ss) => ss.addExtensions(s, ss.inArchiveExtensions),
+      'in-archivefilepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inArchiveFilePatterns),
+      'in-dirpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inDirPatterns),
+      'in-ext': (String s, FindSettings ss) => ss.addExtensions(s, ss.inExtensions),
+      'in-filepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inFilePatterns),
+      'in-filetype': (String s, FindSettings ss) => ss.inFileTypes.add(FileTypes.fromName(s)),
+      'in-linesafterpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inLinesAfterPatterns),
+      'in-linesbeforepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inLinesBeforePatterns),
+      'linesafter': (String s, FindSettings ss) => ss.linesAfter = int.parse(s),
+      'linesaftertopattern': (String s, FindSettings ss) => ss.addPattern(s, ss.linesAfterToPatterns),
+      'linesafteruntilpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.linesAfterUntilPatterns),
+      'linesbefore': (String s, FindSettings ss) => ss.linesBefore = int.parse(s),
+      'maxlinelength': (String s, FindSettings ss) => ss.maxLineLength = int.parse(s),
+      'out-archiveext': (String s, FindSettings ss) => ss.addExtensions(s, ss.outArchiveExtensions),
+      'out-archivefilepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outArchiveFilePatterns),
+      'out-dirpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outDirPatterns),
+      'out-ext': (String s, FindSettings ss) => ss.addExtensions(s, ss.outExtensions),
+      'out-filepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outFilePatterns),
+      'out-filetype': (String s, FindSettings ss) => ss.outFileTypes.add(FileTypes.fromName(s)),
+      'out-linesafterpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outLinesAfterPatterns),
+      'out-linesbeforepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outLinesBeforePatterns),
+      'findpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.findPatterns),
+      'startpath': (String s, FindSettings ss) => ss.startPath = s,
     };
 
     boolArgMap = {
-      'archivesonly': (bool b, SearchSettings ss) => ss.archivesOnly = b,
-      'allmatches': (bool b, SearchSettings ss) => ss.firstMatch = !b,
-      'colorize': (bool b, SearchSettings ss) => ss.colorize = b,
-      'debug': (bool b, SearchSettings ss) => ss.debug = b,
-      'excludehidden': (bool b, SearchSettings ss) => ss.excludeHidden = b,
-      'firstmatch': (bool b, SearchSettings ss) => ss.firstMatch = b,
-      'help': (bool b, SearchSettings ss) => ss.printUsage = b,
-      'includehidden': (bool b, SearchSettings ss) => ss.excludeHidden = !b,
-      'listdirs': (bool b, SearchSettings ss) => ss.listDirs = b,
-      'listfiles': (bool b, SearchSettings ss) => ss.listFiles = b,
-      'listlines': (bool b, SearchSettings ss) => ss.listLines = b,
-      'multilinesearch': (bool b, SearchSettings ss) => ss.multiLineSearch = b,
-      'noprintmatches': (bool b, SearchSettings ss) => ss.printResults = !b,
-      'printusage': (bool b, SearchSettings ss) => ss.printUsage = b,
-      'recursive': (bool b, SearchSettings ss) => ss.recursive = b,
-      'searcharchives': (bool b, SearchSettings ss) => ss.searchArchives = b,
-      'uniquelines': (bool b, SearchSettings ss) => ss.uniqueLines = b,
-      'verbose': (bool b, SearchSettings ss) => ss.verbose = b,
-      'version': (bool b, SearchSettings ss) => ss.printVersion = b,
+      'archivesonly': (bool b, FindSettings ss) => ss.archivesOnly = b,
+      'allmatches': (bool b, FindSettings ss) => ss.firstMatch = !b,
+      'colorize': (bool b, FindSettings ss) => ss.colorize = b,
+      'debug': (bool b, FindSettings ss) => ss.debug = b,
+      'excludehidden': (bool b, FindSettings ss) => ss.excludeHidden = b,
+      'firstmatch': (bool b, FindSettings ss) => ss.firstMatch = b,
+      'help': (bool b, FindSettings ss) => ss.printUsage = b,
+      'includehidden': (bool b, FindSettings ss) => ss.excludeHidden = !b,
+      'listdirs': (bool b, FindSettings ss) => ss.listDirs = b,
+      'listfiles': (bool b, FindSettings ss) => ss.listFiles = b,
+      'listlines': (bool b, FindSettings ss) => ss.listLines = b,
+      'multilineoption-REMOVE': (bool b, FindSettings ss) => ss.multiLineFind = b,
+      'noprintmatches': (bool b, FindSettings ss) => ss.printResults = !b,
+      'printusage': (bool b, FindSettings ss) => ss.printUsage = b,
+      'recursive': (bool b, FindSettings ss) => ss.recursive = b,
+      'findarchives': (bool b, FindSettings ss) => ss.findArchives = b,
+      'uniquelines': (bool b, FindSettings ss) => ss.uniqueLines = b,
+      'verbose': (bool b, FindSettings ss) => ss.verbose = b,
+      'version': (bool b, FindSettings ss) => ss.printVersion = b,
     };
   }
 
-  Future<void> settingsFromJson(String jsonString, SearchSettings settings) async {
+  Future<void> settingsFromJson(String jsonString, FindSettings settings) async {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
       jsonMap.forEach((key, value) {
@@ -137,14 +137,14 @@ class SearchOptions {
     });
   }
 
-  Future<void> settingsFromFile(String filePath, SearchSettings settings) async {
+  Future<void> settingsFromFile(String filePath, FindSettings settings) async {
     var contents = await File(filePath).readAsString();
     await settingsFromJson(contents, settings);
   }
 
-  Future<SearchSettings> settingsFromArgs(List<String> args) async {
+  Future<FindSettings> settingsFromArgs(List<String> args) async {
     return await ready.then((_) async {
-      var settings = SearchSettings();
+      var settings = FindSettings();
       // default printResults to true since running as cli
       settings.printResults = true;
       var it = args.iterator;
@@ -161,7 +161,7 @@ class SearchOptions {
                 var s = it.current;
                 stringArgMap[longArg](s, settings);
               } else {
-                throw SearchException('Missing value for option $arg');
+                throw FindException('Missing value for option $arg');
               }
             } else if (boolArgMap.containsKey(longArg)) {
               boolArgMap[longArg](true, settings);
@@ -170,13 +170,13 @@ class SearchOptions {
                 var s = it.current;
                 await settingsFromFile(s, settings);
               } else {
-                throw SearchException('Missing value for option $arg');
+                throw FindException('Missing value for option $arg');
               }
             } else {
-              throw SearchException('Invalid option: $arg');
+              throw FindException('Invalid option: $arg');
             }
           } else {
-            throw SearchException('Invalid option: $arg');
+            throw FindException('Invalid option: $arg');
           }
         } else {
           settings.startPath = arg;
@@ -193,13 +193,13 @@ class SearchOptions {
   Future<String> getUsageString() async {
     return await ready.then((_) {
       var s = 'Usage:\n'
-          ' dartsearch [options] -s <searchpattern> <startpath>\n\n'
+          ' dartfind [options] -s <findpattern> <startpath>\n\n'
           'Options:\n';
-      var optStrings = searchOptions.map((so) => so.optString()).toList();
+      var optStrings = findOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) => (optString.length > value.length) ? optString : value);
-      for (var i=0; i < searchOptions.length; i++) {
+      for (var i=0; i < findOptions.length; i++) {
         s += ' ' + optStrings[i].padRight(longest.length + 2, ' ');
-        s += searchOptions[i].desc + '\n';
+        s += findOptions[i].desc + '\n';
       }
       return s;
     });

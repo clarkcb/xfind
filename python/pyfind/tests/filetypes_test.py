@@ -12,7 +12,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from pysearch import FileType, FileTypes
+from pyfind import FileType, FileTypes
 
 
 class FileTypesTest(unittest.TestCase):
@@ -52,9 +52,9 @@ class FileTypesTest(unittest.TestCase):
         filename = 'file.xml'
         self.assertTrue(self.filetypes.is_xml_file(filename))
 
-    def test_is_searchable_file(self):
+    def test_is_findable_file(self):
         filename = 'file.xml'
-        self.assertTrue(self.filetypes.is_searchable_file(filename))
+        self.assertTrue(self.filetypes.is_findable_file(filename))
 
 
 if __name__ == '__main__':

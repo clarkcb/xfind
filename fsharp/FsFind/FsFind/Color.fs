@@ -1,4 +1,4 @@
-namespace FsSearch
+namespace FsFind
 
 module Color =
     let Reset =  "\u001B[0m"

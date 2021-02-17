@@ -1,8 +1,8 @@
-﻿namespace FsSearch
+﻿namespace FsFind
 
 open System.Text.RegularExpressions
 
-module SearchSettings =
+module FindSettings =
     type t = {
         ArchivesOnly : bool;
         Colorize : bool;
@@ -25,7 +25,7 @@ module SearchSettings =
         ListFiles : bool;
         ListLines : bool;
         MaxLineLength : int;
-        MultiLineSearch : bool;
+        MultiLineFind : bool;
         OutArchiveExtensions : string list;
         OutArchiveFilePatterns : Regex list;
         OutDirPatterns : Regex list;
@@ -38,8 +38,8 @@ module SearchSettings =
         PrintUsage : bool;
         PrintVersion : bool;
         Recursive : bool;
-        SearchArchives : bool;
-        SearchPatterns : Regex list;
+        FindArchives : bool;
+        FindPatterns : Regex list;
         StartPath : string;
         TextFileEncoding : string;
         UniqueLines : bool;
@@ -68,7 +68,7 @@ module SearchSettings =
         ListFiles = false;
         ListLines = false;
         MaxLineLength = 150;
-        MultiLineSearch = false;
+        MultiLineFind = false;
         OutArchiveExtensions = [];
         OutArchiveFilePatterns = [];
         OutDirPatterns = [];
@@ -81,8 +81,8 @@ module SearchSettings =
         PrintUsage = false;
         PrintVersion = false;
         Recursive = true;
-        SearchArchives = false;
-        SearchPatterns = [];
+        FindArchives = false;
+        FindPatterns = [];
         StartPath = "";
         TextFileEncoding = "utf-8";
         UniqueLines = false;
@@ -97,7 +97,7 @@ module SearchSettings =
 
     let SetArchivesOnly (archivesOnly : bool) (settings : t) : t =
         match archivesOnly with
-        | true -> { settings with ArchivesOnly=true; SearchArchives=true }
+        | true -> { settings with ArchivesOnly=true; FindArchives=true }
         | _ -> { settings with ArchivesOnly=false }
 
     let SetDebug (debug : bool) (settings : t) : t =
@@ -115,7 +115,7 @@ module SearchSettings =
 
     let ToString settings =
         String.concat "" [
-            "SearchSettings(";
+            "FindSettings(";
             sprintf "ArchivesOnly: %b" settings.ArchivesOnly;
             sprintf ", Colorize: %b" settings.Colorize;
             sprintf ", Debug: %b" settings.Debug;
@@ -137,7 +137,7 @@ module SearchSettings =
             sprintf ", ListFiles: %b" settings.ListFiles;
             sprintf ", ListLines: %b" settings.ListLines;
             sprintf ", MaxLineLength: %d" settings.MaxLineLength;
-            sprintf ", MultiLineSearch: %b" settings.MultiLineSearch;
+            sprintf ", MultiLineFind: %b" settings.MultiLineFind;
             sprintf ", OutArchiveExtensions: %s" (Common.list_to_string(settings.OutArchiveExtensions));
             sprintf ", OutArchiveFilePatterns: %s" (Common.list_to_string(settings.OutArchiveFilePatterns));
             sprintf ", OutDirPatterns: %s" (Common.list_to_string(settings.OutDirPatterns));
@@ -150,8 +150,8 @@ module SearchSettings =
             sprintf ", PrintUsage: %b" settings.PrintUsage;
             sprintf ", PrintVersion: %b" settings.PrintVersion;
             sprintf ", Recursive: %b" settings.Recursive;
-            sprintf ", SearchArchives: %b" settings.SearchArchives;
-            sprintf ", SearchPatterns: %s" (Common.list_to_string(settings.SearchPatterns));
+            sprintf ", FindArchives: %b" settings.FindArchives;
+            sprintf ", FindPatterns: %s" (Common.list_to_string(settings.FindPatterns));
             sprintf ", StartPath: \"%s\"" settings.StartPath;
             sprintf ", TextFileEncoding: \"%s\"" settings.TextFileEncoding;
             sprintf ", UniqueLines: %b" settings.UniqueLines;

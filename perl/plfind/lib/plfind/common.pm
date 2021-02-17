@@ -6,7 +6,7 @@
 #
 ###############################################################################
 
-package plsearch::common;
+package plfind::common;
 
 use strict;
 use warnings;

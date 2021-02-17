@@ -1,5 +1,5 @@
-#ifndef CPPSEARCH_COLOR_H
-#define CPPSEARCH_COLOR_H
+#ifndef CPPFIND_COLOR_H
+#define CPPFIND_COLOR_H
 
 #define COLOR_RESET  "\033[0m"
 #define COLOR_BLACK  "\033[30m"
@@ -11,4 +11,4 @@
 #define COLOR_CYAN   "\033[36m"
 #define COLOR_WHITE  "\033[37m"
 
-#endif //CPPSEARCH_COLOR_H
+#endif //CPPFIND_COLOR_H

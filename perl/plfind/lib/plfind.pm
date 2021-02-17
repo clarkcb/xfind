@@ -1,4 +1,4 @@
-package plsearch;
+package plfind;
 
 use 5.005;
 use strict;
@@ -12,7 +12,7 @@ use vars qw($VERSION @ISA @EXPORT @EXPORT_OK %EXPORT_TAGS);
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-# This allows declaration	use plsearch ':all';
+# This allows declaration	use plfind ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 %EXPORT_TAGS = ( 'all' => [ qw(
@@ -38,15 +38,15 @@ __END__
 
 =head1 NAME
 
-plsearch - Perl implementation of xsearch
+plfind - Perl implementation of xfind
 
 =head1 SYNOPSIS
 
-  $ plsearch -h
+  $ plfind -h
 
 =head1 DESCRIPTION
 
-Stub documentation for plsearch, created by h2xs. It looks like the
+Stub documentation for plfind, created by h2xs. It looks like the
 author of the extension was negligent enough to leave the stub
 unedited.
 

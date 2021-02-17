@@ -1,29 +1,29 @@
 /*
- * tssearch.ts
+ * tsfind.ts
  *
- * file search utility written in typescript
+ * file find utility written in typescript
  */
 
 "use strict";
 
 import * as common from './common';
-import {SearchOptions} from './searchoptions';
-import {SearchSettings} from './searchsettings';
-import {Searcher} from './searcher';
+import {FindOptions} from './findoptions';
+import {FindSettings} from './findsettings';
+import {Finder} from './finder';
 
-function handleError(err: Error, searchOptions: SearchOptions) {
+function handleError(err: Error, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
     common.log('\n' + errMsg + '\n');
-    searchOptions.usageWithCode(1);
+    findOptions.usageWithCode(1);
 }
 
-function searchMain() {
-    const searchOptions = new SearchOptions();
+function findMain() {
+    const findOptions = new FindOptions();
     const args = process.argv.slice(2);
 
-    searchOptions.settingsFromArgs(args, (err: Error | void, settings: SearchSettings) => {
+    findOptions.settingsFromArgs(args, (err: Error | void, settings: FindSettings) => {
         if (err) {
-            handleError(err, searchOptions);
+            handleError(err, findOptions);
         }
 
         if (settings.debug)
@@ -31,7 +31,7 @@ function searchMain() {
 
         if (settings.printUsage) {
             common.log('');
-            searchOptions.usage();
+            findOptions.usage();
         }
 
         if (settings.printVersion) {
@@ -40,30 +40,30 @@ function searchMain() {
         }
 
         try {
-            const searcher: Searcher = new Searcher(settings);
-            searcher.search();
+            const finder: Finder = new Finder(settings);
+            finder.find();
 
             if (settings.printResults) {
-                searcher.printSearchResults();
+                finder.printFindResults();
             }
 
             if (settings.listDirs) {
-                searcher.printMatchingDirs();
+                finder.printMatchingDirs();
             }
             if (settings.listFiles) {
-                searcher.printMatchingFiles();
+                finder.printMatchingFiles();
             }
             if (settings.listLines) {
-                searcher.printMatchingLines();
+                finder.printMatchingLines();
             }
 
         } catch (err2) {
-            handleError(err2, searchOptions);
+            handleError(err2, findOptions);
         }
     });
 }
 
 // node.js equivalent of python's if __name__ == '__main__'
 if (!module.parent) {
-    searchMain();
+    findMain();
 }

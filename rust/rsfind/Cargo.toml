@@ -1,5 +1,5 @@
 [package]
-name = "rssearch"
+name = "rsfind"
 version = "0.1.0"
 authors = ["Cary Clark <clarkcb@gmail.com>"]
 edition = "2018"

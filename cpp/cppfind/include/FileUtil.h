@@ -1,10 +1,10 @@
-#ifndef CPPSEARCH_FILEUTIL_H
-#define CPPSEARCH_FILEUTIL_H
+#ifndef CPPFIND_FILEUTIL_H
+#define CPPFIND_FILEUTIL_H
 
 #include <string>
 #include <vector>
 
-namespace cppsearch {
+namespace cppfind {
     class FileUtil {
     public:
         static std::string expand_path(const std::string& filepath);
@@ -24,4 +24,4 @@ namespace cppsearch {
     };
 }
 
-#endif //CPPSEARCH_FILEUTIL_H
+#endif //CPPFIND_FILEUTIL_H

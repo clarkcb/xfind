@@ -3,19 +3,19 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
-use phpsearch\SearchSettings;
+use phpfind\FindSettings;
 
-class SearchSettingsTest extends TestCase
+class FindSettingsTest extends TestCase
 {
     /**
-     * @var SearchSettings
+     * @var FindSettings
      */
     private $settings;
 
     public function __construct()
     {
         parent::__construct();
-        $this->settings = new SearchSettings();
+        $this->settings = new FindSettings();
     }
 
     public function test_default_settings()
@@ -30,12 +30,12 @@ class SearchSettingsTest extends TestCase
         $this->assertFalse($this->settings->listfiles);
         $this->assertFalse($this->settings->listlines);
         $this->assertEquals(150, $this->settings->maxlinelength);
-        $this->assertFalse($this->settings->multilinesearch);
+        $this->assertFalse($this->settings->multilineoption-REMOVE);
         $this->assertTrue($this->settings->printresults);
         $this->assertFalse($this->settings->printusage);
         $this->assertFalse($this->settings->printversion);
         $this->assertTrue($this->settings->recursive);
-        $this->assertFalse($this->settings->searcharchives);
+        $this->assertFalse($this->settings->findarchives);
         $this->assertFalse(isset($this->settings->startpath));
         $this->assertFalse($this->settings->uniquelines);
         $this->assertFalse($this->settings->verbose);
@@ -66,15 +66,15 @@ class SearchSettingsTest extends TestCase
 
     public function test_add_patterns_string()
     {
-        $this->settings->add_patterns('Searcher', $this->settings->searchpatterns);
-        $this->assertCount(1, $this->settings->searchpatterns);
-        $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
+        $this->settings->add_patterns('Finder', $this->settings->findpatterns);
+        $this->assertCount(1, $this->settings->findpatterns);
+        $this->assertTrue(in_array('Finder', $this->settings->findpatterns));
     }
 
     public function test_add_patterns_array()
     {
-        $this->settings->add_patterns(['Searcher'], $this->settings->searchpatterns);
-        $this->assertCount(1, $this->settings->searchpatterns);
-        $this->assertTrue(in_array('Searcher', $this->settings->searchpatterns));
+        $this->settings->add_patterns(['Finder'], $this->settings->findpatterns);
+        $this->assertCount(1, $this->settings->findpatterns);
+        $this->assertTrue(in_array('Finder', $this->settings->findpatterns));
     }
 }

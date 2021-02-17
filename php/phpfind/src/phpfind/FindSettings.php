@@ -1,9 +1,9 @@
 <?php declare(strict_types=1);
 
-namespace phpsearch;
+namespace phpfind;
 
 /**
- * Class SearchSettings
+ * Class FindSettings
  *
  * @property bool archivesonly
  * @property bool colorize
@@ -26,7 +26,7 @@ namespace phpsearch;
  * @property bool listfiles
  * @property bool listlines
  * @property int maxlinelength
- * @property bool multilinesearch
+ * @property bool multilineoption-REMOVE
  * @property array out_archiveextensions
  * @property array out_archivefilepatterns
  * @property array out_dirpatterns
@@ -39,14 +39,14 @@ namespace phpsearch;
  * @property bool printusage
  * @property bool printversion
  * @property bool recursive
- * @property bool searcharchives
- * @property array searchpatterns
+ * @property bool findarchives
+ * @property array findpatterns
  * @property ?string startpath
  * @property string textfileencoding
  * @property bool uniquelines
  * @property bool verbose
  */
-class SearchSettings
+class FindSettings
 {
     public $archivesonly = false;
     public $colorize = true;
@@ -59,12 +59,12 @@ class SearchSettings
     public $listfiles = false;
     public $listlines = false;
     public $maxlinelength = 150;
-    public $multilinesearch = false;
+    public $multilineoption-REMOVE = false;
     public $printresults = true;
     public $printusage = false;
     public $printversion = false;
     public $recursive = true;
-    public $searcharchives = false;
+    public $findarchives = false;
     public $startpath = null;
     public $textfileencoding = 'utf-8';
     public $uniquelines = false;
@@ -88,7 +88,7 @@ class SearchSettings
     public $out_filetypes = array();
     public $out_linesafterpatterns = array();
     public $out_linesbeforepatterns = array();
-    public $searchpatterns = array();
+    public $findpatterns = array();
 
     public function add_exts($ext, &$exts)
     {
@@ -133,7 +133,7 @@ class SearchSettings
     {
         $this->archivesonly = $b;
         if ($b) {
-            $this->searcharchives = $b;
+            $this->findarchives = $b;
         }
     }
 
@@ -158,7 +158,7 @@ class SearchSettings
 
     public function __toString(): string
     {
-        $s = 'SearchSettings(';
+        $s = 'FindSettings(';
         $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
         $s .= ', colorize: ' . $this->bool_to_string($this->colorize);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);
@@ -180,7 +180,7 @@ class SearchSettings
         $s .= ', listfiles: ' . $this->bool_to_string($this->listfiles);
         $s .= ', listlines: ' . $this->bool_to_string($this->listlines);
         $s .= ', maxlinelength: ' . $this->maxlinelength;
-        $s .= ', multilinesearch: ' . $this->bool_to_string($this->multilinesearch);
+        $s .= ', multilineoption-REMOVE: ' . $this->bool_to_string($this->multilineoption-REMOVE);
         $s .= ', out_archiveextensions: ' . $this->arr_to_string($this->out_archiveextensions);
         $s .= ', out_archivefilepatterns: ' . $this->arr_to_string($this->out_archivefilepatterns);
         $s .= ', out_dirpatterns: ' . $this->arr_to_string($this->out_dirpatterns);
@@ -193,8 +193,8 @@ class SearchSettings
         $s .= ', printusage: ' . $this->bool_to_string($this->printusage);
         $s .= ', printversion: ' . $this->bool_to_string($this->printversion);
         $s .= ', recursive: ' . $this->bool_to_string($this->recursive);
-        $s .= ', searcharchives: ' . $this->bool_to_string($this->searcharchives);
-        $s .= ', searchpatterns: ' . $this->arr_to_string($this->searchpatterns);
+        $s .= ', findarchives: ' . $this->bool_to_string($this->findarchives);
+        $s .= ', findpatterns: ' . $this->arr_to_string($this->findpatterns);
         $s .= ', startpath: "' . $this->startpath . '"';
         $s .= ', textfileencoding: "' . $this->textfileencoding . '"';
         $s .= ', uniquelines: ' . $this->bool_to_string($this->uniquelines);

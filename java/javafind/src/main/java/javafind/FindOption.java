@@ -1,22 +1,22 @@
 /*******************************************************************************
-SearchOption
+FindOption
 
-Class to encapsulate a command line search option
+Class to encapsulate a command line find option
 
 @author Cary Clark &lt;clarkcb@gmail.com&gt;
 @version $Rev$
 @copyright Cary Clark 2012
 *******************************************************************************/
 
-package javasearch;
+package javafind;
 
-public class SearchOption {
+public class FindOption {
 
     private final String shortArg;
     private final String longArg;
     private final String description;
 
-    public SearchOption(final String shortArg, final String longArg,
+    public FindOption(final String shortArg, final String longArg,
                         final String description) {
         this.shortArg = shortArg;
         this.longArg = longArg;

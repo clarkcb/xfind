@@ -1,14 +1,14 @@
 /*******************************************************************************
-SearchSettings
+FindSettings
 
-Class to encapsulate search settings
+Class to encapsulate find settings
 
 @author Cary Clark &lt;clarkcb@gmail.com&gt;
 @version $Rev$
 @copyright Cary Clark 2012
 *******************************************************************************/
 
-package javasearch;
+package javafind;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public class SearchSettings {
+public class FindSettings {
 
     private static final int INITIAL_SET_CAPACITY = 4;
 
@@ -41,7 +41,7 @@ public class SearchSettings {
     private boolean listFiles;
     private boolean listLines;
     private int maxLineLength;
-    private boolean multiLineSearch;
+    private boolean multiLineFind;
     private Set<String> outArchiveExtensions;
     private Set<Pattern> outArchiveFilePatterns;
     private Set<Pattern> outDirPatterns;
@@ -54,14 +54,14 @@ public class SearchSettings {
     private boolean printUsage;
     private boolean printVersion;
     private boolean recursive;
-    private boolean searchArchives;
-    private Set<Pattern> searchPatterns;
+    private boolean findArchives;
+    private Set<Pattern> findPatterns;
     private String startPath;
     private String textFileEncoding;
     private boolean uniqueLines;
     private boolean verbose;
 
-    public SearchSettings() {
+    public FindSettings() {
         this.archivesOnly = DefaultSettings.ARCHIVESONLY;
         this.colorize = DefaultSettings.COLORIZE;
         this.debug = DefaultSettings.DEBUG;
@@ -83,7 +83,7 @@ public class SearchSettings {
         this.listFiles = DefaultSettings.LISTFILES;
         this.listLines = DefaultSettings.LISTLINES;
         this.maxLineLength = DefaultSettings.MAXLINELENGTH;
-        this.multiLineSearch = DefaultSettings.MULTILINESEARCH;
+        this.multiLineFind = DefaultSettings.MULTILINEFIND;
         this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -96,8 +96,8 @@ public class SearchSettings {
         this.printUsage = DefaultSettings.PRINTUSAGE;
         this.printVersion = DefaultSettings.PRINTVERSION;
         this.recursive = DefaultSettings.RECURSIVE;
-        this.searchArchives = DefaultSettings.SEARCHARCHIVES;
-        this.searchPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.findArchives = DefaultSettings.FINDARCHIVES;
+        this.findPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.textFileEncoding = DefaultSettings.TEXTFILEENCODING;
         this.uniqueLines = DefaultSettings.UNIQUELINES;
         this.verbose = DefaultSettings.VERBOSE;
@@ -118,7 +118,7 @@ public class SearchSettings {
     public final void setArchivesOnly(final boolean archivesOnly) {
         this.archivesOnly = archivesOnly;
         if (archivesOnly) {
-            this.searchArchives = true;
+            this.findArchives = true;
         }
     }
 
@@ -205,12 +205,12 @@ public class SearchSettings {
         this.maxLineLength = maxLineLength;
     }
 
-    public final boolean getMultiLineSearch() {
-        return this.multiLineSearch;
+    public final boolean getMultiLineFind() {
+        return this.multiLineFind;
     }
 
-    public final void setMultiLineSearch(final boolean multiLineSearch) {
-        this.multiLineSearch = multiLineSearch;
+    public final void setMultiLineFind(final boolean multiLineFind) {
+        this.multiLineFind = multiLineFind;
     }
 
     public final boolean getPrintResults() {
@@ -245,12 +245,12 @@ public class SearchSettings {
         this.recursive = recursive;
     }
 
-    public final boolean getSearchArchives() {
-        return this.searchArchives;
+    public final boolean getFindArchives() {
+        return this.findArchives;
     }
 
-    public final void setSearchArchives(final boolean searchArchives) {
-        this.searchArchives = searchArchives;
+    public final void setFindArchives(final boolean findArchives) {
+        this.findArchives = findArchives;
     }
 
     public String getTextFileEncoding() {
@@ -431,12 +431,12 @@ public class SearchSettings {
         addPattern(this.linesAfterUntilPatterns, pattern);
     }
 
-    public final void addSearchPattern(final String pattern) {
-        addPattern(this.searchPatterns, pattern);
+    public final void addFindPattern(final String pattern) {
+        addPattern(this.findPatterns, pattern);
     }
 
-    public final Set<Pattern> getSearchPatterns() {
-        return this.searchPatterns;
+    public final Set<Pattern> getFindPatterns() {
+        return this.findPatterns;
     }
 
     public final boolean hasLinesAfterToPatterns() {
@@ -507,7 +507,7 @@ public class SearchSettings {
         } else {
             startPath = "\"" + this.startPath + "\"";
         }
-        return "SearchSettings("
+        return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
                 + ", colorize: " + this.colorize
                 + ", debug: " + this.debug
@@ -528,7 +528,7 @@ public class SearchSettings {
                 + ", listFiles: " + this.listFiles
                 + ", listLines: " + this.listLines
                 + ", maxLineLength: " + this.maxLineLength
-                + ", multiLineSearch: " + this.multiLineSearch
+                + ", multiLineFind: " + this.multiLineFind
                 + ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions)
                 + ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns)
                 + ", outDirPatterns: " + patternSetToString(this.outDirPatterns)
@@ -540,8 +540,8 @@ public class SearchSettings {
                 + ", printUsage: " + this.printUsage
                 + ", printVersion: " + this.printVersion
                 + ", recursive: " + this.recursive
-                + ", searchArchives: " + this.searchArchives
-                + ", searchPatterns: " + patternSetToString(this.searchPatterns)
+                + ", findArchives: " + this.findArchives
+                + ", findPatterns: " + patternSetToString(this.findPatterns)
                 + ", startPath: " + startPath
                 + ", textFileEncoding: " + textFileEncoding
                 + ", uniqueLines: " + this.uniqueLines

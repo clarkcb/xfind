@@ -1,8 +1,8 @@
 import 'dart:convert' show json;
 import 'dart:io' show File;
 
-import 'package:dartsearch/src/config.dart' show FILETYPESPATH;
-import 'package:dartsearch/src/file_util.dart';
+import 'package:dartfind/src/config.dart' show FILETYPESPATH;
+import 'package:dartfind/src/file_util.dart';
 
 enum FileType {
   unknown,
@@ -36,7 +36,7 @@ class FileTypes {
   static const archive = 'archive';
   static const binary = 'binary';
   static const code = 'code';
-  static const searchable = 'searchable';
+  static const findable = 'findable';
   static const text = 'text';
   static const xml = 'xml';
   static const unknown = 'unknown';
@@ -60,7 +60,7 @@ class FileTypes {
       });
       fileTypeMap[text] =
           fileTypeMap[text].union(fileTypeMap[code].union(fileTypeMap[xml]));
-      fileTypeMap[searchable] =
+      fileTypeMap[findable] =
           fileTypeMap[text].union(fileTypeMap[binary].union(fileTypeMap[archive]));
     }
   }
@@ -129,16 +129,16 @@ class FileTypes {
     });
   }
 
-  Future<bool> isSearchableFile(String fileName) async {
+  Future<bool> isFindableFile(String fileName) async {
     return await ready.then((_) {
-      return fileTypeMap[searchable].contains(FileUtil.extension(fileName));
+      return fileTypeMap[findable].contains(FileUtil.extension(fileName));
     });
   }
 
   Future<bool> isUnknownFile(String fileName) async {
     return await ready.then((_) {
       return fileTypeMap[unknown].contains(FileUtil.extension(fileName)) ||
-          !fileTypeMap[searchable].contains(FileUtil.extension(fileName));
+          !fileTypeMap[findable].contains(FileUtil.extension(fileName));
     });
   }
 }

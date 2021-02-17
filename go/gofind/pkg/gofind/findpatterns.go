@@ -1,22 +1,22 @@
-package gosearch
+package gofind
 
 import (
 	"regexp"
 )
 
-type SearchPatternsIterator struct {
+type FindPatternsIterator struct {
 	idx      int
-	patterns *SearchPatterns
+	patterns *FindPatterns
 }
 
-func NewSearchPatternsIterator(sp *SearchPatterns) *SearchPatternsIterator {
-	return &SearchPatternsIterator{
+func NewFindPatternsIterator(sp *FindPatterns) *FindPatternsIterator {
+	return &FindPatternsIterator{
 		-1,
 		sp,
 	}
 }
 
-func (i *SearchPatternsIterator) Next() bool {
+func (i *FindPatternsIterator) Next() bool {
 	i.idx++
 	if i.idx >= len(i.patterns.patterns) {
 		return false
@@ -24,33 +24,33 @@ func (i *SearchPatternsIterator) Next() bool {
 	return true
 }
 
-func (i *SearchPatternsIterator) Value() *regexp.Regexp {
+func (i *FindPatternsIterator) Value() *regexp.Regexp {
 	return i.patterns.patterns[i.idx]
 }
 
-type SearchPatterns struct {
+type FindPatterns struct {
 	patterns []*regexp.Regexp
 }
 
-func NewSearchPatterns() *SearchPatterns {
-	return &SearchPatterns{
+func NewFindPatterns() *FindPatterns {
+	return &FindPatterns{
 		[]*regexp.Regexp{},
 	}
 }
 
-func (sp *SearchPatterns) AddPattern(s *string) {
+func (sp *FindPatterns) AddPattern(s *string) {
 	sp.patterns = append(sp.patterns, regexp.MustCompile(*s))
 }
 
-func (sp *SearchPatterns) IsEmpty() bool {
+func (sp *FindPatterns) IsEmpty() bool {
 	return len(sp.patterns) == 0
 }
 
-func (sp *SearchPatterns) Iterator() *SearchPatternsIterator {
-	return NewSearchPatternsIterator(sp)
+func (sp *FindPatterns) Iterator() *FindPatternsIterator {
+	return NewFindPatternsIterator(sp)
 }
 
-func (sp *SearchPatterns) MatchesAny(s *string) bool {
+func (sp *FindPatterns) MatchesAny(s *string) bool {
 	for _, p := range sp.patterns {
 		if p.MatchString(*s) {
 			return true
@@ -59,7 +59,7 @@ func (sp *SearchPatterns) MatchesAny(s *string) bool {
 	return false
 }
 
-func (sp *SearchPatterns) AnyMatchesAny(ss []*string) bool {
+func (sp *FindPatterns) AnyMatchesAny(ss []*string) bool {
 	for _, s := range ss {
 		if sp.MatchesAny(s) {
 			return true

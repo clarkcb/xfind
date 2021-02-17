@@ -1,8 +1,8 @@
-name: dartsearch
+name: dartfind
 description: A sample command-line application.
 # version: 1.0.0
-# homepage: https://github.com/clarkcb/xsearch
-# repository: https://github.com/clarkcb/xsearch
+# homepage: https://github.com/clarkcb/xfind
+# repository: https://github.com/clarkcb/xfind
 
 environment:
   sdk: '>=2.10.0 <3.0.0'

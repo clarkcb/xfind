@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -10,261 +10,261 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class SearcherTest {
+public class FinderTest {
 
-    public SearcherTest() {}
+    public FinderTest() {}
 
-    private static SearchSettings getSettings() {
-        SearchSettings settings = new SearchSettings();
+    private static FindSettings getSettings() {
+        FindSettings settings = new FindSettings();
         settings.setStartPath(".");
-        settings.addSearchPattern("Searcher");
+        settings.addFindPattern("Finder");
         return settings;
     }
 
     private static final String testFilePath = "/testFile2.txt";
 
     /*************************************************************
-     * isSearchDir tests
+     * isFindDir tests
      *************************************************************/
     @Test
-    public final void testisSearchDir_SingleDot_True() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
-        assertTrue(searcher.isSearchDir(new File(".")));
+    public final void testisFindDir_SingleDot_True() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
+        assertTrue(finder.isFindDir(new File(".")));
     }
 
     @Test
-    public final void testisSearchDir_DoubleDot_True() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
-        assertTrue(searcher.isSearchDir(new File("..")));
+    public final void testisFindDir_DoubleDot_True() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
+        assertTrue(finder.isFindDir(new File("..")));
     }
 
     @Test
-    public final void testisSearchDir_IsHidden_False() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
-        assertFalse(searcher.isSearchDir(new File(".git")));
+    public final void testisFindDir_IsHidden_False() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
+        assertFalse(finder.isFindDir(new File(".git")));
     }
 
     @Test
-    public final void testisSearchDir_IsHiddenIncludeHidden_True() {
-        SearchSettings settings = getSettings();
+    public final void testisFindDir_IsHiddenIncludeHidden_True() {
+        FindSettings settings = getSettings();
         settings.setExcludeHidden(false);
-        Searcher searcher = new Searcher(settings);
-        assertTrue(searcher.isSearchDir(new File(".git")));
+        Finder finder = new Finder(settings);
+        assertTrue(finder.isFindDir(new File(".git")));
     }
 
     @Test
-    public final void testisSearchDir_NoPatterns_True() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
-        assertTrue(searcher.isSearchDir(new File("/Users")));
+    public final void testisFindDir_NoPatterns_True() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
+        assertTrue(finder.isFindDir(new File("/Users")));
     }
 
     @Test
-    public final void testisSearchDir_MatchesInPattern_True() {
-        SearchSettings settings = getSettings();
-        settings.addInDirPattern("Search");
-        Searcher searcher = new Searcher(settings);
-        assertTrue(searcher.isSearchDir(new File("CsSearch")));
+    public final void testisFindDir_MatchesInPattern_True() {
+        FindSettings settings = getSettings();
+        settings.addInDirPattern("Find");
+        Finder finder = new Finder(settings);
+        assertTrue(finder.isFindDir(new File("CsFind")));
     }
 
     @Test
-    public final void testisSearchDir_MatchesOutPattern_False() {
-        SearchSettings settings = getSettings();
-        settings.addOutDirPattern("Search");
-        Searcher searcher = new Searcher(settings);
-        assertFalse(searcher.isSearchDir(new File("CsSearch")));
+    public final void testisFindDir_MatchesOutPattern_False() {
+        FindSettings settings = getSettings();
+        settings.addOutDirPattern("Find");
+        Finder finder = new Finder(settings);
+        assertFalse(finder.isFindDir(new File("CsFind")));
     }
 
     @Test
-    public final void testisSearchDir_DoesNotMatchInPattern_False() {
-        SearchSettings settings = getSettings();
-        settings.addInDirPattern("SearchFiles");
-        Searcher searcher = new Searcher(settings);
-        assertFalse(searcher.isSearchDir(new File("CsSearch")));
+    public final void testisFindDir_DoesNotMatchInPattern_False() {
+        FindSettings settings = getSettings();
+        settings.addInDirPattern("FindFiles");
+        Finder finder = new Finder(settings);
+        assertFalse(finder.isFindDir(new File("CsFind")));
     }
 
     @Test
-    public final void testisSearchDir_DoesNotMatchOutPattern_True() {
-        SearchSettings settings = getSettings();
-        settings.addOutDirPattern("SearchFiles");
-        Searcher searcher = new Searcher(settings);
-        File dir = new File("CsSearch");
-        assertTrue(searcher.isSearchDir(dir));
+    public final void testisFindDir_DoesNotMatchOutPattern_True() {
+        FindSettings settings = getSettings();
+        settings.addOutDirPattern("FindFiles");
+        Finder finder = new Finder(settings);
+        File dir = new File("CsFind");
+        assertTrue(finder.isFindDir(dir));
     }
 
 
     /*************************************************************
-     * isSearchFile tests
+     * isFindFile tests
      *************************************************************/
 
     @Test
-    public final void testIsSearchFile_NoExtensionsNoPatterns_True() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+    public final void testIsFindFile_NoExtensionsNoPatterns_True() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertTrue(searcher.isSearchFile(file));
+        assertTrue(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_MatchesInExtension_True() {
-        SearchSettings settings = getSettings();
+    public final void testIsFindFile_MatchesInExtension_True() {
+        FindSettings settings = getSettings();
         settings.addInExtension("cs");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertTrue(searcher.isSearchFile(file));
+        assertTrue(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_DoesNotMatchInExtension_False() {
-        SearchSettings settings = getSettings();
+    public final void testIsFindFile_DoesNotMatchInExtension_False() {
+        FindSettings settings = getSettings();
         settings.addInExtension("java");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertFalse(searcher.isSearchFile(file));
+        assertFalse(finder.isFindFile(file));
     }
 
 
     @Test
-    public final void testIsSearchFile_MatchesOutExtension_False() {
-        SearchSettings settings = getSettings();
+    public final void testIsFindFile_MatchesOutExtension_False() {
+        FindSettings settings = getSettings();
         settings.addOutExtension("cs");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertFalse(searcher.isSearchFile(file));
+        assertFalse(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_DoesNotMatchOutExtension_True() {
-        SearchSettings settings = getSettings();
+    public final void testIsFindFile_DoesNotMatchOutExtension_True() {
+        FindSettings settings = getSettings();
         settings.addOutExtension("java");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertTrue(searcher.isSearchFile(file));
+        assertTrue(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_MatchesInPattern_True() {
-        SearchSettings settings = getSettings();
-        settings.addInFilePattern("Search");
-        Searcher searcher = new Searcher(settings);
-        File file = new File("Searcher.cs");
-        assertTrue(searcher.isSearchFile(file));
+    public final void testIsFindFile_MatchesInPattern_True() {
+        FindSettings settings = getSettings();
+        settings.addInFilePattern("Find");
+        Finder finder = new Finder(settings);
+        File file = new File("Finder.cs");
+        assertTrue(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_DoesNotMatchInPattern_False() {
-        SearchSettings settings = getSettings();
-        settings.addInFilePattern("Search");
-        Searcher searcher = new Searcher(settings);
+    public final void testIsFindFile_DoesNotMatchInPattern_False() {
+        FindSettings settings = getSettings();
+        settings.addInFilePattern("Find");
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertFalse(searcher.isSearchFile(file));
+        assertFalse(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_MatchesOutPattern_False() {
-        SearchSettings settings = getSettings();
-        settings.addOutFilePattern("Search");
-        Searcher searcher = new Searcher(settings);
-        File file = new File("Searcher.cs");
-        assertFalse(searcher.isSearchFile(file));
+    public final void testIsFindFile_MatchesOutPattern_False() {
+        FindSettings settings = getSettings();
+        settings.addOutFilePattern("Find");
+        Finder finder = new Finder(settings);
+        File file = new File("Finder.cs");
+        assertFalse(finder.isFindFile(file));
     }
 
     @Test
-    public final void testIsSearchFile_DoesNotMatchOutPattern_True() {
-        SearchSettings settings = getSettings();
-        settings.addOutFilePattern("Search");
-        Searcher searcher = new Searcher(settings);
+    public final void testIsFindFile_DoesNotMatchOutPattern_True() {
+        FindSettings settings = getSettings();
+        settings.addOutFilePattern("Find");
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertTrue(searcher.isSearchFile(file));
+        assertTrue(finder.isFindFile(file));
     }
 
 
     /*************************************************************
-     * IsArchiveSearchFile tests
+     * IsArchiveFindFile tests
      *************************************************************/
 
     @Test
-    public final void testIsArchiveSearchFile_NoExtensionsNoPatterns_True() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+    public final void testIsArchiveFindFile_NoExtensionsNoPatterns_True() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.isArchiveSearchFile(file));
+        assertTrue(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_MatchesInExtension_True() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_MatchesInExtension_True() {
+        FindSettings settings = getSettings();
         settings.addInArchiveExtension("zip");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.isArchiveSearchFile(file));
+        assertTrue(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_DoesNotMatchInExtension_False() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_DoesNotMatchInExtension_False() {
+        FindSettings settings = getSettings();
         settings.addInArchiveExtension("gz");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.isArchiveSearchFile(file));
+        assertFalse(finder.isArchiveFindFile(file));
     }
 
 
     @Test
-    public final void testIsArchiveSearchFile_MatchesOutExtension_False() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_MatchesOutExtension_False() {
+        FindSettings settings = getSettings();
         settings.addOutArchiveExtension("zip");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.isArchiveSearchFile(file));
+        assertFalse(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_DoesNotMatchOutExtension_True() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_DoesNotMatchOutExtension_True() {
+        FindSettings settings = getSettings();
         settings.addOutArchiveExtension("gz");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.isArchiveSearchFile(file));
+        assertTrue(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_MatchesInPattern_True() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_MatchesInPattern_True() {
+        FindSettings settings = getSettings();
         settings.addInArchiveFilePattern("arch");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.isArchiveSearchFile(file));
+        assertTrue(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_DoesNotMatchInPattern_False() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_DoesNotMatchInPattern_False() {
+        FindSettings settings = getSettings();
         settings.addInArchiveFilePattern("archives");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.isArchiveSearchFile(file));
+        assertFalse(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_MatchesOutPattern_False() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_MatchesOutPattern_False() {
+        FindSettings settings = getSettings();
         settings.addOutArchiveFilePattern("arch");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.isArchiveSearchFile(file));
+        assertFalse(finder.isArchiveFindFile(file));
     }
 
     @Test
-    public final void testIsArchiveSearchFile_DoesNotMatchOutPattern_True() {
-        SearchSettings settings = getSettings();
+    public final void testIsArchiveFindFile_DoesNotMatchOutPattern_True() {
+        FindSettings settings = getSettings();
         settings.addOutArchiveFilePattern("archives");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.isArchiveSearchFile(file));
+        assertTrue(finder.isArchiveFindFile(file));
     }
 
     /*************************************************************
@@ -273,119 +273,119 @@ public class SearcherTest {
 
     @Test
     public final void testFilterFile_IsHidden_False() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         File file = new File(".gitignore");
-        assertFalse(searcher.filterFile(file));
+        assertFalse(finder.filterFile(file));
     }
 
     @Test
     public final void testFilterFile_IsHiddenIncludeHidden_True() {
-        SearchSettings settings = getSettings();
+        FindSettings settings = getSettings();
         settings.setExcludeHidden(false);
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File(".gitignore");
-        assertTrue(searcher.filterFile(file));
+        assertTrue(finder.filterFile(file));
     }
 
     @Test
-    public final void testFilterFile_ArchiveNoSearchArchives_False() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+    public final void testFilterFile_ArchiveNoFindArchives_False() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.filterFile(file));
+        assertFalse(finder.filterFile(file));
     }
 
     @Test
-    public final void testFilterFile_ArchiveSearchArchives_True() {
-        SearchSettings settings = getSettings();
-        settings.setSearchArchives(true);
-        Searcher searcher = new Searcher(settings);
+    public final void testFilterFile_ArchiveFindArchives_True() {
+        FindSettings settings = getSettings();
+        settings.setFindArchives(true);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.filterFile(file));
+        assertTrue(finder.filterFile(file));
     }
 
     @Test
-    public final void testFilterFile_IsArchiveSearchFile_True() {
-        SearchSettings settings = getSettings();
-        settings.setSearchArchives(true);
+    public final void testFilterFile_IsArchiveFindFile_True() {
+        FindSettings settings = getSettings();
+        settings.setFindArchives(true);
         settings.addInArchiveExtension("zip");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.filterFile(file));
+        assertTrue(finder.filterFile(file));
     }
 
     @Test
-    public final void testFilterFile_NotIsArchiveSearchFile_False() {
-        SearchSettings settings = getSettings();
-        settings.setSearchArchives(true);
+    public final void testFilterFile_NotIsArchiveFindFile_False() {
+        FindSettings settings = getSettings();
+        settings.setFindArchives(true);
         settings.addOutArchiveExtension("zip");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertFalse(searcher.filterFile(file));
+        assertFalse(finder.filterFile(file));
     }
 
     @Test
     public final void testFilterFile_ArchiveFileArchivesOnly_True() {
-        SearchSettings settings = getSettings();
+        FindSettings settings = getSettings();
         settings.setArchivesOnly(true);
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("archive.zip");
-        assertTrue(searcher.filterFile(file));
+        assertTrue(finder.filterFile(file));
     }
 
     @Test
     public final void testFilterFile_NoExtensionsNoPatterns_True() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertTrue(searcher.filterFile(file));
+        assertTrue(finder.filterFile(file));
     }
 
     @Test
-    public final void testFilterFile_IsSearchFile_True() {
-        SearchSettings settings = getSettings();
+    public final void testFilterFile_IsFindFile_True() {
+        FindSettings settings = getSettings();
         settings.addInExtension("cs");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertTrue(searcher.filterFile(file));
+        assertTrue(finder.filterFile(file));
     }
 
     @Test
-    public final void testFilterFile_NotIsSearchFile_False() {
-        SearchSettings settings = getSettings();
+    public final void testFilterFile_NotIsFindFile_False() {
+        FindSettings settings = getSettings();
         settings.addOutExtension("cs");
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertFalse(searcher.filterFile(file));
+        assertFalse(finder.filterFile(file));
     }
 
     @Test
     public final void testFilterFile_NonArchiveFileArchivesOnly_False() {
-        SearchSettings settings = getSettings();
+        FindSettings settings = getSettings();
         settings.setArchivesOnly(true);
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
-        assertFalse(searcher.filterFile(file));
+        assertFalse(finder.filterFile(file));
     }
 
     /*************************************************************
-     * searchStringIterator test
+     * findStringIterator test
      *************************************************************/
     @Test
-    public final void testSearchStringIterator() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+    public final void testFindStringIterator() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         Iterator<String> lineIterator;
         try {
             InputStream is = getClass().getResourceAsStream(testFilePath);
             List<String> lines = FileUtil.getStreamLines(is);
             lineIterator = lines.iterator();
-            List<SearchResult> results = searcher.searchStringIterator(lineIterator);
+            List<FindResult> results = finder.findStringIterator(lineIterator);
 
             assertEquals(results.size(), 2);
 
-            SearchResult firstResult = results.get(0);
+            FindResult firstResult = results.get(0);
             int expectedFirstLineNum = 29;
             assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
             int expectedFirstMatchStartIndex = 3;
@@ -393,7 +393,7 @@ public class SearcherTest {
             int expectedFirstMatchEndIndex = 11;
             assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
 
-            SearchResult secondResult = results.get(1);
+            FindResult secondResult = results.get(1);
             int expectedSecondLineNum = 35;
             assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
             int expectedSecondMatchStartIndex = 24;
@@ -407,22 +407,22 @@ public class SearcherTest {
     }
 
     /*************************************************************
-     * searchMultiLineString tests
+     * findMultiLineString tests
      *************************************************************/
     @Test
-    public final void testSearchMultiLineString() {
-        SearchSettings settings = getSettings();
-        Searcher searcher = new Searcher(settings);
+    public final void testFindMultiLineString() {
+        FindSettings settings = getSettings();
+        Finder finder = new Finder(settings);
         String contents;
         try {
             InputStream is = getClass().getResourceAsStream(testFilePath);
             contents = FileUtil.getStreamContents(is);
             //System.out.println("contents: " + contents);
-            List<SearchResult> results = searcher.searchMultiLineString(contents);
+            List<FindResult> results = finder.findMultiLineString(contents);
 
             assert(results.size() == 2);
 
-            SearchResult firstResult = results.get(0);
+            FindResult firstResult = results.get(0);
             int expectedFirstLineNum = 29;
             assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
             int expectedFirstMatchStartIndex = 3;
@@ -430,7 +430,7 @@ public class SearcherTest {
             int expectedFirstMatchEndIndex = 11;
             assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
 
-            SearchResult secondResult = results.get(1);
+            FindResult secondResult = results.get(1);
             int expectedSecondLineNum = 35;
             assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
             int expectedSecondMatchStartIndex = 24;
@@ -444,20 +444,20 @@ public class SearcherTest {
     }
 
     @Test
-    public final void testSearchMultiLineStringWithLinesBefore() {
-        SearchSettings settings = getSettings();
+    public final void testFindMultiLineStringWithLinesBefore() {
+        FindSettings settings = getSettings();
         settings.setLinesBefore(2);
-        Searcher searcher = new Searcher(settings);
+        Finder finder = new Finder(settings);
         String contents;
         try {
             InputStream is = getClass().getResourceAsStream(testFilePath);
             contents = FileUtil.getStreamContents(is);
             //System.out.println("contents: " + contents);
-            List<SearchResult> results = searcher.searchMultiLineString(contents);
+            List<FindResult> results = finder.findMultiLineString(contents);
 
             assertEquals(results.size(), 2);
 
-            SearchResult firstResult = results.get(0);
+            FindResult firstResult = results.get(0);
             System.out.println("firstResult:\n" + firstResult);
             int expectedFirstLineNum = 29;
             assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
@@ -466,7 +466,7 @@ public class SearcherTest {
             int expectedFirstMatchEndIndex = 11;
             assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
 
-            SearchResult secondResult = results.get(1);
+            FindResult secondResult = results.get(1);
             System.out.println("secondResult:\n" + secondResult);
             int expectedSecondLineNum = 35;
             assertEquals(secondResult.getLineNum(), expectedSecondLineNum);

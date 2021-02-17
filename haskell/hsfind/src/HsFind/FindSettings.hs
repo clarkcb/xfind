@@ -1,15 +1,15 @@
-module HsSearch.SearchSettings
-  ( SearchSettings(..)
-  , defaultSearchSettings
+module HsFind.FindSettings
+  ( FindSettings(..)
+  , defaultFindSettings
   , newExtensions
   ) where
 
 import Data.List.Split (splitOn)
 
-import HsSearch.FileTypes
-import HsSearch.FileUtil (normalizeExtension)
+import HsFind.FileTypes
+import HsFind.FileUtil (normalizeExtension)
 
-data SearchSettings = SearchSettings {
+data FindSettings = FindSettings {
                                        archivesOnly :: Bool
                                      , colorize :: Bool
                                      , debug :: Bool
@@ -31,7 +31,7 @@ data SearchSettings = SearchSettings {
                                      , listFiles :: Bool
                                      , listLines :: Bool
                                      , maxLineLength :: Int
-                                     , multiLineSearch :: Bool
+                                     , multiLineFind :: Bool
                                      , outArchiveExtensions :: [String]
                                      , outArchiveFilePatterns :: [String]
                                      , outDirPatterns :: [String]
@@ -44,16 +44,16 @@ data SearchSettings = SearchSettings {
                                      , printUsage :: Bool
                                      , printVersion :: Bool
                                      , recursive :: Bool
-                                     , searchArchives :: Bool
-                                     , searchPatterns :: [String]
+                                     , findArchives :: Bool
+                                     , findPatterns :: [String]
                                      , startPath :: String
                                      , textFileEncoding :: String
                                      , uniqueLines :: Bool
                                      , verbose :: Bool
                                      } deriving (Show, Eq)
 
-defaultSearchSettings :: SearchSettings
-defaultSearchSettings = SearchSettings {
+defaultFindSettings :: FindSettings
+defaultFindSettings = FindSettings {
                                          archivesOnly=False
                                        , colorize=True
                                        , debug=False
@@ -75,7 +75,7 @@ defaultSearchSettings = SearchSettings {
                                        , listFiles=False
                                        , listLines=False
                                        , maxLineLength=200
-                                       , multiLineSearch=False
+                                       , multiLineFind=False
                                        , outArchiveExtensions=[]
                                        , outArchiveFilePatterns=[]
                                        , outDirPatterns=[]
@@ -88,8 +88,8 @@ defaultSearchSettings = SearchSettings {
                                        , printUsage=False
                                        , printVersion=False
                                        , recursive=True
-                                       , searchArchives=False
-                                       , searchPatterns=[]
+                                       , findArchives=False
+                                       , findPatterns=[]
                                        , startPath=""
                                        , textFileEncoding="utf-8"
                                        , uniqueLines=False

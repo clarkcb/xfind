@@ -1,12 +1,12 @@
 #include <catch2/catch.hpp>
-#include "SearchOptions.h"
+#include "FindOptions.h"
 
-TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
-    auto* options = new cppsearch::SearchOptions();
-    char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-s"), const_cast<char *>("Searcher"),
+TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
+    auto* options = new cppfind::FindOptions();
+    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-s"), const_cast<char *>("Finder"),
                      const_cast<char *>(".") };
     int argc = 4;
-    cppsearch::SearchSettings* settings = options->settings_from_args(argc, argv);
+    cppfind::FindSettings* settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings->archivesonly());
     REQUIRE(!settings->debug());
     REQUIRE(settings->excludehidden());
@@ -17,11 +17,11 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     REQUIRE(!settings->listfiles());
     REQUIRE(!settings->listlines());
     REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilinesearch());
+    REQUIRE(!settings->multilineoption-REMOVE());
     REQUIRE(settings->printresults());
     REQUIRE(!settings->printusage());
     REQUIRE(!settings->printversion());
-    REQUIRE(!settings->searcharchives());
+    REQUIRE(!settings->findarchives());
     REQUIRE(!settings->uniquelines());
     REQUIRE(!settings->verbose());
 
@@ -36,20 +36,20 @@ TEST_CASE("Get SearchSettings from minimal args", "[SearchOptions]") {
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_filepatterns()->empty());
 
-    std::vector<cppsearch::SearchPattern*>* searchpatterns = settings->searchpatterns();
-    REQUIRE(searchpatterns->size() == 1);
-    REQUIRE(searchpatterns->at(0)->pattern() == "Searcher");
+    std::vector<cppfind::FindPattern*>* findpatterns = settings->findpatterns();
+    REQUIRE(findpatterns->size() == 1);
+    REQUIRE(findpatterns->at(0)->pattern() == "Finder");
 
     auto* startpath = settings->startpath();
     REQUIRE(*startpath == ".");
 }
 
-TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
-    auto* options = new cppsearch::SearchOptions();
-    char* argv[] = { const_cast<char *>("cppsearch"), const_cast<char *>("-x"), const_cast<char *>("java,scala"),
-                     const_cast<char *>("-s"), const_cast<char *>("Searcher"), const_cast<char *>(".") };
+TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
+    auto* options = new cppfind::FindOptions();
+    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-x"), const_cast<char *>("java,scala"),
+                     const_cast<char *>("-s"), const_cast<char *>("Finder"), const_cast<char *>(".") };
     int argc = 6;
-    cppsearch::SearchSettings* settings = options->settings_from_args(argc, argv);
+    cppfind::FindSettings* settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings->archivesonly());
     REQUIRE(!settings->debug());
     REQUIRE(settings->excludehidden());
@@ -60,11 +60,11 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     REQUIRE(!settings->listfiles());
     REQUIRE(!settings->listlines());
     REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilinesearch());
+    REQUIRE(!settings->multilineoption-REMOVE());
     REQUIRE(settings->printresults());
     REQUIRE(!settings->printusage());
     REQUIRE(!settings->printversion());
-    REQUIRE(!settings->searcharchives());
+    REQUIRE(!settings->findarchives());
     REQUIRE(!settings->uniquelines());
     REQUIRE(!settings->verbose());
 
@@ -83,22 +83,22 @@ TEST_CASE("Get SearchSettings from valid args", "[SearchOptions]") {
     REQUIRE(in_exts->at(0) == "java");
     REQUIRE(in_exts->at(1) == "scala");
 
-    std::vector<cppsearch::SearchPattern*>* searchpatterns = settings->searchpatterns();
-    REQUIRE(searchpatterns->size() == 1);
-    REQUIRE(searchpatterns->at(0)->pattern() == "Searcher");
+    std::vector<cppfind::FindPattern*>* findpatterns = settings->findpatterns();
+    REQUIRE(findpatterns->size() == 1);
+    REQUIRE(findpatterns->at(0)->pattern() == "Finder");
 
     auto* startpath = settings->startpath();
     REQUIRE(*startpath == ".");
 }
 
-TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
+TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     std::string json = R"(
 {
-    "startpath": "~/src/xsearch/",
+    "startpath": "~/src/xfind/",
     "in-ext": ["js","ts"],
     "out-dirpattern": ["build", "node_module", "tests", "typings"],
     "out-filepattern": ["gulpfile", "\\.min\\."],
-    "searchpattern": "Searcher",
+    "findpattern": "Finder",
     "linesbefore": 2,
     "linesafter": 2,
     "debug": true,
@@ -107,11 +107,11 @@ TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
 }
 )";
 
-    auto *options = new cppsearch::SearchOptions();
-    auto *settings = new cppsearch::SearchSettings();
+    auto *options = new cppfind::FindOptions();
+    auto *settings = new cppfind::FindSettings();
     options->settings_from_json(json, settings);
 
-    REQUIRE(*(settings->startpath()) == "~/src/xsearch/");
+    REQUIRE(*(settings->startpath()) == "~/src/xfind/");
     REQUIRE(settings->in_extensions()->size() == 2);
     REQUIRE(settings->in_extensions()->at(0) == "js");
     REQUIRE(settings->in_extensions()->at(1) == "ts");
@@ -123,8 +123,8 @@ TEST_CASE("Get SearchSettings from JSON", "[SearchOptions]") {
     REQUIRE(settings->out_filepatterns()->size() == 2);
     REQUIRE(settings->out_filepatterns()->at(0)->pattern() == "gulpfile");
     REQUIRE(settings->out_filepatterns()->at(1)->pattern() == "\\.min\\.");
-    REQUIRE(settings->searchpatterns()->size() == 1);
-    REQUIRE(settings->searchpatterns()->at(0)->pattern() == "Searcher");
+    REQUIRE(settings->findpatterns()->size() == 1);
+    REQUIRE(settings->findpatterns()->at(0)->pattern() == "Finder");
     REQUIRE(settings->linesbefore() == 2);
     REQUIRE(settings->linesafter() == 2);
     REQUIRE(settings->debug() == true);

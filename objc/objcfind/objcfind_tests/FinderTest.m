@@ -1,6 +1,6 @@
 //
-//  SearcherTest.m
-//  objcsearch_tests
+//  FinderTest.m
+//  objcfind_tests
 //
 //  Created by Cary Clark on 11/10/18.
 //  Copyright © 2018 Cary Clark. All rights reserved.
@@ -8,14 +8,14 @@
 
 #import <XCTest/XCTest.h>
 #import "FileUtil.h"
-#import "Searcher.h"
-#import "SearchSettings.h"
+#import "Finder.h"
+#import "FindSettings.h"
 
-@interface SearcherTests : XCTestCase
+@interface FinderTests : XCTestCase
 @property NSString *testFilePath;
 @end
 
-@implementation SearcherTests
+@implementation FinderTests
 
 - (void)setUp {
     [super setUp];
@@ -27,321 +27,321 @@
 }
 
 /*************************************************************
- * isSearchDir tests
+ * isFindDir tests
  *************************************************************/
-- (void)testIsSearchDir_SingleDot_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindDir_SingleDot_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchDir:@"."]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindDir:@"."]);
 }
 
-- (void)testIsSearchDir_DoubleDot_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindDir_DoubleDot_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchDir:@".."]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindDir:@".."]);
 }
 
-- (void)testIsSearchDir_IsHidden_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindDir_IsHidden_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isSearchDir:@".git"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isFindDir:@".git"]);
 }
 
-- (void)testIsSearchDir_IsHiddenIncludeHidden_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindDir_IsHiddenIncludeHidden_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings setExcludeHidden:false];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchDir:@".git"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindDir:@".git"]);
 }
 
-- (void)testIsSearchDir_NoPatterns_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindDir_NoPatterns_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchDir:@"/Users"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindDir:@"/Users"]);
 }
 
-- (void)testIsSearchDir_MatchesInPattern_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addInDirPattern:@"Search"];
+- (void)testIsFindDir_MatchesInPattern_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addInDirPattern:@"Find"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchDir:@"CsSearch"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindDir:@"CsFind"]);
 }
 
-- (void)testIsSearchDir_MatchesOutPattern_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addOutDirPattern:@"Search"];
+- (void)testIsFindDir_MatchesOutPattern_False {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addOutDirPattern:@"Find"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isSearchDir:@"CsSearch"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isFindDir:@"CsFind"]);
 }
 
-- (void)testIsSearchDir_DoesNotMatchOutPattern_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addOutDirPattern:@"SearchFiles"];
+- (void)testIsFindDir_DoesNotMatchOutPattern_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addOutDirPattern:@"FindFiles"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchDir:@"CsSearch"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindDir:@"CsFind"]);
 }
 
 /*************************************************************
- * isSearchFile tests
+ * isFindFile tests
  *************************************************************/
-- (void)testIsSearchFile_NoExtensionsNoPatterns_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindFile_NoExtensionsNoPatterns_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_MatchesInExtension_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindFile_MatchesInExtension_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInExtension:@"cs"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_DoesNotMatchInExtension_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindFile_DoesNotMatchInExtension_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInExtension:@"java"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isFindFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_MatchesOutExtension_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindFile_MatchesOutExtension_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutExtension:@"cs"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isFindFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_DoesNotMatchOutExtension_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsFindFile_DoesNotMatchOutExtension_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutExtension:@"java"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_MatchesInPattern_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addInFilePattern:@"Search"];
+- (void)testIsFindFile_MatchesInPattern_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addInFilePattern:@"Find"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchFile:@"Searcher.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindFile:@"Finder.cs"]);
 }
 
-- (void)testIsSearchFile_DoesNotMatchInPattern_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addInFilePattern:@"Search"];
+- (void)testIsFindFile_DoesNotMatchInPattern_False {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addInFilePattern:@"Find"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isFindFile:@"FileUtil.cs"]);
 }
 
-- (void)testIsSearchFile_MatchesOutPattern_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addOutFilePattern:@"Search"];
+- (void)testIsFindFile_MatchesOutPattern_False {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addOutFilePattern:@"Find"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isSearchFile:@"Searcher.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isFindFile:@"Finder.cs"]);
 }
 
-- (void)testIsSearchFile_DoesNotMatchOutPattern_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings addOutFilePattern:@"Search"];
+- (void)testIsFindFile_DoesNotMatchOutPattern_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addOutFilePattern:@"Find"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isSearchFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isFindFile:@"FileUtil.cs"]);
 }
 
 /*************************************************************
- * isArchiveSearchFile tests
+ * isArchiveFindFile tests
  *************************************************************/
-- (void)testIsArchiveSearchFile_NoExtensionsNoPatterns_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_NoExtensionsNoPatterns_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_MatchesInExtension_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_MatchesInExtension_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInArchiveExtension:@"zip"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_DoesNotMatchInExtension_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_DoesNotMatchInExtension_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInArchiveExtension:@"gz"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_MatchesOutExtension_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_MatchesOutExtension_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutArchiveExtension:@"zip"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_DoesNotMatchOutExtension_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_DoesNotMatchOutExtension_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutArchiveExtension:@"gz"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_MatchesInPattern_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_MatchesInPattern_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInArchiveFilePattern:@"arch"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_DoesNotMatchInPattern_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_DoesNotMatchInPattern_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInArchiveFilePattern:@"archives"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_MatchesOutPattern_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_MatchesOutPattern_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutArchiveFilePattern:@"arch"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder isArchiveFindFile:@"archive.zip"]);
 }
 
-- (void)testIsArchiveSearchFile_DoesNotMatchOutPattern_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testIsArchiveFindFile_DoesNotMatchOutPattern_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutArchiveFilePattern:@"archives"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher isArchiveSearchFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder isArchiveFindFile:@"archive.zip"]);
 }
 
 /*************************************************************
  * FilterFile tests
  *************************************************************/
 - (void)testFilterFile_IsHidden_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher filterFile:@".gitignore"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder filterFile:@".gitignore"]);
 }
 
 - (void)testFilterFile_IsHiddenIncludeHidden_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings setExcludeHidden:false];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher filterFile:@".gitignore"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder filterFile:@".gitignore"]);
 }
 
-- (void)testFilterFile_ArchiveNoSearchArchives_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testFilterFile_ArchiveNoFindArchives_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher filterFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder filterFile:@"archive.zip"]);
 }
 
-- (void)testFilterFile_ArchiveSearchArchives_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings setSearchArchives:true];
+- (void)testFilterFile_ArchiveFindArchives_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings setFindArchives:true];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher filterFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder filterFile:@"archive.zip"]);
 }
 
-- (void)testFilterFile_IsArchiveSearchFile_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings setSearchArchives:true];
+- (void)testFilterFile_IsArchiveFindFile_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings setFindArchives:true];
     [settings addInArchiveExtension:@"zip"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher filterFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder filterFile:@"archive.zip"]);
 }
 
-- (void)testFilterFile_NotIsArchiveSearchFile_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
-    [settings setSearchArchives:true];
+- (void)testFilterFile_NotIsArchiveFindFile_True {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings setFindArchives:true];
     [settings addOutArchiveExtension:@"zip"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher filterFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder filterFile:@"archive.zip"]);
 }
 
 - (void)testFilterFile_ArchiveFileArchivesOnly_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings setArchivesOnly:true];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher filterFile:@"archive.zip"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder filterFile:@"archive.zip"]);
 }
 
 - (void)testFilterFile_NoExtensionsNoPatterns_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+    FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher filterFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder filterFile:@"FileUtil.cs"]);
 }
 
-- (void)testFilterFile_IsSearchFile_True {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testFilterFile_IsFindFile_True {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addInExtension:@"cs"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert([searcher filterFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert([finder filterFile:@"FileUtil.cs"]);
 }
 
-- (void)testFilterFile_NotIsSearchFile_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testFilterFile_NotIsFindFile_False {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutExtension:@"cs"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher filterFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder filterFile:@"FileUtil.cs"]);
 }
 
 - (void)testFilterFile_NonArchiveFileArchivesOnly_False {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings setArchivesOnly:true];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
-    XCTAssert(![searcher filterFile:@"FileUtil.cs"]);
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    XCTAssert(![finder filterFile:@"FileUtil.cs"]);
 }
 
 /*************************************************************
- * searchMultiLineString tests
+ * findMultiLineString tests
  *************************************************************/
-- (void)testSearchMultiLineString {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+- (void)testFindMultiLineString {
+    FindSettings *settings = [[FindSettings alloc] init];
     [settings setStartPath:@"."];
-    [settings addSearchPattern:@"Searcher"];
+    [settings addFindPattern:@"Finder"];
     NSError *error = nil;
-    Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     
-    NSArray<SearchResult*> *results = [searcher searchFilePath:self.testFilePath error:&error];
+    NSArray<FindResult*> *results = [finder findFilePath:self.testFilePath error:&error];
 
     XCTAssert([results count] == 2);
 
-    SearchResult *firstResult = [results objectAtIndex:0];
+    FindResult *firstResult = [results objectAtIndex:0];
     int expectedFirstLineNum = 29;
     XCTAssert([firstResult lineNum] == expectedFirstLineNum);
     int expectedFirstMatchStartIndex = 3;
@@ -349,7 +349,7 @@
     int expectedFirstMatchEndIndex = 11;
     XCTAssert([firstResult matchEndIndex] == expectedFirstMatchEndIndex);
 
-    SearchResult *secondResult = [results objectAtIndex:1];
+    FindResult *secondResult = [results objectAtIndex:1];
     int expectedSecondLineNum = 35;
     XCTAssert([secondResult lineNum] == expectedSecondLineNum);
     int expectedSecondMatchStartIndex = 24;

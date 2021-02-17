@@ -1,9 +1,9 @@
 #import <Foundation/Foundation.h>
-#import "Searcher.h"
-#import "SearchOptions.h"
-#import "SearchResult.h"
-#import "SearchResultFormatter.h"
-#import "SearchSettings.h"
+#import "Finder.h"
+#import "FindOptions.h"
+#import "FindResult.h"
+#import "FindResultFormatter.h"
+#import "FindSettings.h"
 
 NSArray* argvToNSArray(int argc, const char * argv[]) {
     NSMutableArray *args = [NSMutableArray array];
@@ -14,15 +14,15 @@ NSArray* argvToNSArray(int argc, const char * argv[]) {
     return [NSArray arrayWithArray:args];
 }
 
-void handleError(NSError *error, SearchOptions *options) {
+void handleError(NSError *error, FindOptions *options) {
     logMsg(@"");
     logError(error.domain);
     [options usage:1];
 }
 
-NSArray<NSString*>* getMatchingDirs(NSArray<SearchResult*> *results) {
+NSArray<NSString*>* getMatchingDirs(NSArray<FindResult*> *results) {
     NSMutableSet<NSString*> *dirs = [NSMutableSet set];
-    for (SearchResult *r in results) {
+    for (FindResult *r in results) {
         [dirs addObject:[[[r file] description] stringByDeletingLastPathComponent]];
     }
     NSArray *dirArr = [NSArray arrayWithArray:[dirs allObjects]];
@@ -31,9 +31,9 @@ NSArray<NSString*>* getMatchingDirs(NSArray<SearchResult*> *results) {
     }];
 }
 
-NSArray<NSString*>* getMatchingFiles(NSArray<SearchResult*> *results) {
+NSArray<NSString*>* getMatchingFiles(NSArray<FindResult*> *results) {
     NSMutableSet<NSString*> *files = [NSMutableSet set];
-    for (SearchResult *r in results) {
+    for (FindResult *r in results) {
         [files addObject:[[r file] description]];
     }
     NSArray *fileArr = [NSArray arrayWithArray:[files allObjects]];
@@ -42,9 +42,9 @@ NSArray<NSString*>* getMatchingFiles(NSArray<SearchResult*> *results) {
     }];
 }
 
-NSArray<NSString*>* getMatchingLines(NSArray<SearchResult*> *results, SearchSettings *settings) {
+NSArray<NSString*>* getMatchingLines(NSArray<FindResult*> *results, FindSettings *settings) {
     NSMutableArray<NSString*> *lines = [NSMutableArray array];
-    for (SearchResult *r in results) {
+    for (FindResult *r in results) {
         [lines addObject:[[r line] stringByTrimmingCharactersInSet:[NSCharacterSet characterSetWithCharactersInString:@" \t\r\n"]]];
     }
     if (settings.uniqueLines) {
@@ -60,14 +60,14 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         NSError *error = nil;
 
-        SearchOptions *options = [[SearchOptions alloc] init];
+        FindOptions *options = [[FindOptions alloc] init];
 
         NSArray *args = argvToNSArray(argc, argv);
         //for (NSString *arg in args) {
         //    logMsg([NSString stringWithFormat:@"arg: %@", arg]);
         //}
 
-        SearchSettings *settings = [options settingsFromArgs:args error:&error];
+        FindSettings *settings = [options settingsFromArgs:args error:&error];
 
         if (error) {
             handleError(error, options);
@@ -81,22 +81,22 @@ int main(int argc, const char * argv[]) {
             [options usage:0];
         }
 
-        Searcher *searcher = [[Searcher alloc] initWithSettings:settings error:&error];
+        Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
 
         if (error) {
             handleError(error, options);
         }
 
-        NSArray<SearchResult *> *results = [searcher search:&error];
+        NSArray<FindResult *> *results = [finder find:&error];
 
         if (error) {
             handleError(error, options);
         }
 
         if (settings.printResults) {
-            SearchResultFormatter *formatter = [[SearchResultFormatter alloc] initWithSettings:settings];
-            logMsg([NSString stringWithFormat:@"\nSearch results (%lu):", [results count]]);
-            for (SearchResult *r in results) {
+            FindResultFormatter *formatter = [[FindResultFormatter alloc] initWithSettings:settings];
+            logMsg([NSString stringWithFormat:@"\nFind results (%lu):", [results count]]);
+            for (FindResult *r in results) {
                 logMsg([formatter format:r]);
             }
         }

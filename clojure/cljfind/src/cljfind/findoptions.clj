@@ -1,12 +1,12 @@
 ;;; ############################################################################
 ;;;
-;;; searchoptions.clj
+;;; findoptions.clj
 ;;;
 ;;; Defines the available command-line options and utility functions
 ;;;
 ;;; ############################################################################
 
-(ns cljsearch.searchoptions
+(ns cljfind.findoptions
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
@@ -16,48 +16,48 @@
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [clojure.xml :only (parse)]
-        [cljsearch.common :only (log-msg)]
-        [cljsearch.fileutil :only (expand-path)]
-        [cljsearch.searchsettings :only
-         (->SearchSettings DEFAULT-SETTINGS add-extension add-filetype add-pattern
+        [cljfind.common :only (log-msg)]
+        [cljfind.fileutil :only (expand-path)]
+        [cljfind.findsettings :only
+         (->FindSettings DEFAULT-SETTINGS add-extension add-filetype add-pattern
             set-archivesonly set-debug set-num)]))
 
-(defrecord SearchOption [short-arg long-arg desc])
+(defrecord FindOption [short-arg long-arg desc])
 
 (defn get-sortarg [so]
   (if (= "" (:short-arg so))
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
 
-(defn get-searchoptions-from-xml []
-  (let [socontents (slurp (io/resource "searchoptions.xml"))
+(defn get-findoptions-from-xml []
+  (let [socontents (slurp (io/resource "findoptions.xml"))
         sostream (java.io.ByteArrayInputStream. (.getBytes socontents))
-        searchoptions (filter #(= :searchoption (:tag %)) (xml-seq (parse sostream)))
-        longnames (map :long (map :attrs searchoptions))
-        shortnames (map :short (map :attrs searchoptions))
+        findoptions (filter #(= :findoption (:tag %)) (xml-seq (parse sostream)))
+        longnames (map :long (map :attrs findoptions))
+        shortnames (map :short (map :attrs findoptions))
         longshortmap (zipmap longnames shortnames)
-        descs (map #(.trim (first %)) (map :content searchoptions))
+        descs (map #(.trim (first %)) (map :content findoptions))
         longdescmap (zipmap longnames descs)
         get-short (fn [l] (get longshortmap l))
         get-desc (fn [l] (get longdescmap l))]
-    (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
+    (sort-by get-sortarg (map #(FindOption. (get-short %) % (get-desc %)) longnames))))
 
-(defn get-searchoptions-from-json []
-  (let [contents (slurp (io/resource "searchoptions.json"))
-        searchoptions-objs (:searchoptions (json/read-str contents :key-fn keyword))
-        longnames (map #(get % :long) searchoptions-objs)
-        shortnames (map #(get % :short "") searchoptions-objs)
+(defn get-findoptions-from-json []
+  (let [contents (slurp (io/resource "findoptions.json"))
+        findoptions-objs (:findoptions (json/read-str contents :key-fn keyword))
+        longnames (map #(get % :long) findoptions-objs)
+        shortnames (map #(get % :short "") findoptions-objs)
         longshortmap (zipmap longnames shortnames)
-        descs (map #(.trim %) (map :desc searchoptions-objs))
+        descs (map #(.trim %) (map :desc findoptions-objs))
         longdescmap (zipmap longnames descs)
         get-short (fn [l] (get longshortmap l))
         get-desc (fn [l] (get longdescmap l))]
-    (sort-by get-sortarg (map #(SearchOption. (get-short %) % (get-desc %)) longnames))))
+    (sort-by get-sortarg (map #(FindOption. (get-short %) % (get-desc %)) longnames))))
 
-(def OPTIONS (get-searchoptions-from-json))
+(def OPTIONS (get-findoptions-from-json))
 
 (defn print-option [opt]
-  (let [format-string "(SearchOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
+  (let [format-string "(FindOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
     (println
       (format format-string (:short-arg opt) (:long-arg opt) (:desc opt)))))
 
@@ -87,7 +87,7 @@
     :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
     :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-linesafterpatterns))
     :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-linesbeforepatterns))
-    :searchpattern (fn [settings s] (add-pattern settings s :searchpatterns))
+    :findpattern (fn [settings s] (add-pattern settings s :findpatterns))
   })
 
 (def bool-flag-action-map
@@ -102,14 +102,14 @@
     :listdirs (fn [settings b] (assoc settings :listdirs b))
     :listfiles (fn [settings b] (assoc settings :listfiles b))
     :listlines (fn [settings b] (assoc settings :listlines b))
-    :multilinesearch (fn [settings b] (assoc settings :multilinesearch b))
+    :multilineoption-REMOVE (fn [settings b] (assoc settings :multilineoption-REMOVE b))
     :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
     :noprintmatches (fn [settings b] (assoc settings :printresults (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
-    :nosearcharchives (fn [settings b] (assoc settings :searcharchives (not b)))
+    :nofindarchives (fn [settings b] (assoc settings :findarchives (not b)))
     :printmatches (fn [settings b] (assoc settings :printresults b))
     :recursive (fn [settings b] (assoc settings :recursive b))
-    :searcharchives (fn [settings b] (assoc settings :searcharchives b))
+    :findarchives (fn [settings b] (assoc settings :findarchives b))
     :uniquelines (fn [settings b] (assoc settings :uniquelines b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))
@@ -194,7 +194,7 @@
   (let [longest (longest-length OPTIONS)]
     (str
       "Usage:\n"
-      " cljsearch [options] -s <searchpattern> <startpath>\n\n"
+      " cljfind [options] -s <findpattern> <startpath>\n\n"
       "Options:\n "
       (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
 

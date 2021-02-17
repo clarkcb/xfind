@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 
-@interface SearchOption : NSObject
+@interface FindOption : NSObject
 
 @property NSString *shortArg;
 @property NSString *longArg;

@@ -1,7 +1,7 @@
 /*
- * searchfile.js
+ * findfile.js
  *
- * encapsulates a file to be searched
+ * encapsulates a file to be found
  */
 
 "use strict";
@@ -10,7 +10,7 @@ import {FileType} from './filetype';
 
 const path = require('path');
 
-export class SearchFile {
+export class FindFile {
     containerSeparator = '!';
     containers: string[] = [];
     pathname: string;

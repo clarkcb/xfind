@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# searcher.py
+# finder.py
 #
-# class Searcher: executes a file search
+# class Finder: executes a file find
 #
 ###############################################################################
 import asyncio
@@ -16,9 +16,9 @@ from typing import Deque, List, TextIO
 from .common import log
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
-from .searchfile import SearchFile
-from .searchresult import SearchResult
-from .searchsettings import SearchSettings, PatternSet
+from .findfile import FindFile
+from .findresult import FindResult
+from .findsettings import FindSettings, PatternSet
 
 TARFILE_MODULE_AVAILABLE = True
 ZIPFILE_MODULE_AVAILABLE = True
@@ -35,23 +35,23 @@ except ImportError as ie:
     ZIPFILE_MODULE_AVAILABLE = False
 
 
-class Searcher(object):
-    """a class to search files"""
+class Finder(object):
+    """a class to find files"""
 
     __slots__ = ['settings', 'filetypes']
 
-    def __init__(self, settings: SearchSettings):
+    def __init__(self, settings: FindSettings):
         self.settings = settings
         self.__validate_settings()
         self.filetypes = FileTypes()
 
     def __validate_settings(self):
-        """Assert required settings in SearchSettings instance"""
+        """Assert required settings in FindSettings instance"""
         assert self.settings.startpath, 'Startpath not defined'
         assert os.path.exists(self.settings.startpath), 'Startpath not found'
         assert os.access(self.settings.startpath,
                          os.R_OK), 'Startpath not readable'
-        assert self.settings.searchpatterns, 'No search patterns defined'
+        assert self.settings.findpatterns, 'No find patterns defined'
         assert self.settings.linesafter >= 0, 'Invalid linesafter'
         assert self.settings.linesbefore >= 0, 'Invalid linesafter'
         try:
@@ -60,7 +60,7 @@ class Searcher(object):
             raise AssertionError('Invalid encoding: {}'.format(
                 self.settings.textfileencoding))
 
-    def is_search_dir(self, d: str) -> bool:
+    def is_find_dir(self, d: str) -> bool:
         path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
         if self.settings.excludehidden:
             for p in path_elems:
@@ -74,7 +74,7 @@ class Searcher(object):
             return False
         return True
 
-    def is_archive_search_file(self, f: str) -> bool:
+    def is_archive_find_file(self, f: str) -> bool:
         ext = FileUtil.get_extension(f)
         if self.settings.in_archiveextensions and \
                 ext not in self.settings.in_archiveextensions:
@@ -90,7 +90,7 @@ class Searcher(object):
             return False
         return True
 
-    def is_search_file(self, sf: SearchFile) -> bool:
+    def is_find_file(self, sf: FindFile) -> bool:
         if (self.settings.in_filepatterns and
             not matches_any_pattern(sf.filename, self.settings.in_filepatterns)) \
                 or (self.settings.out_filepatterns and
@@ -108,110 +108,110 @@ class Searcher(object):
             return False
         return True
 
-    def get_search_files(self) -> List[SearchFile]:
-        """Get the list of all files to search in single walkthrough"""
+    def get_find_files(self) -> List[FindFile]:
+        """Get the list of all files to find in single walkthrough"""
         if self.settings.debug:
-            log('get_search_files()')
-        searchfiles = []
+            log('get_find_files()')
+        findfiles = []
         if os.path.isdir(self.settings.startpath):
-            if self.is_search_dir(os.path.abspath(self.settings.startpath)):
+            if self.is_find_dir(os.path.abspath(self.settings.startpath)):
                 if self.settings.recursive:
                     for root, dirs, files in os.walk(self.settings.startpath):
-                        if self.is_search_dir(root):
-                            new_searchfiles = [
-                                SearchFile(path=root,
+                        if self.is_find_dir(root):
+                            new_findfiles = [
+                                FindFile(path=root,
                                            filename=f,
                                            filetype=self.filetypes.get_filetype(f))
                                 for f in files
                             ]
-                            searchfiles.extend(
-                                [sf for sf in new_searchfiles if self.filter_file(sf)])
+                            findfiles.extend(
+                                [sf for sf in new_findfiles if self.filter_file(sf)])
         elif os.path.isfile(self.settings.startpath):
             d, f = os.path.split(self.settings.startpath)
-            sf = SearchFile(path=d, filename=f,
+            sf = FindFile(path=d, filename=f,
                             filetype=self.filetypes.get_filetype(f))
             if self.filter_file(sf):
-                searchfiles.append(sf)
-        return sorted(searchfiles, key=lambda sf: (sf.path, sf.filename))
+                findfiles.append(sf)
+        return sorted(findfiles, key=lambda sf: (sf.path, sf.filename))
 
-    def filter_file(self, sf: SearchFile) -> bool:
+    def filter_file(self, sf: FindFile) -> bool:
         if FileUtil.is_hidden(sf.filename) and self.settings.excludehidden:
             return False
         if sf.filetype == FileType.ARCHIVE:
-            return self.settings.searcharchives and \
-                self.is_archive_search_file(sf.filename)
+            return self.settings.findarchives and \
+                self.is_archive_find_file(sf.filename)
         return not self.settings.archivesonly and \
-            self.is_search_file(sf)
+            self.is_find_file(sf)
 
-    async def search(self) -> List[SearchResult]:
-        """Search files to find instances of searchpattern(s) starting from
+    async def find(self) -> List[FindResult]:
+        """Find files to find instances of findpattern(s) starting from
            startpath"""
-        # get the searchfiles (now a single walkthrough)
-        searchfiles = self.get_search_files()
+        # get the findfiles (now a single walkthrough)
+        findfiles = self.get_find_files()
         if self.settings.verbose:
-            searchdirs = sorted(list({sf.path for sf in searchfiles}))
-            log('\nDirectories to be searched ({0}):'.format(len(searchdirs)))
-            for d in searchdirs:
+            finddirs = sorted(list({sf.path for sf in findfiles}))
+            log('\nDirectories to be found ({0}):'.format(len(finddirs)))
+            for d in finddirs:
                 log(d)
-            log('\n\nFiles to be searched ({0}):'.format(len(searchfiles)))
-            for f in searchfiles:
+            log('\n\nFiles to be found ({0}):'.format(len(findfiles)))
+            for f in findfiles:
                 log(str(f))
             log("")
 
         # TODO: move to properties or settings
         batch_size = 250
         offset = 0
-        search_results = []
-        while offset < len(searchfiles):
-            to_index = min(offset + batch_size, len(searchfiles))
+        find_results = []
+        while offset < len(findfiles):
+            to_index = min(offset + batch_size, len(findfiles))
             tasks = []
-            for sf in searchfiles[offset:to_index]:
-                tasks.append(asyncio.create_task(self.search_file(sf)))
+            for sf in findfiles[offset:to_index]:
+                tasks.append(asyncio.create_task(self.find_file(sf)))
             for coroutine in asyncio.as_completed(tasks):
-                search_results.extend(await coroutine)
+                find_results.extend(await coroutine)
             offset += batch_size
-        return search_results
+        return find_results
 
-    async def search_file(self, sf: SearchFile) -> List[SearchResult]:
-        """Search in a file, return number of matches found"""
-        if not self.filetypes.is_searchable_file(sf.filename):
+    async def find_file(self, sf: FindFile) -> List[FindResult]:
+        """Find in a file, return number of matches found"""
+        if not self.filetypes.is_findable_file(sf.filename):
             if self.settings.verbose:
-                log('Skipping unsearchable file: {0}'.format(sf))
+                log('Skipping unfindable file: {0}'.format(sf))
             return []
-        search_results = []
+        find_results = []
         if sf.filetype in self.filetypes.TEXT_TYPES:
-            search_results = self.search_text_file(sf)
+            find_results = self.find_text_file(sf)
         elif sf.filetype == FileType.BINARY:
-            search_results = self.search_binary_file(sf)
-        elif sf.filetype == FileType.ARCHIVE and self.settings.searcharchives:
+            find_results = self.find_binary_file(sf)
+        elif sf.filetype == FileType.ARCHIVE and self.settings.findarchives:
             try:
-                search_results = self.search_archive_file(sf)
+                find_results = self.find_archive_file(sf)
             except IOError as e:
                 log('IOError: {0!s}: {1!s}'.format(e, sf))
-        return search_results
+        return find_results
 
-    def search_binary_file(self, sf: SearchFile) -> List[SearchResult]:
-        """Search a binary file"""
+    def find_binary_file(self, sf: FindFile) -> List[FindResult]:
+        """Find a binary file"""
         if self.settings.debug:
-            log("Searching binary file {0!s}".format(sf.relativepath))
-        search_results = []
+            log("Finding binary file {0!s}".format(sf.relativepath))
+        find_results = []
         try:
             fo = open(sf.relativepath, mode='r', encoding='latin-1')
-            search_results = self.__search_binary_file_obj(sf, fo)
+            find_results = self.__find_binary_file_obj(sf, fo)
             fo.close()
         except IOError as e:
             log('IOError: {0!s}: {1!s}'.format(e, sf))
-        return search_results
+        return find_results
 
-    def __search_binary_file_obj(
-            self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
-        """Search a binary file file object"""
+    def __find_binary_file_obj(
+            self, sf: FindFile, fo: TextIO) -> List[FindResult]:
+        """Find a binary file file object"""
         contents = fo.read()
-        search_results = []
-        for p in self.settings.searchpatterns:
+        find_results = []
+        for p in self.settings.findpatterns:
             matches = p.finditer(contents)
             for m in matches:
-                search_result = SearchResult(pattern=p.pattern,
+                find_result = FindResult(pattern=p.pattern,
                                              file=sf,
                                              linenum=0,
                                              line='',
@@ -219,57 +219,57 @@ class Searcher(object):
                                              match_end_index=m.end() + 1,
                                              lines_before=[],
                                              lines_after=[])
-                search_results.append(search_result)
+                find_results.append(find_result)
                 if self.settings.firstmatch:
                     break
-        return search_results
+        return find_results
 
-    def search_text_file(self, sf: SearchFile) -> List[SearchResult]:
-        """Search a text file"""
+    def find_text_file(self, sf: FindFile) -> List[FindResult]:
+        """Find a text file"""
         if self.settings.debug:
-            log("Searching text file {0!s}".format(sf.relativepath))
-        search_results = []
+            log("Finding text file {0!s}".format(sf.relativepath))
+        find_results = []
         try:
             fo = open(sf.relativepath, mode='r',
                       encoding=self.settings.textfileencoding)
-            search_results = self.__search_text_file_obj(sf, fo)
+            find_results = self.__find_text_file_obj(sf, fo)
             fo.close()
         except IOError as e:
             log('IOError: {0!s}: {1}'.format(e, sf))
-        return search_results
+        return find_results
 
-    def __search_text_file_obj(self, sf: SearchFile,
-                               fo: TextIO) -> List[SearchResult]:
-        """Search a text file file object"""
-        if self.settings.multilinesearch:
-            return self.__search_text_file_contents(sf, fo)
-        return self.__search_text_file_lines(sf, fo)
+    def __find_text_file_obj(self, sf: FindFile,
+                               fo: TextIO) -> List[FindResult]:
+        """Find a text file file object"""
+        if self.settings.multilineoption-REMOVE:
+            return self.__find_text_file_contents(sf, fo)
+        return self.__find_text_file_lines(sf, fo)
 
-    def __search_text_file_contents(
-            self, sf: SearchFile, fo: TextIO) -> List[SearchResult]:
-        """Search a given text file object contents all at once
+    def __find_text_file_contents(
+            self, sf: FindFile, fo: TextIO) -> List[FindResult]:
+        """Find a given text file object contents all at once
         """
         contents = fo.read()
-        search_results = self.search_multiline_string(contents)
-        for search_result in search_results:
-            search_result.file = sf
-        return search_results
+        find_results = self.find_multiline_string(contents)
+        for find_result in find_results:
+            find_result.file = sf
+        return find_results
 
-    def search_multiline_string(self, s: str) -> List[SearchResult]:
-        """Search a given searchable string possibly containing multiple newlines
-           and return a list of SearchResult instances (without filename)
+    def find_multiline_string(self, s: str) -> List[FindResult]:
+        """Find a given findable string possibly containing multiple newlines
+           and return a list of FindResult instances (without filename)
         """
-        search_results = []
+        find_results = []
         new_line_indices = get_new_line_indices(s)
         start_line_indices = [0] + [i + 1 for i in new_line_indices]
         end_line_indices = new_line_indices + [len(s) - 1]
-        for p in self.settings.searchpatterns:
-            search_results.extend(
-                self.search_multiline_string_for_pattern(s,
+        for p in self.settings.findpatterns:
+            find_results.extend(
+                self.find_multiline_string_for_pattern(s,
                                                          p,
                                                          start_line_indices,
                                                          end_line_indices))
-        return search_results
+        return find_results
 
     def get_lines_after_to_or_until(
             self, s: str, after_start_indices: List[int]):
@@ -281,7 +281,7 @@ class Searcher(object):
         lines_after = []
         match_indices = {}
         for p in lines_after_patterns:
-            m = p.search(s[after_start_indices[0]:])
+            m = p.find(s[after_start_indices[0]:])
             if m:
                 match_indices[p] = m.start() + after_start_indices[0]
         if match_indices:
@@ -309,15 +309,15 @@ class Searcher(object):
     def do_lines_after(self) -> bool:
         return self.settings.linesafter > 0 or self.do_lines_after_or_until()
 
-    def search_multiline_string_for_pattern(self, s: str, p, start_line_indices: List[int],
-                                            end_line_indices: List[int]) -> List[SearchResult]:
-        """Search a given searchable string possibly containing multiple newlines
-           and a specific pattern and return a list of SearchResult instances
+    def find_multiline_string_for_pattern(self, s: str, p, start_line_indices: List[int],
+                                            end_line_indices: List[int]) -> List[FindResult]:
+        """Find a given findable string possibly containing multiple newlines
+           and a specific pattern and return a list of FindResult instances
            (without filename)
         """
         lines_before = deque()
         lines_after = deque()
-        search_results = []
+        find_results = []
         matches = p.finditer(s)
         for m in matches:
             m_line_start_index = 0
@@ -354,17 +354,17 @@ class Searcher(object):
                 continue
             match_start_index = m.start() - m_line_start_index + 1
             match_end_index = m.end() - m_line_start_index + 1
-            search_result = SearchResult(pattern=p.pattern,
+            find_result = FindResult(pattern=p.pattern,
                                          linenum=before_line_count + 1,
                                          line=line,
                                          match_start_index=match_start_index,
                                          match_end_index=match_end_index,
                                          lines_before=list(lines_before),
                                          lines_after=list(lines_after))
-            search_results.append(search_result)
+            find_results.append(find_result)
             if self.settings.firstmatch:
                 break
-        return search_results
+        return find_results
 
     def lines_before_match(self, lines_before: Deque[str]) -> bool:
         return lines_match(lines_before,
@@ -378,15 +378,15 @@ class Searcher(object):
                            self.settings.in_linesafterpatterns,
                            self.settings.out_linesafterpatterns)
 
-    def __search_text_file_lines(self, sf: SearchFile, fo: TextIO):
-        """Search in a given text file object by line and return the results"""
-        search_results = self.search_line_iterator(fo)
-        for search_result in search_results:
-            search_result.file = sf
-        return search_results
+    def __find_text_file_lines(self, sf: FindFile, fo: TextIO):
+        """Find in a given text file object by line and return the results"""
+        find_results = self.find_line_iterator(fo)
+        for find_result in find_results:
+            find_result.file = sf
+        return find_results
 
-    def search_line_iterator(self, lines: TextIO) -> List[SearchResult]:
-        """Consecutively search the lines of a line iterator and return results"""
+    def find_line_iterator(self, lines: TextIO) -> List[FindResult]:
+        """Consecutively find the lines of a line iterator and return results"""
         pattern_match_dict = {}
         linenum = 0
         lines_before = deque()
@@ -415,7 +415,7 @@ class Searcher(object):
                         lines_after.append(line_after.rstrip('\r\n'))
                     except StopIteration:
                         break
-            for p in self.settings.searchpatterns:
+            for p in self.settings.findpatterns:
                 if self.settings.firstmatch and p in pattern_match_dict:
                     continue
                 # find all matches for the line
@@ -471,15 +471,15 @@ class Searcher(object):
                                 sr_lines_after = list(lines_after)[:-1]
                         else:
                             sr_lines_after = list(lines_after)
-                        search_result = \
-                            SearchResult(pattern=p.pattern,
+                        find_result = \
+                            FindResult(pattern=p.pattern,
                                          linenum=linenum,
                                          line=line,
                                          match_start_index=match.start() + 1,
                                          match_end_index=match.end() + 1,
                                          lines_before=list(lines_before),
                                          lines_after=sr_lines_after)
-                        results.append(search_result)
+                        results.append(find_result)
                         pattern_match_dict[p] = 1
             if self.settings.linesbefore:
                 if len(lines_before) == self.settings.linesbefore:
@@ -488,18 +488,18 @@ class Searcher(object):
                     lines_before.append(line)
         return results
 
-    def search_archive_file(self, sf: SearchFile) -> List[SearchResult]:
-        """Search an archive (compressed) file"""
+    def find_archive_file(self, sf: FindFile) -> List[FindResult]:
+        """Find an archive (compressed) file"""
         ext = FileUtil.get_extension(sf.filename)
         if not ext:
             return []
         if self.settings.debug:
-            log('Searching {0} file {1}'.format(ext, sf))
-        search_results = []
+            log('Finding {0} file {1}'.format(ext, sf))
+        find_results = []
         if ext in ('zip', 'jar', 'war', 'ear'):
             # handle zip files
             try:
-                search_results = self.search_zip_file(sf)
+                find_results = self.find_zip_file(sf)
             except zipfile.BadZipfile as e:
                 if not ext == 'ear':
                     log('BadZipfile: {0!s}: {1}'.format(e, sf))
@@ -507,85 +507,85 @@ class Searcher(object):
                 tarfile.is_tarfile(sf.relativepath):
             # handle tar files
             try:
-                search_results = self.search_tar_file(sf, ext)
+                find_results = self.find_tar_file(sf, ext)
             except Exception as e:
-                msg = 'Exception while searching a tar file {0}: {1!s}'
+                msg = 'Exception while finding a tar file {0}: {1!s}'
                 log(msg.format(sf, e))
         else:
-            msg = 'Searching archive file type "{0}" is unsupported at this time'
+            msg = 'Finding archive file type "{0}" is unsupported at this time'
             log(msg.format(ext))
-        return search_results
+        return find_results
 
-    def search_zip_file(self, sf: SearchFile) -> List[SearchResult]:
-        """Search an archive file compressed with zip"""
+    def find_zip_file(self, sf: FindFile) -> List[FindResult]:
+        """Find an archive file compressed with zip"""
         zfo = zipfile.ZipFile(sf.relativepath, 'r')
-        return self._search_zipfile_obj(sf, zfo)
+        return self._find_zipfile_obj(sf, zfo)
 
-    def _search_zipfile_obj(self, sf: SearchFile, zfo) -> List[SearchResult]:
-        """Search a ZipFile object"""
-        search_results = []
+    def _find_zipfile_obj(self, sf: FindFile, zfo) -> List[FindResult]:
+        """Find a ZipFile object"""
+        find_results = []
         zipinfos = zfo.infolist()
         for zipinfo in zipinfos:
-            if zipinfo.file_size and self.is_search_file(zipinfo.filename):
+            if zipinfo.file_size and self.is_find_file(zipinfo.filename):
                 zio = StringIO(zfo.read(zipinfo.filename))
                 zio.seek(0)
-                nsf = SearchFile(containers=sf.containers + [sf.relativepath])
+                nsf = FindFile(containers=sf.containers + [sf.relativepath])
                 nsf.path, nsf.filename = os.path.split(zipinfo.filename)
-                search_results.extend(self.__search_zipinfo_obj(nsf, zio))
-        return search_results
+                find_results.extend(self.__find_zipinfo_obj(nsf, zio))
+        return find_results
 
-    def __search_zipinfo_obj(self, sf: SearchFile, zio) -> List[SearchResult]:
-        """Search a ZipInfo object"""
+    def __find_zipinfo_obj(self, sf: FindFile, zio) -> List[FindResult]:
+        """Find a ZipInfo object"""
         filetype = self.filetypes.get_filetype(sf.filename)
         if filetype == FileType.TEXT:
-            return self.__search_text_file_obj(sf, zio)
+            return self.__find_text_file_obj(sf, zio)
         elif filetype == FileType.BINARY:
-            return self.__search_binary_file_obj(sf, zio)
+            return self.__find_binary_file_obj(sf, zio)
         return []
 
-    def search_tar_file(self, sf, ext) -> List[SearchResult]:
-        """Search a tar file"""
-        search_results = []
+    def find_tar_file(self, sf, ext) -> List[FindResult]:
+        """Find a tar file"""
+        find_results = []
         try:
             tfo = tarfile.open(sf.relativepath, 'r:' + ext)
-            search_results = self.__search_tarfile_obj(sf, tfo)
+            find_results = self.__find_tarfile_obj(sf, tfo)
             tfo.close()
         except tarfile.CompressionError as e:
             if not ext == 'tgz':
                 msg = 'CompressionError while trying to open {0}: {1!s}'
                 log(msg.format(sf, e))
-        return search_results
+        return find_results
 
-    def __search_tarfile_obj(self, sf: SearchFile, tar) -> List[SearchResult]:
-        """Search a tarfile object"""
-        search_results = []
+    def __find_tarfile_obj(self, sf: FindFile, tar) -> List[FindResult]:
+        """Find a tarfile object"""
+        find_results = []
         for tarinfo in tar:
-            if tarinfo.isfile() and self.is_search_file(tarinfo.name):
+            if tarinfo.isfile() and self.is_find_file(tarinfo.name):
                 tio = StringIO(tar.extractfile(tarinfo).read())
                 tio.seek(0)
-                nsf = SearchFile(containers=sf.containers + [sf.relativepath])
+                nsf = FindFile(containers=sf.containers + [sf.relativepath])
                 nsf.path, nsf.filename = os.path.split(tarinfo.name)
-                search_results.extend(self.__search_tarinfo_obj(nsf, tio))
-        return search_results
+                find_results.extend(self.__find_tarinfo_obj(nsf, tio))
+        return find_results
 
-    def __search_tarinfo_obj(self, sf: SearchFile, tio) -> List[SearchResult]:
-        """Search a tarinfo object"""
+    def __find_tarinfo_obj(self, sf: FindFile, tio) -> List[FindResult]:
+        """Find a tarinfo object"""
         filetype = self.filetypes.get_filetype(sf.filename)
         if filetype == FileType.TEXT:
             if self.settings.debug:
-                log('searchable text file in tar: {0}'.format(sf.filename))
-            return self.__search_text_file_obj(sf, tio)
+                log('findable text file in tar: {0}'.format(sf.filename))
+            return self.__find_text_file_obj(sf, tio)
         elif filetype == FileType.BINARY:
             if self.settings.debug:
-                log('searchable binary file in tar: {0}'.format(sf.filename))
-            return self.__search_binary_file_obj(sf, tio)
+                log('findable binary file in tar: {0}'.format(sf.filename))
+            return self.__find_binary_file_obj(sf, tio)
         return []
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet):
     """Returns true if string s matches any pattern in pattern_set, else
        false"""
-    return any(p.search(s) for p in pattern_set)
+    return any(p.find(s) for p in pattern_set)
 
 
 def any_matches_any_pattern(slist, pattern_set: PatternSet):

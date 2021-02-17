@@ -1,10 +1,10 @@
-package scalasearch
+package scalafind
 
 import java.io.File
 
-object SearchMain {
+object FindMain {
 
-  private def cmpSearchResults(r1: SearchResult, r2: SearchResult): Boolean = {
+  private def cmpFindResults(r1: FindResult, r2: FindResult): Boolean = {
     val (path1, fileName1) = r1.file match {
       case Some(file1) =>
         (FileUtil.pathOrCurrent(file1.file.getParentFile).getPath, file1.file.getName.toLowerCase)
@@ -30,13 +30,13 @@ object SearchMain {
     }
   }
 
-  def printSearchResults(results: Seq[SearchResult], settings: SearchSettings): Unit = {
+  def printFindResults(results: Seq[FindResult], settings: FindSettings): Unit = {
     // TODO: add includePattern setting in formatted output
-    val formatter = new SearchResultFormatter(settings)
-    results.sortWith(cmpSearchResults).foreach(r => Common.log(formatter.format(r)))
+    val formatter = new FindResultFormatter(settings)
+    results.sortWith(cmpFindResults).foreach(r => Common.log(formatter.format(r)))
   }
 
-  def getMatchingDirs(results: Seq[SearchResult]): Seq[File] = {
+  def getMatchingDirs(results: Seq[FindResult]): Seq[File] = {
     results
       .filter(_.file.isDefined)
       .map(r => FileUtil.pathOrCurrent(r.file.get.file.getParentFile))
@@ -44,7 +44,7 @@ object SearchMain {
       .toVector
   }
 
-  def getMatchingFiles(results: Seq[SearchResult]): Seq[File] = {
+  def getMatchingFiles(results: Seq[FindResult]): Seq[File] = {
     results
       .filter(_.file.isDefined)
       .map(_.file.get.file)
@@ -52,7 +52,7 @@ object SearchMain {
       .toVector
   }
 
-  def getMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Seq[String] = {
+  def getMatchingLines(results: Seq[FindResult], settings: FindSettings): Seq[String] = {
     val allLines = results.flatMap(r => r.line).map(_.trim)
     if (settings.uniqueLines) {
       allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
@@ -61,19 +61,19 @@ object SearchMain {
     }
   }
 
-  def printMatchingDirs(results: Seq[SearchResult]): Unit = {
+  def printMatchingDirs(results: Seq[FindResult]): Unit = {
     val dirs = getMatchingDirs(results)
     Common.log("\nDirectories with matches (%d):".format(dirs.length))
     dirs.foreach(f => Common.log(f.toString))
   }
 
-  def printMatchingFiles(results: Seq[SearchResult]): Unit = {
+  def printMatchingFiles(results: Seq[FindResult]): Unit = {
     val files = getMatchingFiles(results)
     Common.log("\nFiles with matches (%d):".format(files.length))
     files.foreach(f => Common.log(f.toString))
   }
 
-  def printMatchingLines(results: Seq[SearchResult], settings: SearchSettings): Unit = {
+  def printMatchingLines(results: Seq[FindResult], settings: FindSettings): Unit = {
     val lines = getMatchingLines(results, settings)
     val hdr =
       if (settings.uniqueLines) {
@@ -87,7 +87,7 @@ object SearchMain {
 
   def main(args: Array[String]) {
     try {
-      val settings = SearchOptions.settingsFromArgs(args)
+      val settings = FindOptions.settingsFromArgs(args)
 
       if (settings.debug) {
         Common.log("settings: " + settings)
@@ -95,25 +95,25 @@ object SearchMain {
 
       if (settings.printUsage) {
         Common.log("")
-        SearchOptions.usage(0)
+        FindOptions.usage(0)
       }
 
-      val searcher = new Searcher(settings)
-      val results = searcher.search()
+      val finder = new Finder(settings)
+      val results = finder.find()
 
       if (settings.printResults) {
-        Common.log("\nSearch results (%d):".format(results.length))
-        printSearchResults(results, settings)
+        Common.log("\nFind results (%d):".format(results.length))
+        printFindResults(results, settings)
       }
       if (settings.listDirs) { printMatchingDirs(results) }
       if (settings.listFiles) { printMatchingFiles(results) }
       if (settings.listLines) { printMatchingLines(results, settings) }
 
     } catch {
-      case e: SearchException =>
+      case e: FindException =>
         Common.log("")
         Common.logError(e.getMessage + "\n")
-        SearchOptions.usage(1)
+        FindOptions.usage(1)
     }
   }
 }

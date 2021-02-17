@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 import org.scalatest.funsuite.AnyFunSuite
 
@@ -14,7 +14,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(!FileTypes.isBinaryFile(archiveFile))
         assert(!FileTypes.isCodeFile(archiveFile))
         assert(FileTypes.isArchiveFile(archiveFile))
-        assert(FileTypes.isSearchableFile(archiveFile))
+        assert(FileTypes.isFindableFile(archiveFile))
         assert(!FileTypes.isTextFile(archiveFile))
         assert(!FileTypes.isUnknownFile(archiveFile))
         val fileType = FileTypes.getFileType(archiveFile)
@@ -32,7 +32,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(FileTypes.isBinaryFile(binFile))
         assert(!FileTypes.isCodeFile(binFile))
         assert(!FileTypes.isArchiveFile(binFile))
-        assert(FileTypes.isSearchableFile(binFile))
+        assert(FileTypes.isFindableFile(binFile))
         assert(!FileTypes.isTextFile(binFile))
         assert(!FileTypes.isUnknownFile(binFile))
         val fileType = FileTypes.getFileType(binFile)
@@ -52,7 +52,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(!FileTypes.isBinaryFile(codeFile))
         assert(FileTypes.isCodeFile(codeFile))
         assert(!FileTypes.isArchiveFile(codeFile))
-        assert(FileTypes.isSearchableFile(codeFile))
+        assert(FileTypes.isFindableFile(codeFile))
         assert(FileTypes.isTextFile(codeFile))
         assert(!FileTypes.isUnknownFile(codeFile))
         val fileType = FileTypes.getFileType(codeFile)
@@ -60,20 +60,20 @@ class FileTypesTest extends AnyFunSuite {
     }
   }
 
-  test("test nosearch extensions") {
+  test("test nofind extensions") {
     """aif aifc aiff au avi bmp cab cur db dib dmg eot gif icns ico
       |idlk ief iso jpe jpeg jpg m3u m4a m4p mov movie mp3 mp4 mpe mpeg mpg mxu
       |ogg otf pdf pict png qt ra ram rm rpm snd suo tif tiff tte ttf wav
       |woff""".
       stripMargin.split("\\s+").foreach { ext =>
-        val nosearchFile = new File("nosearch." + ext).getName
-        println("nosearchFile: " + nosearchFile)
-        assert(!FileTypes.isBinaryFile(nosearchFile))
-        assert(!FileTypes.isArchiveFile(nosearchFile))
-        assert(!FileTypes.isSearchableFile(nosearchFile))
-        assert(!FileTypes.isTextFile(nosearchFile))
-        assert(FileTypes.isUnknownFile(nosearchFile))
-        val fileType = FileTypes.getFileType(nosearchFile)
+        val nofindFile = new File("nofind." + ext).getName
+        println("nofindFile: " + nofindFile)
+        assert(!FileTypes.isBinaryFile(nofindFile))
+        assert(!FileTypes.isArchiveFile(nofindFile))
+        assert(!FileTypes.isFindableFile(nofindFile))
+        assert(!FileTypes.isTextFile(nofindFile))
+        assert(FileTypes.isUnknownFile(nofindFile))
+        val fileType = FileTypes.getFileType(nofindFile)
         assert(fileType == FileType.Unknown)
     }
   }
@@ -94,7 +94,7 @@ class FileTypesTest extends AnyFunSuite {
         println("textFile: " + textFile)
         assert(!FileTypes.isBinaryFile(textFile))
         assert(!FileTypes.isArchiveFile(textFile))
-        assert(FileTypes.isSearchableFile(textFile))
+        assert(FileTypes.isFindableFile(textFile))
         assert(FileTypes.isTextFile(textFile))
         assert(!FileTypes.isUnknownFile(textFile))
         val fileType = FileTypes.getFileType(textFile)
@@ -109,7 +109,7 @@ class FileTypesTest extends AnyFunSuite {
         println("unknownFile: " + unknownFile)
         assert(!FileTypes.isBinaryFile(unknownFile))
         assert(!FileTypes.isArchiveFile(unknownFile))
-        assert(!FileTypes.isSearchableFile(unknownFile))
+        assert(!FileTypes.isFindableFile(unknownFile))
         assert(!FileTypes.isTextFile(unknownFile))
         assert(FileTypes.isUnknownFile(unknownFile))
         val fileType = FileTypes.getFileType(unknownFile)
@@ -128,7 +128,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(!FileTypes.isBinaryFile(xmlFile))
         assert(!FileTypes.isCodeFile(xmlFile))
         assert(!FileTypes.isArchiveFile(xmlFile))
-        assert(FileTypes.isSearchableFile(xmlFile))
+        assert(FileTypes.isFindableFile(xmlFile))
         assert(FileTypes.isTextFile(xmlFile))
         assert(!FileTypes.isUnknownFile(xmlFile))
         val fileType = FileTypes.getFileType(xmlFile)

@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
@@ -7,18 +7,18 @@ import java.io.IOException;
 
 import static org.junit.Assert.*;
 
-public class SearchOptionsTest {
+public class FindOptionsTest {
 
-    public SearchOptionsTest() {
+    public FindOptionsTest() {
 
     }
 
     @Test
     public final void testSettingsFromMinimalArgs() {
-        String[] args = new String[]{"-s", "Search", "."};
+        String[] args = new String[]{"-s", "Find", "."};
         try {
-            SearchOptions searchOptions = new SearchOptions();
-            SearchSettings settings = searchOptions.settingsFromArgs(args);
+            FindOptions findOptions = new FindOptions();
+            FindSettings settings = findOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
             assertTrue(settings.getExcludeHidden());
@@ -29,15 +29,15 @@ public class SearchOptionsTest {
             assertFalse(settings.getListFiles());
             assertFalse(settings.getListLines());
             assertEquals(settings.getMaxLineLength(), 150);
-            assertFalse(settings.getMultiLineSearch());
+            assertFalse(settings.getMultiLineFind());
             assertTrue(settings.getPrintResults());
             assertFalse(settings.getPrintUsage());
             assertFalse(settings.getPrintVersion());
-            assertFalse(settings.getSearchArchives());
+            assertFalse(settings.getFindArchives());
             assertFalse(settings.getUniqueLines());
             assertFalse(settings.getVerbose());
-        } catch (SearchException e) {
-            System.out.println("SearchException: " + e.getMessage());
+        } catch (FindException e) {
+            System.out.println("FindException: " + e.getMessage());
             fail();
         } catch (ParseException | IOException e) {
             System.out.println("Exception: " + e.getMessage());
@@ -47,17 +47,17 @@ public class SearchOptionsTest {
 
     @Test
     public final void testSettingsFromValidArgs() {
-        String[] args = new String[]{"-x", "java,scala", "-s", "Search", "."};
+        String[] args = new String[]{"-x", "java,scala", "-s", "Find", "."};
         try {
-            SearchOptions searchOptions = new SearchOptions();
-            SearchSettings settings = searchOptions.settingsFromArgs(args);
+            FindOptions findOptions = new FindOptions();
+            FindSettings settings = findOptions.settingsFromArgs(args);
             assertEquals(settings.getInExtensions().size(), 2);
             assertTrue(settings.getInExtensions().contains("java"));
             assertTrue(settings.getInExtensions().contains("scala"));
-            assertEquals(settings.getSearchPatterns().size(), 1);
-            assertEquals("Search", settings.getSearchPatterns().toArray()[0].toString());
-        } catch (SearchException e) {
-            System.out.println("SearchException: " + e.getMessage());
+            assertEquals(settings.getFindPatterns().size(), 1);
+            assertEquals("Find", settings.getFindPatterns().toArray()[0].toString());
+        } catch (FindException e) {
+            System.out.println("FindException: " + e.getMessage());
             fail();
         } catch (ParseException | IOException e) {
             System.out.println("Exception: " + e.getMessage());
@@ -68,11 +68,11 @@ public class SearchOptionsTest {
     @Test
     public final void testSettingsFromJson() {
         StringBuilder json = new StringBuilder("{\n")
-                .append("  \"startpath\": \"~/src/xsearch/\",\n")
+                .append("  \"startpath\": \"~/src/xfind/\",\n")
                 .append("  \"in-ext\": [\"js\",\"ts\"],\n")
                 .append("  \"out-dirpattern\": \"node_module\",\n")
                 .append("  \"out-filepattern\": [\"temp\"],\n")
-                .append("  \"searchpattern\": \"Searcher\",\n")
+                .append("  \"findpattern\": \"Finder\",\n")
                 .append("  \"linesbefore\": 2,\n")
                 .append("  \"linesafter\": 2,\n")
                 .append("  \"debug\": true,\n")
@@ -80,11 +80,11 @@ public class SearchOptionsTest {
                 .append("  \"includehidden\": false,\n")
                 .append("}");
         try {
-            SearchOptions searchOptions = new SearchOptions();
-            SearchSettings settings = new SearchSettings();
-            searchOptions.settingsFromJson(json.toString(), settings);
+            FindOptions findOptions = new FindOptions();
+            FindSettings settings = new FindSettings();
+            findOptions.settingsFromJson(json.toString(), settings);
 
-            assertEquals("~/src/xsearch/", settings.getStartPath());
+            assertEquals("~/src/xfind/", settings.getStartPath());
 
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("js"));
@@ -96,8 +96,8 @@ public class SearchOptionsTest {
             assertEquals(1, settings.getOutFilePatterns().size());
             assertEquals("temp", settings.getOutFilePatterns().toArray()[0].toString());
 
-            assertEquals(1, settings.getSearchPatterns().size());
-            assertEquals("Searcher", settings.getSearchPatterns().toArray()[0].toString());
+            assertEquals(1, settings.getFindPatterns().size());
+            assertEquals("Finder", settings.getFindPatterns().toArray()[0].toString());
 
             assertEquals(2, settings.getLinesBefore());
             assertEquals(2, settings.getLinesAfter());

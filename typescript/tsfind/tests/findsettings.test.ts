@@ -1,14 +1,14 @@
 /*
- * searchsettings.test.js
+ * findsettings.test.js
  *
- * Some tests of searchsettings.js
+ * Some tests of findsettings.js
  */
 
-import {SearchSettings} from '../src/searchsettings';
+import {FindSettings} from '../src/findsettings';
 
-describe('testing searchsettings', () => {
+describe('testing findsettings', () => {
     it('testDefaultSettings', () => {
-        const settings: SearchSettings = new SearchSettings();
+        const settings: FindSettings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.debug).toBeFalsy();
         expect(settings.excludeHidden).toBeTruthy();
@@ -19,19 +19,19 @@ describe('testing searchsettings', () => {
         expect(settings.listFiles).toBeFalsy();
         expect(settings.listLines).toBeFalsy();
         expect(settings.maxLineLength).toEqual(150);
-        expect(settings.multilineSearch).toBeFalsy();
+        expect(settings.multilineFind).toBeFalsy();
         expect(settings.printResults).toBeFalsy();
         expect(settings.printUsage).toBeFalsy();
         expect(settings.printVersion).toBeFalsy();
         expect(settings.recursive).toBeTruthy();
-        expect(settings.searchArchives).toBeFalsy();
+        expect(settings.findArchives).toBeFalsy();
         expect(settings.startPath).toEqual('');
         expect(settings.uniqueLines).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
     });
 
     it('testAddExtensionsAsCommaSeparatedString', () => {
-        const settings: SearchSettings = new SearchSettings();
+        const settings: FindSettings = new FindSettings();
         settings.addInExtensions("js,java");
         expect(settings.inExtensions.length).toEqual(2);
         expect(settings.inExtensions[0]).toEqual('js');
@@ -39,39 +39,39 @@ describe('testing searchsettings', () => {
     });
 
     it('testAddExtensionsAsArray', () => {
-        const settings: SearchSettings = new SearchSettings();
+        const settings: FindSettings = new FindSettings();
         settings.addInExtensions(["js","java"]);
         expect(settings.inExtensions.length).toEqual(2);
         expect(settings.inExtensions[0]).toEqual('js');
         expect(settings.inExtensions[1]).toEqual('java');
     });
 
-    it('testAddSearchPattern', () => {
-        const settings: SearchSettings = new SearchSettings();
-        settings.addSearchPatterns("Searcher");
-        expect(settings.searchPatterns.length).toEqual(1);
-        expect(settings.searchPatterns[0].source).toEqual('Searcher');
+    it('testAddFindPattern', () => {
+        const settings: FindSettings = new FindSettings();
+        settings.addFindPatterns("Finder");
+        expect(settings.findPatterns.length).toEqual(1);
+        expect(settings.findPatterns[0].source).toEqual('Finder');
     });
 
-    it('testAddSearchPatterns', () => {
-        const settings: SearchSettings = new SearchSettings();
-        settings.addSearchPatterns(["Searcher", "FileTypes"]);
-        expect(settings.searchPatterns.length).toEqual(2);
-        expect(settings.searchPatterns[0].source).toEqual('Searcher');
-        expect(settings.searchPatterns[1].source).toEqual('FileTypes');
+    it('testAddFindPatterns', () => {
+        const settings: FindSettings = new FindSettings();
+        settings.addFindPatterns(["Finder", "FileTypes"]);
+        expect(settings.findPatterns.length).toEqual(2);
+        expect(settings.findPatterns[0].source).toEqual('Finder');
+        expect(settings.findPatterns[1].source).toEqual('FileTypes');
     });
 
     it('testSetArchivesOnly', () => {
-        const settings: SearchSettings = new SearchSettings();
+        const settings: FindSettings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
-        expect(settings.searchArchives).toBeFalsy();
+        expect(settings.findArchives).toBeFalsy();
         settings.setArchivesOnly(true);
         expect(settings.archivesOnly).toBeTruthy();
-        expect(settings.searchArchives).toBeTruthy();
+        expect(settings.findArchives).toBeTruthy();
     });
 
     it('testSetDebug', () => {
-        const settings: SearchSettings = new SearchSettings();
+        const settings: FindSettings = new FindSettings();
         expect(settings.debug).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
         settings.setDebug(true);

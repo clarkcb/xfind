@@ -1,14 +1,14 @@
 <?php declare(strict_types=1);
 
-namespace phpsearch;
+namespace phpfind;
 
 require_once __DIR__ . '/../autoload.php';
 //include_once __DIR__ . '/common.php';
 
 /**
- * Class SearchOptions
+ * Class FindOptions
  */
-class SearchOptions
+class FindOptions
 {
     private $options;
 
@@ -17,145 +17,145 @@ class SearchOptions
         $this->options = array();
 
         $this->arg_action_map = [
-            'encoding' => function (string $s, SearchSettings $settings) {
+            'encoding' => function (string $s, FindSettings $settings) {
                 $settings->textfileencoding = $s;
             },
-            'in-archiveext' => function (string $s, SearchSettings $settings) {
+            'in-archiveext' => function (string $s, FindSettings $settings) {
                 $settings->add_exts($s, $settings->in_archiveextensions);
             },
-            'in-archivefilepattern' => function (string $s, SearchSettings $settings) {
+            'in-archivefilepattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->in_archivefilepatterns);
             },
-            'in-dirpattern' => function (string $s, SearchSettings $settings) {
+            'in-dirpattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->in_dirpatterns);
             },
-            'in-ext' => function (string $s, SearchSettings $settings) {
+            'in-ext' => function (string $s, FindSettings $settings) {
                 $settings->add_exts($s, $settings->in_extensions);
             },
-            'in-filepattern' => function (string $s, SearchSettings $settings) {
+            'in-filepattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->in_filepatterns);
             },
-            'in-filetype' => function (string $s, SearchSettings $settings) {
+            'in-filetype' => function (string $s, FindSettings $settings) {
                 $settings->add_filetypes($s, $settings->in_filetypes);
             },
-            'in-linesafterpattern' => function (string $s, SearchSettings $settings) {
+            'in-linesafterpattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->in_linesafterpatterns);
             },
-            'in-linesbeforepattern' => function (string $s, SearchSettings $settings) {
+            'in-linesbeforepattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->in_linesbeforepatterns);
             },
-            'linesafter' => function (string $s, SearchSettings $settings) {
+            'linesafter' => function (string $s, FindSettings $settings) {
                 $settings->linesafter = intval($s);
             },
-            'linesaftertopattern' => function (string $s, SearchSettings $settings) {
+            'linesaftertopattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->linesaftertopatterns);
             },
-            'linesafteruntilpattern' => function (string $s, SearchSettings $settings) {
+            'linesafteruntilpattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->linesafteruntilpatterns);
             },
-            'linesbefore' => function (string $s, SearchSettings $settings) {
+            'linesbefore' => function (string $s, FindSettings $settings) {
                 $settings->linesbefore = intval($s);
             },
-            'maxlinelength' => function (string $s, SearchSettings $settings) {
+            'maxlinelength' => function (string $s, FindSettings $settings) {
                 $settings->maxlinelength = intval($s);
             },
-            'out-archiveext' => function (string $s, SearchSettings $settings) {
+            'out-archiveext' => function (string $s, FindSettings $settings) {
                 $settings->add_exts($s, $settings->out_archiveextensions);
             },
-            'out-archivefilepattern' => function (string $s, SearchSettings $settings) {
+            'out-archivefilepattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->out_archivefilepatterns);
             },
-            'out-dirpattern' => function (string $s, SearchSettings $settings) {
+            'out-dirpattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->out_dirpatterns);
             },
-            'out-ext' => function (string $s, SearchSettings $settings) {
+            'out-ext' => function (string $s, FindSettings $settings) {
                 $settings->add_exts($s, $settings->out_extensions);
             },
-            'out-filepattern' => function (string $s, SearchSettings $settings) {
+            'out-filepattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->out_filepatterns);
             },
-            'out-filetype' => function (string $s, SearchSettings $settings) {
+            'out-filetype' => function (string $s, FindSettings $settings) {
                 $settings->add_filetypes($s, $settings->out_filetypes);
             },
-            'out-linesafterpattern' => function (string $s, SearchSettings $settings) {
+            'out-linesafterpattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->out_linesafterpatterns);
             },
-            'out-linesbeforepattern' => function (string $s, SearchSettings $settings) {
+            'out-linesbeforepattern' => function (string $s, FindSettings $settings) {
                 $settings->add_patterns($s, $settings->out_linesbeforepatterns);
             },
-            'searchpattern' => function (string $s, SearchSettings $settings) {
-                $settings->add_patterns($s, $settings->searchpatterns);
+            'findpattern' => function (string $s, FindSettings $settings) {
+                $settings->add_patterns($s, $settings->findpatterns);
             },
-            'settings-file' => function (string $s, SearchSettings $settings) {
+            'settings-file' => function (string $s, FindSettings $settings) {
                 $this->settings_from_file($s, $settings);
             }
         ];
 
         $this->bool_flag_action_map = [
-            'allmatches' => function (bool $b, SearchSettings $settings) {
+            'allmatches' => function (bool $b, FindSettings $settings) {
                 $settings->firstmatch = !$b;
             },
-            'archivesonly' => function (bool $b, SearchSettings $settings) {
+            'archivesonly' => function (bool $b, FindSettings $settings) {
                 $settings->set_archivesonly($b);
             },
-            'colorize' => function (bool $b, SearchSettings $settings) {
+            'colorize' => function (bool $b, FindSettings $settings) {
                 $settings->colorize = $b;
             },
-            'debug' => function (bool $b, SearchSettings $settings) {
+            'debug' => function (bool $b, FindSettings $settings) {
                 $settings->set_debug($b);
             },
-            'excludehidden' => function (bool $b, SearchSettings $settings) {
+            'excludehidden' => function (bool $b, FindSettings $settings) {
                 $settings->excludehidden = $b;
             },
-            'firstmatch' => function (bool $b, SearchSettings $settings) {
+            'firstmatch' => function (bool $b, FindSettings $settings) {
                 $settings->firstmatch = $b;
             },
-            'help' => function (bool $b, SearchSettings $settings) {
+            'help' => function (bool $b, FindSettings $settings) {
                 $settings->printusage = $b;
             },
-            'includehidden' => function (bool $b, SearchSettings $settings) {
+            'includehidden' => function (bool $b, FindSettings $settings) {
                 $settings->excludehidden = !$b;
             },
-            'listdirs' => function (bool $b, SearchSettings $settings) {
+            'listdirs' => function (bool $b, FindSettings $settings) {
                 $settings->listdirs = $b;
             },
-            'listfiles' => function (bool $b, SearchSettings $settings) {
+            'listfiles' => function (bool $b, FindSettings $settings) {
                 $settings->listfiles = $b;
             },
-            'listlines' => function (bool $b, SearchSettings $settings) {
+            'listlines' => function (bool $b, FindSettings $settings) {
                 $settings->listlines = $b;
             },
-            'multilinesearch' => function (bool $b, SearchSettings $settings) {
-                $settings->multilinesearch = $b;
+            'multilineoption-REMOVE' => function (bool $b, FindSettings $settings) {
+                $settings->multilineoption-REMOVE = $b;
             },
-            'nocolorize' => function (bool $b, SearchSettings $settings) {
+            'nocolorize' => function (bool $b, FindSettings $settings) {
                 $settings->colorize = !$b;
             },
-            'noprintmatches' => function (bool $b, SearchSettings $settings) {
+            'noprintmatches' => function (bool $b, FindSettings $settings) {
                 $settings->printresults = !$b;
             },
-            'norecursive' => function (bool $b, SearchSettings $settings) {
+            'norecursive' => function (bool $b, FindSettings $settings) {
                 $settings->recursive = !$b;
             },
-            'nosearcharchives' => function (bool $b, SearchSettings $settings) {
-                $settings->searcharchives = !$b;
+            'nofindarchives' => function (bool $b, FindSettings $settings) {
+                $settings->findarchives = !$b;
             },
-            'printmatches' => function (bool $b, SearchSettings $settings) {
+            'printmatches' => function (bool $b, FindSettings $settings) {
                 $settings->printresults = $b;
             },
-            'recursive' => function (bool $b, SearchSettings $settings) {
+            'recursive' => function (bool $b, FindSettings $settings) {
                 $settings->recursive = $b;
             },
-            'searcharchives' => function (bool $b, SearchSettings $settings) {
-                $settings->searcharchives = $b;
+            'findarchives' => function (bool $b, FindSettings $settings) {
+                $settings->findarchives = $b;
             },
-            'uniquelines' => function (bool $b, SearchSettings $settings) {
+            'uniquelines' => function (bool $b, FindSettings $settings) {
                 $settings->uniquelines = $b;
             },
-            'verbose' => function (bool $b, SearchSettings $settings) {
+            'verbose' => function (bool $b, FindSettings $settings) {
                 $settings->verbose = $b;
             },
-            'version' => function (bool $b, SearchSettings $settings) {
+            'version' => function (bool $b, FindSettings $settings) {
                 $settings->printversion = $b;
             }
         ];
@@ -165,10 +165,10 @@ class SearchOptions
 
     private function set_options_from_json()
     {
-        $searchoptionspath = FileUtil::expand_user_home_path(Config::SEARCHOPTIONSPATH);
-        if (file_exists($searchoptionspath)) {
-            $json_obj = json_decode(file_get_contents($searchoptionspath), true);
-            foreach ($json_obj['searchoptions'] as $so) {
+        $findoptionspath = FileUtil::expand_user_home_path(Config::FINDOPTIONSPATH);
+        if (file_exists($findoptionspath)) {
+            $json_obj = json_decode(file_get_contents($findoptionspath), true);
+            foreach ($json_obj['findoptions'] as $so) {
                 $short = sprintf($so['short']);
                 $long = sprintf($so['long']);
                 $desc = $so['desc'];
@@ -178,31 +178,31 @@ class SearchOptions
                 } elseif (array_key_exists($long, $this->bool_flag_action_map)) {
                     $func = $this->bool_flag_action_map[$long];
                 }
-                $option = new SearchOption($short, $long, $desc, $func);
+                $option = new FindOption($short, $long, $desc, $func);
                 $this->options[] = $option;
                 $this->longarg_map[$long] = $long;
                 if ($short) {
                     $this->longarg_map[$short] = $long;
                 }
             }
-            usort($this->options, array('phpsearch\SearchOptions', 'cmp_searchoptions'));
-//            usort($this->options, array('common', 'cmp_searchoptions'));
-//            usort($this->options, 'cmp_searchoptions');
+            usort($this->options, array('phpfind\FindOptions', 'cmp_findoptions'));
+//            usort($this->options, array('common', 'cmp_findoptions'));
+//            usort($this->options, 'cmp_findoptions');
         } else {
-            throw new SearchException('File not found: ' . $searchoptionspath);
+            throw new FindException('File not found: ' . $findoptionspath);
         }
     }
 
-    private function settings_from_file(string $filepath, SearchSettings $settings)
+    private function settings_from_file(string $filepath, FindSettings $settings)
     {
         if (!file_exists($filepath)) {
-            throw new SearchException('Settings file not found');
+            throw new FindException('Settings file not found');
         }
         $json = file_get_contents($filepath);
         $this->settings_from_json($json, $settings);
     }
 
-    public function settings_from_json(string $json, SearchSettings $settings)
+    public function settings_from_json(string $json, FindSettings $settings)
     {
         $json_obj = json_decode($json, true);
         foreach (array_keys($json_obj) as $k) {
@@ -216,21 +216,21 @@ class SearchOptions
                         $this->arg_action_map[$k]($s, $settings);
                     }
                 } else {
-                    throw new SearchException("Invalid setting type: $k");
+                    throw new FindException("Invalid setting type: $k");
                 }
             } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
                 $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
             } elseif ($k == 'startpath') {
                 $settings->startpath = $json_obj[$k];
             } else {
-                throw new SearchException("Invalid option: $k");
+                throw new FindException("Invalid option: $k");
             }
         }
     }
 
-    public function settings_from_args(array $args): SearchSettings
+    public function settings_from_args(array $args): FindSettings
     {
-        $settings = new SearchSettings();
+        $settings = new FindSettings();
         while (count($args) > 0) {
             $arg = array_shift($args);
             if ($arg{0} == '-') {
@@ -243,7 +243,7 @@ class SearchOptions
                         $val = array_shift($args);
                         $this->arg_action_map[$longarg]($val, $settings);
                     } else {
-                        throw new SearchException("Missing value for $arg");
+                        throw new FindException("Missing value for $arg");
                     }
                 } elseif (array_key_exists($longarg, $this->bool_flag_action_map)) {
                     $this->bool_flag_action_map[$longarg](true, $settings);
@@ -251,7 +251,7 @@ class SearchOptions
                         break;
                     }
                 } else {
-                    throw new SearchException("Invalid option: $arg");
+                    throw new FindException("Invalid option: $arg");
                 }
             } else {
                 $settings->startpath = $arg;
@@ -267,7 +267,7 @@ class SearchOptions
 
     private function get_usage_string(): string
     {
-        $usage = "Usage:\n phpsearch [options] -s <searchpattern>";
+        $usage = "Usage:\n phpfind [options] -s <findpattern>";
         $usage .= " <startpath>\n\nOptions:\n";
         $opt_map = array();
         $longest = 0;
@@ -289,7 +289,7 @@ class SearchOptions
         return $usage;
     }
 
-    private static function cmp_searchoptions(SearchOption $o1, SearchOption $o2): int
+    private static function cmp_findoptions(FindOption $o1, FindOption $o2): int
     {
         return strcmp($o1->sortarg, $o2->sortarg);
     }

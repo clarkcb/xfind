@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CsSearch
+namespace CsFind
 {
-	public class SearchFile
+	public class FindFile
 	{
 		public static string ContainerSeparator = "!";
 
@@ -17,13 +17,13 @@ namespace CsSearch
 
 		public string PathAndName => File.ToString();
 
-		public SearchFile(FileInfo fileInfo, FileType type) :
+		public FindFile(FileInfo fileInfo, FileType type) :
 			this(new List<string>(), fileInfo, type) {}
 
-		public SearchFile(string path, string fileName, FileType type) :
+		public FindFile(string path, string fileName, FileType type) :
 			this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type) {}
 
-		public SearchFile(IList<string> containers, FileInfo file, FileType type)
+		public FindFile(IList<string> containers, FileInfo file, FileType type)
 		{
 			Containers = containers;
 			File = file;
@@ -56,7 +56,7 @@ namespace CsSearch
 			return sb.ToString();
 		}
 		
-		public static int Compare(SearchFile? sf1, SearchFile? sf2)
+		public static int Compare(FindFile? sf1, FindFile? sf2)
 		{
 			if (sf1 is null && sf2 is null)
 				return 0;
@@ -79,11 +79,11 @@ namespace CsSearch
 		}
 	}
 
-	public class SearchFilesComparer : IComparer<SearchFile>
+	public class FindFilesComparer : IComparer<FindFile>
 	{
-		public int Compare(SearchFile? sf1, SearchFile? sf2)
+		public int Compare(FindFile? sf1, FindFile? sf2)
 		{
-			return SearchFile.Compare(sf1, sf2);
+			return FindFile.Compare(sf1, sf2);
 		}
 	}
 }

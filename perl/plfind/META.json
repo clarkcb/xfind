@@ -1,7 +1,7 @@
 {
     "version" : "0.1.0",
-    "name"    : "plsearch",
+    "name"    : "plfind",
     "author"  : "Cary Clark",
-    "abstract": "A perl implementation of xsearch",
+    "abstract": "A perl implementation of xfind",
     "license" : "perl"
 }

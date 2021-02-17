@@ -2,9 +2,9 @@
 
 require 'json'
 require_relative 'fileutil'
-require_relative 'searcherror'
+require_relative 'finderror'
 
-module RbSearch
+module RbFind
 
   module FileType
     UNKNOWN = 0
@@ -45,11 +45,11 @@ module RbSearch
       end
       @file_type_map['text'] = @file_type_map['text'] + @file_type_map['code'] +
         @file_type_map['xml']
-      @file_type_map['searchable'] = @file_type_map['text'] +
+      @file_type_map['findable'] = @file_type_map['text'] +
         @file_type_map['archive'] +
         @file_type_map['binary']
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{SEARCHOPTIONSJSONPATH})"
+      raise FindError, "#{e} (file: #{FINDOPTIONSJSONPATH})"
     ensure
       f&.close
     end
@@ -82,8 +82,8 @@ module RbSearch
       @file_type_map['code'].include?(FileUtil.get_extension(filename))
     end
 
-    def searchable_file?(filename)
-      @file_type_map['searchable'].include?(FileUtil.get_extension(filename))
+    def findable_file?(filename)
+      @file_type_map['findable'].include?(FileUtil.get_extension(filename))
     end
 
     def text_file?(filename)

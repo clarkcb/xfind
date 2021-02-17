@@ -3,7 +3,7 @@
 #import "FileTypes.h"
 #import "Regex.h"
 
-@interface SearchSettings : NSObject
+@interface FindSettings : NSObject
 //@private
 //    BOOL _archivesOnly;
 //    BOOL _debug;
@@ -21,12 +21,12 @@
 @property(nonatomic) BOOL listFiles;
 @property(nonatomic) BOOL listLines;
 @property(nonatomic) uint32_t maxLineLength;
-@property(nonatomic) BOOL multiLineSearch;
+@property(nonatomic) BOOL multiLineFind;
 @property(nonatomic) BOOL printResults;
 @property(nonatomic) BOOL printUsage;
 @property(nonatomic) BOOL printVersion;
 @property(nonatomic) BOOL recursive;
-@property(nonatomic) BOOL searchArchives;
+@property(nonatomic) BOOL findArchives;
 @property(nonatomic) NSMutableString *startPath;
 @property(nonatomic) NSString *textFileEncoding;
 @property(nonatomic) BOOL uniqueLines;
@@ -50,7 +50,7 @@
 @property(nonatomic) NSMutableArray<NSNumber*> *outFileTypes;
 @property(nonatomic) NSMutableArray<Regex*> *outLinesAfterPatterns;
 @property(nonatomic) NSMutableArray<Regex*> *outLinesBeforePatterns;
-@property(nonatomic) NSMutableArray<Regex*> *searchPatterns;
+@property(nonatomic) NSMutableArray<Regex*> *findPatterns;
 
 -(NSString *) description;
 
@@ -65,7 +65,7 @@
 - (void) addOutDirPattern: (NSString*)pattern;
 - (void) addOutExtension: (NSString*)ext;
 - (void) addOutFilePattern: (NSString*)pattern;
-- (void) addSearchPattern: (NSString*)pattern;
+- (void) addFindPattern: (NSString*)pattern;
 
 - (void) addFileType:(NSString*)typeName toArr:(NSMutableArray *)arr;
 - (void) addInFileType: (NSString*)typeName;

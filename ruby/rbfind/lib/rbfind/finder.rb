@@ -6,15 +6,15 @@ require 'set'
 require_relative 'common'
 require_relative 'filetypes'
 require_relative 'fileutil'
-require_relative 'searcherror'
-require_relative 'searchfile'
-require_relative 'searchresult'
-require_relative 'searchresultformatter'
+require_relative 'finderror'
+require_relative 'findfile'
+require_relative 'findresult'
+require_relative 'findresultformatter'
 
-module RbSearch
+module RbFind
 
-  # Searcher - finds files to search and searches them according to settings
-  class Searcher
+  # Finder - finds files to find and findes them according to settings
+  class Finder
     attr_reader :settings
     attr_reader :results
 
@@ -25,7 +25,7 @@ module RbSearch
       @results = []
     end
 
-    def search_dir?(dirname)
+    def find_dir?(dirname)
       path_elems = dirname.split(File::SEPARATOR) - FileUtil.dot_dirs
       if @settings.excludehidden && path_elems.any? { |p| FileUtil.hidden?(p) }
         return false
@@ -41,7 +41,7 @@ module RbSearch
       true
     end
 
-    def search_file?(filename)
+    def find_file?(filename)
       ext = FileUtil.get_extension(filename)
       if !@settings.in_extensions.empty? &&
         !@settings.in_extensions.include?(ext)
@@ -71,7 +71,7 @@ module RbSearch
       true
     end
 
-    def archive_search_file?(filename)
+    def archive_find_file?(filename)
       ext = FileUtil.get_extension(filename)
       if !@settings.in_archiveextensions.empty? &&
         !@settings.in_archiveextensions.include?(ext)
@@ -97,39 +97,39 @@ module RbSearch
         return false
       end
       if @filetypes.archive_file?(filename)
-        return @settings.searcharchives && archive_search_file?(filename)
+        return @settings.findarchives && archive_find_file?(filename)
       end
-      !@settings.archivesonly && search_file?(filename)
+      !@settings.archivesonly && find_file?(filename)
     end
 
-    def search
-      # get the searchfiles
-      searchfiles = get_search_files.sort_by(&:relativepath)
+    def find
+      # get the findfiles
+      findfiles = get_find_files.sort_by(&:relativepath)
       if @settings.verbose
-        searchdirs = searchfiles.map(&:path).uniq.sort
-        log("\nDirectories to be searched (#{searchdirs.size}):")
-        searchdirs.each do |d|
+        finddirs = findfiles.map(&:path).uniq.sort
+        log("\nDirectories to be found (#{finddirs.size}):")
+        finddirs.each do |d|
           log(d)
         end
-        log("\nFiles to be searched (#{searchfiles.size}):")
-        searchfiles.each do |sf|
+        log("\nFiles to be found (#{findfiles.size}):")
+        findfiles.each do |sf|
           log(sf.to_s)
         end
         log("\n")
       end
-      searchfiles.each do |sf|
-        search_file(sf)
+      findfiles.each do |sf|
+        find_file(sf)
       end
     end
 
-    def search_multiline_string(str)
+    def find_multiline_string(str)
       lines_before = []
       lines_after = []
       results = []
       new_line_indices = get_new_line_indices(str)
       start_line_indices = [0] + new_line_indices.map { |n| n + 1 }
       end_line_indices = new_line_indices + [str.length - 1]
-      @settings.searchpatterns.each do |p|
+      @settings.findpatterns.each do |p|
         m = p.match(str)
         stop = false
         while m && !stop
@@ -158,7 +158,7 @@ module RbSearch
           match_end_index = m.end(0) - m_line_start_index
           if (lines_before.length == 0 || lines_before_match(lines_before)) &&
             (lines_after.length == 0 || lines_after_match(lines_after))
-            results.push(SearchResult.new(
+            results.push(FindResult.new(
               p,
               nil,
               before_line_count + 1,
@@ -176,7 +176,7 @@ module RbSearch
       results
     end
 
-    def search_line_iterator(lines)
+    def find_line_iterator(lines)
       linenum = 0
       lines_before = []
       lines_after = []
@@ -203,21 +203,21 @@ module RbSearch
             end
           end
         end
-        @settings.searchpatterns.each do |p|
-          search_line = true
+        @settings.findpatterns.each do |p|
+          find_line = true
           if @settings.firstmatch && pattern_matches.include?(p)
-            search_line = false
+            find_line = false
           end
           pos = 0
-          while search_line && pos < line.length
+          while find_line && pos < line.length
             begin
               m = p.match(line, pos)
               if m
                 if (!lines_before.empty? && !lines_before_match(lines_before)) ||
                   (!lines_after.empty? && !lines_after_match(lines_after))
-                  search_line = false
+                  find_line = false
                 else
-                  results.push(SearchResult.new(
+                  results.push(FindResult.new(
                     p,
                     nil,
                     linenum,
@@ -231,10 +231,10 @@ module RbSearch
                   pattern_matches[p] = 1
                 end
               else
-                search_line = false
+                find_line = false
               end
             rescue StandardError => e
-              raise SearchError, e
+              raise FindError, e
             end
           end
         end
@@ -246,19 +246,19 @@ module RbSearch
     end
 
     def print_results
-      formatter = SearchResultFormatter.new(@settings)
-      RbSearch::log("Search results (#{@results.size}):")
+      formatter = FindResultFormatter.new(@settings)
+      RbFind::log("Find results (#{@results.size}):")
       @results.each do |r|
         # print_result(r)
-        RbSearch::log(formatter.format(r))
+        RbFind::log(formatter.format(r))
       end
     end
 
-    def print_result(search_result)
+    def print_result(find_result)
       s = ''
-      s += "#{search_result.pattern}: " if @settings.searchpatterns.size > 1
-      s += search_result.to_s
-      RbSearch::log(s)
+      s += "#{find_result.pattern}: " if @settings.findpatterns.size > 1
+      s += find_result.to_s
+      RbFind::log(s)
     end
 
     def get_matching_dirs
@@ -278,17 +278,17 @@ module RbSearch
     private
 
     def validate_settings
-      raise SearchError, 'Startpath not defined' unless @settings.startpath
-      raise SearchError, 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
-      raise SearchError, 'Startpath not readable' unless File.readable?(@settings.startpath)
-      raise SearchError, 'No search patterns defined' if @settings.searchpatterns.empty?
-      raise SearchError, 'Invalid linesbefore' if @settings.linesbefore < 0
-      raise SearchError, 'Invalid linesafter' if @settings.linesafter < 0
-      raise SearchError, 'Invalid maxlinelength' if @settings.maxlinelength < 0
+      raise FindError, 'Startpath not defined' unless @settings.startpath
+      raise FindError, 'Startpath not found' unless Pathname.new(@settings.startpath).exist?
+      raise FindError, 'Startpath not readable' unless File.readable?(@settings.startpath)
+      raise FindError, 'No find patterns defined' if @settings.findpatterns.empty?
+      raise FindError, 'Invalid linesbefore' if @settings.linesbefore < 0
+      raise FindError, 'Invalid linesafter' if @settings.linesafter < 0
+      raise FindError, 'Invalid maxlinelength' if @settings.maxlinelength < 0
       begin
         _enc = Encoding.find(@settings.textfileencoding)
       rescue StandardError
-        raise SearchError, "Invalid encoding: #{@settings.textfileencoding}"
+        raise FindError, "Invalid encoding: #{@settings.textfileencoding}"
       end
     end
 
@@ -303,23 +303,23 @@ module RbSearch
       false
     end
 
-    def file_to_searchfile(f)
+    def file_to_findfile(f)
       d = File.dirname(f) || '.'
       filename = File.basename(f)
       filetype = @filetypes.get_filetype(filename)
-      SearchFile.new(d, filename, filetype)
+      FindFile.new(d, filename, filetype)
     end
 
-    def get_search_files
-      searchfiles = []
+    def get_find_files
+      findfiles = []
       if FileTest.directory?(@settings.startpath)
         if @settings.recursive
           Find.find(@settings.startpath) do |f|
             if FileTest.directory?(f)
-              Find.prune unless search_dir?(f)
+              Find.prune unless find_dir?(f)
             elsif filter_file?(f)
-              searchfile = file_to_searchfile(f)
-              searchfiles.push(searchfile)
+              findfile = file_to_findfile(f)
+              findfiles.push(findfile)
             end
           end
         else
@@ -327,57 +327,57 @@ module RbSearch
             if FileTest.directory?(f)
               Find.prune
             elsif filter_file?(f)
-              searchfile = file_to_searchfile(f)
-              searchfiles.push(searchfile)
+              findfile = file_to_findfile(f)
+              findfiles.push(findfile)
             end
           end
         end
       elsif FileTest.file?(@settings.startpath)
-        searchfile = file_to_searchfile(@settings.startpath)
-        searchfiles.push(searchfile)
+        findfile = file_to_findfile(@settings.startpath)
+        findfiles.push(findfile)
       end
-      searchfiles
+      findfiles
     end
 
-    def search_file(sf)
-      unless @filetypes.searchable_file?(sf.filename)
+    def find_file(sf)
+      unless @filetypes.findable_file?(sf.filename)
         if @settings.verbose || @settings.debug
-          log("Skipping unsearchable file: #{sf}")
+          log("Skipping unfindable file: #{sf}")
           return 0
         end
       end
       case sf.filetype
       when FileType::CODE, FileType::TEXT, FileType::XML
-        search_text_file(sf)
+        find_text_file(sf)
       when FileType::BINARY
-        search_binary_file(sf)
+        find_binary_file(sf)
       else
-        log("Searching currently unsupported for FileType #{sf.filetype}")
+        log("Finding currently unsupported for FileType #{sf.filetype}")
       end
     end
 
-    def search_binary_file(sf)
+    def find_binary_file(sf)
       f = File.open(sf.relativepath, 'rb')
       contents = f.read
-      results = search_binary_string(contents)
+      results = find_binary_string(contents)
       results.each do |r|
         r.file = sf
-        add_search_result(r)
+        add_find_result(r)
       end
     rescue StandardError => e
-      raise SearchError, e
+      raise FindError, e
     ensure
       f&.close
     end
 
-    def search_binary_string(binstr)
+    def find_binary_string(binstr)
       results = []
-      @settings.searchpatterns.each do |p|
+      @settings.findpatterns.each do |p|
         pos = 0
         m = p.match(binstr, pos)
         stop = false
         while m && !stop
-          results.push(SearchResult.new(
+          results.push(FindResult.new(
             p,
             nil,
             0,
@@ -393,12 +393,12 @@ module RbSearch
       results
     end
 
-    def search_text_file(sf)
-      log("Searching text file #{sf}") if @settings.debug
-      if @settings.multilinesearch
-        search_text_file_contents(sf)
+    def find_text_file(sf)
+      log("Finding text file #{sf}") if @settings.debug
+      if @settings.multilineoption-REMOVE
+        find_text_file_contents(sf)
       else
-        search_text_file_lines(sf)
+        find_text_file_lines(sf)
       end
     end
 
@@ -406,16 +406,16 @@ module RbSearch
       s.scan(/(\r\n|\n)/m).size
     end
 
-    def search_text_file_contents(sf)
+    def find_text_file_contents(sf)
       f = File.open(sf.relativepath, mode: "r:#{@settings.textfileencoding}")
       contents = f.read
-      results = search_multiline_string(contents)
+      results = find_multiline_string(contents)
       results.each do |r|
         r.file = sf
-        add_search_result(r)
+        add_find_result(r)
       end
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{sf})"
+      raise FindError, "#{e} (file: #{sf})"
     ensure
       f&.close
     end
@@ -472,22 +472,22 @@ module RbSearch
                   @settings.out_linesafterpatterns)
     end
 
-    def search_text_file_lines(sf)
+    def find_text_file_lines(sf)
       f = File.open(sf.relativepath, mode: "r:#{@settings.textfileencoding}")
       line_iterator = f.each_line
-      results = search_line_iterator(line_iterator)
+      results = find_line_iterator(line_iterator)
       results.each do |r|
         r.file = sf
-        add_search_result(r)
+        add_find_result(r)
       end
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{sf})"
+      raise FindError, "#{e} (file: #{sf})"
     ensure
       f&.close
     end
 
-    def add_search_result(search_result)
-      @results.push(search_result)
+    def add_find_result(find_result)
+      @results.push(find_result)
     end
   end
 end

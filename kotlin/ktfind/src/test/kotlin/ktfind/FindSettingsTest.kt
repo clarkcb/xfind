@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -7,7 +7,7 @@ import org.junit.Test
 /**
  * @author cary on 7/30/16.
  */
-class SearchSettingsTest {
+class FindSettingsTest {
     @Test
     fun testDefaultSettings() {
         val settings = getDefaultSettings()
@@ -22,11 +22,11 @@ class SearchSettingsTest {
         assertEquals(false, settings.listFiles)
         assertEquals(false, settings.listLines)
         assertEquals(150, settings.maxLineLength)
-        assertEquals(false, settings.multiLineSearch)
+        assertEquals(false, settings.multiLineFind)
         assertEquals(false, settings.printResults)
         assertEquals(false, settings.printUsage)
         assertEquals(false, settings.printVersion)
-        assertEquals(false, settings.searchArchives)
+        assertEquals(false, settings.findArchives)
         assertEquals(true, settings.recursive)
         assertEquals(false, settings.uniqueLines)
         assertEquals(false, settings.verbose)
@@ -54,7 +54,7 @@ class SearchSettingsTest {
     fun testSetArchivesOnly() {
         val settings = setArchivesOnly(getDefaultSettings(), true)
         assertTrue(settings.archivesOnly)
-        assertTrue(settings.searchArchives)
+        assertTrue(settings.findArchives)
     }
 
     @Test

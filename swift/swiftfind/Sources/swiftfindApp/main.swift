@@ -1,25 +1,25 @@
 //
 //  main.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/12/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
 import Foundation
-import swiftsearch
+import swiftfind
 
-func getMatchingFiles(_ results: [SearchResult]) -> [String] {
+func getMatchingFiles(_ results: [FindResult]) -> [String] {
     results.compactMap(\.file).map(\.filePath).sorted().unique()
 }
 
-func getMatchingDirs(_ results: [SearchResult]) -> [String] {
+func getMatchingDirs(_ results: [FindResult]) -> [String] {
     results.compactMap(\.file).map {
         URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
     }.sorted().unique()
 }
 
-func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [String] {
+func getMatchingLines(_ results: [FindResult], settings: FindSettings) -> [String] {
     var lines = results.map { $0.line.trimmingCharacters(in: whitespace as CharacterSet) }
     if settings.uniqueLines {
         let lineSet = Set<String>(lines)
@@ -28,14 +28,14 @@ func getMatchingLines(_ results: [SearchResult], settings: SearchSettings) -> [S
     return lines.sorted { $0.lowercased() < $1.lowercased() }
 }
 
-func handleError(_ error: NSError, _ options: SearchOptions) {
+func handleError(_ error: NSError, _ options: FindOptions) {
     logMsg("")
     logError(error.domain)
     options.usage(1)
 }
 
 func main() {
-    let options = SearchOptions()
+    let options = FindOptions()
 
     let args: [String] = [] + CommandLine.arguments.dropFirst()
 
@@ -54,23 +54,23 @@ func main() {
         options.usage()
     }
 
-    let searcher = Searcher(settings: settings, error: &error)
+    let finder = Finder(settings: settings, error: &error)
 
     if error != nil {
         handleError(error!, options)
     }
 
-    searcher.search(&error)
+    finder.find(&error)
 
     if error != nil {
         handleError(error!, options)
     }
 
-    let results = searcher.getSearchResults()
+    let results = finder.getFindResults()
 
     if settings.printResults {
-        let formatter = SearchResultFormatter(settings: settings)
-        logMsg("\nSearch results (\(results.count)):")
+        let formatter = FindResultFormatter(settings: settings)
+        logMsg("\nFind results (\(results.count)):")
         for res in results {
             logMsg("\(formatter.format(result: res))")
         }

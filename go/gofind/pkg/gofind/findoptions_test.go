@@ -1,15 +1,15 @@
-package gosearch
+package gofind
 
 import "testing"
 
-func TestSearchSettingsFromNoArgs(t *testing.T) {
-	searchOptions := NewSearchOptions()
+func TestFindSettingsFromNoArgs(t *testing.T) {
+	findOptions := NewFindOptions()
 
 	args := []string{}
 
-	settings, err := searchOptions.SearchSettingsFromArgs(args)
+	settings, err := findOptions.FindSettingsFromArgs(args)
 	if err != nil {
-		t.Errorf("SearchSettingsFromArgs: err: %v", err)
+		t.Errorf("FindSettingsFromArgs: err: %v", err)
 	}
 
 	if settings.ArchivesOnly ||
@@ -19,28 +19,28 @@ func TestSearchSettingsFromNoArgs(t *testing.T) {
 		settings.ListDirs ||
 		settings.ListFiles ||
 		settings.ListLines ||
-		settings.MultiLineSearch ||
+		settings.MultiLineFind ||
 		!settings.PrintResults ||
 		settings.PrintUsage ||
 		settings.PrintVersion ||
 		!settings.Recursive ||
-		settings.SearchArchives ||
+		settings.FindArchives ||
 		settings.UniqueLines ||
 		settings.Verbose {
 		t.Errorf("settings did not match defaults")
 	}
 }
 
-func TestSearchSettingsFromValidArgs(t *testing.T) {
-	searchOptions := NewSearchOptions()
+func TestFindSettingsFromValidArgs(t *testing.T) {
+	findOptions := NewFindOptions()
 
 	args := []string{
-		"-x", "go", "-s", "Searcher", ".",
+		"-x", "go", "-s", "Finder", ".",
 	}
 
-	settings, err := searchOptions.SearchSettingsFromArgs(args)
+	settings, err := findOptions.FindSettingsFromArgs(args)
 	if err != nil {
-		t.Errorf("SearchSettingsFromArgs: err: %v", err)
+		t.Errorf("FindSettingsFromArgs: err: %v", err)
 	}
 
 	if settings.StartPath != "." {
@@ -58,15 +58,15 @@ func TestSearchSettingsFromValidArgs(t *testing.T) {
 	}
 }
 
-func TestSearchSettingsFromJson(t *testing.T) {
-	searchOptions := NewSearchOptions()
+func TestFindSettingsFromJson(t *testing.T) {
+	findOptions := NewFindOptions()
 
 	jsonSettings := []byte(`{
-  "startpath": "~/src/xsearch/",
+  "startpath": "~/src/xfind/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "searchpattern": "Searcher",
+  "findpattern": "Finder",
   "linesbefore": 2,
   "linesafter": 2,
   "debug": true,
@@ -74,15 +74,15 @@ func TestSearchSettingsFromJson(t *testing.T) {
   "includehidden": true
 }`)
 
-	settings := GetDefaultSearchSettings()
+	settings := GetDefaultFindSettings()
 	var err error
-	err = searchOptions.SettingsFromJson(jsonSettings, settings)
+	err = findOptions.SettingsFromJson(jsonSettings, settings)
 	if err != nil {
-		t.Errorf("TestSearchSettingsFromJson: err: %v", err)
+		t.Errorf("TestFindSettingsFromJson: err: %v", err)
 	}
 
-	if settings.StartPath != "~/src/xsearch/" {
-		t.Errorf("settings.StartPath (%s) != \"~/src/xsearch/\"", settings.StartPath)
+	if settings.StartPath != "~/src/xfind/" {
+		t.Errorf("settings.StartPath (%s) != \"~/src/xfind/\"", settings.StartPath)
 	}
 
 	if len(settings.InExtensions) != 2 {
@@ -115,13 +115,13 @@ func TestSearchSettingsFromJson(t *testing.T) {
 			settings.OutFilePatterns.patterns[0].String())
 	}
 
-	if len(settings.SearchPatterns.patterns) != 1 {
-		t.Errorf("len(settings.SearchPatterns.patterns) = %d, expected 1",
-			len(settings.SearchPatterns.patterns))
+	if len(settings.FindPatterns.patterns) != 1 {
+		t.Errorf("len(settings.FindPatterns.patterns) = %d, expected 1",
+			len(settings.FindPatterns.patterns))
 	}
-	if settings.SearchPatterns.patterns[0].String() != "Searcher" {
-		t.Errorf("settings.SearchPatterns.patterns[0].String() (\"%s\") != \"Searcher\"",
-			settings.SearchPatterns.patterns[0].String())
+	if settings.FindPatterns.patterns[0].String() != "Finder" {
+		t.Errorf("settings.FindPatterns.patterns[0].String() (\"%s\") != \"Finder\"",
+			settings.FindPatterns.patterns[0].String())
 	}
 
 	if settings.LinesBefore != 2 {

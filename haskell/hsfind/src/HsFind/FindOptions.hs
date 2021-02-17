@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric, NoMonomorphismRestriction #-}
-module HsSearch.SearchOptions (
-    SearchOption(..)
-  , getSearchOptions
+module HsFind.FindOptions (
+    FindOption(..)
+  , getFindOptions
   , getUsage
   , settingsFromArgs) where
 
@@ -14,74 +14,74 @@ import Data.Maybe (isJust)
 import GHC.Generics
 import Data.Aeson
 
-import HsSearch.Paths_hssearch (getDataFileName)
-import HsSearch.FileTypes (getFileTypeForName)
-import HsSearch.FileUtil (getFileString)
-import HsSearch.SearchSettings
+import HsFind.Paths_hsfind (getDataFileName)
+import HsFind.FileTypes (getFileTypeForName)
+import HsFind.FileUtil (getFileString)
+import HsFind.FindSettings
 
-data SearchOption = SearchOption
+data FindOption = FindOption
   { long :: String
   , short :: Maybe String
   , desc :: String
   } deriving (Show, Eq, Generic)
 
-instance FromJSON SearchOption
+instance FromJSON FindOption
 
-newtype SearchOptions
-  = SearchOptions {searchoptions :: [SearchOption]}
+newtype FindOptions
+  = FindOptions {findoptions :: [FindOption]}
   deriving (Show, Eq, Generic)
 
-instance FromJSON SearchOptions
+instance FromJSON FindOptions
 
-searchOptionsFile :: FilePath
-searchOptionsFile = "searchoptions.json"
+findOptionsFile :: FilePath
+findOptionsFile = "findoptions.json"
 
-getSearchOptions :: IO [SearchOption]
-getSearchOptions = do
-  searchOptionsPath <- getDataFileName searchOptionsFile
-  searchOptionsJsonString <- getFileString searchOptionsPath
-  case searchOptionsJsonString of
+getFindOptions :: IO [FindOption]
+getFindOptions = do
+  findOptionsPath <- getDataFileName findOptionsFile
+  findOptionsJsonString <- getFileString findOptionsPath
+  case findOptionsJsonString of
     (Left _) -> return []
     (Right jsonString) ->
-      case (eitherDecode (BC.pack jsonString) :: Either String SearchOptions) of
-        (Left e) -> return [SearchOption {long=e, short=Nothing, desc=e}]
-        (Right jsonSearchOptions) -> return (searchoptions jsonSearchOptions)
+      case (eitherDecode (BC.pack jsonString) :: Either String FindOptions) of
+        (Left e) -> return [FindOption {long=e, short=Nothing, desc=e}]
+        (Right jsonFindOptions) -> return (findoptions jsonFindOptions)
 
-getUsage :: [SearchOption] -> String
-getUsage searchOptions =
-  "Usage:\n hssearch [options] -s <searchpattern> <startpath>\n\nOptions:\n" ++
-  searchOptionsToString searchOptions
+getUsage :: [FindOption] -> String
+getUsage findOptions =
+  "Usage:\n hsfind [options] -s <findpattern> <startpath>\n\nOptions:\n" ++
+  findOptionsToString findOptions
 
-getOptStrings :: [SearchOption] -> [String]
+getOptStrings :: [FindOption] -> [String]
 getOptStrings = map formatOpts
-  where formatOpts SearchOption {long=l, short=Nothing} = getLong l
-        formatOpts SearchOption {long=l, short=Just s}  = shortAndLong s l
+  where formatOpts FindOption {long=l, short=Nothing} = getLong l
+        formatOpts FindOption {long=l, short=Just s}  = shortAndLong s l
         getLong l = "--" ++ l
         shortAndLong s l = "-" ++ s ++ "," ++ getLong l
 
-getOptDesc :: SearchOption -> String
-getOptDesc SearchOption {desc=""} = error "No description for SearchOption"
-getOptDesc SearchOption {desc=d} = d
+getOptDesc :: FindOption -> String
+getOptDesc FindOption {desc=""} = error "No description for FindOption"
+getOptDesc FindOption {desc=d} = d
 
-sortSearchOption :: SearchOption -> SearchOption -> Ordering
-sortSearchOption SearchOption {long=l1, short=s1} SearchOption {long=l2, short=s2} =
+sortFindOption :: FindOption -> FindOption -> Ordering
+sortFindOption FindOption {long=l1, short=s1} FindOption {long=l2, short=s2} =
   compare (shortOrLong s1 l1) (shortOrLong s2 l2)
   where
     shortOrLong Nothing l = l
     shortOrLong (Just s) l = map toLower s ++ "@" ++ l
 
-sortSearchOptions :: [SearchOption] -> [SearchOption]
-sortSearchOptions = sortBy sortSearchOption
+sortFindOptions :: [FindOption] -> [FindOption]
+sortFindOptions = sortBy sortFindOption
 
 padString :: String -> Int -> String
 padString s len | length s < len = s ++ replicate (len - length s) ' '
                 | otherwise      = s
 
-searchOptionsToString :: [SearchOption] -> String
-searchOptionsToString searchOptions = 
+findOptionsToString :: [FindOption] -> String
+findOptionsToString findOptions = 
   unlines $ zipWith formatOptLine optStrings optDescs
   where
-    sorted = sortSearchOptions searchOptions
+    sorted = sortFindOptions findOptions
     optStrings = getOptStrings sorted
     optDescs = map getOptDesc sorted
     longest = maximum $ map length optStrings
@@ -93,9 +93,9 @@ data ActionType = ArgActionType
                 | UnknownActionType
   deriving (Show, Eq)
 
-type ArgAction = SearchSettings -> String -> SearchSettings
-type BoolFlagAction = SearchSettings -> Bool -> SearchSettings
-type FlagAction = SearchSettings -> SearchSettings
+type ArgAction = FindSettings -> String -> FindSettings
+type BoolFlagAction = FindSettings -> Bool -> FindSettings
+type FlagAction = FindSettings -> FindSettings
 
 argActions :: [(String, ArgAction)]
 argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
@@ -120,13 +120,13 @@ argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
              , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
              , ("out-linesafterpattern", \ss s -> ss {outLinesAfterPatterns = outLinesAfterPatterns ss ++ [s]})
              , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
-             , ("searchpattern", \ss s -> ss {searchPatterns = searchPatterns ss ++ [s]})
+             , ("findpattern", \ss s -> ss {findPatterns = findPatterns ss ++ [s]})
              ]
 
 flagActions :: [(String, FlagAction)]
 flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("archivesonly", \ss -> ss {archivesOnly=True,
-                                            searchArchives=True})
+                                            findArchives=True})
               , ("colorize", \ss -> ss {colorize=True})
               , ("debug", \ss -> ss {debug=True, verbose=True})
               , ("excludehidden", \ss -> ss {excludeHidden=True})
@@ -136,14 +136,14 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
               , ("listdirs", \ss -> ss {listDirs=True})
               , ("listfiles", \ss -> ss {listFiles=True})
               , ("listlines", \ss -> ss {listLines=True})
-              , ("multilinesearch", \ss -> ss {multiLineSearch=True})
+              , ("multilineoption-REMOVE", \ss -> ss {multiLineFind=True})
               , ("nocolorize", \ss -> ss {colorize=False})
               , ("noprintmatches", \ss -> ss {printResults=False})
               , ("norecursive", \ss -> ss {recursive=False})
-              , ("nosearcharchives", \ss -> ss {searchArchives=False})
+              , ("nofindarchives", \ss -> ss {findArchives=False})
               , ("printmatches", \ss -> ss {printResults=True})
               , ("recursive", \ss -> ss {recursive=True})
-              , ("searcharchives", \ss -> ss {searchArchives=True})
+              , ("findarchives", \ss -> ss {findArchives=True})
               , ("uniquelines", \ss -> ss {uniqueLines=True})
               , ("verbose", \ss -> ss {verbose=True})
               , ("version", \ss -> ss {printVersion=True})
@@ -152,7 +152,7 @@ flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
 boolFlagActions :: [(String, BoolFlagAction)]
 boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                   , ("archivesonly", \ss b -> ss {archivesOnly=b,
-                                                  searchArchives=b})
+                                                  findArchives=b})
                   , ("colorize", \ss b -> ss {colorize=b})
                   , ("debug", \ss b -> ss {debug=b, verbose=b})
                   , ("excludehidden", \ss b -> ss {excludeHidden=b})
@@ -162,20 +162,20 @@ boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
                   , ("listdirs", \ss b -> ss {listDirs=b})
                   , ("listfiles", \ss b -> ss {listFiles=b})
                   , ("listlines", \ss b -> ss {listLines=b})
-                  , ("multilinesearch", \ss b -> ss {multiLineSearch=b})
+                  , ("multilineoption-REMOVE", \ss b -> ss {multiLineFind=b})
                   , ("nocolorize", \ss b -> ss {colorize=not b})
                   , ("noprintmatches", \ss b -> ss {printResults=not b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
-                  , ("nosearcharchives", \ss b -> ss {searchArchives=not b})
+                  , ("nofindarchives", \ss b -> ss {findArchives=not b})
                   , ("printmatches", \ss b -> ss {printResults=b})
                   , ("recursive", \ss b -> ss {recursive=b})
-                  , ("searcharchives", \ss b -> ss {searchArchives=b})
+                  , ("findarchives", \ss b -> ss {findArchives=b})
                   , ("uniquelines", \ss b -> ss {uniqueLines=b})
                   , ("verbose", \ss b -> ss {verbose=b})
                   , ("version", \ss b -> ss {printVersion=b})
                   ]
 
-shortToLong :: [SearchOption] -> String -> Either String String
+shortToLong :: [FindOption] -> String -> Either String String
 shortToLong _ "" = Left "Missing argument"
 shortToLong opts s | length s == 2 && head s == '-' =
                       if any (\so -> short so == Just (tail s)) optsWithShort
@@ -185,13 +185,13 @@ shortToLong opts s | length s == 2 && head s == '-' =
   where optsWithShort = filter (isJust . short) opts
         getLongForShort x = (long . head . filter (\so -> short so == Just (tail x))) optsWithShort
 
-settingsFromArgs :: [SearchOption] -> [String] -> Either String SearchSettings
+settingsFromArgs :: [FindOption] -> [String] -> Either String FindSettings
 settingsFromArgs opts arguments =
   if any isLeft longArgs
   then (Left . head . lefts) longArgs
   else
-    recSettingsFromArgs defaultSearchSettings $ rights longArgs
-  where recSettingsFromArgs :: SearchSettings -> [String] -> Either String SearchSettings
+    recSettingsFromArgs defaultFindSettings $ rights longArgs
+  where recSettingsFromArgs :: FindSettings -> [String] -> Either String FindSettings
         recSettingsFromArgs settings args =
           case args of
           [] -> Right settings

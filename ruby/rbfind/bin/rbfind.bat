@@ -1,2 +1,2 @@
 @echo off
-ruby %~dp0\rbsearch %*
+ruby %~dp0\rbfind %*

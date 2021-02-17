@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
@@ -13,7 +13,7 @@ import java.io.InputStreamReader
 /**
  * @author cary on 7/23/16.
  */
-data class SearchOption(val shortarg: String?, val longarg: String, val desc: String) {
+data class FindOption(val shortarg: String?, val longarg: String, val desc: String) {
     val sortarg =
             if (shortarg == null) {
                 longarg.toLowerCase()
@@ -22,41 +22,41 @@ data class SearchOption(val shortarg: String?, val longarg: String, val desc: St
             }
 }
 
-class SearchOptions {
-    private val searchOptions : List<SearchOption>
+class FindOptions {
+    private val findOptions : List<FindOption>
 
     init {
-        searchOptions = loadSearchOptionsFromJson()
+        findOptions = loadFindOptionsFromJson()
     }
 
-    private fun loadSearchOptionsFromJson() : List<SearchOption> {
-        val searchOptionsXmlPath = "/searchoptions.json"
-        val searchOptionsInputStream = javaClass.getResourceAsStream(searchOptionsXmlPath)
-        val obj: Any = JSONParser().parse(InputStreamReader(searchOptionsInputStream))
+    private fun loadFindOptionsFromJson() : List<FindOption> {
+        val findOptionsXmlPath = "/findoptions.json"
+        val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsXmlPath)
+        val obj: Any = JSONParser().parse(InputStreamReader(findOptionsInputStream))
         val jsonObj = obj as JSONObject
-        val searchoptionsArray = jsonObj["searchoptions"] as JSONArray
+        val findoptionsArray = jsonObj["findoptions"] as JSONArray
 
-        val options : MutableList<SearchOption> = mutableListOf()
-        for (o in searchoptionsArray) {
-            val searchoptionMap = o as Map<String, String>
-            val longArg = searchoptionMap["long"] as String
-            val desc = searchoptionMap["desc"] as String
+        val options : MutableList<FindOption> = mutableListOf()
+        for (o in findoptionsArray) {
+            val findoptionMap = o as Map<String, String>
+            val longArg = findoptionMap["long"] as String
+            val desc = findoptionMap["desc"] as String
             var shortArg: String? = null
-            if (searchoptionMap.containsKey("short")) {
-                shortArg = searchoptionMap["short"] as String
+            if (findoptionMap.containsKey("short")) {
+                shortArg = findoptionMap["short"] as String
             }
-            options.add(SearchOption(shortArg, longArg, desc))
+            options.add(FindOption(shortArg, longArg, desc))
         }
         return options.toList().sortedBy { it.sortarg }
     }
 
     private fun getArgMap() : Map<String, String> {
-        val longOpts = searchOptions.map { Pair(it.longarg, it.longarg) }.toMap()
-        val shortOpts = searchOptions.filter { it.shortarg != null }.map { Pair(it.shortarg!!, it.longarg) }.toMap()
+        val longOpts = findOptions.map { Pair(it.longarg, it.longarg) }.toMap()
+        val shortOpts = findOptions.filter { it.shortarg != null }.map { Pair(it.shortarg!!, it.longarg) }.toMap()
         return longOpts.plus(shortOpts)
     }
 
-    private val argActionMap: Map<String, ((String, SearchSettings) -> SearchSettings)> = mapOf(
+    private val argActionMap: Map<String, ((String, FindSettings) -> FindSettings)> = mapOf(
             "encoding" to
                     { s, ss -> ss.copy(textFileEncoding = s) },
             "in-archiveext" to
@@ -101,15 +101,15 @@ class SearchOptions {
                     { s, ss -> ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns.plus(Regex(s))) },
             "out-linesbeforepattern" to
                     { s, ss -> ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns.plus(Regex(s))) },
-            "searchpattern" to
-                    { s, ss -> ss.copy(searchPatterns = ss.searchPatterns.plus(Regex(s))) },
+            "findpattern" to
+                    { s, ss -> ss.copy(findPatterns = ss.findPatterns.plus(Regex(s))) },
             "settings-file" to
                     { s, ss -> settingsFromFile(s, ss) }
     )
 
-    private val boolFlagActionMap: Map<String, ((Boolean, SearchSettings) -> SearchSettings)> = mapOf(
+    private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
             "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
-                    searchArchives = b) else ss.copy(archivesOnly = b) },
+                    findArchives = b) else ss.copy(archivesOnly = b) },
             "allmatches" to { b, ss -> ss.copy(firstMatch = !b) },
             "colorize" to { b, ss -> ss.copy(colorize = b) },
             "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
@@ -121,36 +121,36 @@ class SearchOptions {
             "listdirs" to { b, ss -> ss.copy(listDirs = b) },
             "listfiles" to { b, ss -> ss.copy(listFiles = b) },
             "listlines" to { b, ss -> ss.copy(listLines = b) },
-            "multilinesearch" to { b, ss -> ss.copy(multiLineSearch = b) },
+            "multilineoption-REMOVE" to { b, ss -> ss.copy(multiLineFind = b) },
             "noprintmatches" to { b, ss -> ss.copy(printResults = !b) },
             "norecursive" to { b, ss -> ss.copy(recursive = !b) },
-            "nosearcharchives" to { b, ss -> ss.copy(searchArchives = !b) },
+            "nofindarchives" to { b, ss -> ss.copy(findArchives = !b) },
             "printmatches" to { b, ss -> ss.copy(printResults = b) },
             "recursive" to { b, ss -> ss.copy(recursive = b) },
-            "searcharchives" to { b, ss -> ss.copy(searchArchives = b) },
+            "findarchives" to { b, ss -> ss.copy(findArchives = b) },
             "uniquelines" to { b, ss -> ss.copy(uniqueLines = b) },
             "verbose" to { b, ss -> ss.copy(verbose = b) },
             "version" to { b, ss -> ss.copy(printVersion = b) }
     )
 
-    private fun settingsFromFile(filePath: String, settings: SearchSettings) : SearchSettings {
+    private fun settingsFromFile(filePath: String, settings: FindSettings) : FindSettings {
         val file = File(filePath)
         try {
             val json = file.readText()
             return settingsFromJson(json, settings)
         } catch (e: FileNotFoundException) {
-            throw SearchException("Settings file not found: $filePath")
+            throw FindException("Settings file not found: $filePath")
         } catch (e: IOException) {
-            throw SearchException("IOException reading settings file: $filePath")
+            throw FindException("IOException reading settings file: $filePath")
         } catch (e: ParseException) {
-            throw SearchException("ParseException trying to parse the JSON in $filePath")
+            throw FindException("ParseException trying to parse the JSON in $filePath")
         }
     }
 
-    fun settingsFromJson(json: String, settings: SearchSettings): SearchSettings {
+    fun settingsFromJson(json: String, settings: FindSettings): FindSettings {
         val obj = JSONValue.parseWithException(json)
         val jsonObject = obj as JSONObject
-        fun recSettingsFromJson(keys: List<Any?>, settings: SearchSettings) : SearchSettings {
+        fun recSettingsFromJson(keys: List<Any?>, settings: FindSettings) : FindSettings {
             return if (keys.isEmpty()) settings
             else {
                 val ko = keys.first()
@@ -165,7 +165,7 @@ class SearchOptions {
         return recSettingsFromJson(obj.keys.toList(), settings)
     }
 
-    private fun applySetting(key: String, obj: Any, settings: SearchSettings): SearchSettings {
+    private fun applySetting(key: String, obj: Any, settings: FindSettings): FindSettings {
         when (obj) {
             is String -> {
                 return applySetting(key, obj, settings)
@@ -185,7 +185,7 @@ class SearchOptions {
         }
     }
 
-    private fun applySetting(key: String, s: String, settings: SearchSettings): SearchSettings {
+    private fun applySetting(key: String, s: String, settings: FindSettings): FindSettings {
         return when {
             this.argActionMap.containsKey(key) -> {
                 this.argActionMap[key]!!.invoke(s, settings)
@@ -194,29 +194,29 @@ class SearchOptions {
                 settings.copy(startPath = s)
             }
             else -> {
-                throw SearchException("Invalid option: $key")
+                throw FindException("Invalid option: $key")
             }
         }
     }
 
-    private fun applySetting(key: String, bool: Boolean, settings: SearchSettings): SearchSettings {
+    private fun applySetting(key: String, bool: Boolean, settings: FindSettings): FindSettings {
         if (this.boolFlagActionMap.containsKey(key)) {
             return this.boolFlagActionMap[key]!!.invoke(bool, settings)
         } else {
-            throw SearchException("Invalid option: $key")
+            throw FindException("Invalid option: $key")
         }
     }
 
-    private fun applySetting(key: String, lst: List<String>, settings: SearchSettings): SearchSettings {
+    private fun applySetting(key: String, lst: List<String>, settings: FindSettings): FindSettings {
         return if (lst.isEmpty()) settings
         else {
             applySetting(key, lst.drop(1), applySetting(key, lst.first(), settings))
         }
     }
 
-    fun settingsFromArgs(args : Array<String>) : SearchSettings {
+    fun settingsFromArgs(args : Array<String>) : FindSettings {
         val argMap = getArgMap()
-        fun recSettingsFromArgs(args: List<String>, settings: SearchSettings) : SearchSettings {
+        fun recSettingsFromArgs(args: List<String>, settings: FindSettings) : FindSettings {
             if (args.isEmpty()) return settings
             val nextArg = args.first()
             if (nextArg.startsWith("-")) {
@@ -229,16 +229,16 @@ class SearchOptions {
                             val ss = argActionMap[longArg]!!.invoke(argVal, settings)
                             recSettingsFromArgs(args.drop(2), ss)
                         } else {
-                            throw SearchException("Missing value for option $arg")
+                            throw FindException("Missing value for option $arg")
                         }
                     } else if (boolFlagActionMap.containsKey(longArg)) {
                         val ss = boolFlagActionMap[longArg]!!.invoke(true, settings)
                         recSettingsFromArgs(args.drop(1), ss)
                     } else {
-                        throw SearchException("Invalid option: $arg")
+                        throw FindException("Invalid option: $arg")
                     }
                 } else {
-                    throw SearchException("Invalid option: $arg")
+                    throw FindException("Invalid option: $arg")
                 }
             } else {
                 return recSettingsFromArgs(args.drop(1), settings.copy(startPath = nextArg))
@@ -254,12 +254,12 @@ class SearchOptions {
     private fun getUsageString() : String {
         val sb = StringBuilder()
         sb.append("Usage:\n")
-        sb.append(" ktsearch [options] -s <searchpattern> <startpath>\n\n")
+        sb.append(" ktfind [options] -s <findpattern> <startpath>\n\n")
         sb.append("Options:\n")
-        fun getOptString(so: SearchOption): String {
+        fun getOptString(so: FindOption): String {
             return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"
         }
-        val optPairs = searchOptions.map { Pair(getOptString(it), it.desc) }
+        val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.map { it.first.length }.max()
         val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {

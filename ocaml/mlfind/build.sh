@@ -4,9 +4,9 @@
 
 
 build_src () {
-	# the mlsearch executable
-	echo 'corebuild -package ounit -package re2 -package xml-light -I src mlsearch.native'
-	corebuild -package ounit -package re2 -package xml-light -I src mlsearch.native
+	# the mlfind executable
+	echo 'corebuild -package ounit -package re2 -package xml-light -I src mlfind.native'
+	corebuild -package ounit -package re2 -package xml-light -I src mlfind.native
 }
 
 build_tests () {

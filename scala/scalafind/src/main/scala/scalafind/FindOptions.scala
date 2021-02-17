@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 import org.json.simple.parser.{JSONParser, ParseException}
 import org.json.simple.{JSONArray, JSONObject, JSONValue}
@@ -8,31 +8,31 @@ import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
-case class SearchOption(shortarg: Option[String], longarg: String, desc: String) {
+case class FindOption(shortarg: Option[String], longarg: String, desc: String) {
   val sortarg: String = shortarg match {
     case Some(sa) => sa.toLowerCase + "@" + longarg.toLowerCase
     case None => longarg.toLowerCase
   }
 }
 
-object SearchOptions {
+object FindOptions {
   // TODO: move to config file
-  private val _searchOptionsJsonPath = "/searchoptions.json"
-  private val _searchOptions = mutable.ListBuffer.empty[SearchOption]
+  private val _findOptionsJsonPath = "/findoptions.json"
+  private val _findOptions = mutable.ListBuffer.empty[FindOption]
 
-  private def searchOptions: List[SearchOption] = {
-    if (_searchOptions.isEmpty) {
-      loadSearchOptionsFromJson()
+  private def findOptions: List[FindOption] = {
+    if (_findOptions.isEmpty) {
+      loadFindOptionsFromJson()
     }
-    List.empty[SearchOption] ++ _searchOptions.sortWith(_.sortarg < _.sortarg)
+    List.empty[FindOption] ++ _findOptions.sortWith(_.sortarg < _.sortarg)
   }
 
-  private def loadSearchOptionsFromJson() {
+  private def loadFindOptionsFromJson() {
     try {
-      val searchOptionsInputStream = getClass.getResourceAsStream(_searchOptionsJsonPath)
-      val obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream))
+      val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
+      val obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream))
       val jsonObj = obj.asInstanceOf[JSONObject]
-      val soIt = jsonObj.get("searchoptions").asInstanceOf[JSONArray].iterator()
+      val soIt = jsonObj.get("findoptions").asInstanceOf[JSONArray].iterator()
       while (soIt.hasNext) {
         val soObj = soIt.next().asInstanceOf[JSONObject]
         val longArg = soObj.get("long").asInstanceOf[String]
@@ -43,8 +43,8 @@ object SearchOptions {
             None
           }
         val desc = soObj.get("desc").asInstanceOf[String]
-        val option = SearchOption(shortArg, longArg, desc)
-        _searchOptions += option
+        val option = FindOption(shortArg, longArg, desc)
+        _findOptions += option
       }
     } catch {
       case e: ParseException =>
@@ -58,7 +58,7 @@ object SearchOptions {
     extensions ++ exts.split(",").filterNot(_.isEmpty)
   }
 
-  type ArgAction = (String, SearchSettings) => SearchSettings
+  type ArgAction = (String, FindSettings) => FindSettings
 
   private val argActionMap = Map[String, ArgAction](
     "encoding" ->
@@ -105,17 +105,17 @@ object SearchOptions {
       ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
     "out-linesbeforepattern" ->
       ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
-    "searchpattern" ->
-      ((s, ss) => ss.copy(searchPatterns = ss.searchPatterns + s.r)),
+    "findpattern" ->
+      ((s, ss) => ss.copy(findPatterns = ss.findPatterns + s.r)),
     "settings-file" ->
       ((s, ss) => settingsFromFile(s, ss))
   )
 
-  type FlagAction = (Boolean, SearchSettings) => SearchSettings
+  type FlagAction = (Boolean, FindSettings) => FindSettings
 
   private val boolFlagActionMap = Map[String, FlagAction](
     "archivesonly" -> ((b, ss) =>
-      if (b) ss.copy(archivesOnly = b, searchArchives = b) else ss.copy(archivesOnly = b)),
+      if (b) ss.copy(archivesOnly = b, findArchives = b) else ss.copy(archivesOnly = b)),
     "allmatches" -> ((b, ss) => ss.copy(firstMatch = !b)),
     "colorize" -> ((b, ss) => ss.copy(colorize = b)),
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
@@ -126,33 +126,33 @@ object SearchOptions {
     "listdirs" -> ((b, ss) => ss.copy(listDirs = b)),
     "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
     "listlines" -> ((b, ss) => ss.copy(listLines = b)),
-    "multilinesearch" -> ((b, ss) => ss.copy(multiLineSearch = b)),
+    "multilineoption-REMOVE" -> ((b, ss) => ss.copy(multiLineFind = b)),
     "nocolorize" -> ((b, ss) => ss.copy(colorize = !b)),
     "noprintmatches" -> ((b, ss) => ss.copy(printResults = !b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
-    "nosearcharchives" -> ((b, ss) => ss.copy(searchArchives = !b)),
+    "nofindarchives" -> ((b, ss) => ss.copy(findArchives = !b)),
     "printmatches" -> ((b, ss) => ss.copy(printResults = b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
-    "searcharchives" -> ((b, ss) => ss.copy(searchArchives = b)),
+    "findarchives" -> ((b, ss) => ss.copy(findArchives = b)),
     "uniquelines" -> ((b, ss) => ss.copy(uniqueLines = b)),
     "verbose" -> ((b, ss) => ss.copy(verbose = b)),
     "version" -> ((b, ss) => ss.copy(printVersion = b))
   )
 
-  private def settingsFromFile(filePath: String, ss: SearchSettings): SearchSettings = {
+  private def settingsFromFile(filePath: String, ss: FindSettings): FindSettings = {
     val file: File = new File(filePath)
     if (!file.exists()) {
-      throw new SearchException("Settings file not found: %s".format(filePath))
+      throw new FindException("Settings file not found: %s".format(filePath))
     }
     val json: String = FileUtil.getFileContents(file)
     settingsFromJson(json, ss)
   }
 
-  def settingsFromJson(json: String, ss: SearchSettings): SearchSettings = {
+  def settingsFromJson(json: String, ss: FindSettings): FindSettings = {
     val obj: AnyRef = JSONValue.parseWithException(json)
     val jsonObject: JSONObject = obj.asInstanceOf[JSONObject]
     @tailrec
-    def recSettingsFromJson(keys: List[String], settings: SearchSettings): SearchSettings = keys match {
+    def recSettingsFromJson(keys: List[String], settings: FindSettings): FindSettings = keys match {
       case Nil => settings
       case k :: ks =>
         val v = jsonObject.get(k)
@@ -162,46 +162,46 @@ object SearchOptions {
   }
 
   @tailrec
-  def applySetting(arg: String, obj: Any, ss: SearchSettings): SearchSettings = obj match {
+  def applySetting(arg: String, obj: Any, ss: FindSettings): FindSettings = obj match {
     case s: String =>
       if (this.argActionMap.contains(arg)) {
         argActionMap(arg)(s, ss)
       } else if (arg == "startpath") {
         ss.copy(startPath = Some(s))
       } else {
-        throw new SearchException("Invalid option: " + arg)
+        throw new FindException("Invalid option: " + arg)
       }
     case b: Boolean =>
       if (this.boolFlagActionMap.contains(arg)) {
         boolFlagActionMap(arg)(b, ss)
       } else {
-        throw new SearchException("Invalid option: " + arg)
+        throw new FindException("Invalid option: " + arg)
       }
     case l: Long =>
       applySetting(arg, l.toString, ss)
     case a: JSONArray =>
       applySettings(arg, a.toArray.toList.map(_.toString), ss)
     case _ =>
-      throw new SearchException("Unsupported data type")
+      throw new FindException("Unsupported data type")
   }
 
   @tailrec
-  def applySettings(arg: String, lst: List[String], ss: SearchSettings): SearchSettings = lst match {
+  def applySettings(arg: String, lst: List[String], ss: FindSettings): FindSettings = lst match {
     case Nil => ss
     case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
   }
 
   private def getArgMap: Map[String, String] = {
-    val longOpts: Map[String, String] = searchOptions.map { o => (o.longarg, o.longarg)}.toMap
-    val shortOpts = searchOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg.get, o.longarg)}.toMap
+    val longOpts: Map[String, String] = findOptions.map { o => (o.longarg, o.longarg)}.toMap
+    val shortOpts = findOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg.get, o.longarg)}.toMap
     longOpts ++ shortOpts
   }
 
-  def settingsFromArgs(args: Array[String]): SearchSettings = {
+  def settingsFromArgs(args: Array[String]): FindSettings = {
     val argMap = getArgMap
     val switchPattern = """^-+(\w[\w\-]*)$""".r
     @tailrec
-    def nextArg(arglist: List[String], ss: SearchSettings): SearchSettings = {
+    def nextArg(arglist: List[String], ss: FindSettings): FindSettings = {
       arglist match {
         case Nil => ss
         case switchPattern(arg) :: tail =>
@@ -211,7 +211,7 @@ object SearchOptions {
                 if (tail.nonEmpty) {
                   nextArg(tail.tail, argActionMap(longArg)(tail.head, ss))
                 } else {
-                  throw new SearchException("Missing value for arg %s".format(arg))
+                  throw new FindException("Missing value for arg %s".format(arg))
                 }
               } else if (boolFlagActionMap.contains(longArg)) {
                 if (Set("help", "version").contains(longArg)) {
@@ -220,16 +220,16 @@ object SearchOptions {
                   nextArg(tail, boolFlagActionMap(longArg)(true, ss))
                 }
               } else {
-                throw new SearchException("Invalid option: %s".format(arg))
+                throw new FindException("Invalid option: %s".format(arg))
               }
             case None =>
-              throw new SearchException("Invalid option: %s".format(arg))
+              throw new FindException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
           nextArg(tail, ss.copy(startPath = Some(arg)))
       }
     }
-    nextArg(args.toList, SearchSettings(printResults = true))
+    nextArg(args.toList, FindSettings(printResults = true))
   }
 
   def usage(status: Int): Unit = {
@@ -240,9 +240,9 @@ object SearchOptions {
   def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
-    sb.append(" scalasearch [options] -s <searchpattern> <startpath>\n\n")
+    sb.append(" scalafind [options] -s <findpattern> <startpath>\n\n")
     sb.append("Options:\n")
-    val optPairs = searchOptions.map { so =>
+    val optPairs = findOptions.map { so =>
       val opts = so.shortarg match {
         case Some(sa) => s"-$sa,--${so.longarg}"
         case None => s"--${so.longarg}"

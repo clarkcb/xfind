@@ -6,7 +6,7 @@
 #
 ###############################################################################
 
-package plsearch::config;
+package plfind::config;
 
 use strict;
 use warnings;
@@ -18,19 +18,19 @@ use File::Basename;
 use File::Spec;
 use JSON::PP qw(decode_json);
 
-use plsearch::FileUtil;
+use plfind::FileUtil;
 
 my $absdir = dirname(abs_path(__FILE__));
 my $share_path = File::Spec->join($absdir, '../../share');
 my $config_json_path = $share_path . '/config.json';
-my $config = decode_json plsearch::FileUtil::get_file_contents($config_json_path);
+my $config = decode_json plfind::FileUtil::get_file_contents($config_json_path);
 
-our $XSEARCHPATH = $config->{xsearchpath};
-our $SHAREDPATH = "$XSEARCHPATH/shared";
+our $XFINDPATH = $config->{xfindpath};
+our $SHAREDPATH = "$XFINDPATH/shared";
 our $FILETYPESPATH = "$share_path/filetypes.json";
-our $SEARCHOPTIONSPATH = "$share_path/searchoptions.json";
+our $FINDOPTIONSPATH = "$share_path/findoptions.json";
 
-our @EXPORT = qw($XSEARCHPATH $SHAREDPATH $FILETYPESPATH $SEARCHOPTIONSPATH);
+our @EXPORT = qw($XFINDPATH $SHAREDPATH $FILETYPESPATH $FINDOPTIONSPATH);
 
 1;
 

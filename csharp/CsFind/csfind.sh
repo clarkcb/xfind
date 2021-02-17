@@ -4,9 +4,9 @@ SCRIPTPATH=$( readlink "${BASH_SOURCE[0]}" )
 SCRIPTDIR=$( dirname "$SCRIPTPATH" )
 source "$SCRIPTDIR/../../scripts/config.sh" 
 
-CSSEARCH_PATH=$CSHARP_PATH/CsSearch
+CSFIND_PATH=$CSHARP_PATH/CsFind
 # CONFIGURATION=Debug
 CONFIGURATION=Release
-CSSEARCHEXE=$CSSEARCH_PATH/CsSearch/bin/$CONFIGURATION/netcoreapp3.1/CsSearch.dll
+CSFINDEXE=$CSFIND_PATH/CsFind/bin/$CONFIGURATION/netcoreapp3.1/CsFind.dll
 
-dotnet $CSSEARCHEXE $@
+dotnet $CSFINDEXE $@

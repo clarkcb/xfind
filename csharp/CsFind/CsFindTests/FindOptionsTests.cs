@@ -2,19 +2,19 @@
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using CsSearch;
+using CsFind;
 
-namespace CsSearchTests
+namespace CsFindTests
 {
 	[TestFixture]
-	public class SearchOptionsTests
+	public class FindOptionsTests
 	{
-		private readonly SearchOptions _searchOptions = new SearchOptions();
+		private readonly FindOptions _findOptions = new FindOptions();
 
 		[Test]
 		public void SettingsFromArgs_NoArgs_HasDefaultValues()
 		{
-			var settings = _searchOptions.SettingsFromArgs(new List<string>());
+			var settings = _findOptions.SettingsFromArgs(new List<string>());
 			Assert.IsFalse(settings.ArchivesOnly);
 			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
@@ -26,12 +26,12 @@ namespace CsSearchTests
 			Assert.IsFalse(settings.ListFiles);
 			Assert.IsFalse(settings.ListLines);
 			Assert.AreEqual(150, settings.MaxLineLength);
-			Assert.IsFalse(settings.MultiLineSearch);
+			Assert.IsFalse(settings.MultiLineFind);
 			Assert.IsTrue(settings.PrintResults);
 			Assert.IsFalse(settings.PrintUsage);
 			Assert.IsFalse(settings.PrintVersion);
 			Assert.IsTrue(settings.Recursive);
-			Assert.IsFalse(settings.SearchArchives);
+			Assert.IsFalse(settings.FindArchives);
 			Assert.AreEqual(null, settings.StartPath);
 			Assert.IsFalse(settings.UniqueLines);
 			Assert.IsFalse(settings.Verbose);
@@ -40,21 +40,21 @@ namespace CsSearchTests
 		[Test]
 		public void SettingsFromArgs_ValidArgs_HasArgValues()
 		{
-			var args = new List<string>() { "-x", "cs", "-s", "Search", "." };
-			var settings = _searchOptions.SettingsFromArgs(args);
+			var args = new List<string>() { "-x", "cs", "-s", "Find", "." };
+			var settings = _findOptions.SettingsFromArgs(args);
 			var startInfo = new DirectoryInfo(".");
 			Assert.AreEqual(startInfo.ToString(), settings.StartPath);
 			Assert.AreEqual(1, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
-			Assert.AreEqual(1, settings.SearchPatterns.Count);
-			Assert.IsTrue(settings.SearchPatterns.First().ToString() == "Search");
+			Assert.AreEqual(1, settings.FindPatterns.Count);
+			Assert.IsTrue(settings.FindPatterns.First().ToString() == "Find");
 		}
 
 		[Test]
-		public void SettingsFromArgs_InValidArgs_ThrowsSearchException()
+		public void SettingsFromArgs_InValidArgs_ThrowsFindException()
 		{
-			var args = new List<string>() { "-x", "cs", "-s", "Search", ".", "-Q" };
-			var ex = Assert.Throws<SearchException>(() => _searchOptions.SettingsFromArgs(args));
+			var args = new List<string>() { "-x", "cs", "-s", "Find", ".", "-Q" };
+			var ex = Assert.Throws<FindException>(() => _findOptions.SettingsFromArgs(args));
 			Assert.AreEqual("Invalid option: Q", ex.Message);
 		}
 		
@@ -62,21 +62,21 @@ namespace CsSearchTests
 		public void SettingsFromJson_EqualsExpected()
 		{
 			var json = @"{
-  ""startpath"": ""~/src/xsearch/"", 
+  ""startpath"": ""~/src/xfind/"", 
   ""in-ext"": [""js"", ""ts""],
   ""out-dirpattern"": ""node_module"",
   ""out-filepattern"": [""temp""],
-  ""searchpattern"": ""Searcher"",
+  ""findpattern"": ""Finder"",
   ""linesbefore"": 2,
   ""linesafter"": 2,
   ""debug"": true,
   ""allmatches"": false,
   ""includehidden"": false
 }";
-			var settings = new SearchSettings();
-			SearchOptions.SettingsFromJson(json, settings);
+			var settings = new FindSettings();
+			FindOptions.SettingsFromJson(json, settings);
 
-			Assert.AreEqual("~/src/xsearch/", settings.StartPath);
+			Assert.AreEqual("~/src/xfind/", settings.StartPath);
 
 			Assert.AreEqual(2, settings.InExtensions.Count);
 			Assert.True(settings.InExtensions.Contains(".js"));
@@ -88,8 +88,8 @@ namespace CsSearchTests
 			Assert.AreEqual(1, settings.OutFilePatterns.Count);
 			Assert.AreEqual("temp", settings.OutFilePatterns.First().ToString());
 
-			Assert.AreEqual(1, settings.SearchPatterns.Count);
-			Assert.AreEqual("Searcher", settings.SearchPatterns.First().ToString());
+			Assert.AreEqual(1, settings.FindPatterns.Count);
+			Assert.AreEqual("Finder", settings.FindPatterns.First().ToString());
 
 			Assert.AreEqual(2, settings.LinesBefore);
 			Assert.AreEqual(2, settings.LinesAfter);

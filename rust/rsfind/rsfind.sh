@@ -1,7 +1,7 @@
 #!/bin/bash
 
-RSSEARCH_PATH=/Users/cary/src/xsearch/rust/rssearch
+RSFIND_PATH=/Users/cary/src/xfind/rust/rsfind
 # PROFILE=debug
 PROFILE=release
 
-$RSSEARCH_PATH/target/$PROFILE/rssearch "$@"
+$RSFIND_PATH/target/$PROFILE/rsfind "$@"

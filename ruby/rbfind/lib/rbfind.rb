@@ -3,96 +3,96 @@
 
 ################################################################################
 #
-# rbsearch.rb
+# rbfind.rb
 #
-# A ruby implementation of xsearch
+# A ruby implementation of xfind
 #
 ################################################################################
 
-require_relative 'rbsearch/common'
-require_relative 'rbsearch/filetypes'
-require_relative 'rbsearch/fileutil'
-require_relative 'rbsearch/searcher'
-require_relative 'rbsearch/searchfile'
-require_relative 'rbsearch/searchoption'
-require_relative 'rbsearch/searchoptions'
-require_relative 'rbsearch/searchresult'
-require_relative 'rbsearch/searchsettings'
+require_relative 'rbfind/common'
+require_relative 'rbfind/filetypes'
+require_relative 'rbfind/fileutil'
+require_relative 'rbfind/finder'
+require_relative 'rbfind/findfile'
+require_relative 'rbfind/findoption'
+require_relative 'rbfind/findoptions'
+require_relative 'rbfind/findresult'
+require_relative 'rbfind/findsettings'
 
 def main
-  options = RbSearch::SearchOptions.new
+  options = RbFind::FindOptions.new
 
   settings =
     begin
-      options.search_settings_from_args(ARGV)
-    rescue RbSearch::SearchError => e
+      options.find_settings_from_args(ARGV)
+    rescue RbFind::FindError => e
       handle_error(e, options)
     end
 
-  RbSearch::log("settings: #{settings}") if settings.debug
+  RbFind::log("settings: #{settings}") if settings.debug
 
   if settings.printusage
-    RbSearch::log("\n")
+    RbFind::log("\n")
     options.usage
   end
 
   if settings.printversion
-    RbSearch::log("Version: #{RbSearch::VERSION}")
+    RbFind::log("Version: #{RbFind::VERSION}")
     abort
   end
 
-  search(options, settings)
+  find(options, settings)
 end
 
 def handle_error(err, options)
-  RbSearch::log("\nERROR: #{err.message}\n\n")
+  RbFind::log("\nERROR: #{err.message}\n\n")
   options.usage
 end
 
-def search(options, settings)
-  searcher = RbSearch::Searcher.new(settings)
-  searcher.search
+def find(options, settings)
+  finder = RbFind::Finder.new(settings)
+  finder.find
 
   # print the results
   if settings.printresults
-    RbSearch::log("\n")
-    searcher.print_results
+    RbFind::log("\n")
+    finder.print_results
   end
 
   if settings.listdirs
-    RbSearch::log("\n")
-    dirs = searcher.get_matching_dirs
-    RbSearch::log("Directories with matches (#{dirs.size}):")
+    RbFind::log("\n")
+    dirs = finder.get_matching_dirs
+    RbFind::log("Directories with matches (#{dirs.size}):")
     dirs.each do |d|
-      RbSearch::log("#{d}\n")
+      RbFind::log("#{d}\n")
     end
   end
 
   if settings.listfiles
-    RbSearch::log("\n")
-    files = searcher.get_matching_files
-    RbSearch::log("Files with matches (#{files.size}):")
+    RbFind::log("\n")
+    files = finder.get_matching_files
+    RbFind::log("Files with matches (#{files.size}):")
     files.each do |f|
-      RbSearch::log("#{f}\n")
+      RbFind::log("#{f}\n")
     end
   end
 
   if settings.listlines
-    RbSearch::log("\n")
-    lines = searcher.get_matching_lines
+    RbFind::log("\n")
+    lines = finder.get_matching_lines
     hdr_text =
       if settings.uniquelines
         'Unique lines with matches'
       else
         'Lines with matches'
       end
-    RbSearch::log("#{hdr_text} (#{lines.size}):")
+    RbFind::log("#{hdr_text} (#{lines.size}):")
     lines.each do |line|
-      RbSearch::log("#{line}\n")
+      RbFind::log("#{line}\n")
     end
   end
 
-rescue RbSearch::SearchError => e
+rescue RbFind::FindError => e
   handle_error(e, options)
 
 rescue RuntimeError => e

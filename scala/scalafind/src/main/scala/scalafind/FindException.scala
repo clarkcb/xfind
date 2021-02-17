@@ -1,5 +1,5 @@
-package scalasearch
+package scalafind
 
-class SearchException(val message: String) extends Exception {
+class FindException(val message: String) extends Exception {
   override def getMessage : String = message
 }

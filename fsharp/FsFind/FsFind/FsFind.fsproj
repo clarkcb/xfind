@@ -9,19 +9,19 @@
     <Compile Include="Common.fs" />
     <Compile Include="Color.fs" />
     <Compile Include="EmbeddedResource.fs" />
-    <Compile Include="SearchException.fs" />
+    <Compile Include="FindException.fs" />
     <Compile Include="FileUtil.fs" />
     <Compile Include="FileTypes.fs" />
-    <Compile Include="SearchSettings.fs" />
-    <Compile Include="SearchFile.fs" />
-    <Compile Include="SearchResult.fs" />
-    <Compile Include="SearchResultFormatter.fs" />
-    <Compile Include="SearchOptions.fs" />
-    <Compile Include="Searcher.fs" />
-    <Compile Include="SearchMain.fs" />
+    <Compile Include="FindSettings.fs" />
+    <Compile Include="FindFile.fs" />
+    <Compile Include="FindResult.fs" />
+    <Compile Include="FindResultFormatter.fs" />
+    <Compile Include="FindOptions.fs" />
+    <Compile Include="Finder.fs" />
+    <Compile Include="FindMain.fs" />
     <EmbeddedResource Include="Resources\filetypes.xml" />
-    <EmbeddedResource Include="Resources\searchoptions.xml" />
-    <EmbeddedResource Include="Resources\searchoptions.json" />
+    <EmbeddedResource Include="Resources\findoptions.xml" />
+    <EmbeddedResource Include="Resources\findoptions.json" />
     <EmbeddedResource Include="Resources\filetypes.json" />
   </ItemGroup>
 

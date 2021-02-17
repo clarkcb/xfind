@@ -1,8 +1,8 @@
 #include <catch2/catch.hpp>
-#include "SearchSettings.h"
+#include "FindSettings.h"
 
-TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
-    auto* settings = new cppsearch::SearchSettings();
+TEST_CASE("Get default FindSettings", "[FindSettings]") {
+    auto* settings = new cppfind::FindSettings();
 
     REQUIRE(!settings->archivesonly());
     REQUIRE(!settings->debug());
@@ -14,11 +14,11 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(!settings->listfiles());
     REQUIRE(!settings->listlines());
     REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilinesearch());
+    REQUIRE(!settings->multilineoption-REMOVE());
     REQUIRE(!settings->printresults());
     REQUIRE(!settings->printusage());
     REQUIRE(!settings->printversion());
-    REQUIRE(!settings->searcharchives());
+    REQUIRE(!settings->findarchives());
     REQUIRE(!settings->uniquelines());
     REQUIRE(!settings->verbose());
 
@@ -34,11 +34,11 @@ TEST_CASE("Get default SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->out_dirpatterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_filepatterns()->empty());
-    REQUIRE(settings->searchpatterns()->empty());
+    REQUIRE(settings->findpatterns()->empty());
 }
 
-TEST_CASE("Add extensions to SearchSettings", "[SearchSettings]") {
-    auto *settings = new cppsearch::SearchSettings();
+TEST_CASE("Add extensions to FindSettings", "[FindSettings]") {
+    auto *settings = new cppfind::FindSettings();
 
     REQUIRE(settings->in_archiveextensions()->empty());
     settings->add_in_archiveextension("zip,gz");
@@ -57,8 +57,8 @@ TEST_CASE("Add extensions to SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->out_extensions()->size() == 2);
 }
 
-TEST_CASE("Add patterns to SearchSettings", "[SearchSettings]") {
-    auto *settings = new cppsearch::SearchSettings();
+TEST_CASE("Add patterns to FindSettings", "[FindSettings]") {
+    auto *settings = new cppfind::FindSettings();
 
     REQUIRE(settings->in_archivefilepatterns()->empty());
     settings->add_in_archivefilepattern("archive");
@@ -85,14 +85,14 @@ TEST_CASE("Add patterns to SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->out_filepatterns()->size() == 1);
 }
 
-TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
-    auto *settings = new cppsearch::SearchSettings();
+TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
+    auto *settings = new cppfind::FindSettings();
 
     REQUIRE(!settings->archivesonly());
-    REQUIRE(!settings->searcharchives());
+    REQUIRE(!settings->findarchives());
     settings->archivesonly(true);
     REQUIRE(settings->archivesonly());
-    REQUIRE(settings->searcharchives());
+    REQUIRE(settings->findarchives());
 
     REQUIRE(!settings->debug());
     REQUIRE(!settings->verbose());
@@ -108,9 +108,9 @@ TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
     settings->firstmatch(true);
     REQUIRE(settings->firstmatch());
 
-    REQUIRE(!settings->multilinesearch());
-    settings->multilinesearch(true);
-    REQUIRE(settings->multilinesearch());
+    REQUIRE(!settings->multilineoption-REMOVE());
+    settings->multilineoption-REMOVE(true);
+    REQUIRE(settings->multilineoption-REMOVE());
 
     REQUIRE(!settings->listdirs());
     settings->listdirs(true);
@@ -145,8 +145,8 @@ TEST_CASE("Alter booleans in SearchSettings", "[SearchSettings]") {
     REQUIRE(settings->uniquelines());
 }
 
-TEST_CASE("Alter ints in SearchSettings", "[SearchSettings]") {
-    auto *settings = new cppsearch::SearchSettings();
+TEST_CASE("Alter ints in FindSettings", "[FindSettings]") {
+    auto *settings = new cppfind::FindSettings();
 
     REQUIRE(settings->linesbefore() == 0);
     settings->linesbefore(5);

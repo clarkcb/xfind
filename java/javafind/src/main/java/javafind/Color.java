@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 public class Color {
     static final String RESET = "\u001B[0m";

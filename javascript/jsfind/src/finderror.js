@@ -1,14 +1,14 @@
 /*
- * searcherror.js
+ * finderror.js
  *
- * custom error class for jssearch
+ * custom error class for jsfind
  */
 
-class SearchError extends Error {
+class FindError extends Error {
     constructor(message) {
         super(message);
-        this.name = "SearchError";
+        this.name = "FindError";
     }
 }
 
-exports.SearchError = SearchError;
+exports.FindError = FindError;

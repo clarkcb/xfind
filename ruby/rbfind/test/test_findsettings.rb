@@ -6,14 +6,14 @@
 #
 ################################################################################
 
-require_relative '../lib/rbsearch'
+require_relative '../lib/rbfind'
 require 'minitest/autorun'
 
-module RbSearch
+module RbFind
 
-  class SearchSettingsTest < Minitest::Test
+  class FindSettingsTest < Minitest::Test
     def setup
-      @settings = SearchSettings.new
+      @settings = FindSettings.new
     end
 
     def test_default_settings
@@ -27,12 +27,12 @@ module RbSearch
       assert_equal(false, @settings.listfiles)
       assert_equal(false, @settings.listlines)
       assert_equal(150, @settings.maxlinelength)
-      assert_equal(false, @settings.multilinesearch)
+      assert_equal(false, @settings.multilineoption-REMOVE)
       assert_equal(true, @settings.printresults)
       assert_equal(false, @settings.printusage)
       assert_equal(false, @settings.printversion)
       assert_equal(true, @settings.recursive)
-      assert_equal(false, @settings.searcharchives)
+      assert_equal(false, @settings.findarchives)
       assert_equal(nil, @settings.startpath)
       assert_equal(false, @settings.uniquelines)
       assert_equal(false, @settings.verbose)
@@ -50,7 +50,7 @@ module RbSearch
       assert(@settings.out_filepatterns.empty?)
       assert(@settings.out_linesafterpatterns.empty?)
       assert(@settings.out_linesbeforepatterns.empty?)
-      assert(@settings.searchpatterns.empty?)
+      assert(@settings.findpatterns.empty?)
     end
 
     def test_set_properties
@@ -59,7 +59,7 @@ module RbSearch
       @settings.linesafter = 5
       @settings.linesbefore = 5
       assert_equal(true, @settings.archivesonly)
-      assert_equal(true, @settings.searcharchives)
+      assert_equal(true, @settings.findarchives)
       assert_equal(true, @settings.debug)
       assert_equal(true, @settings.verbose)
       assert_equal(5, @settings.linesafter)
@@ -87,16 +87,16 @@ module RbSearch
     end
 
     def test_add_pattern
-      @settings.add_pattern('Search', @settings.searchpatterns)
-      assert_equal(1, @settings.searchpatterns.length)
-      assert_equal(@settings.searchpatterns.first.source, 'Search')
+      @settings.add_pattern('Find', @settings.findpatterns)
+      assert_equal(1, @settings.findpatterns.length)
+      assert_equal(@settings.findpatterns.first.source, 'Find')
     end
 
     def test_add_patterns_as_array
-      @settings.add_patterns(%w[Search FileTypes], @settings.searchpatterns)
-      assert_equal(2, @settings.searchpatterns.length)
-      assert_equal(@settings.searchpatterns.first.source, 'Search')
-      assert_equal(@settings.searchpatterns[1].source, 'FileTypes')
+      @settings.add_patterns(%w[Find FileTypes], @settings.findpatterns)
+      assert_equal(2, @settings.findpatterns.length)
+      assert_equal(@settings.findpatterns.first.source, 'Find')
+      assert_equal(@settings.findpatterns[1].source, 'FileTypes')
     end
   end
 end

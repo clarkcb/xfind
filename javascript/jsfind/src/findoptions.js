@@ -1,16 +1,16 @@
 /*
- * searchoptions.js
+ * findoptions.js
  *
- * defines the set of search options and provides functionality to define search settings from them
+ * defines the set of find options and provides functionality to define find settings from them
  */
 
 const config = require('./config');
 const {expandPath} = require('./fileutil');
-const {SearchError} = require('./searcherror');
-const {SearchOption} = require('./searchoption');
-const {SearchSettings} = require('./searchsettings');
+const {FindError} = require('./finderror');
+const {FindOption} = require('./findoption');
+const {FindSettings} = require('./findsettings');
 
-class SearchOptions {
+class FindOptions {
     'use strict'
 
     constructor() {
@@ -62,8 +62,8 @@ class SearchOptions {
                 (x, settings) => { settings.addOutLinesAfterPatterns(x); },
             'out-linesbeforepattern':
                 (x, settings) => { settings.addOutLinesBeforePatterns(x); },
-            'searchpattern':
-                (x, settings) => { settings.addSearchPatterns(x); },
+            'findpattern':
+                (x, settings) => { settings.addFindPatterns(x); },
             'settings-file':
                 (x, settings) => { return settingsFromFile(x, settings); }
 
@@ -91,22 +91,22 @@ class SearchOptions {
                 (b, settings) => { settings.listFiles = b; },
             'listlines':
                 (b, settings) => { settings.listLines = b; },
-            'multilinesearch':
-                (b, settings) => { settings.multilineSearch = b; },
+            'multilineoption-REMOVE':
+                (b, settings) => { settings.multilineFind = b; },
             'nocolorize':
                 (b, settings) => { settings.colorize = !b; },
             'noprintmatches':
                 (b, settings) => { settings.printResults = !b; },
             'norecursive':
                 (b, settings) => { settings.recursive = !b; },
-            'nosearcharchives':
-                (b, settings) => { settings.searchArchives = !b; },
+            'nofindarchives':
+                (b, settings) => { settings.findArchives = !b; },
             'printmatches':
                 (b, settings) => { settings.printResults = b; },
             'recursive':
                 (b, settings) => { settings.recursive = b; },
-            'searcharchives':
-                (b, settings) => { settings.searchArchives = b; },
+            'findarchives':
+                (b, settings) => { settings.findArchives = b; },
             'uniquelines':
                 (b, settings) => { settings.uniqueLines = b; },
             'verbose':
@@ -114,21 +114,21 @@ class SearchOptions {
             'version':
                 (b, settings) => { settings.printVersion = b; }
         };
-        // the list of SearchOption objects (populated from JSON)
+        // the list of FindOption objects (populated from JSON)
         this.options = [];
         (() => {
             const fs = require('fs');
 
             let json = '';
-            if (fs.existsSync(expandPath(config.SEARCHOPTIONSJSONPATH))) {
-                json = fs.readFileSync(expandPath(config.SEARCHOPTIONSJSONPATH)).toString();
+            if (fs.existsSync(expandPath(config.FINDOPTIONSJSONPATH))) {
+                json = fs.readFileSync(expandPath(config.FINDOPTIONSJSONPATH)).toString();
             } else {
-                throw new SearchError('File not found: ' + config.SEARCHOPTIONSJSONPATH);
+                throw new FindError('File not found: ' + config.FINDOPTIONSJSONPATH);
             }
 
             let obj = JSON.parse(json);
-            if (obj.hasOwnProperty('searchoptions') && Array.isArray(obj['searchoptions'])) {
-                obj['searchoptions'].forEach(so => {
+            if (obj.hasOwnProperty('findoptions') && Array.isArray(obj['findoptions'])) {
+                obj['findoptions'].forEach(so => {
                     let longArg = so['long'];
                     let shortArg = '';
                     if (so.hasOwnProperty('short'))
@@ -139,8 +139,8 @@ class SearchOptions {
                     if (shortArg) this.argNameMap[shortArg] = longArg;
                     if (this.argActionMap[longArg]) func = this.argActionMap[longArg];
                     else if (this.boolFlagActionMap[longArg]) func = this.boolFlagActionMap[longArg];
-                    else throw new SearchError("Unknown option: " + longArg);
-                    const option = new SearchOption(shortArg, longArg, desc, func);
+                    else throw new FindError("Unknown option: " + longArg);
+                    const option = new FindOption(shortArg, longArg, desc, func);
                     this.options.push(option);
                     if (this.argActionMap[longArg]) {
                         this.argMap[longArg] = option;
@@ -150,7 +150,7 @@ class SearchOptions {
                         if (shortArg) this.flagMap[shortArg] = option;
                     }
                 });
-            } else throw new SearchError("Invalid searchoptions file: " + config.SEARCHOPTIONSJSONPATH);
+            } else throw new FindError("Invalid findoptions file: " + config.FINDOPTIONSJSONPATH);
             this.options.sort(this.optcmp);
         })();
 
@@ -168,7 +168,7 @@ class SearchOptions {
             let json = fs.readFileSync(filepath).toString();
             return this.settingsFromJson(json, settings);
         } else {
-            return new SearchError('Settings file not found');
+            return new FindError('Settings file not found');
         }
     }
 
@@ -190,7 +190,7 @@ class SearchOptions {
                 } else if (k === 'startpath') {
                     settings.startPath = obj[k];
                 } else {
-                    err = new SearchError("Invalid option: " + k);
+                    err = new FindError("Invalid option: " + k);
                 }
             }
         }
@@ -199,7 +199,7 @@ class SearchOptions {
 
     settingsFromArgs(args, cb) {
         let err = null;
-        let settings = new SearchSettings();
+        let settings = new FindSettings();
 
         // default printResults to true since it's being run from cmd line
         settings.printResults = true;
@@ -240,7 +240,7 @@ class SearchOptions {
     }
 
     getUsageString() {
-        let usage = 'Usage:\n jssearch [options] -s <searchpattern> <startpath>\n\n';
+        let usage = 'Usage:\n jsfind [options] -s <findpattern> <startpath>\n\n';
         usage += 'Options:\n';
         let optStrings = [];
         let optDescs = [];
@@ -265,4 +265,4 @@ class SearchOptions {
     }
 }
 
-exports.SearchOptions = SearchOptions;
+exports.FindOptions = FindOptions;

@@ -4,11 +4,11 @@
 import PackageDescription
 
 let package = Package(
-    name: "swiftsearch",
-    // products already default to swiftsearch.framework, swiftsearchApp and swfitsearchTests.xctest
+    name: "swiftfind",
+    // products already default to swiftfind.framework, swiftfindApp and swfitfindTests.xctest
     products: [
-        .library(name: "swiftsearch", targets: ["swiftsearch"]),
-        .executable(name: "swiftsearchApp", targets: ["swiftsearchApp"])
+        .library(name: "swiftfind", targets: ["swiftfind"]),
+        .executable(name: "swiftfindApp", targets: ["swiftfindApp"])
     ],
     dependencies: [
         // Dependencies declare other packages that this package depends on.
@@ -18,13 +18,13 @@ let package = Package(
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
         // Targets can depend on other targets in this package, and on products in packages this package depends on.
         .target(
-            name: "swiftsearch",
+            name: "swiftfind",
             dependencies: []),
         .target(
-            name: "swiftsearchApp",
-            dependencies: ["swiftsearch"]),
+            name: "swiftfindApp",
+            dependencies: ["swiftfind"]),
         .testTarget(
-            name: "swiftsearchTests",
-            dependencies: ["swiftsearch"])
+            name: "swiftfindTests",
+            dependencies: ["swiftfind"])
     ]
 )

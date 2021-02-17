@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 import java.io.File
 import java.io.IOException
@@ -8,7 +8,7 @@ import java.util.*
 /**
  * @author cary on 7/23/16.
  */
-class Searcher(val settings: SearchSettings) {
+class Finder(val settings: FindSettings) {
     private val fileTypes: FileTypes
     private var charset: Charset? = null
 
@@ -17,33 +17,33 @@ class Searcher(val settings: SearchSettings) {
         fileTypes = FileTypes()
     }
 
-    private fun validateSettings(settings: SearchSettings) {
+    private fun validateSettings(settings: FindSettings) {
         if (settings.startPath.isNullOrEmpty()) {
-            throw SearchException("Startpath not defined")
+            throw FindException("Startpath not defined")
         }
         val startPathFile = File(settings.startPath)
         if (!startPathFile.exists()) {
-            throw SearchException("Startpath not found")
+            throw FindException("Startpath not found")
         }
         if (!startPathFile.canRead()) {
-            throw SearchException("Startpath not readable")
+            throw FindException("Startpath not readable")
         }
-        if (settings.searchPatterns.isEmpty()) {
-            throw SearchException("No search patterns defined")
+        if (settings.findPatterns.isEmpty()) {
+            throw FindException("No find patterns defined")
         }
         if (settings.linesAfter < 0) {
-            throw SearchException("Invalid linesafter")
+            throw FindException("Invalid linesafter")
         }
         if (settings.linesBefore < 0) {
-            throw SearchException("Invalid linesbefore")
+            throw FindException("Invalid linesbefore")
         }
         if (settings.maxLineLength < 0) {
-            throw SearchException("Invalid maxlinelength")
+            throw FindException("Invalid maxlinelength")
         }
         try {
             charset = Charset.forName(settings.textFileEncoding)
         } catch (e: IllegalArgumentException) {
-            throw SearchException("Invalid or unsupported encoding: ${settings.textFileEncoding}")
+            throw FindException("Invalid or unsupported encoding: ${settings.textFileEncoding}")
         }
     }
 
@@ -60,7 +60,7 @@ class Searcher(val settings: SearchSettings) {
         return patternSet.mapNotNull { p -> p.find(s, startIndex) }
     }
 
-    fun isSearchDir(d: File): Boolean {
+    fun isFindDir(d: File): Boolean {
         val pathElems = d.path.split(File.separatorChar)
         if (settings.excludeHidden && pathElems.any { FileUtil.isHidden(it) }) {
             return false
@@ -72,7 +72,7 @@ class Searcher(val settings: SearchSettings) {
                         || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
-    fun isSearchFile(sf: SearchFile): Boolean {
+    fun isFindFile(sf: FindFile): Boolean {
         val ext = sf.file.extension
         return (settings.inExtensions.isEmpty()
                         || settings.inExtensions.contains(ext))
@@ -93,7 +93,7 @@ class Searcher(val settings: SearchSettings) {
                         || !settings.outFileTypes.contains(sf.fileType))
     }
 
-    fun isArchiveSearchFile(sf: SearchFile): Boolean {
+    fun isArchiveFindFile(sf: FindFile): Boolean {
         val ext = sf.file.extension
         return (settings.inArchiveExtensions.isEmpty()
                         || settings.inArchiveExtensions.contains(ext))
@@ -108,72 +108,72 @@ class Searcher(val settings: SearchSettings) {
                         || !matchesAnyPattern(sf.file.name, settings.outArchiveFilePatterns))
     }
 
-    fun filterToSearchFile(f: File): SearchFile? {
+    fun filterToFindFile(f: File): FindFile? {
         if (settings.excludeHidden && f.isHidden) {
             return null
         }
-        val sf = SearchFile(f, fileTypes.getFileType(f))
+        val sf = FindFile(f, fileTypes.getFileType(f))
         if ((sf.fileType === FileType.ARCHIVE
-                    && (settings.searchArchives || settings.archivesOnly)
-                    && isArchiveSearchFile(sf))
-            || (!settings.archivesOnly && isSearchFile(sf))) {
+                    && (settings.findArchives || settings.archivesOnly)
+                    && isArchiveFindFile(sf))
+            || (!settings.archivesOnly && isFindFile(sf))) {
             return sf
         }
         return null
     }
 
-    private fun getSearchFiles(startPath: File): List<SearchFile> {
+    private fun getFindFiles(startPath: File): List<FindFile> {
         return startPath.walk()
-            .onEnter { isSearchDir(it) }
+            .onEnter { isFindDir(it) }
             .filter { it.isFile }
-            .mapNotNull { filterToSearchFile(it) }
+            .mapNotNull { filterToFindFile(it) }
             .toList()
     }
 
-    fun search(): List<SearchResult> {
+    fun find(): List<FindResult> {
         val startPathFile = File(settings.startPath!!)
         return if (startPathFile.isDirectory) {
-            searchPath(startPathFile)
+            findPath(startPathFile)
         } else if (startPathFile.isFile) {
-            val sf = filterToSearchFile(startPathFile)
+            val sf = filterToFindFile(startPathFile)
             if (sf != null) {
-                searchFile(sf)
+                findFile(sf)
             } else {
-                throw SearchException("Startpath does not match search settings")
+                throw FindException("Startpath does not match find settings")
             }
         } else {
-            throw SearchException("startPath is invalid file type: " + settings.startPath)
+            throw FindException("startPath is invalid file type: " + settings.startPath)
         }
     }
 
-    private fun searchPath(filePath: File): List<SearchResult> {
-        val searchFiles = getSearchFiles(filePath)
+    private fun findPath(filePath: File): List<FindResult> {
+        val findFiles = getFindFiles(filePath)
         if (settings.verbose) {
-            val searchDirs: List<String> = searchFiles.map { it.file.parent }.distinct().sorted().toList()
-            log("\nDirectories to be searched (${searchDirs.size}):")
-            for (d in searchDirs) {
+            val findDirs: List<String> = findFiles.map { it.file.parent }.distinct().sorted().toList()
+            log("\nDirectories to be found (${findDirs.size}):")
+            for (d in findDirs) {
                 log(d)
             }
-            log("\n\nFiles to be searched (${searchFiles.size}):")
-            for (sf in searchFiles) {
+            log("\n\nFiles to be found (${findFiles.size}):")
+            for (sf in findFiles) {
                 log(sf.toString())
             }
             log("")
         }
-        return searchFiles(searchFiles)
+        return findFiles(findFiles)
     }
 
-    private fun searchFiles(sfs: List<SearchFile>): List<SearchResult> {
-        return sfs.flatMap { searchFile(it) }
+    private fun findFiles(sfs: List<FindFile>): List<FindResult> {
+        return sfs.flatMap { findFile(it) }
     }
 
-    private fun searchFile(sf: SearchFile): List<SearchResult> {
+    private fun findFile(sf: FindFile): List<FindResult> {
         return when {
             setOf(FileType.TEXT, FileType.CODE, FileType.XML).contains(sf.fileType) -> {
-                searchTextFile(sf)
+                findTextFile(sf)
             }
             sf.fileType === FileType.BINARY -> {
-                searchBinaryFile(sf)
+                findBinaryFile(sf)
             }
             else -> {
                 listOf()
@@ -181,20 +181,20 @@ class Searcher(val settings: SearchSettings) {
         }
     }
 
-    private fun searchTextFile(sf: SearchFile): List<SearchResult> {
+    private fun findTextFile(sf: FindFile): List<FindResult> {
         if (settings.debug) {
-            log("Searching text file $sf")
+            log("Finding text file $sf")
         }
-        return if (settings.multiLineSearch) {
-            searchTextFileContents(sf)
+        return if (settings.multiLineFind) {
+            findTextFileContents(sf)
         } else {
-            searchTextFileLines(sf)
+            findTextFileLines(sf)
         }
     }
 
-    private fun searchTextFileContents(sf: SearchFile): List<SearchResult> {
-        val results: List<SearchResult> =
-                searchMultilineString(sf.file.readText(charset!!))
+    private fun findTextFileContents(sf: FindFile): List<FindResult> {
+        val results: List<FindResult> =
+                findMultilineString(sf.file.readText(charset!!))
         return results.map { r -> r.copy(file = sf) }
     }
 
@@ -237,12 +237,12 @@ class Searcher(val settings: SearchSettings) {
         } else listOf()
     }
 
-    fun searchMultilineString(s: String): List<SearchResult> {
-        val results: MutableList<SearchResult> = mutableListOf()
+    fun findMultilineString(s: String): List<FindResult> {
+        val results: MutableList<FindResult> = mutableListOf()
         val newlineIndices: List<Int> = s.indices.zip(s.asIterable()).
                 filter { it.second == '\n' }.map { it.first }
 
-        for (p in settings.searchPatterns) {
+        for (p in settings.findPatterns) {
             val matches: Sequence<MatchResult> =
                     if (settings.firstMatch) {
                         val m = p.find(s)
@@ -278,7 +278,7 @@ class Searcher(val settings: SearchSettings) {
                 val line = s.substring(startLineIndex, endLineIndex)
                 val startMatchIndex = m.range.first - startLineIndex + 1
                 val endMatchIndex = m.range.last - startLineIndex + 2
-                results.add(SearchResult(
+                results.add(FindResult(
                         p,
                         null,
                         lineNum,
@@ -292,9 +292,9 @@ class Searcher(val settings: SearchSettings) {
         return results.toList()
     }
 
-    fun searchTextFileLines(sf: SearchFile): List<SearchResult> {
-        val results: List<SearchResult> = sf.file.reader(charset!!).
-                useLines { ss -> searchLineIterator(ss.iterator()) }
+    fun findTextFileLines(sf: FindFile): List<FindResult> {
+        val results: List<FindResult> = sf.file.reader(charset!!).
+                useLines { ss -> findLineIterator(ss.iterator()) }
         return results.map { r -> r.copy(file = sf) }
     }
 
@@ -354,8 +354,8 @@ class Searcher(val settings: SearchSettings) {
         return foundMatch
     }
 
-    fun searchLineIterator(lines: Iterator<String>): List<SearchResult> {
-        val results: MutableList<SearchResult> = mutableListOf()
+    fun findLineIterator(lines: Iterator<String>): List<FindResult> {
+        val results: MutableList<FindResult> = mutableListOf()
         val linesBefore: MutableList<String> = mutableListOf()
         val linesAfter: MutableList<String> = mutableListOf()
         var lineNum = 0
@@ -376,16 +376,16 @@ class Searcher(val settings: SearchSettings) {
                 }
             }
 
-            val searchPatterns =
+            val findPatterns =
                     if (settings.firstMatch)
-                        settings.searchPatterns.filterNot { matchedPatterns.contains(it) }
-                    else settings.searchPatterns
+                        settings.findPatterns.filterNot { matchedPatterns.contains(it) }
+                    else settings.findPatterns
 
-            if (searchPatterns.isEmpty()) {
+            if (findPatterns.isEmpty()) {
                 break
             }
 
-            for (p in searchPatterns) {
+            for (p in findPatterns) {
                 val matches: Sequence<MatchResult> =
                         if (settings.firstMatch) {
                             val m = p.find(line)
@@ -406,7 +406,7 @@ class Searcher(val settings: SearchSettings) {
                 matchedPatterns.add(p)
 
                 for (m in matches) {
-                    results.add(SearchResult(
+                    results.add(FindResult(
                             p,
                             null,
                             lineNum,
@@ -425,22 +425,22 @@ class Searcher(val settings: SearchSettings) {
                     linesBefore.add(line)
                 }
             }
-            if (settings.firstMatch && matchedPatterns.size == settings.searchPatterns.size) {
+            if (settings.firstMatch && matchedPatterns.size == settings.findPatterns.size) {
                 break
             }
         }
         return results.toList()
     }
 
-    private fun searchBinaryFile(sf: SearchFile): List<SearchResult> {
+    private fun findBinaryFile(sf: FindFile): List<FindResult> {
         if (settings.verbose) {
-            log("Searching binary file $sf")
+            log("Finding binary file $sf")
         }
-        val results: MutableList<SearchResult> = mutableListOf()
+        val results: MutableList<FindResult> = mutableListOf()
 
         try {
             val content: String = sf.file.readText(Charsets.ISO_8859_1)
-            for (p in settings.searchPatterns) {
+            for (p in settings.findPatterns) {
                 val matches: Sequence<MatchResult> =
                         if (settings.firstMatch) {
                             val m = p.find(content)
@@ -452,7 +452,7 @@ class Searcher(val settings: SearchSettings) {
                         }
                         else p.findAll(content)
                 matches.forEach { m ->
-                    results.add(SearchResult(
+                    results.add(FindResult(
                             p,
                             sf,
                             0,

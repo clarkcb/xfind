@@ -1,7 +1,7 @@
 import XCTest
 import class Foundation.Bundle
 
-final class swiftsearchTests: XCTestCase {
+final class swiftfindTests: XCTestCase {
     func testExample() throws {
         // This is an example of a functional test case.
         // Use XCTAssert and related functions to verify your tests produce the correct
@@ -12,7 +12,7 @@ final class swiftsearchTests: XCTestCase {
             return
         }
 
-        let fooBinary = productsDirectory.appendingPathComponent("swiftsearchApp")
+        let fooBinary = productsDirectory.appendingPathComponent("swiftfindApp")
 
         let process = Process()
         process.executableURL = fooBinary

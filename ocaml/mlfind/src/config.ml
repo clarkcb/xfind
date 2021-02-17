@@ -1,3 +1,3 @@
 open Core.Std
 
-let xsearchpath : string = "/Users/cary/src/xsearch"
+let xfindpath : string = "/Users/cary/src/xfind"

@@ -1,6 +1,6 @@
 //
 //  Color.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/12/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.

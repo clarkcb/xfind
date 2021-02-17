@@ -1,14 +1,14 @@
 ###############################################################################
 #
-# SearchSettings.pm
+# FindSettings.pm
 #
-# Encapsulates the search settings
+# Encapsulates the find settings
 #
 ###############################################################################
 
-package plsearch::SearchSettings;
+package plfind::FindSettings;
 
-use plsearch::FileTypes;
+use plfind::FileTypes;
 
 use strict;
 use warnings;
@@ -37,7 +37,7 @@ sub new {
         listfiles => 0,
         listlines => 0,
         maxlinelength => 150,
-        multilinesearch => 0,
+        multilineoption-REMOVE => 0,
         out_archiveextensions => [],
         out_archivefilepatterns => [],
         out_dirpatterns => [],
@@ -50,8 +50,8 @@ sub new {
         printusage => 0,
         printversion => 0,
         recursive => 1,
-        searcharchives => 0,
-        searchpatterns => [],
+        findarchives => 0,
+        findpatterns => [],
         startpath => '',
         textfileencoding => 'UTF-8',
         uniquelines => 0,
@@ -86,7 +86,7 @@ sub set_property {
     $self->{$name} = $val;
     if ($val == 1) {
         if ($name eq 'archivesonly') {
-            $self->{searcharchives} = 1;
+            $self->{findarchives} = 1;
         } elsif ($name eq 'debug') {
             $self->{verbose} = 1;
         }
@@ -117,7 +117,7 @@ sub add_filetypes {
         $fts = \@split;
     }
     foreach my $ft (@{$fts}) {
-        push (@{$ftaref}, plsearch::FileTypes::from_name($ft));
+        push (@{$ftaref}, plfind::FileTypes::from_name($ft));
     }
 }
 
@@ -134,7 +134,7 @@ sub add_patterns {
 
 sub to_string {
     my $self = shift @_;
-    my $s = "SearchSettings(";
+    my $s = "FindSettings(";
     $s .= 'archivesonly=' . $self->bool_to_string($self->{archivesonly});
     $s .= ', colorize=' . $self->bool_to_string($self->{colorize});
     $s .= ', debug=' . $self->bool_to_string($self->{debug});
@@ -156,7 +156,7 @@ sub to_string {
     $s .= ', listfiles=' . $self->bool_to_string($self->{listfiles});
     $s .= ', listlines=' . $self->bool_to_string($self->{listlines});
     $s .= ', maxlinelength=' . $self->{maxlinelength};
-    $s .= ', multilinesearch=' . $self->bool_to_string($self->{multilinesearch});
+    $s .= ', multilineoption-REMOVE=' . $self->bool_to_string($self->{multilineoption-REMOVE});
     $s .= ', out_archiveextensions=' . $self->aref_to_string($self->{out_archiveextensions});
     $s .= ', out_archivefilepatterns=' . $self->aref_to_string($self->{out_archivefilepatterns});
     $s .= ', out_dirpatterns=' . $self->aref_to_string($self->{out_dirpatterns});
@@ -169,8 +169,8 @@ sub to_string {
     $s .= ', printusage=' . $self->bool_to_string($self->{printusage});
     $s .= ', printversion=' . $self->bool_to_string($self->{printversion});
     $s .= ', recursive=' . $self->bool_to_string($self->{recursive});
-    $s .= ', searcharchives=' . $self->bool_to_string($self->{searcharchives});
-    $s .= ', searchpatterns=' . $self->aref_to_string($self->{searchpatterns});
+    $s .= ', findarchives=' . $self->bool_to_string($self->{findarchives});
+    $s .= ', findpatterns=' . $self->aref_to_string($self->{findpatterns});
     $s .= ', startpath="' . $self->{startpath} . '"';
     $s .= ', textfileencoding="' . $self->{textfileencoding} . '"';
     $s .= ', uniquelines=' . $self->bool_to_string($self->{uniquelines});

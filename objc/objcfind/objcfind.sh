@@ -1,13 +1,13 @@
 #!/bin/sh
 
-XSEARCH_PATH=$HOME/src/xsearch
-OBJC_PATH=$XSEARCH_PATH/objc
-OBJCSEARCH_PATH=$OBJC_PATH/objcsearch
+XFIND_PATH=$HOME/src/xfind
+OBJC_PATH=$XFIND_PATH/objc
+OBJCFIND_PATH=$OBJC_PATH/objcfind
 
 # Debug exe location (when compiling from within Xcode)
-#OBJCSEARCHEXE=$HOME/Library/Developer/Xcode/DerivedData/objcsearch-ahhnhqcmbhdevtgqfhmgnnerqaln/Build/Products/Debug/objcsearch
+#OBJCFINDEXE=$HOME/Library/Developer/Xcode/DerivedData/objcfind-ahhnhqcmbhdevtgqfhmgnnerqaln/Build/Products/Debug/objcfind
 
 # Release exe location (when compiling from command line (scripts/build.sh objc))
-OBJCSEARCHEXE=$OBJCSEARCH_PATH/build/Release/objcsearch
+OBJCFINDEXE=$OBJCFIND_PATH/build/Release/objcfind
 
-$OBJCSEARCHEXE $@
+$OBJCFINDEXE $@

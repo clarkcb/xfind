@@ -1,12 +1,12 @@
 /*
- * searchoption.js
+ * findoption.js
  *
- * encapsulates a search option
+ * encapsulates a find option
  */
 
 "use strict";
 
-export class SearchOption {
+export class FindOption {
     shortarg: string;
     longarg: string;
     desc: string;

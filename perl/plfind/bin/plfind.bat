@@ -1,2 +1,2 @@
 @echo off
-perl %~dp0\plsearch %*
+perl %~dp0\plfind %*

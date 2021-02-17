@@ -1,16 +1,16 @@
-package javasearch;
+package javafind;
 
-public class SearchException extends Exception {
+public class FindException extends Exception {
 
-    public SearchException() {
+    public FindException() {
         super();
     }
 
-    public SearchException(final String msg) {
+    public FindException(final String msg) {
         super(msg);
     }
 
-    public SearchException(final String msg, final Exception cause) {
+    public FindException(final String msg, final Exception cause) {
         super(msg, cause);
     }
 }

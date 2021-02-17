@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-module RbSearch
+module RbFind
 
-  # SearchOption - encapsulates a CLI search option
-  class SearchOption
+  # FindOption - encapsulates a CLI find option
+  class FindOption
     attr_reader :shortarg
     attr_reader :longarg
     attr_reader :desc

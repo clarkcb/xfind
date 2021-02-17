@@ -1,12 +1,12 @@
-#ifndef CPPSEARCH_SEARCHFILE_H
-#define CPPSEARCH_SEARCHFILE_H
+#ifndef CPPFIND_FINDFILE_H
+#define CPPFIND_FINDFILE_H
 
 #include <string>
 #include <vector>
 #include "FileTypes.h"
 
-namespace cppsearch {
-    class SearchFile {
+namespace cppfind {
+    class FindFile {
     private:
         const std::string CONTAINER_SEPARATOR = "!";
         std::vector<std::string> m_containers;
@@ -16,9 +16,9 @@ namespace cppsearch {
         void init(const std::vector<std::string>& containers, const std::string& path, const std::string& filename, FileType filetype);
 
     public:
-        SearchFile(std::string& path, std::string& filename, FileType filetype);
-        SearchFile(const std::vector<std::string>& containers, std::string& path, std::string& filename, FileType filetype);
-        SearchFile(const std::vector<std::string> &containers, const std::string& path, const std::string& filename, FileType filetype);
+        FindFile(std::string& path, std::string& filename, FileType filetype);
+        FindFile(const std::vector<std::string>& containers, std::string& path, std::string& filename, FileType filetype);
+        FindFile(const std::vector<std::string> &containers, const std::string& path, const std::string& filename, FileType filetype);
         std::string path() const;
         std::string filename() const;
         FileType filetype();
@@ -26,4 +26,4 @@ namespace cppsearch {
     };
 }
 
-#endif // CPPSEARCH_SEARCHFILE_H
+#endif // CPPFIND_FINDFILE_H

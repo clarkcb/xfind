@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 import org.junit.Test
 import org.junit.Assert.assertEquals
@@ -9,9 +9,9 @@ import java.io.File
 /**
  * @author cary on 7/30/16.
  */
-class SearcherTest {
-    private fun getSettings(): SearchSettings {
-        return getDefaultSettings().copy(startPath=".", searchPatterns=setOf(Regex("Searcher")))
+class FinderTest {
+    private fun getSettings(): FindSettings {
+        return getDefaultSettings().copy(startPath=".", findPatterns=setOf(Regex("Finder")))
     }
 
     private val testFilePath = "/testFile2.txt"
@@ -22,324 +22,324 @@ class SearcherTest {
     @Test
     fun testFilterFile_IsHidden_False() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File(".gitignore")
-        assertEquals(null, searcher.filterToSearchFile(file))
+        assertEquals(null, finder.filterToFindFile(file))
     }
 
     @Test
     fun testFilterFile_IsHiddenIncludeHidden_True() {
         val settings = getSettings().copy(excludeHidden = false)
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File(".gitignore")
-        val searchFile = SearchFile(file, FileType.TEXT)
-        assertEquals(searchFile, searcher.filterToSearchFile(file))
+        val findFile = FindFile(file, FileType.TEXT)
+        assertEquals(findFile, finder.filterToFindFile(file))
     }
 
     @Test
-    fun testFilterFile_ArchiveNoSearchArchives_False() {
+    fun testFilterFile_ArchiveNoFindArchives_False() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("archive.zip")
-        assertEquals(null, searcher.filterToSearchFile(file))
+        assertEquals(null, finder.filterToFindFile(file))
     }
 
     @Test
-    fun testFilterFile_ArchiveSearchArchives_True() {
-        val settings = getSettings().copy(searchArchives = true)
-        val searcher = Searcher(settings)
+    fun testFilterFile_ArchiveFindArchives_True() {
+        val settings = getSettings().copy(findArchives = true)
+        val finder = Finder(settings)
         val file = File("archive.zip")
-        val searchFile = SearchFile(file, FileType.ARCHIVE)
-        assertEquals(searchFile, searcher.filterToSearchFile(file))
+        val findFile = FindFile(file, FileType.ARCHIVE)
+        assertEquals(findFile, finder.filterToFindFile(file))
     }
 
     @Test
-    fun testFilterFile_IsArchiveSearchFile_True() {
-        val settings = getSettings().copy(searchArchives = true, inArchiveExtensions = setOf("zip"))
-        val searcher = Searcher(settings)
+    fun testFilterFile_IsArchiveFindFile_True() {
+        val settings = getSettings().copy(findArchives = true, inArchiveExtensions = setOf("zip"))
+        val finder = Finder(settings)
         val file = File("archive.zip")
-        val searchFile = SearchFile(file, FileType.ARCHIVE)
-        assertEquals(searchFile, searcher.filterToSearchFile(file))
+        val findFile = FindFile(file, FileType.ARCHIVE)
+        assertEquals(findFile, finder.filterToFindFile(file))
     }
 
     @Test
-    fun testFilterFile_NotIsArchiveSearchFile_False() {
+    fun testFilterFile_NotIsArchiveFindFile_False() {
         val settings = getSettings().copy(outExtensions = setOf("zip"))
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("archive.zip")
-        assertEquals(null, searcher.filterToSearchFile(file))
+        assertEquals(null, finder.filterToFindFile(file))
     }
 
     @Test
     fun testFilterFile_ArchiveFileArchivesOnly_True() {
         val settings = getSettings().copy(archivesOnly = true)
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("archive.zip")
-        val searchFile = SearchFile(file, FileType.ARCHIVE)
-        assertEquals(searchFile, searcher.filterToSearchFile(file))
+        val findFile = FindFile(file, FileType.ARCHIVE)
+        assertEquals(findFile, finder.filterToFindFile(file))
     }
 
     @Test
     fun testFilterFile_NoExtensionsNoPatterns_True() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("FileUtil.cs")
-        val searchFile = SearchFile(file, FileType.TEXT)
-        assertEquals(searchFile, searcher.filterToSearchFile(file))
+        val findFile = FindFile(file, FileType.TEXT)
+        assertEquals(findFile, finder.filterToFindFile(file))
     }
 
     @Test
-    fun testFilterFile_IsSearchFile_True() {
+    fun testFilterFile_IsFindFile_True() {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("FileUtil.cs")
-        val searchFile = SearchFile(file, FileType.TEXT)
-        assertEquals(searchFile, searcher.filterToSearchFile(file))
+        val findFile = FindFile(file, FileType.TEXT)
+        assertEquals(findFile, finder.filterToFindFile(file))
     }
 
     @Test
-    fun testFilterFile_NotIsSearchFile_False() {
+    fun testFilterFile_NotIsFindFile_False() {
         val settings = getSettings().copy(outExtensions = setOf("cs"))
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("FileUtil.cs")
-        assertEquals(null, searcher.filterToSearchFile(file))
+        assertEquals(null, finder.filterToFindFile(file))
     }
 
     @Test
     fun testFilterFile_NonArchiveFileArchivesOnly_False() {
         val settings = getSettings().copy(archivesOnly = true)
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val file = File("FileUtil.cs")
-        assertEquals(null, searcher.filterToSearchFile(file))
+        assertEquals(null, finder.filterToFindFile(file))
     }
 
     /***************************************************************************
-     * isSearchDir tests
+     * isFindDir tests
      **************************************************************************/
     @Test
-    fun testisSearchDir_SingleDot_True() {
+    fun testisFindDir_SingleDot_True() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
-        assertTrue(searcher.isSearchDir(File(".")))
+        val finder = Finder(settings)
+        assertTrue(finder.isFindDir(File(".")))
     }
 
     @Test
-    fun testisSearchDir_DoubleDot_True() {
+    fun testisFindDir_DoubleDot_True() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
-        assertTrue(searcher.isSearchDir(File("..")))
+        val finder = Finder(settings)
+        assertTrue(finder.isFindDir(File("..")))
     }
 
     @Test
-    fun testisSearchDir_IsHidden_False() {
+    fun testisFindDir_IsHidden_False() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
-        assertFalse(searcher.isSearchDir(File(".git")))
+        val finder = Finder(settings)
+        assertFalse(finder.isFindDir(File(".git")))
     }
 
     @Test
-    fun testisSearchDir_IsHiddenIncludeHidden_True() {
+    fun testisFindDir_IsHiddenIncludeHidden_True() {
         val settings = getSettings().copy(excludeHidden = false)
-        val searcher = Searcher(settings)
-        assertTrue(searcher.isSearchDir(File(".git")))
+        val finder = Finder(settings)
+        assertTrue(finder.isFindDir(File(".git")))
     }
 
     @Test
-    fun testisSearchDir_NoPatterns_True() {
+    fun testisFindDir_NoPatterns_True() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
-        assertTrue(searcher.isSearchDir(File("/Users")))
+        val finder = Finder(settings)
+        assertTrue(finder.isFindDir(File("/Users")))
     }
 
     @Test
-    fun testisSearchDir_MatchesInPattern_True() {
-        val settings = getSettings().copy(inDirPatterns = setOf(Regex("Search")))
-        val searcher = Searcher(settings)
-        assertTrue(searcher.isSearchDir(File("CsSearch")))
+    fun testisFindDir_MatchesInPattern_True() {
+        val settings = getSettings().copy(inDirPatterns = setOf(Regex("Find")))
+        val finder = Finder(settings)
+        assertTrue(finder.isFindDir(File("CsFind")))
     }
 
     @Test
-    fun testisSearchDir_MatchesOutPattern_False() {
-        val settings = getSettings().copy(outDirPatterns = setOf(Regex("Search")))
-        val searcher = Searcher(settings)
-        assertFalse(searcher.isSearchDir(File("CsSearch")))
+    fun testisFindDir_MatchesOutPattern_False() {
+        val settings = getSettings().copy(outDirPatterns = setOf(Regex("Find")))
+        val finder = Finder(settings)
+        assertFalse(finder.isFindDir(File("CsFind")))
     }
 
     @Test
-    fun testisSearchDir_DoesNotMatchInPattern_False() {
-        val settings = getSettings().copy(inDirPatterns = setOf(Regex("SearchFiles")))
-        val searcher = Searcher(settings)
-        assertFalse(searcher.isSearchDir(File("CsSearch")))
+    fun testisFindDir_DoesNotMatchInPattern_False() {
+        val settings = getSettings().copy(inDirPatterns = setOf(Regex("FindFiles")))
+        val finder = Finder(settings)
+        assertFalse(finder.isFindDir(File("CsFind")))
     }
 
     @Test
-    fun testisSearchDir_DoesNotMatchOutPattern_True() {
-        val settings = getSettings().copy(outDirPatterns = setOf(Regex("SearchFiles")))
-        val searcher = Searcher(settings)
-        val dir = File("CsSearch")
-        assertTrue(searcher.isSearchDir(dir))
+    fun testisFindDir_DoesNotMatchOutPattern_True() {
+        val settings = getSettings().copy(outDirPatterns = setOf(Regex("FindFiles")))
+        val finder = Finder(settings)
+        val dir = File("CsFind")
+        assertTrue(finder.isFindDir(dir))
     }
 
     /***************************************************************************
-     * isSearchFile tests
+     * isFindFile tests
      **************************************************************************/
     @Test
-    fun testIsSearchFile_NoExtensionsNoPatterns_True() {
+    fun testIsFindFile_NoExtensionsNoPatterns_True() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(searcher.isSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertTrue(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_MatchesInExtension_True() {
+    fun testIsFindFile_MatchesInExtension_True() {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(searcher.isSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertTrue(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_DoesNotMatchInExtension_False() {
+    fun testIsFindFile_DoesNotMatchInExtension_False() {
         val settings = getSettings().copy(inExtensions = setOf("java"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertFalse(searcher.isSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertFalse(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_MatchesOutExtension_False() {
+    fun testIsFindFile_MatchesOutExtension_False() {
         val settings = getSettings().copy(outExtensions = setOf("cs"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertFalse(searcher.isSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertFalse(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_DoesNotMatchOutExtension_True() {
+    fun testIsFindFile_DoesNotMatchOutExtension_True() {
         val settings = getSettings().copy(outExtensions = setOf("java"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(searcher.isSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertTrue(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_MatchesInPattern_True() {
-        val settings = getSettings().copy(inFilePatterns = setOf(Regex("Search")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("Searcher.cs"), FileType.CODE)
-        assertTrue(searcher.isSearchFile(file))
+    fun testIsFindFile_MatchesInPattern_True() {
+        val settings = getSettings().copy(inFilePatterns = setOf(Regex("Find")))
+        val finder = Finder(settings)
+        val file = FindFile(File("Finder.cs"), FileType.CODE)
+        assertTrue(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_DoesNotMatchInPattern_False() {
-        val settings = getSettings().copy(inFilePatterns = setOf(Regex("Search")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertFalse(searcher.isSearchFile(file))
+    fun testIsFindFile_DoesNotMatchInPattern_False() {
+        val settings = getSettings().copy(inFilePatterns = setOf(Regex("Find")))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertFalse(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_MatchesOutPattern_False() {
-        val settings = getSettings().copy(outFilePatterns = setOf(Regex("Search")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("Searcher.cs"), FileType.CODE)
-        assertFalse(searcher.isSearchFile(file))
+    fun testIsFindFile_MatchesOutPattern_False() {
+        val settings = getSettings().copy(outFilePatterns = setOf(Regex("Find")))
+        val finder = Finder(settings)
+        val file = FindFile(File("Finder.cs"), FileType.CODE)
+        assertFalse(finder.isFindFile(file))
     }
 
     @Test
-    fun testIsSearchFile_DoesNotMatchOutPattern_True() {
-        val settings = getSettings().copy(outFilePatterns = setOf(Regex("Search")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(searcher.isSearchFile(file))
+    fun testIsFindFile_DoesNotMatchOutPattern_True() {
+        val settings = getSettings().copy(outFilePatterns = setOf(Regex("Find")))
+        val finder = Finder(settings)
+        val file = FindFile(File("FileUtil.cs"), FileType.CODE)
+        assertTrue(finder.isFindFile(file))
     }
 
     /***************************************************************************
-     * isArchiveSearchFile tests
+     * isArchiveFindFile tests
      **************************************************************************/
     @Test
-    fun testIsArchiveSearchFile_NoExtensionsNoPatterns_True() {
+    fun testIsArchiveFindFile_NoExtensionsNoPatterns_True() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertTrue(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_MatchesInExtension_True() {
+    fun testIsArchiveFindFile_MatchesInExtension_True() {
         val settings = getSettings().copy(inArchiveExtensions = setOf("zip"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertTrue(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_DoesNotMatchInExtension_False() {
+    fun testIsArchiveFindFile_DoesNotMatchInExtension_False() {
         val settings = getSettings().copy(inArchiveExtensions = setOf("gz"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertFalse(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_MatchesOutExtension_False() {
+    fun testIsArchiveFindFile_MatchesOutExtension_False() {
         val settings = getSettings().copy(outArchiveExtensions = setOf("zip"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertFalse(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_DoesNotMatchOutExtension_True() {
+    fun testIsArchiveFindFile_DoesNotMatchOutExtension_True() {
         val settings = getSettings().copy(outArchiveExtensions = setOf("gz"))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertTrue(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_MatchesInPattern_True() {
+    fun testIsArchiveFindFile_MatchesInPattern_True() {
         val settings = getSettings().copy(inArchiveFilePatterns = setOf(Regex("arch")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertTrue(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_DoesNotMatchInPattern_False() {
+    fun testIsArchiveFindFile_DoesNotMatchInPattern_False() {
         val settings = getSettings().copy(inArchiveFilePatterns = setOf(Regex("archives")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertFalse(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_MatchesOutPattern_False() {
+    fun testIsArchiveFindFile_MatchesOutPattern_False() {
         val settings = getSettings().copy(outArchiveFilePatterns = setOf(Regex("arch")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertFalse(finder.isArchiveFindFile(file))
     }
 
     @Test
-    fun testIsArchiveSearchFile_DoesNotMatchOutPattern_True() {
+    fun testIsArchiveFindFile_DoesNotMatchOutPattern_True() {
         val settings = getSettings().copy(outArchiveFilePatterns = setOf(Regex("archives")))
-        val searcher = Searcher(settings)
-        val file = SearchFile(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(searcher.isArchiveSearchFile(file))
+        val finder = Finder(settings)
+        val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
+        assertTrue(finder.isArchiveFindFile(file))
     }
 
     /***************************************************************************
-     * searchStringIterator tests
+     * findStringIterator tests
      **************************************************************************/
     @Test
-    fun testSearchStringIterator() {
+    fun testFindStringIterator() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val lineIterator = javaClass.getResourceAsStream(testFilePath).reader().readLines().iterator()
 
-        val results = searcher.searchLineIterator(lineIterator)
+        val results = finder.findLineIterator(lineIterator)
 
         assertEquals(results.size.toLong(), 2)
 
@@ -361,14 +361,14 @@ class SearcherTest {
     }
 
     /***************************************************************************
-     * searchMultiLineString tests
+     * findMultiLineString tests
      **************************************************************************/
     @Test
-    fun testSearchMultiLineString() {
+    fun testFindMultiLineString() {
         val settings = getSettings()
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
-        val results = searcher.searchMultilineString(contents)
+        val results = finder.findMultilineString(contents)
 
         assertEquals(results.size.toLong(), 2)
 
@@ -390,11 +390,11 @@ class SearcherTest {
     }
 
     @Test
-    fun testSearchMultiLineStringWithLinesBefore() {
+    fun testFindMultiLineStringWithLinesBefore() {
         val settings = getSettings().copy(linesBefore = 2)
-        val searcher = Searcher(settings)
+        val finder = Finder(settings)
         val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
-        val results = searcher.searchMultilineString(contents)
+        val results = finder.findMultilineString(contents)
 
         assertEquals(results.size.toLong(), 2)
 

@@ -6,7 +6,7 @@ using System.Xml.Linq;
 
 using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,object>>>;
 
-namespace CsSearch
+namespace CsFind
 {
 	public enum FileType
 	{
@@ -28,14 +28,14 @@ namespace CsSearch
 		private const string Archive = "archive";
 		private const string Binary = "binary";
 		private const string Code = "code";
-		private const string Searchable = "searchable";
+		private const string Findable = "findable";
 		private const string Text = "text";
 		private const string Xml = "xml";
 
 		public FileTypes()
 		{
-			// _fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.xml");
-			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsSearch.Resources.filetypes.json");
+			// _fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.filetypes.xml");
+			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
 			// PopulateFileTypesFromXml();
 			PopulateFileTypesFromJson();
@@ -55,9 +55,9 @@ namespace CsSearch
 			}
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-			_fileTypesDictionary[Searchable] = new HashSet<string>(_fileTypesDictionary[Text]);
-			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Binary]);
-			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Archive]);
+			_fileTypesDictionary[Findable] = new HashSet<string>(_fileTypesDictionary[Text]);
+			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Binary]);
+			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Archive]);
 		}
 
 		private void PopulateFileTypesFromXml()
@@ -72,9 +72,9 @@ namespace CsSearch
 			}
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-			_fileTypesDictionary[Searchable] = new HashSet<string>(_fileTypesDictionary[Text]);
-			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Binary]);
-			_fileTypesDictionary[Searchable].UnionWith(_fileTypesDictionary[Archive]);
+			_fileTypesDictionary[Findable] = new HashSet<string>(_fileTypesDictionary[Text]);
+			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Binary]);
+			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Archive]);
 		}
 
 		public static FileType FromName(string name)
@@ -116,9 +116,9 @@ namespace CsSearch
 			return _fileTypesDictionary[Code].Contains(f.Extension.ToLowerInvariant());
 		}
 
-		public bool IsSearchableFile(FileInfo f)
+		public bool IsFindableFile(FileInfo f)
 		{
-			return _fileTypesDictionary[Searchable].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Findable].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsTextFile(FileInfo f)
@@ -128,7 +128,7 @@ namespace CsSearch
 
 		public bool IsUnknownFile(FileInfo f)
 		{
-			return !IsSearchableFile(f);
+			return !IsFindableFile(f);
 		}
 
 		public bool IsXmlFile(FileInfo f)

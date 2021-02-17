@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue

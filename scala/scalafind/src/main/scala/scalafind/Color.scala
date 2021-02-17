@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 object Color {
   val RESET = "\u001B[0m"

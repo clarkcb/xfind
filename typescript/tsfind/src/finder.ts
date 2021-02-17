@@ -1,7 +1,7 @@
 /*
- * searcher.ts
+ * finder.ts
  *
- * performs the searching based on the given SearchSettings instance
+ * performs the finding based on the given FindSettings instance
  */
 
 "use strict";
@@ -14,22 +14,22 @@ import * as common from './common';
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
 import {FileUtil} from './fileutil';
-import {SearchError} from './searcherror';
-import {SearchFile} from './searchfile';
-import {SearchResult} from './searchresult';
-import {SearchResultFormatter} from './searchresultformatter';
-import {SearchSettings} from './searchsettings';
+import {FindError} from './finderror';
+import {FindFile} from './findfile';
+import {FindResult} from './findresult';
+import {FindResultFormatter} from './findresultformatter';
+import {FindSettings} from './findsettings';
 
-export class Searcher {
+export class Finder {
     _binaryEncoding = 'latin1';
     // from https://github.com/nodejs/node/blob/master/lib/buffer.js
     _supportedEncodings: string[] = ['utf-8', 'utf8', 'latin1', 'ascii', 'ucs2',  'ucs-2', 'utf16le',
         'binary', 'base64', 'hex'];
 
-    _settings: SearchSettings;
-    results: SearchResult[] = [];
+    _settings: FindSettings;
+    results: FindResult[] = [];
 
-    constructor(settings: SearchSettings) {
+    constructor(settings: FindSettings) {
         this._settings = settings;
         this.validateSettings();
     }
@@ -43,15 +43,15 @@ export class Searcher {
             const stat = fs.lstatSync(this._settings.startPath);
 
             if (stat.isDirectory()) {
-                assert.ok(this.isSearchDir(this._settings.startPath),
-                    'Startpath does not match search settings');
+                assert.ok(this.isFindDir(this._settings.startPath),
+                    'Startpath does not match find settings');
             } else if (stat.isFile()) {
                 assert.ok(this.filterFile(this._settings.startPath),
-                    'Startpath does not match search settings');
+                    'Startpath does not match find settings');
             } else {
-                assert.ok(false, 'Startpath not searchable file type');
+                assert.ok(false, 'Startpath not findable file type');
             }
-            assert.ok(this._settings.searchPatterns.length, 'No search patterns defined');
+            assert.ok(this._settings.findPatterns.length, 'No find patterns defined');
             assert.ok(this._supportedEncodings.indexOf(this._settings.textFileEncoding) > -1,
                 'Invalid encoding');
             assert.ok(this._settings.linesBefore > -1, 'Invalid linesbefore');
@@ -65,7 +65,7 @@ export class Searcher {
             } else if (err.code === 'EACCES') {
                 msg = 'Startpath not readable';
             }
-            throw new SearchError(msg);
+            throw new FindError(msg);
         }
     }
 
@@ -74,7 +74,7 @@ export class Searcher {
     }
 
     private static matchesAnyPattern(s: string, patterns: RegExp[]): boolean {
-        return patterns.some((p: RegExp) => s.search(p) > -1);
+        return patterns.some((p: RegExp) => s.find(p) > -1);
     }
 
     private static matchesAnyFileType(ft: FileType, fileTypes: FileType[]): boolean {
@@ -85,12 +85,12 @@ export class Searcher {
         return ss.some((s: string) => this.matchesAnyPattern(s, patterns));
     }
 
-    public isSearchDir(dir: string): boolean {
+    public isFindDir(dir: string): boolean {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
         if (this._settings.excludeHidden) {
-            const nonDotElems = dir.split(path.sep).filter((p: string) => !Searcher.matchesAnyString(p, ['.','..']));
+            const nonDotElems = dir.split(path.sep).filter((p: string) => !Finder.matchesAnyString(p, ['.','..']));
             if (nonDotElems.length === 0) {
                 return true;
             }
@@ -98,142 +98,142 @@ export class Searcher {
                 return false;
             }
         }
-        if (this._settings.inDirPatterns.length && !Searcher.matchesAnyPattern(dir,
+        if (this._settings.inDirPatterns.length && !Finder.matchesAnyPattern(dir,
                 this._settings.inDirPatterns)) {
             return false;
         }
-        return !(this._settings.outDirPatterns.length && Searcher.matchesAnyPattern(dir,
+        return !(this._settings.outDirPatterns.length && Finder.matchesAnyPattern(dir,
             this._settings.outDirPatterns));
     }
 
-    public isSearchFile(file: string): boolean {
+    public isFindFile(file: string): boolean {
         if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
             return false;
         }
         const ext: string = FileUtil.getExtension(file);
         if ((this._settings.inExtensions.length &&
-            !Searcher.matchesAnyString(ext, this._settings.inExtensions))
+            !Finder.matchesAnyString(ext, this._settings.inExtensions))
             || (this._settings.outExtensions.length &&
-                Searcher.matchesAnyString(ext, this._settings.outExtensions))
+                Finder.matchesAnyString(ext, this._settings.outExtensions))
             || (this._settings.inFilePatterns.length &&
-                !Searcher.matchesAnyPattern(file, this._settings.inFilePatterns))
+                !Finder.matchesAnyPattern(file, this._settings.inFilePatterns))
             || (this._settings.outFilePatterns.length &&
-                Searcher.matchesAnyPattern(file, this._settings.outFilePatterns))) {
+                Finder.matchesAnyPattern(file, this._settings.outFilePatterns))) {
             return false;
         }
         const filetype: FileType = FileTypes.getFileType(file);
         return !((this._settings.inFileTypes.length &&
-            !Searcher.matchesAnyFileType(filetype, this._settings.inFileTypes))
+            !Finder.matchesAnyFileType(filetype, this._settings.inFileTypes))
             || (this._settings.outFileTypes.length &&
-                Searcher.matchesAnyFileType(filetype, this._settings.outFileTypes)));
+                Finder.matchesAnyFileType(filetype, this._settings.outFileTypes)));
     }
 
-    public isArchiveSearchFile(file: string): boolean {
+    public isArchiveFindFile(file: string): boolean {
         if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
             return false;
         }
         const ext: string = FileUtil.getExtension(file);
         if (this._settings.inArchiveExtensions.length &&
-            !Searcher.matchesAnyString(ext, this._settings.inArchiveExtensions)) {
+            !Finder.matchesAnyString(ext, this._settings.inArchiveExtensions)) {
             return false;
         }
         if (this._settings.outArchiveExtensions.length &&
-            Searcher.matchesAnyString(ext, this._settings.outArchiveExtensions)) {
+            Finder.matchesAnyString(ext, this._settings.outArchiveExtensions)) {
             return false;
         }
         if (this._settings.inArchiveFilePatterns.length &&
-            !Searcher.matchesAnyPattern(file, this._settings.inArchiveFilePatterns)) {
+            !Finder.matchesAnyPattern(file, this._settings.inArchiveFilePatterns)) {
             return false;
         }
         return !(this._settings.outArchiveFilePatterns.length &&
-        Searcher.matchesAnyPattern(file, this._settings.outArchiveFilePatterns));
+        Finder.matchesAnyPattern(file, this._settings.outArchiveFilePatterns));
     }
 
     public filterFile(f: string): boolean {
         if (FileTypes.isArchiveFile(f)) {
-            return (this._settings.searchArchives && this.isArchiveSearchFile(f));
+            return (this._settings.findArchives && this.isArchiveFindFile(f));
         }
-        return (!this._settings.archivesOnly && this.isSearchFile(f));
+        return (!this._settings.archivesOnly && this.isFindFile(f));
     }
 
-    private getSearchFiles(startPath: string): SearchFile[] {
-        let searchFiles: SearchFile[] = [];
+    private getFindFiles(startPath: string): FindFile[] {
+        let findFiles: FindFile[] = [];
         const stats = fs.statSync(startPath);
         if (stats.isDirectory()) {
-            if (this.isSearchDir(startPath)) {
-                searchFiles = searchFiles.concat(this.recGetSearchFiles(startPath));
+            if (this.isFindDir(startPath)) {
+                findFiles = findFiles.concat(this.recGetFindFiles(startPath));
             } else {
-                throw new SearchError("startPath does not match search criteria");
+                throw new FindError("startPath does not match find criteria");
             }
         } else if (stats.isFile()) {
             const dirname = path.dirname(startPath) || '.';
             const filename = path.basename(startPath);
-            if (this.isSearchDir(dirname) && this.filterFile(filename)) {
+            if (this.isFindDir(dirname) && this.filterFile(filename)) {
                 const filetype = FileTypes.getFileType(filename);
-                const sf = new SearchFile(dirname, filename, filetype);
-                searchFiles.push(sf);
+                const sf = new FindFile(dirname, filename, filetype);
+                findFiles.push(sf);
             } else {
-                throw new SearchError("startPath does not match search criteria");
+                throw new FindError("startPath does not match find criteria");
             }
         }
-        return searchFiles;
+        return findFiles;
     }
 
-    private recGetSearchFiles(currentDir: string): SearchFile[] {
-        const searchDirs: string[] = [];
-        let searchFiles: SearchFile[] = [];
+    private recGetFindFiles(currentDir: string): FindFile[] {
+        const findDirs: string[] = [];
+        let findFiles: FindFile[] = [];
         fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
         }).forEach((f: string) => {
             const stats = fs.statSync(f);
-            if (stats.isDirectory() && this._settings.recursive && this.isSearchDir(f)) {
-                searchDirs.push(f);
+            if (stats.isDirectory() && this._settings.recursive && this.isFindDir(f)) {
+                findDirs.push(f);
             } else if (stats.isFile() && this.filterFile(f)) {
                 const dirname = path.dirname(f) || '.';
                 const filename = path.basename(f);
                 const filetype = FileTypes.getFileType(filename);
-                const sf = new SearchFile(dirname, filename, filetype);
-                searchFiles.push(sf);
+                const sf = new FindFile(dirname, filename, filetype);
+                findFiles.push(sf);
             }
         });
-        searchDirs.forEach(d => {
-            searchFiles = searchFiles.concat(this.recGetSearchFiles(d));
+        findDirs.forEach(d => {
+            findFiles = findFiles.concat(this.recGetFindFiles(d));
         });
-        return searchFiles;
+        return findFiles;
     }
 
-    public search() {
-        // get the search files
-        const searchfiles: SearchFile[] = this.getSearchFiles(this._settings.startPath);
+    public find() {
+        // get the find files
+        const findfiles: FindFile[] = this.getFindFiles(this._settings.startPath);
 
         if (this._settings.verbose) {
-            let dirs = searchfiles.map(sf => sf.pathname);
+            let dirs = findfiles.map(sf => sf.pathname);
             dirs = common.setFromArray(dirs);
             dirs.sort();
-            common.log("\nDirectories to be searched " + `(${dirs.length}):`);
+            common.log("\nDirectories to be found " + `(${dirs.length}):`);
             dirs.forEach(d => common.log(d));
 
-            common.log("\nFiles to be searched " + `(${searchfiles.length}):`);
-            searchfiles.forEach(sf => common.log(sf.toString()));
+            common.log("\nFiles to be found " + `(${findfiles.length}):`);
+            findfiles.forEach(sf => common.log(sf.toString()));
             common.log("");
         }
 
-        // search the files
-        searchfiles.forEach(sf => this.searchFile(sf));
+        // find the files
+        findfiles.forEach(sf => this.findFile(sf));
 
         if (this._settings.verbose)
-            common.log('Search complete.');
+            common.log('Find complete.');
     }
 
-    private searchFile(searchfile: SearchFile): void {
-        switch (searchfile.filetype) {
+    private findFile(findfile: FindFile): void {
+        switch (findfile.filetype) {
             case FileType.Code:
             case FileType.Xml:
             case FileType.Text:
-                this.searchTextFile(searchfile);
+                this.findTextFile(findfile);
                 break;
             case FileType.Binary:
-                this.searchBinaryFile(searchfile);
+                this.findBinaryFile(findfile);
                 break;
             default:
                 // TODO: add message about unsupported filetype
@@ -241,22 +241,22 @@ export class Searcher {
         }
     }
 
-    private searchBinaryFile(searchfile: SearchFile): void {
+    private findBinaryFile(findfile: FindFile): void {
         const self = this;
         if (this._settings.verbose) {
-            common.log(`Searching binary file: "${searchfile}"`);
+            common.log(`Finding binary file: "${findfile}"`);
         }
-        const contents: string = FileUtil.getFileContents(searchfile.relativePath(), this._binaryEncoding);
+        const contents: string = FileUtil.getFileContents(findfile.relativePath(), this._binaryEncoding);
         let pattern: RegExp;
         const patternResults: {[index: string]:number} = {};
-        this._settings.searchPatterns.forEach(function(p: RegExp) {
+        this._settings.findPatterns.forEach(function(p: RegExp) {
             pattern = new RegExp(p.source, 'g');
             if (self._settings.firstMatch && (pattern.source in patternResults)) {
                 return;
             }
             let match = pattern.exec(contents);
             while (match) {
-                const r = new SearchResult(
+                const r = new FindResult(
                     pattern,
                     0,
                     match.index + 1,
@@ -264,8 +264,8 @@ export class Searcher {
                     '',
                     [],
                     []);
-                r.file = searchfile;
-                self.addSearchResult(r);
+                r.file = findfile;
+                self.addFindResult(r);
                 if (self._settings.firstMatch) {
                     patternResults[pattern.source] = 1;
                     break;
@@ -275,23 +275,23 @@ export class Searcher {
         });
     }
 
-    private searchTextFile(searchfile: SearchFile): void {
+    private findTextFile(findfile: FindFile): void {
         if (this._settings.verbose) {
-            common.log(`Searching text file ${searchfile}`);
+            common.log(`Finding text file ${findfile}`);
         }
-        if (this._settings.multilineSearch)
-            this.searchTextFileContents(searchfile);
+        if (this._settings.multilineFind)
+            this.findTextFileContents(findfile);
         else
-            this.searchTextFileLines(searchfile);
+            this.findTextFileLines(findfile);
     }
 
-    private searchTextFileContents(searchfile: SearchFile): void {
+    private findTextFileContents(findfile: FindFile): void {
         const self = this;
-        const contents: string = FileUtil.getFileContents(searchfile.relativePath(), this._settings.textFileEncoding);
-        const results: SearchResult[] = this.searchMultiLineString(contents);
-        results.forEach(function(r: SearchResult) {
-            r.file = searchfile;
-            self.addSearchResult(r);
+        const contents: string = FileUtil.getFileContents(findfile.relativePath(), this._settings.textFileEncoding);
+        const results: FindResult[] = this.findMultiLineString(contents);
+        results.forEach(function(r: FindResult) {
+            r.file = findfile;
+            self.addFindResult(r);
         });
     }
 
@@ -321,14 +321,14 @@ export class Searcher {
     private static getLinesBefore(s: string, beforeStartIndices: number[],
                                   startLineIndices: number[],
                                   endLineIndices: number[]) {
-        return Searcher.getLinesAtIndices(s, beforeStartIndices,
+        return Finder.getLinesAtIndices(s, beforeStartIndices,
             startLineIndices, endLineIndices);
     }
 
     private static getLinesAfter(s: string, afterStartIndices: number[],
                                  startLineIndices: number[],
                                  endLineIndices: number[]) {
-        return Searcher.getLinesAtIndices(s, afterStartIndices,
+        return Finder.getLinesAtIndices(s, afterStartIndices,
             startLineIndices, endLineIndices);
     }
 
@@ -340,18 +340,18 @@ export class Searcher {
         return function(i: number): boolean { return i > matchIdx; };
     }
 
-    public searchMultiLineString(s: string): SearchResult[] {
+    public findMultiLineString(s: string): FindResult[] {
         const self = this;
         const patternResults: {[index: string]:number} = {};
         let linesBefore: string[] = [];
         let linesAfter: string[] = [];
-        const results: SearchResult[] = [];
-        const newLineIndices: number[] = Searcher.getNewLineIndices(s);
+        const results: FindResult[] = [];
+        const newLineIndices: number[] = Finder.getNewLineIndices(s);
         const plusOne = function(i: number): number { return i+1; };
         const startLineIndices: number[] = [0].concat(newLineIndices.map(plusOne));
         const endLineIndices: number[] = newLineIndices.concat([s.length - 1]);
 
-        this._settings.searchPatterns.forEach(function(p: RegExp) {
+        this._settings.findPatterns.forEach(function(p: RegExp) {
             const pattern = new RegExp(p.source, "g");
             let match = pattern.exec(s);
             let stop = false;
@@ -377,7 +377,7 @@ export class Searcher {
                 lineEndIndex = endLineIndices[startLineIndices.indexOf(lineStartIndex)];
                 const line: string = s.substring(lineStartIndex, lineEndIndex);
                 if (self._settings.linesBefore && beforeLineCount) {
-                    linesBefore = Searcher.getLinesBefore(s, beforeStartIndices,
+                    linesBefore = Finder.getLinesBefore(s, beforeStartIndices,
                         startLineIndices, endLineIndices);
                 }
                 if (self._settings.linesAfter) {
@@ -386,14 +386,14 @@ export class Searcher {
                         afterStartIndices = afterStartIndices.slice(0,
                             self._settings.linesAfter);
                     }
-                    linesAfter = Searcher.getLinesAfter(s, afterStartIndices,
+                    linesAfter = Finder.getLinesAfter(s, afterStartIndices,
                         startLineIndices, endLineIndices);
                 }
                 const matchStartIndex: number = match.index - lineStartIndex + 1;
                 const matchEndIndex: number = pattern.lastIndex - lineStartIndex + 1;
                 if ((self._settings.linesBefore === 0 || self.linesBeforeMatch(linesBefore)) &&
                     (self._settings.linesAfter === 0 || self.linesAfterMatch(linesAfter))) {
-                    const searchResult: SearchResult = new SearchResult(
+                    const findResult: FindResult = new FindResult(
                         pattern,
                         beforeLineCount+1,
                         matchStartIndex,
@@ -401,7 +401,7 @@ export class Searcher {
                         line,
                         linesBefore,
                         linesAfter);
-                    results.push(searchResult);
+                    results.push(findResult);
                     if (!(pattern.source in patternResults)) {
                         patternResults[pattern.source] = 1;
                     }
@@ -413,41 +413,41 @@ export class Searcher {
     }
 
     private static linesMatch(lines: string[], inPatterns: RegExp[], outPatterns: RegExp[]): boolean {
-        return ((inPatterns.length === 0 || Searcher.anyMatchesAnyPattern(lines, inPatterns)) &&
-               (outPatterns.length === 0 || ! Searcher.anyMatchesAnyPattern(lines, outPatterns)));
+        return ((inPatterns.length === 0 || Finder.anyMatchesAnyPattern(lines, inPatterns)) &&
+               (outPatterns.length === 0 || ! Finder.anyMatchesAnyPattern(lines, outPatterns)));
     }
 
     private linesBeforeMatch(linesBefore: string[]): boolean {
-        return Searcher.linesMatch(linesBefore, this._settings.inLinesBeforePatterns,
+        return Finder.linesMatch(linesBefore, this._settings.inLinesBeforePatterns,
             this._settings.outLinesBeforePatterns);
     }
 
     private linesAfterMatch(linesAfter: string[]): boolean {
-        return Searcher.linesMatch(linesAfter, this._settings.inLinesAfterPatterns,
+        return Finder.linesMatch(linesAfter, this._settings.inLinesAfterPatterns,
             this._settings.outLinesAfterPatterns);
     }
 
-    private searchTextFileLines(searchfile: SearchFile): void {
+    private findTextFileLines(findfile: FindFile): void {
         const self = this;
-        const lines: string[] = FileUtil.getFileLines(searchfile.relativePath(), this._settings.textFileEncoding);
-        const results: SearchResult[] = this.searchLines(lines);
-        results.forEach(function(r: SearchResult) {
-            r.file = searchfile;
-            self.addSearchResult(r);
+        const lines: string[] = FileUtil.getFileLines(findfile.relativePath(), this._settings.textFileEncoding);
+        const results: FindResult[] = this.findLines(lines);
+        results.forEach(function(r: FindResult) {
+            r.file = findfile;
+            self.addFindResult(r);
         });
     }
 
     // return results so that filepath can be added to them
-    public searchLines(lines: string[]): SearchResult[] {
+    public findLines(lines: string[]): FindResult[] {
         const self = this;
         let linenum = 0;
         let pattern: RegExp;
         const linesBefore: string[] = [];
         const linesAfter: string[] = [];
-        const results: SearchResult[] = [];
+        const results: FindResult[] = [];
         const patternResults: {[index: string]:number} = {};
         while (true) {
-            if (Object.keys(patternResults).length === this._settings.searchPatterns.length) {
+            if (Object.keys(patternResults).length === this._settings.findPatterns.length) {
                 break;
             }
             let line = "";
@@ -464,13 +464,13 @@ export class Searcher {
                     linesAfter.push(lines.shift() || '');
                 }
             }
-            this._settings.searchPatterns.forEach(function(p: RegExp) {
+            this._settings.findPatterns.forEach(function(p: RegExp) {
                 pattern = new RegExp(p.source, "g");
                 let match = pattern.exec(line);
                 while (match) {
                     if ((self._settings.linesBefore === 0 || self.linesBeforeMatch(linesBefore)) &&
                         (self._settings.linesAfter === 0 || self.linesAfterMatch(linesAfter))) {
-                        results.push(new SearchResult(
+                        results.push(new FindResult(
                             pattern,
                             linenum,
                             match.index+1,
@@ -496,11 +496,11 @@ export class Searcher {
         return results;
     }
 
-    private addSearchResult(result: SearchResult): void {
+    private addFindResult(result: FindResult): void {
         this.results.push(result);
     }
 
-    private static cmpSearchResults(r1: SearchResult, r2: SearchResult): number {
+    private static cmpFindResults(r1: FindResult, r2: FindResult): number {
         let pathCmp = 0;
         if (r1.file && r2.file)
             pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
@@ -519,11 +519,11 @@ export class Searcher {
         return pathCmp;
     }
 
-    public printSearchResults(): void {
+    public printFindResults(): void {
         // first sort the results
-        this.results.sort(Searcher.cmpSearchResults);
-        const formatter = new SearchResultFormatter(this._settings);
-        common.log("\nSearch results " + `(${this.results.length}):`);
+        this.results.sort(Finder.cmpFindResults);
+        const formatter = new FindResultFormatter(this._settings);
+        common.log("\nFind results " + `(${this.results.length}):`);
         this.results.forEach(r => common.log(formatter.format(r)));
     }
 

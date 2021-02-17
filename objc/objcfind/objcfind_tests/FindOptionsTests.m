@@ -1,6 +1,6 @@
 //
-//  SearchOptionsTests.m
-//  objcsearch_tests
+//  FindOptionsTests.m
+//  objcfind_tests
 //
 //  Created by Cary Clark on 11/11/18.
 //  Copyright © 2018 Cary Clark. All rights reserved.
@@ -8,13 +8,13 @@
 
 #import <XCTest/XCTest.h>
 #import "FileUtil.h"
-#import "SearchOptions.h"
+#import "FindOptions.h"
 
-@interface SearchOptionsTests : XCTestCase
+@interface FindOptionsTests : XCTestCase
 
 @end
 
-@implementation SearchOptionsTests
+@implementation FindOptionsTests
 
 - (void)setUp {
     [super setUp];
@@ -25,10 +25,10 @@
 }
 
 - (void)testSettingsFromMinimalArgs {
-    SearchOptions *options = [[SearchOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objsearch",@"-s",@"Searcher",@".",nil];
+    FindOptions *options = [[FindOptions alloc] init];
+    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-s",@"Finder",@".",nil];
     NSError *error = nil;
-    SearchSettings *settings = [options settingsFromArgs:args error:&error];
+    FindSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
     XCTAssert([settings excludeHidden]);
@@ -36,43 +36,43 @@
     XCTAssert(![settings listDirs]);
     XCTAssert(![settings listFiles]);
     XCTAssert(![settings listLines]);
-    XCTAssert(![settings multiLineSearch]);
+    XCTAssert(![settings multiLineFind]);
     XCTAssert([settings printResults]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
-    XCTAssert(![settings searchArchives]);
+    XCTAssert(![settings findArchives]);
     XCTAssert(![settings uniqueLines]);
     XCTAssert(![settings verbose]);
     
-    XCTAssert([[settings searchPatterns] count] == 1);
-    XCTAssert([[[[settings searchPatterns] objectAtIndex:0] pattern] isEqual:@"Searcher"]);
+    XCTAssert([[settings findPatterns] count] == 1);
+    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Finder"]);
     XCTAssert([[settings startPath] isEqual:@"."]);
 }
 
 - (void)testSettingsFromValidArgs {
-    SearchOptions *options = [[SearchOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objsearch",@"-x",@"java,scala",@"-s",@"Search",@".",nil];
+    FindOptions *options = [[FindOptions alloc] init];
+    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-x",@"java,scala",@"-s",@"Find",@".",nil];
     NSError *error = nil;
-    SearchSettings *settings = [options settingsFromArgs:args error:&error];
+    FindSettings *settings = [options settingsFromArgs:args error:&error];
     
     XCTAssert([[settings inExtensions] count] == 2);
     XCTAssert([[[settings inExtensions] objectAtIndex:0] isEqual:@"java"]);
     XCTAssert([[[settings inExtensions] objectAtIndex:1] isEqual:@"scala"]);
-    XCTAssert([[settings searchPatterns] count] == 1);
-    XCTAssert([[[[settings searchPatterns] objectAtIndex:0] pattern] isEqual:@"Search"]);
+    XCTAssert([[settings findPatterns] count] == 1);
+    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Find"]);
     XCTAssert([[settings startPath] isEqual:@"."]);
 }
 
 - (void)testSettingsFromJson {
-    SearchSettings *settings = [[SearchSettings alloc] init];
+    FindSettings *settings = [[FindSettings alloc] init];
 
-    NSString *startPath = @"~/src/xsearch";
+    NSString *startPath = @"~/src/xfind";
     NSString *json = [NSString stringWithFormat:@"{\n"
                       "\"startpath\": \"%@\",\n"
                       "\"in-ext\": [\"js\", \"ts\"],\n"
                       "\"out-dirpattern\": \"node_module\",\n"
                       "\"out-filepattern\": [\"temp\"],\n"
-                      "\"searchpattern\": \"Searcher\",\n"
+                      "\"findpattern\": \"Finder\",\n"
                       "\"linesbefore\": 2,\n"
                       "\"linesafter\": 2,\n"
                       "\"debug\": true,\n"
@@ -82,7 +82,7 @@
 
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
 
-    SearchOptions *options = [[SearchOptions alloc] init];
+    FindOptions *options = [[FindOptions alloc] init];
     [options settingsFromData:data settings:settings];
 
     XCTAssert([[settings inExtensions] count] == 2);
@@ -92,8 +92,8 @@
     XCTAssert([[[[settings outDirPatterns] objectAtIndex:0] pattern] isEqual:@"node_module"]);
     XCTAssert([[settings outFilePatterns] count] == 1);
     XCTAssert([[[[settings outFilePatterns] objectAtIndex:0] pattern] isEqual:@"temp"]);
-    XCTAssert([[settings searchPatterns] count] == 1);
-    XCTAssert([[[[settings searchPatterns] objectAtIndex:0] pattern] isEqual:@"Searcher"]);
+    XCTAssert([[settings findPatterns] count] == 1);
+    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Finder"]);
     XCTAssert([settings linesBefore] == 2);
     XCTAssert([settings linesAfter] == 2);
     XCTAssert([settings debug]);

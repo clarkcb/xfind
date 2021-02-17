@@ -1,6 +1,6 @@
 //
 //  common.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/20/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -78,7 +78,7 @@ func takeRight<T>(_ seq: [T], num: Int) -> [T] {
     return Array(right.reversed())
 }
 
-// for printing the borders in multiline search results
+// for printing the borders in multiline find results
 extension String {
     func `repeat`(_ n: Int) -> String {
         var result = self

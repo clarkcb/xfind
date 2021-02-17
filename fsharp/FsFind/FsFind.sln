@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsSearch", "FsSearch\FsSearch.fsproj", "{0611BE46-16C5-46E0-8084-E563CC240D8A}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsFind", "FsFind\FsFind.fsproj", "{0611BE46-16C5-46E0-8084-E563CC240D8A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsSearchTests", "FsSearchTests\FsSearchTests.fsproj", "{3396DEDC-074A-4C0B-83F2-3A54AF918A2E}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsFindTests", "FsFindTests\FsFindTests.fsproj", "{3396DEDC-074A-4C0B-83F2-3A54AF918A2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

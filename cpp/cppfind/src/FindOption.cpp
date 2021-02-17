@@ -1,8 +1,8 @@
 #include <boost/algorithm/string.hpp>
-#include "SearchOption.h"
+#include "FindOption.h"
 
-namespace cppsearch {
-    SearchOption::SearchOption(const std::string* sa, const std::string& la, const std::string& desc) {
+namespace cppfind {
+    FindOption::FindOption(const std::string* sa, const std::string& la, const std::string& desc) {
         m_shortarg = sa;
         m_longarg = la;
         m_description = desc;
@@ -16,19 +16,19 @@ namespace cppsearch {
         }
     }
 
-    const std::string* SearchOption::shortarg() const {
+    const std::string* FindOption::shortarg() const {
         return m_shortarg;
     }
 
-    std::string SearchOption::longarg() const {
+    std::string FindOption::longarg() const {
         return m_longarg;
     }
 
-    std::string SearchOption::description() const {
+    std::string FindOption::description() const {
         return m_description;
     }
 
-    std::string SearchOption::sortarg() const {
+    std::string FindOption::sortarg() const {
         return m_sortarg;
     }
 }

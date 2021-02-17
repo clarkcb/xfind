@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+﻿namespace FsFind
 
 open System
 open System.Collections.Generic
@@ -20,7 +20,7 @@ type FileTypes() =
     static let archive = "archive"
     static let binary = "binary"
     static let code = "code"
-    static let searchable = "searchable"
+    static let findable = "findable"
     static let text = "text"
     static let xml = "xml"
 
@@ -46,10 +46,10 @@ type FileTypes() =
         allText.UnionWith(fileTypesDictionary.[xml])
         if fileTypesDictionary.Remove(text) then
             fileTypesDictionary.Add(text, allText)
-        let searchableSet = HashSet<String>(fileTypesDictionary.[text])
-        searchableSet.UnionWith(fileTypesDictionary.[binary])
-        searchableSet.UnionWith(fileTypesDictionary.[archive])
-        fileTypesDictionary.Add(searchable, searchableSet)
+        let findableSet = HashSet<String>(fileTypesDictionary.[text])
+        findableSet.UnionWith(fileTypesDictionary.[binary])
+        findableSet.UnionWith(fileTypesDictionary.[archive])
+        fileTypesDictionary.Add(findable, findableSet)
         fileTypesDictionary
 
     let PopulateFileTypesFromXml (xmlString : string) =
@@ -64,14 +64,14 @@ type FileTypes() =
         allText.UnionWith(fileTypesDictionary.[xml])
         if fileTypesDictionary.Remove(text) then
             fileTypesDictionary.Add(text, allText)
-        let searchableSet = HashSet<String>(fileTypesDictionary.[text])
-        searchableSet.UnionWith(fileTypesDictionary.[binary])
-        searchableSet.UnionWith(fileTypesDictionary.[archive])
-        fileTypesDictionary.Add(searchable, searchableSet)
+        let findableSet = HashSet<String>(fileTypesDictionary.[text])
+        findableSet.UnionWith(fileTypesDictionary.[binary])
+        findableSet.UnionWith(fileTypesDictionary.[archive])
+        fileTypesDictionary.Add(findable, findableSet)
         fileTypesDictionary
 
-//    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.xml")
-    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsSearch.Resources.filetypes.json")
+//    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.filetypes.xml")
+    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.filetypes.json")
 //    let _fileTypesDictionary = PopulateFileTypesFromXml(_fileTypesResource)
     let _fileTypesDictionary = PopulateFileTypesFromJson(_fileTypesResource)
 
@@ -113,14 +113,14 @@ type FileTypes() =
     member this.IsCodeFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[code]
 
-    member this.IsSearchableFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[searchable]
+    member this.IsFindableFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[findable]
 
     member this.IsTextFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[text]
 
     member this.IsUnknownFile (f : FileInfo) : bool =
-        not (this.IsSearchableFile f)
+        not (this.IsFindableFile f)
 
     member this.IsXmlFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[xml]

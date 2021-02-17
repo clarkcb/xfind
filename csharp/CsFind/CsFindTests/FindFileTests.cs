@@ -1,40 +1,40 @@
 ﻿using NUnit.Framework;
-using CsSearch;
+using CsFind;
 
-namespace CsSearchTests
+namespace CsFindTests
 {
 	[TestFixture]
-	class SearchFileTests
+	class FindFileTests
 	{
-		private const string CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch";
-		private const string WinCsSearchPath = @"C:\src\git\xsearch\csharp\CsSearch\CsSearch";
+		private const string CsFindPath = "~/src/xfind/csharp/CsFind/CsFind";
+		private const string WinCsFindPath = @"C:\src\git\xfind\csharp\CsFind\CsFind";
 
 		[Test]
-		public void SearchFile_ToString_EqualsExpected()
+		public void FindFile_ToString_EqualsExpected()
 		{
-			var searchFile = new SearchFile(CsSearchPath, "Searcher.cs", FileType.Text);
-			Assert.AreEqual(CsSearchPath + "/Searcher.cs", searchFile.ToString());
+			var findFile = new FindFile(CsFindPath, "Finder.cs", FileType.Text);
+			Assert.AreEqual(CsFindPath + "/Finder.cs", findFile.ToString());
 		}
 
 		[Test]
-		public void SearchFileTrailingSlash_ToString_EqualsExpected()
+		public void FindFileTrailingSlash_ToString_EqualsExpected()
 		{
-			var searchFile = new SearchFile(CsSearchPath + "/", "Searcher.cs", FileType.Text);
-			Assert.AreEqual(CsSearchPath + "/Searcher.cs", searchFile.ToString());
+			var findFile = new FindFile(CsFindPath + "/", "Finder.cs", FileType.Text);
+			Assert.AreEqual(CsFindPath + "/Finder.cs", findFile.ToString());
 		}
 
 		[Test]
-		public void SearchFileBackSlashes_ToString_EqualsExpected()
+		public void FindFileBackSlashes_ToString_EqualsExpected()
 		{
-			var searchFile = new SearchFile(WinCsSearchPath, "Searcher.cs", FileType.Text);
-			Assert.AreEqual(WinCsSearchPath + @"\Searcher.cs", searchFile.ToString());
+			var findFile = new FindFile(WinCsFindPath, "Finder.cs", FileType.Text);
+			Assert.AreEqual(WinCsFindPath + @"\Finder.cs", findFile.ToString());
 		}
 
 		[Test]
-		public void SearchFileBackSlashesTrailingSlash_ToString_EqualsExpected()
+		public void FindFileBackSlashesTrailingSlash_ToString_EqualsExpected()
 		{
-			var searchFile = new SearchFile(WinCsSearchPath + @"\", "Searcher.cs", FileType.Text);
-			Assert.AreEqual(WinCsSearchPath + @"\Searcher.cs", searchFile.ToString());
+			var findFile = new FindFile(WinCsFindPath + @"\", "Finder.cs", FileType.Text);
+			Assert.AreEqual(WinCsFindPath + @"\Finder.cs", findFile.ToString());
 		}
 	}
 }

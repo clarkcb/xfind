@@ -1,8 +1,8 @@
-package scalasearch
+package scalafind
 
 import java.io.File
 
-class SearchFile(val containers: List[String], val file: File, val fileType: FileType.Value) {
+class FindFile(val containers: List[String], val file: File, val fileType: FileType.Value) {
 
   val CONTAINER_SEPARATOR = "!"
 

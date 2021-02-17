@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using NUnit.Framework;
-using CsSearch;
+using CsFind;
 
-namespace CsSearchTests
+namespace CsFindTests
 {
 	[TestFixture]
 	public class FileTypesTests
@@ -87,10 +87,10 @@ namespace CsSearchTests
 		}
 
 		[Test]
-		public void IsSearchableFile_XmlFile_True()
+		public void IsFindableFile_XmlFile_True()
 		{
 			var xmlFile = new FileInfo("markup.xml");
-			Assert.IsTrue(_fileTypes.IsSearchableFile(xmlFile));
+			Assert.IsTrue(_fileTypes.IsFindableFile(xmlFile));
 		}
 	}
 }

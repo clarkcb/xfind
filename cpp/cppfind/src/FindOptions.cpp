@@ -7,69 +7,69 @@
 #include "config.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
-#include "SearchException.h"
-#include "SearchOption.h"
-#include "SearchOptions.h"
+#include "FindException.h"
+#include "FindOption.h"
+#include "FindOptions.h"
 
-namespace cppsearch {
-    SearchOptions::SearchOptions() {
+namespace cppfind {
+    FindOptions::FindOptions() {
         m_coll_arg_map = {
-                {"in-archiveext", [](std::string& s, SearchSettings* ss) { ss->add_in_archiveextension(s); }},
-                {"in-archivefilepattern", [](std::string& s, SearchSettings* ss) { ss->add_in_archivefilepattern(s); }},
-                {"in-dirpattern", [](std::string& s, SearchSettings* ss) { ss->add_in_dirpattern(s); }},
-                {"in-ext", [](std::string& s, SearchSettings* ss) { ss->add_in_extension(s); }},
-                {"in-filepattern", [](std::string& s, SearchSettings* ss) { ss->add_in_filepattern(s); }},
-                {"in-filetype", [](std::string& s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(t); }},
-                {"in-linesafterpattern", [](std::string& s, SearchSettings* ss) { ss->add_in_linesafterpattern(s); }},
-                {"in-linesbeforepattern", [](std::string& s, SearchSettings* ss) { ss->add_in_linesbeforepattern(s); }},
-                {"linesaftertopattern", [](std::string& s, SearchSettings* ss) { ss->add_linesaftertopattern(s); }},
-                {"linesafteruntilpattern", [](std::string& s, SearchSettings* ss) { ss->add_linesafteruntilpattern(s); }},
-                {"out-archiveext", [](std::string& s, SearchSettings* ss) { ss->add_out_archiveextension(s); }},
-                {"out-archivefilepattern", [](std::string& s, SearchSettings* ss) { ss->add_out_archivefilepattern(s); }},
-                {"out-dirpattern", [](std::string& s, SearchSettings* ss) { ss->add_out_dirpattern(s); }},
-                {"out-ext", [](std::string& s, SearchSettings* ss) { ss->add_out_extension(s); }},
-                {"out-filepattern", [](std::string& s, SearchSettings* ss) { ss->add_out_filepattern(s); }},
-                {"out-filetype", [](std::string& s, SearchSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(t); }},
-                {"out-linesafterpattern", [](std::string& s, SearchSettings* ss) { ss->add_out_linesafterpattern(s); }},
-                {"out-linesbeforepattern", [](std::string& s, SearchSettings* ss) { ss->add_out_linesbeforepattern(s); }},
-                {"searchpattern", [](std::string& s, SearchSettings* ss) { ss->add_searchpattern(s); }},
-                {"settings-file", [this](std::string& s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
+                {"in-archiveext", [](std::string& s, FindSettings* ss) { ss->add_in_archiveextension(s); }},
+                {"in-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_in_archivefilepattern(s); }},
+                {"in-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_in_dirpattern(s); }},
+                {"in-ext", [](std::string& s, FindSettings* ss) { ss->add_in_extension(s); }},
+                {"in-filepattern", [](std::string& s, FindSettings* ss) { ss->add_in_filepattern(s); }},
+                {"in-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(t); }},
+                {"in-linesafterpattern", [](std::string& s, FindSettings* ss) { ss->add_in_linesafterpattern(s); }},
+                {"in-linesbeforepattern", [](std::string& s, FindSettings* ss) { ss->add_in_linesbeforepattern(s); }},
+                {"linesaftertopattern", [](std::string& s, FindSettings* ss) { ss->add_linesaftertopattern(s); }},
+                {"linesafteruntilpattern", [](std::string& s, FindSettings* ss) { ss->add_linesafteruntilpattern(s); }},
+                {"out-archiveext", [](std::string& s, FindSettings* ss) { ss->add_out_archiveextension(s); }},
+                {"out-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_out_archivefilepattern(s); }},
+                {"out-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_out_dirpattern(s); }},
+                {"out-ext", [](std::string& s, FindSettings* ss) { ss->add_out_extension(s); }},
+                {"out-filepattern", [](std::string& s, FindSettings* ss) { ss->add_out_filepattern(s); }},
+                {"out-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(t); }},
+                {"out-linesafterpattern", [](std::string& s, FindSettings* ss) { ss->add_out_linesafterpattern(s); }},
+                {"out-linesbeforepattern", [](std::string& s, FindSettings* ss) { ss->add_out_linesbeforepattern(s); }},
+                {"findpattern", [](std::string& s, FindSettings* ss) { ss->add_findpattern(s); }},
+                {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }}
         };
 
         m_int_arg_map = {
-                {"linesafter", [](unsigned int i, SearchSettings* ss) { ss->linesafter(i); }},
-                {"linesbefore", [](unsigned int i, SearchSettings* ss) { ss->linesbefore(i); }},
-                {"maxlinelength", [](unsigned int i, SearchSettings* ss) { ss->maxlinelength(i); }}
+                {"linesafter", [](unsigned int i, FindSettings* ss) { ss->linesafter(i); }},
+                {"linesbefore", [](unsigned int i, FindSettings* ss) { ss->linesbefore(i); }},
+                {"maxlinelength", [](unsigned int i, FindSettings* ss) { ss->maxlinelength(i); }}
         };
 
         m_str_arg_map = {
-                {"startpath", [](std::string& s, SearchSettings* ss) { ss->startpath(s); }},
-                {"settings-file", [this](std::string& s, SearchSettings* ss) { this->settings_from_file(s, ss); }}
+                {"startpath", [](std::string& s, FindSettings* ss) { ss->startpath(s); }},
+                {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }}
         };
 
         m_bool_arg_map = {
-                {"archivesonly", [](bool b, SearchSettings* ss) { ss->archivesonly(b); }},
-                {"allmatches", [](bool b, SearchSettings* ss) { ss->firstmatch(!b); }},
-                {"colorize", [](bool b, SearchSettings* ss) { ss->colorize(b); }},
-                {"debug", [](bool b, SearchSettings* ss) { ss->debug(b); }},
-                {"excludehidden", [](bool b, SearchSettings* ss) { ss->excludehidden(b); }},
-                {"firstmatch", [](bool b, SearchSettings* ss) { ss->firstmatch(b); }},
-                {"help", [](bool b, SearchSettings* ss) { ss->printusage(b); }},
-                {"includehidden", [](bool b, SearchSettings* ss) { ss->excludehidden(!b); }},
-                {"listdirs", [](bool b, SearchSettings* ss) { ss->listdirs(b); }},
-                {"listfiles", [](bool b, SearchSettings* ss) { ss->listfiles(b); }},
-                {"listlines", [](bool b, SearchSettings* ss) { ss->listlines(b); }},
-                {"multilinesearch", [](bool b, SearchSettings* ss) { ss->multilinesearch(b); }},
-                {"nocolorize", [](bool b, SearchSettings* ss) { ss->colorize(!b); }},
-                {"noprintmatches", [](bool b, SearchSettings* ss) { ss->printresults(!b); }},
-                {"norecursive", [](bool b, SearchSettings* ss) { ss->recursive(!b); }},
-                {"nosearcharchives", [](bool b, SearchSettings* ss) { ss->searcharchives(!b); }},
-                {"printmatches", [](bool b, SearchSettings* ss) { ss->printresults(b); }},
-                {"recursive", [](bool b, SearchSettings* ss) { ss->recursive(b); }},
-                {"searcharchives", [](bool b, SearchSettings* ss) { ss->searcharchives(b); }},
-                {"uniquelines", [](bool b, SearchSettings* ss) { ss->uniquelines(b); }},
-                {"verbose", [](bool b, SearchSettings* ss) { ss->verbose(b); }},
-                {"version", [](bool b, SearchSettings* ss) { ss->printversion(b); }},
+                {"archivesonly", [](bool b, FindSettings* ss) { ss->archivesonly(b); }},
+                {"allmatches", [](bool b, FindSettings* ss) { ss->firstmatch(!b); }},
+                {"colorize", [](bool b, FindSettings* ss) { ss->colorize(b); }},
+                {"debug", [](bool b, FindSettings* ss) { ss->debug(b); }},
+                {"excludehidden", [](bool b, FindSettings* ss) { ss->excludehidden(b); }},
+                {"firstmatch", [](bool b, FindSettings* ss) { ss->firstmatch(b); }},
+                {"help", [](bool b, FindSettings* ss) { ss->printusage(b); }},
+                {"includehidden", [](bool b, FindSettings* ss) { ss->excludehidden(!b); }},
+                {"listdirs", [](bool b, FindSettings* ss) { ss->listdirs(b); }},
+                {"listfiles", [](bool b, FindSettings* ss) { ss->listfiles(b); }},
+                {"listlines", [](bool b, FindSettings* ss) { ss->listlines(b); }},
+                {"multilineoption-REMOVE", [](bool b, FindSettings* ss) { ss->multilineoption-REMOVE(b); }},
+                {"nocolorize", [](bool b, FindSettings* ss) { ss->colorize(!b); }},
+                {"noprintmatches", [](bool b, FindSettings* ss) { ss->printresults(!b); }},
+                {"norecursive", [](bool b, FindSettings* ss) { ss->recursive(!b); }},
+                {"nofindarchives", [](bool b, FindSettings* ss) { ss->findarchives(!b); }},
+                {"printmatches", [](bool b, FindSettings* ss) { ss->printresults(b); }},
+                {"recursive", [](bool b, FindSettings* ss) { ss->recursive(b); }},
+                {"findarchives", [](bool b, FindSettings* ss) { ss->findarchives(b); }},
+                {"uniquelines", [](bool b, FindSettings* ss) { ss->uniquelines(b); }},
+                {"verbose", [](bool b, FindSettings* ss) { ss->verbose(b); }},
+                {"version", [](bool b, FindSettings* ss) { ss->printversion(b); }},
         };
 
         m_long_arg_map = {};
@@ -77,11 +77,11 @@ namespace cppsearch {
         load_options();
     }
 
-    void SearchOptions::settings_from_file(std::string& filepath, SearchSettings* settings) {
+    void FindOptions::settings_from_file(std::string& filepath, FindSettings* settings) {
         if (!FileUtil::file_exists(filepath)) {
             std::string msg = "Settings file not found: ";
             msg.append(filepath);
-            throw SearchException(msg);
+            throw FindException(msg);
         }
 
         FILE *fp = fopen(filepath.c_str(), "r");
@@ -96,13 +96,13 @@ namespace cppsearch {
         settings_from_document(&document, settings);
     }
 
-    void SearchOptions::settings_from_json(std::string& json, SearchSettings* settings) {
+    void FindOptions::settings_from_json(std::string& json, FindSettings* settings) {
         Document document;
         document.Parse(json.c_str());
         settings_from_document(&document, settings);
     }
 
-    void SearchOptions::settings_from_document(Document* document, SearchSettings* settings) {
+    void FindOptions::settings_from_document(Document* document, FindSettings* settings) {
         assert(document->IsObject());
 
         for(Value::ConstMemberIterator it=document->MemberBegin(); it != document->MemberEnd(); it++) {
@@ -123,7 +123,7 @@ namespace cppsearch {
                 if (i < 0) {
                     std::string msg = "Invalid value for option ";
                     msg.append(name).append(": ").append(std::to_string(i));
-                    throw SearchException(msg);
+                    throw FindException(msg);
                 }
                 m_int_arg_map[name]((unsigned int)i, settings);
 
@@ -140,23 +140,23 @@ namespace cppsearch {
                     m_coll_arg_map[name](*s, settings);
                 } else {
                     std::string msg = "Invalid option: " + name;
-                    throw SearchException(msg);
+                    throw FindException(msg);
                 }
             }
         }
     }
 
-    void SearchOptions::load_options() {
-        auto searchoptions_path = std::string(XSEARCHPATH);
-        searchoptions_path.append("/shared/searchoptions.json");
+    void FindOptions::load_options() {
+        auto findoptions_path = std::string(XFINDPATH);
+        findoptions_path.append("/shared/findoptions.json");
 
-        if (!FileUtil::file_exists(searchoptions_path)) {
-            std::string msg = "Searchoptions file not found: ";
-            msg.append(searchoptions_path);
-            throw SearchException(msg);
+        if (!FileUtil::file_exists(findoptions_path)) {
+            std::string msg = "Findoptions file not found: ";
+            msg.append(findoptions_path);
+            throw FindException(msg);
         }
 
-        FILE* fp = fopen(searchoptions_path.c_str(), "r");
+        FILE* fp = fopen(findoptions_path.c_str(), "r");
 
         char readBuffer[65536];
         FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -166,36 +166,36 @@ namespace cppsearch {
         document.ParseStream(is);
         fclose(fp);
 
-        assert(document.HasMember("searchoptions"));
-        const Value& searchoptions = document["searchoptions"];
-        assert(searchoptions.IsArray());
-        for (SizeType i = 0; i < searchoptions.Size(); i++) {
-            const Value::ConstObject &searchoption = searchoptions[i].GetObject();
-            assert(searchoption.HasMember("long"));
-            const Value &longValue = searchoption["long"];
+        assert(document.HasMember("findoptions"));
+        const Value& findoptions = document["findoptions"];
+        assert(findoptions.IsArray());
+        for (SizeType i = 0; i < findoptions.Size(); i++) {
+            const Value::ConstObject &findoption = findoptions[i].GetObject();
+            assert(findoption.HasMember("long"));
+            const Value &longValue = findoption["long"];
             auto* lng = new std::string(longValue.GetString());
             m_long_arg_map[*lng] = *lng;
 
             std::string* sht;
-            if (searchoption.HasMember("short")) {
-                const Value &shortValue = searchoption["short"];
+            if (findoption.HasMember("short")) {
+                const Value &shortValue = findoption["short"];
                 sht = new std::string(shortValue.GetString());
                 m_long_arg_map[*sht] = *lng;
             } else {
                 sht = new std::string("");
             }
 
-            assert(searchoption.HasMember("desc"));
-            const Value &descValue = searchoption["desc"];
+            assert(findoption.HasMember("desc"));
+            const Value &descValue = findoption["desc"];
             auto* desc = new std::string(descValue.GetString());
 
-            auto* option = new SearchOption(sht, *lng, *desc);
+            auto* option = new FindOption(sht, *lng, *desc);
             m_options.push_back(option);
         }
     }
 
-    SearchSettings* SearchOptions::settings_from_args(int &argc, char **argv) {
-        auto *settings = new SearchSettings();
+    FindSettings* FindOptions::settings_from_args(int &argc, char **argv) {
+        auto *settings = new FindSettings();
 
         // set print results to true since we are running the executable
         settings->printresults(true);
@@ -235,7 +235,7 @@ namespace cppsearch {
                         if (arg_deque.empty()) {
                             std::string msg = "Missing value for option ";
                             msg.append(*next_arg);
-                            throw SearchException(msg);
+                            throw FindException(msg);
                         } else {
                             auto* arg_val = new std::string(arg_deque.front());
                             arg_deque.pop_front();
@@ -246,7 +246,7 @@ namespace cppsearch {
                                 if (int_val < 0) {
                                     std::string msg = "Invalid value for option ";
                                     msg.append(*next_arg).append(": ").append(*arg_val);
-                                    throw SearchException(msg);
+                                    throw FindException(msg);
                                 }
                                 m_int_arg_map[longarg](int_val, settings);
                             } else if (str_arg_found != m_str_arg_map.end()) {
@@ -256,12 +256,12 @@ namespace cppsearch {
                     } else { // shouldn't be possible to get here
                         std::string msg = "Invalid option: ";
                         msg.append(*next_arg);
-                        throw SearchException(msg);
+                        throw FindException(msg);
                     }
                 } else {
                     std::string msg = "Invalid option: ";
                     msg.append(*next_arg);
-                    throw SearchException(msg);
+                    throw FindException(msg);
                 }
             } else {
                 settings->startpath(*next_arg);
@@ -270,19 +270,19 @@ namespace cppsearch {
         return settings;
     }
 
-    void SearchOptions::usage() {
+    void FindOptions::usage() {
         std::string usage_string = get_usage_string();
         std::cout << usage_string << std::endl;
         exit(1);
     }
 
-    std::string SearchOptions::get_usage_string() {
-        auto* usage_string = new std::string("\nUsage:\n cppsearch [options] -s <searchpattern> <startpath>\n\nOptions:\n");
+    std::string FindOptions::get_usage_string() {
+        auto* usage_string = new std::string("\nUsage:\n cppfind [options] -s <findpattern> <startpath>\n\nOptions:\n");
 
         std::vector<std::string> opt_strings = {};
         std::vector<std::string> opt_descs = {};
 
-        auto sort_option_lambda = [](const SearchOption* s1, const SearchOption* s2) -> bool {
+        auto sort_option_lambda = [](const FindOption* s1, const FindOption* s2) -> bool {
             return s1->sortarg().compare(s2->sortarg()) < 0;
         };
         sort(m_options.begin(), m_options.end(), sort_option_lambda);

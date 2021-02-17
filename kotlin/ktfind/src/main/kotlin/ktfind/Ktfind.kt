@@ -1,16 +1,16 @@
-package ktsearch
+package ktfind
 
 import java.util.Comparator
 
-fun printUsage(searchOptions: SearchOptions) {
+fun printUsage(findOptions: FindOptions) {
     log("")
-    searchOptions.usage()
+    findOptions.usage()
 }
 
-fun printErrorWithUsage(err: String, searchOptions: SearchOptions) {
+fun printErrorWithUsage(err: String, findOptions: FindOptions) {
     log("")
     logError(err + "\n")
-    searchOptions.usage()
+    findOptions.usage()
 }
 
 private fun signum(num: Int): Int {
@@ -23,8 +23,8 @@ private fun signum(num: Int): Int {
     return 0
 }
 
-class SearchResultComparator : Comparator<SearchResult> {
-    override fun compare(r1: SearchResult, r2: SearchResult): Int {
+class FindResultComparator : Comparator<FindResult> {
+    override fun compare(r1: FindResult, r2: FindResult): Int {
         val pathCmp = (r1.file!!.file.parent ?: "").toLowerCase().
                 compareTo((r2.file!!.file.parent ?: "").toLowerCase())
         if (pathCmp == 0) {
@@ -43,15 +43,15 @@ class SearchResultComparator : Comparator<SearchResult> {
     }
 }
 
-fun printResults(results: List<SearchResult>, settings: SearchSettings) {
-    log("\nSearch results (${results.size}):")
-    val formatter = SearchResultFormatter(settings)
-    for (r in results.sortedWith(SearchResultComparator())) {
+fun printResults(results: List<FindResult>, settings: FindSettings) {
+    log("\nFind results (${results.size}):")
+    val formatter = FindResultFormatter(settings)
+    for (r in results.sortedWith(FindResultComparator())) {
         log(formatter.format(r))
     }
 }
 
-fun printMatchingDirs(results: List<SearchResult>) {
+fun printMatchingDirs(results: List<FindResult>) {
     val dirs = results.mapNotNull { r -> r.file }.mapNotNull { f -> f.file.parent }.distinct().sorted()
     log("\nDirectories with matches (${dirs.size}):")
     for (d in dirs) {
@@ -59,7 +59,7 @@ fun printMatchingDirs(results: List<SearchResult>) {
     }
 }
 
-fun printMatchingFiles(results: List<SearchResult>) {
+fun printMatchingFiles(results: List<FindResult>) {
     val files = results.mapNotNull { r -> r.file }.map { f -> f.toString() }.distinct().sorted()
     log("\nFiles with matches (${files.size}):")
     for (f in files) {
@@ -67,7 +67,7 @@ fun printMatchingFiles(results: List<SearchResult>) {
     }
 }
 
-fun printMatchingLines(settings: SearchSettings, results: List<SearchResult>) {
+fun printMatchingLines(settings: FindSettings, results: List<FindResult>) {
     val lines: List<String> =
             if (settings.uniqueLines) results.map { r -> r.line.trim() }.
                     distinct().sorted()
@@ -81,9 +81,9 @@ fun printMatchingLines(settings: SearchSettings, results: List<SearchResult>) {
     }
 }
 
-fun search(settings: SearchSettings) {
-    val searcher = Searcher(settings)
-    val results: List<SearchResult> = searcher.search()
+fun find(settings: FindSettings) {
+    val finder = Finder(settings)
+    val results: List<FindResult> = finder.find()
 
     if (settings.printResults) {
         printResults(results, settings)
@@ -100,13 +100,13 @@ fun search(settings: SearchSettings) {
 }
 
 fun main(args : Array<String>) {
-    val searchOptions = SearchOptions()
+    val findOptions = FindOptions()
     try {
-        val settings = searchOptions.settingsFromArgs(args)
+        val settings = findOptions.settingsFromArgs(args)
         if (settings.debug) log("settings: $settings")
-        if (settings.printUsage) printUsage(searchOptions)
-        else search(settings)
-    } catch (e: SearchException) {
-        printErrorWithUsage(e.message ?: "Unknown error", searchOptions)
+        if (settings.printUsage) printUsage(findOptions)
+        else find(settings)
+    } catch (e: FindException) {
+        printErrorWithUsage(e.message ?: "Unknown error", findOptions)
     }
 }

@@ -1,4 +1,4 @@
-package scalasearch
+package scalafind
 
 import java.io.File
 import scala.io.{Codec, Source}
@@ -7,7 +7,7 @@ object FileUtil {
   val CURRENT_PATH = "."
   val PARENT_PATH = ".."
 
-  def getExtension(f: SearchFile): String = {
+  def getExtension(f: FindFile): String = {
     getExtension(f.file.getName)
   }
 

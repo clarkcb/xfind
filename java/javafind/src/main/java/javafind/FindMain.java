@@ -1,14 +1,14 @@
 /*******************************************************************************
-SearchMain
+FindMain
 
-Main class for initiating javasearch from command line
+Main class for initiating javafind from command line
 
 @author Cary Clark &lt;clarkcb@gmail.com&gt;
 @version $Rev$
 @copyright Cary Clark 2012
 *******************************************************************************/
 
-package javasearch;
+package javafind;
 
 import org.json.simple.parser.ParseException;
 
@@ -16,16 +16,16 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static javasearch.Logger.log;
+import static javafind.Logger.log;
 
-public class SearchMain {
+public class FindMain {
 
     private static void handleError(final String message) {
         log("");
         Logger.logError(message);
     }
 
-    private static void handleError(final String message, SearchOptions options) {
+    private static void handleError(final String message, FindOptions options) {
         log("");
         Logger.logError(message + "\n");
         options.usage(1);
@@ -35,12 +35,12 @@ public class SearchMain {
         return Integer.compare(num, 0);
     }
 
-    private static int compareResults(final SearchResult r1, final SearchResult r2) {
-        int pathCmp = r1.getSearchFile().getPath().toLowerCase()
-                .compareTo(r2.getSearchFile().getPath().toLowerCase());
+    private static int compareResults(final FindResult r1, final FindResult r2) {
+        int pathCmp = r1.getFindFile().getPath().toLowerCase()
+                .compareTo(r2.getFindFile().getPath().toLowerCase());
         if (pathCmp == 0) {
-            int fileCmp = r1.getSearchFile().getFileName().toLowerCase()
-                    .compareTo(r2.getSearchFile().getFileName().toLowerCase());
+            int fileCmp = r1.getFindFile().getFileName().toLowerCase()
+                    .compareTo(r2.getFindFile().getFileName().toLowerCase());
             if (fileCmp == 0) {
                 int lineNumCmp = signum(r1.getLineNum() - r2.getLineNum());
                 if (lineNumCmp == 0) {
@@ -53,26 +53,26 @@ public class SearchMain {
         return pathCmp;
     }
 
-    private static List<SearchResult> getSortedSearchResults(List<SearchResult> results) {
-        return results.stream().sorted(SearchMain::compareResults)
+    private static List<FindResult> getSortedFindResults(List<FindResult> results) {
+        return results.stream().sorted(FindMain::compareResults)
                 .collect(Collectors.toList());
     }
 
-    private static void printSearchResults(List<SearchResult> results, SearchSettings settings) {
-        List<SearchResult> sortedResults = getSortedSearchResults(results);
-        SearchResultFormatter formatter = new SearchResultFormatter(settings);
-        log(String.format("Search results (%d):", sortedResults.size()));
-        for (SearchResult r : sortedResults) {
+    private static void printFindResults(List<FindResult> results, FindSettings settings) {
+        List<FindResult> sortedResults = getSortedFindResults(results);
+        FindResultFormatter formatter = new FindResultFormatter(settings);
+        log(String.format("Find results (%d):", sortedResults.size()));
+        for (FindResult r : sortedResults) {
             log(formatter.format(r));
         }
     }
 
-    private static List<String> getMatchingDirs(List<SearchResult> results) {
-        return results.stream().map(r -> r.getSearchFile().getPath()).distinct()
+    private static List<String> getMatchingDirs(List<FindResult> results) {
+        return results.stream().map(r -> r.getFindFile().getPath()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
-    private static void printMatchingDirs(List<SearchResult> results) {
+    private static void printMatchingDirs(List<FindResult> results) {
         List<String> dirs = getMatchingDirs(results);
         log(String.format("\nDirectories with matches (%d):", dirs.size()));
         for (String d : dirs) {
@@ -80,12 +80,12 @@ public class SearchMain {
         }
     }
 
-    private static List<String> getMatchingFiles(List<SearchResult> results) {
-        return results.stream().map(r -> r.getSearchFile().toString()).distinct()
+    private static List<String> getMatchingFiles(List<FindResult> results) {
+        return results.stream().map(r -> r.getFindFile().toString()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
-    private static void printMatchingFiles(List<SearchResult> results) {
+    private static void printMatchingFiles(List<FindResult> results) {
         List<String> files = getMatchingFiles(results);
         log(String.format("\nFiles with matches (%d):", files.size()));
         for (String f : files) {
@@ -93,9 +93,9 @@ public class SearchMain {
         }
     }
 
-    private static List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {
+    private static List<String> getMatchingLines(List<FindResult> results, FindSettings settings) {
         List<String> lines = new ArrayList<>();
-        for (SearchResult r : results) {
+        for (FindResult r : results) {
             lines.add(r.getLine().trim());
         }
         if (settings.getUniqueLines()) {
@@ -106,7 +106,7 @@ public class SearchMain {
         return lines;
     }
 
-    private static void printMatchingLines(List<SearchResult> results, SearchSettings settings) {
+    private static void printMatchingLines(List<FindResult> results, FindSettings settings) {
         List<String> lines = getMatchingLines(results, settings);
         String hdr;
         if (settings.getUniqueLines()) {
@@ -123,10 +123,10 @@ public class SearchMain {
     public static void main(final String[] args) {
 
         try {
-            SearchOptions options = new SearchOptions();
+            FindOptions options = new FindOptions();
 
             try {
-                SearchSettings settings = options.settingsFromArgs(args);
+                FindSettings settings = options.settingsFromArgs(args);
 
                 if (settings.getDebug()) {
                     log("\nsettings:");
@@ -138,15 +138,15 @@ public class SearchMain {
                     options.usage(0);
                 }
 
-                Searcher searcher = new Searcher(settings);
+                Finder finder = new Finder(settings);
 
-                searcher.validateSettings();
-                List<SearchResult> results = searcher.search();
+                finder.validateSettings();
+                List<FindResult> results = finder.find();
 
                 // print the results
                 if (settings.getPrintResults()) {
                     log("");
-                    printSearchResults(results, settings);
+                    printFindResults(results, settings);
                 }
                 if (settings.getListDirs()) {
                     printMatchingDirs(results);
@@ -158,7 +158,7 @@ public class SearchMain {
                     printMatchingLines(results, settings);
                 }
 
-            } catch (SearchException e) {
+            } catch (FindException e) {
                 handleError(e.getMessage(), options);
             }
 

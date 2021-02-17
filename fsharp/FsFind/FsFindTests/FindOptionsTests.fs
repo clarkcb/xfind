@@ -1,10 +1,10 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open NUnit.Framework
-open FsSearch
+open FsFind
 
 [<TestFixture>]
-type SearchOptionsTests () =
+type FindOptionsTests () =
 
     [<SetUp>]
     member this.Setup () =
@@ -13,7 +13,7 @@ type SearchOptionsTests () =
     [<Test>]
     member this.SettingsFromArgs_NoArgs_HasDefaultValues () =
         let args : string[] = [||]
-        let settings, _ = SearchOptions.SettingsFromArgs(args)
+        let settings, _ = FindOptions.SettingsFromArgs(args)
         Assert.IsFalse(settings.ArchivesOnly)
         Assert.IsTrue(settings.Colorize)
         Assert.IsFalse(settings.Debug)
@@ -25,12 +25,12 @@ type SearchOptionsTests () =
         Assert.IsFalse(settings.ListFiles)
         Assert.IsFalse(settings.ListLines)
         Assert.AreEqual(150, settings.MaxLineLength)
-        Assert.IsFalse(settings.MultiLineSearch)
+        Assert.IsFalse(settings.MultiLineFind)
         Assert.IsTrue(settings.PrintResults)
         Assert.IsFalse(settings.PrintUsage)
         Assert.IsFalse(settings.PrintVersion)
         Assert.IsTrue(settings.Recursive)
-        Assert.IsFalse(settings.SearchArchives)
+        Assert.IsFalse(settings.FindArchives)
         Assert.AreEqual("", settings.StartPath)
         Assert.AreEqual("utf-8", settings.TextFileEncoding)
         Assert.IsFalse(settings.UniqueLines)
@@ -39,19 +39,19 @@ type SearchOptionsTests () =
 
     [<Test>]
     member this.SettingsFromArgs_ValidArgs_HasArgValues () =
-        let args = [| "-x"; "cs"; "-s"; "Search"; "." |]
-        let settings, _ = SearchOptions.SettingsFromArgs(args)
+        let args = [| "-x"; "cs"; "-s"; "Find"; "." |]
+        let settings, _ = FindOptions.SettingsFromArgs(args)
         //let startFile = FileInfo(".")
         //Assert.AreEqual(settings.StartPath, startFile.FullName)
         Assert.AreEqual(1, settings.InExtensions.Length)
         Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".cs"))
-        Assert.AreEqual(1, settings.SearchPatterns.Length)
-        Assert.AreEqual("Search", settings.SearchPatterns.Head.ToString())
+        Assert.AreEqual(1, settings.FindPatterns.Length)
+        Assert.AreEqual("Find", settings.FindPatterns.Head.ToString())
         ()
 
     [<Test>]
-    member this.SettingsFromArgs_InValidArgs_ThrowsSearchException () =
-        let args = [| "-x"; "cs"; "-s"; "Search"; "."; "-Q" |]
-        let _, err = SearchOptions.SettingsFromArgs(args)
+    member this.SettingsFromArgs_InValidArgs_ThrowsFindException () =
+        let args = [| "-x"; "cs"; "-s"; "Find"; "."; "-Q" |]
+        let _, err = FindOptions.SettingsFromArgs(args)
         Assert.AreEqual("Invalid option: Q", err)
         ()

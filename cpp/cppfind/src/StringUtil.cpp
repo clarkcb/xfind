@@ -1,7 +1,7 @@
 #include <boost/algorithm/string.hpp>
 #include "StringUtil.h"
 
-namespace cppsearch {
+namespace cppfind {
     std::vector<std::string> StringUtil::split_string(const std::string& s, const std::string& delims) {
         std::vector<std::string> parts = {};
         boost::split(parts, s, boost::is_any_of(delims));

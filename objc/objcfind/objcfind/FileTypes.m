@@ -150,7 +150,7 @@
     return [self isFileOfType:fileName type:self.xml];
 }
 
-- (BOOL) isSearchableFile:(NSString*)fileName {
+- (BOOL) isFindableFile:(NSString*)fileName {
     return [self getFileType:fileName] != FileTypeUnknown;
 }
 

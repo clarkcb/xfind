@@ -1,16 +1,16 @@
 ﻿using System.Linq;
 using NUnit.Framework;
-using CsSearch;
+using CsFind;
 
-namespace CsSearchTests
+namespace CsFindTests
 {
 	[TestFixture]
-	public class SearchSettingsTests
+	public class FindSettingsTests
 	{
 		[Test]
-		public void GetNewSearchSettings_NoModifications_HasDefaultValues()
+		public void GetNewFindSettings_NoModifications_HasDefaultValues()
 		{
-			var settings = new SearchSettings();
+			var settings = new FindSettings();
 			Assert.IsFalse(settings.ArchivesOnly);
 			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
@@ -22,20 +22,20 @@ namespace CsSearchTests
 			Assert.IsFalse(settings.ListFiles);
 			Assert.IsFalse(settings.ListLines);
 			Assert.AreEqual(settings.MaxLineLength, 150);
-			Assert.IsFalse(settings.MultiLineSearch);
+			Assert.IsFalse(settings.MultiLineFind);
 			Assert.IsFalse(settings.PrintResults);
 			Assert.IsFalse(settings.PrintUsage);
 			Assert.IsFalse(settings.PrintVersion);
 			Assert.IsTrue(settings.Recursive);
-			Assert.IsFalse(settings.SearchArchives);
+			Assert.IsFalse(settings.FindArchives);
 			Assert.IsFalse(settings.UniqueLines);
 			Assert.IsFalse(settings.Verbose);
 		}
 
 		[Test]
-		public void SearchSettings_AddExtensions_HasExtensions()
+		public void FindSettings_AddExtensions_HasExtensions()
 		{
-			var settings = new SearchSettings();
+			var settings = new FindSettings();
 			settings.AddInExtension("cs");
 			Assert.AreEqual(settings.InExtensions.Count, 1);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
@@ -46,26 +46,26 @@ namespace CsSearchTests
 		}
 
 		[Test]
-		public void SearchSettings_AddPatterns_HasPatterns()
+		public void FindSettings_AddPatterns_HasPatterns()
 		{
-			var settings = new SearchSettings();
-			settings.AddSearchPattern("Search");
-			Assert.AreEqual(settings.SearchPatterns.Count, 1);
-			Assert.IsTrue(settings.SearchPatterns.First().ToString() == "Search");
+			var settings = new FindSettings();
+			settings.AddFindPattern("Find");
+			Assert.AreEqual(settings.FindPatterns.Count, 1);
+			Assert.IsTrue(settings.FindPatterns.First().ToString() == "Find");
 		}
 
 		[Test]
-		public void SearchSettings_SetArchivesOnly_HasSearchArchives()
+		public void FindSettings_SetArchivesOnly_HasFindArchives()
 		{
-			var settings = new SearchSettings {ArchivesOnly = true};
+			var settings = new FindSettings {ArchivesOnly = true};
 			Assert.IsTrue(settings.ArchivesOnly);
-			Assert.IsTrue(settings.SearchArchives);
+			Assert.IsTrue(settings.FindArchives);
 		}
 
 		[Test]
-		public void SearchSettings_SetDebug_HasVerbose()
+		public void FindSettings_SetDebug_HasVerbose()
 		{
-			var settings = new SearchSettings {Debug = true};
+			var settings = new FindSettings {Debug = true};
 			Assert.IsTrue(settings.Debug);
 			Assert.IsTrue(settings.Verbose);
 		}

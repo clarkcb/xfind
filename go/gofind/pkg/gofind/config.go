@@ -1,11 +1,11 @@
-package gosearch
+package gofind
 
 const (
 	// TODO: get most of these from config.json
-	XSEARCHPATH       = "/Users/cary/src/xsearch"
-	SHAREDPATH        = XSEARCHPATH + "/shared"
+	XFINDPATH       = "/Users/cary/src/xfind"
+	SHAREDPATH        = XFINDPATH + "/shared"
 	CONFIGFILEPATH    = SHAREDPATH + "/config.json"
 	FILETYPESPATH     = SHAREDPATH + "/filetypes.json"
-	SEARCHOPTIONSPATH = SHAREDPATH + "/searchoptions.json"
+	FINDOPTIONSPATH = SHAREDPATH + "/findoptions.json"
 	VERSION           = "1.0.0"
 )

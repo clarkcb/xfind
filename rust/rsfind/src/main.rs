@@ -3,34 +3,34 @@ use std::env;
 use std::process;
 
 use crate::common::log;
-use crate::searcher::{get_result_dirs, get_result_files, get_result_lines};
-use crate::searcherror::SearchError;
-use crate::searchresultformatter::SearchResultFormatter;
+use crate::finder::{get_result_dirs, get_result_files, get_result_lines};
+use crate::finderror::FindError;
+use crate::findresultformatter::FindResultFormatter;
 
 pub mod color;
 pub mod common;
 pub mod config;
 pub mod filetypes;
 pub mod fileutil;
-pub mod searcher;
-pub mod searcherror;
-pub mod searchfile;
-pub mod searchoptions;
-pub mod searchresult;
-pub mod searchsettings;
-pub mod searchresultformatter;
+pub mod finder;
+pub mod finderror;
+pub mod findfile;
+pub mod findoptions;
+pub mod findresult;
+pub mod findsettings;
+pub mod findresultformatter;
 
-fn print_error(error: SearchError, options: &searchoptions::SearchOptions) {
+fn print_error(error: FindError, options: &findoptions::FindOptions) {
     log(format!("\nERROR: {}", error.description).as_str());
     options.print_usage();
 }
 
-fn error_and_exit(error: SearchError, options: &searchoptions::SearchOptions) {
+fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
     print_error(error, options);
     process::exit(1);
 }
 
-fn print_result_dirs(results: &Vec<searchresult::SearchResult>) {
+fn print_result_dirs(results: &Vec<findresult::FindResult>) {
     let dirs = get_result_dirs(results);
     log(format!("\nDirectories with matches ({}):", dirs.len()).as_str());
     for dir in dirs.iter() {
@@ -38,7 +38,7 @@ fn print_result_dirs(results: &Vec<searchresult::SearchResult>) {
     }
 }
 
-fn print_result_files(results: &Vec<searchresult::SearchResult>) {
+fn print_result_files(results: &Vec<findresult::FindResult>) {
     let files = get_result_files(results);
     log(format!("\nFiles with matches ({}):", files.len()).as_str());
     for file in files.iter() {
@@ -46,7 +46,7 @@ fn print_result_files(results: &Vec<searchresult::SearchResult>) {
     }
 }
 
-fn print_result_lines(results: &Vec<searchresult::SearchResult>, unique: bool) {
+fn print_result_lines(results: &Vec<findresult::FindResult>, unique: bool) {
     let lines = get_result_lines(results, unique);
     let lines_title = if unique { "Unique lines" } else { "Lines" };
     log(format!("\n{} with matches ({}):", lines_title, lines.len()).as_str());
@@ -55,8 +55,8 @@ fn print_result_lines(results: &Vec<searchresult::SearchResult>, unique: bool) {
     }
 }
 
-fn search(args: Iter<String>) {
-    let options = match searchoptions::SearchOptions::new() {
+fn find(args: Iter<String>) {
+    let options = match findoptions::FindOptions::new() {
         Ok(options) => options,
         Err(error) => {
             log(format!("\nERROR: {}", error.description).as_str());
@@ -78,32 +78,32 @@ fn search(args: Iter<String>) {
                 process::exit(0);
             }
 
-            let searcher = match searcher::Searcher::new(settings) {
-                Ok(searcher) => searcher,
+            let finder = match finder::Finder::new(settings) {
+                Ok(finder) => finder,
                 Err(error) => {
                     print_error(error, &options);
                     process::exit(1);
                 }
             };
 
-            match searcher.search() {
+            match finder.find() {
                 Ok(results) => {
-                    if searcher.settings.print_results {
-                        let formatter = SearchResultFormatter::new(
-                            searcher.settings.colorize, searcher.settings.max_line_length);
-                        log(format!("\nSearch results ({}):", results.len()).as_str());
+                    if finder.settings.print_results {
+                        let formatter = FindResultFormatter::new(
+                            finder.settings.colorize, finder.settings.max_line_length);
+                        log(format!("\nFind results ({}):", results.len()).as_str());
                         for r in results.iter() {
                             log(formatter.format(r).as_str());
                         }
                     }
-                    if searcher.settings.list_dirs {
+                    if finder.settings.list_dirs {
                         print_result_dirs(&results);
                     }
-                    if searcher.settings.list_files {
+                    if finder.settings.list_files {
                         print_result_files(&results);
                     }
-                    if searcher.settings.list_lines {
-                        print_result_lines(&results, searcher.settings.unique_lines);
+                    if finder.settings.list_lines {
+                        print_result_lines(&results, finder.settings.unique_lines);
                     }
                 },
                 Err(error) => error_and_exit(error, &options),
@@ -117,7 +117,7 @@ fn search(args: Iter<String>) {
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    search(args.iter());
+    find(args.iter());
 }
 
 #[cfg(test)]
@@ -125,31 +125,31 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_search_code_files() {
-        let startpath = "/Users/cary/src/xsearch/rust";
+    fn test_find_code_files() {
+        let startpath = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rssearch", "-x", "rs", "-s", "search", "-D", "debug", "-f", "search", "--debug",
+            "rsfind", "-x", "rs", "-s", "find", "-D", "debug", "-f", "find", "--debug",
             startpath,
         ]
         .into_iter()
         .map(|a| a.to_string())
         .collect();
 
-        search(args.iter());
+        find(args.iter());
     }
 
     #[test]
-    fn test_search_binary_files() {
-        let startpath = "/Users/cary/src/xsearch/rust";
+    fn test_find_binary_files() {
+        let startpath = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rssearch", "-x", "rlib", "-s", "search", "-f", "search", "--debug", startpath,
+            "rsfind", "-x", "rlib", "-s", "find", "-f", "find", "--debug", startpath,
         ]
         .into_iter()
         .map(|a| a.to_string())
         .collect();
 
-        search(args.iter());
+        find(args.iter());
     }
 }

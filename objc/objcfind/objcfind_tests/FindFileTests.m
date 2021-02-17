@@ -1,47 +1,47 @@
 #import <XCTest/XCTest.h>
 #import "FileTypes.h"
-#import "SearchFile.h"
+#import "FindFile.h"
 
-@interface SearchFileTests : XCTestCase
+@interface FindFileTests : XCTestCase
 //@property FileTypes *fileTypes;
 @end
 
-@implementation SearchFileTests
+@implementation FindFileTests
 
-- (void)testSearchFileAbsPath {
-    NSString *path = @"/Users/cary/src/xsearch/objc/objcsearch/objcsearch/SearchFile.m";
-    SearchFile *searchFile = [[SearchFile alloc]
+- (void)testFindFileAbsPath {
+    NSString *path = @"/Users/cary/src/xfind/objc/objcfind/objcfind/FindFile.m";
+    FindFile *findFile = [[FindFile alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode];
-    NSString *searchFileString = [searchFile description];
-    XCTAssert([searchFileString isEqualToString:path]);
+    NSString *findFileString = [findFile description];
+    XCTAssert([findFileString isEqualToString:path]);
 }
 
-- (void)testSearchFileTildePath {
-    NSString *path = @"~/src/xsearch/objc/objcsearch/objcsearch/SearchFile.m";
-    SearchFile *searchFile = [[SearchFile alloc]
+- (void)testFindFileTildePath {
+    NSString *path = @"~/src/xfind/objc/objcfind/objcfind/FindFile.m";
+    FindFile *findFile = [[FindFile alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode];
-    NSString *searchFileString = [searchFile description];
-    XCTAssert([searchFileString isEqualToString:path]);
+    NSString *findFileString = [findFile description];
+    XCTAssert([findFileString isEqualToString:path]);
 }
 
-- (void)testSearchFileRelPath1 {
-    NSString *path = @"./SearchFile.m";
-    SearchFile *searchFile = [[SearchFile alloc]
+- (void)testFindFileRelPath1 {
+    NSString *path = @"./FindFile.m";
+    FindFile *findFile = [[FindFile alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode];
-    NSString *searchFileString = [searchFile description];
-    XCTAssert([searchFileString isEqualToString:path]);
+    NSString *findFileString = [findFile description];
+    XCTAssert([findFileString isEqualToString:path]);
 }
 
-- (void)testSearchFileRelPath2 {
-    NSString *path = @"../SearchFile.m";
-    SearchFile *searchFile = [[SearchFile alloc]
+- (void)testFindFileRelPath2 {
+    NSString *path = @"../FindFile.m";
+    FindFile *findFile = [[FindFile alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode];
-    NSString *searchFileString = [searchFile description];
-    XCTAssert([searchFileString isEqualToString:path]);
+    NSString *findFileString = [findFile description];
+    XCTAssert([findFileString isEqualToString:path]);
 }
 
 @end

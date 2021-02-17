@@ -1,10 +1,10 @@
 open Core.Std
 open OUnit
 
-let test_fixture = "Searchsettings" >:::
+let test_fixture = "Findsettings" >:::
 [
   "test_default_settings" >:: (fun () ->
-    let settings = Searchsettings.default_settings in
+    let settings = Findsettings.default_settings in
     assert_equal settings.archivesonly false;
     assert_equal settings.debug false;
     assert_equal settings.excludehidden true;
@@ -23,7 +23,7 @@ let test_fixture = "Searchsettings" >:::
     assert_equal settings.listdirs false;
     assert_equal settings.listfiles false;
     assert_equal settings.listlines false;
-    assert_equal settings.multilinesearch false;
+    assert_equal settings.multilineoption-REMOVE false;
     assert_equal settings.out_archiveextensions [];
     assert_equal settings.out_archivefilepatterns [];
     assert_equal settings.out_dirpatterns [];
@@ -35,16 +35,16 @@ let test_fixture = "Searchsettings" >:::
     assert_equal settings.printusage false;
     assert_equal settings.printversion false;
     assert_equal settings.recursive true;
-    assert_equal settings.searcharchives false;
-    assert_equal settings.searchpatterns [];
+    assert_equal settings.findarchives false;
+    assert_equal settings.findpatterns [];
     assert_equal settings.startpath "";
     assert_equal settings.uniquelines false;
     assert_equal settings.verbose false;
   );
 
   "test_add_extensions" >:: (fun () ->
-    assert_equal (Searchsettings.add_extensions "py" []) ["py"];
-    assert_equal (Searchsettings.add_extensions "py,rb" []) ["py"; "rb"];
+    assert_equal (Findsettings.add_extensions "py" []) ["py"];
+    assert_equal (Findsettings.add_extensions "py,rb" []) ["py"; "rb"];
   );
 ]
 

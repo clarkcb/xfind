@@ -1,15 +1,15 @@
 import Cocoa
 import XCTest
 
-import swiftsearch
+import swiftfind
 
-class SearcherTests: XCTestCase {
+class FinderTests: XCTestCase {
     let fileTypes = FileTypes()
 
-    func getSettings() -> SearchSettings {
-        let settings = SearchSettings()
+    func getSettings() -> FindSettings {
+        let settings = FindSettings()
         settings.startPath = "."
-        settings.addSearchPattern("Searcher")
+        settings.addFindPattern("Finder")
         return settings
     }
 
@@ -22,223 +22,223 @@ class SearcherTests: XCTestCase {
     }
 
     /* ==========================================================================
-     * isSearchDir tests
+     * isFindDir tests
      ========================================================================= */
-    func testIsSearchDir_SingleDot_True() {
+    func testIsFindDir_SingleDot_True() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchDir("."))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindDir("."))
     }
 
-    func testIsSearchDir_DoubleDot_True() {
+    func testIsFindDir_DoubleDot_True() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchDir(".."))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindDir(".."))
     }
 
-    func testIsSearchDir_IsHidden_False() {
+    func testIsFindDir_IsHidden_False() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchDir(".git"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindDir(".git"))
     }
 
-    func testIsSearchDir_IsHiddenIncludeHidden_True() {
+    func testIsFindDir_IsHiddenIncludeHidden_True() {
         var error: NSError?
         let settings = getSettings()
         settings.excludeHidden = false
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchDir(".git"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindDir(".git"))
     }
 
-    func testIsSearchDir_NoPatterns_True() {
+    func testIsFindDir_NoPatterns_True() {
         var error: NSError?
         let settings = getSettings()
         settings.excludeHidden = false
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchDir("/Users"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindDir("/Users"))
     }
 
-    func testIsSearchDir_MatchesInPattern_True() {
+    func testIsFindDir_MatchesInPattern_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.addInDirPattern("Search")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchDir("CsSearch"))
+        settings.addInDirPattern("Find")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindDir("CsFind"))
     }
 
-    func testIsSearchDir_DoesNotMatchInPattern_False() {
+    func testIsFindDir_DoesNotMatchInPattern_False() {
         var error: NSError?
         let settings = getSettings()
-        settings.addInDirPattern("SearchFiles")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchDir("CsSearch"))
+        settings.addInDirPattern("FindFiles")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindDir("CsFind"))
     }
 
-    func testIsSearchDir_MatchesOutPattern_False() {
+    func testIsFindDir_MatchesOutPattern_False() {
         var error: NSError?
         let settings = getSettings()
-        settings.addOutDirPattern("Search")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchDir("CsSearch"))
+        settings.addOutDirPattern("Find")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindDir("CsFind"))
     }
 
-    func testIsSearchDir_DoesNotMatchOutPattern_True() {
+    func testIsFindDir_DoesNotMatchOutPattern_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.addOutDirPattern("SearchFiles")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchDir("CsSearch"))
+        settings.addOutDirPattern("FindFiles")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindDir("CsFind"))
     }
 
     /* ==========================================================================
-     * isSearchFile tests
+     * isFindFile tests
      ========================================================================= */
-    func testIsSearchFile_NoExtensionsNoPatterns_True() {
+    func testIsFindFile_NoExtensionsNoPatterns_True() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindFile("FileUtil.cs"))
     }
 
-    func testIsSearchFile_MatchesInExtension_True() {
+    func testIsFindFile_MatchesInExtension_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addInExtension("cs")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindFile("FileUtil.cs"))
     }
 
-    func testIsSearchFile_DoesNotMatchInExtension_False() {
+    func testIsFindFile_DoesNotMatchInExtension_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addInExtension("java")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindFile("FileUtil.cs"))
     }
 
-    func testIsSearchFile_MatchesOutExtension_False() {
+    func testIsFindFile_MatchesOutExtension_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutExtension("cs")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindFile("FileUtil.cs"))
     }
 
-    func testIsSearchFile_DoesNotMatchOutExtension_True() {
+    func testIsFindFile_DoesNotMatchOutExtension_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutExtension("java")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindFile("FileUtil.cs"))
     }
 
-    func testIsSearchFile_MatchesInFilePattern_True() {
+    func testIsFindFile_MatchesInFilePattern_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.addInFilePattern("Search")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchFile("Searcher.cs"))
+        settings.addInFilePattern("Find")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindFile("Finder.cs"))
     }
 
-    func testIsSearchFile_DoesNotMatchInFilePattern_False() {
+    func testIsFindFile_DoesNotMatchInFilePattern_False() {
         var error: NSError?
         let settings = getSettings()
-        settings.addInFilePattern("Search")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchFile("FileUtil.cs"))
+        settings.addInFilePattern("Find")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindFile("FileUtil.cs"))
     }
 
-    func testIsSearchFile_MatchesOutFilePattern_False() {
+    func testIsFindFile_MatchesOutFilePattern_False() {
         var error: NSError?
         let settings = getSettings()
-        settings.addOutFilePattern("Search")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isSearchFile("Searcher.cs"))
+        settings.addOutFilePattern("Find")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isFindFile("Finder.cs"))
     }
 
-    func testIsSearchFile_DoesNotMatchOutFilePattern_True() {
+    func testIsFindFile_DoesNotMatchOutFilePattern_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.addOutFilePattern("Search")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isSearchFile("FileUtil.cs"))
+        settings.addOutFilePattern("Find")
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isFindFile("FileUtil.cs"))
     }
 
     /* ==========================================================================
-     * isArchiveSearchFile tests
+     * isArchiveFindFile tests
      ========================================================================= */
-    func testIsArchiveSearchFile_NoExtensionsNoPatterns_True() {
+    func testIsArchiveFindFile_NoExtensionsNoPatterns_True() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_MatchesInExtension_True() {
+    func testIsArchiveFindFile_MatchesInExtension_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addInArchiveExtension("zip")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_DoesNotMatchInExtension_False() {
+    func testIsArchiveFindFile_DoesNotMatchInExtension_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addInArchiveExtension("gz")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_MatchesOutExtension_False() {
+    func testIsArchiveFindFile_MatchesOutExtension_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutArchiveExtension("zip")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_DoesNotMatchOutExtension_True() {
+    func testIsArchiveFindFile_DoesNotMatchOutExtension_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutArchiveExtension("gz")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_MatchesInArchiveFilePattern_True() {
+    func testIsArchiveFindFile_MatchesInArchiveFilePattern_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addInArchiveFilePattern("arch")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_DoesNotMatchInArchiveFilePattern_False() {
+    func testIsArchiveFindFile_DoesNotMatchInArchiveFilePattern_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addInArchiveFilePattern("archives")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_MatchesOutArchiveFilePattern_False() {
+    func testIsArchiveFindFile_MatchesOutArchiveFilePattern_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutArchiveFilePattern("arch")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.isArchiveFindFile("archive.zip"))
     }
 
-    func testIsArchiveSearchFile_DoesNotMatchOutArchiveFilePattern_True() {
+    func testIsArchiveFindFile_DoesNotMatchOutArchiveFilePattern_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutArchiveFilePattern("archives")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.isArchiveSearchFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.isArchiveFindFile("archive.zip"))
     }
 
     /* ==========================================================================
@@ -247,101 +247,101 @@ class SearcherTests: XCTestCase {
     func testFilterFile_IsHidden_False() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.filterFile(".gitignore"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.filterFile(".gitignore"))
     }
 
     func testFilterFile_IsHiddenIncludeHidden_True() {
         var error: NSError?
         let settings = getSettings()
         settings.excludeHidden = false
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.filterFile(".hidden.txt"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.filterFile(".hidden.txt"))
     }
 
-    func testFilterFile_ArchiveNoSearchArchives_False() {
+    func testFilterFile_ArchiveNoFindArchives_False() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.filterFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.filterFile("archive.zip"))
     }
 
-    func testFilterFile_ArchiveSearchArchives_True() {
+    func testFilterFile_ArchiveFindArchives_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.searchArchives = true
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.filterFile("archive.zip"))
+        settings.findArchives = true
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.filterFile("archive.zip"))
     }
 
-    func testFilterFile_IsArchiveSearchFile_True() {
+    func testFilterFile_IsArchiveFindFile_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.searchArchives = true
+        settings.findArchives = true
         settings.addInArchiveExtension("zip")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.filterFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.filterFile("archive.zip"))
     }
 
-    func testFilterFile_NotIsArchiveSearchFile_False() {
+    func testFilterFile_NotIsArchiveFindFile_False() {
         var error: NSError?
         let settings = getSettings()
-        settings.searchArchives = true
+        settings.findArchives = true
         settings.addOutArchiveExtension("zip")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.filterFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.filterFile("archive.zip"))
     }
 
     func testFilterFile_ArchiveFileArchivesOnly_True() {
         var error: NSError?
         let settings = getSettings()
         settings.archivesOnly = true
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.filterFile("archive.zip"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.filterFile("archive.zip"))
     }
 
     func testFilterFile_NoExtensionsNoPatterns_True() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.filterFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.filterFile("FileUtil.cs"))
     }
 
-    func testFilterFile_IsSearchFile_True() {
+    func testFilterFile_IsFindFile_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addInExtension("cs")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertTrue(searcher.filterFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertTrue(finder.filterFile("FileUtil.cs"))
     }
 
-    func testFilterFile_NotIsSearchFile_False() {
+    func testFilterFile_NotIsFindFile_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutExtension("cs")
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.filterFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.filterFile("FileUtil.cs"))
     }
 
     func testFilterFile_NonArchiveFileArchivesOnly_False() {
         var error: NSError?
         let settings = getSettings()
         settings.archivesOnly = true
-        let searcher = Searcher(settings: settings, error: &error)
-        XCTAssertFalse(searcher.filterFile("FileUtil.cs"))
+        let finder = Finder(settings: settings, error: &error)
+        XCTAssertFalse(finder.filterFile("FileUtil.cs"))
     }
 
     /* ==========================================================================
-     * searchLineReader tests
+     * findLineReader tests
      ========================================================================= */
-    func testSearchLineReader() {
+    func testFindLineReader() {
         var error: NSError?
         let settings = getSettings()
-        let searcher = Searcher(settings: settings, error: &error)
+        let finder = Finder(settings: settings, error: &error)
         let testFilePath = FileUtil.joinPath(Config.sharedPath, childPath: "testFiles/testFile2.txt")
 
         if let reader = StreamReader(path: testFilePath, encoding: .utf8) {
-            let results = searcher.searchLineReader(reader)
+            let results = finder.findLineReader(reader)
 
             XCTAssert(results.count == 2)
 
@@ -361,17 +361,17 @@ class SearcherTests: XCTestCase {
     }
 
     /* ==========================================================================
-     * searchMultiLineString tests
+     * findMultiLineString tests
      ========================================================================= */
-    func testSearchMultiLineString() {
+    func testFindMultiLineString() {
         var error: NSError?
         let settings = getSettings()
-        settings.multiLineSearch = true
-        let searcher = Searcher(settings: settings, error: &error)
+        settings.multiLineFind = true
+        let finder = Finder(settings: settings, error: &error)
         let testFilePath = FileUtil.joinPath(Config.sharedPath, childPath: "testFiles/testFile2.txt")
         let testFileContents = try? String(contentsOfFile: testFilePath, encoding: .utf8)
         if testFileContents != nil {
-            let results = searcher.searchMultiLineString(testFileContents!)
+            let results = finder.findMultiLineString(testFileContents!)
 
             XCTAssert(results.count == 2)
 

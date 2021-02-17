@@ -4,16 +4,16 @@ use std::path::Path;
 use crate::filetypes::FileType;
 
 #[derive(Clone, Debug, Eq)]
-pub struct SearchFile {
+pub struct FindFile {
     pub containers: Vec<String>,
     pub path: String,
     pub name: String,
     pub filetype: FileType,
 }
 
-impl SearchFile {
-    pub fn new(path: String, name: String, filetype: FileType) -> SearchFile {
-        SearchFile::with_containers(Vec::new(), path, name, filetype)
+impl FindFile {
+    pub fn new(path: String, name: String, filetype: FileType) -> FindFile {
+        FindFile::with_containers(Vec::new(), path, name, filetype)
     }
 
     pub fn with_containers(
@@ -21,8 +21,8 @@ impl SearchFile {
         path: String,
         name: String,
         filetype: FileType,
-    ) -> SearchFile {
-        SearchFile {
+    ) -> FindFile {
+        FindFile {
             containers: containers,
             path: path,
             name: name,
@@ -48,19 +48,19 @@ impl SearchFile {
     }
 }
 
-impl Ord for SearchFile {
+impl Ord for FindFile {
     fn cmp(&self, other: &Self) -> Ordering {
         self.filepath().cmp(&other.filepath())
     }
 }
 
-impl PartialOrd for SearchFile {
+impl PartialOrd for FindFile {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl PartialEq for SearchFile {
+impl PartialEq for FindFile {
     fn eq(&self, other: &Self) -> bool {
         self.filepath() == other.filepath()
     }
@@ -73,21 +73,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_search_file_abs_path() {
-        let sf = SearchFile::new(
-            "/Users/cary/src/xsearch/rust/rssearch/src".to_string(),
-            "searcher.rs".to_string(),
+    fn test_find_file_abs_path() {
+        let sf = FindFile::new(
+            "/Users/cary/src/xfind/rust/rsfind/src".to_string(),
+            "finder.rs".to_string(),
             FileType::Code,
         );
         assert_eq!(
             sf.filepath(),
-            "/Users/cary/src/xsearch/rust/rssearch/src/searcher.rs"
+            "/Users/cary/src/xfind/rust/rsfind/src/finder.rs"
         );
     }
 
     #[test]
-    fn test_search_file_rel_path() {
-        let sf = SearchFile::new(".".to_string(), "searcher.rs".to_string(), FileType::Code);
-        assert_eq!(sf.filepath(), "./searcher.rs");
+    fn test_find_file_rel_path() {
+        let sf = FindFile::new(".".to_string(), "finder.rs".to_string(), FileType::Code);
+        assert_eq!(sf.filepath(), "./finder.rs");
     }
 }

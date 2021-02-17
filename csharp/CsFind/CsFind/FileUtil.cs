@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CsSearch
+namespace CsFind
 {
 	public static class FileUtil
 	{
@@ -22,7 +22,7 @@ namespace CsSearch
 			       ?? "~";
 		}
 
-		public static IEnumerable<string> EnumerableStringFromFile(SearchFile f, Encoding enc)
+		public static IEnumerable<string> EnumerableStringFromFile(FindFile f, Encoding enc)
 		{
 			return EnumerableStringFromFile(f.FullName, enc);
 		}
@@ -49,11 +49,11 @@ namespace CsSearch
 			}
 			catch (IOException e)
 			{
-				throw new SearchException(e.Message);
+				throw new FindException(e.Message);
 			}
 		}
 
-		public static string GetFileContents(SearchFile f, Encoding encoding)
+		public static string GetFileContents(FindFile f, Encoding encoding)
 		{
 			return GetFileContents(f.FullName, encoding);
 		}

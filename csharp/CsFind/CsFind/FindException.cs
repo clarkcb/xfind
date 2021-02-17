@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace CsSearch
+namespace CsFind
 {
-	public class SearchException : Exception
+	public class FindException : Exception
 	{
-		public SearchException(string message) : base(message)
+		public FindException(string message) : base(message)
 		{
 		}
 	}

@@ -1,6 +1,6 @@
-name:                hssearch
+name:                hsfind
 version:             0.1.0.0
-github:              "clarkcb/xsearch"
+github:              "clarkcb/xfind"
 license:             MIT
 author:              "Cary Clark"
 maintainer:          "clarkcb@gmail.com"
@@ -11,13 +11,13 @@ extra-source-files:
 - ChangeLog.md
 
 # Metadata used when publishing your package
-# synopsis:            File search utility in Haskell
+# synopsis:            File find utility in Haskell
 # category:            CLI
 
 # To avoid duplicated efforts in documentation and dealing with the
 # complications of embedding Haddock markup inside cabal files, it is
 # common to point users to the README.md file.
-description:         Please see the README on GitHub at <https://github.com/clarkcb/xsearch#readme>
+description:         Please see the README on GitHub at <https://github.com/clarkcb/xfind#readme>
 
 dependencies:
 - aeson
@@ -40,7 +40,7 @@ library:
   source-dirs: src
 
 executables:
-  hssearch:
+  hsfind:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
@@ -48,10 +48,10 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - hssearch
+    - hsfind
 
 tests:
-  hssearch-test:
+  hsfind-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
@@ -59,7 +59,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
-    - hssearch
+    - hsfind
     - HUnit >=1.6 && <1.7
     - test-framework >=0.8 && <0.9
     - test-framework-hunit >=0.3 && <0.4

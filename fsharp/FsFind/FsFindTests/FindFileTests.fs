@@ -1,39 +1,39 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open System.IO
 open NUnit.Framework
-open FsSearch
+open FsFind
 
 [<TestFixture>]
-type SearchFileTests () =
+type FindFileTests () =
 
-    member this.CsSearchPath = "~/src/xsearch/csharp/CsSearch/CsSearch"
-    member this.WinCsSearchPath = @"C:\src\xsearch\csharp\CsSearch\CsSearch"
+    member this.CsFindPath = "~/src/xfind/csharp/CsFind/CsFind"
+    member this.WinCsFindPath = @"C:\src\xfind\csharp\CsFind\CsFind"
 
     [<SetUp>]
     member this.Setup () =
         ()
 
     [<Test>]
-    member this.SearchFile_ToString_EqualsExpected () =
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(this.CsSearchPath + "/Searcher.cs", SearchFile.ToString(searchFile))
+    member this.FindFile_ToString_EqualsExpected () =
+        let findFile = FindFile.Create (FileInfo(FileUtil.JoinPath this.CsFindPath "Finder.cs")) FileType.Code
+        Assert.AreEqual(this.CsFindPath + "/Finder.cs", FindFile.ToString(findFile))
         ()
 
     [<Test>]
-    member this.SearchFileTrailingSlash_ToString_EqualsExpected () =
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.CsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(this.CsSearchPath + "/Searcher.cs", SearchFile.ToString(searchFile))
+    member this.FindFileTrailingSlash_ToString_EqualsExpected () =
+        let findFile = FindFile.Create (FileInfo(FileUtil.JoinPath this.CsFindPath "Finder.cs")) FileType.Code
+        Assert.AreEqual(this.CsFindPath + "/Finder.cs", FindFile.ToString(findFile))
         ()
 
     [<Test>]
-    member this.SearchFileBackSlashes_ToString_EqualsExpected () =
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.WinCsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(this.WinCsSearchPath + @"\Searcher.cs", SearchFile.ToString(searchFile))
+    member this.FindFileBackSlashes_ToString_EqualsExpected () =
+        let findFile = FindFile.Create (FileInfo(FileUtil.JoinPath this.WinCsFindPath "Finder.cs")) FileType.Code
+        Assert.AreEqual(this.WinCsFindPath + @"\Finder.cs", FindFile.ToString(findFile))
         ()
 
     [<Test>]
-    member this.SearchFileBackSlashesTrailingSlash_ToString_EqualsExpected () =
-        let searchFile = SearchFile.Create (FileInfo(FileUtil.JoinPath this.WinCsSearchPath "Searcher.cs")) FileType.Code
-        Assert.AreEqual(this.WinCsSearchPath + @"\Searcher.cs", SearchFile.ToString(searchFile))
+    member this.FindFileBackSlashesTrailingSlash_ToString_EqualsExpected () =
+        let findFile = FindFile.Create (FileInfo(FileUtil.JoinPath this.WinCsFindPath "Finder.cs")) FileType.Code
+        Assert.AreEqual(this.WinCsFindPath + @"\Finder.cs", FindFile.ToString(findFile))
         ()

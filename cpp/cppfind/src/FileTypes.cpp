@@ -8,7 +8,7 @@
 
 using namespace rapidjson;
 
-namespace cppsearch {
+namespace cppfind {
     FileTypes::FileTypes() {
         m_archive_extensions = {};
         m_binary_extensions = {};
@@ -17,14 +17,14 @@ namespace cppsearch {
     }
 
     void FileTypes::load_filetypes() {
-        auto filetypes_path = std::string(XSEARCHPATH);
+        auto filetypes_path = std::string(XFINDPATH);
         filetypes_path.append("/shared/filetypes.json");
 
         if (!FileUtil::file_exists(filetypes_path)) {
             std::string msg = "Filetypes file not found: ";
             msg.append(filetypes_path);
             log_error(msg);
-            // TODO: SearchException
+            // TODO: FindException
             return;
         }
 
@@ -125,7 +125,7 @@ namespace cppsearch {
         return found_ext(&m_code_extensions, ext);
     }
 
-    bool FileTypes::is_searchable_file(const std::string& filepath) {
+    bool FileTypes::is_findable_file(const std::string& filepath) {
         std::string ext = FileUtil::get_extension(filepath);
         return found_ext(&m_text_extensions, ext)
                || found_ext(&m_code_extensions, ext)

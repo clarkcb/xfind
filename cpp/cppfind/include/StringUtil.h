@@ -1,10 +1,10 @@
-#ifndef CPPSEARCH_STRINGUTIL_H
-#define CPPSEARCH_STRINGUTIL_H
+#ifndef CPPFIND_STRINGUTIL_H
+#define CPPFIND_STRINGUTIL_H
 
 #include <string>
 #include <vector>
 
-namespace cppsearch {
+namespace cppfind {
     class StringUtil {
     public:
         static std::vector<std::string> split_string(const std::string& s, const std::string& delims);
@@ -21,4 +21,4 @@ namespace cppsearch {
     };
 }
 
-#endif //CPPSEARCH_STRINGUTIL_H
+#endif //CPPFIND_STRINGUTIL_H

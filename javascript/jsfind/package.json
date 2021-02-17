@@ -1,18 +1,18 @@
 {
-  "name": "jssearch",
+  "name": "jsfind",
   "version": "0.1.0",
-  "description": "An implementation of xsearch in JavaScript + Node.js",
+  "description": "An implementation of xfind in JavaScript + Node.js",
   "author": {
     "name": "Cary Clark",
     "email": "clarkcb@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/clarkcb/xsearch.git"
+    "url": "https://github.com/clarkcb/xfind.git"
   },
-  "main": "./dist/jssearch.js",
+  "main": "./dist/jsfind.js",
   "bin": {
-    "jssearch": "bin/jssearch"
+    "jsfind": "bin/jsfind"
   },
   "scripts": {
     "build": "babel src -d dist",
@@ -20,7 +20,7 @@
     "coverage": "jest --coverage"
   },
   "keywords": [
-    "xsearch",
+    "xfind",
     "javascript",
     "node.js"
   ],

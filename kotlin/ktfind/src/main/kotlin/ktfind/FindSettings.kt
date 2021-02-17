@@ -1,9 +1,9 @@
-package ktsearch
+package ktfind
 
 /**
  * @author cary on 7/23/16.
  */
-data class SearchSettings(val archivesOnly: Boolean,
+data class FindSettings(val archivesOnly: Boolean,
                           val colorize: Boolean,
                           val debug: Boolean,
                           val excludeHidden: Boolean,
@@ -24,7 +24,7 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val listFiles: Boolean,
                           val listLines: Boolean,
                           val maxLineLength: Int,
-                          val multiLineSearch: Boolean,
+                          val multiLineFind: Boolean,
                           val outArchiveExtensions: Set<String>,
                           val outArchiveFilePatterns: Set<Regex>,
                           val outDirPatterns: Set<Regex>,
@@ -37,15 +37,15 @@ data class SearchSettings(val archivesOnly: Boolean,
                           val printUsage: Boolean,
                           val printVersion: Boolean,
                           val recursive: Boolean,
-                          val searchArchives: Boolean,
-                          val searchPatterns: Set<Regex>,
+                          val findArchives: Boolean,
+                          val findPatterns: Set<Regex>,
                           val startPath: String?,
                           val textFileEncoding: String,
                           val uniqueLines: Boolean,
                           val verbose: Boolean)
 
-fun getDefaultSettings() : SearchSettings {
-    return SearchSettings(
+fun getDefaultSettings() : FindSettings {
+    return FindSettings(
             archivesOnly = false,
             colorize = true,
             debug = false,
@@ -67,7 +67,7 @@ fun getDefaultSettings() : SearchSettings {
             listFiles = false,
             listLines = false,
             maxLineLength = 150,
-            multiLineSearch = false,
+            multiLineFind = false,
             outArchiveExtensions = setOf(),
             outArchiveFilePatterns = setOf(),
             outDirPatterns = setOf(),
@@ -80,8 +80,8 @@ fun getDefaultSettings() : SearchSettings {
             printUsage = false,
             printVersion = false,
             recursive = true,
-            searchArchives = false,
-            searchPatterns = setOf(),
+            findArchives = false,
+            findPatterns = setOf(),
             startPath = null,
             textFileEncoding = "UTF-8",
             uniqueLines = false,
@@ -98,10 +98,10 @@ fun addFileTypes(ft: String, filetypes: Set<FileType>): Set<FileType> {
     return filetypes.plus(fts)
 }
 
-fun setArchivesOnly(ss: SearchSettings, archivesOnly: Boolean): SearchSettings {
-    return ss.copy(archivesOnly = archivesOnly, searchArchives = archivesOnly || ss.searchArchives)
+fun setArchivesOnly(ss: FindSettings, archivesOnly: Boolean): FindSettings {
+    return ss.copy(archivesOnly = archivesOnly, findArchives = archivesOnly || ss.findArchives)
 }
 
-fun setDebug(ss: SearchSettings, debug: Boolean): SearchSettings {
+fun setDebug(ss: FindSettings, debug: Boolean): FindSettings {
     return ss.copy(debug = debug, verbose = debug || ss.verbose)
 }

@@ -13,7 +13,7 @@ from enum import Enum
 from .common import get_text
 from .config import FILETYPESPATH
 from .fileutil import FileUtil
-from .searchexception import SearchException
+from .findexception import FindException
 
 
 class FileType(Enum):
@@ -31,7 +31,7 @@ class FileType(Enum):
         try:
             return FileType[uname]
         except KeyError:
-            raise SearchException('Invalid file type: {0!s}\n'.format(name))
+            raise FindException('Invalid file type: {0!s}\n'.format(name))
 
 
 class FileTypes(object):
@@ -63,16 +63,16 @@ class FileTypes(object):
         return FileUtil.get_extension(f) in self.__filetypes['archive']
 
     def is_binary_file(self, f: str) -> bool:
-        """Return true if file is of a (known) searchable binary file type"""
+        """Return true if file is of a (known) findable binary file type"""
         return FileUtil.get_extension(f) in self.__filetypes['binary']
 
     def is_code_file(self, f: str) -> bool:
         """Return true if file is of a (known) code file type"""
         return FileUtil.get_extension(f) in self.__filetypes['code']
 
-    def is_searchable_file(self, f: str) -> bool:
-        """Return true if file is of a (known) searchable type"""
-        return FileUtil.get_extension(f) in self.__filetypes['searchable']
+    def is_findable_file(self, f: str) -> bool:
+        """Return true if file is of a (known) findable type"""
+        return FileUtil.get_extension(f) in self.__filetypes['findable']
 
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
@@ -91,7 +91,7 @@ class FileTypes(object):
             self.__filetypes[typename] = exts
         self.__filetypes['text'].update(self.__filetypes['code'],
                                         self.__filetypes['xml'])
-        self.__filetypes['searchable'] = \
+        self.__filetypes['findable'] = \
             self.__filetypes['binary'].union(self.__filetypes['archive'],
                                              self.__filetypes['text'])
 
@@ -105,6 +105,6 @@ class FileTypes(object):
             self.__filetypes[name] = exts
         self.__filetypes['text'].update(self.__filetypes['code'],
                                         self.__filetypes['xml'])
-        self.__filetypes['searchable'] = \
+        self.__filetypes['findable'] = \
             self.__filetypes['binary'].union(self.__filetypes['archive'],
                                              self.__filetypes['text'])

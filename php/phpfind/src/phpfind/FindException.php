@@ -1,13 +1,13 @@
 <?php declare(strict_types=1);
 
-namespace phpsearch;
+namespace phpfind;
 
 use Exception;
 
 /**
- * Class SearchException
+ * Class FindException
  */
-class SearchException extends Exception
+class FindException extends Exception
 {
     public function __construct(string $message)
     {

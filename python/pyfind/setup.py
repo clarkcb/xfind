@@ -1,23 +1,23 @@
 from setuptools import setup
-from pysearch import VERSION
+from pyfind import VERSION
 
 #long_description = open('README.md').read()
 
-setup(name='pysearch',
+setup(name='pyfind',
       version=VERSION,
-      description='Python version of xsearch',
+      description='Python version of xfind',
       # long_description=long_description,
-      url='https://github.com/clarkcb/xsearch.git',
+      url='https://github.com/clarkcb/xfind.git',
       author='Cary Clark',
       author_email='clarkcb@gmail.com',
       include_package_data=True,
       install_requires=[],
       license='MIT',
-      packages=['pysearch'],
+      packages=['pyfind'],
       python_requires='>=3',
       scripts=[
-          'bin/pysearch',
-          # 'bin/pysearch.bat'
+          'bin/pyfind',
+          # 'bin/pyfind.bat'
       ],
       tests_require=[
           'nose',

@@ -6,7 +6,7 @@
 #
 ###############################################################################
 
-package plsearch::FileTypes;
+package plfind::FileTypes;
 
 use strict;
 use warnings;
@@ -14,10 +14,10 @@ use warnings;
 # use XML::Simple;
 use Data::Dumper;
 use JSON::PP qw(decode_json);
-use plsearch::common;
-use plsearch::config;
-use plsearch::FileType;
-use plsearch::FileUtil;
+use plfind::common;
+use plfind::config;
+use plfind::FileType;
+use plfind::FileUtil;
 
 sub get_xml_file_type_hash {
     my $file_type_hash = {};
@@ -31,25 +31,25 @@ sub get_xml_file_type_hash {
     my @text = (@{$file_type_hash->{text}}, @{$file_type_hash->{code}},
         @{$file_type_hash->{xml}});
     $file_type_hash->{text} = \@text;
-    my @searchable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
+    my @findable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
         @{$file_type_hash->{binary}});
-    $file_type_hash->{searchable} = \@searchable;
+    $file_type_hash->{findable} = \@findable;
     return $file_type_hash;
 }
 
 sub get_json_file_type_hash {
     # print "get_json_file_type_hash\n";
     my $file_type_hash = {};
-    my $json_file_type_hash = decode_json plsearch::FileUtil::get_file_contents($FILETYPESPATH);
+    my $json_file_type_hash = decode_json plfind::FileUtil::get_file_contents($FILETYPESPATH);
     foreach my $file_type (@{$json_file_type_hash->{filetypes}}) {
         $file_type_hash->{$file_type->{type}} = $file_type->{extensions};
     }
     my @text = (@{$file_type_hash->{text}}, @{$file_type_hash->{code}},
         @{$file_type_hash->{xml}});
     $file_type_hash->{text} = \@text;
-    my @searchable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
+    my @findable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
         @{$file_type_hash->{binary}});
-    $file_type_hash->{searchable} = \@searchable;
+    $file_type_hash->{findable} = \@findable;
     return $file_type_hash;
 }
 
@@ -67,46 +67,46 @@ sub from_name {
     my ($name) = @_;
     my $uname = uc($name);
     if ($uname eq 'CODE') {
-        return plsearch::FileType->CODE;
+        return plfind::FileType->CODE;
     }
     if ($uname eq 'XML') {
-        return plsearch::FileType->XML;
+        return plfind::FileType->XML;
     }
     if ($uname eq 'TEXT') {
-        return plsearch::FileType->TEXT;
+        return plfind::FileType->TEXT;
     }
     if ($uname eq 'BINARY') {
-        return plsearch::FileType->BINARY;
+        return plfind::FileType->BINARY;
     }
     if ($uname eq 'ARCHIVE') {
-        return plsearch::FileType->ARCHIVE;
+        return plfind::FileType->ARCHIVE;
     }
-    return plsearch::FileType->UNKNOWN;
+    return plfind::FileType->UNKNOWN;
 }
 
 sub get_filetype {
     my ($self, $file) = @_;
     if ($self->is_code($file)) {
-        return plsearch::FileType->CODE;
+        return plfind::FileType->CODE;
     }
     if ($self->is_xml($file)) {
-        return plsearch::FileType->XML;
+        return plfind::FileType->XML;
     }
     if ($self->is_text($file)) {
-        return plsearch::FileType->TEXT;
+        return plfind::FileType->TEXT;
     }
     if ($self->is_binary($file)) {
-        return plsearch::FileType->BINARY;
+        return plfind::FileType->BINARY;
     }
     if ($self->is_archive($file)) {
-        return plsearch::FileType->ARCHIVE;
+        return plfind::FileType->ARCHIVE;
     }
-    return plsearch::FileType->UNKNOWN;
+    return plfind::FileType->UNKNOWN;
 }
 
 sub is_archive {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
+    my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_types}->{archive}}) {
         return 1;
     }
@@ -115,7 +115,7 @@ sub is_archive {
 
 sub is_binary {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
+    my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_types}->{binary}}) {
         return 1;
     }
@@ -124,7 +124,7 @@ sub is_binary {
 
 sub is_code {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
+    my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_types}->{code}}) {
         return 1;
     }
@@ -133,17 +133,17 @@ sub is_code {
 
 sub is_text {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
+    my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_types}->{text}}) {
         return 1;
     }
     return 0;
 }
 
-sub is_searchable {
+sub is_findable {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_types}->{searchable}}) {
+    my $ext = plfind::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_types}->{findable}}) {
         return 1;
     }
     return 0;
@@ -151,7 +151,7 @@ sub is_searchable {
 
 sub is_xml {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
+    my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_types}->{xml}}) {
         return 1;
     }
@@ -160,8 +160,8 @@ sub is_xml {
 
 sub is_unknown {
     my ($self, $file) = @_;
-    my $ext = plsearch::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_types}->{searchable}}) {
+    my $ext = plfind::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_types}->{findable}}) {
         return 0;
     }
     return 1;

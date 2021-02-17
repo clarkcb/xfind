@@ -1,12 +1,12 @@
 ###############################################################################
 #
-# SearchOptions.pm
+# FindOptions.pm
 #
-# Helper class for search options
+# Helper class for find options
 #
 ###############################################################################
 
-package plsearch::SearchOptions;
+package plfind::FindOptions;
 
 use strict;
 use warnings;
@@ -15,11 +15,11 @@ use warnings;
 use Data::Dumper;
 use JSON::PP qw(decode_json);
 
-use plsearch::common;
-use plsearch::config;
-use plsearch::FileUtil;
-use plsearch::SearchOption;
-use plsearch::SearchSettings;
+use plfind::common;
+use plfind::config;
+use plfind::FileUtil;
+use plfind::FindOption;
+use plfind::FindSettings;
 
 my $arg_action_hash = {
     'encoding' => sub {
@@ -110,9 +110,9 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_patterns($s, $settings->{out_linesbeforepatterns});
     },
-    'searchpattern' => sub {
+    'findpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{searchpatterns});
+        $settings->add_patterns($s, $settings->{findpatterns});
     },
     'settings-file' => sub {
         my ($s, $settings) = @_;
@@ -169,9 +169,9 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('listlines', $b);
     },
-    'multilinesearch' => sub {
+    'multilineoption-REMOVE' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('multilinesearch', $b);
+        $settings->set_property('multilineoption-REMOVE', $b);
     },
     'nocolorize' => sub {
         my ($b, $settings) = @_;
@@ -185,9 +185,9 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', !$b);
     },
-    'nosearcharchives' => sub {
+    'nofindarchives' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('searcharchives', !$b);
+        $settings->set_property('findarchives', !$b);
     },
     'printmatches' => sub {
         my ($b, $settings) = @_;
@@ -197,9 +197,9 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', $b);
     },
-    'searcharchives' => sub {
+    'findarchives' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('searcharchives', $b);
+        $settings->set_property('findarchives', $b);
     },
     'uniquelines' => sub {
         my ($b, $settings) = @_;
@@ -227,19 +227,19 @@ sub new {
 
 sub set_options_from_xml {
     my $options_hash = {};
-    my $options_xml_hash = XMLin($SEARCHOPTIONSPATH);
-    foreach my $i (0..$#{$options_xml_hash->{searchoption}}) {
-        my $short = $options_xml_hash->{searchoption}->[$i]->{short};
-        my $long = $options_xml_hash->{searchoption}->[$i]->{long};
-        my $desc = $options_xml_hash->{searchoption}->[$i]->{content};
-        $desc = plsearch::common::trim($desc);
+    my $options_xml_hash = XMLin($FINDOPTIONSPATH);
+    foreach my $i (0..$#{$options_xml_hash->{findoption}}) {
+        my $short = $options_xml_hash->{findoption}->[$i]->{short};
+        my $long = $options_xml_hash->{findoption}->[$i]->{long};
+        my $desc = $options_xml_hash->{findoption}->[$i]->{content};
+        $desc = plfind::common::trim($desc);
         my $func = sub {};
         if (exists $arg_action_hash->{$long}) {
             $func = $arg_action_hash->{$long};
         } elsif (exists $bool_flag_action_hash->{$long}) {
             $func = $bool_flag_action_hash->{$long};
         }
-        my $opt = new plsearch::SearchOption($short, $long, $desc, $func);
+        my $opt = new plfind::FindOption($short, $long, $desc, $func);
         $options_hash->{$long} = $opt;
         if ($short) {
             $options_hash->{$short} = $options_hash->{$long};
@@ -250,18 +250,18 @@ sub set_options_from_xml {
 
 sub set_options_from_json {
     my $options_hash = {};
-    my $options_json_hash = decode_json plsearch::FileUtil::get_file_contents($SEARCHOPTIONSPATH);
-    foreach my $searchoption (@{$options_json_hash->{searchoptions}}) {
-        my $short = $searchoption->{short};
-        my $long = $searchoption->{long};
-        my $desc = $searchoption->{desc};
+    my $options_json_hash = decode_json plfind::FileUtil::get_file_contents($FINDOPTIONSPATH);
+    foreach my $findoption (@{$options_json_hash->{findoptions}}) {
+        my $short = $findoption->{short};
+        my $long = $findoption->{long};
+        my $desc = $findoption->{desc};
         my $func = sub {};
         if (exists $arg_action_hash->{$long}) {
             $func = $arg_action_hash->{$long};
         } elsif (exists $bool_flag_action_hash->{$long}) {
             $func = $bool_flag_action_hash->{$long};
         }
-        my $opt = new plsearch::SearchOption($short, $long, $desc, $func);
+        my $opt = new plfind::FindOption($short, $long, $desc, $func);
         $options_hash->{$long} = $opt;
         if ($short) {
             $options_hash->{$short} = $options_hash->{$long};
@@ -277,7 +277,7 @@ sub settings_from_file {
         push(@{$errs}, 'Settings file not found: ' . $filepath);
         return $errs;
     }
-    my $json = plsearch::FileUtil::get_file_contents($filepath);
+    my $json = plfind::FileUtil::get_file_contents($filepath);
     return __from_json($json, $settings);
 }
 
@@ -311,7 +311,7 @@ sub settings_from_json {
 
 sub settings_from_args {
     my ($self, $args) = @_;
-    my $settings = new plsearch::SearchSettings();
+    my $settings = new plfind::FindSettings();
     my @errs;
     while (scalar @{$args}) {
         my $arg = shift @{$args};
@@ -347,7 +347,7 @@ sub usage {
 
 sub get_usage_string {
     my $self = shift;
-    my $usage = "Usage:\n plsearch.pl [options] -s <searchpattern> <startpath>\n\nOptions:\n";
+    my $usage = "Usage:\n plfind.pl [options] -s <findpattern> <startpath>\n\nOptions:\n";
     my $longest = 0;
     my $options_with_sortkey = {};
     my @opt_strs_with_descs;
@@ -362,7 +362,7 @@ sub get_usage_string {
         $options_with_sortkey->{$sortkey} = $option;
     }
     my @sortkeys = keys %{$options_with_sortkey};
-    @sortkeys = sort {$plsearch::SearchOptions::a cmp $plsearch::SearchOptions::b} @sortkeys;
+    @sortkeys = sort {$plfind::FindOptions::a cmp $plfind::FindOptions::b} @sortkeys;
     my $opt_strs_with_key = {};
     my $opt_descs_with_key = {};
     foreach my $sortkey (@sortkeys) {

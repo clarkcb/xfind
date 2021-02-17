@@ -1,4 +1,4 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open System.IO
 open System.Reflection

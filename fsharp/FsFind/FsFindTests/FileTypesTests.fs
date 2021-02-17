@@ -1,8 +1,8 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open System.IO
 open NUnit.Framework
-open FsSearch
+open FsFind
 
 [<TestFixture>]
 type FileTypesTests () =
@@ -91,8 +91,8 @@ type FileTypesTests () =
         ()
 
     [<Test>]
-    member this.IsSearchableFile_XmlFile_True () =
-        printfn "IsSearchableFile_XmlFile_True"
+    member this.IsFindableFile_XmlFile_True () =
+        printfn "IsFindableFile_XmlFile_True"
         let xmlFile = FileInfo("markup.xml")
-        Assert.IsTrue(this.FileTypes.IsSearchableFile(xmlFile))
+        Assert.IsTrue(this.FileTypes.IsFindableFile(xmlFile))
         ()

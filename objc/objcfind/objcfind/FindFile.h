@@ -1,7 +1,7 @@
 #import <Foundation/Foundation.h>
 #import "common.h"
 
-@interface SearchFile : NSObject
+@interface FindFile : NSObject
 
 @property NSArray<NSString*> *containers;
 @property NSString *filePath;

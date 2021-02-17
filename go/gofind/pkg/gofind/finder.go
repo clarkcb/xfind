@@ -1,25 +1,25 @@
 /*
-Package xsearch provides functionality to search specific files in specific
+Package xfind provides functionality to find specific files in specific
 directories for content that matches any number of regular expressions.
 
-The Searcher class is the main class that provides the file searching
-functionality. It takes a SearchSettings instance argument on instantiation
-that defines the various search options (what files extension, what directory
-and/or file name patterns, what content search patterns, etc.).
+The Finder class is the main class that provides the file finding
+functionality. It takes a FindSettings instance argument on instantiation
+that defines the various find options (what files extension, what directory
+and/or file name patterns, what content find patterns, etc.).
 
-The two main methods of Searcher are:
+The two main methods of Finder are:
 
-* Search - this performs the search based on the SearchSettings, starting in
+* Find - this performs the find based on the FindSettings, starting in
            StartPath. It has three main phases:
 
-    a) Find matching directories - get the list of directories to search
-    b) Find matching files - get the list of files to search under the directories
-    c) Search matching files - search the matching files
+    a) Find matching directories - get the list of directories to find
+    b) Find matching files - get the list of files to find under the directories
+    c) Find matching files - find the matching files
 
-* SearchFile - this performs a search of a single file. Its use is less common
+* FindFile - this performs a find of a single file. Its use is less common
                but provided for cases where this is needed.
 */
-package gosearch
+package gofind
 
 import (
 	"archive/tar"
@@ -40,47 +40,47 @@ import (
 	"sync"
 )
 
-type Searcher struct {
-	Settings         *SearchSettings
+type Finder struct {
+	Settings         *FindSettings
 	fileTypes        *FileTypes
-	searchDirs       []*string
-	searchItems      *SearchItems
+	findDirs       []*string
+	findItems      *FindItems
 	errors           []error
-	addItemChan      chan *SearchItem
+	addItemChan      chan *FindItem
 	addItemsDoneChan chan bool
 	doneChan         chan *string
 	errChan          chan error
-	searchResults    *SearchResults
-	resultChan       chan *SearchResult
+	findResults    *FindResults
+	resultChan       chan *FindResult
 	textDecoder      *encoding.Decoder
 }
 
-func NewSearcher(settings *SearchSettings) *Searcher {
-	return &Searcher{
+func NewFinder(settings *FindSettings) *Finder {
+	return &Finder{
 		settings,                   // Settings
 		FileTypesFromJson(),        // fileTypes
-		[]*string{},                // searchDirs
-		NewSearchItems(),           // searchItems
+		[]*string{},                // findDirs
+		NewFindItems(),           // findItems
 		[]error{},                  // errors
-		make(chan *SearchItem),     // addItemChan
+		make(chan *FindItem),     // addItemChan
 		make(chan bool),            // addItemsDoneChan
 		make(chan *string, 10),     // doneChan
 		make(chan error, 1),        // errChan
-		NewSearchResults(settings), // searchResults
-		make(chan *SearchResult),   // resultChan
+		NewFindResults(settings), // findResults
+		make(chan *FindResult),   // resultChan
 		nil,
 	}
 }
 
-func (s *Searcher) ClearSearchResults() {
-	s.searchResults = nil
+func (s *Finder) ClearFindResults() {
+	s.findResults = nil
 }
 
-func (s *Searcher) GetSearchResults() *SearchResults {
-	return s.searchResults
+func (s *Finder) GetFindResults() *FindResults {
+	return s.findResults
 }
 
-func (s *Searcher) validateSettings() error {
+func (s *Finder) validateSettings() error {
 	if s.Settings.StartPath == "" {
 		return fmt.Errorf("Startpath not defined")
 	}
@@ -94,16 +94,16 @@ func (s *Searcher) validateSettings() error {
 		}
 		return err
 	}
-	if fi.IsDir() && !s.isSearchDir(&s.Settings.StartPath) {
-		return fmt.Errorf("Startpath does not match search settings")
+	if fi.IsDir() && !s.isFindDir(&s.Settings.StartPath) {
+		return fmt.Errorf("Startpath does not match find settings")
 	} else if fi.Mode().IsRegular() {
 		dir, file := filepath.Split(s.Settings.StartPath)
-		if !s.isSearchDir(&dir) || !s.isSearchFile(&file) {
-			return fmt.Errorf("Startpath does not match search settings")
+		if !s.isFindDir(&dir) || !s.isFindFile(&file) {
+			return fmt.Errorf("Startpath does not match find settings")
 		}
 	}
-	if s.Settings.SearchPatterns.IsEmpty() {
-		return fmt.Errorf("No search patterns defined")
+	if s.Settings.FindPatterns.IsEmpty() {
+		return fmt.Errorf("No find patterns defined")
 	}
 	if s.Settings.LinesAfter < 0 {
 		return fmt.Errorf("Invalid linesafter")
@@ -122,8 +122,8 @@ func (s *Searcher) validateSettings() error {
 	return nil
 }
 
-func filterInBySearchPatterns(s *string, inPatterns *SearchPatterns,
-	outPatterns *SearchPatterns) bool {
+func filterInByFindPatterns(s *string, inPatterns *FindPatterns,
+	outPatterns *FindPatterns) bool {
 	if !inPatterns.IsEmpty() && !inPatterns.MatchesAny(s) {
 		return false
 	}
@@ -133,15 +133,15 @@ func filterInBySearchPatterns(s *string, inPatterns *SearchPatterns,
 	return true
 }
 
-func (s *Searcher) isSearchDir(d *string) bool {
+func (s *Finder) isFindDir(d *string) bool {
 	if isHidden(*d) && s.Settings.ExcludeHidden {
 		return false
 	}
-	return filterInBySearchPatterns(d, s.Settings.InDirPatterns,
+	return filterInByFindPatterns(d, s.Settings.InDirPatterns,
 		s.Settings.OutDirPatterns)
 }
 
-func (s *Searcher) isArchiveSearchFile(filename *string) bool {
+func (s *Finder) isArchiveFindFile(filename *string) bool {
 	if s.fileTypes.IsArchiveFile(*filename) {
 		if isHidden(*filename) && s.Settings.ExcludeHidden {
 			return false
@@ -153,13 +153,13 @@ func (s *Searcher) isArchiveSearchFile(filename *string) bool {
 		if len(s.Settings.OutArchiveExtensions) > 0 && contains(s.Settings.OutArchiveExtensions, ext) {
 			return false
 		}
-		return filterInBySearchPatterns(filename, s.Settings.InArchiveFilePatterns,
+		return filterInByFindPatterns(filename, s.Settings.InArchiveFilePatterns,
 			s.Settings.OutArchiveFilePatterns)
 	}
 	return false
 }
 
-func (s *Searcher) isArchiveSearchItem(si *SearchItem) bool {
+func (s *Finder) isArchiveFindItem(si *FindItem) bool {
 	if si.fileType == FiletypeArchive {
 		if (isHidden(*si.Path) || isHidden(*si.Name)) && s.Settings.ExcludeHidden {
 			return false
@@ -171,13 +171,13 @@ func (s *Searcher) isArchiveSearchItem(si *SearchItem) bool {
 		if len(s.Settings.OutArchiveExtensions) > 0 && contains(s.Settings.OutArchiveExtensions, ext) {
 			return false
 		}
-		return filterInBySearchPatterns(si.Name, s.Settings.InArchiveFilePatterns,
+		return filterInByFindPatterns(si.Name, s.Settings.InArchiveFilePatterns,
 			s.Settings.OutArchiveFilePatterns)
 	}
 	return false
 }
 
-func (s *Searcher) isSearchFile(filename *string) bool {
+func (s *Finder) isFindFile(filename *string) bool {
 	if isHidden(*filename) && s.Settings.ExcludeHidden {
 		return false
 	}
@@ -195,11 +195,11 @@ func (s *Searcher) isSearchFile(filename *string) bool {
 	if len(s.Settings.OutFileTypes) > 0 && containsFileType(s.Settings.OutFileTypes, fileType) {
 		return false
 	}
-	return filterInBySearchPatterns(filename, s.Settings.InFilePatterns,
+	return filterInByFindPatterns(filename, s.Settings.InFilePatterns,
 		s.Settings.OutFilePatterns)
 }
 
-func (s *Searcher) isSearchItem(si *SearchItem) bool {
+func (s *Finder) isFindItem(si *FindItem) bool {
 	if (isHidden(*si.Path) || isHidden(*si.Name)) && s.Settings.ExcludeHidden {
 		return false
 	}
@@ -216,25 +216,25 @@ func (s *Searcher) isSearchItem(si *SearchItem) bool {
 	if len(s.Settings.OutFileTypes) > 0 && containsFileType(s.Settings.OutFileTypes, si.fileType) {
 		return false
 	}
-	return filterInBySearchPatterns(si.Name, s.Settings.InFilePatterns,
+	return filterInByFindPatterns(si.Name, s.Settings.InFilePatterns,
 		s.Settings.OutFilePatterns)
 }
 
-func (s *Searcher) filterFile(f *string) bool {
+func (s *Finder) filterFile(f *string) bool {
 	if s.fileTypes.IsArchiveFile(*f) {
-		return s.Settings.SearchArchives && s.isArchiveSearchFile(f)
+		return s.Settings.FindArchives && s.isArchiveFindFile(f)
 	}
-	return !s.Settings.ArchivesOnly && s.isSearchFile(f)
+	return !s.Settings.ArchivesOnly && s.isFindFile(f)
 }
 
-func (s *Searcher) filterSearchItem(si *SearchItem) bool {
+func (s *Finder) filterFindItem(si *FindItem) bool {
 	if si.fileType == FiletypeArchive {
-		return s.Settings.SearchArchives && s.isArchiveSearchItem(si)
+		return s.Settings.FindArchives && s.isArchiveFindItem(si)
 	}
-	return !s.Settings.ArchivesOnly && s.isSearchItem(si)
+	return !s.Settings.ArchivesOnly && s.isFindItem(si)
 }
 
-func (s *Searcher) fileToSearchItem(f string) *SearchItem {
+func (s *Finder) fileToFindItem(f string) *FindItem {
 	dir, file := filepath.Split(f)
 	if dir == "" {
 		dir = "."
@@ -242,27 +242,27 @@ func (s *Searcher) fileToSearchItem(f string) *SearchItem {
 		dir = normalizePath(dir)
 	}
 	t := s.fileTypes.getFileType(file)
-	return NewSearchItem(&dir, &file, t)
+	return NewFindItem(&dir, &file, t)
 }
 
-func (s *Searcher) checkAddSearchFile(f string) {
-	searchItem := s.fileToSearchItem(f)
-	if s.filterSearchItem(searchItem) {
-		s.addItemChan <- searchItem
+func (s *Finder) checkAddFindFile(f string) {
+	findItem := s.fileToFindItem(f)
+	if s.filterFindItem(findItem) {
+		s.addItemChan <- findItem
 	}
 }
 
 // this method passed to the filepath.Walk method, it must have this signature
-func (s *Searcher) checkAddSearchWalkFile(f string, fi os.FileInfo, err error) error {
+func (s *Finder) checkAddFindWalkFile(f string, fi os.FileInfo, err error) error {
 	if fi.Mode().IsRegular() {
-		s.checkAddSearchFile(f)
+		s.checkAddFindFile(f)
 	}
 	return nil
 }
 
-func (s *Searcher) setSearchFiles() error {
+func (s *Finder) setFindFiles() error {
 	if s.Settings.Verbose {
-		log("\nBuilding file search list")
+		log("\nBuilding file find list")
 	}
 
 	startPath := normalizePath(s.Settings.StartPath)
@@ -272,7 +272,7 @@ func (s *Searcher) setSearchFiles() error {
 	}
 	if fi.IsDir() {
 		if s.Settings.Recursive {
-			err := filepath.Walk(startPath, s.checkAddSearchWalkFile)
+			err := filepath.Walk(startPath, s.checkAddFindWalkFile)
 			if err != nil {
 				return err
 			}
@@ -283,12 +283,12 @@ func (s *Searcher) setSearchFiles() error {
 			}
 
 			for _, file := range files {
-				s.checkAddSearchFile(file.Name())
+				s.checkAddFindFile(file.Name())
 			}
 		}
 
 	} else if fi.Mode().IsRegular() {
-		s.checkAddSearchFile(s.Settings.StartPath)
+		s.checkAddFindFile(s.Settings.StartPath)
 	}
 
 	s.addItemsDoneChan <- true
@@ -296,23 +296,23 @@ func (s *Searcher) setSearchFiles() error {
 	return nil
 }
 
-func (s *Searcher) addSearchResult(r *SearchResult) {
-	s.searchResults.AddSearchResult(r)
+func (s *Finder) addFindResult(r *FindResult) {
+	s.findResults.AddFindResult(r)
 }
 
-func linesMatch(lines []*string, inPatterns *SearchPatterns,
-	outPatterns *SearchPatterns) bool {
+func linesMatch(lines []*string, inPatterns *FindPatterns,
+	outPatterns *FindPatterns) bool {
 	inLinesMatch := inPatterns.IsEmpty() || inPatterns.AnyMatchesAny(lines)
 	outLinesMatch := !outPatterns.IsEmpty() && outPatterns.AnyMatchesAny(lines)
 	return inLinesMatch && !outLinesMatch
 }
 
-func (s *Searcher) linesAfterMatch(linesAfter []*string) bool {
+func (s *Finder) linesAfterMatch(linesAfter []*string) bool {
 	return linesMatch(linesAfter, s.Settings.InLinesAfterPatterns,
 		s.Settings.OutLinesAfterPatterns)
 }
 
-func (s *Searcher) linesBeforeMatch(linesBefore []*string) bool {
+func (s *Finder) linesBeforeMatch(linesBefore []*string) bool {
 	return linesMatch(linesBefore, s.Settings.InLinesBeforePatterns,
 		s.Settings.OutLinesBeforePatterns)
 }
@@ -421,33 +421,33 @@ func linesAfterIndex(bytes []byte, idx int, lineCount int) []*string {
 	return lines[:lineCount]
 }
 
-func (s *Searcher) searchTextFileReaderContents(r io.Reader, si *SearchItem) {
+func (s *Finder) findTextFileReaderContents(r io.Reader, si *FindItem) {
 	bytes, err := ioutil.ReadAll(r)
 	if err != nil {
 		s.errChan <- err
 		return
 	}
-	results := s.searchTextBytes(bytes)
+	results := s.findTextBytes(bytes)
 	for _, sr := range results {
 		sr.File = si
 		s.resultChan <- sr
 	}
 }
 
-// public method to search a multi-line string
-func (s *Searcher) SearchMultiLineString(str string) []*SearchResult {
-	return s.searchTextBytes([]byte(str))
+// public method to find a multi-line string
+func (s *Finder) FindMultiLineString(str string) []*FindResult {
+	return s.findTextBytes([]byte(str))
 }
 
-func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
-	var results []*SearchResult
+func (s *Finder) findTextBytes(bytes []byte) []*FindResult {
+	var results []*FindResult
 	var linesBefore []*string
 	var linesAfter []*string
 	findLimit := -1
 	if s.Settings.FirstMatch {
 		findLimit = 1
 	}
-	spi := s.Settings.SearchPatterns.Iterator()
+	spi := s.Settings.FindPatterns.Iterator()
 	for spi.Next() {
 		p := spi.Value()
 		if allIndices := p.FindAllIndex(bytes, findLimit); allIndices != nil {
@@ -478,7 +478,7 @@ func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
 				}
 
 				lineStr := strings.TrimRight(string(line), "\r\n")
-				sr := &SearchResult{
+				sr := &FindResult{
 					p,
 					nil,
 					linenum,
@@ -498,16 +498,16 @@ func (s *Searcher) searchTextBytes(bytes []byte) []*SearchResult {
 	return results
 }
 
-func (s *Searcher) searchTextFileReaderLines(r io.Reader, si *SearchItem) {
-	results := s.SearchTextReaderLines(r)
+func (s *Finder) findTextFileReaderLines(r io.Reader, si *FindItem) {
+	results := s.FindTextReaderLines(r)
 	for _, sr := range results {
 		sr.File = si
 		s.resultChan <- sr
 	}
 }
 
-func (s *Searcher) SearchTextReaderLines(r io.Reader) []*SearchResult {
-	var results []*SearchResult
+func (s *Finder) FindTextReaderLines(r io.Reader) []*FindResult {
+	var results []*FindResult
 	scanner := bufio.NewScanner(r)
 	linenum := 0
 	var linesBefore []*string
@@ -530,7 +530,7 @@ ReadLines:
 			lineAfter := scanner.Text()
 			linesAfter = append(linesAfter, &lineAfter)
 		}
-		spi := s.Settings.SearchPatterns.Iterator()
+		spi := s.Settings.FindPatterns.Iterator()
 		for spi.Next() {
 			p := spi.Value()
 			if matchIndices := p.FindAllStringIndex(*line, -1); matchIndices != nil {
@@ -595,7 +595,7 @@ ReadLines:
 					if s.Settings.FirstMatch && patternMatched {
 						continue
 					} else {
-						sr := &SearchResult{
+						sr := &FindResult{
 							p,
 							nil,
 							linenum,
@@ -626,20 +626,20 @@ ReadLines:
 	return results
 }
 
-func (s *Searcher) searchTextFileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findTextFileReader(r io.Reader, si *FindItem) {
 	if s.Settings.Verbose {
-		log(fmt.Sprintf("Searching text file %s", si.String()))
+		log(fmt.Sprintf("Finding text file %s", si.String()))
 	}
-	if s.Settings.MultiLineSearch {
-		s.searchTextFileReaderContents(r, si)
+	if s.Settings.MultiLineFind {
+		s.findTextFileReaderContents(r, si)
 	} else {
-		s.searchTextFileReaderLines(r, si)
+		s.findTextFileReaderLines(r, si)
 	}
 }
 
-func (s *Searcher) searchBinaryFileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findBinaryFileReader(r io.Reader, si *FindItem) {
 	if s.Settings.Verbose {
-		log(fmt.Sprintf("Searching binary file %s", si.String()))
+		log(fmt.Sprintf("Finding binary file %s", si.String()))
 	}
 	bytes, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -650,13 +650,13 @@ func (s *Searcher) searchBinaryFileReader(r io.Reader, si *SearchItem) {
 	if s.Settings.FirstMatch {
 		findLimit = 1
 	}
-	spi := s.Settings.SearchPatterns.Iterator()
+	spi := s.Settings.FindPatterns.Iterator()
 	for spi.Next() {
 		p := spi.Value()
 		if matchIndices := p.FindAllIndex(bytes, findLimit); matchIndices != nil {
 			for _, m := range matchIndices {
 				emptyStr := ""
-				sr := &SearchResult{
+				sr := &FindResult{
 					p,
 					si,
 					0,
@@ -676,10 +676,10 @@ func notR(c rune) bool {
 	return c != 'r'
 }
 
-func (s *Searcher) searchTarFileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findTarFileReader(r io.Reader, si *FindItem) {
 	if s.Settings.Verbose {
 		tarName := strings.TrimRightFunc(si.String(), notR)
-		log(fmt.Sprintf("Searching tar file %s", tarName))
+		log(fmt.Sprintf("Finding tar file %s", tarName))
 	}
 	tr := tar.NewReader(r)
 	for {
@@ -696,42 +696,42 @@ func (s *Searcher) searchTarFileReader(r io.Reader, si *SearchItem) {
 				break
 			}
 			if s.Settings.Debug {
-				log(fmt.Sprintf("Error encountered in searchTarFileReader: %s",
+				log(fmt.Sprintf("Error encountered in findTarFileReader: %s",
 					err))
 			}
 			s.errChan <- err
 		}
 		dir, file := filepath.Split(hdr.Name)
 		if !strings.HasSuffix(hdr.Name, "/") {
-			if s.isSearchFile(&file) {
+			if s.isFindFile(&file) {
 				t := s.fileTypes.getFileType(file)
-				newSearchItem := NewSearchItem(&dir, &file, t)
+				newFindItem := NewFindItem(&dir, &file, t)
 				for _, c := range si.Containers {
-					newSearchItem.AddContainer(c)
+					newFindItem.AddContainer(c)
 				}
-				newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
-				s.searchFileReader(tr, newSearchItem)
-			} else if s.isArchiveSearchFile(&file) {
+				newFindItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+				s.findFileReader(tr, newFindItem)
+			} else if s.isArchiveFindFile(&file) {
 				t := s.fileTypes.getFileType(file)
-				newSearchItem := NewSearchItem(&dir, &file, t)
+				newFindItem := NewFindItem(&dir, &file, t)
 				for _, c := range si.Containers {
-					newSearchItem.AddContainer(c)
+					newFindItem.AddContainer(c)
 				}
-				newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
-				s.searchArchiveFileReader(tr, newSearchItem)
+				newFindItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+				s.findArchiveFileReader(tr, newFindItem)
 			}
 		}
 	}
 }
 
-func (s *Searcher) searchGzipFileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findGzipFileReader(r io.Reader, si *FindItem) {
 	if s.Settings.Verbose {
-		log(fmt.Sprintf("Searching gzip file %s", si.String()))
+		log(fmt.Sprintf("Finding gzip file %s", si.String()))
 	}
 	gr, err := gzip.NewReader(r)
 	if err != nil {
 		if s.Settings.Debug {
-			log(fmt.Sprintf("Error encountered in searchGzipFileReader: %s",
+			log(fmt.Sprintf("Error encountered in findGzipFileReader: %s",
 				err))
 		}
 		s.errChan <- err
@@ -741,47 +741,47 @@ func (s *Searcher) searchGzipFileReader(r io.Reader, si *SearchItem) {
 		gr.Close()
 	}()
 	if strings.HasSuffix(*si.Name, "tar.gz") || strings.HasSuffix(*si.Name, "tgz") {
-		s.searchTarFileReader(gr, si)
+		s.findTarFileReader(gr, si)
 	} else {
 		name := gr.Name
-		if s.isSearchFile(&name) {
+		if s.isFindFile(&name) {
 			emptyStr := ""
 			t := s.fileTypes.getFileType(name)
-			newSearchItem := NewSearchItem(&emptyStr, &name, t)
+			newFindItem := NewFindItem(&emptyStr, &name, t)
 			for _, c := range si.Containers {
-				newSearchItem.AddContainer(c)
+				newFindItem.AddContainer(c)
 			}
-			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
-			s.searchFileReader(gr, newSearchItem)
+			newFindItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.findFileReader(gr, newFindItem)
 		}
 	}
 }
 
-func (s *Searcher) searchBzip2FileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findBzip2FileReader(r io.Reader, si *FindItem) {
 	if s.Settings.Verbose {
-		log(fmt.Sprintf("Searching bzip2 file %s", si.String()))
+		log(fmt.Sprintf("Finding bzip2 file %s", si.String()))
 	}
 	br := bzip2.NewReader(r)
 	if strings.HasSuffix(*si.Name, "tar.bz2") {
-		s.searchTarFileReader(br, si)
+		s.findTarFileReader(br, si)
 	} else {
 		containedFileName := strings.TrimSuffix(*si.Name, ".bz2")
-		if s.isSearchFile(&containedFileName) {
+		if s.isFindFile(&containedFileName) {
 			emptyStr := ""
 			t := s.fileTypes.getFileType(containedFileName)
-			newSearchItem := NewSearchItem(&emptyStr, &containedFileName, t)
+			newFindItem := NewFindItem(&emptyStr, &containedFileName, t)
 			for _, c := range si.Containers {
-				newSearchItem.AddContainer(c)
+				newFindItem.AddContainer(c)
 			}
-			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
-			s.searchFileReader(br, newSearchItem)
+			newFindItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.findFileReader(br, newFindItem)
 		}
 	}
 }
 
-func (s *Searcher) searchZipFileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findZipFileReader(r io.Reader, si *FindItem) {
 	if s.Settings.Verbose {
-		log(fmt.Sprintf("Searching zip file %s", si.String()))
+		log(fmt.Sprintf("Finding zip file %s", si.String()))
 	}
 	// zip.OpenReader returns a *zip.ReaderCloser struct type that extends Reader
 	zr, err := zip.OpenReader(filepath.Join(*si.Path, *si.Name))
@@ -797,50 +797,50 @@ func (s *Searcher) searchZipFileReader(r io.Reader, si *SearchItem) {
 			log(fmt.Sprintf("%s is an UNKNOWN file type", file))
 		}
 		// f.FileHeader.Flags == 2 seems to mean it's a file (not a dir, etc.)
-		if f.FileHeader.Flags == 2 && s.isSearchFile(&file) {
+		if f.FileHeader.Flags == 2 && s.isFindFile(&file) {
 			cr, err := f.Open()
 			if err != nil {
 				s.errChan <- err
 				return
 			}
 			t := s.fileTypes.getFileType(file)
-			newSearchItem := NewSearchItem(&dir, &file, t)
+			newFindItem := NewFindItem(&dir, &file, t)
 			for _, c := range si.Containers {
-				newSearchItem.AddContainer(c)
+				newFindItem.AddContainer(c)
 			}
-			newSearchItem.AddContainer(filepath.Join(*si.Path, *si.Name))
-			s.searchFileReader(cr, newSearchItem)
+			newFindItem.AddContainer(filepath.Join(*si.Path, *si.Name))
+			s.findFileReader(cr, newFindItem)
 			cr.Close()
 		}
 	}
 }
 
-func (s *Searcher) searchArchiveFileReader(r io.Reader, si *SearchItem) {
-	if !s.isArchiveSearchFile(si.Name) {
+func (s *Finder) findArchiveFileReader(r io.Reader, si *FindItem) {
+	if !s.isArchiveFindFile(si.Name) {
 		return
 	}
 	ext := getExtension(*si.Name)
 	switch ext {
 	case "zip", "jar", "war", "ear":
-		s.searchZipFileReader(r, si)
+		s.findZipFileReader(r, si)
 	case "gz", "tgz":
-		s.searchGzipFileReader(r, si)
+		s.findGzipFileReader(r, si)
 	case "bz2":
-		s.searchBzip2FileReader(r, si)
+		s.findBzip2FileReader(r, si)
 	default:
-		log(fmt.Sprintf("Searching not currently supported for %s files", ext))
+		log(fmt.Sprintf("Finding not currently supported for %s files", ext))
 	}
 }
 
-func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
+func (s *Finder) findFileReader(r io.Reader, si *FindItem) {
 	switch si.fileType {
 	case FiletypeCode, FiletypeXml, FiletypeText:
-		s.searchTextFileReader(transform.NewReader(r, s.textDecoder), si)
+		s.findTextFileReader(transform.NewReader(r, s.textDecoder), si)
 	case FiletypeBinary:
-		s.searchBinaryFileReader(r, si)
+		s.findBinaryFileReader(r, si)
 	case FiletypeArchive:
-		if s.Settings.SearchArchives {
-			s.searchArchiveFileReader(r, si)
+		if s.Settings.FindArchives {
+			s.findArchiveFileReader(r, si)
 		} else {
 			if s.Settings.Verbose {
 				log(fmt.Sprintf("Skipping archive file: %s", si.String()))
@@ -851,16 +851,16 @@ func (s *Searcher) searchFileReader(r io.Reader, si *SearchItem) {
 	}
 }
 
-func (s *Searcher) searchSearchItem(si *SearchItem) {
-	if !s.fileTypes.IsSearchableItem(si) {
+func (s *Finder) findFindItem(si *FindItem) {
+	if !s.fileTypes.IsFindableItem(si) {
 		if contains(s.Settings.InExtensions, getExtension(*si.Name)) {
 			if s.Settings.Debug {
-				log(fmt.Sprintf("File made searchable by passing in-ext: %s",
+				log(fmt.Sprintf("File made findable by passing in-ext: %s",
 					si.String()))
 			}
 		} else {
 			if s.Settings.Verbose {
-				log(fmt.Sprintf("Skipping unsearchable file: %s", si.String()))
+				log(fmt.Sprintf("Skipping unfindable file: %s", si.String()))
 			}
 			return
 		}
@@ -877,42 +877,42 @@ func (s *Searcher) searchSearchItem(si *SearchItem) {
 			return
 		}
 		defer r.Close()
-		s.searchFileReader(r, si)
+		s.findFileReader(r, si)
 		s.doneChan <- &fullName
 	}
 }
 
-// initiates goroutines to search each file in the batch, waiting for all
+// initiates goroutines to find each file in the batch, waiting for all
 // to finish before returning
-func (s *Searcher) doBatchFileSearch(searchItems []*SearchItem) {
+func (s *Finder) doBatchFileFind(findItems []*FindItem) {
 	wg := &sync.WaitGroup{}
-	wg.Add(len(searchItems)) // set the WaitGroup counter to searchItem length
-	for _, si := range searchItems {
-		go func(wg *sync.WaitGroup, si *SearchItem) {
-			s.searchSearchItem(si)
+	wg.Add(len(findItems)) // set the WaitGroup counter to findItem length
+	for _, si := range findItems {
+		go func(wg *sync.WaitGroup, si *FindItem) {
+			s.findFindItem(si)
 			wg.Done() // decrement the counter
 		}(wg, si)
 	}
 	wg.Wait()
 }
 
-func (s *Searcher) doFileSearch() error {
-	const batchSize = 240 // max files to search at one time
-	var searchItems []*SearchItem
-	sii := s.searchItems.Iterator()
+func (s *Finder) doFileFind() error {
+	const batchSize = 240 // max files to find at one time
+	var findItems []*FindItem
+	sii := s.findItems.Iterator()
 	for sii.Next() {
-		searchItems = append(searchItems, sii.Value())
+		findItems = append(findItems, sii.Value())
 	}
-	// start the processSearchChannels goroutine
-	go s.processSearchChannels()
+	// start the processFindChannels goroutine
+	go s.processFindChannels()
 
-	// batch search (to avoid too many files open at once)
-	for len(searchItems) > batchSize && len(s.errors) == 0 {
-		s.doBatchFileSearch(searchItems[:batchSize])
-		searchItems = searchItems[batchSize:]
+	// batch find (to avoid too many files open at once)
+	for len(findItems) > batchSize && len(s.errors) == 0 {
+		s.doBatchFileFind(findItems[:batchSize])
+		findItems = findItems[batchSize:]
 	}
-	if len(searchItems) > 0 && len(s.errors) == 0 {
-		s.doBatchFileSearch(searchItems)
+	if len(findItems) > 0 && len(s.errors) == 0 {
+		s.doBatchFileFind(findItems)
 	}
 	if len(s.errors) > 0 {
 		return s.errors[0]
@@ -920,13 +920,13 @@ func (s *Searcher) doFileSearch() error {
 	return nil
 }
 
-func (s *Searcher) processSearchChannels() {
+func (s *Finder) processFindChannels() {
 	//get the results from the results channel
 	doneFiles := map[string]bool{}
-	for len(doneFiles) < s.searchItems.Count() && len(s.errors) == 0 {
+	for len(doneFiles) < s.findItems.Count() && len(s.errors) == 0 {
 		select {
 		case r := <-s.resultChan:
-			s.addSearchResult(r)
+			s.addFindResult(r)
 		case f := <-s.doneChan:
 			doneFiles[*f] = true
 		case e := <-s.errChan:
@@ -935,32 +935,32 @@ func (s *Searcher) processSearchChannels() {
 	}
 }
 
-// the public-facing method takes a string and converts to a SearchItem type
-func (s *Searcher) SearchFile(fp string) {
+// the public-facing method takes a string and converts to a FindItem type
+func (s *Finder) FindFile(fp string) {
 	dir, file := filepath.Split(fp)
 	t := s.fileTypes.getFileType(file)
-	searchItem := NewSearchItem(&dir, &file, t)
-	s.searchSearchItem(searchItem)
+	findItem := NewFindItem(&dir, &file, t)
+	s.findFindItem(findItem)
 }
 
-//get the search items (files) from the file channel
-func (s *Searcher) processSearchItemChannels() {
+//get the find items (files) from the file channel
+func (s *Finder) processFindItemChannels() {
 	addItemsDone := false
 	for !addItemsDone {
 		select {
 		case b := <-s.addItemsDoneChan:
 			addItemsDone = b
 		case i := <-s.addItemChan:
-			s.searchItems.AddItem(i)
+			s.findItems.AddItem(i)
 		}
 	}
 }
 
-func (s *Searcher) printToBeSearched() {
+func (s *Finder) printToBeFinded() {
 	dirs := []string{}
 	files := []string{}
 
-	sfi := s.searchItems.Iterator()
+	sfi := s.findItems.Iterator()
 	for sfi.Next() {
 		dirs = append(dirs, *sfi.Value().Path)
 		files = append(files, sfi.Value().String())
@@ -969,7 +969,7 @@ func (s *Searcher) printToBeSearched() {
 	dirMap := makeMap(dirs)
 	dirs = getSortedKeys(dirMap)
 
-	log(fmt.Sprintf("\nDirectories to be searched (%d):", len(dirs)))
+	log(fmt.Sprintf("\nDirectories to be found (%d):", len(dirs)))
 	for _, d := range dirs {
 		log(d)
 	}
@@ -977,60 +977,60 @@ func (s *Searcher) printToBeSearched() {
 	fileMap := makeMap(files)
 	files = getSortedKeys(fileMap)
 
-	log(fmt.Sprintf("\nFiles to be searched (%d):", len(files)))
+	log(fmt.Sprintf("\nFiles to be found (%d):", len(files)))
 	for _, f := range files {
 		log(f)
 	}
 }
 
-func (s *Searcher) Search() error {
+func (s *Finder) Find() error {
 	if err := s.validateSettings(); err != nil {
 		return err
 	}
 
-	// get search file list
-	// first start the processSearchItemChannels goroutine
-	go s.processSearchItemChannels()
+	// get find file list
+	// first start the processFindItemChannels goroutine
+	go s.processFindItemChannels()
 
-	// now fill the searchItem channels
-	if err := s.setSearchFiles(); err != nil {
+	// now fill the findItem channels
+	if err := s.setFindFiles(); err != nil {
 		return err
 	}
 
 	if s.Settings.Verbose {
-		s.printToBeSearched()
+		s.printToBeFinded()
 	}
 
-	// search the files
+	// find the files
 	if s.Settings.Verbose {
-		log("\nStarting file search...\n")
+		log("\nStarting file find...\n")
 	}
-	if err := s.doFileSearch(); err != nil {
+	if err := s.doFileFind(); err != nil {
 		return err
 	}
 	if s.Settings.Verbose {
-		log("\nFile search complete.\n")
+		log("\nFile find complete.\n")
 	}
 
 	return nil
 }
 
-func (s *Searcher) PrintSearchResults() {
-	s.searchResults.PrintSearchResults()
+func (s *Finder) PrintFindResults() {
+	s.findResults.PrintFindResults()
 }
 
-func (s *Searcher) PrintDirCounts() {
-	s.searchResults.PrintDirCounts()
+func (s *Finder) PrintDirCounts() {
+	s.findResults.PrintDirCounts()
 }
 
-func (s *Searcher) PrintFileCounts() {
-	s.searchResults.PrintFileCounts()
+func (s *Finder) PrintFileCounts() {
+	s.findResults.PrintFileCounts()
 }
 
-func (s *Searcher) PrintLineCounts() {
-	s.searchResults.PrintLineCounts()
+func (s *Finder) PrintLineCounts() {
+	s.findResults.PrintLineCounts()
 }
 
-func (s *Searcher) PrintUniqueLineCounts() {
-	s.searchResults.PrintUniqueLineCounts()
+func (s *Finder) PrintUniqueLineCounts() {
+	s.findResults.PrintUniqueLineCounts()
 }

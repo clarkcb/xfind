@@ -3,8 +3,8 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
-use phpsearch\FileType;
-use phpsearch\FileTypes;
+use phpfind\FileType;
+use phpfind\FileTypes;
 
 class FileTypesTest extends TestCase
 {
@@ -59,10 +59,10 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Xml, $filetype);
     }
 
-    public function test_getfiletype_searchable_file()
+    public function test_getfiletype_findable_file()
     {
         $filename = 'compressed.bz2';
-        $this->assertEquals(true, $this->filetypes->is_searchable($filename));
+        $this->assertEquals(true, $this->filetypes->is_findable($filename));
         $filetype = $this->filetypes->get_filetype($filename);
         $this->assertEquals(FileType::Archive, $filetype);
     }

@@ -1,8 +1,8 @@
 #ifndef config_h
 #define config_h
 
-#define XSEARCHPATH "/Users/cary/src/xsearch"
+#define XFINDPATH "/Users/cary/src/xfind"
 
-#define SHAREDPATH XSEARCHPATH "/shared"
+#define SHAREDPATH XFINDPATH "/shared"
 
 #endif /* config_h */

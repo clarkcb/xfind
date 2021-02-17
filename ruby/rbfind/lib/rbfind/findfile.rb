@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-module RbSearch
-  # SearchFile - encapsulates a file to be searched
-  class SearchFile
+module RbFind
+  # FindFile - encapsulates a file to be found
+  class FindFile
 
     attr_accessor :containers
     attr_reader :path

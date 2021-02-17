@@ -1,12 +1,12 @@
 #import <Foundation/Foundation.h>
-#import "SearchOption.h"
-#import "SearchSettings.h"
+#import "FindOption.h"
+#import "FindSettings.h"
 
-@interface SearchOptions : NSObject
+@interface FindOptions : NSObject
 
-- (NSArray<SearchOption*>*) searchOptionsFromJson;
-- (SearchSettings*) settingsFromArgs:(NSArray*)args error:(NSError**)error;
-- (void) settingsFromData:(NSData *)data settings:(SearchSettings *)settings;
+- (NSArray<FindOption*>*) findOptionsFromJson;
+- (FindSettings*) settingsFromArgs:(NSArray*)args error:(NSError**)error;
+- (void) settingsFromData:(NSData *)data settings:(FindSettings *)settings;
 - (NSString*) getUsageString;
 - (void) usage:(int)code;
 

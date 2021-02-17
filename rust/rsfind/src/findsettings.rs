@@ -3,7 +3,7 @@ use regex::Regex;
 use crate::filetypes;
 
 #[derive(Clone, Debug)]
-pub struct SearchSettings {
+pub struct FindSettings {
     pub archives_only: bool,
     pub colorize: bool,
     pub debug: bool,
@@ -25,7 +25,7 @@ pub struct SearchSettings {
     pub list_files: bool,
     pub list_lines: bool,
     pub max_line_length: usize,
-    pub multiline_search: bool,
+    pub multiline_find: bool,
     pub out_archive_extensions: Vec<String>,
     pub out_archive_file_patterns: Vec<Regex>,
     pub out_dir_patterns: Vec<Regex>,
@@ -38,17 +38,17 @@ pub struct SearchSettings {
     pub print_usage: bool,
     pub print_version: bool,
     pub recursive: bool,
-    pub search_archives: bool,
-    pub search_patterns: Vec<Regex>,
+    pub find_archives: bool,
+    pub find_patterns: Vec<Regex>,
     pub startpath: String,
     pub text_file_encoding: String,
     pub unique_lines: bool,
     pub verbose: bool,
 }
 
-impl SearchSettings {
-    pub fn default() -> SearchSettings {
-        SearchSettings {
+impl FindSettings {
+    pub fn default() -> FindSettings {
+        FindSettings {
             archives_only: false,
             colorize: true,
             debug: false,
@@ -70,7 +70,7 @@ impl SearchSettings {
             list_files: false,
             list_lines: false,
             max_line_length: 150usize,
-            multiline_search: false,
+            multiline_find: false,
             out_archive_extensions: Vec::new(),
             out_archive_file_patterns: Vec::new(),
             out_dir_patterns: Vec::new(),
@@ -83,8 +83,8 @@ impl SearchSettings {
             print_usage: false,
             print_version: false,
             recursive: true,
-            search_archives: false,
-            search_patterns: Vec::new(),
+            find_archives: false,
+            find_patterns: Vec::new(),
             startpath: String::from(""),
             text_file_encoding: String::from("utf-8"),
             unique_lines: false,
@@ -95,7 +95,7 @@ impl SearchSettings {
     pub fn set_archives_only(&mut self, b: bool) {
         self.archives_only = b;
         if b {
-            self.search_archives = b;
+            self.find_archives = b;
         }
     }
 
@@ -178,8 +178,8 @@ impl SearchSettings {
         add_pattern(pattern, &mut self.lines_after_until_patterns);
     }
 
-    pub fn add_search_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.search_patterns);
+    pub fn add_find_pattern(&mut self, pattern: String) {
+        add_pattern(pattern, &mut self.find_patterns);
     }
 }
 
@@ -200,7 +200,7 @@ mod tests {
 
     #[test]
     fn test_default() {
-        let settings = SearchSettings::default();
+        let settings = FindSettings::default();
         assert_eq!(settings.archives_only, false);
         assert_eq!(settings.colorize, true);
         assert_eq!(settings.debug, false);
@@ -220,7 +220,7 @@ mod tests {
         assert_eq!(settings.list_files, false);
         assert_eq!(settings.list_lines, false);
         assert_eq!(settings.max_line_length, 150);
-        assert_eq!(settings.multiline_search, false);
+        assert_eq!(settings.multiline_find, false);
         assert!(settings.out_archive_extensions.is_empty());
         assert!(settings.out_archive_file_patterns.is_empty());
         assert!(settings.out_dir_patterns.is_empty());
@@ -231,7 +231,7 @@ mod tests {
         assert_eq!(settings.print_usage, false);
         assert_eq!(settings.print_version, false);
         assert_eq!(settings.recursive, true);
-        assert_eq!(settings.search_archives, false);
+        assert_eq!(settings.find_archives, false);
         assert_eq!(settings.startpath, String::from(""));
         assert_eq!(settings.text_file_encoding, String::from("utf-8"));
         assert_eq!(settings.unique_lines, false);
@@ -240,20 +240,20 @@ mod tests {
 
     #[test]
     fn test_set_archives_only() {
-        let mut settings = SearchSettings::default();
+        let mut settings = FindSettings::default();
         assert_eq!(settings.archives_only, false);
-        assert_eq!(settings.search_archives, false);
+        assert_eq!(settings.find_archives, false);
         settings.set_archives_only(true);
         assert_eq!(settings.archives_only, true);
-        assert_eq!(settings.search_archives, true);
+        assert_eq!(settings.find_archives, true);
         settings.set_archives_only(false);
         assert_eq!(settings.archives_only, false);
-        assert_eq!(settings.search_archives, true);
+        assert_eq!(settings.find_archives, true);
     }
 
     #[test]
     fn test_set_debug() {
-        let mut settings = SearchSettings::default();
+        let mut settings = FindSettings::default();
         assert_eq!(settings.debug, false);
         assert_eq!(settings.verbose, false);
         settings.set_debug(true);
@@ -266,7 +266,7 @@ mod tests {
 
     #[test]
     fn test_add_extensions() {
-        let mut settings = SearchSettings::default();
+        let mut settings = FindSettings::default();
 
         settings.add_in_extension("c".to_string());
         assert_eq!(settings.in_extensions.len(), 1);
@@ -289,7 +289,7 @@ mod tests {
 
     #[test]
     fn test_add_pattern() {
-        let mut settings = SearchSettings::default();
+        let mut settings = FindSettings::default();
 
         settings.add_in_dir_pattern("src".to_string());
         assert_eq!(settings.in_dir_patterns.len(), 1);
@@ -299,11 +299,11 @@ mod tests {
         assert_eq!(settings.out_dir_patterns.len(), 1);
         assert_eq!(settings.out_dir_patterns[0].to_string(), "temp".to_string());
 
-        settings.add_in_file_pattern("search".to_string());
+        settings.add_in_file_pattern("find".to_string());
         assert_eq!(settings.in_file_patterns.len(), 1);
         assert_eq!(
             settings.in_file_patterns[0].to_string(),
-            "search".to_string()
+            "find".to_string()
         );
 
         settings.add_out_file_pattern("tempfile".to_string());

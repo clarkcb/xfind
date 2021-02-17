@@ -1,10 +1,10 @@
-﻿namespace CsSearch
+﻿namespace CsFind
 {
-	static class SearchMain
+	static class FindMain
 	{
 		static void Main(string[] args)
 		{
-			var options = new SearchOptions();
+			var options = new FindOptions();
 			try
 			{
 				var settings = options.SettingsFromArgs(args);
@@ -19,31 +19,31 @@
 					options.Usage();
 				}
 
-				var searcher = new Searcher(settings);
-				searcher.Search();
+				var finder = new Finder(settings);
+				finder.Find();
 
 				if (settings.PrintResults)
 				{
 					Common.Log("");
-					searcher.PrintResults();
+					finder.PrintResults();
 				}
 
 				if (settings.ListDirs)
 				{
-					searcher.PrintMatchingDirs();
+					finder.PrintMatchingDirs();
 				}
 
 				if (settings.ListFiles)
 				{
-					searcher.PrintMatchingFiles();
+					finder.PrintMatchingFiles();
 				}
 
 				if (settings.ListLines)
 				{
-					searcher.PrintMatchingLines();
+					finder.PrintMatchingLines();
 				}
 			}
-			catch (SearchException e)
+			catch (FindException e)
 			{
 				Common.Log($"\nERROR: {e.Message}");
 				options.Usage(1);

@@ -1,9 +1,9 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open System
 open System.IO
 open NUnit.Framework
-open FsSearch
+open FsFind
 
 [<TestFixture>]
 type FileUtilTests () =
@@ -100,7 +100,7 @@ type FileUtilTests () =
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.ExpandPath_WithTilde_ExpandHome () =
-        let path = "~/src/git/xsearch"
+        let path = "~/src/git/xfind"
         let expected = FileUtil.JoinPath (FileUtil.GetHomePath()) (path.Substring(1))
         let actual = FileUtil.ExpandPath(path)
         Assert.AreEqual(expected, actual)
@@ -114,7 +114,7 @@ type FileUtilTests () =
 
     [<Test>]
     member this.ExpandPath_WithBackSlashes_UnchangedPath () =
-        let path = @"C:\src\git\xsearch\"
+        let path = @"C:\src\git\xfind\"
         Assert.AreEqual(path, FileUtil.ExpandPath(path))
         ()
 
@@ -123,20 +123,20 @@ type FileUtilTests () =
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.NormalizePath_NoTrailingSlash_UnchangedPath () =
-        let path = "~/src/git/xsearch"
+        let path = "~/src/git/xfind"
         Assert.AreEqual(path, FileUtil.NormalizePath(path))
         ()
 
     [<Test>]
     member this.NormalizePath_TrailingSlash_TrimmedPath () =
-        let path = "~/src/git/xsearch/"
-        Assert.AreEqual("~/src/git/xsearch", FileUtil.NormalizePath(path))
+        let path = "~/src/git/xfind/"
+        Assert.AreEqual("~/src/git/xfind", FileUtil.NormalizePath(path))
         ()
 
     [<Test>]
     member this.NormalizePath_TrailingBackSlash_TrimmedPath () =
-        let path = @"C:\src\git\xsearch\"
-        Assert.AreEqual(@"C:\src\git\xsearch", FileUtil.NormalizePath(path))
+        let path = @"C:\src\git\xfind\"
+        Assert.AreEqual(@"C:\src\git\xfind", FileUtil.NormalizePath(path))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -144,7 +144,7 @@ type FileUtilTests () =
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.JoinPath_NoTrailingSlash_EqualsExpected () =
-        let path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests"
+        let path = "~/src/git/xfind/csharp/CsFind/CsFindTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
         Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
@@ -152,7 +152,7 @@ type FileUtilTests () =
 
     [<Test>]
     member this.JoinPath_TrailingSlash_EqualsExpected () =
-        let path = "~/src/git/xsearch/csharp/CsSearch/CsSearchTests/"
+        let path = "~/src/git/xfind/csharp/CsFind/CsFindTests/"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + filename
         Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
@@ -160,7 +160,7 @@ type FileUtilTests () =
 
     [<Test>]
     member this.JoinPath_NoTrailingBackSlash_EqualsExpected () =
-        let path = @"C:\src\git\xsearch"
+        let path = @"C:\src\git\xfind"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "\\" + filename
         Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
@@ -168,7 +168,7 @@ type FileUtilTests () =
 
     [<Test>]
     member this.JoinPath_TrailingBackSlash_EqualsExpected () =
-        let path = @"C:\src\git\xsearch\"
+        let path = @"C:\src\git\xfind\"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + filename
         Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)
@@ -176,7 +176,7 @@ type FileUtilTests () =
 
     [<Test>]
     member this.JoinPath_NoSlashes_EqualsExpected () =
-        let path = "CsSearchTests"
+        let path = "CsFindTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
         Assert.AreEqual(pathAndFile, FileUtil.JoinPath path filename)

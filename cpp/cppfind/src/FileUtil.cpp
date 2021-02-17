@@ -3,7 +3,7 @@
 #include <sys/stat.h>
 #include "FileUtil.h"
 
-namespace cppsearch {
+namespace cppfind {
     std::string FileUtil::expand_path(const std::string& filepath) {
         if (filepath.at(0) == '~') {
             std::string expanded = getenv("HOME");

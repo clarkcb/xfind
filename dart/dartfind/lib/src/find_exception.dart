@@ -1,7 +1,7 @@
-class SearchException implements Exception {
+class FindException implements Exception {
   final String message;
 
-  const SearchException(this.message);
+  const FindException(this.message);
 
   @override
   String toString() => message;

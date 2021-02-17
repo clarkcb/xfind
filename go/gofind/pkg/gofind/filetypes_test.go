@@ -1,4 +1,4 @@
-package gosearch
+package gofind
 
 import "testing"
 
@@ -22,7 +22,7 @@ func TestGetFileType(t *testing.T) {
 	}
 }
 
-func TestIsSearchableFile(t *testing.T) {
+func TestIsFindableFile(t *testing.T) {
 	expected := map[string]bool{
 		"hello.txt":             true,
 		"filetypes.go":          true,
@@ -36,7 +36,7 @@ func TestIsSearchableFile(t *testing.T) {
 	fileTypes := FileTypesFromJson()
 
 	for k, v := range expected {
-		if is := fileTypes.IsSearchableFile(k); is != v {
+		if is := fileTypes.IsFindableFile(k); is != v {
 			t.Errorf("getFileType(\"%s\")=\"%t\", expected=\"%t\"", k, is, v)
 		}
 	}

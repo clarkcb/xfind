@@ -1,2 +1,2 @@
 @echo off
-%~dp0\hssearch\dist\build\HsSearch\hssearch.exe %*
+%~dp0\hsfind\dist\build\HsFind\hsfind.exe %*

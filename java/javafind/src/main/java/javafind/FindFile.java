@@ -1,22 +1,22 @@
-package javasearch;
+package javafind;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SearchFile {
+public class FindFile {
     public static final String CONTAINER_SEPARATOR = "!";
     private List<String> containers;
     private String path;
     private String fileName;
     private FileType fileType;
 
-    public SearchFile(final String path, final String fileName,
+    public FindFile(final String path, final String fileName,
                       final FileType fileType) {
         this(new ArrayList<>(), path, fileName, fileType);
     }
 
-    public SearchFile(final List<String> containers, final String path,
+    public FindFile(final List<String> containers, final String path,
                       final String fileName, final FileType fileType) {
         this.containers = containers;
         this.path = path;

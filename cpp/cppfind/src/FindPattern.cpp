@@ -1,16 +1,16 @@
-#include "SearchPattern.h"
+#include "FindPattern.h"
 
-namespace cppsearch {
-    SearchPattern::SearchPattern(const std::string& pattern) {
+namespace cppfind {
+    FindPattern::FindPattern(const std::string& pattern) {
         m_pattern = pattern;
         m_regex = std::regex(pattern);
     }
 
-    std::string SearchPattern::pattern() const {
+    std::string FindPattern::pattern() const {
         return m_pattern;
     }
 
-    std::regex SearchPattern::r() const {
+    std::regex FindPattern::r() const {
         return m_regex;
     }
 }

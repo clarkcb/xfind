@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 public final class DefaultSettings {
     private DefaultSettings() {
@@ -16,12 +16,12 @@ public final class DefaultSettings {
     public static final boolean LISTFILES = false;
     public static final boolean LISTLINES = false;
     public static final int MAXLINELENGTH = 150;
-    public static final boolean MULTILINESEARCH = false;
+    public static final boolean MULTILINEFIND = false;
     public static final boolean PRINTRESULTS = true;
     public static final boolean PRINTUSAGE = false;
     public static final boolean PRINTVERSION = false;
     public static final boolean RECURSIVE = true;
-    public static final boolean SEARCHARCHIVES = false;
+    public static final boolean FINDARCHIVES = false;
     public static final String TEXTFILEENCODING = "UTF-8";
     public static final boolean UNIQUELINES = false;
     public static final boolean VERBOSE = false;

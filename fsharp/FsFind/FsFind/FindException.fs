@@ -1,3 +1,3 @@
-namespace FsSearch
+namespace FsFind
 
-exception SearchException of string
+exception FindException of string

@@ -1,8 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSearch", "CsSearch\CsSearch.csproj", "{33CF2ED9-5133-48B8-ABEB-103B0C0FD2FF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFind", "CsFind\CsFind.csproj", "{33CF2ED9-5133-48B8-ABEB-103B0C0FD2FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSearchTests", "CsSearchTests\CsSearchTests.csproj", "{68A5813B-150B-49AE-9ED0-7BC8F06AEB4D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFindTests", "CsFindTests\CsFindTests.csproj", "{68A5813B-150B-49AE-9ED0-7BC8F06AEB4D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

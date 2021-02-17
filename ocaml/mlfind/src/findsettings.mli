@@ -23,7 +23,7 @@ type t = {
   listfiles : bool;
   listlines : bool;
   maxlinelength : int;
-  multilinesearch : bool;
+  multilineoption-REMOVE : bool;
   out_archiveextensions : string list;
   out_archivefilepatterns : Re2.Regex.t list;
   out_dirpatterns : Re2.Regex.t list;
@@ -36,8 +36,8 @@ type t = {
   printusage : bool;
   printversion : bool;
   recursive : bool;
-  searcharchives : bool;
-  searchpatterns : Re2.Regex.t list;
+  findarchives : bool;
+  findpatterns : Re2.Regex.t list;
   startpath : string;
   uniquelines : bool;
   verbose : bool

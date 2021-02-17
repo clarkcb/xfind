@@ -22,7 +22,7 @@ dependencies {
 
 jar {
     manifest {
-        attributes "Main-Class": "ktsearch.KtsearchKt"
+        attributes "Main-Class": "ktfind.KtfindKt"
     }
 
     from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }

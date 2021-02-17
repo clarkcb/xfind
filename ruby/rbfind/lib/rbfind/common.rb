@@ -8,7 +8,7 @@
 #
 ################################################################################
 
-module RbSearch
+module RbFind
   module_function
   def log(message)
     puts message

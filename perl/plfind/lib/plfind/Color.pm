@@ -6,7 +6,7 @@
 #
 ###############################################################################
 
-package plsearch::Color;
+package plfind::Color;
 
 use strict;
 use warnings;

@@ -1,6 +1,6 @@
 //
 //  FileTypes.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/12/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -74,7 +74,7 @@ public class FileTypes {
     fileprivate static let archive = "archive"
     fileprivate static let binary = "binary"
     fileprivate static let code = "code"
-    fileprivate static let searchable = "searchable"
+    fileprivate static let findable = "findable"
     fileprivate static let text = "text"
     fileprivate static let unknown = "unknown"
     fileprivate static let xml = "xml"
@@ -91,7 +91,7 @@ public class FileTypes {
         fileTypesDict = parser.parseFile(Config.fileTypesPath)
         fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
             .union(fileTypesDict[FileTypes.xml]!)
-        fileTypesDict[FileTypes.searchable] =
+        fileTypesDict[FileTypes.findable] =
             fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
                 .union(fileTypesDict[FileTypes.archive]!)
     }
@@ -109,7 +109,7 @@ public class FileTypes {
                     }
                     fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
                         .union(fileTypesDict[FileTypes.xml]!)
-                    fileTypesDict[FileTypes.searchable] =
+                    fileTypesDict[FileTypes.findable] =
                         fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
                             .union(fileTypesDict[FileTypes.archive]!)
                 }
@@ -194,8 +194,8 @@ public class FileTypes {
         isFileOfType(fileName, FileTypes.code)
     }
 
-    public func isSearchableFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.searchable)
+    public func isFindableFile(_ fileName: String) -> Bool {
+        isFileOfType(fileName, FileTypes.findable)
     }
 
     public func isTextFile(_ fileName: String) -> Bool {
@@ -205,7 +205,7 @@ public class FileTypes {
     public func isUnknownFile(_ fileName: String) -> Bool {
         (fileTypesDict.index(forKey: FileTypes.unknown) != nil &&
             fileTypesDict[FileTypes.unknown]!.contains(FileUtil.getExtension(fileName)))
-            || !isSearchableFile(fileName)
+            || !isFindableFile(fileName)
     }
 
     public func isXmlFile(_ fileName: String) -> Bool {

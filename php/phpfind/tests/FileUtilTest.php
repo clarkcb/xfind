@@ -3,7 +3,7 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
-use phpsearch\FileUtil;
+use phpfind\FileUtil;
 
 class FileUtilTest extends TestCase
 {

@@ -1,16 +1,16 @@
 <?php declare(strict_types=1);
 
-namespace phpsearch;
+namespace phpfind;
 
 /**
- * Class SearchFile
+ * Class FindFile
  *
  * @property array containers
  * @property string path
  * @property string filename
  * @property FileType filetype
  */
-class SearchFile
+class FindFile
 {
     const CONTAINER_SEPARATOR = '!';
 
@@ -31,8 +31,8 @@ class SearchFile
     {
         $s = "";
         if ($this->containers) {
-            $s = join(SearchFile::CONTAINER_SEPARATOR, $this->containers) .
-                SearchFile::CONTAINER_SEPARATOR;
+            $s = join(FindFile::CONTAINER_SEPARATOR, $this->containers) .
+                FindFile::CONTAINER_SEPARATOR;
         }
         $s .= FileUtil::join_path($this->path, $this->filename);
         return $s;

@@ -1,6 +1,6 @@
 //
-//  swiftsearchTests.swift
-//  swiftsearchTests
+//  swiftfindTests.swift
+//  swiftfindTests
 //
 //  Created by Cary Clark on 5/18/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -9,31 +9,31 @@
 import Cocoa
 import XCTest
 
-import swiftsearch
+import swiftfind
 
-class SearchFileTests: XCTestCase {
+class FindFileTests: XCTestCase {
 
-    func testSearchFileAbsPath() {
-        let path = "/Users/cary/src/xsearch/swift/swiftsearch/Sources/swiftsearch/SearchFile.swift"
-        let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description)
+    func testFindFileAbsPath() {
+        let path = "/Users/cary/src/xfind/swift/swiftfind/Sources/swiftfind/FindFile.swift"
+        let findFile = FindFile(filePath: path, fileType: FileType.code)
+        XCTAssertEqual(path, findFile.description)
     }
 
-    func testSearchFileTildePath() {
-        let path = "~/src/xsearch/swift/swiftsearch/Sources/swiftsearch/SearchFile.swift"
-        let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description)
+    func testFindFileTildePath() {
+        let path = "~/src/xfind/swift/swiftfind/Sources/swiftfind/FindFile.swift"
+        let findFile = FindFile(filePath: path, fileType: FileType.code)
+        XCTAssertEqual(path, findFile.description)
     }
 
-    func testSearchFileRelPath1() {
-        let path = "./SearchFile.swift"
-        let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description)
+    func testFindFileRelPath1() {
+        let path = "./FindFile.swift"
+        let findFile = FindFile(filePath: path, fileType: FileType.code)
+        XCTAssertEqual(path, findFile.description)
     }
 
-    func testSearchFileRelPath2() {
-        let path = "../SearchFile.swift"
-        let searchFile = SearchFile(filePath: path, fileType: FileType.code)
-        XCTAssertEqual(path, searchFile.description)
+    func testFindFileRelPath2() {
+        let path = "../FindFile.swift"
+        let findFile = FindFile(filePath: path, fileType: FileType.code)
+        XCTAssertEqual(path, findFile.description)
     }
 }

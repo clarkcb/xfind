@@ -1,4 +1,4 @@
-module HsSearch.Color
+module HsFind.Color
   (
       reset
     , black

@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 import org.json.simple.JSONArray
 import org.json.simple.JSONObject
@@ -24,7 +24,7 @@ enum class FileType {
 private const val archive = "archive"
 private const val code = "code"
 private const val binary = "binary"
-private const val searchable = "searchable"
+private const val findable = "findable"
 private const val text = "text"
 private const val xml = "xml"
 private const val unknown = "unknown"
@@ -82,11 +82,11 @@ class FileTypes {
             allText.addAll(ftMap["text"]!!)
             allText.addAll(ftMap["xml"]!!)
             ftMap["text"] = allText
-            val allSearchable: MutableSet<String> = mutableSetOf()
-            allSearchable.addAll(ftMap["archive"]!!)
-            allSearchable.addAll(ftMap["binary"]!!)
-            allSearchable.addAll(ftMap["text"]!!)
-            ftMap["searchable"] = allSearchable
+            val allFindable: MutableSet<String> = mutableSetOf()
+            allFindable.addAll(ftMap["archive"]!!)
+            allFindable.addAll(ftMap["binary"]!!)
+            allFindable.addAll(ftMap["text"]!!)
+            ftMap["findable"] = allFindable
         } catch (e: ParseException) {
             e.printStackTrace()
         } catch (e: IOException) {
@@ -131,8 +131,8 @@ class FileTypes {
         return (fileTypeMap[code] ?: setOf()).contains(file.extension.toLowerCase())
     }
 
-    fun isSearchableFile(file: File): Boolean {
-        return (fileTypeMap[searchable] ?: setOf()).contains(file.extension.toLowerCase())
+    fun isFindableFile(file: File): Boolean {
+        return (fileTypeMap[findable] ?: setOf()).contains(file.extension.toLowerCase())
     }
 
     fun isTextFile(file: File): Boolean {
@@ -141,7 +141,7 @@ class FileTypes {
 
     fun isUnknownFile(file: File): Boolean {
         return (fileTypeMap[unknown] ?: setOf()).contains(file.extension.toLowerCase())
-                || !isSearchableFile(file)
+                || !isFindableFile(file)
     }
 
     fun isXmlFile(file: File): Boolean {

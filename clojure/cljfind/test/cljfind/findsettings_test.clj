@@ -1,7 +1,7 @@
-(ns cljsearch.searchsettings-test
+(ns cljfind.findsettings-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
-        [cljsearch.searchsettings :only
+        [cljfind.findsettings :only
     (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly set-debug)]))
 
 (deftest test-default-settings
@@ -17,12 +17,12 @@
       (is (not (:listfiles settings)))
       (is (not (:listlines settings)))
       (is (= (:maxlinelength settings) 150))
-      (is (not (:multilinesearch settings)))
+      (is (not (:multilineoption-REMOVE settings)))
       (is (:printresults settings))
       (is (not (:printusage settings)))
       (is (not (:printversion settings)))
       (is (:recursive settings))
-      (is (not (:searcharchives settings)))
+      (is (not (:findarchives settings)))
       (is (= (:startpath settings) nil))
       (is (not (:uniquelines settings)))
       (is (not (:verbose settings))))))
@@ -37,16 +37,16 @@
 
 (deftest test-add-pattern
   (let [settings DEFAULT-SETTINGS
-        with-pattern (add-pattern settings "Search" :searchpatterns)]
+        with-pattern (add-pattern settings "Find" :findpatterns)]
     (testing "test-add-pattern"
-      (is (= (count (:searchpatterns with-pattern)) 1)))))
+      (is (= (count (:findpatterns with-pattern)) 1)))))
 
 (deftest test-set-archivesonly
   (let [settings DEFAULT-SETTINGS
         with-archivesonly (set-archivesonly settings true)]
     (testing "test-set-archivesonly"
       (is (:archivesonly with-archivesonly))
-      (is (:searcharchives with-archivesonly)))))
+      (is (:findarchives with-archivesonly)))))
 
 (deftest test-set-debug
   (let [settings DEFAULT-SETTINGS

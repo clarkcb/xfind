@@ -2,9 +2,9 @@
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace CsSearch
+namespace CsFind
 {
-	public class SearchSettings
+	public class FindSettings
 	{
 		private bool _archivesOnly;
 
@@ -15,7 +15,7 @@ namespace CsSearch
 			{
 				_archivesOnly = value;
 				if (_archivesOnly)
-					SearchArchives = true;
+					FindArchives = true;
 			}
 		}
 
@@ -51,7 +51,7 @@ namespace CsSearch
 		public bool ListFiles { get; set; }
 		public bool ListLines { get; set; }
 		public int MaxLineLength { get; set; }
-		public bool MultiLineSearch { get; set; }
+		public bool MultiLineFind { get; set; }
 		public ISet<string> OutArchiveExtensions { get; private set; }
 		public ISet<Regex> OutArchiveFilePatterns { get; private set; }
 		public ISet<Regex> OutDirPatterns { get; private set; }
@@ -64,14 +64,14 @@ namespace CsSearch
 		public bool PrintUsage { get; set; }
 		public bool PrintVersion { get; set; }
 		public bool Recursive { get; set; }
-		public bool SearchArchives { get; set; }
-		public ISet<Regex> SearchPatterns { get; private set; }
+		public bool FindArchives { get; set; }
+		public ISet<Regex> FindPatterns { get; private set; }
 		public string? StartPath { get; set; }
 		public string TextFileEncoding { get; set; }
 		public bool UniqueLines { get; set; }
 		public bool Verbose { get; set; }
 
-		public SearchSettings()
+		public FindSettings()
 		{
 			ArchivesOnly = false;
 			Colorize = true;
@@ -94,7 +94,7 @@ namespace CsSearch
 			ListFiles = false;
 			ListLines = false;
 			MaxLineLength = 150;
-			MultiLineSearch = false;
+			MultiLineFind = false;
 			OutArchiveExtensions = new HashSet<string>();
 			OutArchiveFilePatterns = new HashSet<Regex>();
 			OutDirPatterns = new HashSet<Regex>();
@@ -107,8 +107,8 @@ namespace CsSearch
 			PrintUsage = false;
 			PrintVersion = false;
 			Recursive = true;
-			SearchArchives = false;
-			SearchPatterns = new HashSet<Regex>();
+			FindArchives = false;
+			FindPatterns = new HashSet<Regex>();
 			TextFileEncoding = "utf-8";
 			UniqueLines = false;
 			Verbose = false;
@@ -211,9 +211,9 @@ namespace CsSearch
 			AddPattern(LinesAfterUntilPatterns, pattern);
 		}
 
-		public void AddSearchPattern(string pattern)
+		public void AddFindPattern(string pattern)
 		{
-			AddPattern(SearchPatterns, pattern);
+			AddPattern(FindPatterns, pattern);
 		}
 
 		private static void AddFileType(ISet<FileType> set, string typeNameList)
@@ -257,7 +257,7 @@ namespace CsSearch
 
 		public override string ToString()
 		{
-			return "SearchSettings(" +
+			return "FindSettings(" +
 				"ArchivesOnly: " + ArchivesOnly +
 				", Colorize: " + Colorize +
 				", Debug: " + Debug +
@@ -279,7 +279,7 @@ namespace CsSearch
 				", ListFiles: " + ListFiles +
 				", ListLines: " + ListLines +
 				", MaxLineLength: " + MaxLineLength +
-				", MultiLineSearch: " + MultiLineSearch +
+				", MultiLineFind: " + MultiLineFind +
 				", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions) +
 				", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns) +
 				", OutDirPatterns: " + EnumerableToString(OutDirPatterns) +
@@ -292,8 +292,8 @@ namespace CsSearch
 				", PrintUsage: " + PrintUsage +
 				", PrintVersion: " + PrintVersion +
 				", Recursive: " + Recursive +
-				", SearchArchives: " + SearchArchives +
-				", SearchPatterns: " + EnumerableToString(SearchPatterns) +
+				", FindArchives: " + FindArchives +
+				", FindPatterns: " + EnumerableToString(FindPatterns) +
 				", StartPath: \"" + StartPath + "\"" +
 				", TextFileEncoding: \"" + TextFileEncoding + "\"" +
 				", UniqueLines: " + UniqueLines +

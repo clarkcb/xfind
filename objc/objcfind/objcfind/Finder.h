@@ -1,26 +1,26 @@
 #import <Foundation/Foundation.h>
 #import "FileTypes.h"
-#import "SearchFile.h"
-#import "SearchResult.h"
-#import "SearchSettings.h"
+#import "FindFile.h"
+#import "FindResult.h"
+#import "FindSettings.h"
 
-@interface Searcher : NSObject
+@interface Finder : NSObject
 
 @property FileTypes *fileTypes;
-@property SearchSettings *settings;
+@property FindSettings *settings;
 @property NSStringEncoding textFileEncoding;
 
-- (instancetype) initWithSettings:(SearchSettings*)settings error:(NSError**)error;
-- (NSArray<SearchResult*>*) search:(NSError**)error;
-- (NSArray<SearchResult*>*) searchDirPath:(NSString*)filePath error:(NSError**)error;
-- (NSArray<SearchResult*>*) searchFilePath:(NSString*)filePath error:(NSError**)error;
-- (NSArray<SearchResult*>*) searchFile:(SearchFile*)sf error:(NSError**)error;
-- (NSArray<SearchResult*>*) searchMultiLineString:(NSString*)s error:(NSError**)error;
+- (instancetype) initWithSettings:(FindSettings*)settings error:(NSError**)error;
+- (NSArray<FindResult*>*) find:(NSError**)error;
+- (NSArray<FindResult*>*) findDirPath:(NSString*)filePath error:(NSError**)error;
+- (NSArray<FindResult*>*) findFilePath:(NSString*)filePath error:(NSError**)error;
+- (NSArray<FindResult*>*) findFile:(FindFile*)sf error:(NSError**)error;
+- (NSArray<FindResult*>*) findMultiLineString:(NSString*)s error:(NSError**)error;
 
 // private methods
 - (BOOL) filterFile:(NSString*)filePath;
-- (BOOL) isArchiveSearchFile:(NSString*)filePath;
-- (BOOL) isSearchDir:(NSString*)dirPath;
-- (BOOL) isSearchFile:(NSString*)filePath;
+- (BOOL) isArchiveFindFile:(NSString*)filePath;
+- (BOOL) isFindDir:(NSString*)dirPath;
+- (BOOL) isFindFile:(NSString*)filePath;
 
 @end

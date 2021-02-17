@@ -1,7 +1,7 @@
 #include <iostream>
 #include "common.h"
 
-namespace cppsearch {
+namespace cppfind {
     void log(const std::string& msg) {
         std::cout << msg << std::endl;
     }

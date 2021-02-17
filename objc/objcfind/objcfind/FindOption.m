@@ -1,6 +1,6 @@
-#import "SearchOption.h"
+#import "FindOption.h"
 
-@implementation SearchOption
+@implementation FindOption
 
 - (instancetype) initWithShortArg:(NSString *)sArg withLongArg:(NSString *)lArg withDesc:(NSString *)desc {
     self = [super init];
@@ -20,7 +20,7 @@
 }
 
 - (NSString *) description {
-    NSMutableString *d = [[NSMutableString alloc] initWithString:@"SearchOption("];
+    NSMutableString *d = [[NSMutableString alloc] initWithString:@"FindOption("];
     [d appendFormat:@"short: \"%@\", long: \"%@\", desc: \"%@\")",
      self.shortArg, self.longArg, self.description];
     return d;

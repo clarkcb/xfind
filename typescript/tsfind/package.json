@@ -1,18 +1,18 @@
 {
-  "name": "tssearch",
+  "name": "tsfind",
   "version": "0.1.0",
-  "description": "An implementation of xsearch in TypeScript + Node.js",
+  "description": "An implementation of xfind in TypeScript + Node.js",
   "author": {
     "name": "Cary Clark",
     "email": "clarkcb@gmail.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/clarkcb/xsearch.git"
+    "url": "https://github.com/clarkcb/xfind.git"
   },
-  "main": "./dist/tssearch.js",
+  "main": "./dist/tsfind.js",
   "bin": {
-    "tssearch": "bin/tssearch"
+    "tsfind": "bin/tsfind"
   },
   "scripts": {
     "build": "tsc -p .",
@@ -24,7 +24,7 @@
     "coverage": "jest --coverage"
   },
   "keywords": [
-    "xsearch",
+    "xfind",
     "typescript",
     "node.js"
   ],

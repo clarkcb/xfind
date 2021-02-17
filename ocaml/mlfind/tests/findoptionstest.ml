@@ -1,12 +1,12 @@
 open Core.Std
 open OUnit
 
-let searchoptions = Searchoptions.get_searchoptions
+let findoptions = Findoptions.get_findoptions
 
-let test_fixture = "Searchoptions" >:::
+let test_fixture = "Findoptions" >:::
 [
   "test_no_args" >:: (fun () ->
-    match (Searchoptions.settings_from_args searchoptions []) with
+    match (Findoptions.settings_from_args findoptions []) with
     | Ok settings ->
       assert_equal settings.archivesonly false;
       assert_equal settings.debug false;
@@ -26,7 +26,7 @@ let test_fixture = "Searchoptions" >:::
       assert_equal settings.listdirs false;
       assert_equal settings.listfiles false;
       assert_equal settings.listlines false;
-      assert_equal settings.multilinesearch false;
+      assert_equal settings.multilineoption-REMOVE false;
       assert_equal settings.out_archiveextensions [];
       assert_equal settings.out_archivefilepatterns [];
       assert_equal settings.out_dirpatterns [];
@@ -38,8 +38,8 @@ let test_fixture = "Searchoptions" >:::
       assert_equal settings.printusage false;
       assert_equal settings.printversion false;
       assert_equal settings.recursive true;
-      assert_equal settings.searcharchives false;
-      assert_equal settings.searchpatterns [];
+      assert_equal settings.findarchives false;
+      assert_equal settings.findpatterns [];
       assert_equal settings.startpath "";
       assert_equal settings.uniquelines false;
       assert_equal settings.verbose false;
@@ -47,27 +47,27 @@ let test_fixture = "Searchoptions" >:::
   );
 
   "test_valid_args" >:: (fun () ->
-    let args = ["-x"; "py,rb"; "-s"; "Search"; "."] in
-    match (Searchoptions.settings_from_args searchoptions args) with
+    let args = ["-x"; "py,rb"; "-s"; "Find"; "."] in
+    match (Findoptions.settings_from_args findoptions args) with
     | Ok settings ->
       assert_equal settings.in_extensions ["py"; "rb"];
-      assert_equal settings.searchpatterns [Re2.Regex.create_exn "Search"];
+      assert_equal settings.findpatterns [Re2.Regex.create_exn "Find"];
       assert_equal settings.startpath ".";
     | _ -> ()
   );
 
   "test_archivesonly_arg" >:: (fun () ->
     let args = ["--archivesonly"] in
-    match (Searchoptions.settings_from_args searchoptions args) with
+    match (Findoptions.settings_from_args findoptions args) with
     | Ok settings ->
       assert_equal settings.archivesonly true;
-      assert_equal settings.searcharchives true;
+      assert_equal settings.findarchives true;
     | _ -> ()
   );
 
   "test_debug_arg" >:: (fun () ->
     let args = ["--debug"] in
-    match (Searchoptions.settings_from_args searchoptions args) with
+    match (Findoptions.settings_from_args findoptions args) with
     | Ok settings ->
       assert_equal settings.debug true;
       assert_equal settings.verbose true;

@@ -1,4 +1,4 @@
-(ns cljsearch.common)
+(ns cljfind.common)
 
 (defn log-msg [msg & msgs]
   (println msg)

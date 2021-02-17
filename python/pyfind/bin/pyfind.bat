@@ -1,2 +1,2 @@
 @echo off
-python3 %~dp0\pysearch %*
+python3 %~dp0\pyfind %*

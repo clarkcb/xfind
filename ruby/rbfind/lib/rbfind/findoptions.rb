@@ -1,15 +1,15 @@
-# SearchOptions - generate help, create settings from CLI args
+# FindOptions - generate help, create settings from CLI args
 require 'json'
 
 require_relative 'common'
-require_relative 'searcherror'
-require_relative 'searchoption'
-require_relative 'searchsettings'
+require_relative 'finderror'
+require_relative 'findoption'
+require_relative 'findsettings'
 
-module RbSearch
+module RbFind
 
-  # SearchOptions - parses CLI args into settings, generates usage string
-  class SearchOptions
+  # FindOptions - parses CLI args into settings, generates usage string
+  class FindOptions
 
     def initialize
       @options = []
@@ -22,8 +22,8 @@ module RbSearch
       @options.sort! { |a, b| a.sortarg <=> b.sortarg }
     end
 
-    def search_settings_from_args(args)
-      settings = SearchSettings.new
+    def find_settings_from_args(args)
+      settings = FindSettings.new
       settings.printresults = true
       until args.empty?
         arg = args.shift
@@ -31,14 +31,14 @@ module RbSearch
           arg = arg[1..arg.length] while arg && arg.start_with?('-')
           longarg = @longarg_dict[arg]
           if @arg_action_dict.key?(longarg)
-            raise SearchError, "Missing value for option #{arg}" if args.empty?
+            raise FindError, "Missing value for option #{arg}" if args.empty?
             argval = args.shift
             @arg_action_dict[longarg].call(argval, settings)
           elsif @bool_flag_action_dict.key?(longarg)
             @bool_flag_action_dict[longarg].call(true, settings)
             return settings if %w[help version].include?(longarg)
           else
-            raise SearchError, "Invalid option: #{arg}"
+            raise FindError, "Invalid option: #{arg}"
           end
         else
           settings.startpath = arg
@@ -52,11 +52,11 @@ module RbSearch
       json = f.read
       settings_from_json(json, settings)
     rescue IOError => e
-      raise SearchError, "#{e} (file: #{filepath})"
+      raise FindError, "#{e} (file: #{filepath})"
     rescue ArgumentError => e
-      raise SearchError, "#{e} (file: #{filepath})"
-    rescue SearchError => e
-      raise SearchError, "#{e} (file: #{filepath})"
+      raise FindError, "#{e} (file: #{filepath})"
+    rescue FindError => e
+      raise FindError, "#{e} (file: #{filepath})"
     ensure
       f&.close
     end
@@ -73,7 +73,7 @@ module RbSearch
         elsif arg == 'startpath'
           settings.startpath = json_hash[arg]
         else
-          raise SearchError, "Invalid option: #{arg}"
+          raise FindError, "Invalid option: #{arg}"
         end
       end
     end
@@ -85,7 +85,7 @@ module RbSearch
 
     def get_usage_string
       usage = "Usage:\n"
-      usage << " rbsearch [options] -s <searchpattern> <startpath>\n\n"
+      usage << " rbfind [options] -s <findpattern> <startpath>\n\n"
       usage << "Options:\n"
       opt_strings = []
       opt_descs = []
@@ -177,8 +177,8 @@ module RbSearch
         'out-linesbeforepattern': lambda { |x, settings|
           settings.add_patterns(x, settings.out_linesbeforepatterns)
         },
-        'searchpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.searchpatterns)
+        'findpattern': lambda { |x, settings|
+          settings.add_patterns(x, settings.findpatterns)
         },
         'settings-file': lambda { |x, settings|
           settings_from_file(x, settings)
@@ -198,14 +198,14 @@ module RbSearch
         listdirs: ->(b, settings) { settings.listdirs = b },
         listfiles: ->(b, settings) { settings.listfiles = b },
         listlines: ->(b, settings) { settings.listlines = b },
-        multilinesearch: ->(b, settings) { settings.multilinesearch = b },
+        multilineoption-REMOVE: ->(b, settings) { settings.multilineoption-REMOVE = b },
         nocolorize: ->(b, settings) { settings.colorize = !b },
         noprintmatches: ->(b, settings) { settings.printresults = !b },
         norecursive: ->(b, settings) { settings.recursive = !b },
-        nosearcharchives: ->(b, settings) { settings.searcharchives = !b },
+        nofindarchives: ->(b, settings) { settings.findarchives = !b },
         printmatches: ->(b, settings) { settings.printresults = b },
         recursive: ->(b, settings) { settings.recursive = b },
-        searcharchives: ->(b, settings) { settings.searcharchives = b },
+        findarchives: ->(b, settings) { settings.findarchives = b },
         uniquelines: ->(b, settings) { settings.uniquelines = b },
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.printversion = b }
@@ -214,11 +214,11 @@ module RbSearch
     end
 
     def set_options_from_json
-      searchoptions_json_path = File.join(File.dirname(__FILE__), "../../data/searchoptions.json")
-      f = File.open(searchoptions_json_path, mode: 'r')
+      findoptions_json_path = File.join(File.dirname(__FILE__), "../../data/findoptions.json")
+      f = File.open(findoptions_json_path, mode: 'r')
       json = f.read
       json_hash = JSON.parse(json)
-      json_hash['searchoptions'].each do |so|
+      json_hash['findoptions'].each do |so|
         long = so['long']
         short =
           if so.key?('short')
@@ -234,14 +234,14 @@ module RbSearch
           elsif @bool_flag_action_dict.key?(long_sym)
             @bool_flag_action_dict[long_sym]
           else
-            raise SearchError, "Unknown search option: #{long}"
+            raise FindError, "Unknown find option: #{long}"
           end
-        @options.push(SearchOption.new(short, long, desc, func))
+        @options.push(FindOption.new(short, long, desc, func))
         @longarg_dict[long] = long_sym
         @longarg_dict[short] = long_sym if short
       end
     rescue StandardError => e
-      raise SearchError, "#{e} (file: #{SEARCHOPTIONSJSONPATH})"
+      raise FindError, "#{e} (file: #{FINDOPTIONSJSONPATH})"
     ensure
       f&.close
     end

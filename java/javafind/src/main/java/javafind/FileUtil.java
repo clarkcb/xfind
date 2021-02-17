@@ -8,7 +8,7 @@ Utility class to determine file types, etc.
 @copyright Cary Clark 2012
 *******************************************************************************/
 
-package javasearch;
+package javafind;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;

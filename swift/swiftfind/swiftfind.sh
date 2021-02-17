@@ -1,13 +1,13 @@
 #!/bin/sh
 
-XSEARCH_PATH=$HOME/src/xsearch
-SWIFT_PATH=$XSEARCH_PATH/swift
-SWIFTSEARCH_PATH=$SWIFT_PATH/swiftsearch
+XFIND_PATH=$HOME/src/xfind
+SWIFT_PATH=$XFIND_PATH/swift
+SWIFTFIND_PATH=$SWIFT_PATH/swiftfind
 
 # Debug exe location (when compiling from within Xcode)
-#SWIFTSEARCHEXE=$HOME/Library/Developer/Xcode/DerivedData/swiftsearch-fnxmcvhlrjapoaeeqzmwblpnnffc/Build/Products/Debug/swiftsearch
+#SWIFTFINDEXE=$HOME/Library/Developer/Xcode/DerivedData/swiftfind-fnxmcvhlrjapoaeeqzmwblpnnffc/Build/Products/Debug/swiftfind
 
 # Release exe location (when compiling from command line (scripts/build.sh swift))
-SWIFTSEARCHEXE=$SWIFTSEARCH_PATH/.build/release/swiftsearchApp
+SWIFTFINDEXE=$SWIFTFIND_PATH/.build/release/swiftfindApp
 
-$SWIFTSEARCHEXE $@
+$SWIFTFINDEXE $@

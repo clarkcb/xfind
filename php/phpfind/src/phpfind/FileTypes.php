@@ -1,6 +1,6 @@
 <?php declare(strict_types=1);
 
-namespace phpsearch;
+namespace phpfind;
 
 //require_once __DIR__ . '/../autoload.php';
 
@@ -32,7 +32,7 @@ class FileTypes
                 $file_type_map['code'],
                 $file_type_map['xml']
             );
-            $file_type_map['searchable'] = array_merge(
+            $file_type_map['findable'] = array_merge(
                 $file_type_map['text'],
                 $file_type_map['archive'],
                 $file_type_map['binary']
@@ -109,13 +109,13 @@ class FileTypes
         return in_array(FileUtil::get_extension($f), $this->file_type_map['xml']);
     }
 
-    public function is_searchable(string $f): bool
+    public function is_findable(string $f): bool
     {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['searchable']);
+        return in_array(FileUtil::get_extension($f), $this->file_type_map['findable']);
     }
 
     public function is_unknown(string $f): bool
     {
-        return !$this->is_searchable($f);
+        return !$this->is_findable($f);
     }
 }

@@ -1,30 +1,30 @@
 import 'dart:io' show File;
 
-import 'package:dartsearch/dartsearch.dart' show FileType, SearchFile;
+import 'package:dartfind/dartfind.dart' show FileType, FindFile;
 import 'package:test/test.dart';
 
 void main() {
-  test('test SearchFile with absolute path', () {
-    var path = '/Users/cary/src/xsearch/dart/dartsearch/lib/src/search_file.dart';
-    var searchFile = SearchFile(File(path), FileType.code);
-    expect(searchFile.toString(), path);
+  test('test FindFile with absolute path', () {
+    var path = '/Users/cary/src/xfind/dart/dartfind/lib/src/find_file.dart';
+    var findFile = FindFile(File(path), FileType.code);
+    expect(findFile.toString(), path);
   });
 
-  test('test SearchFile with tilde path', () {
-    var path = '~/src/xsearch/dart/dartsearch/lib/src/search_file.dart';
-    var searchFile = SearchFile(File(path), FileType.code);
-    expect(searchFile.toString(), path);
+  test('test FindFile with tilde path', () {
+    var path = '~/src/xfind/dart/dartfind/lib/src/find_file.dart';
+    var findFile = FindFile(File(path), FileType.code);
+    expect(findFile.toString(), path);
   });
 
-  test('test SearchFile with rel path #1', () {
-    var path = './search_file.dart';
-    var searchFile = SearchFile(File(path), FileType.code);
-    expect(searchFile.toString(), path);
+  test('test FindFile with rel path #1', () {
+    var path = './find_file.dart';
+    var findFile = FindFile(File(path), FileType.code);
+    expect(findFile.toString(), path);
   });
 
-  test('test SearchFile with rel path #2', () {
-    var path = './search_file.dart';
-    var searchFile = SearchFile(File(path), FileType.code);
-    expect(searchFile.toString(), path);
+  test('test FindFile with rel path #2', () {
+    var path = './find_file.dart';
+    var findFile = FindFile(File(path), FileType.code);
+    expect(findFile.toString(), path);
   });
 }

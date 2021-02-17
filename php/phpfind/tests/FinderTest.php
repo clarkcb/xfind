@@ -3,18 +3,18 @@ use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
 
-use phpsearch\Config;
-use phpsearch\FileUtil;
-use phpsearch\Searcher;
-use phpsearch\SearchSettings;
+use phpfind\Config;
+use phpfind\FileUtil;
+use phpfind\Finder;
+use phpfind\FindSettings;
 
-class SearcherTest extends TestCase
+class FinderTest extends TestCase
 {
     private function get_settings()
     {
-        $settings = new SearchSettings();
+        $settings = new FindSettings();
         $settings->startpath = '.';
-        array_push($settings->searchpatterns, "Searcher");
+        array_push($settings->findpatterns, "Finder");
         return $settings;
     }
 
@@ -24,249 +24,249 @@ class SearcherTest extends TestCase
     }
 
     ################################################################################
-    # is_search_dir tests
+    # is_find_dir tests
     ################################################################################
-    public function test_is_search_dir_no_patterns()
+    public function test_is_find_dir_no_patterns()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
-        $dir = 'plsearch';
-        $this->assertTrue($searcher->is_search_dir($dir));
+        $finder = new Finder($settings);
+        $dir = 'plfind';
+        $this->assertTrue($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_matches_in_pattern()
+    public function test_is_find_dir_matches_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_dirpatterns, 'plsearch');
-        $searcher = new Searcher($settings);
-        $dir = 'plsearch';
-        $this->assertTrue($searcher->is_search_dir($dir));
+        array_push($settings->in_dirpatterns, 'plfind');
+        $finder = new Finder($settings);
+        $dir = 'plfind';
+        $this->assertTrue($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_no_match_in_pattern()
+    public function test_is_find_dir_no_match_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_dirpatterns, 'plsearch');
-        $searcher = new Searcher($settings);
-        $dir = 'pysearch';
-        $this->assertFalse($searcher->is_search_dir($dir));
+        array_push($settings->in_dirpatterns, 'plfind');
+        $finder = new Finder($settings);
+        $dir = 'pyfind';
+        $this->assertFalse($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_matches_out_pattern()
+    public function test_is_find_dir_matches_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_dirpatterns, 'pysearch');
-        $searcher = new Searcher($settings);
-        $dir = 'pysearch';
-        $this->assertFalse($searcher->is_search_dir($dir));
+        array_push($settings->out_dirpatterns, 'pyfind');
+        $finder = new Finder($settings);
+        $dir = 'pyfind';
+        $this->assertFalse($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_no_match_out_pattern()
+    public function test_is_find_dir_no_match_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_dirpatterns, 'pysearch');
-        $searcher = new Searcher($settings);
-        $dir = 'plsearch';
-        $this->assertTrue($searcher->is_search_dir($dir));
+        array_push($settings->out_dirpatterns, 'pyfind');
+        $finder = new Finder($settings);
+        $dir = 'plfind';
+        $this->assertTrue($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_single_dot()
+    public function test_is_find_dir_single_dot()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $dir = '.';
-        $this->assertTrue($searcher->is_search_dir($dir));
+        $this->assertTrue($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_double_dot()
+    public function test_is_find_dir_double_dot()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $dir = '..';
-        $this->assertTrue($searcher->is_search_dir($dir));
+        $this->assertTrue($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_hidden_dir()
+    public function test_is_find_dir_hidden_dir()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $dir = '.git';
-        $this->assertFalse($searcher->is_search_dir($dir));
+        $this->assertFalse($finder->is_find_dir($dir));
     }
 
-    public function test_is_search_dir_hidden_dir_include_hidden()
+    public function test_is_find_dir_hidden_dir_include_hidden()
     {
         $settings = $this->get_settings();
         $settings->excludehidden = 0;
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $dir = '.git';
-        $this->assertTrue($searcher->is_search_dir($dir));
+        $this->assertTrue($finder->is_find_dir($dir));
     }
 
     ################################################################################
-    # is_search_file tests
+    # is_find_file tests
     ################################################################################
-    public function test_is_search_file_matches_by_default()
+    public function test_is_find_file_matches_by_default()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($searcher->is_search_file($file));
+        $this->assertTrue($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_matches_in_extension()
+    public function test_is_find_file_matches_in_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->in_extensions, 'pm');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($searcher->is_search_file($file));
+        $this->assertTrue($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_no_match_in_extension()
+    public function test_is_find_file_no_match_in_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->in_extensions, 'pl');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($searcher->is_search_file($file));
+        $this->assertFalse($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_matches_out_extension()
+    public function test_is_find_file_matches_out_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->out_extensions, 'pm');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($searcher->is_search_file($file));
+        $this->assertFalse($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_no_match_out_extension()
+    public function test_is_find_file_no_match_out_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->out_extensions, 'py');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($searcher->is_search_file($file));
+        $this->assertTrue($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_matches_in_pattern()
+    public function test_is_find_file_matches_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_filepatterns, 'Search');
-        $searcher = new Searcher($settings);
-        $file = 'Searcher.pm';
-        $this->assertTrue($searcher->is_search_file($file));
+        array_push($settings->in_filepatterns, 'Find');
+        $finder = new Finder($settings);
+        $file = 'Finder.pm';
+        $this->assertTrue($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_no_match_in_pattern()
+    public function test_is_find_file_no_match_in_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->in_filepatterns, 'Search');
-        $searcher = new Searcher($settings);
+        array_push($settings->in_filepatterns, 'Find');
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($searcher->is_search_file($file));
+        $this->assertFalse($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_matches_out_pattern()
+    public function test_is_find_file_matches_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_filepatterns, 'Search');
-        $searcher = new Searcher($settings);
-        $file = 'Searcher.pm';
-        $this->assertFalse($searcher->is_search_file($file));
+        array_push($settings->out_filepatterns, 'Find');
+        $finder = new Finder($settings);
+        $file = 'Finder.pm';
+        $this->assertFalse($finder->is_find_file($file));
     }
 
-    public function test_is_search_file_no_match_out_pattern()
+    public function test_is_find_file_no_match_out_pattern()
     {
         $settings = $this->get_settings();
-        array_push($settings->out_filepatterns, 'Search');
-        $searcher = new Searcher($settings);
+        array_push($settings->out_filepatterns, 'Find');
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($searcher->is_search_file($file));
+        $this->assertTrue($finder->is_find_file($file));
     }
 
     ################################################################################
-    # is__archive_search_file tests
+    # is__archive_find_file tests
     ################################################################################
-    public function test_is_archive_search_file_matches_by_default()
+    public function test_is_archive_find_file_matches_by_default()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($searcher->is_archive_search_file($file));
+        $this->assertTrue($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_matches_in_extension()
+    public function test_is_archive_find_file_matches_in_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->in_archiveextensions, 'zip');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($searcher->is_archive_search_file($file));
+        $this->assertTrue($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_no_match_in_extension()
+    public function test_is_archive_find_file_no_match_in_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->in_archiveextensions, 'gz');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($searcher->is_archive_search_file($file));
+        $this->assertFalse($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_matches_out_extension()
+    public function test_is_archive_find_file_matches_out_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->out_archiveextensions, 'zip');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($searcher->is_archive_search_file($file));
+        $this->assertFalse($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_no_match_out_extension()
+    public function test_is_archive_find_file_no_match_out_extension()
     {
         $settings = $this->get_settings();
         array_push($settings->out_archiveextensions, 'gz');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($searcher->is_archive_search_file($file));
+        $this->assertTrue($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_matches_in_pattern()
+    public function test_is_archive_find_file_matches_in_pattern()
     {
         $settings = $this->get_settings();
         array_push($settings->in_archivefilepatterns, 'arch');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($searcher->is_archive_search_file($file));
+        $this->assertTrue($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_no_match_in_pattern()
+    public function test_is_archive_find_file_no_match_in_pattern()
     {
         $settings = $this->get_settings();
         array_push($settings->in_archivefilepatterns, 'archives');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($searcher->is_archive_search_file($file));
+        $this->assertFalse($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_matches_out_pattern()
+    public function test_is_archive_find_file_matches_out_pattern()
     {
         $settings = $this->get_settings();
         array_push($settings->out_archivefilepatterns, 'arch');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($searcher->is_archive_search_file($file));
+        $this->assertFalse($finder->is_archive_find_file($file));
     }
 
-    public function test_is_archive_search_file_no_match_out_pattern()
+    public function test_is_archive_find_file_no_match_out_pattern()
     {
         $settings = $this->get_settings();
         array_push($settings->out_archivefilepatterns, 'archives');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($searcher->is_archive_search_file($file));
+        $this->assertTrue($finder->is_archive_find_file($file));
     }
 
     ################################################################################
@@ -275,95 +275,95 @@ class SearcherTest extends TestCase
     public function test_filter_file_matches_by_default()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($searcher->filter_file($file));
+        $this->assertTrue($finder->filter_file($file));
     }
 
-    public function test_filter_file_is_search_file()
+    public function test_filter_file_is_find_file()
     {
         $settings = $this->get_settings();
         array_push($settings->in_extensions, 'pm');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($searcher->filter_file($file));
+        $this->assertTrue($finder->filter_file($file));
     }
 
-    public function test_filter_file_not_is_search_file()
+    public function test_filter_file_not_is_find_file()
     {
         $settings = $this->get_settings();
         array_push($settings->in_extensions, 'pl');
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($searcher->filter_file($file));
+        $this->assertFalse($finder->filter_file($file));
     }
 
     public function test_filter_file_is_hidden_file()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = '.gitignore';
-        $this->assertFalse($searcher->filter_file($file));
+        $this->assertFalse($finder->filter_file($file));
     }
 
     public function test_filter_file_hidden_includehidden()
     {
         $settings = $this->get_settings();
         $settings->excludehidden = 0;
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = '.gitignore';
-        $this->assertTrue($searcher->filter_file($file));
+        $this->assertTrue($finder->filter_file($file));
     }
 
-    public function test_filter_file_archive_no_searcharchives()
+    public function test_filter_file_archive_no_findarchives()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
-        $this->assertFalse($searcher->filter_file($file));
+        #print "finder->is_archive_find_file(archive.zip): " . $finder->is_archive_find_file('archive.zip') . "\n";
+        $this->assertFalse($finder->filter_file($file));
     }
 
-    public function test_filter_file_archive_searcharchives()
+    public function test_filter_file_archive_findarchives()
     {
         $settings = $this->get_settings();
-        $settings->searcharchives = 1;
-        $searcher = new Searcher($settings);
+        $settings->findarchives = 1;
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        #print "searcher->is_archive_search_file(archive.zip): " . $searcher->is_archive_search_file('archive.zip') . "\n";
-        $this->assertTrue($searcher->filter_file($file));
+        #print "finder->is_archive_find_file(archive.zip): " . $finder->is_archive_find_file('archive.zip') . "\n";
+        $this->assertTrue($finder->filter_file($file));
     }
 
     public function test_filter_file_archive_archivesonly()
     {
         $settings = $this->get_settings();
         $settings->archivesonly = 1;
-        $settings->searcharchives = 1;
-        $searcher = new Searcher($settings);
+        $settings->findarchives = 1;
+        $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($searcher->filter_file($file));
+        $this->assertTrue($finder->filter_file($file));
     }
 
     public function test_filter_file_nonarchive_archivesonly()
     {
         $settings = $this->get_settings();
         $settings->archivesonly = 1;
-        $settings->searcharchives = 1;
-        $searcher = new Searcher($settings);
+        $settings->findarchives = 1;
+        $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($searcher->filter_file($file));
+        $this->assertFalse($finder->filter_file($file));
     }
 
     ################################################################################
-    # search_lines tests
+    # find_lines tests
     ################################################################################
-    public function test_search_lines()
+    public function test_find_lines()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $testfile = $this->get_test_file();
         $contents = file_get_contents($testfile);
-        $results = $searcher->search_multiline_string($contents);
+        $results = $finder->find_multiline_string($contents);
         $this->assertCount(2, $results);
 
         $firstResult = $results[0];
@@ -378,15 +378,15 @@ class SearcherTest extends TestCase
     }
 
     ################################################################################
-    # search_multiline_string tests
+    # find_multiline_string tests
     ################################################################################
-    public function test_search_multiline_string()
+    public function test_find_multiline_string()
     {
         $settings = $this->get_settings();
-        $searcher = new Searcher($settings);
+        $finder = new Finder($settings);
         $testfile = $this->get_test_file();
         $lines = file($testfile);
-        $results = $searcher->search_lines($lines);
+        $results = $finder->find_lines($lines);
         $this->assertCount(2, $results);
 
         $firstResult = $results[0];

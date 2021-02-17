@@ -1,12 +1,12 @@
 /*
- * searcherror.ts
+ * finderror.ts
  *
- * custom error class for tssearch
+ * custom error class for tsfind
  */
 
-export class SearchError extends Error {
+export class FindError extends Error {
     constructor(message: string) {
         super(message);
-        this.name = "SearchError";
+        this.name = "FindError";
     }
 }

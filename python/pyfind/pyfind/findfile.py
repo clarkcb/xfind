@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# searchfile.py
+# findfile.py
 #
-# class SearchFile: encapsulates a file to search
+# class FindFile: encapsulates a file to find
 #
 ###############################################################################
 import os
@@ -13,8 +13,8 @@ from typing import List
 from .filetypes import FileType
 
 
-class SearchFile(object):
-    """encapsulates a search file"""
+class FindFile(object):
+    """encapsulates a find file"""
     CONTAINER_SEPARATOR = '!'
 
     __slots__ = ['containers', 'path', 'filename', 'filetype']

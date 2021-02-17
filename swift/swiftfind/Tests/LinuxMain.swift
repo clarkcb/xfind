@@ -1,7 +1,7 @@
 import XCTest
 
-import swiftsearchTests
+import swiftfindTests
 
 var tests = [XCTestCaseEntry]()
-tests += swiftsearchTests.allTests()
+tests += swiftfindTests.allTests()
 XCTMain(tests)

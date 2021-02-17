@@ -1,4 +1,4 @@
-package gosearch
+package gofind
 
 import (
 	"fmt"
@@ -16,7 +16,7 @@ func TestExpandPath(t *testing.T) {
 			t.Errorf("expandPath(\"%s\")=\"%s\", expected=\"%s\"", k, path, v)
 		}
 	}
-	expandable := "~/src/git/xsearch"
+	expandable := "~/src/git/xfind"
 	expanded := expandPath(expandable)
 	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/")
 	if !valid {

@@ -1,11 +1,11 @@
-namespace FsSearchTests
+namespace FsFindTests
 
 open System.IO
 open NUnit.Framework
-open FsSearch
+open FsFind
 
 [<TestFixture>]
-type SearcherTests () =
+type FinderTests () =
 
     member this.FileTypes = FileTypes()
 
@@ -15,277 +15,277 @@ type SearcherTests () =
 
     member this.GetTestFileContent () : string =
         try
-            EmbeddedTestResource.GetResourceFileContents "FsSearchTests.Resources.testFile2.txt"
+            EmbeddedTestResource.GetResourceFileContents "FsFindTests.Resources.testFile2.txt"
         with
         | :? IOException as e -> raise e
-        | :? SearchException as e -> raise e
+        | :? FindException as e -> raise e
 
-    member this.GetSettings () : SearchSettings.t =
-        let settings = { SearchSettings.DefaultSettings with StartPath = "." }
-        let settings = { settings with SearchPatterns = SearchSettings.AddPattern "Searcher" settings.SearchPatterns }
+    member this.GetSettings () : FindSettings.t =
+        let settings = { FindSettings.DefaultSettings with StartPath = "." }
+        let settings = { settings with FindPatterns = FindSettings.AddPattern "Finder" settings.FindPatterns }
         settings
     
 
     
     //////////////////////////////////////////////////////////////
-    // IsSearchDirectory tests
+    // IsFindDirectory tests
     //////////////////////////////////////////////////////////////
     [<Test>]
-    member this.TestIsSearchDirectory_SingleDot_True () =
+    member this.TestIsFindDirectory_SingleDot_True () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
-        Assert.True(searcher.IsSearchDir(DirectoryInfo(".")))
+        let finder = Finder(settings)
+        Assert.True(finder.IsFindDir(DirectoryInfo(".")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_DoubleDot_True () =
+    member this.TestIsFindDirectory_DoubleDot_True () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
-        Assert.True(searcher.IsSearchDir(DirectoryInfo("..")))
+        let finder = Finder(settings)
+        Assert.True(finder.IsFindDir(DirectoryInfo("..")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_IsHidden_False () =
+    member this.TestIsFindDirectory_IsHidden_False () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
-        Assert.False(searcher.IsSearchDir(DirectoryInfo(".git")))
+        let finder = Finder(settings)
+        Assert.False(finder.IsFindDir(DirectoryInfo(".git")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_IsHiddenIncludeHidden_True () =
+    member this.TestIsFindDirectory_IsHiddenIncludeHidden_True () =
         let settings = { this.GetSettings() with ExcludeHidden = false }
-        let searcher = Searcher(settings)
-        Assert.True(searcher.IsSearchDir(DirectoryInfo(".git")))
+        let finder = Finder(settings)
+        Assert.True(finder.IsFindDir(DirectoryInfo(".git")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_NoPatterns_True () =
+    member this.TestIsFindDirectory_NoPatterns_True () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
-        Assert.True(searcher.IsSearchDir(DirectoryInfo("/Users")))
+        let finder = Finder(settings)
+        Assert.True(finder.IsFindDir(DirectoryInfo("/Users")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_MatchesInPattern_True () =
+    member this.TestIsFindDirectory_MatchesInPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InDirPatterns = SearchSettings.AddPattern "Search" settings.InDirPatterns }
-        let searcher = Searcher(settings)
-        Assert.True(searcher.IsSearchDir(DirectoryInfo("CsSearch")))
+        let settings = { settings with InDirPatterns = FindSettings.AddPattern "Find" settings.InDirPatterns }
+        let finder = Finder(settings)
+        Assert.True(finder.IsFindDir(DirectoryInfo("CsFind")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_MatchesOutPattern_False () =
+    member this.TestIsFindDirectory_MatchesOutPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutDirPatterns = SearchSettings.AddPattern "Search" settings.OutDirPatterns }
-        let searcher = Searcher(settings)
-        Assert.False(searcher.IsSearchDir(DirectoryInfo("CsSearch")))
+        let settings = { settings with OutDirPatterns = FindSettings.AddPattern "Find" settings.OutDirPatterns }
+        let finder = Finder(settings)
+        Assert.False(finder.IsFindDir(DirectoryInfo("CsFind")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_DoesNotMatchInPattern_False () =
+    member this.TestIsFindDirectory_DoesNotMatchInPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InDirPatterns = SearchSettings.AddPattern "SearchFiles" settings.InDirPatterns }
-        let searcher = Searcher(settings)
-        Assert.False(searcher.IsSearchDir(DirectoryInfo("CsSearch")))
+        let settings = { settings with InDirPatterns = FindSettings.AddPattern "FindFiles" settings.InDirPatterns }
+        let finder = Finder(settings)
+        Assert.False(finder.IsFindDir(DirectoryInfo("CsFind")))
         ()
 
     [<Test>]
-    member this.TestIsSearchDirectory_DoesNotMatchOutPattern_True () =
+    member this.TestIsFindDirectory_DoesNotMatchOutPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutDirPatterns = SearchSettings.AddPattern "SearchFiles" settings.OutDirPatterns }
-        let searcher = Searcher(settings)
-        let dir = DirectoryInfo("CsSearch")
-        Assert.True(searcher.IsSearchDir(dir))
-        ()
-
-
-    //////////////////////////////////////////////////////////////
-    // IsSearchFile tests
-    //////////////////////////////////////////////////////////////
-
-    [<Test>]
-    member this.TestIsSearchFile_NoExtensionsNoPatterns_True () =
-        let settings = this.GetSettings()
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_MatchesInExtension_True () =
-        let settings = this.GetSettings()
-        let settings = { settings with InExtensions = SearchSettings.AddExtensions "cs" settings.InExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_DoesNotMatchInExtension_False () =
-        let settings = this.GetSettings()
-        let settings = { settings with InExtensions = SearchSettings.AddExtensions "java" settings.InExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsSearchFile(sf))
-        ()
-
-
-    [<Test>]
-    member this.TestIsSearchFile_MatchesOutExtension_False () =
-        let settings = this.GetSettings()
-        let settings = { settings with OutExtensions = SearchSettings.AddExtensions "cs" settings.OutExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_DoesNotMatchOutExtension_True () =
-        let settings = this.GetSettings()
-        let settings = { settings with OutExtensions = SearchSettings.AddExtensions "java" settings.OutExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_MatchesInPattern_True () =
-        let settings = this.GetSettings()
-        let settings = { settings with InFilePatterns = SearchSettings.AddPattern "Search" settings.InFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("Searcher.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_DoesNotMatchInPattern_False () =
-        let settings = this.GetSettings()
-        let settings = { settings with InFilePatterns = SearchSettings.AddPattern "Search" settings.InFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_MatchesOutPattern_False () =
-        let settings = this.GetSettings()
-        let settings = { settings with OutFilePatterns = SearchSettings.AddPattern "Search" settings.OutFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("Searcher.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsSearchFile(sf))
-        ()
-
-    [<Test>]
-    member this.TestIsSearchFile_DoesNotMatchOutPattern_True () =
-        let settings = this.GetSettings()
-        let settings = { settings with OutFilePatterns = SearchSettings.AddPattern "Search" settings.OutFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsSearchFile(sf))
+        let settings = { settings with OutDirPatterns = FindSettings.AddPattern "FindFiles" settings.OutDirPatterns }
+        let finder = Finder(settings)
+        let dir = DirectoryInfo("CsFind")
+        Assert.True(finder.IsFindDir(dir))
         ()
 
 
     //////////////////////////////////////////////////////////////
-    // IsArchiveSearchFile tests
+    // IsFindFile tests
     //////////////////////////////////////////////////////////////
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_NoExtensionsNoPatterns_True () =
+    member this.TestIsFindFile_NoExtensionsNoPatterns_True () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsArchiveSearchFile(sf))
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_MatchesInExtension_True () =
+    member this.TestIsFindFile_MatchesInExtension_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveExtensions = SearchSettings.AddExtensions "zip" settings.InArchiveExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with InExtensions = FindSettings.AddExtensions "cs" settings.InExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_DoesNotMatchInExtension_False () =
+    member this.TestIsFindFile_DoesNotMatchInExtension_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveExtensions = SearchSettings.AddExtensions "gz" settings.InArchiveExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with InExtensions = FindSettings.AddExtensions "java" settings.InExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsFindFile(sf))
         ()
 
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_MatchesOutExtension_False () =
+    member this.TestIsFindFile_MatchesOutExtension_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveExtensions = SearchSettings.AddExtensions "zip" settings.OutArchiveExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with OutExtensions = FindSettings.AddExtensions "cs" settings.OutExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_DoesNotMatchOutExtension_True () =
+    member this.TestIsFindFile_DoesNotMatchOutExtension_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveExtensions = SearchSettings.AddExtensions "gz" settings.OutArchiveExtensions }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with OutExtensions = FindSettings.AddExtensions "java" settings.OutExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_MatchesInPattern_True () =
+    member this.TestIsFindFile_MatchesInPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveFilePatterns = SearchSettings.AddPattern "arch" settings.InArchiveFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with InFilePatterns = FindSettings.AddPattern "Find" settings.InFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("Finder.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_DoesNotMatchInPattern_False () =
+    member this.TestIsFindFile_DoesNotMatchInPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveFilePatterns = SearchSettings.AddPattern "archives" settings.InArchiveFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with InFilePatterns = FindSettings.AddPattern "Find" settings.InFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_MatchesOutPattern_False () =
+    member this.TestIsFindFile_MatchesOutPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveFilePatterns = SearchSettings.AddPattern "arch" settings.OutArchiveFilePatterns }
-        let searcher = Searcher(settings)
-        let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.IsArchiveSearchFile(sf))
+        let settings = { settings with OutFilePatterns = FindSettings.AddPattern "Find" settings.OutFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("Finder.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsFindFile(sf))
         ()
 
     [<Test>]
-    member this.TestIsArchiveSearchFile_DoesNotMatchOutPattern_True () =
+    member this.TestIsFindFile_DoesNotMatchOutPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveFilePatterns = SearchSettings.AddPattern "archives" settings.OutArchiveFilePatterns }
-        let searcher = Searcher(settings)
+        let settings = { settings with OutFilePatterns = FindSettings.AddPattern "Find" settings.OutFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("FileUtil.cs")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsFindFile(sf))
+        ()
+
+
+    //////////////////////////////////////////////////////////////
+    // IsArchiveFindFile tests
+    //////////////////////////////////////////////////////////////
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_NoExtensionsNoPatterns_True () =
+        let settings = this.GetSettings()
+        let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.IsArchiveSearchFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_MatchesInExtension_True () =
+        let settings = this.GetSettings()
+        let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "zip" settings.InArchiveExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_DoesNotMatchInExtension_False () =
+        let settings = this.GetSettings()
+        let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "gz" settings.InArchiveExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsArchiveFindFile(sf))
+        ()
+
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_MatchesOutExtension_False () =
+        let settings = this.GetSettings()
+        let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "zip" settings.OutArchiveExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_DoesNotMatchOutExtension_True () =
+        let settings = this.GetSettings()
+        let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "gz" settings.OutArchiveExtensions }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_MatchesInPattern_True () =
+        let settings = this.GetSettings()
+        let settings = { settings with InArchiveFilePatterns = FindSettings.AddPattern "arch" settings.InArchiveFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_DoesNotMatchInPattern_False () =
+        let settings = this.GetSettings()
+        let settings = { settings with InArchiveFilePatterns = FindSettings.AddPattern "archives" settings.InArchiveFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_MatchesOutPattern_False () =
+        let settings = this.GetSettings()
+        let settings = { settings with OutArchiveFilePatterns = FindSettings.AddPattern "arch" settings.OutArchiveFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.IsArchiveFindFile(sf))
+        ()
+
+    [<Test>]
+    member this.TestIsArchiveFindFile_DoesNotMatchOutPattern_True () =
+        let settings = this.GetSettings()
+        let settings = { settings with OutArchiveFilePatterns = FindSettings.AddPattern "archives" settings.OutArchiveFilePatterns }
+        let finder = Finder(settings)
+        let file = FileInfo("archive.zip")
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.IsArchiveFindFile(sf))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -295,117 +295,117 @@ type SearcherTests () =
     [<Test>]
     member this.TestFilterFile_IsHidden_False () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let file = FileInfo(".gitignore")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.FilterFile(sf))
         ()
 
     [<Test>]
     member this.TestFilterFile_IsHiddenIncludeHidden_True () =
         let settings = { this.GetSettings() with ExcludeHidden = false }
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let file = FileInfo(".gitignore")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.FilterFile(sf))
         ()
 
     [<Test>]
-    member this.TestFilterFile_ArchiveNoSearchArchives_False () =
+    member this.TestFilterFile_ArchiveNoFindArchives_False () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.FilterFile(sf))
         ()
 
     [<Test>]
-    member this.TestFilterFile_ArchiveSearchArchives_True () =
-        let settings = { this.GetSettings() with SearchArchives = true }
-        let searcher = Searcher(settings)
+    member this.TestFilterFile_ArchiveFindArchives_True () =
+        let settings = { this.GetSettings() with FindArchives = true }
+        let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.FilterFile(sf))
         ()
 
     [<Test>]
-    member this.TestFilterFile_IsArchiveSearchFile_True () =
-        let settings = { this.GetSettings() with SearchArchives = true }
-        let settings = { settings with InArchiveExtensions = SearchSettings.AddExtensions "zip" settings.InArchiveExtensions }
-        let searcher = Searcher(settings)
+    member this.TestFilterFile_IsArchiveFindFile_True () =
+        let settings = { this.GetSettings() with FindArchives = true }
+        let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "zip" settings.InArchiveExtensions }
+        let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.FilterFile(sf))
         ()
 
     [<Test>]
-    member this.TestFilterFile_NotIsArchiveSearchFile_False () =
-        let settings = { this.GetSettings() with SearchArchives = true }
-        let settings = { settings with OutArchiveExtensions = SearchSettings.AddExtensions "zip" settings.OutArchiveExtensions }
-        let searcher = Searcher(settings)
+    member this.TestFilterFile_NotIsArchiveFindFile_False () =
+        let settings = { this.GetSettings() with FindArchives = true }
+        let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "zip" settings.OutArchiveExtensions }
+        let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.FilterFile(sf))
         ()
 
     [<Test>]
     member this.TestFilterFile_ArchiveFileArchivesOnly_True () =
         let settings = { this.GetSettings() with ArchivesOnly = true }
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.FilterFile(sf))
         ()
 
 
     [<Test>]
     member this.TestFilterFile_NoExtensionsNoPatterns_True () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.FilterFile(sf))
         ()
 
     [<Test>]
-    member this.TestFilterFile_IsSearchFile_True () =
+    member this.TestFilterFile_IsFindFile_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InExtensions = SearchSettings.AddExtensions "cs" settings.InExtensions }
-        let searcher = Searcher(settings)
+        let settings = { settings with InExtensions = FindSettings.AddExtensions "cs" settings.InExtensions }
+        let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.True(finder.FilterFile(sf))
         ()
 
     [<Test>]
-    member this.TestFilterFile_NotIsSearchFile_False () =
+    member this.TestFilterFile_NotIsFindFile_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutExtensions = SearchSettings.AddExtensions "cs" settings.OutExtensions }
-        let searcher = Searcher(settings)
+        let settings = { settings with OutExtensions = FindSettings.AddExtensions "cs" settings.OutExtensions }
+        let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.FilterFile(sf))
         ()
 
     [<Test>]
     member this.TestFilterFile_NonArchiveFileArchivesOnly_False () =
         let settings = { this.GetSettings() with ArchivesOnly = true }
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = SearchFile.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(searcher.FilterFile(sf))
+        let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
+        Assert.False(finder.FilterFile(sf))
         ()
 
 
     //////////////////////////////////////////////////////////////
-    // SearchTextReaderLines test
+    // FindTextReaderLines test
     //////////////////////////////////////////////////////////////
     [<Test>]
-    member this.TestSearchTextReaderLines () =
+    member this.TestFindTextReaderLines () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let enumerableLines = this.GetTestFileContent().Split([|'\n'; '\r'|]) |> Array.toList
-        let results = searcher.SearchLines(enumerableLines)
+        let results = finder.FindLines(enumerableLines)
 
         Assert.AreEqual(results.Length, 2)
 
@@ -429,14 +429,14 @@ type SearcherTests () =
         ()
 
     //////////////////////////////////////////////////////////////
-    // SearchMultiLineString test
+    // FindMultiLineString test
     //////////////////////////////////////////////////////////////
     [<Test>]
-    member this.TestSearchMultiLineString () =
+    member this.TestFindMultiLineString () =
         let settings = this.GetSettings()
-        let searcher = Searcher(settings)
+        let finder = Finder(settings)
         let contents = this.GetTestFileContent()
-        let results = searcher.SearchContents(contents)
+        let results = finder.FindContents(contents)
 
         Assert.AreEqual(results.Count, 2)
 

@@ -1,4 +1,4 @@
-package gosearch
+package gofind
 
 import (
 	"bytes"
@@ -8,19 +8,19 @@ import (
 	"strings"
 )
 
-type SearchItemsIterator struct {
+type FindItemsIterator struct {
 	idx   int
-	items *SearchItems
+	items *FindItems
 }
 
-func NewSearchItemsIterator(sf *SearchItems) *SearchItemsIterator {
-	return &SearchItemsIterator{
+func NewFindItemsIterator(sf *FindItems) *FindItemsIterator {
+	return &FindItemsIterator{
 		-1,
 		sf,
 	}
 }
 
-func (i *SearchItemsIterator) Next() bool {
+func (i *FindItemsIterator) Next() bool {
 	i.idx++
 	if i.idx >= len(i.items.items) {
 		return false
@@ -28,24 +28,24 @@ func (i *SearchItemsIterator) Next() bool {
 	return true
 }
 
-func (i *SearchItemsIterator) Value() *SearchItem {
+func (i *FindItemsIterator) Value() *FindItem {
 	return i.items.items[i.idx]
 }
 
-type SearchItems struct {
-	items     []*SearchItem
+type FindItems struct {
+	items     []*FindItem
 	strPtrMap map[string]*string
 }
 
-func NewSearchItems() *SearchItems {
-	return &SearchItems{
-		[]*SearchItem{},
+func NewFindItems() *FindItems {
+	return &FindItems{
+		[]*FindItem{},
 		make(map[string]*string),
 	}
 }
 
 // limits string pointers to one per distinct string (memory management)
-func (si *SearchItems) getStrPtr(s *string) *string {
+func (si *FindItems) getStrPtr(s *string) *string {
 	strPtr := s
 	if sp, ok := si.strPtrMap[*s]; ok {
 		strPtr = sp
@@ -55,8 +55,8 @@ func (si *SearchItems) getStrPtr(s *string) *string {
 	return strPtr
 }
 
-func (si *SearchItems) AddItem(i *SearchItem) {
-	si.items = append(si.items, &SearchItem{
+func (si *FindItems) AddItem(i *FindItem) {
+	si.items = append(si.items, &FindItem{
 		i.Containers,
 		si.getStrPtr(i.Path),
 		si.getStrPtr(i.Name),
@@ -64,27 +64,27 @@ func (si *SearchItems) AddItem(i *SearchItem) {
 	})
 }
 
-func (si *SearchItems) Count() int {
+func (si *FindItems) Count() int {
 	return len(si.items)
 }
 
-func (si *SearchItems) IsEmpty() bool {
+func (si *FindItems) IsEmpty() bool {
 	return len(si.items) == 0
 }
 
-func (si *SearchItems) Iterator() *SearchItemsIterator {
-	return NewSearchItemsIterator(si)
+func (si *FindItems) Iterator() *FindItemsIterator {
+	return NewFindItemsIterator(si)
 }
 
-type SearchItem struct {
+type FindItem struct {
 	Containers []string
 	Path       *string
 	Name       *string
 	fileType   FileType
 }
 
-func NewSearchItem(path *string, name *string, fileType FileType) *SearchItem {
-	return &SearchItem{
+func NewFindItem(path *string, name *string, fileType FileType) *FindItem {
+	return &FindItem{
 		[]string{},
 		path,
 		name,
@@ -92,13 +92,13 @@ func NewSearchItem(path *string, name *string, fileType FileType) *SearchItem {
 	}
 }
 
-func (si *SearchItem) AddContainer(c string) {
+func (si *FindItem) AddContainer(c string) {
 	si.Containers = append(si.Containers, c)
 }
 
 const containerSeparator = "!"
 
-func (si *SearchItem) String() string {
+func (si *FindItem) String() string {
 	var buffer bytes.Buffer
 	if len(si.Containers) > 0 {
 		buffer.WriteString(strings.Join(si.Containers, containerSeparator))

@@ -1,6 +1,6 @@
 //
-//  swiftsearchTests.swift
-//  swiftsearchTests
+//  swiftfindTests.swift
+//  swiftfindTests
 //
 //  Created by Cary Clark on 5/18/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -9,7 +9,7 @@
 import Cocoa
 import XCTest
 
-import swiftsearch
+import swiftfind
 
 class FileTypesTests: XCTestCase {
     let fileTypes = FileTypes()
@@ -65,9 +65,9 @@ class FileTypesTests: XCTestCase {
         XCTAssert(fileTypes.getFileType(fileName) == FileType.text, "\(fileName) is text file")
     }
 
-    func testSearchableFile() {
+    func testFindableFile() {
         let fileName = "archive.zip"
-        XCTAssert(fileTypes.isSearchableFile(fileName), "isSearchableFile(\(fileName))")
+        XCTAssert(fileTypes.isFindableFile(fileName), "isFindableFile(\(fileName))")
     }
 
     func testXmlFile() {

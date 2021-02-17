@@ -1,16 +1,16 @@
 /*
- * searchoptions.test.js
+ * findoptions.test.js
  *
- * Some tests of searchoptions.js
+ * Some tests of findoptions.js
  */
 
-import {SearchOptions} from '../src/searchoptions';
-import {SearchSettings} from '../src/searchsettings';
+import {FindOptions} from '../src/findoptions';
+import {FindSettings} from '../src/findsettings';
 
-describe('testing searchoptions', () => {
+describe('testing findoptions', () => {
     it('testNoArgs', () => {
-        const searchOptions: SearchOptions = new SearchOptions();
-        searchOptions.settingsFromArgs([], function (err: Error | void, settings: SearchSettings) {
+        const findOptions: FindOptions = new FindOptions();
+        findOptions.settingsFromArgs([], function (err: Error | void, settings: FindSettings) {
             if (err) {
                 console.log("There was an error calling settingsFromArgs: " + err);
                 expect(false).toEqual(true);
@@ -25,12 +25,12 @@ describe('testing searchoptions', () => {
             expect(settings.listFiles).toBeFalsy();
             expect(settings.listLines).toBeFalsy();
             expect(settings.maxLineLength).toEqual(150);
-            expect(settings.multilineSearch).toBeFalsy();
+            expect(settings.multilineFind).toBeFalsy();
             expect(settings.printResults).toBeTruthy();
             expect(settings.printUsage).toBeFalsy();
             expect(settings.printVersion).toBeFalsy();
             expect(settings.recursive).toBeTruthy();
-            expect(settings.searchArchives).toBeFalsy();
+            expect(settings.findArchives).toBeFalsy();
             expect(settings.startPath).toEqual('');
             expect(settings.uniqueLines).toBeFalsy();
             expect(settings.verbose).toBeFalsy();
@@ -38,9 +38,9 @@ describe('testing searchoptions', () => {
     });
 
     it('testValidArgs', () => {
-        const searchOptions: SearchOptions = new SearchOptions();
-        const args: string[] = ['-x', 'js,java', '-s', 'Searcher', '.'];
-        searchOptions.settingsFromArgs(args, function (err: Error | void, settings: SearchSettings) {
+        const findOptions: FindOptions = new FindOptions();
+        const args: string[] = ['-x', 'js,java', '-s', 'Finder', '.'];
+        findOptions.settingsFromArgs(args, function (err: Error | void, settings: FindSettings) {
             if (err) {
                 console.log("There was an error calling settingsFromArgs: " + err);
                 expect(false).toEqual(true);
@@ -48,15 +48,15 @@ describe('testing searchoptions', () => {
             expect(settings.inExtensions.length).toEqual(2);
             expect(settings.inExtensions[0]).toEqual('js');
             expect(settings.inExtensions[1]).toEqual('java');
-            expect(settings.searchPatterns.length).toEqual(1);
-            expect(settings.searchPatterns[0].source).toEqual('Searcher');
+            expect(settings.findPatterns.length).toEqual(1);
+            expect(settings.findPatterns[0].source).toEqual('Finder');
         });
     });
 
     it('testInvalidArg', () => {
-        const searchOptions: SearchOptions = new SearchOptions();
+        const findOptions: FindOptions = new FindOptions();
         const args: string[] = ['-Q'];
-        searchOptions.settingsFromArgs(args, function(err: Error|void) {
+        findOptions.settingsFromArgs(args, function(err: Error|void) {
             if (err) {
                 const expected = "Invalid option: Q";
                 expect(err.message).toEqual(expected);
@@ -67,30 +67,30 @@ describe('testing searchoptions', () => {
     });
 
     it('testSettingsFromJson', () => {
-        const searchOptions: SearchOptions = new SearchOptions();
-        const settings: SearchSettings = new SearchSettings();
+        const findOptions: FindOptions = new FindOptions();
+        const settings: FindSettings = new FindSettings();
         const json: string = '{\n' +
-            '  "startpath": "~/src/xsearch/",\n' +
+            '  "startpath": "~/src/xfind/",\n' +
             '  "in-ext": ["js","ts"],\n' +
             '  "out-dirpattern": "node_module",\n' +
             '  "out-filepattern": ["temp"],\n' +
-            '  "searchpattern": "Searcher",\n' +
+            '  "findpattern": "Finder",\n' +
             '  "linesbefore": 2,\n' +
             '  "linesafter": 2,\n' +
             '  "debug": true,\n' +
             '  "allmatches": false,\n' +
             '  "includehidden": true\n' +
             '}';
-        const err: Error|void = searchOptions.settingsFromJson(json, settings);
+        const err: Error|void = findOptions.settingsFromJson(json, settings);
         expect(err).toBeUndefined();
-        expect(settings.startPath).toEqual('~/src/xsearch/');
+        expect(settings.startPath).toEqual('~/src/xfind/');
         expect(settings.inExtensions.length).toEqual(2);
         expect(settings.outDirPatterns.length).toEqual(1);
         expect(settings.outDirPatterns[0].source).toEqual('node_module');
         expect(settings.outFilePatterns.length).toEqual(1);
         expect(settings.outFilePatterns[0].source).toEqual('temp');
-        expect(settings.searchPatterns.length).toEqual(1);
-        expect(settings.searchPatterns[0].source).toEqual('Searcher');
+        expect(settings.findPatterns.length).toEqual(1);
+        expect(settings.findPatterns[0].source).toEqual('Finder');
         expect(settings.linesBefore).toEqual(2);
         expect(settings.linesAfter).toEqual(2);
         expect(settings.debug).toBeTruthy();

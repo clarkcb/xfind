@@ -1,10 +1,10 @@
-module HsSearch.FileTypesTest
+module HsFind.FileTypesTest
   (
     getFileTypeTests
   , getFileTypeFromNameTests
   ) where
 
-import HsSearch.FileTypes
+import HsFind.FileTypes
 
 import Test.Framework
 import Test.Framework.Providers.HUnit

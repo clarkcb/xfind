@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# searchexception.py
+# findexception.py
 #
-# class SearchException: custom exception
+# class FindException: custom exception
 #
 ###############################################################################
 
 
-class SearchException(Exception):
+class FindException(Exception):
     def __init__(self, *args):
         Exception.__init__(self, *args)

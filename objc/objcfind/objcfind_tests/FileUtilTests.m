@@ -1,6 +1,6 @@
 //
 //  FileUtilTests.m
-//  objcsearch
+//  objcfind
 //
 //  Created by Cary Clark on 1/25/18.
 //  Copyright © 2018 Cary Clark. All rights reserved.
@@ -61,8 +61,8 @@
 - (void)testRelativePathToPathIsCurrent {
     NSString *toPath = @".";
     NSString *pwd = [[NSFileManager defaultManager] currentDirectoryPath];
-    NSString *fullPath = [FileUtil joinPath:pwd childPath:@"objcsearch"];
-    NSString *expected = @"./objcsearch";
+    NSString *fullPath = [FileUtil joinPath:pwd childPath:@"objcfind"];
+    NSString *expected = @"./objcfind";
     NSString *relativePath = [FileUtil relativePath:fullPath to:toPath];
     XCTAssert([relativePath isEqualToString:expected]);
 }

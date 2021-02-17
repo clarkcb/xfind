@@ -1,6 +1,6 @@
 //
 //  Regex.swift
-//  swiftsearch
+//  swiftfind
 //
 // from http://benscheirman.com/2014/06/regex-in-swift/ with modifications
 //

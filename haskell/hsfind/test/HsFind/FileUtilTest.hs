@@ -1,6 +1,6 @@
-module HsSearch.FileUtilTest (getFileUtilTests) where
+module HsFind.FileUtilTest (getFileUtilTests) where
 
-import HsSearch.FileUtil
+import HsFind.FileUtil
 
 import Test.Framework
 import Test.Framework.Providers.HUnit

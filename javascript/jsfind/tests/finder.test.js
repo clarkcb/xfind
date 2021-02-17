@@ -1,233 +1,233 @@
 /*
- * searcher_test.js
+ * finder_test.js
  *
- * Some tests of searcher.js
+ * Some tests of finder.js
  */
 
 const config = require('../src/config');
 const FileUtil = require('../src/fileutil');
-const Searcher = require('../src/searcher').Searcher;
-const SearchSettings = require('../src/searchsettings').SearchSettings;
+const Finder = require('../src/finder').Finder;
+const FindSettings = require('../src/findsettings').FindSettings;
 
 const testFile = config.SHAREDPATH + "/testFiles/testFile2.txt";
 
 const getSettings = () => {
-    let settings = new SearchSettings();
+    let settings = new FindSettings();
     settings.startPath = '.';
-    settings.addSearchPatterns('Searcher');
+    settings.addFindPatterns('Finder');
     return settings;
 };
 
-describe('testing searcher', () => {
+describe('testing finder', () => {
     /*************************************************************
-     * isSearchDir tests
+     * isFindDir tests
      *************************************************************/
-    it('testisSearchDir_SingleDot_True', () => {
+    it('testisFindDir_SingleDot_True', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir(".")).toBeTruthy();
+        const finder = new Finder(settings);
+        expect(finder.isFindDir(".")).toBeTruthy();
     });
 
-    it('testisSearchDir_DoubleDot_True', () => {
+    it('testisFindDir_DoubleDot_True', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir("..")).toBeTruthy();
+        const finder = new Finder(settings);
+        expect(finder.isFindDir("..")).toBeTruthy();
     });
 
-    it('testisSearchDir_IsHidden_False', () => {
+    it('testisFindDir_IsHidden_False', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir(".git")).toBeFalsy();
+        const finder = new Finder(settings);
+        expect(finder.isFindDir(".git")).toBeFalsy();
     });
 
-    it('testisSearchDir_IsHiddenIncludeHidden_True', () => {
+    it('testisFindDir_IsHiddenIncludeHidden_True', () => {
         const settings = getSettings();
         settings.excludeHidden = false;
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir(".git")).toBeTruthy();
+        const finder = new Finder(settings);
+        expect(finder.isFindDir(".git")).toBeTruthy();
     });
 
-    it('testisSearchDir_NoPatterns_True', () => {
+    it('testisFindDir_NoPatterns_True', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir("/Users")).toBeTruthy();
+        const finder = new Finder(settings);
+        expect(finder.isFindDir("/Users")).toBeTruthy();
     });
 
-    it('testisSearchDir_MatchesInPattern_True', () => {
+    it('testisFindDir_MatchesInPattern_True', () => {
         const settings = getSettings();
-        settings.addInDirPatterns("Search");
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir("CsSearch")).toBeTruthy();
+        settings.addInDirPatterns("Find");
+        const finder = new Finder(settings);
+        expect(finder.isFindDir("CsFind")).toBeTruthy();
     });
 
-    it('testisSearchDir_MatchesOutPattern_False', () => {
+    it('testisFindDir_MatchesOutPattern_False', () => {
         const settings = getSettings();
-        settings.addOutDirPatterns("Search");
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir("CsSearch")).toBeFalsy();
+        settings.addOutDirPatterns("Find");
+        const finder = new Finder(settings);
+        expect(finder.isFindDir("CsFind")).toBeFalsy();
     });
 
-    it('testisSearchDir_DoesNotMatchInPattern_False', () => {
+    it('testisFindDir_DoesNotMatchInPattern_False', () => {
         const settings = getSettings();
-        settings.addInDirPatterns("SearchFiles");
-        const searcher = new Searcher(settings);
-        expect(searcher.isSearchDir("CsSearch")).toBeFalsy();
+        settings.addInDirPatterns("FindFiles");
+        const finder = new Finder(settings);
+        expect(finder.isFindDir("CsFind")).toBeFalsy();
     });
 
-    it('testisSearchDir_DoesNotMatchOutPattern_True', () => {
+    it('testisFindDir_DoesNotMatchOutPattern_True', () => {
         const settings = getSettings();
-        settings.addOutDirPatterns("SearchFiles");
-        const searcher = new Searcher(settings);
-        const dir = "CsSearch";
-        expect(searcher.isSearchDir(dir)).toBeTruthy();
+        settings.addOutDirPatterns("FindFiles");
+        const finder = new Finder(settings);
+        const dir = "CsFind";
+        expect(finder.isFindDir(dir)).toBeTruthy();
     });
 
     /*************************************************************
-     * isSearchFile tests
+     * isFindFile tests
      *************************************************************/
-    it('testIsSearchFile_NoExtensionsNoPatterns_True', () => {
+    it('testIsFindFile_NoExtensionsNoPatterns_True', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeTruthy();
+        expect(finder.isFindFile(file)).toBeTruthy();
     });
 
-    it('testIsSearchFile_MatchesInExtension_True', () => {
+    it('testIsFindFile_MatchesInExtension_True', () => {
         const settings = getSettings();
         settings.addInExtensions("cs");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeTruthy();
+        expect(finder.isFindFile(file)).toBeTruthy();
     });
 
-    it('testIsSearchFile_DoesNotMatchInExtension_False', () => {
+    it('testIsFindFile_DoesNotMatchInExtension_False', () => {
         const settings = getSettings();
         settings.addInExtensions("java");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeFalsy();
+        expect(finder.isFindFile(file)).toBeFalsy();
     });
 
-    it('testIsSearchFile_MatchesOutExtension_False', () => {
+    it('testIsFindFile_MatchesOutExtension_False', () => {
         const settings = getSettings();
         settings.addOutExtensions("cs");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeFalsy();
+        expect(finder.isFindFile(file)).toBeFalsy();
     });
 
-    it('testIsSearchFile_DoesNotMatchOutExtension_True', () => {
+    it('testIsFindFile_DoesNotMatchOutExtension_True', () => {
         const settings = getSettings();
         settings.addOutExtensions("java");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeTruthy();
+        expect(finder.isFindFile(file)).toBeTruthy();
     });
 
-    it('testIsSearchFile_MatchesInPattern_True', () => {
+    it('testIsFindFile_MatchesInPattern_True', () => {
         const settings = getSettings();
-        settings.addInFilePatterns("Search");
-        const searcher = new Searcher(settings);
-        const file = "Searcher.cs";
-        expect(searcher.isSearchFile(file)).toBeTruthy();
+        settings.addInFilePatterns("Find");
+        const finder = new Finder(settings);
+        const file = "Finder.cs";
+        expect(finder.isFindFile(file)).toBeTruthy();
     });
 
-    it('testIsSearchFile_DoesNotMatchInPattern_False', () => {
+    it('testIsFindFile_DoesNotMatchInPattern_False', () => {
         const settings = getSettings();
-        settings.addInFilePatterns("Search");
-        const searcher = new Searcher(settings);
+        settings.addInFilePatterns("Find");
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeFalsy();
+        expect(finder.isFindFile(file)).toBeFalsy();
     });
 
-    it('testIsSearchFile_MatchesOutPattern_False', () => {
+    it('testIsFindFile_MatchesOutPattern_False', () => {
         const settings = getSettings();
-        settings.addOutFilePatterns("Search");
-        const searcher = new Searcher(settings);
-        const file = "Searcher.cs";
-        expect(searcher.isSearchFile(file)).toBeFalsy();
+        settings.addOutFilePatterns("Find");
+        const finder = new Finder(settings);
+        const file = "Finder.cs";
+        expect(finder.isFindFile(file)).toBeFalsy();
     });
 
-    it('testIsSearchFile_DoesNotMatchOutPattern_True', () => {
+    it('testIsFindFile_DoesNotMatchOutPattern_True', () => {
         const settings = getSettings();
-        settings.addOutFilePatterns("Search");
-        const searcher = new Searcher(settings);
+        settings.addOutFilePatterns("Find");
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.isSearchFile(file)).toBeTruthy();
+        expect(finder.isFindFile(file)).toBeTruthy();
     });
 
     /*************************************************************
-     * IsArchiveSearchFile tests
+     * IsArchiveFindFile tests
      *************************************************************/
-    it('testIsArchiveSearchFile_NoExtensionsNoPatterns_True', () => {
+    it('testIsArchiveFindFile_NoExtensionsNoPatterns_True', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeTruthy();
+        expect(finder.isArchiveFindFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveSearchFile_MatchesInExtension_True', () => {
+    it('testIsArchiveFindFile_MatchesInExtension_True', () => {
         const settings = getSettings();
         settings.addInArchiveExtensions("zip");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeTruthy();
+        expect(finder.isArchiveFindFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveSearchFile_DoesNotMatchInExtension_False', () => {
+    it('testIsArchiveFindFile_DoesNotMatchInExtension_False', () => {
         const settings = getSettings();
         settings.addInArchiveExtensions("gz");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeFalsy();
+        expect(finder.isArchiveFindFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveSearchFile_MatchesOutExtension_False', () => {
+    it('testIsArchiveFindFile_MatchesOutExtension_False', () => {
         const settings = getSettings();
         settings.addOutArchiveExtensions("zip");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeFalsy();
+        expect(finder.isArchiveFindFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveSearchFile_DoesNotMatchOutExtension_True', () => {
+    it('testIsArchiveFindFile_DoesNotMatchOutExtension_True', () => {
         const settings = getSettings();
         settings.addOutArchiveExtensions("gz");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeTruthy();
+        expect(finder.isArchiveFindFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveSearchFile_MatchesInPattern_True', () => {
+    it('testIsArchiveFindFile_MatchesInPattern_True', () => {
         const settings = getSettings();
         settings.addInArchiveFilePatterns("arch");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeTruthy();
+        expect(finder.isArchiveFindFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveSearchFile_DoesNotMatchInPattern_False', () => {
+    it('testIsArchiveFindFile_DoesNotMatchInPattern_False', () => {
         const settings = getSettings();
         settings.addInArchiveFilePatterns("archives");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeFalsy();
+        expect(finder.isArchiveFindFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveSearchFile_MatchesOutPattern_False', () => {
+    it('testIsArchiveFindFile_MatchesOutPattern_False', () => {
         const settings = getSettings();
         settings.addOutArchiveFilePatterns("arch");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeFalsy();
+        expect(finder.isArchiveFindFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveSearchFile_DoesNotMatchOutPattern_True', () => {
+    it('testIsArchiveFindFile_DoesNotMatchOutPattern_True', () => {
         const settings = getSettings();
         settings.addOutArchiveFilePatterns("archives");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.isArchiveSearchFile(file)).toBeTruthy();
+        expect(finder.isArchiveFindFile(file)).toBeTruthy();
     });
 
     /*************************************************************
@@ -235,99 +235,99 @@ describe('testing searcher', () => {
      *************************************************************/
     it('testFilterFile_IsHidden_False', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = ".gitignore";
-        expect(searcher.filterFile(file)).toBeFalsy();
+        expect(finder.filterFile(file)).toBeFalsy();
     });
 
     it('testFilterFile_IsHiddenIncludeHidden_True', () => {
         const settings = getSettings();
         settings.excludeHidden = false;
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = ".gitignore";
-        expect(searcher.filterFile(file)).toBeTruthy();
+        expect(finder.filterFile(file)).toBeTruthy();
     });
 
-    it('testFilterFile_ArchiveNoSearchArchives_False', () => {
+    it('testFilterFile_ArchiveNoFindArchives_False', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.filterFile(file)).toBeFalsy();
+        expect(finder.filterFile(file)).toBeFalsy();
     });
 
-    it('testFilterFile_ArchiveSearchArchives_True', () => {
+    it('testFilterFile_ArchiveFindArchives_True', () => {
         const settings = getSettings();
-        settings.searchArchives = true;
-        const searcher = new Searcher(settings);
+        settings.findArchives = true;
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.filterFile(file)).toBeTruthy();
+        expect(finder.filterFile(file)).toBeTruthy();
     });
 
-    it('testFilterFile_IsArchiveSearchFile_True', () => {
+    it('testFilterFile_IsArchiveFindFile_True', () => {
         const settings = getSettings();
-        settings.searchArchives = true;
+        settings.findArchives = true;
         settings.addInArchiveExtensions("zip");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.filterFile(file)).toBeTruthy();
+        expect(finder.filterFile(file)).toBeTruthy();
     });
 
-    it('testFilterFile_NotIsArchiveSearchFile_False', () => {
+    it('testFilterFile_NotIsArchiveFindFile_False', () => {
         const settings = getSettings();
         settings.addOutExtensions("zip");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.filterFile(file)).toBeFalsy();
+        expect(finder.filterFile(file)).toBeFalsy();
     });
 
     it('testFilterFile_ArchiveFileArchivesOnly_True', () => {
         const settings = getSettings();
         settings.archivesOnly = true;
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "archive.zip";
-        expect(searcher.filterFile(file)).toBeFalsy();
+        expect(finder.filterFile(file)).toBeFalsy();
     });
 
     it('testFilterFile_NoExtensionsNoPatterns_True', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.filterFile(file)).toBeTruthy();
+        expect(finder.filterFile(file)).toBeTruthy();
     });
 
-    it('testFilterFile_IsSearchFile_True', () => {
+    it('testFilterFile_IsFindFile_True', () => {
         const settings = getSettings();
         settings.addInExtensions("cs");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.filterFile(file)).toBeTruthy();
+        expect(finder.filterFile(file)).toBeTruthy();
     });
 
-    it('testFilterFile_NotIsSearchFile_False', () => {
+    it('testFilterFile_NotIsFindFile_False', () => {
         const settings = getSettings();
         settings.addOutExtensions("cs");
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.filterFile(file)).toBeFalsy();
+        expect(finder.filterFile(file)).toBeFalsy();
     });
 
     it('testFilterFile_NonArchiveFileArchivesOnly_False', () => {
         const settings = getSettings();
         settings.archivesOnly = true;
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const file = "FileUtil.cs";
-        expect(searcher.filterFile(file)).toBeFalsy();
+        expect(finder.filterFile(file)).toBeFalsy();
     });
 
     /*************************************************************
-     * searchLines test
+     * findLines test
      *************************************************************/
-    it('TestSearchLines', async () => {
+    it('TestFindLines', async () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const lines = FileUtil.getFileLines(testFile);
 
-        const results = await searcher.searchLines(lines);
+        const results = await finder.findLines(lines);
         expect(results.length).toEqual(2);
 
         const firstResult = results[0];
@@ -348,14 +348,14 @@ describe('testing searcher', () => {
     });
 
     /*************************************************************
-     * searchMultiLineString test
+     * findMultiLineString test
      *************************************************************/
-    it('TestSearchMultiLineString', () => {
+    it('TestFindMultiLineString', () => {
         const settings = getSettings();
-        const searcher = new Searcher(settings);
+        const finder = new Finder(settings);
         const contents = FileUtil.getFileContents(testFile);
 
-        searcher.searchMultiLineString(contents, (err, results) => {
+        finder.findMultiLineString(contents, (err, results) => {
             expect(results.length).toEqual(2);
 
             const firstResult = results[0];

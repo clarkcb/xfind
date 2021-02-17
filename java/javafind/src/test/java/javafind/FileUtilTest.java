@@ -1,4 +1,4 @@
-package javasearch;
+package javafind;
 
 import org.junit.Test;
 

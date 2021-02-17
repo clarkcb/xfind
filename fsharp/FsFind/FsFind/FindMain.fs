@@ -1,31 +1,31 @@
-﻿namespace FsSearch
+﻿namespace FsFind
 
 module Main =
 
     let HandleError (err : string) : unit =
         Common.Log (sprintf "\nERROR: %s" err)
-        SearchOptions.Usage(1)
+        FindOptions.Usage(1)
 
-    let Search (settings : SearchSettings.t) : unit =
-        let searcher = Searcher(settings)
+    let Find (settings : FindSettings.t) : unit =
+        let finder = Finder(settings)
 
-        let errs = searcher.ValidateSettings()
+        let errs = finder.ValidateSettings()
         if errs.Length > 0 then
             HandleError errs.Head
 
-        searcher.Search()
+        finder.Find()
 
         if settings.PrintResults then
-            searcher.PrintResults
+            finder.PrintResults
 
         if settings.ListDirs then
-            searcher.PrintMatchingDirs
+            finder.PrintMatchingDirs
 
         if settings.ListFiles then
-            searcher.PrintMatchingFiles
+            finder.PrintMatchingFiles
 
         if settings.ListLines then
-            searcher.PrintMatchingLines
+            finder.PrintMatchingLines
 
 
     [<EntryPoint>]
@@ -33,18 +33,18 @@ module Main =
         match (Array.toList args) with
         | [] -> HandleError "Startpath not defined"
         | _ ->
-            let settings, err = SearchOptions.SettingsFromArgs(args)
+            let settings, err = FindOptions.SettingsFromArgs(args)
 
             if err.Length > 0 then
                 HandleError err
 
             if settings.Debug then
-                Common.Log (sprintf "settings: %s" (SearchSettings.ToString settings))
+                Common.Log (sprintf "settings: %s" (FindSettings.ToString settings))
 
             if settings.PrintUsage then
-                SearchOptions.Usage(0)
+                FindOptions.Usage(0)
             else
-                Search settings
+                Find settings
 
         // main entry point return
         0;;

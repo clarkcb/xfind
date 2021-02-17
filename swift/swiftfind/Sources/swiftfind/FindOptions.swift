@@ -1,6 +1,6 @@
 //
-//  SearchOptions.swift
-//  swiftsearch
+//  FindOptions.swift
+//  swiftfind
 //
 //  Created by Cary Clark on 5/17/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct SearchOption {
+struct FindOption {
     let short: String
     let long: String
     let desc: String
@@ -18,9 +18,9 @@ struct SearchOption {
     }
 }
 
-class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
-    var searchOptions = [SearchOption]()
-    let searchOptionNodeName = "searchoption"
+class FindOptionsXmlParser: NSObject, XMLParserDelegate {
+    var findOptions = [FindOption]()
+    let findOptionNodeName = "findoption"
     let longAttributeName = "long"
     let shortAttributeName = "short"
     var element = ""
@@ -28,7 +28,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     var shortName = ""
     var desc = NSMutableString()
 
-    func parseFile(_ filepath: String) -> [SearchOption] {
+    func parseFile(_ filepath: String) -> [FindOption] {
         if FileManager.default.fileExists(atPath: filepath) {
             let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
             let inputStream: InputStream? = InputStream(data: data!)
@@ -40,7 +40,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
         } else {
             print("ERROR: filepath not found: \(filepath)")
         }
-        return searchOptions
+        return findOptions
     }
 
     func parser(_: XMLParser, didStartElement elementName: String,
@@ -48,7 +48,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
                 attributes attributeDict: [String: String])
     {
         element = elementName
-        if (elementName as NSString).isEqual(to: searchOptionNodeName) {
+        if (elementName as NSString).isEqual(to: findOptionNodeName) {
             if attributeDict.index(forKey: longAttributeName) != nil {
                 longName = (attributeDict[longAttributeName]!)
             }
@@ -61,7 +61,7 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     }
 
     func parser(_: XMLParser, foundCharacters string: String) {
-        if element == searchOptionNodeName {
+        if element == findOptionNodeName {
             desc.append(string)
         }
     }
@@ -69,30 +69,30 @@ class SearchOptionsXmlParser: NSObject, XMLParserDelegate {
     func parser(_: XMLParser, didEndElement elementName: String,
                 namespaceURI _: String?, qualifiedName _: String?)
     {
-        if (elementName as NSString).isEqual(to: searchOptionNodeName) {
+        if (elementName as NSString).isEqual(to: findOptionNodeName) {
             if !desc.isEqual(nil) {
                 let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
-                searchOptions.append(SearchOption(short: shortName,
+                findOptions.append(FindOption(short: shortName,
                                                   long: longName, desc: trimmedDesc))
             }
         }
     }
 }
 
-public class SearchOptions {
-    private var searchOptions = [SearchOption]()
+public class FindOptions {
+    private var findOptions = [FindOption]()
     private var longArgDict: [String: String] = [:]
 
     public init() {
-        // setSearchOptionsFromXml()
-        setSearchOptionsFromJson()
+        // setFindOptionsFromXml()
+        setFindOptionsFromJson()
     }
 
-    private func setSearchOptionsFromXml() {
-        let parser = SearchOptionsXmlParser()
-        searchOptions = parser.parseFile(Config.searchOptionsPath)
-        searchOptions.sort(by: { $0.sortArg < $1.sortArg })
-        for opt in searchOptions {
+    private func setFindOptionsFromXml() {
+        let parser = FindOptionsXmlParser()
+        findOptions = parser.parseFile(Config.findOptionsPath)
+        findOptions.sort(by: { $0.sortArg < $1.sortArg })
+        for opt in findOptions {
             longArgDict[opt.long] = opt.long
             if !opt.short.isEmpty {
                 longArgDict[opt.short] = opt.long
@@ -100,20 +100,20 @@ public class SearchOptions {
         }
     }
 
-    private func setSearchOptionsFromJson() {
+    private func setFindOptionsFromJson() {
         do {
-            let searchOptionsUrl = URL(fileURLWithPath: Config.searchOptionsPath)
-            let data = try Data(contentsOf: searchOptionsUrl, options: .mappedIfSafe)
+            let findOptionsUrl = URL(fileURLWithPath: Config.findOptionsPath)
+            let data = try Data(contentsOf: findOptionsUrl, options: .mappedIfSafe)
             if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                if let options = json["searchoptions"] as? [[String: Any]] {
+                if let options = json["findoptions"] as? [[String: Any]] {
                     for so in options {
                         let longArg = so["long"] as! String
                         let shortArg = so.index(forKey: "short") != nil ? so["short"] as! String : ""
                         let desc = so["desc"] as! String
-                        searchOptions.append(SearchOption(short: shortArg, long: longArg, desc: desc))
+                        findOptions.append(FindOption(short: shortArg, long: longArg, desc: desc))
                     }
-                    searchOptions.sort(by: { $0.sortArg < $1.sortArg })
-                    for opt in searchOptions {
+                    findOptions.sort(by: { $0.sortArg < $1.sortArg })
+                    for opt in findOptions {
                         longArgDict[opt.long] = opt.long
                         if !opt.short.isEmpty {
                             longArgDict[opt.short] = opt.long
@@ -127,156 +127,156 @@ public class SearchOptions {
     }
 
     // this is computed property so that it can reference self
-    private var argActionDict: [String: (String, SearchSettings) -> Void] {
+    private var argActionDict: [String: (String, FindSettings) -> Void] {
         [
-            "encoding": { (str: String, settings: SearchSettings) -> Void in
+            "encoding": { (str: String, settings: FindSettings) -> Void in
                 settings.textFileEncoding = str
             },
-            "in-archiveext": { (str: String, settings: SearchSettings) -> Void in
+            "in-archiveext": { (str: String, settings: FindSettings) -> Void in
                 settings.addInArchiveExtension(str)
             },
-            "in-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
+            "in-archivefilepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addInArchiveFilePattern(str)
             },
-            "in-dirpattern": { (str: String, settings: SearchSettings) -> Void in
+            "in-dirpattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addInDirPattern(str)
             },
-            "in-ext": { (str: String, settings: SearchSettings) -> Void in
+            "in-ext": { (str: String, settings: FindSettings) -> Void in
                 settings.addInExtension(str)
             },
-            "in-filepattern": { (str: String, settings: SearchSettings) -> Void in
+            "in-filepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addInFilePattern(str)
             },
-            "in-filetype": { (str: String, settings: SearchSettings) -> Void in
+            "in-filetype": { (str: String, settings: FindSettings) -> Void in
                 settings.addInFileType(str)
             },
-            "in-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
+            "in-linesafterpattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addInLinesAfterPattern(str)
             },
-            "in-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
+            "in-linesbeforepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addInLinesBeforePattern(str)
             },
-            "linesafter": { (str: String, settings: SearchSettings) -> Void in
+            "linesafter": { (str: String, settings: FindSettings) -> Void in
                 settings.linesAfter = Int(str)!
             },
-            "linesaftertopattern": { (str: String, settings: SearchSettings) -> Void in
+            "linesaftertopattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addLinesAfterToPattern(str)
             },
-            "linesafteruntilpattern": { (str: String, settings: SearchSettings) -> Void in
+            "linesafteruntilpattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addLinesAfterUntilPattern(str)
             },
-            "linesbefore": { (str: String, settings: SearchSettings) -> Void in
+            "linesbefore": { (str: String, settings: FindSettings) -> Void in
                 settings.linesBefore = Int(str)!
             },
-            "maxlinelength": { (str: String, settings: SearchSettings) -> Void in
+            "maxlinelength": { (str: String, settings: FindSettings) -> Void in
                 settings.maxLineLength = Int(str)!
             },
-            "out-archiveext": { (str: String, settings: SearchSettings) -> Void in
+            "out-archiveext": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutArchiveExtension(str)
             },
-            "out-archivefilepattern": { (str: String, settings: SearchSettings) -> Void in
+            "out-archivefilepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutArchiveFilePattern(str)
             },
-            "out-dirpattern": { (str: String, settings: SearchSettings) -> Void in
+            "out-dirpattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutDirPattern(str)
             },
-            "out-ext": { (str: String, settings: SearchSettings) -> Void in
+            "out-ext": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutExtension(str)
             },
-            "out-filepattern": { (str: String, settings: SearchSettings) -> Void in
+            "out-filepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutFilePattern(str)
             },
-            "out-filetype": { (str: String, settings: SearchSettings) -> Void in
+            "out-filetype": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutFileType(str)
             },
-            "out-linesafterpattern": { (str: String, settings: SearchSettings) -> Void in
+            "out-linesafterpattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutLinesAfterPattern(str)
             },
-            "out-linesbeforepattern": { (str: String, settings: SearchSettings) -> Void in
+            "out-linesbeforepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutLinesBeforePattern(str)
             },
-            "searchpattern": { (str: String, settings: SearchSettings) -> Void in
-                settings.addSearchPattern(str)
+            "findpattern": { (str: String, settings: FindSettings) -> Void in
+                settings.addFindPattern(str)
             },
-            "settings-file": { (str: String, settings: SearchSettings) -> Void in
+            "settings-file": { (str: String, settings: FindSettings) -> Void in
                 var error: NSError?
                 self.addSettingsFromFile(str, settings: settings, error: &error)
             },
         ]
     }
 
-    private let boolFlagActionDict: [String: (Bool, SearchSettings) -> Void] = [
-        "allmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+    private let boolFlagActionDict: [String: (Bool, FindSettings) -> Void] = [
+        "allmatches": { (bool: Bool, settings: FindSettings) -> Void in
             settings.firstMatch = !bool
         },
-        "archivesonly": { (bool: Bool, settings: SearchSettings) -> Void in
+        "archivesonly": { (bool: Bool, settings: FindSettings) -> Void in
             settings.archivesOnly = bool
         },
-        "colorize": { (bool: Bool, settings: SearchSettings) -> Void in
+        "colorize": { (bool: Bool, settings: FindSettings) -> Void in
             settings.colorize = bool
         },
-        "debug": { (bool: Bool, settings: SearchSettings) -> Void in
+        "debug": { (bool: Bool, settings: FindSettings) -> Void in
             settings.debug = bool
         },
-        "excludehidden": { (bool: Bool, settings: SearchSettings) -> Void in
+        "excludehidden": { (bool: Bool, settings: FindSettings) -> Void in
             settings.excludeHidden = bool
         },
-        "firstmatch": { (bool: Bool, settings: SearchSettings) -> Void in
+        "firstmatch": { (bool: Bool, settings: FindSettings) -> Void in
             settings.firstMatch = bool
         },
-        "help": { (bool: Bool, settings: SearchSettings) -> Void in
+        "help": { (bool: Bool, settings: FindSettings) -> Void in
             settings.printUsage = bool
         },
-        "includehidden": { (bool: Bool, settings: SearchSettings) -> Void in
+        "includehidden": { (bool: Bool, settings: FindSettings) -> Void in
             settings.excludeHidden = !bool
         },
-        "listdirs": { (bool: Bool, settings: SearchSettings) -> Void in
+        "listdirs": { (bool: Bool, settings: FindSettings) -> Void in
             settings.listDirs = bool
         },
-        "listfiles": { (bool: Bool, settings: SearchSettings) -> Void in
+        "listfiles": { (bool: Bool, settings: FindSettings) -> Void in
             settings.listFiles = bool
         },
-        "listlines": { (bool: Bool, settings: SearchSettings) -> Void in
+        "listlines": { (bool: Bool, settings: FindSettings) -> Void in
             settings.listLines = bool
         },
-        "multilinesearch": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.multiLineSearch = bool
+        "multilineoption-REMOVE": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.multiLineFind = bool
         },
-        "nocolorize": { (bool: Bool, settings: SearchSettings) -> Void in
+        "nocolorize": { (bool: Bool, settings: FindSettings) -> Void in
             settings.colorize = !bool
         },
-        "noprintmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+        "noprintmatches": { (bool: Bool, settings: FindSettings) -> Void in
             settings.printResults = !bool
         },
-        "norecursive": { (bool: Bool, settings: SearchSettings) -> Void in
+        "norecursive": { (bool: Bool, settings: FindSettings) -> Void in
             settings.recursive = !bool
         },
-        "nosearcharchives": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.searchArchives = !bool
+        "nofindarchives": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.findArchives = !bool
         },
-        "printmatches": { (bool: Bool, settings: SearchSettings) -> Void in
+        "printmatches": { (bool: Bool, settings: FindSettings) -> Void in
             settings.printResults = bool
         },
-        "recursive": { (bool: Bool, settings: SearchSettings) -> Void in
+        "recursive": { (bool: Bool, settings: FindSettings) -> Void in
             settings.recursive = bool
         },
-        "searcharchives": { (bool: Bool, settings: SearchSettings) -> Void in
-            settings.searchArchives = bool
+        "findarchives": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.findArchives = bool
         },
-        "uniquelines": { (bool: Bool, settings: SearchSettings) -> Void in
+        "uniquelines": { (bool: Bool, settings: FindSettings) -> Void in
             settings.uniqueLines = bool
         },
-        "verbose": { (bool: Bool, settings: SearchSettings) -> Void in
+        "verbose": { (bool: Bool, settings: FindSettings) -> Void in
             settings.verbose = bool
         },
-        "version": { (bool: Bool, settings: SearchSettings) -> Void in
+        "version": { (bool: Bool, settings: FindSettings) -> Void in
             settings.printVersion = bool
         },
     ]
 
-    public func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> SearchSettings {
+    public func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> FindSettings {
         var i = 0
-        let settings = SearchSettings()
+        let settings = FindSettings()
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
@@ -311,13 +311,13 @@ public class SearchOptions {
         return settings
     }
 
-    public func settingsFromFile(_ filePath: String, error: NSErrorPointer) -> SearchSettings {
-        let settings = SearchSettings()
+    public func settingsFromFile(_ filePath: String, error: NSErrorPointer) -> FindSettings {
+        let settings = FindSettings()
         addSettingsFromFile(filePath, settings: settings, error: error)
         return settings
     }
 
-    public func addSettingsFromFile(_ filePath: String, settings: SearchSettings, error: NSErrorPointer) {
+    public func addSettingsFromFile(_ filePath: String, settings: FindSettings, error: NSErrorPointer) {
         do {
             let fileUrl = URL(fileURLWithPath: filePath)
             let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
@@ -327,13 +327,13 @@ public class SearchOptions {
         }
     }
 
-    public func settingsFromJson(_ jsonString: String, error: NSErrorPointer) -> SearchSettings {
-        let settings = SearchSettings()
+    public func settingsFromJson(_ jsonString: String, error: NSErrorPointer) -> FindSettings {
+        let settings = FindSettings()
         addSettingsFromJson(jsonString, settings: settings, error: error)
         return settings
     }
 
-    public func addSettingsFromJson(_ jsonString: String, settings: SearchSettings, error: NSErrorPointer) {
+    public func addSettingsFromJson(_ jsonString: String, settings: FindSettings, error: NSErrorPointer) {
         do {
             if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
                                                            options: []) as? [String: Any]
@@ -391,12 +391,12 @@ public class SearchOptions {
     }
 
     func getUsageString() -> String {
-        var str = "\nUsage:\n swiftsearch [options] -s <searchpattern> <startpath>\n\n"
+        var str = "\nUsage:\n swiftfind [options] -s <findpattern> <startpath>\n\n"
         str += "Options:\n"
-        let optStrings = searchOptions.map {
+        let optStrings = findOptions.map {
             $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)"
         }
-        let optDescs = searchOptions.map(\.desc)
+        let optDescs = findOptions.map(\.desc)
         let longest = optStrings.map { $0.lengthOfBytes(using: String.Encoding.utf8) }.max()!
         for i in 0 ..< optStrings.count {
             var optLine = " \(optStrings[i])"

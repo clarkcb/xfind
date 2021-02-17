@@ -1,35 +1,35 @@
-;;; search.clj: Recursive file search utility
+;;; find.clj: Recursive file find utility
 
 ;; by Cary Clark
 ;; April 10, 2010
 
-(ns cljsearch.searcher
+(ns cljfind.finder
   #^{:author "Cary Clark",
-     :doc "Recursive file search utility"}
+     :doc "Recursive file find utility"}
   (:import (java.io File)
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
   (:use [clojure.java.io :only (file reader)]
         [clojure.string :as str :only (join trim upper-case)]
-        [cljsearch.common :only (log-msg)]
-        [cljsearch.filetypes :only (archive-file? get-filetype)]
-        [cljsearch.fileutil :only
+        [cljfind.common :only (log-msg)]
+        [cljfind.filetypes :only (archive-file? get-filetype)]
+        [cljfind.fileutil :only
           (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
             is-dot-dir?)]
-        [cljsearch.searchfile :only (new-search-file search-file-path)]
-        [cljsearch.searchresult :only
-          (->SearchResult search-result-to-string)]))
+        [cljfind.findfile :only (new-find-file find-file-path)]
+        [cljfind.findresult :only
+          (->FindResult find-result-to-string)]))
 
-; ref to contain the seq of SearchResult records
-(def search-results (ref []))
+; ref to contain the seq of FindResult records
+(def find-results (ref []))
 
-(defn save-search-result
-  "Saves a SearchResult to the search-results vector ref"
+(defn save-find-result
+  "Saves a FindResult to the find-results vector ref"
   [r]
   (dosync
-    (alter search-results conj r)))
+    (alter find-results conj r)))
 
-(defn is-search-dir? [d settings]
+(defn is-find-dir? [d settings]
   (or
     (is-dot-dir? (get-name d))
     (and
@@ -43,15 +43,15 @@
        (empty? (:out-dirpatterns settings))
         (not-any? #(re-find % (.getPath d)) (:out-dirpatterns settings))))))
 
-(defn print-search-result [r settings]
-  (log-msg (search-result-to-string r settings)))
+(defn print-find-result [r settings]
+  (log-msg (find-result-to-string r settings)))
 
-(defn print-search-results [settings]
-  (log-msg (format "\nSearch results (%d):" (count (deref search-results))))
-  (doseq [r (deref search-results)] (print-search-result r settings)))
+(defn print-find-results [settings]
+  (log-msg (format "\nFind results (%d):" (count (deref find-results))))
+  (doseq [r (deref find-results)] (print-find-result r settings)))
 
 (defn get-matching-dirs []
-  (sort (distinct (map #(.getParent (:file %)) (deref search-results)))))
+  (sort (distinct (map #(.getParent (:file %)) (deref find-results)))))
 
 (defn print-matching-dirs []
   (let [dirs (get-matching-dirs)]
@@ -59,7 +59,7 @@
     (doseq [d dirs] (log-msg d))))
 
 (defn get-matching-files []
-  (sort (distinct (map #(.getPath (:file %)) (deref search-results)))))
+  (sort (distinct (map #(.getPath (:file %)) (deref find-results)))))
 
 (defn print-matching-files []
   (let [files (get-matching-files)]
@@ -67,7 +67,7 @@
     (doseq [f files] (log-msg f))))
 
 (defn get-matching-lines [settings]
-  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) (deref search-results)))]
+  (let [lines (sort-by str/upper-case (map #(str/trim (:line %)) (deref find-results)))]
     (if (:uniquelines settings)
       (distinct lines)
       lines)))
@@ -86,7 +86,7 @@
         tests [(fn [ss] (if (not startpath) "Startpath not defined" nil))
                (fn [ss] (if (or (not startdir) (not (.exists startdir))) "Startpath not found" nil))
                (fn [ss] (if (and startdir (not (.canRead startdir))) "Startpath not readable" nil))
-               (fn [ss] (if (empty? (:searchpatterns ss)) "No search patterns defined" nil))
+               (fn [ss] (if (empty? (:findpatterns ss)) "No find patterns defined" nil))
                (fn [ss]
                  (if
                    (not
@@ -103,7 +103,7 @@
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
-(defn is-archive-search-file? [f settings]
+(defn is-archive-find-file? [f settings]
   (and
     (or
      (empty? (:in-archiveextensions settings))
@@ -118,7 +118,7 @@
      (empty? (:out-archivefilepatterns settings))
      (not-any? #(re-find % (.getName f)) (:out-archivefilepatterns settings)))))
 
-(defn is-search-file? [f settings]
+(defn is-find-file? [f settings]
   (and
     (or
      (empty? (:in-extensions settings))
@@ -146,40 +146,40 @@
       (not (:excludehidden settings)))
     (if (archive-file? f)
       (and
-        (:searcharchives settings)
-        (is-archive-search-file? f settings))
+        (:findarchives settings)
+        (is-archive-find-file? f settings))
       (and
         (not (:archivesonly settings))
-        (is-search-file? f settings)))))
+        (is-find-file? f settings)))))
 
-(defn get-search-files [settings]
+(defn get-find-files [settings]
   (let [startdir (file (:startpath settings))]
     (if (:recursive settings)
       (vec
        (map
-        #(new-search-file % (get-filetype %))
+        #(new-find-file % (get-filetype %))
         (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq startdir)))))
       (vec
        (map
-        #(new-search-file % (get-filetype %))
+        #(new-find-file % (get-filetype %))
         (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles startdir))))))))
 
-(defn search-archive-file [f settings]
+(defn find-archive-file [f settings]
   (if (:verbose settings)
-    (log-msg (format "Searching archive file %s" f))))
+    (log-msg (format "Finding archive file %s" f))))
 
-(defn search-binary-string-for-pattern
+(defn find-binary-string-for-pattern
   ([b p settings]
     (let [m (re-matcher p b)]
       (if (.find m 0)
-        (search-binary-string-for-pattern b m 0 settings)
+        (find-binary-string-for-pattern b m 0 settings)
         [])))
   ([b m i settings]
     (if (.find m i)
       (do
         (let [startmatchindex (.start m)
               endmatchindex (.end m)
-              result (->SearchResult
+              result (->FindResult
                        (.pattern m)
                        nil
                        0
@@ -190,23 +190,23 @@
                        [])]
           (if (:firstmatch settings)
             [result]
-            (concat [result] (search-binary-string-for-pattern b m
+            (concat [result] (find-binary-string-for-pattern b m
               endmatchindex settings)))))
       [])))
 
-(defn search-binary-string [b settings]
+(defn find-binary-string [b settings]
   (if (:debug settings)
-    (log-msg "Searching binary string"))
+    (log-msg "Finding binary string"))
   (apply concat
-    (map #(search-binary-string-for-pattern b % settings) (:searchpatterns settings))))
+    (map #(find-binary-string-for-pattern b % settings) (:findpatterns settings))))
 
-(defn search-binary-file [sf settings]
+(defn find-binary-file [sf settings]
   (if (:verbose settings)
-    (log-msg (format "Searching binary file %s" (search-file-path sf))))
+    (log-msg (format "Finding binary file %s" (find-file-path sf))))
   (let [contents (slurp (:file sf) :encoding "ISO-8859-1") ; use single-byte enc to avoid corruption
-        search-results (search-binary-string contents settings)
-        with-file-results (map #(assoc-in % [:file] sf) search-results)]
-    (doseq [r with-file-results] (save-search-result r))))
+        find-results (find-binary-string contents settings)
+        with-file-results (map #(assoc-in % [:file] sf) find-results)]
+    (doseq [r with-file-results] (save-find-result r))))
 
 (defn matches-any-pattern? [s pp]
   (some #(re-find % s) pp))
@@ -254,14 +254,14 @@
         []))
     []))
 
-(defn search-multiline-string-for-pattern
+(defn find-multiline-string-for-pattern
   ([s p settings]
     (let [m (re-matcher p s)]
       (if (.find m 0)
         (let [newlineindices (get-newline-indices s)
               startlineindices (concat [0] (map inc newlineindices))
               endlineindices (concat newlineindices [(count s)])]
-          (search-multiline-string-for-pattern s m 0 startlineindices
+          (find-multiline-string-for-pattern s m 0 startlineindices
             endlineindices settings)))))
   ([s m i startlineindices endlineindices settings]
     (if (.find m i)
@@ -280,7 +280,7 @@
               afterendindices (filter #(> % startmatchindex) endlineindices)
               linesafter (get-multiline-linesafter s afterstartindices
                 (rest afterendindices) settings)
-              result (->SearchResult
+              result (->FindResult
                        (.pattern m)
                        nil 
                        linenum
@@ -299,22 +299,22 @@
                 (linesafter-match? linesafter settings)))
             (if (:firstmatch settings)
               [result]
-              (concat [result] (search-multiline-string-for-pattern s m
+              (concat [result] (find-multiline-string-for-pattern s m
                 endmatchindex startlineindices endlineindices settings)))
             [])))
       [])))
 
-(defn search-multiline-string [s settings]
+(defn find-multiline-string [s settings]
   (apply concat
-    (map #(search-multiline-string-for-pattern s % settings) (:searchpatterns settings))))
+    (map #(find-multiline-string-for-pattern s % settings) (:findpatterns settings))))
 
-(defn search-text-file-contents [sf settings]
+(defn find-text-file-contents [sf settings]
   (let [contents (slurp (:file sf) :encoding (:textfileencoding settings))
-        search-results (search-multiline-string contents settings)
-        with-file-results (map #(assoc-in % [:file] sf) search-results)]
-    (doseq [r with-file-results] (save-search-result r))))
+        find-results (find-multiline-string contents settings)
+        with-file-results (map #(assoc-in % [:file] sf) find-results)]
+    (doseq [r with-file-results] (save-find-result r))))
 
-(defn search-line-for-pattern
+(defn find-line-for-pattern
   ([linenum line linesbefore linesafter p settings]
     (let [m (re-matcher p line)]
       (if
@@ -322,14 +322,14 @@
           (.find m 0)
           (linesbefore-match? linesbefore settings)
           (linesafter-match? linesafter settings))
-        (search-line-for-pattern linenum line linesbefore linesafter m 0 [] settings)
+        (find-line-for-pattern linenum line linesbefore linesafter m 0 [] settings)
         [])))
   ([linenum line linesbefore linesafter m i results settings]
     (if (.find m i)
       (do
         (let [startmatchindex (.start m)
               endmatchindex (.end m)
-              result (->SearchResult
+              result (->FindResult
                        (.pattern m)
                        nil 
                        linenum
@@ -338,25 +338,25 @@
                        line
                        linesbefore
                        linesafter)]
-          (search-line-for-pattern linenum line linesbefore linesafter m
+          (find-line-for-pattern linenum line linesbefore linesafter m
             endmatchindex (concat results [result]) settings)))
       results)))
 
-(defn search-line [linenum line linesbefore linesafter settings]
+(defn find-line [linenum line linesbefore linesafter settings]
   (apply concat
-    (map #(search-line-for-pattern linenum line linesbefore linesafter % settings)
-      (:searchpatterns settings))))
+    (map #(find-line-for-pattern linenum line linesbefore linesafter % settings)
+      (:findpatterns settings))))
 
-(defn search-lines
+(defn find-lines
   ([lines settings]
     (let [line (first lines)
           nextlines (drop (:linesafter settings) (rest lines))
           linesbefore []
           linesafter (take (:linesafter settings) (rest lines))]
-      (search-lines 1 line nextlines linesbefore linesafter [] settings)))
+      (find-lines 1 line nextlines linesbefore linesafter [] settings)))
   ([linenum line lines linesbefore linesafter results settings]
     (if line
-      (let [nextresults (search-line linenum line linesbefore linesafter settings)
+      (let [nextresults (find-line linenum line linesbefore linesafter settings)
             nextlinenum (+ linenum 1)
             nextline (if (empty? linesafter) (first lines) (first linesafter))
             nextlinesbefore
@@ -369,7 +369,7 @@
               (if (> (:linesafter settings) 0)
                 (concat (rest linesafter) (take 1 lines))
                 [])]
-          (search-lines nextlinenum nextline (rest lines) nextlinesbefore
+          (find-lines nextlinenum nextline (rest lines) nextlinesbefore
             nextlinesafter (concat results nextresults) settings))
       (if
         (and
@@ -378,51 +378,51 @@
         (take 1 results)
         results))))
 
-(defn search-text-file-lines [sf settings]
+(defn find-text-file-lines [sf settings]
   (with-open [rdr (reader (:file sf) :encoding (:textfileencoding settings))]
-    (let [search-results (search-lines (line-seq rdr) settings)
-          with-file-results (map #(assoc-in % [:file] sf) search-results)]
-      (doseq [r with-file-results] (save-search-result r)))))
+    (let [find-results (find-lines (line-seq rdr) settings)
+          with-file-results (map #(assoc-in % [:file] sf) find-results)]
+      (doseq [r with-file-results] (save-find-result r)))))
 
-(defn search-text-file [sf settings]
+(defn find-text-file [sf settings]
   (if (:verbose settings)
-    (log-msg (format "Searching text file %s" (search-file-path sf))))
-  (if (:multilinesearch settings)
-    (search-text-file-contents sf settings)
-    (search-text-file-lines sf settings)))
+    (log-msg (format "Finding text file %s" (find-file-path sf))))
+  (if (:multilineoption-REMOVE settings)
+    (find-text-file-contents sf settings)
+    (find-text-file-lines sf settings)))
 
-(defn search-file [sf settings]
+(defn find-file [sf settings]
   (let [filetype (:filetype sf)
         verbose (:verbose settings)
-        filepath (search-file-path sf)]
+        filepath (find-file-path sf)]
     (cond
       (or
         (= filetype :code)
         (= filetype :text)
-        (= filetype :xml)) (search-text-file sf settings)
-      (= filetype :binary) (search-binary-file sf settings)
+        (= filetype :xml)) (find-text-file sf settings)
+      (= filetype :binary) (find-binary-file sf settings)
       (= filetype :archive)
-        (if (:searcharchives settings)
-          (search-archive-file sf settings)
+        (if (:findarchives settings)
+          (find-archive-file sf settings)
           (if verbose (log-msg (format "Skipping archive file %s" filepath))))
       :else
         (if verbose (log-msg (format "Skipping file of unknown type: %s" filepath))))))
 
-(defn search-files [searchfiles settings]
+(defn find-files [findfiles settings]
   (if (:verbose settings)
     (do
-      (log-msg (format "\nFiles to be searched (%d):" (count searchfiles)))
-      (doseq [sf searchfiles] (log-msg (search-file-path sf)))
+      (log-msg (format "\nFiles to be found (%d):" (count findfiles)))
+      (doseq [sf findfiles] (log-msg (find-file-path sf)))
       (log-msg "")))
-  (doseq [sf searchfiles] (search-file sf settings)))
+  (doseq [sf findfiles] (find-file sf settings)))
 
-(defn search [settings]
+(defn find [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
       (let [startfile (file (:startpath settings))
-            searchfiles (if
-                          (.isFile startfile) [(new-search-file startfile (get-filetype startfile))]
-                          (get-search-files settings))]
-        (search-files searchfiles settings))
+            findfiles (if
+                          (.isFile startfile) [(new-find-file startfile (get-filetype startfile))]
+                          (get-find-files settings))]
+        (find-files findfiles settings))
         [])
       errs))

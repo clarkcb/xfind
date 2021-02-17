@@ -1,15 +1,15 @@
 import 'dart:io' show File;
 
-import 'package:dartsearch/src/file_types.dart';
+import 'package:dartfind/src/file_types.dart';
 
-class SearchFile {
+class FindFile {
   static const String CONTAINER_SEPARATOR = '!';
 
   List<String> containers = [];
   final File file;
   final FileType fileType;
 
-  SearchFile(this.file, this.fileType);
+  FindFile(this.file, this.fileType);
 
   @override
   String toString() {

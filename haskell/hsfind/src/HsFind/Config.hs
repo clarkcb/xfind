@@ -1,6 +1,6 @@
-module HsSearch.Config
+module HsFind.Config
   (
-      getXsearchPath
+      getXfindPath
     , getDataPath
   ) where
 
@@ -15,15 +15,15 @@ getHome :: IO FilePath
 getHome = getEnv homeName
   where homeName = if isWin then "HOMEPATH" else "HOME"
 
-xsearchPath :: FilePath
-xsearchPath = "/Users/cary/src/xsearch"
+xfindPath :: FilePath
+xfindPath = "/Users/cary/src/xfind"
 
-getXsearchPath :: IO FilePath
-getXsearchPath =
-  return xsearchPath
+getXfindPath :: IO FilePath
+getXfindPath =
+  return xfindPath
 
 getDataPath :: IO FilePath
 getDataPath = do
-  let elems = ["haskell", "hssearch", "data"]
-  return $ foldl concatPath xsearchPath elems
+  let elems = ["haskell", "hsfind", "data"]
+  return $ foldl concatPath xfindPath elems
   where concatPath path p = path </> p  

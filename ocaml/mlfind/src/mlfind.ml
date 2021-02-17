@@ -1,11 +1,11 @@
 open Core.Std
 open Common
 
-let print_usage searchoptions = 
-  log_msg (sprintf "\n%s\n" (Searchoptions.get_usage searchoptions));;
+let print_usage findoptions = 
+  log_msg (sprintf "\n%s\n" (Findoptions.get_usage findoptions));;
 
-let print_error_with_usage (err : string) searchoptions = 
-  log_msg (sprintf "\nERROR: %s\n\n%s\n" err (Searchoptions.get_usage searchoptions));;
+let print_error_with_usage (err : string) findoptions = 
+  log_msg (sprintf "\nERROR: %s\n\n%s\n" err (Findoptions.get_usage findoptions));;
 
 let sort_lines (lines : string list) : string list =
   let cmp_lines l1 l2 : int =
@@ -14,8 +14,8 @@ let sort_lines (lines : string list) : string list =
     else 0 in
   List.sort lines ~cmp:cmp_lines
 
-let get_matching_lines (settings : Searchsettings.t) (results : Searchresult.t list) : string list =
-  let rec rec_get_matching_lines (res : Searchresult.t list) (lines : string list) : string list =
+let get_matching_lines (settings : Findsettings.t) (results : Findresult.t list) : string list =
+  let rec rec_get_matching_lines (res : Findresult.t list) (lines : string list) : string list =
     match res with
     | [] -> lines
     | r :: rs -> (
@@ -25,7 +25,7 @@ let get_matching_lines (settings : Searchsettings.t) (results : Searchresult.t l
       else rec_get_matching_lines rs (List.append lines [line])) in
   sort_lines (rec_get_matching_lines results [])
 
-let print_matching_lines (settings : Searchsettings.t) (results : Searchresult.t list) : unit = 
+let print_matching_lines (settings : Findsettings.t) (results : Findresult.t list) : unit = 
   let matching_lines = get_matching_lines settings results in
   let hdr =
     if settings.uniquelines
@@ -34,24 +34,24 @@ let print_matching_lines (settings : Searchsettings.t) (results : Searchresult.t
   log_msg hdr;
   List.iter matching_lines ~f:(fun l -> log_msg l);;
 
-let get_matching_files (results : Searchresult.t list) : string list =
-  let rec rec_get_matching_files (res : Searchresult.t list) (files : string list) : string list =
+let get_matching_files (results : Findresult.t list) : string list =
+  let rec rec_get_matching_files (res : Findresult.t list) (files : string list) : string list =
     match res with
     | [] -> files
     | r :: rs -> (
-      let file = Searchfile.to_string r.file in
+      let file = Findfile.to_string r.file in
       if List.exists files ~f:(fun f -> f = file)
       then rec_get_matching_files rs files
       else rec_get_matching_files rs (List.append files [file])) in
   rec_get_matching_files results []
 
-let print_matching_files (results : Searchresult.t list) : unit = 
+let print_matching_files (results : Findresult.t list) : unit = 
   let matching_files = get_matching_files results in
   log_msg (sprintf "\nFiles with matches (%d):" (List.length matching_files));
   List.iter matching_files ~f:(fun f -> log_msg f);;
 
-let get_matching_dirs (results : Searchresult.t list) : string list =
-  let rec rec_get_matching_dirs (res : Searchresult.t list) (dirs : string list) : string list =
+let get_matching_dirs (results : Findresult.t list) : string list =
+  let rec rec_get_matching_dirs (res : Findresult.t list) (dirs : string list) : string list =
     match res with
     | [] -> dirs
     | r :: rs -> (
@@ -61,35 +61,35 @@ let get_matching_dirs (results : Searchresult.t list) : string list =
       else rec_get_matching_dirs rs (List.append dirs [dir])) in
   rec_get_matching_dirs results []
 
-let print_matching_dirs (results : Searchresult.t list) : unit = 
+let print_matching_dirs (results : Findresult.t list) : unit = 
   let matching_dirs = get_matching_dirs results in
   log_msg (sprintf "\nDirectories with matches (%d):" (List.length matching_dirs));
   List.iter matching_dirs ~f:(fun d -> log_msg d);;
 
-let print_search_results (results : Searchresult.t list) : unit = 
-  log_msg (sprintf "\nSearch results (%d):" (List.length results));
-  List.iter results ~f:(fun r -> log_msg (Searchresult.to_string r));;
+let print_find_results (results : Findresult.t list) : unit = 
+  log_msg (sprintf "\nFind results (%d):" (List.length results));
+  List.iter results ~f:(fun r -> log_msg (Findresult.to_string r));;
 
-let search (settings : Searchsettings.t) searchoptions = 
-  if settings.debug then log_msg (sprintf "settings: %s" (Searchsettings.to_string settings));
-  match Searcher.search settings with
-  | Ok (results : Searchresult.t list) ->
-      if settings.printresults then print_search_results results;
+let find (settings : Findsettings.t) findoptions = 
+  if settings.debug then log_msg (sprintf "settings: %s" (Findsettings.to_string settings));
+  match Finder.find settings with
+  | Ok (results : Findresult.t list) ->
+      if settings.printresults then print_find_results results;
       if settings.listdirs then print_matching_dirs results;
       if settings.listfiles then print_matching_files results;
       if settings.listlines then print_matching_lines settings results
-  | Error msg -> print_error_with_usage msg searchoptions;;
+  | Error msg -> print_error_with_usage msg findoptions;;
 
 let () =
-  let searchoptions = Searchoptions.get_searchoptions in
+  let findoptions = Findoptions.get_findoptions in
   match (Array.to_list Sys.argv) with
-  | []      -> print_error_with_usage "Startpath not defined" searchoptions
-  | [_]     -> print_error_with_usage "Startpath not defined" searchoptions
+  | []      -> print_error_with_usage "Startpath not defined" findoptions
+  | [_]     -> print_error_with_usage "Startpath not defined" findoptions
   | _ :: tl -> (
-      match (Searchoptions.settings_from_args searchoptions tl) with
+      match (Findoptions.settings_from_args findoptions tl) with
       | Ok settings ->
         if settings.printusage
-        then print_usage searchoptions
-        else search settings searchoptions
-      | Error msg -> print_error_with_usage msg searchoptions
+        then print_usage findoptions
+        else find settings findoptions
+      | Error msg -> print_error_with_usage msg findoptions
     );;

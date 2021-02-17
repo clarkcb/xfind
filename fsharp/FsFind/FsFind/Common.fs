@@ -1,4 +1,4 @@
-﻿namespace FsSearch
+﻿namespace FsFind
 
 open System
 

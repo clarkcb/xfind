@@ -1,14 +1,14 @@
 /*******************************************************************************
-SearchOptions
+FindOptions
 
-Class to encapsulate all command line search options
+Class to encapsulate all command line find options
 
 @author Cary Clark &lt;clarkcb@gmail.com&gt;
 @version $Rev$
 @copyright Cary Clark 2012
 *******************************************************************************/
 
-package javasearch;
+package javafind;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -19,17 +19,17 @@ import org.json.simple.parser.ParseException;
 import java.io.*;
 import java.util.*;
 
-public class SearchOptions {
-    private final List<SearchOption> options;
+public class FindOptions {
+    private final List<FindOption> options;
 
-    public SearchOptions() throws IOException, ParseException {
+    public FindOptions() throws IOException, ParseException {
         options = new ArrayList<>();
         setOptionsFromJson();
     }
 
     @FunctionalInterface
     private interface ArgSetter {
-        void set(String s, SearchSettings settings);
+        void set(String s, FindSettings settings);
     }
 
     private final int actionMapSize = 24;
@@ -57,14 +57,14 @@ public class SearchOptions {
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
             put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
             put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
-            put("searchpattern", (s, settings) -> settings.addSearchPattern(s));
+            put("findpattern", (s, settings) -> settings.addFindPattern(s));
             put("settings-file", (s, settings) -> settingsFromFile(s, settings));
         }
     };
 
     @FunctionalInterface
     private interface BooleanFlagSetter {
-        void set(Boolean b, SearchSettings settings);
+        void set(Boolean b, FindSettings settings);
     }
 
     private final int flagMapSize = 22;
@@ -81,14 +81,14 @@ public class SearchOptions {
             put("listdirs", (b, settings) -> settings.setListDirs(b));
             put("listfiles", (b, settings) -> settings.setListFiles(b));
             put("listlines", (b, settings) -> settings.setListLines(b));
-            put("multilinesearch", (b, settings) -> settings.setMultiLineSearch(b));
+            put("multilineoption-REMOVE", (b, settings) -> settings.setMultiLineFind(b));
             put("nocolorize", (b, settings) -> settings.setColorize(!b));
             put("noprintmatches", (b, settings) -> settings.setPrintResults(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
-            put("nosearcharchives", (b, settings) -> settings.setSearchArchives(!b));
+            put("nofindarchives", (b, settings) -> settings.setFindArchives(!b));
             put("printmatches", (b, settings) -> settings.setPrintResults(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
-            put("searcharchives", (b, settings) -> settings.setSearchArchives(b));
+            put("findarchives", (b, settings) -> settings.setFindArchives(b));
             put("uniquelines", (b, settings) -> settings.setUniqueLines(b));
             put("verbose", (b, settings) -> settings.setVerbose(b));
             put("version", (b, settings) -> settings.setPrintVersion(b));
@@ -96,21 +96,21 @@ public class SearchOptions {
     };
 
     private void setOptionsFromJson() throws IOException, ParseException {
-        final String searchOptionsJsonPath = "/searchoptions.json";
-        InputStream searchOptionsInputStream = getClass().getResourceAsStream(searchOptionsJsonPath);
-        Object obj = new JSONParser().parse(new InputStreamReader(searchOptionsInputStream));
+        final String findOptionsJsonPath = "/findoptions.json";
+        InputStream findOptionsInputStream = getClass().getResourceAsStream(findOptionsJsonPath);
+        Object obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream));
         JSONObject jsonObj = (JSONObject)obj;
-        JSONArray searchoptionsArray = (JSONArray) jsonObj.get("searchoptions");
+        JSONArray findoptionsArray = (JSONArray) jsonObj.get("findoptions");
 
-        for (Object o : searchoptionsArray) {
-            Map searchoptionMap = (Map) o;
-            String longArg = (String) searchoptionMap.get("long");
-            String desc = (String) searchoptionMap.get("desc");
+        for (Object o : findoptionsArray) {
+            Map findoptionMap = (Map) o;
+            String longArg = (String) findoptionMap.get("long");
+            String desc = (String) findoptionMap.get("desc");
             String shortArg = "";
-            if (searchoptionMap.containsKey("short")) {
-                shortArg = (String) searchoptionMap.get("short");
+            if (findoptionMap.containsKey("short")) {
+                shortArg = (String) findoptionMap.get("short");
             }
-            options.add(new SearchOption(shortArg, longArg, desc));
+            options.add(new FindOption(shortArg, longArg, desc));
         }
     }
 
@@ -122,7 +122,7 @@ public class SearchOptions {
         return list;
     }
 
-    private void settingsFromFile(String filePath, SearchSettings settings) {
+    private void settingsFromFile(String filePath, FindSettings settings) {
         File file = new File(filePath);
         try {
             if (!file.exists()) {
@@ -146,7 +146,7 @@ public class SearchOptions {
         }
     }
 
-    public void settingsFromJson(String json, SearchSettings settings) throws ParseException {
+    public void settingsFromJson(String json, FindSettings settings) throws ParseException {
         Object obj = JSONValue.parseWithException(json);
         JSONObject jsonObject=(JSONObject)obj;
         for (Object ko : jsonObject.keySet()) {
@@ -156,31 +156,31 @@ public class SearchOptions {
         }
     }
 
-    private void applySetting(String arg, Object obj, SearchSettings settings) {
+    private void applySetting(String arg, Object obj, FindSettings settings) {
         if (obj.getClass().equals(String.class)) {
             try {
                 applySetting(arg, (String)obj, settings);
-            } catch (SearchException e) {
-                Logger.logError("SearchException: " + e.getMessage());
+            } catch (FindException e) {
+                Logger.logError("FindException: " + e.getMessage());
             }
         } else if (obj.getClass().equals(Boolean.class)) {
             try {
                 applySetting(arg, (Boolean)obj, settings);
-            } catch (SearchException e) {
-                Logger.logError("SearchException: " + e.getMessage());
+            } catch (FindException e) {
+                Logger.logError("FindException: " + e.getMessage());
             }
         } else if (obj.getClass().equals(Long.class)) {
             try {
                 applySetting(arg, obj.toString(), settings);
-            } catch (SearchException e) {
-                Logger.logError("SearchException: " + e.getMessage());
+            } catch (FindException e) {
+                Logger.logError("FindException: " + e.getMessage());
             }
         } else if (obj.getClass().equals(JSONArray.class)) {
             for (String s : listFromJSONArray((JSONArray)obj)) {
                 try {
                     applySetting(arg, s, settings);
-                } catch (SearchException e) {
-                    Logger.logError("SearchException: " + e.getMessage());
+                } catch (FindException e) {
+                    Logger.logError("FindException: " + e.getMessage());
                 }
             }
         } else {
@@ -188,28 +188,28 @@ public class SearchOptions {
         }
     }
 
-    private void applySetting(String arg, String val, SearchSettings settings)
-            throws SearchException{
+    private void applySetting(String arg, String val, FindSettings settings)
+            throws FindException{
         if (this.argActionMap.containsKey(arg)) {
             this.argActionMap.get(arg).set(val, settings);
         } else if (arg.equals("startpath")) {
             settings.setStartPath(val);
         } else {
-            throw new SearchException("Invalid option: " + arg);
+            throw new FindException("Invalid option: " + arg);
         }
     }
 
-    private void applySetting(String arg, Boolean val, SearchSettings settings)
-            throws SearchException{
+    private void applySetting(String arg, Boolean val, FindSettings settings)
+            throws FindException{
         if (this.boolflagActionMap.containsKey(arg)) {
             this.boolflagActionMap.get(arg).set(val, settings);
         } else {
-            throw new SearchException("Invalid option: " + arg);
+            throw new FindException("Invalid option: " + arg);
         }
     }
 
-    public final SearchSettings settingsFromArgs(final String[] args) throws SearchException {
-        SearchSettings settings = new SearchSettings();
+    public final FindSettings settingsFromArgs(final String[] args) throws FindException {
+        FindSettings settings = new FindSettings();
         // default printresults to True since running from command line
         settings.setPrintResults(true);
 
@@ -234,12 +234,12 @@ public class SearchOptions {
                         String argVal = queue.remove();
                         this.argActionMap.get(arg).set(argVal, settings);
                     } else {
-                        throw new SearchException("Missing value for option " + arg);
+                        throw new FindException("Missing value for option " + arg);
                     }
                 } else if (this.boolflagActionMap.containsKey(arg)) {
                     this.boolflagActionMap.get(arg).set(true, settings);
                 } else {
-                    throw new SearchException("Invalid option: " + arg);
+                    throw new FindException("Invalid option: " + arg);
                 }
             } else {
                 settings.setStartPath(arg);
@@ -256,15 +256,15 @@ public class SearchOptions {
     public final String getUsageString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Usage:\n");
-        sb.append(" javasearch [options] -s <searchpattern> <startpath>\n\n");
+        sb.append(" javafind [options] -s <findpattern> <startpath>\n\n");
         sb.append("Options:\n");
 
-        this.options.sort(Comparator.comparing(SearchOption::getSortArg));
+        this.options.sort(Comparator.comparing(FindOption::getSortArg));
 
         List<String> optStrings = new ArrayList<>();
         List<String> optDescs = new ArrayList<>();
         int longest = 0;
-        for (SearchOption opt : this.options) {
+        for (FindOption opt : this.options) {
             StringBuilder optString = new StringBuilder();
             String shortArg = opt.getShortArg();
             if (null != shortArg && !shortArg.isEmpty()) {

@@ -1,12 +1,12 @@
 ###############################################################################
 #
-# SearchOption.pm
+# FindOption.pm
 #
-# Encapsulates a file to be searched
+# Encapsulates a file to be found
 #
 ###############################################################################
 
-package plsearch::SearchFile;
+package plfind::FindFile;
 
 use strict;
 use warnings;

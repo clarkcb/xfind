@@ -3,7 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 
-namespace CsSearch
+namespace CsFind
 {
     public static class EmbeddedResource
     {

@@ -1,10 +1,10 @@
-#ifndef CPPSEARCH_FILETYPES_H
-#define CPPSEARCH_FILETYPES_H
+#ifndef CPPFIND_FILETYPES_H
+#define CPPFIND_FILETYPES_H
 
 #include <cstdlib>
 #include <set>
 
-namespace cppsearch {
+namespace cppfind {
     enum class FileType {UNKNOWN, ARCHIVE, BINARY, CODE, TEXT, XML};
 
     class FileTypes {
@@ -15,7 +15,7 @@ namespace cppsearch {
         bool is_archive_file(const std::string& filepath);
         bool is_binary_file(const std::string& filepath);
         bool is_code_file(const std::string& filepath);
-        bool is_searchable_file(const std::string& filepath);
+        bool is_findable_file(const std::string& filepath);
         bool is_text_file(const std::string& filepath);
         bool is_unknown_file(const std::string& filepath);
         bool is_xml_file(const std::string& filepath);
@@ -31,4 +31,4 @@ namespace cppsearch {
     };
 }
 
-#endif //CPPSEARCH_FILETYPES_H
+#endif //CPPFIND_FILETYPES_H

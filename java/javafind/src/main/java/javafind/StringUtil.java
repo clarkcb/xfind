@@ -8,7 +8,7 @@ Utility class to determine file types, etc.
 @copyright Cary Clark 2012
 ***************************************************************************** */
 
-package javasearch;
+package javafind;
 
 import java.util.Arrays;
 import java.util.HashSet;

@@ -1,6 +1,6 @@
 //
 //  Config.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/12/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -9,11 +9,11 @@
 import Foundation
 
 public enum Config {
-    // static let xsearchPath = NSString(string: "~/src/xsearch").stringByExpandingTildeInPath
-    public static let xsearchPath = "\(NSHomeDirectory())/src/xsearch"
-    public static let sharedPath = "\(xsearchPath)/shared"
+    // static let xfindPath = NSString(string: "~/src/xfind").stringByExpandingTildeInPath
+    public static let xfindPath = "\(NSHomeDirectory())/src/xfind"
+    public static let sharedPath = "\(xfindPath)/shared"
     // public static let fileTypesPath = "\(sharedPath)/filetypes.xml"
     public static let fileTypesPath = "\(sharedPath)/filetypes.json"
-    // public static let searchOptionsPath = "\(sharedPath)/searchoptions.xml"
-    public static let searchOptionsPath = "\(sharedPath)/searchoptions.json"
+    // public static let findOptionsPath = "\(sharedPath)/findoptions.xml"
+    public static let findOptionsPath = "\(sharedPath)/findoptions.json"
 }

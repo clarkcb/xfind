@@ -1,6 +1,6 @@
 //
 //  FileUtil.m
-//  objcsearch
+//  objcfind
 //
 //  Created by Cary Clark on 1/14/18.
 //  Copyright © 2018 Cary Clark. All rights reserved.
@@ -91,7 +91,7 @@
     return [[self getFileManager] contentsOfDirectoryAtPath:filePath error:error];
 }
 
-+ (NSDirectoryEnumerationOptions) optionsForSettings:(SearchSettings*)settings {
++ (NSDirectoryEnumerationOptions) optionsForSettings:(FindSettings*)settings {
     NSDirectoryEnumerationOptions options = NSDirectoryEnumerationSkipsPackageDescendants;
     if (settings.excludeHidden) {
         options |= NSDirectoryEnumerationSkipsHiddenFiles;
@@ -102,7 +102,7 @@
     return options;
 }
 
-+ (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath settings:(SearchSettings*)settings{
++ (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath settings:(FindSettings*)settings{
     NSDirectoryEnumerationOptions options = [self optionsForSettings:settings];
     return [[self getFileManager]
             enumeratorAtURL:[NSURL fileURLWithPath:filePath]

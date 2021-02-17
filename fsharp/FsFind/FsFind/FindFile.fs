@@ -1,8 +1,8 @@
-﻿namespace FsSearch
+﻿namespace FsFind
 
 open System.IO
 
-module SearchFile = 
+module FindFile = 
 
     type t = {
         Containers : string list;

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# searchoptions.py
+# findoptions.py
 #
-# class SearchOptions: defines the available command-line options and
+# class FindOptions: defines the available command-line options and
 #                      corresponding utility methods
 #
 ###############################################################################
@@ -16,13 +16,13 @@ from io import StringIO
 from typing import List
 
 from .common import get_text
-from .config import SEARCHOPTIONSPATH
-from .searchexception import SearchException
-from .searchoption import SearchOption
-from .searchsettings import SearchSettings
+from .config import FINDOPTIONSPATH
+from .findexception import FindException
+from .findoption import FindOption
+from .findsettings import FindSettings
 
 
-class SearchOptions(object):
+class FindOptions(object):
     """class to provide usage info and parse command-line arguments into settings"""
 
     def __init__(self):
@@ -65,9 +65,9 @@ class SearchOptions(object):
             'listlines':
                 lambda b, settings:
                 settings.set_property('listlines', b),
-            'multilinesearch':
+            'multilineoption-REMOVE':
                 lambda b, settings:
-                settings.set_property('multilinesearch', b),
+                settings.set_property('multilineoption-REMOVE', b),
             'nocolorize':
                 lambda b, settings:
                 settings.set_property('colorize', not b),
@@ -77,18 +77,18 @@ class SearchOptions(object):
             'norecursive':
                 lambda b, settings:
                 settings.set_property('recursive', not b),
-            'nosearcharchives':
+            'nofindarchives':
                 lambda b, settings:
-                settings.set_property('searcharchives', not b),
+                settings.set_property('findarchives', not b),
             'printmatches':
                 lambda b, settings:
                 settings.set_property('printresults', b),
             'recursive':
                 lambda b, settings:
                 settings.set_property('recursive', b),
-            'searcharchives':
+            'findarchives':
                 lambda b, settings:
-                settings.set_property('searcharchives', b),
+                settings.set_property('findarchives', b),
             'uniquelines':
                 lambda b, settings:
                 settings.set_property('uniquelines', b),
@@ -155,9 +155,9 @@ class SearchOptions(object):
             'out-linesbeforepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'out_linesbeforepatterns'),
-            'searchpattern':
+            'findpattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'searchpatterns')
+                settings.add_patterns(x, 'findpatterns')
         }
 
         self.__int_arg_dict = {
@@ -183,14 +183,14 @@ class SearchOptions(object):
 
         self.__longarg_dict = {}
 
-    def settings_from_file(self, filepath: str, settings: SearchSettings):
+    def settings_from_file(self, filepath: str, settings: FindSettings):
         assert os.path.exists(filepath), \
             'Settings file not found: {0:s}'.format(filepath)
         with open(filepath) as f:
             jsonstr = f.read()
         self.settings_from_json(jsonstr, settings)
 
-    def settings_from_json(self, jsonstr: str, settings: SearchSettings):
+    def settings_from_json(self, jsonstr: str, settings: FindSettings):
         json_dict = json.loads(jsonstr)
         for arg in json_dict:
             if arg in self.__bool_arg_dict:
@@ -202,17 +202,17 @@ class SearchOptions(object):
             elif arg in self.__str_arg_dict:
                 self.__str_arg_dict[arg](json_dict[arg], settings)
             else:
-                raise SearchException('Invalid option: {0}'.format(arg))
+                raise FindException('Invalid option: {0}'.format(arg))
 
     def __set_options_from_json(self):
-        with open(SEARCHOPTIONSPATH, mode='r') as f:
-            searchoptions_dict = json.load(f)
-        for searchoption_obj in searchoptions_dict['searchoptions']:
-            longarg = searchoption_obj['long']
+        with open(FINDOPTIONSPATH, mode='r') as f:
+            findoptions_dict = json.load(f)
+        for findoption_obj in findoptions_dict['findoptions']:
+            longarg = findoption_obj['long']
             shortarg = ''
-            if 'short' in searchoption_obj:
-                shortarg = searchoption_obj['short']
-            desc = searchoption_obj['desc']
+            if 'short' in findoption_obj:
+                shortarg = findoption_obj['short']
+            desc = findoption_obj['desc']
             if longarg in self.__bool_arg_dict:
                 func = self.__bool_arg_dict[longarg]
             elif longarg in self.__coll_arg_dict:
@@ -226,21 +226,21 @@ class SearchOptions(object):
             elif longarg == 'settings-file':
                 func = self.settings_from_file
             else:
-                raise SearchException(
-                    'Unknown search option: {0:s}'.format(longarg))
-            self.options.append(SearchOption(shortarg, longarg, desc, func))
+                raise FindException(
+                    'Unknown find option: {0:s}'.format(longarg))
+            self.options.append(FindOption(shortarg, longarg, desc, func))
             self.__longarg_dict[longarg] = longarg
             if shortarg:
                 self.__longarg_dict[shortarg] = longarg
 
     def __set_options_from_xml(self):
-        searchoptionsdom = minidom.parse(SEARCHOPTIONSPATH)
-        searchoptionnodes = searchoptionsdom.getElementsByTagName(
-            'searchoption')
-        for searchoptionnode in searchoptionnodes:
-            longarg = searchoptionnode.getAttribute('long')
-            shortarg = searchoptionnode.getAttribute('short')
-            desc = get_text(searchoptionnode.childNodes).strip()
+        findoptionsdom = minidom.parse(FINDOPTIONSPATH)
+        findoptionnodes = findoptionsdom.getElementsByTagName(
+            'findoption')
+        for findoptionnode in findoptionnodes:
+            longarg = findoptionnode.getAttribute('long')
+            shortarg = findoptionnode.getAttribute('short')
+            desc = get_text(findoptionnode.childNodes).strip()
             if longarg in self.__bool_arg_dict:
                 func = self.__bool_arg_dict[longarg]
             elif longarg in self.__coll_arg_dict:
@@ -252,16 +252,16 @@ class SearchOptions(object):
             elif longarg == 'settings-file':
                 func = self.settings_from_file
             else:
-                raise SearchException(
-                    'Unknown search option: {0:s}'.format(longarg))
-            self.options.append(SearchOption(shortarg, longarg, desc, func))
+                raise FindException(
+                    'Unknown find option: {0:s}'.format(longarg))
+            self.options.append(FindOption(shortarg, longarg, desc, func))
             self.__longarg_dict[longarg] = longarg
             if shortarg:
                 self.__longarg_dict[shortarg] = longarg
 
-    def search_settings_from_args(self, args: List[str]) -> SearchSettings:
-        """Returns a SearchSettings instance for a given list of args"""
-        settings = SearchSettings()
+    def find_settings_from_args(self, args: List[str]) -> FindSettings:
+        """Returns a FindSettings instance for a given list of args"""
+        settings = FindSettings()
         # default printresults to True since running from command line
         settings.printresults = True
         argdeque = deque(args)
@@ -296,20 +296,20 @@ class SearchOptions(object):
                                 if invalid_int:
                                     err = 'Invalid value for option {}: {}'.format(
                                         arg, argval)
-                                    raise SearchException(err)
+                                    raise FindException(err)
                                 self.__int_arg_dict[longarg](argval, settings)
                             elif longarg in self.__str_arg_dict:
                                 self.__str_arg_dict[longarg](argval, settings)
                             elif longarg == 'settings-file':
                                 self.settings_from_file(argval, settings)
                         else:
-                            raise SearchException('Missing value for option {0}'.
+                            raise FindException('Missing value for option {0}'.
                                                   format(arg))
                     else:
-                        raise SearchException(
+                        raise FindException(
                             'Invalid option: {0}'.format(arg))
                 else:
-                    raise SearchException('Invalid option: {0}'.format(arg))
+                    raise FindException('Invalid option: {0}'.format(arg))
             else:
                 settings.startpath = arg
         return settings
@@ -322,7 +322,7 @@ class SearchOptions(object):
         sio = StringIO()
         sio.write('Usage:\n')
         sio.write(
-            ' pysearch [options] -s <searchpattern> <startpath>\n\nOptions:\n')
+            ' pyfind [options] -s <findpattern> <startpath>\n\nOptions:\n')
         opt_pairs = []
         longest = 0
         for opt in sorted(self.options, key=lambda o: o.sortarg):

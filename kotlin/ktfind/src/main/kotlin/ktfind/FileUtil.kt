@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 /**
  * @author cary on 7/24/16.

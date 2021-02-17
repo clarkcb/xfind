@@ -1,6 +1,6 @@
 //
 //  FileUtil.swift
-//  swiftsearch
+//  swiftfind
 //
 //  Created by Cary Clark on 5/18/15.
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
@@ -49,7 +49,7 @@ public enum FileUtil {
         FileManager.default
     }
 
-    fileprivate static func getOptions(forSettings settings: SearchSettings) -> FileManager.DirectoryEnumerationOptions {
+    fileprivate static func getOptions(forSettings settings: FindSettings) -> FileManager.DirectoryEnumerationOptions {
         var options: FileManager.DirectoryEnumerationOptions = [.skipsPackageDescendants]
         if settings.excludeHidden {
             options.insert(.skipsHiddenFiles)
@@ -61,7 +61,7 @@ public enum FileUtil {
     }
 
     // gets files only directly under given path --> set settings.recursive to false and call `enumerator` below instead
-    public static func directoryContents(forPath filePath: String, settings: SearchSettings) -> [String] {
+    public static func directoryContents(forPath filePath: String, settings: FindSettings) -> [String] {
         do {
             let options = getOptions(forSettings: settings)
             let fileUrls = try getFileManager().contentsOfDirectory(at: URL(fileURLWithPath: expandPath(filePath)), includingPropertiesForKeys: [.isRegularFileKey], options: options)
@@ -72,7 +72,7 @@ public enum FileUtil {
     }
 
     // gets files recursively under given path
-    public static func enumerator(forPath filePath: String, settings: SearchSettings) -> FileManager.DirectoryEnumerator? {
+    public static func enumerator(forPath filePath: String, settings: FindSettings) -> FileManager.DirectoryEnumerator? {
         let options = getOptions(forSettings: settings)
         return getFileManager().enumerator(at: URL(fileURLWithPath: expandPath(filePath)),
                                            includingPropertiesForKeys: [.isDirectoryKey, .isRegularFileKey],

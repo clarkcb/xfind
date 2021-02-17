@@ -1,11 +1,11 @@
-package ktsearch
+package ktfind
 
 import java.io.File
 
 /**
  * @author cary on 7/24/16.
  */
-class SearchFile(val containers: List<String>, val file: File, val fileType: FileType) {
+class FindFile(val containers: List<String>, val file: File, val fileType: FileType) {
     val CONTAINER_SEPARATOR = "!"
 
     constructor(file: File, fileType: FileType) : this(listOf(), file, fileType)

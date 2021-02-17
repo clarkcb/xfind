@@ -7,56 +7,56 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace CsSearch
+namespace CsFind
 {
-	public class Searcher
+	public class Finder
 	{
 		private readonly FileTypes _fileTypes;
-		private SearchSettings Settings { get; set; }
-		private ConcurrentBag<SearchResult> Results { get; set; }
+		private FindSettings Settings { get; set; }
+		private ConcurrentBag<FindResult> Results { get; set; }
 		private Encoding TextFileEncoding { get; set; } = Encoding.Default;
 
-		// TODO: move this to SearchSettings
+		// TODO: move this to FindSettings
 		private const int FileBatchSize = 255;
 		// use single-byte encoding for reading binary files (will break if UTF8)
 		private readonly Encoding _binaryEncoding = Encoding.GetEncoding("ISO-8859-1");
 
-		public Searcher(SearchSettings settings)
+		public Finder(FindSettings settings)
 		{
 			Settings = settings;
 			ValidateSettings();
 			_fileTypes = new FileTypes();
-			Results = new ConcurrentBag<SearchResult>();
+			Results = new ConcurrentBag<FindResult>();
 		}
 
 		private void ValidateSettings()
 		{
 			if (string.IsNullOrEmpty(Settings.StartPath))
-				throw new SearchException("Startpath not defined");
+				throw new FindException("Startpath not defined");
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath);
 			if (!Directory.Exists(expandedPath) && !File.Exists(expandedPath))
 			{
-				throw new SearchException("Startpath not found");
+				throw new FindException("Startpath not found");
 			}
-			if (Settings.SearchPatterns.Count < 1)
-				throw new SearchException("No search patterns defined");
+			if (Settings.FindPatterns.Count < 1)
+				throw new FindException("No find patterns defined");
 			try
 			{
 				TextFileEncoding = Encoding.GetEncoding(Settings.TextFileEncoding);
 			}
 			catch (ArgumentException)
 			{
-				throw new SearchException("Invalid encoding");
+				throw new FindException("Invalid encoding");
 			}
 			if (Settings.LinesBefore < 0)
-				throw new SearchException("Invalid linesbefore");
+				throw new FindException("Invalid linesbefore");
 			if (Settings.LinesAfter < 0)
-				throw new SearchException("Invalid linesafter");
+				throw new FindException("Invalid linesafter");
 			if (Settings.MaxLineLength < 0)
-				throw new SearchException("Invalid maxlinelength");
+				throw new FindException("Invalid maxlinelength");
 		}
 
-		public bool IsSearchDirectory(DirectoryInfo d)
+		public bool IsFindDirectory(DirectoryInfo d)
 		{
 			if (FileUtil.IsDotDir(d.Name))
 				return true;
@@ -68,7 +68,7 @@ namespace CsSearch
 			        !Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0));
 		}
 
-		public bool IsSearchFile(SearchFile sf)
+		public bool IsFindFile(FindFile sf)
 		{
 			return (Settings.InExtensions.Count == 0 ||
 			        Settings.InExtensions.Contains(sf.File.Extension)) &&
@@ -80,7 +80,7 @@ namespace CsSearch
 			        !Settings.OutFilePatterns.Any(p => p.Match(sf.File.Name).Success));
 		}
 
-		public bool IsArchiveSearchFile(SearchFile sf)
+		public bool IsArchiveFindFile(FindFile sf)
 		{
 			return (Settings.InArchiveExtensions.Count == 0 ||
 			        Settings.InArchiveExtensions.Contains(sf.File.Extension)) &&
@@ -92,134 +92,134 @@ namespace CsSearch
 			        !Settings.OutArchiveFilePatterns.Any(p => p.Match(sf.File.Name).Success));
 		}
 
-		public bool FilterFile(SearchFile sf)
+		public bool FilterFile(FindFile sf)
 		{
 			if (FileUtil.IsHidden(sf.File) && Settings.ExcludeHidden)
 				return false;
 			if (sf.Type.Equals(FileType.Archive))
 			{
-				return (Settings.SearchArchives && IsArchiveSearchFile(sf));
+				return (Settings.FindArchives && IsArchiveFindFile(sf));
 			}
-			return (!Settings.ArchivesOnly && IsSearchFile(sf));
+			return (!Settings.ArchivesOnly && IsFindFile(sf));
 		}
 
-		private IEnumerable<SearchFile> GetSearchFiles()
+		private IEnumerable<FindFile> GetFindFiles()
 		{
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath!);
-			var searchOption = Settings.Recursive ? System.IO.SearchOption.AllDirectories :
-				System.IO.SearchOption.TopDirectoryOnly;
+			var findOption = Settings.Recursive ? System.IO.FindOption.AllDirectories :
+				System.IO.FindOption.TopDirectoryOnly;
 			return new DirectoryInfo(expandedPath).
-				EnumerateFiles("*", searchOption).
-				Where(f => IsSearchDirectory(f.Directory)).
-				Select(f => new SearchFile(f, _fileTypes.GetFileType(f))).
+				EnumerateFiles("*", findOption).
+				Where(f => IsFindDirectory(f.Directory)).
+				Select(f => new FindFile(f, _fileTypes.GetFileType(f))).
 				Where(FilterFile).
 				Select(sf => sf);
 		}
 
-		public void Search()
+		public void Find()
 		{
 			var expandedPath = FileUtil.ExpandPath(Settings.StartPath!);
 			if (Directory.Exists(expandedPath))
 			{
 				var startDir = new DirectoryInfo(expandedPath);
-				if (IsSearchDirectory(startDir))
+				if (IsFindDirectory(startDir))
 				{
-					SearchPath(startDir);
+					FindPath(startDir);
 				}
 				else
 				{
-					throw new SearchException("Startpath does not match search settings");
+					throw new FindException("Startpath does not match find settings");
 				}
 			}
 			else
 			{
 				var f = new FileInfo(expandedPath);
-				var sf = new SearchFile(f, _fileTypes.GetFileType(f));
+				var sf = new FindFile(f, _fileTypes.GetFileType(f));
 				if (FilterFile(sf))
 				{
-					SearchFile(sf);
+					FindFile(sf);
 				}
 				else
 				{
-					throw new SearchException("Startpath does not match search settings");
+					throw new FindException("Startpath does not match find settings");
 				}
 			}
 		}
 
-		public void SearchPath(DirectoryInfo path)
+		public void FindPath(DirectoryInfo path)
 		{
-			var searchFiles = GetSearchFiles().ToList();
+			var findFiles = GetFindFiles().ToList();
 			if (Settings.Verbose)
 			{
-				searchFiles.Sort(new SearchFilesComparer());
+				findFiles.Sort(new FindFilesComparer());
 
-				var searchDirs = searchFiles
+				var findDirs = findFiles
 					.Where(sf => sf.File.Directory != null)
 					.Select(sf => sf.File.Directory.ToString())
 					.Distinct()
 					.OrderBy(d => d).ToArray();
-				Common.Log($"Directories to be searched ({searchDirs.Length}):");
-				foreach (var d in searchDirs)
+				Common.Log($"Directories to be found ({findDirs.Length}):");
+				foreach (var d in findDirs)
 				{
 					Common.Log(FileUtil.ContractOrRelativePath(d, Settings.StartPath!));
 				}
 				
-				Common.Log($"\nFiles to be searched ({searchFiles.Count}):");
-				foreach (var f in searchFiles)
+				Common.Log($"\nFiles to be found ({findFiles.Count}):");
+				foreach (var f in findFiles)
 				{
 					Common.Log(FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!));
 				}
 			}
 
-			var searched = 0;
-			while (searchFiles.Count - searched > FileBatchSize)
+			var found = 0;
+			while (findFiles.Count - found > FileBatchSize)
 			{
-				SearchBatch(searchFiles.Skip(searched).Take(FileBatchSize).ToArray());
-				searched += FileBatchSize;
+				FindBatch(findFiles.Skip(found).Take(FileBatchSize).ToArray());
+				found += FileBatchSize;
 			}
-			if (searchFiles.Count > searched)
+			if (findFiles.Count > found)
 			{
-				SearchBatch(searchFiles.Skip(searched).ToArray());
+				FindBatch(findFiles.Skip(found).ToArray());
 			}
 		}
 
-		private void SearchBatch(IReadOnlyList<SearchFile> searchFiles)
+		private void FindBatch(IReadOnlyList<FindFile> findFiles)
 		{
-			if (searchFiles.Count > 100)
+			if (findFiles.Count > 100)
 			{
-				SearchBatchConcurrent(searchFiles);
+				FindBatchConcurrent(findFiles);
 			}
 			else
 			{
-				foreach (var f in searchFiles)
+				foreach (var f in findFiles)
 				{
-					SearchFile(f);
+					FindFile(f);
 				}
 			}
 		}
 
-		private void SearchBatchConcurrent(IReadOnlyList<SearchFile> searchFiles)
+		private void FindBatchConcurrent(IReadOnlyList<FindFile> findFiles)
 		{
-			var searchTasks = new Task[searchFiles.Count];
-			for (var i = 0; i < searchFiles.Count; i++)
+			var findTasks = new Task[findFiles.Count];
+			for (var i = 0; i < findFiles.Count; i++)
 			{
-				var searchFile = searchFiles[i];
-				searchTasks[i] = Task.Factory.StartNew(() => SearchFile(searchFile));
+				var findFile = findFiles[i];
+				findTasks[i] = Task.Factory.StartNew(() => FindFile(findFile));
 			}
-			Task.WaitAll(searchTasks);
+			Task.WaitAll(findTasks);
 		}
 
-		public void SearchFile(SearchFile f)
+		public void FindFile(FindFile f)
 		{
 			switch (f.Type)
 			{
 				case FileType.Code:
 				case FileType.Text:
 				case FileType.Xml:
-					SearchTextFile(f);
+					FindTextFile(f);
 					break;
 				case FileType.Binary:
-					SearchBinaryFile(f);
+					FindBinaryFile(f);
 					break;
 				case FileType.Archive:
 					Common.Log($"Skipping archive file {FileUtil.ContractPath(f.FullName)}");
@@ -236,26 +236,26 @@ namespace CsSearch
 			}
 		}
 
-		private void SearchTextFile(SearchFile f)
+		private void FindTextFile(FindFile f)
 		{
 			if (Settings.Debug)
-				Common.Log($"Searching text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!)}");
-			if (Settings.MultiLineSearch)
-				SearchTextFileContents(f);
+				Common.Log($"Finding text file {FileUtil.ContractOrRelativePath(f.FullName, Settings.StartPath!)}");
+			if (Settings.MultiLineFind)
+				FindTextFileContents(f);
 			else
-				SearchTextFileLines(f);
+				FindTextFileLines(f);
 		}
 
-		private void SearchTextFileContents(SearchFile f)
+		private void FindTextFileContents(FindFile f)
 		{
 			try
 			{
 				var contents = FileUtil.GetFileContents(f, TextFileEncoding);
-				var results = SearchContents(contents);
+				var results = FindContents(contents);
 				foreach (var r in results)
 				{
 					r.File = f;
-					AddSearchResult(r);
+					AddFindResult(r);
 				}
 			}
 			catch (IOException e)
@@ -314,15 +314,15 @@ namespace CsSearch
 			return linesAfter;
 		}
 
-		public IEnumerable<SearchResult> SearchContents(string contents)
+		public IEnumerable<FindResult> FindContents(string contents)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
-			var results = new List<SearchResult>();
+			var results = new List<FindResult>();
 			var newLineIndices = GetNewLineIndices(contents);
 			var startLineIndices = GetStartLineIndices(newLineIndices).ToList();
 			var endLineIndices = GetEndLineIndices(contents, newLineIndices).ToList();
 
-			foreach (var p in Settings.SearchPatterns)
+			foreach (var p in Settings.FindPatterns)
 			{
 				var match = p.Match(contents);
 				while (match.Success)
@@ -354,7 +354,7 @@ namespace CsSearch
 					if ((linesBefore.ToList().Count == 0 || LinesBeforeMatch(linesBefore))
 						&&
 						(linesAfter.ToList().Count == 0 || LinesAfterMatch(linesAfter)))
-						results.Add(new SearchResult(
+						results.Add(new FindResult(
 						p,
 						null,
 						lineNum,
@@ -371,17 +371,17 @@ namespace CsSearch
 			return results;
 		}
 
-		private void SearchTextFileLines(SearchFile f)
+		private void FindTextFileLines(FindFile f)
 		{
 			try
 			{
 				var enumerableLines = FileUtil.EnumerableStringFromFile(f, TextFileEncoding);
-				var results = SearchLines(enumerableLines);
+				var results = FindLines(enumerableLines);
 
 				foreach (var r in results)
 				{
 					r.File = f;
-					AddSearchResult(r);
+					AddFindResult(r);
 				}
 			}
 			catch (IOException e)
@@ -420,10 +420,10 @@ namespace CsSearch
 				Settings.OutLinesAfterPatterns);
 		}
 
-		public IEnumerable<SearchResult> SearchLines(IEnumerable<string> lines)
+		public IEnumerable<FindResult> FindLines(IEnumerable<string> lines)
 		{
 			var patternMatches = new Dictionary<Regex, int>();
-			var results = new List<SearchResult>();
+			var results = new List<FindResult>();
 			var lineNum = 0;
 			var linesBefore = new Queue<string>();
 			var linesAfter = new Queue<string>();
@@ -446,7 +446,7 @@ namespace CsSearch
 				    &&
 				    (Settings.LinesAfter == 0 || linesAfter.Count == 0 || LinesAfterMatch(linesAfter)))
 				{
-					foreach (var p in Settings.SearchPatterns)
+					foreach (var p in Settings.FindPatterns)
 					{
 						foreach (Match match in p.Matches(line).Where(m => m != null))
 						{
@@ -455,7 +455,7 @@ namespace CsSearch
 								stop = true;
 								break;
 							}
-							results.Add(new SearchResult(p,
+							results.Add(new FindResult(p,
 								null,
 								lineNum,
 								match.Index + 1,
@@ -482,15 +482,15 @@ namespace CsSearch
 			return results;
 		}
 
-		private void SearchBinaryFile(SearchFile sf)
+		private void FindBinaryFile(FindFile sf)
 		{
 			if (Settings.Verbose)
-				Common.Log($"Searching binary file {FileUtil.ContractPath(sf.FullName)}");
+				Common.Log($"Finding binary file {FileUtil.ContractPath(sf.FullName)}");
 			try
 			{
 				using var sr = new StreamReader(sf.FullName, _binaryEncoding);
 				var contents = sr.ReadToEnd();
-				foreach (var p in Settings.SearchPatterns)
+				foreach (var p in Settings.FindPatterns)
 				{
 					var matches = p.Matches(contents).Cast<Match>();
 					if (Settings.FirstMatch)
@@ -499,7 +499,7 @@ namespace CsSearch
 					}
 					foreach (var m in matches)
 					{
-						AddSearchResult(new SearchResult(
+						AddFindResult(new FindResult(
 							p,
 							sf,
 							0,
@@ -515,26 +515,26 @@ namespace CsSearch
 			}
 		}
 
-		private void AddSearchResult(SearchResult searchResult)
+		private void AddFindResult(FindResult findResult)
 		{
-			Results.Add(searchResult);
+			Results.Add(findResult);
 		}
 
-		private IList<SearchResult> GetSortedSearchResults()
+		private IList<FindResult> GetSortedFindResults()
 		{
 			var sorted = Results.ToList();
-			sorted.Sort(new SearchResultsComparer());
+			sorted.Sort(new FindResultsComparer());
 			return sorted;
 		}
 
 		public void PrintResults()
 		{
-			var sortedResults = GetSortedSearchResults();
-			var formatter = new SearchResultFormatter(Settings);
-			Common.Log($"Search results ({sortedResults.Count}):");
-			foreach (var searchResult in sortedResults)
+			var sortedResults = GetSortedFindResults();
+			var formatter = new FindResultFormatter(Settings);
+			Common.Log($"Find results ({sortedResults.Count}):");
+			foreach (var findResult in sortedResults)
 			{
-				Common.Log(formatter.Format(searchResult));
+				Common.Log(formatter.Format(findResult));
 			}
 		}
 

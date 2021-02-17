@@ -1,7 +1,7 @@
 <?php
 
 
-namespace phpsearch;
+namespace phpfind;
 
 
 class Logger

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module RbSearch
+module RbFind
 
   # FileUtil - file utility functions
   module FileUtil

@@ -1,32 +1,32 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# searchsettings.py
+# findsettings.py
 #
-# class SearchSettings: encapsulates search settings
+# class FindSettings: encapsulates find settings
 #
 ###############################################################################
 import re
 from typing import Any, Dict, Pattern, Set
 
 from .filetypes import FileType
-from .searchexception import SearchException
+from .findexception import FindException
 
 PatternSet = Set[Pattern]
 
 
-class SearchSettings(object):
-    """a class to encapsulate search settings for a particular search session"""
+class FindSettings(object):
+    """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
         'archivesonly', 'colorize', 'debug', 'excludehidden', 'firstmatch', 'in_archiveextensions',
         'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
         'in_filetypes', 'in_linesafterpatterns', 'in_linesbeforepatterns', 'linesafter',
         'linesaftertopatterns', 'linesafteruntilpatterns', 'linesbefore', 'listdirs',
-        'listfiles', 'listlines', 'maxlinelength', 'multilinesearch', 'out_archivefilepatterns',
+        'listfiles', 'listlines', 'maxlinelength', 'multilineoption-REMOVE', 'out_archivefilepatterns',
         'out_archiveextensions', 'out_dirpatterns', 'out_extensions', 'out_filepatterns',
         'out_filetypes', 'out_linesafterpatterns', 'out_linesbeforepatterns', 'printresults',
-        'printusage', 'printversion', 'recursive', 'searcharchives', 'searchpatterns', 'startpath',
+        'printusage', 'printversion', 'recursive', 'findarchives', 'findpatterns', 'startpath',
         'textfileencoding', 'uniquelines', 'verbose'
     ]
 
@@ -38,12 +38,12 @@ class SearchSettings(object):
                  linesafter: int = 0, linesaftertopatterns: PatternSet = None,
                  linesafteruntilpatterns: PatternSet = None, linesbefore: int = 0, listdirs: bool = False,
                  listfiles: bool = False, listlines: bool = False, maxlinelength: int = 150,
-                 multilinesearch: bool = False, out_archivefilepatterns: PatternSet = None,
+                 multilineoption-REMOVE: bool = False, out_archivefilepatterns: PatternSet = None,
                  out_archiveextensions: Set[str] = None, out_dirpatterns: PatternSet = None,
                  out_extensions: Set[str] = None, out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
                  out_linesafterpatterns: PatternSet = None, out_linesbeforepatterns: PatternSet = None,
                  printresults: bool = True, printusage: bool = False, printversion: bool = False,
-                 recursive: bool = True, searcharchives: bool = False, searchpatterns: PatternSet = None,
+                 recursive: bool = True, findarchives: bool = False, findpatterns: PatternSet = None,
                  startpath: str = '', textfileencoding: str = 'UTF-8', uniquelines: bool = False,
                  verbose: bool = False):
         self.archivesonly = archivesonly
@@ -67,7 +67,7 @@ class SearchSettings(object):
         self.listfiles = listfiles
         self.listlines = listlines
         self.maxlinelength = maxlinelength
-        self.multilinesearch = multilinesearch
+        self.multilineoption-REMOVE = multilineoption-REMOVE
         self.out_archiveextensions = out_archiveextensions if out_archiveextensions else set()
         self.out_archivefilepatterns: PatternSet = out_archivefilepatterns if out_archivefilepatterns else set()
         self.out_dirpatterns: PatternSet = out_dirpatterns if out_dirpatterns else set()
@@ -80,9 +80,9 @@ class SearchSettings(object):
         self.printresults = printresults
         self.printusage = printusage
         self.printversion = printversion
-        # self.searchpatterns: PatternSet = searchpatterns if searchpatterns else set()
-        self.searchpatterns = searchpatterns if searchpatterns else set()
-        self.searcharchives = searcharchives
+        # self.findpatterns: PatternSet = findpatterns if findpatterns else set()
+        self.findpatterns = findpatterns if findpatterns else set()
+        self.findarchives = findarchives
         self.startpath = startpath
         self.textfileencoding = textfileencoding
         self.uniquelines = uniquelines
@@ -108,7 +108,7 @@ class SearchSettings(object):
             pattern_set = getattr(self, pattern_set_name)
             pattern_set.add(re.compile(patterns, compile_flag))
         else:
-            raise SearchException('patterns is an unknown type')
+            raise FindException('patterns is an unknown type')
 
     def add_filetypes(self, filetypes, filetype_set_name: str):
         if isinstance(filetypes, list) or isinstance(filetypes, set):
@@ -118,7 +118,7 @@ class SearchSettings(object):
             new_filetype_set = set([FileType.from_name(ft)
                                     for ft in filetypes.split(',') if ft])
         else:
-            raise SearchException('filetypes is an unknown type')
+            raise FindException('filetypes is an unknown type')
         filetype_set = getattr(self, filetype_set_name)
         filetype_set.update(new_filetype_set)
 
@@ -127,7 +127,7 @@ class SearchSettings(object):
         # some trues trigger others
         if isinstance(val, bool) and val:
             if name == 'archivesonly':
-                self.searcharchives = True
+                self.findarchives = True
             elif name == 'debug':
                 self.verbose = True
 

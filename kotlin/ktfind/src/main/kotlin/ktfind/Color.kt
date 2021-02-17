@@ -1,4 +1,4 @@
-package ktsearch
+package ktfind
 
 object Color {
     const val RESET = "\u001B[0m"

@@ -35,7 +35,7 @@ class FileTypes {
             } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
 
             fileTypeMap.text = [].concat(fileTypeMap.text, fileTypeMap.code, fileTypeMap.xml);
-            fileTypeMap.searchable = [].concat(fileTypeMap.text, fileTypeMap.binary,
+            fileTypeMap.findable = [].concat(fileTypeMap.text, fileTypeMap.binary,
                 fileTypeMap.archive);
 
             return fileTypeMap;
@@ -89,9 +89,9 @@ class FileTypes {
         return this.fileTypeMap.code.indexOf(ext) > -1;
     }
 
-    isSearchableFile(filename) {
+    isFindableFile(filename) {
         let ext = getExtension(filename);
-        return this.fileTypeMap.searchable.indexOf(ext) > -1;
+        return this.fileTypeMap.findable.indexOf(ext) > -1;
     }
 
     isTextFile(filename) {
@@ -106,7 +106,7 @@ class FileTypes {
 
     isUnknownFile(filename) {
         let ext = getExtension(filename);
-        return this.fileTypeMap.searchable.indexOf(ext) === -1;
+        return this.fileTypeMap.findable.indexOf(ext) === -1;
     }
 }
 

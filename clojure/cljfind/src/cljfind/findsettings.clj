@@ -1,19 +1,19 @@
 ;;; ############################################################################
 ;;;
-;;; searchsettings.clj
+;;; findsettings.clj
 ;;;
-;;; Defines the settings for a given search instance
+;;; Defines the settings for a given find instance
 ;;;
 ;;; ############################################################################
 
-(ns cljsearch.searchsettings
+(ns cljfind.findsettings
   #^{:author "Cary Clark",
-     :doc "Defines the settings for a given search instance"}
+     :doc "Defines the settings for a given find instance"}
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (split)]
-        [cljsearch.filetypes :only (from-name)]))
+        [cljfind.filetypes :only (from-name)]))
 
-(defrecord SearchSettings
+(defrecord FindSettings
   [
     archivesonly
     colorize
@@ -36,7 +36,7 @@
     listfiles
     listlines
     maxlinelength
-    multilinesearch
+    multilineoption-REMOVE
     out-archiveextensions
     out-archivefilepatterns
     out-dirpatterns
@@ -49,15 +49,15 @@
     printusage
     printversion
     recursive
-    searcharchives
-    searchpatterns
+    findarchives
+    findpatterns
     startpath
     textfileencoding
     uniquelines
     verbose
   ])
 
-(def DEFAULT-SETTINGS (->SearchSettings
+(def DEFAULT-SETTINGS (->FindSettings
     false   ; archivesonly
     true    ; colorize
     false   ; debug
@@ -79,7 +79,7 @@
     false   ; listfiles
     false   ; listlines
     150     ; maxlinelength
-    false   ; multilinesearch
+    false   ; multilineoption-REMOVE
     #{}     ; out-archiveextensions
     #{}     ; out-archivefilepatterns
     #{}     ; out-dirpatterns
@@ -92,8 +92,8 @@
     false   ; printusage
     false   ; printversion
     true    ; recursive
-    false   ; searcharchives
-    #{}     ; searchpatterns
+    false   ; findarchives
+    #{}     ; findpatterns
     nil     ; startpath
     "utf-8" ; textfileencoding
     false   ; uniquelines
@@ -154,10 +154,10 @@
         (assoc settings numname (read-string n)))))
 
 (defn set-archivesonly [settings b]
-  (let [with-searcharchives (assoc settings :searcharchives b)]
+  (let [with-findarchives (assoc settings :findarchives b)]
     (if b
-      (assoc with-searcharchives :archivesonly true)
-      with-searcharchives)))
+      (assoc with-findarchives :archivesonly true)
+      with-findarchives)))
 
 (defn set-debug [settings b]
   (let [with-debug (assoc settings :debug true)]

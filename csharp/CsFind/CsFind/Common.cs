@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CsSearch
+namespace CsFind
 {
 	internal static class Common
 	{

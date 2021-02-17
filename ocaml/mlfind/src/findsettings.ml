@@ -23,7 +23,7 @@ type t = {
   listfiles : bool;
   listlines : bool;
   maxlinelength : int;
-  multilinesearch : bool;
+  multilineoption-REMOVE : bool;
   out_archiveextensions : string list;
   out_archivefilepatterns : Re2.Regex.t list;
   out_dirpatterns : Re2.Regex.t list;
@@ -36,8 +36,8 @@ type t = {
   printusage : bool;
   printversion : bool;
   recursive : bool;
-  searcharchives : bool;
-  searchpatterns : Re2.Regex.t list;
+  findarchives : bool;
+  findpatterns : Re2.Regex.t list;
   startpath : string;
   textfileencoding : string;
   uniquelines : bool;
@@ -66,7 +66,7 @@ let default_settings = {
   listfiles = false;
   listlines = false;
   maxlinelength = 200;
-  multilinesearch = false;
+  multilineoption-REMOVE = false;
   out_archiveextensions = [];
   out_archivefilepatterns = [];
   out_dirpatterns = [];
@@ -79,8 +79,8 @@ let default_settings = {
   printusage = false;
   printversion = false;
   recursive = true;
-  searcharchives = false;
-  searchpatterns = [];
+  findarchives = false;
+  findpatterns = [];
   startpath = "";
   textfileencoding = "UTF-8";
   uniquelines = false;
@@ -95,11 +95,11 @@ let add_filetypes (ft_string : string) (filetypes : string list) =
   let fts = String.split ft_string ~on:(char_of_int 44) in
   List.append filetypes fts
 
-let set_archivesonly (ss : SearchSettings.t) (archivesonly: bool) (ss : SearchSettings.t) =
-  let searcharchives = if archivesonly then archivesonly else ss.searcharchives
-  { ss with archivesonly=archivesonly; searcharchives=searcharchives }
+let set_archivesonly (ss : FindSettings.t) (archivesonly: bool) (ss : FindSettings.t) =
+  let findarchives = if archivesonly then archivesonly else ss.findarchives
+  { ss with archivesonly=archivesonly; findarchives=findarchives }
 
-let set_debug (ss : SearchSettings.t) (debug: bool) (ss : SearchSettings.t) =
+let set_debug (ss : FindSettings.t) (debug: bool) (ss : FindSettings.t) =
   let verbose = if debug then debug else ss.verbose
   { ss with debug=debug; verbose=verbose }
 
@@ -126,7 +126,7 @@ let to_string s =
     sprintf "; listfiles=%b" s.listfiles;
     sprintf "; listlines=%b" s.listlines;
     sprintf "; maxlinelength=%d" s.maxlinelength;
-    sprintf "; multilinesearch=%b" s.multilinesearch;
+    sprintf "; multilineoption-REMOVE=%b" s.multilineoption-REMOVE;
     sprintf "; out_archiveextensions=%s" (list_to_string s.out_archiveextensions);
     sprintf "; out_archivefilepatterns=%s" (regexp_list_to_string s.out_archivefilepatterns);
     sprintf "; out_dirpatterns=%s" (regexp_list_to_string s.out_dirpatterns);
@@ -138,8 +138,8 @@ let to_string s =
     sprintf "; printresults=%b" s.printresults;
     sprintf "; printversion=%b" s.printversion;
     sprintf "; recursive=%b" s.recursive;
-    sprintf "; searcharchives=%b" s.searcharchives;
-    sprintf "; searchpatterns=%s" (regexp_list_to_string s.searchpatterns);
+    sprintf "; findarchives=%b" s.findarchives;
+    sprintf "; findpatterns=%s" (regexp_list_to_string s.findpatterns);
     sprintf "; startpath=\"%s\"" s.startpath;
     sprintf "; textfileencoding=\"%s\"" s.textfileencoding;
     sprintf "; uniquelines=%b" s.uniquelines;

@@ -17,59 +17,59 @@ use zip::read::ZipFile;
 use crate::common::log;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
-use crate::searcherror::SearchError;
-use crate::searchfile::SearchFile;
-use crate::searchresult::SearchResult;
-use crate::searchsettings::SearchSettings;
+use crate::finderror::FindError;
+use crate::findfile::FindFile;
+use crate::findresult::FindResult;
+use crate::findsettings::FindSettings;
 
 const BINARY_ENCODING: &SingleByteEncoding = encoding::all::ISO_8859_1;
 
-pub struct Searcher {
+pub struct Finder {
     pub filetypes: FileTypes,
-    pub settings: SearchSettings,
+    pub settings: FindSettings,
 }
 
-impl Searcher {
-    /// Create a new Searcher instance for the given settings, if valid
-    pub fn new(settings: SearchSettings) -> Result<Searcher, SearchError> {
+impl Finder {
+    /// Create a new Finder instance for the given settings, if valid
+    pub fn new(settings: FindSettings) -> Result<Finder, FindError> {
         let filetypes = match FileTypes::new() {
             Ok(filetypes) => filetypes,
             Err(error) => return Err(error),
         };
 
-        if let Err(error) = Searcher::validate_settings(&settings) {
+        if let Err(error) = Finder::validate_settings(&settings) {
             return Err(error);
         }
 
-        Ok(Searcher {
+        Ok(Finder {
             filetypes,
             settings,
         })
     }
 
-    fn validate_settings(settings: &SearchSettings) -> Result<(), SearchError> {
+    fn validate_settings(settings: &FindSettings) -> Result<(), FindError> {
         if settings.startpath == "" {
-            return Err(SearchError::new("Startpath not defined"));
+            return Err(FindError::new("Startpath not defined"));
         }
         let metadata = fs::metadata(&settings.startpath);
         if metadata.is_err() {
             match metadata.err().unwrap().kind() {
-                io::ErrorKind::NotFound => return Err(SearchError::new("Startpath not found")),
+                io::ErrorKind::NotFound => return Err(FindError::new("Startpath not found")),
                 io::ErrorKind::PermissionDenied => {
-                    return Err(SearchError::new("Startpath not readable"))
+                    return Err(FindError::new("Startpath not readable"))
                 },
                 _ => {
-                    return Err(SearchError::new(
+                    return Err(FindError::new(
                         "An unknown error occurred trying to read startpath",
                     ))
                 }
             }
         }
-        if settings.search_patterns.is_empty() {
-            return Err(SearchError::new("No search patterns defined"));
+        if settings.find_patterns.is_empty() {
+            return Err(FindError::new("No find patterns defined"));
         }
         if let None = label::encoding_from_whatwg_label(&settings.text_file_encoding) {
-            return Err(SearchError::new(
+            return Err(FindError::new(
                 "Invalid or unsupported text file encoding",
             ));
         }
@@ -102,7 +102,7 @@ impl Searcher {
         false
     }
 
-    fn is_search_dir(&self, dir: &String) -> bool {
+    fn is_find_dir(&self, dir: &String) -> bool {
         if FileUtil::is_hidden(&dir) && self.settings.exclude_hidden {
             return false;
         }
@@ -112,30 +112,30 @@ impl Searcher {
                 || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns))
     }
 
-    fn is_archive_search_file(&self, searchfile: &SearchFile) -> bool {
-        if !self.is_search_dir(&searchfile.path) {
+    fn is_archive_find_file(&self, findfile: &FindFile) -> bool {
+        if !self.is_find_dir(&findfile.path) {
             return false;
         }
-        if FileUtil::is_hidden(&searchfile.name) && self.settings.exclude_hidden {
+        if FileUtil::is_hidden(&findfile.name) && self.settings.exclude_hidden {
             return false;
         }
         (self.settings.in_archive_file_patterns.is_empty()
-            || self.matches_any_pattern(&searchfile.name, &self.settings.in_archive_file_patterns))
+            || self.matches_any_pattern(&findfile.name, &self.settings.in_archive_file_patterns))
             && (self.settings.out_archive_file_patterns.is_empty()
                 || !self.matches_any_pattern(
-                    &searchfile.name,
+                    &findfile.name,
                     &self.settings.out_archive_file_patterns,
                 ))
     }
 
-    fn is_search_file(&self, searchfile: &SearchFile) -> bool {
-        if !self.is_search_dir(&searchfile.path) {
+    fn is_find_file(&self, findfile: &FindFile) -> bool {
+        if !self.is_find_dir(&findfile.path) {
             return false;
         }
-        if FileUtil::is_hidden(&searchfile.name) && self.settings.exclude_hidden {
+        if FileUtil::is_hidden(&findfile.name) && self.settings.exclude_hidden {
             return false;
         }
-        if let Some(ext) = FileUtil::get_extension(&searchfile.name) {
+        if let Some(ext) = FileUtil::get_extension(&findfile.name) {
             if (!self.settings.in_extensions.is_empty()
                 && !self.matches_any_string(ext, &self.settings.in_extensions))
                 || (!self.settings.out_extensions.is_empty()
@@ -145,25 +145,25 @@ impl Searcher {
             }
         }
         (self.settings.in_file_patterns.is_empty()
-            || self.matches_any_pattern(&searchfile.name, &self.settings.in_file_patterns))
+            || self.matches_any_pattern(&findfile.name, &self.settings.in_file_patterns))
             && (self.settings.in_file_types.is_empty()
-                || self.settings.in_file_types.contains(&searchfile.filetype))
+                || self.settings.in_file_types.contains(&findfile.filetype))
             && (self.settings.out_file_patterns.is_empty()
-                || !self.matches_any_pattern(&searchfile.name, &self.settings.out_file_patterns))
+                || !self.matches_any_pattern(&findfile.name, &self.settings.out_file_patterns))
             && (self.settings.out_file_types.is_empty()
-                || !self.settings.out_file_types.contains(&searchfile.filetype))
+                || !self.settings.out_file_types.contains(&findfile.filetype))
     }
 
-    fn filter_file(&self, searchfile: &SearchFile) -> bool {
-        if searchfile.filetype == FileType::Archive {
-            return self.settings.search_archives && self.is_archive_search_file(searchfile);
+    fn filter_file(&self, findfile: &FindFile) -> bool {
+        if findfile.filetype == FileType::Archive {
+            return self.settings.find_archives && self.is_archive_find_file(findfile);
         }
-        !self.settings.archives_only && self.is_search_file(searchfile)
+        !self.settings.archives_only && self.is_find_file(findfile)
     }
 
-    /// Initiate a searcher search for the given settings and get the results
-    pub fn search(&self) -> Result<Vec<SearchResult>, SearchError> {
-        let mut searchfiles: Vec<SearchFile> = Vec::new();
+    /// Initiate a finder find for the given settings and get the results
+    pub fn find(&self) -> Result<Vec<FindResult>, FindError> {
+        let mut findfiles: Vec<FindFile> = Vec::new();
         for entry in WalkDir::new(&self.settings.startpath)
             .into_iter()
             .filter_map(|e| e.ok())
@@ -178,36 +178,36 @@ impl Searcher {
             if filetype == FileType::Unknown {
                 continue;
             }
-            let searchfile = SearchFile::new(path, filename, filetype);
-            if self.filter_file(&searchfile) {
-                searchfiles.push(searchfile)
+            let findfile = FindFile::new(path, filename, filetype);
+            if self.filter_file(&findfile) {
+                findfiles.push(findfile)
             }
         }
 
-        if self.settings.verbose && !searchfiles.is_empty() {
-            let mut dirs: Vec<String> = searchfiles.iter().map(|f| f.path.clone()).collect();
+        if self.settings.verbose && !findfiles.is_empty() {
+            let mut dirs: Vec<String> = findfiles.iter().map(|f| f.path.clone()).collect();
             dirs.sort_unstable();
             dirs.dedup();
-            log(format!("\nDirectories to be searched ({}):", dirs.len()).as_str());
+            log(format!("\nDirectories to be found ({}):", dirs.len()).as_str());
             for dir in dirs.iter() {
                 log(format!("{}", dir).as_str());
             }
 
-            let mut files: Vec<String> = searchfiles.iter().map(|f| f.filepath()).collect();
+            let mut files: Vec<String> = findfiles.iter().map(|f| f.filepath()).collect();
             files.sort_unstable();
-            log(format!("\nFiles to be searched ({}):", files.len()).as_str());
+            log(format!("\nFiles to be found ({}):", files.len()).as_str());
             for file in files.iter() {
                 log(format!("{}", file).as_str());
             }
         }
 
-        self.search_files(&searchfiles)
+        self.find_files(&findfiles)
     }
 
-    fn search_files(&self, searchfiles: &[SearchFile]) -> Result<Vec<SearchResult>, SearchError> {
-        let mut results: Vec<SearchResult> = Vec::new();
-        for sf in searchfiles.iter() {
-            match self.search_file(&sf) {
+    fn find_files(&self, findfiles: &[FindFile]) -> Result<Vec<FindResult>, FindError> {
+        let mut results: Vec<FindResult> = Vec::new();
+        for sf in findfiles.iter() {
+            match self.find_file(&sf) {
                 Ok(mut file_results) => {
                     results.append(&mut file_results);
                 },
@@ -221,47 +221,47 @@ impl Searcher {
         Ok(results)
     }
 
-    /// Search an individual file and get the results
-    pub fn search_file(&self, searchfile: &SearchFile) -> Result<Vec<SearchResult>, SearchError> {
-        match searchfile.filetype {
-            FileType::Text | FileType::Code | FileType::Xml => self.search_text_file(searchfile),
-            FileType::Binary => self.search_binary_file(searchfile),
+    /// Find an individual file and get the results
+    pub fn find_file(&self, findfile: &FindFile) -> Result<Vec<FindResult>, FindError> {
+        match findfile.filetype {
+            FileType::Text | FileType::Code | FileType::Xml => self.find_text_file(findfile),
+            FileType::Binary => self.find_binary_file(findfile),
             FileType::Archive => {
-                if self.settings.search_archives {
-                    self.search_archive_file(searchfile)
+                if self.settings.find_archives {
+                    self.find_archive_file(findfile)
                 } else {
-                    log(format!("Skipping archive file: {}", searchfile.filepath()).as_str());
+                    log(format!("Skipping archive file: {}", findfile.filepath()).as_str());
                     Ok(vec![])
                 }
             },
             _ => {
-                log(format!("Skipping unknown file type: {:?}", searchfile.filetype).as_str());
+                log(format!("Skipping unknown file type: {:?}", findfile.filetype).as_str());
                 Ok(vec![])
             }
         }
     }
 
-    fn search_archive_file(
+    fn find_archive_file(
         &self,
-        searchfile: &SearchFile,
-    ) -> Result<Vec<SearchResult>, SearchError> {
+        findfile: &FindFile,
+    ) -> Result<Vec<FindResult>, FindError> {
         if self.settings.verbose {
-            log(format!("Searching archive file {}", searchfile.filepath()).as_str());
+            log(format!("Finding archive file {}", findfile.filepath()).as_str());
         }
 
-        match FileUtil::get_extension(&searchfile.name) {
+        match FileUtil::get_extension(&findfile.name) {
             // TODO: what other extensions are zip format?
             Some(ext) if ["zip", "zipx", "jar", "war", "ear", "whl"].contains(&ext) => {
-                self.search_archive_zip_file(searchfile)
+                self.find_archive_zip_file(findfile)
             },
             Some(ext) => {
-                log(format!("Searching not currently supported for {} files", ext).as_str());
+                log(format!("Finding not currently supported for {} files", ext).as_str());
                 Ok(vec![])
             },
             None => {
                 log(format!(
                     "Skipping unknown archive file of unknown type: {}",
-                    searchfile.filepath()
+                    findfile.filepath()
                 )
                 .as_str());
                 Ok(vec![])
@@ -269,28 +269,28 @@ impl Searcher {
         }
     }
 
-    fn search_archive_zip_file(
+    fn find_archive_zip_file(
         &self,
-        searchfile: &SearchFile,
-    ) -> Result<Vec<SearchResult>, SearchError> {
+        findfile: &FindFile,
+    ) -> Result<Vec<FindResult>, FindError> {
         if self.settings.verbose {
-            log(format!("Searching zip file {}", searchfile.filepath()).as_str());
+            log(format!("Finding zip file {}", findfile.filepath()).as_str());
         }
-        let mut results: Vec<SearchResult> = Vec::new();
-        match fs::File::open(searchfile.filepath()) {
+        let mut results: Vec<FindResult> = Vec::new();
+        match fs::File::open(findfile.filepath()) {
             Ok(f) => {
                 let reader = BufReader::new(f);
                 let mut archive = match zip::ZipArchive::new(reader) {
                     Ok(archive) => archive,
-                    Err(error) => return Err(SearchError::new(error.description())),
+                    Err(error) => return Err(FindError::new(error.description())),
                 };
                 for i in 0..archive.len() {
                     let mut zipfile = match archive.by_index(i) {
                         Ok(zipfile) => zipfile,
-                        Err(error) => return Err(SearchError::new(error.description())),
+                        Err(error) => return Err(FindError::new(error.description())),
                     };
                     if zipfile.is_file() {
-                        match self.search_zip_file(searchfile, &mut zipfile) {
+                        match self.find_zip_file(findfile, &mut zipfile) {
                             Ok(mut zip_results) => results.append(&mut zip_results),
                             Err(error) => return Err(error),
                         }
@@ -298,17 +298,17 @@ impl Searcher {
                 }
             },
             Err(error) => {
-                return Err(SearchError::new(error.description()));
+                return Err(FindError::new(error.description()));
             }
         }
         Ok(results)
     }
 
-    fn search_zip_file(
+    fn find_zip_file(
         &self,
-        searchfile: &SearchFile,
+        findfile: &FindFile,
         zipfile: &mut ZipFile,
-    ) -> Result<Vec<SearchResult>, SearchError> {
+    ) -> Result<Vec<FindResult>, FindError> {
         let path = if let Some(path) = Path::new(zipfile.name()).parent() {
             path.to_str().unwrap()
         } else {
@@ -320,18 +320,18 @@ impl Searcher {
             .to_str()
             .unwrap();
         let mut containers = vec![];
-        for c in searchfile.containers.iter() {
+        for c in findfile.containers.iter() {
             containers.push(c.clone());
         }
-        containers.push(searchfile.filepath());
-        let zip_searchfile = SearchFile::with_containers(
+        containers.push(findfile.filepath());
+        let zip_findfile = FindFile::with_containers(
             containers,
             path.to_string(),
             filename.to_string(),
             self.filetypes.get_file_type(filename),
         );
-        if self.is_search_file(&zip_searchfile) {
-            match zip_searchfile.filetype {
+        if self.is_find_file(&zip_findfile) {
+            match zip_findfile.filetype {
                 FileType::Text | FileType::Code | FileType::Xml => {
                     let encoding = self.get_text_file_encoding();
                     let zip_contents = match self.get_text_reader_contents(zipfile, encoding) {
@@ -339,18 +339,18 @@ impl Searcher {
                         Err(error) => return Err(error),
                     };
 
-                    let results = if self.settings.multiline_search {
-                        self.search_multiline_string(&zip_contents)
+                    let results = if self.settings.multiline_find {
+                        self.find_multiline_string(&zip_contents)
                     } else {
                         let mut lines = zip_contents.lines();
-                        self.search_text_lines(&mut lines)
+                        self.find_text_lines(&mut lines)
                     };
                     return Ok(results
                         .iter()
                         .map(|r| {
-                            SearchResult::new(
+                            FindResult::new(
                                 r.pattern.clone(),
-                                Some(zip_searchfile.clone()),
+                                Some(zip_findfile.clone()),
                                 r.line_num,
                                 r.match_start_index,
                                 r.match_end_index,
@@ -362,14 +362,14 @@ impl Searcher {
                         .collect());
                 },
                 FileType::Binary => match self.get_byte_string_for_reader(zipfile) {
-                    Ok(bytestring) => match self.search_binary_byte_string(&bytestring) {
+                    Ok(bytestring) => match self.find_binary_byte_string(&bytestring) {
                         Ok(results) => {
                             return Ok(results
                                 .iter()
                                 .map(|r| {
-                                    SearchResult::new(
+                                    FindResult::new(
                                         r.pattern.clone(),
-                                        Some(zip_searchfile.clone()),
+                                        Some(zip_findfile.clone()),
                                         0,
                                         r.match_start_index,
                                         r.match_end_index,
@@ -382,7 +382,7 @@ impl Searcher {
                         }
                         Err(error) => return Err(error),
                     },
-                    Err(error) => return Err(SearchError::new(&error.to_string())),
+                    Err(error) => return Err(FindError::new(&error.to_string())),
                 },
                 _ => {}
             }
@@ -394,53 +394,53 @@ impl Searcher {
         &self,
         reader: &mut dyn Read,
         enc: &dyn Encoding,
-    ) -> Result<String, SearchError> {
+    ) -> Result<String, FindError> {
         let mut buffer: Vec<u8> = Vec::new();
         match reader.read_to_end(&mut buffer) {
             Ok(_) => match enc.decode(&buffer, DecoderTrap::Strict) {
                 Ok(bytestring) => Ok(bytestring),
-                Err(cow) => return Err(SearchError::new(&cow.to_string())),
+                Err(cow) => return Err(FindError::new(&cow.to_string())),
             },
             Err(error) => {
-                return Err(SearchError::new(error.description()));
+                return Err(FindError::new(error.description()));
             }
         }
     }
 
     fn get_encoded_byte_string(
         &self,
-        searchfile: &SearchFile,
+        findfile: &FindFile,
         enc: &dyn Encoding,
-    ) -> Result<String, SearchError> {
-        match fs::File::open(searchfile.filepath()) {
+    ) -> Result<String, FindError> {
+        match fs::File::open(findfile.filepath()) {
             Ok(mut f) => self.get_encoded_byte_string_for_reader(&mut f, enc),
-            Err(error) => Err(SearchError::new(error.description())),
+            Err(error) => Err(FindError::new(error.description())),
         }
     }
 
-    fn get_byte_string_for_reader(&self, reader: &mut dyn Read) -> Result<String, SearchError> {
+    fn get_byte_string_for_reader(&self, reader: &mut dyn Read) -> Result<String, FindError> {
         self.get_encoded_byte_string_for_reader(reader, BINARY_ENCODING)
     }
 
-    fn get_byte_string(&self, searchfile: &SearchFile) -> Result<String, SearchError> {
-        self.get_encoded_byte_string(searchfile, BINARY_ENCODING)
+    fn get_byte_string(&self, findfile: &FindFile) -> Result<String, FindError> {
+        self.get_encoded_byte_string(findfile, BINARY_ENCODING)
     }
 
-    fn search_binary_file(
+    fn find_binary_file(
         &self,
-        searchfile: &SearchFile,
-    ) -> Result<Vec<SearchResult>, SearchError> {
+        findfile: &FindFile,
+    ) -> Result<Vec<FindResult>, FindError> {
         if self.settings.verbose {
-            log(format!("Searching binary file {}", searchfile.filepath()).as_str());
+            log(format!("Finding binary file {}", findfile.filepath()).as_str());
         }
-        let mut results: Vec<SearchResult> = Vec::new();
-        match self.get_byte_string(searchfile) {
-            Ok(bytestring) => match self.search_binary_byte_string(&bytestring) {
+        let mut results: Vec<FindResult> = Vec::new();
+        match self.get_byte_string(findfile) {
+            Ok(bytestring) => match self.find_binary_byte_string(&bytestring) {
                 Ok(rs) => {
                     for r in rs.iter() {
-                        results.push(SearchResult::new(
+                        results.push(FindResult::new(
                             r.pattern.clone(),
-                            Some(searchfile.clone()),
+                            Some(findfile.clone()),
                             0,
                             r.match_start_index,
                             r.match_end_index,
@@ -457,12 +457,12 @@ impl Searcher {
         Ok(results)
     }
 
-    fn search_binary_byte_string(
+    fn find_binary_byte_string(
         &self,
         bytestring: &String,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        let mut results: Vec<SearchResult> = Vec::new();
-        for p in &self.settings.search_patterns {
+    ) -> Result<Vec<FindResult>, FindError> {
+        let mut results: Vec<FindResult> = Vec::new();
+        for p in &self.settings.find_patterns {
             let matches: Vec<Match> = if self.settings.first_match {
                 match p.find(&bytestring) {
                     Some(m) => vec![m],
@@ -472,7 +472,7 @@ impl Searcher {
                 p.find_iter(&bytestring).collect()
             };
             for m in matches {
-                let r = SearchResult::new(
+                let r = FindResult::new(
                     p.as_str().to_string(),
                     None,
                     0,
@@ -493,7 +493,7 @@ impl Searcher {
         &self,
         reader: &mut dyn Read,
         encoding: &'static dyn Encoding,
-    ) -> Result<String, SearchError> {
+    ) -> Result<String, FindError> {
         let mut into_string = String::from("");
         let contents = match encoding.name() {
             "utf-8" => match reader.read_to_string(&mut into_string) {
@@ -505,8 +505,8 @@ impl Searcher {
                     }
                 },
                 Err(error) => {
-                    //let msg = format!("{} (file: {}", error.description(), searchfile.filepath());
-                    return Err(SearchError::new(error.description()));
+                    //let msg = format!("{} (file: {}", error.description(), findfile.filepath());
+                    return Err(FindError::new(error.description()));
                 }
             },
             _ => match self.get_encoded_byte_string_for_reader(reader, encoding) {
@@ -520,43 +520,43 @@ impl Searcher {
     /// Try to get the file contents for the given encoding (UTF-8 by default)
     fn get_text_file_contents(
         &self,
-        searchfile: &SearchFile,
+        findfile: &FindFile,
         encoding: &'static dyn Encoding,
-    ) -> Result<String, SearchError> {
-        match fs::File::open(searchfile.filepath()) {
+    ) -> Result<String, FindError> {
+        match fs::File::open(findfile.filepath()) {
             Ok(mut f) => self.get_text_reader_contents(&mut f, encoding),
-            Err(error) => Err(SearchError::new(error.description())),
+            Err(error) => Err(FindError::new(error.description())),
         }
     }
 
-    fn search_text_file(&self, searchfile: &SearchFile) -> Result<Vec<SearchResult>, SearchError> {
+    fn find_text_file(&self, findfile: &FindFile) -> Result<Vec<FindResult>, FindError> {
         let encoding = self.get_text_file_encoding();
         if self.settings.verbose {
-            log(format!("Searching text file {}", searchfile.filepath()).as_str());
+            log(format!("Finding text file {}", findfile.filepath()).as_str());
         }
-        if self.settings.multiline_search {
-            return self.search_text_file_contents(searchfile, encoding);
+        if self.settings.multiline_find {
+            return self.find_text_file_contents(findfile, encoding);
         }
-        return self.search_text_file_lines(searchfile, encoding);
+        return self.find_text_file_lines(findfile, encoding);
     }
 
-    fn search_text_file_lines<'a>(
+    fn find_text_file_lines<'a>(
         &self,
-        searchfile: &'a SearchFile,
+        findfile: &'a FindFile,
         encoding: &'static dyn Encoding,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        let contents = match self.get_text_file_contents(searchfile, encoding) {
+    ) -> Result<Vec<FindResult>, FindError> {
+        let contents = match self.get_text_file_contents(findfile, encoding) {
             Ok(contents) => contents,
             Err(error) => return Err(error),
         };
         let mut lines = contents.lines();
         Ok(self
-            .search_text_lines(&mut lines)
+            .find_text_lines(&mut lines)
             .iter()
             .map(|r| {
-                SearchResult::new(
+                FindResult::new(
                     r.pattern.clone(),
-                    Some(searchfile.clone()),
+                    Some(findfile.clone()),
                     r.line_num,
                     r.match_start_index,
                     r.match_end_index,
@@ -573,9 +573,9 @@ impl Searcher {
             && (out_patterns.is_empty() || !self.any_matches_any_pattern(lines, out_patterns))
     }
 
-    /// Search a Lines iterator
-    pub fn search_text_lines<'a>(&self, lines: &mut Lines) -> Vec<SearchResult> {
-        let mut results: Vec<SearchResult> = Vec::new();
+    /// Find a Lines iterator
+    pub fn find_text_lines<'a>(&self, lines: &mut Lines) -> Vec<FindResult> {
+        let mut results: Vec<FindResult> = Vec::new();
         let mut current_linenum = 1usize;
         let mut lines_before: VecDeque<&str> = VecDeque::new();
         let mut lines_after: VecDeque<&str> = VecDeque::new();
@@ -594,7 +594,7 @@ impl Searcher {
                     None => break,
                 }
             }
-            for p in &self.settings.search_patterns {
+            for p in &self.settings.find_patterns {
                 for m in p.find_iter(line) {
                     let mut v_lines_before: Vec<String> = Vec::new();
                     if !lines_before.is_empty() {
@@ -661,7 +661,7 @@ impl Searcher {
                         }
                     }
 
-                    let r = SearchResult::new(
+                    let r = FindResult::new(
                         p.as_str().to_string(),
                         None,
                         current_linenum,
@@ -674,7 +674,7 @@ impl Searcher {
                     results.push(r);
                     matched_patterns.insert(p.as_str());
                     if self.settings.first_match
-                        && matched_patterns.len() == self.settings.search_patterns.len()
+                        && matched_patterns.len() == self.settings.find_patterns.len()
                     {
                         return results;
                     }
@@ -693,22 +693,22 @@ impl Searcher {
         results
     }
 
-    fn search_text_file_contents(
+    fn find_text_file_contents(
         &self,
-        searchfile: &SearchFile,
+        findfile: &FindFile,
         encoding: &'static dyn Encoding,
-    ) -> Result<Vec<SearchResult>, SearchError> {
-        let contents = match self.get_text_file_contents(searchfile, encoding) {
+    ) -> Result<Vec<FindResult>, FindError> {
+        let contents = match self.get_text_file_contents(findfile, encoding) {
             Ok(contents) => contents,
             Err(error) => return Err(error),
         };
         Ok(self
-            .search_multiline_string(&contents)
+            .find_multiline_string(&contents)
             .iter()
             .map(|r| {
-                SearchResult::new(
+                FindResult::new(
                     r.pattern.clone(),
-                    Some(searchfile.clone()),
+                    Some(findfile.clone()),
                     r.line_num,
                     r.match_start_index,
                     r.match_end_index,
@@ -734,15 +734,15 @@ impl Searcher {
         }
     }
 
-    /// Search a file's contents as a multiline string
-    pub fn search_multiline_string<'a>(&self, contents: &str) -> Vec<SearchResult> {
-        let mut results: Vec<SearchResult> = Vec::new();
+    /// Find a file's contents as a multiline string
+    pub fn find_multiline_string<'a>(&self, contents: &str) -> Vec<FindResult> {
+        let mut results: Vec<FindResult> = Vec::new();
 
         let newline_indices: Vec<usize> = contents.match_indices("\n").map(|i| i.0).collect();
         let mut startline_indices: Vec<usize> = vec![0];
         startline_indices.append(&mut newline_indices.iter().map(|n| n + 1).collect());
 
-        for p in &self.settings.search_patterns {
+        for p in &self.settings.find_patterns {
             let matches: Vec<Match> = if self.settings.first_match {
                 match p.find(contents) {
                     Some(m) => vec![m],
@@ -837,7 +837,7 @@ impl Searcher {
                 {
                     continue;
                 }
-                let r = SearchResult::new(
+                let r = FindResult::new(
                     p.as_str().to_string(),
                     None,
                     lines_before_count,
@@ -855,8 +855,8 @@ impl Searcher {
     }
 }
 
-/// Get the unique list of directories for which search results were found
-pub fn get_result_dirs(results: &[SearchResult]) -> Vec<&String> {
+/// Get the unique list of directories for which find results were found
+pub fn get_result_dirs(results: &[FindResult]) -> Vec<&String> {
     let mut dirs: Vec<&String> = Vec::new();
     for r in results.iter() {
         if let Some(f) = &r.file {
@@ -868,8 +868,8 @@ pub fn get_result_dirs(results: &[SearchResult]) -> Vec<&String> {
     dirs
 }
 
-/// Get the unique list of files for which search results were found
-pub fn get_result_files(results: &[SearchResult]) -> Vec<String> {
+/// Get the unique list of files for which find results were found
+pub fn get_result_files(results: &[FindResult]) -> Vec<String> {
     let mut files: Vec<String> = Vec::new();
     for r in results.iter() {
         if let Some(f) = &r.file {
@@ -882,8 +882,8 @@ pub fn get_result_files(results: &[SearchResult]) -> Vec<String> {
     files
 }
 
-/// Get the [unique] list of lines containing matches for a set of search results
-pub fn get_result_lines(results: &[SearchResult], unique: bool) -> Vec<&str> {
+/// Get the [unique] list of lines containing matches for a set of find results
+pub fn get_result_lines(results: &[FindResult], unique: bool) -> Vec<&str> {
     let mut lines: Vec<&str> = Vec::new();
     for r in results.iter() {
         lines.push(&r.line.trim());
@@ -904,10 +904,10 @@ mod tests {
 
     use super::*;
 
-    fn get_default_test_settings() -> SearchSettings {
-        let mut settings = SearchSettings::default();
+    fn get_default_test_settings() -> FindSettings {
+        let mut settings = FindSettings::default();
         settings.startpath = String::from(".");
-        settings.add_search_pattern(String::from("Searcher"));
+        settings.add_find_pattern(String::from("Finder"));
         settings
     }
 
@@ -917,138 +917,138 @@ mod tests {
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
         settings.add_out_file_pattern(String::from("temp"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
         let filename = String::from("codefile.js");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(finder.filter_file(&file));
 
         let path = String::from(".");
         let filename = String::from("codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(finder.filter_file(&file));
 
         let path = String::from("./temp/");
         let filename = String::from("codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(!searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(!finder.filter_file(&file));
 
         let path = String::from("./.hidden/");
         let filename = String::from("codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(!searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(!finder.filter_file(&file));
 
         let path = String::from(".");
         let filename = String::from(".codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(!searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(!finder.filter_file(&file));
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(!searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(!finder.filter_file(&file));
 
         let mut settings = get_default_test_settings();
-        settings.search_archives = true;
-        let searcher = Searcher::new(settings).ok().unwrap();
+        settings.find_archives = true;
+        let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(searcher.filter_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(finder.filter_file(&file));
     }
 
     #[test]
-    fn test_is_search_dir() {
+    fn test_is_find_dir() {
         let mut settings = get_default_test_settings();
         settings.add_out_dir_pattern(String::from("temp"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
-        assert!(searcher.is_search_dir(&path));
+        assert!(finder.is_find_dir(&path));
 
         let path = String::from(".git");
-        assert!(!searcher.is_search_dir(&path));
+        assert!(!finder.is_find_dir(&path));
 
         let path = String::from("./temp/");
-        assert!(!searcher.is_search_dir(&path));
+        assert!(!finder.is_find_dir(&path));
     }
 
     #[test]
-    fn test_is_search_file() {
+    fn test_is_find_file() {
         let mut settings = get_default_test_settings();
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
         settings.add_out_file_pattern(String::from("temp"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
         let filename = String::from("codefile.js");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(searcher.is_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(finder.is_find_file(&file));
 
         let path = String::from(".");
         let filename = String::from("codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(searcher.is_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(finder.is_find_file(&file));
 
         let path = String::from("./temp/");
         let filename = String::from("codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(!searcher.is_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(!finder.is_find_file(&file));
 
         let path = String::from("./.hidden/");
         let filename = String::from("codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(!searcher.is_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(!finder.is_find_file(&file));
 
         let path = String::from("./");
         let filename = String::from(".codefile.ts");
-        let file = SearchFile::new(path, filename, FileType::Code);
-        assert!(!searcher.is_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Code);
+        assert!(!finder.is_find_file(&file));
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(!searcher.is_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(!finder.is_find_file(&file));
     }
 
     #[test]
-    fn test_is_archive_search_file() {
+    fn test_is_archive_find_file() {
         let mut settings = get_default_test_settings();
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
         settings.add_out_archive_file_pattern(String::from("temp"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(searcher.is_archive_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(finder.is_archive_find_file(&file));
 
         let path = String::from(".");
         let filename = String::from(".archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(!searcher.is_archive_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(!finder.is_archive_find_file(&file));
 
         let path = String::from("./temp");
         let filename = String::from("archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(!searcher.is_archive_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(!finder.is_archive_find_file(&file));
 
         let path = String::from(".");
         let filename = String::from("temp_archive.zip");
-        let file = SearchFile::new(path, filename, FileType::Archive);
-        assert!(!searcher.is_archive_search_file(&file));
+        let file = FindFile::new(path, filename, FileType::Archive);
+        assert!(!finder.is_archive_find_file(&file));
     }
 
     #[test]
-    fn test_search_text_lines() {
-        let mut settings = SearchSettings::default();
+    fn test_find_text_lines() {
+        let mut settings = FindSettings::default();
         settings.startpath = String::from(".");
-        settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        settings.add_find_pattern(String::from("Finder"));
+        let finder = Finder::new(settings).ok().unwrap();
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
@@ -1056,7 +1056,7 @@ mod tests {
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
         let mut lines: std::str::Lines = contents.lines();
 
-        let results = searcher.search_text_lines(&mut lines);
+        let results = finder.find_text_lines(&mut lines);
 
         assert_eq!(results.len(), 2);
         assert_eq!(results[0].line_num, 29);
@@ -1072,12 +1072,12 @@ mod tests {
     }
 
     #[test]
-    fn test_search_text_lines_lines_after_to_until() {
-        let mut settings = SearchSettings::default();
+    fn test_find_text_lines_lines_after_to_until() {
+        let mut settings = FindSettings::default();
         settings.startpath = String::from(".");
-        settings.add_search_pattern(String::from("Searcher"));
+        settings.add_find_pattern(String::from("Finder"));
         settings.add_lines_after_to_pattern("after".to_string());
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
@@ -1085,7 +1085,7 @@ mod tests {
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
         let mut lines: std::str::Lines = contents.lines();
 
-        let results = searcher.search_text_lines(&mut lines);
+        let results = finder.find_text_lines(&mut lines);
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].line_num, 29);
@@ -1095,22 +1095,22 @@ mod tests {
     }
 
     #[test]
-    fn test_search_text_contents() {
-        let mut settings = SearchSettings::default();
+    fn test_find_text_contents() {
+        let mut settings = FindSettings::default();
         settings.startpath = String::from(".");
-        settings.add_search_pattern(String::from("Searcher"));
+        settings.add_find_pattern(String::from("Finder"));
 
         settings.lines_before = 2;
         settings.lines_after = 2;
 
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
 
-        let results = searcher.search_multiline_string(&contents);
+        let results = finder.find_multiline_string(&contents);
 
         assert_eq!(results.len(), 2);
         assert_eq!(results[0].line_num, 29);
@@ -1126,21 +1126,21 @@ mod tests {
     }
 
     #[test]
-    fn test_search_text_contents_lines_after_to_until() {
-        let mut settings = SearchSettings::default();
+    fn test_find_text_contents_lines_after_to_until() {
+        let mut settings = FindSettings::default();
         settings.startpath = String::from(".");
-        settings.add_search_pattern(String::from("Searcher"));
+        settings.add_find_pattern(String::from("Finder"));
 
         settings.add_lines_after_to_pattern("after".to_string());
 
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/testFile2.txt");
         let contents =
             fs::read_to_string(testfile_path).expect("Something went wrong reading test file");
 
-        let results = searcher.search_multiline_string(&contents);
+        let results = finder.find_multiline_string(&contents);
 
         assert_eq!(results.len(), 1);
         assert_eq!(results[0].line_num, 29);
@@ -1150,52 +1150,52 @@ mod tests {
     }
 
     #[test]
-    fn test_search_code_files() {
-        let mut settings = SearchSettings::default();
-        settings.startpath = String::from("/Users/cary/src/xsearch/rust");
+    fn test_find_code_files() {
+        let mut settings = FindSettings::default();
+        settings.startpath = String::from("/Users/cary/src/xfind/rust");
         settings.add_in_extension(String::from("go,rs"));
-        settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        settings.add_find_pattern(String::from("Finder"));
+        let finder = Finder::new(settings).ok().unwrap();
 
-        let results = searcher.search();
+        let results = finder.find();
         assert!(results.is_ok());
         let results = results.ok().unwrap();
         println!("results: {}", results.len());
     }
 
     #[test]
-    fn test_search_helloworld_file() {
-        let mut settings = SearchSettings::default();
+    fn test_find_helloworld_file() {
+        let mut settings = FindSettings::default();
 
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let testfile_path = Path::new(config.shared_path.as_str()).join("testFiles/helloworld.txt");
 
         settings.startpath = String::from(testfile_path.to_str().unwrap());
-        settings.add_search_pattern(String::from("Hello"));
-        settings.add_search_pattern(String::from("你好"));
+        settings.add_find_pattern(String::from("Hello"));
+        settings.add_find_pattern(String::from("你好"));
         //settings.text_file_encoding = String::from("windows-1252");
-        let searcher = Searcher::new(settings).ok().unwrap();
+        let finder = Finder::new(settings).ok().unwrap();
 
-        let results = searcher.search();
+        let results = finder.find();
         assert!(results.is_ok());
         let results = results.ok().unwrap();
         println!("results: {}", results.len());
     }
 
     #[test]
-    fn test_search_binary_files() {
-        let mut settings = SearchSettings::default();
-        settings.startpath = String::from("/Users/cary/src/xsearch/java");
+    fn test_find_binary_files() {
+        let mut settings = FindSettings::default();
+        settings.startpath = String::from("/Users/cary/src/xfind/java");
         settings.add_in_extension(String::from("class"));
-        settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        settings.add_find_pattern(String::from("Finder"));
+        let finder = Finder::new(settings).ok().unwrap();
 
-        let results = searcher.search();
+        let results = finder.find();
         assert!(results.is_ok());
         let results = results.ok().unwrap();
         println!("results: {}", results.len());
         if !results.is_empty() {
-            assert_eq!(results[0].pattern, "Searcher");
+            assert_eq!(results[0].pattern, "Finder");
             assert!(results[0].file.is_some());
             assert_eq!(results[0].line, "");
             assert_eq!(results[0].line_num, 0);
@@ -1203,20 +1203,20 @@ mod tests {
     }
 
     #[test]
-    fn test_search_jar_files() {
-        let mut settings = SearchSettings::default();
-        settings.startpath = String::from("../../java/javasearch");
+    fn test_find_jar_files() {
+        let mut settings = FindSettings::default();
+        settings.startpath = String::from("../../java/javafind");
         settings.set_archives_only(true);
         settings.add_in_archive_extension(String::from("jar"));
-        settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        settings.add_find_pattern(String::from("Finder"));
+        let finder = Finder::new(settings).ok().unwrap();
 
-        let results = searcher.search();
+        let results = finder.find();
         assert!(results.is_ok());
         let results = results.ok().unwrap();
         println!("results: {}", results.len());
         if !results.is_empty() {
-            assert_eq!(results[0].pattern, "Searcher");
+            assert_eq!(results[0].pattern, "Finder");
             assert!(results[0].file.is_some());
             //assert_eq!(results[0].line, "");
             assert_eq!(results[0].line_num, 0);
@@ -1224,24 +1224,24 @@ mod tests {
     }
 
     #[test]
-    fn test_search_zip_file() {
-        let mut settings = SearchSettings::default();
+    fn test_find_zip_file() {
+        let mut settings = FindSettings::default();
         let path = Path::new("../../shared/testFiles.zip");
         settings.startpath = if path.exists() {
             String::from("../../shared/testFiles.zip")
         } else {
             String::from("../../shared")
         };
-        settings.search_archives = true;
-        settings.add_search_pattern(String::from("Searcher"));
-        let searcher = Searcher::new(settings).ok().unwrap();
+        settings.find_archives = true;
+        settings.add_find_pattern(String::from("Finder"));
+        let finder = Finder::new(settings).ok().unwrap();
 
-        let results = searcher.search();
+        let results = finder.find();
         assert!(results.is_ok());
         let results = results.ok().unwrap();
         println!("results: {}", results.len());
         if !results.is_empty() {
-            assert_eq!(results[0].pattern, "Searcher");
+            assert_eq!(results[0].pattern, "Finder");
             assert!(results[0].file.is_some());
             //assert_eq!(results[0].line, "");
             assert_eq!(results[0].line_num, 3);

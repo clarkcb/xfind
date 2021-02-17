@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:dartsearch/dartsearch.dart';
+import 'package:dartfind/dartfind.dart';
 
-void _handleError(err, SearchOptions options) {
+void _handleError(err, FindOptions options) {
   log('');
   logError(err.toString() + '\n');
   options.usage();
   exitCode = 1;
 }
 
-int sortResults(SearchResult r1, SearchResult r2) {
+int sortResults(FindResult r1, FindResult r2) {
   if (r1.file.file.parent.path == r2.file.file.parent.path) {
     if (r1.file.file.path == r2.file.file.path) {
       if (r1.lineNum == r2.lineNum) {
@@ -25,22 +25,22 @@ int sortResults(SearchResult r1, SearchResult r2) {
   }
 }
 
-void printResults(List<SearchResult> results, SearchSettings settings) {
-  log('\nSearch results (${results.length}):');
-  var formatter = SearchResultFormatter(settings);
+void printResults(List<FindResult> results, FindSettings settings) {
+  log('\nFind results (${results.length}):');
+  var formatter = FindResultFormatter(settings);
   results.sort(sortResults);
   for (var r in results) {
     log(formatter.format(r));
   }
 }
 
-List<String> getMatchingDirs(List<SearchResult> results) {
+List<String> getMatchingDirs(List<FindResult> results) {
   var dirs = results.map((r) => r.file.file.parent.path).toSet().toList();
   dirs.sort();
   return dirs;
 }
 
-void printMatchingDirs(List<SearchResult> results, SearchSettings settings) {
+void printMatchingDirs(List<FindResult> results, FindSettings settings) {
   var dirs = getMatchingDirs(results);
   if (dirs.isNotEmpty) {
     log('\nDirectories with matches (${dirs.length}):');
@@ -60,13 +60,13 @@ int sortFiles(File f1, File f2) {
   }
 }
 
-List<String> getMatchingFiles(List<SearchResult> results, SearchSettings settings) {
+List<String> getMatchingFiles(List<FindResult> results, FindSettings settings) {
   var files = results.map((r) => r.file.file).toSet().toList();
   files.sort(sortFiles);
   return files.map((f) => FileUtil.contractPath(f.path)).toList();
 }
 
-void printMatchingFiles(List<SearchResult> results, SearchSettings settings) {
+void printMatchingFiles(List<FindResult> results, FindSettings settings) {
   var files = getMatchingFiles(results, settings);
   if (files.isNotEmpty) {
     log('\nFiles with matches (${files.length}):');
@@ -81,7 +81,7 @@ void printMatchingFiles(List<SearchResult> results, SearchSettings settings) {
   }
 }
 
-List<String> getMatchingLines(List<SearchResult> results, SearchSettings settings) {
+List<String> getMatchingLines(List<FindResult> results, FindSettings settings) {
   var lines = results.map((r) => r.line.trim()).toList();
   if (settings.uniqueLines) {
     lines = lines.toSet().toList();
@@ -90,7 +90,7 @@ List<String> getMatchingLines(List<SearchResult> results, SearchSettings setting
   return lines;
 }
 
-void printMatchingLines(List<SearchResult> results, SearchSettings settings) {
+void printMatchingLines(List<FindResult> results, FindSettings settings) {
   var lines = getMatchingLines(results, settings);
   if (lines.isNotEmpty) {
     String msg;
@@ -106,14 +106,14 @@ void printMatchingLines(List<SearchResult> results, SearchSettings settings) {
   }
 }
 
-Future<void> search(SearchSettings settings, SearchOptions options) async {
-  var results = <SearchResult>[];
+Future<void> find(FindSettings settings, FindOptions options) async {
+  var results = <FindResult>[];
   try {
-    var searcher = Searcher(settings);
-    results = await searcher.search();
+    var finder = Finder(settings);
+    results = await finder.find();
   } on FormatException catch(e) {
     logError(e.message);
-  } on SearchException catch(e) {
+  } on FindException catch(e) {
     _handleError(e, options);
   } catch (e) {
     print(e);
@@ -143,7 +143,7 @@ Future<void> main(List<String> arguments) async {
   // initialize as success
   exitCode = 0;
 
-  var options = SearchOptions();
+  var options = FindOptions();
 
   await options.settingsFromArgs(arguments).then((settings) {
     if (settings.debug) log('settings: $settings');
@@ -151,7 +151,7 @@ Future<void> main(List<String> arguments) async {
       log('');
       options.usage();
     } else {
-      search(settings, options);
+      find(settings, options);
     }
   }).catchError((e) {
     _handleError(e, options);

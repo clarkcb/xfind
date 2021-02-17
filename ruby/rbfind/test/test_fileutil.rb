@@ -6,10 +6,10 @@
 #
 ################################################################################
 
-require_relative '../lib/rbsearch'
+require_relative '../lib/rbfind'
 require 'minitest/autorun'
 
-module RbSearch
+module RbFind
 
   class FileUtilTest < Minitest::Test
     ################################################################################

@@ -1,2 +1,2 @@
 @echo off
-node %~dp0\..\dist\tssearch.js %*
+node %~dp0\..\dist\tsfind.js %*
