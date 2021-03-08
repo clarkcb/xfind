@@ -1,7 +1,7 @@
 # xfind
 
-[xfind](https://github.com/clarkcb/xfind) is a command-line file find utility implemented
-in multiiple programming languages, currently these [twenty](#why):
+[xfind](https://github.com/clarkcb/xfind) is a command-line recursive file find utility
+implemented in multiple programming languages, currently these [twenty](#why):
 
 * [Clojure](https://clojure.org/)
 * [C#](https://docs.microsoft.com/en-us/dotnet/csharp/)
@@ -124,7 +124,7 @@ into a runnable state.
 The build script is under _scripts_ and named _build.sh_. If you are on Windows, or if you just
 prefer powershell, you can also use _build.ps1_. To run the build for a specific language,
 run the script on the command line with the name of the language (or the language's extension
-tht the language version name is derived from) as the argument. For example, you can build
+that the language version name is derived from) as the argument. For example, you can build
 the TypeScript version using either of these commands:
 
 ```
@@ -133,7 +133,7 @@ $ ./scripts/build.sh typescript
 $ ./scripts/build.sh ts
 ```
 
-You can run builds for all language versions together by not passing an argument or passing
+You can build all language versions together by not passing an argument or passing
 `'all'`:
 
 ```
@@ -279,10 +279,10 @@ versions in various ways, but the one that will likely be of primary interest is
 python script _benchmark.py_, an *unscientific* tool for comparing performance and
 functionality (i.e. ensuring matching output of all versions).
 
-By default, the _benchmark.py_ script will default to comparing all language versions,
-but this can be customized one of two ways:
+By default, the _benchmark.py_ script will default to running and comparing all language
+versions, but this can be customized one of two ways:
 
-1. pass language/ext code argument, e.g. `-l cpp,go,hs,rs,swift`
+1. pass a comma-separated language/ext code argument, e.g. `-l cpp,go,hs,objc,rs,swift`
 2. modify the `lang_dict` dictionary in _xfind.py_
 
 The _benchmark.py_ script executes a series of "scenarios" for each configured language
@@ -323,8 +323,10 @@ Total results for 10 out of 10 scenarios with 100 out of 100 total runs
  tsfind      26.95   0.27      6   2.60   0.03      5  11.59   0.12      8  41.14   0.41      7
 ```
 
-It probably goes without saying, but attempting to run language versions that aren't built will
-lead to invalid results.
+Notice the line above the table that says "Output of all versions in all scenarios match". It is
+important to see this and similar messages on all scenarios runs, otherwise one of the language
+versions isn't working properly and the results will be invalid. An obvious example of this would
+be attempting to run language versions that aren't built.
 
 
 ## TODOs
@@ -332,13 +334,16 @@ lead to invalid results.
 * Add `minlastmod`, `maxlastmod`, `minsize` and `maxsize` functionality (currently only implemented in `python` version)
 * Add Docker support - it is a high-priority goal to create a docker image that includes all software necessary to build and run all language versions for easy setup and comparison
 * Separate executable code from library code to make integrating into `xsearch` easier or possible
+* Determine how archive file support should work, two options:
+  1. Provide option to find files inside archives - in this case should change archivesOnly and includeArchives options to inArchivesOnly and findInArchives, respectively
+  2. Find archives the same as other files - in this case should consider removing archivesOnly and includeArchives options
 * Troubleshoot building OCaml version on my OSX machine (it is possible this is unique to my machine)
 * Add documentation about the what/why/how of `xfind`
 * Add other language versions (in alphabetical order and subject to change)
   * [C](https://en.wikipedia.org/wiki/C_(programming_language)) - I've started a C version in the past and should finish it, if for no other than reason than to verify my assumption that it *should* be the fastest and most efficient version once complete
   * [Common Lisp](https://lisp-lang.org/) - I want to see how it compares to Clojure and learn more about macros
   * [Elixir](https://elixir-lang.org/)/[Erlang](https://www.erlang.org/) - Elixir is probably higher priority than Erlang, but it could be interesting to compare both
-  * [Julia](https://julialang.org/) - as a high-performance scripting languages, I'm interested to see how it compares to existing implementations
+  * [Julia](https://julialang.org/) - Julia is described as a high-performance scripting language, so I'm interested to see how it compares to existing implementations
   * [Lua](http://www.lua.org/) - another language that I would like to compare with existing implementations
   * [Racket](https://racket-lang.org/) - this might be an alternate choice to Common Lisp, or another comparison point
 
