@@ -1,5 +1,7 @@
 tools/
 vendor/
 
+.php_cs.cache
+
 # phpunit
 .phpunit.result.cache
