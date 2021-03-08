@@ -1,5 +1,5 @@
-plsearch version 0.1.0
-======================
+plfind version 0.1.0
+====================
 
 The README is used to introduce the module and provide instructions on
 how to install the module, any machine dependencies it may have (for
@@ -31,7 +31,7 @@ COPYRIGHT AND LICENCE
 
 Put the correct copyright and licence information here.
 
-Copyright (C) 2020 by Cary Clark
+Copyright (C) 2021 by Cary Clark
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.32.0 or,

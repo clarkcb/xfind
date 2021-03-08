@@ -15,20 +15,12 @@ class FindSettingsTest {
         assertEquals(true, settings.colorize)
         assertEquals(false, settings.debug)
         assertEquals(true, settings.excludeHidden)
-        assertEquals(false, settings.firstMatch)
-        assertEquals(0, settings.linesAfter)
-        assertEquals(0, settings.linesBefore)
+        assertEquals(false, settings.includeArchives)
         assertEquals(false, settings.listDirs)
         assertEquals(false, settings.listFiles)
-        assertEquals(false, settings.listLines)
-        assertEquals(150, settings.maxLineLength)
-        assertEquals(false, settings.multiLineFind)
-        assertEquals(false, settings.printResults)
         assertEquals(false, settings.printUsage)
         assertEquals(false, settings.printVersion)
-        assertEquals(false, settings.findArchives)
         assertEquals(true, settings.recursive)
-        assertEquals(false, settings.uniqueLines)
         assertEquals(false, settings.verbose)
     }
 
@@ -54,7 +46,7 @@ class FindSettingsTest {
     fun testSetArchivesOnly() {
         val settings = setArchivesOnly(getDefaultSettings(), true)
         assertTrue(settings.archivesOnly)
-        assertTrue(settings.findArchives)
+        assertTrue(settings.includeArchives)
     }
 
     @Test

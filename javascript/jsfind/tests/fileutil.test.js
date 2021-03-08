@@ -91,6 +91,7 @@ describe('testing fileutil', () => {
     it('testGetExtensionNonString', () => {
         const file = 200;
         try {
+            // eslint-disable-next-line no-unused-vars
             const ext = FileUtil.getExtension(file);
         } catch (err) {
             expect(err).toBeDefined();
@@ -109,7 +110,7 @@ describe('testing fileutil', () => {
      * getRelativePath tests
      **************************************************************************/
     it('testGetRelativePath', () => {
-        const filepath = "/Users/cary/filename.txt";
+        const filepath = `${process.env.HOME}/filename.txt`;
         expect(FileUtil.getRelativePath(filepath, '.')).toEqual("./filename.txt");
     });
 
@@ -169,7 +170,7 @@ describe('testing fileutil', () => {
      **************************************************************************/
     it('testExpandPathPathWithTilde', () => {
         const filepath = "~/filename.txt";
-        const expected = process.env.HOME + "/filename.txt";
+        const expected = `${process.env.HOME}/filename.txt`;
         expect(FileUtil.expandPath(filepath) === expected).toBeTruthy();
     });
 

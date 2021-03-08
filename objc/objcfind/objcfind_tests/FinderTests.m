@@ -238,124 +238,93 @@
 }
 
 /*************************************************************
- * FilterFile tests
+ * filterToFindFile tests
  *************************************************************/
-- (void)testFilterFile_IsHidden_False {
+- (void)testFilterToFindFile_IsHidden_False {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder filterFile:@".gitignore"]);
+    XCTAssert([finder filterToFindFile:@".gitignore"] == nil);
 }
 
-- (void)testFilterFile_IsHiddenIncludeHidden_True {
+- (void)testFilterToFindFile_IsHiddenIncludeHidden_True {
     FindSettings *settings = [[FindSettings alloc] init];
     [settings setExcludeHidden:false];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterFile:@".gitignore"]);
+    XCTAssert([finder filterToFindFile:@".hidden.txt"] != nil);
 }
 
-- (void)testFilterFile_ArchiveNoFindArchives_False {
+- (void)testFilterToFindFile_ArchiveNoFindArchives_False {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder filterFile:@"archive.zip"]);
+    XCTAssert([finder filterToFindFile:@"archive.zip"] == nil);
 }
 
-- (void)testFilterFile_ArchiveFindArchives_True {
+- (void)testFilterToFindFile_ArchiveFindArchives_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setFindArchives:true];
+    [settings setIncludeArchives:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterFile:@"archive.zip"]);
+    XCTAssert([finder filterToFindFile:@"archive.zip"] != nil);
 }
 
-- (void)testFilterFile_IsArchiveFindFile_True {
+- (void)testFilterToFindFile_IsArchiveFindFile_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setFindArchives:true];
+    [settings setIncludeArchives:true];
     [settings addInArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterFile:@"archive.zip"]);
+    XCTAssert([finder filterToFindFile:@"archive.zip"] != nil);
 }
 
-- (void)testFilterFile_NotIsArchiveFindFile_False {
+- (void)testFilterToFindFile_NotIsArchiveFindFile_False {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setFindArchives:true];
+    [settings setIncludeArchives:true];
     [settings addOutArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder filterFile:@"archive.zip"]);
+    XCTAssert([finder filterToFindFile:@"archive.zip"] == nil);
 }
 
-- (void)testFilterFile_ArchiveFileArchivesOnly_True {
+- (void)testFilterToFindFile_ArchiveFileArchivesOnly_True {
     FindSettings *settings = [[FindSettings alloc] init];
     [settings setArchivesOnly:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterFile:@"archive.zip"]);
+    XCTAssert([finder filterToFindFile:@"archive.zip"] != nil);
 }
 
-- (void)testFilterFile_NoExtensionsNoPatterns_True {
+- (void)testFilterToFindFile_NoExtensionsNoPatterns_True {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterFile:@"FileUtil.cs"]);
+    XCTAssert([finder filterToFindFile:@"FileUtil.cs"] != nil);
 }
 
-- (void)testFilterFile_IsFindFile_True {
+- (void)testFilterToFindFile_IsFindFile_True {
     FindSettings *settings = [[FindSettings alloc] init];
     [settings addInExtension:@"cs"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterFile:@"FileUtil.cs"]);
+    XCTAssert([finder filterToFindFile:@"FileUtil.cs"] != nil);
 }
 
-- (void)testFilterFile_NotIsFindFile_False {
+- (void)testFilterToFindFile_NotIsFindFile_False {
     FindSettings *settings = [[FindSettings alloc] init];
     [settings addOutExtension:@"cs"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder filterFile:@"FileUtil.cs"]);
+    XCTAssert([finder filterToFindFile:@"FileUtil.cs"] == nil);
 }
 
-- (void)testFilterFile_NonArchiveFileArchivesOnly_False {
+- (void)testFilterToFindFile_NonArchiveFileArchivesOnly_False {
     FindSettings *settings = [[FindSettings alloc] init];
     [settings setArchivesOnly:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert(![finder filterFile:@"FileUtil.cs"]);
-}
-
-/*************************************************************
- * findMultiLineString tests
- *************************************************************/
-- (void)testFindMultiLineString {
-    FindSettings *settings = [[FindSettings alloc] init];
-    [settings setStartPath:@"."];
-    [settings addFindPattern:@"Finder"];
-    NSError *error = nil;
-    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    
-    NSArray<FindResult*> *results = [finder findFilePath:self.testFilePath error:&error];
-
-    XCTAssert([results count] == 2);
-
-    FindResult *firstResult = [results objectAtIndex:0];
-    int expectedFirstLineNum = 29;
-    XCTAssert([firstResult lineNum] == expectedFirstLineNum);
-    int expectedFirstMatchStartIndex = 3;
-    XCTAssert([firstResult matchStartIndex] == expectedFirstMatchStartIndex);
-    int expectedFirstMatchEndIndex = 11;
-    XCTAssert([firstResult matchEndIndex] == expectedFirstMatchEndIndex);
-
-    FindResult *secondResult = [results objectAtIndex:1];
-    int expectedSecondLineNum = 35;
-    XCTAssert([secondResult lineNum] == expectedSecondLineNum);
-    int expectedSecondMatchStartIndex = 24;
-    XCTAssert([secondResult matchStartIndex] == expectedSecondMatchStartIndex);
-    int expectedSecondMatchEndIndex = 32;
-    XCTAssert([secondResult matchEndIndex] == expectedSecondMatchEndIndex);
+    XCTAssert([finder filterToFindFile:@"FileUtil.cs"] == nil);
 }
 
 @end

@@ -10,11 +10,14 @@ import json
 import os
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-config_json_path = os.path.join(cwd, '../data/config.json')
+data_path = os.path.join(cwd, '../data')
+if not os.path.exists(data_path):
+    data_path = os.path.join(cwd, 'data')
+config_json_path = os.path.join(data_path, 'config.json')
 config = json.load(open(config_json_path))
 
 XFINDPATH = config['xfindpath']
 SHAREDPATH = os.path.join(XFINDPATH, 'shared')
-FILETYPESPATH = os.path.join(cwd, '../data/filetypes.json')
-FINDOPTIONSPATH = os.path.join(cwd, '../data/findoptions.json')
+FILETYPESPATH = os.path.join(data_path, 'filetypes.json')
+FINDOPTIONSPATH = os.path.join(data_path, 'findoptions.json')
 VERSION = config['version']

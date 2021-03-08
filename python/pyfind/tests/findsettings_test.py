@@ -23,78 +23,47 @@ class FindSettingsTest(unittest.TestCase):
         # test the props
         self.assertFalse(self.settings.archivesonly)
         self.assertFalse(self.settings.debug)
-        self.assertFalse(self.settings.firstmatch)
         self.assertTrue(self.settings.excludehidden)
-        self.assertEqual(0, self.settings.linesafter)
-        self.assertEqual(0, self.settings.linesbefore)
+        self.assertFalse(self.settings.includearchives)
         self.assertFalse(self.settings.listdirs)
         self.assertFalse(self.settings.listfiles)
-        self.assertFalse(self.settings.listlines)
-        self.assertEqual(150, self.settings.maxlinelength)
-        self.assertFalse(self.settings.multilineoption-REMOVE)
-        self.assertTrue(self.settings.printresults)
         self.assertFalse(self.settings.printusage)
         self.assertFalse(self.settings.printversion)
         self.assertTrue(self.settings.recursive)
-        self.assertFalse(self.settings.findarchives)
-        self.assertFalse(self.settings.uniquelines)
         self.assertFalse(self.settings.verbose)
         # test the extension and pattern sets
         self.assertFalse(self.settings.in_archiveextensions)
         self.assertFalse(self.settings.in_archivefilepatterns)
         self.assertFalse(self.settings.in_dirpatterns)
         self.assertFalse(self.settings.in_filepatterns)
-        self.assertFalse(self.settings.in_linesafterpatterns)
-        self.assertFalse(self.settings.in_linesbeforepatterns)
-        self.assertFalse(self.settings.linesaftertopatterns)
-        self.assertFalse(self.settings.linesafteruntilpatterns)
         self.assertFalse(self.settings.out_archiveextensions)
         self.assertFalse(self.settings.out_archivefilepatterns)
         self.assertFalse(self.settings.out_dirpatterns)
         self.assertFalse(self.settings.out_filepatterns)
-        self.assertFalse(self.settings.out_linesafterpatterns)
-        self.assertFalse(self.settings.out_linesbeforepatterns)
-        self.assertFalse(self.settings.findpatterns)
 
     def test_set_properties(self):
         props = {
             'archivesonly': True,
             'debug': True,
-            'firstmatch': True,
             'excludehidden': False,
-            'linesafter': 5,
-            'linesbefore': 5,
+            'includearchives': True,
             'listdirs': True,
             'listfiles': True,
-            'listlines': True,
-            'maxlinelength': 155,
-            'multilineoption-REMOVE': True,
-            'printresults': False,
             'printusage': True,
             'printversion': True,
             'recursive': False,
-            'findarchives': True,
-            'uniquelines': True,
             'verbose': True,
         }
         self.settings.set_properties(props)
         self.assertEqual(True, self.settings.archivesonly)
         self.assertEqual(True, self.settings.debug)
-        self.assertEqual(True, self.settings.firstmatch)
         self.assertEqual(False, self.settings.excludehidden)
-        self.assertEqual(5, self.settings.linesafter)
-        self.assertEqual(5, self.settings.linesbefore)
+        self.assertEqual(True, self.settings.includearchives)
         self.assertEqual(True, self.settings.listdirs)
         self.assertEqual(True, self.settings.listfiles)
-        self.assertEqual(True, self.settings.listlines)
-        self.assertEqual(155, self.settings.maxlinelength)
-        self.assertEqual(True, self.settings.multilineoption-REMOVE)
-        self.assertEqual(False, self.settings.printresults)
-        self.assertEqual(True, self.settings.printusage,)
+        self.assertEqual(True, self.settings.printusage)
         self.assertEqual(True, self.settings.printversion)
         self.assertEqual(False, self.settings.recursive)
-        self.assertEqual(True, self.settings.findarchives)
-        self.assertEqual(True, self.settings.uniquelines)
         self.assertEqual(True, self.settings.verbose)
 
     def test_add_single_extension(self):
@@ -114,19 +83,6 @@ class FindSettingsTest(unittest.TestCase):
         self.assertEqual(3, len(self.settings.in_extensions))
         for x in extensions_set:
             self.assertIn(x, self.settings.in_extensions)
-
-    def test_add_single_pattern(self):
-        p = 'Find'
-        self.settings.add_patterns(p, 'findpatterns')
-        self.assertEqual(1, len(self.settings.findpatterns))
-        self.assertEqual(p, list(self.settings.findpatterns)[0].pattern)
-
-    def test_add_patterns_set(self):
-        patterns_set = {'Find', 'Test'}
-        self.settings.add_patterns(patterns_set, 'findpatterns')
-        self.assertEqual(len(patterns_set), len(self.settings.findpatterns))
-        for p in self.settings.findpatterns:
-            self.assertIn(p.pattern, patterns_set)
 
 
 if __name__ == '__main__':

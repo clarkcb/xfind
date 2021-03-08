@@ -24,7 +24,8 @@ module RbFind
 
     def find_settings_from_args(args)
       settings = FindSettings.new
-      settings.printresults = true
+      # default listfiles to true since running as cli
+      settings.listfiles = true
       until args.empty?
         arg = args.shift
         if arg.start_with?('-')
@@ -41,7 +42,7 @@ module RbFind
             raise FindError, "Invalid option: #{arg}"
           end
         else
-          settings.startpath = arg
+          settings.paths.push(arg)
         end
       end
       settings
@@ -70,8 +71,8 @@ module RbFind
         elsif @bool_flag_action_dict.key?(arg_sym)
           @bool_flag_action_dict[arg_sym].call(json_hash[arg], settings)
           return if %w[h help V version].include?(arg)
-        elsif arg == 'startpath'
-          settings.startpath = json_hash[arg]
+        elsif arg == 'path'
+          settings.paths.push(arg)
         else
           raise FindError, "Invalid option: #{arg}"
         end
@@ -85,7 +86,7 @@ module RbFind
 
     def get_usage_string
       usage = "Usage:\n"
-      usage << " rbfind [options] -s <findpattern> <startpath>\n\n"
+      usage << " rbfind [options] <path> [<path> ...]\n\n"
       usage << "Options:\n"
       opt_strings = []
       opt_descs = []
@@ -111,9 +112,6 @@ module RbFind
 
     def set_actions
       @arg_action_dict = {
-        'encoding': lambda { |x, settings|
-          settings.textfileencoding = x
-        },
         'in-archiveext': lambda { |x, settings|
           settings.add_exts(x, settings.in_archiveextensions)
         },
@@ -132,26 +130,17 @@ module RbFind
         'in-filepattern': lambda { |x, settings|
           settings.add_patterns(x, settings.in_filepatterns)
         },
-        'in-linesafterpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_linesafterpatterns)
+        'maxlastmod': lambda { |x, settings|
+          # TODO: add maxlastmod to settings as date/time
         },
-        'in-linesbeforepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_linesbeforepatterns)
+        'maxsize': lambda { |x, settings|
+          # TODO: add maxsize to settings as int
         },
-        'linesafter': lambda { |x, settings|
-          settings.linesafter = x.to_i
+        'minlastmod': lambda { |x, settings|
+          # TODO: add minlastmod to settings as date/time
         },
-        'linesaftertopattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.linesaftertopatterns)
-        },
-        'linesafteruntilpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.linesafteruntilpatterns)
-        },
-        'linesbefore': lambda { |x, settings|
-          settings.linesbefore = x.to_i
-        },
-        'maxlinelength': lambda { |x, settings|
-          settings.maxlinelength = x.to_i
+        'minsize': lambda { |x, settings|
+          # TODO: add minsize to settings as int
         },
         'out-archiveext': lambda { |x, settings|
           settings.add_exts(x, settings.out_archiveextensions)
@@ -171,42 +160,29 @@ module RbFind
         'out-filetype': lambda { |x, settings|
           settings.add_filetypes(x, settings.out_filetypes)
         },
-        'out-linesafterpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_linesafterpatterns)
-        },
-        'out-linesbeforepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_linesbeforepatterns)
-        },
-        'findpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.findpatterns)
+        'path': lambda { |x, settings|
+          settings.paths.push(x)
         },
         'settings-file': lambda { |x, settings|
           settings_from_file(x, settings)
         }
       }
       @bool_flag_action_dict = {
-        allmatches: ->(b, settings) { settings.firstmatch = !b },
         archivesonly: ->(b, settings) { settings.archivesonly = b },
         caseinsensitive: ->(b, settings) { settings.casesensitive = !b },
         casesensitive: ->(b, settings) { settings.casesensitive = b },
         colorize: ->(b, settings) { settings.colorize = b },
         debug: ->(b, settings) { settings.debug = b },
+        excludearchives: ->(b, settings) { settings.includearchives = !b },
         excludehidden: ->(b, settings) { settings.excludehidden = b },
-        firstmatch: ->(b, settings) { settings.firstmatch = b },
         help: ->(b, settings) { settings.printusage = b },
+        includearchives: ->(b, settings) { settings.includearchives = b },
         includehidden: ->(b, settings) { settings.excludehidden = !b },
         listdirs: ->(b, settings) { settings.listdirs = b },
         listfiles: ->(b, settings) { settings.listfiles = b },
-        listlines: ->(b, settings) { settings.listlines = b },
-        multilineoption-REMOVE: ->(b, settings) { settings.multilineoption-REMOVE = b },
         nocolorize: ->(b, settings) { settings.colorize = !b },
-        noprintmatches: ->(b, settings) { settings.printresults = !b },
         norecursive: ->(b, settings) { settings.recursive = !b },
-        nofindarchives: ->(b, settings) { settings.findarchives = !b },
-        printmatches: ->(b, settings) { settings.printresults = b },
         recursive: ->(b, settings) { settings.recursive = b },
-        findarchives: ->(b, settings) { settings.findarchives = b },
-        uniquelines: ->(b, settings) { settings.uniquelines = b },
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.printversion = b }
       }
@@ -241,7 +217,7 @@ module RbFind
         @longarg_dict[short] = long_sym if short
       end
     rescue StandardError => e
-      raise FindError, "#{e} (file: #{FINDOPTIONSJSONPATH})"
+      raise FindError, "#{e} (file: #{findoptions_json_path})"
     ensure
       f&.close
     end

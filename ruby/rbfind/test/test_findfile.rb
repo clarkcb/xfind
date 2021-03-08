@@ -13,10 +13,10 @@ module RbFind
 
   class FindFileTest < Minitest::Test
     def test_findfile_abs_path
-      path = '/Users/cary/src/xfind/ruby/rbfind'
+      path = ENV['HOME'] + '/src/xfind/ruby/rbfind'
       filename = 'findfile.rb'
       findfile = FindFile.new(path, filename, FileType::CODE)
-      assert_equal('/Users/cary/src/xfind/ruby/rbfind/findfile.rb', findfile.relativepath)
+      assert_equal(ENV['HOME'] + '/src/xfind/ruby/rbfind/findfile.rb', findfile.relativepath)
     end
 
     def test_findfile_rel_path1

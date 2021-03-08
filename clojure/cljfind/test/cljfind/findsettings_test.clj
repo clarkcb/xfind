@@ -10,20 +10,13 @@
       (is (not (:archivesonly settings)))
       (is (not (:debug settings)))
       (is (:excludehidden settings))
-      (is (not (:firstmatch settings)))
-      (is (= (:linesafter settings) 0))
-      (is (= (:linesbefore settings) 0))
       (is (not (:listdirs settings)))
       (is (not (:listfiles settings)))
-      (is (not (:listlines settings)))
-      (is (= (:maxlinelength settings) 150))
-      (is (not (:multilineoption-REMOVE settings)))
-      (is (:printresults settings))
       (is (not (:printusage settings)))
       (is (not (:printversion settings)))
       (is (:recursive settings))
-      (is (not (:findarchives settings)))
-      (is (= (:startpath settings) nil))
+      (is (not (:includearchives settings)))
+      (is (empty? (:paths settings)))
       (is (not (:uniquelines settings)))
       (is (not (:verbose settings))))))
 
@@ -37,16 +30,16 @@
 
 (deftest test-add-pattern
   (let [settings DEFAULT-SETTINGS
-        with-pattern (add-pattern settings "Find" :findpatterns)]
+        with-pattern (add-pattern settings "Find" :dirpatterns)]
     (testing "test-add-pattern"
-      (is (= (count (:findpatterns with-pattern)) 1)))))
+      (is (= (count (:dirpatterns with-pattern)) 1)))))
 
 (deftest test-set-archivesonly
   (let [settings DEFAULT-SETTINGS
         with-archivesonly (set-archivesonly settings true)]
     (testing "test-set-archivesonly"
       (is (:archivesonly with-archivesonly))
-      (is (:findarchives with-archivesonly)))))
+      (is (:includearchives with-archivesonly)))))
 
 (deftest test-set-debug
   (let [settings DEFAULT-SETTINGS

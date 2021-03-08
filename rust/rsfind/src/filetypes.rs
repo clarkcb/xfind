@@ -7,7 +7,6 @@ use serde::{Deserialize, Serialize};
 use crate::config::{Config, CONFIG_FILE_PATH};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
-use std::error::Error;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum FileType {
@@ -40,11 +39,11 @@ impl FileTypes {
         let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
         let contents: String = match fs::read_to_string(config.filetypes_path) {
             Ok(contents) => contents,
-            Err(error) => return Err(FindError::new(error.description())),
+            Err(error) => return Err(FindError::new(&error.to_string())),
         };
         let jft: JsonFileTypes = match serde_json::from_str(&contents) {
             Ok(deserialized) => deserialized,
-            Err(error) => return Err(FindError::new(error.description())),
+            Err(error) => return Err(FindError::new(&error.to_string())),
         };
         let mut filetypes = FileTypes {
             filetypemap: HashMap::new(),
@@ -137,12 +136,6 @@ impl FileTypes {
             || self.is_file_type("xml", filename)
     }
 
-    pub fn is_findable_file(&self, filename: &str) -> bool {
-        self.is_text_file(filename)
-            || self.is_binary_file(filename)
-            || self.is_archive_file(filename)
-    }
-
     pub fn is_unknown_file(&self, filename: &str) -> bool {
         self.get_file_type(filename) == FileType::Unknown
     }
@@ -195,9 +188,6 @@ mod tests {
         let filename = "text.txt";
         assert!(filetypes.is_text_file(filename));
         assert_eq!(filetypes.get_file_type(filename), FileType::Text);
-        let filename = "text.html";
-        assert!(filetypes.is_text_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Text);
         let filename = "text.md";
         assert!(filetypes.is_text_file(filename));
         assert_eq!(filetypes.get_file_type(filename), FileType::Text);
@@ -210,6 +200,9 @@ mod tests {
     fn get_file_type_code_file() {
         let filetypes = FileTypes::new().ok().unwrap();
         let filename = "code.c";
+        assert!(filetypes.is_code_file(filename));
+        assert_eq!(filetypes.get_file_type(filename), FileType::Code);
+        let filename = "code.html";
         assert!(filetypes.is_code_file(filename));
         assert_eq!(filetypes.get_file_type(filename), FileType::Code);
         let filename = "code.rs";
@@ -226,23 +219,6 @@ mod tests {
         let filename = "markup.xml";
         assert!(filetypes.is_xml_file(&filename));
         assert_eq!(filetypes.get_file_type(&filename), FileType::Xml);
-    }
-
-    #[test]
-    fn get_file_type_findable_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "archive.zip";
-        assert!(filetypes.is_findable_file(&filename));
-        let filename = "binary.exe";
-        assert!(filetypes.is_findable_file(&filename));
-        let filename = "text.txt";
-        assert!(filetypes.is_findable_file(&filename));
-        let filename = "code.rs";
-        assert!(filetypes.is_findable_file(&filename));
-        let filename = "markup.xml";
-        assert!(filetypes.is_findable_file(&filename));
-        let filename = "unknown.xyz";
-        assert!(!filetypes.is_findable_file(&filename));
     }
 
     #[test]

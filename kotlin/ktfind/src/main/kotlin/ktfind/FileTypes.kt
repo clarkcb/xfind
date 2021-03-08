@@ -24,7 +24,7 @@ enum class FileType {
 private const val archive = "archive"
 private const val code = "code"
 private const val binary = "binary"
-private const val findable = "findable"
+// private const val findable = "findable"
 private const val text = "text"
 private const val xml = "xml"
 private const val unknown = "unknown"
@@ -82,11 +82,11 @@ class FileTypes {
             allText.addAll(ftMap["text"]!!)
             allText.addAll(ftMap["xml"]!!)
             ftMap["text"] = allText
-            val allFindable: MutableSet<String> = mutableSetOf()
-            allFindable.addAll(ftMap["archive"]!!)
-            allFindable.addAll(ftMap["binary"]!!)
-            allFindable.addAll(ftMap["text"]!!)
-            ftMap["findable"] = allFindable
+            // val allFindable: MutableSet<String> = mutableSetOf()
+            // allFindable.addAll(ftMap["archive"]!!)
+            // allFindable.addAll(ftMap["binary"]!!)
+            // allFindable.addAll(ftMap["text"]!!)
+            // ftMap["findable"] = allFindable
         } catch (e: ParseException) {
             e.printStackTrace()
         } catch (e: IOException) {
@@ -98,6 +98,12 @@ class FileTypes {
 
     fun getFileType(file: File) : FileType {
         when {
+            isCodeFile(file) -> {
+                return FileType.CODE
+            }
+            isXmlFile(file) -> {
+                return FileType.XML
+            }
             isTextFile(file) -> {
                 return FileType.TEXT
             }
@@ -106,12 +112,6 @@ class FileTypes {
             }
             isArchiveFile(file) -> {
                 return FileType.ARCHIVE
-            }
-            isCodeFile(file) -> {
-                return FileType.CODE
-            }
-            isXmlFile(file) -> {
-                return FileType.XML
             }
             else -> {
                 return FileType.UNKNOWN
@@ -131,17 +131,16 @@ class FileTypes {
         return (fileTypeMap[code] ?: setOf()).contains(file.extension.toLowerCase())
     }
 
-    fun isFindableFile(file: File): Boolean {
-        return (fileTypeMap[findable] ?: setOf()).contains(file.extension.toLowerCase())
-    }
+    // fun isFindableFile(file: File): Boolean {
+    //     return (fileTypeMap[findable] ?: setOf()).contains(file.extension.toLowerCase())
+    // }
 
     fun isTextFile(file: File): Boolean {
         return (fileTypeMap[text] ?: setOf()).contains(file.extension.toLowerCase())
     }
 
     fun isUnknownFile(file: File): Boolean {
-        return (fileTypeMap[unknown] ?: setOf()).contains(file.extension.toLowerCase())
-                || !isFindableFile(file)
+        return getFileType(file) == FileType.UNKNOWN
     }
 
     fun isXmlFile(file: File): Boolean {

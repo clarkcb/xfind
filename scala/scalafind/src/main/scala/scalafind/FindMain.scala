@@ -4,85 +4,58 @@ import java.io.File
 
 object FindMain {
 
-  private def cmpFindResults(r1: FindResult, r2: FindResult): Boolean = {
-    val (path1, fileName1) = r1.file match {
+  def getMatchingDirs(findfiles: Seq[FindFile]): Seq[File] = {
+    findfiles
+      .map(f => FileUtil.pathOrCurrent(f.file))
+      .distinct
+      .sortWith(_.toString < _.toString)
+      .toVector
+  }
+
+  private def cmpFiles(f1: File, f2: File): Boolean = {
+    val (path1, fileName1) = Option(f1) match {
       case Some(file1) =>
-        (FileUtil.pathOrCurrent(file1.file.getParentFile).getPath, file1.file.getName.toLowerCase)
+        (FileUtil.pathOrCurrent(file1).toString, file1.getName.toLowerCase)
       case None => ("", "")
     }
-    val (path2, fileName2) = r2.file match {
+    val (path2, fileName2) = Option(f2) match {
       case Some(file2) =>
-        (FileUtil.pathOrCurrent(file2.file.getParentFile).getPath, file2.file.getName.toLowerCase)
+        (FileUtil.pathOrCurrent(file2).toString, file2.getName.toLowerCase)
       case None => ("", "")
     }
     if (path1 == path2) {
-      if (fileName1 == fileName2) {
-        if (r1.lineNum == r2.lineNum) {
-          r1.matchStartIndex < r2.matchStartIndex
-        } else {
-          r1.lineNum < r2.lineNum
-        }
-      } else {
-        fileName1 < fileName2
-      }
+      fileName1 < fileName2
     } else {
       path1 < path2
     }
   }
 
-  def printFindResults(results: Seq[FindResult], settings: FindSettings): Unit = {
-    // TODO: add includePattern setting in formatted output
-    val formatter = new FindResultFormatter(settings)
-    results.sortWith(cmpFindResults).foreach(r => Common.log(formatter.format(r)))
-  }
-
-  def getMatchingDirs(results: Seq[FindResult]): Seq[File] = {
-    results
-      .filter(_.file.isDefined)
-      .map(r => FileUtil.pathOrCurrent(r.file.get.file.getParentFile))
+  def getMatchingFiles(findfiles: Seq[FindFile]): Seq[File] = {
+    findfiles
+      .map(_.file)
       .distinct
       .toVector
+      .sortWith(cmpFiles)
   }
 
-  def getMatchingFiles(results: Seq[FindResult]): Seq[File] = {
-    results
-      .filter(_.file.isDefined)
-      .map(_.file.get.file)
-      .distinct
-      .toVector
-  }
-
-  def getMatchingLines(results: Seq[FindResult], settings: FindSettings): Seq[String] = {
-    val allLines = results.flatMap(r => r.line).map(_.trim)
-    if (settings.uniqueLines) {
-      allLines.distinct.sortWith(_.toUpperCase < _.toUpperCase)
+  def printMatchingDirs(findfiles: Seq[FindFile]): Unit = {
+    val dirs = getMatchingDirs(findfiles)
+    if (dirs.nonEmpty) {
+      Common.log("\nMatching directories (%d):".format(dirs.length))
+      dirs.foreach(f => Common.log(f.toString))
     } else {
-      allLines.sortWith(_.toUpperCase < _.toUpperCase)
+      Common.log("\nMatching directories: 0")
     }
   }
 
-  def printMatchingDirs(results: Seq[FindResult]): Unit = {
-    val dirs = getMatchingDirs(results)
-    Common.log("\nDirectories with matches (%d):".format(dirs.length))
-    dirs.foreach(f => Common.log(f.toString))
-  }
-
-  def printMatchingFiles(results: Seq[FindResult]): Unit = {
-    val files = getMatchingFiles(results)
-    Common.log("\nFiles with matches (%d):".format(files.length))
-    files.foreach(f => Common.log(f.toString))
-  }
-
-  def printMatchingLines(results: Seq[FindResult], settings: FindSettings): Unit = {
-    val lines = getMatchingLines(results, settings)
-    val hdr =
-      if (settings.uniqueLines) {
-        "\nUnique lines with matches (%d):"
-      } else {
-        "\nLines with matches (%d):"
-      }
-    Common.log(hdr.format(lines.length))
-    lines.foreach(Common.log)
+  def printMatchingFiles(findfiles: Seq[FindFile]): Unit = {
+    val files = getMatchingFiles(findfiles)
+    if (files.nonEmpty) {
+      Common.log("\nMatching files (%d):".format(files.length))
+      files.foreach(f => Common.log(f.toString))
+    } else {
+      Common.log("\nMatching files: 0")
+    }
   }
 
   def main(args: Array[String]) {
@@ -99,15 +72,10 @@ object FindMain {
       }
 
       val finder = new Finder(settings)
-      val results = finder.find()
+      val findFiles = finder.find()
 
-      if (settings.printResults) {
-        Common.log("\nFind results (%d):".format(results.length))
-        printFindResults(results, settings)
-      }
-      if (settings.listDirs) { printMatchingDirs(results) }
-      if (settings.listFiles) { printMatchingFiles(results) }
-      if (settings.listLines) { printMatchingLines(results, settings) }
+      if (settings.listDirs) { printMatchingDirs(findFiles) }
+      if (settings.listFiles) { printMatchingFiles(findFiles) }
 
     } catch {
       case e: FindException =>

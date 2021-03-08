@@ -70,53 +70,37 @@ let get_usage findoptions =
 type argAction = string -> Findsettings.t -> Findsettings.t;;
 
 let arg_actions : (string * argAction) list = [
-  ("encoding", fun s ss -> { ss with textfileencoding=s });
   ("in-archiveext", fun s ss -> { ss with in_archiveextensions=Findsettings.add_extensions s ss.in_archiveextensions });
   ("in-archivefilepattern", fun s ss -> { ss with in_archivefilepatterns=List.append ss.in_archivefilepatterns [Re2.Regex.create_exn s] });
   ("in-dirpattern", fun s ss -> { ss with in_dirpatterns=List.append ss.in_dirpatterns [Re2.Regex.create_exn s] });
   ("in-ext", fun s ss -> { ss with in_extensions=Findsettings.add_extensions s ss.in_extensions });
   ("in-filepattern", fun s ss -> { ss with in_filepatterns=List.append ss.in_filepatterns [Re2.Regex.create_exn s] });
-  ("in-linesafterpattern", fun s ss -> { ss with in_linesafterpatterns=List.append ss.in_linesafterpatterns [Re2.Regex.create_exn s] });
-  ("in-linesbeforepattern", fun s ss -> { ss with in_linesbeforepatterns=List.append ss.in_linesbeforepatterns [Re2.Regex.create_exn s] });
-  ("linesafter", fun s ss -> { ss with linesafter=int_of_string s });
-  ("linesaftertopattern", fun s ss -> { ss with linesaftertopatterns=List.append ss.linesaftertopatterns [Re2.Regex.create_exn s] });
-  ("linesafteruntilpattern", fun s ss -> { ss with linesafteruntilpatterns=List.append ss.linesafteruntilpatterns [Re2.Regex.create_exn s] });
-  ("linesbefore", fun s ss -> { ss with linesbefore=int_of_string s });
-  ("maxlinelength", fun s ss -> { ss with maxlinelength=int_of_string s });
   ("out-archiveext", fun s ss -> { ss with out_archiveextensions=Findsettings.add_extensions s ss.out_archiveextensions });
   ("out-archivefilepattern", fun s ss -> { ss with out_archivefilepatterns=List.append ss.out_archivefilepatterns [Re2.Regex.create_exn s] });
   ("out-dirpattern", fun s ss -> { ss with out_dirpatterns=List.append ss.out_dirpatterns [Re2.Regex.create_exn s] });
   ("out-ext", fun s ss -> { ss with out_extensions=Findsettings.add_extensions s ss.out_extensions });
   ("out-filepattern", fun s ss -> { ss with out_filepatterns=List.append ss.out_filepatterns [Re2.Regex.create_exn s] });
-  ("out-linesafterpattern", fun s ss -> { ss with out_linesafterpatterns=List.append ss.out_linesafterpatterns [Re2.Regex.create_exn s] });
-  ("out-linesbeforepattern", fun s ss -> { ss with out_linesbeforepatterns=List.append ss.out_linesbeforepatterns [Re2.Regex.create_exn s] });
-  ("findpattern", fun s ss -> { ss with findpatterns=List.append ss.findpatterns [Re2.Regex.create_exn s] });
-  ("startpath", fun s ss -> { ss with startpath=s })
+  ("path", fun s ss -> { ss with paths=List.append ss.paths s })
 ];;
 
 type boolFlagAction = bool -> Findsettings.t -> Findsettings.t;;
 
 let bool_flag_actions : (string * boolFlagAction) list = [
-  ("allmatches", fun b ss -> { ss with firstmatch=(not b) });
   ("archivesonly", fun b ss -> FindSettings.set_archivesonly ss b);
   ("colorize", fun b ss -> { ss with colorize=b });
   ("debug", fun b ss -> FindSettings.set_debug ss b);
+  ("excludearchives", fun b ss -> { ss with includearchives=(not b) });
   ("excludehidden", fun b ss -> { ss with excludehidden=b });
-  ("firstmatch", fun b ss -> { ss with firstmatch=b });
   ("help", fun b ss -> { ss with printusage=b });
+  ("includearchives", fun b ss -> { ss with includearchives=b });
   ("includehidden", fun b ss -> { ss with excludehidden=(not b) });
   ("listdirs", fun b ss -> { ss with listdirs=b });
   ("listfiles", fun b ss -> { ss with listfiles=b });
-  ("listlines", fun b ss -> { ss with listlines=b });
-  ("multilineoption-REMOVE", fun b ss -> { ss with multilineoption-REMOVE=b });
   ("nocolorize", fun b ss -> { ss with colorize=(not b) });
   ("noprintmatches", fun b ss -> { ss with printresults=(not b) });
   ("norecursive", fun b ss -> { ss with recursive=(not b) });
-  ("nofindarchives", fun b ss -> { ss with findarchives=(not b) });
   ("printmatches", fun b ss -> { ss with printresults=b });
   ("recursive", fun b ss -> { ss with recursive=b });
-  ("findarchives", fun b ss -> { ss with findarchives=b });
-  ("uniquelines", fun b ss -> { ss with uniquelines=b });
   ("verbose", fun b ss -> { ss with verbose=b });
   ("version", fun b ss -> { ss with printversion=b })
 ];;
@@ -149,6 +133,7 @@ let settings_from_args findoptions args =
                      | h :: t  -> rec_settings_from_args (f h settings) t)
                  | None -> Error (sprintf "Invalid option: %s" arg)))
          | None -> Error (sprintf "Invalid option: %s" arg))
-    | hd :: tl -> rec_settings_from_args { settings with Findsettings.startpath=hd } tl in
-  rec_settings_from_args { Findsettings.default_settings with printresults=true } args;;
+    | hd :: tl -> rec_settings_from_args { settings with paths=List.append settings.paths hd } tl in
+  (* default listfiles to true since running as cli *)
+  rec_settings_from_args { Findsettings.default_settings with listfiles=true } args;;
 

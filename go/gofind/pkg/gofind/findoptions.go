@@ -87,11 +87,11 @@ func (so *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 			} else {
 				log(fmt.Sprintf("value for %v is invalid", k))
 			}
-		} else if k == "startpath" {
+		} else if k == "path" {
 			if sp, hasStartPath := jsonSettings[k]; hasStartPath {
-				settings.StartPath = sp.(string)
+				settings.AddPath(sp.(string))
 			} else {
-				log("startpath value is invalid")
+				log("path value is invalid")
 			}
 		} else {
 			return fmt.Errorf("Invalid option: %s", k)
@@ -103,6 +103,8 @@ func (so *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 
 func (so *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
 	settings := GetDefaultFindSettings()
+	// default listFiles to true since running as cli
+	settings.ListFiles = true
 	argActionMap := so.getArgActionMap()
 	flagActionMap := so.getBoolFlagActionMap()
 
@@ -130,7 +132,7 @@ func (so *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 				return nil, fmt.Errorf("Invalid option: %s", k)
 			}
 		} else {
-			settings.StartPath = args[i]
+			settings.AddPath(args[i])
 		}
 		i++
 	}
@@ -143,7 +145,7 @@ func (so *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 func (so *FindOptions) getUsageString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("\nUsage:\n")
-	buffer.WriteString(" gofind [options] -s <findpattern> <startpath>\n\nOptions:\n")
+	buffer.WriteString(" gofind [options] <path> [<path> ...]\n\nOptions:\n")
 	sortKeyMap := so.getSortKeyMap()
 	optStringMap := so.getOptStringMap()
 	optDescMap := so.getOptDescMap()
@@ -209,9 +211,6 @@ type argAction func(s string, settings *FindSettings)
 
 func (so *FindOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
-		"encoding": func(s string, settings *FindSettings) {
-			settings.TextFileEncoding = s
-		},
 		"in-archiveext": func(s string, settings *FindSettings) {
 			settings.AddInArchiveExtension(s)
 		},
@@ -229,42 +228,6 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 		},
 		"in-filetype": func(s string, settings *FindSettings) {
 			settings.AddInFileType(getFileTypeForName(s))
-		},
-		"in-linesafterpattern": func(s string, settings *FindSettings) {
-			settings.AddInLinesAfterPattern(s)
-		},
-		"in-linesbeforepattern": func(s string, settings *FindSettings) {
-			settings.AddInLinesBeforePattern(s)
-		},
-		"linesafter": func(s string, settings *FindSettings) {
-			num, err := strconv.Atoi(s)
-			if err == nil {
-				settings.LinesAfter = num
-			} else {
-				log(fmt.Sprintf("Invalid value for linesafter: %s\n", s))
-			}
-		},
-		"linesaftertopattern": func(s string, settings *FindSettings) {
-			settings.AddLinesAfterToPattern(s)
-		},
-		"linesafteruntilpattern": func(s string, settings *FindSettings) {
-			settings.AddLinesAfterUntilPattern(s)
-		},
-		"linesbefore": func(s string, settings *FindSettings) {
-			num, err := strconv.Atoi(s)
-			if err == nil {
-				settings.LinesBefore = num
-			} else {
-				log(fmt.Sprintf("Invalid value for linesbefore: %s\n", s))
-			}
-		},
-		"maxlinelength": func(s string, settings *FindSettings) {
-			num, err := strconv.Atoi(s)
-			if err == nil {
-				settings.MaxLineLength = num
-			} else {
-				log(fmt.Sprintf("Invalid value for maxlinelength: %s\n", s))
-			}
 		},
 		"out-archiveext": func(s string, settings *FindSettings) {
 			settings.AddOutArchiveExtension(s)
@@ -284,14 +247,8 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 		"out-filetype": func(s string, settings *FindSettings) {
 			settings.AddOutFileType(getFileTypeForName(s))
 		},
-		"out-linesafterpattern": func(s string, settings *FindSettings) {
-			settings.AddOutLinesAfterPattern(s)
-		},
-		"out-linesbeforepattern": func(s string, settings *FindSettings) {
-			settings.AddOutLinesBeforePattern(s)
-		},
-		"findpattern": func(s string, settings *FindSettings) {
-			settings.AddFindPattern(s)
+		"path": func(s string, settings *FindSettings) {
+			settings.AddPath(s)
 		},
 		"settings-file": func(s string, settings *FindSettings) {
 			so.SettingsFromFile(s, settings)
@@ -311,23 +268,23 @@ type boolFlagAction func(b bool, settings *FindSettings)
 
 func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 	m := map[string]boolFlagAction{
-		"allmatches": func(b bool, settings *FindSettings) {
-			settings.FirstMatch = !b
-		},
 		"archivesonly": func(b bool, settings *FindSettings) {
 			settings.SetArchivesOnly(b)
 		},
 		"debug": func(b bool, settings *FindSettings) {
 			settings.SetDebug(b)
 		},
+		"excludearchives": func(b bool, settings *FindSettings) {
+			settings.IncludeArchives = !b
+		},
 		"excludehidden": func(b bool, settings *FindSettings) {
 			settings.ExcludeHidden = b
 		},
-		"firstmatch": func(b bool, settings *FindSettings) {
-			settings.FirstMatch = b
-		},
 		"help": func(b bool, settings *FindSettings) {
 			settings.PrintUsage = b
+		},
+		"includearchives": func(b bool, settings *FindSettings) {
+			settings.IncludeArchives = b
 		},
 		"includehidden": func(b bool, settings *FindSettings) {
 			settings.ExcludeHidden = !b
@@ -338,32 +295,11 @@ func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"listfiles": func(b bool, settings *FindSettings) {
 			settings.ListFiles = b
 		},
-		"listlines": func(b bool, settings *FindSettings) {
-			settings.ListLines = b
-		},
-		"multilineoption-REMOVE": func(b bool, settings *FindSettings) {
-			settings.MultiLineFind = b
-		},
-		"noprintmatches": func(b bool, settings *FindSettings) {
-			settings.PrintResults = !b
-		},
 		"norecursive": func(b bool, settings *FindSettings) {
 			settings.Recursive = !b
 		},
-		"nofindarchives": func(b bool, settings *FindSettings) {
-			settings.FindArchives = !b
-		},
-		"printmatches": func(b bool, settings *FindSettings) {
-			settings.PrintResults = b
-		},
 		"recursive": func(b bool, settings *FindSettings) {
 			settings.Recursive = b
-		},
-		"findarchives": func(b bool, settings *FindSettings) {
-			settings.FindArchives = b
-		},
-		"uniquelines": func(b bool, settings *FindSettings) {
-			settings.UniqueLines = b
 		},
 		"verbose": func(b bool, settings *FindSettings) {
 			settings.Verbose = b

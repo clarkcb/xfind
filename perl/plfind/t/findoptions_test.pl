@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 53;
+use Test::Simple tests => 38;
 
 use plfind::FindOptions;
 
@@ -30,34 +30,24 @@ sub test_no_args {
     ok(!$settings->{archivesonly}, 'archivesonly is false by default');
     ok(!$settings->{debug}, 'debug is false by default');
     ok($settings->{excludehidden}, 'excludehidden is true by default');
-    ok(!$settings->{firstmatch}, 'firstmatch is false by default');
-    ok($settings->{linesafter} == 0, 'linesafter == 0 by default');
-    ok($settings->{linesbefore} == 0, 'linesbefore == 0 by default');
+    ok(!$settings->{includearchives}, 'includearchives is false by default');
     ok(!$settings->{listdirs}, 'listdirs is false by default');
-    ok(!$settings->{listfiles}, 'listfiles is false by default');
-    ok(!$settings->{listlines}, 'listlines is false by default');
-    ok($settings->{maxlinelength} == 150, 'maxlinelength == 150 by default');
-    ok(!$settings->{multilineoption-REMOVE}, 'multilineoption-REMOVE is false by default');
-    ok($settings->{printresults}, 'printresults is true by default');
+    ok($settings->{listfiles}, 'listfiles is true by default');
     ok(!$settings->{printusage}, 'printusage is false by default');
     ok(!$settings->{printversion}, 'printversion is false by default');
     ok($settings->{recursive}, 'recursive is true by default');
-    ok(!$settings->{findarchives}, 'findarchives is false by default');
-    ok($settings->{startpath} eq '', 'startpath is empty by default');
-    ok(!$settings->{uniquelines}, 'uniquelines is false by default');
+    ok(scalar @{$settings->{paths}} == 0, 'paths are empty by default');
     ok(!$settings->{verbose}, 'verbose is false by default');
 }
 
 sub test_valid_args {
-    my $args = ['-x', 'pl,py', '-s', 'Find', '.'];
+    my $args = ['-x', 'pl,py', '.'];
     my ($settings, $errs) = $findoptions->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from valid args');
     ok(scalar @{$settings->{in_extensions}} == 2, 'in_extensions has two extensions');
     ok($settings->{in_extensions}->[0] eq 'pl', 'in_extensions has "pl" extension');
     ok($settings->{in_extensions}->[1] eq 'py', 'in_extensions has "py" extension');
-    ok(scalar @{$settings->{findpatterns}} == 1, 'findpatterns has one pattern');
-    ok($settings->{findpatterns}->[0] eq 'Find', 'findpatterns has "Find" pattern');
-    ok($settings->{startpath} eq '.', 'startpath eq '.'');
+    ok(${$settings->{paths}}[0] eq '.', 'paths[0] eq '.'');
 }
 
 sub test_archivesonly_arg {
@@ -65,7 +55,7 @@ sub test_archivesonly_arg {
     my ($settings, $errs) = $findoptions->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from valid archivesonly arg');
     ok($settings->{archivesonly}, 'archivesonly is true');
-    ok($settings->{findarchives}, 'findarchives is true');
+    ok($settings->{includearchives}, 'includearchives is true');
 }
 
 sub test_debug_arg {
@@ -94,20 +84,16 @@ sub test_settings_from_json {
     my $settings = new plfind::FindSettings();
     my $json = <<"END_JSON";
 {
-  "startpath": "~/src/xfind/",
+  "path": "~/src/xfind/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "findpattern": "Finder",
-  "linesbefore": 2,
-  "linesafter": 2,
   "debug": true,
-  "allmatches": false,
   "includehidden": true
 }
 END_JSON
     $findoptions->settings_from_json($json, $settings);
-    ok($settings->{startpath} eq '~/src/xfind/', "startpath is set to ~/src/xfind/");
+    ok(${$settings->{paths}}[0] eq '~/src/xfind/', "paths[0] is set to ~/src/xfind/");
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");
     ok($settings->{in_extensions}->[1] eq 'ts', "in_extensions contains ts extension");
@@ -115,13 +101,8 @@ END_JSON
     ok($settings->{out_dirpatterns}->[0] eq 'node_module', "out_dirpatterns[0] is node_module");
     ok(scalar @{$settings->{out_filepatterns}} == 1, "out_filepatterns has one pattern");
     ok($settings->{out_filepatterns}->[0] eq 'temp', "out_filepatterns[0] is temp");
-    ok(scalar @{$settings->{findpatterns}} == 1, "findpatterns has one pattern");
-    ok($settings->{findpatterns}->[0] eq 'Finder', "findpatterns[0] is Finder");
-    ok($settings->{linesbefore} == 2, "linesbefore is set to 2");
-    ok($settings->{linesafter} == 2, "linesafter is set to 2");
     ok($settings->{debug} == 1, "debug is set to true");
     ok($settings->{verbose} == 1, "verbose is set to true");
-    ok($settings->{firstmatch} == 1, "firstmatch is set to true by setting allmatches to false");
     ok($settings->{excludehidden} == 0, 'excludehidden is set to false by setting includehidden to true');
 }
 

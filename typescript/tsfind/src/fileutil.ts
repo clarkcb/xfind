@@ -4,10 +4,10 @@
  * file-related utility functions
  */
 
-"use strict";
+'use strict';
 
-const fs = require('fs');
-const path = require('path');
+import * as fs from 'fs';
+import * as path from 'path';
 
 import * as config from './config';
 
@@ -29,7 +29,7 @@ export class FileUtil {
         return '';
     }
 
-    public static getFileContents(filepath: string, encoding: string): string {
+    public static getFileContents(filepath: string, encoding: BufferEncoding='utf-8'): string {
         return fs.readFileSync(filepath, encoding).toString();
     }
 
@@ -37,11 +37,11 @@ export class FileUtil {
         cb(fs.readFileSync(filepath).toString());
     }
 
-    public static getFileLines(filepath: string, encoding: string): string[] {
+    public static getFileLines(filepath: string, encoding: BufferEncoding='utf-8'): string[] {
         return FileUtil.getFileContents(filepath, encoding).split(/\r?\n/);
     }
 
-    public static getFileLinesAsync(filepath: string, encoding: string, cb: (lines: string[]) => void): void {
+    public static getFileLinesAsync(filepath: string, encoding: BufferEncoding, cb: (lines: string[]) => void): void {
         cb(FileUtil.getFileContents(filepath, encoding).split(/\r?\n/));
     }
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 ################################################################################
 #
@@ -8,12 +8,14 @@
 # language versions
 #
 ################################################################################
-from cStringIO import StringIO
+from collections import namedtuple
+from io import StringIO
 import subprocess
 import sys
 
-from xsearch import *
+from xfind import *
 
+Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'], verbose=False)
 
 ########################################
 # Configuration
@@ -64,14 +66,14 @@ scenarios = [
 ########################################
 class Comparator(object):
     def __init__(self, **kargs):
-        self.xsearch_names = all_xsearch_names
+        self.xfind_names = all_xfind_names
         self.scenarios = []
         self.debug = False
         self.__dict__.update(kargs)
         self.results = [] # a list of tuples of (scenario, {nonmatching})
 
-    def compare_outputs(self, xsearch_output):
-        nonmatching = nonmatching_outputs(xsearch_output)
+    def compare_outputs(self, xfind_output):
+        nonmatching = nonmatching_outputs(xfind_output)
         if nonmatching:
             xs = []
             if len(nonmatching) == 2:
@@ -81,18 +83,18 @@ class Comparator(object):
             print
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print '%s output != %s output' % (x, y)
-                    # print '%s output:\n"%s"' % (x, xsearch_output[x])
-                    # print '%s output:\n"%s"' % (y, xsearch_output[y])
+                    print('%s output != %s output' % (x, y))
+                    # print '%s output:\n"%s"' % (x, xfind_output[x])
+                    # print '%s output:\n"%s"' % (y, xfind_output[y])
         else:
-            print '\nOutputs of all versions match'
+            print('\nOutputs of all versions match')
         return nonmatching
 
     def run_scenario(self, scenario, sn):
-        xsearch_output = {}
-        for x in self.xsearch_names:
+        xfind_output = {}
+        for x in self.xfind_names:
             fullargs = [x] + scenario.args
-            print ' '.join(fullargs)
+            print(' '.join(fullargs))
             p = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             output_lines = []
@@ -102,12 +104,12 @@ class Comparator(object):
                     break
                 output_lines.append(output_line)
             output = ''.join(output_lines)
-            if scenario.replace_xsearch_name:
-                output = xsearch_name_regex.sub('xsearch', output)
-            xsearch_output[x] = output
+            if scenario.replace_xfind_name:
+                output = xfind_name_regex.sub('xfind', output)
+            xfind_output[x] = output
             if self.debug:
-                print 'output:\n"%s"' % output
-        nonmatching = self.compare_outputs(xsearch_output)
+                print('output:\n"%s"' % output)
+        nonmatching = self.compare_outputs(xfind_output)
         self.results.append((scenario, nonmatching))
 
     def run(self):
@@ -115,65 +117,65 @@ class Comparator(object):
         hdr_len = 80
         for i,s in enumerate(self.scenarios):
             sn = i+1
-            print '\n\n%s' % ('=' * hdr_len)
-            print 'scenario %d: %s' % (sn, s.name)
-            print '%s\n' % ('-' * hdr_len)
+            print('\n\n%s' % ('=' * hdr_len))
+            print('scenario %d: %s' % (sn, s.name))
+            print('%s\n' % ('-' * hdr_len))
             self.run_scenario(s, sn)
         nonmatching_results = [r for r in self.results if r[1]]
         if nonmatching_results:
-            print '\nFound non-matching output in these scenarios:'
+            print('\nFound non-matching output in these scenarios:')
             for r in nonmatching_results:
-                print ' - %s' % r[0].name
+                print(' - %s' % r[0].name)
         else:
-            print '\nOutputs matched for all xsearch versions in all scenarios'
+            print('\nOutputs matched for all xfind versions in all scenarios')
 
 
 ########################################
 # Main functions
 ########################################
 def get_args(args):
-    xsearch_names = all_xsearch_names
+    xfind_names = all_xfind_names
     debug = False
     while args:
         arg = args.pop(0)
         if arg.startswith('-'):
-            if arg == '-l': # add xsearch_names
-                xsearch_names = []
+            if arg == '-l': # add xfind_names
+                xfind_names = []
                 if args:
                     langs = sorted(args.pop(0).split(','))
                     for lang in langs:
-                        if lang in xsearch_dict:
-                            xsearch_names.append(xsearch_dict[lang])
+                        if lang in xfind_dict:
+                            xfind_names.append(xfind_dict[lang])
                         else:
-                            print 'Skipping unknown language: %s' % lang
+                            print('Skipping unknown language: %s' % lang)
                 else:
-                    print 'ERROR: missing language names for -l arg'
+                    print('ERROR: missing language names for -l arg')
                     sys.exit(1)
-            elif arg == '-L': # remove xsearch_names
+            elif arg == '-L': # remove xfind_names
                 if args:
                     langs = sorted(args.pop(0).split(','))
                     for lang in langs:
-                        if lang in xsearch_dict and xsearch_dict[lang] in xsearch_names:
-                            xsearch_names.remove(xsearch_dict[lang])
+                        if lang in xfind_dict and xfind_dict[lang] in xfind_names:
+                            xfind_names.remove(xfind_dict[lang])
                 else:
-                    print 'ERROR: missing language names for -L arg'
+                    print('ERROR: missing language names for -L arg')
                     sys.exit(1)
             elif arg == '--debug':
                 debug = True
             else:
-                print 'ERROR: unknown arg: %s' % arg
+                print('ERROR: unknown arg: %s' % arg)
                 sys.exit(1)
 
         else:
-            print 'ERROR: unknown arg: %s' % arg
+            print('ERROR: unknown arg: %s' % arg)
             sys.exit(1)
-    return xsearch_names, debug
+    return xfind_names, debug
 
 def main():
-    xsearch_names, debug = get_args(sys.argv[1:])
-    print 'xsearch_names: %s' % str(xsearch_names)
-    print 'scenarios: %d' % len(scenarios)
-    comparator = Comparator(xsearch_names=xsearch_names,
+    xfind_names, debug = get_args(sys.argv[1:])
+    print('xfind_names: %s' % str(xfind_names))
+    print('scenarios: %d' % len(scenarios))
+    comparator = Comparator(xfind_names=xfind_names,
         scenarios=scenarios, debug=debug)
     comparator.run()
 

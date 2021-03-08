@@ -1,38 +1,28 @@
 #include "common.h"
 #include "Finder.h"
+#include "FindFile.h"
 #include "StringUtil.h"
 #include "FindException.h"
-#include "FindResultFormatter.h"
 #include "FindOptions.h"
 
 using namespace cppfind;
 
-std::vector<std::string> get_result_dirs(std::vector<FindResult*>* results) {
-    std::set<std::string> result_dir_set = {};
-    for (const auto& result : *results) {
-        result_dir_set.insert(result->findfile()->path());
+std::vector<std::string> get_matching_dirs(std::vector<FindFile*>* findfiles) {
+    std::set<std::string> matching_dir_set = {};
+    for (const auto& f : *findfiles) {
+        matching_dir_set.insert(f->path());
     }
-    std::vector<std::string> result_dirs(result_dir_set.begin(), result_dir_set.end());
-    return result_dirs;
+    std::vector<std::string> matching_dirs(matching_dir_set.begin(), matching_dir_set.end());
+    return matching_dirs;
 }
 
-std::vector<std::string> get_result_files(std::vector<FindResult*>* results) {
-    std::set<std::string> result_file_set = {};
-    for (const auto& result : *results) {
-        result_file_set.insert(result->findfile()->string());
+std::vector<std::string> get_matching_files(std::vector<FindFile*>* findfiles) {
+    std::set<std::string> matching_file_set = {};
+    for (const auto& f : *findfiles) {
+        matching_file_set.insert(f->string());
     }
-    std::vector<std::string> result_files(result_file_set.begin(), result_file_set.end());
-    return result_files;
-}
-
-std::vector<std::string> get_result_lines(std::vector<FindResult*>* results, bool unique) {
-    std::set<std::string> result_line_set = {};
-    for (const auto& result : *results) {
-        result_line_set.insert(result->line());
-    }
-    std::vector<std::string> result_lines(result_line_set.begin(), result_line_set.end());
-    sort(result_lines.begin(), result_lines.end());
-    return result_lines;
+    std::vector<std::string> matching_files(matching_file_set.begin(), matching_file_set.end());
+    return matching_files;
 }
 
 int main(int argc, char *argv[]) {
@@ -59,64 +49,34 @@ int main(int argc, char *argv[]) {
 
         auto* finder = new Finder(settings);
 
-        std::vector<FindResult*> results = finder->find();
-
-        if (settings->printresults()) {
-            auto* formatter = new FindResultFormatter(settings);
-            std::string msg = "\nFind results (";
-            msg.append(std::to_string(results.size())).append("):");
-            log(msg);
-            for (const auto& result : results) {
-                log(formatter->format(result));
-            }
-        }
+        std::vector<FindFile*> findfiles = finder->find();
 
         if (settings->listdirs()) {
-            std::vector<std::string> result_dirs = get_result_dirs(&results);
-            std::string msg = "\nDirectories with matches";
-            if (result_dirs.empty()) {
+            std::vector<std::string> dirs = get_matching_dirs(&findfiles);
+            std::string msg = "\nMatching directories";
+            if (dirs.empty()) {
                 msg.append(": 0");
                 log(msg);
             } else {
-                msg.append(" (").append(std::to_string(result_dirs.size())).append("):");
+                msg.append(" (").append(std::to_string(dirs.size())).append("):");
                 log(msg);
-                for (const auto& d : result_dirs) {
+                for (const auto& d : dirs) {
                     log(d);
                 }
             }
         }
 
         if (settings->listfiles()) {
-            std::vector<std::string> result_files = get_result_files(&results);
-            std::string msg = "\nFiles with matches";
-            if (result_files.empty()) {
+            std::vector<std::string> files = get_matching_files(&findfiles);
+            std::string msg = "\nMatching files";
+            if (files.empty()) {
                 msg.append(": 0");
                 log(msg);
             } else {
-                msg.append(" (").append(std::to_string(result_files.size())).append("):");
+                msg.append(" (").append(std::to_string(files.size())).append("):");
                 log(msg);
-                for (const auto& f : result_files) {
+                for (const auto& f : files) {
                     log(f);
-                }
-            }
-        }
-
-        if (settings->listlines()) {
-            std::vector<std::string> result_lines = get_result_lines(&results, settings->uniquelines());
-            std::string msg;
-            if (settings->uniquelines()) {
-                msg = "\nUnique lines with matches";
-            } else {
-                msg = "\nLines with matches";
-            }
-            if (result_lines.empty()) {
-                msg.append(": 0");
-                log(msg);
-            } else {
-                msg.append(" (").append(std::to_string(result_lines.size())).append("):");
-                log(msg);
-                for (const auto& l : result_lines) {
-                    log(l);
                 }
             }
         }

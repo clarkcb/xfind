@@ -2,9 +2,9 @@
 # -*- coding: utf-8 -*-
 ################################################################################
 #
-# xsearch.py
+# xfind.py
 #
-# Shared domain classes, properties, functions for xsearch scripts
+# Shared domain classes, properties, functions for xfind scripts
 #
 ################################################################################
 import os
@@ -14,73 +14,93 @@ import re
 ########################################
 # Configuration
 ########################################
-xsearch_dict = {
-    # 'clojure':    'cljsearch',
-    # 'cpp':        'cppsearch',
-    'csharp':     'cssearch',
-    'dart':     'dartsearch',
-    # 'fsharp':     'fssearch',
-    'go':         'gosearch',
-    # 'haskell':    'hssearch',
-    # 'java':       'javasearch',
-    # 'javascript': 'jssearch',
-    'kotlin':     'ktsearch',
-    'objc':       'objcsearch',
-    # 'ocaml':      'mlsearch',
-    # 'perl':       'plsearch',
-    # 'php':        'phpsearch',
-    'python':     'pysearch',
-    # 'ruby':       'rbsearch',
-    'rust':       'rssearch',
-    # 'scala':      'scalasearch',
-    'swift':      'swiftsearch',
-    # 'typescript': 'tssearch',
+xfind_dict = {
+    'clj':        'cljfind',
+    'clojure':    'cljfind',
+    'cpp':        'cppfind',
+    'cs':         'csfind',
+    'csharp':     'csfind',
+    'dart':       'dartfind',
+    'fs':         'fsfind',
+    'fsharp':     'fsfind',
+    'go':         'gofind',
+    'haskell':    'hsfind',
+    'hs':         'hsfind',
+    'java':       'javafind',
+    'javascript': 'jsfind',
+    'js':         'jsfind',
+    'kotlin':     'ktfind',
+    'kt':         'ktfind',
+    'objc':       'objcfind',
+    # 'ocaml':      'mlfind',
+    'perl':       'plfind',
+    'pl':         'plfind',
+    'php':        'phpfind',
+    'py':         'pyfind',
+    'python':     'pyfind',
+    'rb':         'rbfind',
+    'ruby':       'rbfind',
+    'rs':         'rsfind',
+    'rust':       'rsfind',
+    'scala':      'scalafind',
+    'swift':      'swiftfind',
+    'ts':         'tsfind',
+    'typescript': 'tsfind',
 }
-win_supported = ['csharp', 'fsharp', 'go', 'haskell', 'javascript', 'perl', 'python', 'ruby']
-all_xsearch_names = sorted(xsearch_dict.values())
+win_supported = [
+    'cs', 'csharp', 'fs', 'fsharp', 'go', 'haskell', 'javascript', 'js',
+    'perl', 'pl', 'py', 'python', 'rb', 'ruby'
+]
+all_xfind_names = sorted(list(set(xfind_dict.values())))
 HOME_NAME = 'HOME'
 if platform.system() == 'Windows':
     HOME_NAME = 'USERPROFILE'
-    all_xsearch_names = sorted([xsearch_dict[l] for l in win_supported])
+    all_xfind_names = sorted([xfind_dict[l] for l in win_supported])
 
-xsearch_name_regex = re.compile(r'\b({})(\.exe)?\b'.format('|'.join(all_xsearch_names)), re.I | re.S)
+xfind_name_regex = re.compile(r'\b({})(\.exe)?\b'.format('|'.join(all_xfind_names)), re.I | re.S)
 
 default_runs = 10
 
 HOME = os.environ[HOME_NAME]
-XSEARCHPATH = os.path.join(HOME, 'src', 'xsearch')
 
-default_startpath = XSEARCHPATH
+# set XFINDPATH, default to $HOME/srx/xfind but override with env var if defined
+XFINDPATH = os.path.join(HOME, 'src', 'xfind')
+if 'XFIND_PATH' in os.environ:
+    XFINDPATH = os.environ['XFIND_PATH']
+elif 'XFINDPATH' in os.environ:
+    XFINDPATH = os.environ['XFINDPATH']
 
-def nonmatching_lens(xsearch_output):
-    """Examines xsearch_output (a dict of {xsearch_name : [lines]})
-       and returns a dict of xsearch instances with non-matching
-       output line lengths ({xsearch_name: [non_matching_xsearch_names]})
+default_startpath = XFINDPATH
+
+def nonmatching_lens(xfind_output):
+    """Examines xfind_output (a dict of {xfind_name : [lines]})
+       and returns a dict of xfind instances with non-matching
+       output line lengths ({xfind_name: [non_matching_xfind_names]})
     """
     nonmatching = {}
-    xs = sorted(xsearch_output.keys())
+    xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
         for y in xs:
-            x_len = len(xsearch_output[x])
-            y_len = len(xsearch_output[y])
+            x_len = len(xfind_output[x])
+            y_len = len(xfind_output[y])
             if x_len != y_len:
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
     return nonmatching
 
-def nonmatching_outputs(xsearch_output):
-    """Examines xsearch_output (a dict of {xsearch_name : [lines]})
-       and returns a dict of xsearch instances with non-matching
-       output ({xsearch_name: [non_matching_xsearch_names]})
+def nonmatching_outputs(xfind_output):
+    """Examines xfind_output (a dict of {xfind_name : [lines]})
+       and returns a dict of xfind instances with non-matching
+       output ({xfind_name: [non_matching_xfind_names]})
     """
     nonmatching = {}
-    xs = sorted(xsearch_output.keys())
+    xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
         for y in xs:
-            x_output = xsearch_output[x]
-            y_output = xsearch_output[y]
+            x_output = xfind_output[x]
+            y_output = xfind_output[y]
             if x_output != y_output:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))

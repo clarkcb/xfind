@@ -21,8 +21,7 @@ type FinderTests () =
         | :? FindException as e -> raise e
 
     member this.GetSettings () : FindSettings.t =
-        let settings = { FindSettings.DefaultSettings with StartPath = "." }
-        let settings = { settings with FindPatterns = FindSettings.AddPattern "Finder" settings.FindPatterns }
+        let settings = { FindSettings.DefaultSettings with Paths = ["."] }
         settings
     
 
@@ -102,7 +101,6 @@ type FinderTests () =
     //////////////////////////////////////////////////////////////
     // IsFindFile tests
     //////////////////////////////////////////////////////////////
-
     [<Test>]
     member this.TestIsFindFile_NoExtensionsNoPatterns_True () =
         let settings = this.GetSettings()
@@ -197,7 +195,6 @@ type FinderTests () =
     //////////////////////////////////////////////////////////////
     // IsArchiveFindFile tests
     //////////////////////////////////////////////////////////////
-
     [<Test>]
     member this.TestIsArchiveFindFile_NoExtensionsNoPatterns_True () =
         let settings = this.GetSettings()
@@ -291,7 +288,6 @@ type FinderTests () =
     //////////////////////////////////////////////////////////////
     // FilterFile tests
     //////////////////////////////////////////////////////////////
-
     [<Test>]
     member this.TestFilterFile_IsHidden_False () =
         let settings = this.GetSettings()
@@ -311,7 +307,7 @@ type FinderTests () =
         ()
 
     [<Test>]
-    member this.TestFilterFile_ArchiveNoFindArchives_False () =
+    member this.TestFilterFile_ArchiveNoIncludeArchives_False () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
@@ -320,8 +316,8 @@ type FinderTests () =
         ()
 
     [<Test>]
-    member this.TestFilterFile_ArchiveFindArchives_True () =
-        let settings = { this.GetSettings() with FindArchives = true }
+    member this.TestFilterFile_ArchiveIncludeArchives_True () =
+        let settings = { this.GetSettings() with IncludeArchives = true }
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
@@ -330,7 +326,7 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterFile_IsArchiveFindFile_True () =
-        let settings = { this.GetSettings() with FindArchives = true }
+        let settings = { this.GetSettings() with IncludeArchives = true }
         let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "zip" settings.InArchiveExtensions }
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
@@ -340,7 +336,7 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterFile_NotIsArchiveFindFile_False () =
-        let settings = { this.GetSettings() with FindArchives = true }
+        let settings = { this.GetSettings() with IncludeArchives = true }
         let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "zip" settings.OutArchiveExtensions }
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
@@ -394,69 +390,4 @@ type FinderTests () =
         let file = FileInfo("FileUtil.cs")
         let sf = FindFile.Create file (this.FileTypes.GetFileType(file))
         Assert.False(finder.FilterFile(sf))
-        ()
-
-
-    //////////////////////////////////////////////////////////////
-    // FindTextReaderLines test
-    //////////////////////////////////////////////////////////////
-    [<Test>]
-    member this.TestFindTextReaderLines () =
-        let settings = this.GetSettings()
-        let finder = Finder(settings)
-        let enumerableLines = this.GetTestFileContent().Split([|'\n'; '\r'|]) |> Array.toList
-        let results = finder.FindLines(enumerableLines)
-
-        Assert.AreEqual(results.Length, 2)
-
-        let firstResult = results.[0]
-        let expectedFirstLineNum = 29
-        Assert.AreEqual(firstResult.LineNum, expectedFirstLineNum)
-
-        let expectedFirstMatchStartIndex = 3
-        Assert.AreEqual(firstResult.MatchStartIndex, expectedFirstMatchStartIndex)
-
-        let expectedFirstMatchEndIndex = 11
-        Assert.AreEqual(firstResult.MatchEndIndex, expectedFirstMatchEndIndex)
-
-        let secondResult = results.[1]
-        let expectedSecondLineNum = 35
-        Assert.AreEqual(secondResult.LineNum, expectedSecondLineNum)
-        let expectedSecondMatchStartIndex = 24
-        Assert.AreEqual(secondResult.MatchStartIndex, expectedSecondMatchStartIndex)
-        let expectedSecondMatchEndIndex = 32
-        Assert.AreEqual(secondResult.MatchEndIndex, expectedSecondMatchEndIndex)
-        ()
-
-    //////////////////////////////////////////////////////////////
-    // FindMultiLineString test
-    //////////////////////////////////////////////////////////////
-    [<Test>]
-    member this.TestFindMultiLineString () =
-        let settings = this.GetSettings()
-        let finder = Finder(settings)
-        let contents = this.GetTestFileContent()
-        let results = finder.FindContents(contents)
-
-        Assert.AreEqual(results.Count, 2)
-
-        let firstResult = results.[0]
-        let expectedFirstLineNum = 29
-        Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum)
-
-        let expectedFirstMatchStartIndex = 3
-        Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex)
-
-        let expectedFirstMatchEndIndex = 11
-        Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex)
-
-        let secondResult = results.[1]
-        let expectedSecondLineNum = 35
-        Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum)
-
-        let expectedSecondMatchStartIndex = 24
-        Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex)
-
-        let expectedSecondMatchEndIndex = 32
-        Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex)
         ()

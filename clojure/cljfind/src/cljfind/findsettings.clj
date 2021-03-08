@@ -19,41 +19,25 @@
     colorize
     debug
     excludehidden
-    firstmatch
+    includearchives
     in-archiveextensions
     in-archivefilepatterns
     in-dirpatterns
     in-extensions
     in-filepatterns
     in-filetypes
-    in-linesafterpatterns
-    in-linesbeforepatterns
-    linesafter
-    linesaftertopatterns
-    linesafteruntilpatterns
-    linesbefore
     listdirs
     listfiles
-    listlines
-    maxlinelength
-    multilineoption-REMOVE
     out-archiveextensions
     out-archivefilepatterns
     out-dirpatterns
     out-extensions
     out-filepatterns
     out-filetypes
-    out-linesafterpatterns
-    out-linesbeforepatterns
-    printresults
+    paths
     printusage
     printversion
     recursive
-    findarchives
-    findpatterns
-    startpath
-    textfileencoding
-    uniquelines
     verbose
   ])
 
@@ -62,41 +46,25 @@
     true    ; colorize
     false   ; debug
     true    ; excludehidden
-    false   ; firstmatch
+    false   ; includearchives
     #{}     ; in-archiveextensions
     #{}     ; in-archivefilepatterns
     #{}     ; in-dirpatterns
     #{}     ; in-extensions
     #{}     ; in-filepatterns
     #{}     ; in-filetypes
-    #{}     ; in-linesafterpatterns
-    #{}     ; in-linesbeforepatterns
-    0       ; linesafter
-    #{}     ; linesaftertopatterns
-    #{}     ; linesafteruntilpatterns
-    0       ; linesbefore
     false   ; listdirs
     false   ; listfiles
-    false   ; listlines
-    150     ; maxlinelength
-    false   ; multilineoption-REMOVE
     #{}     ; out-archiveextensions
     #{}     ; out-archivefilepatterns
     #{}     ; out-dirpatterns
     #{}     ; out-extensions
     #{}     ; out-filepatterns
     #{}     ; out-filetypes
-    #{}     ; out-linesafterpatterns
-    #{}     ; out-linesbeforepatterns
-    true    ; printresults
+    #{}     ; paths
     false   ; printusage
     false   ; printversion
     true    ; recursive
-    false   ; findarchives
-    #{}     ; findpatterns
-    nil     ; startpath
-    "utf-8" ; textfileencoding
-    false   ; uniquelines
     false   ; verbose
   ))
 
@@ -131,6 +99,20 @@
       :else
       (add-filetypes settings (str/split typ #",") typesname))))
 
+(defn add-paths [settings paths]
+  (if (empty? paths)
+    settings
+    (add-paths
+      (update-in settings [:paths] #(add-element (first paths) %)) (rest paths))))
+
+(defn add-path [settings path]
+  (let [t (type path)]
+    (cond
+      (= t (type []))
+        (add-paths settings path)
+      :else
+        (add-paths settings [path]))))
+
 (defn add-patterns [settings pats patname]
   (if (empty? pats)
     settings
@@ -154,10 +136,10 @@
         (assoc settings numname (read-string n)))))
 
 (defn set-archivesonly [settings b]
-  (let [with-findarchives (assoc settings :findarchives b)]
+  (let [with-archivesonly (assoc settings :archivesonly b)]
     (if b
-      (assoc with-findarchives :archivesonly true)
-      with-findarchives)))
+      (assoc with-archivesonly :includearchives true)
+      with-archivesonly)))
 
 (defn set-debug [settings b]
   (let [with-debug (assoc settings :debug true)]

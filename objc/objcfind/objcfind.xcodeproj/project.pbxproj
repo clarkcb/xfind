@@ -3,45 +3,50 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 46;
+	objectVersion = 50;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4A0E2401200895CD00E73BAD /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0E2400200895CD00E73BAD /* main.m */; };
-		4A123598254D098100FEF13E /* SearchResultFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A123597254D098100FEF13E /* SearchResultFormatter.m */; };
-		4A1C43542019A98100594046 /* FileTypesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1C43532019A98100594046 /* FileTypesTests.m */; };
-		4A1C43592019B0AF00594046 /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C86562009CABB00644D0C /* FileTypes.m */; };
-		4A1C435A2019B17500594046 /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C864F20097B8900644D0C /* common.m */; };
-		4A1C435B2019B17B00594046 /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A79E915200C43D9002CF298 /* FileUtil.m */; };
-		4A1C435C2019B17F00594046 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A0E2400200895CD00E73BAD /* main.m */; };
-		4A1C435D2019B18300594046 /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C86532009B83000644D0C /* Regex.m */; };
-		4A1C435E2019B18600594046 /* SearchFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD1F71B200D7784006EA828 /* SearchFile.m */; };
-		4A1C435F2019B18C00594046 /* SearchOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C865A200A9B8900644D0C /* SearchOption.m */; };
-		4A1C43602019B19100594046 /* SearchSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C864D20094F8300644D0C /* SearchSettings.m */; };
-		4A1C43612019B1AD00594046 /* SearchOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C865D200AA08C00644D0C /* SearchOptions.m */; };
-		4A1C43622019B1B100594046 /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD1F71E200F1402006EA828 /* SearchResult.m */; };
-		4A1C43632019B1B500594046 /* Searcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A79E912200C3491002CF298 /* Searcher.m */; };
-		4A1C4365201A5DB800594046 /* FileUtilTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A1C4364201A5DB800594046 /* FileUtilTests.m */; };
-		4A29F26D25730BB5007ED1BA /* SearchResultFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A123597254D098100FEF13E /* SearchResultFormatter.m */; };
-		4A29F27125732A86007ED1BA /* SearchFileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A29F27025732A86007ED1BA /* SearchFileTests.m */; };
-		4A3D6A82219A7E74001CB786 /* SearchSettingsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D6A81219A7E74001CB786 /* SearchSettingsTests.m */; };
-		4A3D6A84219A82C5001CB786 /* SearchResultTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A3D6A83219A82C5001CB786 /* SearchResultTests.m */; };
-		4A6B74C12197AF8500760F1E /* SearcherTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B74C02197AF8500760F1E /* SearcherTests.m */; };
-		4A6B74C321992E4300760F1E /* SearchOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B74C221992E4300760F1E /* SearchOptionsTests.m */; };
-		4A79E913200C3491002CF298 /* Searcher.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A79E912200C3491002CF298 /* Searcher.m */; };
-		4A79E916200C43D9002CF298 /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A79E915200C43D9002CF298 /* FileUtil.m */; };
-		4A8C864E20094F8300644D0C /* SearchSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C864D20094F8300644D0C /* SearchSettings.m */; };
-		4A8C865020097B8900644D0C /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C864F20097B8900644D0C /* common.m */; };
-		4A8C86542009B83000644D0C /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C86532009B83000644D0C /* Regex.m */; };
-		4A8C86572009CABB00644D0C /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C86562009CABB00644D0C /* FileTypes.m */; };
-		4A8C865B200A9B8900644D0C /* SearchOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C865A200A9B8900644D0C /* SearchOption.m */; };
-		4A8C865E200AA08C00644D0C /* SearchOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A8C865D200AA08C00644D0C /* SearchOptions.m */; };
-		4AD1F71C200D7784006EA828 /* SearchFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD1F71B200D7784006EA828 /* SearchFile.m */; };
-		4AD1F71F200F1402006EA828 /* SearchResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AD1F71E200F1402006EA828 /* SearchResult.m */; };
+		4A076CAE25EC6FD0009E8B52 /* FindSettingsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA725EC6FD0009E8B52 /* FindSettingsTests.m */; };
+		4A076CAF25EC6FD0009E8B52 /* FindFileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA825EC6FD0009E8B52 /* FindFileTests.m */; };
+		4A076CB025EC6FD0009E8B52 /* FileTypesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA925EC6FD0009E8B52 /* FileTypesTests.m */; };
+		4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */; };
+		4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */; };
+		4A076CB425EC6FD0009E8B52 /* FinderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAD25EC6FD0009E8B52 /* FinderTests.m */; };
+		4A20B9F925EC776200B104C1 /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E725EC60E1000FFE49 /* common.m */; };
+		4A20B9FC25EC776600B104C1 /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E325EC60E1000FFE49 /* FileTypes.m */; };
+		4A20B9FF25EC776A00B104C1 /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36EB25EC60E1000FFE49 /* FileUtil.m */; };
+		4A20BA0225EC776E00B104C1 /* Finder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F325EC60E1000FFE49 /* Finder.m */; };
+		4A20BA0525EC777100B104C1 /* FindFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36DF25EC60E1000FFE49 /* FindFile.m */; };
+		4A20BA0825EC777500B104C1 /* FindOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F025EC60E1000FFE49 /* FindOption.m */; };
+		4A20BA0B25EC777900B104C1 /* FindOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E125EC60E1000FFE49 /* FindOptions.m */; };
+		4A20BA0E25EC777D00B104C1 /* FindSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E825EC60E1000FFE49 /* FindSettings.m */; };
+		4A20BA1125EC778100B104C1 /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F225EC60E1000FFE49 /* Regex.m */; };
+		4A20BA1425EC778400B104C1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCE5E625EC5EFA001EF088 /* main.m */; };
+		4A7E36F425EC60E2000FFE49 /* FindFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36DF25EC60E1000FFE49 /* FindFile.m */; };
+		4A7E36F525EC60E2000FFE49 /* FindOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E125EC60E1000FFE49 /* FindOptions.m */; };
+		4A7E36F725EC60E2000FFE49 /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E325EC60E1000FFE49 /* FileTypes.m */; };
+		4A7E36F825EC60E2000FFE49 /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E725EC60E1000FFE49 /* common.m */; };
+		4A7E36F925EC60E2000FFE49 /* FindSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E825EC60E1000FFE49 /* FindSettings.m */; };
+		4A7E36FA25EC60E2000FFE49 /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36EB25EC60E1000FFE49 /* FileUtil.m */; };
+		4A7E36FB25EC60E2000FFE49 /* FindOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F025EC60E1000FFE49 /* FindOption.m */; };
+		4A7E36FC25EC60E2000FFE49 /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F225EC60E1000FFE49 /* Regex.m */; };
+		4A7E36FD25EC60E2000FFE49 /* Finder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F325EC60E1000FFE49 /* Finder.m */; };
+		4ABCE5E725EC5EFA001EF088 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCE5E625EC5EFA001EF088 /* main.m */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		4A8BDDBB25EC75BC00D02950 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4ABCE5DB25EC5EFA001EF088 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4ABCE5E225EC5EFA001EF088;
+			remoteInfo = objcfind;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXCopyFilesBuildPhase section */
-		4A0E23FB200895CD00E73BAD /* CopyFiles */ = {
+		4ABCE5E125EC5EFA001EF088 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -53,52 +58,47 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4A0E23FD200895CD00E73BAD /* objcsearch */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = objcsearch; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A0E2400200895CD00E73BAD /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		4A123596254D089300FEF13E /* SearchResultFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchResultFormatter.h; sourceTree = "<group>"; };
-		4A123597254D098100FEF13E /* SearchResultFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchResultFormatter.m; sourceTree = "<group>"; };
-		4A1C43512019A98100594046 /* objcsearch_tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = objcsearch_tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4A1C43532019A98100594046 /* FileTypesTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = FileTypesTests.m; sourceTree = "<group>"; };
-		4A1C43552019A98100594046 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		4A1C4364201A5DB800594046 /* FileUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtilTests.m; sourceTree = "<group>"; };
-		4A29F27025732A86007ED1BA /* SearchFileTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchFileTests.m; sourceTree = "<group>"; };
-		4A3D6A81219A7E74001CB786 /* SearchSettingsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchSettingsTests.m; sourceTree = "<group>"; };
-		4A3D6A83219A82C5001CB786 /* SearchResultTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchResultTests.m; sourceTree = "<group>"; };
-		4A5A1DB625384FBE002FAFD1 /* color.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = color.h; sourceTree = "<group>"; };
-		4A6B74C02197AF8500760F1E /* SearcherTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearcherTests.m; sourceTree = "<group>"; };
-		4A6B74C221992E4300760F1E /* SearchOptionsTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchOptionsTests.m; sourceTree = "<group>"; };
-		4A79E911200C3491002CF298 /* Searcher.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Searcher.h; sourceTree = "<group>"; };
-		4A79E912200C3491002CF298 /* Searcher.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Searcher.m; sourceTree = "<group>"; };
-		4A79E914200C43D9002CF298 /* FileUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtil.h; sourceTree = "<group>"; };
-		4A79E915200C43D9002CF298 /* FileUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtil.m; sourceTree = "<group>"; };
-		4A8C864C20094F8300644D0C /* SearchSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchSettings.h; sourceTree = "<group>"; };
-		4A8C864D20094F8300644D0C /* SearchSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchSettings.m; sourceTree = "<group>"; };
-		4A8C864F20097B8900644D0C /* common.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = common.m; sourceTree = "<group>"; };
-		4A8C865120097CA600644D0C /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
-		4A8C86522009B83000644D0C /* Regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Regex.h; sourceTree = "<group>"; };
-		4A8C86532009B83000644D0C /* Regex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Regex.m; sourceTree = "<group>"; };
-		4A8C86552009CABB00644D0C /* FileTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileTypes.h; sourceTree = "<group>"; };
-		4A8C86562009CABB00644D0C /* FileTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileTypes.m; sourceTree = "<group>"; };
-		4A8C86582009D1FD00644D0C /* config.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
-		4A8C8659200A9B8900644D0C /* SearchOption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchOption.h; sourceTree = "<group>"; };
-		4A8C865A200A9B8900644D0C /* SearchOption.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchOption.m; sourceTree = "<group>"; };
-		4A8C865C200AA08C00644D0C /* SearchOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SearchOptions.h; sourceTree = "<group>"; };
-		4A8C865D200AA08C00644D0C /* SearchOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SearchOptions.m; sourceTree = "<group>"; };
-		4AD1F71A200D7784006EA828 /* SearchFile.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchFile.h; sourceTree = "<group>"; };
-		4AD1F71B200D7784006EA828 /* SearchFile.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchFile.m; sourceTree = "<group>"; };
-		4AD1F71D200F1402006EA828 /* SearchResult.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SearchResult.h; sourceTree = "<group>"; };
-		4AD1F71E200F1402006EA828 /* SearchResult.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SearchResult.m; sourceTree = "<group>"; };
+		4A076CA725EC6FD0009E8B52 /* FindSettingsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindSettingsTests.m; sourceTree = "<group>"; };
+		4A076CA825EC6FD0009E8B52 /* FindFileTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindFileTests.m; sourceTree = "<group>"; };
+		4A076CA925EC6FD0009E8B52 /* FileTypesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileTypesTests.m; sourceTree = "<group>"; };
+		4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtilTests.m; sourceTree = "<group>"; };
+		4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOptionsTests.m; sourceTree = "<group>"; };
+		4A076CAD25EC6FD0009E8B52 /* FinderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FinderTests.m; sourceTree = "<group>"; };
+		4A7E36DE25EC60E1000FFE49 /* FileTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileTypes.h; sourceTree = "<group>"; };
+		4A7E36DF25EC60E1000FFE49 /* FindFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindFile.m; sourceTree = "<group>"; };
+		4A7E36E025EC60E1000FFE49 /* FindOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOptions.h; sourceTree = "<group>"; };
+		4A7E36E125EC60E1000FFE49 /* FindOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOptions.m; sourceTree = "<group>"; };
+		4A7E36E325EC60E1000FFE49 /* FileTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileTypes.m; sourceTree = "<group>"; };
+		4A7E36E425EC60E1000FFE49 /* FileUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtil.h; sourceTree = "<group>"; };
+		4A7E36E525EC60E1000FFE49 /* FindFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindFile.h; sourceTree = "<group>"; };
+		4A7E36E625EC60E1000FFE49 /* Regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Regex.h; sourceTree = "<group>"; };
+		4A7E36E725EC60E1000FFE49 /* common.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = common.m; sourceTree = "<group>"; };
+		4A7E36E825EC60E1000FFE49 /* FindSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindSettings.m; sourceTree = "<group>"; };
+		4A7E36E925EC60E1000FFE49 /* FindOption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOption.h; sourceTree = "<group>"; };
+		4A7E36EA25EC60E1000FFE49 /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		4A7E36EB25EC60E1000FFE49 /* FileUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtil.m; sourceTree = "<group>"; };
+		4A7E36EC25EC60E1000FFE49 /* Finder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Finder.h; sourceTree = "<group>"; };
+		4A7E36ED25EC60E1000FFE49 /* FindSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindSettings.h; sourceTree = "<group>"; };
+		4A7E36EE25EC60E1000FFE49 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		4A7E36F025EC60E1000FFE49 /* FindOption.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOption.m; sourceTree = "<group>"; };
+		4A7E36F125EC60E1000FFE49 /* color.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = color.h; sourceTree = "<group>"; };
+		4A7E36F225EC60E1000FFE49 /* Regex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Regex.m; sourceTree = "<group>"; };
+		4A7E36F325EC60E1000FFE49 /* Finder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Finder.m; sourceTree = "<group>"; };
+		4A7E370425EC6F3A000FFE49 /* objcfind_tests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = objcfind_tests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A7E370825EC6F3A000FFE49 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		4ABCE5E325EC5EFA001EF088 /* objcfind */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = objcfind; sourceTree = BUILT_PRODUCTS_DIR; };
+		4ABCE5E625EC5EFA001EF088 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		4A0E23FA200895CD00E73BAD /* Frameworks */ = {
+		4A7E370125EC6F3A000FFE49 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4A1C434E2019A98100594046 /* Frameworks */ = {
+		4ABCE5E025EC5EFA001EF088 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -108,150 +108,141 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4A0E23F4200895CD00E73BAD = {
+		4A7E370525EC6F3A000FFE49 /* objcfind_tests */ = {
 			isa = PBXGroup;
 			children = (
-				4A0E23FF200895CD00E73BAD /* objcsearch */,
-				4A1C43522019A98100594046 /* objcsearch_tests */,
-				4A0E23FE200895CD00E73BAD /* Products */,
+				4A076CA925EC6FD0009E8B52 /* FileTypesTests.m */,
+				4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */,
+				4A076CAD25EC6FD0009E8B52 /* FinderTests.m */,
+				4A076CA825EC6FD0009E8B52 /* FindFileTests.m */,
+				4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */,
+				4A076CA725EC6FD0009E8B52 /* FindSettingsTests.m */,
+				4A7E370825EC6F3A000FFE49 /* Info.plist */,
+			);
+			path = objcfind_tests;
+			sourceTree = "<group>";
+		};
+		4ABCE5DA25EC5EFA001EF088 = {
+			isa = PBXGroup;
+			children = (
+				4ABCE5E525EC5EFA001EF088 /* objcfind */,
+				4A7E370525EC6F3A000FFE49 /* objcfind_tests */,
+				4ABCE5E425EC5EFA001EF088 /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		4A0E23FE200895CD00E73BAD /* Products */ = {
+		4ABCE5E425EC5EFA001EF088 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				4A0E23FD200895CD00E73BAD /* objcsearch */,
-				4A1C43512019A98100594046 /* objcsearch_tests.xctest */,
+				4ABCE5E325EC5EFA001EF088 /* objcfind */,
+				4A7E370425EC6F3A000FFE49 /* objcfind_tests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		4A0E23FF200895CD00E73BAD /* objcsearch */ = {
+		4ABCE5E525EC5EFA001EF088 /* objcfind */ = {
 			isa = PBXGroup;
 			children = (
-				4A5A1DB625384FBE002FAFD1 /* color.h */,
-				4A8C865120097CA600644D0C /* common.h */,
-				4A8C864F20097B8900644D0C /* common.m */,
-				4A8C86582009D1FD00644D0C /* config.h */,
-				4A8C86552009CABB00644D0C /* FileTypes.h */,
-				4A8C86562009CABB00644D0C /* FileTypes.m */,
-				4A79E914200C43D9002CF298 /* FileUtil.h */,
-				4A79E915200C43D9002CF298 /* FileUtil.m */,
-				4A0E2400200895CD00E73BAD /* main.m */,
-				4A8C86522009B83000644D0C /* Regex.h */,
-				4A8C86532009B83000644D0C /* Regex.m */,
-				4AD1F71A200D7784006EA828 /* SearchFile.h */,
-				4AD1F71B200D7784006EA828 /* SearchFile.m */,
-				4A8C8659200A9B8900644D0C /* SearchOption.h */,
-				4A8C865A200A9B8900644D0C /* SearchOption.m */,
-				4A8C864C20094F8300644D0C /* SearchSettings.h */,
-				4A8C864D20094F8300644D0C /* SearchSettings.m */,
-				4A8C865C200AA08C00644D0C /* SearchOptions.h */,
-				4A8C865D200AA08C00644D0C /* SearchOptions.m */,
-				4AD1F71D200F1402006EA828 /* SearchResult.h */,
-				4AD1F71E200F1402006EA828 /* SearchResult.m */,
-				4A123596254D089300FEF13E /* SearchResultFormatter.h */,
-				4A123597254D098100FEF13E /* SearchResultFormatter.m */,
-				4A79E911200C3491002CF298 /* Searcher.h */,
-				4A79E912200C3491002CF298 /* Searcher.m */,
+				4A7E36F125EC60E1000FFE49 /* color.h */,
+				4A7E36EA25EC60E1000FFE49 /* common.h */,
+				4A7E36E725EC60E1000FFE49 /* common.m */,
+				4A7E36EE25EC60E1000FFE49 /* config.h */,
+				4A7E36DE25EC60E1000FFE49 /* FileTypes.h */,
+				4A7E36E325EC60E1000FFE49 /* FileTypes.m */,
+				4A7E36E425EC60E1000FFE49 /* FileUtil.h */,
+				4A7E36EB25EC60E1000FFE49 /* FileUtil.m */,
+				4A7E36EC25EC60E1000FFE49 /* Finder.h */,
+				4A7E36F325EC60E1000FFE49 /* Finder.m */,
+				4A7E36E525EC60E1000FFE49 /* FindFile.h */,
+				4A7E36DF25EC60E1000FFE49 /* FindFile.m */,
+				4A7E36E925EC60E1000FFE49 /* FindOption.h */,
+				4A7E36F025EC60E1000FFE49 /* FindOption.m */,
+				4A7E36E025EC60E1000FFE49 /* FindOptions.h */,
+				4A7E36E125EC60E1000FFE49 /* FindOptions.m */,
+				4A7E36ED25EC60E1000FFE49 /* FindSettings.h */,
+				4A7E36E825EC60E1000FFE49 /* FindSettings.m */,
+				4A7E36E625EC60E1000FFE49 /* Regex.h */,
+				4A7E36F225EC60E1000FFE49 /* Regex.m */,
+				4ABCE5E625EC5EFA001EF088 /* main.m */,
 			);
-			path = objcsearch;
-			sourceTree = "<group>";
-		};
-		4A1C43522019A98100594046 /* objcsearch_tests */ = {
-			isa = PBXGroup;
-			children = (
-				4A1C43532019A98100594046 /* FileTypesTests.m */,
-				4A29F27025732A86007ED1BA /* SearchFileTests.m */,
-				4A1C4364201A5DB800594046 /* FileUtilTests.m */,
-				4A1C43552019A98100594046 /* Info.plist */,
-				4A6B74C02197AF8500760F1E /* SearcherTests.m */,
-				4A6B74C221992E4300760F1E /* SearchOptionsTests.m */,
-				4A3D6A83219A82C5001CB786 /* SearchResultTests.m */,
-				4A3D6A81219A7E74001CB786 /* SearchSettingsTests.m */,
-			);
-			path = objcsearch_tests;
+			path = objcfind;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		4A0E23FC200895CD00E73BAD /* objcsearch */ = {
+		4A7E370325EC6F3A000FFE49 /* objcfind_tests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 4A0E2404200895CD00E73BAD /* Build configuration list for PBXNativeTarget "objcsearch" */;
+			buildConfigurationList = 4A7E370925EC6F3A000FFE49 /* Build configuration list for PBXNativeTarget "objcfind_tests" */;
 			buildPhases = (
-				4A0E23F9200895CD00E73BAD /* Sources */,
-				4A0E23FA200895CD00E73BAD /* Frameworks */,
-				4A0E23FB200895CD00E73BAD /* CopyFiles */,
+				4A7E370025EC6F3A000FFE49 /* Sources */,
+				4A7E370125EC6F3A000FFE49 /* Frameworks */,
+				4A7E370225EC6F3A000FFE49 /* Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				4A8BDDBC25EC75BC00D02950 /* PBXTargetDependency */,
 			);
-			name = objcsearch;
-			productName = objcsearch;
-			productReference = 4A0E23FD200895CD00E73BAD /* objcsearch */;
-			productType = "com.apple.product-type.tool";
-		};
-		4A1C43502019A98100594046 /* objcsearch_tests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 4A1C43562019A98100594046 /* Build configuration list for PBXNativeTarget "objcsearch_tests" */;
-			buildPhases = (
-				4A1C434D2019A98100594046 /* Sources */,
-				4A1C434E2019A98100594046 /* Frameworks */,
-				4A1C434F2019A98100594046 /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = objcsearch_tests;
-			productName = objcsearch_tests;
-			productReference = 4A1C43512019A98100594046 /* objcsearch_tests.xctest */;
+			name = objcfind_tests;
+			productName = objcfind_tests;
+			productReference = 4A7E370425EC6F3A000FFE49 /* objcfind_tests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		4ABCE5E225EC5EFA001EF088 /* objcfind */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4ABCE5EA25EC5EFA001EF088 /* Build configuration list for PBXNativeTarget "objcfind" */;
+			buildPhases = (
+				4ABCE5DF25EC5EFA001EF088 /* Sources */,
+				4ABCE5E025EC5EFA001EF088 /* Frameworks */,
+				4ABCE5E125EC5EFA001EF088 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = objcfind;
+			productName = objcfind;
+			productReference = 4ABCE5E325EC5EFA001EF088 /* objcfind */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		4A0E23F5200895CD00E73BAD /* Project object */ = {
+		4ABCE5DB25EC5EFA001EF088 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1200;
-				ORGANIZATIONNAME = "Cary Clark";
+				LastUpgradeCheck = 1240;
 				TargetAttributes = {
-					4A0E23FC200895CD00E73BAD = {
-						CreatedOnToolsVersion = 8.3.3;
-						DevelopmentTeam = 9AAZ88EQ26;
-						ProvisioningStyle = Automatic;
+					4A7E370325EC6F3A000FFE49 = {
+						CreatedOnToolsVersion = 12.4;
 					};
-					4A1C43502019A98100594046 = {
-						CreatedOnToolsVersion = 8.3.3;
-						DevelopmentTeam = 9AAZ88EQ26;
-						ProvisioningStyle = Automatic;
+					4ABCE5E225EC5EFA001EF088 = {
+						CreatedOnToolsVersion = 12.4;
 					};
 				};
 			};
-			buildConfigurationList = 4A0E23F8200895CD00E73BAD /* Build configuration list for PBXProject "objcsearch" */;
-			compatibilityVersion = "Xcode 3.2";
-			developmentRegion = English;
+			buildConfigurationList = 4ABCE5DE25EC5EFA001EF088 /* Build configuration list for PBXProject "objcfind" */;
+			compatibilityVersion = "Xcode 9.3";
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
-				English,
 				en,
+				Base,
 			);
-			mainGroup = 4A0E23F4200895CD00E73BAD;
-			productRefGroup = 4A0E23FE200895CD00E73BAD /* Products */;
+			mainGroup = 4ABCE5DA25EC5EFA001EF088;
+			productRefGroup = 4ABCE5E425EC5EFA001EF088 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				4A0E23FC200895CD00E73BAD /* objcsearch */,
-				4A1C43502019A98100594046 /* objcsearch_tests */,
+				4ABCE5E225EC5EFA001EF088 /* objcfind */,
+				4A7E370325EC6F3A000FFE49 /* objcfind_tests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		4A1C434F2019A98100594046 /* Resources */ = {
+		4A7E370225EC6F3A000FFE49 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -261,65 +252,102 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		4A0E23F9200895CD00E73BAD /* Sources */ = {
+		4A7E370025EC6F3A000FFE49 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A8C864E20094F8300644D0C /* SearchSettings.m in Sources */,
-				4AD1F71C200D7784006EA828 /* SearchFile.m in Sources */,
-				4A8C86542009B83000644D0C /* Regex.m in Sources */,
-				4A79E913200C3491002CF298 /* Searcher.m in Sources */,
-				4A0E2401200895CD00E73BAD /* main.m in Sources */,
-				4A8C86572009CABB00644D0C /* FileTypes.m in Sources */,
-				4A8C865E200AA08C00644D0C /* SearchOptions.m in Sources */,
-				4A79E916200C43D9002CF298 /* FileUtil.m in Sources */,
-				4AD1F71F200F1402006EA828 /* SearchResult.m in Sources */,
-				4A8C865B200A9B8900644D0C /* SearchOption.m in Sources */,
-				4A8C865020097B8900644D0C /* common.m in Sources */,
-				4A123598254D098100FEF13E /* SearchResultFormatter.m in Sources */,
+				4A076CAF25EC6FD0009E8B52 /* FindFileTests.m in Sources */,
+				4A076CAE25EC6FD0009E8B52 /* FindSettingsTests.m in Sources */,
+				4A076CB425EC6FD0009E8B52 /* FinderTests.m in Sources */,
+				4A20BA0B25EC777900B104C1 /* FindOptions.m in Sources */,
+				4A20BA0E25EC777D00B104C1 /* FindSettings.m in Sources */,
+				4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */,
+				4A20BA0825EC777500B104C1 /* FindOption.m in Sources */,
+				4A20B9F925EC776200B104C1 /* common.m in Sources */,
+				4A20BA0225EC776E00B104C1 /* Finder.m in Sources */,
+				4A20BA0525EC777100B104C1 /* FindFile.m in Sources */,
+				4A20B9FF25EC776A00B104C1 /* FileUtil.m in Sources */,
+				4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */,
+				4A20BA1425EC778400B104C1 /* main.m in Sources */,
+				4A20B9FC25EC776600B104C1 /* FileTypes.m in Sources */,
+				4A20BA1125EC778100B104C1 /* Regex.m in Sources */,
+				4A076CB025EC6FD0009E8B52 /* FileTypesTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		4A1C434D2019A98100594046 /* Sources */ = {
+		4ABCE5DF25EC5EFA001EF088 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A1C43602019B19100594046 /* SearchSettings.m in Sources */,
-				4A6B74C321992E4300760F1E /* SearchOptionsTests.m in Sources */,
-				4A1C435F2019B18C00594046 /* SearchOption.m in Sources */,
-				4A1C43632019B1B500594046 /* Searcher.m in Sources */,
-				4A1C435C2019B17F00594046 /* main.m in Sources */,
-				4A1C43542019A98100594046 /* FileTypesTests.m in Sources */,
-				4A1C43612019B1AD00594046 /* SearchOptions.m in Sources */,
-				4A6B74C12197AF8500760F1E /* SearcherTests.m in Sources */,
-				4A1C43592019B0AF00594046 /* FileTypes.m in Sources */,
-				4A1C435D2019B18300594046 /* Regex.m in Sources */,
-				4A3D6A82219A7E74001CB786 /* SearchSettingsTests.m in Sources */,
-				4A29F26D25730BB5007ED1BA /* SearchResultFormatter.m in Sources */,
-				4A1C435E2019B18600594046 /* SearchFile.m in Sources */,
-				4A1C43622019B1B100594046 /* SearchResult.m in Sources */,
-				4A29F27125732A86007ED1BA /* SearchFileTests.m in Sources */,
-				4A1C435A2019B17500594046 /* common.m in Sources */,
-				4A1C4365201A5DB800594046 /* FileUtilTests.m in Sources */,
-				4A3D6A84219A82C5001CB786 /* SearchResultTests.m in Sources */,
-				4A1C435B2019B17B00594046 /* FileUtil.m in Sources */,
+				4A7E36F425EC60E2000FFE49 /* FindFile.m in Sources */,
+				4A7E36FB25EC60E2000FFE49 /* FindOption.m in Sources */,
+				4A7E36FC25EC60E2000FFE49 /* Regex.m in Sources */,
+				4A7E36F825EC60E2000FFE49 /* common.m in Sources */,
+				4A7E36FD25EC60E2000FFE49 /* Finder.m in Sources */,
+				4A7E36FA25EC60E2000FFE49 /* FileUtil.m in Sources */,
+				4A7E36F525EC60E2000FFE49 /* FindOptions.m in Sources */,
+				4A7E36F925EC60E2000FFE49 /* FindSettings.m in Sources */,
+				4A7E36F725EC60E2000FFE49 /* FileTypes.m in Sources */,
+				4ABCE5E725EC5EFA001EF088 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		4A8BDDBC25EC75BC00D02950 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4ABCE5E225EC5EFA001EF088 /* objcfind */;
+			targetProxy = 4A8BDDBB25EC75BC00D02950 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
-		4A0E2402200895CD00E73BAD /* Debug */ = {
+		4A7E370A25EC6F3A000FFE49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 9AAZ88EQ26;
+				INFOPLIST_FILE = objcfind_tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "clarkcb.objcfind-tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		4A7E370B25EC6F3A000FFE49 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = 9AAZ88EQ26;
+				INFOPLIST_FILE = objcfind_tests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "clarkcb.objcfind-tests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		4ABCE5E825EC5EFA001EF088 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -339,14 +367,14 @@
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -360,24 +388,25 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
-		4A0E2403200895CD00E73BAD /* Release */ = {
+		4ABCE5E925EC5EFA001EF088 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
 				CLANG_WARN_BOOL_CONVERSION = YES;
 				CLANG_WARN_COMMA = YES;
@@ -397,14 +426,14 @@
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -412,56 +441,29 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 			};
 			name = Release;
 		};
-		4A0E2405200895CD00E73BAD /* Debug */ = {
+		4ABCE5EB25EC5EFA001EF088 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9AAZ88EQ26;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		4A0E2406200895CD00E73BAD /* Release */ = {
+		4ABCE5EC25EC5EFA001EF088 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9AAZ88EQ26;
-				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Release;
-		};
-		4A1C43572019A98100594046 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 9AAZ88EQ26;
-				INFOPLIST_FILE = objcsearch_tests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACH_O_TYPE = mh_bundle;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = "clarkcb.objcsearch-tests";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-			};
-			name = Debug;
-		};
-		4A1C43582019A98100594046 /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 9AAZ88EQ26;
-				INFOPLIST_FILE = objcsearch_tests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
-				MACH_O_TYPE = mh_bundle;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
-				PRODUCT_BUNDLE_IDENTIFIER = "clarkcb.objcsearch-tests";
+				ENABLE_HARDENED_RUNTIME = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -469,34 +471,34 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		4A0E23F8200895CD00E73BAD /* Build configuration list for PBXProject "objcsearch" */ = {
+		4A7E370925EC6F3A000FFE49 /* Build configuration list for PBXNativeTarget "objcfind_tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4A0E2402200895CD00E73BAD /* Debug */,
-				4A0E2403200895CD00E73BAD /* Release */,
+				4A7E370A25EC6F3A000FFE49 /* Debug */,
+				4A7E370B25EC6F3A000FFE49 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4A0E2404200895CD00E73BAD /* Build configuration list for PBXNativeTarget "objcsearch" */ = {
+		4ABCE5DE25EC5EFA001EF088 /* Build configuration list for PBXProject "objcfind" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4A0E2405200895CD00E73BAD /* Debug */,
-				4A0E2406200895CD00E73BAD /* Release */,
+				4ABCE5E825EC5EFA001EF088 /* Debug */,
+				4ABCE5E925EC5EFA001EF088 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		4A1C43562019A98100594046 /* Build configuration list for PBXNativeTarget "objcsearch_tests" */ = {
+		4ABCE5EA25EC5EFA001EF088 /* Build configuration list for PBXNativeTarget "objcfind" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				4A1C43572019A98100594046 /* Debug */,
-				4A1C43582019A98100594046 /* Release */,
+				4ABCE5EB25EC5EFA001EF088 /* Debug */,
+				4ABCE5EC25EC5EFA001EF088 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = 4A0E23F5200895CD00E73BAD /* Project object */;
+	rootObject = 4ABCE5DB25EC5EFA001EF088 /* Project object */;
 }

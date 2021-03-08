@@ -65,8 +65,8 @@
 
 - (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(FindSettings *)settings {
     if ([obj isKindOfClass:[NSString class]]) {
-        if ([name isEqualToString:@"startpath"]) {
-            [settings setStartPath:(NSMutableString*)obj];
+        if ([name isEqualToString:@"path"]) {
+            [settings addPath:(NSString*)obj];
         } else if (self.argActionDict[name]) {
             void(^block)() = self.argActionDict[name];
             block(obj, settings);
@@ -138,9 +138,6 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
 - (NSDictionary<NSString*,ArgActionBlockType>*) getArgActionDict {
     return [[NSDictionary alloc] initWithObjectsAndKeys:
             ^void (NSString* s, FindSettings *ss) {
-                ss.textFileEncoding = s;
-            }, @"encoding",
-            ^void (NSString* s, FindSettings *ss) {
                 [ss addInArchiveExtension:s];
             }, @"in-archiveext",
             ^void (NSString* s, FindSettings *ss) {
@@ -158,27 +155,6 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
             ^void (NSString* s, FindSettings *ss) {
                 [ss addInFileType:s];
             }, @"in-filetype",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.inLinesAfterPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-linesafterpattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.inLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-linesbeforepattern",
-            ^void (NSString* s, FindSettings *ss) {
-                ss.linesAfter = [s intValue];
-            }, @"linesafter",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.linesAfterToPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"linesaftertopattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.linesAfterUntilPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"linesafteruntilpattern",
-            ^void (NSString* s, FindSettings *ss) {
-                ss.linesBefore = [s intValue];
-            }, @"linesbefore",
-            ^void (NSString* s, FindSettings *ss) {
-                ss.maxLineLength = [s intValue];
-            }, @"maxlinelength",
             ^void (NSString* s, FindSettings *ss) {
                 [ss addOutArchiveExtension:s];
             }, @"out-archiveext",
@@ -198,14 +174,8 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
                 [ss addOutFileType:s];
             }, @"out-filetype",
             ^void (NSString* s, FindSettings *ss) {
-                [ss.outLinesAfterPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-linesafterpattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.outLinesBeforePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-linesbeforepattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.findPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"findpattern",
+                [ss.paths addObject:s];
+            }, @"path",
 //            ^void (NSString* s, FindSettings *ss) {
 //                [self settingsFromFile:s settings:ss];
 //            }, @"settings-file",
@@ -216,30 +186,23 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
 
 - (NSDictionary<NSString*,BoolFlagActionBlockType>*) getBoolFlagActionDict {
     return [[NSDictionary alloc] initWithObjectsAndKeys:
-            [^void (BOOL b, FindSettings *ss) { ss.firstMatch = !b; } copy], @"allmatches",
             [^void (BOOL b, FindSettings *ss) {
                 ss.archivesOnly = b;
-                if (b) ss.findArchives = true;
+                if (b) ss.includeArchives = true;
             } copy], @"archivesonly",
             [^void (BOOL b, FindSettings *ss) {
                 ss.debug = b;
                 if (b) ss.verbose = true;
             } copy], @"debug",
+            [^void (BOOL b, FindSettings *ss) { ss.includeArchives = !b; } copy], @"excludearchives",
             [^void (BOOL b, FindSettings *ss) { ss.excludeHidden = b; } copy], @"excludehidden",
-            [^void (BOOL b, FindSettings *ss) { ss.firstMatch = b; } copy], @"firstmatch",
             [^void (BOOL b, FindSettings *ss) { ss.printUsage = b; } copy], @"help",
+            [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy], @"includearchives",
             [^void (BOOL b, FindSettings *ss) { ss.excludeHidden = !b; } copy], @"includehidden",
             [^void (BOOL b, FindSettings *ss) { ss.listDirs = b; } copy], @"listdirs",
             [^void (BOOL b, FindSettings *ss) { ss.listFiles = b; } copy], @"listfiles",
-            [^void (BOOL b, FindSettings *ss) { ss.listLines = b; } copy], @"listlines",
-            [^void (BOOL b, FindSettings *ss) { ss.multiLineFind = b; } copy], @"multilineoption-REMOVE",
-            [^void (BOOL b, FindSettings *ss) { ss.printResults = !b; } copy], @"noprintmatches",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
-            [^void (BOOL b, FindSettings *ss) { ss.findArchives = !b; } copy], @"nofindarchives",
-            [^void (BOOL b, FindSettings *ss) { ss.printResults = b; } copy], @"printmatches",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
-            [^void (BOOL b, FindSettings *ss) { ss.findArchives = b; } copy], @"findarchives",
-            [^void (BOOL b, FindSettings *ss) { ss.uniqueLines = b; } copy], @"uniquelines",
             [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy], @"verbose",
             [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy], @"version",
             nil];
@@ -247,6 +210,9 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
 
 - (FindSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
     FindSettings *settings = [[FindSettings alloc] init];
+    // default listFiles to true since running as cli
+    settings.listFiles = true;
+
     int i = 1;
     while (i < [args count]) {
         NSString *arg = args[i];
@@ -283,7 +249,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
                 return nil;
             }
         } else {
-            settings.startPath = [NSMutableString stringWithString:args[i]];
+            [settings.paths addObject:args[i]];
         }
         i++;
     }
@@ -293,7 +259,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
 
 - (NSString*) getUsageString {
     NSMutableString *s = [[NSMutableString alloc] initWithString:@"\nUsage:\n"];
-    [s appendString:@" objcfind [options] -s <findpattern> <startpath>\n\n"];
+    [s appendString:@" objcfind [options] <path> [<path> ...]\n\n"];
     [s appendString:@"Options:\n"];
     NSMutableArray *optStrings = [NSMutableArray array];
     long longest = 0;

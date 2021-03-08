@@ -11,7 +11,7 @@ import java.io.File
  */
 class FinderTest {
     private fun getSettings(): FindSettings {
-        return getDefaultSettings().copy(startPath=".", findPatterns=setOf(Regex("Finder")))
+        return getDefaultSettings().copy(paths=setOf("."))
     }
 
     private val testFilePath = "/testFile2.txt"
@@ -32,34 +32,40 @@ class FinderTest {
         val settings = getSettings().copy(excludeHidden = false)
         val finder = Finder(settings)
         val file = File(".gitignore")
-        val findFile = FindFile(file, FileType.TEXT)
-        assertEquals(findFile, finder.filterToFindFile(file))
+        // val findFile = FindFile(file, FileType.TEXT)
+        // assertEquals(findFile, finder.filterToFindFile(file))
+        assertEquals(".gitignore", finder.filterToFindFile(file)!!.file.name)
     }
 
     @Test
-    fun testFilterFile_ArchiveNoFindArchives_False() {
+    fun testFilterFile_ArchiveNoIncludeArchives_False() {
         val settings = getSettings()
         val finder = Finder(settings)
         val file = File("archive.zip")
-        assertEquals(null, finder.filterToFindFile(file))
+        val filteredFile = finder.filterToFindFile(file)
+        assertEquals(null, filteredFile)
     }
 
     @Test
-    fun testFilterFile_ArchiveFindArchives_True() {
-        val settings = getSettings().copy(findArchives = true)
+    fun testFilterFile_ArchiveIncludeArchives_True() {
+        val settings = getSettings().copy(includeArchives = true)
         val finder = Finder(settings)
         val file = File("archive.zip")
         val findFile = FindFile(file, FileType.ARCHIVE)
-        assertEquals(findFile, finder.filterToFindFile(file))
+        val filteredFile = finder.filterToFindFile(file)
+        assertEquals(findFile.file.name, filteredFile!!.file.name)
+        assertEquals(FileType.ARCHIVE, filteredFile.fileType)
     }
 
     @Test
     fun testFilterFile_IsArchiveFindFile_True() {
-        val settings = getSettings().copy(findArchives = true, inArchiveExtensions = setOf("zip"))
+        val settings = getSettings().copy(includeArchives = true, inArchiveExtensions = setOf("zip"))
         val finder = Finder(settings)
         val file = File("archive.zip")
         val findFile = FindFile(file, FileType.ARCHIVE)
-        assertEquals(findFile, finder.filterToFindFile(file))
+        val filteredFile = finder.filterToFindFile(file)
+        assertEquals(findFile.file.name, filteredFile!!.file.name)
+        assertEquals(FileType.ARCHIVE, filteredFile.fileType)
     }
 
     @Test
@@ -76,7 +82,9 @@ class FinderTest {
         val finder = Finder(settings)
         val file = File("archive.zip")
         val findFile = FindFile(file, FileType.ARCHIVE)
-        assertEquals(findFile, finder.filterToFindFile(file))
+        val filteredFile = finder.filterToFindFile(file)
+        assertEquals(findFile.file.name, filteredFile!!.file.name)
+        assertEquals(FileType.ARCHIVE, filteredFile.fileType)
     }
 
     @Test
@@ -84,8 +92,10 @@ class FinderTest {
         val settings = getSettings()
         val finder = Finder(settings)
         val file = File("FileUtil.cs")
-        val findFile = FindFile(file, FileType.TEXT)
-        assertEquals(findFile, finder.filterToFindFile(file))
+        val findFile = FindFile(file, FileType.CODE)
+        val filteredFile = finder.filterToFindFile(file)
+        assertEquals(findFile.file.name, filteredFile!!.file.name)
+        assertEquals(FileType.CODE, filteredFile.fileType)
     }
 
     @Test
@@ -93,8 +103,10 @@ class FinderTest {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
         val finder = Finder(settings)
         val file = File("FileUtil.cs")
-        val findFile = FindFile(file, FileType.TEXT)
-        assertEquals(findFile, finder.filterToFindFile(file))
+        val findFile = FindFile(file, FileType.CODE)
+        val filteredFile = finder.filterToFindFile(file)
+        assertEquals(findFile.file.name, filteredFile!!.file.name)
+        assertEquals(FileType.CODE, filteredFile.fileType)
     }
 
     @Test
@@ -328,90 +340,5 @@ class FinderTest {
         val finder = Finder(settings)
         val file = FindFile(File("archive.zip"), FileType.ARCHIVE)
         assertTrue(finder.isArchiveFindFile(file))
-    }
-
-    /***************************************************************************
-     * findStringIterator tests
-     **************************************************************************/
-    @Test
-    fun testFindStringIterator() {
-        val settings = getSettings()
-        val finder = Finder(settings)
-        val lineIterator = javaClass.getResourceAsStream(testFilePath).reader().readLines().iterator()
-
-        val results = finder.findLineIterator(lineIterator)
-
-        assertEquals(results.size.toLong(), 2)
-
-        val firstResult = results[0]
-        val expectedFirstLineNum = 29
-        assertEquals(firstResult.lineNum, expectedFirstLineNum)
-        val expectedFirstMatchStartIndex = 3
-        assertEquals(firstResult.matchStartIndex, expectedFirstMatchStartIndex)
-        val expectedFirstMatchEndIndex = 11
-        assertEquals(firstResult.matchEndIndex, expectedFirstMatchEndIndex)
-
-        val secondResult = results[1]
-        val expectedSecondLineNum = 35
-        assertEquals(secondResult.lineNum, expectedSecondLineNum)
-        val expectedSecondMatchStartIndex = 24
-        assertEquals(secondResult.matchStartIndex, expectedSecondMatchStartIndex)
-        val expectedSecondMatchEndIndex = 32
-        assertEquals(secondResult.matchEndIndex, expectedSecondMatchEndIndex)
-    }
-
-    /***************************************************************************
-     * findMultiLineString tests
-     **************************************************************************/
-    @Test
-    fun testFindMultiLineString() {
-        val settings = getSettings()
-        val finder = Finder(settings)
-        val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
-        val results = finder.findMultilineString(contents)
-
-        assertEquals(results.size.toLong(), 2)
-
-        val firstResult = results[0]
-        val expectedFirstLineNum = 29
-        assertEquals(firstResult.lineNum, expectedFirstLineNum)
-        val expectedFirstMatchStartIndex = 3
-        assertEquals(firstResult.matchStartIndex, expectedFirstMatchStartIndex)
-        val expectedFirstMatchEndIndex = 11
-        assertEquals(firstResult.matchEndIndex, expectedFirstMatchEndIndex)
-
-        val secondResult = results[1]
-        val expectedSecondLineNum = 35
-        assertEquals(secondResult.lineNum, expectedSecondLineNum)
-        val expectedSecondMatchStartIndex = 24
-        assertEquals(secondResult.matchStartIndex, expectedSecondMatchStartIndex)
-        val expectedSecondMatchEndIndex = 32
-        assertEquals(secondResult.matchEndIndex, expectedSecondMatchEndIndex)
-    }
-
-    @Test
-    fun testFindMultiLineStringWithLinesBefore() {
-        val settings = getSettings().copy(linesBefore = 2)
-        val finder = Finder(settings)
-        val contents = javaClass.getResourceAsStream(testFilePath).reader().readText()
-        val results = finder.findMultilineString(contents)
-
-        assertEquals(results.size.toLong(), 2)
-
-        val firstResult = results[0]
-        val expectedFirstLineNum = 29
-        assertEquals(firstResult.lineNum, expectedFirstLineNum)
-        val expectedFirstMatchStartIndex = 3
-        assertEquals(firstResult.matchStartIndex, expectedFirstMatchStartIndex)
-        val expectedFirstMatchEndIndex = 11
-        assertEquals(firstResult.matchEndIndex, expectedFirstMatchEndIndex)
-
-        val secondResult = results[1]
-        val expectedSecondLineNum = 35
-        assertEquals(secondResult.lineNum, expectedSecondLineNum)
-        val expectedSecondMatchStartIndex = 24
-        assertEquals(secondResult.matchStartIndex, expectedSecondMatchStartIndex)
-        val expectedSecondMatchEndIndex = 32
-        assertEquals(secondResult.matchEndIndex, expectedSecondMatchEndIndex)
     }
 }

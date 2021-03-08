@@ -16,8 +16,7 @@ namespace cppfind {
         m_out_extensions = {};
         m_out_filepatterns = {};
         m_out_filetypes = {};
-        m_findpatterns = {};
-        m_startpath = nullptr;
+        m_paths = {};
     }
 
     void FindSettings::add_pattern(const std::string& p, std::vector<FindPattern*>* ps) {
@@ -57,22 +56,6 @@ namespace cppfind {
         m_in_filetypes.push_back(filetype);
     }
 
-    void FindSettings::add_in_linesafterpattern(const std::string& p) {
-        add_pattern(p, &m_in_linesafterpatterns);
-    }
-
-    void FindSettings::add_in_linesbeforepattern(const std::string& p) {
-        add_pattern(p, &m_in_linesbeforepatterns);
-    }
-
-    void FindSettings::add_linesaftertopattern(const std::string& p) {
-        add_pattern(p, &m_linesaftertopatterns);
-    }
-
-    void FindSettings::add_linesafteruntilpattern(const std::string& p) {
-        add_pattern(p, &m_linesafteruntilpatterns);
-    }
-
     void FindSettings::add_out_archiveextension(const std::string& ext) {
         add_extensions(ext, &m_out_archiveextensions);
     }
@@ -97,16 +80,8 @@ namespace cppfind {
         m_out_filetypes.push_back(filetype);
     }
 
-    void FindSettings::add_out_linesafterpattern(const std::string& p) {
-        add_pattern(p, &m_out_linesafterpatterns);
-    }
-
-    void FindSettings::add_out_linesbeforepattern(const std::string& p) {
-        add_pattern(p, &m_out_linesbeforepatterns);
-    }
-
-    void FindSettings::add_findpattern(const std::string& p) {
-        add_pattern(p, &m_findpatterns);
+    void FindSettings::add_path(const std::string& p) {
+        m_paths.push_back(p);
     }
 
     bool FindSettings::archivesonly() const {
@@ -125,20 +100,8 @@ namespace cppfind {
         return m_excludehidden;
     }
 
-    bool FindSettings::firstmatch() const {
-        return m_firstmatch;
-    }
-
-    bool FindSettings::multilineoption-REMOVE() const {
-        return m_multilineoption-REMOVE;
-    }
-
-    unsigned int FindSettings::linesafter() const {
-        return m_linesafter;
-    }
-
-    unsigned int FindSettings::linesbefore() const {
-        return m_linesbefore;
+    bool FindSettings::includearchives() const {
+        return m_includearchives;
     }
 
     bool FindSettings::listdirs() const {
@@ -147,18 +110,6 @@ namespace cppfind {
 
     bool FindSettings::listfiles() const {
         return m_listfiles;
-    }
-
-    bool FindSettings::listlines() const {
-        return m_listlines;
-    }
-
-    size_t FindSettings::maxlinelength() const {
-        return m_maxlinelength;
-    }
-
-    bool FindSettings::printresults() const {
-        return m_printresults;
     }
 
     bool FindSettings::printusage() const {
@@ -171,10 +122,6 @@ namespace cppfind {
 
     bool FindSettings::recursive() const {
         return m_recursive;
-    }
-
-    bool FindSettings::findarchives() const {
-        return m_findarchives;
     }
 
     std::vector<std::string>* FindSettings::in_archiveextensions() {
@@ -197,12 +144,8 @@ namespace cppfind {
         return &m_in_filepatterns;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_linesafterpatterns() {
-        return &m_in_linesafterpatterns;
-    }
-
-    std::vector<FindPattern*>* FindSettings::in_linesbeforepatterns() {
-        return &m_in_linesbeforepatterns;
+    std::vector<FileType>* FindSettings::in_filetypes() {
+        return &m_in_filetypes;
     }
 
     std::vector<std::string>* FindSettings::out_archiveextensions() {
@@ -225,25 +168,12 @@ namespace cppfind {
         return &m_out_filepatterns;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_linesafterpatterns() {
-        return &m_out_linesafterpatterns;
+    std::vector<FileType>* FindSettings::out_filetypes() {
+        return &m_out_filetypes;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_linesbeforepatterns() {
-        return &m_out_linesbeforepatterns;
-    }
-
-    std::vector<FindPattern*>* FindSettings::findpatterns() {
-        return &m_findpatterns;
-    }
-
-
-    std::string* FindSettings::startpath() {
-        return m_startpath;
-    }
-
-    bool FindSettings::uniquelines() const {
-        return m_uniquelines;
+    std::vector<std::string>* FindSettings::paths() {
+        return &m_paths;
     }
 
     bool FindSettings::verbose() const {
@@ -252,7 +182,7 @@ namespace cppfind {
 
     void FindSettings::archivesonly(const bool b) {
         m_archivesonly = b;
-        if (b) m_findarchives = b;
+        if (b) m_includearchives = b;
     }
 
     void FindSettings::colorize(const bool b) {
@@ -268,16 +198,8 @@ namespace cppfind {
         m_excludehidden = b;
     }
 
-    void FindSettings::firstmatch(const bool b) {
-        m_firstmatch = b;
-    }
-
-    void FindSettings::linesafter(const unsigned int linecount) {
-        m_linesafter = linecount;
-    }
-
-    void FindSettings::linesbefore(const unsigned int linecount) {
-        m_linesbefore = linecount;
+    void FindSettings::includearchives(const bool b) {
+        m_includearchives = b;
     }
 
     void FindSettings::listdirs(const bool b) {
@@ -286,22 +208,6 @@ namespace cppfind {
 
     void FindSettings::listfiles(const bool b) {
         m_listfiles = b;
-    }
-
-    void FindSettings::listlines(const bool b) {
-        m_listlines = b;
-    }
-
-    void FindSettings::maxlinelength(const size_t max) {
-        m_maxlinelength = max;
-    }
-
-    void FindSettings::multilineoption-REMOVE(const bool b) {
-        m_multilineoption-REMOVE = b;
-    }
-
-    void FindSettings::printresults(const bool b) {
-        m_printresults = b;
     }
 
     void FindSettings::printusage(const bool b) {
@@ -314,18 +220,6 @@ namespace cppfind {
 
     void FindSettings::recursive(const bool b) {
         m_recursive = b;
-    }
-
-    void FindSettings::findarchives(const bool b) {
-        m_findarchives = b;
-    }
-
-    void FindSettings::startpath(std::string& s) {
-        m_startpath = &s;
-    }
-
-    void FindSettings::uniquelines(const bool b) {
-        m_uniquelines = b;
     }
 
     void FindSettings::verbose(const bool b) {
@@ -364,49 +258,46 @@ namespace cppfind {
         return ps_string;
     }
 
-    std::string FindSettings::string() {
-        std::string path = "\"\"";
-        if (m_startpath != nullptr) {
-            path = std::string("\"") + *m_startpath + "\"";
+    std::string FindSettings::filetypes_to_string(std::vector<FileType>* ts) {
+        std::string ts_string = "[";
+        int count = 0;
+        for (auto const& t : *ts) {
+            if (count > 0) {
+                ts_string.append(", ");
+            }
+            ts_string.append("\"").append(FileTypes::to_name(t)).append("\"");
+            count++;
         }
+        ts_string.append("]");
+        return ts_string;
+    }
+
+    std::string FindSettings::string() {
         auto settings_str =
                 std::string("FindSettings(")
                 + "archivesonly: " + bool_to_string(m_archivesonly)
                 + ", colorize: " + bool_to_string(m_colorize)
                 + ", debug: " + bool_to_string(m_debug)
                 + ", excludehidden: " + bool_to_string(m_excludehidden)
-                + ", firstmatch: " + bool_to_string(m_firstmatch)
                 + ", in_archiveextensions: " + string_vector_to_string(&m_in_archiveextensions)
                 + ", in_archivefilepatterns: " + findpatterns_to_string(&m_in_archivefilepatterns)
                 + ", in_dirpatterns: " + findpatterns_to_string(&m_in_dirpatterns)
                 + ", in_extensions: " + string_vector_to_string(&m_in_extensions)
                 + ", in_filepatterns: " + findpatterns_to_string(&m_in_filepatterns)
-                + ", in_linesafterpatterns: " + findpatterns_to_string(&m_in_linesafterpatterns)
-                + ", in_linesbeforepatterns: " + findpatterns_to_string(&m_in_linesbeforepatterns)
-                + ", linesafter: " + std::to_string(m_linesafter)
-                + ", linesaftertopatterns: " + findpatterns_to_string(&m_linesaftertopatterns)
-                + ", linesafteruntilpatterns: " + findpatterns_to_string(&m_linesafteruntilpatterns)
-                + ", linesbefore: " + std::to_string(m_linesbefore)
+                + ", in_filetypes: " + filetypes_to_string(&m_in_filetypes)
+                + ", includearchives: " + bool_to_string(m_includearchives)
                 + ", listdirs: " + bool_to_string(m_listdirs)
                 + ", listfiles: " + bool_to_string(m_listfiles)
-                + ", listlines: " + bool_to_string(m_listlines)
-                + ", maxlinelength: " + std::to_string(m_maxlinelength)
-                + ", multilineoption-REMOVE: " + bool_to_string(m_multilineoption-REMOVE)
                 + ", out_archiveextensions: " + string_vector_to_string(&m_out_archiveextensions)
                 + ", out_archivefilepatterns: " + findpatterns_to_string(&m_out_archivefilepatterns)
                 + ", out_dirpatterns: " + findpatterns_to_string(&m_out_dirpatterns)
                 + ", out_extensions: " + string_vector_to_string(&m_out_extensions)
                 + ", out_filepatterns: " + findpatterns_to_string(&m_out_filepatterns)
-                + ", out_linesafterpatterns: " + findpatterns_to_string(&m_out_linesafterpatterns)
-                + ", out_linesbeforepatterns: " + findpatterns_to_string(&m_out_linesbeforepatterns)
-                + ", printresults: " + bool_to_string(m_printresults)
+                + ", out_filetypes: " + filetypes_to_string(&m_out_filetypes)
+                + ", paths: " + string_vector_to_string(&m_paths)
                 + ", printusage: " + bool_to_string(m_printusage)
                 + ", printversion: " + bool_to_string(m_printversion)
                 + ", recursive: " + bool_to_string(m_recursive)
-                + ", findarchives: " + bool_to_string(m_findarchives)
-                + ", findpatterns: " + findpatterns_to_string(&m_findpatterns)
-                + ", startpath: " + path
-                + ", uniquelines: " + bool_to_string(m_uniquelines)
                 + ", verbose: " + bool_to_string(m_verbose)
                 + ")";
         return settings_str;

@@ -14,22 +14,12 @@
 @property(nonatomic) BOOL colorize;
 @property(nonatomic) BOOL debug;
 @property(nonatomic) BOOL excludeHidden;
-@property(nonatomic) BOOL firstMatch;
-@property(nonatomic) int linesAfter;
-@property(nonatomic) int linesBefore;
+@property(nonatomic) BOOL includeArchives;
 @property(nonatomic) BOOL listDirs;
 @property(nonatomic) BOOL listFiles;
-@property(nonatomic) BOOL listLines;
-@property(nonatomic) uint32_t maxLineLength;
-@property(nonatomic) BOOL multiLineFind;
-@property(nonatomic) BOOL printResults;
 @property(nonatomic) BOOL printUsage;
 @property(nonatomic) BOOL printVersion;
 @property(nonatomic) BOOL recursive;
-@property(nonatomic) BOOL findArchives;
-@property(nonatomic) NSMutableString *startPath;
-@property(nonatomic) NSString *textFileEncoding;
-@property(nonatomic) BOOL uniqueLines;
 @property(nonatomic) BOOL verbose;
 
 @property(nonatomic) NSMutableArray<NSString*> *inArchiveExtensions;
@@ -38,19 +28,13 @@
 @property(nonatomic) NSMutableArray<NSString*> *inExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *inFilePatterns;
 @property(nonatomic) NSMutableArray<NSNumber*> *inFileTypes;
-@property(nonatomic) NSMutableArray<Regex*> *inLinesAfterPatterns;
-@property(nonatomic) NSMutableArray<Regex*> *inLinesBeforePatterns;
-@property(nonatomic) NSMutableArray<Regex*> *linesAfterToPatterns;
-@property(nonatomic) NSMutableArray<Regex*> *linesAfterUntilPatterns;
 @property(nonatomic) NSMutableArray<NSString*> *outArchiveExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *outArchiveFilePatterns;
 @property(nonatomic) NSMutableArray<Regex*> *outDirPatterns;
 @property(nonatomic) NSMutableArray<NSString*> *outExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *outFilePatterns;
 @property(nonatomic) NSMutableArray<NSNumber*> *outFileTypes;
-@property(nonatomic) NSMutableArray<Regex*> *outLinesAfterPatterns;
-@property(nonatomic) NSMutableArray<Regex*> *outLinesBeforePatterns;
-@property(nonatomic) NSMutableArray<Regex*> *findPatterns;
+@property(nonatomic) NSMutableArray<NSString*> *paths;
 
 -(NSString *) description;
 
@@ -65,7 +49,7 @@
 - (void) addOutDirPattern: (NSString*)pattern;
 - (void) addOutExtension: (NSString*)ext;
 - (void) addOutFilePattern: (NSString*)pattern;
-- (void) addFindPattern: (NSString*)pattern;
+- (void) addPath: (NSString*)path;
 
 - (void) addFileType:(NSString*)typeName toArr:(NSMutableArray *)arr;
 - (void) addInFileType: (NSString*)typeName;

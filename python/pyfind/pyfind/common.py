@@ -6,6 +6,9 @@
 # Common functionality
 #
 ###############################################################################
+from dateutil.parser import parse
+
+from .findexception import FindException
 
 
 def log(message: str):
@@ -20,3 +23,11 @@ def get_text(nodelist):
         if node.nodeType == node.TEXT_NODE:
             rc.append(node.data)
     return ''.join(rc)
+
+
+def parse_datetime_str(datetime_str: str):
+    """Try to parse datetime string to datetime instance"""
+    try:
+        return parse(datetime_str)
+    except:
+        raise FindException('Invalid datetime string: {}'.format(datetime_str))

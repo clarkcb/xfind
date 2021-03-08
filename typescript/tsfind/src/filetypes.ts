@@ -4,7 +4,7 @@
  * identifies file types (archive, binary, text, unknown)
  */
 
-"use strict";
+'use strict';
 
 import * as config from './config';
 import * as common from './common';
@@ -117,11 +117,6 @@ export class FileTypes {
         return FileTypes.fileTypeMap['code'].indexOf(ext) > -1;
     }
 
-    public static isFindableFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['findable'].indexOf(ext) > -1;
-    }
-
     public static isTextFile(filename: string): boolean {
         const ext: string = FileUtil.getExtension(filename);
         return FileTypes.fileTypeMap['text'].indexOf(ext) > -1;
@@ -133,7 +128,6 @@ export class FileTypes {
     }
 
     public static isUnknownFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['findable'].indexOf(ext) === -1;
+        return FileTypes.getFileType(filename) === FileType.Unknown;
     }
 }

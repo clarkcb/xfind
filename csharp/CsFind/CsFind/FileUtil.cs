@@ -80,6 +80,19 @@ namespace CsFind
 			return filePath;
 		}
 
+		public static string GetRelativePath(string path, IEnumerable<string> paths)
+		{
+			foreach (var p in paths)
+			{
+				string relativePath = FileUtil.GetRelativePath(path, p);
+				if (relativePath.Length < path.Length)
+				{
+					return relativePath;
+				}
+			}
+			return path;
+		}
+
 		public static string ContractOrRelativePath(string fullPath, string startpath)
 		{
 			if (startpath[0] == '~')
@@ -87,6 +100,19 @@ namespace CsFind
 				return ContractPath(fullPath);
 			}
 			return GetRelativePath(fullPath, startpath);
+		}
+
+		public static string ContractOrRelativePath(string fullPath, IEnumerable<string> paths)
+		{
+			foreach (var p in paths)
+			{
+				string modifiedPath = FileUtil.ContractOrRelativePath(fullPath, p);
+				if (modifiedPath.Length < fullPath.Length)
+				{
+					return modifiedPath;
+				}
+			}
+			return fullPath;
 		}
 
 		public static bool IsDotDir(string filename)

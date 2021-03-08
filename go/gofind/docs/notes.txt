@@ -1,0 +1,7 @@
+Go module project structure
+* https://github.com/golang-standards/project-layout
+
+Resource files - note that code generation probably is the best way to go here
+* https://levelup.gitconnected.com/how-i-embedded-resources-in-go-514b72f6ef0a
+* https://github.com/omeid/go-resources
+* https://github.com/markbates/pkger

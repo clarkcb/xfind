@@ -8,41 +8,25 @@ pub struct FindSettings {
     pub colorize: bool,
     pub debug: bool,
     pub exclude_hidden: bool,
-    pub first_match: bool,
     pub in_archive_extensions: Vec<String>,
     pub in_archive_file_patterns: Vec<Regex>,
     pub in_dir_patterns: Vec<Regex>,
     pub in_extensions: Vec<String>,
     pub in_file_patterns: Vec<Regex>,
     pub in_file_types: Vec<filetypes::FileType>,
-    pub in_lines_after_patterns: Vec<Regex>,
-    pub in_lines_before_patterns: Vec<Regex>,
-    pub lines_after: usize,
-    pub lines_after_to_patterns: Vec<Regex>,
-    pub lines_after_until_patterns: Vec<Regex>,
-    pub lines_before: usize,
+    pub include_archives: bool,
     pub list_dirs: bool,
     pub list_files: bool,
-    pub list_lines: bool,
-    pub max_line_length: usize,
-    pub multiline_find: bool,
     pub out_archive_extensions: Vec<String>,
     pub out_archive_file_patterns: Vec<Regex>,
     pub out_dir_patterns: Vec<Regex>,
     pub out_extensions: Vec<String>,
     pub out_file_patterns: Vec<Regex>,
     pub out_file_types: Vec<filetypes::FileType>,
-    pub out_lines_after_patterns: Vec<Regex>,
-    pub out_lines_before_patterns: Vec<Regex>,
-    pub print_results: bool,
+    pub paths: Vec<String>,
     pub print_usage: bool,
     pub print_version: bool,
     pub recursive: bool,
-    pub find_archives: bool,
-    pub find_patterns: Vec<Regex>,
-    pub startpath: String,
-    pub text_file_encoding: String,
-    pub unique_lines: bool,
     pub verbose: bool,
 }
 
@@ -53,41 +37,25 @@ impl FindSettings {
             colorize: true,
             debug: false,
             exclude_hidden: true,
-            first_match: false,
             in_archive_extensions: Vec::new(),
             in_archive_file_patterns: Vec::new(),
             in_dir_patterns: Vec::new(),
             in_extensions: Vec::new(),
             in_file_patterns: Vec::new(),
             in_file_types: Vec::new(),
-            in_lines_after_patterns: Vec::new(),
-            in_lines_before_patterns: Vec::new(),
-            lines_after: 0usize,
-            lines_after_to_patterns: Vec::new(),
-            lines_after_until_patterns: Vec::new(),
-            lines_before: 0usize,
+            include_archives: false,
             list_dirs: false,
             list_files: false,
-            list_lines: false,
-            max_line_length: 150usize,
-            multiline_find: false,
             out_archive_extensions: Vec::new(),
             out_archive_file_patterns: Vec::new(),
             out_dir_patterns: Vec::new(),
             out_extensions: Vec::new(),
             out_file_patterns: Vec::new(),
             out_file_types: Vec::new(),
-            out_lines_after_patterns: Vec::new(),
-            out_lines_before_patterns: Vec::new(),
-            print_results: false,
+            paths: Vec::new(),
             print_usage: false,
             print_version: false,
             recursive: true,
-            find_archives: false,
-            find_patterns: Vec::new(),
-            startpath: String::from(""),
-            text_file_encoding: String::from("utf-8"),
-            unique_lines: false,
             verbose: false,
         }
     }
@@ -95,7 +63,7 @@ impl FindSettings {
     pub fn set_archives_only(&mut self, b: bool) {
         self.archives_only = b;
         if b {
-            self.find_archives = b;
+            self.include_archives = b;
         }
     }
 
@@ -154,32 +122,8 @@ impl FindSettings {
         self.out_file_types.push(filetype)
     }
 
-    pub fn add_in_lines_after_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.in_lines_after_patterns);
-    }
-
-    pub fn add_out_lines_after_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.out_lines_after_patterns);
-    }
-
-    pub fn add_in_lines_before_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.in_lines_before_patterns);
-    }
-
-    pub fn add_out_lines_before_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.out_lines_before_patterns);
-    }
-
-    pub fn add_lines_after_to_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.lines_after_to_patterns);
-    }
-
-    pub fn add_lines_after_until_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.lines_after_until_patterns);
-    }
-
-    pub fn add_find_pattern(&mut self, pattern: String) {
-        add_pattern(pattern, &mut self.find_patterns);
+    pub fn add_path(&mut self, path: String) {
+        self.paths.push(path)
     }
 }
 
@@ -205,36 +149,25 @@ mod tests {
         assert_eq!(settings.colorize, true);
         assert_eq!(settings.debug, false);
         assert_eq!(settings.exclude_hidden, true);
-        assert_eq!(settings.first_match, false);
         assert!(settings.in_archive_extensions.is_empty());
         assert!(settings.in_archive_file_patterns.is_empty());
         assert!(settings.in_dir_patterns.is_empty());
         assert!(settings.in_extensions.is_empty());
         assert!(settings.in_file_patterns.is_empty());
         assert!(settings.in_file_types.is_empty());
-        assert_eq!(settings.lines_after, 0);
-        assert!(settings.lines_after_to_patterns.is_empty());
-        assert!(settings.lines_after_until_patterns.is_empty());
-        assert_eq!(settings.lines_before, 0);
+        assert_eq!(settings.include_archives, false);
         assert_eq!(settings.list_dirs, false);
         assert_eq!(settings.list_files, false);
-        assert_eq!(settings.list_lines, false);
-        assert_eq!(settings.max_line_length, 150);
-        assert_eq!(settings.multiline_find, false);
         assert!(settings.out_archive_extensions.is_empty());
         assert!(settings.out_archive_file_patterns.is_empty());
         assert!(settings.out_dir_patterns.is_empty());
         assert!(settings.out_extensions.is_empty());
         assert!(settings.out_file_patterns.is_empty());
         assert!(settings.out_file_types.is_empty());
-        assert_eq!(settings.print_results, false);
+        assert!(settings.paths.is_empty());
         assert_eq!(settings.print_usage, false);
         assert_eq!(settings.print_version, false);
         assert_eq!(settings.recursive, true);
-        assert_eq!(settings.find_archives, false);
-        assert_eq!(settings.startpath, String::from(""));
-        assert_eq!(settings.text_file_encoding, String::from("utf-8"));
-        assert_eq!(settings.unique_lines, false);
         assert_eq!(settings.verbose, false);
     }
 
@@ -242,13 +175,13 @@ mod tests {
     fn test_set_archives_only() {
         let mut settings = FindSettings::default();
         assert_eq!(settings.archives_only, false);
-        assert_eq!(settings.find_archives, false);
+        assert_eq!(settings.include_archives, false);
         settings.set_archives_only(true);
         assert_eq!(settings.archives_only, true);
-        assert_eq!(settings.find_archives, true);
+        assert_eq!(settings.include_archives, true);
         settings.set_archives_only(false);
         assert_eq!(settings.archives_only, false);
-        assert_eq!(settings.find_archives, true);
+        assert_eq!(settings.include_archives, true);
     }
 
     #[test]

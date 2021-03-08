@@ -2,8 +2,7 @@
   (:gen-class)
   (:use [cljfind.common :only (log-msg log-errors)]
         [cljfind.finder :only
-          (find print-find-results print-matching-dirs print-matching-files
-            print-matching-lines)]
+          (find-files print-matching-dirs print-matching-files)]
         [cljfind.findoptions :only (settings-from-args usage)]))
 
 (defn -main
@@ -14,13 +13,11 @@
     (if (empty? errs)
       (do
         (if (:printusage settings) (usage))
-        (let [errs (find settings)]
+        (let [[files errs] (find-files settings)]
           (if (empty? errs)
             (do
-              (if (:printresults settings) (print-find-results settings))
-              (if (:listdirs settings) (print-matching-dirs))
-              (if (:listfiles settings) (print-matching-files))
-              (if (:listlines settings) (print-matching-lines settings)))
+              (if (:listdirs settings) (print-matching-dirs files))
+              (if (:listfiles settings) (print-matching-files files)))
             (do
               (log-errors errs)
               (usage)))))

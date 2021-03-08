@@ -8,7 +8,7 @@
 
 (ns cljfind.findoptions
   #^{:author "Cary Clark",
-     :doc "Module to provide file-related utility functions"}
+     :doc "Defines the available command-line options and utility functions"}
   (:import (java.io File))
   (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
@@ -19,8 +19,8 @@
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.findsettings :only
-         (->FindSettings DEFAULT-SETTINGS add-extension add-filetype add-pattern
-            set-archivesonly set-debug set-num)]))
+         (->FindSettings DEFAULT-SETTINGS add-extension add-filetype add-path
+            add-pattern set-archivesonly set-debug set-num)]))
 
 (defrecord FindOption [short-arg long-arg desc])
 
@@ -65,52 +65,34 @@
   (doseq [o OPTIONS] (print-option o)))
 
 (def arg-action-map
-  { :encoding (fn [settings s] (assoc settings :textfileencoding s))
-    :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
+  { :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
     :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archivefilepatterns))
     :in-dirpattern (fn [settings s] (add-pattern settings s :in-dirpatterns))
     :in-ext (fn [settings s] (add-extension settings s :in-extensions))
     :in-filepattern (fn [settings s] (add-pattern settings s :in-filepatterns))
     :in-filetype (fn [settings s] (add-filetype settings s :in-filetypes))
-    :in-linesafterpattern (fn [settings s] (add-pattern settings s :in-linesafterpatterns))
-    :in-linesbeforepattern (fn [settings s] (add-pattern settings s :in-linesbeforepatterns))
-    :linesafter (fn [settings s] (set-num settings s :linesafter))
-    :linesaftertopattern (fn [settings s] (add-pattern settings s :linesaftertopatterns))
-    :linesafteruntilpattern (fn [settings s] (add-pattern settings s :linesafteruntilpatterns))
-    :linesbefore (fn [settings s] (set-num settings s :linesbefore))
-    :maxlinelength (fn [settings s] (assoc settings :maxlinelength (read-string s)))
     :out-archiveext (fn [settings s] (add-extension settings s :out-archiveextensions))
     :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archivefilepattern))
     :out-dirpattern (fn [settings s] (add-pattern settings s :out-dirpatterns))
     :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
     :out-filepattern (fn [settings s] (add-pattern settings s :out-filepatterns))
     :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
-    :out-linesafterpattern (fn [settings s] (add-pattern settings s :out-linesafterpatterns))
-    :out-linesbeforepattern (fn [settings s] (add-pattern settings s :out-linesbeforepatterns))
-    :findpattern (fn [settings s] (add-pattern settings s :findpatterns))
   })
 
 (def bool-flag-action-map
-  { :allmatches (fn [settings b] (assoc settings :firstmatch (not b)))
-    :archivesonly (fn [settings b] (set-archivesonly settings b))
+  { :archivesonly (fn [settings b] (set-archivesonly settings b))
     :colorize (fn [settings b] (assoc settings :colorize b))
     :debug (fn [settings b] (set-debug settings b))
+    :excludearchives (fn [settings b] (assoc settings :includearchives (not b)))
     :excludehidden (fn [settings b] (assoc settings :excludehidden b))
-    :firstmatch (fn [settings b] (assoc settings :firstmatch b))
     :help (fn [settings b] (assoc settings :printusage b))
+    :includearchives (fn [settings b] (assoc settings :includearchives b))
     :includehidden (fn [settings b] (assoc settings :excludehidden (not b)))
     :listdirs (fn [settings b] (assoc settings :listdirs b))
     :listfiles (fn [settings b] (assoc settings :listfiles b))
-    :listlines (fn [settings b] (assoc settings :listlines b))
-    :multilineoption-REMOVE (fn [settings b] (assoc settings :multilineoption-REMOVE b))
     :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
-    :noprintmatches (fn [settings b] (assoc settings :printresults (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
-    :nofindarchives (fn [settings b] (assoc settings :findarchives (not b)))
-    :printmatches (fn [settings b] (assoc settings :printresults b))
     :recursive (fn [settings b] (assoc settings :recursive b))
-    :findarchives (fn [settings b] (assoc settings :findarchives b))
-    :uniquelines (fn [settings b] (assoc settings :uniquelines b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))
   })
@@ -135,9 +117,9 @@
           (settings-from-map ((k arg-action-map) settings v) (rest ks) m errs)
         (contains? bool-flag-action-map k)
           (settings-from-map ((k bool-flag-action-map) settings v) (rest ks) m errs)
-        (= k :startpath)
+        (= k :path)
           (do
-            (settings-from-map (assoc settings :startpath v) (rest ks) m errs))
+            (settings-from-map (add-path settings v) (rest ks) m errs))
         :else
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
@@ -155,7 +137,8 @@
 
 (defn settings-from-args
   ([args]
-    (settings-from-args DEFAULT-SETTINGS args []))
+    ;; default listfiles to true since running as cli
+    (settings-from-args (assoc DEFAULT-SETTINGS :listfiles true) args []))
   ([settings args errs]
     (if (or (empty? args) (not (empty? errs)))
       [settings errs]
@@ -176,7 +159,8 @@
                 (settings-from-args file-settings (drop 2 args) (concat errs file-errs)))
             :else
               (settings-from-args settings (rest args) (conj errs (str "Invalid option: " a))))
-          (settings-from-args (assoc settings :startpath arg) (rest args) errs))))))
+          ;;(settings-from-args (assoc settings :startpath arg) (rest args) errs)
+          (settings-from-args (add-path settings arg) (rest args) errs))))))
 
 (defn longest-length [options]
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
@@ -194,7 +178,7 @@
   (let [longest (longest-length OPTIONS)]
     (str
       "Usage:\n"
-      " cljfind [options] -s <findpattern> <startpath>\n\n"
+      " cljfind [options] <path> [<path> ...]\n\n"
       "Options:\n "
       (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
 

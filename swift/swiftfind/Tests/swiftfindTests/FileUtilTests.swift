@@ -22,6 +22,16 @@ class FileUtilTests: XCTestCase {
     }
 
     /* ==========================================================================
+     * contractPath tests
+     ========================================================================= */
+    func testContractPathWithHome() {
+        let homePath = NSHomeDirectory()
+        let fullPath = FileUtil.joinPath(homePath, childPath: "filename.txt")
+        let expected = "~/filename.txt"
+        XCTAssertEqual(expected, FileUtil.contractPath(fullPath))
+    }
+
+    /* ==========================================================================
      * expandPath tests
      ========================================================================= */
     func testExpandPathHasTilde() {

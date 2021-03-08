@@ -11,11 +11,11 @@ namespace cppfind {
     public:
         FileTypes();
         static FileType from_name(const std::string& name);
+        static std::string to_name(const FileType filetype);
         FileType get_filetype(const std::string& filepath);
         bool is_archive_file(const std::string& filepath);
         bool is_binary_file(const std::string& filepath);
         bool is_code_file(const std::string& filepath);
-        bool is_findable_file(const std::string& filepath);
         bool is_text_file(const std::string& filepath);
         bool is_unknown_file(const std::string& filepath);
         bool is_xml_file(const std::string& filepath);

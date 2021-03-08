@@ -8,7 +8,7 @@ import java.io.File
 class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   def getFindSettings: FindSettings = {
-    FindSettings(startPath = Some("."), findPatterns = Set("Finder".r))
+    FindSettings(paths = Set("."))
   }
 
   /** ***********************************************************
@@ -206,87 +206,5 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
     val finder = new Finder(settings)
     val file = new File("archive.zip")
     assert(finder.isArchiveFindFile(file.getName))
-  }
-
-  /** ***********************************************************
-    * FilterFile tests
-    * ************************************************************/
-  test("testFilterFile_IsHidden_False") {
-    val settings = getFindSettings
-    val finder = new Finder(settings)
-    val file = new File(".gitignore")
-    assert(!finder.filterFile(file))
-  }
-
-  test("testFilterFile_IsHiddenIncludeHidden_True") {
-    val settings = getFindSettings.copy(excludeHidden = false)
-    val finder = new Finder(settings)
-    val findFile = new FindFile(new File(".hidden.txt"), FileType.Text)
-    println("finder.isFindFile(\"%s\"): %s".format(findFile, finder.isFindFile(findFile)))
-    assert(finder.filterFile(findFile.file))
-  }
-
-  test("testFilterFile_ArchiveNoFindArchives_False") {
-    val settings = getFindSettings
-    val finder = new Finder(settings)
-    val file = new File("archive.zip")
-    assert(!finder.filterFile(file))
-  }
-
-  test("testFilterFile_ArchiveFindArchives_True") {
-    val settings = getFindSettings.copy(findArchives = true)
-    val finder = new Finder(settings)
-    val file = new File("archive.zip")
-    assert(finder.filterFile(file))
-  }
-
-  test("testFilterFile_IsArchiveFindFile_True") {
-    val settings = getFindSettings.copy(findArchives = true,
-      inArchiveExtensions = Set("zip"))
-    val finder = new Finder(settings)
-    val file = new File("archive.zip")
-    assert(finder.filterFile(file))
-  }
-
-  test("testFilterFile_NotIsArchiveFindFile_False") {
-    val settings = getFindSettings.copy(outExtensions = Set("zip"))
-    val finder = new Finder(settings)
-    val file = new File("archive.zip")
-    assert(!finder.filterFile(file))
-  }
-
-  test("testFilterFile_ArchiveFileArchivesOnly_True") {
-    val settings = getFindSettings.copy(archivesOnly = true)
-    val finder = new Finder(settings)
-    val file = new File("archive.zip")
-    assert(finder.filterFile(file))
-  }
-
-  test("testFilterFile_NoExtensionsNoPatterns_True") {
-    val settings = getFindSettings
-    val finder = new Finder(settings)
-    val file = new File("FileUtil.cs")
-    assert(finder.filterFile(file))
-  }
-
-  test("testFilterFile_IsFindFile_True") {
-    val settings = getFindSettings.copy(inExtensions = Set("cs"))
-    val finder = new Finder(settings)
-    val file = new File("FileUtil.cs")
-    assert(finder.filterFile(file))
-  }
-
-  test("testFilterFile_NotIsFindFile_False") {
-    val settings = getFindSettings.copy(outExtensions = Set("cs"))
-    val finder = new Finder(settings)
-    val file = new File("FileUtil.cs")
-    assert(!finder.filterFile(file))
-  }
-
-  test("testFilterFile_NonArchiveFileArchivesOnly_False") {
-    val settings = getFindSettings.copy(archivesOnly = true)
-    val finder = new Finder(settings)
-    val file = new File("FileUtil.cs")
-    assert(!finder.filterFile(file))
   }
 }

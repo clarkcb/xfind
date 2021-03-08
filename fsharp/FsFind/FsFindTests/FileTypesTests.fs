@@ -89,10 +89,3 @@ type FileTypesTests () =
         let xmlFile = FileInfo("markup.xml")
         Assert.IsTrue(this.FileTypes.IsXmlFile(xmlFile))
         ()
-
-    [<Test>]
-    member this.IsFindableFile_XmlFile_True () =
-        printfn "IsFindableFile_XmlFile_True"
-        let xmlFile = FileInfo("markup.xml")
-        Assert.IsTrue(this.FileTypes.IsFindableFile(xmlFile))
-        ()

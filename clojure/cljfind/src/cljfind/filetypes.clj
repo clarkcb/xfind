@@ -35,12 +35,14 @@
                   (union (get filetypemap TEXT)
                          (get filetypemap CODE)
                          (get filetypemap XML)))
-        findablemap (hash-map "findable"
-                        (union (get filetypemap ARCHIVE)
-                               (get filetypemap BINARY)
-                               (get filetypemap TEXT)))
-        ]
-  (merge filetypemap textmap findablemap)))
+        ; findablemap (hash-map "findable"
+        ;                 (union (get filetypemap ARCHIVE)
+        ;                        (get filetypemap BINARY)
+        ;                        (get filetypemap TEXT)))
+        ; fullmap (merge filetypemap textmap findablemap)
+        fullmap (merge filetypemap textmap)
+       ]
+    fullmap))
 
 (defn get-filetypemap-from-json []
   (let [contents (slurp (io/resource "filetypes.json"))
@@ -52,12 +54,13 @@
                   (union (get filetypemap TEXT)
                          (get filetypemap CODE)
                          (get filetypemap XML)))
-        findablemap (hash-map "findable"
-                        (union (get filetypemap ARCHIVE)
-                               (get filetypemap BINARY)
-                               (get filetypemap TEXT)))
-        fullmap (merge filetypemap textmap findablemap)
-        ]
+        ; findablemap (hash-map "findable"
+        ;                 (union (get filetypemap ARCHIVE)
+        ;                        (get filetypemap BINARY)
+        ;                        (get filetypemap TEXT)))
+        ; fullmap (merge filetypemap textmap findablemap)
+        fullmap (merge filetypemap textmap)
+       ]
     fullmap))
 
 (def FILETYPEMAP (get-filetypemap-from-json))
@@ -80,8 +83,8 @@
 (defn code-file? [f]
   (contains? (get FILETYPEMAP CODE) (get-ext f)))
 
-(defn findable-file? [f]
-  (contains? (get FILETYPEMAP "findable") (get-ext f)))
+; (defn findable-file? [f]
+;   (contains? (get FILETYPEMAP "findable") (get-ext f)))
 
 (defn text-ext? [ext]
   (contains? (get FILETYPEMAP TEXT) ext))
@@ -98,11 +101,11 @@
 (defn get-filetype [f]
   (let [ext (get-ext f)]
     (cond
-      (text-ext? ext) :text
       (binary-ext? ext) :binary
-      (archive-ext? ext) :archive
       (code-ext? ext) :code
       (xml-ext? ext) :xml
+      (text-ext? ext) :text
+      (archive-ext? ext) :archive
       :else :unknown)))
 
 (defn unknown-file? [f]
@@ -112,7 +115,7 @@
   (cond
     (= TEXT (lower-case name)) :text
     (= BINARY (lower-case name)) :binary
-    (= ARCHIVE (lower-case name)) :archive
     (= CODE (lower-case name)) :code
     (= XML (lower-case name)) :xml
+    (= ARCHIVE (lower-case name)) :archive
     :else :unknown))

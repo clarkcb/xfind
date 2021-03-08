@@ -6,7 +6,6 @@ module HsFind.FileTypes
   , getFileTypes
   , getFileTypeForName
   , getJsonFileTypes
-  , isFindableFileType
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as BC
@@ -26,12 +25,6 @@ data FileType = Unknown
               | Text
               | Xml
   deriving (Show, Eq)
-
-findableFileTypes :: [FileType]
-findableFileTypes = [Archive, Binary, Code, Text, Xml]
-
-isFindableFileType :: FileType -> Bool
-isFindableFileType t = t `elem` findableFileTypes
 
 getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =

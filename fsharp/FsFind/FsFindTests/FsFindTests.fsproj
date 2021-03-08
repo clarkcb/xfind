@@ -21,8 +21,7 @@
         <Compile Include="FinderTests.fs" />
         <Compile Include="FindFileTests.fs" />
         <Compile Include="FindOptionsTests.fs" />
-        <Compile Include="FindResultTests.fs" />
-        <Compile Include="FindSettingTests.fs" />
+        <Compile Include="FindSettingsTests.fs" />
     </ItemGroup>
 
     <ItemGroup>

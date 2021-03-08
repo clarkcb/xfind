@@ -42,7 +42,7 @@ public final class FileUtil {
         return ext;
     }
 
-    public static boolean hasExtension(final File f, String ext) {
+    public static boolean hasExtension(final File f, final String ext) {
         return hasExtension(f.getName(), ext);
     }
 

@@ -3,8 +3,6 @@ module HsFind.FinderTest
   , getIsArchiveFindFileTests
   , getIsFindDirTests
   , getIsFindFileTests
-  , getFindContentsTests
-  , getFindLinesTests
   ) where
 
 import HsFind.Config
@@ -12,7 +10,6 @@ import HsFind.FileTypes
 import HsFind.FileUtil
 import HsFind.Finder
 import HsFind.FindFile
-import HsFind.FindResult
 import HsFind.FindSettings
 
 import qualified Data.ByteString as B
@@ -85,8 +82,8 @@ getFilterFileTests = do
   let settingsInExtension = settings { inExtensions = [".hs"] }
   let settingsOutExtension = settings { outExtensions = [".hs"] }
   let settingsIncludeHidden = settings { excludeHidden = False }
-  let settingsFindArchives = settings { findArchives = True }
-  let settingsArchivesOnly = settingsFindArchives { archivesOnly = True }
+  let settingsIncludeArchives = settings { includeArchives = True }
+  let settingsArchivesOnly = settingsIncludeArchives { archivesOnly = True }
   let hsTestFile = FindFile { findFileContainers=[], findFilePath="Finder.hs", findFileType=Text }
   let hiddenTestFile = FindFile { findFileContainers=[], findFilePath=".gitignore", findFileType=Text }
   let archiveTestFile = FindFile { findFileContainers=[], findFilePath="archive.zip", findFileType=Archive }
@@ -96,56 +93,7 @@ getFilterFileTests = do
          , testCase "filterFile .gitignore default settings" (filterFile settings hiddenTestFile @?= False)
          , testCase "filterFile .gitignore includeHidden" (filterFile settingsIncludeHidden hiddenTestFile @?= True)
          , testCase "filterFile archive.zip default settings" (filterFile settings archiveTestFile @?= False)
-         , testCase "filterFile archive.zip findArchives" (filterFile settingsFindArchives archiveTestFile @?= True)
+         , testCase "filterFile archive.zip includeArchives" (filterFile settingsIncludeArchives archiveTestFile @?= True)
          , testCase "filterFile archive.zip archivesOnly" (filterFile settingsArchivesOnly archiveTestFile @?= True)
          , testCase "filterFile Finder.hs archivesOnly" (filterFile settingsArchivesOnly hsTestFile @?= False)
-         ]
-
-getLines :: FilePath -> IO [B.ByteString]
-getLines f = do
-  linesEither <- getFileLines f
-  case linesEither of
-    Left e -> return []
-    Right fileLines -> return fileLines
-
-sharedTestFile :: FilePath
-sharedTestFile = "/shared/testFiles/testFile2.txt"
-
-getFindLinesTests :: IO [Test]
-getFindLinesTests = do
-  let settings = defaultFindSettings { findPatterns = ["Finder"] }
-  xfindPath <- getXfindPath
-  let testFile = xfindPath ++ sharedTestFile
-  fileLines <- getLines testFile
-  let results = findLines settings fileLines
-  return [ testCase "length results == 2" (length results @?= 2)
-         , testCase "lineNum (head results) == 29" (lineNum (head results) @?= 29)
-         , testCase "matchStartIndex (head results) == 3" (matchStartIndex (head results) @?= 3)
-         , testCase "matchEndIndex (head results) == 11" (matchEndIndex (head results) @?= 11)
-         , testCase "lineNum (last results) == 35" (lineNum (last results) @?= 35)
-         , testCase "matchStartIndex (last results) == 3" (matchStartIndex (last results) @?= 24)
-         , testCase "matchEndIndex (last results) == 11" (matchEndIndex (last results) @?= 32)
-         ]
-
-getFileContents :: FilePath -> IO B.ByteString
-getFileContents f = do
-  contentsEither <- getFileByteString f
-  case contentsEither of
-    (Left _) -> return B.empty
-    (Right contents) -> return contents
-
-getFindContentsTests :: IO [Test]
-getFindContentsTests = do
-  let settings = defaultFindSettings { findPatterns = ["Finder"] }
-  xfindPath <- getXfindPath
-  let testFile = xfindPath ++ sharedTestFile
-  contents <- getFileContents testFile
-  let results = findContents settings contents
-  return [ testCase "length results == 2" (length results @?= 2)
-         , testCase "lineNum (head results) == 29" (lineNum (head results) @?= 29)
-         , testCase "matchStartIndex (head results) == 3" (matchStartIndex (head results) @?= 3)
-         , testCase "matchEndIndex (head results) == 11" (matchEndIndex (head results) @?= 11)
-         , testCase "lineNum (last results) == 35" (lineNum (last results) @?= 35)
-         , testCase "matchStartIndex (last results) == 3" (matchStartIndex (last results) @?= 24)
-         , testCase "matchEndIndex (last results) == 11" (matchEndIndex (last results) @?= 32)
          ]

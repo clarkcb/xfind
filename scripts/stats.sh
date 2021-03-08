@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ################################################################################
 #
 # stats.sh
@@ -43,191 +43,261 @@ word_counts () {
 
 stats_clojure () {
     echo
-    log "stats_clojure"
-    CLJSEARCH_SRCPATH=$XSEARCH_PATH/clojure/cljsearch/src
-    CLJFILES=$(find $CLJSEARCH_SRCPATH -name "*.clj")
+    hdr "stats_clojure"
+    CLJFIND_SRCPATH=$CLJFIND_PATH/src
+    CLJFILES=$(find $CLJFIND_SRCPATH -type f -iname "*.clj")
     log "Main source counts"
     word_counts $CLJFILES
-    CLJSEARCH_TESTPATH=$XSEARCH_PATH/clojure/cljsearch/test
-    CLJFILES=$(find $CLJSEARCH_TESTPATH -name "*.clj")
+    CLJFIND_TESTPATH=$CLJFIND_PATH/test
+    CLJFILES=$(find $CLJFIND_TESTPATH -type f -iname "*.clj")
     log "Test counts"
     word_counts $CLJFILES
 }
 
+
+stats_cpp () {
+    echo
+    hdr "stats_cpp"
+    # find ./ -type f \( -iname \*.jpg -o -iname \*.png \)
+    CPPFIND_INCPATH=$CPPFIND_PATH/include
+    CPPFILES=$(find $CPPFIND_INCPATH -type f -iname "*.h")
+    log "Main include counts"
+    word_counts $CPPFILES
+    CPPFIND_SRCPATH=$CPPFIND_PATH/src
+    CPPFILES=$(find $CPPFIND_SRCPATH -type f \( -iname \*.h -o -iname \*.cpp \))
+    log "Main source counts"
+    word_counts $CPPFILES
+    CPPFIND_TESTPATH=$CPPFIND_PATH/tests
+    CPPFILES=$(find $CPPFIND_TESTPATH -type f -iname "*.cpp")
+    log "Test source counts"
+    word_counts $CPPFILES
+}
+
 stats_csharp () {
     echo
-    log "stats_csharp"
-    CSSEARCH_SRCPATH=$CSHARP_PATH/CsSearch/CsSearch
-    CSFILES=$(find $CSSEARCH_SRCPATH -name "*.cs" | grep -v /obj/)
+    hdr "stats_csharp"
+    CSFIND_SRCPATH=$CSFIND_PATH/CsFind
+    CSFILES=$(find $CSFIND_SRCPATH -type f -iname "*.cs" | grep -v /obj/)
     log "Main source counts"
     word_counts $CSFILES
-    CSSEARCH_TESTPATH=$CSHARP_PATH/CsSearch/CsSearchTests
-    CSFILES=$(find $CSSEARCH_TESTPATH -name "*.cs" | grep -v /obj/)
+    CSFIND_TESTPATH=$CSFIND_PATH/CsFindTests
+    CSFILES=$(find $CSFIND_TESTPATH -type f -iname "*.cs" | grep -v /obj/)
     log "Test source counts"
     word_counts $CSFILES
 }
 
+stats_dart () {
+    echo
+    hdr "stats_dart"
+    DARTFIND_SRCPATH=$DARTFIND_PATH/lib
+    DARTFILES=$(find $DARTFIND_SRCPATH -type f -iname "*.dart")
+    log "Main source counts"
+    word_counts $DARTFILES
+    DARTFIND_TESTPATH=$DARTFIND_PATH/test
+    DARTFILES=$(find $DARTFIND_TESTPATH -type f -iname "*.dart")
+    log "Test source counts"
+    word_counts $DARTFILES
+}
+
 stats_fsharp () {
     echo
-    log "stats_fsharp"
-    FSSEARCH_SRCPATH=$FSHARP_PATH/FsSearch
-    FSFILES=$(find $FSSEARCH_SRCPATH -name "*.fs")
+    hdr "stats_fsharp"
+    FSFIND_SRCPATH=$FSFIND_PATH/FsFind
+    FSFILES=$(find $FSFIND_SRCPATH -type f -iname "*.fs")
     log "Main source counts"
+    word_counts $FSFILES
+    FSFIND_TESTPATH=$FSFIND_PATH/FsFindTests
+    FSFILES=$(find $FSFIND_TESTPATH -type f -iname "*.fs" | grep -v /obj/)
+    log "Test source counts"
     word_counts $FSFILES
 }
 
 stats_go () {
     echo
-    log "stats_go"
-    GOSEARCH_PATH=$GO_PATH/src/elocale.com/clarkcb/xsearch
-    GOSRCFILES=$(find $GOSEARCH_PATH -name "*.go" | grep -v "_test")
+    hdr "stats_go"
+    GOFILES=$(find $GOFIND_PATH -type f -iname "*.go" | grep -v "_test")
     log "Main source counts"
-    word_counts $GOSRCFILES
-    GOTESTFILES=$(find $GOSEARCH_PATH -name "*_test.go")
+    word_counts $GOFILES
+    GOFILES=$(find $GOFIND_PATH -type f -iname "*_test.go")
     log "Test source counts"
-    word_counts $GOTESTFILES
+    word_counts $GOFILES
 }
 
 stats_haskell () {
     echo
-    log "stats_haskell"
-    HSSEARCH_SRCPATH=$HASKELL_PATH/hssearch/src
-    # HSFILES=$(find $HSSEARCH_SRCPATH -name "*.hs" | grep -v "sandbox" | grep -v /dist/)
-    HSSRCFILES=$(find $HSSEARCH_SRCPATH -name "*.hs")
+    hdr "stats_haskell"
+    HSFIND_SRCPATH=$HSFIND_PATH/src
+    HSSRCFILES=$(find $HSFIND_SRCPATH -type f -iname "*.hs")
     log "Main source counts"
     word_counts $HSSRCFILES
-    HSSEARCH_TESTPATH=$HASKELL_PATH/hssearch/test
-    HSTESTFILES=$(find $HSSEARCH_TESTPATH -name "*.hs")
+    HSFIND_TESTPATH=$HSFIND_PATH/test
+    HSTESTFILES=$(find $HSFIND_TESTPATH -type f -iname "*.hs")
     log "Test source counts"
     word_counts $HSTESTFILES
 }
 
 stats_java () {
     echo
-    log "stats_java"
-    JAVASEARCH_SRCPATH=$JAVA_PATH/javasearch/src/main
-    JAVASRCFILES=$(find $JAVASEARCH_SRCPATH -name "*.java")
+    hdr "stats_java"
+    JAVAFIND_SRCPATH=$JAVAFIND_PATH/src/main
+    JAVASRCFILES=$(find $JAVAFIND_SRCPATH -type f -iname "*.java")
     log "Main source counts"
     word_counts $JAVASRCFILES
-    JAVASEARCH_TESTPATH=$JAVA_PATH/javasearch/src/test
-    JAVATESTFILES=$(find $JAVASEARCH_TESTPATH -name "*.java")
+    JAVAFIND_TESTPATH=$JAVAFIND_PATH/src/test
+    JAVATESTFILES=$(find $JAVAFIND_TESTPATH -type f -iname "*.java")
     log "Test source counts"
     word_counts $JAVATESTFILES
 }
 
 stats_javascript () {
     echo
-    log "stats_javascript"
-    JSSEARCH_PATH=$JAVASCRIPT_PATH/jssearch
-    SRC_PATH=$JSSEARCH_PATH/src
-    JSFILES=$(find $SRC_PATH -name "*.js")
+    hdr "stats_javascript"
+    JSFIND_SRCPATH=$JSFIND_PATH/src
+    JSFILES=$(find $JSFIND_SRCPATH -type f -iname "*.js")
     log "Main source counts"
     word_counts $JSFILES
-    TEST_PATH=$JSSEARCH_PATH/tests
-    JSTESTFILES=$(find $TEST_PATH -name "*.js")
+    JSFIND_TESTPATH=$JSFIND_PATH/tests
+    JSTESTFILES=$(find $JSFIND_TESTPATH -type f -iname "*.js")
     log "Test source counts"
     word_counts $JSTESTFILES
 }
 
+stats_kotlin () {
+    echo
+    hdr "stats_kotlin"
+    KTFIND_SRCPATH=$KTFIND_PATH/src/main
+    KTFILES=$(find $KTFIND_SRCPATH -type f -iname "*.kt")
+    log "Main source counts"
+    word_counts $KTFILES
+    KTFIND_TESTPATH=$KTFIND_PATH/src/test
+    KTTESTFILES=$(find $KTFIND_TESTPATH -type f -iname "*.kt")
+    log "Test source counts"
+    word_counts $KTTESTFILES
+}
+
+stats_objc () {
+    echo
+    hdr "stats_objc"
+    OBJCFIND_SRCPATH=$OBJCFIND_PATH/objcfind
+    OBJCFILES=$(find $OBJCFIND_SRCPATH -type f \( -iname \*.h -o -iname \*.m \))
+    log "Main source counts"
+    word_counts $OBJCFILES
+    OBJCFIND_TESTPATH=$OBJCFIND_PATH/objcfind_tests
+    OBJCTESTFILES=$(find $OBJCFIND_TESTPATH -type f -iname "*.m")
+    log "Test source counts"
+    word_counts $OBJCTESTFILES
+}
+
 stats_perl () {
     echo
-    log "stats_perl"
-    PLSEARCH_PATH=$PERL_PATH/plsearch
-    PLSRCFILES=$(find $PLSEARCH_PATH -name "*.p[lm]")
+    hdr "stats_perl"
+    PLFIND_SRCPATH=$PLFIND_PATH/lib
+    PLSRCFILES=$(find $PLFIND_SRCPATH -type f -iname "*.p[lm]")
     log "Main source counts"
     word_counts $PLSRCFILES
-    TEST_PATH=$PERL_PATH/tests
-    PLTESTFILES=$(find $TEST_PATH -name "*.p[lm]")
+    PLFIND_TESTPATH=$PLFIND_PATH/t
+    PLTESTFILES=$(find $PLFIND_TESTPATH -type f -iname "*.p[lm]")
     log "Test source counts"
     word_counts $PLTESTFILES
 }
 
 stats_php () {
     echo
-    log "stats_php"
-    PHPSEARCH_PATH=$PHP_PATH/phpsearch
-    PHPSRCFILES=$(find $PHPSEARCH_PATH -name "*.php")
+    hdr "stats_php"
+    PHPFIND_SRCPATH=$PHPFIND_PATH/src
+    PHPSRCFILES=$(find $PHPFIND_SRCPATH -type f -iname "*.php")
     log "Main source counts"
     word_counts $PHPSRCFILES
-    TEST_PATH=$PHP_PATH/tests
-    PHPTESTFILES=$(find $TEST_PATH -name "*.php")
+    PHPFIND_TESTPATH=$PHPFIND_PATH/tests
+    PHPTESTFILES=$(find $PHPFIND_TESTPATH -type f -iname "*.php")
     log "Test source counts"
     word_counts $PHPTESTFILES
 }
 
 stats_python () {
     echo
-    log "stats_python"
-    PYSEARCH_PATH=$PYTHON_PATH/pysearch
-    PYSRCFILES=$(find $PYSEARCH_PATH -name "*.py")
+    hdr "stats_python"
+    PYFIND_SRCPATH=$PYFIND_PATH/pyfind
+    PYSRCFILES=$(find $PYFIND_SRCPATH -type f -iname "*.py")
     log "Main source counts"
     word_counts $PYSRCFILES
-    TEST_PATH=$PYTHON_PATH/tests
-    PYTESTFILES=$(find $TEST_PATH -name "*.py")
+    PYFIND_TESTPATH=$PYFIND_PATH/tests
+    PYTESTFILES=$(find $PYFIND_TESTPATH -type f -iname "*.py")
     log "Test source counts"
     word_counts $PYTESTFILES
 }
 
 stats_ruby () {
     echo
-    log "stats_ruby"
-    RBSEARCH_PATH=$RUBY_PATH/rbsearch
-    RBSRCFILES=$(find $RBSEARCH_PATH -name "*.rb")
+    hdr "stats_ruby"
+    RBFIND_SRCPATH=$RBFIND_PATH/lib
+    RBSRCFILES=$(find $RBFIND_SRCPATH -type f -iname "*.rb")
     log "Main source counts"
     word_counts $RBSRCFILES
-    TEST_PATH=$RUBY_PATH/tests
-    RBTESTFILES=$(find $TEST_PATH -name "*.rb")
+    RBFIND_TESTPATH=$RBFIND_PATH/test
+    RBTESTFILES=$(find $RBFIND_TESTPATH -type f -iname "*.rb")
     log "Test source counts"
     word_counts $RBTESTFILES
 }
 
+stats_rust () {
+    echo
+    hdr "stats_rust"
+    RSFIND_SRCPATH=$RSFIND_PATH/src
+    RSSRCFILES=$(find $RSFIND_SRCPATH -type f -iname "*.rs")
+    log "Source counts (tests are embedded)"
+    word_counts $RSSRCFILES
+}
+
 stats_scala () {
     echo
-    log "stats_scala"
-    SCALASEARCH_PATH=$SCALA_PATH/scalasearch
-    SCALASEARCH_SRCPATH=$SCALASEARCH_PATH/src/main
-    SCALASRCFILES=$(find $SCALASEARCH_SRCPATH -name "*.scala")
+    hdr "stats_scala"
+    SCALAFIND_SRCPATH=$SCALAFIND_PATH/src/main
+    SCALASRCFILES=$(find $SCALAFIND_SRCPATH -type f -iname "*.scala")
     log "Main source counts"
     word_counts $SCALASRCFILES
-    SCALASEARCH_TESTPATH=$SCALASEARCH_PATH/src/test
-    SCALATESTFILES=$(find $SCALASEARCH_TESTPATH -name "*.scala")
+    SCALAFIND_TESTPATH=$SCALAFIND_PATH/src/test
+    SCALATESTFILES=$(find $SCALAFIND_TESTPATH -type f -iname "*.scala")
     log "Test source counts"
     word_counts $SCALATESTFILES
 }
 
 stats_swift () {
     echo
-    log "stats_swift"
-    SWIFTSEARCH_SRCPATH=$SWIFT_PATH/swiftsearch/swiftsearch
-    SWIFTSRCFILES=$(find $SWIFTSEARCH_SRCPATH -name "*.swift")
+    hdr "stats_swift"
+    SWIFTFIND_SRCPATH=$SWIFTFIND_PATH/Sources
+    SWIFTSRCFILES=$(find $SWIFTFIND_SRCPATH -type f -iname "*.swift")
     log "Main source counts"
     word_counts $SWIFTSRCFILES
-    SWIFTSEARCH_TESTPATH=$SWIFT_PATH/swiftsearch/swiftsearchTests
-    SWIFTTESTFILES=$(find $SWIFTSEARCH_TESTPATH -name "*.swift")
+    SWIFTFIND_TESTPATH=$SWIFTFIND_PATH/Tests
+    SWIFTTESTFILES=$(find $SWIFTFIND_TESTPATH -type f -iname "*.swift")
     log "Test source counts"
     word_counts $SWIFTTESTFILES
 }
 
 stats_typescript () {
     echo
-    log "stats_typescript"
-    TSSEARCH_PATH=$TYPESCRIPT_PATH/tssearch
-    SRC_PATH=$TSSEARCH_PATH/src
-    TSFILES=$(find $SRC_PATH -name "*.ts")
+    hdr "stats_typescript"
+    TSFIND_SRCPATH=$TSFIND_PATH/src
+    TSFILES=$(find $TSFIND_SRCPATH -type f -iname "*.ts")
     log "Main source counts"
     word_counts $TSFILES
-    TEST_PATH=$TSSEARCH_PATH/tests
-    TSTESTFILES=$(find $TEST_PATH -name "*.ts")
+    TSFIND_TESTPATH=$TSFIND_PATH/tests
+    TSTESTFILES=$(find $TSFIND_TESTPATH -type f -iname "*.ts")
     log "Test source counts"
     word_counts $TSTESTFILES
 }
 
 stats_all () {
-    log "stats_all"
+    hdr "stats_all"
     
     stats_clojure
 
+    stats_cpp
+
     stats_csharp
+
+    stats_dart
 
     stats_fsharp
 
@@ -239,6 +309,10 @@ stats_all () {
 
     stats_javascript
 
+    stats_kotlin
+
+    stats_objc
+
     stats_perl
 
     stats_php
@@ -246,6 +320,8 @@ stats_all () {
     stats_python
 
     stats_ruby
+
+    stats_rust
 
     stats_scala
 
@@ -259,41 +335,72 @@ stats_all () {
 # Build Steps
 ########################################
 
-if [ $# == 0 ]; then
+if [ $# == 0 ]
+then
     ARG="all"
 else
     ARG=$1
 fi
 
-if [ "$ARG" == "all" ]; then
+if [ "$ARG" == "all" ]
+then
     stats_all
-elif [ "$ARG" == "clojure" ]; then
+elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
+then
     stats_clojure
-elif [ "$ARG" == "csharp" ]; then
+elif [ "$ARG" == "cpp" ]
+then
+    stats_cpp
+elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
+then
     stats_csharp
-elif [ "$ARG" == "fsharp" ]; then
+elif [ "$ARG" == "dart" ]
+then
+    stats_dart
+elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
+then
     stats_fsharp
-elif [ "$ARG" == "go" ]; then
+elif [ "$ARG" == "go" ] || [ "$ARG" == "go" ]
+then
     stats_go
-elif [ "$ARG" == "haskell" ]; then
+elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
+then
     stats_haskell
-elif [ "$ARG" == "java" ]; then
+elif [ "$ARG" == "java" ]
+then
     stats_java
-elif [ "$ARG" == "javascript" ]; then
+elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
+then
     stats_javascript
-elif [ "$ARG" == "perl" ]; then
+elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
+then
+    stats_kotlin
+elif [ "$ARG" == "objc" ]
+then
+    stats_objc
+elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
+then
     stats_perl
-elif [ "$ARG" == "php" ]; then
+elif [ "$ARG" == "php" ] || [ "$ARG" == "php" ]
+then
     stats_php
-elif [ "$ARG" == "python" ]; then
+elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
+then
     stats_python
-elif [ "$ARG" == "ruby" ]; then
+elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
+then
     stats_ruby
-elif [ "$ARG" == "scala" ]; then
+elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
+then
+    stats_rust
+elif [ "$ARG" == "scala" ]
+then
     stats_scala
-elif [ "$ARG" == "swift" ]; then
+elif [ "$ARG" == "swift" ]
+then
     stats_swift
-elif [ "$ARG" == "typescript" ]; then
+elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
+then
     stats_typescript
 else
     echo "ERROR: unknown stats argument: $ARG"

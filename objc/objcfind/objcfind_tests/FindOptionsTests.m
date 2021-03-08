@@ -26,41 +26,34 @@
 
 - (void)testSettingsFromMinimalArgs {
     FindOptions *options = [[FindOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-s",@"Finder",@".",nil];
+    NSArray *args =[NSArray arrayWithObjects:@"objfind",@".",nil];
     NSError *error = nil;
     FindSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
     XCTAssert([settings excludeHidden]);
-    XCTAssert(![settings firstMatch]);
+    XCTAssert(![settings includeArchives]);
     XCTAssert(![settings listDirs]);
-    XCTAssert(![settings listFiles]);
-    XCTAssert(![settings listLines]);
-    XCTAssert(![settings multiLineFind]);
-    XCTAssert([settings printResults]);
+    XCTAssert([settings listFiles]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
-    XCTAssert(![settings findArchives]);
-    XCTAssert(![settings uniqueLines]);
     XCTAssert(![settings verbose]);
     
-    XCTAssert([[settings findPatterns] count] == 1);
-    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Finder"]);
-    XCTAssert([[settings startPath] isEqual:@"."]);
+    XCTAssert([[settings paths] count] == 1);
+    XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"."]);
 }
 
 - (void)testSettingsFromValidArgs {
     FindOptions *options = [[FindOptions alloc] init];
-    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-x",@"java,scala",@"-s",@"Find",@".",nil];
+    NSArray *args =[NSArray arrayWithObjects:@"objfind",@"-x",@"java,scala",@".",nil];
     NSError *error = nil;
     FindSettings *settings = [options settingsFromArgs:args error:&error];
     
     XCTAssert([[settings inExtensions] count] == 2);
     XCTAssert([[[settings inExtensions] objectAtIndex:0] isEqual:@"java"]);
     XCTAssert([[[settings inExtensions] objectAtIndex:1] isEqual:@"scala"]);
-    XCTAssert([[settings findPatterns] count] == 1);
-    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Find"]);
-    XCTAssert([[settings startPath] isEqual:@"."]);
+    XCTAssert([[settings paths] count] == 1);
+    XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"."]);
 }
 
 - (void)testSettingsFromJson {
@@ -68,15 +61,11 @@
 
     NSString *startPath = @"~/src/xfind";
     NSString *json = [NSString stringWithFormat:@"{\n"
-                      "\"startpath\": \"%@\",\n"
+                      "\"path\": \"%@\",\n"
                       "\"in-ext\": [\"js\", \"ts\"],\n"
                       "\"out-dirpattern\": \"node_module\",\n"
                       "\"out-filepattern\": [\"temp\"],\n"
-                      "\"findpattern\": \"Finder\",\n"
-                      "\"linesbefore\": 2,\n"
-                      "\"linesafter\": 2,\n"
                       "\"debug\": true,\n"
-                      "\"allmatches\": false,\n"
                       "\"includehidden\": false\n"
                       "}", startPath];
 
@@ -92,15 +81,10 @@
     XCTAssert([[[[settings outDirPatterns] objectAtIndex:0] pattern] isEqual:@"node_module"]);
     XCTAssert([[settings outFilePatterns] count] == 1);
     XCTAssert([[[[settings outFilePatterns] objectAtIndex:0] pattern] isEqual:@"temp"]);
-    XCTAssert([[settings findPatterns] count] == 1);
-    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Finder"]);
-    XCTAssert([settings linesBefore] == 2);
-    XCTAssert([settings linesAfter] == 2);
+    XCTAssert([[settings paths] count] == 1);
+    XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"~/src/xfind"]);
     XCTAssert([settings debug]);
-    XCTAssert([settings firstMatch]);
     XCTAssert([settings excludeHidden]);
-    //NSString *sp = [settings startPath];
-    //XCTAssert([[settings startPath] isEqual:startPath]);
 }
 
 @end

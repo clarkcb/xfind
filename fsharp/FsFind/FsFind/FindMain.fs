@@ -13,19 +13,13 @@ module Main =
         if errs.Length > 0 then
             HandleError errs.Head
 
-        finder.Find()
-
-        if settings.PrintResults then
-            finder.PrintResults
+        let findFiles = finder.Find()
 
         if settings.ListDirs then
-            finder.PrintMatchingDirs
+            finder.PrintMatchingDirs findFiles
 
         if settings.ListFiles then
-            finder.PrintMatchingFiles
-
-        if settings.ListLines then
-            finder.PrintMatchingLines
+            finder.PrintMatchingFiles findFiles
 
 
     [<EntryPoint>]

@@ -28,7 +28,6 @@ namespace CsFind
 		private const string Archive = "archive";
 		private const string Binary = "binary";
 		private const string Code = "code";
-		private const string Findable = "findable";
 		private const string Text = "text";
 		private const string Xml = "xml";
 
@@ -55,9 +54,6 @@ namespace CsFind
 			}
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-			_fileTypesDictionary[Findable] = new HashSet<string>(_fileTypesDictionary[Text]);
-			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Binary]);
-			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Archive]);
 		}
 
 		private void PopulateFileTypesFromXml()
@@ -72,9 +68,6 @@ namespace CsFind
 			}
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
 			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-			_fileTypesDictionary[Findable] = new HashSet<string>(_fileTypesDictionary[Text]);
-			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Binary]);
-			_fileTypesDictionary[Findable].UnionWith(_fileTypesDictionary[Archive]);
 		}
 
 		public static FileType FromName(string name)
@@ -116,11 +109,6 @@ namespace CsFind
 			return _fileTypesDictionary[Code].Contains(f.Extension.ToLowerInvariant());
 		}
 
-		public bool IsFindableFile(FileInfo f)
-		{
-			return _fileTypesDictionary[Findable].Contains(f.Extension.ToLowerInvariant());
-		}
-
 		public bool IsTextFile(FileInfo f)
 		{
 			return _fileTypesDictionary[Text].Contains(f.Extension.ToLowerInvariant());
@@ -128,7 +116,7 @@ namespace CsFind
 
 		public bool IsUnknownFile(FileInfo f)
 		{
-			return !IsFindableFile(f);
+			return GetFileType(f) == FileType.Unknown;
 		}
 
 		public bool IsXmlFile(FileInfo f)

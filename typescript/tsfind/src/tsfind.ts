@@ -4,7 +4,7 @@
  * file find utility written in typescript
  */
 
-"use strict";
+'use strict';
 
 import * as common from './common';
 import {FindOptions} from './findoptions';
@@ -21,7 +21,7 @@ function findMain() {
     const findOptions = new FindOptions();
     const args = process.argv.slice(2);
 
-    findOptions.settingsFromArgs(args, (err: Error | void, settings: FindSettings) => {
+    findOptions.settingsFromArgs(args, async (err: Error | void, settings: FindSettings) => {
         if (err) {
             handleError(err, findOptions);
         }
@@ -41,20 +41,13 @@ function findMain() {
 
         try {
             const finder: Finder = new Finder(settings);
-            finder.find();
-
-            if (settings.printResults) {
-                finder.printFindResults();
-            }
+            const findfiles = await finder.find();
 
             if (settings.listDirs) {
-                finder.printMatchingDirs();
+                finder.printMatchingDirs(findfiles);
             }
             if (settings.listFiles) {
-                finder.printMatchingFiles();
-            }
-            if (settings.listLines) {
-                finder.printMatchingLines();
+                finder.printMatchingFiles(findfiles);
             }
 
         } catch (err2) {

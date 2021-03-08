@@ -9,10 +9,10 @@ import {FindFile} from '../src/findfile';
 
 describe('testing findfile', () => {
     it('testFindFileAbsPath', () => {
-        const pathname = '/Users/cary/src/xfind/javascript/jsfind/src';
+        const pathname = `${process.env.HOME}/src/xfind/javascript/jsfind/src`;
         const filename = 'findfile.js';
         const findfile = new FindFile(pathname, filename, FileType.Code);
-        const expected = '/Users/cary/src/xfind/javascript/jsfind/src/findfile.js';
+        const expected = `${process.env.HOME}/src/xfind/javascript/jsfind/src/findfile.js`;
         expect(findfile.relativePath()).toEqual(expected);
     });
 

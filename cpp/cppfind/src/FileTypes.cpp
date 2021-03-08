@@ -86,6 +86,30 @@ namespace cppfind {
         return FileType::UNKNOWN;
     }
 
+    std::string FileTypes::to_name(const FileType filetype) {
+        switch (filetype)
+        {
+        case FileType::ARCHIVE:
+            return "ARCHIVE";
+            break;
+        case FileType::CODE:
+            return "CODE";
+            break;
+        case FileType::BINARY:
+            return "BINARY";
+            break;
+        case FileType::TEXT:
+            return "TEXT";
+            break;
+        case FileType::XML:
+            return "XML";
+            break;
+        default:
+            return "UNKNOWN";
+            break;
+        }
+    }
+
     FileType FileTypes::get_filetype(const std::string& filepath) {
         if (is_code_file(filepath)) {
             return FileType::CODE;
@@ -123,15 +147,6 @@ namespace cppfind {
     bool FileTypes::is_code_file(const std::string& filepath) {
         std::string ext = FileUtil::get_extension(filepath);
         return found_ext(&m_code_extensions, ext);
-    }
-
-    bool FileTypes::is_findable_file(const std::string& filepath) {
-        std::string ext = FileUtil::get_extension(filepath);
-        return found_ext(&m_text_extensions, ext)
-               || found_ext(&m_code_extensions, ext)
-               || found_ext(&m_xml_extensions, ext)
-               || found_ext(&m_binary_extensions, ext)
-               || found_ext(&m_archive_extensions, ext);
     }
 
     bool FileTypes::is_text_file(const std::string& filepath) {

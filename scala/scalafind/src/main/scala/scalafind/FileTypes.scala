@@ -23,7 +23,6 @@ object FileTypes {
   private val archive = "archive"
   private val binary = "binary"
   private val code = "code"
-  private val findable = "findable"
   private val text = "text"
   private val unknown = "unknown"
   private val xml = "xml"
@@ -54,8 +53,6 @@ object FileTypes {
 
       _fileTypeMap(text) = _fileTypeMap(text) ++ _fileTypeMap(code) ++
         _fileTypeMap(xml)
-      _fileTypeMap(findable) = _fileTypeMap(text) ++ _fileTypeMap(binary) ++
-        _fileTypeMap(archive)
       Map.empty[String, Set[String]] ++ _fileTypeMap
     } else {
       Map.empty[String, Set[String]] ++ _fileTypeMap
@@ -64,16 +61,16 @@ object FileTypes {
 
   def fromName(name: String): FileType.Value = {
     val lname = name.toLowerCase
-    if (lname == text) {
-      FileType.Text
+    if (lname == code) {
+      FileType.Code
     } else if (lname == binary) {
       FileType.Binary
     } else if (lname == archive) {
       FileType.Archive
-    } else if (lname == code) {
-      FileType.Code
     } else if (lname == xml) {
       FileType.Xml
+    } else if (lname == text) {
+      FileType.Text
     } else {
       FileType.Unknown
     }
@@ -107,17 +104,12 @@ object FileTypes {
     fileTypeMap(code).contains(FileUtil.getExtension(fileName))
   }
 
-  def isFindableFile(fileName: String): Boolean = {
-    fileTypeMap(findable).contains(FileUtil.getExtension(fileName))
-  }
-
   def isTextFile(fileName: String): Boolean = {
     fileTypeMap(text).contains(FileUtil.getExtension(fileName))
   }
 
   def isUnknownFile(fileName: String): Boolean = {
-    fileTypeMap(unknown).contains(FileUtil.getExtension(fileName)) ||
-      !fileTypeMap(findable).contains(FileUtil.getExtension(fileName))
+    getFileType(fileName) == FileType.Unknown
   }
 
   def isXmlFile(fileName: String): Boolean = {

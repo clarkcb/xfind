@@ -23,7 +23,7 @@ class FileTypesTests: XCTestCase {
     }
 
     func testArchiveFiles() {
-        let exts = ["7z", "arj", "bz2", "cpio", "ear", "gz", "hqx", "jar",
+        let exts = ["7z", "arj", "bin", "bz2", "cpio", "ear", "gz", "hqx", "jar",
                     "pax", "rar", "sit", "sitx", "tar", "tgz", "war", "zip", "zipx",
                     "Z"]
         for ext in exts {
@@ -37,12 +37,11 @@ class FileTypesTests: XCTestCase {
     }
 
     func testBinaryFiles() {
-        let exts = ["a", "ai", "beam", "bin", "chm", "class", "com", "dat",
-                    "dbmdl", "dcr", "dir", "dll", "dms", "doc", "dot", "dxr", "dylib",
-                    "epub", "exe", "fm", "hi", "hlp", "indd", "lib", "lnk", "mdb", "mo",
-                    "mobi", "mpp", "nib", "o", "obj", "odm", "odt", "ott", "pages",
-                    "pdb", "ppt", "psd", "pub", "pyc", "pyo", "qxd", "rpt", "so", "swf",
-                    "sys", "vsd", "wpd", "wps", "wpt", "wri", "xls", "xlt"]
+        let exts = ["a", "ai", "beam", "chm", "class", "com", "dat", "dbmdl", "dcr", "dir", "dll",
+                    "dms", "doc", "dot", "dxr", "dylib", "epub", "exe", "fm", "hi", "hlp", "indd",
+                    "lib", "lnk", "mdb", "mo", "mobi", "mpp", "nib", "o", "obj", "odm", "odt",
+                    "ott", "pages", "pdb", "ppt", "psd", "pub", "pyc", "pyo", "qxd", "rpt", "so",
+                    "swf", "sys", "vsd", "wpd", "wps", "wpt", "wri", "xls", "xlt"]
         for ext in exts {
             let fileName = "binfile.\(ext)"
             XCTAssert(!fileTypes.isArchiveFile(fileName), "isArchiveFile(\(fileName)) == false")
@@ -63,11 +62,6 @@ class FileTypesTests: XCTestCase {
         let fileName = "text.txt"
         XCTAssert(fileTypes.isTextFile(fileName), "isTextFile(\(fileName)) == true")
         XCTAssert(fileTypes.getFileType(fileName) == FileType.text, "\(fileName) is text file")
-    }
-
-    func testFindableFile() {
-        let fileName = "archive.zip"
-        XCTAssert(fileTypes.isFindableFile(fileName), "isFindableFile(\(fileName))")
     }
 
     func testXmlFile() {

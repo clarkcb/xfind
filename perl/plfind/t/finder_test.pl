@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 89;
+use Test::Simple tests => 73;
 
 use plfind::config;
 use plfind::FileUtil;
@@ -27,8 +27,7 @@ use plfind::Finder;
 
 sub get_settings {
     my $settings = new plfind::FindSettings();
-    $settings->{startpath} = '.';
-    push(@{$settings->{findpatterns}}, "Finder");
+    $settings->{paths} = ['.'];
     return $settings;
 }
 
@@ -335,29 +334,29 @@ sub test_filter_file_hidden_includehidden {
     ok($finder->filter_file($file), "$file passes filter_file when hidden and excludehidden=0");
 }
 
-sub test_filter_file_archive_no_findarchives {
+sub test_filter_file_archive_no_includearchives {
     my $settings = get_settings();
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
     #print "finder->is_archive_find_file(archive.zip): " . $finder->is_archive_find_file('archive.zip') . "\n";
-    ok(!$finder->filter_file($file), "$file does not pass filter_file when findarchives=0");
+    ok(!$finder->filter_file($file), "$file does not pass filter_file when includearchives=0");
 }
 
-sub test_filter_file_archive_findarchives {
+sub test_filter_file_archive_includearchives {
     my $settings = get_settings();
-    $settings->{findarchives} = 1;
+    $settings->{includearchives} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
     #print "finder->is_archive_find_file(archive.zip): " . $finder->is_archive_find_file('archive.zip') . "\n";
-    ok($finder->filter_file($file), "$file passes filter_file when findarchives=1");
+    ok($finder->filter_file($file), "$file passes filter_file when includearchives=1");
 }
 
 sub test_filter_file_archive_archivesonly {
     my $settings = get_settings();
     $settings->{archivesonly} = 1;
-    $settings->{findarchives} = 1;
+    $settings->{includearchives} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
@@ -368,56 +367,12 @@ sub test_filter_file_archive_archivesonly {
 sub test_filter_file_nonarchive_archivesonly {
     my $settings = get_settings();
     $settings->{archivesonly} = 1;
-    $settings->{findarchives} = 1;
+    $settings->{includearchives} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
     #print "finder->is_archive_find_file(archive.zip): " . $finder->is_archive_find_file('archive.zip') . "\n";
     ok(!$finder->filter_file($file), "$file does not pass filter_file when archivesonly=1");
-}
-
-################################################################################
-# find_lines tests
-################################################################################
-sub test_find_lines {
-    my $settings = get_settings();
-    my ($finder, $errs) = new plfind::Finder($settings);
-    ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $testfile = get_test_file();
-    my $contents = plfind::FileUtil::get_file_contents($testfile);
-    my $results = $finder->find_multiline_string($contents);
-    ok(scalar @{$results} == 2, 'Two find results');
-    my $firstResult = $results->[0];
-    ok($firstResult->{linenum} == 29, "First result on line 23");
-    ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
-    ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
-
-    my $secondResult = $results->[1];
-    ok($secondResult->{linenum} == 35, "Second result on line 29");
-    ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
-    ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
-}
-
-################################################################################
-# find_multiline_string tests
-################################################################################
-sub test_find_multiline_string {
-    my $settings = get_settings();
-    my ($finder, $errs) = new plfind::Finder($settings);
-    ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $testfile = get_test_file();
-    my $lines = plfind::FileUtil::get_file_lines($testfile);
-    my $results = $finder->find_lines($lines);
-    ok(scalar @{$results} == 2, 'Two find results');
-    my $firstResult = $results->[0];
-    ok($firstResult->{linenum} == 29, "First result on line 23");
-    ok($firstResult->{match_start_index} == 3, "First result match_start_index == 3");
-    ok($firstResult->{match_end_index} == 11, "First result match_start_index == 11");
-
-    my $secondResult = $results->[1];
-    ok($secondResult->{linenum} == 35, "Second result on line 29");
-    ok($secondResult->{match_start_index} == 24, "Second result match_start_index == 24");
-    ok($secondResult->{match_end_index} == 32, "Second result match_start_index == 32");
 }
 
 ################################################################################
@@ -466,16 +421,10 @@ sub main {
     test_filter_file_not_is_find_file();                # 2 tests
     test_filter_file_is_hidden_file();                    # 2 tests
     test_filter_file_hidden_includehidden();              # 2 tests
-    test_filter_file_archive_no_findarchives();         # 2 tests
-    test_filter_file_archive_findarchives();            # 2 tests
+    test_filter_file_archive_no_includearchives();         # 2 tests
+    test_filter_file_archive_includearchives();            # 2 tests
     test_filter_file_archive_archivesonly();              # 2 tests
     test_filter_file_nonarchive_archivesonly();           # 2 tests
-
-    # find_lines tests
-    test_find_lines();                                  # 8 tests
-
-    # find_multiline_string tests
-    test_find_multiline_string();                       # 8 tests
 }
 
 main();

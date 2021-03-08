@@ -22,10 +22,6 @@ use plfind::FindOption;
 use plfind::FindSettings;
 
 my $arg_action_hash = {
-    'encoding' => sub {
-        my ($s, $settings) = @_;
-        $settings->{textfileencoding} = $s;
-    },
     'in-archiveext' => sub {
         my ($s, $settings) = @_;
         $settings->add_exts($s, $settings->{in_archiveextensions});
@@ -49,34 +45,6 @@ my $arg_action_hash = {
     'in-filetype' => sub {
         my ($s, $settings) = @_;
         $settings->add_filetypes($s, $settings->{in_filetypes});
-    },
-    'in-linesafterpattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_linesafterpatterns});
-    },
-    'in-linesbeforepattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_linesbeforepatterns});
-    },
-    'linesafter' => sub {
-        my ($s, $settings) = @_;
-        $settings->{linesafter} = int($s);
-    },
-    'linesaftertopattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{linesaftertopatterns});
-    },
-    'linesafteruntilpattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{linesafteruntilpatterns});
-    },
-    'linesbefore' => sub {
-        my ($s, $settings) = @_;
-        $settings->{linesbefore} = int($s);
-    },
-    'maxlinelength' => sub {
-        my ($s, $settings) = @_;
-        $settings->{maxlinelength} = int($s);
     },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;
@@ -102,33 +70,17 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_filetypes($s, $settings->{out_filetypes});
     },
-    'out-linesafterpattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_linesafterpatterns});
-    },
-    'out-linesbeforepattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_linesbeforepatterns});
-    },
-    'findpattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{findpatterns});
-    },
     'settings-file' => sub {
         my ($s, $settings) = @_;
         settings_from_file($s, $settings);
     },
-    'startpath' => sub {
+    'path' => sub {
         my ($s, $settings) = @_;
-        $settings->{startpath} = $s;
+        push(@{$settings->{paths}}, $s);
     }
 };
 
 my $bool_flag_action_hash = {
-    'allmatches' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('firstmatch', !$b);
-    },
     'archivesonly' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('archivesonly', $b);
@@ -141,17 +93,21 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('debug', $b);
     },
+    'excludearchives' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('includearchives', !$b);
+    },
     'excludehidden' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('excludehidden', $b);
     },
-    'firstmatch' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('firstmatch', $b);
-    },
     'help' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('printusage', $b);
+    },
+    'includearchives' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('includearchives', $b);
     },
     'includehidden' => sub {
         my ($b, $settings) = @_;
@@ -165,45 +121,17 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('listfiles', $b);
     },
-    'listlines' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('listlines', $b);
-    },
-    'multilineoption-REMOVE' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('multilineoption-REMOVE', $b);
-    },
     'nocolorize' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('colorize', !$b);
-    },
-    'noprintmatches' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('printresults', !$b);
     },
     'norecursive' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', !$b);
     },
-    'nofindarchives' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('findarchives', !$b);
-    },
-    'printmatches' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('printresults', $b);
-    },
     'recursive' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', $b);
-    },
-    'findarchives' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('findarchives', $b);
-    },
-    'uniquelines' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('uniquelines', $b);
     },
     'verbose' => sub {
         my ($b, $settings) = @_;
@@ -284,7 +212,6 @@ sub settings_from_file {
 # private function
 sub __from_json {
     my ($json, $settings) = @_;
-    #print "\$json: '$json'\n";
     my $errs = [];
     my $json_hash = decode_json $json;
     my @opt_names = keys %{$json_hash};
@@ -305,13 +232,14 @@ sub __from_json {
 # public method (made available for unit testing)
 sub settings_from_json {
     my ($self, $json, $settings) = @_;
-    #print "\$json: '$json'\n";
     __from_json($json, $settings);
 }
 
 sub settings_from_args {
     my ($self, $args) = @_;
     my $settings = new plfind::FindSettings();
+    # default listfiles to true since running as cli
+    $settings->set_property('listfiles', 1);
     my @errs;
     while (scalar @{$args}) {
         my $arg = shift @{$args};
@@ -334,7 +262,7 @@ sub settings_from_args {
                 push(@errs, "Invalid option: $arg");
             }
         } else {
-            $settings->{startpath} = $arg;
+            push(@{$settings->{paths}}, $arg);
         }
     }
     return ($settings, \@errs);
@@ -347,7 +275,7 @@ sub usage {
 
 sub get_usage_string {
     my $self = shift;
-    my $usage = "Usage:\n plfind.pl [options] -s <findpattern> <startpath>\n\nOptions:\n";
+    my $usage = "Usage:\n plfind [options] <path> [<path> ...]\n\nOptions:\n";
     my $longest = 0;
     my $options_with_sortkey = {};
     my @opt_strs_with_descs;

@@ -24,6 +24,15 @@
 }
 
 /***************************************************************************
+ * contractPath tests
+ **************************************************************************/
+- (void)testContractPathWithHome {
+    NSString *fullPath = [FileUtil joinPath:NSHomeDirectory() childPath:@"filename.txt"];
+    NSString *expected = @"~/filename.txt";
+    XCTAssert([[FileUtil contractPath:fullPath] isEqualToString:expected]);
+}
+
+/***************************************************************************
  * expandPath tests
  **************************************************************************/
 - (void)testExpandPathHasTilde {

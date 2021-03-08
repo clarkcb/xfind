@@ -6,6 +6,7 @@ import scala.io.{Codec, Source}
 object FileUtil {
   val CURRENT_PATH = "."
   val PARENT_PATH = ".."
+  val DEFAULT_ENCODING = "UTF-8"
 
   def getExtension(f: FindFile): String = {
     getExtension(f.file.getName)
@@ -20,7 +21,7 @@ object FileUtil {
     }
   }
 
-  def getFileContents(f: File, enc: String=DefaultSettings.textFileEncoding): String = {
+  def getFileContents(f: File, enc: String=DEFAULT_ENCODING): String = {
     val bufferedSource = Source.fromFile(f, enc)
     val contents = bufferedSource.mkString
     bufferedSource.close

@@ -9,7 +9,6 @@ void main() {
     expect(await fileTypes.isArchiveFile(fileName), true);
     expect(await fileTypes.isBinaryFile(fileName), false);
     expect(await fileTypes.isCodeFile(fileName), false);
-    expect(await fileTypes.isFindableFile(fileName), true);
     expect(await fileTypes.isTextFile(fileName), false);
     expect(await fileTypes.isXmlFile(fileName), false);
     expect(await fileTypes.getFileType(fileName), FileType.archive);
@@ -20,7 +19,6 @@ void main() {
     expect(await fileTypes.isArchiveFile(fileName), false);
     expect(await fileTypes.isBinaryFile(fileName), true);
     expect(await fileTypes.isCodeFile(fileName), false);
-    expect(await fileTypes.isFindableFile(fileName), true);
     expect(await fileTypes.isTextFile(fileName), false);
     expect(await fileTypes.isXmlFile(fileName), false);
     expect(await fileTypes.getFileType(fileName), FileType.binary);
@@ -31,7 +29,6 @@ void main() {
     expect(await fileTypes.isArchiveFile(fileName), false);
     expect(await fileTypes.isBinaryFile(fileName), false);
     expect(await fileTypes.isCodeFile(fileName), true);
-    expect(await fileTypes.isFindableFile(fileName), true);
     expect(await fileTypes.isTextFile(fileName), true);
     expect(await fileTypes.isXmlFile(fileName), false);
     expect(await fileTypes.getFileType(fileName), FileType.code);
@@ -42,7 +39,6 @@ void main() {
     expect(await fileTypes.isArchiveFile(fileName), false);
     expect(await fileTypes.isBinaryFile(fileName), false);
     expect(await fileTypes.isCodeFile(fileName), false);
-    expect(await fileTypes.isFindableFile(fileName), true);
     expect(await fileTypes.isTextFile(fileName), true);
     expect(await fileTypes.isXmlFile(fileName), false);
     expect(await fileTypes.getFileType(fileName), FileType.text);
@@ -53,7 +49,6 @@ void main() {
     expect(await fileTypes.isArchiveFile(fileName), false);
     expect(await fileTypes.isBinaryFile(fileName), false);
     expect(await fileTypes.isCodeFile(fileName), false);
-    expect(await fileTypes.isFindableFile(fileName), true);
     expect(await fileTypes.isTextFile(fileName), true);
     expect(await fileTypes.isXmlFile(fileName), true);
     expect(await fileTypes.getFileType(fileName), FileType.xml);
@@ -64,7 +59,6 @@ void main() {
     expect(await fileTypes.isArchiveFile(fileName), false);
     expect(await fileTypes.isBinaryFile(fileName), false);
     expect(await fileTypes.isCodeFile(fileName), false);
-    expect(await fileTypes.isFindableFile(fileName), false);
     expect(await fileTypes.isTextFile(fileName), false);
     expect(await fileTypes.isXmlFile(fileName), false);
     expect(await fileTypes.getFileType(fileName), FileType.unknown);

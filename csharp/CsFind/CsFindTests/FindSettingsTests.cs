@@ -15,20 +15,12 @@ namespace CsFindTests
 			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
-			Assert.IsFalse(settings.FirstMatch);
-			Assert.AreEqual(settings.LinesAfter, 0);
-			Assert.AreEqual(settings.LinesBefore, 0);
+			Assert.IsFalse(settings.IncludeArchives);
 			Assert.IsFalse(settings.ListDirs);
 			Assert.IsFalse(settings.ListFiles);
-			Assert.IsFalse(settings.ListLines);
-			Assert.AreEqual(settings.MaxLineLength, 150);
-			Assert.IsFalse(settings.MultiLineFind);
-			Assert.IsFalse(settings.PrintResults);
 			Assert.IsFalse(settings.PrintUsage);
 			Assert.IsFalse(settings.PrintVersion);
 			Assert.IsTrue(settings.Recursive);
-			Assert.IsFalse(settings.FindArchives);
-			Assert.IsFalse(settings.UniqueLines);
 			Assert.IsFalse(settings.Verbose);
 		}
 
@@ -49,17 +41,17 @@ namespace CsFindTests
 		public void FindSettings_AddPatterns_HasPatterns()
 		{
 			var settings = new FindSettings();
-			settings.AddFindPattern("Find");
-			Assert.AreEqual(settings.FindPatterns.Count, 1);
-			Assert.IsTrue(settings.FindPatterns.First().ToString() == "Find");
+			settings.AddInFilePattern("Find");
+			Assert.AreEqual(settings.InFilePatterns.Count, 1);
+			Assert.IsTrue(settings.InFilePatterns.First().ToString() == "Find");
 		}
 
 		[Test]
-		public void FindSettings_SetArchivesOnly_HasFindArchives()
+		public void FindSettings_SetArchivesOnly_HasIncludeArchives()
 		{
 			var settings = new FindSettings {ArchivesOnly = true};
 			Assert.IsTrue(settings.ArchivesOnly);
-			Assert.IsTrue(settings.FindArchives);
+			Assert.IsTrue(settings.IncludeArchives);
 		}
 
 		[Test]

@@ -8,13 +8,8 @@ import scala.io.Source
 
 class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
-  val testFile1 = new File(getClass.getResource("/testFile1.txt").toURI)
-  var lines1: Iterator[String] = Iterator.empty
-  var contents1 = ""
-
   def getFindSettings: FindSettings = {
-    val startPath = System.getProperty("user.home") + "/src/xfind/scala/scalafind/src/test/resources"
-    FindSettings(startPath = Some(startPath), findPatterns = Set("\\bFinder\\b".r))
+    FindSettings(paths = Set("."))
   }
 
   def getFileLines(file: File): Iterator[String] = {
@@ -22,15 +17,6 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
     val lines = source.getLines()
     source.close()
     lines
-  }
-
-  override def beforeEach() {
-    contents1 = FileUtil.getFileContents(testFile1)
-    lines1 = getFileLines(testFile1)
-  }
-
-  override def beforeAll() {
-    beforeEach()
   }
 
   /*************************************************************
@@ -158,7 +144,7 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
   }
 
   /*************************************************************
-   * IsArchiveFindFile tests
+   * isArchiveFindFile tests
    *************************************************************/
   test("testIsArchiveFindFile_NoExtensionsNoPatterns_True") {
     val settings = getFindSettings
@@ -224,172 +210,85 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
   }
 
   /*************************************************************
-   * FilterFile tests
+   * filterToFindFile tests
    *************************************************************/
-  test("testFilterFile_IsHidden_False") {
+  test("testFilterToFindFile_IsHidden_None") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     val file = new File(".gitignore")
-    assert(!finder.filterFile(file))
+    assert(finder.filterToFindFile(file).isEmpty)
   }
 
-  test("testFilterFile_IsHiddenIncludeHidden_True") {
+  test("testFilterToFindFile_IsHiddenIncludeHidden_Some") {
     val settings = getFindSettings.copy(excludeHidden = false)
     val finder = new Finder(settings)
     val file = new File(".hidden.txt")
     println("FileUtil.isHidden(\"%s\"): %s".format(file.getName,
       FileUtil.isHidden(file.getName)))
-    assert(finder.filterFile(file))
+    assert(finder.filterToFindFile(file).nonEmpty)
   }
 
-  test("testFilterFile_ArchiveNoFindArchives_False") {
+  test("testFilterToFindFile_ArchiveNoFindArchives_None") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     val file = new File("archive.zip")
-    assert(!finder.filterFile(file))
+    assert(finder.filterToFindFile(file).isEmpty)
   }
 
-  test("testFilterFile_ArchiveFindArchives_True") {
-    val settings = getFindSettings.copy(findArchives = true)
+  test("testFilterToFindFile_ArchiveFindArchives_Some") {
+    val settings = getFindSettings.copy(includeArchives = true)
     val finder = new Finder(settings)
     val file = new File("archive.zip")
-    assert(finder.filterFile(file))
+    assert(finder.filterToFindFile(file).nonEmpty)
   }
 
-  test("testFilterFile_IsArchiveFindFile_True") {
-    val settings = getFindSettings.copy(findArchives = true,
+  test("testFilterToFindFile_IsArchiveFindFile_Some") {
+    val settings = getFindSettings.copy(includeArchives = true,
       inArchiveExtensions = Set("zip"))
     val finder = new Finder(settings)
     val file = new File("archive.zip")
-    assert(finder.filterFile(file))
+    assert(finder.filterToFindFile(file).nonEmpty)
   }
 
-  test("testFilterFile_NotIsArchiveFindFile_False") {
+  test("testFilterToFindFile_NotIsArchiveFindFile_None") {
     val settings = getFindSettings.copy(outExtensions = Set("zip"))
     val finder = new Finder(settings)
     val file = new File("archive.zip")
-    assert(!finder.filterFile(file))
+    assert(finder.filterToFindFile(file).isEmpty)
   }
 
-  test("testFilterFile_ArchiveFileArchivesOnly_True") {
+  test("testFilterToFindFile_ArchiveFileArchivesOnly_Some") {
     val settings = getFindSettings.copy(archivesOnly = true)
     val finder = new Finder(settings)
     val file = new File("archive.zip")
-    assert(finder.filterFile(file))
+    assert(finder.filterToFindFile(file).nonEmpty)
   }
 
-  test("testFilterFile_NoExtensionsNoPatterns_True") {
+  test("testFilterToFindFile_NoExtensionsNoPatterns_Some") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     val file = new File("FileUtil.cs")
-    assert(finder.filterFile(file))
+    assert(finder.filterToFindFile(file).nonEmpty)
   }
 
-  test("testFilterFile_IsFindFile_True") {
+  test("testFilterToFindFile_IsFindFile_Some") {
     val settings = getFindSettings.copy(inExtensions = Set("cs"))
     val finder = new Finder(settings)
     val file = new File("FileUtil.cs")
-    assert(finder.filterFile(file))
+    assert(finder.filterToFindFile(file).nonEmpty)
   }
 
-  test("testFilterFile_NotIsFindFile_False") {
+  test("testFilterToFindFile_NotIsFindFile_None") {
     val settings = getFindSettings.copy(outExtensions = Set("cs"))
     val finder = new Finder(settings)
     val file = new File("FileUtil.cs")
-    assert(!finder.filterFile(file))
+    assert(finder.filterToFindFile(file).isEmpty)
   }
 
-  test("testFilterFile_NonArchiveFileArchivesOnly_False") {
+  test("testFilterToFindFile_NonArchiveFileArchivesOnly_None") {
     val settings = getFindSettings.copy(archivesOnly = true)
     val finder = new Finder(settings)
     val file = new File("FileUtil.cs")
-    assert(!finder.filterFile(file))
-  }
-
-  test("test getStartLineIndices") {
-    val indices = Finder.getLineIndices(contents1)
-    println("contents (%d chars): \"%s\"".format(contents1.length, contents1))
-    println("indices: "+indices)
-  }
-
-  /************************************************************
-   * findLineStringIterator tests
-   *************************************************************/
-  test("test findLineStringIterator #1 - simple") {
-    val settings = getFindSettings
-    val finder = new Finder(settings)
-    val source = Source.fromFile(testFile1)
-    val lines = source.getLines()
-    val results = finder.findStringIterator(lines)
-    source.close()
-    println("results (%d):\n%s".format(results.length, results.mkString("\n")))
-    assert(results.length == 2)
-    assert(results.forall(r => r.linesBefore.isEmpty && r.linesAfter.isEmpty))
-    assert(results.head.line == Some("This is line 3, it includes the word Finder"))
-    assert(results.head.lineNum == 3)
-    assert(results(1).line == Some("Finder"))
-    assert(results(1).lineNum == 7)
-  }
-
-  test("test findLineStringIterator #2 - linesBefore+linesAfter") {
-    val settings = getFindSettings.copy(linesBefore = 2, linesAfter = 2)
-    val finder = new Finder(settings)
-    val source = Source.fromFile(testFile1)
-    val lines = source.getLines()
-    val results = finder.findStringIterator(lines)
-    source.close()
-    println("results (%d):\n%s".format(results.length, results.mkString("\n")))
-    assert(results.length == 2)
-    assert(results.forall(r => r.linesBefore.length == 2 && r.linesAfter.length == 2))
-  }
-
-  test("test findLineStringIterator #3 - inLinesBeforeAfterPattern") {
-    val settings = getFindSettings.copy(linesBefore = 1, linesAfter = 1,
-      inLinesBeforePatterns = Set("line".r), inLinesAfterPatterns = Set("line".r))
-    val finder = new Finder(settings)
-    val source = Source.fromFile(testFile1)
-    val lines = source.getLines()
-    val results = finder.findStringIterator(lines)
-    source.close()
-    println("results (%d):\n%s".format(results.length, results.mkString("\n")))
-    assert(results.length == 1)
-    assert(results.forall(r =>
-      r.linesBefore.length == settings.linesBefore &&
-        r.linesAfter.length == settings.linesAfter))
-  }
-
-  /************************************************************
-   * findMultiLineString tests
-   *************************************************************/
-  test("test findMultiLineString #1 - simple") {
-    val settings = getFindSettings
-    val finder = new Finder(settings)
-    val results = finder.findMultiLineString(contents1)
-    println("results (%d):\n%s".format(results.length, results.mkString("\n")))
-    assert(results.length == 2)
-    assert(results.forall(r => r.linesBefore.isEmpty && r.linesAfter.isEmpty))
-    assert(results(0).line == Some("This is line 3, it includes the word Finder"))
-    assert(results(1).line == Some("Finder"))
-  }
-
-  test("test findMultiLineString #2 - linesBefore+linesAfter") {
-    val settings = getFindSettings.copy(linesBefore = 2, linesAfter = 2)
-    val finder = new Finder(settings)
-    val results = finder.findMultiLineString(contents1)
-    println("results (%d):\n%s".format(results.length, results.mkString("\n")))
-    assert(results.length == 2)
-    assert(results.forall(r => r.linesBefore.length == 2 && r.linesAfter.length == 2))
-  }
-
-  test("test findMultiLineString #3 - inLinesBeforeAfterPattern") {
-    val settings = getFindSettings.copy(linesBefore = 1, linesAfter = 1,
-      inLinesBeforePatterns = Set("line".r), inLinesAfterPatterns = Set("line".r))
-    val finder = new Finder(settings)
-    val results = finder.findMultiLineString(contents1)
-    println("results (%d):\n%s".format(results.length, results.mkString("\n")))
-    assert(results.length == 1)
-    assert(results.forall(r =>
-      r.linesBefore.length == settings.linesBefore &&
-        r.linesAfter.length == settings.linesAfter))
+    assert(finder.filterToFindFile(file).isEmpty)
   }
 }

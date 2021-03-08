@@ -35,18 +35,18 @@ func makeMap(slice []string) map[string]string {
 
 func union(s1, s2 set) set {
 	s := make(map[string]bool)
-	for k, _ := range s1 {
+	for k := range s1 {
 		s[k] = true
 	}
-	for k, _ := range s2 {
+	for k := range s2 {
 		s[k] = true
 	}
 	return s
 }
 
-func contains(slice []*string, s string) bool {
+func contains(slice []string, s string) bool {
 	for _, as := range slice {
-		if s == *as {
+		if s == as {
 			return true
 		}
 	}
@@ -99,6 +99,20 @@ func getMapValues(m map[string]string) []string {
 
 func getSortedKeys(m map[string]string) []string {
 	keys := getMapKeys(m)
+	sort.Strings(keys)
+	return keys
+}
+
+func getCountMapKeys(m map[string]int) []string {
+	keys := []string{}
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func getSortedCountKeys(m map[string]int) []string {
+	keys := getCountMapKeys(m)
 	sort.Strings(keys)
 	return keys
 }

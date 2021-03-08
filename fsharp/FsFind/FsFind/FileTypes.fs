@@ -20,7 +20,6 @@ type FileTypes() =
     static let archive = "archive"
     static let binary = "binary"
     static let code = "code"
-    static let findable = "findable"
     static let text = "text"
     static let xml = "xml"
 
@@ -46,10 +45,6 @@ type FileTypes() =
         allText.UnionWith(fileTypesDictionary.[xml])
         if fileTypesDictionary.Remove(text) then
             fileTypesDictionary.Add(text, allText)
-        let findableSet = HashSet<String>(fileTypesDictionary.[text])
-        findableSet.UnionWith(fileTypesDictionary.[binary])
-        findableSet.UnionWith(fileTypesDictionary.[archive])
-        fileTypesDictionary.Add(findable, findableSet)
         fileTypesDictionary
 
     let PopulateFileTypesFromXml (xmlString : string) =
@@ -64,10 +59,6 @@ type FileTypes() =
         allText.UnionWith(fileTypesDictionary.[xml])
         if fileTypesDictionary.Remove(text) then
             fileTypesDictionary.Add(text, allText)
-        let findableSet = HashSet<String>(fileTypesDictionary.[text])
-        findableSet.UnionWith(fileTypesDictionary.[binary])
-        findableSet.UnionWith(fileTypesDictionary.[archive])
-        fileTypesDictionary.Add(findable, findableSet)
         fileTypesDictionary
 
 //    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.filetypes.xml")
@@ -113,14 +104,11 @@ type FileTypes() =
     member this.IsCodeFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[code]
 
-    member this.IsFindableFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[findable]
-
     member this.IsTextFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[text]
 
     member this.IsUnknownFile (f : FileInfo) : bool =
-        not (this.IsFindableFile f)
+        (this.GetFileType f) = FileType.Unknown
 
     member this.IsXmlFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypesDictionary.[xml]

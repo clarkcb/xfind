@@ -1,10 +1,8 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.2.
+-- This file has been generated from package.yaml by hpack version 0.34.3.
 --
 -- see: https://github.com/sol/hpack
---
--- hash: 8c5cf4b2e15da02dc5a012d948f2d5005ef5cb703c301e31887579794b3bfb03
 
 name:           hsfind
 version:        0.1.0.0
@@ -13,7 +11,7 @@ homepage:       https://github.com/clarkcb/xfind#readme
 bug-reports:    https://github.com/clarkcb/xfind/issues
 author:         Cary Clark
 maintainer:     clarkcb@gmail.com
-copyright:      2019 Cary Clark
+copyright:      2021 Cary Clark
 license:        MIT
 license-file:   LICENSE
 build-type:     Simple
@@ -37,12 +35,11 @@ library
       HsFind.Config
       HsFind.FileTypes
       HsFind.FileUtil
-      HsFind.Paths_hsfind
       HsFind.Finder
       HsFind.FindFile
       HsFind.FindOptions
-      HsFind.FindResult
       HsFind.FindSettings
+      HsFind.Paths_hsfind
   other-modules:
       Paths_hsfind
   hs-source-dirs:
@@ -89,7 +86,6 @@ test-suite hsfind-test
       HsFind.FileUtilTest
       HsFind.FinderTest
       HsFind.FindOptionsTest
-      HsFind.FindResultTest
       HsFind.FindSettingsTest
       Paths_hsfind
   hs-source-dirs:
@@ -97,6 +93,7 @@ test-suite hsfind-test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       HUnit >=1.6 && <1.7
+    , aeson
     , base >=4.7 && <5
     , bytestring
     , directory

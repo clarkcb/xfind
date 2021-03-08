@@ -1,0 +1,112 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 8c5cf4b2e15da02dc5a012d948f2d5005ef5cb703c301e31887579794b3bfb03
+
+name:           hsfind
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/clarkcb/xfind#readme>
+homepage:       https://github.com/clarkcb/xfind#readme
+bug-reports:    https://github.com/clarkcb/xfind/issues
+author:         Cary Clark
+maintainer:     clarkcb@gmail.com
+copyright:      2019 Cary Clark
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+data-files:
+    data/config.json
+    data/filetypes.json
+    data/findoptions.json
+    data/filetypes.xml
+    data/findoptions.xml
+
+source-repository head
+  type: git
+  location: https://github.com/clarkcb/xfind
+
+library
+  exposed-modules:
+      HsFind.Color
+      HsFind.Config
+      HsFind.FileTypes
+      HsFind.FileUtil
+      HsFind.Paths_hsfind
+      HsFind.Finder
+      HsFind.FindFile
+      HsFind.FindOptions
+      HsFind.FindResult
+      HsFind.FindSettings
+  other-modules:
+      Paths_hsfind
+  hs-source-dirs:
+      src
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , directory
+    , filepath
+    , hxt
+    , regex-pcre-builtin >=0.94.4
+    , split >=0.2.2
+    , text
+    , timeit
+  default-language: Haskell2010
+
+executable hsfind
+  main-is: Main.hs
+  other-modules:
+      Paths_hsfind
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , bytestring
+    , directory
+    , filepath
+    , hsfind
+    , hxt
+    , regex-pcre-builtin >=0.94.4
+    , split >=0.2.2
+    , text
+    , timeit
+  default-language: Haskell2010
+
+test-suite hsfind-test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      HsFind.FileTypesTest
+      HsFind.FileUtilTest
+      HsFind.FinderTest
+      HsFind.FindOptionsTest
+      HsFind.FindResultTest
+      HsFind.FindSettingsTest
+      Paths_hsfind
+  hs-source-dirs:
+      test
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      HUnit >=1.6 && <1.7
+    , base >=4.7 && <5
+    , bytestring
+    , directory
+    , filepath
+    , hsfind
+    , hxt
+    , regex-pcre-builtin >=0.94.4
+    , split >=0.2.2
+    , test-framework >=0.8 && <0.9
+    , test-framework-hunit >=0.3 && <0.4
+    , text
+    , timeit
+  default-language: Haskell2010

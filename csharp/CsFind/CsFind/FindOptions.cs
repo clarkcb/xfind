@@ -17,55 +17,53 @@ namespace CsFind
 		private static readonly Dictionary<string, Action<string, FindSettings>> ArgActionDictionary =
 			new Dictionary<string, Action<string,FindSettings>>
 				{
-					{ "encoding", (s, settings) => settings.TextFileEncoding = s },
 					{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
 					{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
 					{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
 					{ "in-ext", (s, settings) => settings.AddInExtension(s) },
 					{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
 					{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
-					{ "in-linesafterpattern", (s, settings) => settings.AddInLinesAfterPattern(s) },
-					{ "in-linesbeforepattern", (s, settings) => settings.AddInLinesBeforePattern(s) },
-					{ "linesafter", (s, settings) => settings.LinesAfter = int.Parse(s) },
-					{ "linesaftertopattern", (s, settings) => settings.AddLinesAfterToPattern(s) },
-					{ "linesafteruntilpattern", (s, settings) => settings.AddLinesAfterUntilPattern(s) },
-					{ "linesbefore", (s, settings) => settings.LinesBefore = int.Parse(s) },
-					{ "maxlinelength", (s, settings) => settings.MaxLineLength = int.Parse(s) },
 					{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
 					{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
 					{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
 					{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
 					{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 					{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
-					{ "out-linesafterpattern", (s, settings) => settings.AddOutLinesAfterPattern(s) },
-					{ "out-linesbeforepattern", (s, settings) => settings.AddOutLinesBeforePattern(s) },
-					{ "findpattern", (s, settings) => settings.AddFindPattern(s) },
 					{ "settings-file", SettingsFromFile },
 				};
 
 		private static readonly Dictionary<string, Action<bool, FindSettings>> BoolFlagActionDictionary =
 			new Dictionary<string, Action<bool, FindSettings>>
 				{
-					{ "allmatches", (b, settings) => settings.FirstMatch = !b },
 					{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
 					{ "colorize", (b, settings) => settings.Colorize = b },
 					{ "debug", (b, settings) => settings.Debug = b },
+					{ "excludearchives", (b, settings) => settings.IncludeArchives = !b },
 					{ "excludehidden", (b, settings) => settings.ExcludeHidden = b },
-					{ "firstmatch", (b, settings) => settings.FirstMatch = b },
 					{ "help", (b, settings) => settings.PrintUsage = b },
+					{ "includearchives", (b, settings) => settings.IncludeArchives = b },
 					{ "includehidden", (b, settings) => settings.ExcludeHidden = !b },
 					{ "listdirs", (b, settings) => settings.ListDirs = b },
 					{ "listfiles", (b, settings) => settings.ListFiles = b },
-					{ "listlines", (b, settings) => settings.ListLines = b },
-					{ "multilineoption-REMOVE", (b, settings) => settings.MultiLineFind = b },
+					{ "maxlastmod", (b, settings) => {
+							// TODO: convert to datetime
+						}
+					},
+					{ "maxsize", (b, settings) => {
+							// TODO: convert to int
+						}
+					},
+					{ "minlastmod", (b, settings) => {
+							// TODO: convert to datetime
+						}
+					},
+					{ "minsize", (b, settings) => {
+							// TODO: convert to int
+						}
+					},
 					{ "nocolorize", (b, settings) => settings.Colorize = !b },
-					{ "noprintmatches", (b, settings) => settings.PrintResults = !b },
 					{ "norecursive", (b, settings) => settings.Recursive = !b },
-					{ "nofindarchives", (b, settings) => settings.FindArchives = !b },
-					{ "printmatches", (b, settings) => settings.PrintResults = b },
 					{ "recursive", (b, settings) => settings.Recursive = b },
-					{ "findarchives", (b, settings) => settings.FindArchives = b },
-					{ "uniquelines", (b, settings) => settings.UniqueLines = b },
 					{ "verbose", (b, settings) => settings.Verbose = b },
 					{ "version", (b, settings) => settings.PrintVersion = b },
 				};
@@ -203,9 +201,9 @@ namespace CsFind
 			{
 				ArgActionDictionary[arg](val, settings);
 			}
-			else if (arg.Equals("startpath"))
+			else if (arg.Equals("path"))
 			{
-				settings.StartPath = val;
+				settings.Paths.Add(val);
 			}
 			else
 			{
@@ -227,8 +225,8 @@ namespace CsFind
 
 		public FindSettings SettingsFromArgs(IEnumerable<string> args)
 		{
-			// default to PrintResults = true since this is called from CLI functionality
-			var settings = new FindSettings {PrintResults = true};
+			// default to ListFiles = true since this is called from CLI
+			var settings = new FindSettings {ListFiles = true};
 			var queue = new Queue<string>(args);
 
 			while (queue.Count > 0)
@@ -280,7 +278,7 @@ namespace CsFind
 				}
 				else
 				{
-					settings.StartPath = s;
+					settings.Paths.Add(s);
 				}
 			}
 			return settings;
@@ -296,7 +294,7 @@ namespace CsFind
 		{
 			var sb = new StringBuilder();
 			sb.AppendLine("\nUsage:");
-			sb.AppendLine(" csfind [options] -s <findpattern> <startpath>\n");
+			sb.AppendLine(" csfind [options] <path> [<path> ...]\n");
 			sb.AppendLine("Options:");
 			var optStrings = new List<string>();
 			var optDescs = new List<string>();
@@ -316,7 +314,7 @@ namespace CsFind
 				optStrings.Add(optString.ToString());
 				optDescs.Add(opt.Description);
 			}
-			var format = " {0,-"+longest+"}  {1}";
+			var format = " {0,-" + longest + "}  {1}";
 			for (var i = 0; i < optStrings.Count; i++)
 			{
 				sb.AppendLine(string.Format(format, optStrings[i], optDescs[i]));

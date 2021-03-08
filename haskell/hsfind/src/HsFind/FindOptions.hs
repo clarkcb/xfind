@@ -49,7 +49,7 @@ getFindOptions = do
 
 getUsage :: [FindOption] -> String
 getUsage findOptions =
-  "Usage:\n hsfind [options] -s <findpattern> <startpath>\n\nOptions:\n" ++
+  "Usage:\n hsfind [options] <path> [<path> ...]\n\nOptions:\n" ++
   findOptionsToString findOptions
 
 getOptStrings :: [FindOption] -> [String]
@@ -98,79 +98,55 @@ type BoolFlagAction = FindSettings -> Bool -> FindSettings
 type FlagAction = FindSettings -> FindSettings
 
 argActions :: [(String, ArgAction)]
-argActions = [ ("encoding", \ss s -> ss {textFileEncoding=s})
-             , ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ newExtensions s})
+argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ newExtensions s})
              , ("in-archivefilepattern", \ss s -> ss {inArchiveFilePatterns = inArchiveFilePatterns ss ++ [s]})
              , ("in-dirpattern", \ss s -> ss {inDirPatterns = inDirPatterns ss ++ [s]})
              , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ newExtensions s})
              , ("in-filepattern", \ss s -> ss {inFilePatterns = inFilePatterns ss ++ [s]})
              , ("in-filetype", \ss s -> ss {inFileTypes = inFileTypes ss ++ [getFileTypeForName s]})
-             , ("in-linesafterpattern", \ss s -> ss {inLinesAfterPatterns = inLinesAfterPatterns ss ++ [s]})
-             , ("in-linesbeforepattern", \ss s -> ss {inLinesBeforePatterns = inLinesBeforePatterns ss ++ [s]})
-             , ("linesafter", \ss s -> ss {linesAfter = read s})
-             , ("linesaftertopattern", \ss s -> ss {linesAfterToPatterns = linesAfterToPatterns ss ++ [s]})
-             , ("linesafteruntilpattern", \ss s -> ss {linesAfterUntilPatterns = linesAfterUntilPatterns ss ++ [s]})
-             , ("linesbefore", \ss s -> ss {linesBefore = read s})
-             , ("maxlinelength", \ss s -> ss {maxLineLength = read s})
              , ("out-archiveext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ newExtensions s})
              , ("out-archivefilepattern", \ss s -> ss {outArchiveFilePatterns = outArchiveFilePatterns ss ++ [s]})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})
              , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ newExtensions s})
              , ("out-filepattern", \ss s -> ss {outFilePatterns = outFilePatterns ss ++ [s]})
              , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
-             , ("out-linesafterpattern", \ss s -> ss {outLinesAfterPatterns = outLinesAfterPatterns ss ++ [s]})
-             , ("out-linesbeforepattern", \ss s -> ss {outLinesBeforePatterns = outLinesBeforePatterns ss ++ [s]})
-             , ("findpattern", \ss s -> ss {findPatterns = findPatterns ss ++ [s]})
+             , ("path", \ss s -> ss {paths = paths ss ++ [s]})
              ]
 
 flagActions :: [(String, FlagAction)]
-flagActions = [ ("allmatches", \ss -> ss {firstMatch=False})
-              , ("archivesonly", \ss -> ss {archivesOnly=True,
-                                            findArchives=True})
+flagActions = [ ("archivesonly", \ss -> ss {archivesOnly=True,
+                                            includeArchives=True})
               , ("colorize", \ss -> ss {colorize=True})
               , ("debug", \ss -> ss {debug=True, verbose=True})
+              , ("excludearchives", \ss -> ss {includeArchives=False})
               , ("excludehidden", \ss -> ss {excludeHidden=True})
-              , ("firstmatch", \ss -> ss {firstMatch=True})
               , ("help", \ss -> ss {printUsage=True})
+              , ("includearchives", \ss -> ss {includeArchives=True})
               , ("includehidden", \ss -> ss {excludeHidden=False})
               , ("listdirs", \ss -> ss {listDirs=True})
               , ("listfiles", \ss -> ss {listFiles=True})
-              , ("listlines", \ss -> ss {listLines=True})
-              , ("multilineoption-REMOVE", \ss -> ss {multiLineFind=True})
               , ("nocolorize", \ss -> ss {colorize=False})
-              , ("noprintmatches", \ss -> ss {printResults=False})
               , ("norecursive", \ss -> ss {recursive=False})
-              , ("nofindarchives", \ss -> ss {findArchives=False})
-              , ("printmatches", \ss -> ss {printResults=True})
               , ("recursive", \ss -> ss {recursive=True})
-              , ("findarchives", \ss -> ss {findArchives=True})
-              , ("uniquelines", \ss -> ss {uniqueLines=True})
               , ("verbose", \ss -> ss {verbose=True})
               , ("version", \ss -> ss {printVersion=True})
               ]
 
 boolFlagActions :: [(String, BoolFlagAction)]
-boolFlagActions = [ ("allmatches", \ss b -> ss {firstMatch=not b})
-                  , ("archivesonly", \ss b -> ss {archivesOnly=b,
-                                                  findArchives=b})
+boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
+                                                  includeArchives=b})
                   , ("colorize", \ss b -> ss {colorize=b})
                   , ("debug", \ss b -> ss {debug=b, verbose=b})
+                  , ("excludearchives", \ss b -> ss {includeArchives=not b})
                   , ("excludehidden", \ss b -> ss {excludeHidden=b})
-                  , ("firstmatch", \ss b -> ss {firstMatch=b})
                   , ("help", \ss b -> ss {printUsage=b})
+                  , ("includearchives", \ss b -> ss {includeArchives=b})
                   , ("includehidden", \ss b -> ss {excludeHidden=not b})
                   , ("listdirs", \ss b -> ss {listDirs=b})
                   , ("listfiles", \ss b -> ss {listFiles=b})
-                  , ("listlines", \ss b -> ss {listLines=b})
-                  , ("multilineoption-REMOVE", \ss b -> ss {multiLineFind=b})
                   , ("nocolorize", \ss b -> ss {colorize=not b})
-                  , ("noprintmatches", \ss b -> ss {printResults=not b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
-                  , ("nofindarchives", \ss b -> ss {findArchives=not b})
-                  , ("printmatches", \ss b -> ss {printResults=b})
                   , ("recursive", \ss b -> ss {recursive=b})
-                  , ("findarchives", \ss b -> ss {findArchives=b})
-                  , ("uniquelines", \ss b -> ss {uniqueLines=b})
                   , ("verbose", \ss b -> ss {verbose=b})
                   , ("version", \ss b -> ss {printVersion=b})
                   ]
@@ -190,7 +166,8 @@ settingsFromArgs opts arguments =
   if any isLeft longArgs
   then (Left . head . lefts) longArgs
   else
-    recSettingsFromArgs defaultFindSettings $ rights longArgs
+    -- default listFiles to true since running as cli
+    recSettingsFromArgs defaultFindSettings{listFiles=True} $ rights longArgs
   where recSettingsFromArgs :: FindSettings -> [String] -> Either String FindSettings
         recSettingsFromArgs settings args =
           case args of
@@ -207,7 +184,8 @@ settingsFromArgs opts arguments =
               BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) as
               FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
-          a:as -> recSettingsFromArgs (settings {startPath=a}) as
+          a:as -> recSettingsFromArgs (settings {paths = paths settings ++ [a]}) as
+
         longArgs :: [Either String String]
         longArgs = map (shortToLong opts) arguments
         getActionType :: String -> ActionType

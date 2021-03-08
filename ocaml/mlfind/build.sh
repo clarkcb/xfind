@@ -1,8 +1,6 @@
 #!/bin/bash
 
 
-
-
 build_src () {
 	# the mlfind executable
 	echo 'corebuild -package ounit -package re2 -package xml-light -I src mlfind.native'

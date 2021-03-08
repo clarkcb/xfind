@@ -28,7 +28,6 @@ public class FileTypes {
     private static final String archive = "archive";
     private static final String binary = "binary";
     private static final String code = "code";
-    private static final String findable = "findable";
     private static final String text = "text";
     private static final String unknown = "unknown";
     private static final String xml = "xml";
@@ -57,11 +56,6 @@ public class FileTypes {
             allText.addAll(ftMap.get(text));
             allText.addAll(ftMap.get(xml));
             ftMap.put(text, allText);
-            Set<String> allFindable = new HashSet<>();
-            allFindable.addAll(ftMap.get(archive));
-            allFindable.addAll(ftMap.get(binary));
-            allFindable.addAll(ftMap.get(text));
-            ftMap.put(findable, allFindable);
         } catch (ParseException | IOException e) {
             e.printStackTrace();
         }
@@ -98,11 +92,6 @@ public class FileTypes {
             allText.addAll(ftMap.get(text));
             allText.addAll(ftMap.get(xml));
             ftMap.put(text, allText);
-            Set<String> allFindable = new HashSet<>();
-            allFindable.addAll(ftMap.get(archive));
-            allFindable.addAll(ftMap.get(binary));
-            allFindable.addAll(ftMap.get(text));
-            ftMap.put(findable, allFindable);
         } catch (ParserConfigurationException | SAXException | IOException e) {
             e.printStackTrace();
         }
@@ -145,18 +134,12 @@ public class FileTypes {
         return fileTypeMap.get(code).contains(FileUtil.getExtension(f));
     }
 
-    final boolean isFindableFile(final File f) {
-        return fileTypeMap.get(findable).contains(FileUtil.getExtension(f));
-    }
-
     final boolean isTextFile(final File f) {
         return fileTypeMap.get(text).contains(FileUtil.getExtension(f));
     }
 
     final boolean isUnknownFile(final File f) {
-        return fileTypeMap.get(unknown).contains(FileUtil.getExtension(f))
-                ||
-                !fileTypeMap.get(findable).contains(FileUtil.getExtension(f));
+        return getFileType(f) == FileType.UNKNOWN;
     }
 
     public final boolean isXmlFile(final File f) {

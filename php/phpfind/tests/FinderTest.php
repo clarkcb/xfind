@@ -13,8 +13,7 @@ class FinderTest extends TestCase
     private function get_settings()
     {
         $settings = new FindSettings();
-        $settings->startpath = '.';
-        array_push($settings->findpatterns, "Finder");
+        $settings->paths = ['.'];
         return $settings;
     }
 
@@ -315,7 +314,7 @@ class FinderTest extends TestCase
         $this->assertTrue($finder->filter_file($file));
     }
 
-    public function test_filter_file_archive_no_findarchives()
+    public function test_filter_file_archive_no_includearchives()
     {
         $settings = $this->get_settings();
         $finder = new Finder($settings);
@@ -324,10 +323,10 @@ class FinderTest extends TestCase
         $this->assertFalse($finder->filter_file($file));
     }
 
-    public function test_filter_file_archive_findarchives()
+    public function test_filter_file_archive_includearchives()
     {
         $settings = $this->get_settings();
-        $settings->findarchives = 1;
+        $settings->includearchives = 1;
         $finder = new Finder($settings);
         $file = 'archive.zip';
         #print "finder->is_archive_find_file(archive.zip): " . $finder->is_archive_find_file('archive.zip') . "\n";
@@ -338,7 +337,7 @@ class FinderTest extends TestCase
     {
         $settings = $this->get_settings();
         $settings->archivesonly = 1;
-        $settings->findarchives = 1;
+        $settings->includearchives = 1;
         $finder = new Finder($settings);
         $file = 'archive.zip';
         $this->assertTrue($finder->filter_file($file));
@@ -348,55 +347,9 @@ class FinderTest extends TestCase
     {
         $settings = $this->get_settings();
         $settings->archivesonly = 1;
-        $settings->findarchives = 1;
+        $settings->includearchives = 1;
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
         $this->assertFalse($finder->filter_file($file));
-    }
-
-    ################################################################################
-    # find_lines tests
-    ################################################################################
-    public function test_find_lines()
-    {
-        $settings = $this->get_settings();
-        $finder = new Finder($settings);
-        $testfile = $this->get_test_file();
-        $contents = file_get_contents($testfile);
-        $results = $finder->find_multiline_string($contents);
-        $this->assertCount(2, $results);
-
-        $firstResult = $results[0];
-        $this->assertEquals(29, $firstResult->linenum);
-        $this->assertEquals(3, $firstResult->match_start_index);
-        $this->assertEquals(11, $firstResult->match_end_index);
-
-        $secondResult = $results[1];
-        $this->assertEquals(35, $secondResult->linenum);
-        $this->assertEquals(24, $secondResult->match_start_index);
-        $this->assertEquals(32, $secondResult->match_end_index);
-    }
-
-    ################################################################################
-    # find_multiline_string tests
-    ################################################################################
-    public function test_find_multiline_string()
-    {
-        $settings = $this->get_settings();
-        $finder = new Finder($settings);
-        $testfile = $this->get_test_file();
-        $lines = file($testfile);
-        $results = $finder->find_lines($lines);
-        $this->assertCount(2, $results);
-
-        $firstResult = $results[0];
-        $this->assertEquals(29, $firstResult->linenum);
-        $this->assertEquals(3, $firstResult->match_start_index);
-        $this->assertEquals(11, $firstResult->match_end_index);
-
-        $secondResult = $results[1];
-        $this->assertEquals(35, $secondResult->linenum);
-        $this->assertEquals(24, $secondResult->match_start_index);
-        $this->assertEquals(32, $secondResult->match_end_index);
     }
 }

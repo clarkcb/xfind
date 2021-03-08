@@ -206,80 +206,33 @@ let test_fixture = "Finder" >:::
     assert_equal (Finder.filter_file ss sf) true;
   );
 
-  "test_filter_file_archive_no_findarchives" >:: (fun () ->
+  "test_filter_file_archive_no_includearchives" >:: (fun () ->
     let file = "archive.zip" in
     let sf = Findfile.create file Filetypes.Archive in
     assert_equal (Finder.filter_file settings sf) false;
   );
 
-  "test_filter_file_archive_findarchives" >:: (fun () ->
+  "test_filter_file_archive_includearchives" >:: (fun () ->
     let file = "archive.zip" in
-    let ss = { settings with findarchives=true } in
+    let ss = { settings with includearchives=true } in
     let sf = Findfile.create file Filetypes.Archive in
     assert_equal (Finder.filter_file ss sf) true;
   );
 
   "test_filter_file_archive_archivesonly" >:: (fun () ->
     let file = "archive.zip" in
-    let ss = { settings with findarchives=true; archivesonly=true } in
+    let ss = { settings with includearchives=true; archivesonly=true } in
     let sf = Findfile.create file Filetypes.Archive in
     assert_equal (Finder.filter_file ss sf) true;
   );
 
   "test_filter_file_nonarchive_archivesonly" >:: (fun () ->
     let file = "fileutil.ml" in
-    let ss = { settings with findarchives=true; archivesonly=true } in
+    let ss = { settings with includearchives=true; archivesonly=true } in
     let sf = Findfile.create file Filetypes.Text in
     assert_equal (Finder.filter_file ss sf) false;
-  );
-
-  (*****************************************************************************
-   * find_lines tests
-   *****************************************************************************)
-  "test_find_lines" >:: (fun () ->
-    let testfile = (Config.xfindpath ^ "/shared/testFiles/testFile2.txt") in
-    let findpatterns = [Re2.Regex.create_exn "Finder"] in
-    let ss = { settings with startpath=testfile; findpatterns=findpatterns } in
-    match Finder.find ss with
-    | Ok (results : Findresult.t list) ->
-        assert_equal (List.length results) 2;
-        let res1 = List.hd_exn results in
-        assert_equal res1.linenum 23;
-        assert_equal res1.match_start_index 3;
-        assert_equal res1.match_end_index 11;
-        let res2 = List.hd_exn (List.tl_exn results) in
-        assert_equal res2.linenum 29;
-        assert_equal res2.match_start_index 24;
-        assert_equal res2.match_end_index 32
-    | Error msg ->
-        printf "Error msg: %s\n" msg;
-        assert_equal false true
-  );
-
-  (*****************************************************************************
-   * find_contents tests
-   *****************************************************************************)
-  "test_find_contents" >:: (fun () ->
-    let testfile = (Config.xfindpath ^ "/shared/testFiles/testFile2.txt") in
-    let findpatterns = [Re2.Regex.create_exn "Finder"] in
-    let ss = { settings with multilineoption-REMOVE=true; startpath=testfile; findpatterns=findpatterns } in
-    match Finder.find ss with
-    | Ok (results : Findresult.t list) ->
-        assert_equal (List.length results) 2;
-        let res1 = List.hd_exn results in
-        assert_equal res1.linenum 23;
-        assert_equal res1.match_start_index 3;
-        assert_equal res1.match_end_index 11;
-        let res2 = List.hd_exn (List.tl_exn results) in
-        assert_equal res2.linenum 29;
-        assert_equal res2.match_start_index 24;
-        assert_equal res2.match_end_index 32
-    | Error msg ->
-        printf "Error msg: %s\n" msg;
-        assert_equal false true
   );
 
 ]
 
 let _ = run_test_tt ~verbose:true test_fixture;;
-

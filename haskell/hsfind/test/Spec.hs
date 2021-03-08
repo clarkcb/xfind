@@ -4,7 +4,6 @@ import HsFind.FileTypesTest
 import HsFind.FileUtilTest
 import HsFind.FinderTest
 import HsFind.FindOptionsTest
-import HsFind.FindResultTest
 import HsFind.FindSettingsTest
 
 import Test.Framework
@@ -25,8 +24,6 @@ main = do
   isFindFileTests <- getIsFindFileTests
   isArchiveFindFileTests <- getIsArchiveFindFileTests
   filterFileTests <- getFilterFileTests
-  findLinesTests <- getFindLinesTests
-  findContentsTests <- getFindContentsTests
 
   -- FindOptions tests
   settingsFromArgsTests <- getSettingsFromArgsTests
@@ -34,20 +31,12 @@ main = do
   archivesOnlyTests <- getArchivesOnlyTests
   debugTests <- getDebugTests
 
-  -- FindResult tests
-  binaryFileFindResultTests <- getBinaryFileFindResultTests
-  singleLineFindResultTests <- getSingleLineFindResultTests
-  multiLineFindResultTests <- getMultiLineFindResultTests
-
   -- FindSettings tests
   defaultFindSettingsTests <- getDefaultFindSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
   defaultMain (fileTypeTests ++ fileTypeFromNameTests ++ fileUtilTests ++
     isFindDirTests ++ isFindFileTests ++ isArchiveFindFileTests ++
-    filterFileTests ++ findLinesTests ++ findContentsTests ++
-    settingsFromArgsTests ++ settingsFromNoArgsTests ++
+    filterFileTests ++ settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
-    binaryFileFindResultTests ++ singleLineFindResultTests ++
-    multiLineFindResultTests ++ 
     defaultFindSettingsTests ++ newExtensionsTests)

@@ -13,22 +13,12 @@ public enum DefaultSettings {
     public static let colorize = true
     public static let debug = false
     public static let excludeHidden = true
-    public static let firstMatch = false
-    public static let linesAfter = 0
-    public static let linesBefore = 0
+    public static let includeArchives = false
     public static let listDirs = false
     public static let listFiles = false
-    public static let listLines = false
-    public static let maxLineLength = 150
-    public static let multiLineFind = false
-    public static let printResults = true
     public static let printUsage = false
     public static let printVersion = false
     public static let recursive = true
-    public static let findArchives = false
-    public static let startPath: String? = ""
-    public static let textFileEncoding: String = "UTF-8"
-    public static let uniqueLines = false
     public static let verbose = false
 }
 
@@ -37,22 +27,12 @@ public class FindSettings: CustomStringConvertible {
     public var colorize: Bool = DefaultSettings.colorize
     private var _debug: Bool = DefaultSettings.debug
     public var excludeHidden: Bool = DefaultSettings.excludeHidden
-    public var firstMatch: Bool = DefaultSettings.firstMatch
-    public var linesAfter = DefaultSettings.linesAfter
-    public var linesBefore = DefaultSettings.linesBefore
+    public var includeArchives: Bool = DefaultSettings.includeArchives
     public var listDirs: Bool = DefaultSettings.listDirs
     public var listFiles: Bool = DefaultSettings.listFiles
-    public var listLines: Bool = DefaultSettings.listLines
-    public var maxLineLength = DefaultSettings.maxLineLength
-    public var multiLineFind: Bool = DefaultSettings.multiLineFind
-    public var printResults: Bool = DefaultSettings.printResults
     public var printUsage: Bool = DefaultSettings.printUsage
     public var printVersion: Bool = DefaultSettings.printVersion
     public var recursive: Bool = DefaultSettings.recursive
-    public var findArchives: Bool = DefaultSettings.findArchives
-    public var startPath = DefaultSettings.startPath
-    public var textFileEncoding = DefaultSettings.textFileEncoding
-    public var uniqueLines: Bool = DefaultSettings.uniqueLines
     public var verbose: Bool = DefaultSettings.verbose
 
     public var inArchiveExtensions = Set<String>()
@@ -61,19 +41,13 @@ public class FindSettings: CustomStringConvertible {
     public var inExtensions = Set<String>()
     public var inFilePatterns = [Regex]()
     public var inFileTypes = [FileType]()
-    public var inLinesAfterPatterns = [Regex]()
-    public var inLinesBeforePatterns = [Regex]()
-    public var linesAfterToPatterns = [Regex]()
-    public var linesAfterUntilPatterns = [Regex]()
     public var outArchiveExtensions = Set<String>()
     public var outArchiveFilePatterns = [Regex]()
     public var outDirPatterns = [Regex]()
     public var outExtensions = Set<String>()
     public var outFilePatterns = [Regex]()
     public var outFileTypes = [FileType]()
-    public var outLinesAfterPatterns = [Regex]()
-    public var outLinesBeforePatterns = [Regex]()
-    public var findPatterns = [Regex]()
+    public var paths = Set<String>()
 
     public init() {}
 
@@ -115,22 +89,6 @@ public class FindSettings: CustomStringConvertible {
         }
     }
 
-    public func addInLinesAfterPattern(_ pattern: String) {
-        inLinesAfterPatterns.append(Regex(pattern))
-    }
-
-    public func addInLinesBeforePattern(_ pattern: String) {
-        inLinesBeforePatterns.append(Regex(pattern))
-    }
-
-    public func addLinesAfterToPattern(_ pattern: String) {
-        linesAfterToPatterns.append(Regex(pattern))
-    }
-
-    public func addLinesAfterUntilPattern(_ pattern: String) {
-        linesAfterUntilPatterns.append(Regex(pattern))
-    }
-
     public func addOutArchiveExtension(_ exts: String) {
         for ext in splitExtensions(exts) {
             outArchiveExtensions.insert(ext)
@@ -165,16 +123,8 @@ public class FindSettings: CustomStringConvertible {
         }
     }
 
-    public func addOutLinesAfterPattern(_ pattern: String) {
-        outLinesAfterPatterns.append(Regex(pattern))
-    }
-
-    public func addOutLinesBeforePattern(_ pattern: String) {
-        outLinesBeforePatterns.append(Regex(pattern))
-    }
-
-    public func addFindPattern(_ pattern: String) {
-        findPatterns.append(Regex(pattern))
+    public func addPath(_ path: String) {
+        paths.insert(path)
     }
 
     public var archivesOnly: Bool {
@@ -184,7 +134,7 @@ public class FindSettings: CustomStringConvertible {
         set {
             _archivesOnly = newValue
             if newValue {
-                findArchives = newValue
+                includeArchives = newValue
             }
         }
     }
@@ -207,40 +157,25 @@ public class FindSettings: CustomStringConvertible {
             ", colorize=\(colorize)" +
             ", debug=\(debug)" +
             ", excludeHidden=\(excludeHidden)" +
-            ", firstMatch=\(firstMatch)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
-            ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
+            ", inArchiveFilePatterns=\(arrayToString(inArchiveFilePatterns))" +
             ", inDirPatterns=\(arrayToString(inDirPatterns))" +
             ", inExtensions=\(setToString(inExtensions))" +
             ", inFilePatterns=\(arrayToString(inFilePatterns))" +
             ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }))" +
-            ", inLinesAfterPatterns=\(arrayToString(inLinesAfterPatterns))" +
-            ", inLinesBeforePatterns=\(arrayToString(inLinesBeforePatterns))" +
-            ", linesAfterToPatterns=\(arrayToString(linesAfterToPatterns))" +
-            ", linesAfterUntilPatterns=\(arrayToString(linesAfterUntilPatterns))" +
-            ", linesAfter=\(linesAfter)" +
-            ", linesBefore=\(linesBefore)" +
+            ", includeArchives=\(includeArchives)" +
             ", listDirs=\(listDirs)" +
             ", listFiles=\(listFiles)" +
-            ", listLines=\(listLines)" +
-            ", maxLineLength=\(maxLineLength)" +
             ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
-            ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
+            ", outArchiveFilePatterns=\(arrayToString(outArchiveFilePatterns))" +
             ", outDirPatterns=\(arrayToString(outDirPatterns))" +
             ", outExtensions=\(setToString(outExtensions))" +
             ", outFilePatterns=\(arrayToString(outFilePatterns))" +
             ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }))" +
-            ", outLinesAfterPatterns=\(arrayToString(outLinesAfterPatterns))" +
-            ", outLinesBeforePatterns=\(arrayToString(outLinesBeforePatterns))" +
-            ", printResults=\(printResults)" +
+            ", paths=\(setToString(paths))" +
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +
-            ", findArchives=\(findArchives)" +
-            ", findPatterns=\(arrayToString(findPatterns))" +
-            ", startPath=\"\(startPath!)\"" +
-            ", textFileEncoding=\"\(textFileEncoding)\"" +
-            ", uniqueLines=\(uniqueLines)" +
             ", verbose=\(verbose)" +
             ")"
     }

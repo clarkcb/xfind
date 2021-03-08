@@ -3,7 +3,7 @@
 #
 # findfile.py
 #
-# class FindFile: encapsulates a file to find
+# class FindFile: encapsulates a file to evaluate as find match
 #
 ###############################################################################
 import os
@@ -14,17 +14,18 @@ from .filetypes import FileType
 
 
 class FindFile(object):
-    """encapsulates a find file"""
+    """encapsulates a file to evaluate as a find match"""
     CONTAINER_SEPARATOR = '!'
 
-    __slots__ = ['containers', 'path', 'filename', 'filetype']
+    __slots__ = ['containers', 'path', 'filename', 'filetype', 'stat']
 
     def __init__(self, containers: List[str] = None, path: str = '', filename: str = '',
-                 filetype: FileType = FileType.UNKNOWN):
+                 filetype: FileType = FileType.UNKNOWN, stat=None):
         self.containers = containers if containers else []
         self.path = path
         self.filename = filename
         self.filetype = filetype
+        self.stat = stat
 
     @property
     def relativepath(self):

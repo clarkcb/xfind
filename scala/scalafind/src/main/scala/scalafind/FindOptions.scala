@@ -61,8 +61,6 @@ object FindOptions {
   type ArgAction = (String, FindSettings) => FindSettings
 
   private val argActionMap = Map[String, ArgAction](
-    "encoding" ->
-      ((s, ss) => ss.copy(textFileEncoding = s)),
     "in-archiveext" ->
       ((s, ss) => ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions))),
     "in-archivefilepattern" ->
@@ -75,20 +73,6 @@ object FindOptions {
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
       ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileTypes.fromName(s))),
-    "in-linesafterpattern" ->
-      ((s, ss) => ss.copy(inLinesAfterPatterns  = ss.inLinesAfterPatterns + s.r)),
-    "in-linesbeforepattern" ->
-      ((s, ss) => ss.copy(inLinesBeforePatterns = ss.inLinesBeforePatterns + s.r)),
-    "linesafter" ->
-      ((s, ss) => ss.copy(linesAfter = s.toInt)),
-    "linesaftertopattern" ->
-      ((s, ss) => ss.copy(linesAfterToPatterns  = ss.linesAfterToPatterns + s.r)),
-    "linesafteruntilpattern" ->
-      ((s, ss) => ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns + s.r)),
-    "linesbefore" ->
-      ((s, ss) => ss.copy(linesBefore = s.toInt)),
-    "maxlinelength" ->
-      ((s, ss) => ss.copy(maxLineLength = s.toInt)),
     "out-archiveext" ->
       ((s, ss) => ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions))),
     "out-archivefilepattern" ->
@@ -101,12 +85,8 @@ object FindOptions {
       ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
     "out-filetype" ->
       ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileTypes.fromName(s))),
-    "out-linesafterpattern" ->
-      ((s, ss) => ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns + s.r)),
-    "out-linesbeforepattern" ->
-      ((s, ss) => ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns + s.r)),
-    "findpattern" ->
-      ((s, ss) => ss.copy(findPatterns = ss.findPatterns + s.r)),
+    "path" ->
+      ((s, ss) => ss.copy(paths = ss.paths + s)),
     "settings-file" ->
       ((s, ss) => settingsFromFile(s, ss))
   )
@@ -115,26 +95,19 @@ object FindOptions {
 
   private val boolFlagActionMap = Map[String, FlagAction](
     "archivesonly" -> ((b, ss) =>
-      if (b) ss.copy(archivesOnly = b, findArchives = b) else ss.copy(archivesOnly = b)),
-    "allmatches" -> ((b, ss) => ss.copy(firstMatch = !b)),
+      if (b) ss.copy(archivesOnly = b, includeArchives = b) else ss.copy(archivesOnly = b)),
     "colorize" -> ((b, ss) => ss.copy(colorize = b)),
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
+    "excludearchives" -> ((b, ss) => ss.copy(includeArchives = !b)),
     "excludehidden" -> ((b, ss) => ss.copy(excludeHidden = b)),
-    "firstmatch" -> ((b, ss) => ss.copy(firstMatch = b)),
     "help" -> ((b, ss) => ss.copy(printUsage = b)),
+    "includearchives" -> ((b, ss) => ss.copy(includeArchives = b)),
     "includehidden" -> ((b, ss) => ss.copy(excludeHidden = !b)),
     "listdirs" -> ((b, ss) => ss.copy(listDirs = b)),
     "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
-    "listlines" -> ((b, ss) => ss.copy(listLines = b)),
-    "multilineoption-REMOVE" -> ((b, ss) => ss.copy(multiLineFind = b)),
     "nocolorize" -> ((b, ss) => ss.copy(colorize = !b)),
-    "noprintmatches" -> ((b, ss) => ss.copy(printResults = !b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
-    "nofindarchives" -> ((b, ss) => ss.copy(findArchives = !b)),
-    "printmatches" -> ((b, ss) => ss.copy(printResults = b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
-    "findarchives" -> ((b, ss) => ss.copy(findArchives = b)),
-    "uniquelines" -> ((b, ss) => ss.copy(uniqueLines = b)),
     "verbose" -> ((b, ss) => ss.copy(verbose = b)),
     "version" -> ((b, ss) => ss.copy(printVersion = b))
   )
@@ -166,8 +139,8 @@ object FindOptions {
     case s: String =>
       if (this.argActionMap.contains(arg)) {
         argActionMap(arg)(s, ss)
-      } else if (arg == "startpath") {
-        ss.copy(startPath = Some(s))
+      } else if (arg == "path") {
+        ss.copy(paths = ss.paths + arg)
       } else {
         throw new FindException("Invalid option: " + arg)
       }
@@ -226,10 +199,11 @@ object FindOptions {
               throw new FindException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
-          nextArg(tail, ss.copy(startPath = Some(arg)))
+          nextArg(tail, ss.copy(paths = ss.paths + arg))
       }
     }
-    nextArg(args.toList, FindSettings(printResults = true))
+    // default listFiles to true since running as cli
+    nextArg(args.toList, FindSettings(listFiles = true))
   }
 
   def usage(status: Int): Unit = {
@@ -240,7 +214,7 @@ object FindOptions {
   def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
-    sb.append(" scalafind [options] -s <findpattern> <startpath>\n\n")
+    sb.append(" scalafind [options] <path> [<path> ...]\n\n")
     sb.append("Options:\n")
     val optPairs = findOptions.map { so =>
       val opts = so.shortarg match {

@@ -17,20 +17,12 @@ type FindSettingTests () =
         Assert.IsTrue(settings.Colorize)
         Assert.IsFalse(settings.Debug)
         Assert.IsTrue(settings.ExcludeHidden)
-        Assert.IsFalse(settings.FirstMatch)
-        Assert.AreEqual(settings.LinesAfter, 0)
-        Assert.AreEqual(settings.LinesBefore, 0)
         Assert.IsFalse(settings.ListDirs)
         Assert.IsFalse(settings.ListFiles)
-        Assert.IsFalse(settings.ListLines)
-        Assert.AreEqual(settings.MaxLineLength, 150)
-        Assert.IsFalse(settings.MultiLineFind)
-        Assert.IsFalse(settings.PrintResults)
         Assert.IsFalse(settings.PrintUsage)
         Assert.IsFalse(settings.PrintVersion)
         Assert.IsTrue(settings.Recursive)
-        Assert.IsFalse(settings.FindArchives)
-        Assert.IsFalse(settings.UniqueLines)
+        Assert.IsFalse(settings.IncludeArchives)
         Assert.IsFalse(settings.Verbose)
         ()
 
@@ -49,16 +41,16 @@ type FindSettingTests () =
     [<Test>]
     member this.FindSettings_AddPatterns_HasPatterns () =
         let settings = FindSettings.DefaultSettings
-        let settings = { settings with FindPatterns = FindSettings.AddPattern "Find" settings.FindPatterns }
-        Assert.AreEqual(1, settings.FindPatterns.Length)
-        Assert.AreEqual("Find", settings.FindPatterns.Head.ToString())
+        let settings = { settings with InFilePatterns = FindSettings.AddPattern "Find" settings.InFilePatterns }
+        Assert.AreEqual(1, settings.InFilePatterns.Length)
+        Assert.AreEqual("Find", settings.InFilePatterns.Head.ToString())
         ()
 
     [<Test>]
-    member this.FindSettings_SetArchivesOnly_HasFindArchives () =
+    member this.FindSettings_SetArchivesOnly_HasIncludeArchives () =
         let settings = FindSettings.SetArchivesOnly true FindSettings.DefaultSettings 
         Assert.IsTrue(settings.ArchivesOnly)
-        Assert.IsTrue(settings.FindArchives)
+        Assert.IsTrue(settings.IncludeArchives)
         ()
 
     [<Test>]

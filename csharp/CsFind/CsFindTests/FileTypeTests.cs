@@ -86,11 +86,11 @@ namespace CsFindTests
 			Assert.IsTrue(_fileTypes.IsXmlFile(xmlFile));
 		}
 
-		[Test]
-		public void IsFindableFile_XmlFile_True()
-		{
-			var xmlFile = new FileInfo("markup.xml");
-			Assert.IsTrue(_fileTypes.IsFindableFile(xmlFile));
-		}
+		// [Test]
+		// public void IsFindableFile_XmlFile_True()
+		// {
+		// 	var xmlFile = new FileInfo("markup.xml");
+		// 	Assert.IsTrue(_fileTypes.IsFindableFile(xmlFile));
+		// }
 	}
 }

@@ -1,5 +1,5 @@
 buildscript {
-    ext.kotlin_version = "1.4.21"
+    ext.kotlin_version = "1.4.31"
     repositories {
         mavenCentral()
     }
@@ -15,9 +15,9 @@ repositories {
 }
 
 dependencies {
-    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    compile "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
-    compile "com.googlecode.json-simple:json-simple:1.1.1"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlin_version"
+    implementation "com.googlecode.json-simple:json-simple:1.1.1"
 }
 
 jar {
@@ -25,5 +25,5 @@ jar {
         attributes "Main-Class": "ktfind.KtfindKt"
     }
 
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 }

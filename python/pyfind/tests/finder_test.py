@@ -7,25 +7,29 @@
 #
 ################################################################################
 import os
+from pathlib import Path
 import sys
 import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from pyfind import FileType, Finder, FindFile, FindSettings, SHAREDPATH
+from pyfind import FileType, Finder, FindFile, FindSettings, XFINDPATH, SHAREDPATH
 
 
 class FinderTest(unittest.TestCase):
-
     def get_settings(self):
         settings = FindSettings()
-        settings.startpath = '.'
-        settings.add_patterns('Finder', 'findpatterns')
+        settings.add_paths('.')
         settings.debug = True
         return settings
 
     def get_test_file(self):
         return os.path.join(SHAREDPATH, 'testFiles/testFile2.txt')
+
+    def ensure_archive(self):
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        if not os.path.exists(archive_path):
+            Path(archive_path).touch()
 
 ################################################################################
 # is_find_dir tests
@@ -90,252 +94,168 @@ class FinderTest(unittest.TestCase):
         self.assertTrue(finder.is_find_dir(dir))
 
 ################################################################################
-# is_find_file tests
+# filter_to_find_file tests
+#
+# NOTE: the filepaths are required to be existing for these tests to work
 ################################################################################
-    def test_is_find_file_matches_by_default(self):
+    def test_filter_to_find_file_matches_by_default(self):
         settings = self.get_settings()
         finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(finder.is_find_file(f))
+        filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        findfile = finder.filter_to_find_file(filepath)
+        self.assertIsNotNone(findfile)
 
-    def test_is_find_file_matches_in_extension(self):
+    def test_filter_to_find_file_is_find_file(self):
         settings = self.get_settings()
-        settings.add_exts('pm', 'in_extensions')
+        settings.add_exts('py', 'in_extensions')
         finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(finder.is_find_file(f))
+        filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        findfile = finder.filter_to_find_file(filepath)
+        self.assertIsNotNone(findfile)
 
-    def test_is_find_file_no_match_in_extension(self):
+    def test_filter_to_find_file_not_is_find_file(self):
         settings = self.get_settings()
         settings.add_exts('pl', 'in_extensions')
         finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertFalse(finder.is_find_file(f))
+        filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        findfile = finder.filter_to_find_file(filepath)
+        self.assertIsNone(findfile)
 
-    def test_is_find_file_matches_out_extension(self):
-        settings = self.get_settings()
-        settings.add_exts('pm', 'out_extensions')
-        finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertFalse(finder.is_find_file(f))
-
-    def test_is_find_file_no_match_out_extension(self):
-        settings = self.get_settings()
-        settings.add_exts('py', 'out_extensions')
-        finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(finder.is_find_file(f))
-
-    def test_is_find_file_matches_in_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('Find', 'in_filepatterns')
-        finder = Finder(settings)
-        f = FindFile(path='.', filename='Finder.pm', filetype=FileType.CODE)
-        self.assertTrue(finder.is_find_file(f))
-
-    def test_is_find_file_no_match_in_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('Find', 'in_filepatterns')
-        finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertFalse(finder.is_find_file(f))
-
-    def test_is_find_file_matches_out_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('Find', 'out_filepatterns')
-        finder = Finder(settings)
-        f = FindFile(path='.', filename='Finder.pm', filetype=FileType.CODE)
-        self.assertFalse(finder.is_find_file(f))
-
-    def test_is_find_file_no_match_out_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('Find', 'out_filepatterns')
-        finder = Finder(settings)
-        f = FindFile(path='.', filename='FileUtil.pm', filetype=FileType.CODE)
-        self.assertTrue(finder.is_find_file(f))
-
-################################################################################
-# is__archive_find_file tests
-################################################################################
-    def test_is_archive_find_file_matches_by_default(self):
+    def test_filter_to_find_file_is_hidden_file(self):
         settings = self.get_settings()
         finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertTrue(finder.is_archive_find_file(f))
+        filepath = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
+        findfile = finder.filter_to_find_file(filepath)
+        self.assertIsNone(findfile)
 
-    def test_is_archive_find_file_matches_in_extension(self):
-        settings = self.get_settings()
-        settings.add_exts('zip', 'in_archiveextensions')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertTrue(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_no_match_in_extension(self):
-        settings = self.get_settings()
-        settings.add_exts('gz', 'in_archiveextensions')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertFalse(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_matches_out_extension(self):
-        settings = self.get_settings()
-        settings.add_exts('zip', 'out_archiveextensions')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertFalse(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_no_match_out_extension(self):
-        settings = self.get_settings()
-        settings.add_exts('gz', 'out_archiveextensions')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertTrue(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_matches_in_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('arch', 'in_archivefilepatterns')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertTrue(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_no_match_in_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('archives', 'in_archivefilepatterns')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertFalse(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_matches_out_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('arch', 'out_archivefilepatterns')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertFalse(finder.is_archive_find_file(f))
-
-    def test_is_archive_find_file_no_match_out_pattern(self):
-        settings = self.get_settings()
-        settings.add_patterns('archives', 'out_archivefilepatterns')
-        finder = Finder(settings)
-        f = 'archive.zip'
-        self.assertTrue(finder.is_archive_find_file(f))
-
-################################################################################
-# filter_file tests
-################################################################################
-    def test_filter_file_matches_by_default(self):
-        settings = self.get_settings()
-        finder = Finder(settings)
-        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertTrue(finder.filter_file(f))
-
-    def test_filter_file_is_find_file(self):
-        settings = self.get_settings()
-        settings.add_exts('pm', 'in_extensions')
-        finder = Finder(settings)
-        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertTrue(finder.filter_file(f))
-
-    def test_filter_file_not_is_find_file(self):
-        settings = self.get_settings()
-        settings.add_exts('pl', 'in_extensions')
-        finder = Finder(settings)
-        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertFalse(finder.filter_file(f))
-
-    def test_filter_file_is_hidden_file(self):
-        settings = self.get_settings()
-        finder = Finder(settings)
-        f = FindFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
-        self.assertFalse(finder.filter_file(f))
-
-    def test_filter_file_hidden_includehidden(self):
+    def test_filter_to_find_file_hidden_includehidden(self):
         settings = self.get_settings()
         settings.excludehidden = False
         finder = Finder(settings)
-        f = FindFile(path='', filename='.gitignore', filetype=FileType.UNKNOWN)
-        self.assertTrue(finder.filter_file(f))
+        filepath = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
+        findfile = finder.filter_to_find_file(filepath)
+        self.assertIsNotNone(findfile)
 
-    def test_filter_file_archive_no_findarchives(self):
+    def test_filter_to_find_file_archive_no_match_by_default(self):
+        self.ensure_archive()
         settings = self.get_settings()
         finder = Finder(settings)
-        f = FindFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
-        self.assertFalse(finder.filter_file(f))
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNone(findfile)
 
-    def test_filter_file_archive_findarchives(self):
-        settings = self.get_settings()
-        settings.findarchives = 1
-        finder = Finder(settings)
-        f = FindFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
-        self.assertTrue(finder.filter_file(f))
-
-    def test_filter_file_archive_archivesonly(self):
-        settings = self.get_settings()
-        settings.archivesonly = True
-        settings.findarchives = True
-        finder = Finder(settings)
-        f = FindFile(path='', filename='archive.zip', filetype=FileType.ARCHIVE)
-        self.assertTrue(finder.filter_file(f))
-
-    def test_filter_file_nonarchive_archivesonly(self):
-        settings = self.get_settings()
-        settings.archivesonly = True
-        settings.findarchives = True
-        finder = Finder(settings)
-        f = FindFile(path='', filename='FileUtil.pm', filetype=FileType.TEXT)
-        self.assertFalse(finder.filter_file(f))
-
-################################################################################
-# find_lines tests
-################################################################################
-    def test_find_lines(self):
+    def test_filter_to_find_file_archive_no_includearchives(self):
+        self.ensure_archive()
         settings = self.get_settings()
         finder = Finder(settings)
-        testfile = self.get_test_file()
-        results = []
-        try:
-            fo = open(testfile, 'r')
-            results = finder.find_line_iterator(fo)
-            fo.close()
-        except IOError as e:
-            print(('IOError: {0!s}'.format(e)))
-        self.assertEqual(len(results), 2)
+        findfile = finder.filter_to_find_file('./archive.zip')
+        self.assertIsNone(findfile)
 
-        firstResult = results[0]
-        self.assertEqual(firstResult.linenum, 29)
-        self.assertEqual(firstResult.match_start_index, 3)
-        self.assertEqual(firstResult.match_end_index, 11)
-
-        secondResult = results[1]
-        self.assertEqual(secondResult.linenum, 35)
-        self.assertEqual(secondResult.match_start_index, 24)
-        self.assertEqual(secondResult.match_end_index, 32)
-
-################################################################################
-# find_multiline_string tests
-################################################################################
-    def test_find_multiline_string(self):
+    def test_filter_to_find_file_archive_includearchives(self):
+        self.ensure_archive()
         settings = self.get_settings()
+        settings.includearchives = True
         finder = Finder(settings)
-        testfile = self.get_test_file()
-        results = []
-        try:
-            fo = open(testfile, 'r')
-            contents = fo.read()
-            results = finder.find_multiline_string(contents)
-            fo.close()
-        except IOError as e:
-            print(('IOError: {0!s}'.format(e)))
-        self.assertEqual(len(results), 2)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNotNone(findfile)
 
-        firstResult = results[0]
-        self.assertEqual(firstResult.linenum, 29)
-        self.assertEqual(firstResult.match_start_index, 3)
-        self.assertEqual(firstResult.match_end_index, 11)
+    def test_filter_to_find_file_archive_matches_in_extension(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_exts('zip', 'in_archiveextensions')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNotNone(findfile)
 
-        secondResult = results[1]
-        self.assertEqual(secondResult.linenum, 35)
-        self.assertEqual(secondResult.match_start_index, 24)
-        self.assertEqual(secondResult.match_end_index, 32)
+    def test_filter_to_find_file_archive_no_match_in_extension(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_exts('gz', 'in_archiveextensions')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNone(findfile)
+
+    def test_filter_to_find_file_archive_matches_out_extension(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_exts('zip', 'out_archiveextensions')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNone(findfile)
+
+    def test_filter_to_find_file_archive_no_match_out_extension(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_exts('gz', 'out_archiveextensions')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNotNone(findfile)
+
+    def test_filter_to_find_file_archive_matches_in_pattern(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_patterns('arch', 'in_archivefilepatterns')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNotNone(findfile)
+
+    def test_filter_to_find_file_archive_no_match_in_pattern(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_patterns('archives', 'in_archivefilepatterns')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNone(findfile)
+
+    def test_filter_to_find_file_archive_matches_out_pattern(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_patterns('arch', 'out_archivefilepatterns')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNone(findfile)
+
+    def test_filter_to_find_file_archive_no_match_out_pattern(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.includearchives = True
+        settings.add_patterns('archives', 'out_archivefilepatterns')
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNotNone(findfile)
+
+    def test_filter_to_find_file_archive_archivesonly(self):
+        self.ensure_archive()
+        settings = self.get_settings()
+        settings.set_property('archivesonly', True)
+        finder = Finder(settings)
+        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        findfile = finder.filter_to_find_file(archive_path)
+        self.assertIsNotNone(findfile)
+
+    def test_filter_to_find_file_nonarchive_archivesonly(self):
+        settings = self.get_settings()
+        settings.set_property('archivesonly', True)
+        finder = Finder(settings)
+        filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        findfile = finder.filter_to_find_file(filepath)
+        self.assertIsNone(findfile)
 
 
 if __name__ == '__main__':

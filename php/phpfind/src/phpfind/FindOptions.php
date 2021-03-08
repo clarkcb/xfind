@@ -17,9 +17,6 @@ class FindOptions
         $this->options = array();
 
         $this->arg_action_map = [
-            'encoding' => function (string $s, FindSettings $settings) {
-                $settings->textfileencoding = $s;
-            },
             'in-archiveext' => function (string $s, FindSettings $settings) {
                 $settings->add_exts($s, $settings->in_archiveextensions);
             },
@@ -37,27 +34,6 @@ class FindOptions
             },
             'in-filetype' => function (string $s, FindSettings $settings) {
                 $settings->add_filetypes($s, $settings->in_filetypes);
-            },
-            'in-linesafterpattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->in_linesafterpatterns);
-            },
-            'in-linesbeforepattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->in_linesbeforepatterns);
-            },
-            'linesafter' => function (string $s, FindSettings $settings) {
-                $settings->linesafter = intval($s);
-            },
-            'linesaftertopattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->linesaftertopatterns);
-            },
-            'linesafteruntilpattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->linesafteruntilpatterns);
-            },
-            'linesbefore' => function (string $s, FindSettings $settings) {
-                $settings->linesbefore = intval($s);
-            },
-            'maxlinelength' => function (string $s, FindSettings $settings) {
-                $settings->maxlinelength = intval($s);
             },
             'out-archiveext' => function (string $s, FindSettings $settings) {
                 $settings->add_exts($s, $settings->out_archiveextensions);
@@ -77,24 +53,12 @@ class FindOptions
             'out-filetype' => function (string $s, FindSettings $settings) {
                 $settings->add_filetypes($s, $settings->out_filetypes);
             },
-            'out-linesafterpattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->out_linesafterpatterns);
-            },
-            'out-linesbeforepattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->out_linesbeforepatterns);
-            },
-            'findpattern' => function (string $s, FindSettings $settings) {
-                $settings->add_patterns($s, $settings->findpatterns);
-            },
             'settings-file' => function (string $s, FindSettings $settings) {
                 $this->settings_from_file($s, $settings);
             }
         ];
 
         $this->bool_flag_action_map = [
-            'allmatches' => function (bool $b, FindSettings $settings) {
-                $settings->firstmatch = !$b;
-            },
             'archivesonly' => function (bool $b, FindSettings $settings) {
                 $settings->set_archivesonly($b);
             },
@@ -104,14 +68,17 @@ class FindOptions
             'debug' => function (bool $b, FindSettings $settings) {
                 $settings->set_debug($b);
             },
+            'excludearchives' => function (bool $b, FindSettings $settings) {
+                $settings->includearchives = !$b;
+            },
             'excludehidden' => function (bool $b, FindSettings $settings) {
                 $settings->excludehidden = $b;
             },
-            'firstmatch' => function (bool $b, FindSettings $settings) {
-                $settings->firstmatch = $b;
-            },
             'help' => function (bool $b, FindSettings $settings) {
                 $settings->printusage = $b;
+            },
+            'includearchives' => function (bool $b, FindSettings $settings) {
+                $settings->includearchives = $b;
             },
             'includehidden' => function (bool $b, FindSettings $settings) {
                 $settings->excludehidden = !$b;
@@ -122,35 +89,14 @@ class FindOptions
             'listfiles' => function (bool $b, FindSettings $settings) {
                 $settings->listfiles = $b;
             },
-            'listlines' => function (bool $b, FindSettings $settings) {
-                $settings->listlines = $b;
-            },
-            'multilineoption-REMOVE' => function (bool $b, FindSettings $settings) {
-                $settings->multilineoption-REMOVE = $b;
-            },
             'nocolorize' => function (bool $b, FindSettings $settings) {
                 $settings->colorize = !$b;
-            },
-            'noprintmatches' => function (bool $b, FindSettings $settings) {
-                $settings->printresults = !$b;
             },
             'norecursive' => function (bool $b, FindSettings $settings) {
                 $settings->recursive = !$b;
             },
-            'nofindarchives' => function (bool $b, FindSettings $settings) {
-                $settings->findarchives = !$b;
-            },
-            'printmatches' => function (bool $b, FindSettings $settings) {
-                $settings->printresults = $b;
-            },
             'recursive' => function (bool $b, FindSettings $settings) {
                 $settings->recursive = $b;
-            },
-            'findarchives' => function (bool $b, FindSettings $settings) {
-                $settings->findarchives = $b;
-            },
-            'uniquelines' => function (bool $b, FindSettings $settings) {
-                $settings->uniquelines = $b;
             },
             'verbose' => function (bool $b, FindSettings $settings) {
                 $settings->verbose = $b;
@@ -186,8 +132,6 @@ class FindOptions
                 }
             }
             usort($this->options, array('phpfind\FindOptions', 'cmp_findoptions'));
-//            usort($this->options, array('common', 'cmp_findoptions'));
-//            usort($this->options, 'cmp_findoptions');
         } else {
             throw new FindException('File not found: ' . $findoptionspath);
         }
@@ -220,8 +164,8 @@ class FindOptions
                 }
             } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
                 $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
-            } elseif ($k == 'startpath') {
-                $settings->startpath = $json_obj[$k];
+            } elseif ($k == 'path') {
+                $settings->paths[] = $json_obj[$k];
             } else {
                 throw new FindException("Invalid option: $k");
             }
@@ -231,6 +175,8 @@ class FindOptions
     public function settings_from_args(array $args): FindSettings
     {
         $settings = new FindSettings();
+        // default listfiles to true since running as cli
+        $settings->listfiles = true;
         while (count($args) > 0) {
             $arg = array_shift($args);
             if ($arg{0} == '-') {
@@ -254,7 +200,7 @@ class FindOptions
                     throw new FindException("Invalid option: $arg");
                 }
             } else {
-                $settings->startpath = $arg;
+                $settings->paths[] = $arg;
             }
         }
         return $settings;
@@ -267,8 +213,8 @@ class FindOptions
 
     private function get_usage_string(): string
     {
-        $usage = "Usage:\n phpfind [options] -s <findpattern>";
-        $usage .= " <startpath>\n\nOptions:\n";
+        $usage = "Usage:\n phpfind [options] <path> [<path> ...]";
+        $usage .= "\n\nOptions:\n";
         $opt_map = array();
         $longest = 0;
         foreach ($this->options as $option) {

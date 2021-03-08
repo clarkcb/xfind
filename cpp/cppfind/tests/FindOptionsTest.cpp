@@ -3,26 +3,17 @@
 
 TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     auto* options = new cppfind::FindOptions();
-    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-s"), const_cast<char *>("Finder"),
-                     const_cast<char *>(".") };
-    int argc = 4;
+    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>(".") };
+    int argc = 2;
     cppfind::FindSettings* settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings->archivesonly());
     REQUIRE(!settings->debug());
     REQUIRE(settings->excludehidden());
-    REQUIRE(!settings->firstmatch());
-    REQUIRE((settings->linesafter() == 0));
-    REQUIRE((settings->linesbefore() == 0));
+    REQUIRE(!settings->includearchives());
     REQUIRE(!settings->listdirs());
-    REQUIRE(!settings->listfiles());
-    REQUIRE(!settings->listlines());
-    REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilineoption-REMOVE());
-    REQUIRE(settings->printresults());
+    REQUIRE(settings->listfiles());
     REQUIRE(!settings->printusage());
     REQUIRE(!settings->printversion());
-    REQUIRE(!settings->findarchives());
-    REQUIRE(!settings->uniquelines());
     REQUIRE(!settings->verbose());
 
     REQUIRE(settings->in_archiveextensions()->empty());
@@ -36,36 +27,25 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_filepatterns()->empty());
 
-    std::vector<cppfind::FindPattern*>* findpatterns = settings->findpatterns();
-    REQUIRE(findpatterns->size() == 1);
-    REQUIRE(findpatterns->at(0)->pattern() == "Finder");
-
-    auto* startpath = settings->startpath();
-    REQUIRE(*startpath == ".");
+    std::vector<std::string>* paths = settings->paths();
+    REQUIRE(paths->size() == 1);
+    REQUIRE(paths->at(0) == ".");
 }
 
 TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     auto* options = new cppfind::FindOptions();
-    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-x"), const_cast<char *>("java,scala"),
-                     const_cast<char *>("-s"), const_cast<char *>("Finder"), const_cast<char *>(".") };
-    int argc = 6;
+    char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-x"),
+                     const_cast<char *>("java,scala"), const_cast<char *>(".") };
+    int argc = 4;
     cppfind::FindSettings* settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings->archivesonly());
     REQUIRE(!settings->debug());
     REQUIRE(settings->excludehidden());
-    REQUIRE(!settings->firstmatch());
-    REQUIRE((settings->linesafter() == 0));
-    REQUIRE((settings->linesbefore() == 0));
+    REQUIRE(!settings->includearchives());
     REQUIRE(!settings->listdirs());
-    REQUIRE(!settings->listfiles());
-    REQUIRE(!settings->listlines());
-    REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilineoption-REMOVE());
-    REQUIRE(settings->printresults());
+    REQUIRE(settings->listfiles());
     REQUIRE(!settings->printusage());
     REQUIRE(!settings->printversion());
-    REQUIRE(!settings->findarchives());
-    REQUIRE(!settings->uniquelines());
     REQUIRE(!settings->verbose());
 
     REQUIRE(settings->in_archiveextensions()->empty());
@@ -83,26 +63,19 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(in_exts->at(0) == "java");
     REQUIRE(in_exts->at(1) == "scala");
 
-    std::vector<cppfind::FindPattern*>* findpatterns = settings->findpatterns();
-    REQUIRE(findpatterns->size() == 1);
-    REQUIRE(findpatterns->at(0)->pattern() == "Finder");
-
-    auto* startpath = settings->startpath();
-    REQUIRE(*startpath == ".");
+    std::vector<std::string>* paths = settings->paths();
+    REQUIRE(paths->size() == 1);
+    REQUIRE(paths->at(0) == ".");
 }
 
 TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     std::string json = R"(
 {
-    "startpath": "~/src/xfind/",
+    "path": "~/src/xfind/",
     "in-ext": ["js","ts"],
     "out-dirpattern": ["build", "node_module", "tests", "typings"],
     "out-filepattern": ["gulpfile", "\\.min\\."],
-    "findpattern": "Finder",
-    "linesbefore": 2,
-    "linesafter": 2,
     "debug": true,
-    "allmatches": false,
     "includehidden": false
 }
 )";
@@ -111,7 +84,8 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     auto *settings = new cppfind::FindSettings();
     options->settings_from_json(json, settings);
 
-    REQUIRE(*(settings->startpath()) == "~/src/xfind/");
+    REQUIRE(settings->paths()->size() == 1);
+    REQUIRE(settings->paths()->at(0) == "~/src/xfind/");
     REQUIRE(settings->in_extensions()->size() == 2);
     REQUIRE(settings->in_extensions()->at(0) == "js");
     REQUIRE(settings->in_extensions()->at(1) == "ts");
@@ -123,11 +97,6 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     REQUIRE(settings->out_filepatterns()->size() == 2);
     REQUIRE(settings->out_filepatterns()->at(0)->pattern() == "gulpfile");
     REQUIRE(settings->out_filepatterns()->at(1)->pattern() == "\\.min\\.");
-    REQUIRE(settings->findpatterns()->size() == 1);
-    REQUIRE(settings->findpatterns()->at(0)->pattern() == "Finder");
-    REQUIRE(settings->linesbefore() == 2);
-    REQUIRE(settings->linesafter() == 2);
     REQUIRE(settings->debug() == true);
-    REQUIRE(settings->firstmatch() == true);
     REQUIRE(settings->excludehidden() == true);
 }

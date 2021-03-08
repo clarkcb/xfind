@@ -7,22 +7,12 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
     REQUIRE(!settings->archivesonly());
     REQUIRE(!settings->debug());
     REQUIRE(settings->excludehidden());
-    REQUIRE(!settings->firstmatch());
-    REQUIRE((settings->linesafter() == 0));
-    REQUIRE((settings->linesbefore() == 0));
     REQUIRE(!settings->listdirs());
     REQUIRE(!settings->listfiles());
-    REQUIRE(!settings->listlines());
-    REQUIRE((settings->maxlinelength() == 150));
-    REQUIRE(!settings->multilineoption-REMOVE());
-    REQUIRE(!settings->printresults());
     REQUIRE(!settings->printusage());
     REQUIRE(!settings->printversion());
-    REQUIRE(!settings->findarchives());
-    REQUIRE(!settings->uniquelines());
+    REQUIRE(!settings->includearchives());
     REQUIRE(!settings->verbose());
-
-    REQUIRE(settings->startpath() == nullptr);
 
     REQUIRE(settings->in_archiveextensions()->empty());
     REQUIRE(settings->in_archivefilepatterns()->empty());
@@ -34,7 +24,7 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
     REQUIRE(settings->out_dirpatterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_filepatterns()->empty());
-    REQUIRE(settings->findpatterns()->empty());
+    REQUIRE(settings->paths()->empty());
 }
 
 TEST_CASE("Add extensions to FindSettings", "[FindSettings]") {
@@ -89,10 +79,10 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     auto *settings = new cppfind::FindSettings();
 
     REQUIRE(!settings->archivesonly());
-    REQUIRE(!settings->findarchives());
+    REQUIRE(!settings->includearchives());
     settings->archivesonly(true);
     REQUIRE(settings->archivesonly());
-    REQUIRE(settings->findarchives());
+    REQUIRE(settings->includearchives());
 
     REQUIRE(!settings->debug());
     REQUIRE(!settings->verbose());
@@ -104,14 +94,6 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     settings->excludehidden(false);
     REQUIRE(!settings->excludehidden());
 
-    REQUIRE(!settings->firstmatch());
-    settings->firstmatch(true);
-    REQUIRE(settings->firstmatch());
-
-    REQUIRE(!settings->multilineoption-REMOVE());
-    settings->multilineoption-REMOVE(true);
-    REQUIRE(settings->multilineoption-REMOVE());
-
     REQUIRE(!settings->listdirs());
     settings->listdirs(true);
     REQUIRE(settings->listdirs());
@@ -119,14 +101,6 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     REQUIRE(!settings->listfiles());
     settings->listfiles(true);
     REQUIRE(settings->listfiles());
-
-    REQUIRE(!settings->listlines());
-    settings->listlines(true);
-    REQUIRE(settings->listlines());
-
-    REQUIRE(!settings->printresults());
-    settings->printresults(true);
-    REQUIRE(settings->printresults());
 
     REQUIRE(!settings->printusage());
     settings->printusage(true);
@@ -139,28 +113,4 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     REQUIRE(settings->recursive());
     settings->recursive(false);
     REQUIRE(!settings->recursive());
-
-    REQUIRE(!settings->uniquelines());
-    settings->uniquelines(true);
-    REQUIRE(settings->uniquelines());
-}
-
-TEST_CASE("Alter ints in FindSettings", "[FindSettings]") {
-    auto *settings = new cppfind::FindSettings();
-
-    REQUIRE(settings->linesbefore() == 0);
-    settings->linesbefore(5);
-    REQUIRE(settings->linesbefore() == 5);
-
-    // TODO: fix handling of negative values
-    //m_settings->linesbefore(-5);
-    //REQUIRE(m_settings->linesbefore() == 5);
-
-    REQUIRE(settings->linesafter() == 0);
-    settings->linesafter(5);
-    REQUIRE(settings->linesafter() == 5);
-
-    // TODO: fix handling of negative values
-    //m_settings->linesafter(-5);
-    //REQUIRE(m_settings->linesafter() == 5);
 }

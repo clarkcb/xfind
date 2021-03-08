@@ -8,8 +8,7 @@ class FinderTests: XCTestCase {
 
     func getSettings() -> FindSettings {
         let settings = FindSettings()
-        settings.startPath = "."
-        settings.addFindPattern("Finder")
+        settings.addPath(".")
         return settings
     }
 
@@ -242,149 +241,92 @@ class FinderTests: XCTestCase {
     }
 
     /* ==========================================================================
-     * filterFile tests
+     * filterToFindFile tests
      ========================================================================= */
-    func testFilterFile_IsHidden_False() {
+    func testFilterToFindFile_IsHidden_False() {
         var error: NSError?
         let settings = getSettings()
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertFalse(finder.filterFile(".gitignore"))
+        XCTAssert(finder.filterToFindFile(".gitignore") == nil)
     }
 
-    func testFilterFile_IsHiddenIncludeHidden_True() {
+    func testFilterToFindFile_IsHiddenIncludeHidden_True() {
         var error: NSError?
         let settings = getSettings()
         settings.excludeHidden = false
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertTrue(finder.filterFile(".hidden.txt"))
+        XCTAssert(finder.filterToFindFile(".hidden.txt") != nil)
     }
 
-    func testFilterFile_ArchiveNoFindArchives_False() {
+    func testFilterToFindFile_ArchiveNoIncludeArchives_False() {
         var error: NSError?
         let settings = getSettings()
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertFalse(finder.filterFile("archive.zip"))
+        XCTAssert(finder.filterToFindFile("archive.zip") == nil)
     }
 
-    func testFilterFile_ArchiveFindArchives_True() {
+    func testFilterToFindFile_ArchiveIncludeArchives_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.findArchives = true
+        settings.includeArchives = true
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertTrue(finder.filterFile("archive.zip"))
+        XCTAssert(finder.filterToFindFile("archive.zip") != nil)
     }
 
-    func testFilterFile_IsArchiveFindFile_True() {
+    func testFilterToFindFile_IsArchiveFindFile_True() {
         var error: NSError?
         let settings = getSettings()
-        settings.findArchives = true
+        settings.includeArchives = true
         settings.addInArchiveExtension("zip")
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertTrue(finder.filterFile("archive.zip"))
+        XCTAssert(finder.filterToFindFile("archive.zip") != nil)
     }
 
-    func testFilterFile_NotIsArchiveFindFile_False() {
+    func testFilterToFindFile_NotIsArchiveFindFile_False() {
         var error: NSError?
         let settings = getSettings()
-        settings.findArchives = true
+        settings.includeArchives = true
         settings.addOutArchiveExtension("zip")
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertFalse(finder.filterFile("archive.zip"))
+        XCTAssert(finder.filterToFindFile("archive.zip") == nil)
     }
 
-    func testFilterFile_ArchiveFileArchivesOnly_True() {
+    func testFilterToFindFile_ArchiveFileArchivesOnly_True() {
         var error: NSError?
         let settings = getSettings()
         settings.archivesOnly = true
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertTrue(finder.filterFile("archive.zip"))
+        XCTAssert(finder.filterToFindFile("archive.zip") != nil)
     }
 
-    func testFilterFile_NoExtensionsNoPatterns_True() {
+    func testFilterToFindFile_NoExtensionsNoPatterns_True() {
         var error: NSError?
         let settings = getSettings()
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertTrue(finder.filterFile("FileUtil.cs"))
+        XCTAssert(finder.filterToFindFile("FileUtil.cs") != nil)
     }
 
-    func testFilterFile_IsFindFile_True() {
+    func testFilterToFindFile_IsFindFile_True() {
         var error: NSError?
         let settings = getSettings()
         settings.addInExtension("cs")
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertTrue(finder.filterFile("FileUtil.cs"))
+        XCTAssert(finder.filterToFindFile("FileUtil.cs") != nil)
     }
 
-    func testFilterFile_NotIsFindFile_False() {
+    func testFilterToFindFile_NotIsFindFile_False() {
         var error: NSError?
         let settings = getSettings()
         settings.addOutExtension("cs")
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertFalse(finder.filterFile("FileUtil.cs"))
+        XCTAssert(finder.filterToFindFile("FileUtil.cs") == nil)
     }
 
-    func testFilterFile_NonArchiveFileArchivesOnly_False() {
+    func testFilterToFindFile_NonArchiveFileArchivesOnly_False() {
         var error: NSError?
         let settings = getSettings()
         settings.archivesOnly = true
         let finder = Finder(settings: settings, error: &error)
-        XCTAssertFalse(finder.filterFile("FileUtil.cs"))
-    }
-
-    /* ==========================================================================
-     * findLineReader tests
-     ========================================================================= */
-    func testFindLineReader() {
-        var error: NSError?
-        let settings = getSettings()
-        let finder = Finder(settings: settings, error: &error)
-        let testFilePath = FileUtil.joinPath(Config.sharedPath, childPath: "testFiles/testFile2.txt")
-
-        if let reader = StreamReader(path: testFilePath, encoding: .utf8) {
-            let results = finder.findLineReader(reader)
-
-            XCTAssert(results.count == 2)
-
-            XCTAssertEqual(29, results[0].lineNum)
-            XCTAssertEqual(3, results[0].matchStartIndex)
-            XCTAssertEqual(11, results[0].matchEndIndex)
-
-            XCTAssertEqual(35, results[1].lineNum)
-            XCTAssertEqual(24, results[1].matchStartIndex)
-            XCTAssertEqual(32, results[1].matchEndIndex)
-
-            reader.close()
-
-        } else {
-            XCTAssertTrue(false)
-        }
-    }
-
-    /* ==========================================================================
-     * findMultiLineString tests
-     ========================================================================= */
-    func testFindMultiLineString() {
-        var error: NSError?
-        let settings = getSettings()
-        settings.multiLineFind = true
-        let finder = Finder(settings: settings, error: &error)
-        let testFilePath = FileUtil.joinPath(Config.sharedPath, childPath: "testFiles/testFile2.txt")
-        let testFileContents = try? String(contentsOfFile: testFilePath, encoding: .utf8)
-        if testFileContents != nil {
-            let results = finder.findMultiLineString(testFileContents!)
-
-            XCTAssert(results.count == 2)
-
-            XCTAssertEqual(29, results[0].lineNum)
-            XCTAssertEqual(3, results[0].matchStartIndex)
-            XCTAssertEqual(11, results[0].matchEndIndex)
-
-            XCTAssertEqual(35, results[1].lineNum)
-            XCTAssertEqual(24, results[1].matchStartIndex)
-            XCTAssertEqual(32, results[1].matchEndIndex)
-
-        } else {
-            XCTAssertTrue(false)
-        }
+        XCTAssert(finder.filterToFindFile("FileUtil.cs") == nil)
     }
 }

@@ -16,7 +16,6 @@ require_relative 'rbfind/finder'
 require_relative 'rbfind/findfile'
 require_relative 'rbfind/findoption'
 require_relative 'rbfind/findoptions'
-require_relative 'rbfind/findresult'
 require_relative 'rbfind/findsettings'
 
 def main
@@ -51,44 +50,28 @@ end
 
 def find(options, settings)
   finder = RbFind::Finder.new(settings)
-  finder.find
-
-  # print the results
-  if settings.printresults
-    RbFind::log("\n")
-    finder.print_results
-  end
+  findfiles = finder.find
 
   if settings.listdirs
-    RbFind::log("\n")
-    dirs = finder.get_matching_dirs
-    RbFind::log("Directories with matches (#{dirs.size}):")
-    dirs.each do |d|
-      RbFind::log("#{d}\n")
+    finddirs = findfiles.map(&:path).uniq.sort
+    if finddirs.empty?
+      RbFind::log("\nMatching directories: 0")
+    else
+      RbFind::log("\nMatching directories (#{finddirs.size}):")
+      finddirs.each do |d|
+        RbFind::log("#{d}\n")
+      end
     end
   end
 
   if settings.listfiles
-    RbFind::log("\n")
-    files = finder.get_matching_files
-    RbFind::log("Files with matches (#{files.size}):")
-    files.each do |f|
-      RbFind::log("#{f}\n")
-    end
-  end
-
-  if settings.listlines
-    RbFind::log("\n")
-    lines = finder.get_matching_lines
-    hdr_text =
-      if settings.uniquelines
-        'Unique lines with matches'
-      else
-        'Lines with matches'
+    if findfiles.empty?
+      RbFind::log("\nMatching files: 0")
+    else
+      RbFind::log("\nMatching files (#{findfiles.size}):")
+      findfiles.each do |f|
+        RbFind::log("#{f}\n")
       end
-    RbFind::log("#{hdr_text} (#{lines.size}):")
-    lines.each do |line|
-      RbFind::log("#{line}\n")
     end
   end
 

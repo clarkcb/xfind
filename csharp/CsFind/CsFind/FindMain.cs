@@ -20,27 +20,16 @@
 				}
 
 				var finder = new Finder(settings);
-				finder.Find();
-
-				if (settings.PrintResults)
-				{
-					Common.Log("");
-					finder.PrintResults();
-				}
+				var files = finder.Find();
 
 				if (settings.ListDirs)
 				{
-					finder.PrintMatchingDirs();
+					finder.PrintMatchingDirs(files);
 				}
 
 				if (settings.ListFiles)
 				{
-					finder.PrintMatchingFiles();
-				}
-
-				if (settings.ListLines)
-				{
-					finder.PrintMatchingLines();
+					finder.PrintMatchingFiles(files);
 				}
 			}
 			catch (FindException e)

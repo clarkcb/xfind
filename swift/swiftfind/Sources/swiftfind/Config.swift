@@ -9,7 +9,6 @@
 import Foundation
 
 public enum Config {
-    // static let xfindPath = NSString(string: "~/src/xfind").stringByExpandingTildeInPath
     public static let xfindPath = "\(NSHomeDirectory())/src/xfind"
     public static let sharedPath = "\(xfindPath)/shared"
     // public static let fileTypesPath = "\(sharedPath)/filetypes.xml"

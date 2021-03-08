@@ -59,14 +59,6 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Xml, $filetype);
     }
 
-    public function test_getfiletype_findable_file()
-    {
-        $filename = 'compressed.bz2';
-        $this->assertEquals(true, $this->filetypes->is_findable($filename));
-        $filetype = $this->filetypes->get_filetype($filename);
-        $this->assertEquals(FileType::Archive, $filetype);
-    }
-
     public function test_getfiletype_unknown_file()
     {
         $filename = 'unknown.xyz';

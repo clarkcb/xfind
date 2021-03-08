@@ -24,48 +24,31 @@ public class FindSettings {
     private boolean colorize;
     private boolean debug;
     private boolean excludeHidden;
-    private boolean firstMatch;
     private Set<String> inArchiveExtensions;
     private Set<Pattern> inArchiveFilePatterns;
     private Set<Pattern> inDirPatterns;
     private Set<String> inExtensions;
     private Set<Pattern> inFilePatterns;
     private Set<FileType> inFileTypes;
-    private Set<Pattern> inLinesAfterPatterns;
-    private Set<Pattern> inLinesBeforePatterns;
-    private int linesAfter;
-    private Set<Pattern> linesAfterToPatterns;
-    private Set<Pattern> linesAfterUntilPatterns;
-    private int linesBefore;
+    private boolean includeArchives;
     private boolean listDirs;
     private boolean listFiles;
-    private boolean listLines;
-    private int maxLineLength;
-    private boolean multiLineFind;
     private Set<String> outArchiveExtensions;
     private Set<Pattern> outArchiveFilePatterns;
     private Set<Pattern> outDirPatterns;
     private Set<String> outExtensions;
     private Set<Pattern> outFilePatterns;
     private Set<FileType> outFileTypes;
-    private Set<Pattern> outLinesAfterPatterns;
-    private Set<Pattern> outLinesBeforePatterns;
-    private boolean printResults;
     private boolean printUsage;
     private boolean printVersion;
     private boolean recursive;
-    private boolean findArchives;
-    private Set<Pattern> findPatterns;
-    private String startPath;
-    private String textFileEncoding;
-    private boolean uniqueLines;
+    private Set<String> paths;
     private boolean verbose;
 
     public FindSettings() {
         this.archivesOnly = DefaultSettings.ARCHIVESONLY;
         this.colorize = DefaultSettings.COLORIZE;
         this.debug = DefaultSettings.DEBUG;
-        this.firstMatch = DefaultSettings.FIRSTMATCH;
         this.excludeHidden = DefaultSettings.EXCLUDEHIDDEN;
         this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -73,42 +56,32 @@ public class FindSettings {
         this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesAfter = DefaultSettings.LINESAFTER;
-        this.linesAfterToPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesAfterUntilPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.linesBefore = DefaultSettings.LINESBEFORE;
+        this.includeArchives = DefaultSettings.INCLUDEARCHIVES;
         this.listDirs = DefaultSettings.LISTDIRS;
         this.listFiles = DefaultSettings.LISTFILES;
-        this.listLines = DefaultSettings.LISTLINES;
-        this.maxLineLength = DefaultSettings.MAXLINELENGTH;
-        this.multiLineFind = DefaultSettings.MULTILINEFIND;
         this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outLinesAfterPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.outLinesBeforePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.printResults = DefaultSettings.PRINTRESULTS;
         this.printUsage = DefaultSettings.PRINTUSAGE;
         this.printVersion = DefaultSettings.PRINTVERSION;
         this.recursive = DefaultSettings.RECURSIVE;
-        this.findArchives = DefaultSettings.FINDARCHIVES;
-        this.findPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.textFileEncoding = DefaultSettings.TEXTFILEENCODING;
-        this.uniqueLines = DefaultSettings.UNIQUELINES;
+        this.paths = new HashSet<>(INITIAL_SET_CAPACITY);
         this.verbose = DefaultSettings.VERBOSE;
     }
 
-    public final String getStartPath() {
-        return this.startPath;
+    public final Set<String> getPaths() {
+        return this.paths;
     }
 
-    public final void setStartPath(final String startPath) {
-        this.startPath = startPath;
+    public final void setPaths(final Set<String> paths) {
+        this.paths = paths;
+    }
+
+    public final void addPath(final String path) {
+        this.paths.add(path);
     }
 
     public final boolean getArchivesOnly() {
@@ -118,7 +91,7 @@ public class FindSettings {
     public final void setArchivesOnly(final boolean archivesOnly) {
         this.archivesOnly = archivesOnly;
         if (archivesOnly) {
-            this.findArchives = true;
+            this.includeArchives = true;
         }
     }
 
@@ -141,14 +114,6 @@ public class FindSettings {
         }
     }
 
-    public final boolean getFirstMatch() {
-        return this.firstMatch;
-    }
-
-    public final void setFirstMatch(final boolean firstMatch) {
-        this.firstMatch = firstMatch;
-    }
-
     public final boolean getExcludeHidden() {
         return this.excludeHidden;
     }
@@ -157,20 +122,12 @@ public class FindSettings {
         this.excludeHidden = excludeHidden;
     }
 
-    public final int getLinesAfter() {
-        return this.linesAfter;
+    public final boolean getIncludeArchives() {
+        return this.includeArchives;
     }
 
-    public final void setLinesAfter(final int linesAfter) {
-        this.linesAfter = linesAfter;
-    }
-
-    public final int getLinesBefore() {
-        return this.linesBefore;
-    }
-
-    public final void setLinesBefore(final int linesBefore) {
-        this.linesBefore = linesBefore;
+    public final void setIncludeArchives(final boolean includeArchives) {
+        this.includeArchives = includeArchives;
     }
 
     public final boolean getListDirs() {
@@ -187,38 +144,6 @@ public class FindSettings {
 
     public final void setListFiles(final boolean listFiles) {
         this.listFiles = listFiles;
-    }
-
-    public final boolean getListLines() {
-        return this.listLines;
-    }
-
-    public final void setListLines(final boolean listLines) {
-        this.listLines = listLines;
-    }
-
-    public final int getMaxLineLength() {
-        return this.maxLineLength;
-    }
-
-    public final void setMaxLineLength(final int maxLineLength) {
-        this.maxLineLength = maxLineLength;
-    }
-
-    public final boolean getMultiLineFind() {
-        return this.multiLineFind;
-    }
-
-    public final void setMultiLineFind(final boolean multiLineFind) {
-        this.multiLineFind = multiLineFind;
-    }
-
-    public final boolean getPrintResults() {
-        return this.printResults;
-    }
-
-    public final void setPrintResults(final boolean printResults) {
-        this.printResults = printResults;
     }
 
     public final boolean getPrintUsage() {
@@ -243,30 +168,6 @@ public class FindSettings {
 
     public final void setRecursive(final boolean recursive) {
         this.recursive = recursive;
-    }
-
-    public final boolean getFindArchives() {
-        return this.findArchives;
-    }
-
-    public final void setFindArchives(final boolean findArchives) {
-        this.findArchives = findArchives;
-    }
-
-    public String getTextFileEncoding() {
-        return textFileEncoding;
-    }
-
-    public void setTextFileEncoding(String textFileEncoding) {
-        this.textFileEncoding = textFileEncoding;
-    }
-
-    public final boolean getUniqueLines() {
-        return this.uniqueLines;
-    }
-
-    public final void setUniqueLines(final boolean uniqueLines) {
-        this.uniqueLines = uniqueLines;
     }
 
     public final boolean getVerbose() {
@@ -382,81 +283,12 @@ public class FindSettings {
         addPattern(this.outArchiveFilePatterns, pattern);
     }
 
-    public final Set<Pattern> getInLinesAfterPatterns() {
-        return this.inLinesAfterPatterns;
-    }
-
-    public final void addInLinesAfterPattern(final String pattern) {
-        addPattern(this.inLinesAfterPatterns, pattern);
-    }
-
-    public final Set<Pattern> getOutLinesAfterPatterns() {
-        return this.outLinesAfterPatterns;
-    }
-
-    public final void addOutLinesAfterPattern(final String pattern) {
-        addPattern(this.outLinesAfterPatterns, pattern);
-    }
-
-    public final Set<Pattern> getInLinesBeforePatterns() {
-        return this.inLinesBeforePatterns;
-    }
-
-    public final void addInLinesBeforePattern(final String pattern) {
-        addPattern(this.inLinesBeforePatterns, pattern);
-    }
-
-    public final Set<Pattern> getOutLinesBeforePatterns() {
-        return this.outLinesBeforePatterns;
-    }
-
-    public final void addOutLinesBeforePattern(final String pattern) {
-        addPattern(this.outLinesBeforePatterns, pattern);
-    }
-
-    public final Set<Pattern> getLinesAfterToPatterns() {
-        return this.linesAfterToPatterns;
-    }
-
-    public final void addLinesAfterToPattern(final String pattern) {
-        addPattern(this.linesAfterToPatterns, pattern);
-    }
-
-
-    public final Set<Pattern> getLinesAfterUntilPatterns() {
-        return this.linesAfterUntilPatterns;
-    }
-
-    public final void addLinesAfterUntilPattern(final String pattern) {
-        addPattern(this.linesAfterUntilPatterns, pattern);
-    }
-
-    public final void addFindPattern(final String pattern) {
-        addPattern(this.findPatterns, pattern);
-    }
-
-    public final Set<Pattern> getFindPatterns() {
-        return this.findPatterns;
-    }
-
-    public final boolean hasLinesAfterToPatterns() {
-        return linesAfterToPatterns.size() > 0;
-    }
-
-    public final boolean hasLinesAfterUntilPatterns() {
-        return linesAfterUntilPatterns.size() > 0;
-    }
-
-    public final boolean hasLinesAfterToOrUntilPatterns() {
-        return hasLinesAfterToPatterns() || hasLinesAfterUntilPatterns();
-    }
-
     // could be a comma-separated list
-    private static void addEFileTypes(Set<FileType> set, final String fts) {
-        addEFileTypes(set, Arrays.asList(fts.split(",")));
+    private static void addFileTypes(Set<FileType> set, final String fts) {
+        addFileTypes(set, Arrays.asList(fts.split(",")));
     }
 
-    private static void addEFileTypes(Set<FileType> set, final List<String> fts) {
+    private static void addFileTypes(Set<FileType> set, final List<String> fts) {
         for (String ft : fts) {
             if (!ft.isEmpty()) {
                 set.add(FileTypes.fromName(ft));
@@ -465,11 +297,11 @@ public class FindSettings {
     }
 
     public final void addInFileType(final String ft) {
-        addEFileTypes(this.inFileTypes, ft);
+        addFileTypes(this.inFileTypes, ft);
     }
 
     public final void addOutFileType(final String ft) {
-        addEFileTypes(this.outFileTypes, ft);
+        addFileTypes(this.outFileTypes, ft);
     }
 
     private static String stringSetToString(final Set<String> set) {
@@ -501,50 +333,28 @@ public class FindSettings {
     }
 
     public final String toString() {
-        String startPath;
-        if (null == this.startPath) {
-            startPath = "\"\"";
-        } else {
-            startPath = "\"" + this.startPath + "\"";
-        }
         return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
                 + ", colorize: " + this.colorize
                 + ", debug: " + this.debug
                 + ", excludeHidden: " + this.excludeHidden
-                + ", firstMatch: " + this.firstMatch
                 + ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions)
                 + ", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns)
                 + ", inDirPatterns: " + patternSetToString(this.inDirPatterns)
                 + ", inExtensions: " + stringSetToString(this.inExtensions)
                 + ", inFilePatterns: " + patternSetToString(this.inFilePatterns)
-                + ", inLinesAfterPatterns: " + patternSetToString(this.inLinesAfterPatterns)
-                + ", inLinesBeforePatterns: " + patternSetToString(this.inLinesBeforePatterns)
-                + ", linesAfter: " + this.linesAfter
-                + ", linesAfterToPatterns: " + patternSetToString(this.linesAfterToPatterns)
-                + ", linesAfterUntilPatterns: " + patternSetToString(this.linesAfterUntilPatterns)
-                + ", linesBefore: " + this.linesBefore
+                + ", includeArchives: " + this.includeArchives
                 + ", listDirs: " + this.listDirs
                 + ", listFiles: " + this.listFiles
-                + ", listLines: " + this.listLines
-                + ", maxLineLength: " + this.maxLineLength
-                + ", multiLineFind: " + this.multiLineFind
                 + ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions)
                 + ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns)
                 + ", outDirPatterns: " + patternSetToString(this.outDirPatterns)
                 + ", outExtensions: " + stringSetToString(this.outExtensions)
                 + ", outFilePatterns: " + patternSetToString(this.outFilePatterns)
-                + ", outLinesAfterPatterns: " + patternSetToString(this.outLinesAfterPatterns)
-                + ", outLinesBeforePatterns: " + patternSetToString(this.outLinesBeforePatterns)
-                + ", printResults: " + this.printResults
                 + ", printUsage: " + this.printUsage
                 + ", printVersion: " + this.printVersion
                 + ", recursive: " + this.recursive
-                + ", findArchives: " + this.findArchives
-                + ", findPatterns: " + patternSetToString(this.findPatterns)
-                + ", startPath: " + startPath
-                + ", textFileEncoding: " + textFileEncoding
-                + ", uniqueLines: " + this.uniqueLines
+                + ", paths: " + stringSetToString(this.paths)
                 + ", verbose: " + this.verbose
                 + ")";
     }

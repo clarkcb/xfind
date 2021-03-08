@@ -1,6 +1,8 @@
+import 'dart:io' show Platform;
 
-// TODO: figure out how to read local package data files
-const String XFINDPATH = '/Users/cary/src/xfind';
-const String SHAREDPATH = '$XFINDPATH/shared';
-const String FILETYPESPATH = '$SHAREDPATH/filetypes.json';
-const String FINDOPTIONSPATH = '$SHAREDPATH/findoptions.json';
+String XFINDPATH = Platform.environment.containsKey('XFIND_PATH') ?
+  Platform.environment['XFIND_PATH'] :
+  Platform.environment['HOME'] + '/src/xfind';
+String SHAREDPATH = '$XFINDPATH/shared';
+String FILETYPESPATH = '$SHAREDPATH/filetypes.json';
+String FINDOPTIONSPATH = '$SHAREDPATH/findoptions.json';

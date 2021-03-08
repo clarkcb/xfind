@@ -4,14 +4,19 @@
  * Configuration values
  */
 
-"use strict";
+'use strict';
 
-const config = require('../../../shared/config.json');
+const config = require('../data/config.json');
 
-const isWin = /^win/.test(process.platform);
+// const isWin = /^win/.test(process.platform);
 
-const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
-const HOME = process.env[HOME_NAME];
+// const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
+// const HOME = process.env[HOME_NAME];
+
+// use XFIND_PATH env var if defined
+if (process.env.XFIND_PATH) {
+    config.xfindpath = process.env.XFIND_PATH;
+}
 
 exports.XFINDPATH = config.xfindpath;
 exports.SHAREDPATH = exports.XFINDPATH + '/shared';

@@ -96,6 +96,3 @@ public extension Sequence where Iterator.Element: Hashable {
         return filter { seen.insert($0).inserted }
     }
 }
-
-// let array: [Int] = [1, 1, 1, 2, 2, 2, 3, 3, 3]
-// print(array.unique()) // prints: [1, 2, 3]

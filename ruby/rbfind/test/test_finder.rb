@@ -15,8 +15,7 @@ module RbFind
 
     def get_settings
       settings = FindSettings.new
-      settings.startpath = '.'
-      settings.add_pattern('Finder', settings.findpatterns)
+      settings.paths.push('.')
       settings
     end
 
@@ -285,16 +284,16 @@ module RbFind
       assert(finder.filter_file?(f))
     end
 
-    def test_filter_file_archive_no_findarchives
+    def test_filter_file_archive_no_includearchives
       settings = get_settings
       finder = Finder.new(settings)
       f = 'archive.zip'
       assert(!finder.filter_file?(f))
     end
 
-    def test_filter_file_archive_findarchives
+    def test_filter_file_archive_includearchives
       settings = get_settings
-      settings.findarchives = 1
+      settings.includearchives = true
       finder = Finder.new(settings)
       f = 'archive.zip'
       assert(finder.filter_file?(f))
@@ -303,7 +302,7 @@ module RbFind
     def test_filter_file_archive_archivesonly
       settings = get_settings
       settings.archivesonly = true
-      settings.findarchives = true
+      settings.includearchives = true
       finder = Finder.new(settings)
       f = 'archive.zip'
       assert(finder.filter_file?(f))
@@ -312,60 +311,10 @@ module RbFind
     def test_filter_file_nonarchive_archivesonly
       settings = get_settings
       settings.archivesonly = true
-      settings.findarchives = true
+      settings.includearchives = true
       finder = Finder.new(settings)
       f = 'fileutil.rb'
       assert(!finder.filter_file?(f))
-    end
-
-    ################################################################################
-    # find_lines tests
-    ################################################################################
-    def test_find_lines
-      settings = get_settings
-      finder = Finder.new(settings)
-      testfile = get_test_file
-      fo = File.open(testfile, mode: 'r:ISO-8859-1')
-      contents = fo.read
-      results = finder.find_multiline_string(contents)
-      assert_equal(results.size, 2)
-
-      first_result = results[0]
-      assert_equal(first_result.linenum, 29)
-      assert_equal(first_result.match_start_index, 3)
-      assert_equal(first_result.match_end_index, 11)
-
-      second_result = results[1]
-      assert_equal(second_result.linenum, 35)
-      assert_equal(second_result.match_start_index, 24)
-      assert_equal(second_result.match_end_index, 32)
-    ensure
-      fo&.close
-    end
-
-    ################################################################################
-    # find_multiline_string tests
-    ################################################################################
-    def test_find_multiline_string
-      settings = get_settings
-      finder = Finder.new(settings)
-      testfile = get_test_file
-      fo = File.open(testfile, mode: 'r:ISO-8859-1')
-      line_iterator = fo.each_line
-      results = finder.find_line_iterator(line_iterator)
-      assert_equal(results.size, 2)
-
-      first_result = results[0]
-      assert_equal(first_result.linenum, 29)
-      assert_equal(first_result.match_start_index, 3)
-      assert_equal(first_result.match_end_index, 11)
-
-      second_result = results[1]
-      assert_equal(second_result.linenum, 35)
-      assert_equal(second_result.match_start_index, 24)
-      assert_equal(second_result.match_end_index, 32)
-    ensure
-      fo&.close
     end
   end
 end

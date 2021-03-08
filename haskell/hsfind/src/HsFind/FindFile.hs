@@ -1,20 +1,24 @@
 module HsFind.FindFile
   ( FindFile(..)
+  , blankFindFile
   , isArchiveFile
-  , isFindableFile
   ) where
 
 import HsFind.FileTypes
 
 -- TODO: use this type with all file-based functions
 data FindFile = FindFile {
-                                findFileContainers :: [FilePath]
-                              , findFilePath :: FilePath
-                              , findFileType :: FileType
-                              } deriving (Show, Eq)
+                           findFileContainers :: [FilePath]
+                         , findFilePath :: FilePath
+                         , findFileType :: FileType
+                         } deriving (Show, Eq)
+
+blankFindFile :: FindFile
+blankFindFile = FindFile {
+                           findFileContainers=[]
+                         , findFilePath=""
+                         , findFileType=Unknown
+                         }
 
 isArchiveFile :: FindFile -> Bool
-isArchiveFile sf = findFileType sf == Archive
-
-isFindableFile :: FindFile -> Bool
-isFindableFile sf = isFindableFileType (findFileType sf)
+isArchiveFile ff = findFileType ff == Archive

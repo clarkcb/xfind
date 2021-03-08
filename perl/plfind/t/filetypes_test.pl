@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 13;
+use Test::Simple tests => 12;
 
 use plfind::FileType;
 use plfind::FileTypes;
@@ -64,14 +64,6 @@ sub test_getfiletype_xml_file {
     ok($type eq plfind::FileType->XML, "FileType of $filename is $type");
 }
 
-sub test_getfiletype_findable_file {
-    my $filename = 'archive.zip';
-    my $ok = $filetypes->is_findable($filename);
-    ok($ok > 0, "$filename is findable file");
-    # my $type = $filetypes->get_filetype($filename);
-    # ok($type eq plfind::FileType->UNKNOWN, "FileType of $filename is $type");
-}
-
 sub test_getfiletype_unknown_file {
     my $filename = 'unknown.xyz';
     my $ok = $filetypes->is_unknown($filename);
@@ -86,7 +78,6 @@ sub main {
     test_getfiletype_code_file();
     test_getfiletype_text_file();
     test_getfiletype_xml_file();
-    test_getfiletype_findable_file();
     test_getfiletype_unknown_file();
 }
 

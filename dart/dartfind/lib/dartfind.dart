@@ -6,6 +6,5 @@ export 'src/file_util.dart';
 export 'src/find_exception.dart';
 export 'src/find_file.dart';
 export 'src/find_options.dart';
-export 'src/find_result.dart';
 export 'src/find_settings.dart';
 export 'src/finder.dart';

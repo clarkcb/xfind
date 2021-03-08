@@ -9,46 +9,23 @@ void _handleError(err, FindOptions options) {
   exitCode = 1;
 }
 
-int sortResults(FindResult r1, FindResult r2) {
-  if (r1.file.file.parent.path == r2.file.file.parent.path) {
-    if (r1.file.file.path == r2.file.file.path) {
-      if (r1.lineNum == r2.lineNum) {
-        return r1.matchStartIndex.compareTo(r2.matchStartIndex);
-      } else {
-        return r1.lineNum.compareTo(r2.lineNum);
-      }
-    } else {
-      return r1.file.file.path.compareTo(r2.file.file.path);
-    }
-  } else {
-    return r1.file.file.parent.path.compareTo(r2.file.file.parent.path);
-  }
-}
-
-void printResults(List<FindResult> results, FindSettings settings) {
-  log('\nFind results (${results.length}):');
-  var formatter = FindResultFormatter(settings);
-  results.sort(sortResults);
-  for (var r in results) {
-    log(formatter.format(r));
-  }
-}
-
-List<String> getMatchingDirs(List<FindResult> results) {
-  var dirs = results.map((r) => r.file.file.parent.path).toSet().toList();
+List<String> getMatchingDirs(List<FindFile> findFiles) {
+  var dirs = findFiles.map((f) => f.file.parent.path).toSet().toList();
   dirs.sort();
   return dirs;
 }
 
-void printMatchingDirs(List<FindResult> results, FindSettings settings) {
-  var dirs = getMatchingDirs(results);
+void printMatchingDirs(List<FindFile> findFiles, FindSettings settings) {
+  var dirs = getMatchingDirs(findFiles);
   if (dirs.isNotEmpty) {
-    log('\nDirectories with matches (${dirs.length}):');
-    if (settings.startPath.startsWith('~')) {
+    log('\nMatching directories (${dirs.length}):');
+    if (settings.paths.any((p) => p.startsWith('~'))) {
       dirs.forEach((d) { log(FileUtil.contractPath(d)); });
     } else {
       dirs.forEach(log);
     }
+  } else {
+    log('\nMatching directories: 0');
   }
 }
 
@@ -60,57 +37,40 @@ int sortFiles(File f1, File f2) {
   }
 }
 
-List<String> getMatchingFiles(List<FindResult> results, FindSettings settings) {
-  var files = results.map((r) => r.file.file).toSet().toList();
+List<String> getMatchingFiles(List<FindFile> results, FindSettings settings) {
+  var files = results.map((f) => f.file).toSet().toList();
   files.sort(sortFiles);
-  return files.map((f) => FileUtil.contractPath(f.path)).toList();
+  return files.map((f) => f.path).toList();
 }
 
-void printMatchingFiles(List<FindResult> results, FindSettings settings) {
+void printMatchingFiles(List<FindFile> results, FindSettings settings) {
   var files = getMatchingFiles(results, settings);
   if (files.isNotEmpty) {
-    log('\nFiles with matches (${files.length}):');
-    if (settings.startPath.startsWith('~')) {
+    log('\nMatching files (${files.length}):');
+    if (settings.paths.any((p) => p.startsWith('~'))) {
       files.forEach((f) { log(FileUtil.contractPath(f)); });
     } else {
       files.forEach(log);
     }
-    for (var f in files) {
-      log(f);
-    }
-  }
-}
-
-List<String> getMatchingLines(List<FindResult> results, FindSettings settings) {
-  var lines = results.map((r) => r.line.trim()).toList();
-  if (settings.uniqueLines) {
-    lines = lines.toSet().toList();
-  }
-  lines.sort((l1, l2) => l1.toLowerCase().compareTo(l2.toLowerCase()));
-  return lines;
-}
-
-void printMatchingLines(List<FindResult> results, FindSettings settings) {
-  var lines = getMatchingLines(results, settings);
-  if (lines.isNotEmpty) {
-    String msg;
-    if (settings.uniqueLines) {
-      msg = '\nUnique lines with matches (${lines.length}):';
-    } else {
-      msg = '\nLines with matches (${lines.length}):';
-    }
-    log(msg);
-    for (var l in lines) {
-      log(l);
-    }
+  } else {
+    log('\nMatching files: 0');
   }
 }
 
 Future<void> find(FindSettings settings, FindOptions options) async {
-  var results = <FindResult>[];
   try {
     var finder = Finder(settings);
-    results = await finder.find();
+    await finder.find().then((findFiles) {
+      if (findFiles.isNotEmpty) {
+        if (settings.listDirs) {
+          printMatchingDirs(findFiles, settings);
+        }
+
+        if (settings.listFiles) {
+          printMatchingFiles(findFiles, settings);
+        }
+      }
+    });
   } on FormatException catch(e) {
     logError(e.message);
   } on FindException catch(e) {
@@ -118,24 +78,6 @@ Future<void> find(FindSettings settings, FindOptions options) async {
   } catch (e) {
     print(e);
     rethrow;
-  }
-
-  if (results.isNotEmpty) {
-    if (settings.printResults) {
-      printResults(results, settings);
-    }
-
-    if (settings.listDirs) {
-      printMatchingDirs(results, settings);
-    }
-
-    if (settings.listFiles) {
-      printMatchingFiles(results, settings);
-    }
-
-    if (settings.listFiles) {
-      printMatchingLines(results, settings);
-    }
   }
 }
 

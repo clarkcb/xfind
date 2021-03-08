@@ -1,9 +1,12 @@
-#!/bin/bash
+#!/bin/sh
 
-SCRIPTPATH=$(readlink "${BASH_SOURCE[0]}")
-SCRIPTDIR=$(dirname "$SCRIPTPATH")
-PROJECTDIR=$(dirname "$SCRIPTDIR")
-PACKAGESPATH=$PROJECTDIR/.packages
-DARTFINDPATH=$SCRIPTDIR/dartfind.dart
+if [ -z "$XFIND_PATH" ]
+then
+    XFIND_PATH=$HOME/src/xfind
+fi
 
-dart --packages="$PACKAGESPATH" "$DARTFINDPATH" "$@"
+DARTFIND_PATH=$XFIND_PATH/dart/dartfind
+PACKAGES_PATH=$DARTFIND_PATH/.packages
+DARTFIND_EXE=$DARTFIND_PATH/bin/dartfind.dart
+
+dart --packages="$PACKAGES_PATH" "$DARTFIND_EXE" "$@"

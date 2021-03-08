@@ -264,7 +264,7 @@
 
 - (void)testFilterFile_ArchiveFindArchives_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setFindArchives:true];
+    [settings setIncludeArchives:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     XCTAssert([finder filterFile:@"archive.zip"]);
@@ -272,7 +272,7 @@
 
 - (void)testFilterFile_IsArchiveFindFile_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setFindArchives:true];
+    [settings setIncludeArchives:true];
     [settings addInArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
@@ -281,7 +281,7 @@
 
 - (void)testFilterFile_NotIsArchiveFindFile_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setFindArchives:true];
+    [settings setIncludeArchives:true];
     [settings addOutArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
@@ -325,37 +325,6 @@
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     XCTAssert(![finder filterFile:@"FileUtil.cs"]);
-}
-
-/*************************************************************
- * findMultiLineString tests
- *************************************************************/
-- (void)testFindMultiLineString {
-    FindSettings *settings = [[FindSettings alloc] init];
-    [settings setStartPath:@"."];
-    [settings addFindPattern:@"Finder"];
-    NSError *error = nil;
-    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    
-    NSArray<FindResult*> *results = [finder findFilePath:self.testFilePath error:&error];
-
-    XCTAssert([results count] == 2);
-
-    FindResult *firstResult = [results objectAtIndex:0];
-    int expectedFirstLineNum = 29;
-    XCTAssert([firstResult lineNum] == expectedFirstLineNum);
-    int expectedFirstMatchStartIndex = 3;
-    XCTAssert([firstResult matchStartIndex] == expectedFirstMatchStartIndex);
-    int expectedFirstMatchEndIndex = 11;
-    XCTAssert([firstResult matchEndIndex] == expectedFirstMatchEndIndex);
-
-    FindResult *secondResult = [results objectAtIndex:1];
-    int expectedSecondLineNum = 35;
-    XCTAssert([secondResult lineNum] == expectedSecondLineNum);
-    int expectedSecondMatchStartIndex = 24;
-    XCTAssert([secondResult matchStartIndex] == expectedSecondMatchStartIndex);
-    int expectedSecondMatchEndIndex = 32;
-    XCTAssert([secondResult matchEndIndex] == expectedSecondMatchEndIndex);
 }
 
 @end

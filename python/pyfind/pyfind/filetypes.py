@@ -70,9 +70,9 @@ class FileTypes(object):
         """Return true if file is of a (known) code file type"""
         return FileUtil.get_extension(f) in self.__filetypes['code']
 
-    def is_findable_file(self, f: str) -> bool:
-        """Return true if file is of a (known) findable type"""
-        return FileUtil.get_extension(f) in self.__filetypes['findable']
+    # def is_findable_file(self, f: str) -> bool:
+    #     """Return true if file is of a (known) findable type"""
+    #     return FileUtil.get_extension(f) in self.__filetypes['findable']
 
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""

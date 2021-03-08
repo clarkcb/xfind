@@ -31,53 +31,44 @@ module FindOptions =
 
     let argActionMap : Map<string, string -> FindSettings.t -> FindSettings.t> =
         [
-            ("encoding", (fun (s : string) (settings : FindSettings.t) -> { settings with TextFileEncoding = s }));
             ("in-archiveext", (fun (s : string) (settings : FindSettings.t) -> { settings with InArchiveExtensions = AddExtensions s settings.InArchiveExtensions }));
             ("in-archivefilepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with InArchiveFilePatterns = AddPattern s settings.InArchiveFilePatterns }));
             ("in-dirpattern", (fun (s : string) (settings : FindSettings.t) -> { settings with InDirPatterns = AddPattern s settings.InDirPatterns }));
             ("in-ext", (fun (s : string) (settings : FindSettings.t) -> { settings with InExtensions = AddExtensions s settings.InExtensions }));
             ("in-filepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with InFilePatterns = AddPattern s settings.InFilePatterns }));
             ("in-filetype", (fun (s : string) (settings : FindSettings.t) -> { settings with InFileTypes = AddFileTypes s settings.InFileTypes }));
-            ("in-linesafterpattern", (fun (s : string) (settings : FindSettings.t) -> { settings with InLinesAfterPatterns = AddPattern s settings.InLinesAfterPatterns }));
-            ("in-linesbeforepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with InLinesBeforePatterns = AddPattern s settings.InLinesBeforePatterns }));
-            ("linesafter", (fun (s : string) (settings : FindSettings.t) -> { settings with LinesAfter = Int32.Parse(s) }));
-            ("linesaftertopattern", (fun (s : string) (settings : FindSettings.t) -> { settings with LinesAfterToPatterns = AddPattern s settings.LinesAfterToPatterns }));
-            ("linesafteruntilpattern", (fun (s : string) (settings : FindSettings.t) -> { settings with LinesAfterUntilPatterns = AddPattern s settings.LinesAfterUntilPatterns }));
-            ("linesbefore", (fun (s : string) (settings : FindSettings.t) -> { settings with LinesBefore = Int32.Parse(s) }));
-            ("maxlinelength", (fun (s : string) (settings : FindSettings.t) -> { settings with MaxLineLength = Int32.Parse(s) }));
             ("out-archiveext", (fun (s : string) (settings : FindSettings.t) -> { settings with OutArchiveExtensions = AddExtensions s settings.OutArchiveExtensions }));
             ("out-archivefilepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with OutArchiveFilePatterns = AddPattern s settings.OutArchiveFilePatterns }));
             ("out-dirpattern", (fun (s : string) (settings : FindSettings.t) -> { settings with OutDirPatterns = AddPattern s settings.OutDirPatterns }));
             ("out-ext", (fun (s : string) (settings : FindSettings.t) -> { settings with OutExtensions = AddExtensions s settings.OutExtensions }));
             ("out-filepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with OutFilePatterns = AddPattern s settings.OutFilePatterns }));
             ("out-filetype", (fun (s : string) (settings : FindSettings.t) -> { settings with OutFileTypes = AddFileTypes s settings.OutFileTypes }));
-            ("out-linesafterpattern", (fun (s : string) (settings : FindSettings.t) -> { settings with OutLinesAfterPatterns = AddPattern s settings.OutLinesAfterPatterns }));
-            ("out-linesbeforepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with OutLinesBeforePatterns = AddPattern s settings.OutLinesBeforePatterns }));
-            ("findpattern", (fun (s : string) (settings : FindSettings.t) -> { settings with FindPatterns = AddPattern s settings.FindPatterns }));
+            // TODO: convert to datetime
+            ("maxlastmod", (fun (s : string) (settings : FindSettings.t) -> settings));
+            // TODO: convert to int
+            ("maxsize", (fun (s : string) (settings : FindSettings.t) -> settings));
+            // TODO: convert to datetime
+            ("minlastmod", (fun (s : string) (settings : FindSettings.t) -> settings));
+            // TODO: convert to int
+            ("minsize", (fun (s : string) (settings : FindSettings.t) -> settings));
+            ("path", (fun (s : string) (settings : FindSettings.t) -> FindSettings.AddPath s settings));
         ] |> Map.ofList
 
     let flagActionMap : Map<string, bool -> FindSettings.t -> FindSettings.t> =
         [
-            ("allmatches", (fun (b : bool) (settings : FindSettings.t) -> { settings with FirstMatch = not b }));
             ("archivesonly", (fun (b : bool) (settings : FindSettings.t) -> FindSettings.SetArchivesOnly b settings));
             ("colorize", (fun (b : bool) (settings : FindSettings.t) -> { settings with Colorize = b }));
             ("debug", (fun (b : bool) (settings : FindSettings.t) -> FindSettings.SetDebug b settings));
+            ("excludearchives", (fun (b : bool) (settings : FindSettings.t) -> { settings with IncludeArchives = not b }));
             ("excludehidden", (fun (b : bool) (settings : FindSettings.t) -> { settings with ExcludeHidden = b }));
-            ("firstmatch", (fun (b : bool) (settings : FindSettings.t) -> { settings with FirstMatch = b }));
             ("help", (fun (b : bool) (settings : FindSettings.t) -> { settings with PrintUsage = b }));
+            ("includearchives", (fun (b : bool) (settings : FindSettings.t) -> { settings with IncludeArchives = b }));
             ("includehidden", (fun (b : bool) (settings : FindSettings.t) -> { settings with ExcludeHidden = not b }));
             ("listdirs", (fun (b : bool) (settings : FindSettings.t) -> { settings with ListDirs = b }));
             ("listfiles", (fun (b : bool) (settings : FindSettings.t) -> { settings with ListFiles = b }));
-            ("listlines", (fun (b : bool) (settings : FindSettings.t) -> { settings with ListLines = b }));
-            ("multilineoption-REMOVE", (fun (b : bool) (settings : FindSettings.t) -> { settings with MultiLineFind = b }));
             ("nocolorize", (fun (b : bool) (settings : FindSettings.t) -> { settings with Colorize = not b }));
-            ("noprintmatches", (fun (b : bool) (settings : FindSettings.t) -> { settings with PrintResults = not b }));
             ("norecursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = not b }));
-            ("nofindarchives", (fun (b : bool) (settings : FindSettings.t) -> { settings with FindArchives = not b }));
-            ("printmatches", (fun (b : bool) (settings : FindSettings.t) -> { settings with PrintResults = b }));
             ("recursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = b }));
-            ("findarchives", (fun (b : bool) (settings : FindSettings.t) -> { settings with FindArchives = b }));
-            ("uniquelines", (fun (b : bool) (settings : FindSettings.t) -> { settings with UniqueLines = b }));
             ("verbose", (fun (b : bool) (settings : FindSettings.t) -> { settings with Verbose = b }));
             ("version", (fun (b : bool) (settings : FindSettings.t) -> { settings with PrintVersion = b }));
         ] |> Map.ofList;
@@ -106,9 +97,9 @@ module FindOptions =
         recOptionsFromXml (List.ofSeq optNodes) []
         |> List.sortBy (fun o -> if (o.ShortArg <> "") then (o.ShortArg.ToLower() + "@" + o.LongArg) else o.LongArg)
 
-//    let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.findoptions.xml");
+    // let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.findoptions.xml");
     let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.findoptions.json");
-//    let options = OptionsFromXml(_findOptionsResource)
+    // let options = OptionsFromXml(_findOptionsResource)
     let options = OptionsFromJson(_findOptionsResource)
 
     let SettingsFromArgs (args : string[]) : FindSettings.t * string =
@@ -147,8 +138,9 @@ module FindOptions =
                             settings, sprintf "Invalid option: %s" opt
                     else
                         settings, sprintf "Invalid option: %s" opt
-                | _ -> recSettingsFromArgs tail { settings with StartPath = head }
-        recSettingsFromArgs (Array.toList args) { FindSettings.DefaultSettings with PrintResults = true }
+                | _ -> recSettingsFromArgs tail { settings with Paths = List.append settings.Paths [head] }
+        // default ListFiles to true since running as cli
+        recSettingsFromArgs (Array.toList args) { FindSettings.DefaultSettings with ListFiles = true }
 
     let GetUsageString () : string =
         let optStringMap =
@@ -183,7 +175,7 @@ module FindOptions =
 
         let usageString = 
             usageStrings
-            |> List.append ["\nUsage:"; " fsfind [options] -s <findpattern> <startpath>\n"; "Options:"] 
+            |> List.append ["\nUsage:"; " fsfind [options] <path> [<path> ...]\n"; "Options:"] 
             |> String.concat "\n"
         usageString
 

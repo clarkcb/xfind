@@ -4,7 +4,7 @@
 #
 # benchmark.py
 #
-# A simple benchmarking tool for the various xsearch language versions
+# A simple benchmarking tool for the various xfind language versions
 #
 ################################################################################
 import subprocess
@@ -13,9 +13,9 @@ from collections import namedtuple
 from io import StringIO
 from typing import Dict, List, Union
 
-from xsearch import *
+from xfind import *
 
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'], verbose=False)
+Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'], verbose=False)
 
 
 ########################################
@@ -24,23 +24,32 @@ Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xsearch_name'], verb
 #exts = ','.join('clj cpp cs dart fs go hs java js kt pl php py rb rs scala swift ts'.split())
 exts = ','.join('py rb'.split())
 
-startpath = os.path.join(XSEARCHPATH, 'python')
+startpaths = [
+    os.path.join(XFINDPATH, 'python'),
+    os.path.join(XFINDPATH, 'ruby'),
+]
 
 default_runs = 10
 
-common_args = ['-D', 'venv', '-x', exts, '-s', 'Searcher', startpath]
+core_args = ['-D', 'venv']
+ext_args = ['-x', exts]
+common_args = core_args + ext_args + startpaths
 
 # Scenarios to add:
-#     -x js,ts -s "Searcher" /Users/cary/src/xsearch/typescript
+#     -x js,ts -s "Finder" /Users/cary/src/xfind/typescript
 scenarios = [
-    Scenario('no args', [], replace_xsearch_name=True),
-    Scenario('help', ['-h'], replace_xsearch_name=True),
-    Scenario('search lines #1', common_args, replace_xsearch_name=False),
-    Scenario('search contents #1', common_args + ['-m'], replace_xsearch_name=False),
-    Scenario('search lines #2 - first match', common_args + ['-1'], replace_xsearch_name=False),
-    Scenario('search contents #2 - first match', common_args + ['-m', '-1'], replace_xsearch_name=False),
-    # Scenario('search lines #3', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript')], replace_xsearch_name=False),
-    # Scenario('search lines #3 - first match', ['-x', 'js,ts', '-s', 'Searcher', os.path.join(XSEARCHPATH, 'typescript'), '-1'], replace_xsearch_name=False),
+    Scenario('no args', [], replace_xfind_name=True),
+    Scenario('help', ['-h'], replace_xfind_name=True),
+    Scenario('find matching "{}" extensions'.format(exts), common_args, replace_xfind_name=False),
+    Scenario('find not matching "{}" extensions'.format(exts), core_args + ['-X', exts] + startpaths,
+        replace_xfind_name=False),
+    Scenario('find with "find" in filename', common_args + ['-f', 'find'], replace_xfind_name=False),
+    Scenario('find with "find" not in filename', common_args + ['-F', 'find'], replace_xfind_name=False),
+    Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths, replace_xfind_name=False),
+    Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths, replace_xfind_name=False),
+    Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs'], replace_xfind_name=False),
+    Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
+        replace_xfind_name=False),
 ]
 
 time_keys = {'real', 'sys', 'user', 'total'}
@@ -253,7 +262,7 @@ class ScenarioResults(object):
 ########################################
 class Benchmarker(object):
     def __init__(self, **kwargs):
-        self.xsearch_names = all_xsearch_names
+        self.xfind_names = all_xfind_names
         self.scenarios = []
         self.runs = default_runs
         self.debug = True
@@ -263,12 +272,12 @@ class Benchmarker(object):
     def __print_data_table(self, title: str, hdr: List[str], data: List[List[Union[float, int]]], col_types: List[type]):
         sio = StringIO()
         sio.write('\n{}'.format(title))
-        longest = max([len(x) for x in self.xsearch_names])
+        longest = max([len(x) for x in self.xfind_names])
         col_width = max([len(h) for h in hdr]) + 1
         hdr_place = ' %' + str(col_width) + 's'
         hdr_places = hdr_place * len(hdr)
         hdr_format = ' %%-%ds %s' % (longest, hdr_places)
-        hdr_line = hdr_format % tuple(['xsearch'] + hdr)
+        hdr_line = hdr_format % tuple(['xfind'] + hdr)
         sep_line = '-' * len(hdr_line)
         sio.write("\n")
         sio.write("{}\n".format(hdr_line))
@@ -295,7 +304,7 @@ class Benchmarker(object):
         hdr.extend(['TOTAL', 'AVG', 'RANK'])
         data = []
         col_types = [float, float, int] * (len(scenario_results) + 1)
-        for x in self.xsearch_names:
+        for x in self.xfind_names:
             row = [x]
             for sr in scenario_results.scenario_results:
                 xt = sr.total_total(x)
@@ -317,7 +326,7 @@ class Benchmarker(object):
                'rank', 'total', 'avg', 'rank']
         data = []
         col_types = [float, float, int] * 4
-        for x in self.xsearch_names:
+        for x in self.xfind_names:
             xr = scenario_results.total_real(x)
             xra = scenario_results.avg_real(x)
             xrr = scenario_results.rank_real(x)
@@ -343,7 +352,7 @@ class Benchmarker(object):
                'avg', 'rank', 'total', 'avg', 'rank']
         data = []
         col_types = [float, float, int] * 4
-        for x in self.xsearch_names:
+        for x in self.xfind_names:
             xr = scenario_result.total_real(x)
             xra = scenario_result.avg_real(x)
             xrr = scenario_result.rank_real(x)
@@ -371,7 +380,7 @@ class Benchmarker(object):
         user_ranks = result.user_ranks
         total_ranks = result.total_ranks
         col_types = [float, int] * 4
-        for x in self.xsearch_names:
+        for x in self.xfind_names:
             lang_result = [lr for lr in result.lang_results if lr.name == x][0]
             xr = lang_result.real
             xrr = real_ranks.index(x) + 1
@@ -396,8 +405,8 @@ class Benchmarker(object):
             time_dict = {s: 0 for s in time_keys}
         return time_dict
 
-    def compare_outputs(self, sn: int, xsearch_output) -> bool:
-        nonmatching = nonmatching_outputs(xsearch_output)
+    def compare_outputs(self, sn: int, xfind_output) -> bool:
+        nonmatching = nonmatching_outputs(xfind_output)
         if nonmatching:
             xs = []
             if len(nonmatching) == 2:
@@ -408,8 +417,8 @@ class Benchmarker(object):
             for x in xs:
                 for y in sorted(nonmatching[x]):
                     print('{} output != {} output'.format(x, y))
-                    print('{} output:\n"{}"'.format(x, xsearch_output[x]))
-                    print('{} output:\n"{}"'.format(y, xsearch_output[y]))
+                    print('{} output:\n"{}"'.format(x, xfind_output[x]))
+                    print('{} output:\n"{}"'.format(y, xfind_output[y]))
                     self.diff_outputs.append((sn, x, y))
             return False
         else:
@@ -424,19 +433,19 @@ class Benchmarker(object):
         """This run version starts procs for all language versions before going back and 
            capturing their outputs
         """
-        xsearch_procs = {}
-        xsearch_output = {}
-        xsearch_times = {}
+        xfind_procs = {}
+        xfind_output = {}
+        xfind_times = {}
         lang_results = []
-        for x in self.xsearch_names:
+        for x in self.xfind_names:
             fullargs = ['time', x] + s.args
             print(' '.join(fullargs[1:]))
-            xsearch_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
+            xfind_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             # print('process opened for {}'.format(x))
 
-        for x in self.xsearch_names:
-            p = xsearch_procs[x]
+        for x in self.xfind_names:
+            p = xfind_procs[x]
             output_lines = []
             time_lines = []
             while True:
@@ -452,24 +461,24 @@ class Benchmarker(object):
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
             output = '\n'.join(sorted(output_lines))
-            if s.replace_xsearch_name:
-                output = xsearch_name_regex.sub('xsearch', output)
-            xsearch_output[x] = output
+            if s.replace_xfind_name:
+                output = xfind_name_regex.sub('xfind', output)
+            xfind_output[x] = output
             if self.debug:
                 print('{} output:\n"{}"'.format(x, output))
-            xsearch_times[x] = self.times_from_lines(time_lines)
-            time_dict = xsearch_times[x]
+            xfind_times[x] = self.times_from_lines(time_lines)
+            time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
-        self.compare_outputs(sn, xsearch_output)
+        self.compare_outputs(sn, xfind_output)
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
     def do_run_seq(self, s: Scenario, sn: int, rn: int) -> RunResult:
         """This run version runs each language version subprocess sequentially
         """
-        xsearch_output = {}
-        xsearch_times = {}
+        xfind_output = {}
+        xfind_times = {}
         lang_results = []
-        for x in self.xsearch_names:
+        for x in self.xfind_names:
             fullargs = ['time', x] + s.args
             print(' '.join(fullargs[1:]))
             p = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
@@ -487,15 +496,15 @@ class Benchmarker(object):
                 if time_line != '':
                     time_lines.append(time_line.strip().decode())
             output = ''.join(output_lines)
-            if s.replace_xsearch_name:
-                output = xsearch_name_regex.sub('xsearch', output)
-            xsearch_output[x] = output
+            if s.replace_xfind_name:
+                output = xfind_name_regex.sub('xfind', output)
+            xfind_output[x] = output
             if self.debug:
                 print('output:\n"{}"'.format(output))
-            xsearch_times[x] = self.times_from_lines(time_lines)
-            time_dict = xsearch_times[x]
+            xfind_times[x] = self.times_from_lines(time_lines)
+            time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
-        self.compare_outputs(sn, xsearch_output)
+        self.compare_outputs(sn, xfind_output)
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
     def run(self):
@@ -524,26 +533,26 @@ class Benchmarker(object):
             print('\nOutputs of all versions in all scenarios match')
 
         self.print_scenario_results(scenario_results)
-        self.print_scenario_summary(scenario_results)
+        # self.print_scenario_summary(scenario_results)
 
 
 ########################################
 # Main functions
 ########################################
 def get_args(args):
-    xsearch_names = all_xsearch_names
+    xfind_names = all_xfind_names
     runs = default_runs
     debug = False
     while args:
         arg = args.pop(0)
         if arg.startswith('-'):
-            if arg == '-l': # xsearch_names
-                xsearch_names = []
+            if arg == '-l': # xfind_names
+                xfind_names = []
                 if args:
                     langs = sorted(args.pop(0).split(','))
                     for lang in langs:
-                        if lang in xsearch_dict:
-                            xsearch_names.append(xsearch_dict[lang])
+                        if lang in xfind_dict:
+                            xfind_names.append(xfind_dict[lang])
                         else:
                             print('Skipping unknown language: {}'.format(lang))
                 else:
@@ -563,14 +572,14 @@ def get_args(args):
         else:
             print('ERROR: unknown arg: {}'.format(arg))
             sys.exit(1)
-    return xsearch_names, runs, debug
+    return xfind_names, runs, debug
 
 
 def main():
-    xsearch_names, runs, debug = get_args(sys.argv[1:])
-    print('xsearch_names: {}'.format(str(xsearch_names)))
+    xfind_names, runs, debug = get_args(sys.argv[1:])
+    print('xfind_names: {}'.format(str(xfind_names)))
     print('runs: {}'.format(runs))
-    benchmarker = Benchmarker(xsearch_names=xsearch_names, runs=runs,
+    benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
         scenarios=scenarios, debug=debug)
     benchmarker.run()
 

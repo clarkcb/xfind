@@ -41,11 +41,6 @@ module RbFind
       assert_equal(@filetypes.get_filetype(filename), FileType::XML)
     end
 
-    def test_get_filetype_findable_file
-      filename = 'config.ini'
-      assert(@filetypes.findable_file?(filename))
-    end
-
     def test_get_filetype_unknown_file
       filename = 'unknown.xyz'
       assert_equal(@filetypes.get_filetype(filename), FileType::UNKNOWN)

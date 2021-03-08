@@ -6,8 +6,6 @@
 # class FindOption: encapsulates a (command-line) find option
 #
 ###############################################################################
-
-
 class FindOption(object):
     """a class to encapsulate a specific command line option"""
 

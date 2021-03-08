@@ -28,8 +28,8 @@ namespace CsFindTests
 
 		private static FindSettings GetSettings()
 		{
-			var settings = new FindSettings {StartPath = "."};
-			settings.AddFindPattern("Finder");
+			var settings = new FindSettings();
+			settings.Paths.Add(".");
 			return settings;
 		}
 
@@ -348,7 +348,7 @@ namespace CsFindTests
 		}
 
 		[Test]
-		public void TestFilterFile_ArchiveNoFindArchives_False()
+		public void TestFilterFile_ArchiveExcludeArchives_False()
 		{
 			var settings = GetSettings();
 			var finder = new Finder(settings);
@@ -358,10 +358,10 @@ namespace CsFindTests
 		}
 
 		[Test]
-		public void TestFilterFile_ArchiveFindArchives_True()
+		public void TestFilterFile_ArchiveIncludeArchives_True()
 		{
 			var settings = GetSettings();
-			settings.FindArchives = true;
+			settings.IncludeArchives = true;
 			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
 			var sf = new FindFile(file, _fileTypes.GetFileType(file));
@@ -372,7 +372,7 @@ namespace CsFindTests
 		public void TestFilterFile_IsArchiveFindFile_True()
 		{
 			var settings = GetSettings();
-			settings.FindArchives = true;
+			settings.IncludeArchives = true;
 			settings.AddInArchiveExtension("zip");
 			var finder = new Finder(settings);
 			var file = new FileInfo("archive.zip");
@@ -444,67 +444,6 @@ namespace CsFindTests
 			var file = new FileInfo("FileUtil.cs");
 			var sf = new FindFile(file, _fileTypes.GetFileType(file));
 			Assert.False(finder.FilterFile(sf));
-		}
-
-
-		/*************************************************************
-		 * FindTextReaderLines test
-		 *************************************************************/
-		[Test]
-		public void TestFindTextReaderLines()
-		{
-			var settings = GetSettings();
-			var finder = new Finder(settings);
-			var enumerableLines = GetTestFileLines();
-			var results = finder.FindLines(enumerableLines).ToList();
-
-			Assert.True(results.Count == 2);
-
-			var firstResult = results[0];
-			const int expectedFirstLineNum = 29;
-			Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum);
-			const int expectedFirstMatchStartIndex = 3;
-			Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex);
-			const int expectedFirstMatchEndIndex = 11;
-			Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex);
-
-			var secondResult = results[1];
-			const int expectedSecondLineNum = 35;
-			Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum);
-			const int expectedSecondMatchStartIndex = 24;
-			Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex);
-			const int expectedSecondMatchEndIndex = 32;
-			Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex);
-		}
-
-		/*************************************************************
-		 * FindMultiLineString test
-		 *************************************************************/
-		[Test]
-		public void TestFindMultiLineString()
-		{
-			var settings = GetSettings();
-			var finder = new Finder(settings);
-			var contents = GetTestFileContent();
-			var results = finder.FindContents(contents).ToList();
-
-			Assert.True(results.Count == 2);
-
-			var firstResult = results[0];
-			const int expectedFirstLineNum = 29;
-			Assert.AreEqual(expectedFirstLineNum, firstResult.LineNum);
-			const int expectedFirstMatchStartIndex = 3;
-			Assert.AreEqual(expectedFirstMatchStartIndex, firstResult.MatchStartIndex);
-			const int expectedFirstMatchEndIndex = 11;
-			Assert.AreEqual(expectedFirstMatchEndIndex, firstResult.MatchEndIndex);
-
-			var secondResult = results[1];
-			const int expectedSecondLineNum = 35;
-			Assert.AreEqual(expectedSecondLineNum, secondResult.LineNum);
-			const int expectedSecondMatchStartIndex = 24;
-			Assert.AreEqual(expectedSecondMatchStartIndex, secondResult.MatchStartIndex);
-			const int expectedSecondMatchEndIndex = 32;
-			Assert.AreEqual(expectedSecondMatchEndIndex, secondResult.MatchEndIndex);
 		}
 	}
 }

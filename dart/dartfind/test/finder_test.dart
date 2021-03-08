@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:convert';
 
 import 'package:dartfind/dartfind.dart';
 import 'package:test/test.dart';
@@ -7,8 +6,7 @@ import 'package:test/test.dart';
 void main() {
   FindSettings getSettings() {
     var settings = FindSettings();
-    settings.startPath = '.';
-    settings.addPattern('Finder', settings.findPatterns);
+    settings.paths.add('.');
     return settings;
   }
 
@@ -227,59 +225,5 @@ void main() {
       var findFile = FindFile(File('archive.zip'), FileType.archive);
       expect(finder.isArchiveFindFile(findFile), true);
     });
-  });
-
-  /***************************************************************************
-   * findLineStream tests
-   **************************************************************************/
-  test('test findLineStream testFile2.txt', () async {
-    var settings = getSettings();
-    var finder = Finder(settings);
-    var testFilePath = '$SHAREDPATH/testFiles/testFile2.txt';
-    var inputStream = File(testFilePath).openRead();
-    var results = [];
-    try {
-      var lineStream =
-        utf8.decoder.bind(inputStream).transform(LineSplitter());
-      results = await finder.findLineStream(lineStream);
-    } catch (e) {
-      log(e.toString());
-    }
-
-    expect(results.length, 2);
-
-    var firstResult = results[0];
-    expect(firstResult.lineNum, 29);
-    expect(firstResult.matchStartIndex, 3);
-    expect(firstResult.matchEndIndex, 11);
-
-    var secondResult = results[1];
-    expect(secondResult.lineNum, 35);
-    expect(secondResult.matchStartIndex, 24);
-    expect(secondResult.matchEndIndex, 32);
-  });
-
-  /***************************************************************************
-   * findMultiLineString tests
-   **************************************************************************/
-  test('test findMultiLineString testFile2.txt', () async {
-    var settings = getSettings();
-    var finder = Finder(settings);
-    var testFilePath = '$SHAREDPATH/testFiles/testFile2.txt';
-
-    var contents = await File(testFilePath).readAsString();
-    var results = finder.findMultilineString(contents);
-
-    expect(results.length, 2);
-
-    var firstResult = results[0];
-    expect(firstResult.lineNum, 29);
-    expect(firstResult.matchStartIndex, 3);
-    expect(firstResult.matchEndIndex, 11);
-
-    var secondResult = results[1];
-    expect(secondResult.lineNum, 35);
-    expect(secondResult.matchStartIndex, 24);
-    expect(secondResult.matchEndIndex, 32);
   });
 }

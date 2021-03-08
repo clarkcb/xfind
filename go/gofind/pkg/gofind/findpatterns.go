@@ -9,23 +9,23 @@ type FindPatternsIterator struct {
 	patterns *FindPatterns
 }
 
-func NewFindPatternsIterator(sp *FindPatterns) *FindPatternsIterator {
+func NewFindPatternsIterator(fp *FindPatterns) *FindPatternsIterator {
 	return &FindPatternsIterator{
 		-1,
-		sp,
+		fp,
 	}
 }
 
-func (i *FindPatternsIterator) Next() bool {
-	i.idx++
-	if i.idx >= len(i.patterns.patterns) {
+func (it *FindPatternsIterator) Next() bool {
+	it.idx++
+	if it.idx >= len(it.patterns.patterns) {
 		return false
 	}
 	return true
 }
 
-func (i *FindPatternsIterator) Value() *regexp.Regexp {
-	return i.patterns.patterns[i.idx]
+func (it *FindPatternsIterator) Value() *regexp.Regexp {
+	return it.patterns.patterns[it.idx]
 }
 
 type FindPatterns struct {
@@ -38,30 +38,30 @@ func NewFindPatterns() *FindPatterns {
 	}
 }
 
-func (sp *FindPatterns) AddPattern(s *string) {
-	sp.patterns = append(sp.patterns, regexp.MustCompile(*s))
+func (fp *FindPatterns) AddPattern(s string) {
+	fp.patterns = append(fp.patterns, regexp.MustCompile(s))
 }
 
-func (sp *FindPatterns) IsEmpty() bool {
-	return len(sp.patterns) == 0
+func (fp *FindPatterns) IsEmpty() bool {
+	return len(fp.patterns) == 0
 }
 
-func (sp *FindPatterns) Iterator() *FindPatternsIterator {
-	return NewFindPatternsIterator(sp)
+func (fp *FindPatterns) Iterator() *FindPatternsIterator {
+	return NewFindPatternsIterator(fp)
 }
 
-func (sp *FindPatterns) MatchesAny(s *string) bool {
-	for _, p := range sp.patterns {
-		if p.MatchString(*s) {
+func (fp *FindPatterns) MatchesAny(s string) bool {
+	for _, p := range fp.patterns {
+		if p.MatchString(s) {
 			return true
 		}
 	}
 	return false
 }
 
-func (sp *FindPatterns) AnyMatchesAny(ss []*string) bool {
+func (fp *FindPatterns) AnyMatchesAny(ss []string) bool {
 	for _, s := range ss {
-		if sp.MatchesAny(s) {
+		if fp.MatchesAny(s) {
 			return true
 		}
 	}

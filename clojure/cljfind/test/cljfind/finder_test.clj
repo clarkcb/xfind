@@ -5,8 +5,7 @@
         [cljfind.config :only (SHAREDPATH)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.finder :only
-          (filter-file? is-archive-find-file? is-find-dir? is-find-file?
-           find-lines find-multiline-string)]
+          (filter-file? is-archive-find-file? is-find-dir? is-find-file?)]
         [cljfind.findsettings :only
           (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly)]))
 
@@ -141,9 +140,9 @@
       (is (not (filter-file? (file "archive.gz") settings)))
       (is (not (filter-file? (file ".gitignore") settings))))))
 
-(deftest test-filter-file?-with-findarchives
-  (let [settings (assoc DEFAULT-SETTINGS :findarchives true)]
-    (testing "test-filter-file?-with-findarchives"
+(deftest test-filter-file?-with-includearchives
+  (let [settings (assoc DEFAULT-SETTINGS :includearchives true)]
+    (testing "test-filter-file?-with-includearchives"
       (is (filter-file? (file "archive.zip") settings))
       (is (filter-file? (file "archive.bz2") settings))
       (is (filter-file? (file "archive.gz") settings))
@@ -165,36 +164,3 @@
       (is (filter-file? (file "finder.clj") settings))
       (is (filter-file? (file ".gitignore") settings))
       (is (not (filter-file? (file "archive.zip") settings))))))
-
-;; *****************************************************************************
-;; find-lines tests
-;; *****************************************************************************
-(deftest test-find-lines
-  (testing "test-find-lines"
-    (with-open [rdr (reader (expand-path TESTFILE))]
-      (let [settings (get-settings)
-            results (find-lines (line-seq rdr) settings)]
-        (is (= (count results) 2))
-        (is (= (:linenum (first results)) 29))
-        (is (= (:matchstartindex (first results)) 3))
-        (is (= (:matchendindex (first results)) 11))
-        (is (= (:linenum (second results)) 35))
-        (is (= (:matchstartindex (second results)) 24))
-        (is (= (:matchendindex (second results)) 32))))))
-
-;; *****************************************************************************
-;; find-multiline-string tests
-;; *****************************************************************************
-(deftest test-find-multiline-string
-  (testing "test-find-multiline-string"
-    (let [settings (get-settings)
-          contents (slurp (expand-path TESTFILE))
-          results (find-multiline-string contents settings)]
-      (is (= (count results) 2))
-      (is (= (:linenum (first results)) 29))
-      (is (= (:matchstartindex (first results)) 3))
-      (is (= (:matchendindex (first results)) 11))
-      (is (= (:linenum (second results)) 35))
-      (is (= (:matchstartindex (second results)) 24))
-      (is (= (:matchendindex (second results)) 32)))))
-

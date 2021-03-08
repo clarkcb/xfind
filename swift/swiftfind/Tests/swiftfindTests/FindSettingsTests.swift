@@ -25,16 +25,11 @@ class FindSettingsTests: XCTestCase {
         XCTAssert(DefaultSettings.colorize == true, "colorize == true")
         XCTAssert(DefaultSettings.debug == false, "debug == false")
         XCTAssert(DefaultSettings.excludeHidden == true, "excludeHidden == true")
-        XCTAssert(DefaultSettings.firstMatch == false, "firstMatch == false")
+        XCTAssert(DefaultSettings.includeArchives == false, "includeArchives == false")
         XCTAssert(DefaultSettings.listDirs == false, "listDirs == false")
         XCTAssert(DefaultSettings.listFiles == false, "listFiles == false")
-        XCTAssert(DefaultSettings.listLines == false, "listLines == false")
-        XCTAssert(DefaultSettings.multiLineFind == false, "multiLineFind == false")
-        XCTAssert(DefaultSettings.printResults == true, "printResults == true")
         XCTAssert(DefaultSettings.printUsage == false, "printUsage == false")
         XCTAssert(DefaultSettings.printVersion == false, "printVersion == false")
-        XCTAssert(DefaultSettings.findArchives == false, "findArchives == false")
-        XCTAssert(DefaultSettings.uniqueLines == false, "uniqueLines == false")
         XCTAssert(DefaultSettings.verbose == false, "verbose == false")
     }
 
@@ -44,18 +39,12 @@ class FindSettingsTests: XCTestCase {
         XCTAssert(settings.colorize == DefaultSettings.colorize, "colorize == true")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
-        XCTAssert(settings.firstMatch == DefaultSettings.firstMatch, "firstMatch == false")
+        XCTAssert(settings.includeArchives == DefaultSettings.includeArchives,
+                  "includeArchives == false")
         XCTAssert(settings.listDirs == DefaultSettings.listDirs, "listDirs == false")
         XCTAssert(settings.listFiles == DefaultSettings.listFiles, "listFiles == false")
-        XCTAssert(settings.listLines == DefaultSettings.listLines, "listLines == false")
-        XCTAssert(settings.multiLineFind == DefaultSettings.multiLineFind,
-                  "multiLineFind == false")
-        XCTAssert(settings.printResults == DefaultSettings.printResults, "printResults == true")
         XCTAssert(settings.printUsage == DefaultSettings.printUsage, "printUsage == false")
         XCTAssert(settings.printVersion == DefaultSettings.printVersion, "printVersion == false")
-        XCTAssert(settings.findArchives == DefaultSettings.findArchives,
-                  "findArchives == false")
-        XCTAssert(settings.uniqueLines == DefaultSettings.uniqueLines, "uniqueLines == false")
         XCTAssert(settings.verbose == DefaultSettings.verbose, "verbose == false")
     }
 
@@ -73,16 +62,18 @@ class FindSettingsTests: XCTestCase {
 
     func testAddPattern() {
         let settings = FindSettings()
-        settings.addFindPattern("Finder")
+        settings.addInFilePattern("Finder")
+        XCTAssert(settings.inFilePatterns.count == 1)
+        XCTAssert(settings.inFilePatterns.contains(where: { $0.test("Finder") }))
     }
 
     func testSetArchivesOnly() {
         let settings = FindSettings()
         XCTAssertFalse(settings.archivesOnly)
-        XCTAssertFalse(settings.findArchives)
+        XCTAssertFalse(settings.includeArchives)
         settings.archivesOnly = true
         XCTAssertTrue(settings.archivesOnly)
-        XCTAssertTrue(settings.findArchives)
+        XCTAssertTrue(settings.includeArchives)
     }
 
     func testSetDebug() {

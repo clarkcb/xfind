@@ -30,8 +30,8 @@ class FindOptions {
     }
 
     private fun loadFindOptionsFromJson() : List<FindOption> {
-        val findOptionsXmlPath = "/findoptions.json"
-        val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsXmlPath)
+        val findOptionsJsonPath = "/findoptions.json"
+        val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
         val obj: Any = JSONParser().parse(InputStreamReader(findOptionsInputStream))
         val jsonObj = obj as JSONObject
         val findoptionsArray = jsonObj["findoptions"] as JSONArray
@@ -57,8 +57,6 @@ class FindOptions {
     }
 
     private val argActionMap: Map<String, ((String, FindSettings) -> FindSettings)> = mapOf(
-            "encoding" to
-                    { s, ss -> ss.copy(textFileEncoding = s) },
             "in-archiveext" to
                     { s, ss -> ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions)) },
             "in-archivefilepattern" to
@@ -71,20 +69,6 @@ class FindOptions {
                     { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
             "in-filetype" to
                     { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
-            "in-linesafterpattern" to
-                    { s, ss -> ss.copy(inLinesAfterPatterns = ss.inLinesAfterPatterns.plus(Regex(s))) },
-            "in-linesbeforepattern" to
-                    { s, ss -> ss.copy(inLinesBeforePatterns = ss.inLinesBeforePatterns.plus(Regex(s))) },
-            "linesafter" to
-                    { s, ss -> ss.copy(linesAfter = s.toInt()) },
-            "linesaftertopattern" to
-                    { s, ss -> ss.copy(linesAfterToPatterns = ss.linesAfterToPatterns.plus(Regex(s))) },
-            "linesafteruntilpattern" to
-                    { s, ss -> ss.copy(linesAfterUntilPatterns = ss.linesAfterUntilPatterns.plus(Regex(s))) },
-            "linesbefore" to
-                    { s, ss -> ss.copy(linesBefore = s.toInt()) },
-            "maxlinelength" to
-                    { s, ss -> ss.copy(maxLineLength = s.toInt()) },
             "out-archiveext" to
                     { s, ss -> ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions)) },
             "out-archivefilepattern" to
@@ -97,38 +81,25 @@ class FindOptions {
                     { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
             "out-filetype" to
                     { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
-            "out-linesafterpattern" to
-                    { s, ss -> ss.copy(outLinesAfterPatterns = ss.outLinesAfterPatterns.plus(Regex(s))) },
-            "out-linesbeforepattern" to
-                    { s, ss -> ss.copy(outLinesBeforePatterns = ss.outLinesBeforePatterns.plus(Regex(s))) },
-            "findpattern" to
-                    { s, ss -> ss.copy(findPatterns = ss.findPatterns.plus(Regex(s))) },
             "settings-file" to
                     { s, ss -> settingsFromFile(s, ss) }
     )
 
     private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
             "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
-                    findArchives = b) else ss.copy(archivesOnly = b) },
-            "allmatches" to { b, ss -> ss.copy(firstMatch = !b) },
+                    includeArchives = b) else ss.copy(archivesOnly = b) },
             "colorize" to { b, ss -> ss.copy(colorize = b) },
             "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
                 ss.copy(debug = b) },
+            "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
             "excludehidden" to { b, ss -> ss.copy(excludeHidden = b) },
-            "firstmatch" to { b, ss -> ss.copy(firstMatch = b) },
             "help" to { b, ss -> ss.copy(printUsage = b) },
             "includehidden" to { b, ss -> ss.copy(excludeHidden = !b) },
             "listdirs" to { b, ss -> ss.copy(listDirs = b) },
             "listfiles" to { b, ss -> ss.copy(listFiles = b) },
-            "listlines" to { b, ss -> ss.copy(listLines = b) },
-            "multilineoption-REMOVE" to { b, ss -> ss.copy(multiLineFind = b) },
-            "noprintmatches" to { b, ss -> ss.copy(printResults = !b) },
             "norecursive" to { b, ss -> ss.copy(recursive = !b) },
-            "nofindarchives" to { b, ss -> ss.copy(findArchives = !b) },
-            "printmatches" to { b, ss -> ss.copy(printResults = b) },
             "recursive" to { b, ss -> ss.copy(recursive = b) },
-            "findarchives" to { b, ss -> ss.copy(findArchives = b) },
-            "uniquelines" to { b, ss -> ss.copy(uniqueLines = b) },
+            "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
             "verbose" to { b, ss -> ss.copy(verbose = b) },
             "version" to { b, ss -> ss.copy(printVersion = b) }
     )
@@ -190,8 +161,8 @@ class FindOptions {
             this.argActionMap.containsKey(key) -> {
                 this.argActionMap[key]!!.invoke(s, settings)
             }
-            key == "startpath" -> {
-                settings.copy(startPath = s)
+            key == "path" -> {
+                settings.copy(paths = settings.paths.plus(s))
             }
             else -> {
                 throw FindException("Invalid option: $key")
@@ -241,10 +212,11 @@ class FindOptions {
                     throw FindException("Invalid option: $arg")
                 }
             } else {
-                return recSettingsFromArgs(args.drop(1), settings.copy(startPath = nextArg))
+                return recSettingsFromArgs(args.drop(1), settings.copy(paths = settings.paths.plus(nextArg)))
             }
         }
-        return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printResults = true))
+      // default listFiles to true since running as cli
+      return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(listFiles = true))
     }
 
     fun usage() {
@@ -254,7 +226,7 @@ class FindOptions {
     private fun getUsageString() : String {
         val sb = StringBuilder()
         sb.append("Usage:\n")
-        sb.append(" ktfind [options] -s <findpattern> <startpath>\n\n")
+        sb.append(" ktfind [options] <path> [<path> ...]\n\n")
         sb.append("Options:\n")
         fun getOptString(so: FindOption): String {
             return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"

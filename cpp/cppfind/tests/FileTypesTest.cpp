@@ -8,7 +8,6 @@ TEST_CASE("Verify that files are the expected type", "[FileType]") {
     REQUIRE(filetypes->is_text_file("textfile.txt"));
     REQUIRE(filetypes->is_code_file("source.cpp"));
     REQUIRE(filetypes->is_xml_file("markup.xml"));
-    REQUIRE(filetypes->is_findable_file("markup.xml"));
     REQUIRE(filetypes->is_unknown_file("unknown.UNKNOWN"));
 }
 

@@ -136,16 +136,6 @@ func (f *FileTypes) IsXmlFile(file string) bool {
 	return f.isFileType("xml", file)
 }
 
-func (f *FileTypes) IsFindableFile(file string) bool {
-	return f.IsCodeFile(file) || f.IsXmlFile(file) || f.IsTextFile(file) || f.IsBinaryFile(file) ||
-		f.IsArchiveFile(file)
-}
-
-func (f *FileTypes) IsFindableItem(si *FindItem) bool {
-	return si.fileType == FiletypeCode || si.fileType == FiletypeXml || si.fileType == FiletypeText ||
-		si.fileType == FiletypeBinary || si.fileType == FiletypeArchive
-}
-
 func (f *FileTypes) IsUnknownFile(file string) bool {
 	return f.getFileType(file) == FiletypeUnknown
 }

@@ -1,4 +1,4 @@
-package gosearch
+package gofind
 
 func GetFileTypes() *FileTypes {
 	return &FileTypes{

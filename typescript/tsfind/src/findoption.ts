@@ -4,7 +4,7 @@
  * encapsulates a find option
  */
 
-"use strict";
+'use strict';
 
 export class FindOption {
     shortarg: string;

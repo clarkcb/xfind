@@ -20,54 +20,30 @@ namespace cppfind {
                 {"in-ext", [](std::string& s, FindSettings* ss) { ss->add_in_extension(s); }},
                 {"in-filepattern", [](std::string& s, FindSettings* ss) { ss->add_in_filepattern(s); }},
                 {"in-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(t); }},
-                {"in-linesafterpattern", [](std::string& s, FindSettings* ss) { ss->add_in_linesafterpattern(s); }},
-                {"in-linesbeforepattern", [](std::string& s, FindSettings* ss) { ss->add_in_linesbeforepattern(s); }},
-                {"linesaftertopattern", [](std::string& s, FindSettings* ss) { ss->add_linesaftertopattern(s); }},
-                {"linesafteruntilpattern", [](std::string& s, FindSettings* ss) { ss->add_linesafteruntilpattern(s); }},
                 {"out-archiveext", [](std::string& s, FindSettings* ss) { ss->add_out_archiveextension(s); }},
                 {"out-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_out_archivefilepattern(s); }},
                 {"out-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_out_dirpattern(s); }},
                 {"out-ext", [](std::string& s, FindSettings* ss) { ss->add_out_extension(s); }},
                 {"out-filepattern", [](std::string& s, FindSettings* ss) { ss->add_out_filepattern(s); }},
                 {"out-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(t); }},
-                {"out-linesafterpattern", [](std::string& s, FindSettings* ss) { ss->add_out_linesafterpattern(s); }},
-                {"out-linesbeforepattern", [](std::string& s, FindSettings* ss) { ss->add_out_linesbeforepattern(s); }},
-                {"findpattern", [](std::string& s, FindSettings* ss) { ss->add_findpattern(s); }},
-                {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }}
-        };
-
-        m_int_arg_map = {
-                {"linesafter", [](unsigned int i, FindSettings* ss) { ss->linesafter(i); }},
-                {"linesbefore", [](unsigned int i, FindSettings* ss) { ss->linesbefore(i); }},
-                {"maxlinelength", [](unsigned int i, FindSettings* ss) { ss->maxlinelength(i); }}
-        };
-
-        m_str_arg_map = {
-                {"startpath", [](std::string& s, FindSettings* ss) { ss->startpath(s); }},
+                {"path", [](std::string& s, FindSettings* ss) { ss->add_path(s); }},
                 {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }}
         };
 
         m_bool_arg_map = {
                 {"archivesonly", [](bool b, FindSettings* ss) { ss->archivesonly(b); }},
-                {"allmatches", [](bool b, FindSettings* ss) { ss->firstmatch(!b); }},
                 {"colorize", [](bool b, FindSettings* ss) { ss->colorize(b); }},
                 {"debug", [](bool b, FindSettings* ss) { ss->debug(b); }},
+                {"excludearchives", [](bool b, FindSettings* ss) { ss->includearchives(!b); }},
                 {"excludehidden", [](bool b, FindSettings* ss) { ss->excludehidden(b); }},
-                {"firstmatch", [](bool b, FindSettings* ss) { ss->firstmatch(b); }},
                 {"help", [](bool b, FindSettings* ss) { ss->printusage(b); }},
+                {"includearchives", [](bool b, FindSettings* ss) { ss->includearchives(b); }},
                 {"includehidden", [](bool b, FindSettings* ss) { ss->excludehidden(!b); }},
                 {"listdirs", [](bool b, FindSettings* ss) { ss->listdirs(b); }},
                 {"listfiles", [](bool b, FindSettings* ss) { ss->listfiles(b); }},
-                {"listlines", [](bool b, FindSettings* ss) { ss->listlines(b); }},
-                {"multilineoption-REMOVE", [](bool b, FindSettings* ss) { ss->multilineoption-REMOVE(b); }},
                 {"nocolorize", [](bool b, FindSettings* ss) { ss->colorize(!b); }},
-                {"noprintmatches", [](bool b, FindSettings* ss) { ss->printresults(!b); }},
                 {"norecursive", [](bool b, FindSettings* ss) { ss->recursive(!b); }},
-                {"nofindarchives", [](bool b, FindSettings* ss) { ss->findarchives(!b); }},
-                {"printmatches", [](bool b, FindSettings* ss) { ss->printresults(b); }},
                 {"recursive", [](bool b, FindSettings* ss) { ss->recursive(b); }},
-                {"findarchives", [](bool b, FindSettings* ss) { ss->findarchives(b); }},
-                {"uniquelines", [](bool b, FindSettings* ss) { ss->uniquelines(b); }},
                 {"verbose", [](bool b, FindSettings* ss) { ss->verbose(b); }},
                 {"version", [](bool b, FindSettings* ss) { ss->printversion(b); }},
         };
@@ -117,16 +93,6 @@ namespace cppfind {
                     m_coll_arg_map[name](*s, settings);
                 }
 
-            } else if (it->value.IsNumber()) {
-                assert(m_int_arg_map.find(name) != m_int_arg_map.end());
-                int i = it->value.GetInt();
-                if (i < 0) {
-                    std::string msg = "Invalid value for option ";
-                    msg.append(name).append(": ").append(std::to_string(i));
-                    throw FindException(msg);
-                }
-                m_int_arg_map[name]((unsigned int)i, settings);
-
             } else if (it->value.IsBool()) {
                 assert(m_bool_arg_map.find(name) != m_bool_arg_map.end());
                 bool b = it->value.GetBool();
@@ -134,9 +100,7 @@ namespace cppfind {
 
             } else if (it->value.IsString()) {
                 auto* s = new std::string(it->value.GetString());
-                if (m_str_arg_map.find(name) != m_str_arg_map.end()) {
-                    m_str_arg_map[name](*s, settings);
-                } else if (m_coll_arg_map.find(name) != m_coll_arg_map.end()) {
+                if (m_coll_arg_map.find(name) != m_coll_arg_map.end()) {
                     m_coll_arg_map[name](*s, settings);
                 } else {
                     std::string msg = "Invalid option: " + name;
@@ -197,8 +161,8 @@ namespace cppfind {
     FindSettings* FindOptions::settings_from_args(int &argc, char **argv) {
         auto *settings = new FindSettings();
 
-        // set print results to true since we are running the executable
-        settings->printresults(true);
+        // set listfiles to true since we are running the executable
+        settings->listfiles(true);
 
         std::deque<std::string> arg_deque;
         unsigned int i;
@@ -224,14 +188,10 @@ namespace cppfind {
 
                     auto bool_arg_found = m_bool_arg_map.find(longarg);
                     auto coll_arg_found = m_coll_arg_map.find(longarg);
-                    auto int_arg_found = m_int_arg_map.find(longarg);
-                    auto str_arg_found = m_str_arg_map.find(longarg);
 
                     if (bool_arg_found != m_bool_arg_map.end()) {
                         m_bool_arg_map[longarg](true, settings);
-                    } else if (coll_arg_found != m_coll_arg_map.end()
-                               || int_arg_found != m_int_arg_map.end()
-                               || str_arg_found != m_str_arg_map.end()) {
+                    } else if (coll_arg_found != m_coll_arg_map.end()) {
                         if (arg_deque.empty()) {
                             std::string msg = "Missing value for option ";
                             msg.append(*next_arg);
@@ -241,16 +201,6 @@ namespace cppfind {
                             arg_deque.pop_front();
                             if (coll_arg_found != m_coll_arg_map.end()) {
                                 m_coll_arg_map[longarg](*arg_val, settings);
-                            } else if (int_arg_found != m_int_arg_map.end()) {
-                                int int_val = stoi(*arg_val);
-                                if (int_val < 0) {
-                                    std::string msg = "Invalid value for option ";
-                                    msg.append(*next_arg).append(": ").append(*arg_val);
-                                    throw FindException(msg);
-                                }
-                                m_int_arg_map[longarg](int_val, settings);
-                            } else if (str_arg_found != m_str_arg_map.end()) {
-                                m_str_arg_map[longarg](*arg_val, settings);
                             }
                         }
                     } else { // shouldn't be possible to get here
@@ -264,7 +214,7 @@ namespace cppfind {
                     throw FindException(msg);
                 }
             } else {
-                settings->startpath(*next_arg);
+                settings->add_path(*next_arg);
             }
         }
         return settings;
@@ -277,7 +227,7 @@ namespace cppfind {
     }
 
     std::string FindOptions::get_usage_string() {
-        auto* usage_string = new std::string("\nUsage:\n cppfind [options] -s <findpattern> <startpath>\n\nOptions:\n");
+        auto* usage_string = new std::string("\nUsage:\n cppfind [options] <path> [<path> ...]\n\nOptions:\n");
 
         std::vector<std::string> opt_strings = {};
         std::vector<std::string> opt_descs = {};
@@ -294,13 +244,11 @@ namespace cppfind {
             if (!shortarg->empty()) {
                 opt_string.append("-").append(*shortarg).append(",");
             }
-//            const std::string longarg = option->longarg();
             opt_string.append("--").append(option->longarg());
             if (opt_string.length() > longest) {
                 longest = opt_string.length();
             }
             opt_strings.push_back(opt_string);
-//            const std::string description = option->description();
             opt_descs.push_back(option->description());
         }
 

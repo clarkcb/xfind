@@ -66,15 +66,6 @@ describe('testing filetypes', () => {
         expect(type).toBe(FileType.XML);
     });
 
-    it('testFileTypesFindableFile', () => {
-        const fileTypes = new FileTypes();
-        const filename = 'README.md';
-        const res = fileTypes.isFindableFile(filename);
-        expect(res).toBeTruthy();
-        const type = fileTypes.getFileType(filename);
-        expect(type).toBe(FileType.TEXT);
-    });
-
     it('testFileTypesUnknownFile', () => {
         const fileTypes = new FileTypes();
         const filename = 'unknown.xyz';

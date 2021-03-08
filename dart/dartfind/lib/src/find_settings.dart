@@ -6,7 +6,7 @@ class FindSettings {
   set archivesOnly(bool value) {
     _archivesOnly = value;
     if (value) {
-      findArchives = value;
+      includeArchives = value;
     }
   }
   bool colorize = true;
@@ -19,7 +19,6 @@ class FindSettings {
     }
   }
   bool excludeHidden = true;
-  bool firstMatch = false;
 
   var inArchiveExtensions = <String>{};
   var inArchiveFilePatterns = <Pattern>{};
@@ -29,18 +28,9 @@ class FindSettings {
 
   var inFileTypes = <FileType>{};
 
-  var inLinesAfterPatterns = <Pattern>{};
-  var inLinesBeforePatterns = <Pattern>{};
-
-  int linesAfter  = 0;
-  var linesAfterToPatterns = <Pattern>{};
-  var linesAfterUntilPatterns = <Pattern>{};
-  int linesBefore  = 0;
+  bool includeArchives  = false;
   bool listDirs  = false;
   bool listFiles  = false;
-  bool listLines  = false;
-  int maxLineLength  = 150;
-  bool multiLineFind  = false;
 
   var outArchiveExtensions = <String>{};
   var outArchiveFilePatterns = <Pattern>{};
@@ -50,20 +40,11 @@ class FindSettings {
 
   var outFileTypes = <FileType>{};
 
-  var outLinesAfterPatterns = <Pattern>{};
-  var outLinesBeforePatterns = <Pattern>{};
-
-  bool printResults  = false;
   bool printUsage  = false;
   bool printVersion  = false;
   bool recursive  = true;
-  bool findArchives  = false;
 
-  var findPatterns = <Pattern>{};
-
-  String startPath  = '';
-  String textFileEncoding  = 'UTF-8';
-  bool uniqueLines  = false;
+  var paths = <String>{};
   bool verbose  = false;
 
   void addExtensions(String exts, Set<String> extensions) {
@@ -94,41 +75,25 @@ class FindSettings {
       ', colorize: $colorize'
       ', debug: $debug'
       ', excludeHidden: $excludeHidden'
-      ', firstMatch: $firstMatch'
       ', inArchiveExtensions: ${stringSetToString(inArchiveExtensions)}'
       ', inArchiveFilePatterns: ${patternSetToString(inArchiveFilePatterns)}'
       ', inDirPatterns: ${patternSetToString(inDirPatterns)}'
       ', inExtensions: ${stringSetToString(inExtensions)}'
       ', inFilePatterns: ${patternSetToString(inFilePatterns)}'
       ', inFileTypes: $inFileTypes'
-      ', inLinesAfterPatterns: ${patternSetToString(inLinesAfterPatterns)}'
-      ', inLinesBeforePatterns: ${patternSetToString(inLinesBeforePatterns)}'
-      ', linesAfter: $linesAfter'
-      ', linesAfterToPatterns: ${patternSetToString(linesAfterToPatterns)}'
-      ', linesAfterUntilPatterns: ${patternSetToString(linesAfterUntilPatterns)}'
-      ', linesBefore: $linesBefore'
+      ', includeArchives: $includeArchives'
       ', listDirs: $listDirs'
       ', listFiles: $listFiles'
-      ', listLines: $listLines'
-      ', maxLineLength: $maxLineLength'
-      ', multiLineFind: $multiLineFind'
       ', outArchiveExtensions: ${stringSetToString(outArchiveExtensions)}'
       ', outArchiveFilePatterns: ${patternSetToString(outArchiveFilePatterns)}'
       ', outDirPatterns: ${patternSetToString(outDirPatterns)}'
       ', outExtensions: ${stringSetToString(outExtensions)}'
       ', outFilePatterns: ${patternSetToString(outFilePatterns)}'
       ', outFileTypes: $outFileTypes'
-      ', outLinesAfterPatterns: ${patternSetToString(outLinesAfterPatterns)}'
-      ', outLinesBeforePatterns: ${patternSetToString(outLinesBeforePatterns)}'
-      ', printResults: $printResults'
+      ', paths: ${stringSetToString(paths)}'
       ', printUsage: $printUsage'
       ', printVersion: $printVersion'
       ', recursive: $recursive'
-      ', findArchives: $findArchives'
-      ', findPatterns: ${patternSetToString(findPatterns)}'
-      ', startPath: "$startPath"'
-      ', textFileEncoding: "$textFileEncoding"'
-      ', uniqueLines: $uniqueLines'
       ', verbose: $verbose'
       ')';
 }

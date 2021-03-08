@@ -9,23 +9,14 @@
 import Foundation
 import swiftfind
 
-func getMatchingFiles(_ results: [FindResult]) -> [String] {
-    results.compactMap(\.file).map(\.filePath).sorted().unique()
-}
-
-func getMatchingDirs(_ results: [FindResult]) -> [String] {
-    results.compactMap(\.file).map {
+func getMatchingDirs(_ findfiles: [FindFile]) -> [String] {
+    findfiles.map {
         URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
     }.sorted().unique()
 }
 
-func getMatchingLines(_ results: [FindResult], settings: FindSettings) -> [String] {
-    var lines = results.map { $0.line.trimmingCharacters(in: whitespace as CharacterSet) }
-    if settings.uniqueLines {
-        let lineSet = Set<String>(lines)
-        lines = Array(lineSet)
-    }
-    return lines.sorted { $0.lowercased() < $1.lowercased() }
+func getMatchingFiles(_ findfiles: [FindFile]) -> [String] {
+    findfiles.map(\.filePath).sorted().unique()
 }
 
 func handleError(_ error: NSError, _ options: FindOptions) {
@@ -60,45 +51,33 @@ func main() {
         handleError(error!, options)
     }
 
-    finder.find(&error)
+    let findfiles = finder.find(&error)
 
     if error != nil {
         handleError(error!, options)
     }
 
-    let results = finder.getFindResults()
-
-    if settings.printResults {
-        let formatter = FindResultFormatter(settings: settings)
-        logMsg("\nFind results (\(results.count)):")
-        for res in results {
-            logMsg("\(formatter.format(result: res))")
-        }
-    }
-
     if settings.listDirs {
-        let dirs = getMatchingDirs(results)
-        logMsg("\nDirectories with matches (\(dirs.count)):")
-        for dir in dirs {
-            logMsg(FileUtil.formatPath(dir, forPath: settings.startPath!))
+        let dirs = getMatchingDirs(findfiles)
+        if (dirs.isEmpty) {
+            logMsg("\nMatching directories: 0")
+        } else {
+            logMsg("\nMatching directories (\(dirs.count)):")
+            for dir in dirs {
+                logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+            }
         }
     }
 
     if settings.listFiles {
-        let files = getMatchingFiles(results)
-        logMsg("\nFiles with matches (\(files.count)):")
-        for file in files {
-            logMsg(FileUtil.formatPath(file, forPath: settings.startPath!))
-        }
-    }
-
-    if settings.listLines {
-        let lines = getMatchingLines(results, settings: settings)
-        let hdr = settings.uniqueLines ? "\nUnique lines with matches (\(lines.count)):"
-            : "\nLines with matches (\(lines.count)):"
-        logMsg(hdr)
-        for line in lines {
-            logMsg(line)
+        let files = getMatchingFiles(findfiles)
+        if (files.isEmpty) {
+            logMsg("\nMatching files: 0")
+        } else {
+            logMsg("\nMatching files (\(files.count)):")
+            for file in files {
+                logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+            }
         }
     }
 }

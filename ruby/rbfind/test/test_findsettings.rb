@@ -20,50 +20,31 @@ module RbFind
       assert_equal(false, @settings.archivesonly)
       assert_equal(false, @settings.debug)
       assert_equal(true, @settings.excludehidden)
-      assert_equal(false, @settings.firstmatch)
-      assert_equal(0, @settings.linesafter)
-      assert_equal(0, @settings.linesbefore)
+      assert_equal(false, @settings.includearchives)
       assert_equal(false, @settings.listdirs)
       assert_equal(false, @settings.listfiles)
-      assert_equal(false, @settings.listlines)
-      assert_equal(150, @settings.maxlinelength)
-      assert_equal(false, @settings.multilineoption-REMOVE)
-      assert_equal(true, @settings.printresults)
       assert_equal(false, @settings.printusage)
       assert_equal(false, @settings.printversion)
       assert_equal(true, @settings.recursive)
-      assert_equal(false, @settings.findarchives)
-      assert_equal(nil, @settings.startpath)
-      assert_equal(false, @settings.uniquelines)
       assert_equal(false, @settings.verbose)
       assert(@settings.in_archiveextensions.empty?)
       assert(@settings.in_archivefilepatterns.empty?)
       assert(@settings.in_dirpatterns.empty?)
       assert(@settings.in_filepatterns.empty?)
-      assert(@settings.in_linesafterpatterns.empty?)
-      assert(@settings.in_linesbeforepatterns.empty?)
-      assert(@settings.linesaftertopatterns.empty?)
-      assert(@settings.linesafteruntilpatterns.empty?)
       assert(@settings.out_archiveextensions.empty?)
       assert(@settings.out_archivefilepatterns.empty?)
       assert(@settings.out_dirpatterns.empty?)
       assert(@settings.out_filepatterns.empty?)
-      assert(@settings.out_linesafterpatterns.empty?)
-      assert(@settings.out_linesbeforepatterns.empty?)
-      assert(@settings.findpatterns.empty?)
+      assert(@settings.paths.empty?)
     end
 
     def test_set_properties
       @settings.archivesonly = true
       @settings.debug = true
-      @settings.linesafter = 5
-      @settings.linesbefore = 5
       assert_equal(true, @settings.archivesonly)
-      assert_equal(true, @settings.findarchives)
+      assert_equal(true, @settings.includearchives)
       assert_equal(true, @settings.debug)
       assert_equal(true, @settings.verbose)
-      assert_equal(5, @settings.linesafter)
-      assert_equal(5, @settings.linesbefore)
     end
 
     def test_add_single_extension
@@ -87,16 +68,16 @@ module RbFind
     end
 
     def test_add_pattern
-      @settings.add_pattern('Find', @settings.findpatterns)
-      assert_equal(1, @settings.findpatterns.length)
-      assert_equal(@settings.findpatterns.first.source, 'Find')
+      @settings.add_pattern('Find', @settings.in_filepatterns)
+      assert_equal(1, @settings.in_filepatterns.length)
+      assert_equal(@settings.in_filepatterns.first.source, 'Find')
     end
 
     def test_add_patterns_as_array
-      @settings.add_patterns(%w[Find FileTypes], @settings.findpatterns)
-      assert_equal(2, @settings.findpatterns.length)
-      assert_equal(@settings.findpatterns.first.source, 'Find')
-      assert_equal(@settings.findpatterns[1].source, 'FileTypes')
+      @settings.add_patterns(%w[Find FileTypes], @settings.in_filepatterns)
+      assert_equal(2, @settings.in_filepatterns.length)
+      assert_equal(@settings.in_filepatterns.first.source, 'Find')
+      assert_equal(@settings.in_filepatterns[1].source, 'FileTypes')
     end
   end
 end

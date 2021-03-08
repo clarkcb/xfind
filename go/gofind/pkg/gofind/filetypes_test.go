@@ -21,23 +21,3 @@ func TestGetFileType(t *testing.T) {
 		}
 	}
 }
-
-func TestIsFindableFile(t *testing.T) {
-	expected := map[string]bool{
-		"hello.txt":             true,
-		"filetypes.go":          true,
-		"markup.xml":            true,
-		"lib.a":                 true,
-		"noext":                 true,
-		"archive.tar.gz":        true,
-		"nonsense.zippitydooda": false,
-	}
-
-	fileTypes := FileTypesFromJson()
-
-	for k, v := range expected {
-		if is := fileTypes.IsFindableFile(k); is != v {
-			t.Errorf("getFileType(\"%s\")=\"%t\", expected=\"%t\"", k, is, v)
-		}
-	}
-}

@@ -10,10 +10,11 @@ class FindFileTest extends TestCase
 {
     public function test_findfile_abs_path()
     {
-        $path = '/Users/cary/src/xfind/php/phpfind/src';
+        $home = getenv('HOME');
+        $path = "$home/src/xfind/php/phpfind/src";
         $filename = 'findfile.php';
         $findfile = new FindFile($path, $filename, FileType::Code);
-        $this->assertEquals('/Users/cary/src/xfind/php/phpfind/src/findfile.php',
+        $this->assertEquals("$home/src/xfind/php/phpfind/src/findfile.php",
             $findfile->filepath());
     }
 

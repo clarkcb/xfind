@@ -29,16 +29,11 @@
     XCTAssert([settings colorize]);
     XCTAssert(![settings debug]);
     XCTAssert([settings excludeHidden]);
-    XCTAssert(![settings firstMatch]);
+    XCTAssert(![settings includeArchives]);
     XCTAssert(![settings listDirs]);
     XCTAssert(![settings listFiles]);
-    XCTAssert(![settings listLines]);
-    XCTAssert(![settings multiLineFind]);
-    XCTAssert([settings printResults]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
-    XCTAssert(![settings findArchives]);
-    XCTAssert(![settings uniqueLines]);
     XCTAssert(![settings verbose]);
 }
 
@@ -53,19 +48,19 @@
 
 - (void)testAddPattern {
     FindSettings *settings = [[FindSettings alloc] init];
-    XCTAssert([[settings findPatterns] count] == 0);
-    [settings addFindPattern:@"Finder"];
-    XCTAssert([[settings findPatterns] count] == 1);
-    XCTAssert([[[[settings findPatterns] objectAtIndex:0] pattern] isEqual:@"Finder"]);
+    XCTAssert([[settings inFilePatterns] count] == 0);
+    [settings addInFilePattern:@"Finder"];
+    XCTAssert([[settings inFilePatterns] count] == 1);
+    XCTAssert([[[[settings inFilePatterns] objectAtIndex:0] pattern] isEqual:@"Finder"]);
 }
 
 - (void)testSetArchivesOnly {
     FindSettings *settings = [[FindSettings alloc] init];
     XCTAssert(![settings archivesOnly]);
-    XCTAssert(![settings findArchives]);
+    XCTAssert(![settings includeArchives]);
     [settings setArchivesOnly:true];
     XCTAssert([settings archivesOnly]);
-    XCTAssert([settings findArchives]);
+    XCTAssert([settings includeArchives]);
 }
 
 - (void)testSetDebug {

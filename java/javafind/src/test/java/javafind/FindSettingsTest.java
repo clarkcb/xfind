@@ -20,19 +20,11 @@ public class FindSettingsTest {
         assertEquals(DefaultSettings.ARCHIVESONLY, settings.getArchivesOnly());
         assertEquals(DefaultSettings.DEBUG, settings.getDebug());
         assertEquals(DefaultSettings.EXCLUDEHIDDEN, settings.getExcludeHidden());
-        assertEquals(DefaultSettings.FIRSTMATCH, settings.getFirstMatch());
-        assertEquals(DefaultSettings.LINESAFTER, settings.getLinesAfter());
-        assertEquals(DefaultSettings.LINESBEFORE, settings.getLinesBefore());
+        assertEquals(DefaultSettings.INCLUDEARCHIVES, settings.getIncludeArchives());
         assertEquals(DefaultSettings.LISTDIRS, settings.getListDirs());
         assertEquals(DefaultSettings.LISTFILES, settings.getListFiles());
-        assertEquals(DefaultSettings.LISTLINES, settings.getListLines());
-        assertEquals(DefaultSettings.MAXLINELENGTH, settings.getMaxLineLength());
-        assertEquals(DefaultSettings.MULTILINEFIND, settings.getMultiLineFind());
-        assertEquals(DefaultSettings.PRINTRESULTS, settings.getPrintResults());
         assertEquals(DefaultSettings.PRINTUSAGE, settings.getPrintUsage());
         assertEquals(DefaultSettings.PRINTVERSION, settings.getPrintVersion());
-        assertEquals(DefaultSettings.FINDARCHIVES, settings.getFindArchives());
-        assertEquals(DefaultSettings.UNIQUELINES, settings.getUniqueLines());
         assertEquals(DefaultSettings.VERBOSE, settings.getVerbose());
     }
 
@@ -49,9 +41,9 @@ public class FindSettingsTest {
     @Test
     public final void testAddPattern() {
         FindSettings settings = new FindSettings();
-        settings.addFindPattern("Finder");
-        Set<Pattern> findPatterns = settings.getFindPatterns();
-        assertEquals(findPatterns.size(), 1);
+        settings.addInFilePattern("Find");
+        Set<Pattern> inFilePatterns = settings.getInFilePatterns();
+        assertEquals(inFilePatterns.size(), 1);
     }
 
     @Test
@@ -59,7 +51,7 @@ public class FindSettingsTest {
         FindSettings settings = new FindSettings();
         settings.setArchivesOnly(true);
         assertTrue(settings.getArchivesOnly());
-        assertTrue(settings.getFindArchives());
+        assertTrue(settings.getIncludeArchives());
     }
 
     @Test

@@ -5,12 +5,7 @@
 
 .idea/
 .vagrant/
-ansible/
-c/
-chef/
-elixir/
-erlang/
-groovy/
+.vscode/
 
 # jekyll-related
 about.md

@@ -31,9 +31,6 @@ sub get_xml_file_type_hash {
     my @text = (@{$file_type_hash->{text}}, @{$file_type_hash->{code}},
         @{$file_type_hash->{xml}});
     $file_type_hash->{text} = \@text;
-    my @findable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
-        @{$file_type_hash->{binary}});
-    $file_type_hash->{findable} = \@findable;
     return $file_type_hash;
 }
 
@@ -47,9 +44,6 @@ sub get_json_file_type_hash {
     my @text = (@{$file_type_hash->{text}}, @{$file_type_hash->{code}},
         @{$file_type_hash->{xml}});
     $file_type_hash->{text} = \@text;
-    my @findable = (@{$file_type_hash->{text}}, @{$file_type_hash->{archive}},
-        @{$file_type_hash->{binary}});
-    $file_type_hash->{findable} = \@findable;
     return $file_type_hash;
 }
 
@@ -140,15 +134,6 @@ sub is_text {
     return 0;
 }
 
-sub is_findable {
-    my ($self, $file) = @_;
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_types}->{findable}}) {
-        return 1;
-    }
-    return 0;
-}
-
 sub is_xml {
     my ($self, $file) = @_;
     my $ext = plfind::FileUtil::get_extension($file);
@@ -160,11 +145,11 @@ sub is_xml {
 
 sub is_unknown {
     my ($self, $file) = @_;
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_types}->{findable}}) {
-        return 0;
+    my $file_type = $self->get_filetype($file);
+    if ($file_type eq plfind::FileType->UNKNOWN) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 1;

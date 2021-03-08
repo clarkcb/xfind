@@ -19,3 +19,4 @@ searchoptions.xml
 Gemfile.lock
 # .ruby-version
 # .ruby-gemset
+*.gem

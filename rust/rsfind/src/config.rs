@@ -1,3 +1,4 @@
+use std::env;
 use std::fs;
 
 use serde::{Deserialize, Serialize};
@@ -23,7 +24,11 @@ pub const VERSION: &str = "1.0.0";
 
 impl Config {
     pub fn new() -> Config {
-        let xfind_path = String::from(XFIND_PATH);
+        // let xfind_path = String::from(XFIND_PATH);
+        let xfind_path: String = match env::var("XFIND_PATH") {
+            Ok(path) => path,
+            Err(_error) => env::var("HOME").unwrap() + "/src/xfind",
+        };
         let version = String::from(VERSION);
         Config::for_values(xfind_path, version)
     }

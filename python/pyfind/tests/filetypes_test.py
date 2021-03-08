@@ -52,10 +52,6 @@ class FileTypesTest(unittest.TestCase):
         filename = 'file.xml'
         self.assertTrue(self.filetypes.is_xml_file(filename))
 
-    def test_is_findable_file(self):
-        filename = 'file.xml'
-        self.assertTrue(self.filetypes.is_findable_file(filename))
-
 
 if __name__ == '__main__':
     unittest.main()

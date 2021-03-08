@@ -35,29 +35,18 @@ public class FindOptions {
     private final int actionMapSize = 24;
     private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
         {
-            put("encoding", (s, settings) -> settings.setTextFileEncoding(s));
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
             put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
             put("in-dirpattern", (s, settings) -> settings.addInDirPattern(s));
             put("in-ext", (s, settings) -> settings.addInExtension(s));
             put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
             put("in-filetype", (s, settings) -> settings.addInFileType(s));
-            put("in-linesafterpattern", (s, settings) -> settings.addInLinesAfterPattern(s));
-            put("in-linesbeforepattern", (s, settings) -> settings.addInLinesBeforePattern(s));
-            put("linesafter", (s, settings) -> settings.setLinesAfter(Integer.parseInt(s)));
-            put("linesaftertopattern", (s, settings) -> settings.addLinesAfterToPattern(s));
-            put("linesafteruntilpattern", (s, settings) -> settings.addLinesAfterUntilPattern(s));
-            put("linesbefore", (s, settings) -> settings.setLinesBefore(Integer.parseInt(s)));
-            put("maxlinelength", (s, settings) -> settings.setMaxLineLength(Integer.parseInt(s)));
             put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
             put("out-archivefilepattern", (s, settings) -> settings.addOutArchiveFilePattern(s));
             put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));
             put("out-ext", (s, settings) -> settings.addOutExtension(s));
             put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
-            put("out-linesafterpattern", (s, settings) -> settings.addOutLinesAfterPattern(s));
-            put("out-linesbeforepattern", (s, settings) -> settings.addOutLinesBeforePattern(s));
-            put("findpattern", (s, settings) -> settings.addFindPattern(s));
             put("settings-file", (s, settings) -> settingsFromFile(s, settings));
         }
     };
@@ -71,25 +60,17 @@ public class FindOptions {
     private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
-            put("allmatches", (b, settings) -> settings.setFirstMatch(!b));
             put("colorize", (b, settings) -> settings.setColorize(b));
             put("debug", (b, settings) -> settings.setDebug(b));
             put("excludehidden", (b, settings) -> settings.setExcludeHidden(b));
-            put("firstmatch", (b, settings) -> settings.setFirstMatch(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
+            put("includearchives", (b, settings) -> settings.setIncludeArchives(b));
             put("includehidden", (b, settings) -> settings.setExcludeHidden(!b));
             put("listdirs", (b, settings) -> settings.setListDirs(b));
             put("listfiles", (b, settings) -> settings.setListFiles(b));
-            put("listlines", (b, settings) -> settings.setListLines(b));
-            put("multilineoption-REMOVE", (b, settings) -> settings.setMultiLineFind(b));
             put("nocolorize", (b, settings) -> settings.setColorize(!b));
-            put("noprintmatches", (b, settings) -> settings.setPrintResults(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
-            put("nofindarchives", (b, settings) -> settings.setFindArchives(!b));
-            put("printmatches", (b, settings) -> settings.setPrintResults(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
-            put("findarchives", (b, settings) -> settings.setFindArchives(b));
-            put("uniquelines", (b, settings) -> settings.setUniqueLines(b));
             put("verbose", (b, settings) -> settings.setVerbose(b));
             put("version", (b, settings) -> settings.setPrintVersion(b));
         }
@@ -114,7 +95,7 @@ public class FindOptions {
         }
     }
 
-    private List<String> listFromJSONArray(JSONArray arr) {
+    private List<String> listFromJSONArray(final JSONArray arr) {
         List<String> list = new ArrayList<>();
         for (Object o : arr) {
             list.add((String)o);
@@ -122,7 +103,7 @@ public class FindOptions {
         return list;
     }
 
-    private void settingsFromFile(String filePath, FindSettings settings) {
+    private void settingsFromFile(final String filePath, final FindSettings settings) {
         File file = new File(filePath);
         try {
             if (!file.exists()) {
@@ -146,17 +127,17 @@ public class FindOptions {
         }
     }
 
-    public void settingsFromJson(String json, FindSettings settings) throws ParseException {
+    public void settingsFromJson(final String json, FindSettings settings) throws ParseException {
         Object obj = JSONValue.parseWithException(json);
-        JSONObject jsonObject=(JSONObject)obj;
+        JSONObject jsonObject = (JSONObject)obj;
         for (Object ko : jsonObject.keySet()) {
             String k = (String)ko;
-            Object vo =jsonObject.get(ko);
+            Object vo = jsonObject.get(ko);
             applySetting(k, vo, settings);
         }
     }
 
-    private void applySetting(String arg, Object obj, FindSettings settings) {
+    private void applySetting(final String arg, final Object obj, FindSettings settings) {
         if (obj.getClass().equals(String.class)) {
             try {
                 applySetting(arg, (String)obj, settings);
@@ -188,18 +169,18 @@ public class FindOptions {
         }
     }
 
-    private void applySetting(String arg, String val, FindSettings settings)
+    private void applySetting(final String arg, final String val, FindSettings settings)
             throws FindException{
         if (this.argActionMap.containsKey(arg)) {
             this.argActionMap.get(arg).set(val, settings);
-        } else if (arg.equals("startpath")) {
-            settings.setStartPath(val);
+        } else if (arg.equals("path")) {
+            settings.addPath(val);
         } else {
             throw new FindException("Invalid option: " + arg);
         }
     }
 
-    private void applySetting(String arg, Boolean val, FindSettings settings)
+    private void applySetting(final String arg, final Boolean val, FindSettings settings)
             throws FindException{
         if (this.boolflagActionMap.containsKey(arg)) {
             this.boolflagActionMap.get(arg).set(val, settings);
@@ -210,8 +191,8 @@ public class FindOptions {
 
     public final FindSettings settingsFromArgs(final String[] args) throws FindException {
         FindSettings settings = new FindSettings();
-        // default printresults to True since running from command line
-        settings.setPrintResults(true);
+        // default listFiles to true since running from command line
+        settings.setListFiles(true);
 
         // add short arg mappings
         options.stream().filter(o -> !o.getShortArg().isEmpty()).forEach(o -> {
@@ -242,7 +223,7 @@ public class FindOptions {
                     throw new FindException("Invalid option: " + arg);
                 }
             } else {
-                settings.setStartPath(arg);
+                settings.addPath(arg);
             }
         }
         return settings;
@@ -256,7 +237,7 @@ public class FindOptions {
     public final String getUsageString() {
         StringBuilder sb = new StringBuilder();
         sb.append("Usage:\n");
-        sb.append(" javafind [options] -s <findpattern> <startpath>\n\n");
+        sb.append(" javafind [options] <path> [<path> ...]\n\n");
         sb.append("Options:\n");
 
         this.options.sort(Comparator.comparing(FindOption::getSortArg));

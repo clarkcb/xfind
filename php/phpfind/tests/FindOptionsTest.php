@@ -27,34 +27,25 @@ class FindOptionsTest extends TestCase
         $this->assertTrue($settings->colorize);
         $this->assertFalse($settings->debug);
         $this->assertTrue($settings->excludehidden);
-        $this->assertFalse($settings->firstmatch);
-        $this->assertEquals(0, $settings->linesafter);
-        $this->assertEquals(0, $settings->linesbefore);
+        $this->assertFalse($settings->includearchives);
         $this->assertFalse($settings->listdirs);
-        $this->assertFalse($settings->listfiles);
-        $this->assertFalse($settings->listlines);
-        $this->assertEquals(150, $settings->maxlinelength);
-        $this->assertFalse($settings->multilineoption-REMOVE);
-        $this->assertTrue($settings->printresults);
+        $this->assertTrue($settings->listfiles);
         $this->assertFalse($settings->printusage);
         $this->assertFalse($settings->printversion);
+        $this->assertCount(0, $settings->paths);
         $this->assertTrue($settings->recursive);
-        $this->assertFalse($settings->findarchives);
-        $this->assertFalse(isset($settings->startpath));
-        $this->assertFalse($settings->uniquelines);
         $this->assertFalse($settings->verbose);
     }
 
     public function test_valid_args()
     {
-        $args = ['-x', 'php,py', '-s', 'Find', '.'];
+        $args = ['-x', 'php,py', '.'];
         $settings = $this->findoptions->settings_from_args($args);
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('php', $settings->in_extensions));
         $this->assertTrue(in_array('py', $settings->in_extensions));
-        $this->assertCount(1, $settings->findpatterns);
-        $this->assertEquals('Find', $settings->findpatterns[0]);
-        $this->assertEquals('.', $settings->startpath);
+        $this->assertCount(1, $settings->paths);
+        $this->assertEquals('.', $settings->paths[0]);
     }
 
     public function test_archivesonly_arg()
@@ -76,14 +67,14 @@ class FindOptionsTest extends TestCase
     public function test_missing_arg()
     {
         $this->expectException(FindException::class);
-        $args = ['-x', 'php,py', '-s', 'Find', '.', '-D'];
+        $args = ['-x', 'php,py', '.', '-D'];
         $this->findoptions->settings_from_args($args);
     }
 
     public function test_invalid_arg()
     {
         $this->expectException(FindException::class);
-        $args = ['-x', 'php,py', '-s', 'Find', '.', '-Q'];
+        $args = ['-x', 'php,py', '.', '-Q'];
         $this->findoptions->settings_from_args($args);
     }
 
@@ -92,20 +83,17 @@ class FindOptionsTest extends TestCase
         $settings = new FindSettings();
         $json = <<<"END_JSON"
 {
-  "startpath": "~/src/xfind/",
+  "path": "~/src/xfind/",
   "in-ext": ["js","ts"],
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
-  "findpattern": "Finder",
-  "linesbefore": 2,
-  "linesafter": 2,
   "debug": true,
-  "allmatches": false,
   "includehidden": true
 }
 END_JSON;
         $this->findoptions->settings_from_json($json, $settings);
-        $this->assertEquals('~/src/xfind/', $settings->startpath);
+        $this->assertCount(1, $settings->paths);
+        $this->assertEquals('~/src/xfind/', $settings->paths[0]);
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('js', $settings->in_extensions));
         $this->assertTrue(in_array('ts', $settings->in_extensions));
@@ -113,13 +101,8 @@ END_JSON;
         $this->assertEquals('node_module', $settings->out_dirpatterns[0]);
         $this->assertCount(1, $settings->out_filepatterns);
         $this->assertEquals('temp', $settings->out_filepatterns[0]);
-        $this->assertCount(1, $settings->findpatterns);
-        $this->assertEquals('Finder', $settings->findpatterns[0]);
-        $this->assertEquals(2, $settings->linesbefore);
-        $this->assertEquals(2, $settings->linesafter);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
-        $this->assertTrue($settings->firstmatch);
-        $this->assertTrue(!$settings->excludehidden);
+        $this->assertFalse($settings->excludehidden);
     }
 }

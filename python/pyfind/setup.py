@@ -14,7 +14,7 @@ setup(name='pyfind',
       install_requires=[],
       license='MIT',
       packages=['pyfind'],
-      python_requires='>=3',
+      python_requires='>=3.7',
       scripts=[
           'bin/pyfind',
           # 'bin/pyfind.bat'

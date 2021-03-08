@@ -7,7 +7,7 @@
 class FindError extends Error {
     constructor(message) {
         super(message);
-        this.name = "FindError";
+        this.name = 'FindError';
     }
 }
 

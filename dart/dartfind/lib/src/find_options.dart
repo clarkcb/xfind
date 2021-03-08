@@ -63,50 +63,34 @@ class FindOptions {
 
   void setMaps() {
     stringArgMap = {
-      'encoding': (String s, FindSettings ss) => ss.textFileEncoding = s,
       'in-archiveext': (String s, FindSettings ss) => ss.addExtensions(s, ss.inArchiveExtensions),
       'in-archivefilepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inArchiveFilePatterns),
       'in-dirpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inDirPatterns),
       'in-ext': (String s, FindSettings ss) => ss.addExtensions(s, ss.inExtensions),
       'in-filepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inFilePatterns),
       'in-filetype': (String s, FindSettings ss) => ss.inFileTypes.add(FileTypes.fromName(s)),
-      'in-linesafterpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inLinesAfterPatterns),
-      'in-linesbeforepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inLinesBeforePatterns),
-      'linesafter': (String s, FindSettings ss) => ss.linesAfter = int.parse(s),
-      'linesaftertopattern': (String s, FindSettings ss) => ss.addPattern(s, ss.linesAfterToPatterns),
-      'linesafteruntilpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.linesAfterUntilPatterns),
-      'linesbefore': (String s, FindSettings ss) => ss.linesBefore = int.parse(s),
-      'maxlinelength': (String s, FindSettings ss) => ss.maxLineLength = int.parse(s),
       'out-archiveext': (String s, FindSettings ss) => ss.addExtensions(s, ss.outArchiveExtensions),
       'out-archivefilepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outArchiveFilePatterns),
       'out-dirpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outDirPatterns),
       'out-ext': (String s, FindSettings ss) => ss.addExtensions(s, ss.outExtensions),
       'out-filepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outFilePatterns),
       'out-filetype': (String s, FindSettings ss) => ss.outFileTypes.add(FileTypes.fromName(s)),
-      'out-linesafterpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outLinesAfterPatterns),
-      'out-linesbeforepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outLinesBeforePatterns),
-      'findpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.findPatterns),
-      'startpath': (String s, FindSettings ss) => ss.startPath = s,
+      'path': (String s, FindSettings ss) => ss.paths.add(s),
     };
 
     boolArgMap = {
       'archivesonly': (bool b, FindSettings ss) => ss.archivesOnly = b,
-      'allmatches': (bool b, FindSettings ss) => ss.firstMatch = !b,
       'colorize': (bool b, FindSettings ss) => ss.colorize = b,
       'debug': (bool b, FindSettings ss) => ss.debug = b,
+      'excludearchives': (bool b, FindSettings ss) => ss.includeArchives = !b,
       'excludehidden': (bool b, FindSettings ss) => ss.excludeHidden = b,
-      'firstmatch': (bool b, FindSettings ss) => ss.firstMatch = b,
       'help': (bool b, FindSettings ss) => ss.printUsage = b,
+      'includearchives': (bool b, FindSettings ss) => ss.includeArchives = b,
       'includehidden': (bool b, FindSettings ss) => ss.excludeHidden = !b,
       'listdirs': (bool b, FindSettings ss) => ss.listDirs = b,
       'listfiles': (bool b, FindSettings ss) => ss.listFiles = b,
-      'listlines': (bool b, FindSettings ss) => ss.listLines = b,
-      'multilineoption-REMOVE': (bool b, FindSettings ss) => ss.multiLineFind = b,
-      'noprintmatches': (bool b, FindSettings ss) => ss.printResults = !b,
       'printusage': (bool b, FindSettings ss) => ss.printUsage = b,
       'recursive': (bool b, FindSettings ss) => ss.recursive = b,
-      'findarchives': (bool b, FindSettings ss) => ss.findArchives = b,
-      'uniquelines': (bool b, FindSettings ss) => ss.uniqueLines = b,
       'verbose': (bool b, FindSettings ss) => ss.verbose = b,
       'version': (bool b, FindSettings ss) => ss.printVersion = b,
     };
@@ -145,8 +129,8 @@ class FindOptions {
   Future<FindSettings> settingsFromArgs(List<String> args) async {
     return await ready.then((_) async {
       var settings = FindSettings();
-      // default printResults to true since running as cli
-      settings.printResults = true;
+      // default listFiles to true since running as cli
+      settings.listFiles = true;
       var it = args.iterator;
       while (it.moveNext()) {
         var arg = it.current;
@@ -179,7 +163,7 @@ class FindOptions {
             throw FindException('Invalid option: $arg');
           }
         } else {
-          settings.startPath = arg;
+          settings.paths.add(arg);
         }
       }
       return settings;
@@ -193,7 +177,7 @@ class FindOptions {
   Future<String> getUsageString() async {
     return await ready.then((_) {
       var s = 'Usage:\n'
-          ' dartfind [options] -s <findpattern> <startpath>\n\n'
+          ' dartfind [options] <path> [<path> ...]\n\n'
           'Options:\n';
       var optStrings = findOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) => (optString.length > value.length) ? optString : value);

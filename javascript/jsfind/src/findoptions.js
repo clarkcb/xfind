@@ -18,8 +18,6 @@ class FindOptions {
         this.argMap = {};
         this.flagMap = {};
         this.argActionMap = {
-            'encoding':
-                (x, settings) => { settings.textFileEncoding = x; },
             'in-archiveext':
                 (x, settings) => { settings.addInArchiveExtensions(x); },
             'in-archivefilepattern':
@@ -32,20 +30,26 @@ class FindOptions {
                 (x, settings) => { settings.addInFilePatterns(x); },
             'in-filetype':
                 (x, settings) => { settings.addInFileTypes(x); },
-            'in-linesafterpattern':
-                (x, settings) => { settings.addInLinesAfterPatterns(x); },
-            'in-linesbeforepattern':
-                (x, settings) => { settings.addInLinesBeforePatterns(x); },
-            'linesafter':
-                (x, settings) => { settings.linesAfter = parseInt(x); },
-            'linesaftertopattern':
-                (x, settings) => { settings.addLinesAfterToPatterns(x); },
-            'linesafteruntilpattern':
-                (x, settings) => { settings.addLinesAfterUntilPatterns(x); },
-            'linesbefore':
-                (x, settings) => { settings.linesBefore = parseInt(x); },
-            'maxlinelength':
-                (x, settings) => { settings.maxLineLength = parseInt(x); },
+            'maxlastmod':
+                (x, settings) => {
+                    /* TODO: add maxlastmod as date/time */
+                    x != null; settings != null;
+                },
+            'maxsize':
+                (x, settings) => {
+                    /* TODO: add maxsize as int */
+                    x != null; settings != null;
+                },
+            'minlastmod':
+                (x, settings) => {
+                    /* TODO: add minlastmod as date/time */
+                    x != null; settings != null;
+                },
+            'minsize':
+                (x, settings) => {
+                    /* TODO: add minsize as int */
+                    x != null; settings != null;
+                },
             'out-dirpattern':
                 (x, settings) => { settings.addOutDirPatterns(x); },
             'out-archiveext':
@@ -58,29 +62,25 @@ class FindOptions {
                 (x, settings) => { settings.addOutFilePatterns(x); },
             'out-filetype':
                 (x, settings) => { settings.addOutFileTypes(x); },
-            'out-linesafterpattern':
-                (x, settings) => { settings.addOutLinesAfterPatterns(x); },
-            'out-linesbeforepattern':
-                (x, settings) => { settings.addOutLinesBeforePatterns(x); },
-            'findpattern':
-                (x, settings) => { settings.addFindPatterns(x); },
+            'path':
+                (x, settings) => { settings.paths.push(x); },
             'settings-file':
-                (x, settings) => { return settingsFromFile(x, settings); }
+                (x, settings) => { this.settingsFromFile(x, settings); }
 
         };
         this.boolFlagActionMap = {
-            'allmatches':
-                (b, settings) => { settings.firstMatch = !b; },
             'archivesonly':
                 (b, settings) => { settings.setArchivesOnly(b); },
             'colorize':
                 (b, settings) => { settings.colorize = b; },
             'debug':
                 (b, settings) => { settings.setDebug(b); },
+            'excludearchives':
+                (b, settings) => { settings.includeArchives = !b; },
             'excludehidden':
                 (b, settings) => { settings.excludeHidden = b; },
-            'firstmatch':
-                (b, settings) => { settings.firstMatch = b; },
+            'includearchives':
+                (b, settings) => { settings.includeArchives = b; },
             'includehidden':
                 (b, settings) => { settings.excludeHidden = !b; },
             'help':
@@ -89,26 +89,12 @@ class FindOptions {
                 (b, settings) => { settings.listDirs = b; },
             'listfiles':
                 (b, settings) => { settings.listFiles = b; },
-            'listlines':
-                (b, settings) => { settings.listLines = b; },
-            'multilineoption-REMOVE':
-                (b, settings) => { settings.multilineFind = b; },
             'nocolorize':
                 (b, settings) => { settings.colorize = !b; },
-            'noprintmatches':
-                (b, settings) => { settings.printResults = !b; },
             'norecursive':
                 (b, settings) => { settings.recursive = !b; },
-            'nofindarchives':
-                (b, settings) => { settings.findArchives = !b; },
-            'printmatches':
-                (b, settings) => { settings.printResults = b; },
             'recursive':
                 (b, settings) => { settings.recursive = b; },
-            'findarchives':
-                (b, settings) => { settings.findArchives = b; },
-            'uniquelines':
-                (b, settings) => { settings.uniqueLines = b; },
             'verbose':
                 (b, settings) => { settings.verbose = b; },
             'version':
@@ -123,15 +109,15 @@ class FindOptions {
             if (fs.existsSync(expandPath(config.FINDOPTIONSJSONPATH))) {
                 json = fs.readFileSync(expandPath(config.FINDOPTIONSJSONPATH)).toString();
             } else {
-                throw new FindError('File not found: ' + config.FINDOPTIONSJSONPATH);
+                throw new FindError(`File not found: ${config.FINDOPTIONSJSONPATH}`);
             }
 
             let obj = JSON.parse(json);
-            if (obj.hasOwnProperty('findoptions') && Array.isArray(obj['findoptions'])) {
+            if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj['findoptions'])) {
                 obj['findoptions'].forEach(so => {
                     let longArg = so['long'];
                     let shortArg = '';
-                    if (so.hasOwnProperty('short'))
+                    if (Object.prototype.hasOwnProperty.call(so, 'short'))
                         shortArg = so['short'];
                     let desc = so['desc'];
                     let func = null;
@@ -150,10 +136,9 @@ class FindOptions {
                         if (shortArg) this.flagMap[shortArg] = option;
                     }
                 });
-            } else throw new FindError("Invalid findoptions file: " + config.FINDOPTIONSJSONPATH);
+            } else throw new FindError(`Invalid findoptions file: ${config.FINDOPTIONSJSONPATH}`);
             this.options.sort(this.optcmp);
         })();
-
     }
 
     optcmp(o1, o2) {
@@ -168,29 +153,30 @@ class FindOptions {
             let json = fs.readFileSync(filepath).toString();
             return this.settingsFromJson(json, settings);
         } else {
-            return new FindError('Settings file not found');
+            throw new FindError('Settings file not found');
         }
     }
 
     settingsFromJson(json, settings) {
+        // TODO: should err be thrown as in settingsFromFile or returned a in settingsFromArgs?
         let err = null;
         let obj = JSON.parse(json);
         for (let k in obj) {
             if (err) break;
-            if (obj.hasOwnProperty(k)) {
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
                 let longKey = this.argNameMap[k];
                 if (this.argMap[k]) {
                     if (obj[k]) {
                         this.argMap[k].func(obj[k], settings);
                     } else {
-                        err = new Error("Missing argument for option " + k);
+                        err = new Error(`Missing argument for option ${k}`);
                     }
                 } else if (this.boolFlagActionMap[longKey]) {
                     this.boolFlagActionMap[longKey](obj[k], settings);
-                } else if (k === 'startpath') {
-                    settings.startPath = obj[k];
+                } else if (k === 'path') {
+                    settings.paths.push(obj[k]);
                 } else {
-                    err = new FindError("Invalid option: " + k);
+                    err = new FindError(`Invalid option: ${k}`);
                 }
             }
         }
@@ -200,9 +186,9 @@ class FindOptions {
     settingsFromArgs(args, cb) {
         let err = null;
         let settings = new FindSettings();
+        // default listFiles to true since running as cli
+        settings.listFiles = true;
 
-        // default printResults to true since it's being run from cmd line
-        settings.printResults = true;
         while(args && !err) {
             let arg = args.shift();
             if (!arg) {
@@ -216,15 +202,15 @@ class FindOptions {
                     if (args.length > 0) {
                         err = this.argMap[arg].func(args.shift(), settings);
                     } else {
-                        err = new Error("Missing argument for option " + arg);
+                        err = new Error(`Missing argument for option ${arg}`);
                     }
                 } else if (this.flagMap[arg]) {
                     this.flagMap[arg].func(true, settings);
                 } else {
-                    err = new Error("Invalid option: " + arg);
+                    err = new Error(`Invalid option: ${arg}`);
                 }
             } else {
-                settings.startPath = arg;
+                settings.paths.push(arg);
             }
         }
         cb(err, settings);
@@ -240,7 +226,7 @@ class FindOptions {
     }
 
     getUsageString() {
-        let usage = 'Usage:\n jsfind [options] -s <findpattern> <startpath>\n\n';
+        let usage = 'Usage:\n jsfind [options] <path> [<path> ...]\n\n';
         usage += 'Options:\n';
         let optStrings = [];
         let optDescs = [];

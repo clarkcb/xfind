@@ -45,9 +45,6 @@ module RbFind
       end
       @file_type_map['text'] = @file_type_map['text'] + @file_type_map['code'] +
         @file_type_map['xml']
-      @file_type_map['findable'] = @file_type_map['text'] +
-        @file_type_map['archive'] +
-        @file_type_map['binary']
     rescue StandardError => e
       raise FindError, "#{e} (file: #{FINDOPTIONSJSONPATH})"
     ensure
@@ -80,10 +77,6 @@ module RbFind
 
     def code_file?(filename)
       @file_type_map['code'].include?(FileUtil.get_extension(filename))
-    end
-
-    def findable_file?(filename)
-      @file_type_map['findable'].include?(FileUtil.get_extension(filename))
     end
 
     def text_file?(filename)

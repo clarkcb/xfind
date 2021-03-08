@@ -1,13 +1,8 @@
 {
-  "searchoptions": [
-    {
-      "long": "allmatches",
-      "short": "a",
-      "desc": "Capture all matches*"
-    },
+  "findoptions": [
     {
       "long": "archivesonly",
-      "desc": "Search only archive files"
+      "desc": "Find only archive files"
     },
     {
       "long": "colorize",
@@ -19,18 +14,13 @@
       "desc": "Set output mode to debug"
     },
     {
-      "long": "encoding",
-      "short": "e",
-      "desc": "Set the encoding to use with text files (default: \"utf-8\")"
+      "long": "excludearchives",
+      "short": "Z",
+      "desc": "Exclude archive files (bz2, gz, tar, zip)*"
     },
     {
       "long": "excludehidden",
       "desc": "Exclude hidden files and directories*"
-    },
-    {
-      "long": "firstmatch",
-      "short": "1",
-      "desc": "Capture only the first file+pattern match"
     },
     {
       "long": "help",
@@ -38,84 +28,65 @@
       "desc": "Print this usage and exit"
     },
     {
+      "long": "includearchives",
+      "short": "z",
+      "desc": "Include archive files (bz2, gz, tar, zip)"
+    },
+    {
       "long": "includehidden",
       "desc": "Include hidden files and directories"
     },
     {
       "long": "in-archiveext",
-      "desc": "Specify extension for archive files to include in search"
+      "desc": "Specify extension for archive files to include in find"
     },
     {
       "long": "in-archivefilepattern",
-      "desc": "Specify name pattern for archive files to include in search"
+      "desc": "Specify name pattern for archive files to include in find"
     },
     {
       "long": "in-dirpattern",
       "short": "d",
-      "desc": "Specify name pattern for directories to include in search"
+      "desc": "Specify name pattern for directories to include in find"
     },
     {
       "long": "in-ext",
       "short": "x",
-      "desc": "Specify extension for files to include in search"
+      "desc": "Specify extension for files to include in find"
     },
     {
       "long": "in-filepattern",
       "short": "f",
-      "desc": "Specify name pattern for files to include in search"
+      "desc": "Specify name pattern for files to include in find"
     },
     {
       "long": "in-filetype",
       "short": "t",
-      "desc": "File type to search (text, binary)"
-    },
-    {
-      "long": "in-linesafterpattern",
-      "desc": "Specify pattern to search the \"lines-after\" lines on"
-    },
-    {
-      "long": "in-linesbeforepattern",
-      "desc": "Specify pattern to search the \"lines-before\" lines on"
-    },
-    {
-      "long": "linesafter",
-      "short": "L",
-      "desc": "Number of lines to include after every matched line (default: 0)"
-    },
-    {
-      "long": "linesaftertopattern",
-      "desc": "Specify pattern to collect lines after up to where pattern matched"
-    },
-    {
-      "long": "linesafteruntilpattern",
-      "desc": "Specify pattern to collect lines after until pattern matched"
-    },
-    {
-      "long": "linesbefore",
-      "short": "l",
-      "desc": "Number of lines to include before every matched line (default: 0)"
+      "desc": "File type to find (text, binary)"
     },
     {
       "long": "listdirs",
-      "desc": "Generate a list of the matching directories after searching"
+      "desc": "Generate a list of the matching directories after finding"
     },
     {
       "long": "listfiles",
-      "desc": "Generate a list of the matching files after searching"
+      "desc": "Generate a list of the matching files after finding"
     },
     {
-      "long": "listlines",
-      "desc": "Generate a list of the matching lines after searching"
+      "long": "maxlastmod",
+      "desc": "Find files with lastmod less than or equal to maxlastmod"
     },
     {
-      "long": "maxlinelength",
-      "short": "w",
-      "desc": "Max length of line of result to print out (default: 150)"
+      "long": "maxsize",
+      "desc": "Find files with size <= maxsize"
     },
     {
-      "long": "multilinesearch",
-      "short": "m",
-      "desc": "Search files as single multi-line content block"
+      "long": "minlastmod",
+      "desc": "Find files with lastmod greater than or equal to minlastmod"
+    },
+    {
+      "long": "minsize",
+      "desc": "Find files with size >= minsize"
     },
     {
       "long": "nocolorize",
@@ -123,84 +94,46 @@
       "desc": "Do not colorize console output"
     },
     {
-      "long": "noprintmatches",
-      "short": "P",
-      "desc": "Suppress printing of search results to stdout"
-    },
-    {
       "long": "norecursive",
       "short": "R",
-      "desc": "Do not search recursively (no subdirectories)"
-    },
-    {
-      "long": "nosearcharchives",
-      "short": "Z",
-      "desc": "Do not search archive files (bz2, gz, tar, zip)*"
+      "desc": "Do not find recursively (no subdirectories)"
     },
     {
       "long": "out-archiveext",
-      "desc": "Specify extension for archive files to exclude from search"
+      "desc": "Specify extension for archive files to exclude from find"
     },
     {
       "long": "out-archivefilepattern",
-      "desc": "Specify name pattern for archive files to exclude from search"
+      "desc": "Specify name pattern for archive files to exclude from find"
     },
     {
       "long": "out-dirpattern",
       "short": "D",
-      "desc": "Specify name pattern for directories to exclude from search"
+      "desc": "Specify name pattern for directories to exclude from find"
     },
     {
       "long": "out-ext",
       "short": "X",
-      "desc": "Specify extension for files to exclude from search"
+      "desc": "Specify extension for files to exclude from find"
     },
     {
       "long": "out-filepattern",
       "short": "F",
-      "desc": "Specify name pattern for files to exclude from search"
+      "desc": "Specify name pattern for files to exclude from find"
     },
     {
       "long": "out-filetype",
       "short": "T",
-      "desc": "File type not to search (text, binary)"
-    },
-    {
-      "long": "out-linesafterpattern",
-      "desc": "Specify pattern to filter the \"lines-after\" lines on"
-    },
-    {
-      "long": "out-linesbeforepattern",
-      "desc": "Specify pattern to filter the \"lines-before\" lines on"
-    },
-    {
-      "long": "printmatches",
-      "short": "p",
-      "desc": "Print search results to stdout*"
+      "desc": "File type not to find (text, binary)"
     },
     {
       "long": "recursive",
       "short": "r",
-      "desc": "Search recursively through subdirectories*"
-    },
-    {
-      "long": "searchpattern",
-      "short": "s",
-      "desc": "Specify search pattern"
-    },
-    {
-      "long": "searcharchives",
-      "short": "z",
-      "desc": "Search archive files (bz2, gz, tar, zip)"
+      "desc": "Find recursively through subdirectories*"
     },
     {
       "long": "settings-file",
-      "desc": "A path to a JSON file with specified search settings"
-    },
-    {
-      "long": "uniquelines",
-      "short": "u",
-      "desc": "Save only search results with unique lines from previous results"
+      "desc": "A path to a JSON file with specified find settings"
     },
     {
       "long": "verbose",

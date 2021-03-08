@@ -4,11 +4,11 @@
  * encapsulates a file to be found
  */
 
-"use strict";
+'use strict';
 
 import {FileType} from './filetype';
 
-const path = require('path');
+import * as path from 'path';
 
 export class FindFile {
     containerSeparator = '!';

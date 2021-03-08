@@ -4,89 +4,46 @@
  * file find utility written in JavaScript + Node.js
  */
 
-"use strict";
-
-const path = require('path');
+'use strict';
 
 const common = require('./common');
 const {Finder} = require('./finder');
-const {FindError} = require('./finderror');
 const {FindOptions} = require('./findoptions');
-const {FindResultFormatter} = require('./findresultformatter');
 
 function handleError(err, findOptions) {
-    const errMsg = "ERROR: " + err.message;
+    const errMsg = 'ERROR: ' + err.message;
     common.log('\n' + errMsg + '\n');
     findOptions.usageWithCode(1);
 }
 
-function cmpFindResults(r1, r2) {
-    const pathCmp = r1.file.pathname.localeCompare(r2.file.pathname);
-    if (pathCmp === 0) {
-        const fileCmp = path.basename(r1.file.filename).localeCompare(path.basename(r2.file.filename));
-        if (fileCmp === 0) {
-            if (r1.linenum === r2.linenum) {
-                return r1.matchStartIndex - r2.matchStartIndex;
-            }
-            return r1.linenum - r2.linenum;
-        }
-        return fileCmp;
-    }
-    return pathCmp;
-}
-
-function printFindResults(results, settings) {
-    // first sort the results
-    results.sort(cmpFindResults);
-    const formatter = new FindResultFormatter(settings);
-    common.log(`\nFind results (${results.length}):`);
-    results.forEach(r => common.log(formatter.format(r)));
-}
-
-function getMatchingDirs(results) {
-    const dirs = results.map(r => path.dirname(r.filename));
+function getMatchingDirs(findfiles) {
+    const dirs = findfiles.map(f => f.pathname);
     return common.setFromArray(dirs);
 }
 
-function printMatchingDirs(results) {
-    const dirs = getMatchingDirs(results);
-    common.log(`\nDirectories with matches (${dirs.length}):`);
-    dirs.forEach(d => common.log(d));
+function printMatchingDirs(findfiles) {
+    const dirs = getMatchingDirs(findfiles);
+    if (dirs.length > 0) {
+        common.log(`\nMatching directories (${dirs.length}):`);
+        dirs.forEach(d => common.log(d));
+    } else {
+        common.log('\nMatching directories: 0');
+    }
 }
 
-function getMatchingFiles(results) {
-    const files = results.map(r => r.filename);
+function getMatchingFiles(findfiles) {
+    const files = findfiles.map(f => f.relativePath());
     return common.setFromArray(files);
 }
 
-function printMatchingFiles(results) {
-    const files = getMatchingFiles(results);
-    common.log(`\nFiles with matches (${files.length}):`);
-    files.forEach(f => common.log(f));
-}
-
-function getMatchingLines(results, uniqueLines) {
-    let lines = results.filter(r => r.linenum > 0).map(r => r.line.trim());
-    if (uniqueLines) {
-        lines = common.setFromArray(lines);
+function printMatchingFiles(findfiles) {
+    const files = getMatchingFiles(findfiles);
+    if (files.length > 0) {
+        common.log(`\nMatching files (${files.length}):`);
+        files.forEach(f => common.log(f));
+    } else {
+        common.log('\nMatching files: 0');
     }
-    lines.sort((a, b) => {
-        if (a.toUpperCase() === b.toUpperCase())
-            return 0;
-        return a.toUpperCase() < b.toUpperCase() ? -1 : 1;
-    });
-    return lines;
-}
-
-function printMatchingLines(results, uniqueLines) {
-    const lines = getMatchingLines(results);
-    let hdrText;
-    if (uniqueLines)
-        hdrText = `\nUnique lines with matches (${lines.length}):`;
-    else
-        hdrText = `\nLines with matches (${lines.length}):`;
-    common.log(hdrText);
-    lines.forEach(l => common.log(l));
 }
 
 const findMain = async () => {
@@ -99,7 +56,7 @@ const findMain = async () => {
         }
 
         if (settings.debug)
-            common.log("settings: " + settings.toString());
+            common.log('settings: ' + settings.toString());
 
         if (settings.printUsage) {
             common.log('');
@@ -113,20 +70,13 @@ const findMain = async () => {
 
         try {
             const finder = new Finder(settings);
-            let results = await finder.find();
-
-            if (settings.printResults) {
-                printFindResults(results, settings);
-            }
+            let findfiles = await finder.find();
 
             if (settings.listDirs) {
-                printMatchingDirs(results);
+                printMatchingDirs(findfiles);
             }
             if (settings.listFiles) {
-                printMatchingFiles(results);
-            }
-            if (settings.listLines) {
-                printMatchingLines(results, settings.uniqueLines);
+                printMatchingFiles(findfiles);
             }
 
         } catch (err2) {

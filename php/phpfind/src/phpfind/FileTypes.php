@@ -32,11 +32,6 @@ class FileTypes
                 $file_type_map['code'],
                 $file_type_map['xml']
             );
-            $file_type_map['findable'] = array_merge(
-                $file_type_map['text'],
-                $file_type_map['archive'],
-                $file_type_map['binary']
-            );
         } else {
             throw new Exception('File not found: ' . $filetypespath);
         }
@@ -109,13 +104,8 @@ class FileTypes
         return in_array(FileUtil::get_extension($f), $this->file_type_map['xml']);
     }
 
-    public function is_findable(string $f): bool
-    {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['findable']);
-    }
-
     public function is_unknown(string $f): bool
     {
-        return !$this->is_findable($f);
+        return $this->get_filetype($f) == FileType::Unknown;
     }
 }

@@ -1,18 +1,22 @@
-﻿################################################################################
+﻿#!/usr/bin/env pwsh
+################################################################################
 #
 # unittest.ps1
 #
-# Runs unit tests for specified language version of xsearch, or all versions
+# Runs unit tests for specified language version of xfind, or all versions
 #
 ################################################################################
-param([string]$lang="all")
+param([string]$lang='all')
 
 ########################################
 # Configuration
 ########################################
 
-. $PSScriptRoot\config.ps1
-. $PSScriptRoot\common.ps1
+$scriptPath = $MyInvocation.MyCommand.Path
+$scriptDir = Split-Path $scriptPath -Parent
+
+. (Join-Path $scriptDir 'config.ps1')
+. (Join-Path $scriptDir 'common.ps1')
 
 
 ################################################################################
@@ -22,44 +26,96 @@ param([string]$lang="all")
 function UnitTestClojure
 {
     Write-Host
-    Log("UnitTestClojure - currently unsupported")
+    Hdr('UnitTestClojure')
+
+    $oldPwd = Get-Location
+    Set-Location $cljfindPath
+
+    # Test with lein
+    Log('Unit-testing cljfind')
+    Log('lein test')
+    lein test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestCpp
+{
+    Write-Host
+    Hdr('UnitTestCpp')
+
+    $configurations = @('debug', 'release')
+    ForEach ($c in $configurations)
+    {
+        $cmakeBuildDir = "$cppfindPath/cmake-build-$c"
+
+        if (Test-Path $cmakeBuildDir)
+        {
+            $cppfindTestExe = Join-Path $cmakeBuildDir 'cppfind-tests'
+            Log($cppfindTestExe)
+            & $cppfindTestExe
+        }
+    }
 }
 
 function UnitTestCsharp
 {
     Write-Host
-    Log("UnitTestCsharp")
+    Hdr('UnitTestCsharp')
 
-    $csharpPath = Join-Path -Path $xsearchPath -ChildPath "csharp"
-    $cssearchSolutionPath = Join-Path -Path $csharpPath -ChildPath "CsSearch"
-    $cssearchTestsPath = Join-Path -Path $cssearchSolutionPath -ChildPath "CsSearchTests"
-    $configuration = "Debug";
-    #$configuration = "Release";
+    $csfindSolutionPath = Join-Path $csfindPath 'CsFind.sln'
+    # $verbosity = 'quiet'
+    # $verbosity = 'minimal'
+    $verbosity = 'normal'
+    # $verbosity = 'detailed'
 
-    Log("Unit-testing cssearch")
-    Write-Host "$cssearchTestsPath\bin\$configuration\CsSearchTests.exe"
-    &$cssearchTestsPath\bin\$configuration\CsSearchTests.exe
+    Log('Unit-testing csfind')
+    Write-Host "dotnet test $csfindSolutionPath --verbosity $verbosity"
+    dotnet test $csfindSolutionPath --verbosity $verbosity
+}
+
+function UnitTestDart
+{
+    Write-Host
+    Hdr('UnitTestDart')
+
+    $oldPwd = Get-Location
+    Set-Location $dartfindPath
+
+    Log('Unit-testing dartfind')
+    Log('pub run test')
+    pub run test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestFsharp
 {
     Write-Host
-    Log("UnitTestFsharp - currently unsupported")
+    Hdr('UnitTestFsharp')
+
+    $fsfindSolutionPath = Join-Path $fsfindPath 'FsFind.sln'
+    # $verbosity = 'quiet'
+    # $verbosity = 'minimal'
+    $verbosity = 'normal'
+    # $verbosity = 'detailed'
+
+    Log('Unit-testing fsfind')
+    Write-Host "dotnet test $fsfindSolutionPath --verbosity $verbosity"
+    dotnet test $fsfindSolutionPath --verbosity $verbosity
 }
 
 function UnitTestGo
 {
     Write-Host
-    Log("UnitTestGo")
-    $goPath = Join-Path -Path $xsearchPath -ChildPath "go"
-    $gosearchPath = "$goPath\src\elocale.com\clarkcb\xsearch"
+    Hdr('UnitTestGo')
 
     $oldPwd = Get-Location
-    Set-Location $gosearchPath
+    Set-Location $gofindPath
 
-    Log("Unit-testing gosearch")
-    Write-Host "go test"
-    go test
+    Log('Unit-testing gofind')
+    Log('go test --cover ./...')
+    go test --cover ./...
 
     Set-Location $oldPwd
 }
@@ -67,16 +123,15 @@ function UnitTestGo
 function UnitTestHaskell
 {
     Write-Host
-    Log("UnitTestHaskell")
-    $haskellPath = Join-Path -Path $xsearchPath -ChildPath "haskell"
-    $hssearchPath = Join-Path -Path $haskellPath -ChildPath "hssearch"
+    Hdr('UnitTestHaskell')
 
     $oldPwd = Get-Location
-    Set-Location $hssearchPath
+    Set-Location $hsfindPath
 
-    Log("Unit-testing hssearch")
-    Write-Host "cabal test"
-    cabal test
+    # test with stack
+    Log('Unit-testing hsfind')
+    Log('stack test')
+    stack test
 
     Set-Location $oldPwd
 }
@@ -84,89 +139,118 @@ function UnitTestHaskell
 function UnitTestJava
 {
     Write-Host
-    Log("UnitTestJava - currently unsupported")
+    Hdr('UnitTestJava')
+
+    # run tests via maven
+    Log('Unit-testing javafind')
+    $pomPath = Join-Path $javafindPath 'pom.xml'
+    Log("mvn -f $pomPath test")
+    mvn -f $pomPath test
 }
 
 function UnitTestJavaScript
 {
     Write-Host
-    Log("UnitTestJavaScript")
-    $javascriptPath = Join-Path -Path $xsearchPath -ChildPath "javascript"
-    $jssearchPath = Join-Path -Path $javascriptPath -ChildPath "jssearch"
-    $testsPath = Join-Path -Path $jssearchPath -ChildPath "tests"
-    $nodeUnitPath = "$jssearchPath\node_modules\nodeunit"
-    $nodeUnit = "$javascriptUnitPath\bin\nodeunit"
+    Hdr('UnitTestJavaScript')
 
     $oldPwd = Get-Location
+    Set-Location $jsfindPath
 
-    if (!(Test-Path $nodeUnitPath))
-    {
-        Log("nodeunit not installed, installing")
-        Set-Location $jssearchPath
-        Write-Host "npm install nodeunit"
-        npm install nodeunit
-    }
-
-    Set-Location $testsPath
-
-    Log("Unit-testing nodesearch")
-    $tests = @(Get-ChildItem $testsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.js' })
-    ForEach ($test in $tests)
-    {
-        Write-Host "`nnodeunit $test"
-        node $nodeUnit $test
-    }
+    # run tests via npm
+    Log('Unit-testing jsfind')
+    Log('npm test')
+    npm test
 
     Set-Location $oldPwd
+}
+
+function UnitTestKotlin
+{
+    Write-Host
+    Hdr('UnitTestKotlin')
+
+    # run tests via gradle
+    Log('Unit-testing ktfind')
+    $buildGradlePath = Join-Path $ktfindPath 'build.gradle'
+    Log("gradle -b $buildGradlePath test")
+    gradle -b $buildGradlePath test
+}
+
+function UnitTestObjc
+{
+    Write-Host
+    Hdr('UnitTestObjc - currently unimplemented')
+}
+
+function UnitTestOcaml
+{
+    Write-Host
+    Hdr('UnitTestOcaml - currently unimplemented')
 }
 
 function UnitTestPerl
 {
     Write-Host
-    Log("UnitTestPerl")
-    $perlPath = Join-Path -Path $xsearchPath -ChildPath "perl"
-    $plTestsPath = Join-Path -Path $perlPath -ChildPath "tests"
+    Hdr('UnitTestPerl')
 
-    $oldPwd = Get-Location
-    Set-Location $plTestsPath
+    $plTestsPath = Join-Path $plfindPath 't'
 
-    Log("Unit-testing plsearch")
+    Log('Unit-testing plfind')
     $pltests = @(Get-ChildItem $plTestsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
+        Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
     ForEach ($pltest in $pltests)
     {
-        Write-Host "`nperl $pltest"
+        Log("perl $pltest")
         perl $pltest
     }
-
-    Set-Location $oldPwd
 }
 
 function UnitTestPhp
 {
     Write-Host
-    Log("UnitTestPhp - currently unsupported")
+    Hdr('UnitTestPhp')
+
+    if (!(Get-Command 'phpunit'))
+    {
+        PrintError('You need to install phpunit')
+        return
+    }
+
+    $phpTestsPath = Join-Path $phpfindPath 'tests'
+
+    Log('Unit-testing plfind')
+    Log("phpunit $phpTestsPath")
+    phpunit $phpTestsPath
 }
 
 function UnitTestPython
 {
     Write-Host
-    Log("UnitTestPython")
-    $pythonPath = Join-Path -Path $xsearchPath -ChildPath "python"
-    $pyTestsPath = Join-Path -Path $pythonPath -ChildPath "tests"
+    Hdr('UnitTestPython')
+
+    $venvPath = Join-Path $pyfindPath 'venv'
+    if (!(Test-Path $venvPath))
+    {  
+        Log('venv path not found, you probably need to run the python build (./build.ps1 python)')
+        return
+    }
 
     $oldPwd = Get-Location
-    Set-Location $pyTestsPath
+    Set-Location $pyfindPath
 
-    Log("Unit-testing pysearch")
-    $pytests = @(Get-ChildItem $pyTestsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.py' })
-    ForEach ($pytest in $pytests)
-    {
-        Write-Host "`npython $pytest"
-        python $pytest
-    }
+    # activate the virtual env
+    $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+    Log("$activatePath")
+    & $activatePath
+
+    Log('Unit-testing pyfind')
+    # Run the individual tests
+    Log('nosetests')
+    nosetests
+
+    # deactivate at end of setup process
+    Log('deactivate')
+    deactivate
 
     Set-Location $oldPwd
 }
@@ -174,21 +258,29 @@ function UnitTestPython
 function UnitTestRuby
 {
     Write-Host
-    Log("UnitTestRuby")
-    $rubyPath = Join-Path -Path $xsearchPath -ChildPath "ruby"
-    $rbTestsPath = Join-Path -Path $rubyPath -ChildPath "tests"
+    Hdr('UnitTestRuby')
 
     $oldPwd = Get-Location
-    Set-Location $rbTestsPath
+    Set-Location $rbfindPath
 
-    Log("Unit-testing rbsearch")
-    $rbtests = @(Get-ChildItem $rbTestsPath |
-        ?{ !$_.PSIsContainer -and $_.Extension -eq '.rb' })
-    ForEach ($rbtest in $rbtests)
-    {
-        Write-Host "`nruby $rbtest"
-        ruby $rbtest
-    }
+    Log('Unit-testing rbfind')
+    Log('rake test')
+    rake test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestRust
+{
+    Write-Host
+    Hdr('UnitTestRust')
+
+    $oldPwd = Get-Location
+    Set-Location $rsfindPath
+
+    Log('Unit-testing rsfind')
+    Log('cargo test')
+    cargo test
 
     Set-Location $oldPwd
 }
@@ -196,23 +288,60 @@ function UnitTestRuby
 function UnitTestScala
 {
     Write-Host
-    Log("UnitTestScala - currently unsupported")
+    Hdr('UnitTestScala')
+
+    $oldPwd = Get-Location
+    Set-Location $scalafindPath
+
+    Log('Unit-testing scalafind')
+    Log('sbt test')
+    sbt test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestSwift
+{
+    Write-Host
+    Hdr('UnitTestSwift')
+
+    $oldPwd = Get-Location
+    Set-Location $swiftfindPath
+
+    Log('Unit-testing swiftfind')
+    Log('swift test')
+    swift test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestTypeScript
 {
     Write-Host
-    Log("UnitTestTypeScript - currently unsupported")
+    Hdr('UnitTestTypeScript')
+
+    $oldPwd = Get-Location
+    Set-Location $tsfindPath
+
+    Log('Unit-testing tsfind')
+    Log('npm test')
+    npm test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestAll
 {
     Write-Host
-    Log("UnitTestAll")
+    Hdr('UnitTestAll')
 
     UnitTestClojure
 
+    UnitTestCpp
+
     UnitTestCsharp
+
+    UnitTestDart
 
     UnitTestFsharp
 
@@ -224,6 +353,12 @@ function UnitTestAll
 
     UnitTestJavaScript
 
+    UnitTestKotlin
+
+    UnitTestObjc
+
+    UnitTestOcaml
+
     UnitTestPerl
 
     UnitTestPhp
@@ -232,7 +367,11 @@ function UnitTestAll
 
     UnitTestRuby
 
+    UnitTestRust
+
     UnitTestScala
+
+    UnitTestSwift
 
     UnitTestTypeScript
 }
@@ -243,24 +382,31 @@ function UnitTestAll
 
 function UnitTestMain
 {
-    param($lang="all")
+    param($lang='all')
 
     switch ($lang)
     {
-        "all"        { UnitTestAll }
-        "clojure"    { UnitTestClojure }
-        "csharp"     { UnitTestCsharp }
-        "fsharp"     { UnitTestFsharp }
-        "go"         { UnitTestGo }
-        "haskell"    { UnitTestHaskell }
-        "java"       { UnitTestJava }
-        "javascript" { UnitTestJavaScript }
-        "perl"       { UnitTestPerl }
-        "php"        { UnitTestPhp }
-        "python"     { UnitTestPython }
-        "ruby"       { UnitTestRuby }
-        "scala"      { UnitTestScala }
-        "typescript" { UnitTestTypeScript }
+        'all'        { UnitTestAll }
+        'clojure'    { UnitTestClojure }
+        'cpp'        { UnitTestCpp }
+        'csharp'     { UnitTestCsharp }
+        'dart'       { UnitTestDart }
+        'fsharp'     { UnitTestFsharp }
+        'go'         { UnitTestGo }
+        'haskell'    { UnitTestHaskell }
+        'java'       { UnitTestJava }
+        'javascript' { UnitTestJavaScript }
+        'kotlin'     { UnitTestKotlin }
+        'objc'       { UnitTestObjc }
+        'ocaml'      { UnitTestOcaml }
+        'perl'       { UnitTestPerl }
+        'php'        { UnitTestPhp }
+        'python'     { UnitTestPython }
+        'ruby'       { UnitTestRuby }
+        'rust'       { UnitTestRust }
+        'scala'      { UnitTestScala }
+        'swift'      { UnitTestSwift }
+        'typescript' { UnitTestTypeScript }
         default      { ExitWithError("Unknown option: $lang") }
     }
 }

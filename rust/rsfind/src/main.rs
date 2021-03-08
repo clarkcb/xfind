@@ -3,9 +3,8 @@ use std::env;
 use std::process;
 
 use crate::common::log;
-use crate::finder::{get_result_dirs, get_result_files, get_result_lines};
+use crate::finder::{get_matching_dirs, get_matching_files};
 use crate::finderror::FindError;
-use crate::findresultformatter::FindResultFormatter;
 
 pub mod color;
 pub mod common;
@@ -16,9 +15,7 @@ pub mod finder;
 pub mod finderror;
 pub mod findfile;
 pub mod findoptions;
-pub mod findresult;
 pub mod findsettings;
-pub mod findresultformatter;
 
 fn print_error(error: FindError, options: &findoptions::FindOptions) {
     log(format!("\nERROR: {}", error.description).as_str());
@@ -30,28 +27,27 @@ fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
     process::exit(1);
 }
 
-fn print_result_dirs(results: &Vec<findresult::FindResult>) {
-    let dirs = get_result_dirs(results);
-    log(format!("\nDirectories with matches ({}):", dirs.len()).as_str());
-    for dir in dirs.iter() {
-        log(format!("{}", dir).as_str());
+fn print_matching_dirs(findfiles: &Vec<findfile::FindFile>) {
+    let dirs = get_matching_dirs(findfiles);
+    if dirs.is_empty() {
+        log("\nMatching directories: 0");
+    } else {
+        log(format!("\nMatching directories ({}):", dirs.len()).as_str());
+        for dir in dirs.iter() {
+            log(format!("{}", dir).as_str());
+        }
     }
 }
 
-fn print_result_files(results: &Vec<findresult::FindResult>) {
-    let files = get_result_files(results);
-    log(format!("\nFiles with matches ({}):", files.len()).as_str());
-    for file in files.iter() {
-        log(format!("{}", file).as_str());
-    }
-}
-
-fn print_result_lines(results: &Vec<findresult::FindResult>, unique: bool) {
-    let lines = get_result_lines(results, unique);
-    let lines_title = if unique { "Unique lines" } else { "Lines" };
-    log(format!("\n{} with matches ({}):", lines_title, lines.len()).as_str());
-    for line in lines.iter() {
-        log(format!("{}", line).as_str());
+fn print_matching_files(findfiles: &Vec<findfile::FindFile>) {
+    let files = get_matching_files(findfiles);
+    if files.is_empty() {
+        log("\nMatching files: 0");
+    } else {
+        log(format!("\nMatching files ({}):", files.len()).as_str());
+        for file in files.iter() {
+            log(format!("{}", file).as_str());
+        }
     }
 }
 
@@ -87,23 +83,12 @@ fn find(args: Iter<String>) {
             };
 
             match finder.find() {
-                Ok(results) => {
-                    if finder.settings.print_results {
-                        let formatter = FindResultFormatter::new(
-                            finder.settings.colorize, finder.settings.max_line_length);
-                        log(format!("\nFind results ({}):", results.len()).as_str());
-                        for r in results.iter() {
-                            log(formatter.format(r).as_str());
-                        }
-                    }
+                Ok(findfiles) => {
                     if finder.settings.list_dirs {
-                        print_result_dirs(&results);
+                        print_matching_dirs(&findfiles);
                     }
                     if finder.settings.list_files {
-                        print_result_files(&results);
-                    }
-                    if finder.settings.list_lines {
-                        print_result_lines(&results, finder.settings.unique_lines);
+                        print_matching_files(&findfiles);
                     }
                 },
                 Err(error) => error_and_exit(error, &options),
@@ -129,7 +114,7 @@ mod tests {
         let startpath = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rsfind", "-x", "rs", "-s", "find", "-D", "debug", "-f", "find", "--debug",
+            "rsfind", "-x", "rs", "-D", "debug", "-f", "find", "--debug",
             startpath,
         ]
         .into_iter()
@@ -144,7 +129,7 @@ mod tests {
         let startpath = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rsfind", "-x", "rlib", "-s", "find", "-f", "find", "--debug", startpath,
+            "rsfind", "-x", "rlib", "-f", "find", "--debug", startpath,
         ]
         .into_iter()
         .map(|a| a.to_string())

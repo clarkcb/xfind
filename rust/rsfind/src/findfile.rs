@@ -75,13 +75,13 @@ mod tests {
     #[test]
     fn test_find_file_abs_path() {
         let sf = FindFile::new(
-            "/Users/cary/src/xfind/rust/rsfind/src".to_string(),
+            "~/src/xfind/rust/rsfind/src".to_string(),
             "finder.rs".to_string(),
             FileType::Code,
         );
         assert_eq!(
             sf.filepath(),
-            "/Users/cary/src/xfind/rust/rsfind/src/finder.rs"
+            "~/src/xfind/rust/rsfind/src/finder.rs"
         );
     }
 

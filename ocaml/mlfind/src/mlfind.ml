@@ -14,26 +14,6 @@ let sort_lines (lines : string list) : string list =
     else 0 in
   List.sort lines ~cmp:cmp_lines
 
-let get_matching_lines (settings : Findsettings.t) (results : Findresult.t list) : string list =
-  let rec rec_get_matching_lines (res : Findresult.t list) (lines : string list) : string list =
-    match res with
-    | [] -> lines
-    | r :: rs -> (
-      let line = String.strip r.line in
-      if settings.uniquelines && List.exists lines ~f:(fun l -> l = line)
-      then rec_get_matching_lines rs lines
-      else rec_get_matching_lines rs (List.append lines [line])) in
-  sort_lines (rec_get_matching_lines results [])
-
-let print_matching_lines (settings : Findsettings.t) (results : Findresult.t list) : unit = 
-  let matching_lines = get_matching_lines settings results in
-  let hdr =
-    if settings.uniquelines
-    then sprintf "\nUnique lines with matches (%d):" (List.length matching_lines)
-    else sprintf "\nLines with matches (%d):" (List.length matching_lines) in
-  log_msg hdr;
-  List.iter matching_lines ~f:(fun l -> log_msg l);;
-
 let get_matching_files (results : Findresult.t list) : string list =
   let rec rec_get_matching_files (res : Findresult.t list) (files : string list) : string list =
     match res with
@@ -66,18 +46,12 @@ let print_matching_dirs (results : Findresult.t list) : unit =
   log_msg (sprintf "\nDirectories with matches (%d):" (List.length matching_dirs));
   List.iter matching_dirs ~f:(fun d -> log_msg d);;
 
-let print_find_results (results : Findresult.t list) : unit = 
-  log_msg (sprintf "\nFind results (%d):" (List.length results));
-  List.iter results ~f:(fun r -> log_msg (Findresult.to_string r));;
-
 let find (settings : Findsettings.t) findoptions = 
   if settings.debug then log_msg (sprintf "settings: %s" (Findsettings.to_string settings));
   match Finder.find settings with
   | Ok (results : Findresult.t list) ->
-      if settings.printresults then print_find_results results;
       if settings.listdirs then print_matching_dirs results;
       if settings.listfiles then print_matching_files results;
-      if settings.listlines then print_matching_lines settings results
   | Error msg -> print_error_with_usage msg findoptions;;
 
 let () =

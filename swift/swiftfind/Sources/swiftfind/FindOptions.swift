@@ -129,9 +129,6 @@ public class FindOptions {
     // this is computed property so that it can reference self
     private var argActionDict: [String: (String, FindSettings) -> Void] {
         [
-            "encoding": { (str: String, settings: FindSettings) -> Void in
-                settings.textFileEncoding = str
-            },
             "in-archiveext": { (str: String, settings: FindSettings) -> Void in
                 settings.addInArchiveExtension(str)
             },
@@ -149,27 +146,6 @@ public class FindOptions {
             },
             "in-filetype": { (str: String, settings: FindSettings) -> Void in
                 settings.addInFileType(str)
-            },
-            "in-linesafterpattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addInLinesAfterPattern(str)
-            },
-            "in-linesbeforepattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addInLinesBeforePattern(str)
-            },
-            "linesafter": { (str: String, settings: FindSettings) -> Void in
-                settings.linesAfter = Int(str)!
-            },
-            "linesaftertopattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addLinesAfterToPattern(str)
-            },
-            "linesafteruntilpattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addLinesAfterUntilPattern(str)
-            },
-            "linesbefore": { (str: String, settings: FindSettings) -> Void in
-                settings.linesBefore = Int(str)!
-            },
-            "maxlinelength": { (str: String, settings: FindSettings) -> Void in
-                settings.maxLineLength = Int(str)!
             },
             "out-archiveext": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutArchiveExtension(str)
@@ -189,14 +165,8 @@ public class FindOptions {
             "out-filetype": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutFileType(str)
             },
-            "out-linesafterpattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addOutLinesAfterPattern(str)
-            },
-            "out-linesbeforepattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addOutLinesBeforePattern(str)
-            },
-            "findpattern": { (str: String, settings: FindSettings) -> Void in
-                settings.addFindPattern(str)
+            "path": { (str: String, settings: FindSettings) -> Void in
+                settings.addPath(str)
             },
             "settings-file": { (str: String, settings: FindSettings) -> Void in
                 var error: NSError?
@@ -206,9 +176,6 @@ public class FindOptions {
     }
 
     private let boolFlagActionDict: [String: (Bool, FindSettings) -> Void] = [
-        "allmatches": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.firstMatch = !bool
-        },
         "archivesonly": { (bool: Bool, settings: FindSettings) -> Void in
             settings.archivesOnly = bool
         },
@@ -218,14 +185,17 @@ public class FindOptions {
         "debug": { (bool: Bool, settings: FindSettings) -> Void in
             settings.debug = bool
         },
+        "excludearchives": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.includeArchives = !bool
+        },
         "excludehidden": { (bool: Bool, settings: FindSettings) -> Void in
             settings.excludeHidden = bool
         },
-        "firstmatch": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.firstMatch = bool
-        },
         "help": { (bool: Bool, settings: FindSettings) -> Void in
             settings.printUsage = bool
+        },
+        "includearchives": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.includeArchives = bool
         },
         "includehidden": { (bool: Bool, settings: FindSettings) -> Void in
             settings.excludeHidden = !bool
@@ -236,35 +206,14 @@ public class FindOptions {
         "listfiles": { (bool: Bool, settings: FindSettings) -> Void in
             settings.listFiles = bool
         },
-        "listlines": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.listLines = bool
-        },
-        "multilineoption-REMOVE": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.multiLineFind = bool
-        },
         "nocolorize": { (bool: Bool, settings: FindSettings) -> Void in
             settings.colorize = !bool
-        },
-        "noprintmatches": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.printResults = !bool
         },
         "norecursive": { (bool: Bool, settings: FindSettings) -> Void in
             settings.recursive = !bool
         },
-        "nofindarchives": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.findArchives = !bool
-        },
-        "printmatches": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.printResults = bool
-        },
         "recursive": { (bool: Bool, settings: FindSettings) -> Void in
             settings.recursive = bool
-        },
-        "findarchives": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.findArchives = bool
-        },
-        "uniquelines": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.uniqueLines = bool
         },
         "verbose": { (bool: Bool, settings: FindSettings) -> Void in
             settings.verbose = bool
@@ -277,6 +226,8 @@ public class FindOptions {
     public func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> FindSettings {
         var i = 0
         let settings = FindSettings()
+        // default listFiles to true since running as cli
+        settings.listFiles = true
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
@@ -304,7 +255,7 @@ public class FindOptions {
                     break
                 }
             } else {
-                settings.startPath = args[i]
+                settings.addPath(args[i])
             }
             i += 1
         }
@@ -369,10 +320,10 @@ public class FindOptions {
                             setError(error, msg: "Invalid option: \(key)")
                             break
                         }
-                    } else if key == "startpath" {
+                    } else if key == "path" {
                         let value = json[key]
                         if let string = value as? String {
-                            settings.startPath = string
+                            settings.addPath(string)
                         }
                     } else {
                         setError(error, msg: "Invalid option: \(key)")
@@ -391,7 +342,7 @@ public class FindOptions {
     }
 
     func getUsageString() -> String {
-        var str = "\nUsage:\n swiftfind [options] -s <findpattern> <startpath>\n\n"
+        var str = "\nUsage:\n swiftfind [options] <path> [<path> ...]\n\n"
         str += "Options:\n"
         let optStrings = findOptions.map {
             $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)"

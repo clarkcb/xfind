@@ -74,7 +74,6 @@ public class FileTypes {
     fileprivate static let archive = "archive"
     fileprivate static let binary = "binary"
     fileprivate static let code = "code"
-    fileprivate static let findable = "findable"
     fileprivate static let text = "text"
     fileprivate static let unknown = "unknown"
     fileprivate static let xml = "xml"
@@ -91,9 +90,6 @@ public class FileTypes {
         fileTypesDict = parser.parseFile(Config.fileTypesPath)
         fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
             .union(fileTypesDict[FileTypes.xml]!)
-        fileTypesDict[FileTypes.findable] =
-            fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
-                .union(fileTypesDict[FileTypes.archive]!)
     }
 
     private func setFileTypesFromJson() {
@@ -109,9 +105,6 @@ public class FileTypes {
                     }
                     fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
                         .union(fileTypesDict[FileTypes.xml]!)
-                    fileTypesDict[FileTypes.findable] =
-                        fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.binary]!)
-                            .union(fileTypesDict[FileTypes.archive]!)
                 }
             }
         } catch let error as NSError {
@@ -194,18 +187,12 @@ public class FileTypes {
         isFileOfType(fileName, FileTypes.code)
     }
 
-    public func isFindableFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.findable)
-    }
-
     public func isTextFile(_ fileName: String) -> Bool {
         isFileOfType(fileName, FileTypes.text)
     }
 
     public func isUnknownFile(_ fileName: String) -> Bool {
-        (fileTypesDict.index(forKey: FileTypes.unknown) != nil &&
-            fileTypesDict[FileTypes.unknown]!.contains(FileUtil.getExtension(fileName)))
-            || !isFindableFile(fileName)
+        getFileType(fileName) == FileType.unknown
     }
 
     public func isXmlFile(_ fileName: String) -> Bool {

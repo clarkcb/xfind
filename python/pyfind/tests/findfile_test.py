@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 ################################################################################
 #
-# filetypes_test.py
+# findfile_test.py
 #
-# class FileTypesTest: testing of FileTypes
+# class FindFileTest: testing of FindFile
 #
 ################################################################################
 import os
@@ -18,11 +18,11 @@ from pyfind import FileType, FindFile
 class FindFileTest(unittest.TestCase):
 
     def test_findfile_abs_path(self):
-        path = '/Users/cary/src/xfind/python/pyfind'
+        path = os.environ['HOME'] + '/src/xfind/python/pyfind'
         filename = 'findfile.py'
         findfile = FindFile(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('/Users/cary/src/xfind/python/pyfind/findfile.py', findfile.relativepath)
-        self.assertEqual('/Users/cary/src/xfind/python/pyfind/findfile.py', str(findfile))
+        self.assertEqual(os.environ['HOME'] + '/src/xfind/python/pyfind/findfile.py', findfile.relativepath)
+        self.assertEqual(os.environ['HOME'] + '/src/xfind/python/pyfind/findfile.py', str(findfile))
 
     def test_findfile_rel_path1(self):
         path = '.'

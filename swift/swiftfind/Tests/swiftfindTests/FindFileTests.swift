@@ -14,7 +14,7 @@ import swiftfind
 class FindFileTests: XCTestCase {
 
     func testFindFileAbsPath() {
-        let path = "/Users/cary/src/xfind/swift/swiftfind/Sources/swiftfind/FindFile.swift"
+        let path = "\(NSHomeDirectory())/src/xfind/swift/swiftfind/Sources/swiftfind/FindFile.swift"
         let findFile = FindFile(filePath: path, fileType: FileType.code)
         XCTAssertEqual(path, findFile.description)
     }

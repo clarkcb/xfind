@@ -1,15 +1,11 @@
 {
-  "startpath": "~/src/xsearch/",
+  "path": "~/src/xfind/",
   "in-ext": ["js", "ts"],
   "out-dirpattern": [
     "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor"
   ],
   "out-filepattern": ["gulpfile", "\\.min\\."],
-  "searchpattern": "Searcher",
-  "linesbefore": 2,
-  "linesafter": 2,
   "debug": true,
-  "allmatches": false,
   "includehidden": false,
   "listdirs": true,
   "listfiles": true

@@ -4,7 +4,7 @@
  * Some common functions, etc.
  */
 
-'use strict'
+'use strict';
 
 // add a startsWith method to String type
 if (typeof String.prototype.startsWith !== 'function') {
@@ -36,11 +36,11 @@ const setFromArray = (arr) => {
 exports.setFromArray = setFromArray;
 
 const COLORS = {
-    GREY: '\u001b[30m',
-    RED: '\u001b[31m',
-    GREEN: '\u001b[32m',
-    YELLOW: '\u001b[33m',
-    BLUE: '\u001b[34m',
-    RESET: '\u001b[0m'
+  GREY: '\u001b[30m',
+  RED: '\u001b[31m',
+  GREEN: '\u001b[32m',
+  YELLOW: '\u001b[33m',
+  BLUE: '\u001b[34m',
+  RESET: '\u001b[0m'
 }
 exports.COLORS = COLORS;

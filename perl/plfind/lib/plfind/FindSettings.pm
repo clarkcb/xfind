@@ -20,41 +20,25 @@ sub new {
         colorize => 1,
         debug => 0,
         excludehidden => 1,
-        firstmatch => 0,
         in_archiveextensions => [],
         in_archivefilepatterns => [],
         in_dirpatterns => [],
         in_extensions => [],
         in_filepatterns => [],
         in_filetypes => [],
-        in_linesafterpatterns => [],
-        in_linesbeforepatterns => [],
-        linesafter => 0,
-        linesaftertopatterns => [],
-        linesafteruntilpatterns => [],
-        linesbefore => 0,
+        includearchives => 0,
         listdirs => 0,
         listfiles => 0,
-        listlines => 0,
-        maxlinelength => 150,
-        multilineoption-REMOVE => 0,
         out_archiveextensions => [],
         out_archivefilepatterns => [],
         out_dirpatterns => [],
         out_extensions => [],
         out_filepatterns => [],
         out_filetypes => [],
-        out_linesafterpatterns => [],
-        out_linesbeforepatterns => [],
-        printresults => 1,
         printusage => 0,
         printversion => 0,
         recursive => 1,
-        findarchives => 0,
-        findpatterns => [],
-        startpath => '',
-        textfileencoding => 'UTF-8',
-        uniquelines => 0,
+        paths => [],
         verbose => 0,
     };
     bless $self, $class;
@@ -86,7 +70,7 @@ sub set_property {
     $self->{$name} = $val;
     if ($val == 1) {
         if ($name eq 'archivesonly') {
-            $self->{findarchives} = 1;
+            $self->{includearchives} = 1;
         } elsif ($name eq 'debug') {
             $self->{verbose} = 1;
         }
@@ -103,7 +87,7 @@ sub add_exts {
         $xs = \@split;
     }
     foreach my $x (@{$xs}) {
-        push (@{$extaref}, $x);
+        push(@{$extaref}, $x);
     }
 }
 
@@ -117,7 +101,7 @@ sub add_filetypes {
         $fts = \@split;
     }
     foreach my $ft (@{$fts}) {
-        push (@{$ftaref}, plfind::FileTypes::from_name($ft));
+        push(@{$ftaref}, plfind::FileTypes::from_name($ft));
     }
 }
 
@@ -128,7 +112,7 @@ sub add_patterns {
             push (@{$pataref}, $p);
         }
     } else { # treat as a string
-        push (@{$pataref}, $pats);
+        push(@{$pataref}, $pats);
     }
 }
 
@@ -139,41 +123,25 @@ sub to_string {
     $s .= ', colorize=' . $self->bool_to_string($self->{colorize});
     $s .= ', debug=' . $self->bool_to_string($self->{debug});
     $s .= ', excludehidden=' . $self->bool_to_string($self->{excludehidden});
-    $s .= ', firstmatch=' . $self->bool_to_string($self->{firstmatch});
     $s .= ', in_archiveextensions=' . $self->aref_to_string($self->{in_archiveextensions});
     $s .= ', in_archivefilepatterns=' . $self->aref_to_string($self->{in_archivefilepatterns});
     $s .= ', in_dirpatterns=' . $self->aref_to_string($self->{in_dirpatterns});
     $s .= ', in_extensions=' . $self->aref_to_string($self->{in_extensions});
     $s .= ', in_filepatterns=' . $self->aref_to_string($self->{in_filepatterns});
     $s .= ', in_filetypes=' . $self->aref_to_string($self->{in_filetypes});
-    $s .= ', in_linesafterpatterns=' . $self->aref_to_string($self->{in_linesafterpatterns});
-    $s .= ', in_linesbeforepatterns=' . $self->aref_to_string($self->{in_linesbeforepatterns});
-    $s .= ', linesafter=' . $self->{linesafter};
-    $s .= ', linesaftertopatterns=' . $self->aref_to_string($self->{linesaftertopatterns});
-    $s .= ', linesafteruntilpatterns=' . $self->aref_to_string($self->{linesafteruntilpatterns});
-    $s .= ', linesbefore=' . $self->{linesbefore};
+    $s .= ', includearchives=' . $self->bool_to_string($self->{includearchives});
     $s .= ', listdirs=' . $self->bool_to_string($self->{listdirs});
     $s .= ', listfiles=' . $self->bool_to_string($self->{listfiles});
-    $s .= ', listlines=' . $self->bool_to_string($self->{listlines});
-    $s .= ', maxlinelength=' . $self->{maxlinelength};
-    $s .= ', multilineoption-REMOVE=' . $self->bool_to_string($self->{multilineoption-REMOVE});
     $s .= ', out_archiveextensions=' . $self->aref_to_string($self->{out_archiveextensions});
     $s .= ', out_archivefilepatterns=' . $self->aref_to_string($self->{out_archivefilepatterns});
     $s .= ', out_dirpatterns=' . $self->aref_to_string($self->{out_dirpatterns});
     $s .= ', out_extensions=' . $self->aref_to_string($self->{out_extensions});
     $s .= ', out_filepatterns=' . $self->aref_to_string($self->{out_filepatterns});
     $s .= ', out_filetypes=' . $self->aref_to_string($self->{out_filetypes});
-    $s .= ', out_linesafterpatterns=' . $self->aref_to_string($self->{out_linesafterpatterns});
-    $s .= ', out_linesbeforepatterns=' . $self->aref_to_string($self->{out_linesbeforepatterns});
-    $s .= ', printresults=' . $self->bool_to_string($self->{printresults});
     $s .= ', printusage=' . $self->bool_to_string($self->{printusage});
     $s .= ', printversion=' . $self->bool_to_string($self->{printversion});
     $s .= ', recursive=' . $self->bool_to_string($self->{recursive});
-    $s .= ', findarchives=' . $self->bool_to_string($self->{findarchives});
-    $s .= ', findpatterns=' . $self->aref_to_string($self->{findpatterns});
-    $s .= ', startpath="' . $self->{startpath} . '"';
-    $s .= ', textfileencoding="' . $self->{textfileencoding} . '"';
-    $s .= ', uniquelines=' . $self->bool_to_string($self->{uniquelines});
+    $s .= ', paths=' . $self->aref_to_string($self->{paths});
     $s .= ', verbose=' . $self->bool_to_string($self->{verbose});
     $s .= ')';
     return $s;

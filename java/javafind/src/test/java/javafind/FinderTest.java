@@ -1,12 +1,8 @@
 package javafind;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.Iterator;
-import java.util.List;
 
 import static org.junit.Assert.*;
 
@@ -16,12 +12,9 @@ public class FinderTest {
 
     private static FindSettings getSettings() {
         FindSettings settings = new FindSettings();
-        settings.setStartPath(".");
-        settings.addFindPattern("Finder");
+        settings.addPath(".");
         return settings;
     }
-
-    private static final String testFilePath = "/testFile2.txt";
 
     /*************************************************************
      * isFindDir tests
@@ -95,11 +88,9 @@ public class FinderTest {
         assertTrue(finder.isFindDir(dir));
     }
 
-
     /*************************************************************
      * isFindFile tests
      *************************************************************/
-
     @Test
     public final void testIsFindFile_NoExtensionsNoPatterns_True() {
         FindSettings settings = getSettings();
@@ -181,11 +172,9 @@ public class FinderTest {
         assertTrue(finder.isFindFile(file));
     }
 
-
     /*************************************************************
      * IsArchiveFindFile tests
      *************************************************************/
-
     @Test
     public final void testIsArchiveFindFile_NoExtensionsNoPatterns_True() {
         FindSettings settings = getSettings();
@@ -270,7 +259,6 @@ public class FinderTest {
     /*************************************************************
      * FilterFile tests
      *************************************************************/
-
     @Test
     public final void testFilterFile_IsHidden_False() {
         FindSettings settings = getSettings();
@@ -299,7 +287,7 @@ public class FinderTest {
     @Test
     public final void testFilterFile_ArchiveFindArchives_True() {
         FindSettings settings = getSettings();
-        settings.setFindArchives(true);
+        settings.setIncludeArchives(true);
         Finder finder = new Finder(settings);
         File file = new File("archive.zip");
         assertTrue(finder.filterFile(file));
@@ -308,7 +296,7 @@ public class FinderTest {
     @Test
     public final void testFilterFile_IsArchiveFindFile_True() {
         FindSettings settings = getSettings();
-        settings.setFindArchives(true);
+        settings.setIncludeArchives(true);
         settings.addInArchiveExtension("zip");
         Finder finder = new Finder(settings);
         File file = new File("archive.zip");
@@ -318,7 +306,7 @@ public class FinderTest {
     @Test
     public final void testFilterFile_NotIsArchiveFindFile_False() {
         FindSettings settings = getSettings();
-        settings.setFindArchives(true);
+        settings.setIncludeArchives(true);
         settings.addOutArchiveExtension("zip");
         Finder finder = new Finder(settings);
         File file = new File("archive.zip");
@@ -367,116 +355,5 @@ public class FinderTest {
         Finder finder = new Finder(settings);
         File file = new File("FileUtil.cs");
         assertFalse(finder.filterFile(file));
-    }
-
-    /*************************************************************
-     * findStringIterator test
-     *************************************************************/
-    @Test
-    public final void testFindStringIterator() {
-        FindSettings settings = getSettings();
-        Finder finder = new Finder(settings);
-        Iterator<String> lineIterator;
-        try {
-            InputStream is = getClass().getResourceAsStream(testFilePath);
-            List<String> lines = FileUtil.getStreamLines(is);
-            lineIterator = lines.iterator();
-            List<FindResult> results = finder.findStringIterator(lineIterator);
-
-            assertEquals(results.size(), 2);
-
-            FindResult firstResult = results.get(0);
-            int expectedFirstLineNum = 29;
-            assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
-            int expectedFirstMatchStartIndex = 3;
-            assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
-            int expectedFirstMatchEndIndex = 11;
-            assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
-
-            FindResult secondResult = results.get(1);
-            int expectedSecondLineNum = 35;
-            assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
-            int expectedSecondMatchStartIndex = 24;
-            assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
-            int expectedSecondMatchEndIndex = 32;
-            assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
-
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
-    }
-
-    /*************************************************************
-     * findMultiLineString tests
-     *************************************************************/
-    @Test
-    public final void testFindMultiLineString() {
-        FindSettings settings = getSettings();
-        Finder finder = new Finder(settings);
-        String contents;
-        try {
-            InputStream is = getClass().getResourceAsStream(testFilePath);
-            contents = FileUtil.getStreamContents(is);
-            //System.out.println("contents: " + contents);
-            List<FindResult> results = finder.findMultiLineString(contents);
-
-            assert(results.size() == 2);
-
-            FindResult firstResult = results.get(0);
-            int expectedFirstLineNum = 29;
-            assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
-            int expectedFirstMatchStartIndex = 3;
-            assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
-            int expectedFirstMatchEndIndex = 11;
-            assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
-
-            FindResult secondResult = results.get(1);
-            int expectedSecondLineNum = 35;
-            assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
-            int expectedSecondMatchStartIndex = 24;
-            assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
-            int expectedSecondMatchEndIndex = 32;
-            assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
-
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
-    }
-
-    @Test
-    public final void testFindMultiLineStringWithLinesBefore() {
-        FindSettings settings = getSettings();
-        settings.setLinesBefore(2);
-        Finder finder = new Finder(settings);
-        String contents;
-        try {
-            InputStream is = getClass().getResourceAsStream(testFilePath);
-            contents = FileUtil.getStreamContents(is);
-            //System.out.println("contents: " + contents);
-            List<FindResult> results = finder.findMultiLineString(contents);
-
-            assertEquals(results.size(), 2);
-
-            FindResult firstResult = results.get(0);
-            System.out.println("firstResult:\n" + firstResult);
-            int expectedFirstLineNum = 29;
-            assertEquals(firstResult.getLineNum(), expectedFirstLineNum);
-            int expectedFirstMatchStartIndex = 3;
-            assertEquals(firstResult.getMatchStartIndex(), expectedFirstMatchStartIndex);
-            int expectedFirstMatchEndIndex = 11;
-            assertEquals(firstResult.getMatchEndIndex(), expectedFirstMatchEndIndex);
-
-            FindResult secondResult = results.get(1);
-            System.out.println("secondResult:\n" + secondResult);
-            int expectedSecondLineNum = 35;
-            assertEquals(secondResult.getLineNum(), expectedSecondLineNum);
-            int expectedSecondMatchStartIndex = 24;
-            assertEquals(secondResult.getMatchStartIndex(), expectedSecondMatchStartIndex);
-            int expectedSecondMatchEndIndex = 32;
-            assertEquals(secondResult.getMatchEndIndex(), expectedSecondMatchEndIndex);
-
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
     }
 }

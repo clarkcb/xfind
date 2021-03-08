@@ -31,33 +31,17 @@ func main() {
 	}
 
 	finder := gofind.NewFinder(settings)
-	err = finder.Find()
+	findItems, err := finder.Find()
 	if err != nil {
 		errorAndExit(err, findOptions)
 	}
 
 	// if there are results and PrintResults is true then print them out
-	if settings.PrintResults {
-		fmt.Println()
-		finder.PrintFindResults()
-	}
-
 	if settings.ListDirs {
-		fmt.Println()
-		finder.PrintDirCounts()
+		findItems.PrintMatchingDirs()
 	}
 
 	if settings.ListFiles {
-		fmt.Println()
-		finder.PrintFileCounts()
-	}
-
-	if settings.ListLines {
-		fmt.Println()
-		if settings.UniqueLines {
-			finder.PrintUniqueLineCounts()
-		} else {
-			finder.PrintLineCounts()
-		}
+		findItems.PrintMatchingFiles()
 	}
 }

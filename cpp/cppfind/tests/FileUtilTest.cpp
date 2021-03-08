@@ -3,12 +3,14 @@
 #include "FileUtil.h"
 
 TEST_CASE("Expand paths", "[FileUtil]") {
+    std::string HOME = getenv("HOME");
+    std::string fullpath = HOME + "/filename.txt";
     REQUIRE(cppfind::FileUtil::expand_path("filename.txt") == "filename.txt");
     REQUIRE(cppfind::FileUtil::expand_path("./filename.txt") == "./filename.txt");
-    REQUIRE(cppfind::FileUtil::expand_path("/Users/cary/filename.txt") == "/Users/cary/filename.txt");
-    REQUIRE(cppfind::FileUtil::expand_path("~/filename.txt") == "/Users/cary/filename.txt");
-    REQUIRE(cppfind::FileUtil::expand_path("~") == "/Users/cary");
-    REQUIRE(cppfind::FileUtil::expand_path("~/") == "/Users/cary/");
+    REQUIRE(cppfind::FileUtil::expand_path(fullpath) == fullpath);
+    REQUIRE(cppfind::FileUtil::expand_path("~/filename.txt") == fullpath);
+    REQUIRE(cppfind::FileUtil::expand_path("~") == HOME);
+    REQUIRE(cppfind::FileUtil::expand_path("~/") == HOME + "/");
 }
 
 TEST_CASE("Detect file existence", "[FileUtil]") {

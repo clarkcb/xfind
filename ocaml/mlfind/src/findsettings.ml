@@ -6,41 +6,25 @@ type t = {
   colorize : bool;
   debug : bool;
   excludehidden : bool;
-  firstmatch : bool;
   in_archiveextensions : string list;
   in_archivefilepatterns : Re2.Regex.t list;
   in_dirpatterns : Re2.Regex.t list;
   in_extensions : string list;
   in_filepatterns : Re2.Regex.t list;
   in_filetypes : string list;
-  in_linesafterpatterns : Re2.Regex.t list;
-  in_linesbeforepatterns : Re2.Regex.t list;
-  linesafter : int;
-  linesaftertopatterns : Re2.Regex.t list;
-  linesafteruntilpatterns : Re2.Regex.t list;
-  linesbefore : int;
+  includearchives : bool;
   listdirs : bool;
   listfiles : bool;
-  listlines : bool;
-  maxlinelength : int;
-  multilineoption-REMOVE : bool;
   out_archiveextensions : string list;
   out_archivefilepatterns : Re2.Regex.t list;
   out_dirpatterns : Re2.Regex.t list;
   out_extensions : string list;
   out_filepatterns : Re2.Regex.t list;
   out_filetypes : string list;
-  out_linesafterpatterns : Re2.Regex.t list;
-  out_linesbeforepatterns : Re2.Regex.t list;
-  printresults : bool;
+  paths : string list;
   printusage : bool;
   printversion : bool;
   recursive : bool;
-  findarchives : bool;
-  findpatterns : Re2.Regex.t list;
-  startpath : string;
-  textfileencoding : string;
-  uniquelines : bool;
   verbose : bool
 }
 
@@ -49,7 +33,6 @@ let default_settings = {
   colorize = true;
   debug = false;
   excludehidden = true;
-  firstmatch = false;
   in_archiveextensions = [];
   in_archivefilepatterns = [];
   in_dirpatterns = [];
@@ -58,32 +41,19 @@ let default_settings = {
   in_filetypes = [];
   in_linesafterpatterns = [];
   in_linesbeforepatterns = [];
-  linesafter = 0;
-  linesaftertopatterns = [];
-  linesafteruntilpatterns = [];
-  linesbefore = 0;
+  includearchives = false;
   listdirs = false;
   listfiles = false;
-  listlines = false;
-  maxlinelength = 200;
-  multilineoption-REMOVE = false;
   out_archiveextensions = [];
   out_archivefilepatterns = [];
   out_dirpatterns = [];
   out_extensions = [];
   out_filepatterns = [];
   out_filetypes = [];
-  out_linesafterpatterns = [];
-  out_linesbeforepatterns = [];
-  printresults = true;
+  paths = [];
   printusage = false;
   printversion = false;
   recursive = true;
-  findarchives = false;
-  findpatterns = [];
-  startpath = "";
-  textfileencoding = "UTF-8";
-  uniquelines = false;
   verbose = false
 };;
 
@@ -96,8 +66,8 @@ let add_filetypes (ft_string : string) (filetypes : string list) =
   List.append filetypes fts
 
 let set_archivesonly (ss : FindSettings.t) (archivesonly: bool) (ss : FindSettings.t) =
-  let findarchives = if archivesonly then archivesonly else ss.findarchives
-  { ss with archivesonly=archivesonly; findarchives=findarchives }
+  let includearchives = if archivesonly then archivesonly else ss.includearchives
+  { ss with archivesonly=archivesonly; includearchives=includearchives }
 
 let set_debug (ss : FindSettings.t) (debug: bool) (ss : FindSettings.t) =
   let verbose = if debug then debug else ss.verbose
@@ -109,38 +79,22 @@ let to_string s =
     sprintf "; colorize=%b" s.colorize;
     sprintf "; debug=%b" s.debug;
     sprintf "; excludehidden=%b" s.excludehidden;
-    sprintf "; firstmatch=%b" s.firstmatch;
     sprintf "; in_archiveextensions=%s" (list_to_string s.in_archiveextensions);
     sprintf "; in_archivefilepatterns=%s" (regexp_list_to_string s.in_archivefilepatterns);
     sprintf "; in_dirpatterns=%s" (regexp_list_to_string s.in_dirpatterns);
     sprintf "; in_extensions=%s" (list_to_string s.in_extensions);
     sprintf "; in_filepatterns=%s" (regexp_list_to_string s.in_filepatterns);
     sprintf "; in_filetypes=%s" (list_to_string s.in_filetypes);
-    sprintf "; in_linesafterpatterns=%s" (regexp_list_to_string s.in_linesafterpatterns);
-    sprintf "; in_linesbeforepatterns=%s" (regexp_list_to_string s.in_linesbeforepatterns);
-    sprintf "; linesafter=%d" s.linesafter;
-    sprintf "; linesaftertopatterns=%s" (regexp_list_to_string s.linesaftertopatterns);
-    sprintf "; linesafteruntilpatterns=%s" (regexp_list_to_string s.linesafteruntilpatterns);
-    sprintf "; linesbefore=%d" s.linesbefore;
+    sprintf "; includearchives=%b" s.includearchives;
     sprintf "; listdirs=%b" s.listdirs;
     sprintf "; listfiles=%b" s.listfiles;
-    sprintf "; listlines=%b" s.listlines;
-    sprintf "; maxlinelength=%d" s.maxlinelength;
-    sprintf "; multilineoption-REMOVE=%b" s.multilineoption-REMOVE;
     sprintf "; out_archiveextensions=%s" (list_to_string s.out_archiveextensions);
     sprintf "; out_archivefilepatterns=%s" (regexp_list_to_string s.out_archivefilepatterns);
     sprintf "; out_dirpatterns=%s" (regexp_list_to_string s.out_dirpatterns);
     sprintf "; out_extensions=%s" (list_to_string s.out_extensions);
     sprintf "; out_filepatterns=%s" (regexp_list_to_string s.out_filepatterns);
     sprintf "; out_filetypes=%s" (list_to_string s.out_filetypes);
-    sprintf "; out_linesafterpatterns=%s" (regexp_list_to_string s.out_linesafterpatterns);
-    sprintf "; out_linesbeforepatterns=%s" (regexp_list_to_string s.out_linesbeforepatterns);
-    sprintf "; printresults=%b" s.printresults;
     sprintf "; printversion=%b" s.printversion;
     sprintf "; recursive=%b" s.recursive;
-    sprintf "; findarchives=%b" s.findarchives;
-    sprintf "; findpatterns=%s" (regexp_list_to_string s.findpatterns);
-    sprintf "; startpath=\"%s\"" s.startpath;
-    sprintf "; textfileencoding=\"%s\"" s.textfileencoding;
-    sprintf "; uniquelines=%b" s.uniquelines;
+    sprintf "; paths=%s" (list_to_string s.paths);
     sprintf "; verbose=%b}" s.verbose];;

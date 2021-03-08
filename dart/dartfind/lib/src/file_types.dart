@@ -36,7 +36,6 @@ class FileTypes {
   static const archive = 'archive';
   static const binary = 'binary';
   static const code = 'code';
-  static const findable = 'findable';
   static const text = 'text';
   static const xml = 'xml';
   static const unknown = 'unknown';
@@ -60,8 +59,6 @@ class FileTypes {
       });
       fileTypeMap[text] =
           fileTypeMap[text].union(fileTypeMap[code].union(fileTypeMap[xml]));
-      fileTypeMap[findable] =
-          fileTypeMap[text].union(fileTypeMap[binary].union(fileTypeMap[archive]));
     }
   }
 
@@ -129,16 +126,10 @@ class FileTypes {
     });
   }
 
-  Future<bool> isFindableFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeMap[findable].contains(FileUtil.extension(fileName));
-    });
-  }
-
   Future<bool> isUnknownFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeMap[unknown].contains(FileUtil.extension(fileName)) ||
-          !fileTypeMap[findable].contains(FileUtil.extension(fileName));
+    return await ready.then((_) async {
+      var fileType = await getFileType(fileName);
+      return fileType == FileType.unknown;
     });
   }
 }

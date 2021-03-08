@@ -11,8 +11,7 @@ namespace CsFindTests
         {
             try
             {
-                using var stream = typeof(EmbeddedTestResource).GetTypeInfo().Assembly
-                    .GetManifestResourceStream(namespaceAndFileName);
+                var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(namespaceAndFileName);
                 using var reader = new StreamReader(stream!, Encoding.UTF8);
                 return reader.ReadToEnd();
             }

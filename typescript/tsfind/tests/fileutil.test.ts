@@ -11,32 +11,32 @@ describe('testing fileutil', () => {
      * getExtension tests
      **************************************************************************/
     it('testGetTxtExtension', () => {
-        const file = "filename.txt";
-        expect(FileUtil.getExtension(file)).toEqual("txt");
+        const file = 'filename.txt';
+        expect(FileUtil.getExtension(file)).toEqual('txt');
     });
 
     it('testGetMissingExtension', () => {
-        const file = "filename.";
+        const file = 'filename.';
         expect(FileUtil.getExtension(file)).toEqual("");
     });
 
     it('testGetNoExtension', () => {
-        const file = "filename";
+        const file = 'filename';
         expect(FileUtil.getExtension(file)).toEqual("");
     });
 
     it('testGetHiddenTxtExtension', () => {
-        const file = ".filename.txt";
-        expect(FileUtil.getExtension(file)).toEqual("txt");
+        const file = '.filename.txt';
+        expect(FileUtil.getExtension(file)).toEqual('txt');
     });
 
     it('testGetHiddenMissingExtension', () => {
-        const file = ".filename.";
+        const file = '.filename.';
         expect(FileUtil.getExtension(file)).toEqual("");
     });
 
     it('testGetHiddenNoExtension', () => {
-        const file = ".filename";
+        const file = '.filename';
         expect(FileUtil.getExtension(file)).toEqual("");
     });
 
@@ -44,30 +44,30 @@ describe('testing fileutil', () => {
      * getRelativePath tests
      **************************************************************************/
     it('testGetRelativePath', () => {
-        const filepath = "/Users/cary/filename.txt";
-        expect(FileUtil.getRelativePath(filepath, '.')).toEqual("./filename.txt");
+        const filepath = `${process.env.HOME}/filename.txt`;
+        expect(FileUtil.getRelativePath(filepath, '.')).toEqual('./filename.txt');
     });
 
     /***************************************************************************
      * isDotDir tests
      **************************************************************************/
     it('testIsDotDirSingleDot', () => {
-        const filepath = ".";
+        const filepath = '.';
         expect(FileUtil.isDotDir(filepath)).toBeTruthy();
     });
 
     it('testIsDotDirSingleDotSlash', () => {
-        const filepath = "./";
+        const filepath = './';
         expect(FileUtil.isDotDir(filepath)).toBeTruthy();
     });
 
     it('testIsDotDirDoubleDot', () => {
-        const filepath = "..";
+        const filepath = '..';
         expect(FileUtil.isDotDir(filepath)).toBeTruthy();
     });
 
     it('testIsDotDirDoubleDotSlash', () => {
-        const filepath = "../";
+        const filepath = '../';
         expect(FileUtil.isDotDir(filepath)).toBeTruthy();
     });
 
@@ -77,12 +77,12 @@ describe('testing fileutil', () => {
     });
 
     it('testIsDotDirPathWithDot', () => {
-        const filepath = "./path";
+        const filepath = './path';
         expect(FileUtil.isDotDir(filepath)).toBeFalsy();
     });
 
     it('testIsDotDirHiddenFile', () => {
-        const filepath = ".gitignore";
+        const filepath = '.gitignore';
         expect(FileUtil.isDotDir(filepath)).toBeFalsy();
     });
 
@@ -90,22 +90,22 @@ describe('testing fileutil', () => {
      * isHidden tests
      **************************************************************************/
     it('testIsHiddenSingleDot', () => {
-        const filepath = ".";
+        const filepath = '.';
         expect(FileUtil.isHidden(filepath)).toBeFalsy();
     });
 
     it('testIsHiddenDoubleDot', () => {
-        const filepath = "..";
+        const filepath = '..';
         expect(FileUtil.isHidden(filepath)).toBeFalsy();
     });
 
     it('testIsHiddenHiddenFile', () => {
-        const filepath = ".gitignore";
+        const filepath = '.gitignore';
         expect(FileUtil.isHidden(filepath)).toBeTruthy();
     });
 
     it('testIsHiddenNotHiddenFile', () => {
-        const filepath = "file.txt";
+        const filepath = 'file.txt';
         expect(FileUtil.isHidden(filepath)).toBeFalsy();
     });
 
@@ -114,12 +114,12 @@ describe('testing fileutil', () => {
      **************************************************************************/
     it('testExpandPathPathWithTilde', () => {
         const filepath = "~/filename.txt";
-        const expected: string = process.env.HOME + "/filename.txt";
+        const expected = `${process.env.HOME}/filename.txt`;
         expect(FileUtil.expandPath(filepath)).toEqual(expected);
     });
 
     it('testExpandPathPathNoTilde', () => {
-        const filepath = "./filename.txt";
+        const filepath = './filename.txt';
         expect(FileUtil.expandPath(filepath)).toEqual(filepath);
     });
 });

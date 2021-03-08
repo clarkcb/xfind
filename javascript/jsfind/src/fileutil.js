@@ -4,7 +4,7 @@
  * file-related utility functions
  */
 
-"use strict";
+'use strict';
 
 const fs = require('fs');
 const path = require('path');
@@ -68,7 +68,7 @@ exports.getFileContentsAsync = async (filepath, encoding) => {
 exports.getFileContentsCallback = (filepath, encoding, cb) => {
     fs.readFile(filepath, encoding, (err, data) => {
         if (err) {
-            common.log("An error occurred trying to read file: " + filepath);
+            common.log('An error occurred trying to read file: ' + filepath);
             cb(err);
         }
         cb(null, data.toString());

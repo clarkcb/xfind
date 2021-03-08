@@ -1,0 +1,13 @@
+en - Hello
+da - God dag
+de - Guten Tag
+es - Buenos dÌas
+eo - Bonan tagon
+eu - Kaixo
+fi - Hyv‰‰ p‰iv‰‰
+fr - Bonjour
+it - Buongiorno
+nl - Goededag
+no - God dag
+pt - Bom dia
+sv - God dag

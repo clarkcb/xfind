@@ -4,7 +4,7 @@
  * Some common functions, etc.
  */
 
-"use strict";
+'use strict';
 
 export interface String {
     startsWith(str: string): boolean;
