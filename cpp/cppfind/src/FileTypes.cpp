@@ -1,8 +1,9 @@
-#include "boost/algorithm/string.hpp"
+#include <boost/algorithm/string.hpp>
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 #include "common.h"
 #include "config.h"
+#include "FindException.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
 
@@ -17,15 +18,14 @@ namespace cppfind {
     }
 
     void FileTypes::load_filetypes() {
-        auto filetypes_path = std::string(XFINDPATH);
-        filetypes_path.append("/shared/filetypes.json");
+        auto xfind_path = xfindpath();
+        auto sub_path = "shared/filetypes.json";
+        auto filetypes_path = FileUtil::join_path(xfind_path, sub_path);
 
         if (!FileUtil::file_exists(filetypes_path)) {
             std::string msg = "Filetypes file not found: ";
             msg.append(filetypes_path);
-            log_error(msg);
-            // TODO: FindException
-            return;
+            throw FindException(msg);
         }
 
         FILE* fp = fopen(filetypes_path.c_str(), "r");

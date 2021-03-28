@@ -1,10 +1,9 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.15)
 project(cppfind)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
@@ -20,7 +19,8 @@ endif()
 include_directories(${XFIND_PATH}/cpp/cppfind/include)
 include_directories(${Boost_INCLUDE_DIRS})
 
-set(SOURCE_FILES include/common.h src/common.cpp include/config.h
+set(SOURCE_FILES include/common.h src/common.cpp
+        include/config.h src/config.cpp
         include/FileTypes.h src/FileTypes.cpp
         include/FileUtil.h src/FileUtil.cpp
         include/StringUtil.h src/StringUtil.cpp
@@ -40,6 +40,19 @@ add_executable(cppfind cppfind.cpp)
 
 target_link_libraries(cppfind xfind)
 
+
+## Testing section
+
+Include(FetchContent)
+
+FetchContent_Declare(
+  Catch2
+  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+  GIT_TAG        v2.13.4
+)
+
+FetchContent_MakeAvailable(Catch2)
+
 set(TEST_FILES tests/FileTypesTest.cpp
         tests/FileUtilTest.cpp
         tests/FinderTest.cpp
@@ -50,6 +63,6 @@ set(TEST_FILES tests/FileTypesTest.cpp
 
 add_executable(cppfind-tests ${TEST_FILES})
 
-target_link_libraries(cppfind-tests xfind)
+target_link_libraries(cppfind-tests xfind Catch2::Catch2)
 
 unset(XFIND_PATH CACHE)

@@ -111,8 +111,9 @@ namespace cppfind {
     }
 
     void FindOptions::load_options() {
-        auto findoptions_path = std::string(XFINDPATH);
-        findoptions_path.append("/shared/findoptions.json");
+        auto xfind_path = xfindpath();
+        auto sub_path = "shared/findoptions.json";
+        auto findoptions_path = FileUtil::join_path(xfind_path, sub_path);
 
         if (!FileUtil::file_exists(findoptions_path)) {
             std::string msg = "Findoptions file not found: ";

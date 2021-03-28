@@ -59,14 +59,20 @@ namespace cppfind {
     }
 
     bool FileUtil::is_dot_dir(const std::string& name) {
-    return name == "." || name == "./" || name == ".." || name == "../";
-//        boost::filesystem::path path(name);
-//        return path.filename_is_dot() || path.filename_is_dot_dot();
+       boost::filesystem::path path(name);
+       return path.filename_is_dot() || path.filename_is_dot_dot();
     }
 
     bool FileUtil::is_hidden(const std::string& name) {
         boost::filesystem::path path(name);
         return !name.empty() && name.at(0) == '.' && !FileUtil::is_dot_dir(name);
+    }
+
+    std::string FileUtil::join_path(const std::string& path1, const std::string& path2) {
+        boost::filesystem::path p1(path1);
+        boost::filesystem::path p2(path2);
+        boost::filesystem::path fullpath = p1 / p2;
+        return fullpath.string();
     }
 
     std::vector<std::string> FileUtil::split_path(const std::string& filepath) {
