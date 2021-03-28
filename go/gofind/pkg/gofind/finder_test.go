@@ -8,7 +8,8 @@ import (
 )
 
 func getTestFileContents() (string, error) {
-	testFile := fmt.Sprintf("%s/shared/testFiles/testFile2.txt", XFINDPATH)
+	config := NewConfig()
+	testFile := fmt.Sprintf("%s/testFiles/testFile2.txt", config.SHAREDPATH)
 	r, err1 := os.Open(testFile)
 	if err1 != nil {
 		return "", err1

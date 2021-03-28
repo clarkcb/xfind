@@ -22,7 +22,8 @@ type FindOptions struct {
 }
 
 func FindOptionsFromJson() (*FindOptions, error) {
-	data, err := ioutil.ReadFile(FINDOPTIONSPATH)
+	config := NewConfig()
+	data, err := ioutil.ReadFile(config.FINDOPTIONSPATH)
 	if err != nil {
 		return &FindOptions{}, err
 	}
@@ -96,7 +97,6 @@ func (so *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 		} else {
 			return fmt.Errorf("Invalid option: %s", k)
 		}
-
 	}
 	return nil
 }
@@ -167,7 +167,8 @@ func (so *FindOptions) PrintUsage() {
 }
 
 func (so *FindOptions) PrintVersion() {
-	log(fmt.Sprintf("xfind version %s", VERSION))
+	config := NewConfig()
+	log(fmt.Sprintf("xfind version %s", config.VERSION))
 	os.Exit(0)
 }
 
@@ -329,7 +330,8 @@ type XmlFindOption struct {
 }
 
 func findOptionsFromXml() (*FindOptions, error) {
-	findOptionsXmlPath := fmt.Sprintf("%s/shared/findoptions.xml", XFINDPATH)
+	config := NewConfig()
+	findOptionsXmlPath := fmt.Sprintf("%s/shared/findoptions.xml", config.XFINDPATH)
 	var findOptions []*FindOption
 	xmlFindOptions := &XmlFindOptions{}
 

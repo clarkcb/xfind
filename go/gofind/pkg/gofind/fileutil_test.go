@@ -18,7 +18,7 @@ func TestExpandPath(t *testing.T) {
 	}
 	expandable := "~/src/git/xfind"
 	expanded := expandPath(expandable)
-	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/")
+	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/") || strings.HasPrefix(expanded, "/root/")
 	if !valid {
 		t.Errorf("expandPath(\"%s\")=\"%s\", expected expanded", expandable, expanded)
 	}

@@ -32,9 +32,11 @@ type JsonFileTypes struct {
 }
 
 func FileTypesFromJson() *FileTypes {
+	config := NewConfig()
+
 	var fileTypes FileTypes
 	fileTypes.fileTypeMap = make(map[string]set)
-	data, err := ioutil.ReadFile(FILETYPESPATH)
+	data, err := ioutil.ReadFile(config.FILETYPESPATH)
 	if err != nil {
 		return &fileTypes
 	}

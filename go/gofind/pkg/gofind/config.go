@@ -1,11 +1,30 @@
 package gofind
 
-const (
-	// TODO: get most of these from config.json
-	XFINDPATH       = "/Users/cary/src/xfind"
-	SHAREDPATH      = XFINDPATH + "/shared"
-	CONFIGFILEPATH  = SHAREDPATH + "/config.json"
-	FILETYPESPATH   = SHAREDPATH + "/filetypes.json"
-	FINDOPTIONSPATH = SHAREDPATH + "/findoptions.json"
-	VERSION         = "1.0.0"
+import (
+	"os"
+	"path/filepath"
 )
+
+type Config struct {
+	XFINDPATH       string
+	SHAREDPATH      string
+	FILETYPESPATH   string
+	FINDOPTIONSPATH string
+	VERSION         string
+}
+
+func NewConfig() *Config {
+	xFindPath := os.Getenv("XFIND_PATH")
+	if xFindPath == "" {
+		xFindPath = filepath.Join(os.Getenv("HOME"), "src/xfind")
+	}
+	sharedPath := filepath.Join(xFindPath, "shared")
+
+	return &Config{
+		xFindPath,
+		sharedPath,
+		filepath.Join(sharedPath, "filetypes.json"),
+		filepath.Join(sharedPath, "findoptions.json"),
+		"0.1.0",
+	}
+}
