@@ -64,7 +64,7 @@ module FindSettings =
         { settings with Paths=(List.append settings.Paths [path]) }
 
     let AddPattern (pattern : string) (patternList : Regex list) : Regex list =
-        List.append patternList [Regex(pattern)]
+        List.append patternList [Regex(pattern, RegexOptions.Compiled)]
 
     let SetArchivesOnly (archivesOnly : bool) (settings : t) : t =
         match archivesOnly with

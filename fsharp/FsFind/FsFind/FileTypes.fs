@@ -47,23 +47,7 @@ type FileTypes() =
             fileTypesDictionary.Add(text, allText)
         fileTypesDictionary
 
-    let PopulateFileTypesFromXml (xmlString : string) =
-        let fileTypesDictionary = Dictionary<string, ISet<string>>()
-        let filetypes = XDocument.Parse(xmlString).Descendants(XName.Get("filetype"))
-        for f in filetypes do
-            let name = [for a in f.Attributes(XName.Get("name")) do yield a.Value].Head
-            let extSet =  ExtensionSet [for e in f.Descendants(XName.Get("extensions")) do yield e.Value].Head
-            fileTypesDictionary.Add(name, HashSet<String>(extSet))
-        let allText = HashSet<String>(fileTypesDictionary.[text])
-        allText.UnionWith(fileTypesDictionary.[code])
-        allText.UnionWith(fileTypesDictionary.[xml])
-        if fileTypesDictionary.Remove(text) then
-            fileTypesDictionary.Add(text, allText)
-        fileTypesDictionary
-
-//    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.filetypes.xml")
     let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.filetypes.json")
-//    let _fileTypesDictionary = PopulateFileTypesFromXml(_fileTypesResource)
     let _fileTypesDictionary = PopulateFileTypesFromJson(_fileTypesResource)
 
     // read-only member properties

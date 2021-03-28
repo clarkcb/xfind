@@ -102,7 +102,7 @@
         "stm", "swift", "tbc", "tcl", "tk", "ts", "tsx", "u3", "vb", "vbs",
         "vue", "xht", "xhtml", "y"
       ],
-      "names": ["Dockerfile", "Jenkinsfile", "Makefile"]
+      "names": []
     },
     {
       "type": "nosearch",
@@ -113,26 +113,30 @@
       "type": "text",
       "extensions": [
         "1", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "1st",
-        "2", "20", "3", "323", "3dml", "4", "5", "6", "7", "8", "9", "am",
-        "app", "appcache", "bib", "brf", "cabal", "cfg", "cmake", "cnf", "cnt",
-        "code-workspace", "conf", "csv", "ctl", "curl", "dbml", "dbschema",
-        "dcurl", "ddl", "def", "dep", "dfm", "diff", "disco", "dlg", "dof",
-        "dpr", "drl", "dsc", "dsp", "dsw", "elt", "eml", "ent", "env", "eps",
-        "etx", "exp", "feature", "fls", "flx", "fly", "gcd", "gemspec",
-        "gradle", "gv", "hql", "htaccess", "htc", "ics", "icz", "ifb", "in",
-        "ini", "ipr", "iws", "jad", "jam", "jql", "layout", "list", "log",
-        "ltx", "mak", "mako", "man", "manifest", "markdown", "master", "mcurl",
-        "md", "me", "mf", "mime", "mml", "moc", "mod", "ms", "n3", "nfo",
-        "nws", "org", "patch", "pem", "po", "pod", "policy", "properties",
-        "ps", "pt", "rex", "roff", "rst", "rtf", "rtx", "sample", "scc", "sct",
-        "scurl", "sfv", "sgm", "sgml", "sht", "shtm", "snap", "spec", "spot",
-        "sqc", "sql", "st", "str", "strings", "sty", "sub", "suml", "t", "tex",
-        "text", "tm", "tmx", "toml", "tr", "tsv", "ttl", "txt", "ui", "uls",
-        "uml", "uri", "uris", "url", "urls", "user", "uu", "vcard", "vcf",
-        "vcs", "vm", "vrm", "vssscc", "wbxml", "webinfo", "wml", "wmls", "wsc",
-        "wsd", "xsp", "yaml", "yml"
+        "2", "20", "3", "323", "3dml", "4", "5", "6", "7", "8", "9", "adoc",
+        "am", "app", "appcache", "bib", "brf", "cabal", "cfg", "cmake", "cnf",
+        "cnt", "code-workspace", "conf", "csv", "ctl", "curl", "dbml",
+        "dbschema", "dcurl", "ddl", "def", "dep", "dfm", "diff", "disco",
+        "dlg", "dof", "dpr", "drl", "dsc", "dsp", "dsw", "elt", "eml", "ent",
+        "env", "eps", "etx", "exp", "feature", "fls", "flx", "fly", "gcd",
+        "gemspec", "gradle", "gv", "hql", "htaccess", "htc", "ics", "icz",
+        "ifb", "in", "ini", "ipr", "iws", "jad", "jam", "jql", "layout",
+        "list", "log", "ltx", "mak", "mako", "man", "manifest", "markdown",
+        "master", "mcurl", "md", "me", "mf", "mime", "mml", "moc", "mod", "ms",
+        "n3", "nfo", "nws", "org", "patch", "pem", "po", "pod", "policy",
+        "properties", "ps", "pt", "rex", "roff", "rst", "rtf", "rtx", "sample",
+        "scc", "sct", "scurl", "sfv", "sgm", "sgml", "sht", "shtm", "snap",
+        "spec", "spot", "sqc", "sql", "st", "str", "strings", "sty", "sub",
+        "suml", "t", "tex", "text", "tm", "tmx", "toml", "tr", "tsv", "ttl",
+        "txt", "ui", "uls", "uml", "uri", "uris", "url", "urls", "user", "uu",
+        "vcard", "vcf", "vcs", "vm", "vrm", "vssscc", "wbxml", "webinfo",
+        "wml", "wmls", "wsc", "wsd", "xsp", "yaml", "yml"
       ],
-      "names": ["README", ".bashrc", ".bash_profile", ".gitignore", ".profile"]
+      "names": [
+        ".bashrc", ".bash_profile", ".gitattributes", ".gitignore", ".gitkeep",
+        ".profile", "Dockerfile", "Jenkinsfile", "LICENSE", "Makefile",
+        "mime.types", "README"
+      ]
     },
     {
       "type": "unknown",
