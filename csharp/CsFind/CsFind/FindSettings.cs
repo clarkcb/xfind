@@ -107,7 +107,7 @@ namespace CsFind
 
 		private static void AddPattern(ISet<Regex> set, string pattern)
 		{
-			set.Add(new Regex(pattern));
+			set.Add(new Regex(pattern, RegexOptions.Compiled));
 		}
 
 		public void AddInDirPattern(string pattern)

@@ -120,7 +120,12 @@ namespace CsFind
 			return DotDirs.Contains(NormalizePath(filename));
 		}
 
-		public static bool IsHidden(FileSystemInfo f)
+		public static bool IsHidden(string filepath)
+		{
+			return (filepath.StartsWith(CurrentPath) && !IsDotDir(filepath));
+		}
+
+		public static bool IsHiddenFile(FileSystemInfo f)
 		{
 			return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
 			        || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));

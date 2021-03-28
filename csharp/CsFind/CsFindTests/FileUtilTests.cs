@@ -77,28 +77,28 @@ namespace CsFindTests
 		public void IsHidden_StartsWithDot_IsHidden()
 		{
 			var hiddenFile = new FileInfo(".FileUtilTests.cs");
-			Assert.IsTrue(FileUtil.IsHidden(hiddenFile));
+			Assert.IsTrue(FileUtil.IsHiddenFile(hiddenFile));
 		}
 
 		[Test]
 		public void IsHidden_NotStartsWithDot_NotIsHidden()
 		{
 			var hiddenFile = new FileInfo("FileUtilTests.cs");
-			Assert.IsFalse(FileUtil.IsHidden(hiddenFile));
+			Assert.IsFalse(FileUtil.IsHiddenFile(hiddenFile));
 		}
 
 		[Test]
 		public void IsHidden_SingleDot_NotIsHidden()
 		{
 			var dotDir = new DirectoryInfo(".");
-			Assert.IsFalse(FileUtil.IsHidden(dotDir));
+			Assert.IsFalse(FileUtil.IsHiddenFile(dotDir));
 		}
 
 		[Test]
 		public void IsHidden_DoubleDot_NotIsHidden()
 		{
 			var dotDir = new DirectoryInfo("..");
-			Assert.IsFalse(FileUtil.IsHidden(dotDir));
+			Assert.IsFalse(FileUtil.IsHiddenFile(dotDir));
 		}
 
 		/*************************************************************

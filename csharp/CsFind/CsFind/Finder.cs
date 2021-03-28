@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace CsFind
 {
-	public class Finder
+    public class Finder
 	{
 		private readonly FileTypes _fileTypes;
 		private FindSettings Settings { get; set; }
@@ -36,10 +32,16 @@ namespace CsFind
 
 		public bool IsFindDirectory(DirectoryInfo d)
 		{
-			if (FileUtil.IsDotDir(d.Name))
-				return true;
-			if (Settings.ExcludeHidden && FileUtil.IsHidden(d))
-				return false;
+			if (Settings.ExcludeHidden)
+			{
+				if (d.FullName.Split('/', '\\').ToList()
+					.Where(e => !string.IsNullOrEmpty(e))
+					.Any(e => FileUtil.IsHidden(e)))
+				{
+					return false;
+				}
+			}
+
 			return (Settings.InDirPatterns.Count == 0 ||
 			        Settings.InDirPatterns.Any(p => p.Matches(d.FullName).Count > 0)) &&
 			       (Settings.OutDirPatterns.Count == 0 ||
@@ -76,7 +78,7 @@ namespace CsFind
 
 		public bool FilterFile(FindFile sf)
 		{
-			if (FileUtil.IsHidden(sf.File) && Settings.ExcludeHidden)
+			if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(sf.File))
 				return false;
 			if (sf.Type.Equals(FileType.Archive))
 			{

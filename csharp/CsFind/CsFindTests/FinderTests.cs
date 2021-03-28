@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using CsFind;
 using NUnit.Framework;
 
 namespace CsFindTests
 {
-	[TestFixture]
+    [TestFixture]
 	class FinderTests
 	{
 		private readonly FileTypes _fileTypes = new FileTypes();

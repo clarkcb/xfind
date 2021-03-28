@@ -22,52 +22,42 @@ namespace CsFind
 	{
 		public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
 
-		private readonly string _fileTypesResource;
-		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
-
 		private const string Archive = "archive";
 		private const string Binary = "binary";
 		private const string Code = "code";
 		private const string Text = "text";
 		private const string Xml = "xml";
 
+		private readonly string _fileTypesResource;
+		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
+
 		public FileTypes()
 		{
-			// _fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.filetypes.xml");
 			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
-			// PopulateFileTypesFromXml();
 			PopulateFileTypesFromJson();
 		}
 
 		private void PopulateFileTypesFromJson()
 		{
 			var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
-			var filetypeDicts = filetypesDict["filetypes"];
-			foreach (var filetypeDict in filetypeDicts)
+			if (filetypesDict.ContainsKey("filetypes"))
 			{
-				var name = ((JsonElement)filetypeDict["type"]).GetString();
-				var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
-					.Select(x => "." + x.GetString());
-				var extensionSet = new HashSet<string>(extensions);
-				_fileTypesDictionary[name] = extensionSet;
+				var filetypeDicts = filetypesDict["filetypes"];
+				foreach (var filetypeDict in filetypeDicts)
+				{
+					if (filetypeDict.ContainsKey("type") && filetypeDict.ContainsKey("extensions"))
+					{
+						var name = ((JsonElement)filetypeDict["type"]).GetString();
+						var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
+							.Select(x => "." + x.GetString());
+						var extensionSet = new HashSet<string>(extensions);
+						_fileTypesDictionary[name] = extensionSet;
+					}
+				}
+				_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
+				_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
 			}
-			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
-			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-		}
-
-		private void PopulateFileTypesFromXml()
-		{
-			var doc = XDocument.Parse(_fileTypesResource);
-			foreach (var f in doc.Descendants("filetype"))
-			{
-				var name = f.Attributes("name").First().Value;
-				var extensions = f.Descendants("extensions").First().Value;
-				var extensionSet = new HashSet<string>(extensions.Split(new[]{' ', '\n'}).Select(x => "." + x));
-				_fileTypesDictionary[name] = extensionSet;
-			}
-			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
-			_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
 		}
 
 		public static FileType FromName(string name)
