@@ -14,7 +14,6 @@
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :only (split lower-case)]
-        [clojure.xml :only (parse)]
         [cljfind.fileutil :only (expand-path get-ext)]))
 
 (def ARCHIVE "archive")
@@ -22,27 +21,6 @@
 (def CODE "code")
 (def TEXT "text")
 (def XML "xml")
-
-(defn get-filetypemap-from-xml []
-  (let [ftcontents (slurp (io/resource "filetypes.xml"))
-        ftstream (java.io.ByteArrayInputStream. (.getBytes ftcontents))
-        filetypes (filter #(= :filetype (:tag %)) (xml-seq (parse ftstream)))
-        typenames (map :name (map :attrs filetypes))
-        extension-nodes (map first (map :content (map first (map :content filetypes))))
-        extension-sets (map #(set %) (map #(split % #"\s+") extension-nodes))
-        filetypemap (zipmap typenames extension-sets)
-        textmap (hash-map "all-text"
-                  (union (get filetypemap TEXT)
-                         (get filetypemap CODE)
-                         (get filetypemap XML)))
-        ; findablemap (hash-map "findable"
-        ;                 (union (get filetypemap ARCHIVE)
-        ;                        (get filetypemap BINARY)
-        ;                        (get filetypemap TEXT)))
-        ; fullmap (merge filetypemap textmap findablemap)
-        fullmap (merge filetypemap textmap)
-       ]
-    fullmap))
 
 (defn get-filetypemap-from-json []
   (let [contents (slurp (io/resource "filetypes.json"))
@@ -54,11 +32,6 @@
                   (union (get filetypemap TEXT)
                          (get filetypemap CODE)
                          (get filetypemap XML)))
-        ; findablemap (hash-map "findable"
-        ;                 (union (get filetypemap ARCHIVE)
-        ;                        (get filetypemap BINARY)
-        ;                        (get filetypemap TEXT)))
-        ; fullmap (merge filetypemap textmap findablemap)
         fullmap (merge filetypemap textmap)
        ]
     fullmap))
@@ -82,9 +55,6 @@
 
 (defn code-file? [f]
   (contains? (get FILETYPEMAP CODE) (get-ext f)))
-
-; (defn findable-file? [f]
-;   (contains? (get FILETYPEMAP "findable") (get-ext f)))
 
 (defn text-ext? [ext]
   (contains? (get FILETYPEMAP TEXT) ext))

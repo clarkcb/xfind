@@ -6,15 +6,15 @@
   (:use [clojure.string :only (join)]))
 
 (def XFINDPATH
-    (let [configjson (slurp (io/resource "config.json"))
-          config (json/read-str configjson :key-fn keyword)]
-      (config :xfindpath)))
+  (or
+    (System/getenv "XFIND_PATH")
+    (clojure.string/join java.io.File/separator [(System/getenv "HOME") "src" "xfind"])))
 
 (def SHAREDPATH
   (clojure.string/join java.io.File/separator [XFINDPATH "shared"]))
 
 (def FILETYPESPATH
-  (clojure.string/join java.io.File/separator [SHAREDPATH "filetypes.xml"]))
+  (clojure.string/join java.io.File/separator [SHAREDPATH "filetypes.json"]))
 
 (def FINDOPTIONSPATH
-  (clojure.string/join java.io.File/separator [SHAREDPATH "findoptions.xml"]))
+  (clojure.string/join java.io.File/separator [SHAREDPATH "findoptions.json"]))

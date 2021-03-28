@@ -1,7 +1,10 @@
-;;; find.clj: Recursive file find utility
-
-;; by Cary Clark
-;; April 10, 2010
+;;; ############################################################################
+;;;
+;;; finder.clj
+;;;
+;;; The main functions to find files matching settings
+;;;
+;;; ############################################################################
 
 (ns cljfind.finder
   #^{:author "Cary Clark",

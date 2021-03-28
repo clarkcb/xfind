@@ -15,7 +15,6 @@
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
-        [clojure.xml :only (parse)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.findsettings :only
@@ -28,19 +27,6 @@
   (if (= "" (:short-arg so))
     (:long-arg so)
     (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
-
-(defn get-findoptions-from-xml []
-  (let [socontents (slurp (io/resource "findoptions.xml"))
-        sostream (java.io.ByteArrayInputStream. (.getBytes socontents))
-        findoptions (filter #(= :findoption (:tag %)) (xml-seq (parse sostream)))
-        longnames (map :long (map :attrs findoptions))
-        shortnames (map :short (map :attrs findoptions))
-        longshortmap (zipmap longnames shortnames)
-        descs (map #(.trim (first %)) (map :content findoptions))
-        longdescmap (zipmap longnames descs)
-        get-short (fn [l] (get longshortmap l))
-        get-desc (fn [l] (get longdescmap l))]
-    (sort-by get-sortarg (map #(FindOption. (get-short %) % (get-desc %)) longnames))))
 
 (defn get-findoptions-from-json []
   (let [contents (slurp (io/resource "findoptions.json"))
