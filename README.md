@@ -3,26 +3,28 @@
 [xfind](https://github.com/clarkcb/xfind) is a command-line recursive file find utility
 implemented in multiple programming languages, currently these [twenty](#why):
 
-* [Clojure](https://clojure.org/)
-* [C#](https://docs.microsoft.com/en-us/dotnet/csharp/)
-* [C++](https://www.stroustrup.com/C++.html)
-* [Dart](https://dart.dev/)
-* [F#](https://docs.microsoft.com/en-us/dotnet/fsharp/)
-* [Go](https://golang.org/)
-* [Haskell](https://www.haskell.org/)
-* [Java](https://www.java.com/en/)
-* [JavaScript](https://nodejs.org/en/)
-* [Kotlin](https://kotlinlang.org/)
-* [Objective-C](https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ProgrammingWithObjectiveC/Introduction/Introduction.html)
-* [OCaml](https://ocaml.org/)
-* [Perl](https://www.perl.org/)
-* [PHP](https://www.php.net/)
-* [Python](https://www.python.org/)
-* [Ruby](https://www.ruby-lang.org/en/)
-* [Rust](https://www.rust-lang.org/)
-* [Scala](https://www.scala-lang.org/)
-* [Swift](https://swift.org/)
-* [TypeScript](https://www.typescriptlang.org/)
+| Language       | URL |
+| :------------ | :---------- |
+| Clojure | [https://clojure.org/](https://clojure.org/) |
+| C# | [https://docs.microsoft.com/en-us/dotnet/csharp/](https://docs.microsoft.com/en-us/dotnet/csharp/) |
+| C++ | [https://www.stroustrup.com/C++.html](https://www.stroustrup.com/C++.html) |
+| Dart | [https://dart.dev/](https://dart.dev/) |
+| F# | [https://docs.microsoft.com/en-us/dotnet/fsharp/](https://docs.microsoft.com/en-us/dotnet/fsharp/) |
+| Go | [https://golang.org/](https://golang.org/) |
+| Haskell | [https://www.haskell.org/](https://www.haskell.org/) |
+| Java | [https://www.java.com/](https://www.java.com/) |
+| JavaScript | [https://nodejs.org/](https://nodejs.org/) |
+| Kotlin | [https://kotlinlang.org/](https://kotlinlang.org/) |
+| Objective-C | [https://en.wikipedia.org/wiki/Objective-C](https://en.wikipedia.org/wiki/Objective-C) |
+| OCaml | [https://ocaml.org/](https://ocaml.org/) |
+| Perl | [https://www.perl.org/](https://www.perl.org/) |
+| PHP | [https://www.php.net/](https://www.php.net/) |
+| Python | [https://www.python.org/](https://www.python.org/) |
+| Ruby | [https://www.ruby-lang.org/](https://www.ruby-lang.org/) |
+| Rust | [https://www.rust-lang.org/](https://www.rust-lang.org/) |
+| Scala | [https://www.scala-lang.org/](https://www.scala-lang.org/) |
+| Swift | [https://swift.org/](https://swift.org/) |
+| TypeScript | [https://www.typescriptlang.org/](https://www.typescriptlang.org/) |
 
 
 [Using](#usage) any language version, you can find files for numerous criteria, including:
@@ -31,70 +33,161 @@ implemented in multiple programming languages, currently these [twenty](#why):
 * filter in/out directory paths by regex
 * filter in/out file names by regex
 * filter in/out by file types
-* find under multiple directories
+* find under multiple separate directories
 * include/exclude hidden directories/files
 
 There are some other features being added, such as:
 
 * find files before and/or after lastmod date/time
-* find files larger and/or smaller than a given size
+* find files smaller and/or larger than a given size
 
 
-The `xfind` repo is derived from [xsearch](https://github.com/clarkcb/xsearch), or more
-accurately, it is the result of extracting the file finding functionality from `xsearch`,
-and including some changes/additions. The primary reason for doing this was the realization
-that the file finding functionality can be useful on its own but it can also form the basis
-for other utilities, such as for example a utility to find duplicate files (see:
-[pydupes](https://github.com/clarkcb/pydupes)). At some point, `xsearch` will be modified
-to use `xfind` as its dependency for file finding functionality.
+The `xfind` repo is derived from [xsearch](https://github.com/clarkcb/xsearch). More specifically,
+I created `xfind` by extracting the file finding functionality from `xsearch`, and also applying
+some changes/additions. I ended up writing a python script to assist with creating `xfind` from
+`xsearch`. It's called _xsearch2xfind.py_ and I added it in the _scripts_ directory.
 
 
 ## Why?
 
-Although I plan to describe why I created `xfind` (and `xsearch` before it) - why all the
-language versions, what the experience was like, what lessons were learned (good and bad),
-what's next - for now I want to describe why I think they might be of interest to you as
-a developer.
+There are a number of "why questions" that can be asked about `xfind`, such as:
 
-The primary reasons to be interested in `xfind` and `xsearch` (their usefulness notwithstanding)
-are the opportunities to compare and contrast various language version implementations
-syntax-wise and/or performance-wise. For example:
+* Why create another file find CLI utility?
+* Why write a version of the utility in X language?
+* Why rewrite the utility in so many languages?!?
 
-* How does a functional language implementation (e.g. Haskell) compare to an imperative/OO version (e.g. Ruby)?
-* What do the newer JVM languages (Scala, Kotlin, Clojure) look like in comparison to Java?
-* How do JavaScript and TypeScript implementations compare?
-* How do C# and F# compare syntactically and performance-wise?
-* What are the comparative strengths and weakness of the scripting languages (Perl, PHP, Python, Ruby, etc.)
-* How do the performances of the natively-compiled languages compare (C++, Go, Haskell, Objective-C, OCaml, Rust, Swift)?
-* Which languages seem most and least suited to implementing a CLI utility vs other uses?
-* What are the relative benefits and drawbacks to using a Lisp-based language (Clojure) vs. other language types?
-* How do the various tools for building, testing, linting, etc. compare?
-* Which languages seem to offer the most opportunity for learning/growth as a developer?
+Those are really questions for `xsearch`, the project that `xfind` is derived from, and I *will*
+answer those questions there. However, there are a couple of questions specific to `xfind`:
 
-If any of these sound interesting to you, or you can imagine your own interesting questions, read on.
+### Why create `xfind` from `xsearch`?
+
+I created `xfind` from `xsearch` after I realized that I would like to be able to use just the file
+finding functionality as a library dependency for another utility that I was working on to find
+file duplicates (see: [pydupes](https://github.com/clarkcb/pydupes)). I also realized that a file
+finding utility is useful on its own without the file searching part. Lastly, I realized that by
+creating `xfind`, I could then modify `xsearch` to use `xfind` as a library dependency to provide
+the file finding functionality, which would add another dimension for inter-language comparison.
+
+By the way, the process of creating `xfind` from `xsearch` was a pretty interesting in and of
+itself, have a look at the _scripts/xsearch2xfind.py_ script I created to help with that.
+
+### Wasn't one multi-language project enough?
+
+Honestly, yes. 😀 &nbsp; I have "reimplementation fatigue" from these projects, and I will probably
+never do another multi-language project. That being said, I'm glad for doing them, it has been a
+very educational and mostly enjoyable process, and it has provided me with a lot of knowledge and
+experience that I wouldn't trade. There's a lot more I can say about it, and I hope to at some point.
+For now the key takeaway that I would offer is that the experience of doing these projects left me
+feeling well-equipped to answer questions like this:
+
+* What languages would you most recommend for a given future project, considering the project's
+  needs (rapid development/prototyping, high-performance, integration into existing environment,
+  etc.)?
 
 
 ## Installation
 
-If you are primarily interested in syntactic comparisons between language versions, you can
-probably get away without installing anything other than a good editor/IDE such as VS Code,
-IntelliJ (and/or other JetBrains IDEs), Sublime Text, or vi or emacs if you prefer one of
-those.
+There are three installation options for `xfind`:
+
+1. Clone the repo only - if you are sure you will only want to compare language versions
+   in an editor, then you can just clone the repo and go from there.
+2. Build a Docker image and open in a container - this is recommended because it's much less
+   effort and won't affect your base system, choose this if you think you will want to build
+   and run different language versions for comparison.
+3. Install different language compilers, interpreters, etc. locally - this is obviously more
+   effort, but it might make sense it in cases where you're particularly interested in a small
+   number of language versions and possibly even have some support for them installed already.
+
+
+### Build Docker Image (recommended)
+
+There is a _Dockerfile_ that enables building a Docker image locally in order to build and run
+`xfind` in a container. This greatly simplifies the setup and building process and is highly
+recommended.
+
+There are actually two steps to this process: first build the image, then open a new container
+instance of the image (opening in VS Code described below).
+
+#### Building the Docker image
+
+To build the Docker image, first make sure you have Docker installed on your system. I also
+recommend enabling `experimental` in the Docker engine configuration in order to enable the
+`--squash` option for building an image, which is done by putting the following JSON in
+the Docker Engine config:
+
+```json
+{
+  "experimental": true
+}
+```
+
+Next, open a terminal in the `xfind` root directory and cd into the _.devcontainer_
+subdirectory. There, run the following command (include `--squash` if you enabled
+`experimental`):
+
+```
+$ docker build --squash -t xfind .
+```
+
+This build will take a long time, probably at least a half hour on a typical system with
+a typical internet connection. To see the specifics of what is happening, have a look at
+the _Dockerfile_, but in general, the necessary components to build and run (most of) the
+language versions of `xfind` in a container are downloaded and installed into a base ubuntu
+image. If the build is interrupted or stalls at any point, it should be possible to restart
+it by issuing the same command and have it continue close to where it left off.
+
+After the image is built, you should be able to see it listed in your images when using
+the `docker images` command, it should include a line similar to this:
+
+```
+REPOSITORY          TAG           IMAGE ID       CREATED        SIZE
+xfind               latest        ca8980e929b1   12 hours ago   5.94GB
+```
+
+Yes, the image is big, and it probably means there's something not quite right in the way
+I've configured the build, even with squashing. I have a TODO to research this.
+
+Now that you have a built image, you can run it one of several ways. I recommend opening it
+inside VS Code.
+
+#### Opening in VS Code
+
+First, open `xfind` in VS Code as you would a project directory. VS Code should automatically
+detect that the project is configured to be able to be opened inside a container and display
+a popup asking if you want to do so, which you can confirm by clicking on the "Reopen in Container"
+button. Otherwise, you can click in the green area in the far lower left corner on the status bar
+and select the option to reopen in container from the menu.
+
+The first time you open `xfind` in a container in VS Code, some more installations will be
+triggered, and this can take some time too, although not nearly as much as builing the image.
+These installations are VS Code extensions to provide extra functionality for many of the languages,
+build systems, etc. I tried to pick ones that are most popular / standard for a given language in
+cases where it's obvious, as well as a few that I found useful and not too intrusive. The list
+is in the _devcontainer.json_ file in the `extensions` array.
+
+The next step will be to [build](#building) the language versions of `find` and compare them.
+
+
+### Installation on local machine
+
+If you are primarily interested in specific language versions, and especially if you already
+have some or all of the language support for those versions installed locally, this installation
+option could make sense.
 
 If you are interested in performance [comparisons](#comparison), and/or you want to try
 [running](#usage) `xfind` in one or more languages, you will need to install the language
-support for all language versions you want to run, unless already installed on the system.
+support for each language version you want to run, unless already installed on the system.
 In many cases, the latest standard install for that language will work fine, but listed
-below are some of special cases/considerations:
+below are some special cases/considerations:
 
 * `clojure/cljfind` - the [leiningen](https://leiningen.org/) tool is used for package management and building
 * `cpp/cppfind` - C++11 is required, but C++17 is recommended
-* `csharp/CsFind` - [dotnet core 3.1](https://dotnet.microsoft.com/download/dotnet/3.1)
-* `fsharp/FsFind` - [dotnet core 3.1](https://dotnet.microsoft.com/download/dotnet/3.1)
+* `csharp/CsFind` - [dotnet 5.0](https://dotnet.microsoft.com/download/dotnet/5.0)
+* `fsharp/FsFind` - [dotnet 5.0](https://dotnet.microsoft.com/download/dotnet/5.0)
 * `go/gofind` - the go version needs to support go modules (1.13+), but 1.16+ is recommended because `gofind` will be making use of the new [embed](https://golang.org/pkg/embed/) feature soon
 * `haskell/hsfind` - this version requires the [stack](https://docs.haskellstack.org/en/stable/README/) utility (instead of `cabal`)
 * `ocaml/mlfind` - this version uses [opam](https://opam.ocaml.org/) and [core](https://opam.ocaml.org/packages/core/), but I'm currently having problems building it on OSX, adding to TODOs to investigate
-* `php/phpfind` - the [composer](https://getcomposer.org/) utility is used for dependency management, also need to use a version PHP that supports classes and namespaces (7+?)
+* `php/phpfind` - the [composer](https://getcomposer.org/) utility is used for dependency management, also need to use a version of PHP that supports classes and namespaces (7+?)
 * `python/pyfind` - this version runs via the `asyncio` module, which requires python 3.7+
 
 
@@ -110,8 +203,10 @@ If undefined, `$XFIND_PATH` defaults to `$HOME/src/xfind`, so if you clone `xfin
 location you will have reasonably good success in running various versions and tools
 without setting `$XFIND_PATH`, but setting it is strongly recommended regardless.
 
-Finally, note that there are some utilities in the _scripts_ written in `python`, most notably
-_benchmark.py_ (see [Comparison](#comparison)), and you will need `python3` to run them.
+Finally, note that there are some useful utilities in the _scripts_ folder. Most require
+`bash`, although some of those also have powershell versions you can use instead. There are
+also several written in `python`, most notably _benchmark.py_ (see [Comparison](#comparison));
+you will need `python3` to run those.
 
 
 ## Building
@@ -145,6 +240,18 @@ $ ./scripts/build.sh all
 You can use the latter approach even if you don't have all necessary software installed to
 build/run all language versions; the build script will simply point out what is missing
 and move on.
+
+For compiled languages that differentiate between debug and release builds, you can 
+include `--debug` and/or `--release` to target those specific builds. If neither is
+specified, debug-only will be assumed. Example:
+
+```
+$ ./scripts/build.sh --debug swift
+# -or-
+$ ./scripts/build.sh --release swift
+# -or-
+$ ./scripts/build.sh --debug --release swift
+```
 
 For each language version built, a softlink is created under `$XFIND_PATH/bin` (`go` and
 `haskell` binaries are installed there directly), so after building you can try
@@ -286,7 +393,7 @@ versions, but this can be customized one of two ways:
 2. modify the `lang_dict` dictionary in _xfind.py_
 
 The _benchmark.py_ script executes a series of "scenarios" for each configured language
-version, and outputs whether the output of all outputs match and a table of ranked
+version, and outputs whether the results of all versions match with a table of ranked
 performance. At the end, the performances values from all scenarios are summed and
 averaged and a final summary table is presented. Here's an example of the final
 output:
@@ -324,7 +431,7 @@ Total results for 10 out of 10 scenarios with 100 out of 100 total runs
 ```
 
 Notice the line above the table that says "Output of all versions in all scenarios match". It is
-important to see this and similar messages on all scenarios runs, otherwise one of the language
+important to see this and similar messages on all scenario runs, otherwise one of the language
 versions isn't working properly and the results will be invalid. An obvious example of this would
 be attempting to run language versions that aren't built.
 
@@ -332,13 +439,17 @@ be attempting to run language versions that aren't built.
 ## TODOs
 
 * Add `minlastmod`, `maxlastmod`, `minsize` and `maxsize` functionality (currently only implemented in `python` version)
-* Add Docker support - it is a high-priority goal to create a docker image that includes all software necessary to build and run all language versions for easy setup and comparison
 * Separate executable code from library code to make integrating into `xsearch` easier or possible
+* Define an approach for identifying the type of "extensionless" filenames, perhaps a combination of:
+  * Add established filenames to list in _filetypes.json_ (e.g. _.gitignore_, _Dockerfile_, _README_, etc.) and add a check for a filename match if filename is extensionless
+  * Assume a file type for any filenames that are not identified (probably BINARY would be the safest), -or- do some very minimal type detection (detect binary/text from first few bytes?)
 * Determine how archive file support should work, two options:
-  1. Provide option to find files inside archives - in this case should change archivesOnly and includeArchives options to inArchivesOnly and findInArchives, respectively
-  2. Find archives the same as other files - in this case should consider removing archivesOnly and includeArchives options
-* Troubleshoot building OCaml version on my OSX machine (it is possible this is unique to my machine)
+  1. Provide option to find files inside archives - in this case should change `archivesonly` and `includearchives` options to `inarchivesonly` and `findinarchives`, respectively
+  2. Find archives the same as other files (without option to look inside them) - in this case should consider removing `archivesonly` and `includearchives` options
 * Add documentation about the what/why/how of `xfind`
+* Add `stats` option to get a json object with various stats, such as unique extensions / extension counts, etc.
+* Resolve issues with building and running some language versions in Docker: Haskell, Objc and OCaml
+* Research Docker best practices to determine if there are ways to reduce the image size
 * Add other language versions (in alphabetical order and subject to change)
   * [C](https://en.wikipedia.org/wiki/C_(programming_language)) - I've started a C version in the past and should finish it, if for no other than reason than to verify my assumption that it *should* be the fastest and most efficient version once complete
   * [Common Lisp](https://lisp-lang.org/) - I want to see how it compares to Clojure and learn more about macros
