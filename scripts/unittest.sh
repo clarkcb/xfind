@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #
 # unittest.sh
@@ -387,7 +387,7 @@ then
 elif [ "$ARG" == "objc" ]
 then
     unittest_objc
-elif [ "$ARG" == "ocaml" ]
+elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
 then
     unittest_ocaml
 elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]

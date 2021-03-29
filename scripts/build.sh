@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #
 # build.sh
@@ -64,8 +64,8 @@ add_to_bin () {
     then
         script_name=${script_name%.*}
     fi
-
-    if [ -f "$script_name" ]
+    # echo "script_name: $script_name"
+    if [ -L "$script_name" ]
     then
         log "rm $script_name"
         rm "$script_name"
@@ -124,7 +124,17 @@ build_cpp () {
 
     cd $CPPFIND_PATH
 
-    CONFIGURATIONS=(debug release)
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(debug release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(release)
+    fi
+
     for c in ${CONFIGURATIONS[*]}
     do
         CMAKE_BUILD_DIR="cmake-build-$c"
@@ -161,8 +171,14 @@ build_cpp () {
         fi
     done
 
-    # add to bin
-    add_to_bin "$CPPFIND_PATH/bin/cppfind.sh"
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$CPPFIND_PATH/bin/cppfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$CPPFIND_PATH/bin/cppfind.debug.sh"
+    fi
 
     cd -
 }
@@ -179,7 +195,17 @@ build_csharp () {
 
     RESOURCES_PATH=$CSFIND_PATH/CsFind/Resources
     TEST_RESOURCES_PATH=$CSFIND_PATH/CsFindTests/Resources
-    CONFIGURATIONS=(Debug Release)
+
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Debug Release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(Debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Release)
+    fi
 
     # copy the shared json, xml files to the local resource location
     mkdir -p $RESOURCES_PATH
@@ -197,8 +223,14 @@ build_csharp () {
         dotnet build $CSFIND_PATH/CsFind.sln --configuration $c
     done
 
-    # add to bin
-    add_to_bin "$CSFIND_PATH/bin/csfind.sh"
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$CSFIND_PATH/bin/csfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$CSFIND_PATH/bin/csfind.debug.sh"
+    fi
 }
 
 build_dart () {
@@ -247,7 +279,17 @@ build_fsharp () {
 
     RESOURCES_PATH=$FSFIND_PATH/FsFind/Resources
     TEST_RESOURCES_PATH=$FSFIND_PATH/FsFindTests/Resources
-    CONFIGURATIONS=(Debug Release)
+
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Debug Release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(Debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Release)
+    fi
 
     # copy the shared json, xml files to the local resource location
     mkdir -p $RESOURCES_PATH
@@ -266,8 +308,14 @@ build_fsharp () {
         dotnet build $FSFIND_PATH/FsFind.sln --configuration $c
     done
 
-    # add to bin
-    add_to_bin "$FSFIND_PATH/bin/fsfind.sh"
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$FSFIND_PATH/bin/fsfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$FSFIND_PATH/bin/fsfind.debug.sh"
+    fi
 }
 
 build_go () {
@@ -317,12 +365,42 @@ build_haskell () {
         return
     fi
 
+    # set the default stack settings, e.g. use system ghc
+    STACK_DIR=$HOME/.stack
+    if [ ! -d "$STACK_DIR" ]
+    then
+        mkdir -p $STACK_DIR
+    fi
+    if [ ! -f "$STACK_DIR/config.yaml" ]
+    then
+        touch $STACK_DIR/config.yaml
+    fi
+    INSTALL_GHC=$(grep '^install-ghc:' $STACK_DIR/config.yaml)
+    if [ -z "$INSTALL_GHC" ]
+    then
+        echo 'install-ghc: false' >> $STACK_DIR/config.yaml
+    fi
+    SYSTEM_GHC=$(grep '^system-ghc:' $STACK_DIR/config.yaml)
+    if [ -z "$SYSTEM_GHC" ]
+    then
+        echo 'system-ghc: true' >> $STACK_DIR/config.yaml
+    fi
+    # RESOLVER=$(grep '^resolver:' $STACK_DIR/config.yaml)
+    # if [ -z "$RESOLVER" ]
+    # then
+    #     GHC_VERSION=$(ghc --version | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
+    #     echo "resolver: ghc-$GHC_VERSION" >> $STACK_DIR/config.yaml
+    # fi
+
     # copy the shared xml files to the local resource location
     RESOURCES_PATH=$HSFIND_PATH/data
     mkdir -p $RESOURCES_PATH
     copy_json_resources $RESOURCES_PATH
 
     cd $HSFIND_PATH/
+
+    # temporary to avoid building (too resource-intensive)
+    # return
 
     # build with stack (via make)
     log "Building hsfind"
@@ -580,6 +658,9 @@ build_python () {
         return
     fi
 
+    # Set to Yes to use venv
+    USE_VENV=No
+
     PYTHON_VERSIONS=(python3.9 python3.8 python3.7)
     PYTHON=
     for p in ${PYTHON_VERSIONS[*]}
@@ -607,24 +688,30 @@ build_python () {
 
     cd $PYFIND_PATH
 
-    # create a virtual env to run from and install to
-    if [ ! -d $PYFIND_PATH/venv ]
+    if [ "$USE_VENV" == 'Yes' ]
     then
-        log "$PYTHON -m venv venv"
-        $PYTHON -m venv venv
-    fi
+        # create a virtual env to run from and install to
+        if [ ! -d $PYFIND_PATH/venv ]
+        then
+            log "$PYTHON -m venv venv"
+            $PYTHON -m venv venv
+        fi
 
-    # activate the virtual env
-    log "source ./venv/bin/activate"
-    source ./venv/bin/activate
+        # activate the virtual env
+        log "source ./venv/bin/activate"
+        source ./venv/bin/activate
+    fi
 
     # install dependencies in requirements.txt
     log "pip3 install -r requirements.txt"
     pip3 install -r requirements.txt
 
-    # deactivate at end of setup process
-    log "deactivate"
-    deactivate
+    if [ "$USE_VENV" == 'Yes' ]
+    then
+        # deactivate at end of setup process
+        log "deactivate"
+        deactivate
+    fi
 
     # TODO: change the !# line in pyfind to use the determined python version
 
@@ -691,13 +778,22 @@ build_rust () {
     cd $RSFIND_PATH
 
     log "Building rsfind"
-    log "cargo build"
-    cargo build
-    log "cargo build --release"
-    cargo build --release
+    if [ -n "$DEBUG" ]
+    then
+        log "cargo build"
+        cargo build
+    fi
+    if [ -n "$RELEASE" ]
+    then
+        log "cargo build --release"
+        cargo build --release
 
-    # add to bin
-    add_to_bin "$RSFIND_PATH/bin/rsfind.sh"
+        # add release to bin
+        add_to_bin "$RSFIND_PATH/bin/rsfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$RSFIND_PATH/bin/rsfind.debug.sh"
+    fi
 
     cd -
 }
@@ -755,15 +851,23 @@ build_swift () {
 
     # run swift build
     log "Building swiftfind"
-    # CONFIGURATIONS=(debug release)
-    log "swift build"
-    swift build
 
-    log "swift build --configuration release"
-    swift build --configuration release
+    if [ -n "$DEBUG" ]
+    then
+        log "swift build"
+        swift build
+    fi
+    if [ -n "$RELEASE" ]
+    then
+        log "swift build --configuration release"
+        swift build --configuration release
 
-    # add to bin
-    add_to_bin "$SWIFTFIND_PATH/bin/swiftfind.sh"
+        # add release to bin
+        add_to_bin "$SWIFTFIND_PATH/bin/swiftfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$SWIFTFIND_PATH/bin/swiftfind.debug.sh"
+    fi
 
     cd -
 }
@@ -798,125 +902,202 @@ build_typescript () {
     cd -
 }
 
+# build_linux - builds the versions that are currently supported in the linux container
+# Notes about some of the builds:
+# - build_clojure    - this build is _really_ slow (10+ minutes?), so call its build directly if you want to try it
+# - build_cpp        - this build takes a decent amount of time to complete (though nowhere near as much as clojure)
+# - build_go         - go is known for having very fast builds, and it's true, the only builds that are faster here
+#                      are the ones that do nothing except copy over resources files (e.g. perl)
+# - build_haskell    - having some dependency issues that need to work through to get it buildling again
+# - build_javascript - this fails to build in the vscode terminal right now due to some debug plugin issue; building
+#                      in an external terminal fixes the problem
+# - build_kotlin     - This build can sometimes be quite slow, other times fairly fast. In particular, the first
+#                      time will likely be quite slow, and I think it will also be slow when a build hasn't been run
+#                      in a while
+# - build_objc       - not sure if it's even possible to build this on linux, but deferring for now
+# - build_ocaml      - had a number of different issues trying to get this version building again, finally
+#                      gave up for now after it appeared that there were a lot of changes to the main API, etc.
+# - build_rust       - the first time this build is run it will pretty time-consuming, particularly for release
+#                      target, but intermittent builds should be pretty fast
+# - build_scala      - this build isn't as slow as the clojure version's, but it's slow enough to run separately
+# - build_typescript - this build has the same problem as build_javascript; run the build in an external terminal
+build_linux () {
+    hdr "build_linux"
+
+    # time build_clojure
+
+    # time build_cpp
+
+    time build_csharp
+
+    time build_dart
+
+    time build_fsharp
+
+    time build_go
+
+    time build_java
+
+    time build_javascript
+
+    # time build_kotlin
+
+    time build_perl
+
+    time build_php
+
+    time build_python
+
+    time build_ruby
+
+    time build_rust
+
+    # time build_scala
+
+    time build_swift
+
+    time build_typescript
+}
+
 build_all () {
     hdr "build_all"
 
-    build_clojure
+    time build_clojure
 
-    build_cpp
+    time build_cpp
 
-    build_csharp
+    time build_csharp
 
-    build_dart
+    time build_dart
 
-    build_fsharp
+    time build_fsharp
 
-    build_go
+    time build_go
 
-    build_haskell
+    time build_haskell
 
-    build_java
+    time build_java
 
-    build_javascript
+    time build_javascript
 
-    build_kotlin
+    time build_kotlin
 
-    build_objc
+    time build_objc
 
-    build_ocaml
+    time build_ocaml
 
-    build_perl
+    time build_perl
 
-    build_php
+    time build_php
 
-    build_python
+    time build_python
 
-    build_ruby
+    time build_ruby
 
-    build_rust
+    time build_rust
 
-    build_scala
+    time build_scala
 
-    build_swift
+    time build_swift
 
-    build_typescript
+    time build_typescript
 }
 
 
 ########################################
-# Build Steps
+# Build Main
 ########################################
+DEBUG=
+RELEASE=
+ARG=all
 
-if [ $# == 0 ]
+while [ -n "$1" ]
+do
+    case "$1" in
+        --debug)
+            DEBUG=yes
+            ;;
+        --release)
+            RELEASE=yes
+            ;;
+        *)
+            ARG=$1
+            ;;
+    esac
+    shift || true
+done
+
+if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
 then
-    ARG="all"
-else
-    ARG=$1
+    DEBUG=yes
 fi
 
 if [ "$ARG" == "all" ]
 then
     build_all
+elif [ "$ARG" == "linux" ]
+then
+    build_linux
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
-    build_clojure
+    time build_clojure
 elif [ "$ARG" == "cpp" ]
 then
-    build_cpp
+    time build_cpp
 elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
 then
-    build_csharp
+    time build_csharp
 elif [ "$ARG" == "dart" ]
 then
-    build_dart
+    time build_dart
 elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
 then
-    build_fsharp
+    time build_fsharp
 elif [ "$ARG" == "go" ]
 then
-    build_go
+    time build_go
 elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
 then
-    build_haskell
+    time build_haskell
 elif [ "$ARG" == "java" ]
 then
-    build_java
+    time build_java
 elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
 then
-    build_javascript
+    time build_javascript
 elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
 then
-    build_kotlin
+    time build_kotlin
 elif [ "$ARG" == "objc" ]
 then
-    build_objc
+    time build_objc
 elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
 then
-    build_ocaml
+    time build_ocaml
 elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
 then
-    build_perl
+    time build_perl
 elif [ "$ARG" == "php" ]
 then
-    build_php
+    time build_php
 elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
 then
-    build_python
+    time build_python
 elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
 then
-    build_ruby
+    time build_ruby
 elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
 then
-    build_rust
+    time build_rust
 elif [ "$ARG" == "scala" ]
 then
-    build_scala
+    time build_scala
 elif [ "$ARG" == "swift" ]
 then
-    build_swift
+    time build_swift
 elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
 then
-    build_typescript
+    time build_typescript
 else
-    echo "ERROR: unknown build argument: $ARG"
+    echo "ERROR: unknown xfind version argument: $ARG"
 fi

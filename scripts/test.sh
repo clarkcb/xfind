@@ -26,128 +26,114 @@ FIND_PARAMS="$EXTS $DEBUG $PATH"
 # Test Functions
 ########################################
 
+test_lang_version () {
+    local lang_version="$1"
+    log "$lang_version $FIND_PARAMS"
+    time "$lang_version" $EXTS $DEBUG $PATH
+}
+
 test_clojure () {
     hdr "test_clojure"
-    log "cljfind $FIND_PARAMS"
-    time cljfind $EXTS $DEBUG $PATH
+    test_lang_version "cljfind"
 }
 
 test_cpp () {
     hdr "test_cpp"
-    log "cppfind $FIND_PARAMS"
-    time cppfind $EXTS $DEBUG $PATH
+    test_lang_version "cppfind"
 }
 
 test_csharp () {
     hdr "test_csharp"
-    log "csfind $FIND_PARAMS"
-    time csfind $EXTS $DEBUG $PATH
+    test_lang_version "csfind"
 }
 
 test_dart () {
     hdr "test_dart"
-    log "dartfind $FIND_PARAMS"
-    time dartfind $EXTS $DEBUG $PATH
+    test_lang_version "dartfind"
 }
 
 test_fsharp () {
     hdr "test_fsharp"
-    log "fsfind $FIND_PARAMS"
-    time fsfind $EXTS $DEBUG $PATH
+    test_lang_version "fsfind"
 }
 
 test_go () {
     hdr "test_go"
-    log "gofind $FIND_PARAMS"
-    time gofind $EXTS $DEBUG $PATH
+    test_lang_version "gofind"
 }
 
 test_haskell () {
     hdr "test_haskell"
-    log "hsfind $FIND_PARAMS"
-    time hsfind $EXTS $DEBUG $PATH
+    test_lang_version "hsfind"
 }
 
 test_java () {
     hdr "test_java"
-    log "javafind $FIND_PARAMS"
-    time javafind $EXTS $DEBUG $PATH
+    test_lang_version "javafind"
 }
 
 test_javascript () {
     hdr "test_javascript"
-    log "jsfind $FIND_PARAMS"
-    time jsfind $EXTS $DEBUG $PATH
+    test_lang_version "jsfind"
 }
 
 test_kotlin () {
     hdr "test_kotlin"
-    log "ktfind $FIND_PARAMS"
-    time ktfind $EXTS $DEBUG $PATH
+    test_lang_version "ktfind"
 }
 
 test_objc () {
     hdr "test_objc"
-    log "objcfind $FIND_PARAMS"
-    time objcfind $EXTS $DEBUG $PATH
+    test_lang_version "objcfind"
 }
 
 test_ocaml () {
     hdr "test_ocaml"
-    log "ocamlfind $FIND_PARAMS"
-    time ocamlfind $EXTS $DEBUG $PATH
+    test_lang_version "ocamlfind"
 }
 
 test_perl () {
     hdr "test_perl"
-    log "plfind $FIND_PARAMS"
-    time plfind $EXTS $DEBUG $PATH
+    test_lang_version "plfind"
 }
 
 test_php () {
     hdr "test_php"
-    log "phpfind $FIND_PARAMS"
-    time phpfind $EXTS $DEBUG $PATH
+    test_lang_version "phpfind"
 }
 
 test_python () {
     hdr "test_python"
-    log "pyfind.py $FIND_PARAMS"
-    time pyfind.py $EXTS $DEBUG $PATH
+    test_lang_version "pyfind"
 }
 
 test_ruby () {
     hdr "test_ruby"
-    log "rbfind $FIND_PARAMS"
-    time rbfind $EXTS $DEBUG $PATH
+    test_lang_version "rbfind"
 }
 
 test_rust () {
     hdr "test_rust"
-    log "rsfind $FIND_PARAMS"
-    time rsfind $EXTS $DEBUG $PATH
+    test_lang_version "rsfind"
 }
 
 test_scala () {
     hdr "test_scala"
-    log "scalafind $FIND_PARAMS"
-    time scalafind $EXTS $DEBUG $PATH
+    test_lang_version "scalafind"
 }
 
 test_swift () {
     hdr "test_swift"
-    log "swiftfind $FIND_PARAMS"
-    time swiftfind $EXTS $DEBUG $PATH
+    test_lang_version "swiftfind"
 }
 
 test_typescript () {
     hdr "test_typescript"
-    log "tsfind $FIND_PARAMS"
-    time tsfind $EXTS $DEBUG $PATH
+    test_lang_version "tsfind"
 }
 
 test_all () {
-    log "test_all"
+    hdr "test_all"
 
     test_clojure
 

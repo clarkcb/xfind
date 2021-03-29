@@ -7,15 +7,19 @@
 # A simple benchmarking tool for the various xfind language versions
 #
 ################################################################################
+import os
+import re
 import subprocess
 import sys
 from collections import namedtuple
 from io import StringIO
 from typing import Dict, List, Union
 
+from tabulate import tabulate
+
 from xfind import *
 
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'], verbose=False)
+Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'])
 
 
 ########################################
@@ -270,29 +274,8 @@ class Benchmarker(object):
         self.__dict__.update(kwargs)
 
     def __print_data_table(self, title: str, hdr: List[str], data: List[List[Union[float, int]]], col_types: List[type]):
-        sio = StringIO()
-        sio.write('\n{}'.format(title))
-        longest = max([len(x) for x in self.xfind_names])
-        col_width = max([len(h) for h in hdr]) + 1
-        hdr_place = ' %' + str(col_width) + 's'
-        hdr_places = hdr_place * len(hdr)
-        hdr_format = ' %%-%ds %s' % (longest, hdr_places)
-        hdr_line = hdr_format % tuple(['xfind'] + hdr)
-        sep_line = '-' * len(hdr_line)
-        sio.write("\n")
-        sio.write("{}\n".format(hdr_line))
-        sio.write("{}\n".format(sep_line))
-        data_format = ''
-        for t in col_types:
-            if t == float:
-                data_format += ' %' + str(col_width) + '.2f'
-            elif t == int:
-                data_format += ' %' + str(col_width) + 'd'
-        line_format = ' %%-%ds %s' % (longest, data_format)
-        for row in data:
-            line = line_format % tuple(row)
-            sio.write("{}\n".format(line))
-        print(sio.getvalue())
+        print('\n{}'.format(title))
+        print(tabulate(data, headers=hdr))
 
     def print_scenario_summary(self, scenario_results: ScenarioResults):
         title = "\nScenario results summary for {} out of {} scenarios with {} out of {} total runs\n".\
@@ -394,15 +377,32 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def times_from_lines(self, lines: List[str]) -> Dict[str,float]:
+        time_dict = {}
         times = lines[0].split()
-        times.reverse()
-        try:
-            time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
-            time_dict['total'] = sum(time_dict.values())
-        except Exception as e:
-            print("Exception: {}".format(str(e)))
-            print("Invalid times line: \"{}\"".format(lines[0]))
-            time_dict = {s: 0 for s in time_keys}
+        time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
+        if time_name_matches:
+            for time_name_match in time_name_matches:
+                n = time_name_match.group(3)
+                t = time_name_match.group(1)
+                # print('name: "{}", time: {}'.format(n, t))
+                if n == 'elapsed':
+                    colon_idx = t.find(':')
+                    # print('colon_idx: {}'.format(colon_idx))
+                    time_dict['real'] = float(t[colon_idx+1:])
+                else:
+                    if n == 'system':
+                        n = 'sys'
+                    time_dict[n] = float(time_name_match.group(1)[2:])
+        else:
+            times.reverse()
+            try:
+                time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
+                time_dict['total'] = sum(time_dict.values())
+            except Exception as e:
+                print("Exception: {}".format(str(e)))
+                print("Invalid times line: \"{}\"".format(lines[0]))
+                time_dict = {s: 0 for s in time_keys}
+        # print('time_dict: {}'.format(time_dict))
         return time_dict
 
     def compare_outputs(self, sn: int, xfind_output) -> bool:
@@ -456,7 +456,11 @@ class Benchmarker(object):
                 if output_line:
                     output_lines.append(output_line.decode().strip())
                 if time_line:
-                    time_lines.append(time_line.decode().strip())
+                    time_line = time_line.decode().strip()
+                    if time_line == 'Command exited with non-zero status 1':
+                        continue
+                    # print('time_line: "{}"'.format(time_line))
+                    time_lines.append(time_line)
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
@@ -468,7 +472,9 @@ class Benchmarker(object):
                 print('{} output:\n"{}"'.format(x, output))
             xfind_times[x] = self.times_from_lines(time_lines)
             time_dict = xfind_times[x]
-            lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
+            treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
+            tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
+            lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
         self.compare_outputs(sn, xfind_output)
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 

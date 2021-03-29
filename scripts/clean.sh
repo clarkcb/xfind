@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #
 # clean.sh
@@ -22,8 +22,7 @@ source "$DIR/common.sh"
 
 clean_clojure () {
     echo
-    log "clean_clojure"
-    CLJFIND_PATH=$CLOJURE_PATH/cljfind
+    hdr "clean_clojure"
 
     cd $CLJFIND_PATH
     log "lein clean"
@@ -33,18 +32,15 @@ clean_clojure () {
 
 clean_cpp () {
     echo
-    log "clean_cpp"
-    CPPFIND_PATH=$CPP_PATH/cppfind
+    hdr "clean_cpp"
 
     cd $CPPFIND_PATH
 
     CONFIGURATIONS=(debug release)
     for c in ${CONFIGURATIONS[*]}
     do
-        CMAKE_BUILD_DIR="cmake-build-$c"
-
-        log "cmake --build $CMAKE_BUILD_DIR --target clean -- -W -Wall -Werror"
-        cmake --build $CMAKE_BUILD_DIR --target clean -- -W -Wall -Werror
+        log "rm -rf $CPPFIND_PATH/cmake-build-$c"
+        rm -rf "$CPPFIND_PATH/cmake-build-$c"
     done
 
     cd -
@@ -52,26 +48,23 @@ clean_cpp () {
 
 clean_csharp () {
     echo
-    log "clean_csharp"
-    CSFIND_PATH=$CSHARP_PATH/CsFind
+    hdr "clean_csharp"
 
-    log "rm -rf $CSFIND_PATH/CsFind/bin"
-    rm -rf "$CSFIND_PATH/CsFind/bin"
-
-    log "rm -rf $CSFIND_PATH/CsFind/obj"
-    rm -rf "$CSFIND_PATH/CsFind/obj"
-
-    log "rm -rf $CSFIND_PATH/CsFindTests/bin"
-    rm -rf "$CSFIND_PATH/CsFindTests/bin"
-
-    log "rm -rf $CSFIND_PATH/CsFindTests/obj"
-    rm -rf "$CSFIND_PATH/CsFindTests/obj"
+    PROJECTS=(CsFind CsFindTests)
+    SUBDIRS=(bin obj)
+    for p in ${PROJECTS[*]}
+    do
+        for d in ${SUBDIRS[*]}
+        do
+            log "rm -rf $CSFIND_PATH/$p/$d"
+            rm -rf "$CSFIND_PATH/$p/$d"
+        done
+    done
 }
 
 clean_dart () {
     echo
-    log "clean_dart"
-    DARTFIND_PATH=$DART_PATH/dartfind
+    hdr "clean_dart"
 
     # pub cache repair is apparently the closest thing to clean for dart
     cd $DARTFIND_PATH
@@ -82,43 +75,43 @@ clean_dart () {
 
 clean_fsharp () {
     echo
-    log "clean_fsharp"
-    FSFIND_PATH=$FSHARP_PATH/FsFind
+    hdr "clean_fsharp"
 
-    log "rm -rf $FSFIND_PATH/FsFind/bin"
-    rm -rf "$FSFIND_PATH/FsFind/bin"
-
-    log "rm -rf $FSFIND_PATH/FsFind/obj"
-    rm -rf "$FSFIND_PATH/FsFind/obj"
-
-    log "rm -rf $FSFIND_PATH/FsFindTests/bin"
-    rm -rf "$FSFIND_PATH/FsFindTests/bin"
-
-    log "rm -rf $FSFIND_PATH/FsFindTests/obj"
-    rm -rf "$FSFIND_PATH/FsFindTests/obj"
+    PROJECTS=(FsFind FsFindTests)
+    SUBDIRS=(bin obj)
+    for p in ${PROJECTS[*]}
+    do
+        for d in ${SUBDIRS[*]}
+        do
+            log "rm -rf $FSFIND_PATH/$p/$d"
+            rm -rf "$FSFIND_PATH/$p/$d"
+        done
+    done
 }
 
 clean_go () {
     echo
-    log "clean_go"
+    hdr "clean_go"
 
     cd $GOFIND_PATH
     log "go clean"
     go clean
+    cd -
 }
 
 clean_haskell () {
     echo
-    log "clean_haskell"
+    hdr "clean_haskell"
 
     cd $HSFIND_PATH
     log "stack clean"
     stack clean
+    cd -
 }
 
 clean_java () {
     echo
-    log "clean_java"
+    hdr "clean_java"
 
     log "mvn -f $JAVAFIND_PATH/pom.xml clean"
     mvn -f $JAVAFIND_PATH/pom.xml clean
@@ -126,7 +119,7 @@ clean_java () {
 
 clean_javascript () {
     echo
-    log "clean_javascript"
+    hdr "clean_javascript"
 
     cd $JSFIND_PATH
     log "npm run clean"
@@ -136,7 +129,7 @@ clean_javascript () {
 
 clean_kotlin () {
     echo
-    log "clean_kotlin"
+    hdr "clean_kotlin"
 
     cd $KTFIND_PATH/
     log "gradle -b build.gradle clean"
@@ -146,45 +139,45 @@ clean_kotlin () {
 
 clean_objc () {
     echo
-    log "clean_objc"
+    hdr "clean_objc"
 
     # TODO: is there a clean command for xcodebuild?
 }
 
 clean_ocaml () {
     echo
-    log "clean_ocaml"
+    hdr "clean_ocaml"
 
     # TODO: probably want to delete the _build directory
 }
 
 clean_perl () {
     echo
-    log "clean_perl"
+    hdr "clean_perl"
     log "Nothing to do for perl"
 }
 
 clean_php () {
     echo
-    log "clean_php"
+    hdr "clean_php"
     log "Nothing to do for php"
 }
 
 clean_python () {
     echo
-    log "clean_python"
+    hdr "clean_python"
     log "Nothing to do for python"
 }
 
 clean_ruby () {
     echo
-    log "clean_ruby"
+    hdr "clean_ruby"
     log "Nothing to do for ruby"
 }
 
 clean_rust () {
     echo
-    log "clean_rust"
+    hdr "clean_rust"
 
     cd $RSFIND_PATH
     echo "cargo clean"
@@ -194,7 +187,7 @@ clean_rust () {
 
 clean_scala () {
     echo
-    log "clean_scala"
+    hdr "clean_scala"
 
     # TODO: convert to sbt command
 
@@ -206,14 +199,14 @@ clean_scala () {
 
 clean_swift () {
     echo
-    log "clean_swift"
+    hdr "clean_swift"
 
     # TODO: is there a clean command for swift?
 }
 
 clean_typescript () {
     echo
-    log "clean_typescript"
+    hdr "clean_typescript"
 
     cd $TSFIND_PATH
     log "npm run clean"
@@ -221,12 +214,56 @@ clean_typescript () {
     cd -
 }
 
-clean_all () {
-    log "clean_all"
+clean_linux () {
+    hdr "clean_linux"
 
-    clean_cpp
+    # clean_clojure
+
+    # clean_cpp
+
+    clean_csharp
+
+    clean_dart
+
+    clean_fsharp
+
+    clean_go
+
+    # clean_haskell
+
+    clean_java
+
+    clean_javascript
+
+    clean_kotlin
+
+    # clean_objc
+
+    # clean_ocaml
+
+    clean_perl
+
+    clean_php
+
+    clean_python
+
+    clean_ruby
+
+    clean_rust
+
+    # clean_scala
+
+    clean_swift
+
+    clean_typescript
+}
+
+clean_all () {
+    hdr "clean_all"
 
     clean_clojure
+
+    clean_cpp
 
     clean_csharp
 
@@ -280,6 +317,9 @@ fi
 if [ "$ARG" == "all" ]
 then
     clean_all
+elif [ "$ARG" == "linux" ]
+then
+    clean_linux
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     clean_clojure

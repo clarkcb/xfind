@@ -289,6 +289,7 @@ lint_swift () {
 lint_typescript () {
     echo
     hdr "lint_typescript"
+
     log "Not supported at this time"
 }
 
@@ -384,7 +385,7 @@ then
 elif [ "$ARG" == "objc" ]
 then
     lint_objc
-elif [ "$ARG" == "ocaml" ]
+elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
 then
     lint_ocaml
 elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]

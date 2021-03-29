@@ -54,7 +54,6 @@ stats_clojure () {
     word_counts $CLJFILES
 }
 
-
 stats_cpp () {
     echo
     hdr "stats_cpp"

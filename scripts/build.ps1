@@ -6,7 +6,9 @@
 # Builds specified language version of xfind, or all versions
 #
 ################################################################################
-param([string]$lang='all')
+param([switch]$debug = $false,
+      [switch]$release = $false,
+      [string]$lang='all')
 
 ########################################
 # Configuration
@@ -18,6 +20,13 @@ $scriptDir = Split-Path $scriptPath -Parent
 . (Join-Path $scriptDir 'config.ps1')
 . (Join-Path $scriptDir 'common.ps1')
 
+
+$debug = $debug.IsPresent
+$release = $release.IsPresent
+if (!$release)
+{
+    $debug = $true
+}
 
 ########################################
 # Utility Functions
@@ -139,7 +148,15 @@ function BuildCpp
     $oldPwd = Get-Location
     Set-Location $cppfindPath
 
-    $configurations = @('debug', 'release')
+    $configurations = @()
+    if ($debug)
+    {
+        $configurations += 'debug'
+    }
+    if ($release)
+    {
+        $configurations += 'release'
+    }
     ForEach ($c in $configurations)
     {
         $cmakeBuildDir = "cmake-build-$c"
@@ -168,9 +185,18 @@ function BuildCpp
         }
     }
 
-    # add to bin
-    $cppfindExe = Join-Path $cppfindPath 'bin' 'cppfind.ps1'
-    AddToBin($cppfindExe)
+    if ($release)
+    {
+        # add release to bin
+        $cppfindExe = Join-Path $cppfindPath 'bin' 'cppfind.release.ps1'
+        AddToBin($cppfindExe)
+    }
+    else
+    {
+        # add debug to bin
+        $cppfindExe = Join-Path $cppfindPath 'bin' 'cppfind.debug.ps1'
+        AddToBin($cppfindExe)
+    }
 
     Set-Location $oldPwd
 }
@@ -205,7 +231,17 @@ function BuildCsharp
     Set-Location $csfindPath
 
     $csFindSolutonPath = Join-Path $csfindPath 'CsFind.sln'
-    $configurations = @('Debug', 'Release')
+
+    $configurations = @()
+    if ($debug)
+    {
+        $configurations += 'Debug'
+    }
+    if ($release)
+    {
+        $configurations += 'Release'
+    }
+
     ForEach ($c in $configurations)
     {
         Log("Building CsFind solution for $c configuration")
@@ -213,9 +249,18 @@ function BuildCsharp
         dotnet build $csFindSolutonPath --configuration $c
     }
 
-    # add to bin
-    $csfindExe = Join-Path $csfindPath 'bin' 'csfind.ps1'
-    AddToBin($csfindExe)
+    if ($release)
+    {
+        # add release to bin
+        $csfindExe = Join-Path $csfindPath 'bin' 'csfind.release.ps1'
+        AddToBin($csfindExe)
+    }
+    else
+    {
+        # add debug to bin
+        $csfindExe = Join-Path $csfindPath 'bin' 'csfind.debug.ps1'
+        AddToBin($csfindExe)
+    }
 
     Set-Location $oldPwd
 }
@@ -283,7 +328,17 @@ function BuildFsharp
     Set-Location $fsfindPath
 
     $fsFindSolutonPath = Join-Path $fsfindPath 'FsFind.sln'
-    $configurations = @('Debug', 'Release')
+
+    $configurations = @()
+    if ($debug)
+    {
+        $configurations += 'Debug'
+    }
+    if ($release)
+    {
+        $configurations += 'Release'
+    }
+
     ForEach ($c in $configurations)
     {
         Log("Building FsFind solution for $c configuration")
@@ -291,9 +346,18 @@ function BuildFsharp
         dotnet build $fsFindSolutonPath --configuration $c
     }
 
-    # add to bin
-    $fsfindExe = Join-Path $fsfindPath 'bin' 'fsfind.ps1'
-    AddToBin($fsfindExe)
+    if ($release)
+    {
+        # add release to bin
+        $fsfindExe = Join-Path $fsfindPath 'bin' 'fsfind.release.ps1'
+        AddToBin($fsfindExe)
+    }
+    else
+    {
+        # add debug to bin
+        $fsfindExe = Join-Path $fsfindPath 'bin' 'fsfind.debug.ps1'
+        AddToBin($fsfindExe)
+    }
 
     Set-Location $oldPwd
 }
@@ -626,11 +690,14 @@ function BuildPython
         return
     }
 
+    # Set to $true to use venv
+    $useVenv=$false
+
     $pythonVersions = @('python3.9', 'python3.8', 'python3.7')
     $python = ''
     ForEach ($p in $pythonVersions)
     {
-        if (Get-Command $p)
+        if (Get-Command $p -ErrorAction "SilentlyContinue")
         {
             $python = $p
             Log("Using $python")
@@ -648,25 +715,31 @@ function BuildPython
     $oldPwd = Get-Location
     Set-Location $pyfindPath
 
-    $venvPath = Join-Path $pyfindPath 'venv'
-    if (!(Test-Path $venvPath))
+    if ($useVenv)
     {
-        Log("$python -m venv venv")
-        & $python -m venv venv
+        $venvPath = Join-Path $pyfindPath 'venv'
+        if (!(Test-Path $venvPath))
+        {
+            Log("$python -m venv venv")
+            & $python -m venv venv
+        }
+    
+        # activate the virtual env
+        $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+        Log("$activatePath")
+        & $activatePath
     }
-
-    # activate the virtual env
-    $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
-    Log("$activatePath")
-    & $activatePath
 
     # install dependencies in requirements.txt
     Log('pip3 install -r requirements.txt')
     pip3 install -r requirements.txt
 
-    # deactivate at end of setup process
-    Log('deactivate')
-    deactivate
+    if ($useVenv)
+    {
+        # deactivate at end of setup process
+        Log('deactivate')
+        deactivate
+    }
 
     # add to bin
     $pyfindExe = Join-Path $pyfindPath 'bin' 'pyfind.ps1'
@@ -728,15 +801,28 @@ function BuildRust
     Set-Location $rsfindPath
 
     Log('Building rsfind')
-    Log('cargo build')
-    cargo build
 
-    Log('cargo build --release')
-    cargo build --release
+    if ($debug)
+    {
+        Log('cargo build')
+        cargo build
+    }
 
-    # add to bin
-    $rsfindExe = Join-Path $rsfindPath 'bin' 'rsfind.ps1'
-    AddToBin($rsfindExe)
+    if ($release)
+    {
+        Log('cargo build --release')
+        cargo build --release
+
+        # add release to bin
+        $rsfindExe = Join-Path $rsfindPath 'bin' 'rsfind.release.ps1'
+        AddToBin($rsfindExe)
+    }
+    else
+    {
+        # add debug to bin
+        $rsfindExe = Join-Path $rsfindPath 'bin' 'rsfind.debug.ps1'
+        AddToBin($rsfindExe)
+    }
 
     Set-Location $oldPwd
 }
@@ -793,15 +879,28 @@ function BuildSwift
     Set-Location $swiftfindPath
 
     Log('Building swiftfind')
-    Log('swift build')
-    swift build
 
-    Log('swift build --configuration release')
-    swift build --configuration release
+    if ($debug)
+    {
+        Log('swift build')
+        swift build
+    }
 
-    # add to bin
-    $swiftfindExe = Join-Path $swiftfindPath 'bin' 'swiftfind.ps1'
-    AddToBin($swiftfindExe)
+    if ($release)
+    {
+        Log('swift build --configuration release')
+        swift build --configuration release
+
+        # add release to bin
+        $swiftfindExe = Join-Path $swiftfindPath 'bin' 'swiftfind.release.ps1'
+        AddToBin($swiftfindExe)
+        }
+    else
+    {
+        # add debug to bin
+        $swiftfindExe = Join-Path $swiftfindPath 'bin' 'swiftfind.debug.ps1'
+        AddToBin($swiftfindExe)
+        }
 
     Set-Location $oldPwd
 }
@@ -841,50 +940,90 @@ function BuildTypeScript
     Set-Location $oldPwd
 }
 
+function BuildLinux
+{
+    Write-Host
+    Hdr('BuildLinux')
+
+    # Measure-Command { BuildClojure }
+
+    # Measure-Command { BuildCpp }
+
+    Measure-Command { BuildCsharp }
+
+    Measure-Command { BuildDart }
+
+    Measure-Command { BuildFsharp }
+
+    Measure-Command { BuildGo }
+
+    Measure-Command { BuildJava }
+
+    Measure-Command { BuildJavaScript }
+
+    # Measure-Command { BuildKotlin }
+
+    Measure-Command { BuildPerl }
+
+    Measure-Command { BuildPhp }
+
+    Measure-Command { BuildPython }
+
+    Measure-Command { BuildRuby }
+
+    Measure-Command { BuildRust }
+
+    # Measure-Command { BuildScala }
+
+    Measure-Command { BuildSwift }
+
+    Measure-Command { BuildTypeScript }
+}
+
 function BuildAll
 {
     Write-Host
     Hdr('BuildAll')
 
-    BuildClojure
+    Measure-Command { BuildClojure }
 
-    BuildCpp
+    Measure-Command { BuildCpp }
 
-    BuildCsharp
+    Measure-Command { BuildCsharp }
 
-    BuildDart
+    Measure-Command { BuildDart }
 
-    BuildFsharp
+    Measure-Command { BuildFsharp }
 
-    BuildGo
+    Measure-Command { BuildGo }
 
-    BuildHaskell
+    Measure-Command { BuildHaskell }
 
-    BuildJava
+    Measure-Command { BuildJava }
 
-    BuildJavaScript
+    Measure-Command { BuildJavaScript }
 
-    BuildKotlin
+    Measure-Command { BuildKotlin }
 
-    BuildObjc
+    Measure-Command { BuildObjc }
 
-    BuildOcaml
+    Measure-Command { BuildOcaml }
 
-    BuildPerl
+    Measure-Command { BuildPerl }
 
-    BuildPhp
+    Measure-Command { BuildPhp }
 
-    BuildPython
+    Measure-Command { BuildPython }
 
-    BuildRuby
+    Measure-Command { BuildRuby }
 
-    BuildRust
+    Measure-Command { BuildRust }
 
-    BuildScala
+    Measure-Command { BuildScala }
 
-    BuildSwift
+    Measure-Command { BuildSwift }
 
-    BuildTypeScript
+    Measure-Command { BuildTypeScript }
 }
 
 ################################################################################
@@ -898,38 +1037,39 @@ function BuildMain
     switch ($lang)
     {
         'all'        { BuildAll }
-        'clj'        { BuildClojure }
-        'clojure'    { BuildClojure }
-        'cpp'        { BuildCpp }
-        'cs'         { BuildCsharp }
-        'csharp'     { BuildCsharp }
-        'dart'       { BuildDart }
-        'fs'         { BuildFsharp }
-        'fsharp'     { BuildFsharp }
-        'go'         { BuildGo }
-        'haskell'    { BuildHaskell }
-        'hs'         { BuildHaskell }
-        'java'       { BuildJava }
-        'javascript' { BuildJavaScript }
-        'js'         { BuildJavaScript }
-        'kotlin'     { BuildKotlin }
-        'kt'         { BuildKotlin }
-        'objc'       { BuildObjc }
-        'ocaml'      { BuildOcaml }
-        'ml'         { BuildOcaml }
-        'perl'       { BuildPerl }
-        'pl'         { BuildPerl }
-        'php'        { BuildPhp }
-        'py'         { BuildPython }
-        'python'     { BuildPython }
-        'rb'         { BuildRuby }
-        'ruby'       { BuildRuby }
-        'rs'         { BuildRust }
-        'rust'       { BuildRust }
-        'scala'      { BuildScala }
-        'swift'      { BuildSwift }
-        'ts'         { BuildTypeScript }
-        'typescript' { BuildTypeScript }
+        'linux'      { BuildLinux }
+        'clj'        { Measure-Command { BuildClojure } }
+        'clojure'    { Measure-Command { BuildClojure } }
+        'cpp'        { Measure-Command { BuildCpp } }
+        'cs'         { Measure-Command { BuildCsharp } }
+        'csharp'     { Measure-Command { BuildCsharp } }
+        'dart'       { Measure-Command { BuildDart } }
+        'fs'         { Measure-Command { BuildFsharp } }
+        'fsharp'     { Measure-Command { BuildFsharp } }
+        'go'         { Measure-Command { BuildGo } }
+        'haskell'    { Measure-Command { BuildHaskell } }
+        'hs'         { Measure-Command { BuildHaskell } }
+        'java'       { Measure-Command { BuildJava } }
+        'javascript' { Measure-Command { BuildJavaScript } }
+        'js'         { Measure-Command { BuildJavaScript } }
+        'kotlin'     { Measure-Command { BuildKotlin } }
+        'kt'         { Measure-Command { BuildKotlin } }
+        'objc'       { Measure-Command { BuildObjc } }
+        'ocaml'      { Measure-Command { BuildOcaml } }
+        'ml'         { Measure-Command { BuildOcaml } }
+        'perl'       { Measure-Command { BuildPerl } }
+        'pl'         { Measure-Command { BuildPerl } }
+        'php'        { Measure-Command { BuildPhp } }
+        'py'         { Measure-Command { BuildPython } }
+        'python'     { Measure-Command { BuildPython } }
+        'rb'         { Measure-Command { BuildRuby } }
+        'ruby'       { Measure-Command { BuildRuby } }
+        'rs'         { Measure-Command { BuildRust } }
+        'rust'       { Measure-Command { BuildRust } }
+        'scala'      { Measure-Command { BuildScala } }
+        'swift'      { Measure-Command { BuildSwift } }
+        'ts'         { Measure-Command { BuildTypeScript } }
+        'typescript' { Measure-Command { BuildTypeScript } }
         default      { ExitWithError("Unknown option: $lang") }
     }
 }
