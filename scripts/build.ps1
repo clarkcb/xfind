@@ -72,12 +72,20 @@ function AddToBin
 
     # get the base filename, minus path and any extension
     $baseName = [io.path]::GetFileNameWithoutExtension($scriptPath)
+    if ($baseName.EndsWith(".debug") -or $baseName.EndsWith(".release"))
+    {
+        $baseName = $baseName.Split(".")[0]
+    }
+
     $linkPath = Join-Path $binPath $baseName
 
-    if (Test-Path $linkPath && (Get-Item $linkPath).LinkType -eq 'SymbolicLink')
+    if (Test-Path $linkPath)
     {
-        Log("Remove-Item $linkPath")
-        Remove-Item $linkPath
+        if ((Get-Item $linkPath).LinkType -eq 'SymbolicLink')
+        {
+            Log("Remove-Item $linkPath")
+            Remove-Item $linkPath
+        }
     }
 
     if (!(Test-Path $linkPath))

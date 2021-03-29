@@ -62,7 +62,7 @@ add_to_bin () {
 
     if [[ $script_name == *.sh ]]
     then
-        script_name=${script_name%.*}
+        script_name=${script_name%%.*}
     fi
     # echo "script_name: $script_name"
     if [ -L "$script_name" ]
