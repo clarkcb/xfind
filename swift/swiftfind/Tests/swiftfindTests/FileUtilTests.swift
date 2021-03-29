@@ -49,12 +49,14 @@ class FileUtilTests: XCTestCase {
      * exist tests
      ========================================================================= */
     func testExistsExistingFile() {
-        let fileTypesFile = FileUtil.joinPath(Config.sharedPath, childPath: "filetypes.json")
+        let config = Config()
+        let fileTypesFile = FileUtil.joinPath(config.sharedPath, childPath: "filetypes.json")
         XCTAssertTrue(FileUtil.exists(fileTypesFile))
     }
 
     func testExistsNonexistingFile() {
-        let fileTypesFile = FileUtil.joinPath(Config.sharedPath, childPath: "filetypes.ZZZ")
+        let config = Config()
+        let fileTypesFile = FileUtil.joinPath(config.sharedPath, childPath: "filetypes.ZZZ")
         XCTAssertFalse(FileUtil.exists(fileTypesFile))
     }
 
@@ -195,4 +197,34 @@ class FileUtilTests: XCTestCase {
         XCTAssertEqual(parent, "./path/to")
         XCTAssertEqual(child, "somefile.txt")
     }
+
+    static var allTests = [
+        ("testContractPathWithHome", testContractPathWithHome),
+        ("testExpandPathHasTilde", testExpandPathHasTilde),
+        ("testExpandPathNoTilde", testExpandPathNoTilde),
+        ("testExistsExistingFile", testExistsExistingFile),
+        ("testExistsNonexistingFile", testExistsNonexistingFile),
+        ("testGetExtension", testGetExtension),
+        ("testHasExtension", testHasExtension),
+        ("testIsDirectorySingleDot", testIsDirectorySingleDot),
+        ("testIsDirectorySingleDotSlash", testIsDirectorySingleDotSlash),
+        ("testIsDirectoryDoubleDot", testIsDirectoryDoubleDot),
+        ("testIsDirectoryDoubleDotSlash", testIsDirectoryDoubleDotSlash),
+        ("testIsDirectoryRootDir", testIsDirectoryRootDir),
+        ("testIsDirectoryTildeHomeDir", testIsDirectoryTildeHomeDir),
+        ("testIsDirectoryNonDirectory", testIsDirectoryNonDirectory),
+        ("testIsDotDirSingleDot", testIsDotDirSingleDot),
+        ("testIsDotDirDoubleDot", testIsDotDirDoubleDot),
+        ("testIsDotDirNotDotDir", testIsDotDirNotDotDir),
+        ("testIsDotDirPathWithDot", testIsDotDirPathWithDot),
+        ("testIsDotDirHiddenFile", testIsDotDirHiddenFile),
+        ("testIsHiddenSingleDot", testIsHiddenSingleDot),
+        ("testIsHiddenDoubleDot", testIsHiddenDoubleDot),
+        ("testIsHiddenHiddenFileName", testIsHiddenHiddenFileName),
+        ("testIsHiddenNotHiddenFileName", testIsHiddenNotHiddenFileName),
+        ("testJoinPathDir", testJoinPathDir),
+        ("testJoinPathFile", testJoinPathFile),
+        ("testSplitPathDir", testSplitPathDir),
+        ("testSplitPathFile", testSplitPathFile),
+    ]
 }

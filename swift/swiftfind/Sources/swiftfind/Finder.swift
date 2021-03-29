@@ -24,18 +24,18 @@ public class Finder {
     let fileTypes = FileTypes()
     let settings: FindSettings
 
-    public init(settings: FindSettings, error: NSErrorPointer) {
+    public init(settings: FindSettings) throws {
         self.settings = settings
-        validateSettings(error)
+        try validateSettings()
     }
 
-    private func validateSettings(_ error: NSErrorPointer) {
+    private func validateSettings() throws {
         if settings.paths.isEmpty {
-            setError(error, msg: "Startpath not defined")
+            throw FindError(msg: "Startpath not defined")
         } else if !settings.paths.allSatisfy({ FileUtil.exists($0) }) {
-            setError(error, msg: "Startpath not found")
+            throw FindError(msg: "Startpath not found")
         } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) }) {
-            setError(error, msg: "Startpath not readable")
+            throw FindError(msg: "Startpath not readable")
         }
     }
 
@@ -132,7 +132,7 @@ public class Finder {
                     let fileAttributes = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey])
                     if fileAttributes.isDirectory! {
                         if !isFindDir(fileURL.path) {
-                            enumerator.skipDescendents()
+                            enumerator.skipDescendants()
                         }
                     } else if fileAttributes.isRegularFile! {
                         if let findFile = filterToFindFile(fileURL.path) {
@@ -145,7 +145,7 @@ public class Finder {
         return findFiles
     }
 
-    public func find(_ error: NSErrorPointer) -> [FindFile] {
+    public func find() -> [FindFile] {
         var findFiles = [FindFile]()
         for p in settings.paths {
             if FileUtil.isDirectory(p) {

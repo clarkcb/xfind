@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
-import Cocoa
 import XCTest
 
 import swiftfind
@@ -74,4 +73,13 @@ class FileTypesTests: XCTestCase {
         let fileName = "unknown.ZZZ"
         XCTAssert(fileTypes.getFileType(fileName) == FileType.unknown, "\(fileName) is unknown file")
     }
+
+    static var allTests = [
+        ("testArchiveFiles", testArchiveFiles),
+        ("testBinaryFiles", testBinaryFiles),
+        ("testCodeFile", testCodeFile),
+        ("testTextFile", testTextFile),
+        ("testXmlFile", testXmlFile),
+        ("testUnknownFile", testUnknownFile),
+    ]
 }

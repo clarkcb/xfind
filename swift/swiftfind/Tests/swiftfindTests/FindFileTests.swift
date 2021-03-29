@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
-import Cocoa
 import XCTest
 
 import swiftfind
@@ -36,4 +35,11 @@ class FindFileTests: XCTestCase {
         let findFile = FindFile(filePath: path, fileType: FileType.code)
         XCTAssertEqual(path, findFile.description)
     }
+
+    static var allTests = [
+        ("testFindFileAbsPath", testFindFileAbsPath),
+        ("testFindFileTildePath", testFindFileTildePath),
+        ("testFindFileRelPath1", testFindFileRelPath1),
+        ("testFindFileRelPath2", testFindFileRelPath2),
+    ]
 }

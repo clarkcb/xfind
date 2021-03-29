@@ -3,7 +3,13 @@ import XCTest
 #if !canImport(ObjectiveC)
 public func allTests() -> [XCTestCaseEntry] {
     return [
-        testCase(swiftfindTests.allTests),
+        // testCase(swiftfindTests.allTests),
+        testCase(FileTypesTests.allTests),
+        testCase(FileUtilTests.allTests),
+        testCase(FinderTests.allTests),
+        testCase(FindFileTests.allTests),
+        testCase(FindOptionsTests.allTests),
+        testCase(FindSettingsTests.allTests),
     ]
 }
 #endif

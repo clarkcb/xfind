@@ -8,11 +8,20 @@
 
 import Foundation
 
-public enum Config {
-    public static let xfindPath = "\(NSHomeDirectory())/src/xfind"
-    public static let sharedPath = "\(xfindPath)/shared"
-    // public static let fileTypesPath = "\(sharedPath)/filetypes.xml"
-    public static let fileTypesPath = "\(sharedPath)/filetypes.json"
-    // public static let findOptionsPath = "\(sharedPath)/findoptions.xml"
-    public static let findOptionsPath = "\(sharedPath)/findoptions.json"
+public struct Config {
+    public let xfindPath: String
+    public let sharedPath: String
+    public let fileTypesPath: String
+    public let findOptionsPath: String
+
+    public init() {
+        if let xfindEnvPath = ProcessInfo.processInfo.environment["XFIND_PATH"] {
+            self.xfindPath = xfindEnvPath
+        } else {
+            self.xfindPath = "\(NSHomeDirectory())/src/xfind"
+        }
+        self.sharedPath = "\(xfindPath)/shared"
+        self.fileTypesPath = "\(sharedPath)/filetypes.json"
+        self.findOptionsPath = "\(sharedPath)/findoptions.json"
+    }
 }

@@ -13,7 +13,13 @@ public enum FileUtil {
     fileprivate static let separator = "/"
 
     public static func contractPath(_ filePath: String) -> String {
-        (filePath as NSString).abbreviatingWithTildeInPath
+        // NOTE: I get this error for the following line when trying to build on linux:
+        //       value of type 'NSString' has no member 'abbreviatingWithTildeInPath'
+        // (filePath as NSString).abbreviatingWithTildeInPath
+        if filePath.hasPrefix(NSHomeDirectory()) {
+            return filePath.replacingOccurrences(of: NSHomeDirectory(), with: "~")
+        }
+        return filePath
     }
 
     public static func relativePath(_ filePath: String, forPath: String) -> String {

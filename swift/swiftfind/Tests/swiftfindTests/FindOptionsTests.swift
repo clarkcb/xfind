@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
-import Cocoa
 import XCTest
 
 import swiftfind
@@ -26,8 +25,7 @@ class FindOptionsTests: XCTestCase {
     }
 
     func testSettingsEqualDefaultSettings() {
-        var error: NSError?
-        let settings: FindSettings = options.settingsFromArgs(requiredArgs, error: &error)
+        let settings: FindSettings = try! options.settingsFromArgs(requiredArgs)
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
@@ -41,9 +39,8 @@ class FindOptionsTests: XCTestCase {
     }
 
     func testSettingsFromArgs() {
-        var error: NSError?
         let otherArgs: [String] = ["--in-ext", "scala,swift", "--debug"]
-        let settings: FindSettings = options.settingsFromArgs(requiredArgs + otherArgs, error: &error)
+        let settings: FindSettings = try! options.settingsFromArgs(requiredArgs + otherArgs)
         print("settings: \(settings)")
         XCTAssert(settings.debug, "debug == true")
         XCTAssert(settings.verbose, "verbose == true")
@@ -55,7 +52,6 @@ class FindOptionsTests: XCTestCase {
     }
 
     func testSettingsFromJson() {
-        var error: NSError?
         let jsonString = """
 {
   "path": "~/src/xfind/",
@@ -68,7 +64,7 @@ class FindOptionsTests: XCTestCase {
   "listfiles": true
 }
 """
-        let settings = options.settingsFromJson(jsonString, error: &error)
+        let settings = try! options.settingsFromJson(jsonString)
         print("settings: \(settings)")
         XCTAssertTrue(settings.debug, "debug == true")
         XCTAssertTrue(settings.excludeHidden, "excludeHidden == true")
@@ -82,4 +78,10 @@ class FindOptionsTests: XCTestCase {
         XCTAssertTrue(settings.paths.contains("~/src/xfind/"))
         XCTAssertTrue(settings.verbose, "verbose == true")
     }
+
+    static var allTests = [
+        ("testSettingsEqualDefaultSettings", testSettingsEqualDefaultSettings),
+        ("testSettingsFromArgs", testSettingsFromArgs),
+        ("testSettingsFromJson", testSettingsFromJson),
+    ]
 }

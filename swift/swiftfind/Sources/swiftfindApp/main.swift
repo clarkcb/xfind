@@ -19,9 +19,9 @@ func getMatchingFiles(_ findfiles: [FindFile]) -> [String] {
     findfiles.map(\.filePath).sorted().unique()
 }
 
-func handleError(_ error: NSError, _ options: FindOptions) {
+func handleError(_ error: FindError, _ options: FindOptions) {
     logMsg("")
-    logError(error.domain)
+    logError(error.msg)
     options.usage(1)
 }
 
@@ -30,55 +30,48 @@ func main() {
 
     let args: [String] = [] + CommandLine.arguments.dropFirst()
 
-    var error: NSError?
-    let settings = options.settingsFromArgs(args, error: &error)
+    do {
+        let settings = try options.settingsFromArgs(args)
 
-    if error != nil {
-        handleError(error!, options)
-    }
+        if settings.debug {
+            logMsg("\nsettings: \(settings)")
+        }
 
-    if settings.debug {
-        logMsg("\nsettings: \(settings)")
-    }
+        if settings.printUsage {
+            options.usage()
+        }
 
-    if settings.printUsage {
-        options.usage()
-    }
+        let finder = try Finder(settings: settings)
 
-    let finder = Finder(settings: settings, error: &error)
+        let findfiles = finder.find()
 
-    if error != nil {
-        handleError(error!, options)
-    }
-
-    let findfiles = finder.find(&error)
-
-    if error != nil {
-        handleError(error!, options)
-    }
-
-    if settings.listDirs {
-        let dirs = getMatchingDirs(findfiles)
-        if (dirs.isEmpty) {
-            logMsg("\nMatching directories: 0")
-        } else {
-            logMsg("\nMatching directories (\(dirs.count)):")
-            for dir in dirs {
-                logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+        if settings.listDirs {
+            let dirs = getMatchingDirs(findfiles)
+            if (dirs.isEmpty) {
+                logMsg("\nMatching directories: 0")
+            } else {
+                logMsg("\nMatching directories (\(dirs.count)):")
+                for dir in dirs {
+                    logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+                }
             }
         }
-    }
 
-    if settings.listFiles {
-        let files = getMatchingFiles(findfiles)
-        if (files.isEmpty) {
-            logMsg("\nMatching files: 0")
-        } else {
-            logMsg("\nMatching files (\(files.count)):")
-            for file in files {
-                logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+        if settings.listFiles {
+            let files = getMatchingFiles(findfiles)
+            if (files.isEmpty) {
+                logMsg("\nMatching files: 0")
+            } else {
+                logMsg("\nMatching files (\(files.count)):")
+                for file in files {
+                    logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+                }
             }
         }
+    } catch let error as FindError {
+        handleError(error, options)
+    } catch {
+        logError("Unknown error occurred")
     }
 }
 

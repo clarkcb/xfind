@@ -6,7 +6,6 @@
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
-import Cocoa
 import XCTest
 
 import swiftfind
@@ -84,4 +83,13 @@ class FindSettingsTests: XCTestCase {
         XCTAssertTrue(settings.debug)
         XCTAssertTrue(settings.verbose)
     }
+
+    static var allTests = [
+        ("testDefaultSettings", testDefaultSettings),
+        ("testInitialSettingsEqualDefaultSettings", testInitialSettingsEqualDefaultSettings),
+        ("testAddExtensions", testAddExtensions),
+        ("testAddPattern", testAddPattern),
+        ("testSetArchivesOnly", testSetArchivesOnly),
+        ("testSetDebug", testSetDebug),
+    ]
 }

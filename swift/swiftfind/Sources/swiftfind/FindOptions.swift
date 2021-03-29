@@ -18,91 +18,19 @@ struct FindOption {
     }
 }
 
-class FindOptionsXmlParser: NSObject, XMLParserDelegate {
-    var findOptions = [FindOption]()
-    let findOptionNodeName = "findoption"
-    let longAttributeName = "long"
-    let shortAttributeName = "short"
-    var element = ""
-    var longName = ""
-    var shortName = ""
-    var desc = NSMutableString()
-
-    func parseFile(_ filepath: String) -> [FindOption] {
-        if FileManager.default.fileExists(atPath: filepath) {
-            let data: Data? = try? Data(contentsOf: URL(fileURLWithPath: filepath))
-            let inputStream: InputStream? = InputStream(data: data!)
-            let parser: XMLParser? = XMLParser(stream: inputStream!)
-            if parser != nil {
-                parser!.delegate = self
-                parser!.parse()
-            }
-        } else {
-            print("ERROR: filepath not found: \(filepath)")
-        }
-        return findOptions
-    }
-
-    func parser(_: XMLParser, didStartElement elementName: String,
-                namespaceURI _: String?, qualifiedName _: String?,
-                attributes attributeDict: [String: String])
-    {
-        element = elementName
-        if (elementName as NSString).isEqual(to: findOptionNodeName) {
-            if attributeDict.index(forKey: longAttributeName) != nil {
-                longName = (attributeDict[longAttributeName]!)
-            }
-            if attributeDict.index(forKey: shortAttributeName) != nil {
-                shortName = (attributeDict[shortAttributeName]!)
-            }
-            desc = NSMutableString()
-            desc = ""
-        }
-    }
-
-    func parser(_: XMLParser, foundCharacters string: String) {
-        if element == findOptionNodeName {
-            desc.append(string)
-        }
-    }
-
-    func parser(_: XMLParser, didEndElement elementName: String,
-                namespaceURI _: String?, qualifiedName _: String?)
-    {
-        if (elementName as NSString).isEqual(to: findOptionNodeName) {
-            if !desc.isEqual(nil) {
-                let trimmedDesc = desc.trimmingCharacters(in: whitespace as CharacterSet)
-                findOptions.append(FindOption(short: shortName,
-                                                  long: longName, desc: trimmedDesc))
-            }
-        }
-    }
-}
-
 public class FindOptions {
+    private var config: Config
     private var findOptions = [FindOption]()
     private var longArgDict: [String: String] = [:]
 
     public init() {
-        // setFindOptionsFromXml()
+        self.config = Config()
         setFindOptionsFromJson()
-    }
-
-    private func setFindOptionsFromXml() {
-        let parser = FindOptionsXmlParser()
-        findOptions = parser.parseFile(Config.findOptionsPath)
-        findOptions.sort(by: { $0.sortArg < $1.sortArg })
-        for opt in findOptions {
-            longArgDict[opt.long] = opt.long
-            if !opt.short.isEmpty {
-                longArgDict[opt.short] = opt.long
-            }
-        }
     }
 
     private func setFindOptionsFromJson() {
         do {
-            let findOptionsUrl = URL(fileURLWithPath: Config.findOptionsPath)
+            let findOptionsUrl = URL(fileURLWithPath: config.findOptionsPath)
             let data = try Data(contentsOf: findOptionsUrl, options: .mappedIfSafe)
             if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
                 if let options = json["findoptions"] as? [[String: Any]] {
@@ -169,8 +97,7 @@ public class FindOptions {
                 settings.addPath(str)
             },
             "settings-file": { (str: String, settings: FindSettings) -> Void in
-                var error: NSError?
-                self.addSettingsFromFile(str, settings: settings, error: &error)
+                try? self.addSettingsFromFile(str, settings: settings)
             },
         ]
     }
@@ -223,7 +150,7 @@ public class FindOptions {
         },
     ]
 
-    public func settingsFromArgs(_ args: [String], error: NSErrorPointer) -> FindSettings {
+    public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
         var i = 0
         let settings = FindSettings()
         // default listFiles to true since running as cli
@@ -241,18 +168,15 @@ public class FindOptions {
                             argActionDict[longArg!]!(args[i + 1], settings)
                             i += 1
                         } else {
-                            setError(error, msg: "Missing argument for option \(arg)")
-                            break
+                            throw FindError(msg: "Missing argument for option \(arg)")
                         }
                     } else if boolFlagActionDict.index(forKey: longArg!) != nil {
                         boolFlagActionDict[longArg!]!(true, settings)
                     } else {
-                        setError(error, msg: "Invalid option: \(arg)")
-                        break
+                        throw FindError(msg: "Invalid option: \(arg)")
                     }
                 } else {
-                    setError(error, msg: "Invalid option: \(arg)")
-                    break
+                    throw FindError(msg: "Invalid option: \(arg)")
                 }
             } else {
                 settings.addPath(args[i])
@@ -262,29 +186,29 @@ public class FindOptions {
         return settings
     }
 
-    public func settingsFromFile(_ filePath: String, error: NSErrorPointer) -> FindSettings {
+    public func settingsFromFile(_ filePath: String) throws -> FindSettings {
         let settings = FindSettings()
-        addSettingsFromFile(filePath, settings: settings, error: error)
+        try addSettingsFromFile(filePath, settings: settings)
         return settings
     }
 
-    public func addSettingsFromFile(_ filePath: String, settings: FindSettings, error: NSErrorPointer) {
+    public func addSettingsFromFile(_ filePath: String, settings: FindSettings) throws {
         do {
             let fileUrl = URL(fileURLWithPath: filePath)
             let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
-            addSettingsFromJson(jsonString, settings: settings, error: error)
+            try addSettingsFromJson(jsonString, settings: settings)
         } catch let error as NSError {
-            print("Failed to load: \(error.localizedDescription)")
+            throw FindError(msg: "Failed to load: \(error.localizedDescription)")
         }
     }
 
-    public func settingsFromJson(_ jsonString: String, error: NSErrorPointer) -> FindSettings {
+    public func settingsFromJson(_ jsonString: String) throws -> FindSettings {
         let settings = FindSettings()
-        addSettingsFromJson(jsonString, settings: settings, error: error)
+        try addSettingsFromJson(jsonString, settings: settings)
         return settings
     }
 
-    public func addSettingsFromJson(_ jsonString: String, settings: FindSettings, error: NSErrorPointer) {
+    public func addSettingsFromJson(_ jsonString: String, settings: FindSettings) throws {
         do {
             if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
                                                            options: []) as? [String: Any]
@@ -305,20 +229,17 @@ public class FindOptions {
                                     argActionDict[longArg!]!(s, settings)
                                 }
                             } else {
-                                setError(error, msg: "Invalid type for \"\(key)\" entry")
-                                break
+                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
                             }
                         } else if boolFlagActionDict.index(forKey: longArg!) != nil {
                             let value = json[key]
                             if let bool = value as? Bool {
                                 boolFlagActionDict[longArg!]!(bool, settings)
                             } else {
-                                setError(error, msg: "Invalid type for \"\(key)\" entry")
-                                break
+                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
                             }
                         } else {
-                            setError(error, msg: "Invalid option: \(key)")
-                            break
+                            throw FindError(msg: "Invalid option: \(key)")
                         }
                     } else if key == "path" {
                         let value = json[key]
@@ -326,13 +247,12 @@ public class FindOptions {
                             settings.addPath(string)
                         }
                     } else {
-                        setError(error, msg: "Invalid option: \(key)")
-                        break
+                        throw FindError(msg: "Invalid option: \(key)")
                     }
                 }
             }
         } catch let error as NSError {
-            print("Failed to load: \(error.localizedDescription)")
+            throw FindError(msg: "Failed to load: \(error.localizedDescription)")
         }
     }
 
