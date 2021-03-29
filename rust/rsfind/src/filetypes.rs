@@ -4,7 +4,7 @@ use std::fs;
 
 use serde::{Deserialize, Serialize};
 
-use crate::config::{Config, CONFIG_FILE_PATH};
+use crate::config::Config;
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 
@@ -36,7 +36,7 @@ pub struct JsonFileTypes {
 
 impl FileTypes {
     pub fn new() -> Result<FileTypes, FindError> {
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
+        let config = Config::new();
         let contents: String = match fs::read_to_string(config.filetypes_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),

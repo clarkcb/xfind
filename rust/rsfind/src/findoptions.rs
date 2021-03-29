@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
 use crate::common::log;
-use crate::config::{Config, CONFIG_FILE_PATH};
+use crate::config::Config;
 use crate::filetypes::FileTypes;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
@@ -35,7 +35,7 @@ pub struct JsonFindOptions {
 
 impl FindOptions {
     pub fn new() -> Result<FindOptions, FindError> {
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
+        let config = Config::new();
         let contents: String = match fs::read_to_string(config.findoptions_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),
@@ -573,7 +573,8 @@ mod tests {
         };
         assert!(!options.findoptions.is_empty());
 
-        let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
+        // let config = Config::from_json_file(CONFIG_FILE_PATH.to_string());
+        let config = Config::new();
         let path = Path::new(config.shared_path.as_str()).join("settings.json");
         let settings_file = path.to_str().unwrap();
 

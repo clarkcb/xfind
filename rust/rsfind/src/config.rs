@@ -18,13 +18,10 @@ pub struct JsonConfig {
     version: String,
 }
 
-pub const XFIND_PATH: &str = "/Users/cary/src/xfind";
-pub const CONFIG_FILE_PATH: &str = "/Users/cary/src/xfind/shared/config.json";
 pub const VERSION: &str = "1.0.0";
 
 impl Config {
     pub fn new() -> Config {
-        // let xfind_path = String::from(XFIND_PATH);
         let xfind_path: String = match env::var("XFIND_PATH") {
             Ok(path) => path,
             Err(_error) => env::var("HOME").unwrap() + "/src/xfind",
