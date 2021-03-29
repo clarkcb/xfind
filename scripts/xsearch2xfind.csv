@@ -1,0 +1,881 @@
+lang,cmd,arg1,arg2
+clojure,mkdir -p,cljfind/doc,
+clojure,mkdir -p,cljfind/resources,
+clojure,mkdir -p,cljfind/src/cljfind,
+clojure,mkdir -p,cljfind/test/cljfind,
+clojure,git mv,cljsearch/.gitignore,cljfind/.gitignore
+clojure,git mv,cljsearch/cljsearch,cljfind/cljfind
+clojure,git mv,cljsearch/LICENSE,cljfind/LICENSE
+clojure,git mv,cljsearch/project.clj,cljfind/project.clj
+clojure,git mv,cljsearch/README.md,cljfind/README.md
+clojure,git mv,cljsearch/doc/intro.md,cljfind/doc/intro.md
+clojure,git mv,cljsearch/resources/filetypes.json,cljfind/resources/filetypes.json
+clojure,git mv,cljsearch/resources/searchoptions.json,cljfind/resources/findoptions.json
+clojure,git mv,cljsearch/src/cljsearch/cljsearch.clj,cljfind/src/cljfind/cljfind.clj
+clojure,git mv,cljsearch/src/cljsearch/color.clj,cljfind/src/cljfind/color.clj
+clojure,git mv,cljsearch/src/cljsearch/common.clj,cljfind/src/cljfind/common.clj
+clojure,git mv,cljsearch/src/cljsearch/config.clj,cljfind/src/cljfind/config.clj
+clojure,git mv,cljsearch/src/cljsearch/filetypes.clj,cljfind/src/cljfind/filetypes.clj
+clojure,git mv,cljsearch/src/cljsearch/fileutil.clj,cljfind/src/cljfind/fileutil.clj
+clojure,git mv,cljsearch/src/cljsearch/searcher.clj,cljfind/src/cljfind/finder.clj
+clojure,git mv,cljsearch/src/cljsearch/searchfile.clj,cljfind/src/cljfind/findfile.clj
+clojure,git mv,cljsearch/src/cljsearch/searchoptions.clj,cljfind/src/cljfind/findoptions.clj
+clojure,git mv,cljsearch/src/cljsearch/searchsettings.clj,cljfind/src/cljfind/findsettings.clj
+clojure,git mv,cljsearch/test/cljsearch/filetypes_test.clj,cljfind/test/cljfind/filetypes_test.clj
+clojure,git mv,cljsearch/test/cljsearch/fileutil_test.clj,cljfind/test/cljfind/fileutil_test.clj
+clojure,git mv,cljsearch/test/cljsearch/searcher_test.clj,cljfind/test/cljfind/finder_test.clj
+clojure,git mv,cljsearch/test/cljsearch/searchfile_test.clj,cljfind/test/cljfind/findfile_test.clj
+clojure,git mv,cljsearch/test/cljsearch/searchoptions_test.clj,cljfind/test/cljfind/findoptions_test.clj
+clojure,git mv,cljsearch/test/cljsearch/searchsettings_test.clj,cljfind/test/cljfind/findsettings_test.clj
+clojure,mv,cljsearch/.eastwood,cljfind/.eastwood
+clojure,mv,cljsearch/resources/config.json,cljfind/resources/config.json
+clojure,mv,cljsearch/resources/filetypes.xml,cljfind/resources/filetypes.xml
+clojure,mv,cljsearch/resources/searchoptions.xml,cljfind/resources/findoptions.xml
+clojure,git rm,cljsearch/src/cljsearch/searchresult.clj,
+clojure,git rm,cljsearch/test/cljsearch/searchresult_test.clj,
+clojure,rm -rf,cljsearch/.idea,
+clojure,rm,cljsearch/.lein-failures,
+clojure,rm -rf,cljsearch/.vscode,
+clojure,rm -rf,cljsearch/target,
+clojure,rmdir,cljsearch/doc,
+clojure,rmdir,cljsearch/resources,
+clojure,rmdir,cljsearch/src/cljsearch,
+clojure,rmdir,cljsearch/src,
+clojure,rmdir,cljsearch/test/cljsearch,
+clojure,rmdir,cljsearch/test,
+clojure,rmdir,cljsearch,
+cpp,mkdir -p,cppfind/include,
+cpp,mkdir -p,cppfind/src,
+cpp,mkdir -p,cppfind/tests,
+cpp,git mv,.gitigmore,cppfind/.gitigmore
+cpp,git mv,cppsearch/CMakeLists.txt,cppfind/CMakeLists.txt
+cpp,git mv,cppsearch/cppsearch.cpp,cppfind/cppfind.cpp
+cpp,git mv,cppsearch/cppsearch.sh,cppfind/cppfind.sh
+cpp,git mv,cppsearch/include/FileTypes.h,cppfind/include/FileTypes.h
+cpp,git mv,cppsearch/include/FileUtil.h,cppfind/include/FileUtil.h
+cpp,git mv,cppsearch/include/SearchException.h,cppfind/include/FindException.h
+cpp,git mv,cppsearch/include/SearchFile.h,cppfind/include/FindFile.h
+cpp,git mv,cppsearch/include/SearchOption.h,cppfind/include/FindOption.h
+cpp,git mv,cppsearch/include/SearchOptions.h,cppfind/include/FindOptions.h
+cpp,git mv,cppsearch/include/SearchPattern.h,cppfind/include/FindPattern.h
+cpp,git mv,cppsearch/include/SearchSettings.h,cppfind/include/FindSettings.h
+cpp,git mv,cppsearch/include/Searcher.h,cppfind/include/Finder.h
+cpp,git mv,cppsearch/include/StringUtil.h,cppfind/include/StringUtil.h
+cpp,git mv,cppsearch/include/color.h,cppfind/include/color.h
+cpp,git mv,cppsearch/include/common.h,cppfind/include/common.h
+cpp,git mv,cppsearch/include/config.h,cppfind/include/config.h
+cpp,git mv,cppsearch/src/FileTypes.cpp,cppfind/src/FileTypes.cpp
+cpp,git mv,cppsearch/src/FileUtil.cpp,cppfind/src/FileUtil.cpp
+cpp,git mv,cppsearch/src/SearchException.cpp,cppfind/src/FindException.cpp
+cpp,git mv,cppsearch/src/SearchFile.cpp,cppfind/src/FindFile.cpp
+cpp,git mv,cppsearch/src/SearchOption.cpp,cppfind/src/FindOption.cpp
+cpp,git mv,cppsearch/src/SearchOptions.cpp,cppfind/src/FindOptions.cpp
+cpp,git mv,cppsearch/src/SearchPattern.cpp,cppfind/src/FindPattern.cpp
+cpp,git mv,cppsearch/src/SearchSettings.cpp,cppfind/src/FindSettings.cpp
+cpp,git mv,cppsearch/src/Searcher.cpp,cppfind/src/Finder.cpp
+cpp,git mv,cppsearch/src/StringUtil.cpp,cppfind/src/StringUtil.cpp
+cpp,git mv,cppsearch/src/common.cpp,cppfind/src/common.cpp
+cpp,git mv,cppsearch/tests/FileTypesTest.cpp,cppfind/tests/FileTypesTest.cpp
+cpp,git mv,cppsearch/tests/FileUtilTest.cpp,cppfind/tests/FileUtilTest.cpp
+cpp,git mv,cppsearch/tests/SearchFileTest.cpp,cppfind/tests/FindFileTest.cpp
+cpp,git mv,cppsearch/tests/SearchOptionsTest.cpp,cppfind/tests/FindOptionsTest.cpp
+cpp,git mv,cppsearch/tests/SearchSettingsTest.cpp,cppfind/tests/FindSettingsTest.cpp
+cpp,git mv,cppsearch/tests/SearcherTest.cpp,cppfind/tests/FinderTest.cpp
+cpp,git mv,cppsearch/tests/tests-main.cpp,cppfind/tests/tests-main.cpp
+cpp,git rm,cppsearch/include/SearchResult.h,
+cpp,git rm,cppsearch/include/SearchResultFormatter.h,
+cpp,git rm,cppsearch/src/SearchResult.cpp,
+cpp,git rm,cppsearch/src/SearchResultFormatter.cpp,
+cpp,git rm,cppsearch/tests/SearchResultTest.cpp,
+cpp,rm -rf,cppsearch/.idea,
+cpp,rm -rf,cppsearch/.vscode,
+cpp,rm -rf,cppsearch/cmake-build-debug,
+cpp,rm -rf,cppsearch/cmake-build-release,
+cpp,rmdir,cppsearch/include,
+cpp,rmdir,cppsearch/src,
+cpp,rmdir,cppsearch/tests,
+cpp,rmdir,cppsearch,
+csharp,mkdir -p,CsFind/CsFind/Resources,
+csharp,mkdir -p,CsFind/CsFindTests/Resources,
+csharp,git mv,.gitignore,CsFind/.gitignore
+csharp,git mv,CsSearch/cssearch.bat,CsFind/csfind.bat
+csharp,git mv,CsSearch/cssearch.sh,CsFind/csfind.sh
+csharp,git mv,CsSearch/CsSearch.sln,CsFind/CsFind.sln
+csharp,git mv,CsSearch/CsSearch/Color.cs,CsFind/CsFind/Color.cs
+csharp,git mv,CsSearch/CsSearch/Common.cs,CsFind/CsFind/Common.cs
+csharp,git mv,CsSearch/CsSearch/CsSearch.csproj,CsFind/CsFind/CsFind.csproj
+csharp,git mv,CsSearch/CsSearch/EmbeddedResource.cs,CsFind/CsFind/EmbeddedResource.cs
+csharp,git mv,CsSearch/CsSearch/FileTypes.cs,CsFind/CsFind/FileTypes.cs
+csharp,git mv,CsSearch/CsSearch/FileUtil.cs,CsFind/CsFind/FileUtil.cs
+csharp,git mv,CsSearch/CsSearch/Searcher.cs,CsFind/CsFind/Finder.cs
+csharp,git mv,CsSearch/CsSearch/SearchException.cs,CsFind/CsFind/FindException.cs
+csharp,git mv,CsSearch/CsSearch/SearchFile.cs,CsFind/CsFind/FindFile.cs
+csharp,git mv,CsSearch/CsSearch/SearchMain.cs,CsFind/CsFind/FindMain.cs
+csharp,git mv,CsSearch/CsSearch/SearchOption.cs,CsFind/CsFind/FindOption.cs
+csharp,git mv,CsSearch/CsSearch/SearchOptions.cs,CsFind/CsFind/FindOptions.cs
+csharp,git mv,CsSearch/CsSearch/SearchSettings.cs,CsFind/CsFind/FindSettings.cs
+csharp,git mv,CsSearch/CsSearch/Resources/filetypes.json,CsFind/CsFind/Resources/filetypes.json
+csharp,git mv,CsSearch/CsSearch/Resources/searchoptions.json,CsFind/CsFind/Resources/findoptions.json
+csharp,git mv,CsSearch/CsSearchTests/CsSearchTests.csproj,CsFind/CsFindTests/CFindTests.csproj
+csharp,git mv,CsSearch/CsSearchTests/EmbeddedTestResource.cs,CsFind/CsFindTests/EmbeddedTestResource.cs
+csharp,git mv,CsSearch/CsSearchTests/FileTypeTests.cs,CsFind/CsFindTests/FileTypeTests.cs
+csharp,git mv,CsSearch/CsSearchTests/FileUtilTests.cs,CsFind/CsFindTests/FileUtilTests.cs
+csharp,git mv,CsSearch/CsSearchTests/SearcherTests.cs,CsFind/CsFindTests/FinderTests.cs
+csharp,git mv,CsSearch/CsSearchTests/SearchFileTests.cs,CsFind/CsFindTests/FindFileTests.cs
+csharp,git mv,CsSearch/CsSearchTests/SearchOptionsTests.cs,CsFind/CsFindTests/FindOptionsTests.cs
+csharp,git mv,CsSearch/CsSearchTests/SearchSettingsTests.cs,CsFind/CsFindTests/FindSettingsTests.cs
+csharp,git mv,CsSearch/CsSearchTests/Resources/testFile2.txt,CsFind/CsFindTests/Resources/testFile2.txt
+csharp,mv,CsSearch/CsSearch/Resources/config.json,CsFind/CsFind/Resources/config.json
+csharp,mv,CsSearch/CsSearch/Resources/filetypes.xml,CsFind/CsFind/Resources/filetypes.xml
+csharp,mv,CsSearch/CsSearch/Resources/searchoptions.xml,CsFind/CsFind/Resources/findoptions.xml
+csharp,mv,CsSearch/CsSearchTests/Resources/testFile1.txt,CsFind/CsFindTests/Resources/testFile1.txt
+csharp,git rm,CsSearch/CsSearch/SearchResult.cs,
+csharp,git rm,CsSearch/CsSearch/SearchResultFormatter.cs,
+csharp,git rm,CsSearch/CsSearchTests/SearchResultTests.cs,
+csharp,rm -rf,CsSearch/.idea,
+csharp,rm -rf,CsSearch/.vscode,
+csharp,rm,CsSearch/CsSearch.sln.DotSettings.user,
+csharp,rm -rf,CsSearch/CsSearch/bin,
+csharp,rm -rf,CsSearch/CsSearch/obj,
+csharp,rm -rf,CsSearch/CsSearchTests/bin,
+csharp,rm -rf,CsSearch/CsSearchTests/obj,
+csharp,rmdir,CsSearch/CsSearch/Resources,
+csharp,rmdir,CsSearch/CsSearch,
+csharp,rmdir,CsSearch/CsSearchTests/Resources,
+csharp,rmdir,CsSearch/CsSearchTests,
+csharp,rmdir,CsSearch,
+dart,mkdir -p,dartfind/bin,
+dart,mkdir -p,dartfind/lib/src,
+dart,mkdir -p,dartfind/test,
+dart,git mv,dartsearch/.gitignore,dartfind/.gitignore
+dart,git mv,dartsearch/CHANGELOG.md,dartfind/CHANGELOG.md
+dart,git mv,dartsearch/README.md,dartfind/README.md
+dart,git mv,dartsearch/analysis_options.yaml,dartfind/analysis_options.yaml
+dart,git mv,dartsearch/pubspec.lock,dartfind/pubspec.lock
+dart,git mv,dartsearch/pubspec.yaml,dartfind/pubspec.yaml
+dart,git mv,dartsearch/bin/dartsearch.dart,dartfind/bin/dartfind.dart
+dart,git mv,dartsearch/bin/dartsearch.sh,dartfind/bin/dartfind.sh
+dart,git mv,dartsearch/lib/dartsearch.dart,dartfind/lib/dartfind.dart
+dart,git mv,dartsearch/lib/src/common.dart,dartfind/lib/src/common.dart
+dart,git mv,dartsearch/lib/src/config.dart,dartfind/lib/src/config.dart
+dart,git mv,dartsearch/lib/src/console_color.dart,dartfind/lib/src/console_color.dart
+dart,git mv,dartsearch/lib/src/file_types.dart,dartfind/lib/src/file_types.dart
+dart,git mv,dartsearch/lib/src/file_util.dart,dartfind/lib/src/file_util.dart
+dart,git mv,dartsearch/lib/src/search_exception.dart,dartfind/lib/src/find_exception.dart
+dart,git mv,dartsearch/lib/src/search_file.dart,dartfind/lib/src/find_file.dart
+dart,git mv,dartsearch/lib/src/search_options.dart,dartfind/lib/src/find_options.dart
+dart,git mv,dartsearch/lib/src/search_settings.dart,dartfind/lib/src/find_settings.dart
+dart,git mv,dartsearch/lib/src/searcher.dart,dartfind/lib/src/finder.dart
+dart,git mv,dartsearch/test/file_types_test.dart,dartfind/test/file_types_test.dart
+dart,git mv,dartsearch/test/file_util_test.dart,dartfind/test/file_util_test.dart
+dart,git mv,dartsearch/test/search_file_test.dart,dartfind/test/find_file_test.dart
+dart,git mv,dartsearch/test/search_options_test.dart,dartfind/test/find_options_test.dart
+dart,git mv,dartsearch/test/search_settings_test.dart,dartfind/test/find_settings_test.dart
+dart,git mv,dartsearch/test/searcher_test.dart,dartfind/test/finder_test.dart
+dart,mv,dartsearch/bin/dcat.dart,dartfind/bin/dcat.dart
+dart,git rm,dartsearch/lib/src/search_result.dart,
+dart,git rm,dartsearch/test/search_result_test.dart,
+dart,rm -rf,dartsearch/.dart_tool,
+dart,rm -rf,dartsearch/.idea,
+dart,rm,dartsearch/.packages,
+dart,rm -rf,dartsearch/.vscode,
+dart,rm,dartsearch/dartsearch.iml,
+dart,rmdir,dartsearch/bin,
+dart,rmdir,dartsearch,
+fsharp,mkdir -p,FsFind/FsFind/Resources,
+fsharp,mkdir -p,FsFind/FsFindTests/Resources,
+fsharp,git mv,FsSearch/.gitignore,FsFind/.gitignore
+fsharp,git mv,FsSearch/fssearch.bat,FsFind/fsfind.bat
+fsharp,git mv,FsSearch/fssearch.sh,FsFind/fsfind.sh
+fsharp,git mv,FsSearch/FsSearch.sln,FsFind/FsFind.sln
+fsharp,git mv,FsSearch/FsSearch/Color.fs,FsFind/FsFind/Color.fs
+fsharp,git mv,FsSearch/FsSearch/Common.fs,FsFind/FsFind/Common.fs
+fsharp,git mv,FsSearch/FsSearch/FsSearch.fsproj,FsFind/FsFind/FsFind.fsproj
+fsharp,git mv,FsSearch/FsSearch/EmbeddedResource.fs,FsFind/FsFind/EmbeddedResource.fs
+fsharp,git mv,FsSearch/FsSearch/FileTypes.fs,FsFind/FsFind/FileTypes.fs
+fsharp,git mv,FsSearch/FsSearch/FileUtil.fs,FsFind/FsFind/FileUtil.fs
+fsharp,git mv,FsSearch/FsSearch/Searcher.fs,FsFind/FsFind/Finder.fs
+fsharp,git mv,FsSearch/FsSearch/SearchException.fs,FsFind/FsFind/FindException.fs
+fsharp,git mv,FsSearch/FsSearch/SearchFile.fs,FsFind/FsFind/FindFile.fs
+fsharp,git mv,FsSearch/FsSearch/SearchMain.fs,FsFind/FsFind/FindMain.fs
+fsharp,git mv,FsSearch/FsSearch/SearchOption.fs,FsFind/FsFind/FindOption.fs
+fsharp,git mv,FsSearch/FsSearch/SearchOptions.fs,FsFind/FsFind/FindOptions.fs
+fsharp,git mv,FsSearch/FsSearch/SearchSettings.fs,FsFind/FsFind/FindSettings.fs
+fsharp,git mv,FsSearch/FsSearch/Resources/filetypes.json,FsFind/FsFind/Resources/filetypes.json
+fsharp,git mv,FsSearch/FsSearch/Resources/searchoptions.json,FsFind/FsFind/Resources/findoptions.json
+fsharp,git mv,FsSearch/FsSearchTests/FsSearchTests.fsproj,FsFind/FsFindTests/FsFindTests.fsproj
+fsharp,git mv,FsSearch/FsSearchTests/EmbeddedTestResource.fs,FsFind/FsFindTests/EmbeddedTestResource.fs
+fsharp,git mv,FsSearch/FsSearchTests/FileTypesTests.fs,FsFind/FsFindTests/FileTypesTests.fs
+fsharp,git mv,FsSearch/FsSearchTests/FileUtilTests.fs,FsFind/FsFindTests/FileUtilTests.fs
+fsharp,git mv,FsSearch/FsSearchTests/SearcherTests.fs,FsFind/FsFindTests/FinderTests.fs
+fsharp,git mv,FsSearch/FsSearchTests/SearchFileTests.fs,FsFind/FsFindTests/FindFileTests.fs
+fsharp,git mv,FsSearch/FsSearchTests/SearchOptionsTests.fs,FsFind/FsFindTests/FindOptionsTests.fs
+fsharp,git mv,FsSearch/FsSearchTests/SearchSettingTests.fs,FsFind/FsFindTests/FindSettingsTests.fs
+fsharp,git mv,FsSearch/FsSearchTests/Resources/testFile2.txt,FsFind/FsFindTests/Resources/testFile2.txt
+fsharp,mv,FsSearch/FsSearch/Resources/config.json,FsFind/FsFind/Resources/config.json
+fsharp,mv,FsSearch/FsSearch/Resources/filetypes.xml,FsFind/FsFind/Resources/filetypes.xml
+fsharp,mv,FsSearch/FsSearch/Resources/searchoptions.xml,FsFind/FsFind/Resources/findoptions.xml
+fsharp,mv,FsSearch/FsSearchTests/Resources/testFile1.txt,FsFind/FsFindTests/Resources/testFile1.txt
+fsharp,git rm,FsSearch/FsSearch/SearchResult.fs,
+fsharp,git rm,FsSearch/FsSearch/SearchResultFormatter.fs,
+fsharp,git rm,FsSearch/FsSearchTests/SearchResultTests.fs,
+fsharp,rm,FsSearch/FsSearch.sln.DotSettings.user,
+fsharp,rm -rf,FsSearch/.idea,
+fsharp,rm -rf,FsSearch/.vscode,
+fsharp,rm -rf,FsSearch/FsSearch/bin,
+fsharp,rm -rf,FsSearch/FsSearch/obj,
+fsharp,rm -rf,FsSearch/FsSearchTests/bin,
+fsharp,rm -rf,FsSearch/FsSearchTests/obj,
+fsharp,rmdir,FsSearch/FsSearch/Resources,
+fsharp,rmdir,FsSearch/FsSearch,
+fsharp,rmdir,FsSearch/FsSearchTests/Resources,
+fsharp,rmdir,FsSearch/FsSearchTests,
+fsharp,rmdir,FsSearch,
+go,mkdir -p,gofind/cmd/gofind,
+go,mkdir -p,gofind/docs,
+go,mkdir -p,gofind/pkg/gofind,
+go,git mv,.gitignore,gofind/.gitignore
+go,git mv,gosearch/go.mod,gofind/go.mod
+go,git mv,gosearch/go.sum,gofind/go.sum
+go,git mv,gosearch/cmd/gosearch/main.go,gofind/cmd/gofind/main.go
+go,git mv,gosearch/pkg/gosearch/color.go,gofind/pkg/gofind/color.go
+go,git mv,gosearch/pkg/gosearch/common_test.go,gofind/pkg/gofind/common_test.go
+go,git mv,gosearch/pkg/gosearch/common.go,gofind/pkg/gofind/common.go
+go,git mv,gosearch/pkg/gosearch/config.go,gofind/pkg/gofind/config.go
+go,git mv,gosearch/pkg/gosearch/filetypes_test.go,gofind/pkg/gofind/filetypes_test.go
+go,git mv,gosearch/pkg/gosearch/filetypes.go,gofind/pkg/gofind/filetypes.go
+go,git mv,gosearch/pkg/gosearch/filetypesgen.go,gofind/pkg/gofind/filetypesgen.go
+go,git mv,gosearch/pkg/gosearch/fileutil_test.go,gofind/pkg/gofind/fileutil_test.go
+go,git mv,gosearch/pkg/gosearch/fileutil.go,gofind/pkg/gofind/fileutil.go
+go,git mv,gosearch/pkg/gosearch/searcher_test.go,gofind/pkg/gofind/finder_test.go
+go,git mv,gosearch/pkg/gosearch/searcher.go,gofind/pkg/gofind/finder.go
+go,git mv,gosearch/pkg/gosearch/searchfiles_test.go,gofind/pkg/gofind/findfiles_test.go
+go,git mv,gosearch/pkg/gosearch/searchfiles.go,gofind/pkg/gofind/findfiles.go
+go,git mv,gosearch/pkg/gosearch/searchoptions_test.go,gofind/pkg/gofind/findoptions_test.go
+go,git mv,gosearch/pkg/gosearch/searchoptions.go,gofind/pkg/gofind/findoptions.go
+go,git mv,gosearch/pkg/gosearch/searchoptionsgen.go,gofind/pkg/gofind/findoptionsgen.go
+go,git mv,gosearch/pkg/gosearch/searchpatterns.go,gofind/pkg/gofind/findpatterns.go
+go,git mv,gosearch/pkg/gosearch/searchsettings_test.go,gofind/pkg/gofind/findsettings_test.go
+go,git mv,gosearch/pkg/gosearch/searchsettings.go,gofind/pkg/gofind/findsettings.go
+go,mv,gosearch/docs/notes.txt,gofind/docs/notes.txt
+go,git rm,gosearch/pkg/gosearch/searchresults_test.go,
+go,git rm,gosearch/pkg/gosearch/searchresults.go,
+go,rm -rf,gosearch/.idea,
+go,rm -rf,gosearch/.vscode,
+go,rmdir,gosearch/cmd/gosearch,
+go,rmdir,gosearch/cmd,
+go,rmdir,gosearch/docs,
+go,rmdir,gosearch,
+haskell,mkdir -p,hsfind/app,
+haskell,mkdir -p,hsfind/data,
+haskell,mkdir -p,hsfind/src/HsFind,
+haskell,mkdir -p,hsfind/test/HsFind,
+haskell,git mv,.gitignore,hsfind/.gitignore
+haskell,git mv,hssearch.bat,hsfind/hsfind.bat
+haskell,git mv,hssearch/ChangeLog.md,hsfind/ChangeLog.md
+haskell,git mv,hssearch/LICENSE,hsfind/LICENSE
+haskell,git mv,hssearch/Makefile,hsfind/Makefile
+haskell,git mv,hssearch/README.md,hsfind/README.md
+haskell,git mv,hssearch/Setup.hs,hsfind/Setup.hs
+haskell,git mv,hssearch/hssearch.cabal,hsfind/hsfind.cabal
+haskell,git mv,hssearch/package.yaml,hsfind/package.yaml
+haskell,git mv,hssearch/stack.yaml,hsfind/stack.yaml
+haskell,git mv,hssearch/stack.yaml.lock,hsfind/stack.yaml.lock
+haskell,git mv,hssearch/app/Main.hs,hsfind/app/Main.hs
+haskell,git mv,hssearch/data/filetypes.json,hsfind/data/filetypes.json
+haskell,git mv,hssearch/data/searchoptions.json,hsfind/data/findoptions.json
+haskell,git mv,hssearch/src/HsSearch/Color.hs,hsfind/src/HsFind/Color.hs
+haskell,git mv,hssearch/src/HsSearch/Config.hs,hsfind/src/HsFind/Config.hs
+haskell,git mv,hssearch/src/HsSearch/FileTypes.hs,hsfind/src/HsFind/FileTypes.hs
+haskell,git mv,hssearch/src/HsSearch/FileUtil.hs,hsfind/src/HsFind/FileUtil.hs
+haskell,git mv,hssearch/src/HsSearch/Paths_hssearch.hs,hsfind/src/HsFind/Paths_hsfind.hs
+haskell,git mv,hssearch/src/HsSearch/SearchFile.hs,hsfind/src/HsFind/FindFile.hs
+haskell,git mv,hssearch/src/HsSearch/SearchOptions.hs,hsfind/src/HsFind/FindOptions.hs
+haskell,git mv,hssearch/src/HsSearch/SearchSettings.hs,hsfind/src/HsFind/FindSettings.hs
+haskell,git mv,hssearch/src/HsSearch/Searcher.hs,hsfind/src/HsFind/Finder.hs
+haskell,git mv,hssearch/test/Spec.hs,hsfind/test/Spec.hs
+haskell,git mv,hssearch/test/HsSearch/FileTypesTest.hs,hsfind/test/HsFind/FileTypesTest.hs
+haskell,git mv,hssearch/test/HsSearch/FileUtilTest.hs,hsfind/test/HsFind/FileUtilTest.hs
+haskell,git mv,hssearch/test/HsSearch/SearchOptionsTest.hs,hsfind/test/HsFind/FindOptionsTest.hs
+haskell,git mv,hssearch/test/HsSearch/SearchSettingsTest.hs,hsfind/test/HsFind/FindSettingsTest.hs
+haskell,git mv,hssearch/test/HsSearch/SearcherTest.hs,hsfind/test/HsFind/FinderTest.hs
+haskell,mv,hssearch/data/config.json,hsfind/data/config.json
+haskell,mv,hssearch/data/filetypes.xml,hsfind/data/filetypes.xml
+haskell,mv,hssearch/data/searchoptions.xml,hsfind/data/findoptions.xml
+haskell,git rm,hssearch/src/HsSearch/SearchResult.hs,
+haskell,git rm,hssearch/test/HsSearch/SearchResultTest.hs,
+haskell,rm -rf,hssearch/.idea,
+haskell,rm -rf,hssearch/.stack-work,
+haskell,rm -rf,hssearch/.vscode,
+haskell,rm,hssearch/hssearch.iml,
+haskell,rmdir,hssearch/app,
+haskell,rmdir,hssearch/data,
+haskell,rmdir,hssearch,
+java,mkdir -p,javafind/src/main/java/javafind,
+java,mkdir -p,javafind/src/main/resources,
+java,mkdir -p,javafind/src/test/java/javafind,
+java,mkdir -p,javafind/src/test/resources,
+java,git mv,javasearch/.gitignore,javafind/.gitignore
+java,git mv,javasearch/google_checks.xml,javafind/google_checks.xml
+java,git mv,javasearch/javasearch,javafind/javafind
+java,git mv,javasearch/pom.xml,javafind/pom.xml
+java,git mv,javasearch/sun_checks.xml,javafind/sun_checks.xml
+java,git mv,javasearch/src/main/java/javasearch/Color.java,javafind/src/main/java/javafind/Color.java
+java,git mv,javasearch/src/main/java/javasearch/DefaultSettings.java,javafind/src/main/java/javafind/DefaultSettings.java
+java,git mv,javasearch/src/main/java/javasearch/FileType.java,javafind/src/main/java/javafind/FileType.java
+java,git mv,javasearch/src/main/java/javasearch/FileTypes.java,javafind/src/main/java/javafind/FileTypes.java
+java,git mv,javasearch/src/main/java/javasearch/FileUtil.java,javafind/src/main/java/javafind/FileUtil.java
+java,git mv,javasearch/src/main/java/javasearch/ListUtil.java,javafind/src/main/java/javafind/ListUtil.java
+java,git mv,javasearch/src/main/java/javasearch/Logger.java,javafind/src/main/java/javafind/Logger.java
+java,git mv,javasearch/src/main/java/javasearch/SearchException.java,javafind/src/main/java/javafind/FindException.java
+java,git mv,javasearch/src/main/java/javasearch/SearchFile.java,javafind/src/main/java/javafind/FindFile.java
+java,git mv,javasearch/src/main/java/javasearch/SearchMain.java,javafind/src/main/java/javafind/FindMain.java
+java,git mv,javasearch/src/main/java/javasearch/SearchOption.java,javafind/src/main/java/javafind/FindOption.java
+java,git mv,javasearch/src/main/java/javasearch/SearchOptions.java,javafind/src/main/java/javafind/FindOptions.java
+java,git mv,javasearch/src/main/java/javasearch/SearchSettings.java,javafind/src/main/java/javafind/FindSettings.java
+java,git mv,javasearch/src/main/java/javasearch/Searcher.java,javafind/src/main/java/javafind/Finder.java
+java,git mv,javasearch/src/main/java/javasearch/StringUtil.java,javafind/src/main/java/javafind/StringUtil.java
+java,git mv,javasearch/src/main/resources/filetypes.json,javafind/src/main/resources/filetypes.json
+java,git mv,javasearch/src/main/resources/searchoptions.json,javafind/src/main/resources/findoptions.json
+java,git mv,javasearch/src/test/java/javasearch/FileTypesTest.java,javafind/src/test/java/javafind/FileTypesTest.java
+java,git mv,javasearch/src/test/java/javasearch/FileUtilTest.java,javafind/src/test/java/javafind/FileUtilTest.java
+java,git mv,javasearch/src/test/java/javasearch/SearchFileTest.java,javafind/src/test/java/javafind/FindFileTest.java
+java,git mv,javasearch/src/test/java/javasearch/SearchOptionsTest.java,javafind/src/test/java/javafind/FindOptionsTest.java
+java,git mv,javasearch/src/test/java/javasearch/SearchSettingsTest.java,javafind/src/test/java/javafind/FindSettingsTest.java
+java,git mv,javasearch/src/test/java/javasearch/SearcherTest.java,javafind/src/test/java/javafind/FinderTest.java
+java,git mv,javasearch/src/test/java/javasearch/StringUtilTest.java,javafind/src/test/java/javafind/StringUtilTest.java
+java,git mv,javasearch/src/test/resources/testFile1.txt,javafind/src/test/resources/testFile1.txt
+java,git mv,javasearch/src/test/resources/testFile2.txt,javafind/src/test/resources/testFile2.txt
+java,mv,javasearch/src/main/resources/config.json,javafind/src/main/resources/config.json
+java,mv,javasearch/src/main/resources/filetypes.xml,javafind/src/main/resources/filetypes.xml
+java,mv,javasearch/src/main/resources/searchoptions.xml,javafind/src/main/resources/findoptions.xml
+java,git rm,javasearch/src/main/java/javasearch/SearchResult.java,
+java,git rm,javasearch/src/main/java/javasearch/SearchResultFormatter.java,
+java,git rm,javasearch/src/test/java/javasearch/SearchResultTest.java,
+java,rm -rf,javasearch/.idea,
+java,rm -rf,javasearch/.vscode,
+java,rm,javasearch/dependency-reduced-pom.xml,
+java,rm,javasearch/javasearch.iml,
+java,rm -rf,javasearch/target,
+java,rmdir,javasearch/src/main/resources,
+java,rmdir,javasearch/src/main,
+java,rmdir,javasearch/src/test/resources,
+java,rmdir,javasearch/src/test,
+java,rmdir,javasearch/src,
+java,rmdir,javasearch,
+javascript,mkdir -p,jsfind/bin,
+javascript,mkdir -p,jsfind/data,
+javascript,mkdir -p,jsfind/src,
+javascript,mkdir -p,jsfind/tests,
+javascript,git mv,jssearch/.eslintrc.js,jsfind/.eslintrc.js
+javascript,git mv,jssearch/.gitignore,jsfind/.gitignore
+javascript,git mv,jssearch/babel.config.json,jsfind/babel.config.json
+javascript,git mv,jssearch/jest.config.js,jsfind/jest.config.js
+javascript,git mv,jssearch/package.json,jsfind/package.json
+javascript,git mv,jssearch/bin/jssearch,jsfind/bin/jsfind
+javascript,git mv,jssearch/bin/jssearch.bat,jsfind/bin/jsfind.bat
+javascript,git mv,jssearch/data/filetypes.json,jsfind/data/filetypes.json
+javascript,git mv,jssearch/data/searchoptions.json,jsfind/data/findoptions.json
+javascript,git mv,jssearch/src/common.js,jsfind/src/common.js
+javascript,git mv,jssearch/src/config.js,jsfind/src/config.js
+javascript,git mv,jssearch/src/filetype.js,jsfind/src/filetype.js
+javascript,git mv,jssearch/src/filetypes.js,jsfind/src/filetypes.js
+javascript,git mv,jssearch/src/fileutil.js,jsfind/src/fileutil.js
+javascript,git mv,jssearch/src/jssearch.js,jsfind/src/jsfind.js
+javascript,git mv,jssearch/src/searcher.js,jsfind/src/finder.js
+javascript,git mv,jssearch/src/searcherror.js,jsfind/src/finderror.js
+javascript,git mv,jssearch/src/searchfile.js,jsfind/src/findfile.js
+javascript,git mv,jssearch/src/searchoption.js,jsfind/src/findoption.js
+javascript,git mv,jssearch/src/searchoptions.js,jsfind/src/findoptions.js
+javascript,git mv,jssearch/src/searchsettings.js,jsfind/src/findsettings.js
+javascript,git mv,jssearch/tests/filetypes.test.js,jsfind/tests/filetypes.test.js
+javascript,git mv,jssearch/tests/fileutil.test.js,jsfind/tests/fileutil.test.js
+javascript,git mv,jssearch/tests/searcher.test.js,jsfind/tests/finder.test.js
+javascript,git mv,jssearch/tests/searchfile.test.js,jsfind/tests/findfile.test.js
+javascript,git mv,jssearch/tests/searchoptions.test.js,jsfind/tests/findoptions.test.js
+javascript,git mv,jssearch/tests/searchsettings.test.js,jsfind/tests/findsettings.test.js
+javascript,git rm,jssearch/src/searchresult.js,
+javascript,git rm,jssearch/src/searchresultformatter.js,
+javascript,git rm,jssearch/tests/searchresult.test.js,
+javascript,rm -rf,jssearch/.idea,
+javascript,rm -rf,jssearch/.vscode,
+javascript,rm,jssearch/.xsearch.json,
+javascript,rm -rf,jssearch/dist,
+javascript,rm,jssearch/jssearch.iml,
+javascript,rm -rf,jssearch/node_modules,
+javascript,rm,jssearch/package-lock.json,
+javascript,rmdir,jssearch/bin,
+javascript,rmdir,jssearch/data,
+javascript,rmdir,jssearch,
+kotlin,mkdir -p,ktfind/src/main/kotlin/ktfind,
+kotlin,mkdir -p,ktfind/src/main/resources,
+kotlin,mkdir -p,ktfind/src/test/kotlin/ktfind,
+kotlin,mkdir -p,ktfind/src/test/resources,
+kotlin,git mv,ktsearch/.gitignore,ktfind/.gitignore
+kotlin,git mv,ktsearch/LICENSE,ktfind/LICENSE
+kotlin,git mv,ktsearch/build.gradle,ktfind/build.gradle
+kotlin,git mv,ktsearch/ktsearch,ktfind/ktfind
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/Color.kt,ktfind/src/main/kotlin/ktfind/Color.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/Common.kt,ktfind/src/main/kotlin/ktfind/Common.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/FileTypes.kt,ktfind/src/main/kotlin/ktfind/FileTypes.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/FileUtil.kt,ktfind/src/main/kotlin/ktfind/FileUtil.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/Ktsearch.kt,ktfind/src/main/kotlin/ktfind/Ktfind.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/SearchFile.kt,ktfind/src/main/kotlin/ktfind/FindFile.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/SearchOptions.kt,ktfind/src/main/kotlin/ktfind/FindOptions.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/SearchSettings.kt,ktfind/src/main/kotlin/ktfind/FindSettings.kt
+kotlin,git mv,ktsearch/src/main/kotlin/ktsearch/Searcher.kt,ktfind/src/main/kotlin/ktfind/Finder.kt
+kotlin,git mv,ktsearch/src/main/resources/filetypes.json,ktfind/src/main/resources/filetypes.json
+kotlin,git mv,ktsearch/src/main/resources/searchoptions.json,ktfind/src/main/resources/findoptions.json
+kotlin,git mv,ktsearch/src/test/kotlin/ktsearch/FileTypesTest.kt,ktfind/src/test/kotlin/ktfind/FileTypesTest.kt
+kotlin,git mv,ktsearch/src/test/kotlin/ktsearch/FileUtilTest.kt,ktfind/src/test/kotlin/ktfind/FileUtilTest.kt
+kotlin,git mv,ktsearch/src/test/kotlin/ktsearch/SearchFileTest.kt,ktfind/src/test/kotlin/ktfind/FindFileTest.kt
+kotlin,git mv,ktsearch/src/test/kotlin/ktsearch/SearchOptionsTest.kt,ktfind/src/test/kotlin/ktfind/FindOptionsTest.kt
+kotlin,git mv,ktsearch/src/test/kotlin/ktsearch/SearchSettingsTest.kt,ktfind/src/test/kotlin/ktfind/FindSettingsTest.kt
+kotlin,git mv,ktsearch/src/test/kotlin/ktsearch/SearcherTest.kt,ktfind/src/test/kotlin/ktfind/FinderTest.kt
+kotlin,mv,ktsearch/src/main/resources/config.json,ktfind/src/main/resources/config.json
+kotlin,mv,ktsearch/src/main/resources/filetypes.xml,ktfind/src/main/resources/filetypes.xml
+kotlin,mv,ktsearch/src/main/resources/searchoptions.xml,ktfind/src/main/resources/findoptions.xml
+kotlin,mv,ktsearch/src/test/resources/testFile1.txt,ktfind/src/test/resources/testFile1.txt
+kotlin,mv,ktsearch/src/test/resources/testFile2.txt,ktfind/src/test/resources/testFile2.txt
+kotlin,git rm,ktsearch/src/main/kotlin/ktsearch/SearchResult.kt,
+kotlin,git rm,ktsearch/src/test/kotlin/ktsearch/SearchResultTest.kt,
+kotlin,rm -rf,ktsearch/.gradle,
+kotlin,rm -rf,ktsearch/.idea,
+kotlin,rm -rf,ktsearch/.vscode,
+kotlin,rm -rf,ktsearch/build,
+kotlin,rm -rf,ktsearch/gradle,
+kotlin,rm,ktsearch/gradlew,
+kotlin,rm,ktsearch/gradlew.bat,
+kotlin,rmdir,ktsearch/src/main/kotlin/ktsearch,
+kotlin,rmdir,ktsearch/src/main/resources,
+kotlin,rmdir,ktsearch/src/main,
+kotlin,rmdir,ktsearch/src/test/kotlin/ktsearch,
+kotlin,rmdir,ktsearch/src/test/resources,
+kotlin,rmdir,ktsearch/src/test,
+kotlin,rmdir,ktsearch/src,
+kotlin,rmdir,ktsearch,
+objc,mkdir -p,objcfind/objcfind,
+objc,mkdir -p,objcfind/objcfind_tests,
+objc,git mv,objcsearch/.gitignore,objcfind/.gitignore
+objc,git mv,objcsearch/objcsearch.sh,objcfind/objcfind.sh
+objc,git mv,objcsearch/objcsearch/FileTypes.h,objcfind/objcfind/FileTypes.h
+objc,git mv,objcsearch/objcsearch/FileTypes.m,objcfind/objcfind/FileTypes.m
+objc,git mv,objcsearch/objcsearch/FileUtil.h,objcfind/objcfind/FileUtil.h
+objc,git mv,objcsearch/objcsearch/FileUtil.m,objcfind/objcfind/FileUtil.m
+objc,git mv,objcsearch/objcsearch/LineInputStream.h,objcfind/objcfind/LineInputStream.h
+objc,git mv,objcsearch/objcsearch/LineInputStream.m,objcfind/objcfind/LineInputStream.m
+objc,git mv,objcsearch/objcsearch/Regex.h,objcfind/objcfind/Regex.h
+objc,git mv,objcsearch/objcsearch/Regex.m,objcfind/objcfind/Regex.m
+objc,git mv,objcsearch/objcsearch/SearchFile.h,objcfind/objcfind/FindFile.h
+objc,git mv,objcsearch/objcsearch/SearchFile.m,objcfind/objcfind/FindFile.m
+objc,git mv,objcsearch/objcsearch/SearchOption.h,objcfind/objcfind/FindOption.h
+objc,git mv,objcsearch/objcsearch/SearchOption.m,objcfind/objcfind/FindOption.m
+objc,git mv,objcsearch/objcsearch/SearchOptions.h,objcfind/objcfind/FindOptions.h
+objc,git mv,objcsearch/objcsearch/SearchOptions.m,objcfind/objcfind/FindOptions.m
+objc,git mv,objcsearch/objcsearch/SearchSettings.h,objcfind/objcfind/FindSettings.h
+objc,git mv,objcsearch/objcsearch/SearchSettings.m,objcfind/objcfind/FindSettings.m
+objc,git mv,objcsearch/objcsearch/Searcher.h,objcfind/objcfind/Finder.h
+objc,git mv,objcsearch/objcsearch/Searcher.m,objcfind/objcfind/Finder.m
+objc,git mv,objcsearch/objcsearch/color.h,objcfind/objcfind/color.h
+objc,git mv,objcsearch/objcsearch/common.h,objcfind/objcfind/common.h
+objc,git mv,objcsearch/objcsearch/common.m,objcfind/objcfind/common.m
+objc,git mv,objcsearch/objcsearch/config.h,objcfind/objcfind/config.h
+objc,git mv,objcsearch/objcsearch/main.m,objcfind/objcfind/main.m
+objc,git mv,objcsearch/objcsearch.xcodeproj,objcfind/objcfind.xcodeproj
+objc,git mv,objcsearch/objcsearch_tests/FileTypesTests.m,objcfind/objcfind_tests/FileTypesTests.m
+objc,git mv,objcsearch/objcsearch_tests/FileUtilTests.m,objcfind/objcfind_tests/FileUtilTests.m
+objc,git mv,objcsearch/objcsearch_tests/Info.plist,objcfind/objcfind_tests/Info.plist
+objc,git mv,objcsearch/objcsearch_tests/SearchFileTests.m,objcfind/objcfind_tests/FindFileTests.m
+objc,git mv,objcsearch/objcsearch_tests/SearchOptionsTests.m,objcfind/objcfind_tests/FindOptionsTests.m
+objc,git mv,objcsearch/objcsearch_tests/SearchSettingsTests.m,objcfind/objcfind_tests/FindSettingsTests.m
+objc,git mv,objcsearch/objcsearch_tests/SearcherTest.m,objcfind/objcfind_tests/FinderTest.m
+objc,git mv,objcsearch/objcsearch_tests/SearcherTests.m,objcfind/objcfind_tests/FinderTests.m
+objc,git rm,objcsearch/objcsearch/SearchResult.h,
+objc,git rm,objcsearch/objcsearch/SearchResult.m,
+objc,git rm,objcsearch/objcsearch/SearchResultFormatter.h,
+objc,git rm,objcsearch/objcsearch/SearchResultFormatter.m,
+objc,git rm,objcsearch/objcsearch_tests/SearchResultTests.m,
+objc,rm -rf,objcsearch/build,
+objc,rmdir,objcsearch/objcsearch,
+objc,rmdir,objcsearch/objcsearch_tests,
+objc,rmdir,objcsearch,
+ocaml,mkdir -p,mlfind/src,
+ocaml,mkdir -p,mlfind/tests,
+ocaml,git mv,mlsearch/.gitignore,mlfind/.gitignore
+ocaml,git mv,mlsearch/build.sh,mlfind/build.sh
+ocaml,git mv,mlsearch/unittest.sh,mlfind/unittest.sh
+ocaml,git mv,mlsearch/src/common.ml,mlfind/src/common.ml
+ocaml,git mv,mlsearch/src/config.ml,mlfind/src/config.ml
+ocaml,git mv,mlsearch/src/filetypes.ml,mlfind/src/filetypes.ml
+ocaml,git mv,mlsearch/src/fileutil.ml,mlfind/src/fileutil.ml
+ocaml,git mv,mlsearch/src/fileutil.mli,mlfind/src/fileutil.mli
+ocaml,git mv,mlsearch/src/mlsearch.ml,mlfind/src/mlfind.ml
+ocaml,git mv,mlsearch/src/searcher.ml,mlfind/src/finder.ml
+ocaml,git mv,mlsearch/src/searchfile.ml,mlfind/src/findfile.ml
+ocaml,git mv,mlsearch/src/searchoptions.ml,mlfind/src/findoptions.ml
+ocaml,git mv,mlsearch/src/searchoptions.mli,mlfind/src/findoptions.mli
+ocaml,git mv,mlsearch/src/searchsettings.ml,mlfind/src/findsettings.ml
+ocaml,git mv,mlsearch/src/searchsettings.mli,mlfind/src/findsettings.mli
+ocaml,git mv,mlsearch/tests/filetypestest.ml,mlfind/tests/filetypestest.ml
+ocaml,git mv,mlsearch/tests/fileutiltest.ml,mlfind/tests/fileutiltest.ml
+ocaml,git mv,mlsearch/tests/searchertest.ml,mlfind/tests/findertest.ml
+ocaml,git mv,mlsearch/tests/searchoptionstest.ml,mlfind/tests/findoptionstest.ml
+ocaml,git mv,mlsearch/tests/searchsettingstest.ml,mlfind/tests/findsettingstest.ml
+ocaml,git rm,mlsearch/src/searchresult.ml,
+ocaml,git rm,mlsearch/tests/searchresulttest.ml,
+ocaml,rm -rf,mlsearch/_build,
+ocaml,rmdir,mlsearch/src,
+ocaml,rmdir,mlsearch/tests,
+ocaml,rmdir,mlsearch,
+perl,mkdir -p,plfind/bin,
+perl,mkdir -p,plfind/lib/plfind,
+perl,mkdir -p,plfind/share,
+perl,mkdir -p,plfind/t,
+perl,git mv,plsearch/Changes,plfind/Changes
+perl,git mv,plsearch/MANIFEST,plfind/MANIFEST
+perl,git mv,plsearch/META.json,plfind/META.json
+perl,git mv,plsearch/Makefile.PL,plfind/Makefile.PL
+perl,git mv,plsearch/README,plfind/README
+perl,git mv,plsearch/bin/plsearch,plfind/bin/plfind
+perl,git mv,plsearch/bin/plsearch.bat,plfind/bin/plfind.bat
+perl,git mv,plsearch/lib/plsearch.pm,plfind/lib/plfind.pm
+perl,git mv,plsearch/lib/plsearch/Color.pm,plfind/lib/plfind/Color.pm
+perl,git mv,plsearch/lib/plsearch/FileType.pm,plfind/lib/plfind/FileType.pm
+perl,git mv,plsearch/lib/plsearch/FileTypes.pm,plfind/lib/plfind/FileTypes.pm
+perl,git mv,plsearch/lib/plsearch/FileUtil.pm,plfind/lib/plfind/FileUtil.pm
+perl,git mv,plsearch/lib/plsearch/SearchFile.pm,plfind/lib/plfind/FindFile.pm
+perl,git mv,plsearch/lib/plsearch/SearchOption.pm,plfind/lib/plfind/FindOption.pm
+perl,git mv,plsearch/lib/plsearch/SearchOptions.pm,plfind/lib/plfind/FindOptions.pm
+perl,git mv,plsearch/lib/plsearch/SearchSettings.pm,plfind/lib/plfind/FindSettings.pm
+perl,git mv,plsearch/lib/plsearch/Searcher.pm,plfind/lib/plfind/Finder.pm
+perl,git mv,plsearch/lib/plsearch/common.pm,plfind/lib/plfind/common.pm
+perl,git mv,plsearch/lib/plsearch/config.pm,plfind/lib/plfind/config.pm
+perl,git mv,plsearch/share/config.json,plfind/share/config.json
+perl,git mv,plsearch/share/filetypes.json,plfind/share/filetypes.json
+perl,git mv,plsearch/share/filetypes.xml,plfind/share/filetypes.xml
+perl,git mv,plsearch/share/searchoptions.json,plfind/share/findoptions.json
+perl,git mv,plsearch/share/searchoptions.xml,plfind/share/findoptions.xml
+perl,git mv,plsearch/share/settings.json,plfind/share/settings.json
+perl,git mv,plsearch/t/filetypes_test.pl,plfind/t/filetypes_test.pl
+perl,git mv,plsearch/t/fileutil_test.pl,plfind/t/fileutil_test.pl
+perl,git mv,plsearch/t/searcher_test.pl,plfind/t/finder_test.pl
+perl,git mv,plsearch/t/searchoptions_test.pl,plfind/t/findoptions_test.pl
+perl,git mv,plsearch/t/searchsettings_test.pl,plfind/t/findsettings_test.pl
+perl,mv,plsearch/Makefile_cmds.txt,plfind/Makefile_cmds.txt
+perl,mv,plsearch/t/FileTypes.t,plfind/t/FileTypes.t
+perl,mv,plsearch/t/plsearch.t,plfind/t/plfind.t
+perl,git rm,plsearch/lib/plsearch/SearchResult.pm,
+perl,git rm,plsearch/lib/plsearch/SearchResultFormatter.pm,
+perl,git rm,plsearch/t/searchresult_test.pl,
+perl,rmdir,plsearch/bin,
+perl,rmdir,plsearch/lib/plsearch,
+perl,rmdir,plsearch/lib,
+perl,rmdir,plsearch/share,
+perl,rmdir,plsearch/t,
+perl,rmdir,plsearch,
+php,mkdir -p,phpfind/bin,
+php,mkdir -p,phpfind/config,
+php,mkdir -p,phpfind/resources,
+php,mkdir -p,phpfind/src/phpfind,
+php,mkdir -p,phpfind/tests,
+php,git mv,phpsearch/.gitignore,phpfind/.gitignore
+php,git mv,phpsearch/README.md,phpfind/README.md
+php,git mv,phpsearch/bin/phpsearch,phpfind/bin/phpfind
+php,git mv,phpsearch/composer.json,phpfind/composer.json
+php,git mv,phpsearch/composer.lock,phpfind/composer.lock
+php,git mv,phpsearch/config/config.json,phpfind/config/config.json
+php,git mv,phpsearch/config/config.json.template,phpfind/config/config.json.template
+php,git mv,phpsearch/resources/filetypes.json,phpfind/resources/filetypes.json
+php,git mv,phpsearch/resources/searchoptions.json,phpfind/resources/findoptions.json
+php,git mv,phpsearch/src/autoload.php,phpfind/src/autoload.php
+php,git mv,phpsearch/src/phpsearch/Color.php,phpfind/src/phpfind/Color.php
+php,git mv,phpsearch/src/phpsearch/Config.php,phpfind/src/phpfind/Config.php
+php,git mv,phpsearch/src/phpsearch/FileType.php,phpfind/src/phpfind/FileType.php
+php,git mv,phpsearch/src/phpsearch/FileTypes.php,phpfind/src/phpfind/FileTypes.php
+php,git mv,phpsearch/src/phpsearch/FileUtil.php,phpfind/src/phpfind/FileUtil.php
+php,git mv,phpsearch/src/phpsearch/Logger.php,phpfind/src/phpfind/Logger.php
+php,git mv,phpsearch/src/phpsearch/SearchException.php,phpfind/src/phpfind/FindException.php
+php,git mv,phpsearch/src/phpsearch/SearchFile.php,phpfind/src/phpfind/FindFile.php
+php,git mv,phpsearch/src/phpsearch/SearchOption.php,phpfind/src/phpfind/FindOption.php
+php,git mv,phpsearch/src/phpsearch/SearchOptions.php,phpfind/src/phpfind/FindOptions.php
+php,git mv,phpsearch/src/phpsearch/SearchSettings.php,phpfind/src/phpfind/FindSettings.php
+php,git mv,phpsearch/src/phpsearch/Searcher.php,phpfind/src/phpfind/Finder.php
+php,git mv,phpsearch/tests/FileTypesTest.php,phpfind/tests/FileTypesTest.php
+php,git mv,phpsearch/tests/FileUtilTest.php,phpfind/tests/FileUtilTest.php
+php,git mv,phpsearch/tests/SearchFileTest.php,phpfind/tests/FindFileTest.php
+php,git mv,phpsearch/tests/SearchOptionsTest.php,phpfind/tests/FindOptionsTest.php
+php,git mv,phpsearch/tests/SearchSettingsTest.php,phpfind/tests/FindSettingsTest.php
+php,git mv,phpsearch/tests/SearcherTest.php,phpfind/tests/FinderTest.php
+php,git rm,phpsearch/src/phpsearch/SearchResult.php,
+php,git rm,phpsearch/src/phpsearch/SearchResultFormatter.php,
+php,git rm,phpsearch/tests/SearchResultTest.php,
+php,rm -rf,phpsearch/.idea,
+php,rm,phpsearch/.phpunit.result.cache,
+php,rm -rf,phpsearch/vendor,
+php,rmdir,phpsearch/bin,
+php,rmdir,phpsearch/config,
+php,rmdir,phpsearch/resources,
+php,rmdir,phpsearch/src/phpsearch,
+php,rmdir,phpsearch/src,
+php,rmdir,phpsearch,
+python,mkdir -p,pyfind/bin,
+python,mkdir -p,pyfind/data,
+python,mkdir -p,pyfind/pyfind,
+python,mkdir -p,pyfind/tests,
+python,git mv,pysearch/.gitignore,pyfind/.gitignore
+python,git mv,pysearch/MANIFEST.in,pyfind/MANIFEST.in
+python,git mv,pysearch/bin/pysearch,pyfind/bin/pyfind
+python,git mv,pysearch/bin/pysearch.bat,pyfind/bin/pyfind.bat
+python,git mv,pysearch/data/config.json,pyfind/data/config.json
+python,git mv,pysearch/data/filetypes.json,pyfind/data/filetypes.json
+python,git mv,pysearch/data/searchoptions.json,pyfind/data/findoptions.json
+python,git mv,pysearch/pysearch/__init__.py,pyfind/pyfind/__init__.py
+python,git mv,pysearch/pysearch/__main__.py,pyfind/pyfind/__main__.py
+python,git mv,pysearch/pysearch/color.py,pyfind/pyfind/color.py
+python,git mv,pysearch/pysearch/common.py,pyfind/pyfind/common.py
+python,git mv,pysearch/pysearch/config.py,pyfind/pyfind/config.py
+python,git mv,pysearch/pysearch/filetypes.py,pyfind/pyfind/filetypes.py
+python,git mv,pysearch/pysearch/fileutil.py,pyfind/pyfind/fileutil.py
+python,git mv,pysearch/pysearch/searcher.py,pyfind/pyfind/finder.py
+python,git mv,pysearch/pysearch/searchexception.py,pyfind/pyfind/findexception.py
+python,git mv,pysearch/pysearch/searchfile.py,pyfind/pyfind/findfile.py
+python,git mv,pysearch/pysearch/searchoption.py,pyfind/pyfind/findoption.py
+python,git mv,pysearch/pysearch/searchoptions.py,pyfind/pyfind/findoptions.py
+python,git mv,pysearch/pysearch/searchsettings.py,pyfind/pyfind/findsettings.py
+python,git mv,pysearch/requirements.txt,pyfind/requirements.txt
+python,git mv,pysearch/setup.py,pyfind/setup.py
+python,git mv,pysearch/tests/filetypes_test.py,pyfind/tests/filetypes_test.py
+python,git mv,pysearch/tests/fileutil_test.py,pyfind/tests/fileutil_test.py
+python,git mv,pysearch/tests/searcher_test.py,pyfind/tests/finder_test.py
+python,git mv,pysearch/tests/searchfile_test.py,pyfind/tests/findfile_test.py
+python,git mv,pysearch/tests/searchoptions_test.py,pyfind/tests/findoptions_test.py
+python,git mv,pysearch/tests/searchsettings_test.py,pyfind/tests/findsettings_test.py
+python,mv,pysearch/data/filetypes.xml,pyfind/data/filetypes.xml
+python,mv,pysearch/data/searchoptions.xml,pyfind/data/findoptions.xml
+python,git rm,pysearch/pysearch/searchresult.py,
+python,git rm,pysearch/tests/searchresult_test.py,
+python,rm -rf,pysearch/.idea,
+python,rm -rf,pysearch/.pytest_cache,
+python,rm -rf,pysearch/pysearch/__pycache__,
+python,rm -rf,pysearch/tests/__pycache__,
+python,rmdir,pysearch/bin,
+python,rmdir,pysearch/data,
+python,rmdir,pysearch/pysearch,
+python,rmdir,pysearch/tests,
+python,rmdir,pysearch,
+ruby,mkdir -p,rbfind/bin,
+ruby,mkdir -p,rbfind/data,
+ruby,mkdir -p,rbfind/lib/rbfind,
+ruby,mkdir -p,rbfind/test/fixtures,
+ruby,git mv,rbsearch/.gitignore,rbfind/.gitignore
+ruby,git mv,rbsearch/Gemfile,rbfind/Gemfile
+ruby,git mv,rbsearch/LICENSE.txt,rbfind/LICENSE.txt
+ruby,git mv,rbsearch/README.md,rbfind/README.md
+ruby,git mv,rbsearch/Rakefile,rbfind/Rakefile
+ruby,git mv,rbsearch/rbsearch.gemspec,rbfind/rbfind.gemspec
+ruby,git mv,rbsearch/bin/console,rbfind/bin/console
+ruby,git mv,rbsearch/bin/rbsearch,rbfind/bin/rbfind
+ruby,git mv,rbsearch/bin/rbsearch.bat,rbfind/bin/rbfind.bat
+ruby,git mv,rbsearch/bin/setup,rbfind/bin/setup
+ruby,git mv,rbsearch/data/filetypes.json,rbfind/data/filetypes.json
+ruby,git mv,rbsearch/data/searchoptions.json,rbfind/data/findoptions.json
+ruby,git mv,rbsearch/lib/rbsearch.rb,rbfind/lib/rbfind.rb
+ruby,git mv,rbsearch/lib/rbsearch/color.rb,rbfind/lib/rbfind/color.rb
+ruby,git mv,rbsearch/lib/rbsearch/common.rb,rbfind/lib/rbfind/common.rb
+ruby,git mv,rbsearch/lib/rbsearch/filetypes.rb,rbfind/lib/rbfind/filetypes.rb
+ruby,git mv,rbsearch/lib/rbsearch/fileutil.rb,rbfind/lib/rbfind/fileutil.rb
+ruby,git mv,rbsearch/lib/rbsearch/searcher.rb,rbfind/lib/rbfind/finder.rb
+ruby,git mv,rbsearch/lib/rbsearch/searcherror.rb,rbfind/lib/rbfind/finderror.rb
+ruby,git mv,rbsearch/lib/rbsearch/searchfile.rb,rbfind/lib/rbfind/findfile.rb
+ruby,git mv,rbsearch/lib/rbsearch/searchoption.rb,rbfind/lib/rbfind/findoption.rb
+ruby,git mv,rbsearch/lib/rbsearch/searchoptions.rb,rbfind/lib/rbfind/findoptions.rb
+ruby,git mv,rbsearch/lib/rbsearch/searchsettings.rb,rbfind/lib/rbfind/findsettings.rb
+ruby,git mv,rbsearch/lib/rbsearch/version.rb,rbfind/lib/rbfind/version.rb
+ruby,git mv,rbsearch/test/test_filetypes.rb,rbfind/test/test_filetypes.rb
+ruby,git mv,rbsearch/test/test_fileutil.rb,rbfind/test/test_fileutil.rb
+ruby,git mv,rbsearch/test/test_searcher.rb,rbfind/test/test_finder.rb
+ruby,git mv,rbsearch/test/test_searchfile.rb,rbfind/test/test_findfile.rb
+ruby,git mv,rbsearch/test/test_searchoptions.rb,rbfind/test/test_findoptions.rb
+ruby,git mv,rbsearch/test/test_searchsettings.rb,rbfind/test/test_findsettings.rb
+ruby,git mv,rbsearch/test/fixtures/testFile2.txt,rbfind/test/fixtures/testFile2.txt
+ruby,mv,rbsearch/data/config.json,rbfind/data/config.json
+ruby,mv,rbsearch/data/filetypes.xml,rbfind/data/filetypes.xml
+ruby,mv,rbsearch/data/searchoptions.xml,rbfind/data/findoptions.xml
+ruby,git rm,rbsearch/lib/rbsearch/searchresult.rb,
+ruby,git rm,rbsearch/lib/rbsearch/searchresultformatter.rb,
+ruby,git rm,rbsearch/test/test_searchresult.rb,
+ruby,rm -rf,rbsearch/.idea,
+ruby,rm -rf,rbsearch/.vscode,
+ruby,rm,rbsearch/Gemfile.lock,
+ruby,rm -rf,rbsearch/lib/test,
+ruby,rm -rf,rbsearch/tmp,
+ruby,rmdir,rbsearch/bin,
+ruby,rmdir,rbsearch/data,
+ruby,rmdir,rbsearch/lib/rbsearch,
+ruby,rmdir,rbsearch/lib,
+ruby,rmdir,rbsearch/test/fixtures,
+ruby,rmdir,rbsearch/test,
+ruby,rmdir,rbsearch,
+rust,mkdir -p,rsfind/src,
+rust,git mv,rssearch/.gitignore,rsfind/.gitignore
+rust,git mv,rssearch/Cargo.lock,rsfind/Cargo.lock
+rust,git mv,rssearch/Cargo.toml,rsfind/Cargo.toml
+rust,git mv,rssearch/rssearch.sh,rsfind/rsfind.sh
+rust,git mv,rssearch/src/color.rs,rsfind/src/color.rs
+rust,git mv,rssearch/src/common.rs,rsfind/src/common.rs
+rust,git mv,rssearch/src/config.rs,rsfind/src/config.rs
+rust,git mv,rssearch/src/filetypes.rs,rsfind/src/filetypes.rs
+rust,git mv,rssearch/src/fileutil.rs,rsfind/src/fileutil.rs
+rust,git mv,rssearch/src/main.rs,rsfind/src/main.rs
+rust,git mv,rssearch/src/searcher.rs,rsfind/src/finder.rs
+rust,git mv,rssearch/src/searcherror.rs,rsfind/src/finderror.rs
+rust,git mv,rssearch/src/searchfile.rs,rsfind/src/findfile.rs
+rust,git mv,rssearch/src/searchoptions.rs,rsfind/src/findoptions.rs
+rust,git mv,rssearch/src/searchsettings.rs,rsfind/src/findsettings.rs
+rust,git rm,rssearch/src/searchresult.rs,
+rust,git rm,rssearch/src/searchresultformatter.rs,
+rust,rm -rf,rssearch/.idea,
+rust,rm -rf,rssearch/target,
+rust,rmdir,rssearch/src,
+rust,rmdir,rssearch,
+scala,mkdir -p,scalafind/project,
+scala,mkdir -p,scalafind/src/main/scala/scalafind,
+scala,mkdir -p,scalafind/src/main/resources,
+scala,mkdir -p,scalafind/src/test/scala/scalafind,
+scala,mkdir -p,scalafind/src/test/resources,
+scala,git mv,scalasearch/.gitignore,scalafind/.gitignore
+scala,git mv,scalasearch/build.sbt,scalafind/build.sbt
+scala,git mv,scalasearch/project/assembly.sbt,scalafind/project/assembly.sbt
+scala,git mv,scalasearch/project/build.properties,scalafind/project/build.properties
+scala,git mv,scalasearch/scalasearch,scalafind/scalafind
+scala,git mv,scalasearch/scalastyle_config.xml,scalafind/scalastyle_config.xml
+scala,git mv,scalasearch/src/main/resources/filetypes.json,scalafind/src/main/resources/filetypes.json
+scala,git mv,scalasearch/src/main/resources/searchoptions.json,scalafind/src/main/resources/findoptions.json
+scala,git mv,scalasearch/src/main/scala/scalasearch/Color.scala,scalafind/src/main/scala/scalafind/Color.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/Common.scala,scalafind/src/main/scala/scalafind/Common.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/FileTypes.scala,scalafind/src/main/scala/scalafind/FileTypes.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/FileUtil.scala,scalafind/src/main/scala/scalafind/FileUtil.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/SearchException.scala,scalafind/src/main/scala/scalafind/FindException.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/SearchFile.scala,scalafind/src/main/scala/scalafind/FindFile.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/SearchMain.scala,scalafind/src/main/scala/scalafind/FindMain.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/SearchOptions.scala,scalafind/src/main/scala/scalafind/FindOptions.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/SearchSettings.scala,scalafind/src/main/scala/scalafind/FindSettings.scala
+scala,git mv,scalasearch/src/main/scala/scalasearch/Searcher.scala,scalafind/src/main/scala/scalafind/Finder.scala
+scala,git mv,scalasearch/src/test/resources/testFile1.txt,scalafind/src/test/resources/testFile1.txt
+scala,git mv,scalasearch/src/test/resources/testFile2.txt,scalafind/src/test/resources/testFile2.txt
+scala,git mv,scalasearch/src/test/scala/scalasearch/FileTypesTest.scala,scalafind/src/test/scala/scalafind/FileTypesTest.scala
+scala,git mv,scalasearch/src/test/scala/scalasearch/FileUtilTest.scala,scalafind/src/test/scala/scalafind/FileUtilTest.scala
+scala,git mv,scalasearch/src/test/scala/scalasearch/SearchFileTest.scala,scalafind/src/test/scala/scalafind/FindFileTest.scala
+scala,git mv,scalasearch/src/test/scala/scalasearch/SearchOptionsTest.scala,scalafind/src/test/scala/scalafind/FindOptionsTest.scala
+scala,git mv,scalasearch/src/test/scala/scalasearch/SearchSettingsTest.scala,scalafind/src/test/scala/scalafind/FindSettingsTest.scala
+scala,git mv,scalasearch/src/test/scala/scalasearch/SearcherFilteringTest.scala,scalafind/src/test/scala/scalafind/FinderFilteringTest.scala
+scala,git mv,scalasearch/src/test/scala/scalasearch/SearcherTest.scala,scalafind/src/test/scala/scalafind/FinderTest.scala
+scala,mv,scalasearch/src/main/resources/config.json,scalafind/src/main/resources/config.json
+scala,mv,scalasearch/src/main/resources/filetypes.xml,scalafind/src/main/resources/filetypes.xml
+scala,mv,scalasearch/src/main/resources/searchoptions.xml,scalafind/src/main/resources/findoptions.xml
+scala,git rm,scalasearch/src/main/scala/scalasearch/SearchResult.scala,
+scala,git rm,scalasearch/src/test/scala/scalasearch/SearchResultTest.scala,
+scala,rm -rf,scalasearch/.bsp,
+scala,rm -rf,scalasearch/.idea,
+scala,rm -rf,scalasearch/.vscode,
+scala,rm -rf,scalasearch/project/project/target,
+scala,rm -rf,scalasearch/project/target,
+scala,rm -rf,scalasearch/target,
+scala,rmdir,scalasearch/project/project,
+scala,rmdir,scalasearch/project,
+scala,rmdir,scalasearch/src/main/resources,
+scala,rmdir,scalasearch/src/main,
+scala,rmdir,scalasearch/src/test/resources,
+scala,rmdir,scalasearch/src/test,
+scala,rmdir,scalasearch/src,
+scala,rmdir,scalasearch,
+scripts,git mv,xsearch.py,xfind.py
+scripts,rm -rf,__pycache__,
+shared,git mv,searchoptions.json,findoptions.json
+shared,git mv,searchoptions.xml,findoptions.xml
+swift,mkdir -p,swiftfind/Sources/swiftfind,
+swift,mkdir -p,swiftfind/Sources/swiftfindApp,
+swift,mkdir -p,swiftfind/Tests/swiftfindTests,
+swift,git mv,swiftsearch/.gitignore,swiftfind/.gitignore
+swift,git mv,swiftsearch/Package.swift,swiftfind/Package.swift
+swift,git mv,swiftsearch/README.md,swiftfind/README.md
+swift,git mv,swiftsearch/Sources/swiftsearch/Color.swift,swiftfind/Sources/swiftfind/Color.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/Config.swift,swiftfind/Sources/swiftfind/Config.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/FileTypes.swift,swiftfind/Sources/swiftfind/FileTypes.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/FileUtil.swift,swiftfind/Sources/swiftfind/FileUtil.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/Regex.swift,swiftfind/Sources/swiftfind/Regex.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/SearchFile.swift,swiftfind/Sources/swiftfind/FindFile.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/SearchOptions.swift,swiftfind/Sources/swiftfind/FindOptions.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/SearchSettings.swift,swiftfind/Sources/swiftfind/FindSettings.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/Searcher.swift,swiftfind/Sources/swiftfind/Finder.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/StreamReader.swift,swiftfind/Sources/swiftfind/StreamReader.swift
+swift,git mv,swiftsearch/Sources/swiftsearch/common.swift,swiftfind/Sources/swiftfind/common.swift
+swift,git mv,swiftsearch/Sources/swiftsearchApp/main.swift,swiftfind/Sources/swiftfindApp/main.swift
+swift,git mv,swiftsearch/Tests/LinuxMain.swift,swiftfind/Tests/LinuxMain.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/FileTypesTests.swift,swiftfind/Tests/swiftfindTests/FileTypesTests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/FileUtilTests.swift,swiftfind/Tests/swiftfindTests/FileUtilTests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/SearchFileTests.swift,swiftfind/Tests/swiftfindTests/FindFileTests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/SearchOptionsTests.swift,swiftfind/Tests/swiftfindTests/FindOptionsTests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/SearchSettingsTests.swift,swiftfind/Tests/swiftfindTests/FindSettingsTests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/SearcherTests.swift,swiftfind/Tests/swiftfindTests/FinderTests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/XCTestManifests.swift,swiftfind/Tests/swiftfindTests/XCTestManifests.swift
+swift,git mv,swiftsearch/Tests/swiftsearchTests/swiftsearchTests.swift,swiftfind/Tests/swiftfindTests/swiftfindTests.swift
+swift,git mv,swiftsearch/swiftsearch.sh,swiftfind/swiftfind.sh
+swift,git rm,swiftsearch/Sources/swiftsearch/SearchResult.swift,
+swift,git rm,swiftsearch/Tests/swiftsearchTests/SearchResultTests.swift,
+swift,rm -rf,swiftsearch/.build,
+swift,rm -rf,swiftsearch/.idea,
+swift,rm -rf,swiftsearch/.swiftpm,
+swift,rm -rf,swiftsearch/.vscode,
+swift,rm -rf,swiftsearch/Sources/Resources,
+swift,rmdir,swiftsearch/Sources/swiftsearch,
+swift,rmdir,swiftsearch/Sources/swiftsearchApp,
+swift,rmdir,swiftsearch/Sources,
+swift,rmdir,swiftsearch/Tests,
+swift,rmdir,swiftsearch,
+typescript,mkdir -p,tsfind/bin,
+typescript,mkdir -p,tsfind/data,
+typescript,mkdir -p,tsfind/src,
+typescript,mkdir -p,tsfind/tests,
+typescript,git mv,tssearch/.eslintignore,tsfind/.eslintignore
+typescript,git mv,tssearch/.eslintrc,tsfind/.eslintrc
+typescript,git mv,tssearch/.gitignore,tsfind/.gitignore
+typescript,git mv,tssearch/bin/tssearch,tsfind/bin/tsfind
+typescript,git mv,tssearch/bin/tssearch.bat,tsfind/bin/tsfind.bat
+typescript,git mv,tssearch/data/filetypes.json,tsfind/data/filetypes.json
+typescript,git mv,tssearch/data/searchoptions.json,tsfind/data/findoptions.json
+typescript,git mv,tssearch/jest.config.js,tsfind/jest.config.js
+typescript,git mv,tssearch/package.json,tsfind/package.json
+typescript,git mv,tssearch/src/.gitignore,tsfind/src/.gitignore
+typescript,git mv,tssearch/src/common.ts,tsfind/src/common.ts
+typescript,git mv,tssearch/src/config.ts,tsfind/src/config.ts
+typescript,git mv,tssearch/src/filetype.ts,tsfind/src/filetype.ts
+typescript,git mv,tssearch/src/filetypes.ts,tsfind/src/filetypes.ts
+typescript,git mv,tssearch/src/fileutil.ts,tsfind/src/fileutil.ts
+typescript,git mv,tssearch/src/searcher.ts,tsfind/src/finder.ts
+typescript,git mv,tssearch/src/searcherror.ts,tsfind/src/finderror.ts
+typescript,git mv,tssearch/src/searchfile.ts,tsfind/src/findfile.ts
+typescript,git mv,tssearch/src/searchoption.ts,tsfind/src/findoption.ts
+typescript,git mv,tssearch/src/searchoptions.ts,tsfind/src/findoptions.ts
+typescript,git mv,tssearch/src/searchsettings.ts,tsfind/src/findsettings.ts
+typescript,git mv,tssearch/src/tssearch.ts,tsfind/src/tsfind.ts
+typescript,git mv,tssearch/tests/filetypes.test.ts,tsfind/tests/filetypes.test.ts
+typescript,git mv,tssearch/tests/fileutil.test.ts,tsfind/tests/fileutil.test.ts
+typescript,git mv,tssearch/tests/searcher.test.ts,tsfind/tests/finder.test.ts
+typescript,git mv,tssearch/tests/searchfile.test.ts,tsfind/tests/findfile.test.ts
+typescript,git mv,tssearch/tests/searchoptions.test.ts,tsfind/tests/findoptions.test.ts
+typescript,git mv,tssearch/tests/searchsettings.test.ts,tsfind/tests/findsettings.test.ts
+typescript,git mv,tssearch/tsconfig.json,tsfind/tsconfig.json
+typescript,git rm,tssearch/src/searchresult.ts,
+typescript,git rm,tssearch/src/searchresultformatter.ts,
+typescript,git rm,tssearch/tests/searchresult.test.ts,
+typescript,rm -rf,tssearch/.idea,
+typescript,rm -rf,tssearch/.vscode,
+typescript,rm -rf,tssearch/dist,
+typescript,rm -rf,tssearch/node_modules,
+typescript,rm,tssearch/package-lock.json,
+typescript,rmdir,tssearch/bin,
+typescript,rmdir,tssearch/data,
+typescript,rmdir,tssearch/src,
+typescript,rmdir,tssearch/tests,
+typescript,rmdir,tssearch,
