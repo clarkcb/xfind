@@ -1,0 +1,29 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
+// https://github.com/microsoft/vscode-dev-containers/tree/v0.163.1/containers/javascript-node
+{
+	"name": "xfind",
+	"build": {
+		"dockerfile": "Dockerfile",
+	},
+
+	// Set *default* container specific settings.json values on container create.
+	"settings": { 
+		"terminal.integrated.shell.linux": "/bin/bash"
+	},
+
+	// Add the IDs of extensions you want installed when the container is created.
+	"extensions": [
+		"dart-code.dart-code",
+		"dbaeumer.vscode-eslint",
+		"golang.go",
+		"mathiasfrohlich.kotlin",
+		"ms-dotnettools.csharp",
+		"ms-vscode.cmake-tools",
+		"ms-vscode.cpptools",
+		"ms-vscode.powershell",
+		"ms-python.python",
+		"rebornix.ruby",
+		"rust-lang.rust",
+		"vscjava.vscode-java-pack"
+	]
+}
