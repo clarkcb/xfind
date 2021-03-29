@@ -38,30 +38,36 @@
     },
     {
       "long": "in-archiveext",
+      "arg": "extension",
       "desc": "Specify extension for archive files to include in find"
     },
     {
       "long": "in-archivefilepattern",
+      "arg": "pattern",
       "desc": "Specify name pattern for archive files to include in find"
     },
     {
       "long": "in-dirpattern",
       "short": "d",
+      "arg": "pattern",
       "desc": "Specify name pattern for directories to include in find"
     },
     {
       "long": "in-ext",
       "short": "x",
+      "arg": "extension",
       "desc": "Specify extension for files to include in find"
     },
     {
       "long": "in-filepattern",
       "short": "f",
+      "arg": "pattern",
       "desc": "Specify name pattern for files to include in find"
     },
     {
       "long": "in-filetype",
       "short": "t",
+      "arg": "filetype",
       "desc": "File type to find (text, binary)"
     },
     {
@@ -74,18 +80,22 @@
     },
     {
       "long": "maxlastmod",
+      "arg": "datetime",
       "desc": "Find files with lastmod less than or equal to maxlastmod"
     },
     {
       "long": "maxsize",
+      "arg": "size",
       "desc": "Find files with size <= maxsize"
     },
     {
       "long": "minlastmod",
+      "arg": "datetime",
       "desc": "Find files with lastmod greater than or equal to minlastmod"
     },
     {
       "long": "minsize",
+      "arg": "size",
       "desc": "Find files with size >= minsize"
     },
     {
@@ -100,30 +110,36 @@
     },
     {
       "long": "out-archiveext",
+      "arg": "extension",
       "desc": "Specify extension for archive files to exclude from find"
     },
     {
       "long": "out-archivefilepattern",
+      "arg": "pattern",
       "desc": "Specify name pattern for archive files to exclude from find"
     },
     {
       "long": "out-dirpattern",
       "short": "D",
+      "arg": "pattern",
       "desc": "Specify name pattern for directories to exclude from find"
     },
     {
       "long": "out-ext",
       "short": "X",
+      "arg": "extension",
       "desc": "Specify extension for files to exclude from find"
     },
     {
       "long": "out-filepattern",
       "short": "F",
+      "arg": "pattern",
       "desc": "Specify name pattern for files to exclude from find"
     },
     {
       "long": "out-filetype",
       "short": "T",
+      "arg": "filetype",
       "desc": "File type not to find (text, binary)"
     },
     {
@@ -133,6 +149,7 @@
     },
     {
       "long": "settings-file",
+      "arg": "file",
       "desc": "A path to a JSON file with specified find settings"
     },
     {
