@@ -9,9 +9,9 @@
 import json
 import xml.dom.minidom as minidom
 from enum import Enum
+import pkg_resources
 
 from .common import get_text
-from .config import FILETYPESPATH
 from .fileutil import FileUtil
 from .findexception import FindException
 
@@ -70,10 +70,6 @@ class FileTypes(object):
         """Return true if file is of a (known) code file type"""
         return FileUtil.get_extension(f) in self.__filetypes['code']
 
-    # def is_findable_file(self, f: str) -> bool:
-    #     """Return true if file is of a (known) findable type"""
-    #     return FileUtil.get_extension(f) in self.__filetypes['findable']
-
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
         return FileUtil.get_extension(f) in self.__filetypes['text']
@@ -83,26 +79,12 @@ class FileTypes(object):
         return FileUtil.get_extension(f) in self.__filetypes['xml']
 
     def __populate_filetypes_from_json(self):
-        with open(FILETYPESPATH, mode='r') as f:
-            filetypes_dict = json.load(f)
+        stream = pkg_resources.resource_stream(__name__, 'data/filetypes.json')
+        filetypes_dict = json.load(stream)
         for filetype_obj in filetypes_dict['filetypes']:
             typename = filetype_obj['type']
             exts = set(filetype_obj['extensions'])
             self.__filetypes[typename] = exts
-        self.__filetypes['text'].update(self.__filetypes['code'],
-                                        self.__filetypes['xml'])
-        self.__filetypes['findable'] = \
-            self.__filetypes['binary'].union(self.__filetypes['archive'],
-                                             self.__filetypes['text'])
-
-    def __populate_filetypes_from_xml(self):
-        filetypedom = minidom.parse(FILETYPESPATH)
-        filetypenodes = filetypedom.getElementsByTagName('filetype')
-        for filetypenode in filetypenodes:
-            name = filetypenode.getAttribute('name')
-            extnode = filetypenode.getElementsByTagName('extensions')[0]
-            exts = set(get_text(extnode.childNodes).split())
-            self.__filetypes[name] = exts
         self.__filetypes['text'].update(self.__filetypes['code'],
                                         self.__filetypes['xml'])
         self.__filetypes['findable'] = \

@@ -9,4 +9,4 @@ PYFIND_PATH=$XFIND_PATH/python/pyfind
 
 PYFIND_EXE=$PYFIND_PATH/bin/pyfind.py
 
-python3.9 $PYFIND_EXE $@
+python3 $PYFIND_EXE $@

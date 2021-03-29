@@ -38,3 +38,11 @@ class FindFile(object):
             sio.write(self.CONTAINER_SEPARATOR)
         sio.write(self.relativepath)
         return sio.getvalue()
+
+    def __lt__(self, other):
+        if self.path == other.path:
+            return self.filename < other.filename
+        return self.path < other.path
+    
+    def __eq__(self, other):
+        return self.path < other.path and self.filename < other.filename

@@ -14,16 +14,16 @@ import xml.dom.minidom as minidom
 from collections import deque
 from io import StringIO
 from typing import List
+import pkg_resources
 
 from .common import get_text, parse_datetime_str
-from .config import FINDOPTIONSPATH
 from .findexception import FindException
 from .findoption import FindOption
 from .findsettings import FindSettings
 
 
 class FindOptions(object):
-    """class to provide usage info and parse command-line arguments into settings"""
+    """class to provide usage info and parse command-line arguments into settings."""
 
     def __init__(self):
         self.options = []
@@ -186,8 +186,8 @@ class FindOptions(object):
                 raise FindException('Invalid option: {0}'.format(arg))
 
     def __set_options_from_json(self):
-        with open(FINDOPTIONSPATH, mode='r') as f:
-            findoptions_dict = json.load(f)
+        stream = pkg_resources.resource_stream(__name__, 'data/findoptions.json')
+        findoptions_dict = json.load(stream)
         for findoption_obj in findoptions_dict['findoptions']:
             longarg = findoption_obj['long']
             shortarg = ''
@@ -216,34 +216,6 @@ class FindOptions(object):
             if shortarg:
                 self.__longarg_dict[shortarg] = longarg
 
-    def __set_options_from_xml(self):
-        findoptionsdom = minidom.parse(FINDOPTIONSPATH)
-        findoptionnodes = findoptionsdom.getElementsByTagName(
-            'findoption')
-        for findoptionnode in findoptionnodes:
-            longarg = findoptionnode.getAttribute('long')
-            shortarg = findoptionnode.getAttribute('short')
-            desc = get_text(findoptionnode.childNodes).strip()
-            if longarg in self.__bool_arg_dict:
-                func = self.__bool_arg_dict[longarg]
-            elif longarg in self.__coll_arg_dict:
-                func = self.__coll_arg_dict[longarg]
-            elif longarg in self.__dt_arg_dict:
-                func = self.__dt_arg_dict[longarg]
-            elif longarg in self.__int_arg_dict:
-                func = self.__int_arg_dict[longarg]
-            elif longarg in self.__str_arg_dict:
-                func = self.__str_arg_dict[longarg]
-            elif longarg == 'settings-file':
-                func = self.settings_from_file
-            else:
-                raise FindException(
-                    'Unknown find option: {0:s}'.format(longarg))
-            self.options.append(FindOption(shortarg, longarg, desc, func))
-            self.__longarg_dict[longarg] = longarg
-            if shortarg:
-                self.__longarg_dict[shortarg] = longarg
-
     def find_settings_from_args(self, args: List[str]) -> FindSettings:
         """Returns a FindSettings instance for a given list of args"""
         settings = FindSettings()
@@ -260,6 +232,12 @@ class FindOptions(object):
                 arg_names = []
                 if arg.startswith('--'):
                     if len(arg) > 2:
+                        arg_name = arg[2:]
+                        if '=' in arg_name:
+                            arg_nv = arg_name.split('=', 1)
+                            arg_name = arg_nv[0]
+                            if arg_nv[1]:
+                                argdeque.appendleft(arg_nv[1])
                         arg_names.append(arg[2:])
                 elif len(arg) > 1:
                     arg_names.extend([c for c in arg[1:]])

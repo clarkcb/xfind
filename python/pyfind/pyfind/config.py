@@ -10,7 +10,7 @@ import json
 import os
 
 cwd = os.path.dirname(os.path.realpath(__file__))
-data_path = os.path.join(cwd, '../data')
+data_path = os.path.join(cwd, 'data')
 if not os.path.exists(data_path):
     data_path = os.path.join(cwd, 'data')
 config_json_path = os.path.join(data_path, 'config.json')

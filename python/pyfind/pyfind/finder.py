@@ -21,24 +21,26 @@ from .findsettings import FindSettings, PatternSet
 
 
 class Finder(object):
-    """a class to find files"""
+    """Finder is a class to find files based on find settings."""
 
     __slots__ = ['settings', 'filetypes']
 
     def __init__(self, settings: FindSettings):
+        """Create a new Finder instance."""
         self.settings = settings
         self.__validate_settings()
         self.filetypes = FileTypes()
 
     def __validate_settings(self):
-        """Assert required settings in FindSettings instance"""
+        """Validate the required settings in the FindSettings instance."""
         assert len(self.settings.paths) > 0, 'Startpath not defined'
         for p in self.settings.paths:
             assert os.path.exists(p), 'Startpath not found'
             assert os.access(p, os.R_OK), 'Startpath not readable'
 
     def is_find_dir(self, d: str) -> bool:
-        path_elems = [p for p in d.split(os.sep) if p not in FileUtil.DOT_DIRS]
+        """Check whether the given directory matches find settings."""
+        path_elems = [p for p in d.split(os.sep) if p and p not in FileUtil.DOT_DIRS]
         if self.settings.excludehidden:
             for p in path_elems:
                 if FileUtil.is_hidden(p):
@@ -52,6 +54,7 @@ class Finder(object):
         return True
 
     def is_matching_stat(self, stat):
+        """Check whether the given file stat matches find settings."""
         if (self.settings.minlastmod and stat.st_mtime < self.settings.minlastmod.timestamp()) \
                 or (self.settings.maxlastmod and stat.st_mtime > self.settings.maxlastmod.timestamp()):
             return False
@@ -61,6 +64,7 @@ class Finder(object):
         return True
 
     def is_archive_find_file(self, filename: str, stat) -> bool:
+        """Check whether the given archive file matches find settings."""
         ext = FileUtil.get_extension(filename)
         if (self.settings.in_archiveextensions and ext not in self.settings.in_archiveextensions) \
             or (self.settings.out_archiveextensions and ext in self.settings.out_archiveextensions) \
@@ -72,6 +76,7 @@ class Finder(object):
         return self.is_matching_stat(stat)
 
     def is_find_file(self, filename: str, filetype: FileType, stat) -> bool:
+        """Check whether the given file matches find settings."""
         ext = FileUtil.get_extension(filename)
         if (self.settings.in_extensions and ext not in self.settings.in_extensions) \
                 or (self.settings.out_extensions and ext in self.settings.out_extensions) \
@@ -85,8 +90,9 @@ class Finder(object):
         return self.is_matching_stat(stat)
 
     def filter_to_find_file(self, filepath: str) -> Optional[FindFile]:
+        """Return a FindFile instance if the given filepath matches find settings, else None."""
         (path, filename) = os.path.split(filepath)
-        if FileUtil.is_hidden(filename) and self.settings.excludehidden:
+        if self.settings.excludehidden and FileUtil.is_hidden(filename):
             return None
         filetype = self.filetypes.get_filetype(filename)
         if filetype == FileType.ARCHIVE and not self.settings.includearchives and not self.settings.archivesonly:
@@ -100,7 +106,7 @@ class Finder(object):
         return FindFile(path=path, filename=filename, filetype=filetype, stat=stat)
 
     def find_files(self) -> List[FindFile]:
-        """Get the list of all files matching find settings"""
+        """Get the list of all files matching find settings."""
         findfiles = []
         for p in self.settings.paths:
             if os.path.isdir(p):
@@ -108,33 +114,44 @@ class Finder(object):
                     if self.settings.recursive:
                         for root, dirs, files in os.walk(p):
                             if self.is_find_dir(root):
-                                new_findfiles = [self.filter_to_find_file(
-                                    os.path.join(root, f)) for f in files]
+                                # TODO: add option to follow symlinks? (skipping for now)
+                                files = [
+                                    os.path.join(root, f) for f in files
+                                    if not os.path.islink(os.path.join(root, f))
+                                ]
+                                new_findfiles = [self.filter_to_find_file(f) for f in files]
                                 findfiles.extend(
-                                    [sf for sf in new_findfiles if sf])
-                    # else:
-                    #     ???
+                                    [ff for ff in new_findfiles if ff])
+                    else:
+                        files = [
+                            os.path.join(p, f) for f in os.listdir(p)
+                            if os.path.isfile(os.path.join(p, f))
+                                and not os.path.islink(os.path.join(p, f))
+                        ]
+                        new_findfiles = [self.filter_to_find_file(f) for f in files]
+                        findfiles.extend(
+                            [ff for ff in new_findfiles if ff])
             elif os.path.isfile(p):
-                sf = self.filter_to_find_file(p)
-                if sf:
-                    findfiles.append(sf)
-        return sorted(findfiles, key=lambda sf: (sf.path, sf.filename))
+                ff = self.filter_to_find_file(p)
+                if ff:
+                    findfiles.append(ff)
+        return sorted(findfiles, key=lambda ff: (ff.path, ff.filename))
 
     async def find(self) -> List[FindFile]:
-        """Find matching files under paths"""
+        """Find matching files under paths."""
         findfiles = self.find_files()
         return findfiles
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet):
-    """Returns true if string s matches any pattern in pattern_set, else
-       false"""
+    """Return true if string s matches any pattern in pattern_set, else
+       false."""
     return any(p.search(s) for p in pattern_set)
 
 
 def any_matches_any_pattern(slist, pattern_set: PatternSet):
-    """Returns true if any string in slist matches any pattern in
-    pattern_set, else false"""
+    """Return true if any string in slist matches any pattern in
+       pattern_set, else false."""
     for s in slist:
         if matches_any_pattern(s, pattern_set):
             return True

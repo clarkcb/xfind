@@ -1,10 +1,10 @@
 from setuptools import setup
-from pyfind import VERSION
+from pyfind import __version__
 
 #long_description = open('README.md').read()
 
 setup(name='pyfind',
-      version=VERSION,
+      version=__version__,
       description='Python version of xfind',
       # long_description=long_description,
       url='https://github.com/clarkcb/xfind.git',
@@ -14,11 +14,11 @@ setup(name='pyfind',
       install_requires=[],
       license='MIT',
       packages=['pyfind'],
+      package_data={'': ['data/*.json']},
       python_requires='>=3.7',
-      scripts=[
-          'bin/pyfind',
-          # 'bin/pyfind.bat'
-      ],
+    #   scripts=[
+    #       'bin/pyfind.sh',
+    #   ],
       tests_require=[
           'nose',
       ])
