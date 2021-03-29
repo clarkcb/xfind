@@ -115,7 +115,10 @@ class FindOptions
         if (file_exists($findoptionspath)) {
             $json_obj = json_decode(file_get_contents($findoptionspath), true);
             foreach ($json_obj['findoptions'] as $so) {
-                $short = sprintf($so['short']);
+                $short = '';
+                if (array_key_exists('short', $so)) {
+                    $short = sprintf($so['short']);
+                }
                 $long = sprintf($so['long']);
                 $desc = $so['desc'];
                 $func = null;
