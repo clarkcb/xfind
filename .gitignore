@@ -6,6 +6,7 @@
 .idea/
 .vagrant/
 .vscode/
+tmp/
 
 # jekyll-related
 about.md
