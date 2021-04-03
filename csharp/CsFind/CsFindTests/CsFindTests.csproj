@@ -2,22 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
+
     <IsPackable>false</IsPackable>
-    <OutputType>Exe</OutputType>
-    <LangVersion>8</LangVersion>
-    <Nullable>enable</Nullable>
-    <AssemblyName>CsFindTests</AssemblyName>
-    <RootNamespace>CsFindTests</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="NUnit" Version="3.12.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CsFind\CsFind.csproj" />
+    <ProjectReference Include="..\CsFindLib\CsFindLib.csproj" />
   </ItemGroup>
 
 </Project>

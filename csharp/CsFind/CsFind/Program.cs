@@ -1,9 +1,11 @@
-﻿namespace CsFind
+﻿using System;
+
+namespace CsFind
 {
-	static class FindMain
-	{
-		static void Main(string[] args)
-		{
+    class Program
+    {
+        static void Main(string[] args)
+        {
 			var options = new FindOptions();
 			try
 			{
@@ -37,6 +39,6 @@
 				Common.Log($"\nERROR: {e.Message}");
 				options.Usage(1);
 			}
-		}
-	}
+        }
+    }
 }

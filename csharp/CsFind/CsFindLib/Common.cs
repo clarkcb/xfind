@@ -2,7 +2,7 @@
 
 namespace CsFind
 {
-	internal static class Common
+	public static class Common
 	{
 		public static void Log(string message)
 		{

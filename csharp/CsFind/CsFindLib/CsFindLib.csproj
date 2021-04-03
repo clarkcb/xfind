@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Resources\findoptions.json" />
+    <None Remove="Resources\filetypes.json" />
+    <EmbeddedResource Include="Resources\findoptions.json" />
+    <EmbeddedResource Include="Resources\filetypes.json" />
+  </ItemGroup>
+
+</Project>

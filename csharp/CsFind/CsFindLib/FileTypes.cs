@@ -33,7 +33,7 @@ namespace CsFind
 
 		public FileTypes()
 		{
-			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.filetypes.json");
+			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
 			PopulateFileTypesFromJson();
 		}

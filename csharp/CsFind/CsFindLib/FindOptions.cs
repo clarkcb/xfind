@@ -75,7 +75,7 @@ namespace CsFind
 		public FindOptions()
 		{
 			// _findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.findoptions.xml");
-			_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.findoptions.json");
+			_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 			Options = new List<FindOption>();
 			ArgDictionary = new Dictionary<string, FindOption>();
 			FlagDictionary = new Dictionary<string, FindOption>();
