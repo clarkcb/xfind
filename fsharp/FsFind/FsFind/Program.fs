@@ -1,4 +1,4 @@
-﻿namespace FsFind
+namespace FsFind
 
 module Main =
 
@@ -23,7 +23,7 @@ module Main =
 
 
     [<EntryPoint>]
-    let Main(args : string[]) = 
+    let Main (args : string[]) = 
         match (Array.toList args) with
         | [] -> HandleError "Startpath not defined"
         | _ ->

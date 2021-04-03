@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Common.fs" />
+    <Compile Include="Color.fs" />
+    <Compile Include="EmbeddedResource.fs" />
+    <Compile Include="FindException.fs" />
+    <Compile Include="FileUtil.fs" />
+    <Compile Include="FileTypes.fs" />
+    <Compile Include="FindSettings.fs" />
+    <Compile Include="FindFile.fs" />
+    <Compile Include="FindOptions.fs" />
+    <Compile Include="Finder.fs" />
+    <None Remove="Resources\filetypes.json" />
+    <None Remove="Resources\filetypes.xml" />
+    <None Remove="Resources\findoptions.json" />
+    <None Remove="Resources\findoptions.xml" />
+    <EmbeddedResource Include="Resources\filetypes.json" />
+    <EmbeddedResource Include="Resources\filetypes.xml" />
+    <EmbeddedResource Include="Resources\findoptions.json" />
+    <EmbeddedResource Include="Resources\findoptions.xml" />
+  </ItemGroup>
+
+</Project>

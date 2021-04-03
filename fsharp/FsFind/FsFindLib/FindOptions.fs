@@ -98,7 +98,7 @@ module FindOptions =
         |> List.sortBy (fun o -> if (o.ShortArg <> "") then (o.ShortArg.ToLower() + "@" + o.LongArg) else o.LongArg)
 
     // let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.findoptions.xml");
-    let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.findoptions.json");
+    let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
     // let options = OptionsFromXml(_findOptionsResource)
     let options = OptionsFromJson(_findOptionsResource)
 

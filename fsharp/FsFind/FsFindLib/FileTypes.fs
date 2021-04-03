@@ -47,7 +47,7 @@ type FileTypes() =
             fileTypesDictionary.Add(text, allText)
         fileTypesDictionary
 
-    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.filetypes.json")
+    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.filetypes.json")
     let _fileTypesDictionary = PopulateFileTypesFromJson(_fileTypesResource)
 
     // read-only member properties
