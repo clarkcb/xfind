@@ -37,10 +37,11 @@ impl Finder {
         if settings.paths.len() < 1 {
             return Err(FindError::new("Startpath not defined"));
         }
-        for p in settings.paths.iter() {
-            if p == "" {
+        for path in settings.paths.iter() {
+            if path == "" {
                 return Err(FindError::new("Startpath not defined"));
             }
+            let p = FileUtil::expand_path(path);
             let metadata = fs::metadata(&p);
             if metadata.is_err() {
                 match metadata.err().unwrap().kind() {
@@ -144,7 +145,8 @@ impl Finder {
     pub fn find(&self) -> Result<Vec<FindFile>, FindError> {
         let mut findfiles: Vec<FindFile> = Vec::new();
         for p in self.settings.paths.iter() {
-            for entry in WalkDir::new(&p)
+            let ep = FileUtil::expand_path(p);
+            for entry in WalkDir::new(&ep)
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file())

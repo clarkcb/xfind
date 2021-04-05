@@ -46,6 +46,23 @@ impl FileUtil {
         }
         false
     }
+
+    /// Expand a filepath if it starts with tilde
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// assert_eq!("/home/user", FileUtil::expand_path("~"));
+    /// assert_eq!("/other/path", FileUtil::expand_path("/other/path"));
+    /// ```
+    pub fn expand_path(filepath: &str) -> String {
+        if filepath.starts_with("~") {
+            let home = std::env::var("HOME").unwrap();
+            let expanded = filepath.replacen("~", &home, 1);
+            return expanded;
+        }
+        String::from(filepath)
+    }
 }
 
 #[cfg(test)]
@@ -98,5 +115,14 @@ mod tests {
         assert!(!FileUtil::is_hidden(filename));
         let filename = "../";
         assert!(!FileUtil::is_hidden(filename));
+    }
+
+    #[test]
+    fn test_expand_path() {
+        let home = std::env::var("HOME").unwrap();
+        assert_eq!(home, FileUtil::expand_path("~"));
+        let xfindpath = format!("{}/xfind", home);
+        assert_eq!(xfindpath, FileUtil::expand_path("~/xfind"));
+        assert_eq!(String::from("/path/to/dir"), FileUtil::expand_path("/path/to/dir"));
     }
 }
