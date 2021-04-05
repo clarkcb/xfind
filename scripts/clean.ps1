@@ -76,7 +76,7 @@ function CleanCsharp
     $oldPwd = Get-Location
     Set-Location $csfindPath
 
-    $projects = @('CsFind', 'CsFindTests')
+    $projects = @('CsFind', 'CsFindLib', 'CsFindTests')
     $subdirs = @('bin', 'obj')
 
     ForEach ($p in $projects)
@@ -125,7 +125,7 @@ function CleanFsharp
     $oldPwd = Get-Location
     Set-Location $fsfindPath
 
-    $projects = @('FsFind', 'FsFindTests')
+    $projects = @('FsFind', 'FsFindLib', 'FsFindTests')
     $subdirs = @('bin', 'obj')
 
     ForEach ($p in $projects)

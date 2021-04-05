@@ -380,7 +380,7 @@ class Benchmarker(object):
         time_dict = {}
         times = lines[0].split()
         time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
-        if time_name_matches:
+        if time_name_matches and all(time_name_matches):
             for time_name_match in time_name_matches:
                 n = time_name_match.group(3)
                 t = time_name_match.group(1)

@@ -50,7 +50,7 @@ clean_csharp () {
     echo
     hdr "clean_csharp"
 
-    PROJECTS=(CsFind CsFindTests)
+    PROJECTS=(CsFind CsFindLib CsFindTests)
     SUBDIRS=(bin obj)
     for p in ${PROJECTS[*]}
     do
@@ -77,7 +77,7 @@ clean_fsharp () {
     echo
     hdr "clean_fsharp"
 
-    PROJECTS=(FsFind FsFindTests)
+    PROJECTS=(FsFind FsFindLib FsFindTests)
     SUBDIRS=(bin obj)
     for p in ${PROJECTS[*]}
     do

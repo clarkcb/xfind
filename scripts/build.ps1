@@ -190,6 +190,11 @@ function BuildCpp
         {
             Log("cmake --build $cmakeBuildDir --target $t -- -W -Wall -Werror")
             cmake --build $cmakeBuildDir --target $t -- -W -Wall -Werror
+            if ($LASTEXITCODE -ne 0)
+            {
+                Log("An error occurred while trying to run build target $t")
+                exit
+            }
         }
     }
 
@@ -220,7 +225,7 @@ function BuildCsharp
         return
     }
 
-    $resourcesPath = Join-Path $csfindPath 'CsFind' 'Resources'
+    $resourcesPath = Join-Path $csfindPath 'CsFindLib' 'Resources'
     $testResourcesPath = Join-Path $csfindPath 'CsFindTests' 'Resources'
 
     if (!(Test-Path $resourcesPath))
@@ -317,7 +322,7 @@ function BuildFsharp
         return
     }
 
-    $resourcesPath = Join-Path $fsfindPath 'FsFind' 'Resources'
+    $resourcesPath = Join-Path $fsfindPath 'FsFindLib' 'Resources'
     $testResourcesPath = Join-Path $fsfindPath 'FsFindTests' 'Resources'
 
     if (!(Test-Path $resourcesPath))

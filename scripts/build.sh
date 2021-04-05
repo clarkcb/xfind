@@ -167,6 +167,7 @@ build_cpp () {
             do
                 log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
                 cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror
+                [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
             done
         fi
     done
@@ -193,8 +194,16 @@ build_csharp () {
         return
     fi
 
-    RESOURCES_PATH=$CSFIND_PATH/CsFind/Resources
+    RESOURCES_PATH=$CSFIND_PATH/CsFindLib/Resources
     TEST_RESOURCES_PATH=$CSFIND_PATH/CsFindTests/Resources
+
+    # copy the shared json, xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
+
+    # copy the shared test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
+    copy_test_resources $TEST_RESOURCES_PATH
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
@@ -207,15 +216,7 @@ build_csharp () {
         CONFIGURATIONS=(Release)
     fi
 
-    # copy the shared json, xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
-
-    # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
-
-    # run dotnet build for both configurations
+    # run dotnet build selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building csfind for $c configuration"
@@ -277,8 +278,16 @@ build_fsharp () {
         return
     fi
 
-    RESOURCES_PATH=$FSFIND_PATH/FsFind/Resources
+    RESOURCES_PATH=$FSFIND_PATH/FsFindLib/Resources
     TEST_RESOURCES_PATH=$FSFIND_PATH/FsFindTests/Resources
+
+    # copy the shared json, xml files to the local resource location
+    mkdir -p $RESOURCES_PATH
+    copy_json_resources $RESOURCES_PATH
+
+    # copy the shared test files to the local test resource location
+    mkdir -p $TEST_RESOURCES_PATH
+    copy_test_resources $TEST_RESOURCES_PATH
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
@@ -291,16 +300,7 @@ build_fsharp () {
         CONFIGURATIONS=(Release)
     fi
 
-    # copy the shared json, xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
-    copy_xml_resources $RESOURCES_PATH
-
-    # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
-
-    # run dotnet for both configurations
+    # run dotnet for selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building fsfind for $c configuration"
