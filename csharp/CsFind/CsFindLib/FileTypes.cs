@@ -2,9 +2,8 @@
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Xml.Linq;
 
-using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,object>>>;
+using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>;
 
 namespace CsFind
 {
@@ -41,7 +40,7 @@ namespace CsFind
 		private void PopulateFileTypesFromJson()
 		{
 			var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
-			if (filetypesDict.ContainsKey("filetypes"))
+			if (filetypesDict!.ContainsKey("filetypes"))
 			{
 				var filetypeDicts = filetypesDict["filetypes"];
 				foreach (var filetypeDict in filetypeDicts)
@@ -52,7 +51,7 @@ namespace CsFind
 						var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
 							.Select(x => "." + x.GetString());
 						var extensionSet = new HashSet<string>(extensions);
-						_fileTypesDictionary[name] = extensionSet;
+						_fileTypesDictionary[name!] = extensionSet;
 					}
 				}
 				_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);

@@ -99,7 +99,7 @@ namespace CsFind
 				{
 					findFiles.AddRange(new DirectoryInfo(expandedPath).
 						EnumerateFiles("*", findOption).
-						Where(f => IsFindDirectory(f.Directory)).
+						Where(f => f.Directory == null || IsFindDirectory(f.Directory)).
 						Select(f => new FindFile(f, _fileTypes.GetFileType(f))).
 						Where(FilterFile).
 						Select(f => f));
@@ -113,7 +113,6 @@ namespace CsFind
 						findFiles.Add(ff);
 					}
 				}
-				
 			}
 			return findFiles;
 		}
@@ -127,8 +126,8 @@ namespace CsFind
 		private IEnumerable<DirectoryInfo> GetMatchingDirs(IEnumerable<FindFile> findFiles)
 		{
 			return new List<DirectoryInfo>(
-				findFiles.Where(r => r.File != null)
-					.Select(r => r.File!.Directory)
+				findFiles.Where(ff => ff.File != null && ff.File.Directory != null)
+					.Select(ff => ff.File!.Directory!)
 					.Distinct()
 					.OrderBy(d => d.FullName));
 		}

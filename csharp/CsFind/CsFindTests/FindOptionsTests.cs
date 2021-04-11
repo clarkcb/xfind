@@ -48,12 +48,12 @@ namespace CsFindTests
 			var ex = Assert.Throws<FindException>(() => _findOptions.SettingsFromArgs(args));
 			Assert.AreEqual("Invalid option: Q", ex.Message);
 		}
-		
+
 		[Test]
 		public void SettingsFromJson_EqualsExpected()
 		{
 			var json = @"{
-  ""path"": ""~/src/xfind/"", 
+  ""path"": ""~/src/xfind/"",
   ""in-ext"": [""js"", ""ts""],
   ""out-dirpattern"": ""node_module"",
   ""out-filepattern"": [""temp""],

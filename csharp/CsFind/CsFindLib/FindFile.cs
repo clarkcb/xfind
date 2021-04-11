@@ -55,7 +55,7 @@ namespace CsFind
 			sb.Append(PathAndName);
 			return sb.ToString();
 		}
-		
+
 		public static int Compare(FindFile? sf1, FindFile? sf2)
 		{
 			if (sf1 is null && sf2 is null)

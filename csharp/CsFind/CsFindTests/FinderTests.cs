@@ -10,7 +10,7 @@ namespace CsFindTests
 	class FinderTests
 	{
 		private readonly FileTypes _fileTypes = new FileTypes();
-		
+
 		private static string GetTestFileContent()
 		{
 			return EmbeddedTestResource.GetResourceFileContents("CsFindTests.Resources.testFile2.txt");

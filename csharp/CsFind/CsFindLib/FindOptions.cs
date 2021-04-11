@@ -4,9 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using System.Xml.Linq;
 
-using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>;
+using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>>>;
 
 namespace CsFind
 {
@@ -74,55 +73,22 @@ namespace CsFind
 
 		public FindOptions()
 		{
-			// _findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFind.Resources.findoptions.xml");
 			_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 			Options = new List<FindOption>();
 			ArgDictionary = new Dictionary<string, FindOption>();
 			FlagDictionary = new Dictionary<string, FindOption>();
-			// SetOptionsFromXml();
 			SetOptionsFromJson();
 		}
 
 		private void SetOptionsFromJson()
 		{
 			var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(_findOptionsResource);
-			var optionDicts = findOptionsDict["findoptions"];
+			var optionDicts = findOptionsDict!["findoptions"];
 			foreach (var optionDict in optionDicts)
 			{
 				var longArg = optionDict["long"];
 				var shortArg = optionDict.ContainsKey("short") ? optionDict["short"] : null;
 				var desc = optionDict["desc"];
-				if (ArgActionDictionary.ContainsKey(longArg))
-				{
-					var option = new FindArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
-					Options.Add(option);
-					ArgDictionary.Add(longArg, option);
-					if (!string.IsNullOrWhiteSpace(shortArg))
-					{
-						ArgDictionary.Add(shortArg, option);
-					}
-				}
-				else if (BoolFlagActionDictionary.ContainsKey(longArg))
-				{
-					var option = new FindFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
-					Options.Add(option);
-					FlagDictionary.Add(longArg, option);
-					if (!string.IsNullOrWhiteSpace(shortArg))
-					{
-						FlagDictionary.Add(shortArg, option);
-					}
-				}
-			}
-		}
-
-		private void SetOptionsFromXml()
-		{
-			var doc = XDocument.Parse(_findOptionsResource);
-			foreach (var f in doc.Descendants("findoption"))
-			{
-				var longArg = f.Attributes("long").First().Value;
-				var shortArg = f.Attributes("short").First().Value;
-				var desc = f.Value.Trim();
 				if (ArgActionDictionary.ContainsKey(longArg))
 				{
 					var option = new FindArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
@@ -158,10 +124,12 @@ namespace CsFind
 		public static void SettingsFromJson(string jsonString, FindSettings settings)
 		{
 			var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-			foreach (var (key, value) in settingsDict)
-			{
-				var obj = (JsonElement)value;
-				ApplySetting(key, obj, settings);
+			if (settingsDict != null) {
+				foreach (var (key, value) in settingsDict)
+				{
+					var obj = (JsonElement)value;
+					ApplySetting(key, obj, settings);
+				}
 			}
 		}
 
@@ -170,7 +138,10 @@ namespace CsFind
 			switch (obj.ValueKind)
 			{
 				case JsonValueKind.String:
-					ApplySetting(arg, obj.GetString(), settings);
+					string? s = obj.GetString();
+					if (s != null) {
+						ApplySetting(arg, s, settings);
+					}
 					break;
 				case JsonValueKind.True:
 					ApplySetting(arg, true, settings);

@@ -10,7 +10,7 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/CsFind/bin/Debug/netcoreapp3.1/CsFind.dll",
+            "program": "${workspaceFolder}/CsFind/bin/Debug/net5.0/CsFind.dll",
             "args": [],
             "cwd": "${workspaceFolder}/CsFind",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
@@ -23,13 +23,31 @@
             "request": "launch",
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
-            "program": "${workspaceFolder}/CsFind/bin/Debug/netcoreapp3.1/CsFind.dll",
+            "program": "${workspaceFolder}/CsFind/bin/Debug/net5.0/CsFind.dll",
             "args": [
                 "-x",
                 "cs",
                 "."
             ],
             "cwd": "${workspaceFolder}/CsFind",
+            // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "csfind -x py pyfind",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/CsFind/bin/Debug/net5.0/CsFind.dll",
+            "args": [
+                "-x",
+                "py",
+                "-D",
+                "venv",
+                "${env:XFIND_PATH}/python"
+            ],
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
             "stopAtEntry": false

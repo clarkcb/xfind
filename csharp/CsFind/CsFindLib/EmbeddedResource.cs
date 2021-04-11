@@ -11,13 +11,7 @@ namespace CsFind
         {
             try
             {
-                var assembly = Assembly.GetAssembly(typeof(EmbeddedResource));
-
-                // using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(namespaceAndFileName);
-                // using var stream = typeof(EmbeddedResource).GetTypeInfo().Assembly
-                //     .GetManifestResourceStream(namespaceAndFileName);
-                using var stream = assembly.GetManifestResourceStream(namespaceAndFileName);
-
+                using var stream = Assembly.GetAssembly(typeof(EmbeddedResource))!.GetManifestResourceStream(namespaceAndFileName);
                 using var reader = new StreamReader(stream!, Encoding.UTF8);
                 return reader.ReadToEnd();
             }
