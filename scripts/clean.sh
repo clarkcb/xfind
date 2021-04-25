@@ -24,7 +24,7 @@ clean_clojure () {
     echo
     hdr "clean_clojure"
 
-    cd $CLJFIND_PATH
+    cd "$CLJFIND_PATH"
     log "lein clean"
     lein clean
     cd -
@@ -34,7 +34,7 @@ clean_cpp () {
     echo
     hdr "clean_cpp"
 
-    cd $CPPFIND_PATH
+    cd "$CPPFIND_PATH"
 
     CONFIGURATIONS=(debug release)
     for c in ${CONFIGURATIONS[*]}
@@ -67,7 +67,7 @@ clean_dart () {
     hdr "clean_dart"
 
     # pub cache repair is apparently the closest thing to clean for dart
-    cd $DARTFIND_PATH
+    cd "$DARTFIND_PATH"
     log "dart pub cache repair"
     dart pub cache repair
     cd -
@@ -93,7 +93,7 @@ clean_go () {
     echo
     hdr "clean_go"
 
-    cd $GOFIND_PATH
+    cd "$GOFIND_PATH"
     log "go clean"
     go clean
     cd -
@@ -103,7 +103,7 @@ clean_haskell () {
     echo
     hdr "clean_haskell"
 
-    cd $HSFIND_PATH
+    cd "$HSFIND_PATH"
     log "stack clean"
     stack clean
     cd -
@@ -114,14 +114,14 @@ clean_java () {
     hdr "clean_java"
 
     log "mvn -f $JAVAFIND_PATH/pom.xml clean"
-    mvn -f $JAVAFIND_PATH/pom.xml clean
+    mvn -f "$JAVAFIND_PATH/pom.xml" clean
 }
 
 clean_javascript () {
     echo
     hdr "clean_javascript"
 
-    cd $JSFIND_PATH
+    cd "$JSFIND_PATH"
     log "npm run clean"
     npm run clean
     cd -
@@ -131,7 +131,7 @@ clean_kotlin () {
     echo
     hdr "clean_kotlin"
 
-    cd $KTFIND_PATH/
+    cd "$KTFIND_PATH"
     log "gradle -b build.gradle clean"
     gradle -b build.gradle clean
     cd -
@@ -179,7 +179,7 @@ clean_rust () {
     echo
     hdr "clean_rust"
 
-    cd $RSFIND_PATH
+    cd "$RSFIND_PATH"
     echo "cargo clean"
     cargo clean
     cd -
@@ -191,7 +191,7 @@ clean_scala () {
 
     # TODO: convert to sbt command
 
-    cd $SCALAFIND_PATH
+    cd "$SCALAFIND_PATH"
     log "sbt clean"
     sbt clean
     cd -
@@ -208,7 +208,7 @@ clean_typescript () {
     echo
     hdr "clean_typescript"
 
-    cd $TSFIND_PATH
+    cd "$TSFIND_PATH"
     log "npm run clean"
     npm run clean
     cd -

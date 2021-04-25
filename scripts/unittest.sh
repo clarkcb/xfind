@@ -26,7 +26,7 @@ unittest_clojure () {
 
     # Test with lein
     log "Unit-testing cljfind"
-    cd $CLJFIND_PATH
+    cd "$CLJFIND_PATH"
     log "lein test"
     lein test
     cd -
@@ -69,7 +69,7 @@ unittest_dart () {
     echo
     hdr "unittest_dart"
 
-    cd $DARTFIND_PATH
+    cd "$DARTFIND_PATH"
     log "Unit-testing dartfind"
     log "pub run test"
     pub run test
@@ -97,9 +97,9 @@ unittest_go () {
 
     # Run the tests using go test
     log "Unit-testing gofind"
-    cd $GOFIND_PATH
+    cd "$GOFIND_PATH"
     log "go test --cover ./..."
-    # cd $GOSRC_PATH; go test; cd -
+    # cd "$GOSRC_PATH"; go test; cd -
     go test --cover ./...
     cd -
 }
@@ -111,7 +111,7 @@ unittest_haskell () {
     # test with stack
     log "Unit-testing hsfind"
     log "stack test"
-    cd $HSFIND_PATH/; stack test; cd -
+    cd "$HSFIND_PATH"; stack test; cd -
 }
 
 unittest_java () {
@@ -121,7 +121,7 @@ unittest_java () {
     # run tests via maven
     log "Unit-testing javafind"
     log "mvn -f $JAVAFIND_PATH/pom.xml test"
-    mvn -f $JAVAFIND_PATH/pom.xml test
+    mvn -f "$JAVAFIND_PATH/pom.xml" test
 }
 
 unittest_javascript () {
@@ -130,7 +130,7 @@ unittest_javascript () {
 
     # run tests
     log "Unit-testing jsfind"
-    cd $JSFIND_PATH
+    cd "$JSFIND_PATH"
     log "npm test"
     npm test
     cd -
@@ -143,14 +143,14 @@ unittest_kotlin () {
     # run tests via gradle
     log "Unit-testing ktfind"
     log "gradle -b $KTFIND_PATH/build.gradle test"
-    gradle -b $KTFIND_PATH/build.gradle test
+    gradle -b "$KTFIND_PATH/build.gradle" test
 }
 
 unittest_objc () {
     echo
     hdr "unittest_objc"
 
-    cd $OBJCFIND_PATH
+    cd "$OBJCFIND_PATH"
     log "Unit-testing objcfind"
     log "xcodebuild test -project objcfind.xcodeproj -scheme objcfind"
     xcodebuild test -project objcfind.xcodeproj -scheme objcfind
@@ -161,7 +161,7 @@ unittest_ocaml () {
     echo
     hdr "unittest_ocaml"
 
-    cd $MLFIND_PATH
+    cd "$MLFIND_PATH"
     log "Unit-testing mlfind"
     ./unittest.sh
     cd -
@@ -175,11 +175,11 @@ unittest_perl () {
 
     # run tests using Test::Simple
     log "Unit-testing plfind"
-    FILES=$(find $TESTS_PATH -name "*_test.pl")
+    FILES=$(find "$TESTS_PATH" -name "*_test.pl")
     for f in ${FILES[*]}
     do
         log "perl $f"
-        perl $f
+        perl "$f"
     done
 }
 
@@ -187,8 +187,8 @@ unittest_php () {
     echo
     hdr "unittest_php"
 
-    TESTS_PATH=$PHPFIND_PATH/tests
-    PHPUNIT=$PHPFIND_PATH/vendor/bin/phpunit
+    TESTS_PATH="$PHPFIND_PATH/tests"
+    PHPUNIT="$PHPFIND_PATH/vendor/bin/phpunit"
 
     if [ ! -f "$PHPUNIT" ]
     then
@@ -199,25 +199,25 @@ unittest_php () {
     # run tests with phpunit
     log "Unit-testing phpfind"
     log "$PHPUNIT $TESTS_PATH"
-    $PHPUNIT $TESTS_PATH
+    "$PHPUNIT" "$TESTS_PATH"
 }
 
 unittest_python () {
     echo
     hdr "unittest_python"
 
-    TESTS_PATH=$PYFIND_PATH/tests
-    VENV_PATH=$PYFIND_PATH/venv
-    PYTHON=$VENV_PATH/bin/python
-    export PYTHONPATH=$PYTHON_PATH
+    TESTS_PATH="$PYFIND_PATH/tests"
+    VENV_PATH="$PYFIND_PATH/venv"
+    PYTHON="$VENV_PATH/bin/python"
+    export PYTHONPATH="$PYTHON_PATH"
 
-    if [ ! -d $VENV_PATH ]
+    if [ ! -d "$VENV_PATH" ]
     then
         log "venv path not found, you probably need to run the python build (./build.sh python)"
         return
     fi
 
-    cd $PYFIND_PATH
+    cd "$PYFIND_PATH"
 
     # activate the virtualenv
     log "source ./venv/bin/activate"
@@ -242,7 +242,7 @@ unittest_ruby () {
     log "Unit-testing rbfind"
 
     # Run all tests via rake
-    cd $RBFIND_PATH
+    cd "$RBFIND_PATH"
     log "rake test"
     rake test
     cd -
@@ -254,7 +254,7 @@ unittest_rust () {
 
     # Run cargo test
     log "Unit-testing rsfind"
-    cd $RSFIND_PATH
+    cd "$RSFIND_PATH"
     log "cargo test"
     cargo test
     cd -
@@ -266,7 +266,7 @@ unittest_scala () {
 
     # run tests via sbt
     log "Unit-testing scalafind"
-    cd $SCALAFIND_PATH
+    cd "$SCALAFIND_PATH"
     log "sbt test"
     sbt test
     cd -
@@ -277,7 +277,7 @@ unittest_swift () {
     hdr "unittest_swift"
 
     log "Unit-testing swiftfind"
-    cd $SWIFTFIND_PATH
+    cd "$SWIFTFIND_PATH"
     log "swift test"
     swift test
     cd -
@@ -289,7 +289,7 @@ unittest_typescript () {
 
     # run tests
     log "Unit-testing tsfind"
-    cd $TSFIND_PATH
+    cd "$TSFIND_PATH"
     log "npm test"
     npm test
     cd -

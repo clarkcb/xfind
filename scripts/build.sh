@@ -24,41 +24,41 @@ source "$DIR/common.sh"
 copy_json_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/config.json $resources_path/"
-    cp $SHARED_PATH/config.json $resources_path/
+    cp "$SHARED_PATH/config.json" "$resources_path/"
     log "cp $SHARED_PATH/filetypes.json $resources_path/"
-    cp $SHARED_PATH/filetypes.json $resources_path/
+    cp "$SHARED_PATH/filetypes.json" "$resources_path/"
     log "cp $SHARED_PATH/findoptions.json $resources_path/"
-    cp $SHARED_PATH/findoptions.json $resources_path/
+    cp "$SHARED_PATH/findoptions.json" "$resources_path/"
 }
 
 # copy_xml_resources
 copy_xml_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/filetypes.xml $resources_path/"
-    cp $SHARED_PATH/filetypes.xml $resources_path/
+    cp "$SHARED_PATH"/filetypes.xml "$resources_path"/
     log "cp $SHARED_PATH/findoptions.xml $resources_path/"
-    cp $SHARED_PATH/findoptions.xml $resources_path/
+    cp "$SHARED_PATH/findoptions.xml" "$resources_path/"
 }
 
 # copy_test_resources
 copy_test_resources () {
     local test_resources_path="$1"
     log "cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/"
-    cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/
+    cp "$TEST_FILE_PATH"/testFile*.txt "$test_resources_path/"
 }
 
 # add_to_bin
 add_to_bin () {
     local script_path="$1"
-    local script_name=$(basename $1)
+    local script_name=$(basename "$1")
     if [ ! -d "$BIN_PATH" ]
     then
         log "Creating bin path"
         log "mkdir -p $BIN_PATH"
-        mkdir -p $BIN_PATH
+        mkdir -p "$BIN_PATH"
     fi
 
-    cd $BIN_PATH
+    cd "$BIN_PATH"
 
     if [[ $script_name == *.sh ]]
     then
@@ -72,7 +72,7 @@ add_to_bin () {
     fi
 
     log "ln -s $script_path $script_name"
-    ln -s $script_path $script_name
+    ln -s "$script_path" "$script_name"
 
     cd -
 }
@@ -93,11 +93,11 @@ build_clojure () {
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH=$CLJFIND_PATH/resources
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
     # copy_xml_resources $RESOURCES_PATH
 
-    cd $CLJFIND_PATH
+    cd "$CLJFIND_PATH"
 
     # Create uberjar with lein
     log "Building cljfind"
@@ -122,7 +122,7 @@ build_cpp () {
         return
     fi
 
-    cd $CPPFIND_PATH
+    cd "$CPPFIND_PATH"
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
@@ -143,10 +143,10 @@ build_cpp () {
         if [ ! -d "$CMAKE_BUILD_PATH" ]
         then
             log "mkdir -p $CMAKE_BUILD_PATH"
-            mkdir -p $CMAKE_BUILD_PATH
+            mkdir -p "$CMAKE_BUILD_PATH"
 
             log "cd $CMAKE_BUILD_PATH"
-            cd $CMAKE_BUILD_PATH
+            cd "$CMAKE_BUILD_PATH"
 
             log "cmake -G \"Unix Makefiles\" .."
             cmake -G "Unix Makefiles" ..
@@ -166,7 +166,7 @@ build_cpp () {
             for t in ${TARGETS[*]}
             do
                 log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
-                cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror
+                cmake --build "$CMAKE_BUILD_DIR" --target "$t" -- -W -Wall -Werror
                 [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
             done
         fi
@@ -198,12 +198,12 @@ build_csharp () {
     TEST_RESOURCES_PATH=$CSFIND_PATH/CsFindTests/Resources
 
     # copy the shared json, xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
@@ -221,7 +221,7 @@ build_csharp () {
     do
         log "Building csfind for $c configuration"
         log "dotnet build $CSFIND_PATH/CsFind.sln --configuration $c"
-        dotnet build $CSFIND_PATH/CsFind.sln --configuration $c
+        dotnet build "$CSFIND_PATH/CsFind.sln" --configuration "$c"
     done
 
     if [ -n "$RELEASE" ]
@@ -244,7 +244,7 @@ build_dart () {
         return
     fi
 
-    cd $DARTFIND_PATH
+    cd "$DARTFIND_PATH"
 
     # RESOURCES_PATH=$DARTFIND_PATH/lib/data
 
@@ -278,16 +278,16 @@ build_fsharp () {
         return
     fi
 
-    RESOURCES_PATH=$FSFIND_PATH/FsFindLib/Resources
-    TEST_RESOURCES_PATH=$FSFIND_PATH/FsFindTests/Resources
+    RESOURCES_PATH="$FSFIND_PATH/FsFindLib/Resources"
+    TEST_RESOURCES_PATH="$FSFIND_PATH/FsFindTests/Resources"
 
     # copy the shared json, xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
@@ -305,7 +305,7 @@ build_fsharp () {
     do
         log "Building fsfind for $c configuration"
         log "dotnet build $FSFIND_PATH/FsFind.sln --configuration $c"
-        dotnet build $FSFIND_PATH/FsFind.sln --configuration $c
+        dotnet build "$FSFIND_PATH/FsFind.sln" --configuration "$c"
     done
 
     if [ -n "$RELEASE" ]
@@ -328,7 +328,7 @@ build_go () {
         return
     fi
 
-    cd $GOFIND_PATH
+    cd "$GOFIND_PATH"
 
     # go fmt the gofind source (for auto-generated code)
     log "Auto-formatting gofind"
@@ -344,7 +344,7 @@ build_go () {
     # if GOBIN not defined, set to BIN_PATH
     if [ ! -d "$GOBIN" ]
     then
-        export GOBIN=$BIN_PATH
+        export GOBIN="$BIN_PATH"
     fi
 
     # now build/install gofind
@@ -369,21 +369,21 @@ build_haskell () {
     STACK_DIR=$HOME/.stack
     if [ ! -d "$STACK_DIR" ]
     then
-        mkdir -p $STACK_DIR
+        mkdir -p "$STACK_DIR"
     fi
     if [ ! -f "$STACK_DIR/config.yaml" ]
     then
-        touch $STACK_DIR/config.yaml
+        touch "$STACK_DIR/config.yaml"
     fi
-    INSTALL_GHC=$(grep '^install-ghc:' $STACK_DIR/config.yaml)
+    INSTALL_GHC=$(grep '^install-ghc:' "$STACK_DIR"/config.yaml)
     if [ -z "$INSTALL_GHC" ]
     then
-        echo 'install-ghc: false' >> $STACK_DIR/config.yaml
+        echo 'install-ghc: false' >> "$STACK_DIR/config.yaml"
     fi
-    SYSTEM_GHC=$(grep '^system-ghc:' $STACK_DIR/config.yaml)
+    SYSTEM_GHC=$(grep '^system-ghc:' "$STACK_DIR"/config.yaml)
     if [ -z "$SYSTEM_GHC" ]
     then
-        echo 'system-ghc: true' >> $STACK_DIR/config.yaml
+        echo 'system-ghc: true' >> "$STACK_DIR/config.yaml"
     fi
     # RESOLVER=$(grep '^resolver:' $STACK_DIR/config.yaml)
     # if [ -z "$RESOLVER" ]
@@ -393,11 +393,11 @@ build_haskell () {
     # fi
 
     # copy the shared xml files to the local resource location
-    RESOURCES_PATH=$HSFIND_PATH/data
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    RESOURCES_PATH="$HSFIND_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
-    cd $HSFIND_PATH/
+    cd "$HSFIND_PATH/"
 
     # temporary to avoid building (too resource-intensive)
     # return
@@ -411,7 +411,7 @@ build_haskell () {
     make build
 
     log "stack install --local-bin-path $BIN_PATH"
-    stack install --local-bin-path $BIN_PATH
+    stack install --local-bin-path "$BIN_PATH"
 
     cd -
 }
@@ -426,21 +426,21 @@ build_java () {
         return
     fi
 
-    RESOURCES_PATH=$JAVAFIND_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$JAVAFIND_PATH/src/test/resources
+    RESOURCES_PATH="$JAVAFIND_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$JAVAFIND_PATH/src/test/resources"
 
     # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     # run a maven clean build
     log "Building javafind"
     log "mvn -f $JAVAFIND_PATH/pom.xml clean package -Dmaven.test.skip=true"
-    mvn -f $JAVAFIND_PATH/pom.xml clean package -Dmaven.test.skip=true
+    mvn -f "$JAVAFIND_PATH/pom.xml" clean package -Dmaven.test.skip=true
 
     # add to bin
     add_to_bin "$JAVAFIND_PATH/bin/javafind.sh"
@@ -458,10 +458,10 @@ build_javascript () {
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH=$JSFIND_PATH/data
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
-    cd $JSFIND_PATH
+    cd "$JSFIND_PATH"
 
     # run npm install and build
     log "Building jsfind"
@@ -491,17 +491,17 @@ build_kotlin () {
     TEST_RESOURCES_PATH=$KTFIND_PATH/src/test/resources
 
     # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     # run a maven clean build
     log "Building ktfind"
 
-    cd $KTFIND_PATH
+    cd "$KTFIND_PATH"
 
     log "gradle -b build.gradle clean jar"
     gradle -b build.gradle clean jar
@@ -526,7 +526,7 @@ build_objc () {
 
     # TODO: copy resource files locally?
 
-    cd $OBJCFIND_PATH
+    cd "$OBJCFIND_PATH"
 
     # run xcodebuild
     log "Building objcfind"
@@ -536,7 +536,7 @@ build_objc () {
         xcodebuild -alltargets
     else
         log "xcodebuild -project $TARGET"
-        xcodebuild -project $TARGET
+        xcodebuild -project "$TARGET"
     fi
 
     # add to bin
@@ -549,13 +549,13 @@ build_ocaml () {
     echo
     hdr "build_ocaml"
 
-    cd $MLFIND_PATH
+    cd "$MLFIND_PATH"
     ./build.sh
     if [ -L ~/bin/mlfind ]
     then
         rm ~/bin/mlfind
     fi
-    ln -s $MLFIND_PATH/_build/src/mlfind.native ~/bin/mlfind
+    ln -s "$MLFIND_PATH/_build/src/mlfind.native" ~/bin/mlfind
     cd -
 }
 
@@ -576,14 +576,14 @@ build_perl () {
     fi
 
     # copy the shared json files to the local resource location
-    RESOURCES_PATH=$PLFIND_PATH/share
-    mkdir -p $RESOURCES_PATH
+    RESOURCES_PATH="$PLFIND_PATH/share"
+    mkdir -p "$RESOURCES_PATH"
     log "cp $SHARED_PATH/config.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/config.json $RESOURCES_PATH/
+    cp "$SHARED_PATH/config.json" "$RESOURCES_PATH/"
     log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/
+    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
     log "cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/
+    cp "$SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
 
     # add to bin
     add_to_bin "$PLFIND_PATH/bin/plfind.sh"
@@ -606,20 +606,20 @@ build_php () {
         return
     fi
 
-    CONFIG_PATH=$PHPFIND_PATH/config
-    RESOURCES_PATH=$PHPFIND_PATH/resources
+    CONFIG_PATH="$PHPFIND_PATH/config"
+    RESOURCES_PATH="$PHPFIND_PATH/resources"
 
     # copy the shared config json file to the local config location
-    mkdir -p $CONFIG_PATH
+    mkdir -p "$CONFIG_PATH"
     log "cp $SHARED_PATH/config.json $CONFIG_PATH/"
-    cp $SHARED_PATH/config.json $CONFIG_PATH/
+    cp "$SHARED_PATH/config.json" "$CONFIG_PATH/"
 
     # copy the shared json files to the local resource location
-    mkdir -p $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
     log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/
+    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
     log "cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/"
-    cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/
+    cp "$SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
 
     COMPOSER=$(which composer)
     if [ -z "$COMPOSER" ]
@@ -628,7 +628,7 @@ build_php () {
         return
     fi
 
-    cd $PHPFIND_PATH
+    cd "$PHPFIND_PATH"
 
     # run a composer build
     log "Building phpfind"
@@ -665,7 +665,7 @@ build_python () {
     PYTHON=
     for p in ${PYTHON_VERSIONS[*]}
     do
-        PYTHON="$(which $p)"
+        PYTHON=$(which "$p")
         if [ -f "$PYTHON" ]
         then
             break
@@ -677,24 +677,24 @@ build_python () {
         log "A version of python >= 3.7 is required"
         return
     else
-        PYTHON=$(basename $PYTHON)
+        PYTHON=$(basename "$PYTHON")
         log "Using $PYTHON"
     fi
 
     # copy the shared json files to the local resource location
-    RESOURCES_PATH=$PYFIND_PATH/data
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    RESOURCES_PATH="$PYFIND_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
-    cd $PYFIND_PATH
+    cd "$PYFIND_PATH"
 
     if [ "$USE_VENV" == 'Yes' ]
     then
         # create a virtual env to run from and install to
-        if [ ! -d $PYFIND_PATH/venv ]
+        if [ ! -d "$PYFIND_PATH/venv" ]
         then
             log "$PYTHON -m venv venv"
-            $PYTHON -m venv venv
+            "$PYTHON" -m venv venv
         fi
 
         # activate the virtual env
@@ -744,16 +744,16 @@ build_ruby () {
     #     return
     # fi
 
-    RESOURCES_PATH=$RBFIND_PATH/data
-    TEST_RESOURCES_PATH=$RBFIND_PATH/lib/test/fixtures
+    RESOURCES_PATH="$RBFIND_PATH/data"
+    TEST_RESOURCES_PATH="$RBFIND_PATH/lib/test/fixtures"
 
     # copy the shared json files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the shared test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
     # TODO: figure out how to install dependencies without installing rbfind (which is what bundler does)
     # cd $RBFIND_PATH
@@ -775,7 +775,7 @@ build_rust () {
         return
     fi
 
-    cd $RSFIND_PATH
+    cd "$RSFIND_PATH"
 
     log "Building rsfind"
     if [ -n "$DEBUG" ]
@@ -808,18 +808,18 @@ build_scala () {
         return
     fi
 
-    RESOURCES_PATH=$SCALAFIND_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$SCALAFIND_PATH/src/test/resources
+    RESOURCES_PATH="$SCALAFIND_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$SCALAFIND_PATH/src/test/resources"
 
     # copy the shared xml files to the local resource location
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     # copy the test files to the local test resource location
-    mkdir -p $TEST_RESOURCES_PATH
-    copy_test_resources $TEST_RESOURCES_PATH
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
 
-    cd $SCALAFIND_PATH
+    cd "$SCALAFIND_PATH"
 
     # run sbt assembly
     log "Building scalafind"
@@ -847,7 +847,7 @@ build_swift () {
 
     # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
-    cd $SWIFTFIND_PATH
+    cd "$SWIFTFIND_PATH"
 
     # run swift build
     log "Building swiftfind"
@@ -883,11 +883,11 @@ build_typescript () {
     fi
 
     # copy the shared json files to the local resource location
-    RESOURCES_PATH=$TSFIND_PATH/data
-    mkdir -p $RESOURCES_PATH
-    copy_json_resources $RESOURCES_PATH
+    RESOURCES_PATH="$TSFIND_PATH/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
-    cd $TSFIND_PATH
+    cd "$TSFIND_PATH"
 
     # run npm install and build
     log "Building tsfind"

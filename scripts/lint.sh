@@ -24,7 +24,7 @@ lint_clojure () {
     echo
     hdr "lint_clojure"
 
-    cd $CLJFIND_PATH
+    cd "$CLJFIND_PATH"
 
     log "Linting cljfind"
     log "lein eastwood"
@@ -53,7 +53,7 @@ lint_dart () {
 
     log "Linting dartfind"
     log "dart analyze $DARTFIND_PATH"
-    dart analyze $DARTFIND_PATH
+    dart analyze "$DARTFIND_PATH"
 }
 
 lint_fsharp () {
@@ -67,7 +67,7 @@ lint_go () {
     echo
     hdr "lint_go"
 
-    cd $GOFIND_PATH
+    cd "$GOFIND_PATH"
 
     log "Linting gofind"
     log "go vet ./..."
@@ -80,38 +80,38 @@ lint_haskell () {
     echo
     hdr "lint_haskell"
 
-    HLINT=$HOME/.local/bin/hlint
+    HLINT="$HOME/.local/bin/hlint"
 
     log "Linting hsfind"
     log "hlint $HSFIND_PATH"
-    $HLINT $HSFIND_PATH
+    "$HLINT" "$HSFIND_PATH"
 }
 
 lint_java () {
     echo
     hdr "lint_java"
 
-    TOOLS_PATH=$JAVA_PATH/tools
+    TOOLS_PATH="$JAVA_PATH/tools"
     if [ ! -d "$TOOLS_PATH" ]
     then
         log "mkdir -p $TOOLS_PATH"
-        mkdir -p $TOOLS_PATH
+        mkdir -p "$TOOLS_PATH"
     fi
 
-    CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "checkstyle*.jar" | head -n 1)
+    CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | head -n 1)
     if [ -z "$CHECKSTYLE_JAR" ]
     then
         log "Checkstyle jar not found, downloading"
         URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.41/checkstyle-8.41-all.jar"
-        cd $TOOLS_PATH
-        curl -J -L -O $URL
+        cd "$TOOLS_PATH"
+        curl -J -L -O "$URL"
         cd -
-        CHECKSTYLE_JAR=$(find $TOOLS_PATH -name "checkstyle*.jar" | head -n 1)
+        CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | head -n 1)
     fi
 
-    JAVA=$JAVA_HOME/bin/java
+    JAVA="$JAVA_HOME/bin/java"
     # CONFIG=$JAVAFIND_PATH/sun_checks.xml
-    CONFIG=$JAVAFIND_PATH/google_checks.xml
+    CONFIG="$JAVAFIND_PATH/google_checks.xml"
 
     GREPVS=("Javadoc"
             "hides a field"
@@ -121,17 +121,17 @@ lint_java () {
             )
 
     log "Linting javafind"
-    FILES=$(find $JAVAFIND_PATH/src -name "*.java")
+    FILES=$(find "$JAVAFIND_PATH/src" -name "*.java")
     for f in ${FILES[*]}
     do
         echo
         log "java -jar $CHECKSTYLE_JAR -c $CONFIG $f"
-        output=$($JAVA -jar $CHECKSTYLE -c $CONFIG $f)
+        output=$("$JAVA" -jar "$CHECKSTYLE" -c "$CONFIG" "$f")
         # for g in ${GREPVS[*]}
         # do
         #     output=$(echo $output | grep -v $g)
         # done
-        echo -e $output
+        echo -e "$output"
     done
 }
 
@@ -139,22 +139,22 @@ lint_javascript () {
     echo
     hdr "lint_javascript"
 
-    JSSRC_PATH=$JSFIND_PATH/src
-    JSHINT=$JSFIND_PATH/node_modules/jshint/bin/jshint
+    JSSRC_PATH="$JSFIND_PATH/src"
+    JSHINT="$JSFIND_PATH/node_modules/jshint/bin/jshint"
 
-    if [ ! -f $JSHINT ]
+    if [ ! -f "$JSHINT" ]
     then
-        cd $JSFIND_PATH
+        cd "$JSFIND_PATH"
         npm install jshint
         cd -
     fi
 
     log "Linting jsfind"
-    FILES=$(find $JSSRC_PATH -name "*.js")
+    FILES=$(find "$JSSRC_PATH" -name "*.js")
     for f in ${FILES[*]}
     do
         log "$JSHINT $f"
-        $JSHINT $f
+        "$JSHINT" "$f"
     done
 }
 
@@ -169,7 +169,7 @@ lint_kotlin () {
     fi
 
     log "Linting ktfind"
-    cd $KTFIND_PATH
+    cd "$KTFIND_PATH"
     log "ktlint"
     ktlint
     cd -
@@ -208,7 +208,7 @@ lint_python () {
     hdr "lint_python"
 
     log "Linting pyfind"
-    cd $PYFIND_PATH
+    cd "$PYFIND_PATH"
     log "pylint pyfind"
     pylint pyfind
     cd -
@@ -225,11 +225,11 @@ lint_ruby () {
     fi
 
     log "Linting rbfind"
-    FILES=$(find $RBFIND_PATH -name "*.rb")
+    FILES=$(find "$RBFIND_PATH" -name "*.rb")
     for f in ${FILES[*]}
     do
         log "ruby-lint $f"
-        ruby-lint $f | grep -v 'undefined'
+        ruby-lint "$f" | grep -v 'undefined'
     done
 }
 
@@ -248,27 +248,27 @@ lint_scala () {
     if [ ! -d "$TOOLS_PATH" ]
     then
         log "mkdir -p $TOOLS_PATH"
-        mkdir -p $TOOLS_PATH
+        mkdir -p "$TOOLS_PATH"
     fi
 
-    SCALASTYLE_JAR=$(find $TOOLS_PATH -name "scalastyle*.jar" | head -n 1)
+    SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
     if [ -z "$SCALASTYLE_JAR" ]
     then
         log "Scalastyle jar not found, downloading"
         # TODO: is it the batch jar or the regular jar that should be used?
         # URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0-batch.jar"
         URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0.jar"
-        cd $TOOLS_PATH
-        curl -O $URL
+        cd "$TOOLS_PATH"
+        curl -O "$URL"
         cd -
-        SCALASTYLE_JAR=$(find $TOOLS_PATH -name "scalastyle*.jar" | head -n 1)
+        SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
     fi
 
-    CONFIG=$SCALAFIND_PATH/scalastyle_config.xml
+    CONFIG="$SCALAFIND_PATH/scalastyle_config.xml"
 
     log "Linting scalafind"
     log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALAFIND_PATH/src/main/scala"
-    java -jar $SCALASTYLE_JAR --config $CONFIG $SCALAFIND_PATH/src/main/scala
+    java -jar "$SCALASTYLE_JAR" --config "$CONFIG" "$SCALAFIND_PATH/src/main/scala"
 }
 
 lint_swift () {
@@ -283,7 +283,7 @@ lint_swift () {
 
     log "Linting swiftfind"
     log "cd $SWIFTFIND_PATH; swiftlint; cd -"
-    cd $SWIFTFIND_PATH; swiftlint; cd -
+    cd "$SWIFTFIND_PATH"; swiftlint; cd -
 }
 
 lint_typescript () {
