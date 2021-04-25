@@ -26,10 +26,9 @@ implemented in multiple programming languages, currently these [twenty](#why):
 | Swift | [https://swift.org/](https://swift.org/) |
 | TypeScript | [https://www.typescriptlang.org/](https://www.typescriptlang.org/) |
 
-
 [Using](#usage) any language version, you can find files for numerous criteria, including:
 
-* filter in/out by extensions
+* filter in/out by file extensions
 * filter in/out directory paths by regex
 * filter in/out file names by regex
 * filter in/out by file types
@@ -41,63 +40,62 @@ There are some other features being added, such as:
 * find files before and/or after lastmod date/time
 * find files smaller and/or larger than a given size
 
-
-The `xfind` repo is derived from [xsearch](https://github.com/clarkcb/xsearch). More specifically,
-I created `xfind` by extracting the file finding functionality from `xsearch`, and also applying
-some changes/additions. I ended up writing a python script to assist with creating `xfind` from
-`xsearch`. It's called _xsearch2xfind.py_ and I added it in the _scripts_ directory.
-
+The `xfind` repo is derived from [xsearch](https://github.com/clarkcb/xsearch).
 
 ## Why?
 
 There are a number of "why questions" that can be asked about `xfind`, such as:
 
-* Why create another file find CLI utility?
+* Why create another file find/search CLI utility?
 * Why write a version of the utility in X language?
 * Why rewrite the utility in so many languages?!?
 
-Those are really questions for `xsearch`, the project that `xfind` is derived from, and I *will*
-answer those questions there. However, there are a couple of questions specific to `xfind`:
+Those are really better questions for `xsearch`, the project that `xfind` is derived from, and I
+*will* answer those questions there. However, there are a couple of questions specific to `xfind`:
 
 ### Why create `xfind` from `xsearch`?
 
-I created `xfind` from `xsearch` after I realized that I would like to be able to use just the file
-finding functionality as a library dependency for another utility that I was working on to find
-file duplicates (see: [pydupes](https://github.com/clarkcb/pydupes)). I also realized that a file
-finding utility is useful on its own without the file searching part. Lastly, I realized that by
-creating `xfind`, I could then modify `xsearch` to use `xfind` as a library dependency to provide
-the file finding functionality, which would add another dimension for inter-language comparison.
+I created `xfind` from `xsearch` after realizing that the file finding portion of the functionality
+would be useful as a library dependency for other projects, such as a utility to find file duplicates
+(see: [pydupes](https://github.com/clarkcb/pydupes)). I also realized that a file finding utility with
+regex filtering would be useful on its own when file searching is not needed. Lastly, it occurred
+to me that I could modify `xsearch` to use the file finding library as an external dependency, which
+would add another dimension for inter-language comparison.
 
-By the way, the process of creating `xfind` from `xsearch` was a pretty interesting in and of
-itself, have a look at the _scripts/xsearch2xfind.py_ script I created to help with that.
+The [process](#how) of creating `xfind` from `xsearch` was kind of interesting in and of itself.
 
 ### Wasn't one multi-language project enough?
 
 Honestly, yes. 😀 &nbsp; I have "reimplementation fatigue" from these projects, and I will probably
 never do another multi-language project. That being said, I'm glad for doing them, it has been a
-very educational and mostly enjoyable process, and it has provided me with a lot of knowledge and
-experience that I wouldn't trade. There's a lot more I can say about it, and I hope to at some point.
-For now the key takeaway that I would offer is that the experience of doing these projects left me
-feeling well-equipped to answer questions like this:
+very educational and mostly enjoyable experience that I wouldn't trade. There's a lot more I can
+say about it, and I plan to. Have a look at the [conclusions](#conclusions) section for an overview
+of how I plan to tackle that.
 
-* What languages would you most recommend for a given future project, considering the project's
-  needs (rapid development/prototyping, high-performance, integration into existing environment,
-  etc.)?
+## How?
 
+The high-level process of creating `xfind` from `xsearch` included these steps:
+
+1. Clone a copy of the `xsearch` repo, renaming the root directory to `xfind`
+2. Write and execute a conversion script on the source under `xfind` (see _scripts/xsearch2xfind.py_)
+3. Manually edit the source to finish the conversion - remove file search functionality, etc.
+
+Looking back, there was more I could have added to the conversion script to further simplify
+the manual editing process, but it provided a good start. It did also get me thinking about
+programming language translation as another possible experimental project...
 
 ## Installation
 
 There are three installation options for `xfind`:
 
-1. Clone the repo only - if you are sure you will only want to compare language versions
-   in an editor, then you can just clone the repo and go from there.
+1. Clone the repo only - if you think you will only want to compare language versions in an
+   editor, then you can just clone the repo and go from there.
 2. Build a Docker image and open in a container - this is recommended because it's much less
    effort and won't affect your base system, choose this if you think you will want to build
    and run different language versions for comparison.
 3. Install different language compilers, interpreters, etc. locally - this is obviously more
    effort, but it might make sense it in cases where you're particularly interested in a small
    number of language versions and possibly even have some support for them installed already.
-
 
 ### Build Docker Image (recommended)
 
@@ -125,7 +123,7 @@ Next, open a terminal in the `xfind` root directory and cd into the _.devcontain
 subdirectory. There, run the following command (include `--squash` if you enabled
 `experimental`):
 
-```
+```sh
 $ docker build --squash -t xfind .
 ```
 
@@ -139,7 +137,7 @@ it by issuing the same command and have it continue close to where it left off.
 After the image is built, you should be able to see it listed in your images when using
 the `docker images` command, it should include a line similar to this:
 
-```
+```sh
 REPOSITORY          TAG           IMAGE ID       CREATED        SIZE
 xfind               latest        ca8980e929b1   12 hours ago   5.94GB
 ```
@@ -167,7 +165,6 @@ is in the _devcontainer.json_ file in the `extensions` array.
 
 The next step will be to [build](#building) the language versions of `find` and compare them.
 
-
 ### Installation on local machine
 
 If you are primarily interested in specific language versions, and especially if you already
@@ -190,13 +187,12 @@ below are some special cases/considerations:
 * `php/phpfind` - the [composer](https://getcomposer.org/) utility is used for dependency management, also need to use a version of PHP that supports classes and namespaces (7+?)
 * `python/pyfind` - this version runs via the `asyncio` module, which requires python 3.7+
 
-
 Another thing you will need to do is set an environment variable called `$XFIND_PATH` to
 the path that you cloned `xfind` to. For example, on my OSX machine is it set to
 this:
 
-```
-$ XFIND_PATH=$HOME/src/xfind
+```sh
+XFIND_PATH=$HOME/src/xfind
 ```
 
 If undefined, `$XFIND_PATH` defaults to `$HOME/src/xfind`, so if you clone `xfind` to that
@@ -207,7 +203,6 @@ Finally, note that there are some useful utilities in the _scripts_ folder. Most
 `bash`, although some of those also have powershell versions you can use instead. There are
 also several written in `python`, most notably _benchmark.py_ (see [Comparison](#comparison));
 you will need `python3` to run those.
-
 
 ## Building
 
@@ -222,7 +217,7 @@ run the script on the command line with the name of the language (or the languag
 that the language version name is derived from) as the argument. For example, you can build
 the TypeScript version using either of these commands:
 
-```
+```sh
 $ ./scripts/build.sh typescript
 # -or-
 $ ./scripts/build.sh ts
@@ -231,7 +226,7 @@ $ ./scripts/build.sh ts
 You can build all language versions together by not passing an argument or passing
 `'all'`:
 
-```
+```sh
 $ ./scripts/build.sh
 # -or-
 $ ./scripts/build.sh all
@@ -245,7 +240,7 @@ For compiled languages that differentiate between debug and release builds, you 
 include `--debug` and/or `--release` to target those specific builds. If neither is
 specified, debug-only will be assumed. Example:
 
-```
+```sh
 $ ./scripts/build.sh --debug swift
 # -or-
 $ ./scripts/build.sh --release swift
@@ -258,10 +253,9 @@ For each language version built, a softlink is created under `$XFIND_PATH/bin` (
 running any version from there, either by changing to that directory or by adding it
 to your path:
 
+```sh
+PATH=$PATH:$XFIND_PATH/bin
 ```
-$ PATH=$PATH:$XFIND_PATH/bin
-```
-
 
 ## Usage
 
@@ -272,7 +266,7 @@ Assuming you have `$XFIND_PATH/bin` in your path or that you are in that directo
 can run any version with the `-h` to get the help/usage. Here's an example for the
 python version:
 
-```
+```sh
 $ pyfind -h
 
 Usage:
@@ -324,7 +318,7 @@ criteria:
 
 Here's what that looks like (using the `rust` version):
 
-```
+```sh
 $ cd $XFIND_PATH
 $ rsfind -x js,ts -D node_module -D dist -f find ./javascript ./typescript
 
@@ -356,7 +350,7 @@ Matching files (22):
 Now change the command to *skip* files that have `find` in the name
 (and use the `go` version this time):
 
-```
+```sh
 $ gofind -x js,ts -D node_module -D dist -F find ./javascript ./typescript
 
 Matching files (16):
@@ -378,7 +372,6 @@ typescript/tsfind/tests/filetypes.test.ts
 typescript/tsfind/tests/fileutil.test.ts
 ```
 
-
 ## Comparison
 
 There are several scripts in the _scripts_ directory to help with comparing the language
@@ -386,8 +379,8 @@ versions in various ways, but the one that will likely be of primary interest is
 python script _benchmark.py_, an *unscientific* tool for comparing performance and
 functionality (i.e. ensuring matching output of all versions).
 
-By default, the _benchmark.py_ script will default to running and comparing all language
-versions, but this can be customized one of two ways:
+By default, the _benchmark.py_ script will run and compare all language versions, but
+this can be customized one of two ways:
 
 1. pass a comma-separated language/ext code argument, e.g. `-l cpp,go,hs,objc,rs,swift`
 2. modify the `lang_dict` dictionary in _xfind.py_
@@ -398,7 +391,7 @@ performance. At the end, the performances values from all scenarios are summed a
 averaged and a final summary table is presented. Here's an example of the final
 output:
 
-```
+```sh
 $ python3 ./scripts/benchmark.py
 
  . . .
@@ -435,6 +428,36 @@ important to see this and similar messages on all scenario runs, otherwise one o
 versions isn't working properly and the results will be invalid. An obvious example of this would
 be attempting to run language versions that aren't built.
 
+## Conclusions
+
+In this section I will write about the experience of developing these projects, writing the
+different language versions, and what personal conclusions I drew from it. For now I will just
+outline the approach I will use.
+
+Here's a list of criteria to evaluate each language by:
+
+* documentation / resources
+* learning curve
+* readability
+* core library
+* building/running
+* managing dependencies
+* speed of development
+* efficiency/performance
+* platform agnosticity
+
+The conclusions from these are helpful in determining which languages are most and least suited for
+given requirements:
+
+* one-off utilities / scripting
+* high-performance
+* cross-platform
+* rich core and/or third-party dependencies
+* specific platform (e.g. iOS or Android)
+* specific framework (e.g. JVM or CLR)
+
+I will give summaries of the experience of developing each of the language versions, and then
+rank them by criteria and requirements.
 
 ## TODOs
 
@@ -457,7 +480,6 @@ be attempting to run language versions that aren't built.
   * [Julia](https://julialang.org/) - Julia is described as a high-performance scripting language, so I'm interested to see how it compares to existing implementations
   * [Lua](http://www.lua.org/) - another language that I would like to compare with existing implementations
   * [Racket](https://racket-lang.org/) - this might be an alternate choice to Common Lisp, or another comparison point
-
 
 ## License
 
