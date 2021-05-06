@@ -8,6 +8,7 @@
 #
 ###############################################################################
 import os
+from typing import List
 
 
 class FileUtil(object):
@@ -42,3 +43,7 @@ class FileUtil(object):
             if e.startswith('.') and not FileUtil.is_dot_dir(e)
         ]
         return len(dot_elems) > 0
+
+    @staticmethod
+    def path_elems(filepath: str) -> List[str]:
+        return [p for p in filepath.split(os.sep) if p and p not in FileUtil.DOT_DIRS]
