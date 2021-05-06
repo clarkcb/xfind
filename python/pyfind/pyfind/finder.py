@@ -40,7 +40,7 @@ class Finder(object):
 
     def is_find_dir(self, d: str) -> bool:
         """Check whether the given directory matches find settings."""
-        path_elems = [p for p in d.split(os.sep) if p and p not in FileUtil.DOT_DIRS]
+        path_elems = FileUtil.path_elems(d)
         if self.settings.excludehidden:
             for p in path_elems:
                 if FileUtil.is_hidden(p):
