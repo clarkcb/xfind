@@ -53,7 +53,6 @@ class FindSettings(object):
         self.includearchives = includearchives
         self.listdirs = listdirs
         self.listfiles = listfiles
-        self.listfiles = listfiles
         self.maxlastmod = maxlastmod
         self.maxsize = maxsize
         self.minlastmod = minlastmod

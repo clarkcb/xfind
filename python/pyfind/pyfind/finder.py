@@ -112,16 +112,26 @@ class Finder(object):
             if os.path.isdir(p):
                 if self.is_find_dir(os.path.abspath(p)):
                     if self.settings.recursive:
-                        for root, dirs, files in os.walk(p):
-                            if self.is_find_dir(root):
-                                # TODO: add option to follow symlinks? (skipping for now)
-                                files = [
-                                    os.path.join(root, f) for f in files
-                                    if not os.path.islink(os.path.join(root, f))
-                                ]
-                                new_findfiles = [self.filter_to_find_file(f) for f in files]
-                                findfiles.extend(
-                                    [ff for ff in new_findfiles if ff])
+                        for root, dirs, files in os.walk(p, topdown=True):
+                            # NOTE: skipping self.is_find_dir(root) and checking dirs,
+                            #       this has the effect of limiting checks to subdirs
+                            #       and removing duplicate checks of settings.paths
+                            del_dirs = []
+                            for d in dirs:
+                                if not self.is_find_dir(d):
+                                    del_dirs.append(d)
+                            for d in del_dirs:
+                                i = dirs.index(d)
+                                del dirs[i]
+
+                            # TODO: add option to follow symlinks? (skipping for now)
+                            files = [
+                                os.path.join(root, f) for f in files
+                                if not os.path.islink(os.path.join(root, f))
+                            ]
+                            new_findfiles = [self.filter_to_find_file(f) for f in files]
+                            findfiles.extend(
+                                [ff for ff in new_findfiles if ff])
                     else:
                         files = [
                             os.path.join(p, f) for f in os.listdir(p)
