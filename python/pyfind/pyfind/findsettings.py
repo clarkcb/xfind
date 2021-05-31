@@ -25,7 +25,7 @@ class FindSettings(object):
         'in_filetypes', 'includearchives', 'listdirs', 'listfiles', 'maxlastmod',
         'maxsize', 'minlastmod', 'minsize', 'out_archivefilepatterns', 'out_archiveextensions',
         'out_dirpatterns', 'out_extensions', 'out_filepatterns', 'out_filetypes', 'paths',
-        'printusage', 'printversion', 'recursive', 'verbose'
+        'printresults', 'printusage', 'printversion', 'recursive', 'verbose'
     ]
 
     def __init__(self, archivesonly: bool = False, colorize: bool = True, debug: bool = False,
@@ -38,8 +38,8 @@ class FindSettings(object):
                  out_archivefilepatterns: PatternSet = None, out_archiveextensions: Set[str] = None,
                  out_dirpatterns: PatternSet = None, out_extensions: Set[str] = None,
                  out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
-                 paths: Set[str] = None, printusage: bool = False, printversion: bool = False,
-                 recursive: bool = True, verbose: bool = False):
+                 paths: Set[str] = None, printresults: bool = False, printusage: bool = False,
+                 printversion: bool = False, recursive: bool = True, verbose: bool = False):
         self.archivesonly = archivesonly
         self.colorize = colorize
         self.debug = debug
@@ -63,10 +63,11 @@ class FindSettings(object):
         self.out_extensions = out_extensions if out_extensions else set()
         self.out_filepatterns: PatternSet = out_filepatterns if out_filepatterns else set()
         self.out_filetypes = out_filetypes if out_filetypes else set()
-        self.recursive = recursive
         self.paths = paths if paths else set()
+        self.printresults = printresults
         self.printusage = printusage
         self.printversion = printversion
+        self.recursive = recursive
         self.verbose = verbose
 
     def add_exts(self, exts, ext_set_name: str):
