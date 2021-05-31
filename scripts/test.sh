@@ -32,6 +32,11 @@ test_lang_version () {
     time "$lang_version" $EXTS $DEBUG $PATH
 }
 
+test_c () {
+    hdr "test_c"
+    test_lang_version "cfind"
+}
+
 test_clojure () {
     hdr "test_clojure"
     test_lang_version "cljfind"
@@ -135,6 +140,8 @@ test_typescript () {
 test_all () {
     hdr "test_all"
 
+    test_c
+
     test_clojure
 
     test_cpp
@@ -191,6 +198,9 @@ fi
 if [ "$ARG" == "all" ]
 then
     test_all
+elif [ "$ARG" == "c" ]
+then
+    test_c
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     test_clojure

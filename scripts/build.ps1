@@ -102,6 +102,25 @@ function AddToBin
 # Build functions
 ################################################################################
 
+function BuildC
+{
+    Write-Host
+    Hdr('BuildC')
+
+    $oldPwd = Get-Location
+    Set-Location $cfindPath
+
+    Log('Building cfind')
+    Log('make')
+    make
+
+    # add to bin
+    $cfindExe = Join-Path $cfindPath 'cfind'
+    AddToBin($cfindExe)
+
+    Set-Location $oldPwd
+}
+
 function BuildClojure
 {
     Write-Host
@@ -958,6 +977,8 @@ function BuildLinux
     Write-Host
     Hdr('BuildLinux')
 
+    Measure-Command { BuildC }
+
     # Measure-Command { BuildClojure }
 
     # Measure-Command { BuildCpp }
@@ -997,6 +1018,8 @@ function BuildAll
 {
     Write-Host
     Hdr('BuildAll')
+
+    Measure-Command { BuildC }
 
     Measure-Command { BuildClojure }
 
@@ -1051,6 +1074,7 @@ function BuildMain
     {
         'all'        { BuildAll }
         'linux'      { BuildLinux }
+        'c'          { Measure-Command { BuildC } }
         'clj'        { Measure-Command { BuildClojure } }
         'clojure'    { Measure-Command { BuildClojure } }
         'cpp'        { Measure-Command { BuildCpp } }

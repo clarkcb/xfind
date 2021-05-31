@@ -41,6 +41,24 @@ word_counts () {
 # Build Functions
 ########################################
 
+stats_c () {
+    echo
+    hdr "stats_c"
+    # find ./ -type f \( -iname \*.jpg -o -iname \*.png \)
+    CFIND_INCPATH=$CFIND_PATH/include
+    CFILES=$(find $CFIND_INCPATH -type f -iname "*.h")
+    log "Main include counts"
+    word_counts $CFILES
+    CFIND_SRCPATH=$CFIND_PATH/src
+    CFILES=$(find $CFIND_SRCPATH -type f \( -iname \*.h -o -iname \*.c \))
+    log "Main source counts"
+    word_counts $CFILES
+    CFIND_TESTPATH=$CFIND_PATH/tests
+    CFILES=$(find $CFIND_TESTPATH -type f -iname "*.c")
+    log "Test source counts"
+    word_counts $CFILES
+}
+
 stats_clojure () {
     echo
     hdr "stats_clojure"
@@ -289,7 +307,9 @@ stats_typescript () {
 
 stats_all () {
     hdr "stats_all"
-    
+
+    stats_c
+
     stats_clojure
 
     stats_cpp
@@ -344,6 +364,9 @@ fi
 if [ "$ARG" == "all" ]
 then
     stats_all
+elif [ "$ARG" == "c" ]
+then
+    stats_c
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     stats_clojure

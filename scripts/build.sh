@@ -81,6 +81,24 @@ add_to_bin () {
 # Build Functions
 ########################################
 
+build_c () {
+    echo
+    hdr "build_c"
+
+    cd "$CFIND_PATH"
+
+    # Create uberjar with lein
+    log "Building cfind"
+    log "make"
+    make
+
+    # add to bin
+    add_to_bin "$CFIND_PATH/cfind"
+
+    cd -
+
+}
+
 build_clojure () {
     echo
     hdr "build_clojure"
@@ -924,6 +942,8 @@ build_typescript () {
 build_linux () {
     hdr "build_linux"
 
+    time build_c
+
     # time build_clojure
 
     # time build_cpp
@@ -961,6 +981,8 @@ build_linux () {
 
 build_all () {
     hdr "build_all"
+
+    time build_c
 
     time build_clojure
 
@@ -1038,6 +1060,9 @@ then
 elif [ "$ARG" == "linux" ]
 then
     build_linux
+elif [ "$ARG" == "c" ]
+then
+    time build_c
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     time build_clojure

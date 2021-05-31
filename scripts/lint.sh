@@ -20,6 +20,13 @@ source "$DIR/common.sh"
 # Lint Functions
 ########################################
 
+lint_c () {
+    echo
+    hdr "lint_c"
+
+    log "not implemented at this time"
+}
+
 lint_clojure () {
     echo
     hdr "lint_clojure"
@@ -296,6 +303,8 @@ lint_typescript () {
 lint_all () {
     log "lint_all"
     
+    lint_c
+
     lint_clojure
 
     lint_cpp
@@ -352,6 +361,9 @@ fi
 if [ "$ARG" == "all" ]
 then
     lint_all
+elif [ "$ARG" == "c" ]
+then
+    lint_c
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     lint_clojure

@@ -18,6 +18,7 @@ $sharedPath = Join-Path $xfindPath 'shared'
 $testFilePath = Join-Path $sharedPath 'testFiles'
 
 # Language roots
+$cPath = Join-Path $xfindPath 'c'
 $clojurePath = Join-Path $xfindPath 'clojure'
 $cppPath = Join-Path $xfindPath 'cpp'
 $csharpPath = Join-Path $xfindPath 'csharp'
@@ -40,6 +41,7 @@ $swiftPath = Join-Path $xfindPath 'swift'
 $typescriptPath = Join-Path $xfindPath 'typescript'
 
 # Language version roots
+$cfindPath = Join-Path $cPath 'cfind'
 $cljfindPath = Join-Path $clojurePath 'cljfind'
 $cppfindPath = Join-Path $cppPath 'cppfind'
 $csfindPath = Join-Path $csharpPath 'csfind'

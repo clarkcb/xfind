@@ -23,6 +23,20 @@ $scriptDir = Split-Path $scriptPath -Parent
 # Clean functions
 ################################################################################
 
+function CleanC
+{
+    Write-Host
+    Hdr('CleanC')
+
+    $oldPwd = Get-Location
+    Set-Location $cfindPath
+
+    Log('make clean')
+    make clean
+
+    Set-Location $oldPwd
+}
+
 function CleanClojure
 {
     Write-Host
@@ -350,6 +364,8 @@ function CleanLinux
     Write-Host
     Hdr('CleanLinux')
 
+    CleanC
+
     # CleanClojure
 
     # CleanCpp
@@ -395,6 +411,8 @@ function CleanAll
 {
     Write-Host
     Hdr('CleanAll')
+
+    CleanC
 
     CleanClojure
 
@@ -449,6 +467,7 @@ function CleanMain
     {
         'all'        { CleanAll }
         'linux'      { CleanLinux }
+        'c'          { CleanC }
         'clj'        { CleanClojure }
         'clojure'    { CleanClojure }
         'cpp'        { CleanCpp }

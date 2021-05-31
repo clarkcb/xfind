@@ -20,6 +20,16 @@ source "$DIR/common.sh"
 # Unit Test Functions
 ########################################
 
+unittest_c () {
+    echo
+    hdr "unittest_c"
+
+    log "Unit-testing cfind"
+    cd "$CFIND_PATH"
+    log "not implemented at this time"
+    cd -
+}
+
 unittest_clojure () {
     echo
     hdr "unittest_clojure"
@@ -297,7 +307,9 @@ unittest_typescript () {
 
 unittest_all () {
     hdr "unittest_all"
-    
+
+    unittest_c
+
     unittest_clojure
 
     unittest_cpp
@@ -354,6 +366,9 @@ fi
 if [ "$ARG" == "all" ]
 then
     unittest_all
+elif [ "$ARG" == "c" ]
+then
+    unittest_c
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     unittest_clojure

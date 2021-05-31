@@ -23,6 +23,20 @@ $scriptDir = Split-Path $scriptPath -Parent
 # Unit Test functions
 ################################################################################
 
+function UnitTestC
+{
+    Write-Host
+    Hdr('UnitTestC')
+
+    $oldPwd = Get-Location
+    Set-Location $cfindPath
+
+    Log('Unit-testing cfind')
+    Log('not implemented at this time')
+
+    Set-Location $oldPwd
+}
+
 function UnitTestClojure
 {
     Write-Host
@@ -335,6 +349,8 @@ function UnitTestAll
     Write-Host
     Hdr('UnitTestAll')
 
+    UnitTestC
+
     UnitTestClojure
 
     UnitTestCpp
@@ -387,6 +403,7 @@ function UnitTestMain
     switch ($lang)
     {
         'all'        { UnitTestAll }
+        'c'          { UnitTestC }
         'clojure'    { UnitTestClojure }
         'cpp'        { UnitTestCpp }
         'csharp'     { UnitTestCsharp }

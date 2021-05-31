@@ -20,6 +20,16 @@ source "$DIR/common.sh"
 # Clean Functions
 ########################################
 
+clean_c () {
+    echo
+    hdr "clean_c"
+
+    cd "$CFIND_PATH"
+    log "make clean"
+    make clean
+    cd -
+}
+
 clean_clojure () {
     echo
     hdr "clean_clojure"
@@ -217,6 +227,8 @@ clean_typescript () {
 clean_linux () {
     hdr "clean_linux"
 
+    clean_c
+
     # clean_clojure
 
     # clean_cpp
@@ -260,6 +272,8 @@ clean_linux () {
 
 clean_all () {
     hdr "clean_all"
+
+    clean_c
 
     clean_clojure
 
@@ -320,6 +334,9 @@ then
 elif [ "$ARG" == "linux" ]
 then
     clean_linux
+elif [ "$ARG" == "c" ]
+then
+    clean_c
 elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
 then
     clean_clojure
