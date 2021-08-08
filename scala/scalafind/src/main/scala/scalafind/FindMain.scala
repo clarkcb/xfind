@@ -58,7 +58,7 @@ object FindMain {
     }
   }
 
-  def main(args: Array[String]) {
+  def main(args: Array[String]) = {
     try {
       val settings = FindOptions.settingsFromArgs(args)
 

@@ -27,7 +27,7 @@ object FindOptions {
     List.empty[FindOption] ++ _findOptions.sortWith(_.sortarg < _.sortarg)
   }
 
-  private def loadFindOptionsFromJson() {
+  private def loadFindOptionsFromJson() = {
     try {
       val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
       val obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream))

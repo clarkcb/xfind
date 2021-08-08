@@ -8,7 +8,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
   val startpath = "."
   val requiredArgs = Array(startpath)
 
-  def assertDefaultSettings(settings: FindSettings) {
+  def assertDefaultSettings(settings: FindSettings) = {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
     assert(settings.excludeHidden == DefaultSettings.excludeHidden)

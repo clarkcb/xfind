@@ -79,27 +79,31 @@ class Finder (settings: FindSettings) {
   }
 
   def filterToFindFile(f: File): Option[FindFile] = {
-    val fileType = FileTypes.getFileType(f.getName)
-    fileType match {
-      // This is commented out to allow unknown files to match in case settings are permissive
-      // case FileType.Unknown => None
-      case FileType.Archive =>
-        if (settings.includeArchives && isArchiveFindFile(f.getName)) {
-          Some(new FindFile(f, fileType))
-        } else {
-          None
-        }
-      case _ =>
-        if (!settings.archivesOnly && isFindFile(f.getName, fileType)) {
-          Some(new FindFile(f, fileType))
-        } else {
-          None
-        }
+    if (!FileUtil.isHidden(f.getName) || !settings.excludeHidden) {
+      val fileType = FileTypes.getFileType(f.getName)
+      fileType match {
+        // This is commented out to allow unknown files to match in case settings are permissive
+        // case FileType.Unknown => None
+        case FileType.Archive =>
+          if (settings.includeArchives && isArchiveFindFile(f.getName)) {
+            Some(new FindFile(f, fileType))
+          } else {
+            None
+          }
+        case _ =>
+          if (!settings.archivesOnly && isFindFile(f.getName, fileType)) {
+            Some(new FindFile(f, fileType))
+          } else {
+            None
+          }
+      }
+    } else {
+      None
     }
   }
 
   final def getFindFiles(startPathFile: File): Seq[FindFile] = {
-    val files = startPathFile.listFiles
+    val files = startPathFile.listFiles.toSeq
     files.filter(_.isFile).flatMap(filterToFindFile) ++
       files
         .filter(_.isDirectory)

@@ -18,7 +18,6 @@ object FileType extends Enumeration {
 
 object FileTypes {
   private val _fileTypesJsonPath = "/filetypes.json"
-  private val _fileTypeMap = mutable.Map.empty[String, Set[String]]
 
   private val archive = "archive"
   private val binary = "binary"
@@ -27,36 +26,33 @@ object FileTypes {
   private val unknown = "unknown"
   private val xml = "xml"
 
-  private def fileTypeMap: Map[String, Set[String]] = {
-    if (_fileTypeMap.isEmpty) {
-      val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
-      try {
-        val obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream))
-        val jsonObj = obj.asInstanceOf[JSONObject]
-        val ftIt = jsonObj.get("filetypes").asInstanceOf[JSONArray].iterator()
-        while (ftIt.hasNext) {
-          val ftObj = ftIt.next().asInstanceOf[JSONObject]
-          val typeName = ftObj.get("type").asInstanceOf[String]
-          val exSet = mutable.Set.empty[String]
-          val exIt = ftObj.get("extensions").asInstanceOf[JSONArray].iterator()
-          while (exIt.hasNext) {
-             exSet += exIt.next().asInstanceOf[String]
-          }
-           _fileTypeMap(typeName) = Set.empty[String] ++ exSet
+  private val fileTypeMap: Map[String, Set[String]] = {
+    val _fileTypeMap = mutable.Map.empty[String, Set[String]]
+    val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
+    try {
+      val obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream))
+      val jsonObj = obj.asInstanceOf[JSONObject]
+      val ftIt = jsonObj.get("filetypes").asInstanceOf[JSONArray].iterator()
+      while (ftIt.hasNext) {
+        val ftObj = ftIt.next().asInstanceOf[JSONObject]
+        val typeName = ftObj.get("type").asInstanceOf[String]
+        val exSet = mutable.Set.empty[String]
+        val exIt = ftObj.get("extensions").asInstanceOf[JSONArray].iterator()
+        while (exIt.hasNext) {
+           exSet += exIt.next().asInstanceOf[String]
         }
-      } catch {
-        case e: ParseException =>
-          print(e.getMessage)
-        case e: IOException =>
-          print(e.getMessage)
+         _fileTypeMap(typeName) = Set.empty[String] ++ exSet
       }
-
-      _fileTypeMap(text) = _fileTypeMap(text) ++ _fileTypeMap(code) ++
-        _fileTypeMap(xml)
-      Map.empty[String, Set[String]] ++ _fileTypeMap
-    } else {
-      Map.empty[String, Set[String]] ++ _fileTypeMap
+    } catch {
+      case e: ParseException =>
+        print(e.getMessage)
+      case e: IOException =>
+        print(e.getMessage)
     }
+
+    _fileTypeMap(text) = _fileTypeMap(text) ++ _fileTypeMap(code) ++
+      _fileTypeMap(xml)
+    Map.empty[String, Set[String]] ++ _fileTypeMap
   }
 
   def fromName(name: String): FileType.Value = {

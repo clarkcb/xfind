@@ -1,23 +1,18 @@
-name := "scalafind"
+val scala3Version = "3.0.1"
 
-version := "0.1.0"
+lazy val root = project
+  .in(file("."))
+  .settings(
+    name := "scalafind",
+    version := "0.1.0",
 
-scalaVersion := "2.13.5"
+    scalaVersion := scala3Version,
 
-scalacOptions += "-target:jvm-11"
-
-initialize := {
-  val _ = initialize.value // run the previous initialization
-  val required = VersionNumber("11")
-  val current = VersionNumber(sys.props("java.specification.version"))
-  assert(current == required, s"Unsupported JDK: java.specification.version $current != $required")
-}
-
-libraryDependencies ++= Seq(
-  "com.googlecode.json-simple" % "json-simple" % "1.1.1",
-  "org.apache.commons" % "commons-compress" % "1.20",
-  "org.scala-lang.modules" % "scala-xml_2.13" % "1.3.0",
-  "org.scalatest" % "scalatest_2.13" % "3.2.6" % Test,
-  "junit" % "junit" % "4.13.2" % Test
-)
-
+    libraryDependencies ++= Seq(
+      "com.googlecode.json-simple" % "json-simple" % "1.1.1",
+      "org.apache.commons" % "commons-compress" % "1.21",
+      "org.scalactic" %% "scalactic" % "3.2.9",
+      "org.scalatest" %% "scalatest" % "3.2.9" % "test",
+      "com.novocode" % "junit-interface" % "0.11" % "test"
+    )
+  )
