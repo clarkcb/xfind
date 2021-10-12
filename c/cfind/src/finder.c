@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include "common.h"
 #include "finderr.h"
@@ -20,8 +19,8 @@ Finder *new_finder(const FindSettings *s, const FileTypes *ft)
 {
     Finder *f = malloc(sizeof(Finder));
     assert(f != NULL);
-    f->settings = s;
-    f->filetypes = ft;
+    f->settings = (FindSettings *)s;
+    f->filetypes = (FileTypes *)ft;
     return f;
 }
 
@@ -55,13 +54,14 @@ static unsigned short is_find_dir(const char *dir, const FindSettings *settings)
 
 static unsigned short is_find_file(const char *filename, const Finder *finder, FileType *filetype)
 {
-    int ext_size = 1;
+    unsigned int ext_size = 1;
     int dot_idx = index_of_char_in_string('.', filename);
     size_t file_len = strlen(filename);
     if (dot_idx > 0 && dot_idx < file_len - 1) {
-        ext_size = file_len - dot_idx;
+        ext_size = (unsigned int)file_len - (unsigned int)dot_idx;
     }
     char *ext = malloc(ext_size * sizeof(char));
+    strcpy(ext, "");
     get_extension(filename, ext);
     *filetype = get_filetype(filename, finder->filetypes);
     unsigned short res = 0;
@@ -72,11 +72,11 @@ static unsigned short is_find_file(const char *filename, const Finder *finder, F
         && ((is_null_or_empty_regex_node(finder->settings->in_filepatterns) == 1)
              || (string_matches_regex_node(filename, finder->settings->in_filepatterns) != 0))
         && ((is_null_or_empty_int_node(finder->settings->in_filetypes) == 1)
-             || (int_matches_int_node(filetype, finder->settings->in_filetypes) != 0))
+             || (int_matches_int_node((int *)filetype, finder->settings->in_filetypes) != 0))
         && ((is_null_or_empty_regex_node(finder->settings->out_filepatterns) == 1)
              || (string_matches_regex_node(filename, finder->settings->out_filepatterns) == 0))
         && ((is_null_or_empty_int_node(finder->settings->out_filetypes) == 1)
-             || (int_matches_int_node(filetype, finder->settings->out_filetypes) == 0))) {
+             || (int_matches_int_node((int *)filetype, finder->settings->out_filetypes) == 0))) {
         res = 1;
     }
     return res;
@@ -93,7 +93,7 @@ static int find_dir(const char *dirpath, const Finder *finder, FileResults *resu
 {
     DIR *dir = opendir(dirpath);
     if (!dir) {
-        destroy_finder(finder);
+        destroy_finder((Finder *)finder);
         if (ENOENT == errno) {
             return E_DIRECTORY_NOT_FOUND;
         } else {
@@ -140,7 +140,7 @@ static int find_dir(const char *dirpath, const Finder *finder, FileResults *resu
             }
         } else if (S_ISREG(fpstat.st_mode)) {
             FileType filetype = UNKNOWN;
-            if (filter_file(dent->d_name, finder, &filetype)) {
+            if (filter_file(dent->d_name, finder, &filetype) == 1) {
                 size_t slen = strlen(dent->d_name);
                 char *filename = (char *)malloc((slen + 1) * sizeof(char));
                 strncpy(filename, dent->d_name, slen);
@@ -194,7 +194,7 @@ int find(const FindSettings *settings, FileResults *results)
             }
         } else if (S_ISREG(statbuf.st_mode)) {
             FileType filetype = UNKNOWN;
-            if (filter_file(nextpath->string, finder, &filetype)) {
+            if (filter_file(nextpath->string, finder, &filetype) == 1) {
                 char *p = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
                 char *f = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
                 split_path(nextpath->string, &p, &f);

@@ -1,7 +1,5 @@
 #include <stdio.h>
-#include <string.h>
 
-#include "common.h"
 #include "fileresults.h"
 #include "finderr.h"
 #include "findsettings.h"
@@ -9,12 +7,16 @@
 #include "finder.h"
 
 
-#define MAX_USERID_LENGTH 32
-
 int main(int argc, char *argv[])
 {
+    if (argc < 2) {
+        handle_error(E_STARTPATH_NOT_DEFINED);
+        print_usage();
+        return E_STARTPATH_NOT_DEFINED;
+    }
+
     FindSettings *settings = default_settings();
-    int err = settings_from_args(argc, argv, settings);
+    int err = settings_from_args(argc - 1, ++argv, settings);
     if (err != E_OK) {
         handle_error(err);
         print_usage();
@@ -46,8 +48,12 @@ int main(int argc, char *argv[])
 
             if (is_null_or_empty_file_results(results)) {
                 printf("\nMatching files: 0\n");
+                if (results != NULL) {
+                    destroy_file_results(results);
+                }
             } else {
                 print_file_results(results);
+                destroy_file_results(results);
             }
         } else {
             handle_error(err);

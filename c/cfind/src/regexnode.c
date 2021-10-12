@@ -1,10 +1,8 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "regexnode.h"
-#include "stringnode.h"
 
 Regex *new_regex(const char *pat)
 {

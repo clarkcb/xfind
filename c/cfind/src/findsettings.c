@@ -171,7 +171,6 @@ void settings_to_string(FindSettings *settings, char *s)
     size_t total_len = settings_strlen(settings) + 1;
 
     s[total_len - 1] = '\0';
-    size_t actual_len = strlen(s);
 
     free(in_archiveextensions_s);
     free(in_archivefilepatterns_s);
@@ -206,13 +205,13 @@ void destroy_settings(FindSettings *settings)
         destroy_regex_node(settings->in_dirpatterns);
         destroy_string_node(settings->in_extensions);
         destroy_regex_node(settings->in_filepatterns);
-        destroy_string_node(settings->in_filetypes);
+        destroy_int_node(settings->in_filetypes);
         destroy_string_node(settings->out_archiveextensions);
         destroy_regex_node(settings->out_archivefilepatterns);
         destroy_regex_node(settings->out_dirpatterns);
         destroy_string_node(settings->out_extensions);
         destroy_regex_node(settings->out_filepatterns);
-        destroy_string_node(settings->out_filetypes);
+        destroy_int_node(settings->out_filetypes);
         destroy_string_node(settings->paths);
         free(settings);
     }

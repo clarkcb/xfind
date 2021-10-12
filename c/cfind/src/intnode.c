@@ -1,9 +1,7 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "common.h"
 #include "intnode.h"
 
 IntNode *empty_int_node(void)

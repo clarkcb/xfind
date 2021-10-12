@@ -1,6 +1,7 @@
 #ifndef FINDER_H
 #define FINDER_H
 
+#include "fileresults.h"
 #include "filetypes.h"
 #include "findsettings.h"
 

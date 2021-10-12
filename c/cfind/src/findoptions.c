@@ -83,20 +83,6 @@ char **flag_abbrs = (char *[]) {
     "V"  // version
 };
 
-// static char *get_arg_name(char *arg)
-// {
-//     int offset = 0;
-//     size_t len = strlen(arg);
-//     while (len > 0 && arg[offset] == '-') {
-//         offset++;
-//         len = strlen(arg + offset);
-//     }
-//     if (len > 0) {
-//         return (arg + offset);
-//     }
-//     return NULL;
-// }
-
 FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc)
 {
     FindOption *o = malloc(sizeof(FindOption));
@@ -199,17 +185,16 @@ FindOptions *get_find_options(void)
     char *fullpath = malloc((strlen(xfindpath) + strlen(shared_find_options_json_path) + 2) * sizeof(char));
     assert(fullpath != NULL);
     join_path(xfindpath, shared_find_options_json_path, fullpath);
-    printf("fullpath: \"%s\"\n", fullpath);
 
     // load the file
     char contents[4020];
     contents[0] = '\0';
     FILE *fp = fopen(fullpath, "r");
-    unsigned int c;
+    int c;
     int i = 0;
     if (fp != NULL) {
         while((c = getc(fp)) != EOF) {
-            strcat(contents, &c);
+            strcat(contents, (char *)&c);
             i++;
         }
         fclose(fp);
@@ -378,7 +363,7 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
 
 int settings_from_args(const int argc, char *argv[], FindSettings *settings)
 {
-    int i = 1;
+    int i = 0;
     while (i < argc) {
         size_t arglen = strlen(argv[i]);
         if (arglen < 1) {

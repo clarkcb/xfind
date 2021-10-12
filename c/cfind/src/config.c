@@ -22,7 +22,7 @@ void get_xfindpath(char *dest)
     dest[0] = '\0';
     char *xfindpath = getenv("XFIND_PATH");
     if (xfindpath == NULL) {
-        char *homepath[MAX_HOMEPATH_LENGTH];
+        char homepath[MAX_HOMEPATH_LENGTH];
         get_homepath(homepath);
         strcat(dest, homepath);
         strcat(dest, "/src/xfind");

@@ -155,7 +155,7 @@ void print_dir_results(FileResults *results)
     int i = 0;
     StringNode *temp = dir_node;
     while (temp != NULL) {
-        dir_array[i++] = temp->string;
+        dir_array[i++] = (char *)temp->string;
         temp = temp->next;
     }
 

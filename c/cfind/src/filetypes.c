@@ -5,8 +5,6 @@
 #include <string.h>
 #include <cjson/cJSON.h>
 
-#include "common.h"
-#include "config.h"
 #include "config.h"
 #include "fileutil.h"
 #include "filetypes.h"
@@ -43,11 +41,11 @@ FileTypes *get_filetypes(void)
     char contents[10450];
     contents[0] = '\0';
     FILE *fp = fopen(fullpath, "r");
-    unsigned int c;
+    int c;
     int i = 0;
     if (fp != NULL) {
         while((c = getc(fp)) != EOF) {
-            strcat(contents, &c);
+            strcat(contents, (char *)&c);
             i++;
         }
         fclose(fp);
@@ -275,7 +273,7 @@ size_t filetype_node_strlen(IntNode *filetype_node)
     IntNode *temp = filetype_node;
     unsigned int nodecount = 0;
     while (temp != NULL) {
-        FileType *filetype = temp->integer;
+        const FileType *filetype = (const FileType *)temp->integer;
         char *name = malloc(10 * sizeof(char));
         filetype_to_name(*filetype, name);
         slen += strlen(name) + 2; // for ""
@@ -305,7 +303,8 @@ void filetype_node_to_string(IntNode *filetype_node, char *s)
 
         char *name = malloc(10 * sizeof(char));
         name[0] = '\0';
-        filetype_to_name(*(temp->integer), name);
+        // filetype_to_name(*(temp->integer), name);
+        filetype_to_name((const FileType)(*temp->integer), name);
         strcat(s, name);
         strcat(s, "\"");
         temp = temp->next;

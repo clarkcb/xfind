@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -52,33 +51,35 @@ void add_string_to_string_node(const char *s, StringNode *string_node)
 
 void *add_char_split_to_string_node(const char c, const char *s, StringNode *string_node)
 {
-    IntNode *int_node = empty_int_node();
     size_t slen = strlen(s);
-    int startidx = 0;
+    if (slen == 0) return string_node;
+
+    unsigned int startidx = 0;
     // skip leading split char
     while (s[startidx] == c) {
         startidx++;
     }
-    int endidx = slen - 1;
+    unsigned int endidx = (unsigned int)slen - 1;
     // skip trailing split char
     while (s[endidx] == c) {
         endidx--;
     }
     assert(endidx > startidx);
 
-    for (int i=startidx; i <= endidx; i++) {
+    IntNode *int_node = empty_int_node();
+    for (unsigned int i=startidx; i <= endidx; i++) {
         if (s[i] == c) {
             int *j = malloc(sizeof(int));
-            *j = i;
+            *j = (int)i;
             add_int_to_int_node(j, int_node);
         }
     }
 
     IntNode *temp = int_node;
     while (temp != NULL) {
-        int i = *(temp->integer);
+        unsigned int i = (unsigned int)*(temp->integer);
         if (i > startidx) {
-            char *ns = malloc((i - startidx + 1) * sizeof(char));
+            char *ns = malloc((unsigned long)(i - startidx + 1) * sizeof(char));
             strncpy(ns, s + startidx, i - startidx);
             ns[i - startidx] = '\0';
             add_string_to_string_node(ns, string_node);
@@ -87,8 +88,8 @@ void *add_char_split_to_string_node(const char c, const char *s, StringNode *str
         temp = temp->next;
     }
     if (endidx >= startidx) {
-        int nslen = endidx - startidx + 1;
-        char *ns = malloc((nslen + 1) * sizeof(char));
+        unsigned int nslen = endidx - startidx + 1;
+        char *ns = malloc((unsigned long)(nslen + 1) * sizeof(char));
         strncpy(ns, s + startidx, nslen);
         ns[nslen] = '\0';
         add_string_to_string_node(ns, string_node);
