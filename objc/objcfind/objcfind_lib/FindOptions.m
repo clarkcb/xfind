@@ -68,7 +68,7 @@
         if ([name isEqualToString:@"path"]) {
             [settings addPath:(NSString*)obj];
         } else if (self.argActionDict[name]) {
-            void(^block)() = self.argActionDict[name];
+            void(^block)(NSObject *, FindSettings *) = self.argActionDict[name];
             block(obj, settings);
         }
     } else if ([obj isKindOfClass:[NSNumber class]]) {
@@ -78,13 +78,12 @@
             block([num description], settings);
         } else if (self.boolFlagActionDict[name]) {
             BOOL b = [num boolValue];
-            void(^block)() = self.boolFlagActionDict[name];
+            void(^block)(BOOL, FindSettings *) = self.boolFlagActionDict[name];
             block(b, settings);
         }
     } else if ([obj isKindOfClass:[NSArray class]]) {
         if (self.argActionDict[name]) {
-            void(^block)() = self.argActionDict[name];
-            
+            void(^block)(NSObject *, FindSettings *) = self.argActionDict[name];
             NSArray *arr = (NSArray *)obj;
             for (NSObject *o in arr) {
                 block([o description], settings);
@@ -227,7 +226,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
                     if ([args count] > i+1) {
                         NSString *secondArg = args[i+1];
                         if (self.argActionDict[longArg]) {
-                            void(^block)() = self.argActionDict[longArg];
+                            void(^block)(NSString *, FindSettings *) = self.argActionDict[longArg];
                             block(secondArg, settings);
                         } else {
                             [self settingsFromFile:secondArg settings:settings];
@@ -238,7 +237,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
                         return nil;
                     }
                 } else if (self.boolFlagActionDict[longArg]) {
-                    void(^block)() = self.boolFlagActionDict[longArg];
+                    void(^block)(BOOL, FindSettings *) = self.boolFlagActionDict[longArg];
                     block(true, settings);
                 } else {
                     setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);

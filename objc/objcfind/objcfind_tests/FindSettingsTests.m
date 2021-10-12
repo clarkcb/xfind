@@ -26,7 +26,6 @@
 - (void)testDefaultSettings {
     FindSettings *settings = [[FindSettings alloc] init];
     XCTAssert(![settings archivesOnly]);
-    XCTAssert([settings colorize]);
     XCTAssert(![settings debug]);
     XCTAssert([settings excludeHidden]);
     XCTAssert(![settings includeArchives]);

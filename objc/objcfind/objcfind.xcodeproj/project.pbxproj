@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 55;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -13,35 +13,44 @@
 		4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */; };
 		4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */; };
 		4A076CB425EC6FD0009E8B52 /* FinderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAD25EC6FD0009E8B52 /* FinderTests.m */; };
-		4A20B9F925EC776200B104C1 /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E725EC60E1000FFE49 /* common.m */; };
-		4A20B9FC25EC776600B104C1 /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E325EC60E1000FFE49 /* FileTypes.m */; };
-		4A20B9FF25EC776A00B104C1 /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36EB25EC60E1000FFE49 /* FileUtil.m */; };
-		4A20BA0225EC776E00B104C1 /* Finder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F325EC60E1000FFE49 /* Finder.m */; };
-		4A20BA0525EC777100B104C1 /* FindFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36DF25EC60E1000FFE49 /* FindFile.m */; };
-		4A20BA0825EC777500B104C1 /* FindOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F025EC60E1000FFE49 /* FindOption.m */; };
-		4A20BA0B25EC777900B104C1 /* FindOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E125EC60E1000FFE49 /* FindOptions.m */; };
-		4A20BA0E25EC777D00B104C1 /* FindSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E825EC60E1000FFE49 /* FindSettings.m */; };
-		4A20BA1125EC778100B104C1 /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F225EC60E1000FFE49 /* Regex.m */; };
-		4A20BA1425EC778400B104C1 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCE5E625EC5EFA001EF088 /* main.m */; };
-		4A7E36F425EC60E2000FFE49 /* FindFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36DF25EC60E1000FFE49 /* FindFile.m */; };
-		4A7E36F525EC60E2000FFE49 /* FindOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E125EC60E1000FFE49 /* FindOptions.m */; };
-		4A7E36F725EC60E2000FFE49 /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E325EC60E1000FFE49 /* FileTypes.m */; };
-		4A7E36F825EC60E2000FFE49 /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E725EC60E1000FFE49 /* common.m */; };
-		4A7E36F925EC60E2000FFE49 /* FindSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36E825EC60E1000FFE49 /* FindSettings.m */; };
-		4A7E36FA25EC60E2000FFE49 /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36EB25EC60E1000FFE49 /* FileUtil.m */; };
-		4A7E36FB25EC60E2000FFE49 /* FindOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F025EC60E1000FFE49 /* FindOption.m */; };
-		4A7E36FC25EC60E2000FFE49 /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F225EC60E1000FFE49 /* Regex.m */; };
-		4A7E36FD25EC60E2000FFE49 /* Finder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A7E36F325EC60E1000FFE49 /* Finder.m */; };
+		4A129EC52713CC5600E2D896 /* libobjcfind_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A12FD0F2713BED90078C10E /* libobjcfind_lib.a */; };
+		4A12FD172713BFE80078C10E /* Finder.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227822713B99C006E8459 /* Finder.h */; };
+		4A12FD182713BFE80078C10E /* common.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227832713B99C006E8459 /* common.m */; };
+		4A12FD192713BFE80078C10E /* FindSettings.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227842713B99C006E8459 /* FindSettings.h */; };
+		4A12FD1A2713BFE80078C10E /* FileTypes.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227852713B99C006E8459 /* FileTypes.h */; };
+		4A12FD1B2713BFE80078C10E /* FindOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227862713B99C006E8459 /* FindOptions.m */; };
+		4A12FD1C2713BFE80078C10E /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227872713B99C006E8459 /* config.h */; };
+		4A12FD1E2713BFE80078C10E /* FileUtil.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227892713B99C006E8459 /* FileUtil.h */; };
+		4A12FD1F2713BFE80078C10E /* FindFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278A2713B99C006E8459 /* FindFile.m */; };
+		4A12FD202713BFE80078C10E /* FindOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278B2713B99C006E8459 /* FindOption.m */; };
+		4A12FD212713BFE80078C10E /* Regex.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278C2713B99C006E8459 /* Regex.h */; };
+		4A12FD222713BFE80078C10E /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278D2713B99C006E8459 /* FileTypes.m */; };
+		4A12FD232713BFE80078C10E /* FindSettings.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278E2713B99C006E8459 /* FindSettings.m */; };
+		4A12FD242713BFE80078C10E /* common.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278F2713B99C006E8459 /* common.h */; };
+		4A12FD252713BFE80078C10E /* Finder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227902713B99C006E8459 /* Finder.m */; };
+		4A12FD262713BFE80078C10E /* FindOptions.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227912713B99C006E8459 /* FindOptions.h */; };
+		4A12FD272713BFE80078C10E /* FindOption.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227922713B99C006E8459 /* FindOption.h */; };
+		4A12FD282713BFE80078C10E /* FindFile.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227932713B99C006E8459 /* FindFile.h */; };
+		4A12FD292713BFE80078C10E /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227942713B99C006E8459 /* FileUtil.m */; };
+		4A12FD2B2713BFE80078C10E /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227962713B99C006E8459 /* Regex.m */; };
 		4ABCE5E725EC5EFA001EF088 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCE5E625EC5EFA001EF088 /* main.m */; };
+		4ACABE732713CB68008DC972 /* libobjcfind_lib.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A12FD0F2713BED90078C10E /* libobjcfind_lib.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		4A8BDDBB25EC75BC00D02950 /* PBXContainerItemProxy */ = {
+		4A12FD132713BF1E0078C10E /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 4ABCE5DB25EC5EFA001EF088 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 4ABCE5E225EC5EFA001EF088;
-			remoteInfo = objcfind;
+			remoteGlobalIDString = 4A12FD0E2713BED90078C10E;
+			remoteInfo = objcfind_lib;
+		};
+		4A12FD152713BF250078C10E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4ABCE5DB25EC5EFA001EF088 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 4A12FD0E2713BED90078C10E;
+			remoteInfo = objcfind_lib;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -64,6 +73,7 @@
 		4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtilTests.m; sourceTree = "<group>"; };
 		4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOptionsTests.m; sourceTree = "<group>"; };
 		4A076CAD25EC6FD0009E8B52 /* FinderTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FinderTests.m; sourceTree = "<group>"; };
+		4A12FD0F2713BED90078C10E /* libobjcfind_lib.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libobjcfind_lib.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		4A7E36DE25EC60E1000FFE49 /* FileTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileTypes.h; sourceTree = "<group>"; };
 		4A7E36DF25EC60E1000FFE49 /* FindFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindFile.m; sourceTree = "<group>"; };
 		4A7E36E025EC60E1000FFE49 /* FindOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOptions.h; sourceTree = "<group>"; };
@@ -88,13 +98,40 @@
 		4A7E370825EC6F3A000FFE49 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4ABCE5E325EC5EFA001EF088 /* objcfind */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = objcfind; sourceTree = BUILT_PRODUCTS_DIR; };
 		4ABCE5E625EC5EFA001EF088 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		4AC227822713B99C006E8459 /* Finder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Finder.h; sourceTree = "<group>"; };
+		4AC227832713B99C006E8459 /* common.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = common.m; sourceTree = "<group>"; };
+		4AC227842713B99C006E8459 /* FindSettings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindSettings.h; sourceTree = "<group>"; };
+		4AC227852713B99C006E8459 /* FileTypes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileTypes.h; sourceTree = "<group>"; };
+		4AC227862713B99C006E8459 /* FindOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOptions.m; sourceTree = "<group>"; };
+		4AC227872713B99C006E8459 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
+		4AC227892713B99C006E8459 /* FileUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtil.h; sourceTree = "<group>"; };
+		4AC2278A2713B99C006E8459 /* FindFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindFile.m; sourceTree = "<group>"; };
+		4AC2278B2713B99C006E8459 /* FindOption.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOption.m; sourceTree = "<group>"; };
+		4AC2278C2713B99C006E8459 /* Regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Regex.h; sourceTree = "<group>"; };
+		4AC2278D2713B99C006E8459 /* FileTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileTypes.m; sourceTree = "<group>"; };
+		4AC2278E2713B99C006E8459 /* FindSettings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindSettings.m; sourceTree = "<group>"; };
+		4AC2278F2713B99C006E8459 /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = common.h; sourceTree = "<group>"; };
+		4AC227902713B99C006E8459 /* Finder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Finder.m; sourceTree = "<group>"; };
+		4AC227912713B99C006E8459 /* FindOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOptions.h; sourceTree = "<group>"; };
+		4AC227922713B99C006E8459 /* FindOption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOption.h; sourceTree = "<group>"; };
+		4AC227932713B99C006E8459 /* FindFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindFile.h; sourceTree = "<group>"; };
+		4AC227942713B99C006E8459 /* FileUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtil.m; sourceTree = "<group>"; };
+		4AC227962713B99C006E8459 /* Regex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Regex.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		4A12FD0D2713BED90078C10E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A7E370125EC6F3A000FFE49 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A129EC52713CC5600E2D896 /* libobjcfind_lib.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -102,6 +139,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4ACABE732713CB68008DC972 /* libobjcfind_lib.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -125,9 +163,11 @@
 		4ABCE5DA25EC5EFA001EF088 = {
 			isa = PBXGroup;
 			children = (
+				4AC227812713B99C006E8459 /* objcfind_lib */,
 				4ABCE5E525EC5EFA001EF088 /* objcfind */,
 				4A7E370525EC6F3A000FFE49 /* objcfind_tests */,
 				4ABCE5E425EC5EFA001EF088 /* Products */,
+				4ACABE722713CB68008DC972 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -136,6 +176,7 @@
 			children = (
 				4ABCE5E325EC5EFA001EF088 /* objcfind */,
 				4A7E370425EC6F3A000FFE49 /* objcfind_tests.xctest */,
+				4A12FD0F2713BED90078C10E /* libobjcfind_lib.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -168,9 +209,69 @@
 			path = objcfind;
 			sourceTree = "<group>";
 		};
+		4AC227812713B99C006E8459 /* objcfind_lib */ = {
+			isa = PBXGroup;
+			children = (
+				4AC2278F2713B99C006E8459 /* common.h */,
+				4AC227832713B99C006E8459 /* common.m */,
+				4AC227872713B99C006E8459 /* config.h */,
+				4AC227852713B99C006E8459 /* FileTypes.h */,
+				4AC2278D2713B99C006E8459 /* FileTypes.m */,
+				4AC227892713B99C006E8459 /* FileUtil.h */,
+				4AC227942713B99C006E8459 /* FileUtil.m */,
+				4AC227932713B99C006E8459 /* FindFile.h */,
+				4AC2278A2713B99C006E8459 /* FindFile.m */,
+				4AC227922713B99C006E8459 /* FindOption.h */,
+				4AC2278B2713B99C006E8459 /* FindOption.m */,
+				4AC227842713B99C006E8459 /* FindSettings.h */,
+				4AC2278E2713B99C006E8459 /* FindSettings.m */,
+				4AC227912713B99C006E8459 /* FindOptions.h */,
+				4AC227862713B99C006E8459 /* FindOptions.m */,
+				4AC2278C2713B99C006E8459 /* Regex.h */,
+				4AC227962713B99C006E8459 /* Regex.m */,
+				4AC227822713B99C006E8459 /* Finder.h */,
+				4AC227902713B99C006E8459 /* Finder.m */,
+			);
+			path = objcfind_lib;
+			sourceTree = "<group>";
+		};
+		4ACABE722713CB68008DC972 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
+/* Begin PBXHeadersBuildPhase section */
+		4A12FD0B2713BED90078C10E /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
 /* Begin PBXNativeTarget section */
+		4A12FD0E2713BED90078C10E /* objcfind_lib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4A12FD102713BED90078C10E /* Build configuration list for PBXNativeTarget "objcfind_lib" */;
+			buildPhases = (
+				4A12FD0B2713BED90078C10E /* Headers */,
+				4A12FD0C2713BED90078C10E /* Sources */,
+				4A12FD0D2713BED90078C10E /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = objcfind_lib;
+			productName = objcfind_lib;
+			productReference = 4A12FD0F2713BED90078C10E /* libobjcfind_lib.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		4A7E370325EC6F3A000FFE49 /* objcfind_tests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4A7E370925EC6F3A000FFE49 /* Build configuration list for PBXNativeTarget "objcfind_tests" */;
@@ -182,7 +283,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				4A8BDDBC25EC75BC00D02950 /* PBXTargetDependency */,
+				4A12FD162713BF250078C10E /* PBXTargetDependency */,
 			);
 			name = objcfind_tests;
 			productName = objcfind_tests;
@@ -200,6 +301,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4A12FD142713BF1E0078C10E /* PBXTargetDependency */,
 			);
 			name = objcfind;
 			productName = objcfind;
@@ -212,8 +314,11 @@
 		4ABCE5DB25EC5EFA001EF088 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1240;
+				LastUpgradeCheck = 1300;
 				TargetAttributes = {
+					4A12FD0E2713BED90078C10E = {
+						CreatedOnToolsVersion = 13.0;
+					};
 					4A7E370325EC6F3A000FFE49 = {
 						CreatedOnToolsVersion = 12.4;
 					};
@@ -223,7 +328,7 @@
 				};
 			};
 			buildConfigurationList = 4ABCE5DE25EC5EFA001EF088 /* Build configuration list for PBXProject "objcfind" */;
-			compatibilityVersion = "Xcode 9.3";
+			compatibilityVersion = "Xcode 13.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -235,6 +340,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
+				4A12FD0E2713BED90078C10E /* objcfind_lib */,
 				4ABCE5E225EC5EFA001EF088 /* objcfind */,
 				4A7E370325EC6F3A000FFE49 /* objcfind_tests */,
 			);
@@ -252,26 +358,42 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		4A12FD0C2713BED90078C10E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4A12FD242713BFE80078C10E /* common.h in Sources */,
+				4A12FD182713BFE80078C10E /* common.m in Sources */,
+				4A12FD1C2713BFE80078C10E /* config.h in Sources */,
+				4A12FD1A2713BFE80078C10E /* FileTypes.h in Sources */,
+				4A12FD222713BFE80078C10E /* FileTypes.m in Sources */,
+				4A12FD1E2713BFE80078C10E /* FileUtil.h in Sources */,
+				4A12FD292713BFE80078C10E /* FileUtil.m in Sources */,
+				4A12FD282713BFE80078C10E /* FindFile.h in Sources */,
+				4A12FD1F2713BFE80078C10E /* FindFile.m in Sources */,
+				4A12FD272713BFE80078C10E /* FindOption.h in Sources */,
+				4A12FD202713BFE80078C10E /* FindOption.m in Sources */,
+				4A12FD262713BFE80078C10E /* FindOptions.h in Sources */,
+				4A12FD1B2713BFE80078C10E /* FindOptions.m in Sources */,
+				4A12FD192713BFE80078C10E /* FindSettings.h in Sources */,
+				4A12FD232713BFE80078C10E /* FindSettings.m in Sources */,
+				4A12FD212713BFE80078C10E /* Regex.h in Sources */,
+				4A12FD2B2713BFE80078C10E /* Regex.m in Sources */,
+				4A12FD172713BFE80078C10E /* Finder.h in Sources */,
+				4A12FD252713BFE80078C10E /* Finder.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		4A7E370025EC6F3A000FFE49 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A076CAF25EC6FD0009E8B52 /* FindFileTests.m in Sources */,
-				4A076CAE25EC6FD0009E8B52 /* FindSettingsTests.m in Sources */,
-				4A076CB425EC6FD0009E8B52 /* FinderTests.m in Sources */,
-				4A20BA0B25EC777900B104C1 /* FindOptions.m in Sources */,
-				4A20BA0E25EC777D00B104C1 /* FindSettings.m in Sources */,
-				4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */,
-				4A20BA0825EC777500B104C1 /* FindOption.m in Sources */,
-				4A20B9F925EC776200B104C1 /* common.m in Sources */,
-				4A20BA0225EC776E00B104C1 /* Finder.m in Sources */,
-				4A20BA0525EC777100B104C1 /* FindFile.m in Sources */,
-				4A20B9FF25EC776A00B104C1 /* FileUtil.m in Sources */,
-				4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */,
-				4A20BA1425EC778400B104C1 /* main.m in Sources */,
-				4A20B9FC25EC776600B104C1 /* FileTypes.m in Sources */,
-				4A20BA1125EC778100B104C1 /* Regex.m in Sources */,
 				4A076CB025EC6FD0009E8B52 /* FileTypesTests.m in Sources */,
+				4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */,
+				4A076CB425EC6FD0009E8B52 /* FinderTests.m in Sources */,
+				4A076CAF25EC6FD0009E8B52 /* FindFileTests.m in Sources */,
+				4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */,
+				4A076CAE25EC6FD0009E8B52 /* FindSettingsTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -279,15 +401,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4A7E36F425EC60E2000FFE49 /* FindFile.m in Sources */,
-				4A7E36FB25EC60E2000FFE49 /* FindOption.m in Sources */,
-				4A7E36FC25EC60E2000FFE49 /* Regex.m in Sources */,
-				4A7E36F825EC60E2000FFE49 /* common.m in Sources */,
-				4A7E36FD25EC60E2000FFE49 /* Finder.m in Sources */,
-				4A7E36FA25EC60E2000FFE49 /* FileUtil.m in Sources */,
-				4A7E36F525EC60E2000FFE49 /* FindOptions.m in Sources */,
-				4A7E36F925EC60E2000FFE49 /* FindSettings.m in Sources */,
-				4A7E36F725EC60E2000FFE49 /* FileTypes.m in Sources */,
 				4ABCE5E725EC5EFA001EF088 /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -295,14 +408,49 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		4A8BDDBC25EC75BC00D02950 /* PBXTargetDependency */ = {
+		4A12FD142713BF1E0078C10E /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 4ABCE5E225EC5EFA001EF088 /* objcfind */;
-			targetProxy = 4A8BDDBB25EC75BC00D02950 /* PBXContainerItemProxy */;
+			target = 4A12FD0E2713BED90078C10E /* objcfind_lib */;
+			targetProxy = 4A12FD132713BF1E0078C10E /* PBXContainerItemProxy */;
+		};
+		4A12FD162713BF250078C10E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 4A12FD0E2713BED90078C10E /* objcfind_lib */;
+			targetProxy = 4A12FD152713BF250078C10E /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		4A12FD112713BED90078C10E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 9AAZ88EQ26;
+				DRIVERKIT_DEPLOYMENT_TARGET = 20.4;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		4A12FD122713BED90078C10E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 9AAZ88EQ26;
+				DRIVERKIT_DEPLOYMENT_TARGET = 20.4;
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = macosx;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 		4A7E370A25EC6F3A000FFE49 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -451,6 +599,7 @@
 		4ABCE5EB25EC5EFA001EF088 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9AAZ88EQ26;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -461,6 +610,7 @@
 		4ABCE5EC25EC5EFA001EF088 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 9AAZ88EQ26;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -471,6 +621,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		4A12FD102713BED90078C10E /* Build configuration list for PBXNativeTarget "objcfind_lib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4A12FD112713BED90078C10E /* Debug */,
+				4A12FD122713BED90078C10E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		4A7E370925EC6F3A000FFE49 /* Build configuration list for PBXNativeTarget "objcfind_tests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
