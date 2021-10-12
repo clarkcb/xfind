@@ -9,6 +9,7 @@ class FindSettings {
       includeArchives = value;
     }
   }
+
   bool colorize = true;
   bool _debug = false;
   bool get debug => _debug;
@@ -18,6 +19,7 @@ class FindSettings {
       verbose = value;
     }
   }
+
   bool excludeHidden = true;
 
   var inArchiveExtensions = <String>{};
@@ -28,9 +30,9 @@ class FindSettings {
 
   var inFileTypes = <FileType>{};
 
-  bool includeArchives  = false;
-  bool listDirs  = false;
-  bool listFiles  = false;
+  bool includeArchives = false;
+  bool listDirs = false;
+  bool listFiles = false;
 
   var outArchiveExtensions = <String>{};
   var outArchiveFilePatterns = <Pattern>{};
@@ -40,12 +42,12 @@ class FindSettings {
 
   var outFileTypes = <FileType>{};
 
-  bool printUsage  = false;
-  bool printVersion  = false;
-  bool recursive  = true;
+  bool printUsage = false;
+  bool printVersion = false;
+  bool recursive = true;
 
   var paths = <String>{};
-  bool verbose  = false;
+  bool verbose = false;
 
   void addExtensions(String exts, Set<String> extensions) {
     var extList = exts.split(',').where((ext) => ext.isNotEmpty).toList();
@@ -63,7 +65,9 @@ class FindSettings {
   }
 
   String patternSetToString(Set<Pattern> patterns) {
-    return '{' + patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ') + '}';
+    return '{' +
+        patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ') +
+        '}';
   }
 
   String stringSetToString(Set<String> set) {

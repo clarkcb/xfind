@@ -40,8 +40,10 @@ class FileUtil {
   static bool isDotDir(String filePath) => dotDirs.contains(filePath);
 
   static bool isHidden(String filePath) {
-    var elems = filePath.split(Platform.pathSeparator)
-        .where((e) => e.isNotEmpty).toSet();
+    var elems = filePath
+        .split(Platform.pathSeparator)
+        .where((e) => e.isNotEmpty)
+        .toSet();
     return elems.any((elem) => elem.startsWith('.') && !isDotDir(elem));
   }
 

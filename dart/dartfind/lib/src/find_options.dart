@@ -63,18 +63,30 @@ class FindOptions {
 
   void setMaps() {
     stringArgMap = {
-      'in-archiveext': (String s, FindSettings ss) => ss.addExtensions(s, ss.inArchiveExtensions),
-      'in-archivefilepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inArchiveFilePatterns),
-      'in-dirpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inDirPatterns),
-      'in-ext': (String s, FindSettings ss) => ss.addExtensions(s, ss.inExtensions),
-      'in-filepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.inFilePatterns),
-      'in-filetype': (String s, FindSettings ss) => ss.inFileTypes.add(FileTypes.fromName(s)),
-      'out-archiveext': (String s, FindSettings ss) => ss.addExtensions(s, ss.outArchiveExtensions),
-      'out-archivefilepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outArchiveFilePatterns),
-      'out-dirpattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outDirPatterns),
-      'out-ext': (String s, FindSettings ss) => ss.addExtensions(s, ss.outExtensions),
-      'out-filepattern': (String s, FindSettings ss) => ss.addPattern(s, ss.outFilePatterns),
-      'out-filetype': (String s, FindSettings ss) => ss.outFileTypes.add(FileTypes.fromName(s)),
+      'in-archiveext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.inArchiveExtensions),
+      'in-archivefilepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.inArchiveFilePatterns),
+      'in-dirpattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.inDirPatterns),
+      'in-ext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.inExtensions),
+      'in-filepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.inFilePatterns),
+      'in-filetype': (String s, FindSettings ss) =>
+          ss.inFileTypes.add(FileTypes.fromName(s)),
+      'out-archiveext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.outArchiveExtensions),
+      'out-archivefilepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.outArchiveFilePatterns),
+      'out-dirpattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.outDirPatterns),
+      'out-ext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.outExtensions),
+      'out-filepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.outFilePatterns),
+      'out-filetype': (String s, FindSettings ss) =>
+          ss.outFileTypes.add(FileTypes.fromName(s)),
       'path': (String s, FindSettings ss) => ss.paths.add(s),
     };
 
@@ -96,7 +108,8 @@ class FindOptions {
     };
   }
 
-  Future<void> settingsFromJson(String jsonString, FindSettings settings) async {
+  Future<void> settingsFromJson(
+      String jsonString, FindSettings settings) async {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
       jsonMap.forEach((key, value) {
@@ -180,8 +193,9 @@ class FindOptions {
           ' dartfind [options] <path> [<path> ...]\n\n'
           'Options:\n';
       var optStrings = findOptions.map((so) => so.optString()).toList();
-      var longest = optStrings.reduce((value, optString) => (optString.length > value.length) ? optString : value);
-      for (var i=0; i < findOptions.length; i++) {
+      var longest = optStrings.reduce((value, optString) =>
+          (optString.length > value.length) ? optString : value);
+      for (var i = 0; i < findOptions.length; i++) {
         s += ' ' + optStrings[i].padRight(longest.length + 2, ' ');
         s += findOptions[i].desc + '\n';
       }
