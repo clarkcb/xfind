@@ -27,7 +27,7 @@ dependencies:
 - filepath
 - hxt
 - regex-pcre-builtin >=0.94.4
-- split >=0.2.2
+- split >= 0.2.3.4
 - text
 - timeit
 

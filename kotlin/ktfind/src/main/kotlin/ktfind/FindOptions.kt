@@ -16,9 +16,9 @@ import java.io.InputStreamReader
 data class FindOption(val shortarg: String?, val longarg: String, val desc: String) {
     val sortarg =
             if (shortarg == null) {
-                longarg.toLowerCase()
+                longarg.lowercase()
             } else {
-                shortarg.toLowerCase() + "@" + longarg.toLowerCase()
+                shortarg.lowercase() + "@" + longarg.lowercase()
             }
 }
 
@@ -232,7 +232,7 @@ class FindOptions {
             return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"
         }
         val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
-        val longest = optPairs.map { it.first.length }.max()
+        val longest = optPairs.map { it.first.length }.maxOrNull()
         val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {
             sb.append(String.format(format, o.first, o.second))

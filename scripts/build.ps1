@@ -312,7 +312,7 @@ function BuildDart
     Set-Location $dartfindPath
 
     Log('Building dartfind')
-    if (!(Test-Path (Join-Path $dartfindPath '.packages')))
+    if (!(Test-Path (Join-Path $dartfindPath '.dart_tool' 'package_config.json')) -and  (!(Test-Path (Join-Path $dartfindPath '.packages'))))
     {
         Log('dart pub get')
         dart pub get

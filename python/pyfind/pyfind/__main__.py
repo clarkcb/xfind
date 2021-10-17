@@ -4,10 +4,9 @@
 #
 # pyfind.py
 #
-# A CLI file find utility implemented in python (3.x)
+# A CLI file find utility implemented in python (>=3.9.x)
 #
 ###############################################################################
-import os
 import sys
 from typing import List
 
@@ -17,7 +16,6 @@ from .finder import Finder
 from .findexception import FindException
 from .findfile import FindFile
 from .findoptions import FindOptions
-from .findsettings import FindSettings
 
 
 def get_found_dirs(found_files: List[FindFile]):
@@ -25,6 +23,9 @@ def get_found_dirs(found_files: List[FindFile]):
 
 
 async def main():
+    if sys.version_info < (3, 9):
+        sys.exit('Sorry, Python < 3.9 is not supported')
+
     findoptions = FindOptions()
 
     settings = None
@@ -62,7 +63,7 @@ async def main():
             if found_files:
                 log('\nMatching files ({}):'.format(len(found_files)))
                 for f in found_files:
-                    log(f)
+                    log(str(f))
             else:
                 log('\nMatching files: 0')
 

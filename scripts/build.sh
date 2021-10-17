@@ -96,7 +96,6 @@ build_c () {
     add_to_bin "$CFIND_PATH/cfind"
 
     cd -
-
 }
 
 build_clojure () {
@@ -271,7 +270,7 @@ build_dart () {
     # copy_json_resources $RESOURCES_PATH
 
     log "Building dartfind"
-    if [ ! -f "$DARTFIND_PATH/.packages" ]
+    if [ ! -f "$DARTFIND_PATH/.dart_tool/package_config.json" ] && [ ! -f "$DARTFIND_PATH/.packages" ]
     then
         log "dart pub get"
         dart pub get

@@ -1,8 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.3.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 8ca12a6e8177a7dbede341cbc6aa53b910e7f0ad8db797f78e8116a34f755ccd
 
 name:           hsfind
 version:        0.1.0.0
@@ -52,7 +54,7 @@ library
     , filepath
     , hxt
     , regex-pcre-builtin >=0.94.4
-    , split >=0.2.2
+    , split >=0.2.3.4
     , text
     , timeit
   default-language: Haskell2010
@@ -73,7 +75,7 @@ executable hsfind
     , hsfind
     , hxt
     , regex-pcre-builtin >=0.94.4
-    , split >=0.2.2
+    , split >=0.2.3.4
     , text
     , timeit
   default-language: Haskell2010
@@ -101,7 +103,7 @@ test-suite hsfind-test
     , hsfind
     , hxt
     , regex-pcre-builtin >=0.94.4
-    , split >=0.2.2
+    , split >=0.2.3.4
     , test-framework >=0.8 && <0.9
     , test-framework-hunit >=0.3 && <0.4
     , text

@@ -55,7 +55,7 @@ RUN apt-get update \
 #     && sh -c 'wget -qO- https://storage.googleapis.com/download.dartlang.org/linux/debian/dart_stable.list > /etc/apt/sources.list.d/dart_stable.list' \
 #     && apt-get install -y --no-install-recommends \
 #         dart
-ARG DART_VERSION=2.12.2
+ARG DART_VERSION=2.14.4
 ENV DART_PATH=/usr/local/dart-sdk
 ENV PATH=$PATH:${DART_PATH}/bin
 RUN wget --progress=dot:giga https://storage.googleapis.com/dart-archive/channels/stable/release/${DART_VERSION}/sdk/dartsdk-linux-x64-release.zip \
@@ -80,7 +80,7 @@ RUN wget --progress=dot:giga https://packages.microsoft.com/config/ubuntu/${UBUN
 
 
 ## Install go stuff
-ARG GO_VERSION=1.16.2
+ARG GO_VERSION=1.17.2
 ENV GO_PATH=/usr/local/go
 ENV PATH=$PATH:${GO_PATH}/bin
 RUN rm -rf /usr/local/go \
@@ -117,8 +117,8 @@ RUN wget --progress=dot:giga https://raw.githubusercontent.com/technomancy/leini
 
 
 ## Install kotlin stuff
-ARG KOTLIN_VERSION=1.4.31
-ARG GRADLE_VERSION=6.8.3
+ARG KOTLIN_VERSION=1.5.31
+ARG GRADLE_VERSION=7.2
 ENV KOTLIN_PATH=/usr/local/kotlinc \
     GRADLE_PATH=/usr/local/gradle-${GRADLE_VERSION}
 ENV PATH=$PATH:${KOTLIN_PATH}/bin:${GRADLE_PATH}/bin
@@ -233,7 +233,7 @@ RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
 
 
 ## Install scala/sbt stuff
-ARG SBT_VERSION=1.4.9
+ARG SBT_VERSION=1.5.5
 ENV SBT_PATH=/usr/local/sbt
 ENV PATH=$PATH:${SBT_PATH}/bin
 RUN wget --progress=dot:giga https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.zip \
@@ -242,7 +242,7 @@ RUN wget --progress=dot:giga https://github.com/sbt/sbt/releases/download/v${SBT
 
 
 ## Install swift stuff
-ARG SWIFT_VERSION=5.3.3
+ARG SWIFT_VERSION=5.5
 # not sure how to dynamically derive this from UBUNTU_VERSION, but needed for swift URL
 ARG UBUNTU_VERSION_ABBREV=2004
 ENV SWIFT_PATH=/usr/local/swift-${SWIFT_VERSION}-RELEASE-ubuntu${UBUNTU_VERSION}
