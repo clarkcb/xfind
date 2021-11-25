@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace CsFind
+namespace CsFindLib
 {
     public class Finder
 	{
@@ -20,13 +20,9 @@ namespace CsFind
 		{
 			if (Settings.Paths.Count == 0)
 				throw new FindException("Startpath not defined");
-			foreach (var p in Settings.Paths)
+			if (Settings.Paths.Select(FileUtil.ExpandPath).Any(p => !Directory.Exists(p) && !File.Exists(p)))
 			{
-				var expandedPath = FileUtil.ExpandPath(p);
-				if (!Directory.Exists(expandedPath) && !File.Exists(expandedPath))
-				{
-					throw new FindException("Startpath not found");
-				}
+				throw new FindException("Startpath not found");
 			}
 		}
 
@@ -90,8 +86,8 @@ namespace CsFind
 		private IEnumerable<FindFile> GetFindFiles()
 		{
 			var findFiles = new List<FindFile>();
-			var findOption = Settings.Recursive ? System.IO.SearchOption.AllDirectories :
-				System.IO.SearchOption.TopDirectoryOnly;
+			var findOption = Settings.Recursive ? SearchOption.AllDirectories :
+				SearchOption.TopDirectoryOnly;
 			foreach (var p in Settings.Paths)
 			{
 				var expandedPath = FileUtil.ExpandPath(p);
@@ -126,8 +122,8 @@ namespace CsFind
 		private IEnumerable<DirectoryInfo> GetMatchingDirs(IEnumerable<FindFile> findFiles)
 		{
 			return new List<DirectoryInfo>(
-				findFiles.Where(ff => ff.File != null && ff.File.Directory != null)
-					.Select(ff => ff.File!.Directory!)
+				findFiles.Where(ff => ff.File.Directory != null)
+					.Select(ff => ff.File.Directory!)
 					.Distinct()
 					.OrderBy(d => d.FullName));
 		}
@@ -150,9 +146,9 @@ namespace CsFind
 			var matchingDirs = GetMatchingDirs(findFiles)
 				.Select(d => GetRelativePath(d.FullName))
 				.Distinct()
-				.OrderBy(d => d);
-			if (matchingDirs.Count() > 0) {
-				Common.Log($"\nMatching directories ({matchingDirs.Count()}):");
+				.OrderBy(d => d).ToList();
+			if (matchingDirs.Any()) {
+				Common.Log($"\nMatching directories ({matchingDirs.Count}):");
 				foreach (var d in matchingDirs)
 				{
 					Common.Log(d);
@@ -165,8 +161,8 @@ namespace CsFind
 		private IEnumerable<FileInfo> GetMatchingFiles(IEnumerable<FindFile> findFiles)
 		{
 			return new List<FileInfo>(
-				findFiles.Where(f => f.File != null)
-					.Select(f => f.File!.ToString())
+				findFiles
+					.Select(f => f.File.ToString())
 					.Distinct().Select(f => new FileInfo(f))
 					.OrderBy(d => d.FullName));
 		}
@@ -176,9 +172,9 @@ namespace CsFind
 			var matchingFiles = GetMatchingFiles(findFiles)
 				.Select(f => GetRelativePath(f.FullName))
 				.Distinct()
-				.OrderBy(f => f);
-			if (matchingFiles.Count() > 0) {
-				Common.Log($"\nMatching files ({matchingFiles.Count()}):");
+				.OrderBy(f => f).ToList();
+			if (matchingFiles.Any()) {
+				Common.Log($"\nMatching files ({matchingFiles.Count}):");
 				foreach (var f in matchingFiles)
 				{
 					Common.Log(f);

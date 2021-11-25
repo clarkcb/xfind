@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CsFind
+namespace CsFindLib
 {
 	public class FindException : Exception
 	{

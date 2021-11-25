@@ -1,11 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text.Json;
-
 using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>;
 
-namespace CsFind
+namespace CsFindLib
 {
 	public enum FileType
 	{

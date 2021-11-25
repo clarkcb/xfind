@@ -1,5 +1,5 @@
 ﻿using NUnit.Framework;
-using CsFind;
+using CsFindLib;
 
 namespace CsFindTests
 {

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using System.Linq;
+using CsFindLib;
 
 namespace CsFind
 {
-    class Program
+	static class Program
     {
         static void Main(string[] args)
         {
@@ -22,7 +23,7 @@ namespace CsFind
 				}
 
 				var finder = new Finder(settings);
-				var files = finder.Find();
+				var files = finder.Find().ToList();
 
 				if (settings.ListDirs)
 				{

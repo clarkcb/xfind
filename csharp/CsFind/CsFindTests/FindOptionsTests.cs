@@ -2,7 +2,8 @@
 using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using CsFind;
+using CsFindLib;
+using FindOptions = CsFindLib.FindOptions;
 
 namespace CsFindTests
 {

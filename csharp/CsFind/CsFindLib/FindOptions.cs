@@ -4,18 +4,17 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-
 using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>>>;
 
-namespace CsFind
+namespace CsFindLib
 {
 	public class FindOptions
 	{
 		private readonly string _findOptionsResource;
 
 		private static readonly Dictionary<string, Action<string, FindSettings>> ArgActionDictionary =
-			new Dictionary<string, Action<string,FindSettings>>
-				{
+			new()
+			{
 					{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
 					{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
 					{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },

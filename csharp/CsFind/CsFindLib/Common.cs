@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CsFind
+namespace CsFindLib
 {
 	public static class Common
 	{

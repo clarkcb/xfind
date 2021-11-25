@@ -1,6 +1,6 @@
 ﻿using System.Linq;
+using CsFindLib;
 using NUnit.Framework;
-using CsFind;
 
 namespace CsFindTests
 {
