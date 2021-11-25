@@ -8,10 +8,8 @@ using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, Syst
 
 namespace CsFindLib
 {
-	public class FindOptions
+	public partial class FindOptions
 	{
-		private readonly string _findOptionsResource;
-
 		private static readonly Dictionary<string, Action<string, FindSettings>> ArgActionDictionary =
 			new()
 			{
@@ -70,40 +68,36 @@ namespace CsFindLib
 
 		public FindOptions()
 		{
-			_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 			Options = new List<FindOption>();
 			ArgDictionary = new Dictionary<string, FindOption>();
 			FlagDictionary = new Dictionary<string, FindOption>();
-			SetOptionsFromJson();
+			// call SetOptions() in generated partial class
+			SetOptions();
+			AddOptionActions();
 		}
 
-		private void SetOptionsFromJson()
+		partial void SetOptions();
+
+		private void AddOptionActions()
 		{
-			var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(_findOptionsResource);
-			var optionDicts = findOptionsDict!["findoptions"];
-			foreach (var optionDict in optionDicts)
+			foreach (var option in Options)
 			{
-				var longArg = optionDict["long"];
-				var shortArg = optionDict.ContainsKey("short") ? optionDict["short"] : null;
-				var desc = optionDict["desc"];
-				if (ArgActionDictionary.ContainsKey(longArg))
+				if (ArgActionDictionary.ContainsKey(option.LongArg))
 				{
-					var option = new FindArgOption(shortArg, longArg, ArgActionDictionary[longArg], desc);
-					Options.Add(option);
-					ArgDictionary.Add(longArg, option);
-					if (!string.IsNullOrWhiteSpace(shortArg))
+					var argOption = new FindArgOption(option, ArgActionDictionary[option.LongArg]);
+					ArgDictionary.Add(option.LongArg, argOption);
+					if (!string.IsNullOrWhiteSpace(option.ShortArg))
 					{
-						ArgDictionary.Add(shortArg, option);
+						ArgDictionary.Add(option.ShortArg, argOption);
 					}
 				}
-				else if (BoolFlagActionDictionary.ContainsKey(longArg))
+				else if (BoolFlagActionDictionary.ContainsKey(option.LongArg))
 				{
-					var option = new FindFlagOption(shortArg, longArg, BoolFlagActionDictionary[longArg], desc);
-					Options.Add(option);
-					FlagDictionary.Add(longArg, option);
-					if (!string.IsNullOrWhiteSpace(shortArg))
+					var flagOption = new FindFlagOption(option, BoolFlagActionDictionary[option.LongArg]);
+					FlagDictionary.Add(option.LongArg, flagOption);
+					if (!string.IsNullOrWhiteSpace(option.ShortArg))
 					{
-						FlagDictionary.Add(shortArg, option);
+						FlagDictionary.Add(option.ShortArg, flagOption);
 					}
 				}
 			}

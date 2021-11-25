@@ -14,7 +14,7 @@ namespace CsFindLib
 		Xml
 	};
 
-	public class FileTypes
+	public partial class FileTypes
 	{
 		public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
 
@@ -24,37 +24,15 @@ namespace CsFindLib
 		private const string Text = "text";
 		private const string Xml = "xml";
 
-		private readonly string _fileTypesResource;
 		private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
 
 		public FileTypes()
 		{
-			_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.filetypes.json");
 			_fileTypesDictionary = new Dictionary<string, ISet<string>>();
-			PopulateFileTypesFromJson();
+			PopulateFileTypes();
 		}
 
-		private void PopulateFileTypesFromJson()
-		{
-			var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
-			if (filetypesDict!.ContainsKey("filetypes"))
-			{
-				var filetypeDicts = filetypesDict["filetypes"];
-				foreach (var filetypeDict in filetypeDicts)
-				{
-					if (filetypeDict.ContainsKey("type") && filetypeDict.ContainsKey("extensions"))
-					{
-						var name = ((JsonElement)filetypeDict["type"]).GetString();
-						var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
-							.Select(x => "." + x.GetString());
-						var extensionSet = new HashSet<string>(extensions);
-						_fileTypesDictionary[name!] = extensionSet;
-					}
-				}
-				_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Code]);
-				_fileTypesDictionary[Text].UnionWith(_fileTypesDictionary[Xml]);
-			}
-		}
+		partial void PopulateFileTypes();
 
 		public static FileType FromName(string name)
 		{
@@ -97,7 +75,9 @@ namespace CsFindLib
 
 		public bool IsTextFile(FileInfo f)
 		{
-			return _fileTypesDictionary[Text].Contains(f.Extension.ToLowerInvariant());
+			return _fileTypesDictionary[Text].Contains(f.Extension.ToLowerInvariant()) ||
+			       _fileTypesDictionary[Code].Contains(f.Extension.ToLowerInvariant()) ||
+			       _fileTypesDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
 		}
 
 		public bool IsUnknownFile(FileInfo f)

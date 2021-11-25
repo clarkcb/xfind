@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFind", "CsFind\CsFind.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFindTests", "CsFindTests\CsFindTests.csproj", "{C76E2D7A-F359-4F4C-A90E-824DABA91D29}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsFindGen", "CsFindGen\CsFindGen.csproj", "{2F6865DF-830C-4CC4-9CE8-377D3FED9148}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -58,5 +60,17 @@ Global
 		{C76E2D7A-F359-4F4C-A90E-824DABA91D29}.Release|x64.Build.0 = Release|Any CPU
 		{C76E2D7A-F359-4F4C-A90E-824DABA91D29}.Release|x86.ActiveCfg = Release|Any CPU
 		{C76E2D7A-F359-4F4C-A90E-824DABA91D29}.Release|x86.Build.0 = Release|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Debug|x64.Build.0 = Debug|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Debug|x86.Build.0 = Debug|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Release|x64.ActiveCfg = Release|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Release|x64.Build.0 = Release|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Release|x86.ActiveCfg = Release|Any CPU
+		{2F6865DF-830C-4CC4-9CE8-377D3FED9148}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

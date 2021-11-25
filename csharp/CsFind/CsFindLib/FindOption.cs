@@ -34,6 +34,11 @@ namespace CsFindLib
 		{
 			Action = action;
 		}
+		public FindArgOption(FindOption findOption, Action<string, FindSettings> action) :
+			base(findOption.ShortArg, findOption.LongArg, findOption.Description)
+		{
+			Action = action;
+		}
 	}
 
 	internal class FindFlagOption : FindOption
@@ -41,6 +46,11 @@ namespace CsFindLib
 		public Action<bool, FindSettings> Action { get; private set; }
 		public FindFlagOption(string? shortArg, string longArg, Action<bool, FindSettings> action, string description) :
 			base(shortArg, longArg, description)
+		{
+			Action = action;
+		}
+		public FindFlagOption(FindOption findOption, Action<bool, FindSettings> action) :
+			base(findOption.ShortArg, findOption.LongArg, findOption.Description)
 		{
 			Action = action;
 		}
