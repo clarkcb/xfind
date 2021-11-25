@@ -11,11 +11,11 @@ module Common =
             String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10)
-        printfn "Elapsed time for %s: %s" name elapsedTime
+        printfn $"Elapsed time for %s{name}: %s{elapsedTime}"
 
     let PrintNames (names : string list) : unit =
         for name in names do
-            printfn "Name: %s" name
+            printfn $"Name: %s{name}"
 
     let list_to_string (lst : 'a list) : string = 
         let rec rec_list_to_string (acc : string) (lst : 'a list) =
@@ -26,6 +26,6 @@ module Common =
         sprintf "[%s]" (rec_list_to_string "" lst)
 
     let ListToString<'a> (name : string, ls : string list) : string = 
-        sprintf "%s (%d): %s" name ls.Length (list_to_string ls)
+        $"%s{name} (%d{ls.Length}): %s{list_to_string ls}"
 
 ;;

@@ -1,13 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Common.fs" />
-    <Compile Include="Color.fs" />
     <Compile Include="EmbeddedResource.fs" />
     <Compile Include="FindException.fs" />
     <Compile Include="FileUtil.fs" />

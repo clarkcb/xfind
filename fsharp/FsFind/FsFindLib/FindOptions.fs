@@ -124,7 +124,7 @@ module FindOptions =
                         if argActionMap.ContainsKey(long) then
                             match tail with
                             | [] ->
-                                settings, sprintf "Missing value for option: %s" opt
+                                settings, $"Missing value for option: %s{opt}"
                             | aHead :: aTail -> 
                                 recSettingsFromArgs aTail (argActionMap.[long] aHead settings)
                         elif flagActionMap.ContainsKey(long) then
@@ -133,9 +133,9 @@ module FindOptions =
                             else
                                 recSettingsFromArgs tail (flagActionMap.[long] true settings)
                         else
-                            settings, sprintf "Invalid option: %s" opt
+                            settings, $"Invalid option: %s{opt}"
                     else
-                        settings, sprintf "Invalid option: %s" opt
+                        settings, $"Invalid option: %s{opt}"
                 | _ -> recSettingsFromArgs tail { settings with Paths = List.append settings.Paths [head] }
         // default ListFiles to true since running as cli
         recSettingsFromArgs (Array.toList args) { FindSettings.DefaultSettings with ListFiles = true }
@@ -179,5 +179,5 @@ module FindOptions =
 
     let Usage (exitCode : int) : unit =
         let usageString = GetUsageString()
-        printfn "%s\n" usageString
+        printfn $"%s{usageString}\n"
         Environment.Exit(exitCode)

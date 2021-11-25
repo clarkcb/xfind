@@ -1,9 +1,7 @@
 ﻿namespace FsFind
 
 open System
-open System.Collections.Generic
 open System.IO
-open System.Text
 open System.Text.RegularExpressions
 
 type Finder (settings : FindSettings.t) =
@@ -27,7 +25,7 @@ type Finder (settings : FindSettings.t) =
     member this.IsFindDir (d : DirectoryInfo) : bool =
         let elems = d.FullName.Split('/', '\\') |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
         (not settings.ExcludeHidden ||
-         not (Seq.exists (fun e -> FileUtil.IsHidden e) elems)) &&
+         not (Seq.exists (FileUtil.IsHidden) elems)) &&
         (Seq.isEmpty settings.InDirPatterns ||
          this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
         (Seq.isEmpty settings.OutDirPatterns ||
@@ -75,7 +73,7 @@ type Finder (settings : FindSettings.t) =
             dir.EnumerateFiles("*", findOption)
             |> Seq.filter (fun f -> this.IsFindDir(f.Directory))
             |> Seq.map (fun f -> FindFile.Create f (_fileTypes.GetFileType f))
-            |> Seq.filter (fun sf -> this.FilterFile sf)
+            |> Seq.filter this.FilterFile
             |> List.ofSeq
         else
             let fileInfo = FileInfo(expandedPath)
@@ -83,7 +81,7 @@ type Finder (settings : FindSettings.t) =
 
     member this.Find () : FindFile.t list =
         settings.Paths
-        |> List.collect (fun p -> this.GetFindFiles p)
+        |> List.collect this.GetFindFiles
 
     member this.GetMatchingDirs (findFiles : FindFile.t list) : DirectoryInfo list = 
         findFiles
@@ -95,9 +93,9 @@ type Finder (settings : FindSettings.t) =
     member this.PrintMatchingDirs (findFiles : FindFile.t list) : unit = 
         let dirs = this.GetMatchingDirs findFiles
         if dirs.Length > 0 then
-            Common.Log (sprintf "\nMatching directories (%d):" dirs.Length)
+            Common.Log $"\nMatching directories (%d{dirs.Length}):"
             for d in dirs do
-                printfn "%s" d.FullName
+                printfn $"%s{d.FullName}"
         else
             Common.Log "\nMatching directories: 0"
 
@@ -112,9 +110,9 @@ type Finder (settings : FindSettings.t) =
     member this.PrintMatchingFiles (findFiles : FindFile.t list) : unit = 
         let files = this.GetMatchingFiles findFiles
         if files.Length > 0 then
-            Common.Log (sprintf "\nMatching files (%d):" files.Length)
+            Common.Log $"\nMatching files (%d{files.Length}):"
             for f in files do
-                printfn "%s" f.FullName
+                printfn $"%s{f.FullName}"
         else
             Common.Log "\nMatching files: 0"
 

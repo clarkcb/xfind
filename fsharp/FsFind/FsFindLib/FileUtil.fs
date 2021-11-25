@@ -29,7 +29,7 @@ module FileUtil =
                 use sr = new StreamReader (filepath, encoding)
                 sr.ReadToEnd()
             with
-            | :? IOException as e -> printfn "%s" e.Message; ""
+            | :? IOException as e -> printfn $"%s{e.Message}"; ""
         contents
 
     let GetFileLines (filePath : string) (encoding : Encoding) = seq {
