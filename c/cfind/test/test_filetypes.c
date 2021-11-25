@@ -1,8 +1,6 @@
 #include <assert.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
-#include "common.h"
 #include "filetypes.h"
 #include "test_filetypes.h"
 
@@ -34,5 +32,4 @@ void test_filetype_from_name(void)
         printf("actual ft:   %d\n", ft);
         assert(ft == expected[i]);
     }
-
 }

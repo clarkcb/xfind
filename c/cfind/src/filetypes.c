@@ -183,10 +183,8 @@ end:
     cJSON_Delete(file_json);
 }
 
-FileType get_filetype(const char *filename, FileTypes *filetypes)
+FileType get_filetype_for_ext(const char *ext, FileTypes *filetypes)
 {
-    char *ext = malloc(100 * sizeof(char));
-    get_extension(filename, ext);
     FileType filetype = UNKNOWN;
     if (strlen(ext) > 0) {
         if (index_of_string_in_string_array(ext, filetypes->code_extensions) > -1) {
@@ -201,7 +199,6 @@ FileType get_filetype(const char *filename, FileTypes *filetypes)
             filetype = ARCHIVE;
         }
     }
-    free(ext);
     return filetype;
 }
 

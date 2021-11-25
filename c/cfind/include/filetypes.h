@@ -26,7 +26,7 @@ FileTypes *new_filetypes(void);
 
 FileTypes *get_filetypes(void);
 
-FileType get_filetype(const char *filename, FileTypes *filetypes);
+FileType get_filetype_for_ext(const char *ext, FileTypes *filetypes);
 
 FileType filetype_from_name(const char *name);
 

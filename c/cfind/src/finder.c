@@ -63,7 +63,7 @@ static unsigned short is_find_file(const char *filename, const Finder *finder, F
     char *ext = malloc(ext_size * sizeof(char));
     strcpy(ext, "");
     get_extension(filename, ext);
-    *filetype = get_filetype(filename, finder->filetypes);
+    *filetype = get_filetype_for_ext(ext, finder->filetypes);
     unsigned short res = 0;
     if (((is_null_or_empty_string_node(finder->settings->in_extensions) == 1)
           || (string_matches_string_node(ext, finder->settings->in_extensions) != 0))
