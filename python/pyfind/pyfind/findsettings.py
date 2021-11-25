@@ -20,7 +20,7 @@ class FindSettings(object):
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
-        'archivesonly', 'colorize', 'debug', 'excludehidden', 'in_archiveextensions',
+        'archivesonly', 'debug', 'excludehidden', 'in_archiveextensions',
         'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
         'in_filetypes', 'includearchives', 'listdirs', 'listfiles', 'maxlastmod',
         'maxsize', 'minlastmod', 'minsize', 'out_archivefilepatterns', 'out_archiveextensions',
@@ -28,20 +28,19 @@ class FindSettings(object):
         'printresults', 'printusage', 'printversion', 'recursive', 'verbose'
     ]
 
-    def __init__(self, archivesonly: bool = False, colorize: bool = True, debug: bool = False,
+    def __init__(self, archivesonly: bool = False, debug: bool = False,
                  excludehidden: bool = True, in_archiveextensions: Set[str] = None,
                  in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
                  in_extensions: Set[str] = None, in_filepatterns: PatternSet = None,
                  in_filetypes: Set[str] = None, includearchives: bool = False,
                  listdirs: bool = False, listfiles: bool = False, maxlastmod: Optional[datetime] = None,
                  maxsize: int = 0, minlastmod: Optional[datetime] = None, minsize: int = 0,
-                 out_archivefilepatterns: PatternSet = None, out_archiveextensions: Set[str] = None,
+                 out_archiveextensions: Set[str] = None, out_archivefilepatterns: PatternSet = None,
                  out_dirpatterns: PatternSet = None, out_extensions: Set[str] = None,
                  out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
                  paths: Set[str] = None, printresults: bool = False, printusage: bool = False,
                  printversion: bool = False, recursive: bool = True, verbose: bool = False):
         self.archivesonly = archivesonly
-        self.colorize = colorize
         self.debug = debug
         self.excludehidden = excludehidden
         self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set()

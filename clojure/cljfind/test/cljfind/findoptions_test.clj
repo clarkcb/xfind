@@ -7,7 +7,6 @@
   (let [[ss errs] (settings-from-args [])]
     (testing "test-no-args"
       (is (not (:archivesonly ss)))
-      (is (:colorize ss))
       (is (not (:debug ss)))
       (is (:excludehidden ss))
       (is (not (:listdirs ss)))

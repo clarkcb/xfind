@@ -13,7 +13,6 @@ FindSettings *default_settings(void)
     assert(settings != NULL);
 
     settings->archivesonly = 0;
-    settings->colorize = 1;
     settings->debug = 0;
     settings->excludehidden = 1;
     settings->in_archiveextensions = NULL;
@@ -46,7 +45,6 @@ const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;
 const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_STRING_NODE_FIELD_COUNT;
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archivesonly=%d"
-            ", colorize=%d"
             ", debug=%d"
             ", excludehidden=%d"
             ", in_archiveextensions=%s"
@@ -143,7 +141,6 @@ void settings_to_string(FindSettings *settings, char *s)
 
     sprintf(s, SETTINGS_TEMPLATE,
         settings->archivesonly,
-        settings->colorize,
         settings->debug,
         settings->excludehidden,
         in_archiveextensions_s,

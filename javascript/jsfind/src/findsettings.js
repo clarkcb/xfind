@@ -9,7 +9,6 @@ const {FileTypes} = require('./filetypes');
 class FindSettings {
     constructor() {
         this.archivesOnly = false;
-        this.colorize = true;
         this.debug = false;
         this.excludeHidden = true;
         this.inArchiveExtensions = [];
@@ -138,7 +137,6 @@ class FindSettings {
     toString() {
         return 'FindSettings(' +
             'archivesOnly=' + this.archivesOnly +
-            ', colorize=' + this.colorize +
             ', debug=' + this.debug +
             ', excludeHidden=' + this.excludeHidden +
             ', ' + this.listToString('inArchiveExtensions', this.inArchiveExtensions) +

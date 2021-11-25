@@ -17,7 +17,6 @@ sub new {
     my $class = shift;
     my $self = {
         archivesonly => 0,
-        colorize => 1,
         debug => 0,
         excludehidden => 1,
         in_archiveextensions => [],
@@ -120,7 +119,6 @@ sub to_string {
     my $self = shift @_;
     my $s = "FindSettings(";
     $s .= 'archivesonly=' . $self->bool_to_string($self->{archivesonly});
-    $s .= ', colorize=' . $self->bool_to_string($self->{colorize});
     $s .= ', debug=' . $self->bool_to_string($self->{debug});
     $s .= ', excludehidden=' . $self->bool_to_string($self->{excludehidden});
     $s .= ', in_archiveextensions=' . $self->aref_to_string($self->{in_archiveextensions});

@@ -6,7 +6,6 @@ module RbFind
   class FindSettings
 
     attr_reader :archivesonly
-    attr_accessor :colorize
     attr_reader :debug
     attr_accessor :excludehidden
     attr_accessor :in_archiveextensions
@@ -32,7 +31,6 @@ module RbFind
 
     def initialize
       @archivesonly = false
-      @colorize = true
       @debug = false
       @excludehidden = true
       @includearchives = false

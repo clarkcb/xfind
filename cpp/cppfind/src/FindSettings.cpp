@@ -88,10 +88,6 @@ namespace cppfind {
         return m_archivesonly;
     }
 
-    bool FindSettings::colorize() const {
-        return m_colorize;
-    }
-
     bool FindSettings::debug() const {
         return m_debug;
     }
@@ -185,10 +181,6 @@ namespace cppfind {
         if (b) m_includearchives = b;
     }
 
-    void FindSettings::colorize(const bool b) {
-        m_colorize = b;
-    }
-
     void FindSettings::debug(const bool b) {
         m_debug = b;
         if (b) m_verbose = b;
@@ -276,7 +268,6 @@ namespace cppfind {
         auto settings_str =
                 std::string("FindSettings(")
                 + "archivesonly: " + bool_to_string(m_archivesonly)
-                + ", colorize: " + bool_to_string(m_colorize)
                 + ", debug: " + bool_to_string(m_debug)
                 + ", excludehidden: " + bool_to_string(m_excludehidden)
                 + ", in_archiveextensions: " + string_vector_to_string(&m_in_archiveextensions)

@@ -11,7 +11,6 @@
 //}
 
 @property(nonatomic) BOOL archivesOnly;
-// @property(nonatomic) BOOL colorize;
 @property(nonatomic) BOOL debug;
 @property(nonatomic) BOOL excludeHidden;
 @property(nonatomic) BOOL includeArchives;

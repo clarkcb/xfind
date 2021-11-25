@@ -36,7 +36,7 @@ class FileUtil
     public static function is_hidden(string $file): bool
     {
         $f = basename($file);
-        return strlen($f) > 1 && $f{0}==='.' && !self::is_dot_dir($f);
+        return strlen($f) > 1 && $f[0] ==='.' && !self::is_dot_dir($f);
     }
 
     public static function join_path(string $path, string $file): string

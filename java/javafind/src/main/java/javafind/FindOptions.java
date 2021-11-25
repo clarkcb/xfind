@@ -60,7 +60,6 @@ public class FindOptions {
     private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
-            put("colorize", (b, settings) -> settings.setColorize(b));
             put("debug", (b, settings) -> settings.setDebug(b));
             put("excludehidden", (b, settings) -> settings.setExcludeHidden(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
@@ -68,7 +67,6 @@ public class FindOptions {
             put("includehidden", (b, settings) -> settings.setExcludeHidden(!b));
             put("listdirs", (b, settings) -> settings.setListDirs(b));
             put("listfiles", (b, settings) -> settings.setListFiles(b));
-            put("nocolorize", (b, settings) -> settings.setColorize(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("verbose", (b, settings) -> settings.setVerbose(b));

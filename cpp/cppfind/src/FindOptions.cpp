@@ -32,7 +32,6 @@ namespace cppfind {
 
         m_bool_arg_map = {
                 {"archivesonly", [](bool b, FindSettings* ss) { ss->archivesonly(b); }},
-                {"colorize", [](bool b, FindSettings* ss) { ss->colorize(b); }},
                 {"debug", [](bool b, FindSettings* ss) { ss->debug(b); }},
                 {"excludearchives", [](bool b, FindSettings* ss) { ss->includearchives(!b); }},
                 {"excludehidden", [](bool b, FindSettings* ss) { ss->excludehidden(b); }},
@@ -41,7 +40,6 @@ namespace cppfind {
                 {"includehidden", [](bool b, FindSettings* ss) { ss->excludehidden(!b); }},
                 {"listdirs", [](bool b, FindSettings* ss) { ss->listdirs(b); }},
                 {"listfiles", [](bool b, FindSettings* ss) { ss->listfiles(b); }},
-                {"nocolorize", [](bool b, FindSettings* ss) { ss->colorize(!b); }},
                 {"norecursive", [](bool b, FindSettings* ss) { ss->recursive(!b); }},
                 {"recursive", [](bool b, FindSettings* ss) { ss->recursive(b); }},
                 {"verbose", [](bool b, FindSettings* ss) { ss->verbose(b); }},

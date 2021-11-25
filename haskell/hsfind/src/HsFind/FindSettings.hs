@@ -11,7 +11,6 @@ import HsFind.FileUtil (normalizeExtension)
 
 data FindSettings = FindSettings {
                                        archivesOnly :: Bool
-                                     , colorize :: Bool
                                      , debug :: Bool
                                      , excludeHidden :: Bool
                                      , inArchiveExtensions :: [String]
@@ -39,7 +38,6 @@ data FindSettings = FindSettings {
 defaultFindSettings :: FindSettings
 defaultFindSettings = FindSettings {
                                          archivesOnly=False
-                                       , colorize=True
                                        , debug=False
                                        , excludeHidden=True
                                        , inArchiveExtensions=[]

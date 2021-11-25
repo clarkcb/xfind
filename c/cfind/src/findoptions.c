@@ -49,7 +49,6 @@ char **arg_abbrs = (char *[]) {
 const size_t flag_count = FLAG_COUNT;
 char **flag_names = (char *[]) {
     "archivesonly",
-    "colorize",
     "debug",
     "excludearchives",
     "excludehidden",
@@ -58,7 +57,6 @@ char **flag_names = (char *[]) {
     "help",
     "listdirs",
     "listfiles",
-    "nocolorize",
     "norecursive",
     "recursive",
     "verbose",
@@ -67,7 +65,6 @@ char **flag_names = (char *[]) {
 
 char **flag_abbrs = (char *[]) {
     "a", // archivesonly
-    "c", // colorize
     "",  // debug
     "Z", // excludearchives
     "",  // excludehidden
@@ -76,7 +73,6 @@ char **flag_abbrs = (char *[]) {
     "h", // help
     "",  // listdirs
     "",  // listfiles
-    "C", // nocolorize
     "R", // norecursive
     "r", // recursive
     "v", // verbose
@@ -312,8 +308,6 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
             settings->includearchives = flag_val;
         }
         break;
-    case COLORIZE:
-        settings->colorize = flag_val;
     case DEBUG:
         settings->debug = flag_val;
         if (flag_val) {
@@ -340,9 +334,6 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
         break;
     case LISTFILES:
         settings->listfiles = flag_val;
-        break;
-    case NOCOLORIZE:
-        settings->colorize = !flag_val;
         break;
     case NORECURSIVE:
         settings->recursive = !flag_val;

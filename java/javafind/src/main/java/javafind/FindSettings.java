@@ -21,7 +21,6 @@ public class FindSettings {
     private static final int INITIAL_SET_CAPACITY = 4;
 
     private boolean archivesOnly;
-    private boolean colorize;
     private boolean debug;
     private boolean excludeHidden;
     private Set<String> inArchiveExtensions;
@@ -47,7 +46,6 @@ public class FindSettings {
 
     public FindSettings() {
         this.archivesOnly = DefaultSettings.ARCHIVESONLY;
-        this.colorize = DefaultSettings.COLORIZE;
         this.debug = DefaultSettings.DEBUG;
         this.excludeHidden = DefaultSettings.EXCLUDEHIDDEN;
         this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -93,14 +91,6 @@ public class FindSettings {
         if (archivesOnly) {
             this.includeArchives = true;
         }
-    }
-
-    public final boolean getColorize() {
-        return this.colorize;
-    }
-
-    public final void setColorize(final boolean colorize) {
-        this.colorize = colorize;
     }
 
     public final boolean getDebug() {
@@ -335,7 +325,6 @@ public class FindSettings {
     public final String toString() {
         return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
-                + ", colorize: " + this.colorize
                 + ", debug: " + this.debug
                 + ", excludeHidden: " + this.excludeHidden
                 + ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions)

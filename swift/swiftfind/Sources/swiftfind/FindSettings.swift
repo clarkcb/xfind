@@ -10,7 +10,6 @@
 
 public enum DefaultSettings {
     public static let archivesOnly = false
-    public static let colorize = true
     public static let debug = false
     public static let excludeHidden = true
     public static let includeArchives = false
@@ -24,7 +23,6 @@ public enum DefaultSettings {
 
 public class FindSettings: CustomStringConvertible {
     private var _archivesOnly: Bool = DefaultSettings.archivesOnly
-    public var colorize: Bool = DefaultSettings.colorize
     private var _debug: Bool = DefaultSettings.debug
     public var excludeHidden: Bool = DefaultSettings.excludeHidden
     public var includeArchives: Bool = DefaultSettings.includeArchives
@@ -154,7 +152,6 @@ public class FindSettings: CustomStringConvertible {
     public var description: String {
         "FindSettings(" +
             "archivesOnly=\(archivesOnly)" +
-            ", colorize=\(colorize)" +
             ", debug=\(debug)" +
             ", excludeHidden=\(excludeHidden)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +

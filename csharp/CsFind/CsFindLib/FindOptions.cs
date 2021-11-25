@@ -32,10 +32,9 @@ namespace CsFind
 				};
 
 		private static readonly Dictionary<string, Action<bool, FindSettings>> BoolFlagActionDictionary =
-			new Dictionary<string, Action<bool, FindSettings>>
-				{
+			new()
+			{
 					{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
-					{ "colorize", (b, settings) => settings.Colorize = b },
 					{ "debug", (b, settings) => settings.Debug = b },
 					{ "excludearchives", (b, settings) => settings.IncludeArchives = !b },
 					{ "excludehidden", (b, settings) => settings.ExcludeHidden = b },
@@ -60,7 +59,6 @@ namespace CsFind
 							// TODO: convert to int
 						}
 					},
-					{ "nocolorize", (b, settings) => settings.Colorize = !b },
 					{ "norecursive", (b, settings) => settings.Recursive = !b },
 					{ "recursive", (b, settings) => settings.Recursive = b },
 					{ "verbose", (b, settings) => settings.Verbose = b },

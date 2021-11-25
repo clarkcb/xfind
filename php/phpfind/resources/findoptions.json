@@ -5,11 +5,6 @@
       "desc": "Find only archive files"
     },
     {
-      "long": "colorize",
-      "short": "c",
-      "desc": "Colorize console output*"
-    },
-    {
       "long": "debug",
       "desc": "Set output mode to debug"
     },
@@ -97,11 +92,6 @@
       "long": "minsize",
       "arg": "size",
       "desc": "Find files with size >= minsize"
-    },
-    {
-      "long": "nocolorize",
-      "short": "C",
-      "desc": "Do not colorize console output"
     },
     {
       "long": "norecursive",

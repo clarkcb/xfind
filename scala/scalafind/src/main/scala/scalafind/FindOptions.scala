@@ -96,7 +96,6 @@ object FindOptions {
   private val boolFlagActionMap = Map[String, FlagAction](
     "archivesonly" -> ((b, ss) =>
       if (b) ss.copy(archivesOnly = b, includeArchives = b) else ss.copy(archivesOnly = b)),
-    "colorize" -> ((b, ss) => ss.copy(colorize = b)),
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
     "excludearchives" -> ((b, ss) => ss.copy(includeArchives = !b)),
     "excludehidden" -> ((b, ss) => ss.copy(excludeHidden = b)),
@@ -105,7 +104,6 @@ object FindOptions {
     "includehidden" -> ((b, ss) => ss.copy(excludeHidden = !b)),
     "listdirs" -> ((b, ss) => ss.copy(listDirs = b)),
     "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
-    "nocolorize" -> ((b, ss) => ss.copy(colorize = !b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
     "verbose" -> ((b, ss) => ss.copy(verbose = b)),

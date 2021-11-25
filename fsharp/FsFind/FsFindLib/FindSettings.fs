@@ -5,7 +5,6 @@ open System.Text.RegularExpressions
 module FindSettings =
     type t = {
         ArchivesOnly : bool;
-        Colorize : bool;
         Debug : bool;
         ExcludeHidden : bool;
         InArchiveExtensions : string list;
@@ -32,7 +31,6 @@ module FindSettings =
 
     let DefaultSettings = {
         ArchivesOnly = false;
-        Colorize = true;
         Debug = false;
         ExcludeHidden = true;
         InArchiveExtensions = [];
@@ -87,30 +85,29 @@ module FindSettings =
     let ToString settings =
         String.concat "" [
             "FindSettings(";
-            sprintf "ArchivesOnly: %b" settings.ArchivesOnly;
-            sprintf ", Colorize: %b" settings.Colorize;
-            sprintf ", Debug: %b" settings.Debug;
-            sprintf ", ExcludeHidden: %b" settings.ExcludeHidden;
-            sprintf ", InArchiveExtensions: %s" (Common.list_to_string(settings.InArchiveExtensions));
-            sprintf ", InArchiveFilePatterns: %s" (Common.list_to_string(settings.InArchiveFilePatterns));
-            sprintf ", InDirPatterns: %s" (Common.list_to_string(settings.InDirPatterns));
-            sprintf ", InExtensions: %s" (Common.list_to_string(settings.InExtensions));
-            sprintf ", InFilePatterns: %s" (Common.list_to_string(settings.InFilePatterns));
-            sprintf ", InFileTypes: %s" (FileTypesListToString settings.InFileTypes);
-            sprintf ", IncludeArchives: %b" settings.IncludeArchives;
-            sprintf ", ListDirs: %b" settings.ListDirs;
-            sprintf ", ListFiles: %b" settings.ListFiles;
-            sprintf ", OutArchiveExtensions: %s" (Common.list_to_string(settings.OutArchiveExtensions));
-            sprintf ", OutArchiveFilePatterns: %s" (Common.list_to_string(settings.OutArchiveFilePatterns));
-            sprintf ", OutDirPatterns: %s" (Common.list_to_string(settings.OutDirPatterns));
-            sprintf ", OutExtensions: %s" (Common.list_to_string(settings.OutExtensions));
-            sprintf ", OutFilePatterns: %s" (Common.list_to_string(settings.OutFilePatterns));
-            sprintf ", OutFileTypes: %s" (FileTypesListToString settings.OutFileTypes);
-            sprintf ", Paths: %s" (Common.list_to_string(settings.Paths));
-            sprintf ", PrintUsage: %b" settings.PrintUsage;
-            sprintf ", PrintVersion: %b" settings.PrintVersion;
-            sprintf ", Recursive: %b" settings.Recursive;
-            sprintf ", Verbose: %b" settings.Verbose;
+            $"ArchivesOnly: %b{settings.ArchivesOnly}";
+            $", Debug: %b{settings.Debug}";
+            $", ExcludeHidden: %b{settings.ExcludeHidden}";
+            $", InArchiveExtensions: %s{Common.list_to_string(settings.InArchiveExtensions)}";
+            $", InArchiveFilePatterns: %s{Common.list_to_string(settings.InArchiveFilePatterns)}";
+            $", InDirPatterns: %s{Common.list_to_string(settings.InDirPatterns)}";
+            $", InExtensions: %s{Common.list_to_string(settings.InExtensions)}";
+            $", InFilePatterns: %s{Common.list_to_string(settings.InFilePatterns)}";
+            $", InFileTypes: %s{FileTypesListToString settings.InFileTypes}";
+            $", IncludeArchives: %b{settings.IncludeArchives}";
+            $", ListDirs: %b{settings.ListDirs}";
+            $", ListFiles: %b{settings.ListFiles}";
+            $", OutArchiveExtensions: %s{Common.list_to_string(settings.OutArchiveExtensions)}";
+            $", OutArchiveFilePatterns: %s{Common.list_to_string(settings.OutArchiveFilePatterns)}";
+            $", OutDirPatterns: %s{Common.list_to_string(settings.OutDirPatterns)}";
+            $", OutExtensions: %s{Common.list_to_string(settings.OutExtensions)}";
+            $", OutFilePatterns: %s{Common.list_to_string(settings.OutFilePatterns)}";
+            $", OutFileTypes: %s{FileTypesListToString settings.OutFileTypes}";
+            $", Paths: %s{Common.list_to_string(settings.Paths)}";
+            $", PrintUsage: %b{settings.PrintUsage}";
+            $", PrintVersion: %b{settings.PrintVersion}";
+            $", Recursive: %b{settings.Recursive}";
+            $", Verbose: %b{settings.Verbose}";
             ")"
         ]
 ;;

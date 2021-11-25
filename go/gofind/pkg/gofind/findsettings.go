@@ -9,7 +9,6 @@ import (
 // FindSettings - the settings for the find session
 type FindSettings struct {
 	ArchivesOnly           bool
-	Colorize               bool
 	Debug                  bool
 	ExcludeHidden          bool
 	InArchiveExtensions    []string
@@ -37,7 +36,6 @@ type FindSettings struct {
 func GetDefaultFindSettings() *FindSettings {
 	return &FindSettings{
 		false,             // ArchivesOnly
-		true,              // Colorize
 		false,             // Debug
 		true,              // ExcludeHidden
 		[]string{},        // InArchiveExtensions
@@ -153,11 +151,7 @@ func (s *FindSettings) addFindPatternsToBuffer(name string, sp *FindPatterns, bu
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
 	elems := []string{}
 	for _, r := range sp.patterns {
-		if s.Colorize {
-			elems = append(elems, fmt.Sprintf("%s\"%s\"%s", COLOR_GREEN, r.String(), COLOR_RESET))
-		} else {
-			elems = append(elems, fmt.Sprintf("\"%s\"", r.String()))
-		}
+		elems = append(elems, fmt.Sprintf("\"%s\"", r.String()))
 	}
 	buffer.WriteString(strings.Join(elems, ","))
 	buffer.WriteString("]")
@@ -167,11 +161,7 @@ func (s *FindSettings) addStringListToBuffer(name string, list []string, buffer 
 	buffer.WriteString(fmt.Sprintf("%s: [", name))
 	elems := []string{}
 	for _, l := range list {
-		if s.Colorize {
-			elems = append(elems, fmt.Sprintf("%s\"%s\"%s", COLOR_GREEN, l, COLOR_RESET))
-		} else {
-			elems = append(elems, fmt.Sprintf("\"%s\"", l))
-		}
+		elems = append(elems, fmt.Sprintf("\"%s\"", l))
 	}
 	buffer.WriteString(strings.Join(elems, ","))
 	buffer.WriteString("]")
@@ -189,19 +179,13 @@ func addFileTypeListToBuffer(name string, list []FileType, buffer *bytes.Buffer)
 
 func (s *FindSettings) addBoolToBuffer(name string, b bool, buffer *bytes.Buffer) {
 	buffer.WriteString(fmt.Sprintf("%s: ", name))
-	if s.Colorize {
-		buffer.WriteString(fmt.Sprintf("%s%t%s", COLOR_GREEN, b, COLOR_RESET))
-	} else {
-		buffer.WriteString(fmt.Sprintf("%t", b))
-	}
+	buffer.WriteString(fmt.Sprintf("%t", b))
 }
 
 func (s *FindSettings) String() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("FindSettings{")
 	s.addBoolToBuffer("ArchivesOnly", s.ArchivesOnly, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("Colorize", s.Colorize, &buffer)
 	buffer.WriteString(", ")
 	s.addBoolToBuffer("Debug", s.Debug, &buffer)
 	buffer.WriteString(", ")

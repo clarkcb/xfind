@@ -11,7 +11,6 @@ import {FileTypes} from './filetypes';
 
 export class FindSettings {
     archivesOnly = false;
-    colorize = true;
     debug = false;
     excludeHidden = true;
     inArchiveExtensions: string[] = [];
@@ -138,7 +137,6 @@ export class FindSettings {
     public toString(): string {
         return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
-            + ', colorize=' + this.colorize
             + ', debug=' + this.debug
             + ', excludeHidden=' + this.excludeHidden
             + ', ' + FindSettings.listToString('inArchiveExtensions', this.inArchiveExtensions)

@@ -57,7 +57,6 @@ module FindOptions =
     let flagActionMap : Map<string, bool -> FindSettings.t -> FindSettings.t> =
         [
             ("archivesonly", (fun (b : bool) (settings : FindSettings.t) -> FindSettings.SetArchivesOnly b settings));
-            ("colorize", (fun (b : bool) (settings : FindSettings.t) -> { settings with Colorize = b }));
             ("debug", (fun (b : bool) (settings : FindSettings.t) -> FindSettings.SetDebug b settings));
             ("excludearchives", (fun (b : bool) (settings : FindSettings.t) -> { settings with IncludeArchives = not b }));
             ("excludehidden", (fun (b : bool) (settings : FindSettings.t) -> { settings with ExcludeHidden = b }));
@@ -66,7 +65,6 @@ module FindOptions =
             ("includehidden", (fun (b : bool) (settings : FindSettings.t) -> { settings with ExcludeHidden = not b }));
             ("listdirs", (fun (b : bool) (settings : FindSettings.t) -> { settings with ListDirs = b }));
             ("listfiles", (fun (b : bool) (settings : FindSettings.t) -> { settings with ListFiles = b }));
-            ("nocolorize", (fun (b : bool) (settings : FindSettings.t) -> { settings with Colorize = not b }));
             ("norecursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = not b }));
             ("recursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = b }));
             ("verbose", (fun (b : bool) (settings : FindSettings.t) -> { settings with Verbose = b }));
@@ -110,7 +108,7 @@ module FindOptions =
             |> Map.ofSeq
 
         let argRegex = Regex("^(?:-{1,2})(?<opt>.*)$")
-        
+
         let (|IsOption|_|) (arg:string) =            
             let m = argRegex.Match(arg)
             if m.Success then Some(m.Groups.["opt"].Value) else None

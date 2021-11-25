@@ -33,7 +33,6 @@ source-repository head
 
 library
   exposed-modules:
-      HsFind.Color
       HsFind.Config
       HsFind.FileTypes
       HsFind.FileUtil

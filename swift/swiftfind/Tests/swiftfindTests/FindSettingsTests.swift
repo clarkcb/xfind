@@ -21,7 +21,6 @@ class FindSettingsTests: XCTestCase {
 
     func testDefaultSettings() {
         XCTAssert(DefaultSettings.archivesOnly == false, "archivesOnly == false")
-        XCTAssert(DefaultSettings.colorize == true, "colorize == true")
         XCTAssert(DefaultSettings.debug == false, "debug == false")
         XCTAssert(DefaultSettings.excludeHidden == true, "excludeHidden == true")
         XCTAssert(DefaultSettings.includeArchives == false, "includeArchives == false")
@@ -35,7 +34,6 @@ class FindSettingsTests: XCTestCase {
     func testInitialSettingsEqualDefaultSettings() {
         let settings = FindSettings()
         XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
-        XCTAssert(settings.colorize == DefaultSettings.colorize, "colorize == true")
         XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
         XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
         XCTAssert(settings.includeArchives == DefaultSettings.includeArchives,

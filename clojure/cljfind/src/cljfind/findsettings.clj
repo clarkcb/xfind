@@ -16,7 +16,6 @@
 (defrecord FindSettings
   [
     archivesonly
-    colorize
     debug
     excludehidden
     includearchives
@@ -43,7 +42,6 @@
 
 (def DEFAULT-SETTINGS (->FindSettings
     false   ; archivesonly
-    true    ; colorize
     false   ; debug
     true    ; excludehidden
     false   ; includearchives

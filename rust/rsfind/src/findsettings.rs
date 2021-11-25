@@ -5,7 +5,6 @@ use crate::filetypes;
 #[derive(Clone, Debug)]
 pub struct FindSettings {
     pub archives_only: bool,
-    pub colorize: bool,
     pub debug: bool,
     pub exclude_hidden: bool,
     pub in_archive_extensions: Vec<String>,
@@ -34,7 +33,6 @@ impl FindSettings {
     pub fn default() -> FindSettings {
         FindSettings {
             archives_only: false,
-            colorize: true,
             debug: false,
             exclude_hidden: true,
             in_archive_extensions: Vec::new(),
@@ -146,7 +144,6 @@ mod tests {
     fn test_default() {
         let settings = FindSettings::default();
         assert_eq!(settings.archives_only, false);
-        assert_eq!(settings.colorize, true);
         assert_eq!(settings.debug, false);
         assert_eq!(settings.exclude_hidden, true);
         assert!(settings.in_archive_extensions.is_empty());

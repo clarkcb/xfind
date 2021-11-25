@@ -71,26 +71,22 @@ class FindOptions {
         this.boolFlagActionMap = {
             'archivesonly':
                 (b, settings) => { settings.setArchivesOnly(b); },
-            'colorize':
-                (b, settings) => { settings.colorize = b; },
             'debug':
                 (b, settings) => { settings.setDebug(b); },
             'excludearchives':
                 (b, settings) => { settings.includeArchives = !b; },
             'excludehidden':
                 (b, settings) => { settings.excludeHidden = b; },
+            'help':
+                (b, settings) => { settings.printUsage = b; },
             'includearchives':
                 (b, settings) => { settings.includeArchives = b; },
             'includehidden':
                 (b, settings) => { settings.excludeHidden = !b; },
-            'help':
-                (b, settings) => { settings.printUsage = b; },
             'listdirs':
                 (b, settings) => { settings.listDirs = b; },
             'listfiles':
                 (b, settings) => { settings.listFiles = b; },
-            'nocolorize':
-                (b, settings) => { settings.colorize = !b; },
             'norecursive':
                 (b, settings) => { settings.recursive = !b; },
             'recursive':

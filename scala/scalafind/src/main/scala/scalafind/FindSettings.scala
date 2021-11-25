@@ -6,7 +6,6 @@ import scala.util.matching.Regex
 
 object DefaultSettings {
   val archivesOnly = false
-  val colorize = true
   val debug = false
   val excludeHidden = true
   var includeArchives = false
@@ -20,7 +19,6 @@ object DefaultSettings {
 }
 
 case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
-                          colorize: Boolean = DefaultSettings.colorize,
                           debug: Boolean = DefaultSettings.debug,
                           excludeHidden: Boolean = DefaultSettings.excludeHidden,
                           inArchiveExtensions: Set[String] = Set.empty[String],
@@ -50,7 +48,6 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
   override def toString: String = {
     "FindSettings(" +
       "archivesOnly: " + archivesOnly +
-      ", colorize: " + colorize +
       ", debug: " + debug +
       ", excludeHidden: " + excludeHidden +
       ", inArchiveExtensions: " + inArchiveExtensions +

@@ -11,7 +11,6 @@
     self = [super init];
     if (self) {
         self.archivesOnly = false;
-        // self.colorize = true;
         self.debug = false;
         self.excludeHidden = true;
         self.includeArchives = false;
@@ -42,7 +41,6 @@
 - (NSString *) description {
     NSMutableString *d = [[NSMutableString alloc] initWithString:@"FindSettings("];
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
-    // [d appendFormat:@", colorize=%@", boolToNSString(self.colorize)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
     [d appendFormat:@", excludeHidden=%@", boolToNSString(self.excludeHidden)];
     [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];

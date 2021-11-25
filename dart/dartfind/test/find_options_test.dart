@@ -6,7 +6,6 @@ void main() {
     var options = FindOptions();
     var settings = await options.settingsFromArgs(['.']);
     expect(settings.archivesOnly, false);
-    expect(settings.colorize, true);
     expect(settings.debug, false);
     expect(settings.excludeHidden, true);
     expect(settings.includeArchives, false);
@@ -31,13 +30,13 @@ void main() {
 
   test('test get settings from json', () async {
     var json = '{'
-    '"path": "~/src/xfind/",'
-    '"in-ext": ["js","ts"],'
-    '"out-dirpattern": ["build", "node_module", "tests", "typings"],'
-    r'"out-filepattern": ["gulpfile", "\\.min\\."],'
-    '"debug": true,'
-    '"includehidden": false'
-    '}';
+        '"path": "~/src/xfind/",'
+        '"in-ext": ["js","ts"],'
+        '"out-dirpattern": ["build", "node_module", "tests", "typings"],'
+        r'"out-filepattern": ["gulpfile", "\\.min\\."],'
+        '"debug": true,'
+        '"includehidden": false'
+        '}';
     var options = FindOptions();
     var settings = FindSettings();
     await options.settingsFromJson(json, settings);
@@ -50,10 +49,16 @@ void main() {
     expect(settings.inExtensions.contains('ts'), true);
 
     expect(settings.outDirPatterns.length, 4);
-    expect(settings.outDirPatterns.any((p) => (p as RegExp).pattern == 'node_module'), true);
+    expect(
+        settings.outDirPatterns
+            .any((p) => (p as RegExp).pattern == 'node_module'),
+        true);
 
     expect(settings.outFilePatterns.length, 2);
-    expect(settings.outFilePatterns.any((p) => (p as RegExp).pattern == 'gulpfile'), true);
+    expect(
+        settings.outFilePatterns
+            .any((p) => (p as RegExp).pattern == 'gulpfile'),
+        true);
 
     expect(settings.debug, true);
     expect(settings.verbose, true);

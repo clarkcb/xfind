@@ -31,20 +31,18 @@ typedef enum {
 
 typedef enum {
     ARCHIVESONLY    = 0,
-    COLORIZE        = 1,
-    DEBUG           = 2,
-    EXCLUDEARCHIVES = 3,
-    EXCLUDEHIDDEN   = 4,
-    INCLUDEARCHIVES = 5,
-    INCLUDEHIDDEN   = 6,
-    HELP            = 7,
-    LISTDIRS        = 8,
-    LISTFILES       = 9,
-    NOCOLORIZE      = 10,
-    NORECURSIVE     = 11,
-    RECURSIVE       = 12,
-    VERBOSE         = 13,
-    VERSION         = 14
+    DEBUG           = 1,
+    EXCLUDEARCHIVES = 2,
+    EXCLUDEHIDDEN   = 3,
+    INCLUDEARCHIVES = 4,
+    INCLUDEHIDDEN   = 5,
+    HELP            = 6,
+    LISTDIRS        = 7,
+    LISTFILES       = 8,
+    NORECURSIVE     = 9,
+    RECURSIVE       = 10,
+    VERBOSE         = 11,
+    VERSION         = 12
 } SettingsFlagType;
 
 FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc);

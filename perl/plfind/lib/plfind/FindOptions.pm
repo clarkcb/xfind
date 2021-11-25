@@ -85,10 +85,6 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('archivesonly', $b);
     },
-    'colorize' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('colorize', $b);
-    },
     'debug' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('debug', $b);
@@ -120,10 +116,6 @@ my $bool_flag_action_hash = {
     'listfiles' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('listfiles', $b);
-    },
-    'nocolorize' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('colorize', !$b);
     },
     'norecursive' => sub {
         my ($b, $settings) = @_;

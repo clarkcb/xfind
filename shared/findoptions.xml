@@ -3,12 +3,6 @@
   <findoption long="archivesonly" short="">
     Find only archive files
   </findoption>
-  <findoption long="colorize" short="c">
-    Colorize console output*
-  </findoption>
-  <findoption long="nocolorize" short="C">
-    Do not colorize console output*
-  </findoption>
   <findoption long="debug" short="">
     Set output mode to debug
   </findoption>

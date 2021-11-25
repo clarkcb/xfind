@@ -106,9 +106,6 @@ public class FindOptions {
         "archivesonly": { (bool: Bool, settings: FindSettings) -> Void in
             settings.archivesOnly = bool
         },
-        "colorize": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.colorize = bool
-        },
         "debug": { (bool: Bool, settings: FindSettings) -> Void in
             settings.debug = bool
         },
@@ -132,9 +129,6 @@ public class FindOptions {
         },
         "listfiles": { (bool: Bool, settings: FindSettings) -> Void in
             settings.listFiles = bool
-        },
-        "nocolorize": { (bool: Bool, settings: FindSettings) -> Void in
-            settings.colorize = !bool
         },
         "norecursive": { (bool: Bool, settings: FindSettings) -> Void in
             settings.recursive = !bool

@@ -6,7 +6,6 @@ namespace phpfind;
  * Class FindSettings
  *
  * @property bool archivesonly
- * @property bool colorize
  * @property bool debug
  * @property bool excludehidden
  * @property array in_archiveextensions
@@ -33,7 +32,6 @@ namespace phpfind;
 class FindSettings
 {
     public $archivesonly = false;
-    public $colorize = true;
     public $debug = false;
     public $excludehidden = true;
     public $includearchives = false;
@@ -129,7 +127,6 @@ class FindSettings
     {
         $s = 'FindSettings(';
         $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
-        $s .= ', colorize: ' . $this->bool_to_string($this->colorize);
         $s .= ', debug: ' . $this->bool_to_string($this->debug);
         $s .= ', excludehidden: ' . $this->bool_to_string($this->excludehidden);
         $s .= ', in_archiveextensions: ' . $this->arr_to_string($this->in_archiveextensions);

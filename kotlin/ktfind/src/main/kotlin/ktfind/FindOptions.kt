@@ -88,7 +88,6 @@ class FindOptions {
     private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
             "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
                     includeArchives = b) else ss.copy(archivesOnly = b) },
-            "colorize" to { b, ss -> ss.copy(colorize = b) },
             "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
                 ss.copy(debug = b) },
             "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },

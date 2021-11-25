@@ -62,9 +62,6 @@ class FindOptions
             'archivesonly' => function (bool $b, FindSettings $settings) {
                 $settings->set_archivesonly($b);
             },
-            'colorize' => function (bool $b, FindSettings $settings) {
-                $settings->colorize = $b;
-            },
             'debug' => function (bool $b, FindSettings $settings) {
                 $settings->set_debug($b);
             },
@@ -88,9 +85,6 @@ class FindOptions
             },
             'listfiles' => function (bool $b, FindSettings $settings) {
                 $settings->listfiles = $b;
-            },
-            'nocolorize' => function (bool $b, FindSettings $settings) {
-                $settings->colorize = !$b;
             },
             'norecursive' => function (bool $b, FindSettings $settings) {
                 $settings->recursive = !$b;
@@ -182,8 +176,8 @@ class FindOptions
         $settings->listfiles = true;
         while (count($args) > 0) {
             $arg = array_shift($args);
-            if ($arg{0} == '-') {
-                while ($arg{0} == '-') {
+            if ($arg[0] == '-') {
+                while ($arg[0] == '-') {
                     $arg = substr($arg, 1);
                 }
                 $longarg = $this->longarg_map[$arg];

@@ -92,7 +92,6 @@ class FindOptions {
 
     boolArgMap = {
       'archivesonly': (bool b, FindSettings ss) => ss.archivesOnly = b,
-      'colorize': (bool b, FindSettings ss) => ss.colorize = b,
       'debug': (bool b, FindSettings ss) => ss.debug = b,
       'excludearchives': (bool b, FindSettings ss) => ss.includeArchives = !b,
       'excludehidden': (bool b, FindSettings ss) => ss.excludeHidden = b,

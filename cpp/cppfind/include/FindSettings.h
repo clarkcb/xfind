@@ -9,7 +9,6 @@ namespace cppfind {
     class FindSettings {
     private:
         bool m_archivesonly = false;
-        bool m_colorize = true;
         bool m_debug = false;
         bool m_excludehidden = true;
 
@@ -70,7 +69,6 @@ namespace cppfind {
         void add_path(const std::string& path);
 
         bool archivesonly() const;
-        bool colorize() const;
         bool debug() const;
         bool excludehidden() const;
         bool includearchives() const;
@@ -109,7 +107,6 @@ namespace cppfind {
         // bool is_out_extension(const std::string* ext);
 
         void archivesonly(bool b);
-        void colorize(bool b);
         void debug(bool b);
         void excludehidden(bool b);
         void includearchives(bool b);

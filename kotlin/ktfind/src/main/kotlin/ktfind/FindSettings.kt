@@ -4,7 +4,6 @@ package ktfind
  * @author cary on 7/23/16.
  */
 data class FindSettings(val archivesOnly: Boolean,
-                          val colorize: Boolean,
                           val debug: Boolean,
                           val excludeHidden: Boolean,
                           val inArchiveExtensions: Set<String>,
@@ -31,7 +30,6 @@ data class FindSettings(val archivesOnly: Boolean,
 fun getDefaultSettings() : FindSettings {
     return FindSettings(
             archivesOnly = false,
-            colorize = true,
             debug = false,
             excludeHidden = true,
             inArchiveExtensions = setOf(),

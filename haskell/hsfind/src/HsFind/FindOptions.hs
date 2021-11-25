@@ -116,7 +116,6 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
 flagActions :: [(String, FlagAction)]
 flagActions = [ ("archivesonly", \ss -> ss {archivesOnly=True,
                                             includeArchives=True})
-              , ("colorize", \ss -> ss {colorize=True})
               , ("debug", \ss -> ss {debug=True, verbose=True})
               , ("excludearchives", \ss -> ss {includeArchives=False})
               , ("excludehidden", \ss -> ss {excludeHidden=True})
@@ -125,7 +124,6 @@ flagActions = [ ("archivesonly", \ss -> ss {archivesOnly=True,
               , ("includehidden", \ss -> ss {excludeHidden=False})
               , ("listdirs", \ss -> ss {listDirs=True})
               , ("listfiles", \ss -> ss {listFiles=True})
-              , ("nocolorize", \ss -> ss {colorize=False})
               , ("norecursive", \ss -> ss {recursive=False})
               , ("recursive", \ss -> ss {recursive=True})
               , ("verbose", \ss -> ss {verbose=True})
@@ -135,7 +133,6 @@ flagActions = [ ("archivesonly", \ss -> ss {archivesOnly=True,
 boolFlagActions :: [(String, BoolFlagAction)]
 boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
                                                   includeArchives=b})
-                  , ("colorize", \ss b -> ss {colorize=b})
                   , ("debug", \ss b -> ss {debug=b, verbose=b})
                   , ("excludearchives", \ss b -> ss {includeArchives=not b})
                   , ("excludehidden", \ss b -> ss {excludeHidden=b})
@@ -144,7 +141,6 @@ boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
                   , ("includehidden", \ss b -> ss {excludeHidden=not b})
                   , ("listdirs", \ss b -> ss {listDirs=b})
                   , ("listfiles", \ss b -> ss {listFiles=b})
-                  , ("nocolorize", \ss b -> ss {colorize=not b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
                   , ("recursive", \ss b -> ss {recursive=b})
                   , ("verbose", \ss b -> ss {verbose=b})

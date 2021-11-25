@@ -395,10 +395,6 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_archives_only(b))),
     );
     flag_map.insert(
-        "colorize".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.colorize = b)),
-    );
-    flag_map.insert(
         "debug".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_debug(b))),
     );
@@ -429,10 +425,6 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     flag_map.insert(
         "listfiles".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.list_files = b)),
-    );
-    flag_map.insert(
-        "nocolorize".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.colorize = !b)),
     );
     flag_map.insert(
         "norecursive".to_string(),

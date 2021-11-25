@@ -16,7 +16,6 @@ namespace CsFindTests
 		{
 			var settings = _findOptions.SettingsFromArgs(new List<string>());
 			Assert.IsFalse(settings.ArchivesOnly);
-			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
 			Assert.IsFalse(settings.IncludeArchives);

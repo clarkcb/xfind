@@ -67,7 +67,6 @@
 
 (def bool-flag-action-map
   { :archivesonly (fn [settings b] (set-archivesonly settings b))
-    :colorize (fn [settings b] (assoc settings :colorize b))
     :debug (fn [settings b] (set-debug settings b))
     :excludearchives (fn [settings b] (assoc settings :includearchives (not b)))
     :excludehidden (fn [settings b] (assoc settings :excludehidden b))
@@ -76,7 +75,6 @@
     :includehidden (fn [settings b] (assoc settings :excludehidden (not b)))
     :listdirs (fn [settings b] (assoc settings :listdirs b))
     :listfiles (fn [settings b] (assoc settings :listfiles b))
-    :nocolorize (fn [settings b] (assoc settings :colorize (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :verbose (fn [settings b] (assoc settings :verbose b))

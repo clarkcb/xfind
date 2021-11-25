@@ -35,9 +35,6 @@ class FindOptions(object):
             'archivesonly':
                 lambda b, settings:
                 settings.set_property('archivesonly', b),
-            'colorize':
-                lambda b, settings:
-                settings.set_property('colorize', b),
             'debug':
                 lambda b, settings:
                 settings.set_property('debug', b),
@@ -62,9 +59,6 @@ class FindOptions(object):
             'listfiles':
                 lambda b, settings:
                 settings.set_property('listfiles', b),
-            'nocolorize':
-                lambda b, settings:
-                settings.set_property('colorize', not b),
             'noincludearchives':
                 lambda b, settings:
                 settings.set_property('includearchives', not b),

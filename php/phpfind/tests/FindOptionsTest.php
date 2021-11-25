@@ -24,7 +24,6 @@ class FindOptionsTest extends TestCase
     {
         $settings = $this->findoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
-        $this->assertTrue($settings->colorize);
         $this->assertFalse($settings->debug);
         $this->assertTrue($settings->excludehidden);
         $this->assertFalse($settings->includearchives);

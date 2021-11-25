@@ -14,7 +14,6 @@ type FindSettingTests () =
     member this.GetNewFindSettings_NoModifications_HasDefaultValues () =
         let settings = FindSettings.DefaultSettings
         Assert.IsFalse(settings.ArchivesOnly)
-        Assert.IsTrue(settings.Colorize)
         Assert.IsFalse(settings.Debug)
         Assert.IsTrue(settings.ExcludeHidden)
         Assert.IsFalse(settings.ListDirs)

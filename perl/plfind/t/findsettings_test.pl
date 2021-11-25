@@ -24,7 +24,6 @@ use plfind::FindSettings;
 sub test_default_settings {
     my $settings = new plfind::FindSettings();
     ok(!$settings->{archivesonly}, "archivesonly is false by default");
-    ok($settings->{colorize}, "colorize is true by default");
     ok(!$settings->{debug}, "debug is false by default");
     ok($settings->{excludehidden}, "excludehidden is true by default");
     ok(!$settings->{includearchives}, "includearchives is false by default");

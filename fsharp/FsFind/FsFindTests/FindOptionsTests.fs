@@ -15,7 +15,6 @@ type FindOptionsTests () =
         let args : string[] = [||]
         let settings, _ = FindOptions.SettingsFromArgs(args)
         Assert.IsFalse(settings.ArchivesOnly)
-        Assert.IsTrue(settings.Colorize)
         Assert.IsFalse(settings.Debug)
         Assert.IsTrue(settings.ExcludeHidden)
         Assert.IsFalse(settings.ListDirs)

@@ -6,19 +6,18 @@
 #include "stringnode.h"
 
 typedef struct FindSettings {
-    unsigned short archivesonly;
-    unsigned short colorize;
-    unsigned short debug;
-    unsigned short excludehidden;
+    unsigned short archivesonly : 1;
+    unsigned short debug : 1;
+    unsigned short excludehidden : 1;
     StringNode *in_archiveextensions;
     RegexNode *in_archivefilepatterns;
     RegexNode *in_dirpatterns;
     StringNode *in_extensions;
     RegexNode *in_filepatterns;
     IntNode *in_filetypes;
-    unsigned short includearchives;
-    unsigned short listdirs;
-    unsigned short listfiles;
+    unsigned short includearchives : 1;
+    unsigned short listdirs : 1;
+    unsigned short listfiles : 1;
     StringNode *out_archiveextensions;
     RegexNode *out_archivefilepatterns;
     RegexNode *out_dirpatterns;
@@ -26,11 +25,11 @@ typedef struct FindSettings {
     RegexNode *out_filepatterns;
     IntNode *out_filetypes;
     StringNode *paths;
-    unsigned short printresults;
-    unsigned short printusage;
-    unsigned short printversion;
-    unsigned short recursive;
-    unsigned short verbose;
+    unsigned short printresults : 1;
+    unsigned short printusage : 1;
+    unsigned short printversion : 1;
+    unsigned short recursive : 1;
+    unsigned short verbose : 1;
 } FindSettings;
 
 FindSettings *default_settings(void);

@@ -19,8 +19,6 @@ namespace CsFind
 			}
 		}
 
-		public bool Colorize { get; set; }
-
 		private bool _debug;
 		public bool Debug
 		{
@@ -58,7 +56,6 @@ namespace CsFind
 		public FindSettings()
 		{
 			ArchivesOnly = false;
-			Colorize = true;
 			Debug = false;
 			ExcludeHidden = true;
 			InArchiveExtensions = new HashSet<string>();
@@ -193,7 +190,6 @@ namespace CsFind
 		{
 			return "FindSettings(" +
 				"ArchivesOnly: " + ArchivesOnly +
-				", Colorize: " + Colorize +
 				", Debug: " + Debug +
 				", ExcludeHidden: " + ExcludeHidden +
 				", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions) +

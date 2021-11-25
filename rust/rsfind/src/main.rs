@@ -6,7 +6,6 @@ use crate::common::log;
 use crate::finder::{get_matching_dirs, get_matching_files};
 use crate::finderror::FindError;
 
-pub mod color;
 pub mod common;
 pub mod config;
 pub mod filetypes;

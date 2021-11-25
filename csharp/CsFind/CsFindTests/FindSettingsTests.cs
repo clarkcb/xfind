@@ -12,7 +12,6 @@ namespace CsFindTests
 		{
 			var settings = new FindSettings();
 			Assert.IsFalse(settings.ArchivesOnly);
-			Assert.IsTrue(settings.Colorize);
 			Assert.IsFalse(settings.Debug);
 			Assert.IsTrue(settings.ExcludeHidden);
 			Assert.IsFalse(settings.IncludeArchives);
@@ -29,10 +28,10 @@ namespace CsFindTests
 		{
 			var settings = new FindSettings();
 			settings.AddInExtension("cs");
-			Assert.AreEqual(settings.InExtensions.Count, 1);
+			Assert.AreEqual(1, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".cs"));
 			settings.AddInExtension("java,scala");
-			Assert.AreEqual(settings.InExtensions.Count, 3);
+			Assert.AreEqual(3, settings.InExtensions.Count);
 			Assert.IsTrue(settings.InExtensions.Contains(".java"));
 			Assert.IsTrue(settings.InExtensions.Contains(".scala"));
 		}

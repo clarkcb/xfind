@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from .color import Color
 from .common import log
+from .config import XFINDPATH, SHAREDPATH
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
 from .finder import Finder
