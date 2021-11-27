@@ -4,7 +4,7 @@ module HsFind.Config
     , getDataPath
   ) where
 
-import System.Environment (getEnv)
+import System.Environment (getEnv, lookupEnv)
 import System.FilePath ((</>))
 import System.Info (os)
 
@@ -15,15 +15,17 @@ getHome :: IO FilePath
 getHome = getEnv homeName
   where homeName = if isWin then "HOMEPATH" else "HOME"
 
-xfindPath :: FilePath
-xfindPath = "/Users/cary/src/xfind"
-
 getXfindPath :: IO FilePath
-getXfindPath =
-  return xfindPath
+getXfindPath = do
+  home <- getHome
+  maybeXfindPath <- lookupEnv "XFIND_PATH"
+  case maybeXfindPath of
+    Just xfindPath -> return xfindPath
+    Nothing -> return $ home ++ "/src/xfind"
 
 getDataPath :: IO FilePath
 getDataPath = do
+  xfindPath <- getXfindPath
   let elems = ["haskell", "hsfind", "data"]
   return $ foldl concatPath xfindPath elems
   where concatPath path p = path </> p  
