@@ -1,10 +1,11 @@
 # xfind
 
 [xfind](https://github.com/clarkcb/xfind) is a command-line recursive file find utility
-implemented in multiple programming languages, currently these [twenty](#why):
+implemented in multiple programming languages, currently these [twenty-one](#why):
 
 | Language       | URL |
 | :------------ | :---------- |
+| C | [https://en.wikipedia.org/wiki/C_(programming_language)](https://en.wikipedia.org/wiki/C_(programming_language)) |
 | Clojure | [https://clojure.org/](https://clojure.org/) |
 | C# | [https://docs.microsoft.com/en-us/dotnet/csharp/](https://docs.microsoft.com/en-us/dotnet/csharp/) |
 | C++ | [https://www.stroustrup.com/C++.html](https://www.stroustrup.com/C++.html) |
@@ -179,10 +180,10 @@ below are some special cases/considerations:
 
 * `clojure/cljfind` - the [leiningen](https://leiningen.org/) tool is used for package management and building
 * `cpp/cppfind` - C++11 is required, but C++17 is recommended
-* `csharp/CsFind` - [dotnet 5.0](https://dotnet.microsoft.com/download/dotnet/5.0)
-* `fsharp/FsFind` - [dotnet 5.0](https://dotnet.microsoft.com/download/dotnet/5.0)
+* `csharp/CsFind` - [dotnet 6.0](https://dotnet.microsoft.com/download/dotnet/6.0)
+* `fsharp/FsFind` - [dotnet 6.0](https://dotnet.microsoft.com/download/dotnet/6.0)
 * `go/gofind` - the go version needs to support go modules (1.13+), but 1.16+ is recommended because `gofind` will be making use of the new [embed](https://golang.org/pkg/embed/) feature soon
-* `haskell/hsfind` - this version requires the [stack](https://docs.haskellstack.org/en/stable/README/) utility (instead of `cabal`)
+* `haskell/hsfind` - this version requires the [stack](https://docs.haskellstack.org/en/stable/README/) utility (instead of just `cabal`)
 * `ocaml/mlfind` - this version uses [opam](https://opam.ocaml.org/) and [core](https://opam.ocaml.org/packages/core/), but I'm currently having problems building it on OSX, adding to TODOs to investigate
 * `php/phpfind` - the [composer](https://getcomposer.org/) utility is used for dependency management, also need to use a version of PHP that supports classes and namespaces (7+?)
 * `python/pyfind` - this version runs via the `asyncio` module, which requires python 3.7+
@@ -197,7 +198,7 @@ XFIND_PATH=$HOME/src/xfind
 
 If undefined, `$XFIND_PATH` defaults to `$HOME/src/xfind`, so if you clone `xfind` to that
 location you will have reasonably good success in running various versions and tools
-without setting `$XFIND_PATH`, but setting it is strongly recommended regardless.
+without setting `$XFIND_PATH`, but setting it is strongly recommended nonetheless.
 
 Finally, note that there are some useful utilities in the _scripts_ folder. Most require
 `bash`, although some of those also have powershell versions you can use instead. There are
@@ -236,9 +237,19 @@ You can use the latter approach even if you don't have all necessary software in
 build/run all language versions; the build script will simply point out what is missing
 and move on.
 
+For each language version built, a softlink to the executable is created under `$XFIND_PATH/bin`
+(`go` and `haskell` binaries are installed there directly), so after building you can try
+running any version from there, either by changing to that directory or by adding it to your path:
+
+```sh
+PATH=$PATH:$XFIND_PATH/bin
+```
+
 For compiled languages that differentiate between debug and release builds, you can 
-include `--debug` and/or `--release` to target those specific builds. If neither is
-specified, debug-only will be assumed. Example:
+include `--debug` and/or `--release` to target those specific builds (they will be ignored for
+languages that don't differentiate). If neither is specified, debug-only will be assumed. If both
+are specified, both builds will run, but the softlink will be created for the release version.
+Examples:
 
 ```sh
 $ ./scripts/build.sh --debug swift
@@ -246,15 +257,6 @@ $ ./scripts/build.sh --debug swift
 $ ./scripts/build.sh --release swift
 # -or-
 $ ./scripts/build.sh --debug --release swift
-```
-
-For each language version built, a softlink is created under `$XFIND_PATH/bin` (`go` and
-`haskell` binaries are installed there directly), so after building you can try
-running any version from there, either by changing to that directory or by adding it
-to your path:
-
-```sh
-PATH=$PATH:$XFIND_PATH/bin
 ```
 
 ## Usage
@@ -274,8 +276,6 @@ Usage:
 
 Options:
  --archivesonly            Find only archive files
- -c,--colorize             Colorize console output*
- -C,--nocolorize           Do not colorize console output
  -d,--in-dirpattern        Specify name pattern for directories to include in find
  -D,--out-dirpattern       Specify name pattern for directories to exclude from find
  --debug                   Set output mode to debug
@@ -382,14 +382,14 @@ functionality (i.e. ensuring matching output of all versions).
 By default, the _benchmark.py_ script will run and compare all language versions, but
 this can be customized one of two ways:
 
-1. pass a comma-separated language/ext code argument, e.g. `-l cpp,go,hs,objc,rs,swift`
+1. pass a comma-separated language/ext code argument, e.g. `-l c,cpp,go,hs,objc,rs,swift`
 2. modify the `lang_dict` dictionary in _xfind.py_
 
 The _benchmark.py_ script executes a series of "scenarios" for each configured language
 version, and outputs whether the results of all versions match with a table of ranked
 performance. At the end, the performances values from all scenarios are summed and
-averaged and a final summary table is presented. Here's an example of the final
-output:
+averaged and a final summary table is presented. Here's an example of the final output
+(from 2021-11-25; ocaml version excluded due to currently unresolved issues):
 
 ```sh
 $ python3 ./scripts/benchmark.py
@@ -400,27 +400,28 @@ Outputs of all versions in all scenarios match
 
 Total results for 10 out of 10 scenarios with 100 out of 100 total runs
 
- xfind        real    avg   rank    sys    avg   rank   user    avg   rank  total    avg   rank
------------------------------------------------------------------------------------------------
- cljfind    281.76   2.82     19  36.96   0.37     19 470.93   4.71     19 789.65   7.90     19
- cppfind      3.65   0.04      1   0.81   0.01      1   1.60   0.02      3   6.06   0.06      1
- csfind      89.09   0.89     13  14.09   0.14     16  31.59   0.32     13 134.77   1.35     13
- dartfind   139.80   1.40     18  20.85   0.21     18 116.23   1.16     17 276.88   2.77     17
- fsfind     104.68   1.05     16  12.60   0.13     15  45.76   0.46     14 163.04   1.63     16
- gofind       9.74   0.10      3   3.93   0.04     10   1.55   0.02      2  15.22   0.15      3
- hsfind      32.28   0.32      7   1.68   0.02      3   7.05   0.07      6  41.01   0.41      6
- javafind    91.72   0.92     15  10.22   0.10     13  60.17   0.60     16 162.11   1.62     15
- jsfind      36.52   0.37      8   2.66   0.03      7  11.35   0.11      7  50.53   0.51      8
- ktfind      90.42   0.90     14  10.23   0.10     14  53.39   0.53     15 154.04   1.54     14
- objcfind    16.02   0.16      5   2.33   0.02      4   2.98   0.03      4  21.33   0.21      4
- phpfind     42.48   0.42      9   3.47   0.03      9  12.17   0.12      9  58.12   0.58      9
- plfind      46.65   0.47     10   2.60   0.03      6  15.97   0.16     10  65.22   0.65     10
- pyfind      68.71   0.69     12   8.25   0.08     11  24.34   0.24     11 101.30   1.01     12
- rbfind      65.03   0.65     11   8.48   0.08     12  25.16   0.25     12  98.67   0.99     11
- rsfind       4.64   0.05      2   1.59   0.02      2   1.04   0.01      1   7.27   0.07      2
- scalafind  131.53   1.32     17  15.86   0.16     17 132.86   1.33     18 280.25   2.80     18
- swiftfind   14.73   0.15      4   2.75   0.03      8   4.11   0.04      5  21.59   0.22      5
- tsfind      26.95   0.27      6   2.60   0.03      5  11.59   0.12      8  41.14   0.41      7
+             real     avg  rank    sys     avg  rank    user     avg  rank    total     avg  rank
+---------  ------  ------  ----  -----  ------  ----  ------  ------  ----  -------  ------  ----
+cfind        0.39  0.0039     1   0     0          2    0     0          1     0.39  0.0039     1
+cljfind    109.6   1.096     20  23.08  0.2308    20  196.34  1.9634    20   329.02  3.2902    20
+cppfind      1.58  0.0158     2   0     0          1    0.8   0.008      2     2.38  0.0238     2
+csfind      19.08  0.1908    12   4.94  0.0494    15   12.41  0.1241    13    36.43  0.3643    12
+dartfind    51.35  0.5135    19  13.1   0.131     19   56.16  0.5616    19   120.61  1.2061    19
+fsfind      28.8   0.288     17   4.53  0.0453    12   22.32  0.2232    17    55.65  0.5565    17
+gofind       3.95  0.0395     5   2.4   0.024     11    0.8   0.008      4     7.15  0.0715     6
+hsfind       4.37  0.0437     7   1.51  0.0151     7    1.6   0.016      7     7.48  0.0748     7
+javafind    20.47  0.2047    14   5.8   0.058     16   19.81  0.1981    15    46.08  0.4608    14
+jsfind      14.63  0.1463    10   2.2   0.022      9   10.6   0.106     10    27.43  0.2743    10
+ktfind      22.82  0.2282    15   6.01  0.0601    17   22.3   0.223     16    51.13  0.5113    16
+objcfind     2.74  0.0274     3   0.8   0.008      4    0.8   0.008      5     4.34  0.0434     3
+phpfind      8.18  0.0818     8   2.32  0.0232    10    4.01  0.0401     8    14.51  0.1451     8
+plfind      10.11  0.1011     9   1.28  0.0128     6    7.06  0.0706     9    18.45  0.1845     9
+pyfind      26.02  0.2602    16   4.88  0.0488    14   18.59  0.1859    14    49.49  0.4949    15
+rbfind      19.39  0.1939    13   4.78  0.0478    13   12.27  0.1227    12    36.44  0.3644    13
+rsfind       2.93  0.0293     4   0.85  0.0085     5    0.8   0.008      3     4.58  0.0458     4
+scalafind   39     0.39      18   7.36  0.0736    18   49.45  0.4945    18    95.81  0.9581    18
+swiftfind    3.96  0.0396     6   0.8   0.008      3    1.6   0.016      6     6.36  0.0636     5
+tsfind      14.7   0.147     11   2.04  0.0204     8   10.72  0.1072    11    27.46  0.2746    11
 ```
 
 Notice the line above the table that says "Output of all versions in all scenarios match". It is
@@ -474,7 +475,7 @@ rank them by criteria and requirements.
 * Resolve issues with building and running some language versions in Docker: Haskell, Objc and OCaml
 * Research Docker best practices to determine if there are ways to reduce the image size
 * Add other language versions (in alphabetical order and subject to change)
-  * [C](https://en.wikipedia.org/wiki/C_(programming_language)) - I've started a C version in the past and should finish it, if for no other than reason than to verify my assumption that it *should* be the fastest and most efficient version once complete
+  * [C](https://en.wikipedia.org/wiki/C_(programming_language)) - I've started a C version in the past and should finish it, if for no other than reason than to verify my assumption that it *should* be the fastest and most efficient version once complete<br/>UPDATE: I added the C version, and it is definitely the fastest, by more than I expected (see benchmark results above), although there are still some missing features
   * [Common Lisp](https://lisp-lang.org/) - I want to see how it compares to Clojure and learn more about macros
   * [Elixir](https://elixir-lang.org/)/[Erlang](https://www.erlang.org/) - Elixir is probably higher priority than Erlang, but it could be interesting to compare both
   * [Julia](https://julialang.org/) - Julia is described as a high-performance scripting language, so I'm interested to see how it compares to existing implementations
