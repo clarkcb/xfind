@@ -11,7 +11,7 @@ import {FindOptions} from './findoptions';
 import {FindSettings} from './findsettings';
 import {Finder} from './finder';
 
-function handleError(err: Error, findOptions: FindOptions) {
+function handleError(err: Error | any, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
     common.log('\n' + errMsg + '\n');
     findOptions.usageWithCode(1);
@@ -51,12 +51,12 @@ function findMain() {
             }
 
         } catch (err2) {
-            handleError(err2, findOptions);
+            handleError(err2 as Error, findOptions);
         }
     });
 }
 
 // node.js equivalent of python's if __name__ == '__main__'
-if (!module.parent) {
+if (require.main === module) {
     findMain();
 }

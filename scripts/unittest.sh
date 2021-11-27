@@ -26,7 +26,8 @@ unittest_c () {
 
     log "Unit-testing cfind"
     cd "$CFIND_PATH"
-    log "not implemented at this time"
+    log "make run_tests"
+    make run_tests
     cd -
 }
 

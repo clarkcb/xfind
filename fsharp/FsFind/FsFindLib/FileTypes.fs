@@ -4,7 +4,6 @@ open System
 open System.Collections.Generic
 open System.IO
 open System.Text.Json
-open System.Xml.Linq
 
 type FileType = 
     | Unknown = 0
@@ -22,13 +21,6 @@ type FileTypes() =
     static let code = "code"
     static let text = "text"
     static let xml = "xml"
-
-    let ExtensionSet (s : string) =
-        List.fold
-            (fun (acc: Set<string>) (ext : string) -> Set.add ext acc)
-            Set.empty
-            (FileUtil.ExtensionsListFromString s)
-
 
     let PopulateFileTypesFromJson (jsonString : string) =
         let fileTypesDictionary = Dictionary<string, ISet<string>>()

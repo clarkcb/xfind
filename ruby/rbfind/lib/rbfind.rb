@@ -49,7 +49,14 @@ def handle_error(err, options)
 end
 
 def find(options, settings)
-  finder = RbFind::Finder.new(settings)
+  finder = 
+    begin
+      RbFind::Finder.new(settings)
+    rescue RbFind::FindError => e
+      handle_error(e, options)
+    rescue => e
+      handle_error(e, options)
+    end
   findfiles = finder.find
 
   if settings.listdirs
@@ -75,8 +82,8 @@ def find(options, settings)
     end
   end
 
-rescue RbFind::FindError => e
-  handle_error(e, options)
+# rescue RbFind::FindError => e
+#   handle_error(e, options)
 
 rescue RuntimeError => e
   handle_error(e, options)

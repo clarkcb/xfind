@@ -2,3 +2,4 @@
 *.txt
 *.xml
 .gradle/
+venv/

@@ -1,24 +1,4 @@
-/*
-Package xfind provides functionality to find specific files in specific
-directories for content that matches any number of regular expressions.
-
-The Finder class is the main class that provides the file finding
-functionality. It takes a FindSettings instance argument on instantiation
-that defines the various find options (what files extension, what directory
-and/or file name patterns, what content find patterns, etc.).
-
-The two main methods of Finder are:
-
-* Find - this performs the find based on the FindSettings, starting in
-           StartPath. It has three main phases:
-
-    a) Find matching directories - get the list of directories to find
-    b) Find matching files - get the list of files to find under the directories
-    c) Find matching files - find the matching files
-
-* FindFile - this performs a find of a single file. Its use is less common
-               but provided for cases where this is needed.
-*/
+// Package gofind /*
 package gofind
 
 import (

@@ -10,13 +10,13 @@
 import json
 import os
 import sys
-import xml.dom.minidom as minidom
 from collections import deque
 from io import StringIO
 from typing import List
+
 import pkg_resources
 
-from .common import get_text, parse_datetime_str
+from .common import parse_datetime_str
 from .findexception import FindException
 from .findoption import FindOption
 from .findsettings import FindSettings

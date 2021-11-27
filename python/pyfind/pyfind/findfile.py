@@ -20,7 +20,7 @@ class FindFile(object):
     __slots__ = ['containers', 'path', 'filename', 'filetype', 'stat']
 
     def __init__(self, containers: List[str] = None, path: str = '', filename: str = '',
-                 filetype: FileType = FileType.UNKNOWN, stat=None):
+                 filetype: FileType = FileType.UNKNOWN, stat: os.stat_result = None):
         self.containers = containers if containers else []
         self.path = path
         self.filename = filename

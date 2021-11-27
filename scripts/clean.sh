@@ -60,7 +60,7 @@ clean_csharp () {
     echo
     hdr "clean_csharp"
 
-    PROJECTS=(CsFind CsFindLib CsFindTests)
+    PROJECTS=(CsFind CsFindGen CsFindLib CsFindTests)
     SUBDIRS=(bin obj)
     for p in ${PROJECTS[*]}
     do
@@ -142,8 +142,8 @@ clean_kotlin () {
     hdr "clean_kotlin"
 
     cd "$KTFIND_PATH"
-    log "gradle -b build.gradle clean"
-    gradle -b build.gradle clean
+    log "gradle --warning-mode all clean"
+    gradle --warning-mode all clean
     cd -
 }
 

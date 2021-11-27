@@ -13,7 +13,7 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from pyfind import FileType, Finder, FindFile, FindSettings, XFINDPATH, SHAREDPATH
+from pyfind import Finder, FindSettings, XFINDPATH, SHAREDPATH
 
 
 class FinderTest(unittest.TestCase):

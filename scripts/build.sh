@@ -520,8 +520,8 @@ build_kotlin () {
 
     cd "$KTFIND_PATH"
 
-    log "gradle -b build.gradle clean jar"
-    gradle -b build.gradle clean jar
+    log "gradle --warning-mode all clean jar"
+    gradle --warning-mode all clean jar
 
     # add to bin
     add_to_bin "$KTFIND_PATH/bin/ktfind.sh"
@@ -676,7 +676,7 @@ build_python () {
     fi
 
     # Set to Yes to use venv
-    USE_VENV=No
+    USE_VENV=Yes
 
     PYTHON_VERSIONS=(python3.9 python3.8 python3.7)
     PYTHON=

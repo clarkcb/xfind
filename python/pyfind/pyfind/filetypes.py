@@ -7,11 +7,10 @@
 #
 ###############################################################################
 import json
-import xml.dom.minidom as minidom
 from enum import Enum
+
 import pkg_resources
 
-from .common import get_text
 from .fileutil import FileUtil
 from .findexception import FindException
 

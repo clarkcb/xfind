@@ -6,14 +6,9 @@
 # class Finder: executes a file find
 #
 ###############################################################################
-import asyncio
-import codecs
 import os
-from collections import deque
-from io import StringIO
-from typing import Deque, List, Optional, TextIO
+from typing import List, Optional
 
-from .common import log
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
 from .findfile import FindFile
@@ -53,7 +48,7 @@ class Finder(object):
             return False
         return True
 
-    def is_matching_stat(self, stat):
+    def is_matching_stat(self, stat) -> bool:
         """Check whether the given file stat matches find settings."""
         if (self.settings.minlastmod and stat.st_mtime < self.settings.minlastmod.timestamp()) \
                 or (self.settings.maxlastmod and stat.st_mtime > self.settings.maxlastmod.timestamp()):
@@ -153,13 +148,13 @@ class Finder(object):
         return findfiles
 
 
-def matches_any_pattern(s: str, pattern_set: PatternSet):
+def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:
     """Return true if string s matches any pattern in pattern_set, else
        false."""
     return any(p.search(s) for p in pattern_set)
 
 
-def any_matches_any_pattern(slist, pattern_set: PatternSet):
+def any_matches_any_pattern(slist, pattern_set: PatternSet) -> bool:
     """Return true if any string in slist matches any pattern in
        pattern_set, else false."""
     for s in slist:
