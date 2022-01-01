@@ -1,12 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <ItemGroup>
-    <ProjectReference Include="..\CsFindLib\CsFindLib.csproj" />
-  </ItemGroup>
-
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <PackageVersion>0.1.0</PackageVersion>
+    <Authors>Cary Clark</Authors>
+    <Description>C# implementation of xfind in dotnet 6.0</Description>
+    <RootNamespace>CsFind</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CsFindLib\CsFindLib.csproj" />
+  </ItemGroup>
 
 </Project>

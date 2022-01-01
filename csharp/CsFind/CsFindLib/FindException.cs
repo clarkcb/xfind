@@ -1,11 +1,10 @@
 ﻿using System;
 
-namespace CsFindLib
+namespace CsFindLib;
+
+public class FindException : Exception
 {
-	public class FindException : Exception
+	public FindException(string message) : base(message)
 	{
-		public FindException(string message) : base(message)
-		{
-		}
 	}
 }

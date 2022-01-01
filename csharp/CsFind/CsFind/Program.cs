@@ -1,45 +1,44 @@
 ﻿using System.Linq;
 using CsFindLib;
 
-namespace CsFind
+namespace CsFind;
+
+static class Program
 {
-	static class Program
-    {
-        static void Main(string[] args)
-        {
-			var options = new FindOptions();
-			try
+	static void Main(string[] args)
+	{
+		var options = new FindOptions();
+		try
+		{
+			var settings = options.SettingsFromArgs(args);
+
+			if (settings.Debug)
 			{
-				var settings = options.SettingsFromArgs(args);
-
-				if (settings.Debug)
-				{
-					Common.Log("settings: " + settings + "\n");
-				}
-
-				if (settings.PrintUsage)
-				{
-					options.Usage();
-				}
-
-				var finder = new Finder(settings);
-				var files = finder.Find().ToList();
-
-				if (settings.ListDirs)
-				{
-					finder.PrintMatchingDirs(files);
-				}
-
-				if (settings.ListFiles)
-				{
-					finder.PrintMatchingFiles(files);
-				}
+				Common.Log("settings: " + settings + "\n");
 			}
-			catch (FindException e)
+
+			if (settings.PrintUsage)
 			{
-				Common.Log($"\nERROR: {e.Message}");
-				options.Usage(1);
+				options.Usage();
 			}
-        }
-    }
+
+			var finder = new Finder(settings);
+			var files = finder.Find().ToList();
+
+			if (settings.ListDirs)
+			{
+				finder.PrintMatchingDirs(files);
+			}
+
+			if (settings.ListFiles)
+			{
+				finder.PrintMatchingFiles(files);
+			}
+		}
+		catch (FindException e)
+		{
+			Common.Log($"\nERROR: {e.Message}");
+			options.Usage(1);
+		}
+	}
 }
