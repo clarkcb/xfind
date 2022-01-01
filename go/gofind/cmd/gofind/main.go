@@ -36,11 +36,12 @@ func main() {
 		errorAndExit(err, findOptions)
 	}
 
-	// if there are results and PrintResults is true then print them out
+	// print matching dirs
 	if settings.ListDirs {
 		findItems.PrintMatchingDirs()
 	}
 
+	// print matching files (should default to true)
 	if settings.ListFiles {
 		findItems.PrintMatchingFiles()
 	}

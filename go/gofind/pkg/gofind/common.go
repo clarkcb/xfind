@@ -1,9 +1,7 @@
 package gofind
 
 import (
-	"encoding/xml"
 	"fmt"
-	"os"
 	"sort"
 )
 
@@ -82,7 +80,7 @@ func getLongestLen(slice []string) int {
 }
 
 func getMapKeys(m map[string]string) []string {
-	keys := []string{}
+	var keys []string
 	for k := range m {
 		keys = append(keys, k)
 	}
@@ -90,7 +88,7 @@ func getMapKeys(m map[string]string) []string {
 }
 
 func getMapValues(m map[string]string) []string {
-	values := []string{}
+	var values []string
 	for _, v := range m {
 		values = append(values, v)
 	}
@@ -104,7 +102,7 @@ func getSortedKeys(m map[string]string) []string {
 }
 
 func getCountMapKeys(m map[string]int) []string {
-	keys := []string{}
+	var keys []string
 	for k := range m {
 		keys = append(keys, k)
 	}
@@ -115,25 +113,4 @@ func getSortedCountKeys(m map[string]int) []string {
 	keys := getCountMapKeys(m)
 	sort.Strings(keys)
 	return keys
-}
-
-func loadXmlFile(xmlFilePath string, targetStruct interface{}) error {
-	file, err := os.Open(xmlFilePath)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	defer func() {
-		err := file.Close()
-		if err != nil {
-			panic(err.Error())
-		}
-	}()
-
-	decoder := xml.NewDecoder(file)
-
-	if err := decoder.Decode(targetStruct); err != nil {
-		return err
-	}
-	return nil
 }

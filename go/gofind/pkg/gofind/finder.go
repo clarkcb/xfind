@@ -125,7 +125,13 @@ func (f *Finder) checkAddFindFile(filePath string) {
 
 // this method passed to the filepath.Walk method, it must have this signature
 func (f *Finder) checkAddFindWalkFile(filePath string, fi os.FileInfo, err error) error {
-	if fi.Mode().IsRegular() {
+	if err != nil {
+		fmt.Printf("an error occurred accessing path %q: %v\n", filePath, err)
+		return err
+	}
+	if fi.IsDir() && !f.isFindDir(fi.Name()) {
+		return filepath.SkipDir
+	} else if fi.Mode().IsRegular() {
 		f.checkAddFindFile(filePath)
 	}
 	return nil
@@ -137,35 +143,33 @@ func (f *Finder) setFindFiles() error {
 	}
 
 	for _, p := range f.Settings.Paths {
-		startPath := normalizePath(p)
-		fi, err := os.Stat(startPath)
+		normPath := normalizePath(p)
+		fi, err := os.Stat(normPath)
 		if err != nil {
 			return err
 		}
 		if fi.IsDir() {
 			if f.Settings.Recursive {
-				err := filepath.Walk(startPath, f.checkAddFindWalkFile)
+				err := filepath.Walk(normPath, f.checkAddFindWalkFile)
 				if err != nil {
 					return err
 				}
 			} else {
-				files, err := ioutil.ReadDir(startPath)
+				entries, err := os.ReadDir(normPath)
 				if err != nil {
 					return err
 				}
 
-				for _, file := range files {
-					f.checkAddFindFile(file.Name())
+				for _, entry := range entries {
+					f.checkAddFindFile(filepath.Join(p, entry.Name()))
 				}
 			}
-
 		} else if fi.Mode().IsRegular() {
 			f.checkAddFindFile(p)
 		}
 	}
 
 	f.addItemsDoneChan <- true
-
 	return nil
 }
 
@@ -224,7 +228,7 @@ func (f *Finder) setFindFilesGoRoutines() error {
 }
 
 //get the find items (files) from the file channel
-func (f *Finder) processFindItemChannels() {
+func (f *Finder) activateFindItemChannels() {
 	addItemsDone := false
 	for !addItemsDone {
 		select {
@@ -243,8 +247,8 @@ func (f *Finder) Find() (*FindItems, error) {
 		return nil, err
 	}
 
-	// first start the processFindItemChannels goroutine
-	go f.processFindItemChannels()
+	// first start the activateFindItemChannels goroutine
+	go f.activateFindItemChannels()
 
 	// now fill the findItem channels
 	if err := f.setFindFiles(); err != nil {

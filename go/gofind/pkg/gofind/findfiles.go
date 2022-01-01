@@ -66,7 +66,7 @@ func (fi *FindItems) AddItem(i *FindItem) {
 	})
 }
 
-func (fi *FindItems) Count() int {
+func (fi *FindItems) Len() int {
 	return len(fi.items)
 }
 

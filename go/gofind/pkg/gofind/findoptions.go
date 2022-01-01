@@ -318,30 +318,3 @@ func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 	}
 	return m
 }
-
-type XmlFindOptions struct {
-	XmlFindOptions []XmlFindOption `xml:"findoption"`
-}
-
-type XmlFindOption struct {
-	Short string `xml:"short,attr"`
-	Long  string `xml:"long,attr"`
-	Desc  string `xml:",chardata"`
-}
-
-func findOptionsFromXml() (*FindOptions, error) {
-	config := NewConfig()
-	findOptionsXmlPath := fmt.Sprintf("%s/shared/findoptions.xml", config.XFINDPATH)
-	var findOptions []*FindOption
-	xmlFindOptions := &XmlFindOptions{}
-
-	if err := loadXmlFile(expandPath(findOptionsXmlPath), xmlFindOptions); err != nil {
-		return nil, err
-	}
-
-	for _, x := range xmlFindOptions.XmlFindOptions {
-		findOption := &FindOption{x.Short, x.Long, strings.TrimSpace(x.Desc)}
-		findOptions = append(findOptions, findOption)
-	}
-	return &FindOptions{findOptions}, nil
-}

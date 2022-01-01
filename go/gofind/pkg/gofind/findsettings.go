@@ -1,7 +1,6 @@
 package gofind
 
 import (
-	"bytes"
 	"fmt"
 	"strings"
 )
@@ -61,20 +60,20 @@ func GetDefaultFindSettings() *FindSettings {
 	}
 }
 
-func (s *FindSettings) AddInExtension(xs string) {
+func (f *FindSettings) AddInExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
 		if x != "" {
 			ext := strings.ToLower(x)
-			s.InExtensions = append(s.InExtensions, ext)
+			f.InExtensions = append(f.InExtensions, ext)
 		}
 	}
 }
 
-func (s *FindSettings) AddOutExtension(xs string) {
+func (f *FindSettings) AddOutExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
 		if x != "" {
 			ext := strings.ToLower(x)
-			s.OutExtensions = append(s.OutExtensions, ext)
+			f.OutExtensions = append(f.OutExtensions, ext)
 		}
 	}
 }
@@ -83,153 +82,118 @@ func addPattern(p string, sp *FindPatterns) {
 	sp.AddPattern(p)
 }
 
-func (s *FindSettings) AddInDirPattern(p string) {
-	addPattern(p, s.InDirPatterns)
+func (f *FindSettings) AddInDirPattern(p string) {
+	addPattern(p, f.InDirPatterns)
 }
 
-func (s *FindSettings) AddOutDirPattern(p string) {
-	addPattern(p, s.OutDirPatterns)
+func (f *FindSettings) AddOutDirPattern(p string) {
+	addPattern(p, f.OutDirPatterns)
 }
 
-func (s *FindSettings) AddInFilePattern(p string) {
-	addPattern(p, s.InFilePatterns)
+func (f *FindSettings) AddInFilePattern(p string) {
+	addPattern(p, f.InFilePatterns)
 }
 
-func (s *FindSettings) AddOutFilePattern(p string) {
-	addPattern(p, s.OutFilePatterns)
+func (f *FindSettings) AddOutFilePattern(p string) {
+	addPattern(p, f.OutFilePatterns)
 }
 
-func (s *FindSettings) AddInFileType(t FileType) {
-	s.InFileTypes = append(s.InFileTypes, t)
+func (f *FindSettings) AddInFileType(t FileType) {
+	f.InFileTypes = append(f.InFileTypes, t)
 }
 
-func (s *FindSettings) AddOutFileType(t FileType) {
-	s.OutFileTypes = append(s.OutFileTypes, t)
+func (f *FindSettings) AddOutFileType(t FileType) {
+	f.OutFileTypes = append(f.OutFileTypes, t)
 }
 
-func (s *FindSettings) AddInArchiveExtension(xs string) {
+func (f *FindSettings) AddInArchiveExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
 		ext := strings.ToLower(x)
-		s.InArchiveExtensions = append(s.InArchiveExtensions, ext)
+		f.InArchiveExtensions = append(f.InArchiveExtensions, ext)
 	}
 }
 
-func (s *FindSettings) AddOutArchiveExtension(xs string) {
+func (f *FindSettings) AddOutArchiveExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
 		ext := strings.ToLower(x)
-		s.OutArchiveExtensions = append(s.OutArchiveExtensions, ext)
+		f.OutArchiveExtensions = append(f.OutArchiveExtensions, ext)
 	}
 }
 
-func (s *FindSettings) AddInArchiveFilePattern(p string) {
-	addPattern(p, s.InArchiveFilePatterns)
+func (f *FindSettings) AddInArchiveFilePattern(p string) {
+	addPattern(p, f.InArchiveFilePatterns)
 }
 
-func (s *FindSettings) AddOutArchiveFilePattern(p string) {
-	addPattern(p, s.OutArchiveFilePatterns)
+func (f *FindSettings) AddOutArchiveFilePattern(p string) {
+	addPattern(p, f.OutArchiveFilePatterns)
 }
 
-func (s *FindSettings) AddPath(p string) {
-	s.Paths = append(s.Paths, p)
+func (f *FindSettings) AddPath(p string) {
+	f.Paths = append(f.Paths, p)
 }
 
-func (s *FindSettings) SetArchivesOnly(archivesOnly bool) {
-	s.ArchivesOnly = archivesOnly
+func (f *FindSettings) SetArchivesOnly(archivesOnly bool) {
+	f.ArchivesOnly = archivesOnly
 	if archivesOnly {
-		s.IncludeArchives = true
+		f.IncludeArchives = true
 	}
 }
 
-func (s *FindSettings) SetDebug(debug bool) {
-	s.Debug = debug
+func (f *FindSettings) SetDebug(debug bool) {
+	f.Debug = debug
 	if debug {
-		s.Verbose = true
+		f.Verbose = true
 	}
 }
 
-func (s *FindSettings) addFindPatternsToBuffer(name string, sp *FindPatterns, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	elems := []string{}
-	for _, r := range sp.patterns {
-		elems = append(elems, fmt.Sprintf("\"%s\"", r.String()))
-	}
-	buffer.WriteString(strings.Join(elems, ","))
-	buffer.WriteString("]")
-}
-
-func (s *FindSettings) addStringListToBuffer(name string, list []string, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	elems := []string{}
-	for _, l := range list {
-		elems = append(elems, fmt.Sprintf("\"%s\"", l))
-	}
-	buffer.WriteString(strings.Join(elems, ","))
-	buffer.WriteString("]")
-}
-
-func addFileTypeListToBuffer(name string, list []FileType, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: [", name))
-	elems := []string{}
-	for _, ft := range list {
-		elems = append(elems, fmt.Sprintf("\"%s\"", getNameForFileType(ft)))
-	}
-	buffer.WriteString(strings.Join(elems, ","))
-	buffer.WriteString("]")
-}
-
-func (s *FindSettings) addBoolToBuffer(name string, b bool, buffer *bytes.Buffer) {
-	buffer.WriteString(fmt.Sprintf("%s: ", name))
-	buffer.WriteString(fmt.Sprintf("%t", b))
-}
-
-func (s *FindSettings) String() string {
-	var buffer bytes.Buffer
-	buffer.WriteString("FindSettings{")
-	s.addBoolToBuffer("ArchivesOnly", s.ArchivesOnly, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("Debug", s.Debug, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("ExcludeHidden", s.ExcludeHidden, &buffer)
-	buffer.WriteString(", ")
-	s.addStringListToBuffer("InArchiveExtensions", s.InArchiveExtensions, &buffer)
-	buffer.WriteString(", ")
-	s.addFindPatternsToBuffer("InArchiveFilePatterns", s.InArchiveFilePatterns, &buffer)
-	buffer.WriteString(", ")
-	s.addFindPatternsToBuffer("InDirPatterns", s.InDirPatterns, &buffer)
-	buffer.WriteString(", ")
-	s.addStringListToBuffer("InExtensions", s.InExtensions, &buffer)
-	buffer.WriteString(", ")
-	s.addFindPatternsToBuffer("InFilePatterns", s.InFilePatterns, &buffer)
-	buffer.WriteString(", ")
-	addFileTypeListToBuffer("InFileTypes", s.InFileTypes, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("IncludeArchives", s.IncludeArchives, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("ListDirs", s.ListDirs, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("ListFiles", s.ListFiles, &buffer)
-	buffer.WriteString(", ")
-	s.addStringListToBuffer("OutArchiveExtensions", s.OutArchiveExtensions, &buffer)
-	buffer.WriteString(", ")
-	s.addFindPatternsToBuffer("OutArchiveFilePatterns", s.OutArchiveFilePatterns, &buffer)
-	buffer.WriteString(", ")
-	s.addFindPatternsToBuffer("OutDirPatterns", s.OutDirPatterns, &buffer)
-	buffer.WriteString(", ")
-	s.addStringListToBuffer("OutExtensions", s.OutExtensions, &buffer)
-	buffer.WriteString(", ")
-	s.addFindPatternsToBuffer("OutFilePatterns", s.OutFilePatterns, &buffer)
-	buffer.WriteString(", ")
-	addFileTypeListToBuffer("OutFileTypes", s.OutFileTypes, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("PrintUsage", s.PrintUsage, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("PrintVersion", s.PrintVersion, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("Recursive", s.Recursive, &buffer)
-	buffer.WriteString(", ")
-	s.addStringListToBuffer("Paths", s.Paths, &buffer)
-	buffer.WriteString(", ")
-	s.addBoolToBuffer("Verbose", s.Verbose, &buffer)
-	buffer.WriteString("}")
-	return buffer.String()
+func (f *FindSettings) String() string {
+	const template = "SearchSettings{" +
+		"ArchivesOnly: %t" +
+		", Debug: %t" +
+		", ExcludeHidden: %t" +
+		", InArchiveExtensions: %s" +
+		", InArchiveFilePatterns: %s" +
+		", InDirPatterns: %s" +
+		", InExtensions: %s" +
+		", InFilePatterns: %s" +
+		", InFileTypes: %s" +
+		", IncludeArchives: %t" +
+		", ListDirs: %t" +
+		", ListFiles: %t" +
+		", OutArchiveExtensions: %s" +
+		", OutArchiveFilePatterns: %s" +
+		", OutDirPatterns: %s" +
+		", OutExtensions: %s" +
+		", OutFilePatterns: %s" +
+		", OutFileTypes: %s" +
+		", Paths: %s" +
+		", PrintUsage: %t" +
+		", PrintVersion: %t" +
+		", Recursive: %t" +
+		", Verbose: %t}"
+	return fmt.Sprintf(template,
+		f.ArchivesOnly,
+		f.Debug,
+		f.ExcludeHidden,
+		stringListToString(f.InArchiveExtensions),
+		findPatternsToString(f.InArchiveFilePatterns),
+		findPatternsToString(f.InDirPatterns),
+		stringListToString(f.InExtensions),
+		findPatternsToString(f.InFilePatterns),
+		fileTypeListToString(f.InFileTypes),
+		f.IncludeArchives,
+		f.ListDirs,
+		f.ListFiles,
+		stringListToString(f.OutArchiveExtensions),
+		findPatternsToString(f.OutArchiveFilePatterns),
+		findPatternsToString(f.OutDirPatterns),
+		stringListToString(f.OutExtensions),
+		findPatternsToString(f.OutFilePatterns),
+		fileTypeListToString(f.OutFileTypes),
+		stringListToString(f.Paths),
+		f.PrintUsage,
+		f.PrintVersion,
+		f.Recursive,
+		f.Verbose,
+	)
 }
