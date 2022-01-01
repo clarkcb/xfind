@@ -26,10 +26,10 @@ class FindSettings {
         this.outExtensions = [];
         this.outFilePatterns = [];
         this.outFileTypes = [];
+        this.paths = [];
         this.printUsage = false;
         this.printVersion = false;
         this.recursive = true;
-        this.paths = [];
         this.verbose = false;
     }
 

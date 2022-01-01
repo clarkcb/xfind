@@ -16,6 +16,7 @@
   },
   "scripts": {
     "build": "babel src -d dist",
+    "clean": "rm -rf ./dist ./node_modules",
     "test": "jest",
     "coverage": "jest --coverage"
   },
