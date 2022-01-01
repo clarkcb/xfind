@@ -41,11 +41,11 @@ class FindSettings {
 
   var outFileTypes = <FileType>{};
 
+  var paths = <String>{};
+
   bool printUsage = false;
   bool printVersion = false;
   bool recursive = true;
-
-  var paths = <String>{};
   bool verbose = false;
 
   void addExtensions(String exts, Set<String> extensions) {
