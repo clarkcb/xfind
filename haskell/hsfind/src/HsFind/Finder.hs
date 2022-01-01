@@ -103,8 +103,6 @@ getFindFiles settings = do
   let allPaths = concat paths
   allFileTypes <- getFileTypes allPaths
   let justFindFiles = filter isJust (map (filterToFindFile settings) (zip allPaths allFileTypes))
-  -- let findFiles = map fromJust justFindFiles
-  -- return (map (\ff -> findFilePath ff) findFiles)
   return $ map fromJust justFindFiles
 
 doFind :: FindSettings -> IO [FindFile]

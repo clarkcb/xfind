@@ -181,7 +181,6 @@ settingsFromArgs opts arguments =
               FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
           a:as -> recSettingsFromArgs (settings {paths = paths settings ++ [a]}) as
-
         longArgs :: [Either String String]
         longArgs = map (shortToLong opts) arguments
         getActionType :: String -> ActionType

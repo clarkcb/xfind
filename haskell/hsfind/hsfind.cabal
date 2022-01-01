@@ -19,6 +19,7 @@ extra-source-files:
     README.md
     ChangeLog.md
 data-files:
+    data/config.json
     data/filetypes.json
     data/findoptions.json
 
