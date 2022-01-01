@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 ################################################################################
 #
 # build.ps1
@@ -8,6 +8,7 @@
 ################################################################################
 param([switch]$debug = $false,
       [switch]$release = $false,
+      [switch]$venv = $false,
       [string]$lang='all')
 
 ########################################
@@ -20,13 +21,16 @@ $scriptDir = Split-Path $scriptPath -Parent
 . (Join-Path $scriptDir 'config.ps1')
 . (Join-Path $scriptDir 'common.ps1')
 
-
+# for languages that have debug and release builds
 $debug = $debug.IsPresent
 $release = $release.IsPresent
-if (!$release)
+if (-not $release)
 {
     $debug = $true
 }
+
+# for python
+$venv = $venv.IsPresent
 
 ########################################
 # Utility Functions
@@ -65,7 +69,7 @@ function AddToBin
 {
     param($scriptPath)
 
-    if (!(Test-Path $binPath))
+    if (-not (Test-Path $binPath))
     {
         New-Item -ItemType directory -Path $binPath
     }
@@ -88,7 +92,7 @@ function AddToBin
         }
     }
 
-    if (!(Test-Path $linkPath))
+    if (-not (Test-Path $linkPath))
     {
         # from https://winaero.com/create-symbolic-link-windows-10-powershell/
         # New-Item -ItemType SymbolicLink -Path "Link" -Target "Target"
@@ -106,6 +110,13 @@ function BuildC
 {
     Write-Host
     Hdr('BuildC')
+
+    # ensure make is installed
+    if (-not (Get-Command 'make' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install make')
+        return
+    }
 
     $oldPwd = Get-Location
     Set-Location $cfindPath
@@ -126,14 +137,16 @@ function BuildClojure
     Write-Host
     Hdr('BuildClojure')
 
-    if (!(Get-Command 'lein'))
+    # ensure leiningen is installed
+    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
         return
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $cljfindPath 'resources'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -172,6 +185,13 @@ function BuildCpp
         return
     }
 
+    # ensure cmake is installed
+    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install cmake')
+        return
+    }
+
     $oldPwd = Get-Location
     Set-Location $cppfindPath
 
@@ -189,7 +209,7 @@ function BuildCpp
         $cmakeBuildDir = "cmake-build-$c"
         $cmakeBuildPath = Join-Path $cppfindPath $cmakeBuildDir
 
-        if (!(Test-Path $cmakeBuildPath))
+        if (-not (Test-Path $cmakeBuildPath))
         {
             New-Item -ItemType directory -Path $cmakeBuildPath
 
@@ -238,7 +258,8 @@ function BuildCsharp
     Write-Host
     Hdr('BuildCsharp')
 
-    if (!(Get-Command 'dotnet'))
+    # ensure dotnet is installed
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
         return
@@ -247,13 +268,15 @@ function BuildCsharp
     $resourcesPath = Join-Path $csfindPath 'CsFindLib' 'Resources'
     $testResourcesPath = Join-Path $csfindPath 'CsFindTests' 'Resources'
 
-    if (!(Test-Path $resourcesPath))
+    # copy the shared json files to the local resource location
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
 
-    if (!(Test-Path $testResourcesPath))
+    # copy the shared test files to the local test resource location
+    if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
@@ -262,7 +285,7 @@ function BuildCsharp
     $oldPwd = Get-Location
     Set-Location $csfindPath
 
-    $csFindSolutonPath = Join-Path $csfindPath 'CsFind.sln'
+    $csFindSolutionPath = Join-Path $csfindPath 'CsFind.sln'
 
     $configurations = @()
     if ($debug)
@@ -274,11 +297,12 @@ function BuildCsharp
         $configurations += 'Release'
     }
 
+    # run dotnet build selected configurations
     ForEach ($c in $configurations)
     {
         Log("Building CsFind solution for $c configuration")
-        Log("dotnet build $csFindSolutonPath --configuration $c")
-        dotnet build $csFindSolutonPath --configuration $c
+        Log("dotnet build $csFindSolutionPath --configuration $c")
+        dotnet build $csFindSolutionPath --configuration $c
     }
 
     if ($release)
@@ -302,7 +326,8 @@ function BuildDart
     Write-Host
     Hdr('BuildDart')
 
-    if (!(Get-Command 'dart'))
+    # ensure dart is installed
+    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
         return
@@ -312,7 +337,8 @@ function BuildDart
     Set-Location $dartfindPath
 
     Log('Building dartfind')
-    if (!(Test-Path (Join-Path $dartfindPath '.dart_tool' 'package_config.json')) -and  (!(Test-Path (Join-Path $dartfindPath '.packages'))))
+    if ((-not (Test-Path (Join-Path $dartfindPath '.dart_tool' 'package_config.json'))) -and
+        (-not (Test-Path (Join-Path $dartfindPath '.packages'))))
     {
         Log('dart pub get')
         dart pub get
@@ -335,7 +361,8 @@ function BuildFsharp
     Write-Host
     Hdr('BuildFsharp')
 
-    if (!(Get-Command 'dotnet'))
+    # ensure dotnet is installed
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
         return
@@ -344,13 +371,15 @@ function BuildFsharp
     $resourcesPath = Join-Path $fsfindPath 'FsFindLib' 'Resources'
     $testResourcesPath = Join-Path $fsfindPath 'FsFindTests' 'Resources'
 
-    if (!(Test-Path $resourcesPath))
+    # copy the shared json files to the local resource location
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
 
-    if (!(Test-Path $testResourcesPath))
+    # copy the shared test files to the local test resource location
+    if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
@@ -371,6 +400,7 @@ function BuildFsharp
         $configurations += 'Release'
     }
 
+    # run dotnet build for selected configurations
     ForEach ($c in $configurations)
     {
         Log("Building FsFind solution for $c configuration")
@@ -399,7 +429,8 @@ function BuildGo
     Write-Host
     Hdr('BuildGo')
 
-    if (!(Get-Command 'go'))
+    # ensure go is installed
+    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
         return
@@ -408,22 +439,25 @@ function BuildGo
     $oldPwd = Get-Location
     Set-Location $gofindPath
 
+    # go fmt the gofind source (for auto-generated code)
     Log('Auto-formatting gofind')
     Log('go fmt ./...')
     go fmt ./...
 
-    if (!(Test-Path $binPath))
+    # create the bin dir if it doesn't already exist
+    if (-not (Test-Path $binPath))
     {
         New-Item -ItemType directory -Path $binPath
     }
 
-    Log('Building gofind')
-
+    # if GOBIN not defined, set to BIN_PATH
     if (-not (Test-Path Env:GOBIN))
     {
         $env:GOBIN = $binPath
     }
 
+    # now build gofind
+    Log('Building gofind')
     Log('go install ./...')
     go install ./...
 
@@ -442,14 +476,28 @@ function BuildHaskell
     Write-Host
     Hdr('BuildHaskell')
 
-    if (!(Get-Command 'stack'))
+    # ensure stack is installed
+    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
         return
     }
 
+    # set the default stack settings, e.g. use system ghc
+    $stackDir = Join-Path $env:HOME '.stack'
+    if (-not (Test-Path $stackDir))
+    {
+        New-Item -ItemType directory -Path $stackDir
+    }
+    $configYaml = Join-Path $stackDir 'config.yaml'
+    if (-not (Test-Path $configYaml))
+    {
+        New-Item -ItemType file -Path $stackDir -Name "config.yaml" -Value "install-ghc: false`nsystem-ghc: true"
+    }
+
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $hsfindPath 'data'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -458,6 +506,7 @@ function BuildHaskell
     $oldPwd = Get-Location
     Set-Location $hsfindPath
 
+    # build with stack (via make)
     Log('Building hsfind')
     Log('stack setup')
     make setup
@@ -476,25 +525,30 @@ function BuildJava
     Write-Host
     Hdr('BuildJava')
 
-    if (!(Get-Command 'mvn'))
+    # ensure mvn is installed
+    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install maven')
         return
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $javafindPath 'src' 'main' 'resources'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
+
+    # copy the test files to the local test resource location
     $testResourcesPath = Join-Path $javafindPath 'src' 'test' 'resources'
-    if (!(Test-Path $testResourcesPath))
+    if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources($testResourcesPath)
 
+    # run maven clean package (skip testing as this is run via unittest.sh)
     Log('Building javafind')
     Log("mvn -f $javafindPath/pom.xml clean package -Dmaven.test.skip=true")
     mvn -f $javafindPath/pom.xml clean package '-Dmaven.test.skip=true'
@@ -509,14 +563,16 @@ function BuildJavaScript
     Write-Host
     Hdr('BuildJavaScript')
 
-    if (!(Get-Command 'npm'))
+    # ensure npm is installed
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
         return
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $jsfindPath 'data'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -525,6 +581,7 @@ function BuildJavaScript
     $oldPwd = Get-Location
     Set-Location $jsfindPath
 
+    # run npm install and build
     Log('Building jsfind')
     Log('npm install')
     npm install
@@ -544,20 +601,24 @@ function BuildKotlin
     Write-Host
     Hdr('BuildKotlin')
 
-    if (!(Get-Command 'gradle'))
+    # ensure gradle is installed
+    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
         return
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $ktfindPath 'src' 'main' 'resources'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
+
+    # copy the test files to the local test resource location
     $testResourcesPath = Join-Path $ktfindPath 'src' 'test' 'resources'
-    if (!(Test-Path $testResourcesPath))
+    if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
@@ -566,9 +627,10 @@ function BuildKotlin
     $oldPwd = Get-Location
     Set-Location $ktfindPath
 
+    # run a gradle build
     Log('Building ktfind')
-    Log('gradle -b build.gradle clean jar')
-    gradle -b 'build.gradle' clean jar
+    Log('gradle --warning-mode all clean jar')
+    gradle --warning-mode all clean jar
 
     # add to bin
     $ktfindExe = Join-Path $ktfindPath 'bin' 'ktfind.ps1'
@@ -584,7 +646,8 @@ function BuildObjc
 
     $target = 'alltargets'
 
-    if (!(Get-Command 'xcodebuild'))
+    # ensure xcode is installed
+    if (-not (Get-Command 'xcodebuild' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install Xcode')
         return
@@ -593,21 +656,43 @@ function BuildObjc
     $oldPwd = Get-Location
     Set-Location $objcfindPath
 
-    Log('Building objcfind')
-    if ($target -eq 'alltargets')
+    $configurations = @()
+    if ($debug)
     {
-        Log('xcodebuild -alltargets')
-        xcodebuild -alltargets
+        $configurations += 'Debug'
+    }
+    if ($release)
+    {
+        $configurations += 'Release'
+    }
+
+    # run dotnet build for selected configurations
+    ForEach ($c in $configurations)
+    {
+        if ($target -eq 'alltargets')
+        {
+            Log("xcodebuild -alltargets -configuration $c")
+            xcodebuild -alltargets -configuration $c
+        }
+        else
+        {
+            Log("xcodebuild -project $target -configuration $c")
+            xcodebuild -project $target -configuration $c
+        }
+    }
+
+    if ($release)
+    {
+        # add release to bin
+        $objcfindExe = Join-Path $objcfindPath 'bin' 'objcfind.release.ps1'
+        AddToBin($objcfindExe)
     }
     else
     {
-        Log("xcodebuild -project $target")
-        xcodebuild -project $target
+        # add debug to bin
+        $objcfindExe = Join-Path $objcfindPath 'bin' 'objcfind.debug.ps1'
+        AddToBin($objcfindExe)
     }
-
-    # add to bin
-    $objcfindExe = Join-Path $objcfindPath 'bin' 'objcfind.ps1'
-    AddToBin($objcfindExe)
 
     Set-Location $oldPwd
 }
@@ -623,21 +708,23 @@ function BuildPerl
     Write-Host
     Hdr('BuildPerl')
 
-    if (!(Get-Command 'perl'))
+    # ensure perl is installed
+    if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install perl')
         return
     }
 
     $versionOutput = & perl -v | Select-String -Pattern 'This is perl 5' 2>&1
-    if (!$versionOutput)
+    if (-not $versionOutput)
     {
         PrintError('A 5.x version of perl is required')
         return
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $plfindPath 'share'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -653,44 +740,49 @@ function BuildPhp
     Write-Host
     Hdr('BuildPhp')
 
-    if (!(Get-Command 'php'))
+    # ensure php is installed
+    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install php')
         return
     }
 
     $versionOutput = & php -v | Select-String -Pattern 'PHP [78]' 2>&1
-    if (!$versionOutput)
+    if (-not $versionOutput)
     {
         PrintError('A version of PHP >= 7.x is required')
         return
     }
 
+    # ensure composer is installed
+    if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install composer')
+        return
+    }
+
+    # copy the shared config json file to the local config location
     $configFilePath = Join-Path $sharedPath 'config.json'
     $configPath = Join-Path $phpfindPath 'config'
-    if (!(Test-Path $configPath))
+    if (-not (Test-Path $configPath))
     {
         New-Item -ItemType directory -Path $configPath
     }
     Log("Copy-Item $configFilePath -Destination $configPath")
     Copy-Item $configFilePath -Destination $configPath
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $phpfindPath 'resources'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
 
-    if (!(Get-Command 'composer'))
-    {
-        PrintError('You need to install composer')
-        return
-    }
-
     $oldPwd = Get-Location
     Set-Location $phpfindPath
 
+    # run a composer build
     Log('Building phpfind')
 
     if (Test-Path (Join-Path $phpfindPath 'vendor'))
@@ -716,20 +808,12 @@ function BuildPython
     Write-Host
     Hdr('BuildPython')
 
-    if (!(Get-Command 'python3'))
-    {
-        PrintError('You need to install python(>= 3.7)')
-        return
-    }
-
-    # Set to $true to use venv
-    $useVenv=$false
-
+    # ensure python3.7+ is installed
     $pythonVersions = @('python3.9', 'python3.8', 'python3.7')
     $python = ''
     ForEach ($p in $pythonVersions)
     {
-        if (Get-Command $p -ErrorAction "SilentlyContinue")
+        if (Get-Command $p -ErrorAction 'SilentlyContinue')
         {
             $python = $p
             Log("Using $python")
@@ -737,8 +821,18 @@ function BuildPython
         }
     }
 
+    if (-not $python)
+    {
+        PrintError('You need to install python(>= 3.7)')
+        return
+    }
+
+    # Set to $true to use venv
+    $useVenv=$venv
+
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $pyfindPath 'data'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -749,8 +843,9 @@ function BuildPython
 
     if ($useVenv)
     {
+        # create a virtual env to run from and install to
         $venvPath = Join-Path $pyfindPath 'venv'
-        if (!(Test-Path $venvPath))
+        if (-not (Test-Path $venvPath))
         {
             Log("$python -m venv venv")
             & $python -m venv venv
@@ -785,30 +880,33 @@ function BuildRuby
     Write-Host
     Hdr('BuildRuby')
 
-    if (!(Get-Command 'ruby'))
+    # ensure ruby2.x is installed
+    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ruby')
         return
     }
 
     $versionOutput = & ruby -v | Select-String -Pattern 'ruby 2' 2>&1
-    if (!$versionOutput)
+    if (-not $versionOutput)
     {
         PrintError('A version of ruby >= 2.x is required')
         return
     }
 
+    # copy the shared config json file to the local config location
     $configFilePath = Join-Path $sharedPath 'config.json'
     $configPath = Join-Path $rbfindPath 'data'
-    if (!(Test-Path $configPath))
+    if (-not (Test-Path $configPath))
     {
         New-Item -ItemType directory -Path $configPath
     }
     Log("Copy-Item $configFilePath -Destination $configPath")
     Copy-Item $configFilePath -Destination $configPath
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $rbfindPath 'data'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -824,7 +922,8 @@ function BuildRust
     Write-Host
     Hdr('BuildRust')
 
-    if (!(Get-Command 'cargo'))
+    # ensure cargo/rust is installed
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
     }
@@ -864,19 +963,23 @@ function BuildScala
     Write-Host
     Hdr('BuildScala')
 
-    if (!(Get-Command 'sbt'))
+    # ensure sbt is installed
+    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala + sbt')
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $scalafindPath 'src' 'main' 'resources'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
+
+    # copy the test files to the local test resource location
     $testResourcesPath = Join-Path $scalafindPath 'src' 'test' 'resources'
-    if (!(Test-Path $testResourcesPath))
+    if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
     }
@@ -885,6 +988,7 @@ function BuildScala
     $oldPwd = Get-Location
     Set-Location $scalafindPath
 
+    # run sbt assembly
     Log('Building scalafind')
     Log("sbt 'set test in assembly := {}' clean assembly")
     sbt 'set test in assembly := {}' clean assembly
@@ -901,7 +1005,8 @@ function BuildSwift
     Write-Host
     Hdr('BuildSwift')
 
-    if (!(Get-Command 'swift'))
+    # ensure swift is installed
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
         return
@@ -942,14 +1047,16 @@ function BuildTypeScript
     Write-Host
     Hdr('BuildTypeScript')
 
-    if (!(Get-Command 'npm'))
+    # ensure npm is installed
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
         return
     }
 
+    # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $tsfindPath 'data'
-    if (!(Test-Path $resourcesPath))
+    if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
     }
@@ -958,6 +1065,7 @@ function BuildTypeScript
     $oldPwd = Get-Location
     Set-Location $tsfindPath
 
+    # run npm install and build
     Log('Building tsfind')
     Log('npm install')
     npm install

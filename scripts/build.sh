@@ -35,7 +35,7 @@ copy_json_resources () {
 copy_xml_resources () {
     local resources_path="$1"
     log "cp $SHARED_PATH/filetypes.xml $resources_path/"
-    cp "$SHARED_PATH"/filetypes.xml "$resources_path"/
+    cp "$SHARED_PATH"/filetypes.xml "$resources_path/"
     log "cp $SHARED_PATH/findoptions.xml $resources_path/"
     cp "$SHARED_PATH/findoptions.xml" "$resources_path/"
 }
@@ -64,6 +64,7 @@ add_to_bin () {
     then
         script_name=${script_name%%.*}
     fi
+
     # echo "script_name: $script_name"
     if [ -L "$script_name" ]
     then
@@ -85,9 +86,16 @@ build_c () {
     echo
     hdr "build_c"
 
+    # ensure make is installed
+    if [ -z "$(which make)" ]
+    then
+        echo "You need to install make"
+        return
+    fi
+
     cd "$CFIND_PATH"
 
-    # Create uberjar with lein
+    # make
     log "Building cfind"
     log "make"
     make
@@ -102,6 +110,7 @@ build_clojure () {
     echo
     hdr "build_clojure"
 
+    # ensure leiningen is installed
     if [ -z "$(which lein)" ]
     then
         echo "You need to install leiningen"
@@ -109,10 +118,9 @@ build_clojure () {
     fi
 
     # copy the shared json files to the local resource location
-    RESOURCES_PATH=$CLJFIND_PATH/resources
+    RESOURCES_PATH="$CLJFIND_PATH/resources"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
-    # copy_xml_resources $RESOURCES_PATH
 
     cd "$CLJFIND_PATH"
 
@@ -133,6 +141,7 @@ build_cpp () {
     echo
     hdr "build_cpp"
 
+    # ensure cmake is installed
     if [ -z "$(which cmake)" ]
     then
         echo "You need to install cmake"
@@ -155,7 +164,7 @@ build_cpp () {
     for c in ${CONFIGURATIONS[*]}
     do
         CMAKE_BUILD_DIR="cmake-build-$c"
-        CMAKE_BUILD_PATH=$CPPFIND_PATH/$CMAKE_BUILD_DIR
+        CMAKE_BUILD_PATH="$CPPFIND_PATH/$CMAKE_BUILD_DIR"
 
         if [ ! -d "$CMAKE_BUILD_PATH" ]
         then
@@ -205,16 +214,17 @@ build_csharp () {
     echo
     hdr "build_csharp"
 
+    # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
         echo "You need to install dotnet"
         return
     fi
 
-    RESOURCES_PATH=$CSFIND_PATH/CsFindLib/Resources
-    TEST_RESOURCES_PATH=$CSFIND_PATH/CsFindTests/Resources
+    RESOURCES_PATH="$CSFIND_PATH/CsFindLib/Resources"
+    TEST_RESOURCES_PATH="$CSFIND_PATH/CsFindTests/Resources"
 
-    # copy the shared json, xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -233,7 +243,7 @@ build_csharp () {
         CONFIGURATIONS=(Release)
     fi
 
-    # run dotnet build selected configurations
+    # run dotnet build for selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building csfind for $c configuration"
@@ -255,6 +265,7 @@ build_dart () {
     echo
     hdr "build_dart"
 
+    # ensure dart is installed
     if [ -z "$(which dart)" ]
     then
         echo "You need to install dart"
@@ -263,11 +274,11 @@ build_dart () {
 
     cd "$DARTFIND_PATH"
 
-    # RESOURCES_PATH=$DARTFIND_PATH/lib/data
+    # RESOURCES_PATH="$DARTFIND_PATH/lib/data"
 
     # TODO: move resources to local location, for now read relative to XFIND_PATH
-    # mkdir -p $RESOURCES_PATH
-    # copy_json_resources $RESOURCES_PATH
+    # mkdir -p "$RESOURCES_PATH"
+    # copy_json_resources "$RESOURCES_PATH"
 
     log "Building dartfind"
     if [ ! -f "$DARTFIND_PATH/.dart_tool/package_config.json" ] && [ ! -f "$DARTFIND_PATH/.packages" ]
@@ -289,6 +300,7 @@ build_fsharp () {
     echo
     hdr "build_fsharp"
 
+    # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
         echo "You need to install dotnet"
@@ -298,7 +310,7 @@ build_fsharp () {
     RESOURCES_PATH="$FSFIND_PATH/FsFindLib/Resources"
     TEST_RESOURCES_PATH="$FSFIND_PATH/FsFindTests/Resources"
 
-    # copy the shared json, xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -339,11 +351,22 @@ build_go () {
     echo
     hdr "build_go"
 
+    # ensure go is installed
     if [ -z "$(which go)" ]
     then
         echo "You need to install go"
         return
     fi
+
+    # build the code to generate the dynamic code for gofind
+    #log "Building gengofindcode"
+    #echo "go install elocale.com/clarkcb/gofindcodegen/gengofindcode"
+    #go install elocale.com/clarkcb/gofindcodegen/gengofindcode
+
+    # run it to generate the dynamic gofind code
+    #log "Running gengofindcode"
+    #log "gengofindcode"
+    #gengofindcode
 
     cd "$GOFIND_PATH"
 
@@ -376,6 +399,7 @@ build_haskell () {
     echo
     hdr "build_haskell"
 
+    # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
         echo "You need to install stack"
@@ -402,22 +426,13 @@ build_haskell () {
     then
         echo 'system-ghc: true' >> "$STACK_DIR/config.yaml"
     fi
-    # RESOLVER=$(grep '^resolver:' $STACK_DIR/config.yaml)
-    # if [ -z "$RESOLVER" ]
-    # then
-    #     GHC_VERSION=$(ghc --version | perl -pe '($_)=/([0-9]+([.][0-9]+)+)/')
-    #     echo "resolver: ghc-$GHC_VERSION" >> $STACK_DIR/config.yaml
-    # fi
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json files to the local resource location
     RESOURCES_PATH="$HSFIND_PATH/data"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
     cd "$HSFIND_PATH/"
-
-    # temporary to avoid building (too resource-intensive)
-    # return
 
     # build with stack (via make)
     log "Building hsfind"
@@ -437,6 +452,7 @@ build_java () {
     echo
     hdr "build_java"
 
+    # ensure mvn is installed
     if [ -z "$(which mvn)" ]
     then
         echo "You need to install maven"
@@ -446,7 +462,7 @@ build_java () {
     RESOURCES_PATH="$JAVAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$JAVAFIND_PATH/src/test/resources"
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -467,6 +483,7 @@ build_javascript () {
     echo
     hdr "build_javascript"
 
+    # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
         echo "You need to install node.js/npm"
@@ -474,7 +491,7 @@ build_javascript () {
     fi
 
     # copy the shared json files to the local resource location
-    RESOURCES_PATH=$JSFIND_PATH/data
+    RESOURCES_PATH="$JSFIND_PATH/data"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -498,16 +515,17 @@ build_kotlin () {
     echo
     hdr "build_kotlin"
 
+    # ensure gradle is installed
     if [ -z "$(which gradle)" ]
     then
         echo "You need to install gradle"
         return
     fi
 
-    RESOURCES_PATH=$KTFIND_PATH/src/main/resources
-    TEST_RESOURCES_PATH=$KTFIND_PATH/src/test/resources
+    RESOURCES_PATH="$KTFIND_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$KTFIND_PATH/src/test/resources"
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -533,31 +551,51 @@ build_objc () {
     echo
     hdr "build_objc"
 
-    TARGET=alltargets
-
+    # ensure xcode is installed
     if [ -z "$(which xcodebuild)" ]
     then
         echo "You need to install Xcode"
         return
     fi
 
+    TARGET=alltargets
+
     # TODO: copy resource files locally?
 
     cd "$OBJCFIND_PATH"
 
-    # run xcodebuild
-    log "Building objcfind"
-    if [ $TARGET == "alltargets" ]
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
-        log "xcodebuild -alltargets"
-        xcodebuild -alltargets
-    else
-        log "xcodebuild -project $TARGET"
-        xcodebuild -project "$TARGET"
+        CONFIGURATIONS=(Debug Release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(Debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(Release)
     fi
 
-    # add to bin
-    add_to_bin "$OBJCFIND_PATH/bin/objcfind.sh"
+    # run xcodebuild for selected configurations
+    for c in ${CONFIGURATIONS[*]}
+    do
+        if [ $TARGET == "alltargets" ]
+        then
+            log "xcodebuild -alltargets -configuration $c"
+            xcodebuild -alltargets -configuration "$c"
+        else
+            log "xcodebuild -target $TARGET -configuration $c"
+            xcodebuild -target "$TARGET" -configuration "$c"
+        fi
+    done
+
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$OBJCFIND_PATH/bin/objcfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$OBJCFIND_PATH/bin/objcfind.debug.sh"
+    fi
 
     cd -
 }
@@ -580,6 +618,7 @@ build_perl () {
     echo
     hdr "build_perl"
 
+    # ensure perl is installed
     if [ -z "$(which perl)" ]
     then
         echo "You need to install perl"
@@ -610,6 +649,7 @@ build_php () {
     echo
     hdr "build_php"
 
+    # ensure php is installed
     if [ -z "$(which php)" ]
     then
         echo "You need to install PHP"
@@ -620,6 +660,13 @@ build_php () {
     if [ -z "$(php -v | grep 'cli')" ]
     then
         echo "A version of PHP >= 7.x is required"
+        return
+    fi
+
+    # ensure composer is installed
+    if [ -z "$(which composer)" ]
+    then
+        echo "Need to install composer"
         return
     fi
 
@@ -637,13 +684,6 @@ build_php () {
     cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
     log "cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/"
     cp "$SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
-
-    COMPOSER=$(which composer)
-    if [ -z "$COMPOSER" ]
-    then
-        echo "Need to install composer"
-        return
-    fi
 
     cd "$PHPFIND_PATH"
 
@@ -669,15 +709,7 @@ build_python () {
     echo
     hdr "build_python"
 
-    if [ -z "$(which python3)" ]
-    then
-        log "You need to install python (>= 3.7)"
-        return
-    fi
-
-    # Set to Yes to use venv
-    USE_VENV=Yes
-
+    # ensure python3.7+ is installed
     PYTHON_VERSIONS=(python3.9 python3.8 python3.7)
     PYTHON=
     for p in ${PYTHON_VERSIONS[*]}
@@ -698,6 +730,9 @@ build_python () {
         log "Using $PYTHON"
     fi
 
+    # Set to Yes to use venv
+    USE_VENV=$VENV
+
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PYFIND_PATH/data"
     mkdir -p "$RESOURCES_PATH"
@@ -705,7 +740,7 @@ build_python () {
 
     cd "$PYFIND_PATH"
 
-    if [ "$USE_VENV" == 'Yes' ]
+    if [ "$USE_VENV" == 'yes' ]
     then
         # create a virtual env to run from and install to
         if [ ! -d "$PYFIND_PATH/venv" ]
@@ -723,7 +758,7 @@ build_python () {
     log "pip3 install -r requirements.txt"
     pip3 install -r requirements.txt
 
-    if [ "$USE_VENV" == 'Yes' ]
+    if [ "$USE_VENV" == 'yes' ]
     then
         # deactivate at end of setup process
         log "deactivate"
@@ -742,6 +777,7 @@ build_ruby () {
     echo
     hdr "build_ruby"
 
+    # ensure ruby2.x+ is installed
     if [ -z "$(which ruby)" ]
     then
         echo "You need to install ruby"
@@ -773,7 +809,7 @@ build_ruby () {
     copy_test_resources "$TEST_RESOURCES_PATH"
 
     # TODO: figure out how to install dependencies without installing rbfind (which is what bundler does)
-    # cd $RBFIND_PATH
+    # cd "$RBFIND_PATH"
     # log "bundle"
     # bundle
     # cd -
@@ -786,6 +822,7 @@ build_rust () {
     echo
     hdr "build_rust"
 
+    # ensure cargo/rust is installed
     if [ -z "$(which cargo)" ]
     then
         echo "You need to install rust"
@@ -819,6 +856,7 @@ build_scala () {
     echo
     hdr "build_scala"
 
+    # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
         echo "You need to install scala + sbt"
@@ -828,7 +866,7 @@ build_scala () {
     RESOURCES_PATH="$SCALAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$SCALAFIND_PATH/src/test/resources"
 
-    # copy the shared xml files to the local resource location
+    # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
@@ -856,6 +894,7 @@ build_swift () {
     echo
     hdr "build_swift"
 
+    # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
         echo "You need to install swift"
@@ -893,6 +932,7 @@ build_typescript () {
     echo
     hdr "build_typescript"
 
+    # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
         echo "You need to install node.js/npm"
@@ -931,7 +971,7 @@ build_typescript () {
 # - build_kotlin     - This build can sometimes be quite slow, other times fairly fast. In particular, the first
 #                      time will likely be quite slow, and I think it will also be slow when a build hasn't been run
 #                      in a while
-# - build_objc       - not sure if it's even possible to build this on linux, but deferring for now
+# - build_objc       - not sure if it's even possible to build this on linux, but excluding for now
 # - build_ocaml      - had a number of different issues trying to get this version building again, finally
 #                      gave up for now after it appeared that there were a lot of changes to the main API, etc.
 # - build_rust       - the first time this build is run it will pretty time-consuming, particularly for release
@@ -1030,6 +1070,7 @@ build_all () {
 ########################################
 DEBUG=
 RELEASE=
+VENV=
 ARG=all
 
 while [ -n "$1" ]
@@ -1040,6 +1081,9 @@ do
             ;;
         --release)
             RELEASE=yes
+            ;;
+        --venv)
+            VENV=yes
             ;;
         *)
             ARG=$1
@@ -1053,75 +1097,77 @@ then
     DEBUG=yes
 fi
 
-if [ "$ARG" == "all" ]
-then
-    build_all
-elif [ "$ARG" == "linux" ]
-then
-    build_linux
-elif [ "$ARG" == "c" ]
-then
-    time build_c
-elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
-then
-    time build_clojure
-elif [ "$ARG" == "cpp" ]
-then
-    time build_cpp
-elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
-then
-    time build_csharp
-elif [ "$ARG" == "dart" ]
-then
-    time build_dart
-elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
-then
-    time build_fsharp
-elif [ "$ARG" == "go" ]
-then
-    time build_go
-elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
-then
-    time build_haskell
-elif [ "$ARG" == "java" ]
-then
-    time build_java
-elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
-then
-    time build_javascript
-elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
-then
-    time build_kotlin
-elif [ "$ARG" == "objc" ]
-then
-    time build_objc
-elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
-then
-    time build_ocaml
-elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
-then
-    time build_perl
-elif [ "$ARG" == "php" ]
-then
-    time build_php
-elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
-then
-    time build_python
-elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
-then
-    time build_ruby
-elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
-then
-    time build_rust
-elif [ "$ARG" == "scala" ]
-then
-    time build_scala
-elif [ "$ARG" == "swift" ]
-then
-    time build_swift
-elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
-then
-    time build_typescript
-else
-    echo "ERROR: unknown xfind version argument: $ARG"
-fi
+case $ARG in
+    all)
+        build_all
+        ;;
+    linux)
+        build_linux
+        ;;
+    c)
+        build_c
+        ;;
+    clj | clojure)
+        build_clojure
+        ;;
+    cpp)
+        build_cpp
+        ;;
+    cs | csharp)
+        build_csharp
+        ;;
+    dart)
+        build_dart
+        ;;
+    fs | fsharp)
+        build_fsharp
+        ;;
+    go)
+        build_go
+        ;;
+    haskell | hs)
+        build_haskell
+        ;;
+    java)
+        build_java
+        ;;
+    javascript | js)
+        build_javascript
+        ;;
+    kotlin | kt)
+        build_kotlin
+        ;;
+    objc)
+        build_objc
+        ;;
+    ocaml | ml)
+        build_ocaml
+        ;;
+    perl | pl)
+        build_perl
+        ;;
+    php)
+        build_php
+        ;;
+    py | python)
+        build_python
+        ;;
+    rb | ruby)
+        build_ruby
+        ;;
+    rs | rust)
+        build_rust
+        ;;
+    scala)
+        build_scala
+        ;;
+    swift)
+        build_swift
+        ;;
+    ts | typescript)
+        build_typescript
+        ;;
+    *)
+        echo -n "ERROR: unknown xfind build argument: $ARG"
+        ;;
+esac

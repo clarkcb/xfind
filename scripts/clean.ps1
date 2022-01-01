@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env pwsh
+#!/usr/bin/env pwsh
 ################################################################################
 #
 # clean.ps1
@@ -42,7 +42,7 @@ function CleanClojure
     Write-Host
     Hdr('CleanClojure')
 
-    if (!(Get-Command 'lein'))
+    if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
         return
@@ -71,11 +71,8 @@ function CleanCpp
         $cmakeBuildPath = Join-Path $cppfindPath "cmake-build-$c"
         if (Test-Path $cmakeBuildPath)
         {
-            Set-Location $cmakeBuildPath
-            Get-ChildItem * -Recurse | Remove-Item
-
-            Set-Location $cppfindPath
-            Remove-Item $cmakeBuildPath
+            Log("Remove-Item $cmakeBuildPath -Recurse -Force")
+            Remove-Item $cmakeBuildPath -Recurse -Force
         }
     }
 
@@ -87,25 +84,17 @@ function CleanCsharp
     Write-Host
     Hdr('CleanCsharp')
 
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dotnet')
+        return
+    }
+
     $oldPwd = Get-Location
     Set-Location $csfindPath
 
-    $projects = @('CsFind', 'CsFindLib', 'CsFindTests')
-    $subdirs = @('bin', 'obj')
-
-    ForEach ($p in $projects)
-    {
-        $projectPath = Join-Path $csfindPath $p
-        ForEach ($d in $subdirs)
-        {
-            $subdirPath = Join-Path $projectPath $d
-            Set-Location $subdirPath
-            Get-ChildItem * -Recurse | Remove-Item
-
-            Set-Location $projectPath
-            Remove-Item $d
-        }
-    }
+    Log('dotnet clean')
+    dotnet clean
 
     Set-Location $oldPwd
 }
@@ -115,7 +104,7 @@ function CleanDart
     Write-Host
     Hdr('CleanDart')
 
-    if (!(Get-Command 'dart'))
+    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
         return
@@ -136,25 +125,17 @@ function CleanFsharp
     Write-Host
     Hdr('CleanFsharp')
 
+    if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dotnet')
+        return
+    }
+
     $oldPwd = Get-Location
     Set-Location $fsfindPath
 
-    $projects = @('FsFind', 'FsFindLib', 'FsFindTests')
-    $subdirs = @('bin', 'obj')
-
-    ForEach ($p in $projects)
-    {
-        $projectPath = Join-Path $fsfindPath $p
-        ForEach ($d in $subdirs)
-        {
-            $subdirPath = Join-Path $projectPath $d
-            Set-Location $subdirPath
-            Get-ChildItem * -Recurse | Remove-Item
-
-            Set-Location $projectPath
-            Remove-Item $d
-        }
-    }
+    Log('dotnet clean')
+    dotnet clean
 
     Set-Location $oldPwd
 }
@@ -164,7 +145,7 @@ function CleanGo
     Write-Host
     Hdr('CleanGo')
 
-    if (!(Get-Command 'go'))
+    if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
         return
@@ -184,7 +165,7 @@ function CleanHaskell
     Write-Host
     Hdr('CleanHaskell')
 
-    if (!(Get-Command 'stack'))
+    if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
         return
@@ -204,7 +185,7 @@ function CleanJava
     Write-Host
     Hdr('CleanJava')
 
-    if (!(Get-Command 'mvn'))
+    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install maven')
         return
@@ -219,7 +200,7 @@ function CleanJavaScript
     Write-Host
     Hdr('CleanJavaScript')
 
-    if (!(Get-Command 'npm'))
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
         return
@@ -239,7 +220,7 @@ function CleanKotlin
     Write-Host
     Hdr('CleanKotlin')
 
-    if (!(Get-Command 'gradle'))
+    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
         return
@@ -258,36 +239,42 @@ function CleanObjc
 {
     Write-Host
     Hdr('CleanObjc')
+    Log('not implemented at this time')
 }
 
 function CleanOcaml
 {
     Write-Host
     Hdr('CleanOcaml')
+    Log('not implemented at this time')
 }
 
 function CleanPerl
 {
     Write-Host
     Hdr('CleanPerl')
+    Log('not implemented at this time')
 }
 
 function CleanPhp
 {
     Write-Host
     Hdr('CleanPhp')
+    Log('not implemented at this time')
 }
 
 function CleanPython
 {
     Write-Host
     Hdr('CleanPython')
+    Log('not implemented at this time')
 }
 
 function CleanRuby
 {
     Write-Host
     Hdr('CleanRuby')
+    Log('not implemented at this time')
 }
 
 function CleanRust
@@ -295,7 +282,7 @@ function CleanRust
     Write-Host
     Hdr('CleanRust')
 
-    if (!(Get-Command 'cargo'))
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
     }
@@ -314,7 +301,7 @@ function CleanScala
     Write-Host
     Hdr('CleanScala')
 
-    if (!(Get-Command 'sbt'))
+    if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala + sbt')
     }
@@ -333,11 +320,12 @@ function CleanSwift
     Write-Host
     Hdr('CleanSwift')
 
-    if (!(Get-Command 'swift'))
-    {
-        PrintError('You need to install swift')
-        return
-    }
+    # if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    # {
+    #     PrintError('You need to install swift')
+    #     return
+    # }
+    Log('not implemented at this time')
 }
 
 function CleanTypeScript
@@ -345,11 +333,12 @@ function CleanTypeScript
     Write-Host
     Hdr('CleanTypeScript')
 
-    if (!(Get-Command 'npm'))
+    if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
         return
     }
+
     $oldPwd = Get-Location
     Set-Location $tsfindPath
 

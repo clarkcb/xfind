@@ -24,6 +24,13 @@ unittest_c () {
     echo
     hdr "unittest_c"
 
+    # ensure make is installed
+    if [ -z "$(which make)" ]
+    then
+        echo "You need to install make"
+        return
+    fi
+
     log "Unit-testing cfind"
     cd "$CFIND_PATH"
     log "make run_tests"
@@ -34,6 +41,13 @@ unittest_c () {
 unittest_clojure () {
     echo
     hdr "unittest_clojure"
+
+    # ensure lein is installed
+    if [ -z "$(which lein)" ]
+    then
+        echo "You need to install lein"
+        return
+    fi
 
     # Test with lein
     log "Unit-testing cljfind"
@@ -65,6 +79,13 @@ unittest_csharp () {
     echo
     hdr "unittest_csharp"
 
+    # ensure dotnet is installed
+    if [ -z "$(which dotnet)" ]
+    then
+        echo "You need to install dotnet"
+        return
+    fi
+
     # VERBOSITY=quiet
     # VERBOSITY=minimal
     VERBOSITY=normal
@@ -91,6 +112,13 @@ unittest_fsharp () {
     echo
     hdr "unittest_fsharp"
 
+    # ensure dotnet is installed
+    if [ -z "$(which dotnet)" ]
+    then
+        echo "You need to install dotnet"
+        return
+    fi
+
     # VERBOSITY=quiet
     # VERBOSITY=minimal
     VERBOSITY=normal
@@ -106,6 +134,13 @@ unittest_go () {
     echo
     hdr "unittest_go"
 
+    # ensure go is installed
+    if [ -z "$(which go)" ]
+    then
+        echo "You need to install go"
+        return
+    fi
+
     # Run the tests using go test
     log "Unit-testing gofind"
     cd "$GOFIND_PATH"
@@ -119,6 +154,13 @@ unittest_haskell () {
     echo
     hdr "unittest_haskell"
 
+    # ensure stack is installed
+    if [ -z "$(which stack)" ]
+    then
+        echo "You need to install stack"
+        return
+    fi
+
     # test with stack
     log "Unit-testing hsfind"
     log "stack test"
@@ -129,6 +171,13 @@ unittest_java () {
     echo
     hdr "unittest_java"
 
+    # ensure mvn is installed
+    if [ -z "$(which mvn)" ]
+    then
+        echo "You need to install mvn"
+        return
+    fi
+
     # run tests via maven
     log "Unit-testing javafind"
     log "mvn -f $JAVAFIND_PATH/pom.xml test"
@@ -138,6 +187,13 @@ unittest_java () {
 unittest_javascript () {
     echo
     hdr "unittest_javascript"
+
+    # ensure npm is installed
+    if [ -z "$(which npm)" ]
+    then
+        echo "You need to install npm"
+        return
+    fi
 
     # run tests
     log "Unit-testing jsfind"
@@ -151,15 +207,31 @@ unittest_kotlin () {
     echo
     hdr "unittest_kotlin"
 
+    # ensure gradle is installed
+    if [ -z "$(which gradle)" ]
+    then
+        echo "You need to install gradle"
+        return
+    fi
+
+    cd $KTFIND_PATH
     # run tests via gradle
     log "Unit-testing ktfind"
-    log "gradle -b $KTFIND_PATH/build.gradle test"
-    gradle -b "$KTFIND_PATH/build.gradle" test
+    log "gradle --warning-mode all test"
+    gradle --warning-mode all test
+    cd -
 }
 
 unittest_objc () {
     echo
     hdr "unittest_objc"
+
+    # ensure xcode is installed
+    if [ -z "$(which xcodebuild)" ]
+    then
+        echo "You need to install xcode"
+        return
+    fi
 
     cd "$OBJCFIND_PATH"
     log "Unit-testing objcfind"
@@ -252,6 +324,13 @@ unittest_ruby () {
 
     log "Unit-testing rbfind"
 
+    # ensure rake is installed
+    if [ -z "$(which rake)" ]
+    then
+        echo "You need to install rake"
+        return
+    fi
+
     # Run all tests via rake
     cd "$RBFIND_PATH"
     log "rake test"
@@ -262,6 +341,13 @@ unittest_ruby () {
 unittest_rust () {
     echo
     hdr "unittest_rust"
+
+    # ensure cargo is installed
+    if [ -z "$(which cargo)" ]
+    then
+        echo "You need to install cargo"
+        return
+    fi
 
     # Run cargo test
     log "Unit-testing rsfind"
@@ -275,6 +361,13 @@ unittest_scala () {
     echo
     hdr "unittest_scala"
 
+    # ensure sbt is installed
+    if [ -z "$(which sbt)" ]
+    then
+        echo "You need to install sbt"
+        return
+    fi
+
     # run tests via sbt
     log "Unit-testing scalafind"
     cd "$SCALAFIND_PATH"
@@ -287,6 +380,13 @@ unittest_swift () {
     echo
     hdr "unittest_swift"
 
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        echo "You need to install swift"
+        return
+    fi
+
     log "Unit-testing swiftfind"
     cd "$SWIFTFIND_PATH"
     log "swift test"
@@ -297,6 +397,13 @@ unittest_swift () {
 unittest_typescript () {
     echo
     hdr "unittest_typescript"
+
+    # ensure npm is installed
+    if [ -z "$(which npm)" ]
+    then
+        echo "You need to install npm"
+        return
+    fi
 
     # run tests
     log "Unit-testing tsfind"
@@ -364,72 +471,77 @@ else
     ARG=$1
 fi
 
-if [ "$ARG" == "all" ]
-then
-    unittest_all
-elif [ "$ARG" == "c" ]
-then
-    unittest_c
-elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
-then
-    unittest_clojure
-elif [ "$ARG" == "cpp" ]
-then
-    unittest_cpp
-elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
-then
-    unittest_csharp
-elif [ "$ARG" == "dart" ]
-then
-    unittest_dart
-elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
-then
-    unittest_fsharp
-elif [ "$ARG" == "go" ]
-then
-    unittest_go
-elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
-then
-    unittest_haskell
-elif [ "$ARG" == "java" ]
-then
-    unittest_java
-elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
-then
-    unittest_javascript
-elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
-then
-    unittest_kotlin
-elif [ "$ARG" == "objc" ]
-then
-    unittest_objc
-elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
-then
-    unittest_ocaml
-elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
-then
-    unittest_perl
-elif [ "$ARG" == "php" ]
-then
-    unittest_php
-elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
-then
-    unittest_python
-elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
-then
-    unittest_ruby
-elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
-then
-    unittest_rust
-elif [ "$ARG" == "scala" ]
-then
-    unittest_scala
-elif [ "$ARG" == "swift" ]
-then
-    unittest_swift
-elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
-then
-    unittest_typescript
-else
-    echo "ERROR: unknown unittest argument: $ARG"
-fi
+case $ARG in
+    all)
+        unittest_all
+        ;;
+    linux)
+        unittest_linux
+        ;;
+    c)
+        unittest_c
+        ;;
+    clj | clojure)
+        unittest_clojure
+        ;;
+    cpp)
+        unittest_cpp
+        ;;
+    cs | csharp)
+        unittest_csharp
+        ;;
+    dart)
+        unittest_dart
+        ;;
+    fs | fsharp)
+        unittest_fsharp
+        ;;
+    go)
+        unittest_go
+        ;;
+    haskell | hs)
+        unittest_haskell
+        ;;
+    java)
+        unittest_java
+        ;;
+    javascript | js)
+        unittest_javascript
+        ;;
+    kotlin | kt)
+        unittest_kotlin
+        ;;
+    objc)
+        unittest_objc
+        ;;
+    ocaml | ml)
+        unittest_ocaml
+        ;;
+    perl | pl)
+        unittest_perl
+        ;;
+    php)
+        unittest_php
+        ;;
+    py | python)
+        unittest_python
+        ;;
+    rb | ruby)
+        unittest_ruby
+        ;;
+    rs | rust)
+        unittest_rust
+        ;;
+    scala)
+        unittest_scala
+        ;;
+    swift)
+        unittest_swift
+        ;;
+    ts | typescript)
+        unittest_typescript
+        ;;
+    *)
+        echo -n "ERROR: unknown unittest argument: $ARG"
+        ;;
+esac

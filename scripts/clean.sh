@@ -24,6 +24,13 @@ clean_c () {
     echo
     hdr "clean_c"
 
+    # ensure make is installed
+    if [ -z "$(which make)" ]
+    then
+        echo "You need to install make"
+        return
+    fi
+
     cd "$CFIND_PATH"
     log "make clean"
     make clean
@@ -33,6 +40,13 @@ clean_c () {
 clean_clojure () {
     echo
     hdr "clean_clojure"
+
+    # ensure lein is installed
+    if [ -z "$(which lein)" ]
+    then
+        echo "You need to install lein"
+        return
+    fi
 
     cd "$CLJFIND_PATH"
     log "lein clean"
@@ -60,21 +74,30 @@ clean_csharp () {
     echo
     hdr "clean_csharp"
 
-    PROJECTS=(CsFind CsFindGen CsFindLib CsFindTests)
-    SUBDIRS=(bin obj)
-    for p in ${PROJECTS[*]}
-    do
-        for d in ${SUBDIRS[*]}
-        do
-            log "rm -rf $CSFIND_PATH/$p/$d"
-            rm -rf "$CSFIND_PATH/$p/$d"
-        done
-    done
+    # ensure dotnet is installed
+    if [ -z "$(which dotnet)" ]
+    then
+        echo "You need to install dotnet"
+        return
+    fi
+
+    cd "$CSFIND_PATH"
+    log "dotnet clean"
+    dotnet clean
+
+    cd -
 }
 
 clean_dart () {
     echo
     hdr "clean_dart"
+
+    # ensure dart is installed
+    if [ -z "$(which dart)" ]
+    then
+        echo "You need to install dart"
+        return
+    fi
 
     # pub cache repair is apparently the closest thing to clean for dart
     cd "$DARTFIND_PATH"
@@ -87,21 +110,30 @@ clean_fsharp () {
     echo
     hdr "clean_fsharp"
 
-    PROJECTS=(FsFind FsFindLib FsFindTests)
-    SUBDIRS=(bin obj)
-    for p in ${PROJECTS[*]}
-    do
-        for d in ${SUBDIRS[*]}
-        do
-            log "rm -rf $FSFIND_PATH/$p/$d"
-            rm -rf "$FSFIND_PATH/$p/$d"
-        done
-    done
+    # ensure dotnet is installed
+    if [ -z "$(which dotnet)" ]
+    then
+        echo "You need to install dotnet"
+        return
+    fi
+
+    cd "$FSFIND_PATH"
+    log "dotnet clean"
+    dotnet clean
+
+    cd -
 }
 
 clean_go () {
     echo
     hdr "clean_go"
+
+    # ensure go is installed
+    if [ -z "$(which go)" ]
+    then
+        echo "You need to install go"
+        return
+    fi
 
     cd "$GOFIND_PATH"
     log "go clean"
@@ -113,6 +145,13 @@ clean_haskell () {
     echo
     hdr "clean_haskell"
 
+    # ensure stack is installed
+    if [ -z "$(which stack)" ]
+    then
+        echo "You need to install stack"
+        return
+    fi
+
     cd "$HSFIND_PATH"
     log "stack clean"
     stack clean
@@ -123,6 +162,13 @@ clean_java () {
     echo
     hdr "clean_java"
 
+    # ensure mvn is installed
+    if [ -z "$(which mvn)" ]
+    then
+        echo "You need to install mvn"
+        return
+    fi
+
     log "mvn -f $JAVAFIND_PATH/pom.xml clean"
     mvn -f "$JAVAFIND_PATH/pom.xml" clean
 }
@@ -130,6 +176,13 @@ clean_java () {
 clean_javascript () {
     echo
     hdr "clean_javascript"
+
+    # ensure npm is installed
+    if [ -z "$(which npm)" ]
+    then
+        echo "You need to install npm"
+        return
+    fi
 
     cd "$JSFIND_PATH"
     log "npm run clean"
@@ -140,6 +193,13 @@ clean_javascript () {
 clean_kotlin () {
     echo
     hdr "clean_kotlin"
+
+    # ensure gradle is installed
+    if [ -z "$(which gradle)" ]
+    then
+        echo "You need to install gradle"
+        return
+    fi
 
     cd "$KTFIND_PATH"
     log "gradle --warning-mode all clean"
@@ -189,6 +249,13 @@ clean_rust () {
     echo
     hdr "clean_rust"
 
+    # ensure cargo is installed
+    if [ -z "$(which cargo)" ]
+    then
+        echo "You need to install cargo"
+        return
+    fi
+
     cd "$RSFIND_PATH"
     echo "cargo clean"
     cargo clean
@@ -198,6 +265,13 @@ clean_rust () {
 clean_scala () {
     echo
     hdr "clean_scala"
+
+    # ensure sbt is installed
+    if [ -z "$(which sbt)" ]
+    then
+        echo "You need to install sbt"
+        return
+    fi
 
     # TODO: convert to sbt command
 
@@ -218,6 +292,13 @@ clean_typescript () {
     echo
     hdr "clean_typescript"
 
+    # ensure npm is installed
+    if [ -z "$(which npm)" ]
+    then
+        echo "You need to install npm"
+        return
+    fi
+
     cd "$TSFIND_PATH"
     log "npm run clean"
     npm run clean
@@ -235,7 +316,7 @@ clean_linux () {
 
     clean_csharp
 
-    clean_dart
+    # clean_dart
 
     clean_fsharp
 
@@ -328,75 +409,77 @@ else
     ARG=$1
 fi
 
-if [ "$ARG" == "all" ]
-then
-    clean_all
-elif [ "$ARG" == "linux" ]
-then
-    clean_linux
-elif [ "$ARG" == "c" ]
-then
-    clean_c
-elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
-then
-    clean_clojure
-elif [ "$ARG" == "cpp" ]
-then
-    clean_cpp
-elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
-then
-    clean_csharp
-elif [ "$ARG" == "dart" ]
-then
-    clean_dart
-elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
-then
-    clean_fsharp
-elif [ "$ARG" == "go" ]
-then
-    clean_go
-elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
-then
-    clean_haskell
-elif [ "$ARG" == "java" ]
-then
-    clean_java
-elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
-then
-    clean_javascript
-elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
-then
-    clean_kotlin
-elif [ "$ARG" == "objc" ]
-then
-    clean_objc
-elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
-then
-    clean_ocaml
-elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
-then
-    clean_perl
-elif [ "$ARG" == "php" ]
-then
-    clean_php
-elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
-then
-    clean_python
-elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
-then
-    clean_ruby
-elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
-then
-    clean_rust
-elif [ "$ARG" == "scala" ]
-then
-    clean_scala
-elif [ "$ARG" == "swift" ]
-then
-    clean_swift
-elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
-then
-    clean_typescript
-else
-    echo "ERROR: unknown clean argument: $ARG"
-fi
+case $ARG in
+    all)
+        clean_all
+        ;;
+    linux)
+        clean_linux
+        ;;
+    c)
+        clean_c
+        ;;
+    clj | clojure)
+        clean_clojure
+        ;;
+    cpp)
+        clean_cpp
+        ;;
+    cs | csharp)
+        clean_csharp
+        ;;
+    dart)
+        clean_dart
+        ;;
+    fs | fsharp)
+        clean_fsharp
+        ;;
+    go)
+        clean_go
+        ;;
+    haskell | hs)
+        clean_haskell
+        ;;
+    java)
+        clean_java
+        ;;
+    javascript | js)
+        clean_javascript
+        ;;
+    kotlin | kt)
+        clean_kotlin
+        ;;
+    objc)
+        clean_objc
+        ;;
+    ocaml | ml)
+        clean_ocaml
+        ;;
+    perl | pl)
+        clean_perl
+        ;;
+    php)
+        clean_php
+        ;;
+    py | python)
+        clean_python
+        ;;
+    rb | ruby)
+        clean_ruby
+        ;;
+    rs | rust)
+        clean_rust
+        ;;
+    scala)
+        clean_scala
+        ;;
+    swift)
+        clean_swift
+        ;;
+    ts | typescript)
+        clean_typescript
+        ;;
+    *)
+        echo -n "ERROR: unknown xfind clean argument: $ARG"
+        ;;
+esac
