@@ -19,28 +19,28 @@ object DefaultSettings {
 }
 
 case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
-                          debug: Boolean = DefaultSettings.debug,
-                          excludeHidden: Boolean = DefaultSettings.excludeHidden,
-                          inArchiveExtensions: Set[String] = Set.empty[String],
-                          inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
-                          inDirPatterns: Set[Regex] = Set.empty[Regex],
-                          inExtensions: Set[String] = Set.empty[String],
-                          inFilePatterns: Set[Regex] = Set.empty[Regex],
-                          inFileTypes: Set[FileType] = Set.empty[FileType],
-                          var includeArchives: Boolean = DefaultSettings.includeArchives,
-                          listDirs: Boolean = DefaultSettings.listDirs,
-                          listFiles: Boolean = DefaultSettings.listFiles,
-                          outArchiveExtensions: Set[String] = Set.empty[String],
-                          outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
-                          outDirPatterns: Set[Regex] = Set.empty[Regex],
-                          outExtensions: Set[String] = Set.empty[String],
-                          outFilePatterns: Set[Regex] = Set.empty[Regex],
-                          outFileTypes: Set[FileType] = Set.empty[FileType],
-                          printUsage: Boolean = DefaultSettings.printUsage,
-                          printVersion: Boolean = DefaultSettings.printVersion,
-                          recursive: Boolean = DefaultSettings.recursive,
-                          paths: Set[String] = DefaultSettings.paths,
-                          var verbose: Boolean = DefaultSettings.verbose) {
+                        debug: Boolean = DefaultSettings.debug,
+                        excludeHidden: Boolean = DefaultSettings.excludeHidden,
+                        inArchiveExtensions: Set[String] = Set.empty[String],
+                        inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
+                        inDirPatterns: Set[Regex] = Set.empty[Regex],
+                        inExtensions: Set[String] = Set.empty[String],
+                        inFilePatterns: Set[Regex] = Set.empty[Regex],
+                        inFileTypes: Set[FileType] = Set.empty[FileType],
+                        var includeArchives: Boolean = DefaultSettings.includeArchives,
+                        listDirs: Boolean = DefaultSettings.listDirs,
+                        listFiles: Boolean = DefaultSettings.listFiles,
+                        outArchiveExtensions: Set[String] = Set.empty[String],
+                        outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
+                        outDirPatterns: Set[Regex] = Set.empty[Regex],
+                        outExtensions: Set[String] = Set.empty[String],
+                        outFilePatterns: Set[Regex] = Set.empty[Regex],
+                        outFileTypes: Set[FileType] = Set.empty[FileType],
+                        paths: Set[String] = DefaultSettings.paths,
+                        printUsage: Boolean = DefaultSettings.printUsage,
+                        printVersion: Boolean = DefaultSettings.printVersion,
+                        recursive: Boolean = DefaultSettings.recursive,
+                        var verbose: Boolean = DefaultSettings.verbose) {
 
   includeArchives = archivesOnly || includeArchives
   verbose = debug || verbose
@@ -65,10 +65,10 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", outExtensions: " + outExtensions +
       ", outFilePatterns: " + outFilePatterns +
       ", outFileTypes: " + outFileTypes +
+      ", paths: " + paths  +
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +
       ", recursive: " + recursive +
-      ", paths: " + paths  +
       ", verbose: " + verbose +
       ")"
   }
