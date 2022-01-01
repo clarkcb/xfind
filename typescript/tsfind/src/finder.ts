@@ -8,6 +8,7 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
+import { access, lstat, stat } from 'fs/promises';
 import * as path from 'path';
 
 import * as common from './common';
@@ -29,8 +30,10 @@ export class Finder {
     private validateSettings(): void {
         try {
             assert.ok(this._settings.paths.length > 0, 'Startpath not defined');
-            this._settings.paths.forEach(p => {
+            for (const p of this._settings.paths) {
+                // await access(p, fs.constants.F_OK | fs.constants.R_OK);
                 fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
+                // const stat = await lstat(p);
                 const stat = fs.lstatSync(p);
                 if (stat.isDirectory()) {
                     assert.ok(this.isFindDir(p),
@@ -41,9 +44,9 @@ export class Finder {
                 } else {
                     assert.ok(false, 'Startpath not findable file type');
                 }
-            });
+            }
 
-        } catch (err) {
+        } catch (err: Error | any) {
             let msg = err.message;
             if (err.code === 'ENOENT') {
                 msg = 'Startpath not found';
@@ -171,7 +174,7 @@ export class Finder {
 
     private async getFindFiles(startPath: string): Promise<FindFile[]> {
         let findFiles: FindFile[] = [];
-        const stats = fs.statSync(startPath);
+        const stats = await stat(startPath);
         if (stats.isDirectory()) {
             if (this.isFindDir(startPath)) {
                 findFiles = findFiles.concat(this.recGetFindFiles(startPath));

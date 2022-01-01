@@ -40,6 +40,8 @@ describe('testing findoptions', () => {
             expect(settings.inExtensions.length).toEqual(2);
             expect(settings.inExtensions[0]).toEqual('js');
             expect(settings.inExtensions[1]).toEqual('java');
+            expect(settings.paths.length).toEqual(1);
+            expect(settings.paths[0]).toEqual('.');
         });
     });
 
