@@ -28,14 +28,12 @@ Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'])
 #exts = ','.join('clj cpp cs dart fs go hs java js kt pl php py rb rs scala swift ts'.split())
 exts = ','.join('py rb'.split())
 
-startpaths = [
-    os.path.join(XFINDPATH, 'python'),
-    os.path.join(XFINDPATH, 'ruby'),
-]
+startpaths = [os.path.join(XFINDPATH, d) for d in ('python', 'ruby')]
 
 default_runs = 10
 
-core_args = ['-D', 'venv']
+ignore_dirs = ['node_modules', 'vendor', 'venv']
+core_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
 ext_args = ['-x', exts]
 common_args = core_args + ext_args + startpaths
 
@@ -513,7 +511,15 @@ class Benchmarker(object):
         self.compare_outputs(sn, xfind_output)
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
+    def activate_pyvenv(self):
+        if 'VIRTUAL_ENV' not in os.environ:
+            print('ERROR: venv must be activated to run pyfind')
+            print('Run "source ./pyvenv_setup.sh" before this script')
+            sys.exit(1)
+
     def run(self):
+        if 'pyfind' in self.xfind_names:
+            self.activate_pyvenv()
         scenario_results = ScenarioResults()
         runs = 0
         try:

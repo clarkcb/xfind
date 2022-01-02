@@ -33,6 +33,7 @@ xfind_dict = {
     'kt':         'ktfind',
     'objc':       'objcfind',
     # 'ocaml':      'mlfind',
+    # 'ml':         'mlfind',
     'perl':       'plfind',
     'pl':         'plfind',
     'php':        'phpfind',
@@ -63,7 +64,7 @@ default_runs = 10
 
 HOME = os.environ[HOME_NAME]
 
-# set XFINDPATH, default to $HOME/srx/xfind but override with env var if defined
+# set XFINDPATH, default to $HOME/src/xfind but override with env var if defined
 XFINDPATH = os.path.join(HOME, 'src', 'xfind')
 if 'XFIND_PATH' in os.environ:
     XFINDPATH = os.environ['XFIND_PATH']
