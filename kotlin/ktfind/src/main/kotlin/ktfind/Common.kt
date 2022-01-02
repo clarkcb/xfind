@@ -11,6 +11,4 @@ fun logError(message: String) {
     println("ERROR: $message")
 }
 
-class FindException(err: String) : Exception(err) {
-
-}
+class FindException(err: String) : Exception(err)
