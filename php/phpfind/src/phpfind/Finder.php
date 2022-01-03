@@ -7,22 +7,18 @@ namespace phpfind;
 
 /**
  * Class Finder
+ *
+ * @property FindSettings $settings
+ * @property FileTypes $filetypes
  */
 class Finder
 {
-    /**
-     * @var FindSettings
-     */
-    private $settings;
-    /**
-     * @var FileTypes
-     */
-    private $filetypes;
-    /**
-     * @var array
-     */
-    private $results;
+    private readonly FindSettings $settings;
+    private readonly FileTypes $filetypes;
 
+    /**
+     * @throws FindException
+     */
     public function __construct(FindSettings $settings)
     {
         $this->settings = $settings;
@@ -30,7 +26,10 @@ class Finder
         $this->validate_settings();
     }
 
-    private function validate_settings()
+    /**
+     * @throws FindException
+     */
+    private function validate_settings(): void
     {
         if (!$this->settings->paths) {
             throw new FindException('Startpath not defined');
@@ -188,6 +187,9 @@ class Finder
         return !$this->settings->archivesonly && $this->is_find_file($f);
     }
 
+    /**
+     * @throws FindException
+     */
     public function find(): array
     {
         $findfiles = array();
@@ -226,7 +228,7 @@ class Finder
         return $dirs;
     }
 
-    public function print_matching_dirs(array $findfiles)
+    public function print_matching_dirs(array $findfiles): void
     {
         $dirs = $this->get_matching_dirs($findfiles);
         if (count($dirs) > 0) {
@@ -251,7 +253,7 @@ class Finder
         return $files;
     }
 
-    public function print_matching_files(array $findfiles)
+    public function print_matching_files(array $findfiles): void
     {
         $files = $this->get_matching_files($findfiles);
         if (count($files) > 0) {

@@ -22,7 +22,7 @@ class FindOption
         $this->sortarg = $this->__sortarg();
     }
 
-    private function __sortarg()
+    private function __sortarg(): string
     {
         if ($this->shortarg) {
             return strtolower($this->shortarg) . 'a' . $this->longarg;

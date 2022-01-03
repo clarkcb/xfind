@@ -19,8 +19,7 @@ function main($argv)
 
         if ($settings->printusage) {
             Logger::log_msg('');
-            $findoptions->usage();
-            exit;
+            $findoptions->usage_and_exit(0);
         }
 
         $finder = new Finder($settings);
@@ -37,7 +36,7 @@ function main($argv)
         }
     } catch (FindException $e) {
         Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");
-        $findoptions->usage();
+        $findoptions->usage_and_exit(1);
     }
 }
 

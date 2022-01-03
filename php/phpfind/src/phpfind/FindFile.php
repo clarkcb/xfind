@@ -14,7 +14,12 @@ class FindFile
 {
     const CONTAINER_SEPARATOR = '!';
 
-    public function __construct(string $path, string $filename, $filetype)
+    public array $containers;
+    public readonly string $path;
+    public readonly string $filename;
+    public readonly FileType $filetype;
+
+    public function __construct(string $path, string $filename, FileType $filetype)
     {
         $this->containers = array();
         $this->path = $path;

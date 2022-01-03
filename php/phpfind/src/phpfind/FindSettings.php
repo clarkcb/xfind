@@ -23,41 +23,41 @@ namespace phpfind;
  * @property array out_extensions
  * @property array out_filepatterns
  * @property array out_filetypes
+ * @property array paths
  * @property bool printusage
  * @property bool printversion
  * @property bool recursive
- * @property array paths
  * @property bool verbose
  */
 class FindSettings
 {
-    public $archivesonly = false;
-    public $debug = false;
-    public $excludehidden = true;
-    public $includearchives = false;
-    public $listdirs = false;
-    public $listfiles = false;
-    public $printusage = false;
-    public $printversion = false;
-    public $recursive = true;
-    public $findarchives = false;
-    public $verbose = false;
+    public bool $archivesonly = false;
+    public bool $debug = false;
+    public bool $excludehidden = true;
+    public bool $includearchives = false;
+    public bool $listdirs = false;
+    public bool $listfiles = false;
+    public bool $printusage = false;
+    public bool $printversion = false;
+    public bool $recursive = true;
+    public bool $findarchives = false;
+    public bool $verbose = false;
 
-    public $in_archiveextensions = array();
-    public $in_archivefilepatterns = array();
-    public $in_dirpatterns = array();
-    public $in_extensions = array();
-    public $in_filepatterns = array();
-    public $in_filetypes = array();
-    public $out_archiveextensions = array();
-    public $out_archivefilepatterns = array();
-    public $out_dirpatterns = array();
-    public $out_extensions = array();
-    public $out_filepatterns = array();
-    public $out_filetypes = array();
-    public $paths = array();
+    public array $in_archiveextensions = array();
+    public array $in_archivefilepatterns = array();
+    public array $in_dirpatterns = array();
+    public array $in_extensions = array();
+    public array $in_filepatterns = array();
+    public array $in_filetypes = array();
+    public array $out_archiveextensions = array();
+    public array $out_archivefilepatterns = array();
+    public array $out_dirpatterns = array();
+    public array $out_extensions = array();
+    public array $out_filepatterns = array();
+    public array $out_filetypes = array();
+    public array $paths = array();
 
-    public function add_exts($ext, &$exts)
+    public function add_exts($ext, &$exts): void
     {
         if (gettype($ext) == 'string') {
             $xs = explode(',', $ext);
@@ -71,7 +71,7 @@ class FindSettings
         }
     }
 
-    public function add_filetypes($filetype, &$filetypes)
+    public function add_filetypes($filetype, &$filetypes): void
     {
         if (gettype($filetype) == 'string') {
             $fts = explode(',', $filetype);
@@ -85,7 +85,7 @@ class FindSettings
         }
     }
 
-    public function add_patterns($pattern, &$patterns)
+    public function add_patterns($pattern, &$patterns): void
     {
         if (gettype($pattern) == 'string') {
             $patterns[] = $pattern;
@@ -96,7 +96,7 @@ class FindSettings
         }
     }
 
-    public function set_archivesonly(bool $b)
+    public function set_archivesonly(bool $b): void
     {
         $this->archivesonly = $b;
         if ($b) {
@@ -104,7 +104,7 @@ class FindSettings
         }
     }
 
-    public function set_debug(bool $b)
+    public function set_debug(bool $b): void
     {
         $this->debug = $b;
         if ($b) {
@@ -112,44 +112,56 @@ class FindSettings
         }
     }
 
-    private function arr_to_string(array $arr): string
-    {
-        $s = '["' . implode('","', $arr) . '"]';
-        return $s;
-    }
-
-    private function bool_to_string(bool $b): string
-    {
-        return $b ? 'true' : 'false';
-    }
-
     public function __toString(): string
     {
-        $s = 'FindSettings(';
-        $s .= 'archivesonly: ' . $this->bool_to_string($this->archivesonly);
-        $s .= ', debug: ' . $this->bool_to_string($this->debug);
-        $s .= ', excludehidden: ' . $this->bool_to_string($this->excludehidden);
-        $s .= ', in_archiveextensions: ' . $this->arr_to_string($this->in_archiveextensions);
-        $s .= ', in_archivefilepatterns: ' . $this->arr_to_string($this->in_archivefilepatterns);
-        $s .= ', in_dirpatterns: ' . $this->arr_to_string($this->in_dirpatterns);
-        $s .= ', in_extensions: ' . $this->arr_to_string($this->in_extensions);
-        $s .= ', in_filepatterns: ' . $this->arr_to_string($this->in_filepatterns);
-        $s .= ', in_filetypes: ' . $this->arr_to_string($this->in_filetypes);
-        $s .= ', includearchives: ' . $this->bool_to_string($this->includearchives);
-        $s .= ', listdirs: ' . $this->bool_to_string($this->listdirs);
-        $s .= ', listfiles: ' . $this->bool_to_string($this->listfiles);
-        $s .= ', out_archiveextensions: ' . $this->arr_to_string($this->out_archiveextensions);
-        $s .= ', out_archivefilepatterns: ' . $this->arr_to_string($this->out_archivefilepatterns);
-        $s .= ', out_dirpatterns: ' . $this->arr_to_string($this->out_dirpatterns);
-        $s .= ', out_extensions: ' . $this->arr_to_string($this->out_extensions);
-        $s .= ', out_filepatterns: ' . $this->arr_to_string($this->out_filepatterns);
-        $s .= ', out_filetypes: ' . $this->arr_to_string($this->out_filetypes);
-        $s .= ', printusage: ' . $this->bool_to_string($this->printusage);
-        $s .= ', printversion: ' . $this->bool_to_string($this->printversion);
-        $s .= ', recursive: ' . $this->bool_to_string($this->recursive);
-        $s .= ', paths: ' . $this->arr_to_string($this->paths);
-        $s .= ', verbose: ' . $this->bool_to_string($this->verbose);
-        $s .= ')';
-        return $s;
+        return sprintf('FindSettings(' .
+            'archivesonly: %s' .
+            ', debug: %s' .
+            ', excludehidden: %s' .
+            ', in_archiveextensions: %s' .
+            ', in_archivefilepatterns: %s' .
+            ', in_dirpatterns: %s' .
+            ', in_extensions: %s' .
+            ', in_filepatterns: %s' .
+            ', in_filetypes: %s' .
+            ', includearchives: %s' .
+            ', listdirs: %s' .
+            ', listfiles: %s' .
+            ', out_archiveextensions: %s' .
+            ', out_archivefilepatterns: %s' .
+            ', out_dirpatterns: %s' .
+            ', out_extensions: %s' .
+            ', out_filepatterns: %s' .
+            ', out_filetypes: %s' .
+            ', paths: %s' .
+            ', printusage: %s' .
+            ', printversion: %s' .
+            ', recursive: %s' .
+            ', verbose: %s' .
+            ')',
+            StringUtil::bool_to_string($this->archivesonly),
+            StringUtil::bool_to_string($this->debug),
+            StringUtil::bool_to_string($this->excludehidden),
+            StringUtil::string_array_to_string($this->in_archiveextensions),
+            StringUtil::string_array_to_string($this->in_archivefilepatterns),
+            StringUtil::string_array_to_string($this->in_dirpatterns),
+            StringUtil::string_array_to_string($this->in_extensions),
+            StringUtil::string_array_to_string($this->in_filepatterns),
+            StringUtil::string_array_to_string($this->in_filetypes),
+            StringUtil::bool_to_string($this->includearchives),
+            StringUtil::bool_to_string($this->listdirs),
+            StringUtil::bool_to_string($this->listfiles),
+            StringUtil::string_array_to_string($this->out_archiveextensions),
+            StringUtil::string_array_to_string($this->out_archivefilepatterns),
+            StringUtil::string_array_to_string($this->out_dirpatterns),
+            StringUtil::string_array_to_string($this->out_extensions),
+            StringUtil::string_array_to_string($this->out_filepatterns),
+            StringUtil::string_array_to_string($this->out_filetypes),
+            StringUtil::string_array_to_string($this->paths),
+            StringUtil::bool_to_string($this->printusage),
+            StringUtil::bool_to_string($this->printversion),
+            StringUtil::bool_to_string($this->recursive),
+            StringUtil::bool_to_string($this->verbose)
+        );
     }
 }

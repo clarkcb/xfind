@@ -6,16 +6,24 @@ namespace phpfind;
 
 /**
  * Class FileTypes
+ *
+ * @property array $file_type_map
  */
 class FileTypes
 {
-    private $file_type_map;
+    private readonly array $file_type_map;
 
+    /**
+     * @throws FindException
+     */
     public function __construct()
     {
         $this->file_type_map = $this->get_file_type_map_from_json();
     }
 
+    /**
+     * @throws FindException
+     */
     private function get_file_type_map_from_json(): array
     {
         $file_type_map = array();
@@ -23,7 +31,7 @@ class FileTypes
         if (file_exists($filetypespath)) {
             $json_obj = json_decode(file_get_contents($filetypespath), true);
             foreach ($json_obj['filetypes'] as $ft) {
-                $type = sprintf($ft['type']);
+                $type = (string)$ft['type'];
                 $exts = $ft['extensions'];
                 $file_type_map[$type] = $exts;
             }
@@ -33,33 +41,24 @@ class FileTypes
                 $file_type_map['xml']
             );
         } else {
-            throw new Exception('File not found: ' . $filetypespath);
+            throw new FindException('File not found: ' . $filetypespath);
         }
         return $file_type_map;
     }
 
-    public static function from_name(string $name)
+    public static function from_name(string $name): FileType
     {
-        $uname = strtoupper($name);
-        if ($uname == 'TEXT') {
-            return FileType::Text;
-        }
-        if ($uname == 'BINARY') {
-            return FileType::Binary;
-        }
-        if ($uname == 'ARCHIVE') {
-            return FileType::Archive;
-        }
-        if ($uname == 'CODE') {
-            return FileType::Code;
-        }
-        if ($uname == 'XML') {
-            return FileType::Xml;
-        }
-        return FileType::Unknown;
+        return match (strtoupper($name)) {
+            'ARCHIVE' => FileType::Archive,
+            'BINARY' => FileType::Binary,
+            'CODE' => FileType::Code,
+            'TEXT' => FileType::Text,
+            'XML' => FileType::Xml,
+            default => FileType::Unknown
+        };
     }
 
-    public function get_filetype(string $file)
+    public function get_filetype(string $file): FileType
     {
         if ($this->is_code($file)) {
             return FileType::Code;

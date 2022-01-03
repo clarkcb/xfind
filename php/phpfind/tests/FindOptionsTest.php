@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
@@ -12,7 +13,7 @@ class FindOptionsTest extends TestCase
     /**
      * @var FindOptions
      */
-    private $findoptions;
+    private FindOptions $findoptions;
 
     public function __construct()
     {

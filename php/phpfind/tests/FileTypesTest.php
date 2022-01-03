@@ -1,4 +1,5 @@
 <?php declare(strict_types=1);
+
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
@@ -11,7 +12,7 @@ class FileTypesTest extends TestCase
     /**
      * @var FileTypes
      */
-    private $filetypes;
+    private FileTypes $filetypes;
 
     public function __construct()
     {

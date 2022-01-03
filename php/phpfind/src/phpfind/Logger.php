@@ -10,5 +10,4 @@ class Logger
     {
         echo "$msg\n";
     }
-
 }
