@@ -117,16 +117,19 @@
           #(new-find-file % (get-filetype %))
           (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles pathfile)))))))))
 
-(defn get-find-files [settings paths findfiles]
-  (if (empty? paths)
-    findfiles
-    (let [nextfindfiles (get-find-files-for-path settings (first paths))]
-      (get-find-files settings (rest paths) (concat findfiles nextfindfiles)))))
+(defn get-find-files
+  ([settings]
+    (get-find-files settings (:paths settings) []))
+  ([settings paths findfiles]
+    (if (empty? paths)
+      findfiles
+      (let [nextfindfiles (get-find-files-for-path settings (first paths))]
+        (get-find-files settings (rest paths) (concat findfiles nextfindfiles))))))
 
 (defn find-files [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
-      [(get-find-files settings (:paths settings) []) []]
+      [(get-find-files settings) []]
       [[] errs])))
 
 (defn get-matching-dirs [findfiles]
