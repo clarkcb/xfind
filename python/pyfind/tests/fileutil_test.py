@@ -16,9 +16,9 @@ from pyfind import FileUtil
 
 
 class FileUtilTest(unittest.TestCase):
-################################################################################
-# get_extension tests
-################################################################################
+    ############################################################################
+    # get_extension tests
+    ############################################################################
     def test_get_extension_has_txt_extension(self):
         filename = 'filename.txt'
         self.assertEqual(FileUtil.get_extension(filename), 'txt')
@@ -43,9 +43,9 @@ class FileUtilTest(unittest.TestCase):
         filename = '.hidden'
         self.assertEqual(FileUtil.get_extension(filename), '')
 
-################################################################################
-# is_dot_dir tests
-################################################################################
+    ############################################################################
+    # is_dot_dir tests
+    ############################################################################
     def test_is_dot_dir_single_dot(self):
         filename = '.'
         self.assertTrue(FileUtil.is_dot_dir(filename))
@@ -58,9 +58,9 @@ class FileUtilTest(unittest.TestCase):
         filename = '.git'
         self.assertFalse(FileUtil.is_dot_dir(filename))
 
-################################################################################
-# is_hidden tests
-################################################################################
+    ############################################################################
+    # is_hidden tests
+    ############################################################################
     def test_is_hidden_hidden_file(self):
         filename = '.filename.txt'
         self.assertTrue(FileUtil.is_hidden(filename))

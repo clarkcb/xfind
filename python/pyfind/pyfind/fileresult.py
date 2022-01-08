@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 ###############################################################################
 #
-# findfile.py
+# fileresult.py
 #
-# class FindFile: encapsulates a file to evaluate as find match
+# class FileResult: encapsulates a file to evaluate as find match and return
+#                   if matching
 #
 ###############################################################################
 import os
@@ -13,8 +14,8 @@ from typing import List
 from .filetypes import FileType
 
 
-class FindFile(object):
-    """encapsulates a file to evaluate as a find match"""
+class FileResult(object):
+    """encapsulates a file to evaluate as a find match and return if matching"""
     CONTAINER_SEPARATOR = '!'
 
     __slots__ = ['containers', 'path', 'filename', 'filetype', 'stat']
@@ -45,4 +46,4 @@ class FindFile(object):
         return self.path < other.path
     
     def __eq__(self, other):
-        return self.path < other.path and self.filename < other.filename
+        return self.path == other.path and self.filename == other.filename

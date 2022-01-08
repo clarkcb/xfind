@@ -9,9 +9,9 @@
 import os
 from typing import List, Optional
 
+from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
-from .findfile import FindFile
 from .findsettings import FindSettings, PatternSet
 
 
@@ -84,8 +84,8 @@ class Finder(object):
             return False
         return self.is_matching_stat(stat)
 
-    def filter_to_find_file(self, filepath: str) -> Optional[FindFile]:
-        """Return a FindFile instance if the given filepath matches find settings, else None."""
+    def filter_to_file_result(self, filepath: str) -> Optional[FileResult]:
+        """Return a FileResult instance if the given filepath matches find settings, else None."""
         (path, filename) = os.path.split(filepath)
         if self.settings.excludehidden and FileUtil.is_hidden(filename):
             return None
@@ -98,11 +98,11 @@ class Finder(object):
                 return None
         elif self.settings.archivesonly or not self.is_find_file(filename, filetype, stat):
             return None
-        return FindFile(path=path, filename=filename, filetype=filetype, stat=stat)
+        return FileResult(path=path, filename=filename, filetype=filetype, stat=stat)
 
-    def find_files(self) -> List[FindFile]:
+    def find_files(self) -> List[FileResult]:
         """Get the list of all files matching find settings."""
-        findfiles = []
+        fileresults = []
         for p in self.settings.paths:
             if os.path.isdir(p):
                 if self.is_find_dir(os.path.abspath(p)):
@@ -124,28 +124,28 @@ class Finder(object):
                                 os.path.join(root, f) for f in files
                                 if not os.path.islink(os.path.join(root, f))
                             ]
-                            new_findfiles = [self.filter_to_find_file(f) for f in files]
-                            findfiles.extend(
-                                [ff for ff in new_findfiles if ff])
+                            new_fileresults = [self.filter_to_file_result(f) for f in files]
+                            fileresults.extend(
+                                [ff for ff in new_fileresults if ff])
                     else:
                         files = [
                             os.path.join(p, f) for f in os.listdir(p)
                             if os.path.isfile(os.path.join(p, f))
                                 and not os.path.islink(os.path.join(p, f))
                         ]
-                        new_findfiles = [self.filter_to_find_file(f) for f in files]
-                        findfiles.extend(
-                            [ff for ff in new_findfiles if ff])
+                        new_fileresults = [self.filter_to_file_result(f) for f in files]
+                        fileresults.extend(
+                            [ff for ff in new_fileresults if ff])
             elif os.path.isfile(p):
-                ff = self.filter_to_find_file(p)
+                ff = self.filter_to_file_result(p)
                 if ff:
-                    findfiles.append(ff)
-        return sorted(findfiles, key=lambda ff: (ff.path, ff.filename))
+                    fileresults.append(ff)
+        return sorted(fileresults, key=lambda ff: (ff.path, ff.filename))
 
-    async def find(self) -> List[FindFile]:
+    async def find(self) -> List[FileResult]:
         """Find matching files under paths."""
-        findfiles = self.find_files()
-        return findfiles
+        fileresults = self.find_files()
+        return fileresults
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:

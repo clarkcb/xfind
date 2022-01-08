@@ -12,13 +12,13 @@ from typing import List
 
 from .common import log
 from .config import VERSION
+from .fileresult import FileResult
 from .finder import Finder
 from .findexception import FindException
-from .findfile import FindFile
 from .findoptions import FindOptions
 
 
-def get_found_dirs(found_files: List[FindFile]):
+def get_found_dirs(found_files: List[FileResult]):
     return sorted(list(set([f.path for f in found_files])))
 
 

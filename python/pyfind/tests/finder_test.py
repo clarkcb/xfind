@@ -102,54 +102,54 @@ class FinderTest(unittest.TestCase):
         settings = self.get_settings()
         finder = Finder(settings)
         filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
-        findfile = finder.filter_to_find_file(filepath)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(filepath)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_is_find_file(self):
         settings = self.get_settings()
         settings.add_exts('py', 'in_extensions')
         finder = Finder(settings)
         filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
-        findfile = finder.filter_to_find_file(filepath)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(filepath)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_not_is_find_file(self):
         settings = self.get_settings()
         settings.add_exts('pl', 'in_extensions')
         finder = Finder(settings)
         filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
-        findfile = finder.filter_to_find_file(filepath)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(filepath)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_is_hidden_file(self):
         settings = self.get_settings()
         finder = Finder(settings)
         filepath = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
-        findfile = finder.filter_to_find_file(filepath)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(filepath)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_hidden_includehidden(self):
         settings = self.get_settings()
         settings.excludehidden = False
         finder = Finder(settings)
         filepath = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
-        findfile = finder.filter_to_find_file(filepath)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(filepath)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_archive_no_match_by_default(self):
         self.ensure_archive()
         settings = self.get_settings()
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_archive_no_includearchives(self):
         self.ensure_archive()
         settings = self.get_settings()
         finder = Finder(settings)
-        findfile = finder.filter_to_find_file('./archive.zip')
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result('./archive.zip')
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_archive_includearchives(self):
         self.ensure_archive()
@@ -157,8 +157,8 @@ class FinderTest(unittest.TestCase):
         settings.includearchives = True
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_archive_matches_in_extension(self):
         self.ensure_archive()
@@ -167,8 +167,8 @@ class FinderTest(unittest.TestCase):
         settings.add_exts('zip', 'in_archiveextensions')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_archive_no_match_in_extension(self):
         self.ensure_archive()
@@ -177,8 +177,8 @@ class FinderTest(unittest.TestCase):
         settings.add_exts('gz', 'in_archiveextensions')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_archive_matches_out_extension(self):
         self.ensure_archive()
@@ -187,8 +187,8 @@ class FinderTest(unittest.TestCase):
         settings.add_exts('zip', 'out_archiveextensions')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_archive_no_match_out_extension(self):
         self.ensure_archive()
@@ -197,8 +197,8 @@ class FinderTest(unittest.TestCase):
         settings.add_exts('gz', 'out_archiveextensions')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_archive_matches_in_pattern(self):
         self.ensure_archive()
@@ -207,8 +207,8 @@ class FinderTest(unittest.TestCase):
         settings.add_patterns('arch', 'in_archivefilepatterns')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_archive_no_match_in_pattern(self):
         self.ensure_archive()
@@ -217,8 +217,8 @@ class FinderTest(unittest.TestCase):
         settings.add_patterns('archives', 'in_archivefilepatterns')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_archive_matches_out_pattern(self):
         self.ensure_archive()
@@ -227,8 +227,8 @@ class FinderTest(unittest.TestCase):
         settings.add_patterns('arch', 'out_archivefilepatterns')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNone(fileresult)
 
     def test_filter_to_find_file_archive_no_match_out_pattern(self):
         self.ensure_archive()
@@ -237,8 +237,8 @@ class FinderTest(unittest.TestCase):
         settings.add_patterns('archives', 'out_archivefilepatterns')
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_archive_archivesonly(self):
         self.ensure_archive()
@@ -246,16 +246,16 @@ class FinderTest(unittest.TestCase):
         settings.set_property('archivesonly', True)
         finder = Finder(settings)
         archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
-        findfile = finder.filter_to_find_file(archive_path)
-        self.assertIsNotNone(findfile)
+        fileresult = finder.filter_to_file_result(archive_path)
+        self.assertIsNotNone(fileresult)
 
     def test_filter_to_find_file_nonarchive_archivesonly(self):
         settings = self.get_settings()
         settings.set_property('archivesonly', True)
         finder = Finder(settings)
         filepath = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
-        findfile = finder.filter_to_find_file(filepath)
-        self.assertIsNone(findfile)
+        fileresult = finder.filter_to_file_result(filepath)
+        self.assertIsNone(fileresult)
 
 
 if __name__ == '__main__':

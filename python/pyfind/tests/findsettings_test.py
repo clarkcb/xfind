@@ -78,7 +78,7 @@ class FindSettingsTest(unittest.TestCase):
             self.assertIn(x, self.settings.in_extensions)
 
     def test_add_extensions_set(self):
-        extensions_set = {'py','rb','scala'}
+        extensions_set = {'py', 'rb', 'scala'}
         self.settings.add_exts(extensions_set, 'in_extensions')
         self.assertEqual(3, len(self.settings.in_extensions))
         for x in extensions_set:
