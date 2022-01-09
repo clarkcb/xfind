@@ -1,7 +1,7 @@
 #ifndef CPPFIND_FINDER_H
 #define CPPFIND_FINDER_H
 
-#include "FindFile.h"
+#include "FileResult.h"
 #include "FindSettings.h"
 
 namespace cppfind {
@@ -10,8 +10,8 @@ namespace cppfind {
         FileTypes* m_filetypes;
         FindSettings* m_settings;
         static void validate_settings(FindSettings* settings);
-        FindFile* get_findfile(std::string& filepath);
-        std::vector<FindFile*> get_find_files(const std::string& filepath);
+        FileResult* get_file_result(std::string& filepath);
+        std::vector<FileResult*> get_file_results(const std::string& filepath);
 
     public:
         explicit Finder(FindSettings* settings);
@@ -19,7 +19,7 @@ namespace cppfind {
         bool is_archive_find_file(const std::string& filepath);
         bool is_find_dir(const std::string& filepath);
         bool is_find_file(const std::string& filepath, const FileType filetype);
-        std::vector<FindFile*> find();
+        std::vector<FileResult*> find();
     };
 }
 

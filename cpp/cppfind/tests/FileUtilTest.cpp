@@ -57,15 +57,36 @@ TEST_CASE("Detect hidden files", "[FileUtil]") {
     REQUIRE(!cppfind::FileUtil::is_hidden("filename.txt"));
 }
 
-TEST_CASE("Split paths", "[FileUtil]") {
-    REQUIRE(cppfind::FileUtil::split_path(".").size() == 1);
-    REQUIRE(cppfind::FileUtil::split_path(".")[0] == ".");
-    REQUIRE(cppfind::FileUtil::split_path("./").size() == 1);
-    REQUIRE(cppfind::FileUtil::split_path("./")[0] == ".");
-    REQUIRE(cppfind::FileUtil::split_path("./path").size() == 2);
-    REQUIRE(cppfind::FileUtil::split_path("./path")[0] == ".");
-    REQUIRE(cppfind::FileUtil::split_path("./path")[1] == "path");
-    REQUIRE(cppfind::FileUtil::split_path("./path/").size() == 2);
-    REQUIRE(cppfind::FileUtil::split_path("./path/")[0] == ".");
-    REQUIRE(cppfind::FileUtil::split_path("./path/")[1] == "path");
+TEST_CASE("Split current dir relative paths", "[FileUtil]") {
+    std::vector<std::string> v1 = cppfind::FileUtil::split_path(".");
+    REQUIRE(v1.size() == 1);
+    REQUIRE(v1[0] == ".");
+    std::vector<std::string> v2 = cppfind::FileUtil::split_path("./");
+    REQUIRE(v2.size() == 1);
+    REQUIRE(v2[0] == ".");
+    std::vector<std::string> v3 = cppfind::FileUtil::split_path("./path");
+    REQUIRE(v3.size() == 2);
+    REQUIRE(v3[0] == ".");
+    REQUIRE(v3[1] == "path");
+    std::vector<std::string> v4 = cppfind::FileUtil::split_path("./path/");
+    REQUIRE(v4.size() == 2);
+    REQUIRE(v4[0] == ".");
+    REQUIRE(v4[1] == "path");
+}
+
+TEST_CASE("Split parent dir relative paths", "[FileUtil]") {
+    std::vector<std::string> v1 = cppfind::FileUtil::split_path("..");
+    REQUIRE(v1.size() == 1);
+    REQUIRE(v1[0] == "..");
+    std::vector<std::string> v2 = cppfind::FileUtil::split_path("../");
+    REQUIRE(v2.size() == 1);
+    REQUIRE(v2[0] == "..");
+    std::vector<std::string> v3 = cppfind::FileUtil::split_path("../path");
+    REQUIRE(v3.size() == 2);
+    REQUIRE(v3[0] == "..");
+    REQUIRE(v3[1] == "path");
+    std::vector<std::string> v4 = cppfind::FileUtil::split_path("../path/");
+    REQUIRE(v4.size() == 2);
+    REQUIRE(v4[0] == "..");
+    REQUIRE(v4[1] == "path");
 }

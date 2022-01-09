@@ -59,8 +59,9 @@ namespace cppfind {
     }
 
     bool FileUtil::is_dot_dir(const std::string& name) {
-       boost::filesystem::path path(name);
-       return path.filename_is_dot() || path.filename_is_dot_dot();
+        return name == "." || name == ".." ||
+            name == "./" || name == "../" ||
+            name == ".\\" || name == "..\\";
     }
 
     bool FileUtil::is_hidden(const std::string& name) {
@@ -77,18 +78,18 @@ namespace cppfind {
 
     std::vector<std::string> FileUtil::split_path(const std::string& filepath) {
         std::vector<std::string> parts;
-        boost::filesystem::path path(filepath);
         if (FileUtil::is_dot_dir(filepath)) {
-            if (path.filename_is_dot()) {
-                parts.emplace_back(".");
-            } else if (path.filename_is_dot_dot()) {
+            if (filepath.substr(0, 2) == "..") {
                 parts.emplace_back("..");
+            } else {
+                parts.emplace_back(".");
             }
             return parts;
         }
         int i = 0;
+        boost::filesystem::path path(filepath);
         for(auto& part : path) {
-            if (part.string() == ".") {
+            if (part.string() == "." || part.string() == "..") {
                 if (i == 0) {
                     parts.push_back(part.string());
                 }

@@ -26,7 +26,7 @@ set(SOURCE_FILES include/common.h src/common.cpp
         include/StringUtil.h src/StringUtil.cpp
         include/FindException.h src/FindException.cpp
         include/FindSettings.h src/FindSettings.cpp
-        include/FindFile.h src/FindFile.cpp
+        include/FileResult.h src/FileResult.cpp
         include/FindOption.h src/FindOption.cpp
         include/FindOptions.h src/FindOptions.cpp
         include/FindPattern.h src/FindPattern.cpp
@@ -53,10 +53,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-set(TEST_FILES tests/FileTypesTest.cpp
+set(TEST_FILES tests/FileResultTest.cpp
+        tests/FileTypesTest.cpp
         tests/FileUtilTest.cpp
         tests/FinderTest.cpp
-        tests/FindFileTest.cpp
         tests/FindOptionsTest.cpp
         tests/FindSettingsTest.cpp
         tests/tests-main.cpp)

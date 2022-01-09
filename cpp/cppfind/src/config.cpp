@@ -15,6 +15,6 @@ namespace cppfind {
             boost::filesystem::path fullpath = home / path;
             return fullpath.string();
         }
-        return std::string(x_p);
+        return {x_p};
     }
 }

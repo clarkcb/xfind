@@ -1,13 +1,13 @@
 #include "common.h"
 #include "Finder.h"
-#include "FindFile.h"
+#include "FileResult.h"
 #include "StringUtil.h"
 #include "FindException.h"
 #include "FindOptions.h"
 
 using namespace cppfind;
 
-std::vector<std::string> get_matching_dirs(std::vector<FindFile*>* findfiles) {
+std::vector<std::string> get_matching_dirs(std::vector<FileResult*>* findfiles) {
     std::set<std::string> matching_dir_set = {};
     for (const auto& f : *findfiles) {
         matching_dir_set.insert(f->path());
@@ -16,7 +16,7 @@ std::vector<std::string> get_matching_dirs(std::vector<FindFile*>* findfiles) {
     return matching_dirs;
 }
 
-std::vector<std::string> get_matching_files(std::vector<FindFile*>* findfiles) {
+std::vector<std::string> get_matching_files(std::vector<FileResult*>* findfiles) {
     std::set<std::string> matching_file_set = {};
     for (const auto& f : *findfiles) {
         matching_file_set.insert(f->string());
@@ -49,7 +49,7 @@ int main(int argc, char *argv[]) {
 
         auto* finder = new Finder(settings);
 
-        std::vector<FindFile*> findfiles = finder->find();
+        std::vector<FileResult*> findfiles = finder->find();
 
         if (settings->listdirs()) {
             std::vector<std::string> dirs = get_matching_dirs(&findfiles);

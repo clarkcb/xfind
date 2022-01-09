@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <boost/filesystem.hpp>
-#include <iostream>
 #include <optional>
-#include "common.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
 #include "FindException.h"
@@ -27,35 +25,35 @@ namespace cppfind {
         }
     }
 
-    FindFile* Finder::get_findfile(std::string& filepath) {
+    FileResult* Finder::get_file_result(std::string& filepath) {
         FileType filetype = m_filetypes->get_filetype(filepath);
         boost::filesystem::path path(filepath);
         std::string parent_path = path.parent_path().string();
         std::string filename = path.filename().string();
-        return new FindFile(parent_path, filename, filetype);
+        return new FileResult(parent_path, filename, filetype);
     }
 
-    std::vector<FindFile*> Finder::find() {
-        std::vector<FindFile*> findfiles{};
+    std::vector<FileResult*> Finder::find() {
+        std::vector<FileResult*> findfiles{};
 
         for (auto& p : *m_settings->paths()) {
             std::string expanded = FileUtil::expand_path(p);
 
             if (FileUtil::is_directory(p) || FileUtil::is_directory(expanded)) {
-                std::vector<FindFile*> p_files{};
+                std::vector<FileResult*> p_files{};
                 if (FileUtil::is_directory(p)) {
-                    p_files = get_find_files(p);
+                    p_files = get_file_results(p);
                 } else {
-                    p_files = get_find_files(expanded);
+                    p_files = get_file_results(expanded);
                 }
                 findfiles.insert(findfiles.end(), p_files.begin(), p_files.end());
 
             } else if (FileUtil::is_regular_file(p)) {
-                auto* sf = get_findfile(p);
+                auto* sf = get_file_result(p);
                 findfiles.push_back(sf);
 
             } else if (FileUtil::is_regular_file(expanded)) {
-                auto* sf = get_findfile(expanded);
+                auto* sf = get_file_result(expanded);
                 findfiles.push_back(sf);
 
             } else {
@@ -147,7 +145,7 @@ namespace cppfind {
         return !m_settings->archivesonly() && is_find_file(filename, filetype);
     }
 
-    // std::optional<FindFile*> Finder::filter_to_find_file(const std::string& filepath) {
+    // std::optional<FileResult*> Finder::filter_to_find_file(const std::string& filepath) {
     //     boost::filesystem::path p(filepath);
     //     std::string filename = p.filename().string();
     //     if (m_settings->excludehidden() && FileUtil::is_hidden(filename)) {
@@ -155,23 +153,23 @@ namespace cppfind {
     //     }
     //     std::string parent_path = subpath.parent_path().string();
     //     auto filetype = m_filetypes->get_filetype(filename);
-    //     auto findfile = new FindFile(parent_path, filename, filetype);
+    //     auto findfile = new FileResult(parent_path, filename, filetype);
     //     if (filetype == FileType::ARCHIVE) {
     //         if (m_settings->includearchives() && is_archive_find_file(filename)) {
-    //             return std::optional<FindFile*>{findfile};
+    //             return std::optional<FileResult*>{findfile};
     //         }
     //         return std::nullopt;
     //     }
     //     if (!m_settings->archivesonly() && is_find_file(filename)) {
-    //         return std::optional<FindFile*>{findfile};
+    //         return std::optional<FileResult*>{findfile};
     //     }
     //     return std::nullopt;
     // }
 
-    std::vector<FindFile*> Finder::get_find_files(const std::string& filepath) {
+    std::vector<FileResult*> Finder::get_file_results(const std::string& filepath) {
         boost::filesystem::path p(filepath);
         std::vector<std::string> finddirs = {};
-        std::vector<FindFile*> findfiles = {};
+        std::vector<FileResult*> findfiles = {};
 
         std::vector<boost::filesystem::directory_entry> v;
         copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
@@ -185,13 +183,13 @@ namespace cppfind {
                 std::string filename = subpath.filename().string();
                 FileType filetype = m_filetypes->get_filetype(filename);
                 if (filter_file(filename)) {
-                    findfiles.push_back(new FindFile(parent_path, filename, filetype));
+                    findfiles.push_back(new FileResult(parent_path, filename, filetype));
                 }
             }
         }
 
         for (const auto& finddir : finddirs) {
-            std::vector<FindFile*> subfindfiles = get_find_files(finddir);
+            std::vector<FileResult*> subfindfiles = get_file_results(finddir);
             findfiles.insert(findfiles.end(), subfindfiles.begin(), subfindfiles.end());
         }
 
@@ -200,10 +198,10 @@ namespace cppfind {
 
     // std::vector<FindResult*> Finder::find_path(const std::string& filepath) {
     //     std::vector<FindResult*> results = {};
-    //     std::vector<FindFile*> findfiles = get_find_files(filepath);
+    //     std::vector<FileResult*> findfiles = get_file_results(filepath);
 
     //     // sort using a lambda expression
-    //     std::sort(findfiles.begin(), findfiles.end(), [](FindFile* sf1, FindFile* sf2) {
+    //     std::sort(findfiles.begin(), findfiles.end(), [](FileResult* sf1, FileResult* sf2) {
     //         if (sf1->path() == sf2->path()) {
     //             return sf1->filename() < sf2->filename();
     //         }
