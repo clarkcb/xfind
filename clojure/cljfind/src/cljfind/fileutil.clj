@@ -11,7 +11,7 @@
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
   (:use [clojure.string :only (split)]
-        [cljfind.findfile :only (new-find-file)]))
+        [cljfind.fileresult :only (new-file-result)]))
 
 ; needs string argument and returns string
 (defn expand-path [f]
@@ -40,16 +40,16 @@
 (defn get-files-in-directory [d]
   (filter #(.isFile %) (.listFiles d)))
 
-(defn has-ext? [f ext]
+(defn has-ext? [f ^String ext]
   (= (.toLowerCase ext) (get-ext f)))
 
-(defn is-dot-dir? [name]
+(defn is-dot-dir? [^String name]
   (contains? #{"." ".."} name))
 
 (defn split-path [f]
   (split (.getPath f) (re-pattern File/separator)))
 
-(defn hidden? [name]
+(defn hidden? [^String name]
   (and
     (.startsWith name ".")
     (not (is-dot-dir? name))))

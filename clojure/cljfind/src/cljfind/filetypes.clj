@@ -38,31 +38,31 @@
 
 (def FILETYPEMAP (get-filetypemap-from-json))
 
-(defn archive-ext? [ext]
+(defn archive-ext? [^String ext]
   (contains? (get FILETYPEMAP ARCHIVE) ext))
 
 (defn archive-file? [f]
   (archive-ext? (get-ext f)))
 
-(defn binary-ext? [ext]
+(defn binary-ext? [^String ext]
   (contains? (get FILETYPEMAP BINARY) ext))
 
 (defn binary-file? [f]
   (contains? (get FILETYPEMAP BINARY) (get-ext f)))
 
-(defn code-ext? [ext]
+(defn code-ext? [^String ext]
   (contains? (get FILETYPEMAP CODE) ext))
 
 (defn code-file? [f]
   (contains? (get FILETYPEMAP CODE) (get-ext f)))
 
-(defn text-ext? [ext]
+(defn text-ext? [^String ext]
   (contains? (get FILETYPEMAP TEXT) ext))
 
 (defn text-file? [f]
   (contains? (get FILETYPEMAP TEXT) (get-ext f)))
 
-(defn xml-ext? [ext]
+(defn xml-ext? [^String ext]
   (contains? (get FILETYPEMAP XML) ext))
 
 (defn xml-file? [f]
@@ -81,7 +81,7 @@
 (defn unknown-file? [f]
   (= :unknown (get-filetype f)))
 
-(defn from-name [name]
+(defn from-name [^String name]
   (cond
     (= TEXT (lower-case name)) :text
     (= BINARY (lower-case name)) :binary

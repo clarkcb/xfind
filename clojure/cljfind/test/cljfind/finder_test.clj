@@ -5,7 +5,7 @@
         [cljfind.config :only (SHAREDPATH)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.finder :only
-          (filter-file? is-archive-find-file? is-find-dir? is-find-file?)]
+          (filter-file? is-matching-archive-file? is-find-dir? is-matching-file?)]
         [cljfind.findsettings :only
           (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly)]))
 
@@ -48,74 +48,74 @@
     (is (is-find-dir? (file "clojure") settings)))))
 
 ;; *****************************************************************************
-;; is-find-file? tests
+;; is-file-result? tests
 ;; *****************************************************************************
-(deftest test-is-find-file?-default-settings
-  (testing "test-is-find-file?-default-settings"
-    (is (is-find-file? (file "finder.clj") DEFAULT-SETTINGS))))
+(deftest test-is-file-result?-default-settings
+  (testing "test-is-file-result?-default-settings"
+    (is (is-matching-file? (file "finder.clj") DEFAULT-SETTINGS))))
 
-(deftest test-is-find-file?-with-in-extensions
+(deftest test-is-file-result?-with-in-extensions
   (let [settings (add-extension DEFAULT-SETTINGS "clj,js" :in-extensions)]
-    (testing "test-is-find-file?-with-in-extensions"
-      (is (is-find-file? (file "finder.clj") settings))
-      (is (is-find-file? (file "finder.js") settings))
-      (is (not (is-find-file? (file "finder.py") settings))))))
+    (testing "test-is-file-result?-with-in-extensions"
+      (is (is-matching-file? (file "finder.clj") settings))
+      (is (is-matching-file? (file "finder.js") settings))
+      (is (not (is-matching-file? (file "finder.py") settings))))))
 
-(deftest test-is-find-file?-with-out-extensions
+(deftest test-is-file-result?-with-out-extensions
   (let [settings (add-extension DEFAULT-SETTINGS "py" :out-extensions)]
     (testing "test-is-find-dir?-with-out-extensions"
-      (is (is-find-file? (file "finder.clj") settings))
-      (is (is-find-file? (file "finder.js") settings))
-      (is (not (is-find-file? (file "finder.py") settings))))))
+      (is (is-matching-file? (file "finder.clj") settings))
+      (is (is-matching-file? (file "finder.js") settings))
+      (is (not (is-matching-file? (file "finder.py") settings))))))
 
-(deftest test-is-find-file?-with-in-filepatterns
+(deftest test-is-file-result?-with-in-filepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "find" :in-filepatterns)]
-    (testing "test-is-find-file?-with-in-filepatterns"
-      (is (is-find-file? (file "cljfind.clj") settings))
-      (is (is-find-file? (file "finder.clj") settings))
-      (is (not (is-find-file? (file "fileutil.clj") settings))))))
+    (testing "test-is-file-result?-with-in-filepatterns"
+      (is (is-matching-file? (file "cljfind.clj") settings))
+      (is (is-matching-file? (file "finder.clj") settings))
+      (is (not (is-matching-file? (file "fileutil.clj") settings))))))
 
-(deftest test-is-find-file?-with-out-filepatterns
+(deftest test-is-file-result?-with-out-filepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "find" :out-filepatterns)]
     (testing "test-is-find-dir?-with-out-filepatterns"
-      (is (is-find-file? (file "fileutil.clj") settings))
-      (is (not (is-find-file? (file "cljfind.clj") settings)))
-      (is (not (is-find-file? (file "finder.clj") settings))))))
+      (is (is-matching-file? (file "fileutil.clj") settings))
+      (is (not (is-matching-file? (file "cljfind.clj") settings)))
+      (is (not (is-matching-file? (file "finder.clj") settings))))))
 
 ;; *****************************************************************************
-;; is-archive-find-file? tests
+;; is-archive-file-result? tests
 ;; *****************************************************************************
-(deftest test-is-archive-find-file?-default-settings
-  (testing "test-is-archive-find-file?-default-settings"
-    (is (is-archive-find-file? (file "archive.zip") DEFAULT-SETTINGS))))
+(deftest test-is-archive-file-result?-default-settings
+  (testing "test-is-archive-file-result?-default-settings"
+    (is (is-matching-archive-file? (file "archive.zip") DEFAULT-SETTINGS))))
 
-(deftest test-iis-archive-find-file?-with-in-earchivextensions
+(deftest test-iis-archive-file-result?-with-in-earchivextensions
   (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archiveextensions)]
-    (testing "test-is-archive-find-file?-with-in-archiveextensions"
-      (is (is-archive-find-file? (file "archive.zip") settings))
-      (is (is-archive-find-file? (file "archive.bz2") settings))
-      (is (not (is-archive-find-file? (file "archive.gz") settings))))))
+    (testing "test-is-archive-file-result?-with-in-archiveextensions"
+      (is (is-matching-archive-file? (file "archive.zip") settings))
+      (is (is-matching-archive-file? (file "archive.bz2") settings))
+      (is (not (is-matching-archive-file? (file "archive.gz") settings))))))
 
-(deftest test-is-archive-find-file?-with-out-archiveextensions
+(deftest test-is-archive-file-result?-with-out-archiveextensions
   (let [settings (add-extension DEFAULT-SETTINGS "gz" :out-archiveextensions)]
-    (testing "test-is-archive-find-file?-with-out-archiveextensions"
-      (is (is-archive-find-file? (file "archive.zip") settings))
-      (is (is-archive-find-file? (file "archive.bz2") settings))
-      (is (not (is-archive-find-file? (file "archive.gz") settings))))))
+    (testing "test-is-archive-file-result?-with-out-archiveextensions"
+      (is (is-matching-archive-file? (file "archive.zip") settings))
+      (is (is-matching-archive-file? (file "archive.bz2") settings))
+      (is (not (is-matching-archive-file? (file "archive.gz") settings))))))
 
-(deftest test-is-archive-find-file?-with-in-archivefilepatterns
+(deftest test-is-archive-file-result?-with-in-archivefilepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "arch" :in-archivefilepatterns)]
-    (testing "test-is-archive-find-file?-with-in-archivefilepatterns"
-      (is (is-archive-find-file? (file "archive.zip") settings))
-      (is (is-archive-find-file? (file "arch.bz2") settings))
-      (is (not (is-archive-find-file? (file "compressed.gz") settings))))))
+    (testing "test-is-archive-file-result?-with-in-archivefilepatterns"
+      (is (is-matching-archive-file? (file "archive.zip") settings))
+      (is (is-matching-archive-file? (file "arch.bz2") settings))
+      (is (not (is-matching-archive-file? (file "compressed.gz") settings))))))
 
-(deftest test-is-archive-find-file?-with-out-archivefilepatterns
+(deftest test-is-archive-file-result?-with-out-archivefilepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "compress" :out-archivefilepatterns)]
-    (testing "test-is-archive-find-file?-with-out-archivefilepatterns"
-      (is (is-archive-find-file? (file "archive.zip") settings))
-      (is (is-archive-find-file? (file "arch.bz2") settings))
-      (is (not (is-archive-find-file? (file "compressed.gz") settings))))))
+    (testing "test-is-archive-file-result?-with-out-archivefilepatterns"
+      (is (is-matching-archive-file? (file "archive.zip") settings))
+      (is (is-matching-archive-file? (file "arch.bz2") settings))
+      (is (not (is-matching-archive-file? (file "compressed.gz") settings))))))
 
 ;; *****************************************************************************
 ;; filter-file? tests
@@ -124,17 +124,17 @@
   (testing "test-filter-file?-default-settings"
     (is (filter-file? (file "finder.clj") DEFAULT-SETTINGS))))
 
-(deftest test-filter-file?-with-find-file-settings
+(deftest test-filter-file?-with-file-result-settings
   (let [settings (add-extension DEFAULT-SETTINGS "clj,js" :in-extensions)]
-    (testing "test-filter-file?-with-find-file-settings"
+    (testing "test-filter-file?-with-file-result-settings"
       (is (filter-file? (file "finder.clj") settings))
       (is (filter-file? (file "finder.js") settings))
       (is (not (filter-file? (file "finder.py") settings)))
       (is (not (filter-file? (file ".gitignore") settings))))))
 
-(deftest test-filter-file?-with-archive-find-file-settings
+(deftest test-filter-file?-with-archive-file-result-settings
   (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archiveextensions)]
-    (testing "test-filter-file?-with-archive-find-file-settings"
+    (testing "test-filter-file?-with-archive-file-result-settings"
       (is (not (filter-file? (file "archive.zip") settings)))
       (is (not (filter-file? (file "archive.bz2") settings)))
       (is (not (filter-file? (file "archive.gz") settings)))

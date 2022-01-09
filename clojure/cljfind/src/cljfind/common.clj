@@ -1,10 +1,10 @@
 (ns cljfind.common)
 
-(defn log-msg [msg & msgs]
+(defn log-msg [^String msg & msgs]
   (println msg)
   (doseq [m msgs] (println m)))
 
-(defn log-error [err]
+(defn log-error [^String err]
   (log-msg (str "\nERROR: " err)))
 
 (defn log-errors [errs]

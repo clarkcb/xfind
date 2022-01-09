@@ -23,10 +23,10 @@
 
 (defrecord FindOption [short-arg long-arg desc])
 
-(defn get-sortarg [so]
-  (if (= "" (:short-arg so))
-    (:long-arg so)
-    (str (str/lower-case (:short-arg so)) "a" (:long-arg so))))
+(defn get-sortarg [^FindOption fo]
+  (if (= "" (:short-arg fo))
+    (:long-arg fo)
+    (str (str/lower-case (:short-arg fo)) "a" (:long-arg fo))))
 
 (defn get-findoptions-from-json []
   (let [contents (slurp (io/resource "findoptions.json"))
@@ -81,7 +81,7 @@
     :version (fn [settings b] (assoc settings :version b))
   })
 
-(defn get-long-arg [arg]
+(defn get-long-arg [^String arg]
   (let [longnames (map :long-arg OPTIONS)
         longmap (zipmap longnames (repeat 1))
         shortoptions (remove #(= (:short-arg %) "") OPTIONS)
@@ -150,7 +150,7 @@
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
     (apply max lens)))
 
-(defn option-to-string [opt longest]
+(defn option-to-string [^FindOption opt longest]
   (let [s (:short-arg opt)
         l (:long-arg opt)
         d (:desc opt)

@@ -15,13 +15,13 @@
   (:use [clojure.java.io :only (file reader)]
         [clojure.string :as str :only (join trim upper-case)]
         [cljfind.common :only (log-msg)]
+        [cljfind.fileresult :only (new-file-result file-result-path)]
         [cljfind.filetypes :only (archive-file? get-filetype)]
         [cljfind.fileutil :only
           (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
-            is-dot-dir?)]
-        [cljfind.findfile :only (new-find-file find-file-path)]))
+            is-dot-dir?)]))
 
-(defn matches-any-pattern? [s pp]
+(defn matches-any-pattern? [^String s pp]
   (some #(re-find % s) pp))
 
 (defn any-matches-any-pattern? [ss pp]
@@ -35,7 +35,7 @@
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
-(defn is-find-dir? [d settings]
+(defn is-find-dir? [^File d settings]
   (or
     (is-dot-dir? (get-name d))
     (and
@@ -43,51 +43,55 @@
         (not (:excludehidden settings))
         (not (hidden-dir? d)))
       (or
-       (empty? (:in-dirpatterns settings))
+        (empty? (:in-dirpatterns settings))
         (some #(re-find % (.getPath d)) (:in-dirpatterns settings)))
       (or
-       (empty? (:out-dirpatterns settings))
+        (empty? (:out-dirpatterns settings))
         (not-any? #(re-find % (.getPath d)) (:out-dirpatterns settings))))))
 
-(defn is-archive-find-file? [f settings]
+(defn is-matching-archive-file? [^File f settings]
   (and
-    (is-find-dir? (.getParentFile f) settings)
     (or
-     (empty? (:in-archiveextensions settings))
-     (some #(= % (get-ext f)) (:in-archiveextensions settings)))
+      (nil? (.getParentFile f))
+      (is-find-dir? (.getParentFile f) settings))
     (or
-     (empty? (:out-archiveextensions settings))
-     (not-any? #(= % (get-ext f)) (:out-archiveextensions settings)))
+      (empty? (:in-archiveextensions settings))
+      (some #(= % (get-ext f)) (:in-archiveextensions settings)))
     (or
-     (empty? (:in-archivefilepatterns settings))
-     (some #(re-find % (.getName f)) (:in-archivefilepatterns settings)))
+      (empty? (:out-archiveextensions settings))
+      (not-any? #(= % (get-ext f)) (:out-archiveextensions settings)))
     (or
-     (empty? (:out-archivefilepatterns settings))
-     (not-any? #(re-find % (.getName f)) (:out-archivefilepatterns settings)))))
+      (empty? (:in-archivefilepatterns settings))
+      (some #(re-find % (.getName f)) (:in-archivefilepatterns settings)))
+    (or
+      (empty? (:out-archivefilepatterns settings))
+      (not-any? #(re-find % (.getName f)) (:out-archivefilepatterns settings)))))
 
-(defn is-find-file? [f settings]
+(defn is-matching-file? [^File f settings]
   (and
-    (is-find-dir? (.getParentFile f) settings)
     (or
-     (empty? (:in-extensions settings))
-     (some #(= % (get-ext f)) (:in-extensions settings)))
+      (nil? (.getParentFile f))
+      (is-find-dir? (.getParentFile f) settings))
     (or
-     (empty? (:out-extensions settings))
-     (not-any? #(= % (get-ext f)) (:out-extensions settings)))
+      (empty? (:in-extensions settings))
+      (some #(= % (get-ext f)) (:in-extensions settings)))
     (or
-     (empty? (:in-filepatterns settings))
-     (some #(re-find % (.getName f)) (:in-filepatterns settings)))
+      (empty? (:out-extensions settings))
+      (not-any? #(= % (get-ext f)) (:out-extensions settings)))
     (or
-     (empty? (:out-filepatterns settings))
-     (not-any? #(re-find % (.getName f)) (:out-filepatterns settings)))
+      (empty? (:in-filepatterns settings))
+      (some #(re-find % (.getName f)) (:in-filepatterns settings)))
     (or
-     (empty? (:in-filetypes settings))
-     (contains? (:in-filetypes settings) (get-filetype f)))
+      (empty? (:out-filepatterns settings))
+      (not-any? #(re-find % (.getName f)) (:out-filepatterns settings)))
     (or
-     (empty? (:out-filetypes settings))
-     (not (contains? (:out-filetypes settings) (get-filetype f))))))
+      (empty? (:in-filetypes settings))
+      (contains? (:in-filetypes settings) (get-filetype f)))
+    (or
+      (empty? (:out-filetypes settings))
+      (not (contains? (:out-filetypes settings) (get-filetype f))))))
 
-(defn filter-file? [f settings]
+(defn filter-file? [^File f settings]
   (and
     (or
       (not (hidden-file? f))
@@ -95,59 +99,59 @@
     (if (archive-file? f)
       (and
         (:includearchives settings)
-        (is-archive-find-file? f settings))
+        (is-matching-archive-file? f settings))
       (and
         (not (:archivesonly settings))
-        (is-find-file? f settings)))))
+        (is-matching-file? f settings)))))
 
-(defn get-find-files-for-path [settings path]
+(defn get-file-results-for-path [settings, ^String path]
   (let [pathfile (file path)]
     (if (.isFile pathfile)
       (vec
        (map
-        #(new-find-file % (get-filetype %))
+        #(new-file-result % (get-filetype %))
         (filter #(filter-file? % settings) [pathfile])))
       (if (:recursive settings)
         (vec
          (map
-          #(new-find-file % (get-filetype %))
+          #(new-file-result % (get-filetype %))
           (filter #(filter-file? % settings) (filter #(.isFile %) (file-seq pathfile)))))
         (vec
          (map
-          #(new-find-file % (get-filetype %))
+          #(new-file-result % (get-filetype %))
           (filter #(filter-file? % settings) (filter #(.isFile %) (.listFiles pathfile)))))))))
 
-(defn get-find-files
+(defn get-file-results
   ([settings]
-    (get-find-files settings (:paths settings) []))
-  ([settings paths findfiles]
+    (get-file-results settings (:paths settings) []))
+  ([settings paths fileresults]
     (if (empty? paths)
-      findfiles
-      (let [nextfindfiles (get-find-files-for-path settings (first paths))]
-        (get-find-files settings (rest paths) (concat findfiles nextfindfiles))))))
+      fileresults
+      (let [nextfileresults (get-file-results-for-path settings (first paths))]
+        (get-file-results settings (rest paths) (concat fileresults nextfileresults))))))
 
 (defn find-files [settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
-      [(get-find-files settings) []]
+      [(get-file-results settings) []]
       [[] errs])))
 
-(defn get-matching-dirs [findfiles]
-  (sort (distinct (map #(.getParent (:file %)) findfiles))))
+(defn get-matching-dirs [fileresults]
+  (sort (distinct (map #(.getParent (:file %)) fileresults))))
 
-(defn print-matching-dirs [findfiles]
-  (let [dirs (get-matching-dirs findfiles)]
+(defn print-matching-dirs [fileresults]
+  (let [dirs (get-matching-dirs fileresults)]
     (if (empty? dirs)
       (log-msg "\nMatching directories: 0")
       (do
         (log-msg (format "\nMatching directories (%d):" (count dirs)))
         (doseq [d dirs] (log-msg d))))))
 
-(defn get-matching-files [findfiles]
-  (sort (distinct (map #(find-file-path %) findfiles))))
+(defn get-matching-files [fileresults]
+  (sort (distinct (map #(file-result-path %) fileresults))))
 
-(defn print-matching-files [findfiles]
-  (let [files (get-matching-files findfiles)]
+(defn print-matching-files [fileresults]
+  (let [files (get-matching-files fileresults)]
     (if (empty? files)
       (log-msg "\nMatching files: 0")
       (do

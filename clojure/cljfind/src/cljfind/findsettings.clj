@@ -69,7 +69,7 @@
 (defn add-element [x coll]
   (conj coll x))
 
-(defn add-extensions [settings exts extname]
+(defn add-extensions [^FindSettings settings exts extname]
   (if (empty? exts)
     settings
     (add-extensions
@@ -83,13 +83,13 @@
       :else
         (add-extensions settings (str/split ext #",") extname))))
 
-(defn add-filetypes [settings types typesname]
+(defn add-filetypes [^FindSettings settings types typesname]
   (if (empty? types)
     settings
     (add-filetypes
      (update-in settings [typesname] #(add-element (from-name (first types)) %)) (rest types) typesname)))
 
-(defn add-filetype [settings typ typesname]
+(defn add-filetype [^FindSettings settings typ typesname]
   (let [t (type typ)]
     (cond
       (= t (type []))
@@ -97,13 +97,13 @@
       :else
       (add-filetypes settings (str/split typ #",") typesname))))
 
-(defn add-paths [settings paths]
+(defn add-paths [^FindSettings settings paths]
   (if (empty? paths)
     settings
     (add-paths
       (update-in settings [:paths] #(add-element (first paths) %)) (rest paths))))
 
-(defn add-path [settings path]
+(defn add-path [^FindSettings settings path]
   (let [t (type path)]
     (cond
       (= t (type []))
@@ -111,13 +111,13 @@
       :else
         (add-paths settings [path]))))
 
-(defn add-patterns [settings pats patname]
+(defn add-patterns [^FindSettings settings pats patname]
   (if (empty? pats)
     settings
     (add-patterns
       (update-in settings [patname] #(add-element (re-pattern (first pats)) %)) (rest pats) patname)))
 
-(defn add-pattern [settings p patname]
+(defn add-pattern [^FindSettings settings p patname]
   (let [t (type p)]
     (cond
       (= t (type []))
@@ -125,7 +125,7 @@
       :else
         (add-patterns settings [p] patname))))
 
-(defn set-num [settings n numname]
+(defn set-num [^FindSettings settings n numname]
   (let [t (type n)]
     (cond
       (= t java.lang.Long)
@@ -133,13 +133,13 @@
       :else
         (assoc settings numname (read-string n)))))
 
-(defn set-archivesonly [settings b]
+(defn set-archivesonly [^FindSettings settings b]
   (let [with-archivesonly (assoc settings :archivesonly b)]
     (if b
       (assoc with-archivesonly :includearchives true)
       with-archivesonly)))
 
-(defn set-debug [settings b]
+(defn set-debug [^FindSettings settings b]
   (let [with-debug (assoc settings :debug true)]
     (if b
       (assoc with-debug :verbose true)
