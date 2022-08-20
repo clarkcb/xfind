@@ -2,7 +2,7 @@ package scalafind
 
 import java.io.File
 
-class FindFile(val containers: List[String], val file: File, val fileType: FileType.Value) {
+class FileResult(val containers: List[String], val file: File, val fileType: FileType.Value) {
 
   val CONTAINER_SEPARATOR = "!"
 

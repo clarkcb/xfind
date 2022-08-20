@@ -4,6 +4,7 @@ import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInp
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
 import scalafind.FileType.FileType
+import scalafind.FileUtil.{getExtension, isHidden}
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
@@ -12,12 +13,97 @@ import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.io.Source
-import scala.jdk.CollectionConverters._
+import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
 
 class Finder (settings: FindSettings) {
-  import FileUtil._
+  import FileUtil.splitPath
   import Finder._
+
+  val fileExtTests: Seq[String => Boolean] = {
+    val _fileExtTests = mutable.ArrayBuffer.empty[String => Boolean]
+    if (settings.inExtensions.nonEmpty) {
+      val extTest = (ext: String) => settings.inExtensions.contains(ext)
+      _fileExtTests += extTest
+    }
+    if (settings.outExtensions.nonEmpty) {
+      val extTest = (ext: String) => !settings.outExtensions.contains(ext)
+      _fileExtTests += extTest
+    }
+    if (_fileExtTests.isEmpty) {
+      val extTest = (ext: String) => true
+      _fileExtTests += extTest
+    }
+    Seq.empty[String => Boolean] ++ _fileExtTests
+  }
+
+  val fileNameTests: Seq[String => Boolean] = {
+    val _fileNameTests = mutable.ArrayBuffer.empty[String => Boolean]
+    if (settings.inFilePatterns.nonEmpty) {
+      val nameTest = (fileName: String) => matchesAnyPattern(fileName, settings.inFilePatterns)
+      _fileNameTests += nameTest
+    }
+    if (settings.outFilePatterns.nonEmpty) {
+      val nameTest = (fileName: String) => !matchesAnyPattern(fileName, settings.outFilePatterns)
+      _fileNameTests += nameTest
+    }
+    if (_fileNameTests.isEmpty) {
+      val nameTest = (fileName: String) => true
+      _fileNameTests += nameTest
+    }
+    Seq.empty[String => Boolean] ++ _fileNameTests
+  }
+
+  val fileTypeTests: Seq[FileType => Boolean] = {
+    val _fileTypeTests = mutable.ArrayBuffer.empty[FileType => Boolean]
+    if (settings.inFileTypes.nonEmpty) {
+      val typeTest = (fileType: FileType) => settings.inFileTypes.contains(fileType)
+      _fileTypeTests += typeTest
+    }
+    if (settings.outFileTypes.nonEmpty) {
+      val typeTest = (fileType: FileType) => !settings.outFileTypes.contains(fileType)
+      _fileTypeTests += typeTest
+    }
+    if (_fileTypeTests.isEmpty) {
+      val typeTest = (fileType: FileType) => true
+      _fileTypeTests += typeTest
+    }
+    Seq.empty[FileType => Boolean] ++ _fileTypeTests
+  }
+
+  val archiveFileExtTests: Seq[String => Boolean] = {
+    val _archiveFileExtTests = mutable.ArrayBuffer.empty[String => Boolean]
+    if (settings.inArchiveExtensions.nonEmpty) {
+      val extTest = (ext: String) => settings.inArchiveExtensions.contains(ext)
+      _archiveFileExtTests += extTest
+    }
+    if (settings.outArchiveExtensions.nonEmpty) {
+      val extTest = (ext: String) => !settings.outArchiveExtensions.contains(ext)
+      _archiveFileExtTests += extTest
+    }
+    if (_archiveFileExtTests.isEmpty) {
+      val extTest = (ext: String) => true
+      _archiveFileExtTests += extTest
+    }
+    Seq.empty[String => Boolean] ++ _archiveFileExtTests
+  }
+
+  val archiveFileNameTests: Seq[String => Boolean] = {
+    val _archiveFileNameTests = mutable.ArrayBuffer.empty[String => Boolean]
+    if (settings.inArchiveFilePatterns.nonEmpty) {
+      val nameTest = (fileName: String) => matchesAnyPattern(fileName, settings.inArchiveFilePatterns)
+      _archiveFileNameTests += nameTest
+    }
+    if (settings.outArchiveFilePatterns.nonEmpty) {
+      val nameTest = (fileName: String) => !matchesAnyPattern(fileName, settings.outArchiveFilePatterns)
+      _archiveFileNameTests += nameTest
+    }
+    if (_archiveFileNameTests.isEmpty) {
+      val nameTest = (fileName: String) => true
+      _archiveFileNameTests += nameTest
+    }
+    Seq.empty[String => Boolean] ++ _archiveFileNameTests
+  }
 
   def validateSettings(): Unit = {
     settingsTests.foreach { t =>
@@ -29,111 +115,92 @@ class Finder (settings: FindSettings) {
   }
   validateSettings()
 
-  def isFindDir(d: File): Boolean = {
-    isFindDir(d.getName)
+  def isMatchingDir(d: File): Boolean = {
+    isMatchingDir(d.getName)
   }
 
-  def isFindDir(dirName: String): Boolean = {
+  def isMatchingDir(dirName: String): Boolean = {
     val pathElems = splitPath(dirName)
-    if (pathElems.exists(p => isHidden(p)) && settings.excludeHidden) {
+    if (settings.excludeHidden && pathElems.exists(p => isHidden(p))) {
       false
     } else {
       filterByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
     }
   }
 
-  def isFindFile(sf: FindFile): Boolean = {
-    isFindFile(sf.file.getPath, sf.fileType)
+  def isMatchingFile(fileResult: FileResult): Boolean = {
+    isMatchingFile(fileResult.file.getName, fileResult.fileType)
   }
 
-  def isFindFile(fileName: String, fileType: FileType): Boolean = {
-    val fileNameTests = Seq[String => Boolean](
-      fileName => !isHidden(fileName) || !settings.excludeHidden,
-      fileName => settings.inExtensions.isEmpty ||
-        settings.inExtensions.contains(getExtension(fileName)),
-      fileName => settings.outExtensions.isEmpty ||
-        !settings.outExtensions.contains(getExtension(fileName)),
-    )
-    val fileTypeTests = Seq[FileType => Boolean](
-      fileType => settings.inFileTypes.isEmpty ||
-        settings.inFileTypes.contains(fileType),
-      fileType => settings.outFileTypes.isEmpty ||
-        !settings.outFileTypes.contains(fileType),
-    )
-
-    fileNameTests.forall(t => t(fileName)) &&
-      fileTypeTests.forall(t => t(fileType)) &&
-      filterByPatterns(fileName, settings.inFilePatterns, settings.outFilePatterns)
+  def isMatchingFile(fileName: String, fileType: FileType): Boolean = {
+    val ext = getExtension(fileName)
+    fileExtTests.forall(t => t(ext)) &&
+      fileNameTests.forall(t => t(fileName)) &&
+      fileTypeTests.forall(t => t(fileType))
   }
 
-  def isArchiveFindFile(fileName: String): Boolean = {
-    val fileNameTests = Seq[String => Boolean](
-      fileName => !isHidden(fileName) || !settings.excludeHidden,
-      fileName => settings.inArchiveExtensions.isEmpty ||
-        settings.inArchiveExtensions.contains(getExtension(fileName)),
-      fileName => settings.outArchiveExtensions.isEmpty ||
-        !settings.outArchiveExtensions.contains(getExtension(fileName)),
-    )
-    fileNameTests.forall(t => t(fileName)) &&
-      filterByPatterns(fileName, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
+  def isMatchingArchiveFile(fileName: String): Boolean = {
+    val ext = getExtension(fileName)
+    archiveFileExtTests.forall(t => t(ext)) &&
+      archiveFileNameTests.forall(t => t(fileName))
   }
 
-  def filterToFindFile(f: File): Option[FindFile] = {
-    if (!FileUtil.isHidden(f.getName) || !settings.excludeHidden) {
-      val fileType = FileTypes.getFileType(f.getName)
-      fileType match {
+  def filterToFileResult(f: File): Option[FileResult] = {
+    if (settings.excludeHidden && FileUtil.isHidden(f.getName)) {
+      None
+    } else {
+      val fileResult = new FileResult(f, FileTypes.getFileType(f.getName))
+      fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None
         case FileType.Archive =>
-          if (settings.includeArchives && isArchiveFindFile(f.getName)) {
-            Some(new FindFile(f, fileType))
+          if (settings.includeArchives && isMatchingArchiveFile(f.getName)) {
+            Some(fileResult)
           } else {
             None
           }
         case _ =>
-          if (!settings.archivesOnly && isFindFile(f.getName, fileType)) {
-            Some(new FindFile(f, fileType))
+          if (!settings.archivesOnly && isMatchingFile(fileResult)) {
+            Some(fileResult)
           } else {
             None
           }
       }
-    } else {
-      None
     }
   }
 
-  final def getFindFiles(startPathFile: File): Seq[FindFile] = {
+  final def getFileResults(startPathFile: File): Seq[FileResult] = {
     val files = startPathFile.listFiles.toSeq
-    files.filter(_.isFile).flatMap(filterToFindFile) ++
+    files.filter(_.isFile).flatMap(filterToFileResult) ++
       files
         .filter(_.isDirectory)
         .filter(_ => settings.recursive)
-        .filter(isFindDir)
-        .flatMap(getFindFiles)
+        .filter(isMatchingDir)
+        .flatMap(getFileResults)
   }
 
-  def find(): Seq[FindFile] = {
-    val findFiles = mutable.ListBuffer.empty[FindFile]
+  def find(): Seq[FileResult] = {
+    val fileResults = mutable.ArrayBuffer.empty[FileResult]
     settings.paths.foreach { p =>
       val pFile = new File(p)
       if (pFile.isDirectory) {
-        if (isFindDir(pFile)) {
-          findFiles ++= getFindFiles(pFile)
+        if (isMatchingDir(pFile)) {
+          fileResults ++= getFileResults(pFile)
         } else {
           throw new FindException("Startpath does not match find settings")
         }
       } else if (pFile.isFile) {
-        filterToFindFile(pFile) match {
+        filterToFileResult(pFile) match {
           case Some(findFile) =>
-            findFiles += findFile
-          case None => 
+            fileResults += findFile
+          case None =>
             throw new FindException("Startpath does not match find settings")
         }
       } else {
         throw new FindException("Startpath not findable")
       }
     }
-    Seq.empty[FindFile] ++ findFiles
+    Seq.empty[FileResult] ++ fileResults
   }
 }
 

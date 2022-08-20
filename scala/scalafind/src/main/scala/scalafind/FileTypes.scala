@@ -112,19 +112,19 @@ object FileTypes {
     fileTypeMap(xml).contains(FileUtil.getExtension(fileName))
   }
 
-  def isZipArchiveFile(sf: FindFile): Boolean = {
+  def isZipArchiveFile(sf: FileResult): Boolean = {
     Set("zip", "jar", "war").contains(FileUtil.getExtension(sf))
   }
 
-  def isGzArchiveFile(sf: FindFile): Boolean = {
+  def isGzArchiveFile(sf: FileResult): Boolean = {
     Set("gz", "tgz").contains(FileUtil.getExtension(sf))
   }
 
-  def isBz2ArchiveFile(sf: FindFile): Boolean = {
+  def isBz2ArchiveFile(sf: FileResult): Boolean = {
     "bz2" == FileUtil.getExtension(sf)
   }
 
-  def isTarArchiveFile(sf: FindFile): Boolean = {
+  def isTarArchiveFile(sf: FileResult): Boolean = {
     "tar" == FileUtil.getExtension(sf)
   }
 }

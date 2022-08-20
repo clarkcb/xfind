@@ -4,7 +4,7 @@ import java.io.File
 
 object FindMain {
 
-  def getMatchingDirs(findfiles: Seq[FindFile]): Seq[File] = {
+  def getMatchingDirs(findfiles: Seq[FileResult]): Seq[File] = {
     findfiles
       .map(f => FileUtil.pathOrCurrent(f.file))
       .distinct
@@ -30,7 +30,7 @@ object FindMain {
     }
   }
 
-  def getMatchingFiles(findfiles: Seq[FindFile]): Seq[File] = {
+  def getMatchingFiles(findfiles: Seq[FileResult]): Seq[File] = {
     findfiles
       .map(_.file)
       .distinct
@@ -38,8 +38,8 @@ object FindMain {
       .sortWith(cmpFiles)
   }
 
-  def printMatchingDirs(findfiles: Seq[FindFile]): Unit = {
-    val dirs = getMatchingDirs(findfiles)
+  def printMatchingDirs(fileResults: Seq[FileResult]): Unit = {
+    val dirs = getMatchingDirs(fileResults)
     if (dirs.nonEmpty) {
       Common.log("\nMatching directories (%d):".format(dirs.length))
       dirs.foreach(f => Common.log(f.toString))
@@ -48,8 +48,8 @@ object FindMain {
     }
   }
 
-  def printMatchingFiles(findfiles: Seq[FindFile]): Unit = {
-    val files = getMatchingFiles(findfiles)
+  def printMatchingFiles(fileResults: Seq[FileResult]): Unit = {
+    val files = getMatchingFiles(fileResults)
     if (files.nonEmpty) {
       Common.log("\nMatching files (%d):".format(files.length))
       files.foreach(f => Common.log(f.toString))
@@ -72,10 +72,10 @@ object FindMain {
       }
 
       val finder = new Finder(settings)
-      val findFiles = finder.find()
+      val fileResults = finder.find()
 
-      if (settings.listDirs) { printMatchingDirs(findFiles) }
-      if (settings.listFiles) { printMatchingFiles(findFiles) }
+      if (settings.listDirs) { printMatchingDirs(fileResults) }
+      if (settings.listFiles) { printMatchingFiles(fileResults) }
 
     } catch {
       case e: FindException =>

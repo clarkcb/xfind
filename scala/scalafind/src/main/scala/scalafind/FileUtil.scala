@@ -8,7 +8,7 @@ object FileUtil {
   val PARENT_PATH = ".."
   val DEFAULT_ENCODING = "UTF-8"
 
-  def getExtension(f: FindFile): String = {
+  def getExtension(f: FileResult): String = {
     getExtension(f.file.getName)
   }
 
