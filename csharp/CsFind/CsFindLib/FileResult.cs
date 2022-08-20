@@ -5,25 +5,25 @@ using System.Text;
 
 namespace CsFindLib;
 
-public class FindFile
+public class FileResult
 {
-	public static string ContainerSeparator = "!";
+	public const string ContainerSeparator = "!";
 
-	public IList<string> Containers { get; private set; }
-	public FileInfo File { get; private set; }
-	public FileType Type { get; private set; }
+	public IList<string> Containers { get; }
+	public FileInfo File { get; }
+	public FileType Type { get; }
 
 	public string FullName => ToString();
 
 	public string PathAndName => File.ToString();
 
-	public FindFile(FileInfo fileInfo, FileType type) :
+	public FileResult(FileInfo fileInfo, FileType type) :
 		this(new List<string>(), fileInfo, type) {}
 
-	public FindFile(string path, string fileName, FileType type) :
+	public FileResult(string path, string fileName, FileType type) :
 		this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type) {}
 
-	public FindFile(IList<string> containers, FileInfo file, FileType type)
+	public FileResult(IList<string> containers, FileInfo file, FileType type)
 	{
 		Containers = containers;
 		File = file;
@@ -56,7 +56,7 @@ public class FindFile
 		return sb.ToString();
 	}
 
-	public static int Compare(FindFile? sf1, FindFile? sf2)
+	public static int Compare(FileResult? sf1, FileResult? sf2)
 	{
 		if (sf1 is null && sf2 is null)
 			return 0;
@@ -79,10 +79,10 @@ public class FindFile
 	}
 }
 
-public class FindFilesComparer : IComparer<FindFile>
+public class FindFilesComparer : IComparer<FileResult>
 {
-	public int Compare(FindFile? sf1, FindFile? sf2)
+	public int Compare(FileResult? sf1, FileResult? sf2)
 	{
-		return FindFile.Compare(sf1, sf2);
+		return FileResult.Compare(sf1, sf2);
 	}
 }

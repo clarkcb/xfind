@@ -26,7 +26,7 @@ public class Finder
 		}
 	}
 
-	public bool IsFindDirectory(DirectoryInfo d)
+	public bool IsMatchingDirectory(DirectoryInfo d)
 	{
 		if (Settings.ExcludeHidden)
 		{
@@ -44,48 +44,59 @@ public class Finder
 		        !Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0));
 	}
 
-	public bool IsFindFile(FindFile sf)
+	public bool IsMatchingFile(FileResult fr)
 	{
 		return (Settings.InExtensions.Count == 0 ||
-		        Settings.InExtensions.Contains(sf.File.Extension)) &&
+		        Settings.InExtensions.Contains(fr.File.Extension)) &&
 		       (Settings.OutExtensions.Count == 0 ||
-		        !Settings.OutExtensions.Contains(sf.File.Extension)) &&
+		        !Settings.OutExtensions.Contains(fr.File.Extension)) &&
 		       (Settings.InFilePatterns.Count == 0 ||
-		        Settings.InFilePatterns.Any(p => p.Match(sf.File.Name).Success)) &&
+		        Settings.InFilePatterns.Any(p => p.Match(fr.File.Name).Success)) &&
 		       (Settings.OutFilePatterns.Count == 0 ||
-		        !Settings.OutFilePatterns.Any(p => p.Match(sf.File.Name).Success)) &&
+		        !Settings.OutFilePatterns.Any(p => p.Match(fr.File.Name).Success)) &&
 		       (Settings.InFileTypes.Count == 0 ||
-		        Settings.InFileTypes.Contains(sf.Type)) &&
+		        Settings.InFileTypes.Contains(fr.Type)) &&
 		       (Settings.OutFileTypes.Count == 0 ||
-		        !Settings.OutFileTypes.Contains(sf.Type));
+		        !Settings.OutFileTypes.Contains(fr.Type));
 	}
 
-	public bool IsArchiveFindFile(FindFile sf)
+	public bool IsMatchingArchiveFile(FileResult fr)
 	{
 		return (Settings.InArchiveExtensions.Count == 0 ||
-		        Settings.InArchiveExtensions.Contains(sf.File.Extension)) &&
+		        Settings.InArchiveExtensions.Contains(fr.File.Extension)) &&
 		       (Settings.OutArchiveExtensions.Count == 0 ||
-		        !Settings.OutArchiveExtensions.Contains(sf.File.Extension)) &&
+		        !Settings.OutArchiveExtensions.Contains(fr.File.Extension)) &&
 		       (Settings.InArchiveFilePatterns.Count == 0 ||
-		        Settings.InArchiveFilePatterns.Any(p => p.Match(sf.File.Name).Success)) &&
+		        Settings.InArchiveFilePatterns.Any(p => p.Match(fr.File.Name).Success)) &&
 		       (Settings.OutArchiveFilePatterns.Count == 0 ||
-		        !Settings.OutArchiveFilePatterns.Any(p => p.Match(sf.File.Name).Success));
+		        !Settings.OutArchiveFilePatterns.Any(p => p.Match(fr.File.Name).Success));
 	}
 
-	public bool FilterFile(FindFile sf)
+	public FileResult? FilterToFileResult(FileInfo fi)
 	{
-		if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(sf.File))
-			return false;
-		if (sf.Type.Equals(FileType.Archive))
+		if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(fi))
+			return null;
+		var fr = new FileResult(fi, _fileTypes.GetFileType(fi));
+		if (fr.Type.Equals(FileType.Archive))
 		{
-			return (Settings.IncludeArchives && IsArchiveFindFile(sf));
+			if (Settings.IncludeArchives && IsMatchingArchiveFile(fr))
+			{
+				return fr;
+			}
+
+			return null;
 		}
-		return (!Settings.ArchivesOnly && IsFindFile(sf));
+		if (!Settings.ArchivesOnly && IsMatchingFile(fr))
+		{
+			return fr;
+		}
+
+		return null;
 	}
 
-	private IEnumerable<FindFile> GetFindFiles()
+	private IEnumerable<FileResult> GetFileResults()
 	{
-		var findFiles = new List<FindFile>();
+		var fileResults = new List<FileResult>();
 		var findOption = Settings.Recursive ? SearchOption.AllDirectories :
 			SearchOption.TopDirectoryOnly;
 		foreach (var p in Settings.Paths)
@@ -93,37 +104,37 @@ public class Finder
 			var expandedPath = FileUtil.ExpandPath(p);
 			if (Directory.Exists(expandedPath))
 			{
-				findFiles.AddRange(new DirectoryInfo(expandedPath).
+				fileResults.AddRange(new DirectoryInfo(expandedPath).
 					EnumerateFiles("*", findOption).
-					Where(f => f.Directory == null || IsFindDirectory(f.Directory)).
-					Select(f => new FindFile(f, _fileTypes.GetFileType(f))).
-					Where(FilterFile).
-					Select(f => f));
+					Where(f => f.Directory == null || IsMatchingDirectory(f.Directory)).
+					Select(f => FilterToFileResult(f)).
+					Where(fr => fr != null).
+					Select(f => f!));
 			}
 			else if (File.Exists(expandedPath))
 			{
 				var fi = new FileInfo(expandedPath);
-				var ff = new FindFile(fi, _fileTypes.GetFileType(fi));
-				if (FilterFile(ff))
+				var fr = FilterToFileResult(fi);
+				if (fr != null)
 				{
-					findFiles.Add(ff);
+					fileResults.Add(fr);
 				}
 			}
 		}
-		return findFiles;
+		return fileResults;
 	}
 
-	public IEnumerable<FindFile> Find()
+	public IEnumerable<FileResult> Find()
 	{
-		var findFiles = GetFindFiles().ToList();
-		return findFiles;
+		var fileResults = GetFileResults().ToList();
+		return fileResults;
 	}
 
-	private IEnumerable<DirectoryInfo> GetMatchingDirs(IEnumerable<FindFile> findFiles)
+	private static IEnumerable<DirectoryInfo> GetMatchingDirs(IEnumerable<FileResult> fileResults)
 	{
 		return new List<DirectoryInfo>(
-			findFiles.Where(ff => ff.File.Directory != null)
-				.Select(ff => ff.File.Directory!)
+			fileResults.Where(fr => fr.File.Directory != null)
+				.Select(fr => fr.File.Directory!)
 				.Distinct()
 				.OrderBy(d => d.FullName));
 	}
@@ -132,7 +143,7 @@ public class Finder
 	{
 		foreach (var p in Settings.Paths)
 		{
-			string relativePath = FileUtil.GetRelativePath(path, p);
+			var relativePath = FileUtil.GetRelativePath(path, p);
 			if (relativePath.Length < path.Length)
 			{
 				return relativePath;
@@ -141,9 +152,9 @@ public class Finder
 		return path;
 	}
 
-	public void PrintMatchingDirs(IEnumerable<FindFile> findFiles)
+	public void PrintMatchingDirs(IEnumerable<FileResult> fileResults)
 	{
-		var matchingDirs = GetMatchingDirs(findFiles)
+		var matchingDirs = GetMatchingDirs(fileResults)
 			.Select(d => GetRelativePath(d.FullName))
 			.Distinct()
 			.OrderBy(d => d).ToList();
@@ -158,18 +169,18 @@ public class Finder
 		}
 	}
 
-	private IEnumerable<FileInfo> GetMatchingFiles(IEnumerable<FindFile> findFiles)
+	private static IEnumerable<FileInfo> GetMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
 		return new List<FileInfo>(
-			findFiles
-				.Select(f => f.File.ToString())
+			fileResults
+				.Select(fr => fr.File.ToString())
 				.Distinct().Select(f => new FileInfo(f))
 				.OrderBy(d => d.FullName));
 	}
 
-	public void PrintMatchingFiles(IEnumerable<FindFile> findFiles)
+	public void PrintMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
-		var matchingFiles = GetMatchingFiles(findFiles)
+		var matchingFiles = GetMatchingFiles(fileResults)
 			.Select(f => GetRelativePath(f.FullName))
 			.Distinct()
 			.OrderBy(f => f).ToList();

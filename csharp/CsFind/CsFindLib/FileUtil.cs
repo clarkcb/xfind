@@ -13,7 +13,7 @@ public static class FileUtil
 
 	private const char ForwardSlash = '/';
 	private const char BackSlash = '\\';
-	private static readonly char[] DirSeps = new char[] { ForwardSlash, BackSlash };
+	private static readonly char[] DirSeps = { ForwardSlash, BackSlash };
 
 	public static string GetHomePath()
 	{
@@ -22,7 +22,7 @@ public static class FileUtil
 		       ?? "~";
 	}
 
-	public static IEnumerable<string> EnumerableStringFromFile(FindFile f, Encoding enc)
+	public static IEnumerable<string> EnumerableStringFromFile(FileResult f, Encoding enc)
 	{
 		return EnumerableStringFromFile(f.FullName, enc);
 	}
@@ -53,7 +53,7 @@ public static class FileUtil
 		}
 	}
 
-	public static string GetFileContents(FindFile f, Encoding encoding)
+	public static string GetFileContents(FileResult f, Encoding encoding)
 	{
 		return GetFileContents(f.FullName, encoding);
 	}
@@ -84,7 +84,7 @@ public static class FileUtil
 	{
 		foreach (var p in paths)
 		{
-			string relativePath = FileUtil.GetRelativePath(path, p);
+			var relativePath = GetRelativePath(path, p);
 			if (relativePath.Length < path.Length)
 			{
 				return relativePath;
@@ -95,18 +95,14 @@ public static class FileUtil
 
 	public static string ContractOrRelativePath(string fullPath, string startpath)
 	{
-		if (startpath[0] == '~')
-		{
-			return ContractPath(fullPath);
-		}
-		return GetRelativePath(fullPath, startpath);
+		return startpath[0] == '~' ? ContractPath(fullPath) : GetRelativePath(fullPath, startpath);
 	}
 
 	public static string ContractOrRelativePath(string fullPath, IEnumerable<string> paths)
 	{
 		foreach (var p in paths)
 		{
-			string modifiedPath = FileUtil.ContractOrRelativePath(fullPath, p);
+			var modifiedPath = ContractOrRelativePath(fullPath, p);
 			if (modifiedPath.Length < fullPath.Length)
 			{
 				return modifiedPath;
@@ -127,8 +123,10 @@ public static class FileUtil
 
 	public static bool IsHiddenFile(FileSystemInfo f)
 	{
-		return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
-		        || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
+		// return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
+		//         || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
+		return (((f.Attributes & FileAttributes.Hidden) != 0)
+		        || (f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name)));
 	}
 
 	public static string JoinPath(string path1, string path2)
