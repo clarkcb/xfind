@@ -11,10 +11,11 @@ const { promisify } = require('util');
 const fsStatAsync = promisify(fs.stat);
 const fsReaddirAsync = promisify(fs.readdir);
 
+const {FileResult} = require('./fileresult');
 const {FileTypes} = require('./filetypes');
 const FileUtil = require('./fileutil');
 const {FindError} = require('./finderror');
-const {FindFile} = require('./findfile');
+const {FileType} = require("./filetype");
 
 class Finder {
     'use strict'
@@ -88,9 +89,9 @@ class Finder {
     }
 
     isFindFile(file) {
-        if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
-            return false;
-        }
+        // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
+        //     return false;
+        // }
         let ext = FileUtil.getExtension(file);
         if ((this.settings.inExtensions.length &&
             !this.matchesAnyElement(ext, this.settings.inExtensions))
@@ -110,9 +111,9 @@ class Finder {
     }
 
     isArchiveFindFile(file) {
-        if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
-            return false;
-        }
+        // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
+        //     return false;
+        // }
         let ext = FileUtil.getExtension(file);
         if (this.settings.inArchiveExtensions.length &&
             !this.matchesAnyElement(ext, this.settings.inArchiveExtensions)) {
@@ -131,15 +132,37 @@ class Finder {
     }
 
     filterFile(f) {
+        if (this.settings.excludeHidden && FileUtil.isHidden(f)) {
+            return false;
+        }
         if (this.filetypes.isArchiveFile(f)) {
             return (this.settings.findArchives && this.isArchiveFindFile(f));
         }
         return (!this.settings.archivesOnly && this.isFindFile(f));
     }
 
-    async recGetFindFiles(currentDir) {
+    filterToFileResult(f) {
+        if (this.settings.excludeHidden && FileUtil.isHidden(f)) {
+            return null;
+        }
+        const dirname = path.dirname(f) || '.';
+        const filename = path.basename(f);
+        let fr = new FileResult(dirname, filename, this.filetypes.getFileType(filename));
+        if (fr.filetype === FileType.ARCHIVE) {
+            if (this.settings.findArchives && this.isArchiveFindFile(fr.filename)) {
+                return fr;
+            }
+            return null;
+        }
+        if (!this.settings.archivesOnly && this.isFindFile(fr.filename)) {
+            return fr;
+        }
+        return null;
+    }
+
+    async recGetFileResults(currentDir) {
         let findDirs = [];
-        let findFiles = [];
+        let fileResults = [];
         let files = await fsReaddirAsync(currentDir);
         files.map(f => {
             return path.join(currentDir, f);
@@ -148,29 +171,33 @@ class Finder {
             if (stats.isDirectory() && this.settings.recursive && this.isFindDir(f)) {
                 findDirs.push(f);
             } else if (stats.isFile()) {
-                const dirname = path.dirname(f) || '.';
-                const filename = path.basename(f);
-                if (this.filterFile(filename)) {
-                    const filetype = this.filetypes.getFileType(filename);
-                    const sf = new FindFile(dirname, filename, filetype);
-                    findFiles.push(sf);
+                // const dirname = path.dirname(f) || '.';
+                // const filename = path.basename(f);
+                // if (this.filterFile(filename)) {
+                //     const filetype = this.filetypes.getFileType(filename);
+                //     const sf = new FileResult(dirname, filename, filetype);
+                //     fileResults.push(sf);
+                // }
+                let fr = this.filterToFileResult(f);
+                if (fr !== null) {
+                    fileResults.push(fr);
                 }
             }
         });
 
-        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFindFiles(d)));
+        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d)));
         subDirFindFileArrays.forEach(subDirFindFiles => {
-            findFiles = findFiles.concat(subDirFindFiles);
+            fileResults = fileResults.concat(subDirFindFiles);
         });
-        return findFiles;
+        return fileResults;
     }
 
-    async getFindFiles(startPath) {
-        let findFiles = [];
+    async getFileResults(startPath) {
+        let fileResults = [];
         let stats = await fsStatAsync(startPath);
         if (stats.isDirectory()) {
             if (this.isFindDir(startPath)) {
-                findFiles = await this.recGetFindFiles(startPath);
+                fileResults = await this.recGetFileResults(startPath);
             } else {
                 throw new FindError("startPath does not match find criteria");
             }
@@ -179,25 +206,25 @@ class Finder {
             if (this.isFindDir(dirname) && this.filterFile(startPath)) {
                 const filename = path.basename(startPath);
                 const filetype = this.filetypes.getFileType(filename);
-                const sf = new FindFile(dirname, filename, filetype);
-                findFiles.push(sf);
+                const sf = new FileResult(dirname, filename, filetype);
+                fileResults.push(sf);
             } else {
                 throw new FindError("startPath does not match find criteria");
             }
         }
-        return findFiles;
-}
+        return fileResults;
+    }
 
     async find() {
-        // get the find files
-        let findfiles = [];
+        // get the file results
+        let fileResults = [];
 
-        const pathFindFilesArrays = await Promise.all(this.settings.paths.map(d => this.getFindFiles(d)));
-        pathFindFilesArrays.forEach(pathFindFiles => {
-            findfiles = findfiles.concat(pathFindFiles);
+        const pathFileResultsArrays = await Promise.all(this.settings.paths.map(d => this.getFileResults(d)));
+        pathFileResultsArrays.forEach(pathFileResults => {
+            fileResults = fileResults.concat(pathFileResults);
         });
 
-        return findfiles;
+        return fileResults;
     }
 }
 

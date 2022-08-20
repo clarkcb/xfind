@@ -1,12 +1,12 @@
 /*
- * findfile.js
+ * fileresult.js
  *
  * encapsulates a file to be found
  */
 
 const path = require('path');
 
-class FindFile {
+class FileResult {
     'use strict'
 
     constructor(pathname, filename, filetype) {
@@ -33,4 +33,4 @@ class FindFile {
     }
 }
 
-exports.FindFile = FindFile;
+exports.FileResult = FileResult;

@@ -84,7 +84,7 @@ exports.getFileLinesAsync = (filepath, encoding, cb) => {
         if (err) {
             cb(err);
         }
-        cb(null, contents.split(/\r?\n/))
+        cb(null, contents.split(/\r?\n/));
     });
 };
 
