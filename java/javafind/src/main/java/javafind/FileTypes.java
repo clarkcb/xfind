@@ -4,20 +4,11 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -39,15 +30,16 @@ public class FileTypes {
         InputStream fileTypesInputStream = getClass().getResourceAsStream(FILETYPESJSONPATH);
 
         try {
+            assert fileTypesInputStream != null;
             Object obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream));
             JSONObject jsonObj = (JSONObject)obj;
             JSONArray filetypesArray = (JSONArray) jsonObj.get("filetypes");
 
             for (Object o : filetypesArray) {
-                Map filetypeMap = (Map) o;
+                Map<String, Object> filetypeMap = (Map<String, Object>) o;
                 String typeName = (String) filetypeMap.get("type");
                 JSONArray extArray = (JSONArray) filetypeMap.get("extensions");
-                Set<String> extSet = new HashSet<>(extArray);
+                Set<String> extSet = new HashSet<String>(extArray);
                 ftMap.put(typeName, extSet);
             }
 
@@ -56,43 +48,7 @@ public class FileTypes {
             allText.addAll(ftMap.get(text));
             allText.addAll(ftMap.get(xml));
             ftMap.put(text, allText);
-        } catch (ParseException | IOException e) {
-            e.printStackTrace();
-        }
-
-        return ftMap;
-    }
-
-    private Map<String, Set<String>> getFileTypeMapFromXml() {
-        int fileTypeKeys = 8;
-        Map<String, Set<String>> ftMap = new HashMap<>(fileTypeKeys);
-        InputStream fileTypesInputStream = getClass().
-                getResourceAsStream("/filetypes.xml");
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-
-        try {
-            DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(fileTypesInputStream);
-            doc.getDocumentElement().normalize();
-            NodeList filetypeNodes = doc.getElementsByTagName("filetype");
-            for (int i = 0; i < filetypeNodes.getLength(); i++) {
-                Node fileTypeNode = filetypeNodes.item(i);
-                String name = fileTypeNode.getAttributes().getNamedItem("name").
-                        getNodeValue();
-                Node extNode = ((Element) fileTypeNode).
-                        getElementsByTagName("extensions").item(0);
-                String extensions = extNode.getChildNodes().item(0).
-                        getNodeValue();
-                Set<String> extSet = new HashSet<>(Arrays.asList(extensions.
-                        split("\\s+")));
-                ftMap.put(name, extSet);
-            }
-            Set<String> allText = new HashSet<>();
-            allText.addAll(ftMap.get(code));
-            allText.addAll(ftMap.get(text));
-            allText.addAll(ftMap.get(xml));
-            ftMap.put(text, allText);
-        } catch (ParserConfigurationException | SAXException | IOException e) {
+        } catch (AssertionError | ParseException | IOException e) {
             e.printStackTrace();
         }
 

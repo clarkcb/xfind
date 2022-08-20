@@ -57,7 +57,7 @@ public class Finder {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    boolean isFindDir(final File d) {
+    boolean isMatchingDir(final File d) {
         List<String> pathElems = FileUtil.splitPath(d.toString());
         if (settings.getExcludeHidden()
                 && pathElems.stream().anyMatch(FileUtil::isHidden)) {
@@ -73,13 +73,14 @@ public class Finder {
     }
 
     // this is temporary to appease the tests
-    boolean isFindFile(final File f) {
-        FindFile sf = new FindFile(f.getParent(), f.getName(), fileTypes.getFileType(f));
-        return isFindFile(sf);
+    boolean isMatchingFile(final File f) {
+        FileResult sf = new FileResult(f, fileTypes.getFileType(f));
+        return isMatchingFile(sf);
     }
 
-    boolean isFindFile(final FindFile sf) {
-        String ext = FileUtil.getExtension(sf.getFileName());
+    boolean isMatchingFile(final FileResult sf) {
+        String fileName = sf.getFile().getName();
+        String ext = FileUtil.getExtension(fileName);
         return (settings.getInExtensions().isEmpty()
                 ||
                 settings.getInExtensions().contains(ext))
@@ -90,11 +91,11 @@ public class Finder {
                &&
                (settings.getInFilePatterns().isEmpty()
                 ||
-                matchesAnyPattern(sf.getFileName(), settings.getInFilePatterns()))
+                matchesAnyPattern(fileName, settings.getInFilePatterns()))
                &&
                (settings.getOutFilePatterns().isEmpty()
                 ||
-                !matchesAnyPattern(sf.getFileName(), settings.getOutFilePatterns()))
+                !matchesAnyPattern(fileName, settings.getOutFilePatterns()))
                &&
                (settings.getInFileTypes().isEmpty()
                 ||
@@ -105,7 +106,7 @@ public class Finder {
                 !settings.getOutFileTypes().contains(sf.getFileType()));
     }
 
-    boolean isArchiveFindFile(final File f) {
+    boolean isMatchingArchiveFile(final File f) {
         String ext = FileUtil.getExtension(f);
         return (settings.getInArchiveExtensions().isEmpty()
                 ||
@@ -129,44 +130,43 @@ public class Finder {
             return false;
         }
         if (fileTypes.getFileType(f) == FileType.ARCHIVE) {
-            return settings.getIncludeArchives() && isArchiveFindFile(f);
+            return settings.getIncludeArchives() && isMatchingArchiveFile(f);
         }
-        return !settings.getArchivesOnly() && isFindFile(f);
+        return !settings.getArchivesOnly() && isMatchingFile(f);
     }
 
-    FindFile filterToFindFile(final File f) {
+    FileResult filterToFileResult(final File f) {
         if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
             return null;
         }
-        FileType fileType = fileTypes.getFileType(f);
-        FindFile findFile = new FindFile(f.getParent(), f.getName(), fileType);
+        FileResult fileResult = new FileResult(f, fileTypes.getFileType(f));
         if (fileTypes.getFileType(f) == FileType.ARCHIVE) {
             if ((settings.getIncludeArchives() || settings.getArchivesOnly())
-                && isArchiveFindFile(f)) {
-                    return findFile;
+                && isMatchingArchiveFile(f)) {
+                    return fileResult;
             }
             return null;
         }
-        if (!settings.getArchivesOnly() && isFindFile(findFile)) {
-            return findFile;
+        if (!settings.getArchivesOnly() && isMatchingFile(fileResult)) {
+            return fileResult;
         }
         return null;
     }
 
-    public final List<FindFile> find() throws FindException {
-        List<FindFile> findFiles = new ArrayList<>();
+    public final List<FileResult> find() throws FindException {
+        List<FileResult> fileResults = new ArrayList<>();
         for (String p : settings.getPaths()) {
             File pFile = new File(p);
             if (pFile.isDirectory()) {
-                if (isFindDir(pFile)) {
-                    findFiles.addAll(findPath(pFile));
+                if (isMatchingDir(pFile)) {
+                    fileResults.addAll(findPath(pFile));
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
             } else if (pFile.isFile()) {
-                FindFile findFile = filterToFindFile(pFile);
-                if (findFile != null) {
-                    findFiles.add(findFile);
+                FileResult fileResult = filterToFileResult(pFile);
+                if (fileResult != null) {
+                    fileResults.add(fileResult);
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
@@ -174,20 +174,20 @@ public class Finder {
                 throw new FindException("Startpath is not a findable file type");
             }
         }
-        return findFiles;
+        return fileResults;
     }
 
     private static class FindFindFileVisitor extends SimpleFileVisitor<Path> {
         Function<File, Boolean> filterDir;
-        Function<File, FindFile> filterToFindFile;
-        List<FindFile> findFiles;
+        Function<File, FileResult> filterToFindFile;
+        List<FileResult> fileResults;
 
         FindFindFileVisitor(final Function<File, Boolean> filterDir,
-                            final Function<File, FindFile> filterToFindFile) {
+                            final Function<File, FileResult> filterToFindFile) {
             super();
             this.filterDir = filterDir;
             this.filterToFindFile = filterToFindFile;
-            findFiles = new ArrayList<>();
+            fileResults = new ArrayList<>();
         }
 
         @Override
@@ -206,9 +206,9 @@ public class Finder {
             Objects.requireNonNull(attrs);
             if (attrs.isRegularFile()) {
                 File f = path.toFile();
-                FindFile ff = filterToFindFile.apply(f);
+                FileResult ff = filterToFindFile.apply(f);
                 if (ff != null) {
-                    findFiles.add(ff);
+                    fileResults.add(ff);
                 }
             }
             return FileVisitResult.CONTINUE;
@@ -228,10 +228,10 @@ public class Finder {
         }
     }
 
-    private List<FindFile> findPath(final File filePath) {
+    private List<FileResult> findPath(final File filePath) {
         Path startPath = filePath.toPath();
-        FindFindFileVisitor findFindFileVisitor = new FindFindFileVisitor(this::isFindDir,
-                this::filterToFindFile);
+        FindFindFileVisitor findFindFileVisitor = new FindFindFileVisitor(this::isMatchingDir,
+                this::filterToFileResult);
 
         // walk file tree to find files
         try {
@@ -240,7 +240,7 @@ public class Finder {
             e.printStackTrace();
         }
 
-        List<FindFile> findFiles = findFindFileVisitor.findFiles;
-        return findFiles;
+        List<FileResult> fileResults = findFindFileVisitor.fileResults;
+        return fileResults;
     }
 }

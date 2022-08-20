@@ -31,13 +31,13 @@ public class FindMain {
         options.usage(1);
     }
 
-    private static List<String> getMatchingDirs(final List<FindFile> findFiles) {
-        return findFiles.stream().map(f -> f.getPath()).distinct()
+    private static List<String> getMatchingDirs(final List<FileResult> fileResults) {
+        return fileResults.stream().map(f -> f.getFile().getParent()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
-    private static void printMatchingDirs(final List<FindFile> findFiles) {
-        List<String> dirs = getMatchingDirs(findFiles);
+    private static void printMatchingDirs(final List<FileResult> fileResults) {
+        List<String> dirs = getMatchingDirs(fileResults);
         if (dirs.size() > 0) {
             log(String.format("\nMatching directories (%d):", dirs.size()));
             for (String d : dirs) {
@@ -48,13 +48,13 @@ public class FindMain {
         }
     }
 
-    private static List<String> getMatchingFiles(final List<FindFile> findFiles) {
-        return findFiles.stream().map(f -> f.toString()).distinct()
+    private static List<String> getMatchingFiles(final List<FileResult> fileResults) {
+        return fileResults.stream().map(f -> f.toString()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
-    private static void printMatchingFiles(final List<FindFile> findFiles) {
-        List<String> files = getMatchingFiles(findFiles);
+    private static void printMatchingFiles(final List<FileResult> fileResults) {
+        List<String> files = getMatchingFiles(fileResults);
         if (files.size() > 0) {
             log(String.format("\nMatching files (%d):", files.size()));
             for (String f : files) {
@@ -86,13 +86,13 @@ public class FindMain {
                 Finder finder = new Finder(settings);
 
                 finder.validateSettings();
-                List<FindFile> findFiles = finder.find();
+                List<FileResult> fileResults = finder.find();
 
                 if (settings.getListDirs()) {
-                    printMatchingDirs(findFiles);
+                    printMatchingDirs(fileResults);
                 }
                 if (settings.getListFiles()) {
-                    printMatchingFiles(findFiles);
+                    printMatchingFiles(fileResults);
                 }
 
             } catch (FindException e) {
