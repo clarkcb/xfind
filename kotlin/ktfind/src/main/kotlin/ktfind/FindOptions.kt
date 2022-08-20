@@ -32,7 +32,7 @@ class FindOptions {
     private fun loadFindOptionsFromJson() : List<FindOption> {
         val findOptionsJsonPath = "/findoptions.json"
         val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
-        val obj: Any = JSONParser().parse(InputStreamReader(findOptionsInputStream))
+        val obj: Any = JSONParser().parse(InputStreamReader(findOptionsInputStream!!))
         val jsonObj = obj as JSONObject
         val findoptionsArray = jsonObj["findoptions"] as JSONArray
 

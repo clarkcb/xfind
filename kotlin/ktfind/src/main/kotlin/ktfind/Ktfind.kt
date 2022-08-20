@@ -11,18 +11,8 @@ fun printErrorWithUsage(err: String, findOptions: FindOptions) {
     findOptions.usage()
 }
 
-private fun signum(num: Int): Int {
-    if (num > 0) {
-        return 1
-    }
-    if (num < 0) {
-        return -1
-    }
-    return 0
-}
-
-fun printMatchingDirs(findFiles: List<FindFile>) {
-    val dirs = findFiles.mapNotNull { f -> f.file.parent }.distinct().sorted()
+fun printMatchingDirs(fileResults: List<FileResult>) {
+    val dirs = fileResults.mapNotNull { f -> f.file.parent }.distinct().sorted()
     if (dirs.isEmpty()) {
         log("\nMatching directories: 0")
     } else {
@@ -33,8 +23,8 @@ fun printMatchingDirs(findFiles: List<FindFile>) {
     }
 }
 
-fun printMatchingFiles(findFiles: List<FindFile>) {
-    val files = findFiles.mapNotNull { f -> f.file }.map { f -> f.toString() }.distinct().sorted()
+fun printMatchingFiles(fileResults: List<FileResult>) {
+    val files = fileResults.map { f -> f.file }.map { f -> f.toString() }.distinct().sorted()
     if (files.isEmpty()) {
         log("\nMatching files: 0")
     } else {
@@ -47,13 +37,13 @@ fun printMatchingFiles(findFiles: List<FindFile>) {
 
 fun find(settings: FindSettings) {
     val finder = Finder(settings)
-    val findFiles: List<FindFile> = finder.find()
+    val fileResults: List<FileResult> = finder.find()
 
     if (settings.listDirs) {
-        printMatchingDirs(findFiles)
+        printMatchingDirs(fileResults)
     }
     if (settings.listFiles) {
-        printMatchingFiles(findFiles)
+        printMatchingFiles(fileResults)
     }
 }
 

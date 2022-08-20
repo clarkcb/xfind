@@ -5,7 +5,7 @@ import java.io.File
 /**
  * @author cary on 7/24/16.
  */
-class FindFile(val containers: List<String>, val file: File, val fileType: FileType) {
+class FileResult(val containers: List<String>, val file: File, val fileType: FileType) {
     val CONTAINER_SEPARATOR = "!"
 
     constructor(file: File, fileType: FileType) : this(listOf(), file, fileType)

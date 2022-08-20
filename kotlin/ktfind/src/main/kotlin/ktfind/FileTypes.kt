@@ -27,7 +27,7 @@ private const val binary = "binary"
 // private const val findable = "findable"
 private const val text = "text"
 private const val xml = "xml"
-private const val unknown = "unknown"
+//private const val unknown = "unknown"
 
 fun fromName(name: String) : FileType {
     when (name.trim().lowercase()) {
@@ -64,10 +64,10 @@ class FileTypes {
 
     private fun getFileTypesFromJson(): Map<String, Set<String>> {
         val ftMap: MutableMap<String, Set<String>> = mutableMapOf()
-        val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
 
         try {
-            val obj: Any = JSONParser().parse(InputStreamReader(fileTypesInputStream))
+            val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
+            val obj: Any = JSONParser().parse(InputStreamReader(fileTypesInputStream!!))
             val jsonObj = obj as JSONObject
             val filetypesArray = jsonObj["filetypes"] as JSONArray
             for (o in filetypesArray) {
