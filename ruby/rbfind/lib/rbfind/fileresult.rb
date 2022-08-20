@@ -2,7 +2,7 @@
 
 module RbFind
   # FindFile - encapsulates a file to be found
-  class FindFile
+  class FileResult
 
     attr_accessor :containers
     attr_reader :path

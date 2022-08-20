@@ -4,14 +4,14 @@ require 'find'
 require 'pathname'
 require 'set'
 require_relative 'common'
+require_relative 'fileresult'
 require_relative 'filetypes'
 require_relative 'fileutil'
 require_relative 'finderror'
-require_relative 'findfile'
 
 module RbFind
 
-  # Finder - finds files to find and findes them according to settings
+  # Finder - finds files according to settings
   class Finder
     attr_reader :settings
     attr_reader :results
@@ -23,7 +23,7 @@ module RbFind
       @results = []
     end
 
-    def find_dir?(dirname)
+    def matching_dir?(dirname)
       path_elems = dirname.split(File::SEPARATOR) - FileUtil.dot_dirs
       if @settings.excludehidden && path_elems.any? { |p| FileUtil.hidden?(p) }
         return false
@@ -39,8 +39,12 @@ module RbFind
       true
     end
 
-    def find_file?(filename)
-      ext = FileUtil.get_extension(filename)
+    def matching_file?(filepath)
+      matching_fileresult?(filepath_to_fileresult(filepath))
+    end
+
+    def matching_fileresult?(fileresult)
+      ext = FileUtil.get_extension(fileresult.filename)
       if !@settings.in_extensions.empty? &&
         !@settings.in_extensions.include?(ext)
         return false
@@ -50,26 +54,25 @@ module RbFind
         return false
       end
       if !@settings.in_filepatterns.empty? &&
-        !matches_any_pattern(filename, @settings.in_filepatterns)
+        !matches_any_pattern(fileresult.filename, @settings.in_filepatterns)
         return false
       end
       if !@settings.out_filepatterns.empty? &&
-        matches_any_pattern(filename, @settings.out_filepatterns)
+        matches_any_pattern(fileresult.filename, @settings.out_filepatterns)
         return false
       end
-      filetype = @filetypes.get_filetype(filename)
       if !@settings.in_filetypes.empty? &&
-        !@settings.in_filetypes.include?(filetype)
+        !@settings.in_filetypes.include?(fileresult.filetype)
         return false
       end
       if !@settings.out_filetypes.empty? &&
-        @settings.out_filetypes.include?(filetype)
+        @settings.out_filetypes.include?(fileresult.filetype)
         return false
       end
       true
     end
 
-    def archive_find_file?(filepath)
+    def matching_archive_file?(filepath)
       filename = File.basename(filepath)
       ext = FileUtil.get_extension(filename)
       if !@settings.in_archiveextensions.empty? &&
@@ -97,18 +100,36 @@ module RbFind
         return false
       end
       if @filetypes.archive_file?(filename)
-        return @settings.includearchives && archive_find_file?(filename)
+        return @settings.includearchives && matching_archive_file?(filename)
       end
-      !@settings.archivesonly && find_file?(filename)
+      !@settings.archivesonly && matching_file?(filepath)
+    end
+
+    def filter_to_fileresult(filepath)
+      filename = File.basename(filepath)
+      if @settings.excludehidden && FileUtil.hidden?(filename)
+        return nil
+      end
+      fileresult = filepath_to_fileresult(filepath)
+      if fileresult.filetype == FileType::ARCHIVE
+        if @settings.includearchives && matching_archive_file?(filename)
+          return fileresult
+        end
+        return nil
+      end
+      if !@settings.archivesonly && matching_fileresult?(fileresult)
+        return fileresult
+      end
+      nil
     end
 
     def find
-      findfiles = []
+      fileresults = []
       @settings.paths.each do |p|
-        findfiles = findfiles.concat(get_find_files(p))
+        fileresults = fileresults.concat(get_file_results(p))
       end
-      findfiles.sort_by(&:relativepath)
-      findfiles
+      fileresults.sort_by(&:relativepath)
+      fileresults
     end
 
     private
@@ -132,24 +153,24 @@ module RbFind
       false
     end
 
-    def file_to_findfile(f)
-      d = File.dirname(f) || '.'
-      filename = File.basename(f)
+    def filepath_to_fileresult(filepath)
+      d = File.dirname(filepath) || '.'
+      filename = File.basename(filepath)
       filetype = @filetypes.get_filetype(filename)
-      FindFile.new(d, filename, filetype)
+      FileResult.new(d, filename, filetype)
     end
 
-    def get_find_files(filepath)
-      findfiles = []
+    def get_file_results(filepath)
+      fileresults = []
       if FileTest.directory?(filepath)
         if @settings.recursive
           Find.find(filepath) do |f|
             if FileTest.directory?(f)
-              Find.prune unless find_dir?(f)
+              Find.prune unless matching_dir?(f)
             elsif FileTest.file?(f)
-              if filter_file?(f)
-                findfile = file_to_findfile(f)
-                findfiles.push(findfile)
+              fileresult = filter_to_fileresult(f)
+              if fileresult != nil
+                fileresults.push(fileresult)
               end
             end
           end
@@ -157,17 +178,21 @@ module RbFind
           Find.find(filepath) do |f|
             if FileTest.directory?(f)
               Find.prune
-            elsif filter_file?(f)
-              findfile = file_to_findfile(f)
-              findfiles.push(findfile)
+            else
+              fileresult = filter_to_fileresult(f)
+              if fileresult != nil
+                fileresults.push(fileresult)
+              end
             end
           end
         end
       elsif FileTest.file?(filepath)
-        findfile = file_to_findfile(filepath)
-        findfiles.push(findfile)
+        fileresult = filter_to_fileresult(f)
+        if fileresult != nil
+          fileresults.push(fileresult)
+        end
       end
-      findfiles
+      fileresults
     end
 
   end

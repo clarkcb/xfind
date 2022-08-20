@@ -10,10 +10,10 @@
 ################################################################################
 
 require_relative 'rbfind/common'
+require_relative 'rbfind/fileresult'
 require_relative 'rbfind/filetypes'
 require_relative 'rbfind/fileutil'
 require_relative 'rbfind/finder'
-require_relative 'rbfind/findfile'
 require_relative 'rbfind/findoption'
 require_relative 'rbfind/findoptions'
 require_relative 'rbfind/findsettings'
@@ -57,10 +57,10 @@ def find(options, settings)
     rescue => e
       handle_error(e, options)
     end
-  findfiles = finder.find
+  fileresults = finder.find
 
   if settings.listdirs
-    finddirs = findfiles.map(&:path).uniq.sort
+    finddirs = fileresults.map(&:path).uniq.sort
     if finddirs.empty?
       RbFind::log("\nMatching directories: 0")
     else
@@ -72,11 +72,11 @@ def find(options, settings)
   end
 
   if settings.listfiles
-    if findfiles.empty?
+    if fileresults.empty?
       RbFind::log("\nMatching files: 0")
     else
-      RbFind::log("\nMatching files (#{findfiles.size}):")
-      findfiles.each do |f|
+      RbFind::log("\nMatching files (#{fileresults.size}):")
+      fileresults.each do |f|
         RbFind::log("#{f}\n")
       end
     end

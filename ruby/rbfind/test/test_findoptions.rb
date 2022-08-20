@@ -1,6 +1,6 @@
 ################################################################################
 #
-# findoptions_test.rb
+# test_findoptions.rb
 #
 # Test the FindOptions class
 #

@@ -1,6 +1,6 @@
 ################################################################################
 #
-# filetypes_test.rb
+# test_filetypes.rb
 #
 # Test the FileTypes class
 #

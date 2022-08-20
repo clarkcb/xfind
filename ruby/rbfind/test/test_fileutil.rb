@@ -1,6 +1,6 @@
 ################################################################################
 #
-# fileutil_test.rb
+# test_fileutil.rb
 #
 # Test the FileUtil static class
 #
