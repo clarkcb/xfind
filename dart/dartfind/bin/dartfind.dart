@@ -9,18 +9,20 @@ void _handleError(err, FindOptions options) {
   exitCode = 1;
 }
 
-List<String> getMatchingDirs(List<FindFile> findFiles) {
-  var dirs = findFiles.map((f) => f.file.parent.path).toSet().toList();
+List<String> getMatchingDirs(List<FileResult> fileResults) {
+  var dirs = fileResults.map((f) => f.file.parent.path).toSet().toList();
   dirs.sort();
   return dirs;
 }
 
-void printMatchingDirs(List<FindFile> findFiles, FindSettings settings) {
-  var dirs = getMatchingDirs(findFiles);
+void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
+  var dirs = getMatchingDirs(fileResults);
   if (dirs.isNotEmpty) {
     log('\nMatching directories (${dirs.length}):');
     if (settings.paths.any((p) => p.startsWith('~'))) {
-      dirs.forEach((d) { log(FileUtil.contractPath(d)); });
+      dirs.forEach((d) {
+        log(FileUtil.contractPath(d));
+      });
     } else {
       dirs.forEach(log);
     }
@@ -37,18 +39,21 @@ int sortFiles(File f1, File f2) {
   }
 }
 
-List<String> getMatchingFiles(List<FindFile> results, FindSettings settings) {
-  var files = results.map((f) => f.file).toSet().toList();
+List<String> getMatchingFiles(
+    List<FileResult> fileResults, FindSettings settings) {
+  var files = fileResults.map((f) => f.file).toSet().toList();
   files.sort(sortFiles);
   return files.map((f) => f.path).toList();
 }
 
-void printMatchingFiles(List<FindFile> results, FindSettings settings) {
-  var files = getMatchingFiles(results, settings);
+void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {
+  var files = getMatchingFiles(fileResults, settings);
   if (files.isNotEmpty) {
     log('\nMatching files (${files.length}):');
     if (settings.paths.any((p) => p.startsWith('~'))) {
-      files.forEach((f) { log(FileUtil.contractPath(f)); });
+      files.forEach((f) {
+        log(FileUtil.contractPath(f));
+      });
     } else {
       files.forEach(log);
     }
@@ -71,9 +76,9 @@ Future<void> find(FindSettings settings, FindOptions options) async {
         }
       }
     });
-  } on FormatException catch(e) {
+  } on FormatException catch (e) {
     logError(e.message);
-  } on FindException catch(e) {
+  } on FindException catch (e) {
     _handleError(e, options);
   } catch (e) {
     print(e);

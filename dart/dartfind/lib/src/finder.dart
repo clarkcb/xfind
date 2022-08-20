@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dartfind/src/file_result.dart';
 import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/file_util.dart';
 import 'package:dartfind/src/find_exception.dart';
-import 'package:dartfind/src/find_file.dart';
 import 'package:dartfind/src/find_settings.dart';
 import 'package:path/path.dart' as path;
 
@@ -42,7 +42,7 @@ class Finder {
     return patterns.any((p) => p.allMatches(s).isNotEmpty);
   }
 
-  bool isFindDir(Directory dir) {
+  bool isMatchingDir(Directory dir) {
     var elems = path.split(dir.path).where((e) => e.isNotEmpty).toSet();
     if (settings.excludeHidden &&
         elems.any((elem) => FileUtil.isHidden(elem))) {
@@ -54,7 +54,7 @@ class Finder {
             !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
   }
 
-  bool isFindFile(FindFile sf) {
+  bool isMatchingFile(FileResult sf) {
     var fileName = path.basename(sf.file.path);
     var ext = FileUtil.extension(fileName);
     return (settings.inExtensions.isEmpty ||
@@ -71,7 +71,7 @@ class Finder {
             !settings.outFileTypes.contains(sf.fileType));
   }
 
-  bool isArchiveFindFile(FindFile sf) {
+  bool isMatchingArchiveFile(FileResult sf) {
     var fileName = sf.file.path.split(Platform.pathSeparator).last;
     if (settings.excludeHidden && FileUtil.isHidden(fileName)) {
       return false;
@@ -87,47 +87,47 @@ class Finder {
             !_matchesAnyPattern(fileName, settings.outArchiveFilePatterns));
   }
 
-  Future<FindFile> filterToFindFile(File f) {
+  Future<FileResult> filterToFileResult(File f) {
     if (settings.excludeHidden && FileUtil.isHidden(path.basename(f.path))) {
       return null;
     }
     return _fileTypes.getFileType(f.path).then((fileType) {
-      var findFile = FindFile(f, fileType);
+      var findFile = FileResult(f, fileType);
       if (findFile.fileType == FileType.archive) {
         if (settings.includeArchives) {
           return findFile;
         }
         return null;
       }
-      if (!settings.archivesOnly && isFindFile(findFile)) {
+      if (!settings.archivesOnly && isMatchingFile(findFile)) {
         return findFile;
       }
       return null;
     });
   }
 
-  Future<List<FindFile>> _getFindFiles(String startPath) async {
+  Future<List<FileResult>> _getFileResultsForPath(String startPath) async {
     var isDir = FileSystemEntity.isDirectory(startPath);
     var isFile = FileSystemEntity.isFile(startPath);
     return Future.wait([isDir, isFile]).then((res) {
-      var findFiles = <FindFile>[];
+      var fileResults = <FileResult>[];
       if (res.first) {
         var dir = Directory(startPath);
         return dir.list(recursive: settings.recursive).listen((f) async {
-          if (f is File && isFindDir(f.parent)) {
-            var findFile = await filterToFindFile(f);
-            if (findFile != null) {
-              findFiles.add(findFile);
+          if (f is File && isMatchingDir(f.parent)) {
+            var fileResult = await filterToFileResult(f);
+            if (fileResult != null) {
+              fileResults.add(fileResult);
             }
           }
-        }).asFuture(findFiles);
+        }).asFuture(fileResults);
       } else if (res.last) {
         var startFile = File(startPath);
-        if (isFindDir(startFile.parent)) {
+        if (isMatchingDir(startFile.parent)) {
           return _fileTypes.getFileType(startPath).then((fileType) {
-            var findFile = FindFile(startFile, fileType);
-            if (isFindFile(findFile)) {
-              return [findFile];
+            var fileResult = FileResult(startFile, fileType);
+            if (isMatchingFile(fileResult)) {
+              return [fileResult];
             }
             return [];
           });
@@ -139,18 +139,19 @@ class Finder {
     });
   }
 
-  Future<List<FindFile>> _findFiles() async {
-    var findFiles = <FindFile>[];
-    var pathsFindFilesFutures = settings.paths.map((p) => _getFindFiles(p));
-    await Future.wait(pathsFindFilesFutures).then((pathsFindFiles) {
-      for (var pathFindFiles in pathsFindFiles) {
-        findFiles.addAll(pathFindFiles);
+  Future<List<FileResult>> _findFiles() async {
+    var fileResults = <FileResult>[];
+    var pathsFileResultsFutures =
+        settings.paths.map((p) => _getFileResultsForPath(p));
+    await Future.wait(pathsFileResultsFutures).then((pathsFileResults) {
+      for (var pathFileResults in pathsFileResults) {
+        fileResults.addAll(pathFileResults);
       }
     });
-    return findFiles;
+    return fileResults;
   }
 
-  Future<List<FindFile>> find() async {
+  Future<List<FileResult>> find() async {
     return Future.wait([_fileTypes.ready, validated]).then((res) {
       return _findFiles();
     });
