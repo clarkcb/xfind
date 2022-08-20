@@ -68,7 +68,7 @@ public class Finder {
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType)))
     }
 
-    public func isFindDir(_ dirPath: String) -> Bool {
+    public func isMatchingDir(_ dirPath: String) -> Bool {
         if FileUtil.isHidden(dirPath), settings.excludeHidden {
             return false
         }
@@ -76,12 +76,11 @@ public class Finder {
                                 outPatterns: settings.outDirPatterns)
     }
 
-    public func isFindFile(_ filePath: String) -> Bool {
-        isFindFile(filePath, fileType: fileTypes.getFileType(filePath))
+    public func isMatchingFile(_ fileName: String) -> Bool {
+        isMatchingFile(fileName, fileType: fileTypes.getFileType(fileName))
     }
 
-    public func isFindFile(_ filePath: String, fileType: FileType) -> Bool {
-        let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+    public func isMatchingFile(_ fileName: String, fileType: FileType) -> Bool {
         if settings.excludeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
@@ -96,8 +95,7 @@ public class Finder {
                                      outFileTypes: settings.outFileTypes))
     }
 
-    public func isArchiveFindFile(_ filePath: String) -> Bool {
-        let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+    public func isMatchingArchiveFile(_ fileName: String) -> Bool {
         if settings.excludeHidden, FileUtil.isHidden(fileName) {
             return false
         }
@@ -108,34 +106,38 @@ public class Finder {
                                     outPatterns: settings.outArchiveFilePatterns))
     }
 
-    public func filterToFindFile(_ filePath: String) -> FindFile? {
+    public func filterToFileResult(_ filePath: String) -> FileResult? {
+        let fileName = URL(fileURLWithPath: filePath).lastPathComponent
+        if settings.excludeHidden, FileUtil.isHidden(fileName) {
+            return nil
+        }
         let fileType = fileTypes.getFileType(filePath)
-        let ff = FindFile(filePath: filePath, fileType: fileType)
+        let fr = FileResult(filePath: filePath, fileType: fileType)
         if (fileType == FileType.archive) {
-            if (settings.includeArchives && isArchiveFindFile(filePath)) {
-                return ff
+            if (settings.includeArchives && isMatchingArchiveFile(fileName)) {
+                return fr
             }
             return nil
         }
-        if (!settings.archivesOnly && isFindFile(filePath, fileType: fileType)) {
-            return ff
+        if (!settings.archivesOnly && isMatchingFile(fileName, fileType: fileType)) {
+            return fr
         }
         return nil
     }
 
-    // gets all FindFiles recursively
-    private func getFindFiles(_ filePath: String) -> [FindFile] {
-        var findFiles = [FindFile]()
+    // gets all FileResults recursively
+    private func getFileResults(_ filePath: String) -> [FileResult] {
+        var findFiles = [FileResult]()
         if let enumerator = FileUtil.enumerator(forPath: filePath, settings: settings) {
             for case let fileURL as URL in enumerator {
                 do {
                     let fileAttributes = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey])
                     if fileAttributes.isDirectory! {
-                        if !isFindDir(fileURL.path) {
+                        if !isMatchingDir(fileURL.path) {
                             enumerator.skipDescendants()
                         }
                     } else if fileAttributes.isRegularFile! {
-                        if let findFile = filterToFindFile(fileURL.path) {
+                        if let findFile = filterToFileResult(fileURL.path) {
                             findFiles.append(findFile)
                         }
                     }
@@ -145,17 +147,17 @@ public class Finder {
         return findFiles
     }
 
-    public func find() -> [FindFile] {
-        var findFiles = [FindFile]()
+    public func find() -> [FileResult] {
+        var fileResults = [FileResult]()
         for p in settings.paths {
             if FileUtil.isDirectory(p) {
-                let pFiles: [FindFile] = getFindFiles(p)
-                findFiles.append(contentsOf: pFiles)
+                let pFiles: [FileResult] = getFileResults(p)
+                fileResults.append(contentsOf: pFiles)
             } else {
                 let fileType = fileTypes.getFileType(p)
-                findFiles.append(FindFile(filePath: p, fileType: fileType))
+                fileResults.append(FileResult(filePath: p, fileType: fileType))
             }
         }
-        return findFiles
+        return fileResults
     }
 }

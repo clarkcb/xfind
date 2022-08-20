@@ -9,13 +9,13 @@
 import Foundation
 import swiftfind
 
-func getMatchingDirs(_ findfiles: [FindFile]) -> [String] {
+func getMatchingDirs(_ findfiles: [FileResult]) -> [String] {
     findfiles.map {
         URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
     }.sorted().unique()
 }
 
-func getMatchingFiles(_ findfiles: [FindFile]) -> [String] {
+func getMatchingFiles(_ findfiles: [FileResult]) -> [String] {
     findfiles.map(\.filePath).sorted().unique()
 }
 
@@ -43,10 +43,10 @@ func main() {
 
         let finder = try Finder(settings: settings)
 
-        let findfiles = finder.find()
+        let fileResults = finder.find()
 
         if settings.listDirs {
-            let dirs = getMatchingDirs(findfiles)
+            let dirs = getMatchingDirs(fileResults)
             if (dirs.isEmpty) {
                 logMsg("\nMatching directories: 0")
             } else {
@@ -58,7 +58,7 @@ func main() {
         }
 
         if settings.listFiles {
-            let files = getMatchingFiles(findfiles)
+            let files = getMatchingFiles(fileResults)
             if (files.isEmpty) {
                 logMsg("\nMatching files: 0")
             } else {

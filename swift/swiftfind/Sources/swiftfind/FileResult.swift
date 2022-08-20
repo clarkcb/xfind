@@ -1,5 +1,5 @@
 //
-//  FindFile.swift
+//  FileResult.swift
 //  swiftfind
 //
 //  Created by Cary Clark on 6/2/15.
@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct FindFile {
+public struct FileResult {
     public let containerSeparator = "!"
     public let containers: [String]
     public let filePath: String
