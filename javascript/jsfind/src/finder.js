@@ -34,7 +34,7 @@ class Finder {
 
                 const stat = fs.lstatSync(p);
                 if (stat.isDirectory()) {
-                    assert.ok(this.isFindDir(p),
+                    assert.ok(this.isMatchingDir(p),
                         'Startpath does not match find settings');
                 } else if (stat.isFile()) {
                     assert.ok(this.filterFile(p),
@@ -67,7 +67,7 @@ class Finder {
         return ss.some((s) => this.matchesAnyPattern(s, patterns));
     }
 
-    isFindDir(dir) {
+    isMatchingDir(dir) {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
@@ -88,7 +88,7 @@ class Finder {
             this.settings.outDirPatterns));
     }
 
-    isFindFile(file) {
+    isMatchingFile(file) {
         // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
         //     return false;
         // }
@@ -110,7 +110,7 @@ class Finder {
                 this.matchesAnyElement(filetype, this.settings.outFileTypes)));
     }
 
-    isArchiveFindFile(file) {
+    isMatchingArchiveFile(file) {
         // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
         //     return false;
         // }
@@ -136,9 +136,9 @@ class Finder {
             return false;
         }
         if (this.filetypes.isArchiveFile(f)) {
-            return (this.settings.findArchives && this.isArchiveFindFile(f));
+            return (this.settings.findArchives && this.isMatchingArchiveFile(f));
         }
-        return (!this.settings.archivesOnly && this.isFindFile(f));
+        return (!this.settings.archivesOnly && this.isMatchingFile(f));
     }
 
     filterToFileResult(f) {
@@ -149,12 +149,12 @@ class Finder {
         const filename = path.basename(f);
         let fr = new FileResult(dirname, filename, this.filetypes.getFileType(filename));
         if (fr.filetype === FileType.ARCHIVE) {
-            if (this.settings.findArchives && this.isArchiveFindFile(fr.filename)) {
+            if (this.settings.findArchives && this.isMatchingArchiveFile(fr.filename)) {
                 return fr;
             }
             return null;
         }
-        if (!this.settings.archivesOnly && this.isFindFile(fr.filename)) {
+        if (!this.settings.archivesOnly && this.isMatchingFile(fr.filename)) {
             return fr;
         }
         return null;
@@ -168,7 +168,7 @@ class Finder {
             return path.join(currentDir, f);
         }).forEach(f => {
             let stats = fs.statSync(f);
-            if (stats.isDirectory() && this.settings.recursive && this.isFindDir(f)) {
+            if (stats.isDirectory() && this.settings.recursive && this.isMatchingDir(f)) {
                 findDirs.push(f);
             } else if (stats.isFile()) {
                 // const dirname = path.dirname(f) || '.';
@@ -196,14 +196,14 @@ class Finder {
         let fileResults = [];
         let stats = await fsStatAsync(startPath);
         if (stats.isDirectory()) {
-            if (this.isFindDir(startPath)) {
+            if (this.isMatchingDir(startPath)) {
                 fileResults = await this.recGetFileResults(startPath);
             } else {
                 throw new FindError("startPath does not match find criteria");
             }
         } else if (stats.isFile()) {
             const dirname = path.dirname(startPath) || '.';
-            if (this.isFindDir(dirname) && this.filterFile(startPath)) {
+            if (this.isMatchingDir(dirname) && this.filterFile(startPath)) {
                 const filename = path.basename(startPath);
                 const filetype = this.filetypes.getFileType(filename);
                 const sf = new FileResult(dirname, filename, filetype);
