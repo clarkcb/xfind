@@ -5,7 +5,7 @@
         [cljfind.config :only (SHAREDPATH)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.finder :only
-          (filter-file? is-matching-archive-file? is-find-dir? is-matching-file?)]
+         (filter-file? is-matching-archive-file? is-matching-dir? is-matching-file?)]
         [cljfind.findsettings :only
           (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly)]))
 
@@ -16,66 +16,66 @@
   (add-pattern DEFAULT-SETTINGS "Finder" :findpatterns))
 
 ;; *****************************************************************************
-;; is-find-dir? tests
+;; is-matching-dir? tests
 ;; *****************************************************************************
-(deftest test-is-find-dir?-default-settings
-  (testing "test-is-find-dir?-default-settings"
-    (is (is-find-dir? (file ".") DEFAULT-SETTINGS))
-    (is (is-find-dir? (file "..") DEFAULT-SETTINGS))
-    (is (not (is-find-dir? (file ".git") DEFAULT-SETTINGS)))
-    (is (is-find-dir? (file "clojure") DEFAULT-SETTINGS))))
+(deftest test-is-matching-dir?-default-settings
+  (testing "test-is-matching-dir?-default-settings"
+           (is (is-matching-dir? (file ".") DEFAULT-SETTINGS))
+           (is (is-matching-dir? (file "..") DEFAULT-SETTINGS))
+           (is (not (is-matching-dir? (file ".git") DEFAULT-SETTINGS)))
+           (is (is-matching-dir? (file "clojure") DEFAULT-SETTINGS))))
 
-(deftest test-is-find-dir?-with-in-dirpatterns
+(deftest test-is-matching-dir?-with-in-dirpatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "find" :in-dirpatterns)]
-    (testing "test-is-find-dir?-with-in-dirpatterns"
-      (is (is-find-dir? (file "cljfind") settings))
-      (is (is-find-dir? (file "finder") settings))
-      (is (not (is-find-dir? (file "clojure") settings))))))
+    (testing "test-is-matching-dir?-with-in-dirpatterns"
+             (is (is-matching-dir? (file "cljfind") settings))
+             (is (is-matching-dir? (file "finder") settings))
+             (is (not (is-matching-dir? (file "clojure") settings))))))
 
-(deftest test-is-find-dir?-with-out-dirpatterns
+(deftest test-is-matching-dir?-with-out-dirpatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "clojure" :out-dirpatterns)]
-    (testing "test-is-find-dir?-with-out-dirpatterns"
-      (is (is-find-dir? (file "cljfind") settings))
-      (is (is-find-dir? (file "finder") settings))
-      (is (not (is-find-dir? (file "clojure") settings))))))
+    (testing "test-is-matching-dir?-with-out-dirpatterns"
+             (is (is-matching-dir? (file "cljfind") settings))
+             (is (is-matching-dir? (file "finder") settings))
+             (is (not (is-matching-dir? (file "clojure") settings))))))
 
-(deftest test-is-find-dir?-with-include-hidden
+(deftest test-is-matching-dir?-with-include-hidden
   (let [settings (assoc DEFAULT-SETTINGS :excludehidden false)]
-    (testing "test-is-find-dir?-with-include-hidden"
-    (is (is-find-dir? (file ".") settings))
-    (is (is-find-dir? (file "..") settings))
-    (is (is-find-dir? (file ".git") settings))
-    (is (is-find-dir? (file "clojure") settings)))))
+    (testing "test-is-matching-dir?-with-include-hidden"
+             (is (is-matching-dir? (file ".") settings))
+             (is (is-matching-dir? (file "..") settings))
+             (is (is-matching-dir? (file ".git") settings))
+             (is (is-matching-dir? (file "clojure") settings)))))
 
 ;; *****************************************************************************
-;; is-file-result? tests
+;; is-matching-file? tests
 ;; *****************************************************************************
-(deftest test-is-file-result?-default-settings
-  (testing "test-is-file-result?-default-settings"
+(deftest test-is-matching-file?-default-settings
+  (testing "test-is-matching-file?-default-settings"
     (is (is-matching-file? (file "finder.clj") DEFAULT-SETTINGS))))
 
-(deftest test-is-file-result?-with-in-extensions
+(deftest test-is-matching-file?-with-in-extensions
   (let [settings (add-extension DEFAULT-SETTINGS "clj,js" :in-extensions)]
-    (testing "test-is-file-result?-with-in-extensions"
+    (testing "test-is-matching-file?-with-in-extensions"
       (is (is-matching-file? (file "finder.clj") settings))
       (is (is-matching-file? (file "finder.js") settings))
       (is (not (is-matching-file? (file "finder.py") settings))))))
 
-(deftest test-is-file-result?-with-out-extensions
+(deftest test-is-matching-file?-with-out-extensions
   (let [settings (add-extension DEFAULT-SETTINGS "py" :out-extensions)]
     (testing "test-is-find-dir?-with-out-extensions"
       (is (is-matching-file? (file "finder.clj") settings))
       (is (is-matching-file? (file "finder.js") settings))
       (is (not (is-matching-file? (file "finder.py") settings))))))
 
-(deftest test-is-file-result?-with-in-filepatterns
+(deftest test-is-matching-file?-with-in-filepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "find" :in-filepatterns)]
-    (testing "test-is-file-result?-with-in-filepatterns"
+    (testing "test-is-matching-file?-with-in-filepatterns"
       (is (is-matching-file? (file "cljfind.clj") settings))
       (is (is-matching-file? (file "finder.clj") settings))
       (is (not (is-matching-file? (file "fileutil.clj") settings))))))
 
-(deftest test-is-file-result?-with-out-filepatterns
+(deftest test-is-matching-file?-with-out-filepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "find" :out-filepatterns)]
     (testing "test-is-find-dir?-with-out-filepatterns"
       (is (is-matching-file? (file "fileutil.clj") settings))
@@ -83,36 +83,36 @@
       (is (not (is-matching-file? (file "finder.clj") settings))))))
 
 ;; *****************************************************************************
-;; is-archive-file-result? tests
+;; is-matching-archive-file? tests
 ;; *****************************************************************************
-(deftest test-is-archive-file-result?-default-settings
-  (testing "test-is-archive-file-result?-default-settings"
+(deftest test-is-matching-archive-file?-default-settings
+  (testing "test-is-matching-archive-file?-default-settings"
     (is (is-matching-archive-file? (file "archive.zip") DEFAULT-SETTINGS))))
 
-(deftest test-iis-archive-file-result?-with-in-earchivextensions
+(deftest test-iis-matching-archive-file?-with-in-earchivextensions
   (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archiveextensions)]
-    (testing "test-is-archive-file-result?-with-in-archiveextensions"
+    (testing "test-is-matching-archive-file?-with-in-archiveextensions"
       (is (is-matching-archive-file? (file "archive.zip") settings))
       (is (is-matching-archive-file? (file "archive.bz2") settings))
       (is (not (is-matching-archive-file? (file "archive.gz") settings))))))
 
-(deftest test-is-archive-file-result?-with-out-archiveextensions
+(deftest test-is-matching-archive-file?-with-out-archiveextensions
   (let [settings (add-extension DEFAULT-SETTINGS "gz" :out-archiveextensions)]
-    (testing "test-is-archive-file-result?-with-out-archiveextensions"
+    (testing "test-is-matching-archive-file?-with-out-archiveextensions"
       (is (is-matching-archive-file? (file "archive.zip") settings))
       (is (is-matching-archive-file? (file "archive.bz2") settings))
       (is (not (is-matching-archive-file? (file "archive.gz") settings))))))
 
-(deftest test-is-archive-file-result?-with-in-archivefilepatterns
+(deftest test-is-matching-archive-file?-with-in-archivefilepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "arch" :in-archivefilepatterns)]
-    (testing "test-is-archive-file-result?-with-in-archivefilepatterns"
+    (testing "test-is-matching-archive-file?-with-in-archivefilepatterns"
       (is (is-matching-archive-file? (file "archive.zip") settings))
       (is (is-matching-archive-file? (file "arch.bz2") settings))
       (is (not (is-matching-archive-file? (file "compressed.gz") settings))))))
 
-(deftest test-is-archive-file-result?-with-out-archivefilepatterns
+(deftest test-is-matching-archive-file?-with-out-archivefilepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "compress" :out-archivefilepatterns)]
-    (testing "test-is-archive-file-result?-with-out-archivefilepatterns"
+    (testing "test-is-matching-archive-file?-with-out-archivefilepatterns"
       (is (is-matching-archive-file? (file "archive.zip") settings))
       (is (is-matching-archive-file? (file "arch.bz2") settings))
       (is (not (is-matching-archive-file? (file "compressed.gz") settings))))))

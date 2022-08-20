@@ -35,7 +35,7 @@
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
 
-(defn is-find-dir? [^File d settings]
+(defn is-matching-dir? [^File d settings]
   (or
     (is-dot-dir? (get-name d))
     (and
@@ -52,8 +52,8 @@
 (defn is-matching-archive-file? [^File f settings]
   (and
     (or
-      (nil? (.getParentFile f))
-      (is-find-dir? (.getParentFile f) settings))
+     (nil? (.getParentFile f))
+     (is-matching-dir? (.getParentFile f) settings))
     (or
       (empty? (:in-archiveextensions settings))
       (some #(= % (get-ext f)) (:in-archiveextensions settings)))
@@ -70,8 +70,8 @@
 (defn is-matching-file? [^File f settings]
   (and
     (or
-      (nil? (.getParentFile f))
-      (is-find-dir? (.getParentFile f) settings))
+     (nil? (.getParentFile f))
+     (is-matching-dir? (.getParentFile f) settings))
     (or
       (empty? (:in-extensions settings))
       (some #(= % (get-ext f)) (:in-extensions settings)))

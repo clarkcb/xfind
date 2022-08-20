@@ -82,10 +82,11 @@
   (= :unknown (get-filetype f)))
 
 (defn from-name [^String name]
-  (cond
-    (= TEXT (lower-case name)) :text
-    (= BINARY (lower-case name)) :binary
-    (= CODE (lower-case name)) :code
-    (= XML (lower-case name)) :xml
-    (= ARCHIVE (lower-case name)) :archive
-    :else :unknown))
+  (let [lname (lower-case name)]
+    (cond
+      (= TEXT lname) :text
+      (= BINARY lname) :binary
+      (= CODE lname) :code
+      (= XML lname) :xml
+      (= ARCHIVE lname) :archive
+      :else :unknown)))
