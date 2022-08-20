@@ -111,7 +111,7 @@ class FinderTest extends TestCase
         $settings = $this->get_settings();
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($finder->is_find_file($file));
+        $this->assertTrue($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_matches_in_extension()
@@ -120,7 +120,7 @@ class FinderTest extends TestCase
         $settings->in_extensions[] = 'pm';
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($finder->is_find_file($file));
+        $this->assertTrue($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_no_match_in_extension()
@@ -129,7 +129,7 @@ class FinderTest extends TestCase
         $settings->in_extensions[] = 'pl';
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($finder->is_find_file($file));
+        $this->assertFalse($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_matches_out_extension()
@@ -138,7 +138,7 @@ class FinderTest extends TestCase
         $settings->out_extensions[] = 'pm';
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($finder->is_find_file($file));
+        $this->assertFalse($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_no_match_out_extension()
@@ -147,7 +147,7 @@ class FinderTest extends TestCase
         $settings->out_extensions[] = 'py';
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($finder->is_find_file($file));
+        $this->assertTrue($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_matches_in_pattern()
@@ -156,7 +156,7 @@ class FinderTest extends TestCase
         $settings->in_filepatterns[] = 'Find';
         $finder = new Finder($settings);
         $file = 'Finder.pm';
-        $this->assertTrue($finder->is_find_file($file));
+        $this->assertTrue($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_no_match_in_pattern()
@@ -165,7 +165,7 @@ class FinderTest extends TestCase
         $settings->in_filepatterns[] = 'Find';
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertFalse($finder->is_find_file($file));
+        $this->assertFalse($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_matches_out_pattern()
@@ -174,7 +174,7 @@ class FinderTest extends TestCase
         $settings->out_filepatterns[] = 'Find';
         $finder = new Finder($settings);
         $file = 'Finder.pm';
-        $this->assertFalse($finder->is_find_file($file));
+        $this->assertFalse($finder->is_matching_file($file));
     }
 
     public function test_is_find_file_no_match_out_pattern()
@@ -183,7 +183,7 @@ class FinderTest extends TestCase
         $settings->out_filepatterns[] = 'Find';
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
-        $this->assertTrue($finder->is_find_file($file));
+        $this->assertTrue($finder->is_matching_file($file));
     }
 
     ################################################################################
@@ -194,7 +194,7 @@ class FinderTest extends TestCase
         $settings = $this->get_settings();
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($finder->is_archive_find_file($file));
+        $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_matches_in_extension()
@@ -203,7 +203,7 @@ class FinderTest extends TestCase
         $settings->in_archiveextensions[] = 'zip';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($finder->is_archive_find_file($file));
+        $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_no_match_in_extension()
@@ -212,7 +212,7 @@ class FinderTest extends TestCase
         $settings->in_archiveextensions[] = 'gz';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($finder->is_archive_find_file($file));
+        $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_matches_out_extension()
@@ -221,7 +221,7 @@ class FinderTest extends TestCase
         $settings->out_archiveextensions[] = 'zip';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($finder->is_archive_find_file($file));
+        $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_no_match_out_extension()
@@ -230,7 +230,7 @@ class FinderTest extends TestCase
         $settings->out_archiveextensions[] = 'gz';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($finder->is_archive_find_file($file));
+        $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_matches_in_pattern()
@@ -239,7 +239,7 @@ class FinderTest extends TestCase
         $settings->in_archivefilepatterns[] = 'arch';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($finder->is_archive_find_file($file));
+        $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_no_match_in_pattern()
@@ -248,7 +248,7 @@ class FinderTest extends TestCase
         $settings->in_archivefilepatterns[] = 'archives';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($finder->is_archive_find_file($file));
+        $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_matches_out_pattern()
@@ -257,7 +257,7 @@ class FinderTest extends TestCase
         $settings->out_archivefilepatterns[] = 'arch';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertFalse($finder->is_archive_find_file($file));
+        $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
     public function test_is_archive_find_file_no_match_out_pattern()
@@ -266,7 +266,7 @@ class FinderTest extends TestCase
         $settings->out_archivefilepatterns[] = 'archives';
         $finder = new Finder($settings);
         $file = 'archive.zip';
-        $this->assertTrue($finder->is_archive_find_file($file));
+        $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
     ################################################################################

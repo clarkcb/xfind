@@ -57,6 +57,11 @@ class FindSettings
     public array $out_filetypes = array();
     public array $paths = array();
 
+    /**
+     * @param $ext
+     * @param $exts
+     * @return void
+     */
     public function add_exts($ext, &$exts): void
     {
         if (gettype($ext) == 'string') {
@@ -71,6 +76,11 @@ class FindSettings
         }
     }
 
+    /**
+     * @param $filetype
+     * @param $filetypes
+     * @return void
+     */
     public function add_filetypes($filetype, &$filetypes): void
     {
         if (gettype($filetype) == 'string') {
@@ -85,6 +95,11 @@ class FindSettings
         }
     }
 
+    /**
+     * @param $pattern
+     * @param $patterns
+     * @return void
+     */
     public function add_patterns($pattern, &$patterns): void
     {
         if (gettype($pattern) == 'string') {
@@ -96,6 +111,10 @@ class FindSettings
         }
     }
 
+    /**
+     * @param bool $b
+     * @return void
+     */
     public function set_archivesonly(bool $b): void
     {
         $this->archivesonly = $b;
@@ -104,6 +123,10 @@ class FindSettings
         }
     }
 
+    /**
+     * @param bool $b
+     * @return void
+     */
     public function set_debug(bool $b): void
     {
         $this->debug = $b;
@@ -112,6 +135,9 @@ class FindSettings
         }
     }
 
+    /**
+     * @return string
+     */
     public function __toString(): string
     {
         return sprintf('FindSettings(' .

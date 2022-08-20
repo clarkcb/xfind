@@ -13,6 +13,12 @@ namespace phpfind;
  */
 class FindOption
 {
+    /**
+     * @param string $shortarg
+     * @param string $longarg
+     * @param string $desc
+     * @param $func
+     */
     public function __construct(string $shortarg, string $longarg, string $desc, $func)
     {
         $this->shortarg = $shortarg;
@@ -22,6 +28,9 @@ class FindOption
         $this->sortarg = $this->__sortarg();
     }
 
+    /**
+     * @return string
+     */
     private function __sortarg(): string
     {
         if ($this->shortarg) {

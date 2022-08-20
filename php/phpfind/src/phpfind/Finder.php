@@ -17,6 +17,7 @@ class Finder
     private readonly FileTypes $filetypes;
 
     /**
+     * @param FindSettings $settings
      * @throws FindException
      */
     public function __construct(FindSettings $settings)
@@ -44,6 +45,11 @@ class Finder
         }
     }
 
+    /**
+     * @param string $s
+     * @param array $patterns
+     * @return bool
+     */
     private function matches_any_pattern(string $s, array $patterns): bool
     {
         foreach ($patterns as $pattern) {
@@ -55,6 +61,11 @@ class Finder
         return false;
     }
 
+    /**
+     * @param array $slist
+     * @param array $patterns
+     * @return bool
+     */
     private function any_matches_any_pattern(array $slist, array $patterns): bool
     {
         foreach ($slist as $s) {
@@ -65,15 +76,19 @@ class Finder
         return false;
     }
 
-    public function is_find_dir(string $d): bool
+    /**
+     * @param string $dir
+     * @return bool
+     */
+    public function is_find_dir(string $dir): bool
     {
-        if (FileUtil::is_dot_dir($d)) {
+        if (FileUtil::is_dot_dir($dir)) {
             return true;
         }
-        if ($this->settings->excludehidden && FileUtil::is_hidden($d)) {
+        if ($this->settings->excludehidden && FileUtil::is_hidden($dir)) {
             return false;
         }
-        $path_elems = FileUtil::split_path($d);
+        $path_elems = FileUtil::split_path($dir);
         if ($this->settings->in_dirpatterns &&
             !$this->any_matches_any_pattern($path_elems, $this->settings->in_dirpatterns)) {
             return false;
@@ -85,9 +100,33 @@ class Finder
         return true;
     }
 
-    public function is_find_file(string $f): bool
+    /**
+     * @param string $filepath
+     * @return FileResult
+     */
+    private function filepath_to_fileresult(string $filepath) {
+        $path_and_filename = FileUtil::split_to_path_and_filename($filepath);
+        $path = $path_and_filename[0];
+        $filename = $path_and_filename[1];
+        return new FileResult($path, $filename, $this->filetypes->get_filetype($filename));
+    }
+
+    /**
+     * @param string $f
+     * @return bool
+     */
+    public function is_matching_file(string $f): bool
     {
-        $ext = FileUtil::get_extension($f);
+        return $this->is_matching_file_result($this->filepath_to_fileresult($f));
+    }
+
+    /**
+     * @param FileResult $fr
+     * @return bool
+     */
+    public function is_matching_file_result(FileResult $fr): bool
+    {
+        $ext = FileUtil::get_extension($fr->filename);
         if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions)) {
             return false;
         }
@@ -95,24 +134,27 @@ class Finder
             return false;
         }
         if ($this->settings->in_filepatterns &&
-            !$this->matches_any_pattern($f, $this->settings->in_filepatterns)) {
+            !$this->matches_any_pattern($fr->filename, $this->settings->in_filepatterns)) {
             return false;
         }
         if ($this->settings->out_filepatterns &&
-            $this->matches_any_pattern($f, $this->settings->out_filepatterns)) {
+            $this->matches_any_pattern($fr->filename, $this->settings->out_filepatterns)) {
             return false;
         }
-        $type = $this->filetypes->get_filetype($f);
-        if ($this->settings->in_filetypes && !in_array($type, $this->settings->in_filetypes)) {
+        if ($this->settings->in_filetypes && !in_array($fr->filetype, $this->settings->in_filetypes)) {
             return false;
         }
-        if ($this->settings->out_filetypes && in_array($type, $this->settings->out_filetypes)) {
+        if ($this->settings->out_filetypes && in_array($fr->filetype, $this->settings->out_filetypes)) {
             return false;
         }
         return true;
     }
 
-    public function is_archive_find_file(string $f): bool
+    /**
+     * @param string $f
+     * @return bool
+     */
+    public function is_matching_archive_file(string $f): bool
     {
         $ext = FileUtil::get_extension($f);
         if ($this->settings->in_archiveextensions &&
@@ -134,57 +176,83 @@ class Finder
         return true;
     }
 
-    private function get_non_dot_dirs(string $d): array
+    private function get_non_dot_dirs(string $dir): array
     {
-        $filter_non_dot_dirs = function ($f) use ($d) {
-            return (is_dir(FileUtil::join_path($d, $f)) && !FileUtil::is_dot_dir($f));
+        $filter_non_dot_dirs = function ($f) use ($dir) {
+            return (is_dir(FileUtil::join_path($dir, $f)) && !FileUtil::is_dot_dir($f));
         };
-        return array_filter(scandir($d), $filter_non_dot_dirs);
+        return array_filter(scandir($dir), $filter_non_dot_dirs);
     }
 
-    private function get_dir_find_dirs(string $d): array
+    private function get_dir_find_dirs(string $dir): array
     {
-        $filter_dirs = function ($f) use ($d) {
-            return is_dir(FileUtil::join_path($d, $f)) && $this->is_find_dir($f);
+        $filter_dirs = function ($f) use ($dir) {
+            return is_dir(FileUtil::join_path($dir, $f)) && $this->is_find_dir($f);
         };
-        $join_path = function ($f) use ($d) {
-            return FileUtil::join_path($d, $f);
+        $join_path = function ($f) use ($dir) {
+            return FileUtil::join_path($dir, $f);
         };
-        $finddirs = array_filter($this->get_non_dot_dirs($d), $filter_dirs);
+        $finddirs = array_filter($this->get_non_dot_dirs($dir), $filter_dirs);
         return array_map($join_path, $finddirs);
     }
 
-    private function get_dir_find_files(string $d): array
+    private function get_dir_file_results(string $dir): array
     {
-        $filter_files = function ($f) use ($d) {
-            return is_file(FileUtil::join_path($d, $f)) && $this->filter_file($f);
+        $filter_files = function ($f) use ($dir) {
+            return is_file(FileUtil::join_path($dir, $f)) && $this->filter_file($f);
         };
-        $to_find_file = function ($f) use ($d) {
-            return new FindFile($d, $f, $this->filetypes->get_filetype($f));
+        $to_file_result = function ($f) use ($dir) {
+            return new FileResult($dir, $f, $this->filetypes->get_filetype($f));
         };
-        $findfiles = array_filter(scandir($d), $filter_files);
-        return array_map($to_find_file, $findfiles);
+        $fileresults = array_filter(scandir($dir), $filter_files);
+        return array_map($to_file_result, $fileresults);
     }
 
-    private function rec_get_find_files(string $d): array
+    private function rec_get_file_results(string $dir): array
     {
-        $finddirs = $this->get_dir_find_dirs($d);
-        $findfiles = $this->get_dir_find_files($d);
+        $finddirs = $this->get_dir_find_dirs($dir);
+        $fileresults = $this->get_dir_file_results($dir);
         foreach ($finddirs as $finddir) {
-            $findfiles = array_merge($findfiles, $this->rec_get_find_files($finddir));
+            $fileresults = array_merge($fileresults, $this->rec_get_file_results($finddir));
         }
-        return $findfiles;
+        return $fileresults;
     }
 
-    public function filter_file(string $f): bool
+    /**
+     * @param string $filepath
+     * @return bool
+     */
+    public function filter_file(string $filepath): bool
     {
-        if ($this->settings->excludehidden && FileUtil::is_hidden($f)) {
+        if ($this->settings->excludehidden && FileUtil::is_hidden($filepath)) {
             return false;
         }
-        if ($this->filetypes->is_archive($f)) {
-            return $this->settings->includearchives && $this->is_archive_find_file($f);
+        if ($this->filetypes->is_archive($filepath)) {
+            return $this->settings->includearchives && $this->is_matching_archive_file($filepath);
         }
-        return !$this->settings->archivesonly && $this->is_find_file($f);
+        return !$this->settings->archivesonly && $this->is_matching_file($filepath);
+    }
+
+    /**
+     * @param string $filepath
+     * @return FileResult|null
+     */
+    public function filter_to_file_result(string $filepath): ?FileResult
+    {
+        if ($this->settings->excludehidden && FileUtil::is_hidden($filepath)) {
+            return null;
+        }
+        $fileresult = $this->filepath_to_fileresult($filepath);
+        if ($fileresult->filetype == FileType::Archive) {
+            if ($this->settings->includearchives && $this->is_matching_archive_file($filepath)) {
+                return $fileresult;
+            }
+            return null;
+        }
+        if (!$this->settings->archivesonly && $this->is_matching_file($filepath)) {
+            return $fileresult;
+        }
+        return null;
     }
 
     /**
@@ -192,34 +260,38 @@ class Finder
      */
     public function find(): array
     {
-        $findfiles = array();
+        $fileresults = array();
         foreach ($this->settings->paths as $p) {
             if (is_dir($p)) {
                 if ($this->is_find_dir($p)) {
                     if ($this->settings->recursive) {
-                        $findfiles = array_merge($findfiles, $this->rec_get_find_files($p));
+                        $fileresults = array_merge($fileresults, $this->rec_get_file_results($p));
                     } else {
-                        $findfiles = array_merge($findfiles, $this->get_dir_find_files($p));
+                        $fileresults = array_merge($fileresults, $this->get_dir_file_results($p));
                     }
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
             } elseif (is_file($p)) {
                 if ($this->filter_file($p)) {
-                    $findfiles[] = $p;
+                    $fileresults[] = $p;
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
             }
         }
-        sort($findfiles);
-        return $findfiles;
+        sort($fileresults);
+        return $fileresults;
     }
 
-    public function get_matching_dirs(array $findfiles): array
+    /**
+     * @param array $fileresults
+     * @return array
+     */
+    public function get_matching_dirs(array $fileresults): array
     {
         $dirs = array();
-        foreach ($findfiles as $f) {
+        foreach ($fileresults as $f) {
             if (!in_array($f->path, $dirs)) {
                 $dirs[] = $f->path;
             }
@@ -228,9 +300,13 @@ class Finder
         return $dirs;
     }
 
-    public function print_matching_dirs(array $findfiles): void
+    /**
+     * @param array $fileresults
+     * @return void
+     */
+    public function print_matching_dirs(array $fileresults): void
     {
-        $dirs = $this->get_matching_dirs($findfiles);
+        $dirs = $this->get_matching_dirs($fileresults);
         if (count($dirs) > 0) {
             Logger::log_msg(sprintf("\nMatching directories (%d):", count($dirs)));
             foreach ($dirs as $d) {
@@ -241,24 +317,32 @@ class Finder
         }
     }
 
-    public function get_matching_files(array $findfiles): array
+    /**
+     * @param array $fileresults
+     * @return array
+     */
+    public function get_matching_files(array $fileresults): array
     {
-        $files = array();
-        foreach ($findfiles as $f) {
-            if (!in_array($f->filename, $files)) {
-                $files[] = FileUtil::join_path($f->path, $f->filename);
+        $filepaths = array();
+        foreach ($fileresults as $f) {
+            if (!in_array($f->filename, $filepaths)) {
+                $filepaths[] = FileUtil::join_path($f->path, $f->filename);
             }
         }
-        sort($files);
-        return $files;
+        sort($filepaths);
+        return $filepaths;
     }
 
-    public function print_matching_files(array $findfiles): void
+    /**
+     * @param array $fileresults
+     * @return void
+     */
+    public function print_matching_files(array $fileresults): void
     {
-        $files = $this->get_matching_files($findfiles);
-        if (count($files) > 0) {
-            Logger::log_msg(sprintf("\nMatching files (%d):", count($files)));
-            foreach ($files as $f) {
+        $filepaths = $this->get_matching_files($fileresults);
+        if (count($filepaths) > 0) {
+            Logger::log_msg(sprintf("\nMatching files (%d):", count($filepaths)));
+            foreach ($filepaths as $f) {
                 Logger::log_msg($f);
             }
         } else {

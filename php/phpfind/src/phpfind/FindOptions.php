@@ -78,9 +78,6 @@ class FindOptions
             $json_obj = json_decode(file_get_contents($findoptionspath), true);
             foreach ($json_obj['findoptions'] as $so) {
                 $short = '';
-                if (array_key_exists('short', $so)) {
-                    $short = (string)$so['short'];
-                }
                 $long = (string)$so['long'];
                 $desc = (string)$so['desc'];
                 $func = null;
@@ -89,12 +86,13 @@ class FindOptions
                 } elseif (array_key_exists($long, $this->bool_flag_action_map)) {
                     $func = $this->bool_flag_action_map[$long];
                 }
-                $option = new FindOption($short, $long, $desc, $func);
-                $this->options[] = $option;
                 $this->longarg_map[$long] = $long;
-                if ($short) {
+                if (array_key_exists('short', $so)) {
+                    $short = (string)$so['short'];
                     $this->longarg_map[$short] = $long;
                 }
+                $option = new FindOption($short, $long, $desc, $func);
+                $this->options[] = $option;
             }
             usort($this->options, array('phpfind\FindOptions', 'cmp_findoptions'));
         } else {
@@ -103,6 +101,9 @@ class FindOptions
     }
 
     /**
+     * @param string $filepath
+     * @param FindSettings $settings
+     * @return void
      * @throws FindException
      */
     private function settings_from_file(string $filepath, FindSettings $settings): void
@@ -115,6 +116,9 @@ class FindOptions
     }
 
     /**
+     * @param string $json
+     * @param FindSettings $settings
+     * @return void
      * @throws FindException
      */
     public function settings_from_json(string $json, FindSettings $settings): void
@@ -142,6 +146,8 @@ class FindOptions
     }
 
     /**
+     * @param array $args
+     * @return FindSettings
      * @throws FindException
      */
     public function settings_from_args(array $args): FindSettings
@@ -181,11 +187,19 @@ class FindOptions
         return $settings;
     }
 
+    /**
+     * @param FindOption $o1
+     * @param FindOption $o2
+     * @return int
+     */
     private static function cmp_findoptions(FindOption $o1, FindOption $o2): int
     {
         return strcmp($o1->sortarg, $o2->sortarg);
     }
 
+    /**
+     * @return string
+     */
     private function get_usage_string(): string
     {
         $usage = "Usage:\n phpfind [options] <path> [<path> ...]";
@@ -210,11 +224,18 @@ class FindOptions
         return $usage;
     }
 
+    /**
+     * @return void
+     */
     public function usage(): void
     {
         echo $this->get_usage_string() . "\n";
     }
 
+    /**
+     * @param int $exit_code
+     * @return never
+     */
     public function usage_and_exit(int $exit_code = 0): never
     {
         $this->usage();

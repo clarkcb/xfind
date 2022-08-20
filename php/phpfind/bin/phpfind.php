@@ -23,16 +23,16 @@ function main($argv)
         }
 
         $finder = new Finder($settings);
-        $findfiles = $finder->find();
+        $file_results = $finder->find();
 
         // print matching dirs
         if ($settings->listdirs) {
-            $finder->print_matching_dirs($findfiles);
+            $finder->print_matching_dirs($file_results);
         }
 
         // print matching files
         if ($settings->listfiles) {
-            $finder->print_matching_files($findfiles);
+            $finder->print_matching_files($file_results);
         }
     } catch (FindException $e) {
         Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");

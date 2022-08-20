@@ -7,6 +7,7 @@ namespace phpfind;
 /**
  * Class FileTypes
  *
+ * @package phpfind
  * @property array $file_type_map
  */
 class FileTypes
@@ -46,9 +47,13 @@ class FileTypes
         return $file_type_map;
     }
 
-    public static function from_name(string $name): FileType
+    /**
+     * @param string $typename
+     * @return FileType
+     */
+    public static function from_name(string $typename): FileType
     {
-        return match (strtoupper($name)) {
+        return match (strtoupper($typename)) {
             'ARCHIVE' => FileType::Archive,
             'BINARY' => FileType::Binary,
             'CODE' => FileType::Code,
@@ -58,53 +63,81 @@ class FileTypes
         };
     }
 
-    public function get_filetype(string $file): FileType
+    /**
+     * @param string $filename
+     * @return FileType
+     */
+    public function get_filetype(string $filename): FileType
     {
-        if ($this->is_code($file)) {
+        if ($this->is_code($filename)) {
             return FileType::Code;
         }
-        if ($this->is_xml($file)) {
+        if ($this->is_xml($filename)) {
             return FileType::Xml;
         }
-        if ($this->is_text($file)) {
+        if ($this->is_text($filename)) {
             return FileType::Text;
         }
-        if ($this->is_binary($file)) {
+        if ($this->is_binary($filename)) {
             return FileType::Binary;
         }
-        if ($this->is_archive($file)) {
+        if ($this->is_archive($filename)) {
             return FileType::Archive;
         }
         return FileType::Unknown;
     }
 
-    public function is_archive(string $f): bool
+    /**
+     * @param string $filename
+     * @return bool
+     */
+    public function is_archive(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['archive']);
+        return in_array(FileUtil::get_extension($filename), $this->file_type_map['archive']);
     }
 
-    public function is_binary(string $f): bool
+    /**
+     * @param string $filename
+     * @return bool
+     */
+    public function is_binary(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['binary']);
+        return in_array(FileUtil::get_extension($filename), $this->file_type_map['binary']);
     }
 
-    public function is_code(string $f): bool
+    /**
+     * @param string $filename
+     * @return bool
+     */
+    public function is_code(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['code']);
+        return in_array(FileUtil::get_extension($filename), $this->file_type_map['code']);
     }
 
-    public function is_text(string $f): bool
+    /**
+     * @param string $filename
+     * @return bool
+     */
+    public function is_text(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['text']);
+        return in_array(FileUtil::get_extension($filename), $this->file_type_map['text']);
     }
 
-    public function is_xml(string $f): bool
+    /**
+     * @param string $filename
+     * @return bool
+     */
+    public function is_xml(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($f), $this->file_type_map['xml']);
+        return in_array(FileUtil::get_extension($filename), $this->file_type_map['xml']);
     }
 
-    public function is_unknown(string $f): bool
+    /**
+     * @param string $filename
+     * @return bool
+     */
+    public function is_unknown(string $filename): bool
     {
-        return $this->get_filetype($f) == FileType::Unknown;
+        return $this->get_filetype($filename) == FileType::Unknown;
     }
 }

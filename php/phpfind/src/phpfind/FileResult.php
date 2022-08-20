@@ -10,7 +10,7 @@ namespace phpfind;
  * @property string filename
  * @property FileType filetype
  */
-class FindFile
+class FileResult
 {
     const CONTAINER_SEPARATOR = '!';
 
@@ -19,6 +19,11 @@ class FindFile
     public readonly string $filename;
     public readonly FileType $filetype;
 
+    /**
+     * @param string $path
+     * @param string $filename
+     * @param FileType $filetype
+     */
     public function __construct(string $path, string $filename, FileType $filetype)
     {
         $this->containers = array();
@@ -27,17 +32,23 @@ class FindFile
         $this->filetype = $filetype;
     }
 
+    /**
+     * @return string
+     */
     public function filepath(): string
     {
         return FileUtil::join_path($this->path, $this->filename);
     }
 
+    /**
+     * @return string
+     */
     public function __toString(): string
     {
         $s = "";
         if ($this->containers) {
-            $s = join(FindFile::CONTAINER_SEPARATOR, $this->containers) .
-                FindFile::CONTAINER_SEPARATOR;
+            $s = join(FileResult::CONTAINER_SEPARATOR, $this->containers) .
+                FileResult::CONTAINER_SEPARATOR;
         }
         $s .= FileUtil::join_path($this->path, $this->filename);
         return $s;
