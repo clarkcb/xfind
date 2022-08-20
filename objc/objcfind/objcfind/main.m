@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "Finder.h"
-#import "FindFile.h"
+#import "FileResult.h"
 #import "FindOptions.h"
 #import "FindSettings.h"
 
@@ -19,9 +19,9 @@ void handleError(NSError *error, FindOptions *options) {
     [options usage:1];
 }
 
-NSArray<NSString*>* getMatchingDirs(NSArray<FindFile*> *findfiles) {
+NSArray<NSString*>* getMatchingDirs(NSArray<FileResult*> *findfiles) {
     NSMutableSet<NSString*> *dirs = [NSMutableSet set];
-    for (FindFile *f in findfiles) {
+    for (FileResult *f in findfiles) {
         [dirs addObject:[[f description] stringByDeletingLastPathComponent]];
     }
     NSArray *dirArr = [NSArray arrayWithArray:[dirs allObjects]];
@@ -30,9 +30,9 @@ NSArray<NSString*>* getMatchingDirs(NSArray<FindFile*> *findfiles) {
     }];
 }
 
-NSArray<NSString*>* getMatchingFiles(NSArray<FindFile*> *findfiles) {
+NSArray<NSString*>* getMatchingFiles(NSArray<FileResult*> *findfiles) {
     NSMutableSet<NSString*> *files = [NSMutableSet set];
-    for (FindFile *f in findfiles) {
+    for (FileResult *f in findfiles) {
         [files addObject:[f description]];
     }
     NSArray *fileArr = [NSArray arrayWithArray:[files allObjects]];
@@ -48,9 +48,6 @@ int main(int argc, const char * argv[]) {
         FindOptions *options = [[FindOptions alloc] init];
 
         NSArray *args = argvToNSArray(argc, argv);
-        //for (NSString *arg in args) {
-        //    logMsg([NSString stringWithFormat:@"arg: %@", arg]);
-        //}
 
         FindSettings *settings = [options settingsFromArgs:args error:&error];
 
@@ -72,14 +69,14 @@ int main(int argc, const char * argv[]) {
             handleError(error, options);
         }
 
-        NSArray<FindFile *> *findfiles = [finder find:&error];
+        NSArray<FileResult*> *fileResults = [finder find:&error];
 
         if (error) {
             handleError(error, options);
         }
 
         if (settings.listDirs) {
-            NSArray<NSString*> *dirPaths = getMatchingDirs(findfiles);
+            NSArray<NSString*> *dirPaths = getMatchingDirs(fileResults);
             if ([dirPaths count] > 0) {
                 logMsg([NSString stringWithFormat:@"\nMatching directories (%lu):", [dirPaths count]]);
                 for (NSString *d in dirPaths) {
@@ -91,7 +88,7 @@ int main(int argc, const char * argv[]) {
         }
 
         if (settings.listFiles) {
-            NSArray<NSString*> *filePaths = getMatchingFiles(findfiles);
+            NSArray<NSString*> *filePaths = getMatchingFiles(fileResults);
             if ([filePaths count] > 0) {
                 logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [filePaths count]]);
                 for (NSString *f in filePaths) {

@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		4A076CAE25EC6FD0009E8B52 /* FindSettingsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA725EC6FD0009E8B52 /* FindSettingsTests.m */; };
-		4A076CAF25EC6FD0009E8B52 /* FindFileTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA825EC6FD0009E8B52 /* FindFileTests.m */; };
+		4A076CAF25EC6FD0009E8B52 /* FileResultTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA825EC6FD0009E8B52 /* FileResultTests.m */; };
 		4A076CB025EC6FD0009E8B52 /* FileTypesTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CA925EC6FD0009E8B52 /* FileTypesTests.m */; };
 		4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */; };
 		4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */; };
@@ -21,7 +21,7 @@
 		4A12FD1B2713BFE80078C10E /* FindOptions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227862713B99C006E8459 /* FindOptions.m */; };
 		4A12FD1C2713BFE80078C10E /* config.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227872713B99C006E8459 /* config.h */; };
 		4A12FD1E2713BFE80078C10E /* FileUtil.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227892713B99C006E8459 /* FileUtil.h */; };
-		4A12FD1F2713BFE80078C10E /* FindFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278A2713B99C006E8459 /* FindFile.m */; };
+		4A12FD1F2713BFE80078C10E /* FileResult.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278A2713B99C006E8459 /* FileResult.m */; };
 		4A12FD202713BFE80078C10E /* FindOption.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278B2713B99C006E8459 /* FindOption.m */; };
 		4A12FD212713BFE80078C10E /* Regex.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278C2713B99C006E8459 /* Regex.h */; };
 		4A12FD222713BFE80078C10E /* FileTypes.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC2278D2713B99C006E8459 /* FileTypes.m */; };
@@ -30,7 +30,7 @@
 		4A12FD252713BFE80078C10E /* Finder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227902713B99C006E8459 /* Finder.m */; };
 		4A12FD262713BFE80078C10E /* FindOptions.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227912713B99C006E8459 /* FindOptions.h */; };
 		4A12FD272713BFE80078C10E /* FindOption.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227922713B99C006E8459 /* FindOption.h */; };
-		4A12FD282713BFE80078C10E /* FindFile.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227932713B99C006E8459 /* FindFile.h */; };
+		4A12FD282713BFE80078C10E /* FileResult.h in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227932713B99C006E8459 /* FileResult.h */; };
 		4A12FD292713BFE80078C10E /* FileUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227942713B99C006E8459 /* FileUtil.m */; };
 		4A12FD2B2713BFE80078C10E /* Regex.m in Sources */ = {isa = PBXBuildFile; fileRef = 4AC227962713B99C006E8459 /* Regex.m */; };
 		4ABCE5E725EC5EFA001EF088 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4ABCE5E625EC5EFA001EF088 /* main.m */; };
@@ -68,7 +68,7 @@
 
 /* Begin PBXFileReference section */
 		4A076CA725EC6FD0009E8B52 /* FindSettingsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindSettingsTests.m; sourceTree = "<group>"; };
-		4A076CA825EC6FD0009E8B52 /* FindFileTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindFileTests.m; sourceTree = "<group>"; };
+		4A076CA825EC6FD0009E8B52 /* FileResultTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileResultTests.m; sourceTree = "<group>"; };
 		4A076CA925EC6FD0009E8B52 /* FileTypesTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileTypesTests.m; sourceTree = "<group>"; };
 		4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtilTests.m; sourceTree = "<group>"; };
 		4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOptionsTests.m; sourceTree = "<group>"; };
@@ -105,7 +105,7 @@
 		4AC227862713B99C006E8459 /* FindOptions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOptions.m; sourceTree = "<group>"; };
 		4AC227872713B99C006E8459 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = config.h; sourceTree = "<group>"; };
 		4AC227892713B99C006E8459 /* FileUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileUtil.h; sourceTree = "<group>"; };
-		4AC2278A2713B99C006E8459 /* FindFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindFile.m; sourceTree = "<group>"; };
+		4AC2278A2713B99C006E8459 /* FileResult.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileResult.m; sourceTree = "<group>"; };
 		4AC2278B2713B99C006E8459 /* FindOption.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FindOption.m; sourceTree = "<group>"; };
 		4AC2278C2713B99C006E8459 /* Regex.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Regex.h; sourceTree = "<group>"; };
 		4AC2278D2713B99C006E8459 /* FileTypes.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileTypes.m; sourceTree = "<group>"; };
@@ -114,7 +114,7 @@
 		4AC227902713B99C006E8459 /* Finder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Finder.m; sourceTree = "<group>"; };
 		4AC227912713B99C006E8459 /* FindOptions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOptions.h; sourceTree = "<group>"; };
 		4AC227922713B99C006E8459 /* FindOption.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindOption.h; sourceTree = "<group>"; };
-		4AC227932713B99C006E8459 /* FindFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FindFile.h; sourceTree = "<group>"; };
+		4AC227932713B99C006E8459 /* FileResult.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FileResult.h; sourceTree = "<group>"; };
 		4AC227942713B99C006E8459 /* FileUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FileUtil.m; sourceTree = "<group>"; };
 		4AC227962713B99C006E8459 /* Regex.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Regex.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -152,7 +152,7 @@
 				4A076CA925EC6FD0009E8B52 /* FileTypesTests.m */,
 				4A076CAB25EC6FD0009E8B52 /* FileUtilTests.m */,
 				4A076CAD25EC6FD0009E8B52 /* FinderTests.m */,
-				4A076CA825EC6FD0009E8B52 /* FindFileTests.m */,
+				4A076CA825EC6FD0009E8B52 /* FileResultTests.m */,
 				4A076CAC25EC6FD0009E8B52 /* FindOptionsTests.m */,
 				4A076CA725EC6FD0009E8B52 /* FindSettingsTests.m */,
 				4A7E370825EC6F3A000FFE49 /* Info.plist */,
@@ -219,8 +219,8 @@
 				4AC2278D2713B99C006E8459 /* FileTypes.m */,
 				4AC227892713B99C006E8459 /* FileUtil.h */,
 				4AC227942713B99C006E8459 /* FileUtil.m */,
-				4AC227932713B99C006E8459 /* FindFile.h */,
-				4AC2278A2713B99C006E8459 /* FindFile.m */,
+				4AC227932713B99C006E8459 /* FileResult.h */,
+				4AC2278A2713B99C006E8459 /* FileResult.m */,
 				4AC227922713B99C006E8459 /* FindOption.h */,
 				4AC2278B2713B99C006E8459 /* FindOption.m */,
 				4AC227842713B99C006E8459 /* FindSettings.h */,
@@ -369,8 +369,8 @@
 				4A12FD222713BFE80078C10E /* FileTypes.m in Sources */,
 				4A12FD1E2713BFE80078C10E /* FileUtil.h in Sources */,
 				4A12FD292713BFE80078C10E /* FileUtil.m in Sources */,
-				4A12FD282713BFE80078C10E /* FindFile.h in Sources */,
-				4A12FD1F2713BFE80078C10E /* FindFile.m in Sources */,
+				4A12FD282713BFE80078C10E /* FileResult.h in Sources */,
+				4A12FD1F2713BFE80078C10E /* FileResult.m in Sources */,
 				4A12FD272713BFE80078C10E /* FindOption.h in Sources */,
 				4A12FD202713BFE80078C10E /* FindOption.m in Sources */,
 				4A12FD262713BFE80078C10E /* FindOptions.h in Sources */,
@@ -391,7 +391,7 @@
 				4A076CB025EC6FD0009E8B52 /* FileTypesTests.m in Sources */,
 				4A076CB225EC6FD0009E8B52 /* FileUtilTests.m in Sources */,
 				4A076CB425EC6FD0009E8B52 /* FinderTests.m in Sources */,
-				4A076CAF25EC6FD0009E8B52 /* FindFileTests.m in Sources */,
+				4A076CAF25EC6FD0009E8B52 /* FileResultTests.m in Sources */,
 				4A076CB325EC6FD0009E8B52 /* FindOptionsTests.m in Sources */,
 				4A076CAE25EC6FD0009E8B52 /* FindSettingsTests.m in Sources */,
 			);

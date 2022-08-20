@@ -1,6 +1,6 @@
 #import <Foundation/Foundation.h>
 #import "FileTypes.h"
-#import "FindFile.h"
+#import "FileResult.h"
 #import "FindSettings.h"
 
 @interface Finder : NSObject
@@ -10,12 +10,12 @@
 @property NSStringEncoding textFileEncoding;
 
 - (instancetype) initWithSettings:(FindSettings*)settings error:(NSError**)error;
-- (NSArray<FindFile*>*) find:(NSError**)error;
+- (NSArray<FileResult*>*) find:(NSError**)error;
 
 // private methods
-- (FindFile*) filterToFindFile:(NSString*)filePath;
-- (BOOL) isArchiveFindFile:(NSString*)filePath;
-- (BOOL) isFindDir:(NSString*)dirPath;
-- (BOOL) isFindFile:(NSString*)filePath;
+- (FileResult*) filterToFileResult:(NSString*)filePath;
+- (BOOL) isMatchingArchiveFile:(NSString*)filePath;
+- (BOOL) isMatchingDir:(NSString*)dirPath;
+- (BOOL) isMatchingFile:(NSString*)filePath;
 
 @end

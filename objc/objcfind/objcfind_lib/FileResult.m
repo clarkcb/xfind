@@ -1,6 +1,6 @@
-#import "FindFile.h"
+#import "FileResult.h"
 
-@implementation FindFile
+@implementation FileResult
 
 - (instancetype) initWithFilePath:(NSString *)filePath fileType:(FileType)fileType {
     self = [super init];

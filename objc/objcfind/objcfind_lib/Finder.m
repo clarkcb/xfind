@@ -66,7 +66,7 @@
             ([outTypes count] == 0 || ![outTypes containsObject:num]));
 }
 
-- (BOOL) isFindDir:(NSString*)dirPath {
+- (BOOL) isMatchingDir:(NSString*)dirPath {
     if (self.settings.excludeHidden && [FileUtil isHidden:dirPath]) {
         return false;
     }
@@ -75,16 +75,17 @@
                       outPatterns:self.settings.outDirPatterns];
 }
 
-- (BOOL) isFindFile:(NSString*)filePath {
-    return [self filterByExtensions:[FileUtil getExtension:filePath]
+- (BOOL) isMatchingFile:(NSString*)filePath {
+    NSString *fileName = [filePath lastPathComponent];
+    return [self filterByExtensions:[FileUtil getExtension:fileName]
                        inExtensions:self.settings.inExtensions
                       outExtensions:self.settings.outExtensions] &&
-    [self filterByPatterns:filePath
+    [self filterByPatterns:fileName
                 inPatterns:self.settings.inFilePatterns
                outPatterns:self.settings.outFilePatterns];
 }
 
-- (BOOL) isArchiveFindFile:(NSString*)filePath {
+- (BOOL) isMatchingArchiveFile:(NSString*)filePath {
     NSString *fileName = [filePath lastPathComponent];
     return [self filterByExtensions:[FileUtil getExtension:fileName]
                        inExtensions:self.settings.inArchiveExtensions
@@ -94,20 +95,20 @@
                outPatterns:self.settings.outArchiveFilePatterns];
 }
 
-- (BOOL) isFindFindFile:(FindFile*)findFile {
-    NSString *fileName = [[findFile filePath] lastPathComponent];
+- (BOOL) isMatchingFileResult:(FileResult*)fileResult {
+    NSString *fileName = [[fileResult filePath] lastPathComponent];
     return [self filterByExtensions:[FileUtil getExtension:fileName]
                        inExtensions:self.settings.inExtensions
                       outExtensions:self.settings.outExtensions] &&
     [self filterByPatterns:fileName
                 inPatterns:self.settings.inFilePatterns
                outPatterns:self.settings.outFilePatterns] &&
-    [self filterByTypes:[findFile fileType]
+    [self filterByTypes:[fileResult fileType]
                 inTypes:self.settings.inFileTypes
                outTypes:self.settings.outFileTypes];
 }
 
-- (FindFile*) filterToFindFile:(NSString*)filePath {
+- (FileResult*) filterToFileResult:(NSString*)filePath {
     if (self.settings.excludeHidden && [FileUtil isHidden:filePath]) {
         return false;
     }
@@ -115,28 +116,28 @@
 //    if (fileType == FileTypeUnknown) {
 //        return nil;
 //    }
-    FindFile *sf = [[FindFile alloc] initWithFilePath:filePath fileType:fileType];
+    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType];
     if (fileType == FileTypeArchive) {
-        if (self.settings.includeArchives && [self isArchiveFindFile:filePath]) {
-            return sf;
+        if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {
+            return fr;
         }
         return nil;
     }
-    if (!self.settings.archivesOnly && [self isFindFindFile:sf]) {
-        return sf;
+    if (!self.settings.archivesOnly && [self isMatchingFileResult:fr]) {
+        return fr;
     }
     return nil;
 }
 
-- (NSArray<FindFile*>*) getFindFiles:(NSString*)filePath {
-    NSMutableArray *findFiles = [NSMutableArray array];
+- (NSArray<FileResult*>*) getFileResults:(NSString*)filePath {
+    NSMutableArray *fileResults = [NSMutableArray array];
     NSDirectoryEnumerator *enumerator = [FileUtil enumeratorForPath:filePath settings:self.settings];
     NSURL *element = (NSURL*)[enumerator nextObject];
     while (element != nil) {
         NSNumber *isDirectory = nil;
         [element getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:nil];
         if ([isDirectory boolValue]) {
-            if (![self isFindDir:[element path]]) {
+            if (![self isMatchingDir:[element path]]) {
                 [enumerator skipDescendants];
             }
         } else {
@@ -144,16 +145,16 @@
             [element getResourceValue:&isRegularFile forKey:NSURLIsRegularFileKey error:nil];
             if ([isRegularFile boolValue]) {
                 NSString *filePath = [element path];
-                FindFile *findFile = [self filterToFindFile:filePath];
-                if (findFile != nil) {
-                    [findFiles addObject:findFile];
+                FileResult *fileResult = [self filterToFileResult:filePath];
+                if (fileResult != nil) {
+                    [fileResults addObject:fileResult];
                 }
             }
         }
         element = (NSURL*)[enumerator nextObject];
     }
-    return [[NSArray arrayWithArray:findFiles]
-            sortedArrayUsingComparator:^NSComparisonResult(FindFile *sf1, FindFile *sf2) {
+    return [[NSArray arrayWithArray:fileResults]
+            sortedArrayUsingComparator:^NSComparisonResult(FileResult *sf1, FileResult *sf2) {
         NSString *p1 = [[sf1 description] stringByDeletingLastPathComponent];
         NSString *p2 = [[sf2 description] stringByDeletingLastPathComponent];
         if ([p1 isEqualToString:p2]) {
@@ -165,22 +166,21 @@
     }];
 }
 
-- (NSArray<FindFile*>*) find:(NSError**)error {
-    //logMsg(@"Finding...");
-    NSMutableArray<FindFile*> *findfiles = [NSMutableArray array];
+- (NSArray<FileResult*>*) find:(NSError**)error {
+    NSMutableArray<FileResult*> *fileResults = [NSMutableArray array];
     for (NSString *p in self.settings.paths) {
         if ([FileUtil isDirectory:p]) {
-            NSArray<FindFile*> *pFiles = [self getFindFiles:p];
-            [findfiles addObjectsFromArray:pFiles];
+            NSArray<FileResult*> *pFiles = [self getFileResults:p];
+            [fileResults addObjectsFromArray:pFiles];
         } else {
-            FindFile *ff = [self filterToFindFile:p];
-            if (ff != nil) {
-                [findfiles addObject:ff];
+            FileResult *fr = [self filterToFileResult:p];
+            if (fr != nil) {
+                [fileResults addObject:fr];
             }
         }
     }
 
-    return [NSArray arrayWithArray:findfiles];
+    return [NSArray arrayWithArray:fileResults];
 }
 
 @end
