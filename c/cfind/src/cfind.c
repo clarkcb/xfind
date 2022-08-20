@@ -16,11 +16,11 @@ int main(int argc, char *argv[])
     }
 
     FindSettings *settings = default_settings();
-    int err = settings_from_args(argc - 1, ++argv, settings);
+    error_t err = settings_from_args(argc - 1, ++argv, settings);
     if (err != E_OK) {
         handle_error(err);
         print_usage();
-        return err;
+        return (int) err;
     }
 
     if (settings->debug) {
@@ -46,14 +46,16 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (is_null_or_empty_file_results(results)) {
-                printf("\nMatching files: 0\n");
-                if (results != NULL) {
+            if (settings->listfiles) {
+                if (is_null_or_empty_file_results(results)) {
+                    printf("\nMatching files: 0\n");
+                    if (results != NULL) {
+                        destroy_file_results(results);
+                    }
+                } else {
+                    print_file_results(results);
                     destroy_file_results(results);
                 }
-            } else {
-                print_file_results(results);
-                destroy_file_results(results);
             }
         } else {
             handle_error(err);
@@ -63,5 +65,5 @@ int main(int argc, char *argv[])
 
     destroy_settings(settings);
 
-    return err;
+    return (int) err;
 }

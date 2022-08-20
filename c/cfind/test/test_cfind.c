@@ -11,10 +11,12 @@ int main(int argc, char *argv[])
 
 	// test_filetypes
     test_filetype_from_name();
+    test_get_filetype_for_ext();
 
 	// test_fileutil
     test_dir_or_file_exists();
-
+    test_get_extension();
+	test_is_dot_dir();
 	test_is_hidden();
 
 	// test_findoptions

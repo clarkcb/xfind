@@ -12,9 +12,11 @@
 #define E_INVALID_ARG                     8 /* Invalid arg */
 #define E_MISSING_ARG_FOR_OPTION          9 /* Missing arg for arg option */
 #define E_DIRECTORY_NOT_FOUND            10 /* Directory not found */
-#define E_FILENAME_TOO_LONG              11 /* Filename is too long */
+#define E_FILE_NOT_FOUND                 11 /* File not found */
+#define E_FILENAME_TOO_LONG              12 /* Filename is too long */
 
+typedef unsigned int error_t;
 
-void handle_error(int errnum);
+void handle_error(error_t err);
 
 #endif

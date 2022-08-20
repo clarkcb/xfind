@@ -1,9 +1,9 @@
 #include "common.h"
 #include "finderr.h"
 
-void handle_error(int errnum)
+void handle_error(error_t err)
 {
-    switch (errnum) {
+    switch (err) {
     case E_STARTPATH_NOT_DEFINED:
         log_err("Startpath not defined");
         break;
@@ -30,6 +30,9 @@ void handle_error(int errnum)
         break;
     case E_DIRECTORY_NOT_FOUND:
         log_err("Directory not found");
+        break;
+    case E_FILE_NOT_FOUND:
+        log_err("File not found");
         break;
     case E_FILENAME_TOO_LONG:
         log_err("Filename is too long");

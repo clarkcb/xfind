@@ -118,10 +118,12 @@ void add_to_find_options(FindOption *o, FindOptions *options)
     }
 }
 
-static void parse_find_options(const char * const findoptions_json_str, FindOptions *options)
+static error_t parse_find_options(const char * const findoptions_json_str, FindOptions *options)
 {
     const cJSON *findoption_json = NULL;
     const cJSON *findoptions_json = NULL;
+
+    error_t err = E_OK;
 
     cJSON *file_json = cJSON_Parse(findoptions_json_str);
     if (file_json == NULL || cJSON_IsInvalid(file_json)) {
@@ -129,6 +131,7 @@ static void parse_find_options(const char * const findoptions_json_str, FindOpti
         if (error_ptr != NULL) {
             fprintf(stderr, "Error before: %s\n", error_ptr);
         }
+        err = E_UNKNOWN_ERROR;
         goto end;
     }
 
@@ -168,11 +171,12 @@ static void parse_find_options(const char * const findoptions_json_str, FindOpti
 
 end:
     cJSON_Delete(file_json);
+    return err;
 }
 
-FindOptions *get_find_options(void)
+error_t get_find_options(FindOptions *options)
 {
-    FindOptions *options = empty_find_options();
+    error_t err = E_OK;
     char *xfindpath = (char *)malloc(MAX_HOMEPATH_LENGTH + 1);
     get_xfindpath(xfindpath);
     // + 2 because of the '/' and the terminating \0
@@ -182,8 +186,15 @@ FindOptions *get_find_options(void)
     assert(fullpath != NULL);
     join_path(xfindpath, shared_find_options_json_path, fullpath);
 
+    if (!dir_or_file_exists(fullpath)) {
+        err = E_FILE_NOT_FOUND;
+        return err;
+    }
+
     // load the file
-    char contents[4020];
+    long fsize = file_size(fullpath);
+    // char contents[4020];
+    char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(fullpath, "r");
     int c;
@@ -195,16 +206,17 @@ FindOptions *get_find_options(void)
         }
         fclose(fp);
     } else {
-        char *err = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
-        sprintf(err, "Unable to load %s", fullpath);
-        return options;
+        char *errmsg = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
+        sprintf(errmsg, "Unable to load %s", fullpath);
+        err = E_UNKNOWN_ERROR;
+        return err;
     }
 
-    parse_find_options(contents, options);
+    err = parse_find_options(contents, options);
 
     free(fullpath);
     free(xfindpath);
-    return options;
+    return err;
 }
 
 static void set_arg(int arg_idx, char *arg_val, FindSettings *settings)
@@ -352,9 +364,10 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
     }
 }
 
-int settings_from_args(const int argc, char *argv[], FindSettings *settings)
+error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
 {
     int i = 0;
+    settings->listfiles = 1;
     while (i < argc) {
         size_t arglen = strlen(argv[i]);
         if (arglen < 1) {
@@ -556,7 +569,11 @@ void find_options_to_usage_string(FindOptions *options, char *s)
 
 void print_usage(void)
 {
-    FindOptions *options = get_find_options();
+    FindOptions *options = empty_find_options();
+    error_t err = get_find_options(options);
+    if (err) {
+        handle_error(err);
+    }
     size_t options_len = find_options_usage_strlen(options) + 1;
     char *usage_str = malloc((options_len + 1) * sizeof(char));
     find_options_to_usage_string(options, usage_str);

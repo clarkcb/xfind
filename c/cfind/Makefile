@@ -47,6 +47,7 @@ TEST_EXE=test/test_cfind.c
 
 LINKED_LIBS=-L/usr/local/lib
 LINKED_LIBS+=-lcjson
+#LINKED_LIBS+=-lpcre2-8
 
 
 build_cfind:

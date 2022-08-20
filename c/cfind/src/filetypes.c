@@ -8,9 +8,11 @@
 #include "config.h"
 #include "fileutil.h"
 #include "filetypes.h"
+#include "finderr.h"
 #include "intnode.h"
 #include "stringarray.h"
 #include "stringnode.h"
+#include "common.h"
 
 FileTypes *new_filetypes(void)
 {
@@ -23,11 +25,12 @@ FileTypes *new_filetypes(void)
     return filetypes;
 }
 
-void parse_filetypes(const char * const filetypes_json_str, FileTypes *filetypes);
+error_t parse_filetypes(const char * const filetypes_json_str, FileTypes *filetypes);
 
-FileTypes *get_filetypes(void)
+error_t get_filetypes(FileTypes *filetypes)
 {
-    FileTypes *filetypes = new_filetypes();
+    error_t err = E_OK;
+
     char *xfindpath = (char *)malloc(MAX_HOMEPATH_LENGTH + 1);
     get_xfindpath(xfindpath);
     // size_t xfind_len = strlen(xfindpath);
@@ -37,8 +40,15 @@ FileTypes *get_filetypes(void)
     assert(fullpath != NULL);
     join_path(xfindpath, shared_filetypes_json_path, fullpath);
 
+    if (!dir_or_file_exists(fullpath)) {
+        err = E_FILE_NOT_FOUND;
+        return err;
+    }
+
     // load the file
-    char contents[10450];
+    // char contents[10450];
+    long fsize = file_size(fullpath);
+    char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(fullpath, "r");
     int c;
@@ -50,20 +60,24 @@ FileTypes *get_filetypes(void)
         }
         fclose(fp);
     } else {
-        char *err = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
-        sprintf(err, "Unable to load %s", fullpath);
-        return filetypes;
+        char *errmsg = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
+        sprintf(errmsg, "Unable to load %s", fullpath);
+        err = E_UNKNOWN_ERROR;
+        return err;
     }
 
-    parse_filetypes(contents, filetypes);
+    err = parse_filetypes(contents, filetypes);
 
     free(fullpath);
     free(xfindpath);
-    return filetypes;
+
+    return err;
 }
 
-void parse_filetypes(const char * const filetypes_json_str, FileTypes *filetypes)
+error_t parse_filetypes(const char * const filetypes_json_str, FileTypes *filetypes)
 {
+    error_t err = E_OK;
+
     const cJSON *filetype_json = NULL;
     const cJSON *filetypes_json = NULL;
 
@@ -82,6 +96,7 @@ void parse_filetypes(const char * const filetypes_json_str, FileTypes *filetypes
         if (error_ptr != NULL) {
             fprintf(stderr, "Error before: %s\n", error_ptr);
         }
+        err = E_UNKNOWN_ERROR;
         goto end;
     }
 
@@ -112,6 +127,7 @@ void parse_filetypes(const char * const filetypes_json_str, FileTypes *filetypes
                 next_node = unknown_node;
             } else {
                 printf("Invalid filetype: \"%s\"\n", name);
+                err = E_UNKNOWN_ERROR;
                 goto end;
             }
 
@@ -181,21 +197,56 @@ end:
     destroy_string_node(unknown_node);
 
     cJSON_Delete(file_json);
+
+    return err;
+}
+
+FileType get_filetype_for_filename(const char *filename, FileTypes *filetypes)
+{
+    if (filename == NULL) return UNKNOWN;
+    size_t file_len = strlen(filename);
+    if (file_len < 1) return UNKNOWN;
+    int dot_idx = last_index_of_char_in_string('.', filename);
+    if (dot_idx == 0 || dot_idx == file_len - 1) return UNKNOWN;
+    unsigned int ext_size = (unsigned int)file_len - (unsigned int)dot_idx + 1; // for final \0
+    char ext[ext_size];
+    get_extension(filename, ext);
+    return get_filetype_for_ext(ext, filetypes);
+}
+
+unsigned short is_archive_ext(const char *ext, FileTypes *filetypes) {
+    return index_of_string_in_string_array(ext, filetypes->archive_extensions) > -1;
+}
+
+unsigned short is_binary_ext(const char *ext, FileTypes *filetypes) {
+    return index_of_string_in_string_array(ext, filetypes->binary_extensions) > -1;
+}
+
+unsigned short is_code_ext(const char *ext, FileTypes *filetypes) {
+    return index_of_string_in_string_array(ext, filetypes->code_extensions) > -1;
+}
+
+unsigned short is_text_ext(const char *ext, FileTypes *filetypes) {
+    return index_of_string_in_string_array(ext, filetypes->text_extensions) > -1;
+}
+
+unsigned short is_xml_ext(const char *ext, FileTypes *filetypes) {
+    return index_of_string_in_string_array(ext, filetypes->xml_extensions) > -1;
 }
 
 FileType get_filetype_for_ext(const char *ext, FileTypes *filetypes)
 {
     FileType filetype = UNKNOWN;
     if (strlen(ext) > 0) {
-        if (index_of_string_in_string_array(ext, filetypes->code_extensions) > -1) {
+        if (is_code_ext(ext, filetypes)) {
             filetype = CODE;
-        } else if (index_of_string_in_string_array(ext, filetypes->xml_extensions) > -1) {
+        } else if (is_xml_ext(ext, filetypes)) {
             filetype = XML;
-        } else if (index_of_string_in_string_array(ext, filetypes->text_extensions) > -1) {
+        } else if (is_text_ext(ext, filetypes)) {
             filetype = TEXT;
-        } else if (index_of_string_in_string_array(ext, filetypes->binary_extensions) > -1) {
+        } else if (is_binary_ext(ext, filetypes)) {
             filetype = BINARY;
-        } else if (index_of_string_in_string_array(ext, filetypes->archive_extensions) > -1) {
+        } else if (is_archive_ext(ext, filetypes)) {
             filetype = ARCHIVE;
         }
     }

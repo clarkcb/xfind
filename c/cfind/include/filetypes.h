@@ -3,6 +3,7 @@
 
 #include "intnode.h"
 #include "stringarray.h"
+#include "finderr.h"
 
 typedef enum {
     UNKNOWN = 0,
@@ -24,7 +25,19 @@ typedef struct FileTypes {
 
 FileTypes *new_filetypes(void);
 
-FileTypes *get_filetypes(void);
+error_t get_filetypes(FileTypes *filetypes);
+
+unsigned short is_archive_ext(const char *ext, FileTypes *filetypes);
+
+unsigned short is_binary_ext(const char *ext, FileTypes *filetypes);
+
+unsigned short is_code_ext(const char *ext, FileTypes *filetypes);
+
+unsigned short is_text_ext(const char *ext, FileTypes *filetypes);
+
+unsigned short is_xml_ext(const char *ext, FileTypes *filetypes);
+
+FileType get_filetype_for_filename(const char *ext, FileTypes *filetypes);
 
 FileType get_filetype_for_ext(const char *ext, FileTypes *filetypes);
 

@@ -53,9 +53,9 @@ FindOptions *new_find_options(FindOption *o);
 
 void add_to_find_options(FindOption *o, FindOptions *options);
 
-FindOptions *get_find_options(void);
+error_t get_find_options(FindOptions *options);
 
-int settings_from_args(const int argc, char *argv[], FindSettings *settings);
+error_t settings_from_args(const int argc, char *argv[], FindSettings *settings);
 
 size_t find_options_count(FindOptions *options);
 

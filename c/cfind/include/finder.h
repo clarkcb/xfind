@@ -12,9 +12,9 @@ typedef struct Finder {
 
 Finder *new_finder(const FindSettings *s, const FileTypes *ft);
 
-int validate_settings(const FindSettings *settings);
+error_t validate_settings(const FindSettings *settings);
 
-int find(const FindSettings *settings, FileResults *results);
+error_t find(const FindSettings *settings, FileResults *results);
 
 void destroy_finder(Finder *finder);
 

@@ -24,7 +24,7 @@ Finder *new_finder(const FindSettings *s, const FileTypes *ft)
     return f;
 }
 
-int validate_settings(const FindSettings *settings)
+error_t validate_settings(const FindSettings *settings)
 {
     size_t path_count = string_node_count(settings->paths);
     if (path_count < 1) {
@@ -40,7 +40,7 @@ int validate_settings(const FindSettings *settings)
     return E_OK;
 }
 
-static unsigned short is_find_dir(const char *dir, const FindSettings *settings)
+static unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
 {
     unsigned short res = 0;
     if (((is_null_or_empty_regex_node(settings->in_dirpatterns) == 1)
@@ -52,16 +52,15 @@ static unsigned short is_find_dir(const char *dir, const FindSettings *settings)
     return res;
 }
 
-static unsigned short is_find_file(const char *filename, const Finder *finder, FileType *filetype)
+static unsigned short is_matching_file(const char *filename, const Finder *finder, FileType *filetype)
 {
-    unsigned int ext_size = 1;
-    int dot_idx = index_of_char_in_string('.', filename);
+    if (filename == NULL) return 0;
     size_t file_len = strlen(filename);
-    if (dot_idx > 0 && dot_idx < file_len - 1) {
-        ext_size = (unsigned int)file_len - (unsigned int)dot_idx;
-    }
-    char *ext = malloc(ext_size * sizeof(char));
-    strcpy(ext, "");
+    if (file_len < 1) return 0;
+    int dot_idx = last_index_of_char_in_string('.', filename);
+    if (dot_idx == 0 || dot_idx == file_len - 1) return 0;
+    unsigned int ext_size = (unsigned int)file_len - (unsigned int)dot_idx + 1; // for final \0
+    char ext[ext_size];
     get_extension(filename, ext);
     *filetype = get_filetype_for_ext(ext, finder->filetypes);
     unsigned short res = 0;
@@ -84,12 +83,12 @@ static unsigned short is_find_file(const char *filename, const Finder *finder, F
 
 static unsigned short filter_file(const char *filename, const Finder *finder, FileType *filetype)
 {
-    if (is_hidden(filename) && finder->settings->excludehidden)
+    if (finder->settings->excludehidden && is_hidden(filename))
         return 0;
-    return is_find_file(filename, finder, filetype);
+    return is_matching_file(filename, finder, filetype);
 }
 
-static int find_dir(const char *dirpath, const Finder *finder, FileResults *results)
+static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results)
 {
     DIR *dir = opendir(dirpath);
     if (!dir) {
@@ -134,8 +133,8 @@ static int find_dir(const char *dirpath, const Finder *finder, FileResults *resu
 
         if (S_ISDIR(fpstat.st_mode)) {
             if (finder->settings->recursive
-                && (!is_hidden(dent->d_name) || !finder->settings->excludehidden)
-                && is_find_dir(dent->d_name, finder->settings)) {
+                && (!finder->settings->excludehidden || !is_hidden(dent->d_name))
+                && is_matching_dir(dent->d_name, finder->settings)) {
                 add_string_to_string_node(filepath, finddirs);
             }
         } else if (S_ISREG(fpstat.st_mode)) {
@@ -165,34 +164,41 @@ static int find_dir(const char *dirpath, const Finder *finder, FileResults *resu
     return E_OK;
 }
 
-int find(const FindSettings *settings, FileResults *results)
+error_t find(const FindSettings *settings, FileResults *results)
 {
-    int err = validate_settings(settings);
+    error_t err = validate_settings(settings);
     if (err != E_OK) {
         return err;
     }
 
-    FileTypes *filetypes = get_filetypes();
+    FileTypes *filetypes = new_filetypes();
+    err = get_filetypes(filetypes);
 
     Finder *finder = new_finder(settings, filetypes);
 
     StringNode *nextpath = settings->paths;
     while (nextpath != NULL) {
+        // expand the path in case it has tilde, etc.
+        size_t path_len = strlen(nextpath->string);
+        char *expanded = malloc((path_len + 1) * (sizeof (char *)));
+        expanded[0] = '\0';
+        expand_path(nextpath->string, &expanded);
+
         // check whether the file is a directory or file
         // and route accordingly
-        struct stat statbuf;
+        struct stat st;
 
-        if (stat(nextpath->string, &statbuf) == -1) {
+        if (stat(expanded, &st) == -1) {
             // this shouldn't happen if we made it this far
             return E_STARTPATH_STAT_FAILED;
         }
-        if (S_ISDIR(statbuf.st_mode)) {
-            err = find_dir(nextpath->string, finder, results);
+        if (S_ISDIR(st.st_mode)) {
+            err = find_dir(expanded, finder, results);
             if (err != E_OK) {
                 destroy_finder(finder);
                 return err;
             }
-        } else if (S_ISREG(statbuf.st_mode)) {
+        } else if (S_ISREG(st.st_mode)) {
             FileType filetype = UNKNOWN;
             if (filter_file(nextpath->string, finder, &filetype) == 1) {
                 char *p = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
@@ -206,11 +212,12 @@ int find(const FindSettings *settings, FileResults *results)
         } else {
             return E_STARTPATH_UNSUPPORTED_FILETYPE;
         }
+        free(expanded);
         nextpath = nextpath->next;
     }
 
     destroy_finder(finder);
-    return E_OK;
+    return err;
 }
 
 void destroy_finder(Finder *finder)

@@ -15,7 +15,7 @@ void test_settings_from_args(void)
     int argc = 3;
 
     FindSettings *settings = default_settings();
-    int err = settings_from_args(argc, argv, settings);
+    error_t err = settings_from_args(argc, argv, settings);
     assert(err == E_OK);
 
     assert(settings->in_extensions != NULL);
