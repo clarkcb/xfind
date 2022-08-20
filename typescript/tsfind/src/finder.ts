@@ -8,15 +8,15 @@
 
 import * as assert from 'assert';
 import * as fs from 'fs';
-import { access, lstat, stat } from 'fs/promises';
+import {stat} from 'fs/promises';
 import * as path from 'path';
 
 import * as common from './common';
+import {FileResult} from './fileresult';
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
 import {FileUtil} from './fileutil';
 import {FindError} from './finderror';
-import {FindFile} from './findfile';
 import {FindSettings} from './findsettings';
 
 export class Finder {
@@ -36,7 +36,7 @@ export class Finder {
                 // const stat = await lstat(p);
                 const stat = fs.lstatSync(p);
                 if (stat.isDirectory()) {
-                    assert.ok(this.isFindDir(p),
+                    assert.ok(this.isMatchingDir(p),
                         'Startpath does not match find settings');
                 } else if (stat.isFile()) {
                     assert.ok(this.filterFile(p),
@@ -73,7 +73,7 @@ export class Finder {
         return ss.some((s: string) => this.matchesAnyPattern(s, patterns));
     }
 
-    public isFindDir(dir: string): boolean {
+    public isMatchingDir(dir: string): boolean {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
@@ -94,10 +94,10 @@ export class Finder {
             this._settings.outDirPatterns));
     }
 
-    public isFindFile(file: string): boolean {
-        if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
-            return false;
-        }
+    public isMatchingFile(file: string): boolean {
+        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
+        //     return false;
+        // }
         const ext: string = FileUtil.getExtension(file);
         if ((this._settings.inExtensions.length &&
             !Finder.matchesAnyString(ext, this._settings.inExtensions))
@@ -119,10 +119,10 @@ export class Finder {
         return true;
     }
 
-    public isArchiveFindFile(file: string): boolean {
-        if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
-            return false;
-        }
+    public isMatchingArchiveFile(file: string): boolean {
+        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
+        //     return false;
+        // }
         const ext: string = FileUtil.getExtension(file);
         if (this._settings.inArchiveExtensions.length &&
             !Finder.matchesAnyString(ext, this._settings.inArchiveExtensions)) {
@@ -141,79 +141,105 @@ export class Finder {
     }
 
     public filterFile(f: string): boolean {
-        if (FileTypes.isArchiveFile(f)) {
-            return (this._settings.includeArchives && this.isArchiveFindFile(f));
+        if (this._settings.excludeHidden && FileUtil.isHidden(f)) {
+            return false;
         }
-        return (!this._settings.archivesOnly && this.isFindFile(f));
+        if (FileTypes.isArchiveFile(f)) {
+            return (this._settings.includeArchives && this.isMatchingArchiveFile(f));
+        }
+        return (!this._settings.archivesOnly && this.isMatchingFile(f));
     }
 
-    private recGetFindFiles(currentDir: string): FindFile[] {
+    public filterToFileResult(f: string): FileResult | null {
+        if (this._settings.excludeHidden && FileUtil.isHidden(f)) {
+            return null;
+        }
+        const dirname = path.dirname(f) || '.';
+        const filename = path.basename(f);
+        const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename));
+        if (fr.filetype === FileType.Archive) {
+            if (this._settings.includeArchives && this.isMatchingArchiveFile(fr.filename)) {
+                return fr;
+            }
+            return null;
+        }
+        if (!this._settings.archivesOnly && this.isMatchingFile(fr.filename)) {
+            return fr;
+        }
+        return null;
+    }
+
+    private recGetFileResults(currentDir: string): FileResult[] {
         const findDirs: string[] = [];
-        let findFiles: FindFile[] = [];
+        let fileResults: FileResult[] = [];
         fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
         }).forEach((f: string) => {
             const stats = fs.statSync(f);
-            if (stats.isDirectory() && this._settings.recursive && this.isFindDir(f)) {
+            if (stats.isDirectory() && this._settings.recursive && this.isMatchingDir(f)) {
                 findDirs.push(f);
             } else if (stats.isFile()) {
-                const dirname = path.dirname(f) || '.';
-                const filename = path.basename(f);
-                if (this.filterFile(filename)) {
-                    const filetype = FileTypes.getFileType(filename);
-                    const sf = new FindFile(dirname, filename, filetype);
-                    findFiles.push(sf);
+                // const dirname = path.dirname(f) || '.';
+                // const filename = path.basename(f);
+                // if (this.filterFile(filename)) {
+                //     const filetype = FileTypes.getFileType(filename);
+                //     const fr = new FileResult(dirname, filename, filetype);
+                //     fileResults.push(fr);
+                // }
+                const fr = this.filterToFileResult(f);
+                if (fr !== null) {
+                    fileResults.push(fr);
                 }
             }
         });
         findDirs.forEach(d => {
-            findFiles = findFiles.concat(this.recGetFindFiles(d));
+            fileResults = fileResults.concat(this.recGetFileResults(d));
         });
-        return findFiles;
+        return fileResults;
     }
 
-    private async getFindFiles(startPath: string): Promise<FindFile[]> {
-        let findFiles: FindFile[] = [];
+    private async getFileResults(startPath: string): Promise<FileResult[]> {
+        let fileResults: FileResult[] = [];
         const stats = await stat(startPath);
         if (stats.isDirectory()) {
-            if (this.isFindDir(startPath)) {
-                findFiles = findFiles.concat(this.recGetFindFiles(startPath));
+            if (this.isMatchingDir(startPath)) {
+                fileResults = fileResults.concat(this.recGetFileResults(startPath));
             } else {
                 throw new FindError('startPath does not match find criteria');
             }
         } else if (stats.isFile()) {
             const dirname = path.dirname(startPath) || '.';
             const filename = path.basename(startPath);
-            if (this.isFindDir(dirname) && this.filterFile(filename)) {
+            if (this.isMatchingDir(dirname) && this.filterFile(filename)) {
                 const filetype = FileTypes.getFileType(filename);
-                const sf = new FindFile(dirname, filename, filetype);
-                findFiles.push(sf);
+                const sf = new FileResult(dirname, filename, filetype);
+                fileResults.push(sf);
             } else {
                 throw new FindError('startPath does not match find criteria');
             }
         }
-        return findFiles;
+        return fileResults;
     }
 
-    public async find(): Promise<FindFile[]> {
-        // get the find files
-        let findfiles: FindFile[] = [];
+    public async find(): Promise<FileResult[]> {
+        // get the file results
+        let fileResults: FileResult[] = [];
 
-        const pathFindFilesArrays = await Promise.all(this._settings.paths.map(d => this.getFindFiles(d)));
-        pathFindFilesArrays.forEach(pathFindFiles => {
-            findfiles = findfiles.concat(pathFindFiles);
+        const pathFileResultsArrays = await Promise.all(this._settings.paths.map(d => this.getFileResults(d)));
+        pathFileResultsArrays.forEach(pathFileResults => {
+            fileResults = fileResults.concat(pathFileResults);
         });
 
-        return findfiles;
+        return fileResults;
     }
 
-    public getMatchingDirs(findfiles: FindFile[]): string[] {
-        const dirs: string[] = findfiles.map(f => f.pathname);
+    public getMatchingDirs(fileResults: FileResult[]): string[] {
+        const dirs: string[] = fileResults.map(f => f.pathname);
         return common.setFromArray(dirs);
     }
 
-    public printMatchingDirs(findfiles: FindFile[]): void {
-        const dirs: string[] = this.getMatchingDirs(findfiles);
+    public printMatchingDirs(fileResults: FileResult[]): void {
+        const dirs: string[] = this.getMatchingDirs(fileResults);
         if (dirs.length > 0) {
             common.log("\nMatching directories " + `(${dirs.length}):`);
             dirs.forEach(d => common.log(d));
@@ -222,13 +248,13 @@ export class Finder {
         }
     }
 
-    public getMatchingFiles(findfiles: FindFile[]): string[] {
-        const files: string[] = findfiles.map(f => f.relativePath());
+    public getMatchingFiles(fileResults: FileResult[]): string[] {
+        const files: string[] = fileResults.map(f => f.relativePath());
         return common.setFromArray(files);
     }
 
-    public printMatchingFiles(findfiles: FindFile[]): void {
-        const files: string[] = this.getMatchingFiles(findfiles);
+    public printMatchingFiles(fileResults: FileResult[]): void {
+        const files: string[] = this.getMatchingFiles(fileResults);
         if (files.length > 0) {
             common.log("\nMatching files " + `(${files.length}):`);
             files.forEach(f => common.log(f));

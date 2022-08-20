@@ -16,204 +16,204 @@ const getSettings = function() {
 describe('testing finder', () => {
 
     /*************************************************************
-     * isFindDir tests
+     * isMatchingDir tests
      *************************************************************/
-    it('testisFindDir_SingleDot_True', () => {
+    it('testIsMatchingDir_SingleDot_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('.')).toBeTruthy();
+        expect(finder.isMatchingDir('.')).toBeTruthy();
     });
 
-    it('testisFindDir_DoubleDot_True', () => {
+    it('testIsMatchingDir_DoubleDot_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('..')).toBeTruthy();
+        expect(finder.isMatchingDir('..')).toBeTruthy();
     });
 
-    it('testisFindDir_IsHidden_False', () => {
+    it('testIsMatchingDir_IsHidden_False', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('.git')).toBeFalsy();
+        expect(finder.isMatchingDir('.git')).toBeFalsy();
     });
 
-    it('testisFindDir_IsHiddenIncludeHidden_True', () => {
+    it('testIsMatchingDir_IsHiddenIncludeHidden_True', () => {
         const settings: FindSettings = getSettings();
         settings.excludeHidden = false;
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('.git')).toBeTruthy();
+        expect(finder.isMatchingDir('.git')).toBeTruthy();
     });
 
-    it('testisFindDir_NoPatterns_True', () => {
+    it('testIsMatchingDir_NoPatterns_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('/Users')).toBeTruthy();
+        expect(finder.isMatchingDir('/Users')).toBeTruthy();
     });
 
-    it('testisFindDir_MatchesInPattern_True', () => {
+    it('testIsMatchingDir_MatchesInPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInDirPatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('CsFind')).toBeTruthy();
+        expect(finder.isMatchingDir('CsFind')).toBeTruthy();
     });
 
-    it('testisFindDir_MatchesOutPattern_False', () => {
+    it('testIsMatchingDir_MatchesOutPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutDirPatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('CsFind')).toBeFalsy();
+        expect(finder.isMatchingDir('CsFind')).toBeFalsy();
     });
 
-    it('testisFindDir_DoesNotMatchInPattern_False', () => {
+    it('testIsMatchingDir_DoesNotMatchInPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInDirPatterns('FindFiles');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('CsFind')).toBeFalsy();
+        expect(finder.isMatchingDir('CsFind')).toBeFalsy();
     });
 
-    it('testisFindDir_DoesNotMatchOutPattern_True', () => {
+    it('testIsMatchingDir_DoesNotMatchOutPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutDirPatterns('FindFiles');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindDir('CsFind')).toBeTruthy();
+        expect(finder.isMatchingDir('CsFind')).toBeTruthy();
     });
 
     /*************************************************************
-     * isFindFile tests
+     * isMatchingFile tests
      *************************************************************/
-    it('testIsFindFile_NoExtensionsNoPatterns_True', () => {
+    it('testIsMatchingFile_NoExtensionsNoPatterns_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeTruthy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
     });
 
-    it('testIsFindFile_MatchesInExtension_True', () => {
+    it('testIsMatchingFile_MatchesInExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInExtensions('cs');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeTruthy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
     });
 
-    it('testIsFindFile_DoesNotMatchInExtension_False', () => {
+    it('testIsMatchingFile_DoesNotMatchInExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInExtensions('java');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeFalsy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeFalsy();
     });
 
-    it('testIsFindFile_MatchesOutExtension_False', () => {
+    it('testIsMatchingFile_MatchesOutExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutExtensions('cs');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeFalsy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeFalsy();
     });
 
-    it('testIsFindFile_DoesNotMatchOutExtension_True', () => {
+    it('testIsMatchingFile_DoesNotMatchOutExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutExtensions('java');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeTruthy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
     });
 
-    it('testIsFindFile_MatchesInPattern_True', () => {
+    it('testIsMatchingFile_MatchesInPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('Finder.cs')).toBeTruthy();
+        expect(finder.isMatchingFile('Finder.cs')).toBeTruthy();
     });
 
-    it('testIsFindFile_DoesNotMatchInPattern_False', () => {
+    it('testIsMatchingFile_DoesNotMatchInPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeFalsy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeFalsy();
     });
 
-    it('testIsFindFile_MatchesOutPattern_False', () => {
+    it('testIsMatchingFile_MatchesOutPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('Finder.cs')).toBeFalsy();
+        expect(finder.isMatchingFile('Finder.cs')).toBeFalsy();
     });
 
-    it('testIsFindFile_DoesNotMatchOutPattern_True', () => {
+    it('testIsMatchingFile_DoesNotMatchOutPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isFindFile('FileUtil.cs')).toBeTruthy();
+        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
     });
 
     /*************************************************************
      * IsArchiveFindFile tests
      *************************************************************/
-    it('testIsArchiveFindFile_NoExtensionsNoPatterns_True', () => {
+    it('testIsMatchingArchiveFile_NoExtensionsNoPatterns_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeTruthy();
+        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveFindFile_MatchesInExtension_True', () => {
+    it('testIsMatchingArchiveFile_MatchesInExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveExtensions('zip');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeTruthy();
+        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveFindFile_DoesNotMatchInExtension_False', () => {
+    it('testIsMatchingArchiveFile_DoesNotMatchInExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveExtensions('gz');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeFalsy();
+        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveFindFile_MatchesOutExtension_False', () => {
+    it('testIsMatchingArchiveFile_MatchesOutExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveExtensions('zip');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeFalsy();
+        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveFindFile_DoesNotMatchOutExtension_True', () => {
+    it('testIsMatchingArchiveFile_DoesNotMatchOutExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveExtensions('gz');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeTruthy();
+        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveFindFile_MatchesInPattern_True', () => {
+    it('testIsMatchingArchiveFile_MatchesInPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveFilePatterns('arch');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeTruthy();
+        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
     });
 
-    it('testIsArchiveFindFile_DoesNotMatchInPattern_False', () => {
+    it('testIsMatchingArchiveFile_DoesNotMatchInPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveFilePatterns('archives');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeFalsy();
+        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveFindFile_MatchesOutPattern_False', () => {
+    it('testIsMatchingArchiveFile_MatchesOutPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveFilePatterns('arch');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeFalsy();
+        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
     });
 
-    it('testIsArchiveFindFile_DoesNotMatchOutPattern_True', () => {
+    it('testIsMatchingArchiveFile_DoesNotMatchOutPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveFilePatterns('archives');
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.isArchiveFindFile(file)).toBeTruthy();
+        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
     });
 
     /*************************************************************

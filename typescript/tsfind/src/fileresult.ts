@@ -1,5 +1,5 @@
 /*
- * findfile.js
+ * fileresult.js
  *
  * encapsulates a file to be found
  */
@@ -10,7 +10,7 @@ import {FileType} from './filetype';
 
 import * as path from 'path';
 
-export class FindFile {
+export class FileResult {
     containerSeparator = '!';
     containers: string[] = [];
     pathname: string;
