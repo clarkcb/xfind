@@ -12,7 +12,7 @@ pub mod filetypes;
 pub mod fileutil;
 pub mod finder;
 pub mod finderror;
-pub mod findfile;
+pub mod fileresult;
 pub mod findoptions;
 pub mod findsettings;
 
@@ -26,8 +26,8 @@ fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
     process::exit(1);
 }
 
-fn print_matching_dirs(findfiles: &Vec<findfile::FindFile>) {
-    let dirs = get_matching_dirs(findfiles);
+fn print_matching_dirs(fileresults: &Vec<fileresult::FileResult>) {
+    let dirs = get_matching_dirs(fileresults);
     if dirs.is_empty() {
         log("\nMatching directories: 0");
     } else {
@@ -38,8 +38,8 @@ fn print_matching_dirs(findfiles: &Vec<findfile::FindFile>) {
     }
 }
 
-fn print_matching_files(findfiles: &Vec<findfile::FindFile>) {
-    let files = get_matching_files(findfiles);
+fn print_matching_files(fileresults: &Vec<fileresult::FileResult>) {
+    let files = get_matching_files(fileresults);
     if files.is_empty() {
         log("\nMatching files: 0");
     } else {
@@ -82,12 +82,12 @@ fn find(args: Iter<String>) {
             };
 
             match finder.find() {
-                Ok(findfiles) => {
+                Ok(fileresults) => {
                     if finder.settings.list_dirs {
-                        print_matching_dirs(&findfiles);
+                        print_matching_dirs(&fileresults);
                     }
                     if finder.settings.list_files {
-                        print_matching_files(&findfiles);
+                        print_matching_files(&fileresults);
                     }
                 },
                 Err(error) => error_and_exit(error, &options),

@@ -4,16 +4,16 @@ use std::path::Path;
 use crate::filetypes::FileType;
 
 #[derive(Clone, Debug, Eq)]
-pub struct FindFile {
+pub struct FileResult {
     pub containers: Vec<String>,
     pub path: String,
     pub name: String,
     pub filetype: FileType,
 }
 
-impl FindFile {
-    pub fn new(path: String, name: String, filetype: FileType) -> FindFile {
-        FindFile::with_containers(Vec::new(), path, name, filetype)
+impl FileResult {
+    pub fn new(path: String, name: String, filetype: FileType) -> FileResult {
+        FileResult::with_containers(Vec::new(), path, name, filetype)
     }
 
     pub fn with_containers(
@@ -21,12 +21,12 @@ impl FindFile {
         path: String,
         name: String,
         filetype: FileType,
-    ) -> FindFile {
-        FindFile {
-            containers: containers,
-            path: path,
-            name: name,
-            filetype: filetype,
+    ) -> FileResult {
+        FileResult {
+            containers,
+            path,
+            name,
+            filetype,
         }
     }
 
@@ -48,19 +48,19 @@ impl FindFile {
     }
 }
 
-impl Ord for FindFile {
+impl Ord for FileResult {
     fn cmp(&self, other: &Self) -> Ordering {
         self.filepath().cmp(&other.filepath())
     }
 }
 
-impl PartialOrd for FindFile {
+impl PartialOrd for FileResult {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl PartialEq for FindFile {
+impl PartialEq for FileResult {
     fn eq(&self, other: &Self) -> bool {
         self.filepath() == other.filepath()
     }
@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn test_find_file_abs_path() {
-        let sf = FindFile::new(
+        let sf = FileResult::new(
             "~/src/xfind/rust/rsfind/src".to_string(),
             "finder.rs".to_string(),
             FileType::Code,
@@ -87,7 +87,7 @@ mod tests {
 
     #[test]
     fn test_find_file_rel_path() {
-        let sf = FindFile::new(".".to_string(), "finder.rs".to_string(), FileType::Code);
+        let sf = FileResult::new(".".to_string(), "finder.rs".to_string(), FileType::Code);
         assert_eq!(sf.filepath(), "./finder.rs");
     }
 }

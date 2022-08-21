@@ -7,7 +7,7 @@ use walkdir::WalkDir;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
-use crate::findfile::FindFile;
+use crate::fileresult::FileResult;
 use crate::findsettings::FindSettings;
 
 pub struct Finder {
@@ -73,7 +73,7 @@ impl Finder {
         false
     }
 
-    fn is_find_dir(&self, dir: &String) -> bool {
+    fn is_matching_dir(&self, dir: &String) -> bool {
         if self.settings.exclude_hidden && FileUtil::is_hidden(&dir) {
             return false;
         }
@@ -83,31 +83,31 @@ impl Finder {
                 || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns))
     }
 
-    fn is_archive_find_file(&self, findfile: &FindFile) -> bool {
-        if !self.is_find_dir(&findfile.path) {
+    fn is_matching_archive_file(&self, fileresult: &FileResult) -> bool {
+        if !self.is_matching_dir(&fileresult.path) {
             return false;
         }
-        if FileUtil::is_hidden(&findfile.name) && self.settings.exclude_hidden {
+        if FileUtil::is_hidden(&fileresult.name) && self.settings.exclude_hidden {
             return false;
         }
         (self.settings.in_archive_file_patterns.is_empty()
-            || self.matches_any_pattern(&findfile.name, &self.settings.in_archive_file_patterns))
+            || self.matches_any_pattern(&fileresult.name, &self.settings.in_archive_file_patterns))
             && (self.settings.out_archive_file_patterns.is_empty()
                 || !self.matches_any_pattern(
-                    &findfile.name,
+                    &fileresult.name,
                     &self.settings.out_archive_file_patterns,
                 ))
     }
 
-    fn is_find_file(&self, findfile: &FindFile) -> bool {
-        if !self.is_find_dir(&findfile.path) {
+    fn is_matching_file(&self, fileresult: &FileResult) -> bool {
+        if !self.is_matching_dir(&fileresult.path) {
             return false;
         }
-        if self.settings.exclude_hidden && FileUtil::is_hidden(&findfile.name) {
+        if self.settings.exclude_hidden && FileUtil::is_hidden(&fileresult.name) {
             return false;
         }
 
-        match FileUtil::get_extension(&findfile.name) {
+        match FileUtil::get_extension(&fileresult.name) {
             Some(ext) => {
                 if (!self.settings.in_extensions.is_empty()
                     && !self.matches_any_string(ext, &self.settings.in_extensions))
@@ -125,25 +125,25 @@ impl Finder {
         }
 
         (self.settings.in_file_patterns.is_empty()
-            || self.matches_any_pattern(&findfile.name, &self.settings.in_file_patterns))
+            || self.matches_any_pattern(&fileresult.name, &self.settings.in_file_patterns))
             && (self.settings.in_file_types.is_empty()
-                || self.settings.in_file_types.contains(&findfile.filetype))
+                || self.settings.in_file_types.contains(&fileresult.filetype))
             && (self.settings.out_file_patterns.is_empty()
-                || !self.matches_any_pattern(&findfile.name, &self.settings.out_file_patterns))
+                || !self.matches_any_pattern(&fileresult.name, &self.settings.out_file_patterns))
             && (self.settings.out_file_types.is_empty()
-                || !self.settings.out_file_types.contains(&findfile.filetype))
+                || !self.settings.out_file_types.contains(&fileresult.filetype))
     }
 
-    fn filter_file(&self, findfile: &FindFile) -> bool {
-        if findfile.filetype == FileType::Archive {
-            return self.settings.include_archives && self.is_archive_find_file(findfile);
+    fn filter_file(&self, fileresult: &FileResult) -> bool {
+        if fileresult.filetype == FileType::Archive {
+            return self.settings.include_archives && self.is_matching_archive_file(fileresult);
         }
-        !self.settings.archives_only && self.is_find_file(findfile)
+        !self.settings.archives_only && self.is_matching_file(fileresult)
     }
 
     /// Initiate a find session for the given settings and get the matching files
-    pub fn find(&self) -> Result<Vec<FindFile>, FindError> {
-        let mut findfiles: Vec<FindFile> = Vec::new();
+    pub fn find(&self) -> Result<Vec<FileResult>, FindError> {
+        let mut fileresults: Vec<FileResult> = Vec::new();
         for p in self.settings.paths.iter() {
             let ep = FileUtil::expand_path(p);
             for entry in WalkDir::new(&ep)
@@ -155,7 +155,7 @@ impl Finder {
                     Some(parent) => parent.to_str().unwrap().to_string(),
                     None => ".".to_string(),
                 };
-                if !self.is_find_dir(&path) {
+                if !self.is_matching_dir(&path) {
                     continue;
                 }
                 let filename = entry.file_name().to_str().unwrap().to_string();
@@ -163,20 +163,20 @@ impl Finder {
                 // if filetype == FileType::Unknown {
                 //     continue;
                 // }
-                let findfile = FindFile::new(path, filename, filetype);
-                if self.filter_file(&findfile) {
-                    findfiles.push(findfile)
+                let fileresult = FileResult::new(path, filename, filetype);
+                if self.filter_file(&fileresult) {
+                    fileresults.push(fileresult)
                 }
             }
         }
-        Ok(findfiles)
+        Ok(fileresults)
     }
 }
 
 /// Get the unique list of directories for matching files
-pub fn get_matching_dirs(findfiles: &[FindFile]) -> Vec<&String> {
+pub fn get_matching_dirs(fileresults: &[FileResult]) -> Vec<&String> {
     let mut dirs: Vec<&String> = Vec::new();
-    for f in findfiles.iter() {
+    for f in fileresults.iter() {
         dirs.push(&f.path);
     }
     dirs.sort_unstable();
@@ -185,9 +185,9 @@ pub fn get_matching_dirs(findfiles: &[FindFile]) -> Vec<&String> {
 }
 
 /// Get the unique list of filepaths for the matching files
-pub fn get_matching_files(findfiles: &[FindFile]) -> Vec<String> {
+pub fn get_matching_files(fileresults: &[FileResult]) -> Vec<String> {
     let mut files: Vec<String> = Vec::new();
-    for f in findfiles.iter() {
+    for f in fileresults.iter() {
         let filepath = f.filepath();
         files.push(filepath);
     }
@@ -220,32 +220,32 @@ mod tests {
 
         let path = String::from(".");
         let filename = String::from("codefile.js");
-        let file = FindFile::new(path, filename, FileType::Code);
+        let file = FileResult::new(path, filename, FileType::Code);
         assert!(finder.filter_file(&file));
 
         let path = String::from(".");
         let filename = String::from("codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
+        let file = FileResult::new(path, filename, FileType::Code);
         assert!(finder.filter_file(&file));
 
         let path = String::from("./temp/");
         let filename = String::from("codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
+        let file = FileResult::new(path, filename, FileType::Code);
         assert!(!finder.filter_file(&file));
 
         let path = String::from("./.hidden/");
         let filename = String::from("codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
+        let file = FileResult::new(path, filename, FileType::Code);
         assert!(!finder.filter_file(&file));
 
         let path = String::from(".");
         let filename = String::from(".codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
+        let file = FileResult::new(path, filename, FileType::Code);
         assert!(!finder.filter_file(&file));
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
+        let file = FileResult::new(path, filename, FileType::Archive);
         assert!(!finder.filter_file(&file));
 
         let mut settings = get_default_test_settings();
@@ -254,28 +254,28 @@ mod tests {
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
+        let file = FileResult::new(path, filename, FileType::Archive);
         assert!(finder.filter_file(&file));
     }
 
     #[test]
-    fn test_is_find_dir() {
+    fn test_is_matching_dir() {
         let mut settings = get_default_test_settings();
         settings.add_out_dir_pattern(String::from("temp"));
         let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
-        assert!(finder.is_find_dir(&path));
+        assert!(finder.is_matching_dir(&path));
 
         let path = String::from(".git");
-        assert!(!finder.is_find_dir(&path));
+        assert!(!finder.is_matching_dir(&path));
 
         let path = String::from("./temp/");
-        assert!(!finder.is_find_dir(&path));
+        assert!(!finder.is_matching_dir(&path));
     }
 
     #[test]
-    fn test_is_find_file() {
+    fn test_is_matching_file() {
         let mut settings = get_default_test_settings();
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
@@ -284,37 +284,37 @@ mod tests {
 
         let path = String::from(".");
         let filename = String::from("codefile.js");
-        let file = FindFile::new(path, filename, FileType::Code);
-        assert!(finder.is_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Code);
+        assert!(finder.is_matching_file(&file));
 
         let path = String::from(".");
         let filename = String::from("codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
-        assert!(finder.is_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Code);
+        assert!(finder.is_matching_file(&file));
 
         let path = String::from("./temp/");
         let filename = String::from("codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
-        assert!(!finder.is_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Code);
+        assert!(!finder.is_matching_file(&file));
 
         let path = String::from("./.hidden/");
         let filename = String::from("codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
-        assert!(!finder.is_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Code);
+        assert!(!finder.is_matching_file(&file));
 
         let path = String::from("./");
         let filename = String::from(".codefile.ts");
-        let file = FindFile::new(path, filename, FileType::Code);
-        assert!(!finder.is_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Code);
+        assert!(!finder.is_matching_file(&file));
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
-        assert!(!finder.is_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Archive);
+        assert!(!finder.is_matching_file(&file));
     }
 
     #[test]
-    fn test_is_archive_find_file() {
+    fn test_is_matching_archive_file() {
         let mut settings = get_default_test_settings();
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
@@ -323,23 +323,23 @@ mod tests {
 
         let path = String::from(".");
         let filename = String::from("archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
-        assert!(finder.is_archive_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Archive);
+        assert!(finder.is_matching_archive_file(&file));
 
         let path = String::from(".");
         let filename = String::from(".archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
-        assert!(!finder.is_archive_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Archive);
+        assert!(!finder.is_matching_archive_file(&file));
 
         let path = String::from("./temp");
         let filename = String::from("archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
-        assert!(!finder.is_archive_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Archive);
+        assert!(!finder.is_matching_archive_file(&file));
 
         let path = String::from(".");
         let filename = String::from("temp_archive.zip");
-        let file = FindFile::new(path, filename, FileType::Archive);
-        assert!(!finder.is_archive_find_file(&file));
+        let file = FileResult::new(path, filename, FileType::Archive);
+        assert!(!finder.is_matching_archive_file(&file));
     }
 
     #[test]
@@ -349,10 +349,10 @@ mod tests {
         settings.add_in_extension(String::from("go,rs"));
         let finder = Finder::new(settings).ok().unwrap();
 
-        let findfiles = finder.find();
-        assert!(findfiles.is_ok());
-        let findfiles = findfiles.ok().unwrap();
-        println!("findfiles: {}", findfiles.len());
+        let fileresults = finder.find();
+        assert!(fileresults.is_ok());
+        let fileresults = fileresults.ok().unwrap();
+        println!("fileresults: {}", fileresults.len());
     }
 
     #[test]
@@ -362,10 +362,10 @@ mod tests {
         settings.add_in_extension(String::from("class"));
         let finder = Finder::new(settings).ok().unwrap();
 
-        let findfiles = finder.find();
-        assert!(findfiles.is_ok());
-        let findfiles = findfiles.ok().unwrap();
-        println!("findfiles: {}", findfiles.len());
+        let fileresults = finder.find();
+        assert!(fileresults.is_ok());
+        let fileresults = fileresults.ok().unwrap();
+        println!("fileresults: {}", fileresults.len());
     }
 
     #[test]
@@ -376,10 +376,10 @@ mod tests {
         settings.add_in_archive_extension(String::from("jar"));
         let finder = Finder::new(settings).ok().unwrap();
 
-        let findfiles = finder.find();
-        assert!(findfiles.is_ok());
-        let findfiles = findfiles.ok().unwrap();
-        println!("findfiles: {}", findfiles.len());
+        let fileresults = finder.find();
+        assert!(fileresults.is_ok());
+        let fileresults = fileresults.ok().unwrap();
+        println!("fileresults: {}", fileresults.len());
     }
 
     #[test]
@@ -395,9 +395,9 @@ mod tests {
         settings.include_archives = true;
         let finder = Finder::new(settings).ok().unwrap();
 
-        let findfiles = finder.find();
-        assert!(findfiles.is_ok());
-        let findfiles = findfiles.ok().unwrap();
-        println!("findfiles: {}", findfiles.len());
+        let fileresults = finder.find();
+        assert!(fileresults.is_ok());
+        let fileresults = fileresults.ok().unwrap();
+        println!("fileresults: {}", fileresults.len());
     }
 }
