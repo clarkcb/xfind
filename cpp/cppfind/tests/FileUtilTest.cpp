@@ -14,8 +14,9 @@ TEST_CASE("Expand paths", "[FileUtil]") {
 }
 
 TEST_CASE("Detect file existence", "[FileUtil]") {
-    REQUIRE(cppfind::FileUtil::file_exists(std::string(XFINDPATH) + "/shared/config.json"));
-    REQUIRE(!cppfind::FileUtil::file_exists(std::string(XFINDPATH) + "/nonexistant.txt"));
+    std::string xfindpath {cppfind::xfindpath()};
+    REQUIRE(cppfind::FileUtil::file_exists(xfindpath + "/shared/filetypes.json"));
+    REQUIRE(!cppfind::FileUtil::file_exists(xfindpath + "/nonexistant.txt"));
 }
 
 TEST_CASE("Get extensions from filenames", "[FileUtil]") {
@@ -32,8 +33,9 @@ TEST_CASE("Detect directories", "[FileUtil]") {
     REQUIRE(cppfind::FileUtil::is_directory(".."));
     REQUIRE(cppfind::FileUtil::is_directory("./"));
     REQUIRE(cppfind::FileUtil::is_directory("../"));
-    REQUIRE(cppfind::FileUtil::is_directory(std::string(XFINDPATH)));
-    REQUIRE(!cppfind::FileUtil::is_directory(std::string(XFINDPATH) + "/shared/config.json"));
+    std::string xfindpath {cppfind::xfindpath()};
+    REQUIRE(cppfind::FileUtil::is_directory(xfindpath));
+    REQUIRE(!cppfind::FileUtil::is_directory(xfindpath + "/shared/filetypes.json"));
 }
 
 TEST_CASE("Detect dot dirs", "[FileUtil]") {

@@ -3,8 +3,6 @@
 
 #include <string>
 
-#define XFINDPATH "/Users/cary/src/xfind"
-
 namespace cppfind {
     std::string xfindpath();
 }

@@ -1,9 +1,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <sys/stat.h>
+#include <fstream>
 #include "FileUtil.h"
 
 namespace cppfind {
+    // TODO: find lib function for this, current implementation is incomplete
     std::string FileUtil::expand_path(const std::string& filepath) {
         if (filepath.at(0) == '~') {
             std::string expanded = getenv("HOME");
@@ -15,9 +17,16 @@ namespace cppfind {
         return filepath;
     }
 
-    bool FileUtil::file_exists(const std::string& name) {
-        struct stat buffer;
-        return (stat(name.c_str(), &buffer) == 0);
+    bool FileUtil::file_exists(const std::string& filepath) {
+        struct stat st;
+        return (stat(filepath.c_str(), &st) == 0);
+    }
+
+    long FileUtil::file_length(const std::string& filepath) {
+        struct stat st;
+        if (stat(filepath.c_str(), &st)) /*failure*/
+            return -1; // when file does not exist or is not accessible
+        return (long) st.st_size;
     }
 
     std::string FileUtil::get_contents(const std::string& filepath) {

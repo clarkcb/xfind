@@ -28,9 +28,10 @@ namespace cppfind {
             throw FindException(msg);
         }
 
+        long file_size = FileUtil::file_length(filetypes_path);
         FILE* fp = fopen(filetypes_path.c_str(), "r");
 
-        char readBuffer[65536];
+        char readBuffer[file_size];
         FileReadStream is(fp, readBuffer, sizeof(readBuffer));
 
         Document document;
