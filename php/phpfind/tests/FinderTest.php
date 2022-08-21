@@ -31,7 +31,7 @@ class FinderTest extends TestCase
         $settings = $this->get_settings();
         $finder = new Finder($settings);
         $dir = 'plfind';
-        $this->assertTrue($finder->is_find_dir($dir));
+        $this->assertTrue($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_matches_in_pattern()
@@ -40,7 +40,7 @@ class FinderTest extends TestCase
         $settings->in_dirpatterns[] = 'plfind';
         $finder = new Finder($settings);
         $dir = 'plfind';
-        $this->assertTrue($finder->is_find_dir($dir));
+        $this->assertTrue($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_no_match_in_pattern()
@@ -49,7 +49,7 @@ class FinderTest extends TestCase
         $settings->in_dirpatterns[] = 'plfind';
         $finder = new Finder($settings);
         $dir = 'pyfind';
-        $this->assertFalse($finder->is_find_dir($dir));
+        $this->assertFalse($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_matches_out_pattern()
@@ -58,7 +58,7 @@ class FinderTest extends TestCase
         $settings->out_dirpatterns[] = 'pyfind';
         $finder = new Finder($settings);
         $dir = 'pyfind';
-        $this->assertFalse($finder->is_find_dir($dir));
+        $this->assertFalse($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_no_match_out_pattern()
@@ -67,7 +67,7 @@ class FinderTest extends TestCase
         $settings->out_dirpatterns[] = 'pyfind';
         $finder = new Finder($settings);
         $dir = 'plfind';
-        $this->assertTrue($finder->is_find_dir($dir));
+        $this->assertTrue($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_single_dot()
@@ -75,7 +75,7 @@ class FinderTest extends TestCase
         $settings = $this->get_settings();
         $finder = new Finder($settings);
         $dir = '.';
-        $this->assertTrue($finder->is_find_dir($dir));
+        $this->assertTrue($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_double_dot()
@@ -83,7 +83,7 @@ class FinderTest extends TestCase
         $settings = $this->get_settings();
         $finder = new Finder($settings);
         $dir = '..';
-        $this->assertTrue($finder->is_find_dir($dir));
+        $this->assertTrue($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_hidden_dir()
@@ -91,7 +91,7 @@ class FinderTest extends TestCase
         $settings = $this->get_settings();
         $finder = new Finder($settings);
         $dir = '.git';
-        $this->assertFalse($finder->is_find_dir($dir));
+        $this->assertFalse($finder->is_matching_dir($dir));
     }
 
     public function test_is_find_dir_hidden_dir_include_hidden()
@@ -100,7 +100,7 @@ class FinderTest extends TestCase
         $settings->excludehidden = false;
         $finder = new Finder($settings);
         $dir = '.git';
-        $this->assertTrue($finder->is_find_dir($dir));
+        $this->assertTrue($finder->is_matching_dir($dir));
     }
 
     ################################################################################

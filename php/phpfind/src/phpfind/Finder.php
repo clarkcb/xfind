@@ -80,7 +80,7 @@ class Finder
      * @param string $dir
      * @return bool
      */
-    public function is_find_dir(string $dir): bool
+    public function is_matching_dir(string $dir): bool
     {
         if (FileUtil::is_dot_dir($dir)) {
             return true;
@@ -187,7 +187,7 @@ class Finder
     private function get_dir_find_dirs(string $dir): array
     {
         $filter_dirs = function ($f) use ($dir) {
-            return is_dir(FileUtil::join_path($dir, $f)) && $this->is_find_dir($f);
+            return is_dir(FileUtil::join_path($dir, $f)) && $this->is_matching_dir($f);
         };
         $join_path = function ($f) use ($dir) {
             return FileUtil::join_path($dir, $f);
@@ -210,10 +210,10 @@ class Finder
 
     private function rec_get_file_results(string $dir): array
     {
-        $finddirs = $this->get_dir_find_dirs($dir);
+        $dirresults = $this->get_dir_find_dirs($dir);
         $fileresults = $this->get_dir_file_results($dir);
-        foreach ($finddirs as $finddir) {
-            $fileresults = array_merge($fileresults, $this->rec_get_file_results($finddir));
+        foreach ($dirresults as $dirresult) {
+            $fileresults = array_merge($fileresults, $this->rec_get_file_results($dirresult));
         }
         return $fileresults;
     }
@@ -263,7 +263,7 @@ class Finder
         $fileresults = array();
         foreach ($this->settings->paths as $p) {
             if (is_dir($p)) {
-                if ($this->is_find_dir($p)) {
+                if ($this->is_matching_dir($p)) {
                     if ($this->settings->recursive) {
                         $fileresults = array_merge($fileresults, $this->rec_get_file_results($p));
                     } else {
