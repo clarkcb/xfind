@@ -6,7 +6,7 @@ module HsFind.FindSettings
 
 import Data.List.Split (splitOn)
 
-import HsFind.FileTypes
+import HsFind.FileTypes (FileType)
 import HsFind.FileUtil (normalizeExtension)
 
 data FindSettings = FindSettings {

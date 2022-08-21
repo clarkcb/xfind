@@ -20,10 +20,10 @@ main = do
   fileUtilTests <- getFileUtilTests
 
   -- Finder tests
-  isFindDirTests <- getIsFindDirTests
-  isFindFileTests <- getIsFindFileTests
-  isArchiveFindFileTests <- getIsArchiveFindFileTests
-  filterFileTests <- getFilterFileTests
+  isMatchingDirTests <- getIsMatchingDirTests
+  isMatchingFileTests <- getIsMatchingFileTests
+  isMatchingArchiveFileTests <- getIsMatchingArchiveFileTests
+  -- filterFileTests <- getFilterFileTests
 
   -- FindOptions tests
   settingsFromArgsTests <- getSettingsFromArgsTests
@@ -36,7 +36,8 @@ main = do
   newExtensionsTests <- getNewExtensionsTests
 
   defaultMain (fileTypeTests ++ fileTypeFromNameTests ++ fileUtilTests ++
-    isFindDirTests ++ isFindFileTests ++ isArchiveFindFileTests ++
-    filterFileTests ++ settingsFromArgsTests ++ settingsFromNoArgsTests ++
+    isMatchingDirTests ++ isMatchingFileTests ++ isMatchingArchiveFileTests ++
+    -- filterFileTests ++ settingsFromArgsTests ++ settingsFromNoArgsTests ++
+    settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
     defaultFindSettingsTests ++ newExtensionsTests)

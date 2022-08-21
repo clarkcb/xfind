@@ -6,8 +6,8 @@ module HsFind.FileTypesTest
 
 import HsFind.FileTypes
 
-import Test.Framework
-import Test.Framework.Providers.HUnit
+import Test.Framework (Test)
+import Test.Framework.Providers.HUnit (testCase)
 import Test.HUnit hiding (Test)
 
 getFileTypeTests :: IO [Test]

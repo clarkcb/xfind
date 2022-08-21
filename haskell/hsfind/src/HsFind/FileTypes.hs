@@ -6,6 +6,7 @@ module HsFind.FileTypes
   , getFileTypes
   , getFileTypeForName
   , getJsonFileTypes
+  , fileTypeFromJsonFileTypes
   ) where
 
 import qualified Data.ByteString.Lazy.Char8 as BC

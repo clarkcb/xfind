@@ -2,108 +2,152 @@ module HsFind.Finder
     (
       doFind
     , filterFile
-    , getFindFiles
-    , isArchiveFindFile
-    , isFindDir
-    , isFindFile
+    , filterToFileResult
+    , getFileResults
+    , isMatchingArchiveFile
+    , isMatchingDir
+    , isMatchingFile
     ) where
 
 import Control.Monad (forM)
 import Data.Maybe (fromJust, isJust)
 import qualified Data.ByteString as B
-import Text.Regex.PCRE
+import Text.Regex.PCRE ( (=~) )
 
-import HsFind.FileTypes
+import HsFind.FileTypes (FileType, JsonFileType, getFileTypes, getJsonFileTypes, fileTypeFromJsonFileTypes)
 import HsFind.FileUtil
-import HsFind.FindFile
+    (hasExtension, isHiddenFilePath, getRecursiveFilteredContents)
+import HsFind.FileResult
+    (FileResult(fileResultPath), isArchiveFile, newFileResult)
 import HsFind.FindSettings
 
 
-isFindDir :: FindSettings -> FilePath -> Bool
-isFindDir settings d = all ($d) tests
-  where tests :: [FilePath -> Bool]
-        tests = [ \x -> null inPatterns
-                         || any (\p -> x =~ p :: Bool) inPatterns
-                , \x -> null outPatterns
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns
-                , \x -> not (isHiddenFilePath x) || includeHidden
-                ]
+getDirTests :: FindSettings -> [FilePath -> Bool]
+getDirTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests
+  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
+        includeHidden = not $ excludeHidden settings
+        inPatternTests  | null inPatterns = []
+                        | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
+        outPatternTests | null outPatterns = []
+                        | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
         inPatterns = inDirPatterns settings
         outPatterns = outDirPatterns settings
-        includeHidden = not $ excludeHidden settings
 
-isFindFile :: FindSettings -> FilePath -> Bool
-isFindFile settings fp = all ($fp) tests
-  where tests :: [FilePath -> Bool]
-        tests = [ \x -> null inExts
-                         || hasInExt x
-                , \x -> null outExts
-                         || not (hasOutExt x)
-                , \x -> null inPatterns
-                         || any (\p -> x =~ p :: Bool) inPatterns
-                , \x -> null outPatterns
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns
-                , \x -> not (isHiddenFilePath x) || includeHidden
-                ]
+matchesDirTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesDirTests tests d = all ($d) tests
+
+isMatchingDir :: FindSettings -> FilePath -> Bool
+isMatchingDir settings = matchesDirTests dirTests
+  where dirTests :: [FilePath -> Bool]
+        dirTests = getDirTests settings
+
+getFileTests :: FindSettings -> [FilePath -> Bool]
+getFileTests settings =
+  hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
+  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
+        includeHidden = not $ excludeHidden settings
+        inExtTests      | null inExts = []
+                        | otherwise = [\fp -> any (hasExtension fp) inExts]
+        outExtTests     | null outExts = []
+                        | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
+        inPatternTests  | null inPatterns = []
+                        | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
+        outPatternTests | null outPatterns = []
+                        | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
         inExts = inExtensions settings
-        hasInExt f | null inExts = True
-                   | otherwise   = any (hasExtension f) inExts
         outExts = outExtensions settings
-        hasOutExt f | null outExts = False
-                    | otherwise    = any (hasExtension f) outExts
         inPatterns = inFilePatterns settings
         outPatterns = outFilePatterns settings
-        includeHidden = not $ excludeHidden settings
 
-isArchiveFindFile :: FindSettings -> FilePath -> Bool
-isArchiveFindFile settings fp = all ($fp) tests
-  where tests :: [FilePath -> Bool]
-        tests = [ \x -> null inExts
-                         || hasInExt x
-                , \x -> null outExts
-                         || not (hasOutExt x)
-                , \x -> null inPatterns
-                         || any (\p -> x =~ p :: Bool) inPatterns
-                , \x -> null outPatterns
-                         || all (\p -> not $ x =~ p :: Bool) outPatterns
-                , \x -> not (isHiddenFilePath x) || includeHidden
-                ]
+getAllFileTests :: FindSettings -> [JsonFileType] -> [FilePath -> Bool]
+getAllFileTests settings jsonFileTypes =
+  hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests ++
+    inFileTypeTests ++ outFileTypeTests
+  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
+        includeHidden = not $ excludeHidden settings
+        inExtTests       | null inExts = []
+                         | otherwise = [\fp -> any (hasExtension fp) inExts]
+        outExtTests      | null outExts = []
+                         | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
+        inPatternTests   | null inPatterns = []
+                         | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
+        outPatternTests  | null outPatterns = []
+                         | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
+        inFileTypeTests  | null inTypes = []
+                         | otherwise = [\fp -> getFileType fp `elem` inTypes]
+        outFileTypeTests | null outTypes = []
+                         | otherwise = [\fp -> getFileType fp `notElem` outTypes]
+        inExts = inExtensions settings
+        outExts = outExtensions settings
+        inPatterns = inFilePatterns settings
+        outPatterns = outFilePatterns settings
+        inTypes = inFileTypes settings
+        outTypes = outFileTypes settings
+        getFileType = fileTypeFromJsonFileTypes jsonFileTypes
+
+matchesFileTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesFileTests tests f = all ($f) tests
+
+isMatchingFile :: FindSettings -> FilePath -> Bool
+isMatchingFile settings = matchesFileTests fileTests
+  where fileTests :: [FilePath -> Bool]
+        fileTests = getFileTests settings
+
+getArchiveFileTests :: FindSettings -> [FilePath -> Bool]
+getArchiveFileTests settings =
+  hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
+  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
+        includeHidden = not $ excludeHidden settings
+        inExtTests      | null inExts = []
+                        | otherwise = [\fp -> any (hasExtension fp) inExts]
+        outExtTests     | null outExts = []
+                        | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
+        inPatternTests  | null inPatterns = []
+                        | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
+        outPatternTests | null outPatterns = []
+                        | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
         inExts = inArchiveExtensions settings
-        hasInExt f | null inExts = True
-                   | otherwise   = any (hasExtension f) inExts
         outExts = outArchiveExtensions settings
-        hasOutExt f | null outExts = False
-                    | otherwise    = any (hasExtension f) outExts
         inPatterns = inArchiveFilePatterns settings
         outPatterns = outArchiveFilePatterns settings
-        includeHidden = not $ excludeHidden settings
 
-filterFile :: FindSettings -> FindFile -> Bool
+matchesArchiveFileTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesArchiveFileTests tests f = all ($f) tests
+
+isMatchingArchiveFile :: FindSettings -> FilePath -> Bool
+isMatchingArchiveFile settings = matchesArchiveFileTests archiveFileTests
+  where archiveFileTests :: [FilePath -> Bool]
+        archiveFileTests = getArchiveFileTests settings
+
+filterFile :: FindSettings -> FileResult -> Bool
 filterFile settings ff | isArchiveFile ff = includeArchiveFile ff
                        | otherwise        = includeFile ff
   where includeArchiveFile f = includeArchives settings &&
-                               isArchiveFindFile settings (findFilePath f)
+                               isMatchingArchiveFile settings (fileResultPath f)
         includeFile f = not (archivesOnly settings) &&
-                        isFindFile settings (findFilePath f)
+                        isMatchingFile settings (fileResultPath f)
 
-filterToFindFile :: FindSettings -> (FilePath,FileType) -> Maybe FindFile
-filterToFindFile settings ft =
+filterToFileResult :: FindSettings -> [JsonFileType] -> (FilePath,FileType) -> Maybe FileResult
+filterToFileResult settings jsonFileTypes ft =
   if (null inTypes || snd ft `elem` inTypes) && (null outTypes || notElem (snd ft) outTypes)
-  then Just blankFindFile { findFilePath=fst ft
-                          , findFileType=snd ft
-                          }
+  then Just $ uncurry newFileResult ft
   else Nothing
   where inTypes = inFileTypes settings
         outTypes = outFileTypes settings
 
-getFindFiles :: FindSettings -> IO [FindFile]
-getFindFiles settings = do
+getFileResult :: (FilePath,FileType) -> FileResult
+getFileResult = uncurry newFileResult
+
+getFileResults :: FindSettings -> IO [FileResult]
+getFileResults settings = do
+  let dirTests = getDirTests settings
+  jsonFileTypes <- getJsonFileTypes
+  let fileTests = getAllFileTests settings jsonFileTypes
   paths <- forM (paths settings) $ \path ->
-    getRecursiveFilteredContents path (isFindDir settings) (isFindFile settings)
+    getRecursiveFilteredContents path (matchesDirTests dirTests) (matchesFileTests fileTests)
   let allPaths = concat paths
   allFileTypes <- getFileTypes allPaths
-  let justFindFiles = filter isJust (map (filterToFindFile settings) (zip allPaths allFileTypes))
-  return $ map fromJust justFindFiles
+  return $ zipWith (curry getFileResult) allPaths allFileTypes
 
-doFind :: FindSettings -> IO [FindFile]
-doFind = getFindFiles
+doFind :: FindSettings -> IO [FileResult]
+doFind = getFileResults

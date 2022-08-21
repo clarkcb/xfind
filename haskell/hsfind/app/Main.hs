@@ -8,10 +8,10 @@ import Data.List (nub, sort, sortBy)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 
+import HsFind.FileResult
 import HsFind.FileUtil (getParentPath, pathExists)
 import HsFind.FindOptions
 import HsFind.Finder (doFind)
-import HsFind.FindFile
 import HsFind.FindSettings
 
 
@@ -35,11 +35,11 @@ errsOrUsage findOptions settings =
                    (False, True) -> errMsg ++ getUsage findOptions
                    _ -> ""
 
-getMatchingDirs :: [FindFile] -> [FilePath]
+getMatchingDirs :: [FileResult] -> [FilePath]
   -- return (map (\ff -> findFilePath ff) findFiles)
-getMatchingDirs = sort . nub . map (takeDirectory . findFilePath)
+getMatchingDirs = sort . nub . map (takeDirectory . fileResultPath)
 
-formatMatchingDirs :: [FindFile] -> String
+formatMatchingDirs :: [FileResult] -> String
 formatMatchingDirs findFiles =
   if not (null matchingDirs) then
     "\nMatching directories (" ++ show (length matchingDirs) ++ "):\n" ++
@@ -47,13 +47,13 @@ formatMatchingDirs findFiles =
   else "\nMatching directories: 0\n"
   where matchingDirs = getMatchingDirs findFiles
 
-formatMatchingFiles :: [FindFile] -> String
+formatMatchingFiles :: [FileResult] -> String
 formatMatchingFiles findFiles =
   if not (null matchingFiles) then
     "\nMatching files (" ++ show (length matchingFiles) ++ "):\n" ++
     unlines (sort matchingFiles)
   else "\nMatching files: 0\n"
-  where matchingFiles = map findFilePath findFiles
+  where matchingFiles = map fileResultPath findFiles
 
 logMsg :: String -> IO ()
 logMsg = putStr
@@ -73,12 +73,12 @@ main = do
         Nothing -> do
           foundPaths <- filterM pathExists (paths settings)
           if length foundPaths == length (paths settings) then do
-            findFiles <- doFind settings
+            fileResults <- doFind settings
             logMsg $ if listDirs settings
-                     then formatMatchingDirs findFiles
+                     then formatMatchingDirs fileResults
                      else ""
             logMsg $ if listFiles settings
-                     then formatMatchingFiles findFiles
+                     then formatMatchingFiles fileResults
                      else ""
             logMsg ""
           else logMsg $ "\nERROR: Startpath not found\n\n" ++ getUsage findOptions ++ "\n"

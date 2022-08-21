@@ -2,8 +2,8 @@ module HsFind.FileUtilTest (getFileUtilTests) where
 
 import HsFind.FileUtil
 
-import Test.Framework
-import Test.Framework.Providers.HUnit
+import Test.Framework (Test)
+import Test.Framework.Providers.HUnit (testCase)
 import Test.HUnit hiding (Test)
 
 getFileUtilTests :: IO [Test]
