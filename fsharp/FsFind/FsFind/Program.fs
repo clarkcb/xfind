@@ -3,7 +3,7 @@ namespace FsFind
 module Main =
 
     let HandleError (err : string) : unit =
-        Common.Log (sprintf "\nERROR: %s" err)
+        Common.Log $"\nERROR: %s{err}"
         FindOptions.Usage(1)
 
     let Find (settings : FindSettings.t) : unit =
@@ -33,7 +33,7 @@ module Main =
                 HandleError err
 
             if settings.Debug then
-                Common.Log (sprintf "settings: %s" (FindSettings.ToString settings))
+                Common.Log $"settings: %s{FindSettings.ToString settings}"
 
             if settings.PrintUsage then
                 FindOptions.Usage(0)

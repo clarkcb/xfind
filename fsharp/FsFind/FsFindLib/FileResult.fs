@@ -2,7 +2,7 @@
 
 open System.IO
 
-module FindFile = 
+module FileResult = 
 
     type t = {
         Containers : string list;

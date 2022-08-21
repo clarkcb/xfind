@@ -82,22 +82,7 @@ module FindOptions =
             let desc = optionDict.["desc"]
             yield { ShortArg=shortArg; LongArg=longArg; Description=desc } ]
 
-    let OptionsFromXml (xmlString : string) : FindOption list =
-        let rec recOptionsFromXml (nodeList : XElement list) (options : FindOption list) : FindOption list =
-            match nodeList with
-            | [] -> options
-            | n :: ns ->
-                let short = [for a in n.Attributes(XName.Get("short")) do yield a.Value].Head
-                let long = [for a in n.Attributes(XName.Get("long")) do yield a.Value].Head
-                let desc = n.Value.Trim()
-                recOptionsFromXml ns (List.append options [{ ShortArg=short; LongArg=long; Description=desc }])
-        let optNodes = XDocument.Parse(xmlString).Descendants(XName.Get("findoption"))
-        recOptionsFromXml (List.ofSeq optNodes) []
-        |> List.sortBy (fun o -> if (o.ShortArg <> "") then (o.ShortArg.ToLower() + "@" + o.LongArg) else o.LongArg)
-
-    // let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFind.Resources.findoptions.xml");
     let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
-    // let options = OptionsFromXml(_findOptionsResource)
     let options = OptionsFromJson(_findOptionsResource)
 
     let SettingsFromArgs (args : string[]) : FindSettings.t * string =

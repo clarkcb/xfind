@@ -12,7 +12,7 @@
     <Compile Include="FileUtil.fs" />
     <Compile Include="FileTypes.fs" />
     <Compile Include="FindSettings.fs" />
-    <Compile Include="FindFile.fs" />
+    <Compile Include="FileResult.fs" />
     <Compile Include="FindOptions.fs" />
     <Compile Include="Finder.fs" />
     <None Remove="Resources\filetypes.json" />

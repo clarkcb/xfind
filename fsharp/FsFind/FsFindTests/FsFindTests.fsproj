@@ -18,7 +18,7 @@
         <Compile Include="FileTypesTests.fs" />
         <Compile Include="FileUtilTests.fs" />
         <Compile Include="FinderTests.fs" />
-        <Compile Include="FindFileTests.fs" />
+        <Compile Include="FileResultTests.fs" />
         <Compile Include="FindOptionsTests.fs" />
         <Compile Include="FindSettingsTests.fs" />
     </ItemGroup>

@@ -11,10 +11,10 @@ type Finder (settings : FindSettings.t) =
     member this.ValidateSettings () : string list =
         [
             (if List.isEmpty settings.Paths then (Some "Startpath not defined") else None);
-            // (if Directory.Exists(settings.StartPath) || File.Exists(settings.StartPath) then None else (Some "Startpath not found"));
+            (if (List.exists (fun p -> not (Directory.Exists(p)) && not (File.Exists(p))) settings.Paths)
+             then (Some "Startpath not found") else None);
         ]
-        |> List.filter (fun e -> e.IsSome)
-        |> List.map (fun e -> e.Value)
+        |> List.choose id
 
     member this.MatchesAnyPattern (s : string) (patterns : Regex list) : bool =
         Seq.exists (fun p -> (p:Regex).Match(s).Success) patterns
@@ -22,7 +22,7 @@ type Finder (settings : FindSettings.t) =
     member this.AnyMatchesAnyPattern (slist : string seq) (patterns : Regex list) : bool =
         Seq.exists (fun s -> this.MatchesAnyPattern s patterns) slist
 
-    member this.IsFindDir (d : DirectoryInfo) : bool =
+    member this.IsMatchingDir (d : DirectoryInfo) : bool =
         let elems = d.FullName.Split('/', '\\') |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
         (not settings.ExcludeHidden ||
          not (Seq.exists (FileUtil.IsHidden) elems)) &&
@@ -31,7 +31,7 @@ type Finder (settings : FindSettings.t) =
         (Seq.isEmpty settings.OutDirPatterns ||
          not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
 
-    member this.IsFindFile (f : FindFile.t) : bool =
+    member this.IsMatchingFile (f : FileResult.t) : bool =
         (List.isEmpty settings.InExtensions ||
          List.exists (fun x -> x = f.File.Extension) settings.InExtensions) &&
         (List.isEmpty settings.OutExtensions ||
@@ -45,7 +45,7 @@ type Finder (settings : FindSettings.t) =
         (List.isEmpty settings.OutFileTypes ||
          not (List.exists (fun ft -> ft = f.FileType) settings.OutFileTypes))
 
-    member this.IsArchiveFindFile (f : FindFile.t) : bool =
+    member this.IsMatchingArchiveFile (f : FileResult.t) : bool =
         (Seq.isEmpty settings.InArchiveExtensions ||
          Seq.exists (fun x -> x = f.File.Extension) settings.InArchiveExtensions) &&
         (Seq.isEmpty settings.OutArchiveExtensions ||
@@ -55,15 +55,23 @@ type Finder (settings : FindSettings.t) =
         (Seq.isEmpty settings.OutArchiveFilePatterns ||
          not (Seq.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutArchiveFilePatterns))
 
-    member this.FilterFile (f: FindFile.t) : bool = 
-        if FileUtil.IsHiddenFile f.File && settings.ExcludeHidden then
-            false
-        else if f.FileType = FileType.Archive then
-            settings.IncludeArchives && this.IsArchiveFindFile f
+    member this.FilterToFileResult (f: FileInfo) : FileResult.t Option = 
+        if settings.ExcludeHidden && FileUtil.IsHiddenFile f then
+            None
         else
-            not settings.ArchivesOnly && this.IsFindFile f
+            let fr = FileResult.Create f (_fileTypes.GetFileType f)
+            if fr.FileType = FileType.Archive then
+                if settings.IncludeArchives && this.IsMatchingArchiveFile fr then
+                    Some fr
+                else
+                    None
+            else
+                if not settings.ArchivesOnly && this.IsMatchingFile fr then
+                    Some fr
+                else
+                    None
 
-    member this.GetFindFiles (path : string) : FindFile.t list =
+    member this.GetFileResults (path : string) : FileResult.t list =
         let expandedPath = FileUtil.ExpandPath path
         if Directory.Exists(expandedPath) then
             let findOption =
@@ -71,26 +79,25 @@ type Finder (settings : FindSettings.t) =
                 else SearchOption.TopDirectoryOnly
             let dir = DirectoryInfo(expandedPath)
             dir.EnumerateFiles("*", findOption)
-            |> Seq.filter (fun f -> this.IsFindDir(f.Directory))
-            |> Seq.map (fun f -> FindFile.Create f (_fileTypes.GetFileType f))
-            |> Seq.filter this.FilterFile
+            |> Seq.filter (fun f -> f.Directory = null || this.IsMatchingDir(f.Directory))
+            |> Seq.choose this.FilterToFileResult
             |> List.ofSeq
         else
             let fileInfo = FileInfo(expandedPath)
-            [FindFile.Create fileInfo (_fileTypes.GetFileType fileInfo)]
+            [FileResult.Create fileInfo (_fileTypes.GetFileType fileInfo)]
 
-    member this.Find () : FindFile.t list =
+    member this.Find () : FileResult.t list =
         settings.Paths
-        |> List.collect this.GetFindFiles
+        |> List.collect this.GetFileResults
 
-    member this.GetMatchingDirs (findFiles : FindFile.t list) : DirectoryInfo list = 
+    member this.GetMatchingDirs (findFiles : FileResult.t list) : DirectoryInfo list = 
         findFiles
         |> Seq.map (fun f -> f.File.Directory)
         |> Seq.distinctBy (fun d -> d.FullName)
         |> Seq.sortBy (fun d -> d.FullName)
         |> List.ofSeq
 
-    member this.PrintMatchingDirs (findFiles : FindFile.t list) : unit = 
+    member this.PrintMatchingDirs (findFiles : FileResult.t list) : unit = 
         let dirs = this.GetMatchingDirs findFiles
         if dirs.Length > 0 then
             Common.Log $"\nMatching directories (%d{dirs.Length}):"
@@ -100,14 +107,14 @@ type Finder (settings : FindSettings.t) =
             Common.Log "\nMatching directories: 0"
 
 
-    member this.GetMatchingFiles (findFiles : FindFile.t list) : FileInfo list = 
+    member this.GetMatchingFiles (findFiles : FileResult.t list) : FileInfo list = 
         findFiles
         |> Seq.map (fun f -> f.File)
         |> Seq.distinctBy (fun f -> f.FullName)
         |> Seq.sortBy (fun f -> f.FullName)
         |> List.ofSeq
 
-    member this.PrintMatchingFiles (findFiles : FindFile.t list) : unit = 
+    member this.PrintMatchingFiles (findFiles : FileResult.t list) : unit = 
         let files = this.GetMatchingFiles findFiles
         if files.Length > 0 then
             Common.Log $"\nMatching files (%d{files.Length}):"

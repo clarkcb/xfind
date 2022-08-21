@@ -4,7 +4,7 @@ open System
 
 module Common = 
     let Log (msg : string) : unit =
-        printfn "%s" msg
+        printfn $"%s{msg}"
 
     let PrintElapsed (name : string) (ts : TimeSpan) : unit =
         let elapsedTime =
