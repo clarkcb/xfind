@@ -235,7 +235,7 @@ class Finder
         return array_map($join_path, $dirresults);
     }
 
-    private function get_dir_file_results_v3(string $dir): array
+    private function get_dir_file_results(string $dir): array
     {
         $fileresults = array();
         foreach (scandir($dir) as $entry) {
@@ -252,7 +252,7 @@ class Finder
     private function rec_get_file_results(string $dir): array
     {
         $dirresults = $this->get_dir_dir_results($dir);
-        $fileresults = $this->get_dir_file_results_v3($dir);
+        $fileresults = $this->get_dir_file_results($dir);
         foreach ($dirresults as $dirresult) {
             $fileresults = array_merge($fileresults, $this->rec_get_file_results($dirresult));
         }
