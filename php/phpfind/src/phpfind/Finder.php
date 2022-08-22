@@ -151,12 +151,12 @@ class Finder
     }
 
     /**
-     * @param string $f
+     * @param string $filename
      * @return bool
      */
-    public function is_matching_archive_file(string $f): bool
+    public function is_matching_archive_file(string $filename): bool
     {
-        $ext = FileUtil::get_extension($f);
+        $ext = FileUtil::get_extension($filename);
         if ($this->settings->in_archiveextensions &&
             !in_array($ext, $this->settings->in_archiveextensions)) {
             return false;
@@ -166,56 +166,14 @@ class Finder
             return false;
         }
         if ($this->settings->in_archivefilepatterns &&
-            !$this->matches_any_pattern($f, $this->settings->in_archivefilepatterns)) {
+            !$this->matches_any_pattern($filename, $this->settings->in_archivefilepatterns)) {
             return false;
         }
         if ($this->settings->out_archivefilepatterns &&
-            $this->matches_any_pattern($f, $this->settings->out_archivefilepatterns)) {
+            $this->matches_any_pattern($filename, $this->settings->out_archivefilepatterns)) {
             return false;
         }
         return true;
-    }
-
-    private function get_non_dot_dirs(string $dir): array
-    {
-        $filter_non_dot_dirs = function ($f) use ($dir) {
-            return (is_dir(FileUtil::join_path($dir, $f)) && !FileUtil::is_dot_dir($f));
-        };
-        return array_filter(scandir($dir), $filter_non_dot_dirs);
-    }
-
-    private function get_dir_find_dirs(string $dir): array
-    {
-        $filter_dirs = function ($f) use ($dir) {
-            return is_dir(FileUtil::join_path($dir, $f)) && $this->is_matching_dir($f);
-        };
-        $join_path = function ($f) use ($dir) {
-            return FileUtil::join_path($dir, $f);
-        };
-        $finddirs = array_filter($this->get_non_dot_dirs($dir), $filter_dirs);
-        return array_map($join_path, $finddirs);
-    }
-
-    private function get_dir_file_results(string $dir): array
-    {
-        $filter_files = function ($f) use ($dir) {
-            return is_file(FileUtil::join_path($dir, $f)) && $this->filter_file($f);
-        };
-        $to_file_result = function ($f) use ($dir) {
-            return new FileResult($dir, $f, $this->filetypes->get_filetype($f));
-        };
-        $fileresults = array_filter(scandir($dir), $filter_files);
-        return array_map($to_file_result, $fileresults);
-    }
-
-    private function rec_get_file_results(string $dir): array
-    {
-        $dirresults = $this->get_dir_find_dirs($dir);
-        $fileresults = $this->get_dir_file_results($dir);
-        foreach ($dirresults as $dirresult) {
-            $fileresults = array_merge($fileresults, $this->rec_get_file_results($dirresult));
-        }
-        return $fileresults;
     }
 
     /**
@@ -234,25 +192,71 @@ class Finder
     }
 
     /**
-     * @param string $filepath
+     * @param string $dir
+     * @param string $filename
      * @return FileResult|null
      */
-    public function filter_to_file_result(string $filepath): ?FileResult
+    public function filter_to_file_result(string $dir, string $filename): ?FileResult
     {
+        $filepath = FileUtil::join_path($dir, $filename);
         if ($this->settings->excludehidden && FileUtil::is_hidden($filepath)) {
             return null;
         }
-        $fileresult = $this->filepath_to_fileresult($filepath);
+        $fileresult = new FileResult($dir, $filename, $this->filetypes->get_filetype($filename));
         if ($fileresult->filetype == FileType::Archive) {
             if ($this->settings->includearchives && $this->is_matching_archive_file($filepath)) {
                 return $fileresult;
             }
             return null;
         }
-        if (!$this->settings->archivesonly && $this->is_matching_file($filepath)) {
+        if (!$this->settings->archivesonly && $this->is_matching_file_result($fileresult)) {
             return $fileresult;
         }
         return null;
+    }
+
+    private function get_non_dot_dirs(string $dir): array
+    {
+        $filter_non_dot_dirs = function ($f) use ($dir) {
+            return (is_dir(FileUtil::join_path($dir, $f)) && !FileUtil::is_dot_dir($f));
+        };
+        return array_filter(scandir($dir), $filter_non_dot_dirs);
+    }
+
+    private function get_dir_dir_results(string $dir): array
+    {
+        $filter_dirs = function ($f) use ($dir) {
+            return is_dir(FileUtil::join_path($dir, $f)) && $this->is_matching_dir($f);
+        };
+        $join_path = function ($f) use ($dir) {
+            return FileUtil::join_path($dir, $f);
+        };
+        $dirresults = array_filter($this->get_non_dot_dirs($dir), $filter_dirs);
+        return array_map($join_path, $dirresults);
+    }
+
+    private function get_dir_file_results_v3(string $dir): array
+    {
+        $fileresults = array();
+        foreach (scandir($dir) as $entry) {
+            if (is_file(FileUtil::join_path($dir, $entry))) {
+                $fileresult = $this->filter_to_file_result($dir, $entry);
+                if ($fileresult != null) {
+                    $fileresults[] = $fileresult;
+                }
+            }
+        }
+        return $fileresults;
+    }
+
+    private function rec_get_file_results(string $dir): array
+    {
+        $dirresults = $this->get_dir_dir_results($dir);
+        $fileresults = $this->get_dir_file_results_v3($dir);
+        foreach ($dirresults as $dirresult) {
+            $fileresults = array_merge($fileresults, $this->rec_get_file_results($dirresult));
+        }
+        return $fileresults;
     }
 
     /**
