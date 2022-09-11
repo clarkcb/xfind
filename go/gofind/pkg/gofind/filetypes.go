@@ -115,7 +115,7 @@ func (f *FileTypes) IsArchiveFile(file string) bool {
 	return f.isFileType("archive", file)
 }
 
-// going to assume file is binary if it has no extension (for now)
+// IsBinaryFile going to assume file is binary if it has no extension (for now)
 func (f *FileTypes) IsBinaryFile(file string) bool {
 	return f.isFileType("binary", file) || getExtension(file) == ""
 }
