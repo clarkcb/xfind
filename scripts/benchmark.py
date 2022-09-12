@@ -268,6 +268,7 @@ class Benchmarker(object):
         self.scenarios = []
         self.runs = default_runs
         self.debug = True
+        self.exit_on_diff = True
         self.diff_outputs = []
         self.__dict__.update(kwargs)
 
@@ -473,7 +474,8 @@ class Benchmarker(object):
             treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
-        self.compare_outputs(sn, xfind_output)
+        if not self.compare_outputs(sn, xfind_output) and self.exit_on_diff:
+            raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
     def do_run_seq(self, s: Scenario, sn: int, rn: int) -> RunResult:
@@ -508,8 +510,10 @@ class Benchmarker(object):
             xfind_times[x] = self.times_from_lines(time_lines)
             time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
-        self.compare_outputs(sn, xfind_output)
+        if not self.compare_outputs(sn, xfind_output) and self.exit_on_diff:
+            raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
+
 
     def activate_pyvenv(self):
         if 'VIRTUAL_ENV' not in os.environ:
