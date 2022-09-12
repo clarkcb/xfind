@@ -15,6 +15,7 @@ use File::Spec;
 use File::Basename;
 
 use plfind::common;
+use plfind::FileResult;
 use plfind::FileType;
 use plfind::FileTypes;
 use plfind::FileUtil;
@@ -68,7 +69,7 @@ sub any_matches_any_pattern {
     return 0;
 }
 
-sub is_find_dir {
+sub is_matching_dir {
     my ($self, $d) = @_;
     if (plfind::FileUtil::is_dot_dir($d)) {
         return 1;
@@ -92,7 +93,7 @@ sub is_find_dir {
     return 1;
 }
 
-sub is_find_file {
+sub is_matching_file {
     my ($self, $f) = @_;
     my $ext = plfind::FileUtil::get_extension($f);
     if (scalar @{$self->{settings}->{in_extensions}} &&
@@ -123,7 +124,7 @@ sub is_find_file {
     return 1;
 }
 
-sub is_archive_find_file {
+sub is_matching_archive_file {
     my ($self, $f) = @_;
     my $ext = plfind::FileUtil::get_extension($f);
     if (scalar @{$self->{settings}->{in_archiveextensions}} &&
@@ -145,88 +146,101 @@ sub is_archive_find_file {
     return 1;
 }
 
-sub rec_get_find_dirs {
+sub filter_to_file_result {
+    my ($self, $fp) = @_;
+    my $d = dirname($fp);
+    my $f = basename($fp);
+    my $fileresult;
+    if ($self->{settings}->{excludehidden} && plfind::FileUtil::is_hidden($f)) {
+        return $fileresult;
+    }
+    my $ft = $self->{filetypes}->get_filetype($f);
+    if ($ft eq plfind::FileType->ARCHIVE) {
+        if ($self->{settings}->{includearchives} && $self->is_matching_archive_file($f)) {
+            $fileresult = new plfind::FileResult($d, $f, $ft);
+        }
+    }
+    if (!$self->{settings}->{archivesonly} && $self->is_matching_file($f)) {
+        $fileresult = new plfind::FileResult($d, $f, $ft);
+    }
+    return $fileresult;
+}
+
+sub get_dir_dir_results {
+    # print "get_dir_dir_results\n";
     my ($self, $d) = @_;
-    my $finddirs = [];
+    # print "d: $d\n";
+    my $dirresults = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
         my $subfile = File::Spec->join($d, $f);
-        if (-d $subfile && !plfind::FileUtil::is_dot_dir($f) && $self->is_find_dir($subfile)) {
-            push(@{$finddirs}, $subfile);
+        if (-d $subfile && !plfind::FileUtil::is_dot_dir($f) && $self->is_matching_dir($subfile)) {
+            push(@{$dirresults}, $subfile);
         }
     }
     closedir(DIR);
-    foreach my $finddir (@{$finddirs}) {
-        my @merged = (@{$finddirs}, @{$self->rec_get_find_dirs($finddir)});
-        $finddirs = \@merged;
-    }
-    return $finddirs;
+    return $dirresults;
 }
 
-sub filter_file {
-    my ($self, $f) = @_;
-    if ($self->{settings}->{excludehidden} && plfind::FileUtil::is_hidden(basename($f))) {
-        return 0;
-    }
-    if ($self->{filetypes}->is_archive($f)) {
-        if ($self->{settings}->{includearchives} && $self->is_archive_find_file($f)) {
-            return 1;
-        }
-        return 0;
-    }
-    return !$self->{settings}->{archivesonly} && $self->is_find_file($f);
-}
-
-sub rec_get_find_files {
-    # print "rec_get_find_files\n";
+sub get_dir_file_results {
+    # print "get_dir_file_results\n";
     my ($self, $d) = @_;
     # print "d: $d\n";
-    my $finddirs = [];
-    my $findfiles = [];
+    my $fileresults = [];
     opendir(DIR, $d) or die $!;
     while (my $f = readdir(DIR)) {
         my $subfile = File::Spec->join($d, $f);
-        if ($subfile !~ /\/\.{1,2}$/) {
-            if (-d $subfile && $self->is_find_dir($f)) {
-                # print "-d $subfile\n";
-                push(@{$finddirs}, $subfile);
-            } elsif (-f $subfile && $self->filter_file($f)) {
-                # print "-f $subfile\n";
-                push(@{$findfiles}, $subfile);
+        if (-f $subfile) {
+            my $fileresult = $self->filter_to_file_result($subfile);
+            if (defined $fileresult) {
+                push(@{$fileresults}, $fileresult);
             }
         }
     }
     closedir(DIR);
-    foreach my $finddir (@{$finddirs}) {
-        my $subfindfiles = $self->rec_get_find_files($finddir);
-        push(@{$findfiles}, @{$subfindfiles});
-    }
+    return $fileresults;
+}
 
-    return $findfiles;
+sub rec_get_file_results {
+    # print "rec_get_file_results\n";
+    my ($self, $d) = @_;
+    # print "d: $d\n";
+    my $dirresults = $self->get_dir_dir_results($d);
+    my $fileresults = $self->get_dir_file_results($d);
+    foreach my $dirresult (@{$dirresults}) {
+        my $subfileresults = $self->rec_get_file_results($dirresult);
+        push(@{$fileresults}, @{$subfileresults});
+    }
+    return $fileresults;
 }
 
 sub find {
     my $self = shift;
-    my $findfiles = [];
+    my $fileresults = [];
     foreach my $p (@{$self->{settings}->{paths}}) {
         if (-d $p) {
-            push(@{$findfiles}, @{$self->rec_get_find_files($p)});
+            if ($self->{settings}->{recursive}) {
+                push(@{$fileresults}, @{$self->rec_get_file_results($p)});
+            } else {
+                push(@{$fileresults}, @{$self->get_dir_file_results($p)});
+            }
         } elsif (-f $p) {
-            if ($self->filter_file($p)) {
-                push(@{$findfiles}, $p);
+            my $fileresult = $self->filter_to_file_result($p);
+            if (defined $fileresult) {
+                push(@{$fileresults}, $fileresult);
             } else {
                 plfind::common::log("ERROR: Startpath does not match find settings");
             }
         }
     }
-    return $findfiles;
+    return $fileresults;
 }
 
 sub get_matching_dirs {
-    my ($self, $findfiles) = @_;
+    my ($self, $fileresults) = @_;
     my $dir_hash = {};
-    foreach my $ff (@{$findfiles}) {
-        my $d = dirname($ff);
+    foreach my $fr (@{$fileresults}) {
+        my $d = $fr->{path};
         $dir_hash->{$d}++;
     }
     my @dirs = keys %{$dir_hash};
@@ -235,8 +249,8 @@ sub get_matching_dirs {
 }
 
 sub print_matching_dirs {
-    my ($self, $findfiles) = @_;
-    my $dirs = $self->get_matching_dirs($findfiles);
+    my ($self, $fileresults) = @_;
+    my $dirs = $self->get_matching_dirs($fileresults);
     if (scalar @{$dirs}) {
         plfind::common::log(sprintf("\nMatching directories (%d):", scalar @{$dirs}));
         foreach my $d (@{$dirs}) {
@@ -248,10 +262,11 @@ sub print_matching_dirs {
 }
 
 sub get_matching_files {
-    my ($self, $findfiles) = @_;
+    my ($self, $fileresults) = @_;
     my $file_hash = {};
-    foreach my $ff (@{$findfiles}) {
-        $file_hash->{$ff}++;
+    foreach my $fr (@{$fileresults}) {
+        my $fp = File::Spec->join($fr->{path}, $fr->{filename});
+        $file_hash->{$fp}++;
     }
     my @files = keys %{$file_hash};
     @files = sort(@files);
@@ -259,8 +274,8 @@ sub get_matching_files {
 }
 
 sub print_matching_files {
-    my ($self, $findfiles) = @_;
-    my $files = $self->get_matching_files($findfiles);
+    my ($self, $fileresults) = @_;
+    my $files = $self->get_matching_files($fileresults);
     if (scalar @{$files}) {
         plfind::common::log(sprintf("\nMatching files (%d):", scalar @{$files}));
         foreach my $f (@{$files}) {

@@ -1,12 +1,12 @@
 ###############################################################################
 #
-# FindOption.pm
+# FileResult.pm
 #
-# Encapsulates a file to be found
+# Encapsulates a found file
 #
 ###############################################################################
 
-package plfind::FindFile;
+package plfind::FileResult;
 
 use strict;
 use warnings;
