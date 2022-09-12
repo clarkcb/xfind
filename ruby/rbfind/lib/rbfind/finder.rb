@@ -94,17 +94,6 @@ module RbFind
       true
     end
 
-    def filter_file?(filepath)
-      filename = File.basename(filepath)
-      if @settings.excludehidden && FileUtil.hidden?(filename)
-        return false
-      end
-      if @filetypes.archive_file?(filename)
-        return @settings.includearchives && matching_archive_file?(filename)
-      end
-      !@settings.archivesonly && matching_file?(filepath)
-    end
-
     def filter_to_fileresult(filepath)
       filename = File.basename(filepath)
       if @settings.excludehidden && FileUtil.hidden?(filename)

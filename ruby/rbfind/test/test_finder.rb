@@ -250,7 +250,7 @@ module RbFind
       settings = get_settings
       finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(finder.filter_file?(f))
+      assert(finder.filter_to_fileresult(f) != nil)
     end
 
     def test_filter_file_is_find_file
@@ -258,7 +258,7 @@ module RbFind
       settings.add_exts('rb', settings.in_extensions)
       finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(finder.filter_file?(f))
+      assert(finder.filter_to_fileresult(f) != nil)
     end
 
     def test_filter_file_not_is_find_file
@@ -266,14 +266,14 @@ module RbFind
       settings.add_exts('pl', settings.in_extensions)
       finder = Finder.new(settings)
       f = 'fileutil.rb'
-      assert(!finder.filter_file?(f))
+      assert(finder.filter_to_fileresult(f) == nil)
     end
 
     def test_filter_file_is_hidden_file
       settings = get_settings
       finder = Finder.new(settings)
       f = '.gitignore'
-      assert(!finder.filter_file?(f))
+      assert(finder.filter_to_fileresult(f) == nil)
     end
 
     def test_filter_file_hidden_includehidden
@@ -288,7 +288,6 @@ module RbFind
       settings = get_settings
       finder = Finder.new(settings)
       f = 'archive.zip'
-      # assert(!finder.filter_file?(f))
       assert(finder.filter_to_fileresult(f) == nil)
     end
 
@@ -297,7 +296,6 @@ module RbFind
       settings.includearchives = true
       finder = Finder.new(settings)
       f = 'archive.zip'
-      # assert(finder.filter_file?(f))
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
@@ -307,7 +305,6 @@ module RbFind
       settings.includearchives = true
       finder = Finder.new(settings)
       f = 'archive.zip'
-      # assert(finder.filter_file?(f))
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
@@ -317,7 +314,6 @@ module RbFind
       settings.includearchives = true
       finder = Finder.new(settings)
       f = 'fileutil.rb'
-      # assert(!finder.filter_file?(f))
       assert(finder.filter_to_fileresult(f) == nil)
     end
   end
