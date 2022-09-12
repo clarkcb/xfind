@@ -177,21 +177,6 @@ class Finder
     }
 
     /**
-     * @param string $filepath
-     * @return bool
-     */
-    public function filter_file(string $filepath): bool
-    {
-        if ($this->settings->excludehidden && FileUtil::is_hidden($filepath)) {
-            return false;
-        }
-        if ($this->filetypes->is_archive($filepath)) {
-            return $this->settings->includearchives && $this->is_matching_archive_file($filepath);
-        }
-        return !$this->settings->archivesonly && $this->is_matching_file($filepath);
-    }
-
-    /**
      * @param string $dir
      * @param string $filename
      * @return FileResult|null
@@ -277,8 +262,11 @@ class Finder
                     throw new FindException("Startpath does not match find settings");
                 }
             } elseif (is_file($p)) {
-                if ($this->filter_file($p)) {
-                    $fileresults[] = $p;
+                $d = dirname($p);
+                $f = basename($p);
+                $fileresult = $this->filter_to_file_result($d, $f);
+                if ($fileresult != null) {
+                    $fileresults[] = $fileresult;
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
