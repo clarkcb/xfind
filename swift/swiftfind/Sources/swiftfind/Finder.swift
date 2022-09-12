@@ -127,7 +127,7 @@ public class Finder {
 
     // gets all FileResults recursively
     private func getFileResults(_ filePath: String) -> [FileResult] {
-        var findFiles = [FileResult]()
+        var fileResults = [FileResult]()
         if let enumerator = FileUtil.enumerator(forPath: filePath, settings: settings) {
             for case let fileURL as URL in enumerator {
                 do {
@@ -137,14 +137,14 @@ public class Finder {
                             enumerator.skipDescendants()
                         }
                     } else if fileAttributes.isRegularFile! {
-                        if let findFile = filterToFileResult(fileURL.path) {
-                            findFiles.append(findFile)
+                        if let fileResult = filterToFileResult(fileURL.path) {
+                            fileResults.append(fileResult)
                         }
                     }
                 } catch { print(error, fileURL) }
             }
         }
-        return findFiles
+        return fileResults
     }
 
     public func find() -> [FileResult] {
@@ -154,8 +154,9 @@ public class Finder {
                 let pFiles: [FileResult] = getFileResults(p)
                 fileResults.append(contentsOf: pFiles)
             } else {
-                let fileType = fileTypes.getFileType(p)
-                fileResults.append(FileResult(filePath: p, fileType: fileType))
+                if let fileResult = filterToFileResult(p) {
+                    fileResults.append(fileResult)
+                }
             }
         }
         return fileResults

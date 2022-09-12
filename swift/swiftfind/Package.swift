@@ -1,4 +1,4 @@
-// swift-tools-version:5.3
+// swift-tools-version:5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
@@ -20,7 +20,7 @@ let package = Package(
         .target(
             name: "swiftfind",
             dependencies: []),
-        .target(
+        .executableTarget(
             name: "swiftfindApp",
             dependencies: ["swiftfind"]),
         .testTarget(
