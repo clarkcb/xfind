@@ -232,7 +232,7 @@ describe('testing finder', () => {
         const settings = getSettings();
         const finder = new Finder(settings);
         const file = '.gitignore';
-        expect(finder.filterFile(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeFalsy();
     });
 
     it('testFilterFile_IsHiddenIncludeHidden_True', () => {
@@ -240,14 +240,14 @@ describe('testing finder', () => {
         settings.excludeHidden = false;
         const finder = new Finder(settings);
         const file = '.gitignore';
-        expect(finder.filterFile(file)).toBeTruthy();
+        expect(finder.filterToFileResult(file)).toBeTruthy();
     });
 
     it('testFilterFile_ArchiveNoFindArchives_False', () => {
         const settings = getSettings();
         const finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.filterFile(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeFalsy();
     });
 
     it('testFilterFile_ArchiveFindArchives_True', () => {
@@ -255,7 +255,7 @@ describe('testing finder', () => {
         settings.findArchives = true;
         const finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.filterFile(file)).toBeTruthy();
+        expect(finder.filterToFileResult(file)).toBeTruthy();
     });
 
     it('testFilterFile_IsArchiveFindFile_True', () => {
@@ -264,7 +264,7 @@ describe('testing finder', () => {
         settings.addInArchiveExtensions('zip');
         const finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.filterFile(file)).toBeTruthy();
+        expect(finder.filterToFileResult(file)).toBeTruthy();
     });
 
     it('testFilterFile_NotIsArchiveFindFile_False', () => {
@@ -272,7 +272,7 @@ describe('testing finder', () => {
         settings.addOutExtensions('zip');
         const finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.filterFile(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeFalsy();
     });
 
     it('testFilterFile_ArchiveFileArchivesOnly_True', () => {
@@ -280,14 +280,14 @@ describe('testing finder', () => {
         settings.archivesOnly = true;
         const finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.filterFile(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeFalsy();
     });
 
     it('testFilterFile_NoExtensionsNoPatterns_True', () => {
         const settings = getSettings();
         const finder = new Finder(settings);
         const file = 'FileUtil.cs';
-        expect(finder.filterFile(file)).toBeTruthy();
+        expect(finder.filterToFileResult(file)).toBeTruthy();
     });
 
     it('testFilterFile_IsFindFile_True', () => {
@@ -295,7 +295,7 @@ describe('testing finder', () => {
         settings.addInExtensions('cs');
         const finder = new Finder(settings);
         const file = 'FileUtil.cs';
-        expect(finder.filterFile(file)).toBeTruthy();
+        expect(finder.filterToFileResult(file)).toBeTruthy();
     });
 
     it('testFilterFile_NotIsFindFile_False', () => {
@@ -303,7 +303,7 @@ describe('testing finder', () => {
         settings.addOutExtensions('cs');
         const finder = new Finder(settings);
         const file = 'FileUtil.cs';
-        expect(finder.filterFile(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeFalsy();
     });
 
     it('testFilterFile_NonArchiveFileArchivesOnly_False', () => {
@@ -311,6 +311,6 @@ describe('testing finder', () => {
         settings.archivesOnly = true;
         const finder = new Finder(settings);
         const file = 'FileUtil.cs';
-        expect(finder.filterFile(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeFalsy();
     });
 });

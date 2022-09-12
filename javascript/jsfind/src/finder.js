@@ -203,11 +203,13 @@ class Finder {
             }
         } else if (stats.isFile()) {
             const dirname = path.dirname(startPath) || '.';
-            if (this.isMatchingDir(dirname) && this.filterFile(startPath)) {
-                const filename = path.basename(startPath);
-                const filetype = this.filetypes.getFileType(filename);
-                const sf = new FileResult(dirname, filename, filetype);
-                fileResults.push(sf);
+            if (this.isMatchingDir(dirname)) {
+                let fr = this.filterToFileResult(f);
+                if (fr !== null) {
+                    fileResults.push(fr);
+                } else {
+                    throw new FindError("startPath does not match find criteria");
+                }
             } else {
                 throw new FindError("startPath does not match find criteria");
             }
