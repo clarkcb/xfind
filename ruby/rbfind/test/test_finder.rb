@@ -244,16 +244,16 @@ module RbFind
     end
 
     ################################################################################
-    # filter_file tests
+    # filter_to_file_result tests
     ################################################################################
-    def test_filter_file_matches_by_default
+    def test_filter_to_file_result_matches_by_default
       settings = get_settings
       finder = Finder.new(settings)
       f = 'fileutil.rb'
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
-    def test_filter_file_is_find_file
+    def test_filter_to_file_result_is_find_file
       settings = get_settings
       settings.add_exts('rb', settings.in_extensions)
       finder = Finder.new(settings)
@@ -261,7 +261,7 @@ module RbFind
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
-    def test_filter_file_not_is_find_file
+    def test_filter_to_file_result_not_is_find_file
       settings = get_settings
       settings.add_exts('pl', settings.in_extensions)
       finder = Finder.new(settings)
@@ -269,14 +269,14 @@ module RbFind
       assert(finder.filter_to_fileresult(f) == nil)
     end
 
-    def test_filter_file_is_hidden_file
+    def test_filter_to_file_result_is_hidden_file
       settings = get_settings
       finder = Finder.new(settings)
       f = '.gitignore'
       assert(finder.filter_to_fileresult(f) == nil)
     end
 
-    def test_filter_file_hidden_includehidden
+    def test_filter_to_file_result_hidden_includehidden
       settings = get_settings
       settings.excludehidden = false
       finder = Finder.new(settings)
@@ -284,14 +284,14 @@ module RbFind
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
-    def test_filter_file_archive_no_includearchives
+    def test_filter_to_file_result_archive_no_includearchives
       settings = get_settings
       finder = Finder.new(settings)
       f = 'archive.zip'
       assert(finder.filter_to_fileresult(f) == nil)
     end
 
-    def test_filter_file_archive_includearchives
+    def test_filter_to_file_result_archive_includearchives
       settings = get_settings
       settings.includearchives = true
       finder = Finder.new(settings)
@@ -299,7 +299,7 @@ module RbFind
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
-    def test_filter_file_archive_archivesonly
+    def test_filter_to_file_result_archive_archivesonly
       settings = get_settings
       settings.archivesonly = true
       settings.includearchives = true
@@ -308,7 +308,7 @@ module RbFind
       assert(finder.filter_to_fileresult(f) != nil)
     end
 
-    def test_filter_file_nonarchive_archivesonly
+    def test_filter_to_file_result_nonarchive_archivesonly
       settings = get_settings
       settings.archivesonly = true
       settings.includearchives = true
