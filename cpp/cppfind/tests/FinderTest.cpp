@@ -4,47 +4,47 @@
 #include "Finder.h"
 
 /***************************************************************************
- * filter_file tests
+ * filter_to_file_result tests
  **************************************************************************/
-TEST_CASE("Test filter_file hidden file should be false", "[Finder]") {
+TEST_CASE("Test filter_to_file_result hidden file should be false", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(!finder->filter_file(".hidden.txt"));
+    REQUIRE(!finder->filter_to_file_result(".hidden.txt").has_value());
 }
 
-TEST_CASE("Test filter_file hidden file include-hidden should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result hidden file include-hidden should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->excludehidden(false);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file(".hidden.txt"));
+    REQUIRE(finder->filter_to_file_result(".hidden.txt").has_value());
 }
 
-TEST_CASE("Test filter_file archive file should be false", "[Finder]") {
+TEST_CASE("Test filter_to_file_result archive file should be false", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(!finder->filter_file("archive.zip"));
+    REQUIRE(!finder->filter_to_file_result("archive.zip").has_value());
 }
 
-TEST_CASE("Test filter_file archive file find-archives should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result archive file find-archives should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->includearchives(true);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file("archive.zip"));
+    REQUIRE(finder->filter_to_file_result("archive.zip").has_value());
 }
 
-TEST_CASE("Test filter_file archive file is_archive_file should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result archive file is_archive_file should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
@@ -52,10 +52,10 @@ TEST_CASE("Test filter_file archive file is_archive_file should be true", "[Find
     settings->add_in_archiveextension("zip");
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file("archive.zip"));
+    REQUIRE(finder->filter_to_file_result("archive.zip").has_value());
 }
 
-TEST_CASE("Test filter_file archive file !is_archive_file should be false", "[Finder]") {
+TEST_CASE("Test filter_to_file_result archive file !is_archive_file should be false", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
@@ -63,76 +63,76 @@ TEST_CASE("Test filter_file archive file !is_archive_file should be false", "[Fi
     settings->add_out_archiveextension("zip");
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(!finder->filter_file("archive.zip"));
+    REQUIRE(!finder->filter_to_file_result("archive.zip").has_value());
 }
 
-TEST_CASE("Test filter_file archive file archives-only should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result archive file archives-only should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->archivesonly(true);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file("archive.zip"));
+    REQUIRE(finder->filter_to_file_result("archive.zip").has_value());
 }
 
-TEST_CASE("Test filter_file non-archive file archives-only should be false", "[Finder]") {
+TEST_CASE("Test filter_to_file_result non-archive file archives-only should be false", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->archivesonly(true);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(!finder->filter_file("FileUtil.cs"));
+    REQUIRE(!finder->filter_to_file_result("FileUtil.cs").has_value());
 }
 
-TEST_CASE("Test filter_file no exts no patterns should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result no exts no patterns should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file("FileUtil.cs"));
+    REQUIRE(finder->filter_to_file_result("FileUtil.cs").has_value());
 }
 
-TEST_CASE("Test filter_file matching in-ext should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result matching in-ext should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->add_in_extension("cs");
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file("FileUtil.cs"));
+    REQUIRE(finder->filter_to_file_result("FileUtil.cs").has_value());
 }
 
-TEST_CASE("Test filter_file not matching in-ext should be false", "[Finder]") {
+TEST_CASE("Test filter_to_file_result not matching in-ext should be false", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->add_in_extension("cpp");
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(!finder->filter_file("FileUtil.cs"));
+    REQUIRE(!finder->filter_to_file_result("FileUtil.cs").has_value());
 }
 
-TEST_CASE("Test filter_file matching out-ext should be false", "[Finder]") {
+TEST_CASE("Test filter_to_file_result matching out-ext should be false", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->add_out_extension("cs");
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(!finder->filter_file("FileUtil.cs"));
+    REQUIRE(!finder->filter_to_file_result("FileUtil.cs").has_value());
 }
 
-TEST_CASE("Test filter_file not matching out-ext should be true", "[Finder]") {
+TEST_CASE("Test filter_to_file_result not matching out-ext should be true", "[Finder]") {
     auto *settings = new cppfind::FindSettings();
     std::string startpath = ".";
     settings->add_path(startpath);
     settings->add_out_extension("cpp");
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_file("FileUtil.cs"));
+    REQUIRE(finder->filter_to_file_result("FileUtil.cs").has_value());
 }
 
 /***************************************************************************
