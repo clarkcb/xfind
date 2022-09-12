@@ -38,60 +38,60 @@ class FinderTest(unittest.TestCase):
         settings = self.get_settings()
         finder = Finder(settings)
         dir = 'plfind'
-        self.assertTrue(finder.is_find_dir(dir))
+        self.assertTrue(finder.is_matching_dir(dir))
 
     def test_is_find_dir_matches_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('plfind', 'in_dirpatterns')
         finder = Finder(settings)
         dir = 'plfind'
-        self.assertTrue(finder.is_find_dir(dir))
+        self.assertTrue(finder.is_matching_dir(dir))
 
     def test_is_find_dir_no_match_in_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('plfind', 'in_dirpatterns')
         finder = Finder(settings)
         dir = 'pyfind'
-        self.assertFalse(finder.is_find_dir(dir))
+        self.assertFalse(finder.is_matching_dir(dir))
 
     def test_is_find_dir_matches_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('pyfind', 'out_dirpatterns')
         finder = Finder(settings)
         dir = 'pyfind'
-        self.assertFalse(finder.is_find_dir(dir))
+        self.assertFalse(finder.is_matching_dir(dir))
 
     def test_is_find_dir_no_match_out_pattern(self):
         settings = self.get_settings()
         settings.add_patterns('pyfind', 'out_dirpatterns')
         finder = Finder(settings)
         dir = 'plfind'
-        self.assertTrue(finder.is_find_dir(dir))
+        self.assertTrue(finder.is_matching_dir(dir))
 
     def test_is_find_dir_single_dot(self):
         settings = self.get_settings()
         finder = Finder(settings)
         dir = '.'
-        self.assertTrue(finder.is_find_dir(dir))
+        self.assertTrue(finder.is_matching_dir(dir))
 
     def test_is_find_dir_double_dot(self):
         settings = self.get_settings()
         finder = Finder(settings)
         dir = '..'
-        self.assertTrue(finder.is_find_dir(dir))
+        self.assertTrue(finder.is_matching_dir(dir))
 
     def test_is_find_dir_hidden_dir(self):
         settings = self.get_settings()
         finder = Finder(settings)
         dir = '.git'
-        self.assertFalse(finder.is_find_dir(dir))
+        self.assertFalse(finder.is_matching_dir(dir))
 
     def test_is_find_dir_hidden_dir_include_hidden(self):
         settings = self.get_settings()
         settings.excludehidden = False
         finder = Finder(settings)
         dir = '.git'
-        self.assertTrue(finder.is_find_dir(dir))
+        self.assertTrue(finder.is_matching_dir(dir))
 
 ################################################################################
 # filter_to_find_file tests

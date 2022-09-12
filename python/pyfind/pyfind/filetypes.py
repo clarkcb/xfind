@@ -77,6 +77,10 @@ class FileTypes(object):
         """Return true if file is of a (known) xml file type"""
         return FileUtil.get_extension(f) in self.__filetypes['xml']
 
+    def is_unknown_file(self, f: str) -> bool:
+        """Return true if file is of an unknown file type"""
+        return self.get_filtype(f) == FileType.UNKNOWN
+
     def __populate_filetypes_from_json(self):
         stream = pkg_resources.resource_stream(__name__, 'data/filetypes.json')
         filetypes_dict = json.load(stream)

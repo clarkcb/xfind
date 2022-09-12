@@ -33,7 +33,7 @@ class Finder(object):
             assert os.path.exists(p), 'Startpath not found'
             assert os.access(p, os.R_OK), 'Startpath not readable'
 
-    def is_find_dir(self, d: str) -> bool:
+    def is_matching_dir(self, d: str) -> bool:
         """Check whether the given directory matches find settings."""
         path_elems = FileUtil.path_elems(d)
         if self.settings.excludehidden:
@@ -58,7 +58,7 @@ class Finder(object):
             return False
         return True
 
-    def is_archive_find_file(self, filename: str, stat) -> bool:
+    def is_matching_archive_file(self, filename: str, stat) -> bool:
         """Check whether the given archive file matches find settings."""
         ext = FileUtil.get_extension(filename)
         if (self.settings.in_archiveextensions and ext not in self.settings.in_archiveextensions) \
@@ -70,7 +70,7 @@ class Finder(object):
             return False
         return self.is_matching_stat(stat)
 
-    def is_find_file(self, filename: str, filetype: FileType, stat) -> bool:
+    def is_matching_file(self, filename: str, filetype: FileType, stat) -> bool:
         """Check whether the given file matches find settings."""
         ext = FileUtil.get_extension(filename)
         if (self.settings.in_extensions and ext not in self.settings.in_extensions) \
@@ -94,9 +94,9 @@ class Finder(object):
             return None
         stat = os.stat(filepath)
         if filetype == FileType.ARCHIVE:
-            if not self.is_archive_find_file(filename, stat):
+            if not self.is_matching_archive_file(filename, stat):
                 return None
-        elif self.settings.archivesonly or not self.is_find_file(filename, filetype, stat):
+        elif self.settings.archivesonly or not self.is_matching_file(filename, filetype, stat):
             return None
         return FileResult(path=path, filename=filename, filetype=filetype, stat=stat)
 
@@ -105,7 +105,7 @@ class Finder(object):
         fileresults = []
         for p in self.settings.paths:
             if os.path.isdir(p):
-                if self.is_find_dir(os.path.abspath(p)):
+                if self.is_matching_dir(os.path.abspath(p)):
                     if self.settings.recursive:
                         for root, dirs, files in os.walk(p, topdown=True):
                             # NOTE: skipping self.is_find_dir(root) and checking dirs,
@@ -113,7 +113,7 @@ class Finder(object):
                             #       and removing duplicate checks of settings.paths
                             del_dirs = []
                             for d in dirs:
-                                if not self.is_find_dir(d):
+                                if not self.is_matching_dir(d):
                                     del_dirs.append(d)
                             for d in del_dirs:
                                 i = dirs.index(d)
@@ -125,8 +125,7 @@ class Finder(object):
                                 if not os.path.islink(os.path.join(root, f))
                             ]
                             new_fileresults = [self.filter_to_file_result(f) for f in files]
-                            fileresults.extend(
-                                [ff for ff in new_fileresults if ff])
+                            fileresults.extend([fr for fr in new_fileresults if fr])
                     else:
                         files = [
                             os.path.join(p, f) for f in os.listdir(p)
@@ -134,13 +133,12 @@ class Finder(object):
                                 and not os.path.islink(os.path.join(p, f))
                         ]
                         new_fileresults = [self.filter_to_file_result(f) for f in files]
-                        fileresults.extend(
-                            [ff for ff in new_fileresults if ff])
+                        fileresults.extend([fr for fr in new_fileresults if fr])
             elif os.path.isfile(p):
-                ff = self.filter_to_file_result(p)
-                if ff:
-                    fileresults.append(ff)
-        return sorted(fileresults, key=lambda ff: (ff.path, ff.filename))
+                fr = self.filter_to_file_result(p)
+                if fr:
+                    fileresults.append(fr)
+        return sorted(fileresults, key=lambda fr: (fr.path, fr.filename))
 
     async def find(self) -> List[FileResult]:
         """Find matching files under paths."""

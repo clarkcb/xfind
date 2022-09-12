@@ -212,9 +212,8 @@ class FindOptions(object):
 
     def find_settings_from_args(self, args: List[str]) -> FindSettings:
         """Returns a FindSettings instance for a given list of args"""
-        settings = FindSettings()
-        # default printresults to True since running from command line
-        settings.listfiles = True
+        # default listfiles to True since running from command line
+        settings = FindSettings(listfiles=True)
         return self.update_settings_from_args(settings, args)
 
     def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:

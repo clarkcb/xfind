@@ -52,6 +52,10 @@ class FileTypesTest(unittest.TestCase):
         filename = 'file.xml'
         self.assertTrue(self.filetypes.is_xml_file(filename))
 
+    def test_is_unknown_file(self):
+        filename = 'unknown.xyz'
+        self.assertTrue(self.filetypes.is_unknown_file(filename))
+
 
 if __name__ == '__main__':
     unittest.main()
