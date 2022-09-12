@@ -145,26 +145,26 @@ namespace cppfind {
         return !m_settings->archivesonly() && is_matching_file(filename, filetype);
     }
 
-     std::optional<FileResult*> Finder::filter_to_file_result(const std::string& filepath) {
-         boost::filesystem::path p(filepath);
-         std::string filename = p.filename().string();
-         if (m_settings->excludehidden() && FileUtil::is_hidden(filename)) {
-             return std::nullopt;
-         }
-         std::string parent_path = p.parent_path().string();
-         auto filetype = m_filetypes->get_filetype(filename);
-         auto fileresult = new FileResult(parent_path, filename, filetype);
-         if (filetype == FileType::ARCHIVE) {
-             if (m_settings->includearchives() && is_matching_archive_file(filename)) {
-                 return std::optional<FileResult*>{fileresult};
-             }
-             return std::nullopt;
-         }
-         if (!m_settings->archivesonly() && is_matching_file(filename, filetype)) {
-             return std::optional<FileResult*>{fileresult};
-         }
-         return std::nullopt;
-     }
+    std::optional<FileResult*> Finder::filter_to_file_result(const std::string& filepath) {
+        boost::filesystem::path p(filepath);
+        std::string filename = p.filename().string();
+        if (m_settings->excludehidden() && FileUtil::is_hidden(filename)) {
+            return std::nullopt;
+        }
+        std::string parent_path = p.parent_path().string();
+        auto filetype = m_filetypes->get_filetype(filename);
+        auto fileresult = new FileResult(parent_path, filename, filetype);
+        if (filetype == FileType::ARCHIVE) {
+            if (m_settings->includearchives() && is_matching_archive_file(filename)) {
+                return std::optional<FileResult*>{fileresult};
+            }
+            return std::nullopt;
+        }
+        if (!m_settings->archivesonly() && is_matching_file(filename, filetype)) {
+            return std::optional<FileResult*>{fileresult};
+        }
+        return std::nullopt;
+    }
 
     std::vector<FileResult*> Finder::get_file_results(const std::string& filepath) {
         boost::filesystem::path p(filepath);
