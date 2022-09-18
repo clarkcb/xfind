@@ -6,7 +6,8 @@
 # Runs a clean (remove generated files) for each language version
 #
 ################################################################################
-param([string]$lang='all')
+param([switch]$help = $false,
+      [string]$lang='')
 
 ########################################
 # Configuration
@@ -17,6 +18,20 @@ $scriptDir = Split-Path $scriptPath -Parent
 
 . (Join-Path $scriptDir 'config.ps1')
 . (Join-Path $scriptDir 'common.ps1')
+
+# check for help switch
+$help = $help.IsPresent
+
+
+########################################
+# Utility Functions
+########################################
+
+function Usage
+{
+    Write-Host "`nUsage: clean.ps1 [-help] {""all"" | langcode}`n"
+    exit
+}
 
 
 ################################################################################
@@ -263,6 +278,13 @@ function CleanPhp
     Log('not implemented at this time')
 }
 
+function CleanPowerShell
+{
+    Write-Host
+    Hdr('CleanPowerShell')
+    Log('not implemented at this time')
+}
+
 function CleanPython
 {
     Write-Host
@@ -431,6 +453,8 @@ function CleanAll
 
     CleanPhp
 
+    CleanPowerShell
+
     CleanPython
 
     CleanRuby
@@ -479,6 +503,8 @@ function CleanMain
         'perl'       { CleanPerl }
         'pl'         { CleanPerl }
         'php'        { CleanPhp }
+        'powershell' { CleanPowerShell }
+        'ps1'        { CleanPowerShell }
         'py'         { CleanPython }
         'python'     { CleanPython }
         'rb'         { CleanRuby }
@@ -491,6 +517,11 @@ function CleanMain
         'typescript' { CleanTypeScript }
         default      { ExitWithError("Unknown option: $lang") }
     }
+}
+
+if ($help -or $lang -eq '')
+{
+    Usage
 }
 
 CleanMain $lang

@@ -17,6 +17,16 @@ source "$DIR/common.sh"
 
 
 ########################################
+# Utility Functions
+########################################
+
+usage () {
+    echo -e "\nUsage: unittest.sh [-h|--help] {\"all\" | langcode}\n"
+    exit
+}
+
+
+########################################
 # Unit Test Functions
 ########################################
 
@@ -463,12 +473,30 @@ unittest_all () {
 ########################################
 # Unit-testing main
 ########################################
+HELP=
+ARG=all
 
 if [ $# == 0 ]
 then
-    ARG="all"
-else
-    ARG=$1
+    HELP=yes
+fi
+
+while [ -n "$1" ]
+do
+    case "$1" in
+        -h | --help)
+            HELP=yes
+            ;;
+        *)
+            ARG=$1
+            ;;
+    esac
+    shift || true
+done
+
+if [ -n "$HELP" ]
+then
+    usage
 fi
 
 case $ARG in
@@ -542,6 +570,6 @@ case $ARG in
         unittest_typescript
         ;;
     *)
-        echo -n "ERROR: unknown unittest argument: $ARG"
+        log_error "ERROR: unknown unittest argument: $ARG"
         ;;
 esac

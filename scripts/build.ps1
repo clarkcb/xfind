@@ -6,10 +6,11 @@
 # Builds specified language version of xfind, or all versions
 #
 ################################################################################
-param([switch]$debug = $false,
+param([switch]$help = $false,
+      [switch]$debug = $false,
       [switch]$release = $false,
       [switch]$venv = $false,
-      [string]$lang='all')
+      [string]$lang = '')
 
 ########################################
 # Configuration
@@ -18,8 +19,11 @@ param([switch]$debug = $false,
 $scriptPath = $MyInvocation.MyCommand.Path
 $scriptDir = Split-Path $scriptPath -Parent
 
-. (Join-Path $scriptDir 'config.ps1')
-. (Join-Path $scriptDir 'common.ps1')
+. (Join-Path -Path $scriptDir -ChildPath 'config.ps1')
+. (Join-Path -Path $scriptDir -ChildPath 'common.ps1')
+
+# check for help switch
+$help = $help.IsPresent
 
 # for languages that have debug and release builds
 $debug = $debug.IsPresent
@@ -32,13 +36,20 @@ if (-not $release)
 # for python
 $venv = $venv.IsPresent
 
+
 ########################################
 # Utility Functions
 ########################################
 
+function Usage
+{
+    Write-Host "`nUsage: build.ps1 [-help] [-debug] [-release] [-venv] {""all"" | langcode}`n"
+    exit
+}
+
 function CopyJsonResources
 {
-    param($resourcesPath)
+    param([string]$resourcesPath)
     $fileTypesPath = Join-Path $sharedPath 'filetypes.json'
     Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
     Copy-Item $fileTypesPath -Destination $resourcesPath
@@ -49,7 +60,7 @@ function CopyJsonResources
 
 function CopyXmlResources
 {
-    param($resourcesPath)
+    param([string]$resourcesPath)
     $fileTypesPath = Join-Path $sharedPath 'filetypes.xml'
     Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
     Copy-Item $fileTypesPath -Destination $resourcesPath
@@ -60,14 +71,38 @@ function CopyXmlResources
 
 function CopyTestResources
 {
-    param($testResourcesPath)
+    param([string]$testResourcesPath)
     Log("Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath")
     Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath
 }
 
+function AddSoftLink
+{
+    param([string]$linkPath, [string]$targetPath, [bool]$replaceLink=$true)
+    Write-Host "linkPath: $linkPath"
+    Write-Host "targetPath: $targetPath"
+
+    if ((Test-Path $linkPath) -and $replaceLink)
+    {
+        if ((Get-Item $linkPath).LinkType -eq 'SymbolicLink')
+        {
+            Log("Remove-Item $linkPath")
+            Remove-Item $linkPath
+        }
+    }
+
+    if (-not (Test-Path $linkPath))
+    {
+        # from https://winaero.com/create-symbolic-link-windows-10-powershell/
+        # New-Item -ItemType SymbolicLink -Path "Link" -Target "Target"
+        Log("New-Item -ItemType SymbolicLink -Path $linkPath -Target $targetPath")
+        New-Item -ItemType SymbolicLink -Path $linkPath -Target $targetPath
+    }
+}
+
 function AddToBin
 {
-    param($scriptPath)
+    param([string]$scriptPath)
 
     if (-not (Test-Path $binPath))
     {
@@ -83,22 +118,7 @@ function AddToBin
 
     $linkPath = Join-Path $binPath $baseName
 
-    if (Test-Path $linkPath)
-    {
-        if ((Get-Item $linkPath).LinkType -eq 'SymbolicLink')
-        {
-            Log("Remove-Item $linkPath")
-            Remove-Item $linkPath
-        }
-    }
-
-    if (-not (Test-Path $linkPath))
-    {
-        # from https://winaero.com/create-symbolic-link-windows-10-powershell/
-        # New-Item -ItemType SymbolicLink -Path "Link" -Target "Target"
-        Log("New-Item -ItemType SymbolicLink -Path $linkPath -Target $scriptPath")
-        New-Item -ItemType SymbolicLink -Path $linkPath -Target $scriptPath
-    }
+    AddSoftLink $linkPath $scriptPath
 }
 
 
@@ -484,7 +504,7 @@ function BuildHaskell
     }
 
     # set the default stack settings, e.g. use system ghc
-    $stackDir = Join-Path $env:HOME '.stack'
+    $stackDir = Join-Path $HOME '.stack'
     if (-not (Test-Path $stackDir))
     {
         New-Item -ItemType directory -Path $stackDir
@@ -803,6 +823,36 @@ function BuildPhp
     Set-Location $oldPwd
 }
 
+function BuildPowerShell
+{
+    Write-Host
+    Hdr('BuildPowerShell')
+
+    $oldPwd = Get-Location
+    Set-Location $ps1findPath
+
+    Log('Building ps1find')
+
+    # copy the file to the first of the module paths, if defined
+    $modulePaths = @($env:PSModulePath -split ':')
+    if ($modulePaths.Count -gt 0) {
+        $ps1findTargetModulePath = Join-Path $modulePaths[0] 'Ps1FindModule'
+        if (-not (Test-Path $ps1findTargetModulePath)) {
+            Log("New-Item -Path $ps1findTargetModulePath -ItemType Directory")
+            New-Item -Path $ps1findTargetModulePath -ItemType Directory
+        }
+        $ps1findModulePath = Join-Path $ps1findPath 'Ps1FindModule.psm1'
+        Log("Copy-Item $ps1findModulePath -Destination $ps1findTargetModulePath")
+        Copy-Item $ps1findModulePath -Destination $ps1findTargetModulePath
+    }
+
+    # add to bin
+    $ps1findExe = Join-Path $ps1findPath 'ps1find.ps1'
+    AddToBin($ps1findExe)
+
+    Set-Location $oldPwd
+}
+
 function BuildPython
 {
     Write-Host
@@ -1109,6 +1159,8 @@ function BuildLinux
 
     Measure-Command { BuildPhp }
 
+    # Measure-Command { BuildPowerShell }
+
     Measure-Command { BuildPython }
 
     Measure-Command { BuildRuby }
@@ -1156,6 +1208,8 @@ function BuildAll
     Measure-Command { BuildPerl }
 
     Measure-Command { BuildPhp }
+
+    Measure-Command { BuildPowerShell }
 
     Measure-Command { BuildPython }
 
@@ -1205,6 +1259,8 @@ function BuildMain
         'perl'       { Measure-Command { BuildPerl } }
         'pl'         { Measure-Command { BuildPerl } }
         'php'        { Measure-Command { BuildPhp } }
+        'powershell' { Measure-Command { BuildPowerShell } }
+        'ps1'        { Measure-Command { BuildPowerShell } }
         'py'         { Measure-Command { BuildPython } }
         'python'     { Measure-Command { BuildPython } }
         'rb'         { Measure-Command { BuildRuby } }
@@ -1217,6 +1273,11 @@ function BuildMain
         'typescript' { Measure-Command { BuildTypeScript } }
         default      { ExitWithError("Unknown option: $lang") }
     }
+}
+
+if ($help -or $lang -eq '')
+{
+    Usage
 }
 
 BuildMain $lang

@@ -11,7 +11,7 @@
 ########################################
 
 # XFIND_PATH defaults to $HOME/src/xfind if not defined
-if (-not (Test-Path env:XFIND_PATH)) { $env:XFIND_PATH = Join-Path $env:HOME 'src' 'xfind' }
+if (-not (Test-Path env:XFIND_PATH)) { $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind' }
 $xfindPath = $env:XFIND_PATH
 $binPath = Join-Path $xfindPath 'bin'
 $sharedPath = Join-Path $xfindPath 'shared'
@@ -33,6 +33,7 @@ $objcPath = Join-Path $xfindPath 'objc'
 $ocamlPath = Join-Path $xfindPath 'ocaml'
 $perlPath = Join-Path $xfindPath 'perl'
 $phpPath = Join-Path $xfindPath 'php'
+$powershellPath = Join-Path $xfindPath 'powershell'
 $pythonPath = Join-Path $xfindPath 'python'
 $rubyPath = Join-Path $xfindPath 'ruby'
 $rustPath = Join-Path $xfindPath 'rust'
@@ -54,8 +55,9 @@ $jsfindPath = Join-Path $javascriptPath 'jsfind'
 $ktfindPath = Join-Path $kotlinPath 'ktfind'
 $objcfindPath = Join-Path $objcPath 'objcfind'
 $mlfindPath = Join-Path $ocamlPath 'mlfind'
-$plfindPath = Join-Path $perlPath 'plfind'
 $phpfindPath = Join-Path $phpPath 'phpfind'
+$plfindPath = Join-Path $perlPath 'plfind'
+$ps1findPath = Join-Path $powershellPath 'ps1find'
 $pyfindPath = Join-Path $pythonPath 'pyfind'
 $rbfindPath = Join-Path $rubyPath 'rbfind'
 $rsfindPath = Join-Path $rustPath 'rsfind'

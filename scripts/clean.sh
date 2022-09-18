@@ -17,6 +17,16 @@ source "$DIR/common.sh"
 
 
 ########################################
+# Utility Functions
+########################################
+
+usage () {
+    echo -e "\nUsage: clean.sh [-h|--help] {\"all\" | langcode}\n"
+    exit
+}
+
+
+########################################
 # Clean Functions
 ########################################
 
@@ -233,6 +243,12 @@ clean_php () {
     log "Nothing to do for php"
 }
 
+clean_powershell () {
+    echo
+    hdr "clean_powershell"
+    log "Nothing to do for powershell"
+}
+
 clean_python () {
     echo
     hdr "clean_python"
@@ -384,6 +400,8 @@ clean_all () {
 
     clean_php
 
+    clean_powershell
+
     clean_python
 
     clean_ruby
@@ -401,12 +419,30 @@ clean_all () {
 ########################################
 # Clean Steps
 ########################################
+HELP=
+ARG=all
 
 if [ $# == 0 ]
 then
-    ARG="all"
-else
-    ARG=$1
+    HELP=yes
+fi
+
+while [ -n "$1" ]
+do
+    case "$1" in
+        -h | --help)
+            HELP=yes
+            ;;
+        *)
+            ARG=$1
+            ;;
+    esac
+    shift || true
+done
+
+if [ -n "$HELP" ]
+then
+    usage
 fi
 
 case $ARG in
@@ -461,6 +497,9 @@ case $ARG in
     php)
         clean_php
         ;;
+    ps1 | powershell)
+        clean_powershell
+        ;;
     py | python)
         clean_python
         ;;
@@ -480,6 +519,6 @@ case $ARG in
         clean_typescript
         ;;
     *)
-        echo -n "ERROR: unknown xfind clean argument: $ARG"
+        log_error "ERROR: unknown xfind clean argument: $ARG"
         ;;
 esac

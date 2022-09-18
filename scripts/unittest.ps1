@@ -6,7 +6,8 @@
 # Runs unit tests for specified language version of xfind, or all versions
 #
 ################################################################################
-param([string]$lang='all')
+param([switch]$help = $false,
+      [string]$lang='')
 
 ########################################
 # Configuration
@@ -17,6 +18,20 @@ $scriptDir = Split-Path $scriptPath -Parent
 
 . (Join-Path $scriptDir 'config.ps1')
 . (Join-Path $scriptDir 'common.ps1')
+
+# check for help switch
+$help = $help.IsPresent
+
+
+########################################
+# Utility Functions
+########################################
+
+function Usage
+{
+    Write-Host "`nUsage: unittest.ps1 [-help] {""all"" | langcode}`n"
+    exit
+}
 
 
 ################################################################################
@@ -291,6 +306,24 @@ function UnitTestPhp
     phpunit $phpTestsPath
 }
 
+function UnitTestPowershell
+{
+    Write-Host
+    Hdr('UnitTestPowershell')
+
+    if (-not (Get-Command 'invoke-pester' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install Pester')
+        return
+    }
+
+    # $phpTestsPath = Join-Path $ps1findPath 'tests'
+
+    Log('Unit-testing ps1find')
+    Log("invoke-pester $ps1findPath")
+    invoke-pester $ps1findPath
+}
+
 function UnitTestPython
 {
     Write-Host
@@ -508,6 +541,8 @@ function UnitTestMain
         'ocaml'      { UnitTestOcaml }
         'perl'       { UnitTestPerl }
         'php'        { UnitTestPhp }
+        'powershell' { UnitTestPowershell }
+        'ps1'        { UnitTestPowershell }
         'py'         { UnitTestPython }
         'python'     { UnitTestPython }
         'rb'         { UnitTestRuby }
@@ -520,6 +555,11 @@ function UnitTestMain
         'typescript' { UnitTestTypeScript }
         default      { ExitWithError("Unknown option: $lang") }
     }
+}
+
+if ($help -or $lang -eq '')
+{
+    Usage
 }
 
 UnitTestMain $lang

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ################################################################################
 #
 # lint.sh
@@ -14,6 +14,16 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
+
+
+########################################
+# Utility Functions
+########################################
+
+usage () {
+    echo -e "\nUsage: lint.sh [-h|--help] {\"all\" | langcode}\n"
+    exit
+}
 
 
 ########################################
@@ -132,8 +142,8 @@ lint_java () {
     for f in ${FILES[*]}
     do
         echo
-        log "java -jar $CHECKSTYLE_JAR -c $CONFIG $f"
-        output=$("$JAVA" -jar "$CHECKSTYLE" -c "$CONFIG" "$f")
+        log "$JAVA -jar $CHECKSTYLE_JAR -c $CONFIG $f"
+        output=$("$JAVA" -jar "$CHECKSTYLE_JAR" -c "$CONFIG" "$f")
         # for g in ${GREPVS[*]}
         # do
         #     output=$(echo $output | grep -v $g)
@@ -207,7 +217,43 @@ lint_php () {
     echo
     hdr "lint_php"
 
-    log "not implemented at this time"
+    cd "$PHPFIND_PATH"
+
+    if [ ! -f "vendor/bin/phpstan" ]
+    then
+        echo "You need to install phpstan"
+        return
+    fi
+
+    log "Linting phpfind"
+
+    log "vendor/bin/phpstan analyse src tests"
+    vendor/bin/phpstan analyse src tests
+
+    cd -
+}
+
+lint_powershell () {
+    echo
+    hdr "lint_powershell"
+
+    cd "$PS1FIND_PATH"
+
+    # This is always going to fail because this is a Cmdlet and only available in Powershell,
+    # adding here as a reminder for when I create lint.ps1
+    if [ ! -f "invoke-scriptanalyzer" ]
+    then
+        echo "You need to install PSScriptAnalyzer"
+        echo "(NOTE: only available in Powershell)"
+        return
+    fi
+
+    log "Linting ps1find"
+
+    log "Invoke-ScriptAnalyzer -Path ."
+    Invoke-ScriptAnalyzer -Path .
+
+    cd -
 }
 
 lint_python () {
@@ -348,14 +394,32 @@ lint_all () {
 
 
 ########################################
-# Lint Steps
+# Lint Main
 ########################################
+HELP=
+ARG=all
 
 if [ $# == 0 ]
 then
-    ARG="all"
-else
-    ARG=$1
+    HELP=yes
+fi
+
+while [ -n "$1" ]
+do
+    case "$1" in
+        -h | --help)
+            HELP=yes
+            ;;
+        *)
+            ARG=$1
+            ;;
+    esac
+    shift || true
+done
+
+if [ -n "$HELP" ]
+then
+    usage
 fi
 
 if [ "$ARG" == "all" ]
@@ -406,6 +470,9 @@ then
 elif [ "$ARG" == "php" ]
 then
     lint_php
+elif [ "$ARG" == "powershell" ] || [ "$ARG" == "ps1" ]
+then
+    lint_powershell
 elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
 then
     lint_python

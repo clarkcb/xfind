@@ -20,6 +20,11 @@ source "$DIR/common.sh"
 # Utility Functions
 ########################################
 
+usage () {
+    echo -e "\nUsage: build.sh [-h|--help] [--debug] [--release] [--venv] {\"all\" | langcode}\n"
+    exit
+}
+
 # copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
@@ -66,14 +71,14 @@ add_to_bin () {
     fi
 
     # echo "script_name: $script_name"
-    if [ -L "$script_name" ]
-    then
-        log "rm $script_name"
-        rm "$script_name"
-    fi
+    # if [ -L "$script_name" ]
+    # then
+    #     log "rm $script_name"
+    #     rm "$script_name"
+    # fi
 
-    log "ln -s $script_path $script_name"
-    ln -s "$script_path" "$script_name"
+    log "ln -sf $script_path $script_name"
+    ln -sf "$script_path" "$script_name"
 
     cd -
 }
@@ -606,11 +611,11 @@ build_ocaml () {
 
     cd "$MLFIND_PATH"
     ./build.sh
-    if [ -L ~/bin/mlfind ]
-    then
-        rm ~/bin/mlfind
-    fi
-    ln -s "$MLFIND_PATH/_build/src/mlfind.native" ~/bin/mlfind
+    # if [ -L ~/bin/mlfind ]
+    # then
+    #     rm ~/bin/mlfind
+    # fi
+    ln -sf "$MLFIND_PATH/_build/src/mlfind.native" ~/bin/mlfind
     cd -
 }
 
@@ -703,6 +708,39 @@ build_php () {
     add_to_bin "$PHPFIND_PATH/bin/phpfind.sh"
 
     cd -
+}
+
+build_powershell () {
+    echo
+    hdr "build_powershell"
+
+    # ensure pwsh is installed
+    if [ -z "$(which pwsh)" ]
+    then
+        echo "You need to install powershell"
+        return
+    fi
+
+    MODULEPATH=$(pwsh -c 'echo $env:PSModulePath')
+
+    if [ -z "$MODULEPATH" ]
+    then
+        echo "Unable to get powershell module path"
+        return
+    fi
+
+    log "Building ps1find"
+
+    # split on : and get the first path
+    IFS=':' read -ra MODULEPATHS <<< "$MODULEPATH"
+    MODULEPATH=${MODULEPATHS[0]}
+    PS1FINDMODULEPATH="$MODULEPATH/Ps1FindModule"
+
+    log "cp $PS1FIND_PATH/Ps1FindModule.psm1 $PS1FINDMODULEPATH/"
+    cp "$PS1FIND_PATH/Ps1FindModule.psm1" "$PS1FINDMODULEPATH/"
+
+    # add to bin
+    add_to_bin "$PS1FIND_PATH/ps1find.ps1"
 }
 
 build_python () {
@@ -1005,6 +1043,8 @@ build_linux () {
 
     time build_php
 
+    # time build_powershell
+
     time build_python
 
     time build_ruby
@@ -1051,6 +1091,8 @@ build_all () {
 
     time build_php
 
+    time build_powershell
+
     time build_python
 
     time build_ruby
@@ -1068,14 +1110,23 @@ build_all () {
 ########################################
 # Build Main
 ########################################
+HELP=
 DEBUG=
 RELEASE=
 VENV=
 ARG=all
 
+if [ $# == 0 ]
+then
+    HELP=yes
+fi
+
 while [ -n "$1" ]
 do
     case "$1" in
+        -h | --help)
+            HELP=yes
+            ;;
         --debug)
             DEBUG=yes
             ;;
@@ -1091,6 +1142,11 @@ do
     esac
     shift || true
 done
+
+if [ -n "$HELP" ]
+then
+    usage
+fi
 
 if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
 then
@@ -1148,6 +1204,9 @@ case $ARG in
         ;;
     php)
         build_php
+        ;;
+    ps1 | powershell)
+        build_powershell
         ;;
     py | python)
         build_python
