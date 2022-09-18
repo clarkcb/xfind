@@ -37,6 +37,8 @@ xfind_dict = {
     'perl':       'plfind',
     'pl':         'plfind',
     'php':        'phpfind',
+    'powershell': 'ps1find',
+    'ps1':        'ps1find',
     'py':         'pyfind',
     'python':     'pyfind',
     'rb':         'rbfind',
@@ -50,7 +52,7 @@ xfind_dict = {
 }
 win_supported = [
     'cs', 'csharp', 'fs', 'fsharp', 'go', 'haskell', 'javascript', 'js',
-    'perl', 'pl', 'py', 'python', 'rb', 'ruby'
+    'perl', 'pl', 'ps1', 'py', 'python', 'rb', 'ruby'
 ]
 all_xfind_names = sorted(list(set(xfind_dict.values())))
 HOME_NAME = 'HOME'
