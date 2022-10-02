@@ -20,7 +20,7 @@ module RbFind
     FILE_TYPE_NAMES = %w[UNKNOWN ARCHIVE BINARY CODE TEXT XML].freeze
 
     def initialize
-      set_filetype_map_from_json
+      set_filetype_maps_from_json
     end
 
     def self.from_name(name)
@@ -32,8 +32,9 @@ module RbFind
       filetype < FILE_TYPE_NAMES.size ? FILE_TYPE_NAMES[filetype] : 0
     end
 
-    def set_filetype_map_from_json
-      @file_type_map = {}
+    def set_filetype_maps_from_json
+      @file_type_ext_map = {}
+      @file_type_name_map = {}
       filetypes_json_path = File.join(File.dirname(__FILE__), "../../data/filetypes.json")
       f = File.open(filetypes_json_path, mode: 'r')
       json = f.read
@@ -41,12 +42,16 @@ module RbFind
       json_hash['filetypes'].each do |ft|
         typename = ft['type']
         exts = ft['extensions'].to_set
-        @file_type_map[typename] = exts
+        @file_type_ext_map[typename] = exts
+        names = ft['names'].to_set
+        @file_type_name_map[typename] = names
       end
-      @file_type_map['text'] = @file_type_map['text'] + @file_type_map['code'] +
-        @file_type_map['xml']
+      @file_type_ext_map['text'] = @file_type_ext_map['text'] + @file_type_ext_map['code'] +
+        @file_type_ext_map['xml']
+      @file_type_name_map['text'] = @file_type_name_map['text'] + @file_type_name_map['code'] +
+        @file_type_name_map['xml']
     rescue StandardError => e
-      raise FindError, "#{e} (file: #{FINDOPTIONSJSONPATH})"
+      raise FindError, "#{e}"
     ensure
       f&.close
     end
@@ -68,23 +73,28 @@ module RbFind
     end
 
     def archive_file?(filename)
-      @file_type_map['archive'].include?(FileUtil.get_extension(filename))
+      @file_type_name_map['archive'].include?(filename) ||
+      @file_type_ext_map['archive'].include?(FileUtil.get_extension(filename))
     end
 
     def binary_file?(filename)
-      @file_type_map['binary'].include?(FileUtil.get_extension(filename))
+      @file_type_name_map['binary'].include?(filename) ||
+      @file_type_ext_map['binary'].include?(FileUtil.get_extension(filename))
     end
 
     def code_file?(filename)
-      @file_type_map['code'].include?(FileUtil.get_extension(filename))
+      @file_type_name_map['code'].include?(filename) ||
+      @file_type_ext_map['code'].include?(FileUtil.get_extension(filename))
     end
 
     def text_file?(filename)
-      @file_type_map['text'].include?(FileUtil.get_extension(filename))
+      @file_type_name_map['text'].include?(filename) ||
+      @file_type_ext_map['text'].include?(FileUtil.get_extension(filename))
     end
 
     def xml_file?(filename)
-      @file_type_map['xml'].include?(FileUtil.get_extension(filename))
+      @file_type_name_map['xml'].include?(filename) ||
+      @file_type_ext_map['xml'].include?(FileUtil.get_extension(filename))
     end
   end
 end
