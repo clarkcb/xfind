@@ -88,10 +88,11 @@ class Finder {
   }
 
   Future<FileResult> filterToFileResult(File f) {
-    if (settings.excludeHidden && FileUtil.isHidden(path.basename(f.path))) {
+    var fileName = path.basename(f.path);
+    if (settings.excludeHidden && FileUtil.isHidden(fileName)) {
       return null;
     }
-    return _fileTypes.getFileType(f.path).then((fileType) {
+    return _fileTypes.getFileType(fileName).then((fileType) {
       var findFile = FileResult(f, fileType);
       if (findFile.fileType == FileType.archive) {
         if (settings.includeArchives) {
