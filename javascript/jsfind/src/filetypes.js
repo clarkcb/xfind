@@ -13,7 +13,7 @@ class FileTypes {
     'use strict'
 
     constructor() {
-        this.fileTypeMap = (() => {
+        [this.fileTypeExtMap, this.fileTypeNameMap] = (() => {
             let fs = require('fs');
 
             let json = '';
@@ -23,20 +23,27 @@ class FileTypes {
                 throw new Error('File not found: ' + config.FILETYPESJSONPATH);
             }
 
-            let fileTypeMap = {};
+            let fileTypeExtMap = {};
+            let fileTypeNameMap = {};
 
             let obj = JSON.parse(json);
             if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
                 obj['filetypes'].forEach(ft => {
                     let typename = ft['type'];
                     let extensions = ft['extensions'];
-                    fileTypeMap[typename] = common.setFromArray(extensions);
+                    fileTypeExtMap[typename] = common.setFromArray(extensions);
+                    if (ft.hasOwnProperty('names')) {
+                        fileTypeNameMap[typename] = common.setFromArray(ft['names']);
+                    } else {
+                        fileTypeNameMap[typename] = [];
+                    }
                 });
             } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
 
-            fileTypeMap.text = [].concat(fileTypeMap.text, fileTypeMap.code, fileTypeMap.xml);
+            fileTypeExtMap.text = [].concat(fileTypeExtMap.text, fileTypeExtMap.code, fileTypeExtMap.xml);
+            fileTypeNameMap.text = [].concat(fileTypeNameMap.text, fileTypeNameMap.code, fileTypeNameMap.xml);
 
-            return fileTypeMap;
+            return [fileTypeExtMap, fileTypeNameMap];
         })();
     }
 
@@ -73,28 +80,28 @@ class FileTypes {
     }
 
     isArchiveFile(filename) {
-        let ext = getExtension(filename);
-        return this.fileTypeMap.archive.indexOf(ext) > -1;
+        return this.fileTypeNameMap.archive.indexOf(filename) > -1
+            || this.fileTypeExtMap.archive.indexOf(getExtension(filename)) > -1;
     }
 
     isBinaryFile(filename) {
-        let ext = getExtension(filename);
-        return this.fileTypeMap.binary.indexOf(ext) > -1;
+        return this.fileTypeNameMap.binary.indexOf(filename) > -1
+            || this.fileTypeExtMap.binary.indexOf(getExtension(filename)) > -1;
     }
 
     isCodeFile(filename) {
-        let ext = getExtension(filename);
-        return this.fileTypeMap.code.indexOf(ext) > -1;
+        return this.fileTypeNameMap.code.indexOf(filename) > -1
+            || this.fileTypeExtMap.code.indexOf(getExtension(filename)) > -1;
     }
 
     isTextFile(filename) {
-        let ext = getExtension(filename);
-        return this.fileTypeMap.text.indexOf(ext) > -1;
+        return this.fileTypeNameMap.text.indexOf(filename) > -1
+            || this.fileTypeExtMap.text.indexOf(getExtension(filename)) > -1;
     }
 
     isXmlFile(filename) {
-        let ext = getExtension(filename);
-        return this.fileTypeMap.xml.indexOf(ext) > -1;
+        return this.fileTypeNameMap.xml.indexOf(filename) > -1
+            || this.fileTypeExtMap.xml.indexOf(getExtension(filename)) > -1;
     }
 
     isUnknownFile(filename) {
