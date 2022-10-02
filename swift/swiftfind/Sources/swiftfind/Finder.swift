@@ -111,7 +111,7 @@ public class Finder {
         if settings.excludeHidden, FileUtil.isHidden(fileName) {
             return nil
         }
-        let fileType = fileTypes.getFileType(filePath)
+        let fileType = fileTypes.getFileType(fileName)
         let fr = FileResult(filePath: filePath, fileType: fileType)
         if (fileType == FileType.archive) {
             if (settings.includeArchives && isMatchingArchiveFile(fileName)) {

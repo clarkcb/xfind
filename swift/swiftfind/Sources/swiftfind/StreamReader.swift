@@ -80,7 +80,7 @@ public class StreamReader {
 }
 
 extension StreamReader: Sequence {
-    open func makeIterator() -> AnyIterator<String> {
+    public func makeIterator() -> AnyIterator<String> {
         AnyIterator {
             self.nextLine()
         }

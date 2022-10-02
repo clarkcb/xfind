@@ -21,7 +21,8 @@ public class FileTypes {
     fileprivate static let xml = "xml"
 
     private var config: Config
-    private var fileTypesDict = [String: Set<String>]()
+    private var fileTypeExtDict = [String: Set<String>]()
+    private var fileTypeNameDict = [String: Set<String>]()
 
     public init() {
         self.config = Config()
@@ -37,10 +38,14 @@ public class FileTypes {
                     for ft in filetypes {
                         let typeName = ft["type"] as! String
                         let extensions = ft["extensions"] as! [String]
-                        fileTypesDict[typeName] = Set(extensions)
+                        fileTypeExtDict[typeName] = Set(extensions)
+                        let names = ft["names"] as! [String]
+                        fileTypeNameDict[typeName] = Set(names)
                     }
-                    fileTypesDict[FileTypes.text] = fileTypesDict[FileTypes.text]!.union(fileTypesDict[FileTypes.code]!)
-                        .union(fileTypesDict[FileTypes.xml]!)
+                    fileTypeExtDict[FileTypes.text] = fileTypeExtDict[FileTypes.text]!.union(fileTypeExtDict[FileTypes.code]!)
+                        .union(fileTypeExtDict[FileTypes.xml]!)
+                    fileTypeNameDict[FileTypes.text] = fileTypeNameDict[FileTypes.text]!.union(fileTypeNameDict[FileTypes.code]!)
+                        .union(fileTypeNameDict[FileTypes.xml]!)
                 }
             }
         } catch let error as NSError {
@@ -107,8 +112,8 @@ public class FileTypes {
     }
 
     private func isFileOfType(_ fileName: String, _ typeName: String) -> Bool {
-        fileTypesDict.index(forKey: typeName) != nil &&
-            fileTypesDict[typeName]!.contains(FileUtil.getExtension(fileName))
+        return fileTypeNameDict[typeName]!.contains(fileName)
+            || fileTypeExtDict[typeName]!.contains(FileUtil.getExtension(fileName))
     }
 
     public func isArchiveFile(_ fileName: String) -> Bool {
