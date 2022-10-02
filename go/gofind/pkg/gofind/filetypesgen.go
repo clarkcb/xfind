@@ -11,5 +11,14 @@ func GetFileTypes() *FileTypes {
 			"unknown":  makeSet([]string{"adm", "aps", "cli", "clw", "def", "df2", "ncb", "nt", "nt2", "orig", "pc", "plg", "roff", "sun", "texinfo", "tr", "xwd"}),
 			"xml":      makeSet([]string{"ant", "atom", "atomcat", "atomsrv", "bdsproj", "config", "csproj", "davmount", "dbproj", "docx", "dotx", "fsproj", "fxml", "iml", "jhm", "jnlp", "kml", "mm", "plist", "pom", "potx", "ppsx", "pptx", "qrc", "rdf", "resx", "rng", "rss", "settings", "sldx", "stc", "std", "sti", "stw", "svg", "svgz", "sxc", "sxd", "sxg", "sxi", "sxm", "sxw", "tld", "vbproj", "vcproj", "vdproj", "wadl", "wsdd", "wsdl", "x3d", "xaml", "xcbkptlist", "xcscheme", "xcworkspacedata", "xht", "xhtml", "xjb", "xlsx", "xltx", "xml", "xps", "xsd", "xsl", "xslt", "xspf", "xul"}),
 		},
+		map[string]set{
+			"archive":  makeSet([]string{}),
+			"binary":   makeSet([]string{}),
+			"code":     makeSet([]string{".bashrc", ".bash_profile", ".editorconfig", ".env", ".gitattributes", ".gitignore", ".gitkeep", ".profile", "Dockerfile", "Gemfile", "Jenkinsfile", "Makefile", "MANIFEST", "mime.types", "PKG-INFO", "Rakefile"}),
+			"nosearch": makeSet([]string{}),
+			"text":     makeSet([]string{"LICENSE", "README"}),
+			"unknown":  makeSet([]string{}),
+			"xml":      makeSet([]string{}),
+		},
 	}
 }

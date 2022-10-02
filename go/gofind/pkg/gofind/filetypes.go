@@ -18,13 +18,15 @@ const (
 )
 
 type FileTypes struct {
-	fileTypeMap map[string]set
+	fileTypeExtMap  map[string]set
+	fileTypeNameMap map[string]set
 }
 
 // used for unmarshalling
 type JsonFileType struct {
 	Type       string
 	Extensions []string
+	Names      []string
 }
 
 type JsonFileTypes struct {
@@ -35,7 +37,8 @@ func FileTypesFromJson() *FileTypes {
 	config := NewConfig()
 
 	var fileTypes FileTypes
-	fileTypes.fileTypeMap = make(map[string]set)
+	fileTypes.fileTypeExtMap = make(map[string]set)
+	fileTypes.fileTypeNameMap = make(map[string]set)
 	data, err := ioutil.ReadFile(config.FILETYPESPATH)
 	if err != nil {
 		return &fileTypes
@@ -45,7 +48,8 @@ func FileTypesFromJson() *FileTypes {
 		return &fileTypes
 	}
 	for _, ft := range jsonFileTypes.FileTypes {
-		fileTypes.fileTypeMap[ft.Type] = makeSet(ft.Extensions)
+		fileTypes.fileTypeExtMap[ft.Type] = makeSet(ft.Extensions)
+		fileTypes.fileTypeNameMap[ft.Type] = makeSet(ft.Names)
 	}
 	return &fileTypes
 }
@@ -108,7 +112,7 @@ func getNameForFileType(fileType FileType) string {
 }
 
 func (f *FileTypes) isFileType(filetype string, file string) bool {
-	return f.fileTypeMap[filetype][getExtension(file)]
+	return f.fileTypeNameMap[filetype][file] || f.fileTypeExtMap[filetype][getExtension(file)]
 }
 
 func (f *FileTypes) IsArchiveFile(file string) bool {
@@ -117,7 +121,7 @@ func (f *FileTypes) IsArchiveFile(file string) bool {
 
 // IsBinaryFile going to assume file is binary if it has no extension (for now)
 func (f *FileTypes) IsBinaryFile(file string) bool {
-	return f.isFileType("binary", file) || getExtension(file) == ""
+	return f.isFileType("binary", file)
 }
 
 func (f *FileTypes) IsCodeFile(file string) bool {
