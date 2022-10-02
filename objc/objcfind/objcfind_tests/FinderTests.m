@@ -238,7 +238,7 @@
 }
 
 /*************************************************************
- * filterToFindFile tests
+ * filterToFileResult tests
  *************************************************************/
 - (void)testFilterToFindFile_IsHidden_False {
     FindSettings *settings = [[FindSettings alloc] init];

@@ -112,10 +112,7 @@
     if (self.settings.excludeHidden && [FileUtil isHidden:filePath]) {
         return false;
     }
-    FileType fileType = [self.fileTypes getFileType:filePath];
-//    if (fileType == FileTypeUnknown) {
-//        return nil;
-//    }
+    FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
     FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType];
     if (fileType == FileTypeArchive) {
         if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {

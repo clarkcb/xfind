@@ -3,7 +3,7 @@
 
 @interface FileTypes : NSObject
 
-- (NSDictionary*) fileTypesFromJson;
+- (NSArray*) fileTypesFromJson;
 + (FileType) fromName:(NSString*)typeName;
 + (NSString*) toName:(FileType)fileType;
 - (FileType) getFileType:(NSString*)fileName;

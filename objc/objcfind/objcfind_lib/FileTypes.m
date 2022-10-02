@@ -13,7 +13,8 @@
 @property NSString *xml;
 
 
-@property NSDictionary<NSString*,NSSet<NSString*>*> *fileTypesDict;
+@property NSDictionary<NSString*,NSSet<NSString*>*> *fileTypeExtDict;
+@property NSDictionary<NSString*,NSSet<NSString*>*> *fileTypeNameDict;
 
 @end
 
@@ -28,17 +29,20 @@
         self.text = [NSString stringWithUTF8String:T_TEXT];
         self.unknown = [NSString stringWithUTF8String:T_UNKNOWN];
         self.xml = [NSString stringWithUTF8String:T_XML];
-        self.fileTypesDict = [self fileTypesFromJson];
+        NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *ftArr = [self fileTypesFromJson];
+        self.fileTypeExtDict = ftArr[0];
+        self.fileTypeNameDict = ftArr[1];
     }
     return self;
 }
 
-- (NSDictionary<NSString*,NSSet<NSString*>*>*) fileTypesFromJson {
+- (NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*>*) fileTypesFromJson {
     NSMutableString *fileTypesJsonPath = [NSMutableString stringWithUTF8String:SHAREDPATH];
     [fileTypesJsonPath appendString:@"/filetypes.json"];
 
-    NSMutableDictionary *fileTypesDict = [[NSMutableDictionary alloc] init];
-    
+    NSMutableDictionary *fileTypeExtDict = [[NSMutableDictionary alloc] init];
+    NSMutableDictionary *fileTypeNameDict = [[NSMutableDictionary alloc] init];
+
     if (![[NSFileManager defaultManager] fileExistsAtPath:fileTypesJsonPath]) {
         return nil;
     }
@@ -57,13 +61,23 @@
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             NSArray *fileTypes = jsonObject[@"filetypes"];
             for (NSDictionary *typeDict in fileTypes) {
-                NSArray *extensions = typeDict[@"extensions"];
                 NSString *type = typeDict[@"type"];
-                fileTypesDict[type] = [NSSet setWithArray:extensions];
+                NSArray *extensions = typeDict[@"extensions"];
+                fileTypeExtDict[type] = [NSSet setWithArray:extensions];
+                NSArray *names = typeDict[@"names"];
+                fileTypeNameDict[type] = [NSSet setWithArray:names];
             }
         }
     }
-    return [NSDictionary dictionaryWithDictionary:fileTypesDict];
+    NSMutableArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *fileTypesDictionaries = [[NSMutableArray alloc] init];
+    NSDictionary *ftExtDict = [NSDictionary dictionaryWithDictionary:fileTypeExtDict];
+    [fileTypesDictionaries addObject:ftExtDict];
+
+    NSDictionary *ftNameDict = [NSDictionary dictionaryWithDictionary:fileTypeNameDict];
+    [fileTypesDictionaries addObject:ftNameDict];
+
+    return [NSArray arrayWithArray:fileTypesDictionaries];
+
 }
 
 + (FileType) fromName:(NSString*)typeName {
@@ -125,9 +139,12 @@
 }
 
 - (BOOL) isFileOfType:(NSString*)fileName type:(NSString*)typeName {
+    if ([self.fileTypeNameDict[typeName] containsObject:fileName]) {
+        return true;
+    }
     NSString *ext = [FileUtil getExtension:fileName];
-    return self.fileTypesDict[typeName] != nil &&
-    [self.fileTypesDict[typeName] containsObject:ext];
+    return self.fileTypeExtDict[typeName] != nil &&
+    [self.fileTypeExtDict[typeName] containsObject:ext];
 }
 
 - (BOOL) isArchiveFile:(NSString*)fileName {
