@@ -85,7 +85,8 @@ function GetFileTypeFromName {
 }
 
 class FileTypes {
-    $FileTypesMap = @{}
+    $FileTypeExtMap = @{}
+    $FileTypeNameMap = @{}
 
     FileTypes() {
         $this.LoadFileTypesFromJson()
@@ -97,7 +98,12 @@ class FileTypes {
             foreach ($fileTypeObj in $fileTypesHash['filetypes']) {
                 $fileType = $fileTypeObj['type']
                 $exts = $fileTypeObj['extensions'] | ForEach-Object { ".$_" }
-                $this.FileTypesMap[$fileType] = $exts
+                $this.FileTypeExtMap[$fileType] = $exts
+                if ($fileTypeObj.ContainsKey('names')) {
+                    $this.FileTypeNameMap[$fileType] = $fileTypeObj['names']
+                } else {
+                    $this.FileTypeNameMap[$fileType] = @()
+                }
             }
         } else {
             throw "Missing filetypes in JSON"
@@ -124,15 +130,18 @@ class FileTypes {
     }
 
     [bool]IsArchiveFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypesMap['archive']
+        return $fileInfo.Extension -in $this.FileTypeExtMap['archive'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['archive']
     }
 
     [bool]IsBinaryFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypesMap['binary']
+        return $fileInfo.Extension -in $this.FileTypeExtMap['binary'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['binary']
     }
 
     [bool]IsCodeFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypesMap['code']
+        return $fileInfo.Extension -in $this.FileTypeExtMap['code'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['code']
     }
 
     [bool]IsSearchableFile([System.IO.FileInfo]$fileInfo) {
@@ -140,16 +149,18 @@ class FileTypes {
     }
 
     [bool]IsTextFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypesMap['text']
+        return $fileInfo.Extension -in $this.FileTypeExtMap['text'] -or
+            $fileInfo.Name -in $this.FileTypeNameMap['text']
     }
 
     [bool]IsUnknownFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypesMap['unknown'] -or
+        return $fileInfo.Extension -in $this.FileTypeExtMap['unknown'] -or
             $this.GetFileType($fileInfo) -eq [FileType]::Unknown
     }
 
     [bool]IsXmlFile([System.IO.FileInfo]$fileInfo) {
-        return $fileInfo.Extension -in $this.FileTypesMap['xml']
+        return $fileInfo.Extension -in $this.FileTypeExtMap['xml'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['xml']
     }
 }
 #endregion
