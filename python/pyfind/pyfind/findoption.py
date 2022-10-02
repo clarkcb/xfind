@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # findoption.py
@@ -6,7 +7,8 @@
 # class FindOption: encapsulates a (command-line) find option
 #
 ###############################################################################
-class FindOption(object):
+"""
+class FindOption:
     """a class to encapsulate a specific command line option"""
 
     __slots__ = ['shortarg', 'longarg', 'desc', 'func']
@@ -19,6 +21,7 @@ class FindOption(object):
 
     @property
     def sortarg(self):
+        """Return a value to compare this option for sorting"""
         if self.shortarg:
             return self.shortarg.lower() + 'a' + self.longarg.lower()
         return self.longarg.lower()

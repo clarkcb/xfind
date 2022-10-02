@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # fileutil.py
@@ -7,11 +8,12 @@
 #                 determining file type
 #
 ###############################################################################
+"""
 import os
 from typing import List
 
 
-class FileUtil(object):
+class FileUtil:
     """a file helper class"""
 
     DOT_DIRS = frozenset(['.', '..'])
@@ -46,4 +48,5 @@ class FileUtil(object):
 
     @staticmethod
     def path_elems(filepath: str) -> List[str]:
+        """Returns list of separate path elements of filepath"""
         return [p for p in filepath.split(os.sep) if p and p not in FileUtil.DOT_DIRS]

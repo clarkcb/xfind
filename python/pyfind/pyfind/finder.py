@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # finder.py
@@ -6,6 +7,7 @@
 # class Finder: executes a file find
 #
 ###############################################################################
+"""
 import os
 from typing import List, Optional
 
@@ -15,7 +17,7 @@ from .fileutil import FileUtil
 from .findsettings import FindSettings, PatternSet
 
 
-class Finder(object):
+class Finder:
     """Finder is a class to find files based on find settings."""
 
     __slots__ = ['settings', 'filetypes']
@@ -50,8 +52,10 @@ class Finder(object):
 
     def is_matching_stat(self, stat) -> bool:
         """Check whether the given file stat matches find settings."""
-        if (self.settings.minlastmod and stat.st_mtime < self.settings.minlastmod.timestamp()) \
-                or (self.settings.maxlastmod and stat.st_mtime > self.settings.maxlastmod.timestamp()):
+        if (self.settings.minlastmod
+            and stat.st_mtime < self.settings.minlastmod.timestamp()) \
+                or (self.settings.maxlastmod
+                    and stat.st_mtime > self.settings.maxlastmod.timestamp()):
             return False
         if (self.settings.minsize and stat.st_size < self.settings.minsize) \
                 or (self.settings.maxsize and stat.st_size > self.settings.maxsize):
@@ -61,12 +65,14 @@ class Finder(object):
     def is_matching_archive_file(self, filename: str, stat) -> bool:
         """Check whether the given archive file matches find settings."""
         ext = FileUtil.get_extension(filename)
-        if (self.settings.in_archiveextensions and ext not in self.settings.in_archiveextensions) \
-            or (self.settings.out_archiveextensions and ext in self.settings.out_archiveextensions) \
-            or (self.settings.in_archivefilepatterns and
-                not matches_any_pattern(filename, self.settings.in_archivefilepatterns)) \
-            or (self.settings.out_archivefilepatterns and
-                matches_any_pattern(filename, self.settings.out_archivefilepatterns)):
+        if (self.settings.in_archiveextensions
+            and ext not in self.settings.in_archiveextensions) \
+            or (self.settings.out_archiveextensions
+                and ext in self.settings.out_archiveextensions) \
+            or (self.settings.in_archivefilepatterns
+                and not matches_any_pattern(filename, self.settings.in_archivefilepatterns)) \
+            or (self.settings.out_archivefilepatterns
+                and matches_any_pattern(filename, self.settings.out_archivefilepatterns)):
             return False
         return self.is_matching_stat(stat)
 
@@ -90,7 +96,9 @@ class Finder(object):
         if self.settings.excludehidden and FileUtil.is_hidden(filename):
             return None
         filetype = self.filetypes.get_filetype(filename)
-        if filetype == FileType.ARCHIVE and not self.settings.includearchives and not self.settings.archivesonly:
+        if filetype == FileType.ARCHIVE \
+           and not self.settings.includearchives \
+           and not self.settings.archivesonly:
             return None
         stat = os.stat(filepath)
         if filetype == FileType.ARCHIVE:

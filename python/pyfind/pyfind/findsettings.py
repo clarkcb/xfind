@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # findsettings.py
@@ -6,6 +7,7 @@
 # class FindSettings: encapsulates find settings
 #
 ###############################################################################
+"""
 from datetime import datetime
 import re
 from typing import Any, Dict, Optional, Pattern, Set
@@ -16,7 +18,7 @@ from .findexception import FindException
 PatternSet = Set[Pattern]
 
 
-class FindSettings(object):
+class FindSettings:
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
@@ -33,9 +35,11 @@ class FindSettings(object):
                  in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
                  in_extensions: Set[str] = None, in_filepatterns: PatternSet = None,
                  in_filetypes: Set[str] = None, includearchives: bool = False,
-                 listdirs: bool = False, listfiles: bool = False, maxlastmod: Optional[datetime] = None,
-                 maxsize: int = 0, minlastmod: Optional[datetime] = None, minsize: int = 0,
-                 out_archiveextensions: Set[str] = None, out_archivefilepatterns: PatternSet = None,
+                 listdirs: bool = False, listfiles: bool = False,
+                 maxlastmod: Optional[datetime] = None, maxsize: int = 0,
+                 minlastmod: Optional[datetime] = None, minsize: int = 0,
+                 out_archiveextensions: Set[str] = None,
+                 out_archivefilepatterns: PatternSet = None,
                  out_dirpatterns: PatternSet = None, out_extensions: Set[str] = None,
                  out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
                  paths: Set[str] = None, printresults: bool = False, printusage: bool = False,
@@ -70,20 +74,21 @@ class FindSettings(object):
         self.verbose = verbose
 
     def add_exts(self, exts, ext_set_name: str):
-        if isinstance(exts, list) or isinstance(exts, set):
+        """Add one or more comma-separated extensions"""
+        if isinstance(exts, (list, set)):
             ext_set = getattr(self, ext_set_name)
             ext_set.update(exts)
         elif isinstance(exts, str):
-            new_ext_set = set([ext for ext in exts.split(',') if ext])
+            new_ext_set = {ext for ext in exts.split(',') if ext}
             ext_set = getattr(self, ext_set_name)
             ext_set.update(new_ext_set)
         else:
             raise FindException('exts is an unknown type')
 
     def add_patterns(self, patterns, pattern_set_name: str, compile_flag=re.S | re.U):
-        if isinstance(patterns, list) or isinstance(patterns, set):
-            new_pattern_set = set([re.compile(p, compile_flag)
-                                   for p in patterns])
+        """Add patterns to patternset"""
+        if isinstance(patterns, (list, set)):
+            new_pattern_set = {re.compile(p, compile_flag) for p in patterns}
             pattern_set = getattr(self, pattern_set_name)
             pattern_set.update(new_pattern_set)
         elif isinstance(patterns, str):
@@ -93,7 +98,8 @@ class FindSettings(object):
             raise FindException('patterns is an unknown type')
 
     def add_paths(self, paths):
-        if isinstance(paths, list) or isinstance(paths, set):
+        """Add one or more paths"""
+        if isinstance(paths, (list, set)):
             self.paths.update(paths)
         elif isinstance(paths, str):
             self.paths.add(paths)
@@ -101,18 +107,18 @@ class FindSettings(object):
             raise FindException('paths is an unknown type')
 
     def add_filetypes(self, filetypes, filetype_set_name: str):
-        if isinstance(filetypes, list) or isinstance(filetypes, set):
-            new_filetype_set = set([FileType.from_name(ft)
-                                    for ft in filetypes])
+        """Add one or more filetypes"""
+        if isinstance(filetypes, (list, set)):
+            new_filetype_set = {FileType.from_name(ft) for ft in filetypes}
         elif isinstance(filetypes, str):
-            new_filetype_set = set([FileType.from_name(ft)
-                                    for ft in filetypes.split(',') if ft])
+            new_filetype_set = {FileType.from_name(ft) for ft in filetypes.split(',') if ft}
         else:
             raise FindException('filetypes is an unknown type')
         filetype_set = getattr(self, filetype_set_name)
         filetype_set.update(new_filetype_set)
 
     def set_property(self, name: str, val):
+        """Set a property"""
         setattr(self, name, val)
         # some trues trigger others
         if isinstance(val, bool) and val:
@@ -122,12 +128,13 @@ class FindSettings(object):
                 self.verbose = True
 
     def set_properties(self, propdict: Dict[str, Any]):
+        """Set properties"""
         for p in propdict.keys():
             self.set_property(p, propdict[p])
 
     def __str__(self):
         print_dict = {}
-        s = '{0}('.format(self.__class__.__name__)
+        s = f'{self.__class__.__name__}('
         for p in sorted(self.__slots__):
             val = getattr(self, p)
             if isinstance(val, set):
@@ -137,16 +144,16 @@ class FindSettings(object):
                     print_dict[p] = str(list(val))
             elif isinstance(val, str):
                 if val:
-                    print_dict[p] = '"{0}"'.format(val)
+                    print_dict[p] = f'"{val}"'
                 else:
                     print_dict[p] = '""'
             else:
-                print_dict[p] = '{0!s}'.format(val)
+                print_dict[p] = f'{val}'
         next_elem = 0
         for p in sorted(print_dict.keys()):
             if next_elem:
                 s += ', '
-            s += '{0}: {1}'.format(p, print_dict[p])
+            s += f'{p}: {print_dict[p]}'
             next_elem += 1
         s += ')'
         return s

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # common.py
@@ -6,6 +7,7 @@
 # Common functionality
 #
 ###############################################################################
+"""
 from dateutil.parser import parse
 
 from .findexception import FindException
@@ -30,4 +32,4 @@ def parse_datetime_str(datetime_str: str):
     try:
         return parse(datetime_str)
     except:
-        raise FindException('Invalid datetime string: {}'.format(datetime_str))
+        raise FindException(f'Invalid datetime string: {datetime_str}')

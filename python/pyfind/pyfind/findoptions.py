@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # findoptions.py
@@ -7,6 +8,7 @@
 #                    corresponding utility methods
 #
 ###############################################################################
+"""
 import json
 import os
 import sys
@@ -22,7 +24,7 @@ from .findoption import FindOption
 from .findsettings import FindSettings
 
 
-class FindOptions(object):
+class FindOptions:
     """class to provide usage info and parse command-line arguments into settings."""
 
     def __init__(self):
@@ -157,13 +159,14 @@ class FindOptions(object):
         self.__longarg_dict = {}
 
     def settings_from_file(self, filepath: str, settings: FindSettings):
-        assert os.path.exists(filepath), \
-            'Settings file not found: {0:s}'.format(filepath)
+        """Read settings from a JSON file"""
+        assert os.path.exists(filepath), f'Settings file not found: {filepath}'
         with open(filepath) as f:
             jsonstr = f.read()
         self.settings_from_json(jsonstr, settings)
 
     def settings_from_json(self, jsonstr: str, settings: FindSettings):
+        """Read settings from a JSON string"""
         json_dict = json.loads(jsonstr)
         for arg in json_dict:
             if arg in self.__bool_arg_dict:
@@ -177,7 +180,7 @@ class FindOptions(object):
             elif arg in self.__str_arg_dict:
                 self.__str_arg_dict[arg](json_dict[arg], settings)
             else:
-                raise FindException('Invalid option: {0}'.format(arg))
+                raise FindException(f'Invalid option: {arg}')
 
     def __set_options_from_json(self):
         stream = pkg_resources.resource_stream(__name__, 'data/findoptions.json')
@@ -203,8 +206,7 @@ class FindOptions(object):
             elif longarg == 'settings-file':
                 func = self.settings_from_file
             else:
-                raise FindException(
-                    'Unknown find option: {0:s}'.format(longarg))
+                raise FindException(f'Unknown find option: {longarg}')
             self.options.append(FindOption(shortarg, longarg, desc, func))
             self.__longarg_dict[longarg] = longarg
             if shortarg:
@@ -233,7 +235,7 @@ class FindOptions(object):
                                 argdeque.appendleft(arg_nv[1])
                         arg_names.append(arg[2:])
                 elif len(arg) > 1:
-                    arg_names.extend([c for c in arg[1:]])
+                    arg_names.extend(list(arg[1:]))
                 for a in arg_names:
                     if a in self.__longarg_dict:
                         longarg = self.__longarg_dict[a]
@@ -264,8 +266,7 @@ class FindOptions(object):
                                         if i < 0:
                                             invalid_int = True
                                     if invalid_int:
-                                        err = 'Invalid value for option {}: {}'.format(
-                                            arg, argval)
+                                        err = f'Invalid value for option {arg}: {argval}'
                                         raise FindException(err)
                                     self.__int_arg_dict[longarg](
                                         argval, settings)
@@ -275,18 +276,17 @@ class FindOptions(object):
                                 elif longarg == 'settings-file':
                                     self.settings_from_file(argval, settings)
                             else:
-                                raise FindException('Missing value for option {0}'.
-                                                    format(a))
+                                raise FindException(f'Missing value for option {a}')
                         else:
-                            raise FindException(
-                                'Invalid option: {0}'.format(a))
+                            raise FindException(f'Invalid option: {a}')
                     else:
-                        raise FindException('Invalid option: {0}'.format(a))
+                        raise FindException(f'Invalid option: {a}')
             else:
                 settings.paths.add(arg)
         return settings
 
     def usage(self):
+        """Print the usage string and exit"""
         print(self.__get_usage_string())
         sys.exit(1)
 
@@ -300,8 +300,8 @@ class FindOptions(object):
         for opt in sorted(self.options, key=lambda o: o.sortarg):
             opt_string = ''
             if opt.shortarg:
-                opt_string += '-{0:s},'.format(opt.shortarg)
-            opt_string += '--{0:s}'.format(opt.longarg)
+                opt_string += f'-{opt.shortarg},'
+            opt_string += f'--{opt.longarg}'
             if len(opt_string) > longest:
                 longest = len(opt_string)
             opt_pairs.append((opt_string, opt.desc))

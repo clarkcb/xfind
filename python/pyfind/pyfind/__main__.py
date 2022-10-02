@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+"""
 ###############################################################################
 #
 # pyfind.py
@@ -7,6 +8,7 @@
 # A CLI file find utility implemented in python (>=3.9.x)
 #
 ###############################################################################
+"""
 import sys
 from typing import List
 
@@ -19,10 +21,13 @@ from .findoptions import FindOptions
 
 
 def get_found_dirs(found_files: List[FileResult]):
-    return sorted(list(set([f.path for f in found_files])))
+    """Return unique list of directories from file results"""
+    # return sorted(list(set([f.path for f in found_files])))
+    return sorted(list({f.path for f in found_files}))
 
 
 async def main():
+    """main()"""
     if sys.version_info < (3, 9):
         sys.exit('Sorry, Python < 3.9 is not supported')
 
@@ -32,18 +37,18 @@ async def main():
     try:
         settings = findoptions.find_settings_from_args(sys.argv[1:])
     except FindException as e:
-        log('\nERROR: {0!s}\n'.format(e))
+        log(f'\nERROR: {e}\n')
         findoptions.usage()
 
     if settings.debug:
-        log('settings: {0!s}'.format(settings))
+        log(f'settings: {settings}')
 
     if settings.printusage:
         log('')
         findoptions.usage()
 
     if settings.printversion:
-        log('xfind version {}'.format(VERSION))
+        log(f'xfind version {VERSION}')
         sys.exit(0)
 
     try:
@@ -53,7 +58,7 @@ async def main():
         if settings.listdirs:
             dirs = get_found_dirs(found_files)
             if dirs:
-                log('\nMatching directories ({}):'.format(len(dirs)))
+                log(f'\nMatching directories ({len(dirs)}):')
                 for d in dirs:
                     log(d)
             else:
@@ -61,14 +66,14 @@ async def main():
 
         if settings.listfiles:
             if found_files:
-                log('\nMatching files ({}):'.format(len(found_files)))
+                log(f'\nMatching files ({len(found_files)}):')
                 for f in found_files:
                     log(str(f))
             else:
                 log('\nMatching files: 0')
 
     except AssertionError as e:
-        log('\nERROR: {0!s}\n'.format(e))
+        log(f'\nERROR: {e}\n')
         findoptions.usage()
     except KeyboardInterrupt:
         log('')
