@@ -14,7 +14,7 @@
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
         [clojure.string :only (split lower-case)]
-        [cljfind.fileutil :only (expand-path get-ext)]))
+        [cljfind.fileutil :only (expand-path get-ext get-name)]))
 
 (def ARCHIVE "archive")
 (def BINARY "binary")
@@ -22,61 +22,79 @@
 (def TEXT "text")
 (def XML "xml")
 
-(defn get-filetypemap-from-json []
+(defn get-filetype-maps-from-json []
   (let [contents (slurp (io/resource "filetypes.json"))
         filetypes-objs (:filetypes (json/read-str contents :key-fn keyword))
         typenames (map :type filetypes-objs)
         extension-sets (map #(set %) (map :extensions filetypes-objs))
-        filetypemap (zipmap typenames extension-sets)
-        textmap (hash-map "all-text"
-                  (union (get filetypemap TEXT)
-                         (get filetypemap CODE)
-                         (get filetypemap XML)))
-        fullmap (merge filetypemap textmap)
+        filetype-ext-map (zipmap typenames extension-sets)
+        text-ext-map (hash-map "all-text"
+                       (union (get filetype-ext-map TEXT)
+                              (get filetype-ext-map CODE)
+                              (get filetype-ext-map XML)))
+        full-ext-map (merge filetype-ext-map text-ext-map)
+        name-sets (map #(set %) (map :names filetypes-objs))
+        filetype-name-map (zipmap typenames name-sets)
+        text-name-map (hash-map "all-text"
+                        (union (get filetype-name-map TEXT)
+                               (get filetype-name-map CODE)
+                               (get filetype-name-map XML)))
+        full-name-map (merge filetype-name-map text-name-map)
        ]
-    fullmap))
+    [full-ext-map full-name-map]))
 
-(def FILETYPEMAP (get-filetypemap-from-json))
+(def FILETYPEMAPS (get-filetype-maps-from-json))
+(def FILETYPEEXTMAP (first FILETYPEMAPS))
+(def FILETYPENAMEMAP (last FILETYPEMAPS))
 
 (defn archive-ext? [^String ext]
-  (contains? (get FILETYPEMAP ARCHIVE) ext))
+  (contains? (get FILETYPEEXTMAP ARCHIVE) ext))
 
 (defn archive-file? [f]
-  (archive-ext? (get-ext f)))
+  (or
+   (contains? (get FILETYPENAMEMAP ARCHIVE) (get-name f))
+   (contains? (get FILETYPEEXTMAP ARCHIVE) (get-ext f))))
 
 (defn binary-ext? [^String ext]
-  (contains? (get FILETYPEMAP BINARY) ext))
+  (contains? (get FILETYPEEXTMAP BINARY) ext))
 
 (defn binary-file? [f]
-  (contains? (get FILETYPEMAP BINARY) (get-ext f)))
+  (or
+   (contains? (get FILETYPENAMEMAP BINARY) (get-name f))
+   (contains? (get FILETYPEEXTMAP BINARY) (get-ext f))))
 
 (defn code-ext? [^String ext]
-  (contains? (get FILETYPEMAP CODE) ext))
+  (contains? (get FILETYPEEXTMAP CODE) ext))
 
 (defn code-file? [f]
-  (contains? (get FILETYPEMAP CODE) (get-ext f)))
+  (or
+   (contains? (get FILETYPENAMEMAP CODE) (get-name f))
+   (contains? (get FILETYPEEXTMAP CODE) (get-ext f))))
 
 (defn text-ext? [^String ext]
-  (contains? (get FILETYPEMAP TEXT) ext))
+  (contains? (get FILETYPEEXTMAP TEXT) ext))
 
 (defn text-file? [f]
-  (contains? (get FILETYPEMAP TEXT) (get-ext f)))
+  (or
+   (contains? (get FILETYPENAMEMAP TEXT) (get-name f))
+   (contains? (get FILETYPEEXTMAP TEXT) (get-ext f))))
 
 (defn xml-ext? [^String ext]
-  (contains? (get FILETYPEMAP XML) ext))
+  (contains? (get FILETYPEEXTMAP XML) ext))
 
 (defn xml-file? [f]
-  (contains? (get FILETYPEMAP XML) (get-ext f)))
+  (or
+   (contains? (get FILETYPENAMEMAP XML) (get-name f))
+   (contains? (get FILETYPEEXTMAP XML) (get-ext f))))
 
 (defn get-filetype [f]
-  (let [ext (get-ext f)]
-    (cond
-      (binary-ext? ext) :binary
-      (code-ext? ext) :code
-      (xml-ext? ext) :xml
-      (text-ext? ext) :text
-      (archive-ext? ext) :archive
-      :else :unknown)))
+  (cond
+    (binary-file? f) :binary
+    (code-file? f) :code
+    (xml-file? f) :xml
+    (text-file? f) :text
+    (archive-file? f) :archive
+    :else :unknown))
 
 (defn unknown-file? [f]
   (= :unknown (get-filetype f)))
