@@ -16,9 +16,11 @@ interface FileTypeMap {
 }
 
 export class FileTypes {
-    private static fileTypeMap: FileTypeMap = FileTypes.getFileTypeMap();
+    private static fileTypeMaps: FileTypeMap[] = FileTypes.getFileTypeMaps();
+    private static fileTypeExtMap: FileTypeMap = FileTypes.fileTypeMaps[0];
+    private static fileTypeNameMap: FileTypeMap = FileTypes.fileTypeMaps[1];
 
-    private static getFileTypeMap(): FileTypeMap {
+    private static getFileTypeMaps(): FileTypeMap[] {
         const fs = require('fs');
 
         let json = '';
@@ -28,21 +30,25 @@ export class FileTypes {
             throw new Error('File not found: ' + config.FILETYPESJSONPATH);
         }
 
-        const fileTypeMap: FileTypeMap = {};
+        const fileTypeExtMap: FileTypeMap = {};
+        const fileTypeNameMap: FileTypeMap = {};
 
         const obj = JSON.parse(json);
         if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
             obj['filetypes'].forEach(ft => {
                 const typename: string = ft['type'];
                 const extensions: string[] = ft['extensions'];
-                fileTypeMap[typename] = common.setFromArray(extensions);
+                fileTypeExtMap[typename] = common.setFromArray(extensions);
+                const names: string[] = ft['names'];
+                fileTypeNameMap[typename] = common.setFromArray(names);
             });
         } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
 
-        fileTypeMap.text = fileTypeMap.text.concat(fileTypeMap.code, fileTypeMap.xml);
-        fileTypeMap.findable = fileTypeMap.text.concat(fileTypeMap.binary, fileTypeMap.archive);
+        fileTypeExtMap.text = fileTypeExtMap.text.concat(fileTypeExtMap.code, fileTypeExtMap.xml);
+        fileTypeNameMap.text = fileTypeNameMap.text.concat(fileTypeNameMap.code, fileTypeNameMap.xml);
+        fileTypeExtMap.findable = fileTypeExtMap.text.concat(fileTypeExtMap.binary, fileTypeExtMap.archive);
 
-        return fileTypeMap;
+        return [fileTypeExtMap, fileTypeNameMap];
     }
 
     public static fromName(name: string): FileType {
@@ -103,28 +109,28 @@ export class FileTypes {
     }
 
     public static isArchiveFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['archive'].indexOf(ext) > -1;
+        return FileTypes.fileTypeExtMap['archive'].indexOf(FileUtil.getExtension(filename)) > -1
+            || FileTypes.fileTypeNameMap['archive'].indexOf(filename) > -1;
     }
 
     public static isBinaryFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['binary'].indexOf(ext) > -1;
+        return FileTypes.fileTypeNameMap['binary'].indexOf(filename) > -1
+            || FileTypes.fileTypeExtMap['binary'].indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     public static isCodeFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['code'].indexOf(ext) > -1;
+        return FileTypes.fileTypeNameMap['code'].indexOf(filename) > -1
+            || FileTypes.fileTypeExtMap['code'].indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     public static isTextFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['text'].indexOf(ext) > -1;
+        return FileTypes.fileTypeNameMap['text'].indexOf(filename) > -1
+            || FileTypes.fileTypeExtMap['text'].indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     public static isXmlFile(filename: string): boolean {
-        const ext: string = FileUtil.getExtension(filename);
-        return FileTypes.fileTypeMap['xml'].indexOf(ext) > -1;
+        return FileTypes.fileTypeNameMap['xml'].indexOf(filename) > -1
+            || FileTypes.fileTypeExtMap['xml'].indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     public static isUnknownFile(filename: string): boolean {
