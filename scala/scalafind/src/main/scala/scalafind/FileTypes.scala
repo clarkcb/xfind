@@ -26,8 +26,9 @@ object FileTypes {
   private val unknown = "unknown"
   private val xml = "xml"
 
-  private val fileTypeMap: Map[String, Set[String]] = {
-    val _fileTypeMap = mutable.Map.empty[String, Set[String]]
+  private val fileTypeMaps: (Map[String, Set[String]], Map[String, Set[String]]) = {
+    val _fileTypeExtMap = mutable.Map.empty[String, Set[String]]
+    val _fileTypeNameMap = mutable.Map.empty[String, Set[String]]
     val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
     try {
       val obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream))
@@ -41,7 +42,13 @@ object FileTypes {
         while (exIt.hasNext) {
            exSet += exIt.next().asInstanceOf[String]
         }
-         _fileTypeMap(typeName) = Set.empty[String] ++ exSet
+         _fileTypeExtMap(typeName) = Set.empty[String] ++ exSet
+        val nameSet = mutable.Set.empty[String]
+        val nameIt = ftObj.get("names").asInstanceOf[JSONArray].iterator()
+        while (nameIt.hasNext) {
+           nameSet += nameIt.next().asInstanceOf[String]
+        }
+         _fileTypeNameMap(typeName) = Set.empty[String] ++ nameSet
       }
     } catch {
       case e: ParseException =>
@@ -50,10 +57,14 @@ object FileTypes {
         print(e.getMessage)
     }
 
-    _fileTypeMap(text) = _fileTypeMap(text) ++ _fileTypeMap(code) ++
-      _fileTypeMap(xml)
-    Map.empty[String, Set[String]] ++ _fileTypeMap
+    _fileTypeExtMap(text) = _fileTypeExtMap(text) ++ _fileTypeExtMap(code) ++
+      _fileTypeExtMap(xml)
+    _fileTypeNameMap(text) = _fileTypeNameMap(text) ++ _fileTypeNameMap(code) ++
+      _fileTypeNameMap(xml)
+    (Map.empty[String, Set[String]] ++ _fileTypeExtMap, Map.empty[String, Set[String]] ++ _fileTypeNameMap)
   }
+  private val fileTypeExtMap: Map[String, Set[String]] = fileTypeMaps._1
+  private val fileTypeNameMap: Map[String, Set[String]] = fileTypeMaps._2
 
   def fromName(name: String): FileType.Value = {
     val lname = name.toLowerCase
@@ -89,19 +100,23 @@ object FileTypes {
   }
 
   def isArchiveFile(fileName: String): Boolean = {
-    fileTypeMap(archive).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(archive).contains(fileName)
+      || fileTypeExtMap(archive).contains(FileUtil.getExtension(fileName))
   }
 
   def isBinaryFile(fileName: String): Boolean = {
-    fileTypeMap(binary).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(binary).contains(fileName)
+      || fileTypeExtMap(binary).contains(FileUtil.getExtension(fileName))
   }
 
   def isCodeFile(fileName: String): Boolean = {
-    fileTypeMap(code).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(code).contains(fileName)
+      || fileTypeExtMap(code).contains(FileUtil.getExtension(fileName))
   }
 
   def isTextFile(fileName: String): Boolean = {
-    fileTypeMap(text).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(text).contains(fileName)
+      || fileTypeExtMap(text).contains(FileUtil.getExtension(fileName))
   }
 
   def isUnknownFile(fileName: String): Boolean = {
@@ -109,7 +124,8 @@ object FileTypes {
   }
 
   def isXmlFile(fileName: String): Boolean = {
-    fileTypeMap(xml).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(xml).contains(fileName)
+      || fileTypeExtMap(xml).contains(FileUtil.getExtension(fileName))
   }
 
   def isZipArchiveFile(sf: FileResult): Boolean = {
