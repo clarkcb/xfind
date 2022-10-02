@@ -20,13 +20,15 @@ pub enum FileType {
 
 #[derive(Debug)]
 pub struct FileTypes {
-    pub filetypemap: HashMap<String, HashSet<String>>,
+    pub filetype_ext_map: HashMap<String, HashSet<String>>,
+    pub filetype_name_map: HashMap<String, HashSet<String>>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct JsonFileType {
     r#type: String,
     extensions: Vec<String>,
+    names: Vec<String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -46,14 +48,19 @@ impl FileTypes {
             Err(error) => return Err(FindError::new(&error.to_string())),
         };
         let mut filetypes = FileTypes {
-            filetypemap: HashMap::new(),
+            filetype_ext_map: HashMap::new(),
+            filetype_name_map: HashMap::new(),
         };
         for json_filetype in jft.filetypes.iter() {
-            let set: HashSet<String> = json_filetype.extensions.iter().cloned().collect();
+            let extset: HashSet<String> = json_filetype.extensions.iter().cloned().collect();
             filetypes
-                .filetypemap
-                .insert(json_filetype.r#type.clone(), set);
-        }
+                .filetype_ext_map
+                .insert(json_filetype.r#type.clone(), extset);
+            let nameset: HashSet<String> = json_filetype.names.iter().cloned().collect();
+            filetypes
+                .filetype_name_map
+                .insert(json_filetype.r#type.clone(), nameset);
+            }
         Ok(filetypes)
     }
 
@@ -108,10 +115,14 @@ impl FileTypes {
     }
 
     fn is_file_type(&self, typename: &str, filename: &str) -> bool {
-        match FileUtil::get_extension(&filename) {
-            Some(ext) => self.filetypemap.get(typename).unwrap().contains(ext),
+        let has_ext = match FileUtil::get_extension(&filename) {
+            Some(ext) => self.filetype_ext_map.get(typename).unwrap().contains(ext),
             None => false,
+        };
+        if has_ext {
+            return true
         }
+        self.filetype_name_map.get(typename).unwrap().contains(filename)
     }
 
     pub fn is_archive_file(&self, filename: &str) -> bool {
