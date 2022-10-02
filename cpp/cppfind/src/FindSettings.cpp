@@ -293,9 +293,4 @@ namespace cppfind {
                 + ")";
         return settings_str;
     }
-
-    std::ostream& operator<<(std::ostream& strm, FindSettings& settings) {
-        std::string settings_string = settings.string();
-        return strm << settings_string;
-    }
 }

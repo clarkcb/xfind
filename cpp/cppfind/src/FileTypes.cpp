@@ -12,8 +12,15 @@ using namespace rapidjson;
 namespace cppfind {
     FileTypes::FileTypes() {
         m_archive_extensions = {};
+        m_archive_names = {};
         m_binary_extensions = {};
+        m_binary_names = {};
+        m_code_extensions = {};
+        m_code_names = {};
         m_text_extensions = {};
+        m_text_names = {};
+        m_xml_extensions = {};
+        m_xml_names = {};
         load_filetypes();
     }
 
@@ -62,6 +69,23 @@ namespace cppfind {
                     m_text_extensions.insert(extensions[j].GetString());
                 } else if (type == "xml") {
                     m_xml_extensions.insert(extensions[j].GetString());
+                }
+            }
+
+            assert(filetype.HasMember("names"));
+            const Value& names = filetype["names"];
+
+            for (SizeType j = 0; j < names.Size(); j++) {
+                if (type == "archive") {
+                    m_archive_names.insert(names[j].GetString());
+                } else if (type == "binary") {
+                    m_binary_names.insert(names[j].GetString());
+                } else if (type == "code") {
+                    m_code_names.insert(names[j].GetString());
+                } else if (type == "text") {
+                    m_text_names.insert(names[j].GetString());
+                } else if (type == "xml") {
+                    m_xml_names.insert(names[j].GetString());
                 }
             }
         }
@@ -130,31 +154,35 @@ namespace cppfind {
         return FileType::UNKNOWN;
     }
 
-    bool FileTypes::found_ext(const std::set<std::string>* ext_set, const std::string& ext) {
-        auto found = ext_set->find(ext);
-        return found != ext_set->end();
+    bool FileTypes::string_in_set(const std::set<std::string>* set, const std::string& s) {
+        auto found = set->find(s);
+        return found != set->end();
     }
 
     bool FileTypes::is_archive_file(const std::string& filepath) {
-        std::string ext = FileUtil::get_extension(filepath);
-        return found_ext(&m_archive_extensions, ext);
+        return string_in_set(&m_archive_extensions, FileUtil::get_extension(filepath))
+               || string_in_set(&m_archive_names, FileUtil::get_filename(filepath));
     }
 
     bool FileTypes::is_binary_file(const std::string& filepath) {
-        std::string ext = FileUtil::get_extension(filepath);
-        return found_ext(&m_binary_extensions, ext);
+        return string_in_set(&m_binary_extensions, FileUtil::get_extension(filepath))
+               || string_in_set(&m_binary_names, FileUtil::get_filename(filepath));
     }
 
     bool FileTypes::is_code_file(const std::string& filepath) {
-        std::string ext = FileUtil::get_extension(filepath);
-        return found_ext(&m_code_extensions, ext);
+        return string_in_set(&m_code_extensions, FileUtil::get_extension(filepath))
+               || string_in_set(&m_code_names, FileUtil::get_filename(filepath));
     }
 
     bool FileTypes::is_text_file(const std::string& filepath) {
         std::string ext = FileUtil::get_extension(filepath);
-        return found_ext(&m_text_extensions, ext)
-               || found_ext(&m_code_extensions, ext)
-               || found_ext(&m_xml_extensions, ext);
+        std::string filename = FileUtil::get_filename(filepath);
+        return string_in_set(&m_text_extensions, ext)
+               || string_in_set(&m_text_names, filename)
+               || string_in_set(&m_code_extensions, ext)
+               || string_in_set(&m_code_names, filename)
+               || string_in_set(&m_xml_extensions, ext)
+               || string_in_set(&m_xml_names, filename);
     }
 
     bool FileTypes::is_unknown_file(const std::string& filepath) {
@@ -162,7 +190,7 @@ namespace cppfind {
     }
 
     bool FileTypes::is_xml_file(const std::string& filepath) {
-        std::string ext = FileUtil::get_extension(filepath);
-        return found_ext(&m_xml_extensions, ext);
+        return string_in_set(&m_xml_extensions, FileUtil::get_extension(filepath))
+               || string_in_set(&m_xml_names, FileUtil::get_filename(filepath));
     }
 }

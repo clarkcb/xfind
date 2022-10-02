@@ -22,12 +22,17 @@ namespace cppfind {
 
     private:
         std::set<std::string> m_archive_extensions;
+        std::set<std::string> m_archive_names;
         std::set<std::string> m_binary_extensions;
+        std::set<std::string> m_binary_names;
         std::set<std::string> m_code_extensions;
+        std::set<std::string> m_code_names;
         std::set<std::string> m_text_extensions;
+        std::set<std::string> m_text_names;
         std::set<std::string> m_xml_extensions;
+        std::set<std::string> m_xml_names;
         void load_filetypes();
-        static bool found_ext(const std::set<std::string>* ext_set, const std::string& ext);
+        static bool string_in_set(const std::set<std::string>* set, const std::string& ext);
     };
 }
 

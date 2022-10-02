@@ -57,6 +57,12 @@ namespace cppfind {
         return ext;
     }
 
+    std::string FileUtil::get_filename(const std::string& filepath) {
+        boost::filesystem::path path(filepath);
+        std::string filename = path.filename().string();
+        return filename;
+    }
+
     bool FileUtil::is_directory(const std::string& name) {
         boost::filesystem::path path(name);
         return boost::filesystem::is_directory(path);
