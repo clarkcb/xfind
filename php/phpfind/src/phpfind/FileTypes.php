@@ -8,18 +8,22 @@ namespace phpfind;
  * Class FileTypes
  *
  * @package phpfind
- * @property array $file_type_map
+ * @property array $file_type_ext_map
+ * @property array $file_type_name_map
  */
 class FileTypes
 {
-    private readonly array $file_type_map;
+    private readonly array $file_type_ext_map;
+    private readonly array $file_type_name_map;
 
     /**
      * @throws FindException
      */
     public function __construct()
     {
-        $this->file_type_map = $this->get_file_type_map_from_json();
+        $file_type_maps = $this->get_file_type_map_from_json();
+        $this->file_type_ext_map = $file_type_maps[0];
+        $this->file_type_name_map = $file_type_maps[1];
     }
 
     /**
@@ -27,24 +31,32 @@ class FileTypes
      */
     private function get_file_type_map_from_json(): array
     {
-        $file_type_map = array();
+        $file_type_ext_map = array();
+        $file_type_name_map = array();
         $filetypespath = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
         if (file_exists($filetypespath)) {
             $json_obj = json_decode(file_get_contents($filetypespath), true);
             foreach ($json_obj['filetypes'] as $ft) {
                 $type = (string)$ft['type'];
                 $exts = $ft['extensions'];
-                $file_type_map[$type] = $exts;
+                $file_type_ext_map[$type] = $exts;
+                $names = $ft['names'];
+                $file_type_name_map[$type] = $names;
             }
-            $file_type_map['text'] = array_merge(
-                $file_type_map['text'],
-                $file_type_map['code'],
-                $file_type_map['xml']
+            $file_type_ext_map['text'] = array_merge(
+                $file_type_ext_map['text'],
+                $file_type_ext_map['code'],
+                $file_type_ext_map['xml']
+            );
+            $file_type_name_map['text'] = array_merge(
+                $file_type_name_map['text'],
+                $file_type_name_map['code'],
+                $file_type_name_map['xml']
             );
         } else {
             throw new FindException('File not found: ' . $filetypespath);
         }
-        return $file_type_map;
+        return [$file_type_ext_map, $file_type_name_map];
     }
 
     /**
@@ -93,7 +105,8 @@ class FileTypes
      */
     public function is_archive(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($filename), $this->file_type_map['archive']);
+        return in_array($filename, $this->file_type_name_map['archive'])
+            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['archive']);
     }
 
     /**
@@ -102,7 +115,8 @@ class FileTypes
      */
     public function is_binary(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($filename), $this->file_type_map['binary']);
+        return in_array($filename, $this->file_type_name_map['binary'])
+            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['binary']);
     }
 
     /**
@@ -111,7 +125,8 @@ class FileTypes
      */
     public function is_code(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($filename), $this->file_type_map['code']);
+        return in_array($filename, $this->file_type_name_map['code'])
+            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['code']);
     }
 
     /**
@@ -120,7 +135,8 @@ class FileTypes
      */
     public function is_text(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($filename), $this->file_type_map['text']);
+        return in_array($filename, $this->file_type_name_map['text'])
+            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['text']);
     }
 
     /**
@@ -129,7 +145,8 @@ class FileTypes
      */
     public function is_xml(string $filename): bool
     {
-        return in_array(FileUtil::get_extension($filename), $this->file_type_map['xml']);
+        return in_array($filename, $this->file_type_name_map['xml'])
+            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['xml']);
     }
 
     /**

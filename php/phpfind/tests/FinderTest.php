@@ -187,9 +187,9 @@ class FinderTest extends TestCase
     }
 
     ################################################################################
-    # is__archive_find_file tests
+    # is_matching_archive_file tests
     ################################################################################
-    public function test_is_archive_find_file_matches_by_default()
+    public function test_is_matching_archive_file_matches_by_default()
     {
         $settings = $this->get_settings();
         $finder = new Finder($settings);
@@ -197,7 +197,7 @@ class FinderTest extends TestCase
         $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_matches_in_extension()
+    public function test_is_matching_archive_file_matches_in_extension()
     {
         $settings = $this->get_settings();
         $settings->in_archiveextensions[] = 'zip';
@@ -206,7 +206,7 @@ class FinderTest extends TestCase
         $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_no_match_in_extension()
+    public function test_is_matching_archive_file_no_match_in_extension()
     {
         $settings = $this->get_settings();
         $settings->in_archiveextensions[] = 'gz';
@@ -215,7 +215,7 @@ class FinderTest extends TestCase
         $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_matches_out_extension()
+    public function test_is_matching_archive_file_matches_out_extension()
     {
         $settings = $this->get_settings();
         $settings->out_archiveextensions[] = 'zip';
@@ -224,7 +224,7 @@ class FinderTest extends TestCase
         $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_no_match_out_extension()
+    public function test_is_matching_archive_file_no_match_out_extension()
     {
         $settings = $this->get_settings();
         $settings->out_archiveextensions[] = 'gz';
@@ -233,7 +233,7 @@ class FinderTest extends TestCase
         $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_matches_in_pattern()
+    public function test_is_matching_archive_file_matches_in_pattern()
     {
         $settings = $this->get_settings();
         $settings->in_archivefilepatterns[] = 'arch';
@@ -242,7 +242,7 @@ class FinderTest extends TestCase
         $this->assertTrue($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_no_match_in_pattern()
+    public function test_is_matching_archive_file_no_match_in_pattern()
     {
         $settings = $this->get_settings();
         $settings->in_archivefilepatterns[] = 'archives';
@@ -251,7 +251,7 @@ class FinderTest extends TestCase
         $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_matches_out_pattern()
+    public function test_is_matching_archive_file_matches_out_pattern()
     {
         $settings = $this->get_settings();
         $settings->out_archivefilepatterns[] = 'arch';
@@ -260,7 +260,7 @@ class FinderTest extends TestCase
         $this->assertFalse($finder->is_matching_archive_file($file));
     }
 
-    public function test_is_archive_find_file_no_match_out_pattern()
+    public function test_is_matching_archive_file_no_match_out_pattern()
     {
         $settings = $this->get_settings();
         $settings->out_archivefilepatterns[] = 'archives';

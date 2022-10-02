@@ -21,7 +21,7 @@ class FindOptionsTest extends TestCase
         $this->findoptions = new FindOptions();
     }
 
-    public function test_no_args()
+    public function test_settings_from_args_no_args()
     {
         $settings = $this->findoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
@@ -37,7 +37,7 @@ class FindOptionsTest extends TestCase
         $this->assertFalse($settings->verbose);
     }
 
-    public function test_valid_args()
+    public function test_settings_from_args_valid_args()
     {
         $args = ['-x', 'php,py', '.'];
         $settings = $this->findoptions->settings_from_args($args);
