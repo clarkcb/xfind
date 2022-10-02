@@ -62,7 +62,10 @@ static unsigned short is_matching_file(const char *filename, const Finder *finde
     unsigned int ext_size = (unsigned int)file_len - (unsigned int)dot_idx + 1; // for final \0
     char ext[ext_size];
     get_extension(filename, ext);
-    *filetype = get_filetype_for_ext(ext, finder->filetypes);
+    *filetype = get_filetype_for_filename(filename, finder->filetypes);
+    if (*filetype == UNKNOWN) {
+        *filetype = get_filetype_for_ext(ext, finder->filetypes);
+    }
     unsigned short res = 0;
     if (((is_null_or_empty_string_node(finder->settings->in_extensions) == 1)
           || (string_matches_string_node(ext, finder->settings->in_extensions) != 0))

@@ -17,10 +17,15 @@ typedef enum {
 
 typedef struct FileTypes {
     StringArray *archive_extensions;
+    StringArray *archive_names;
     StringArray *binary_extensions;
+    StringArray *binary_names;
     StringArray *code_extensions;
+    StringArray *code_names;
     StringArray *text_extensions;
+    StringArray *text_names;
     StringArray *xml_extensions;
+    StringArray *xml_names;
 } FileTypes;
 
 FileTypes *new_filetypes(void);
@@ -29,15 +34,25 @@ error_t get_filetypes(FileTypes *filetypes);
 
 unsigned short is_archive_ext(const char *ext, FileTypes *filetypes);
 
+unsigned short is_archive_name(const char *name, FileTypes *filetypes);
+
 unsigned short is_binary_ext(const char *ext, FileTypes *filetypes);
+
+unsigned short is_binary_name(const char *name, FileTypes *filetypes);
 
 unsigned short is_code_ext(const char *ext, FileTypes *filetypes);
 
+unsigned short is_code_name(const char *name, FileTypes *filetypes);
+
 unsigned short is_text_ext(const char *ext, FileTypes *filetypes);
+
+unsigned short is_text_name(const char *name, FileTypes *filetypes);
 
 unsigned short is_xml_ext(const char *ext, FileTypes *filetypes);
 
-FileType get_filetype_for_filename(const char *ext, FileTypes *filetypes);
+unsigned short is_xml_name(const char *name, FileTypes *filetypes);
+
+FileType get_filetype_for_filename(const char *filename, FileTypes *filetypes);
 
 FileType get_filetype_for_ext(const char *ext, FileTypes *filetypes);
 

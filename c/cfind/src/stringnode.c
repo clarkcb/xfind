@@ -123,7 +123,7 @@ size_t string_node_count(StringNode *string_node)
 {
     size_t nodecount = 0;
     StringNode *temp = string_node;
-    while (temp != NULL) {
+    while (temp != NULL && temp->string != NULL) {
         nodecount++;
         temp = temp->next;
     }
@@ -135,7 +135,7 @@ size_t string_node_strlen(StringNode *string_node)
     size_t slen = 2; // for '[' and ']'
     StringNode *temp = string_node;
     unsigned int nodecount = 0;
-    while (temp != NULL) {
+    while (temp != NULL && temp->string != NULL) {
         slen += strlen(temp->string) + 2; // for ""
         temp = temp->next;
         nodecount++;

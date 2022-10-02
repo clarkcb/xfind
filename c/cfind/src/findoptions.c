@@ -487,7 +487,6 @@ size_t find_option_usage_strlen(FindOption *o, size_t longest_opt_len)
 
 size_t find_options_usage_strlen(FindOptions *options)
 {
-    size_t longest_opt_len = get_longest_opt_strlen(options);
     size_t usage_len = 0;
     FindOptions *temp = options;
     while (temp != NULL && temp->option != NULL) {
