@@ -22,11 +22,12 @@ public class FileTypes {
     private static final String text = "text";
     private static final String unknown = "unknown";
     private static final String xml = "xml";
-    private final Map<String, Set<String>> fileTypeMap;
+    private static final int fileTypeMapCapacity = 8;
+    private final Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeMapCapacity);
+    private final Map<String, Set<String>> fileTypeNameMap = new HashMap<>(fileTypeMapCapacity);
 
-    private Map<String, Set<String>> getFileTypeMapFromJson() {
-        int fileTypeKeys = 8;
-        Map<String, Set<String>> ftMap = new HashMap<>(fileTypeKeys);
+    private void setFileTypeMapsFromJson() {
+        // Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeKeys);
         InputStream fileTypesInputStream = getClass().getResourceAsStream(FILETYPESJSONPATH);
 
         try {
@@ -40,23 +41,30 @@ public class FileTypes {
                 String typeName = (String) filetypeMap.get("type");
                 JSONArray extArray = (JSONArray) filetypeMap.get("extensions");
                 Set<String> extSet = new HashSet<String>(extArray);
-                ftMap.put(typeName, extSet);
+                fileTypeExtMap.put(typeName, extSet);
+                JSONArray nameArray = (JSONArray) filetypeMap.get("names");
+                Set<String> nameSet = new HashSet<String>(nameArray);
+                fileTypeNameMap.put(typeName, nameSet);
             }
 
-            Set<String> allText = new HashSet<>();
-            allText.addAll(ftMap.get(code));
-            allText.addAll(ftMap.get(text));
-            allText.addAll(ftMap.get(xml));
-            ftMap.put(text, allText);
+            Set<String> allTextExts = new HashSet<>();
+            allTextExts.addAll(fileTypeExtMap.get(code));
+            allTextExts.addAll(fileTypeExtMap.get(text));
+            allTextExts.addAll(fileTypeExtMap.get(xml));
+            fileTypeExtMap.put(text, allTextExts);
+
+            Set<String> allTextNames = new HashSet<>();
+            allTextNames.addAll(fileTypeNameMap.get(code));
+            allTextNames.addAll(fileTypeNameMap.get(text));
+            allTextNames.addAll(fileTypeNameMap.get(xml));
+            fileTypeNameMap.put(text, allTextNames);
         } catch (AssertionError | ParseException | IOException e) {
             e.printStackTrace();
         }
-
-        return ftMap;
     }
 
     public FileTypes() {
-        fileTypeMap = getFileTypeMapFromJson();
+        setFileTypeMapsFromJson();
     }
 
     static FileType fromName(final String name) {
@@ -79,19 +87,23 @@ public class FileTypes {
     }
 
     final boolean isArchiveFile(final File f) {
-        return fileTypeMap.get(archive).contains(FileUtil.getExtension(f));
+        return fileTypeNameMap.get(archive).contains(f.getName())
+            || fileTypeExtMap.get(archive).contains(FileUtil.getExtension(f));
     }
 
     final boolean isBinaryFile(final File f) {
-        return fileTypeMap.get(binary).contains(FileUtil.getExtension(f));
+        return fileTypeNameMap.get(binary).contains(f.getName())
+            || fileTypeExtMap.get(binary).contains(FileUtil.getExtension(f));
     }
 
     public final boolean isCodeFile(final File f) {
-        return fileTypeMap.get(code).contains(FileUtil.getExtension(f));
+        return fileTypeNameMap.get(code).contains(f.getName())
+            || fileTypeExtMap.get(code).contains(FileUtil.getExtension(f));
     }
 
     final boolean isTextFile(final File f) {
-        return fileTypeMap.get(text).contains(FileUtil.getExtension(f));
+        return fileTypeNameMap.get(text).contains(f.getName())
+            || fileTypeExtMap.get(text).contains(FileUtil.getExtension(f));
     }
 
     final boolean isUnknownFile(final File f) {
@@ -99,6 +111,7 @@ public class FileTypes {
     }
 
     public final boolean isXmlFile(final File f) {
-        return fileTypeMap.get(xml).contains(FileUtil.getExtension(f));
+        return fileTypeNameMap.get(xml).contains(f.getName())
+            || fileTypeExtMap.get(xml).contains(FileUtil.getExtension(f));
     }
 }
