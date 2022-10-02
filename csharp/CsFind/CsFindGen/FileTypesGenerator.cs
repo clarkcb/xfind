@@ -36,20 +36,22 @@ public class FileTypesGenerator : ISourceGenerator
 	private void GenerateFileTypes(AdditionalText fileTypesFile, GeneratorExecutionContext context)
 	{
 		var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(fileTypesFile.GetText()!.ToString());
-		IDictionary<string, ISet<string>> fileTypesDictionary = new Dictionary<string, ISet<string>>();
+		IDictionary<string, ISet<string>> fileTypeExtDictionary = new Dictionary<string, ISet<string>>();
+		IDictionary<string, ISet<string>> fileTypeNameDictionary = new Dictionary<string, ISet<string>>();
 		if (filetypesDict!.ContainsKey("filetypes"))
 		{
 			var filetypeDicts = filetypesDict["filetypes"];
 			foreach (var filetypeDict in filetypeDicts)
 			{
-				if (filetypeDict.ContainsKey("type") && filetypeDict.ContainsKey("extensions"))
-				{
-					var name = ((JsonElement)filetypeDict["type"]).GetString();
-					var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
-						.Select(x => "." + x.GetString());
-					var extensionSet = new HashSet<string>(extensions);
-					fileTypesDictionary[name!] = extensionSet;
-				}
+				var name = ((JsonElement)filetypeDict["type"]).GetString();
+				var extensions = ((JsonElement)filetypeDict["extensions"]).EnumerateArray()
+					.Select(x => "." + x.GetString());
+				var extensionSet = new HashSet<string>(extensions);
+				fileTypeExtDictionary[name!] = extensionSet;
+				var names = ((JsonElement)filetypeDict["names"]).EnumerateArray()
+					.Select(x => x.GetString());
+				var namesSet = new HashSet<string>(names);
+				fileTypeNameDictionary[name!] = namesSet;
 			}
 		}
 
@@ -68,10 +70,19 @@ public partial class FileTypes
 		var depth = 2;
 		var indent = new string('\t', depth);
 
-		foreach (var typeName in fileTypesDictionary.Keys)
+		foreach (var typeName in fileTypeExtDictionary.Keys)
 		{
-			var extensionsString = string.Join("\",\"", fileTypesDictionary[typeName]);
-			sourceBuilder.AppendLine($@"{indent}_fileTypesDictionary[""{typeName}""] = new HashSet<string> {{ ""{extensionsString}"" }};");
+			var extensionsString = string.Join("\",\"", fileTypeExtDictionary[typeName]);
+			sourceBuilder.AppendLine($@"{indent}_fileTypeExtDictionary[""{typeName}""] = new HashSet<string> {{ ""{extensionsString}"" }};");
+			if (fileTypeNameDictionary[typeName].Count > 0)
+			{
+				var namesString = string.Join("\",\"", fileTypeNameDictionary[typeName]);
+				sourceBuilder.AppendLine($@"{indent}_fileTypeNameDictionary[""{typeName}""] = new HashSet<string> {{ ""{namesString}"" }};");
+			}
+			else
+			{
+				sourceBuilder.AppendLine($@"{indent}_fileTypeNameDictionary[""{typeName}""] = new HashSet<string>();");
+			}
 		}
 
 		// source close

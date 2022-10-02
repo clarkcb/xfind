@@ -24,11 +24,13 @@ public partial class FileTypes
 	private const string Text = "text";
 	private const string Xml = "xml";
 
-	private readonly IDictionary<string, ISet<string>> _fileTypesDictionary;
+	private readonly IDictionary<string, ISet<string>> _fileTypeExtDictionary;
+	private readonly IDictionary<string, ISet<string>> _fileTypeNameDictionary;
 
 	public FileTypes()
 	{
-		_fileTypesDictionary = new Dictionary<string, ISet<string>>();
+		_fileTypeExtDictionary = new Dictionary<string, ISet<string>>();
+		_fileTypeNameDictionary = new Dictionary<string, ISet<string>>();
 		PopulateFileTypes();
 	}
 
@@ -60,24 +62,30 @@ public partial class FileTypes
 
 	public bool IsArchiveFile(FileInfo f)
 	{
-		return _fileTypesDictionary[Archive].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Archive].Contains(f.Name)
+		        || _fileTypeExtDictionary[Archive].Contains(f.Extension.ToLowerInvariant());
 	}
 
 	public bool IsBinaryFile(FileInfo f)
 	{
-		return _fileTypesDictionary[Binary].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Binary].Contains(f.Name)
+		        || _fileTypeExtDictionary[Binary].Contains(f.Extension.ToLowerInvariant());
 	}
 
 	public bool IsCodeFile(FileInfo f)
 	{
-		return _fileTypesDictionary[Code].Contains(f.Extension.ToLowerInvariant());
+		return _fileTypeNameDictionary[Code].Contains(f.Name)
+		       || _fileTypeExtDictionary[Code].Contains(f.Extension.ToLowerInvariant());
 	}
 
 	public bool IsTextFile(FileInfo f)
 	{
-		return _fileTypesDictionary[Text].Contains(f.Extension.ToLowerInvariant()) ||
-		       _fileTypesDictionary[Code].Contains(f.Extension.ToLowerInvariant()) ||
-		       _fileTypesDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Text].Contains(f.Name) ||
+		        _fileTypeExtDictionary[Text].Contains(f.Extension.ToLowerInvariant()) ||
+		        _fileTypeNameDictionary[Code].Contains(f.Name) ||
+		        _fileTypeExtDictionary[Code].Contains(f.Extension.ToLowerInvariant()) ||
+		        _fileTypeNameDictionary[Xml].Contains(f.Name) ||
+		        _fileTypeExtDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
 	}
 
 	public bool IsUnknownFile(FileInfo f)
@@ -87,6 +95,7 @@ public partial class FileTypes
 
 	public bool IsXmlFile(FileInfo f)
 	{
-		return _fileTypesDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Xml].Contains(f.Name)
+		        || _fileTypeExtDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
 	}
 }
