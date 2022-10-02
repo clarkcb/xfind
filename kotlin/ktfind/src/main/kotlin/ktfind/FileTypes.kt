@@ -56,15 +56,14 @@ private const val fileTypesJsonPath = "/filetypes.json"
 
 class FileTypes {
 
-    private val fileTypeMap: Map<String, Set<String>>
+    private val fileTypeExtMap: MutableMap<String, Set<String>> = mutableMapOf()
+    private val fileTypeNameMap: MutableMap<String, Set<String>> = mutableMapOf()
 
     init {
-        fileTypeMap = getFileTypesFromJson()
+        setFileTypeMapsFromJson()
     }
 
-    private fun getFileTypesFromJson(): Map<String, Set<String>> {
-        val ftMap: MutableMap<String, Set<String>> = mutableMapOf()
-
+    private fun setFileTypeMapsFromJson() {
         try {
             val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
             val obj: Any = JSONParser().parse(InputStreamReader(fileTypesInputStream!!))
@@ -75,25 +74,31 @@ class FileTypes {
                 val typeName = filetypeMap["type"] as String
                 val extArray = filetypeMap["extensions"] as JSONArray
                 val extSet: Set<String> = extArray.map { e -> e.toString() }.toSet()
-                ftMap[typeName] = extSet
+                fileTypeExtMap[typeName] = extSet
+                val nameArray = filetypeMap["names"] as JSONArray
+                val nameSet: Set<String> = nameArray.map { e -> e.toString() }.toSet()
+                fileTypeNameMap[typeName] = nameSet
             }
-            val allText: MutableSet<String> = mutableSetOf()
-            allText.addAll(ftMap["code"]!!)
-            allText.addAll(ftMap["text"]!!)
-            allText.addAll(ftMap["xml"]!!)
-            ftMap["text"] = allText
+            val allTextExts: MutableSet<String> = mutableSetOf()
+            allTextExts.addAll(fileTypeExtMap["code"]!!)
+            allTextExts.addAll(fileTypeExtMap["text"]!!)
+            allTextExts.addAll(fileTypeExtMap["xml"]!!)
+            fileTypeExtMap["text"] = allTextExts
+            val allTextNames: MutableSet<String> = mutableSetOf()
+            allTextNames.addAll(fileTypeNameMap["code"]!!)
+            allTextNames.addAll(fileTypeNameMap["text"]!!)
+            allTextNames.addAll(fileTypeNameMap["xml"]!!)
+            fileTypeNameMap["text"] = allTextNames
             // val allFindable: MutableSet<String> = mutableSetOf()
-            // allFindable.addAll(ftMap["archive"]!!)
-            // allFindable.addAll(ftMap["binary"]!!)
-            // allFindable.addAll(ftMap["text"]!!)
-            // ftMap["findable"] = allFindable
+            // allFindable.addAll(fileTypeExtMap["archive"]!!)
+            // allFindable.addAll(fileTypeExtMap["binary"]!!)
+            // allFindable.addAll(fileTypeExtMap["text"]!!)
+            // fileTypeExtMap["findable"] = allFindable
         } catch (e: ParseException) {
             e.printStackTrace()
         } catch (e: IOException) {
             e.printStackTrace()
         }
-
-        return ftMap
     }
 
     fun getFileType(file: File) : FileType {
@@ -120,23 +125,27 @@ class FileTypes {
     }
 
     fun isArchiveFile(file: File): Boolean {
-        return (fileTypeMap[archive] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[archive] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[archive] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isBinaryFile(file: File): Boolean {
-        return (fileTypeMap[binary] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[binary] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[binary] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isCodeFile(file: File): Boolean {
-        return (fileTypeMap[code] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[code] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[code] ?: setOf()).contains(file.extension.lowercase())
     }
 
     // fun isFindableFile(file: File): Boolean {
-    //     return (fileTypeMap[findable] ?: setOf()).contains(file.extension.lowercase())
+    //     return (fileTypeExtMap[findable] ?: setOf()).contains(file.extension.lowercase())
     // }
 
     fun isTextFile(file: File): Boolean {
-        return (fileTypeMap[text] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[text] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[text] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isUnknownFile(file: File): Boolean {
@@ -144,6 +153,7 @@ class FileTypes {
     }
 
     fun isXmlFile(file: File): Boolean {
-        return (fileTypeMap[xml] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[xml] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[xml] ?: setOf()).contains(file.extension.lowercase())
     }
 }
