@@ -16,6 +16,8 @@ import Data.Text(pack, unpack, replace)
 import GHC.Generics
 import Data.Aeson
 
+import System.FilePath (takeFileName)
+
 import HsFind.FileUtil (getExtension, normalizeExtension, getFileString)
 import HsFind.Paths_hsfind (getDataFileName)
 
@@ -41,6 +43,7 @@ getFileTypeForName typeName =
 data JsonFileType = JsonFileType
     { fileType :: String
     , extensions :: [String]
+    , names :: [String]
     } deriving (Show, Eq, Generic)
 
 instance FromJSON JsonFileType where
@@ -69,7 +72,8 @@ getJsonFileTypes = do
         (Right jsonFileTypes) -> return (map normalizeType (filetypes jsonFileTypes))
   where normalizeType :: JsonFileType -> JsonFileType
         normalizeType ft = JsonFileType { fileType = fileType ft,
-                                          extensions = map normalizeExtension (extensions ft) }
+                                          extensions = map normalizeExtension (extensions ft) ,
+                                          names = names ft }
 
 getFileType :: FilePath -> IO FileType
 getFileType f = do
@@ -84,10 +88,26 @@ getFileTypes files = do
   return $ map (fileTypeFromJsonFileTypes jsonFileTypes) files
 
 fileTypeFromJsonFileTypes :: [JsonFileType] -> FilePath -> FileType
-fileTypeFromJsonFileTypes jsonFileTypes f =
-  case getExtension f of
-    Just x -> matchingTypeForExtensionJson jsonFileTypes x
-    Nothing -> Unknown
+fileTypeFromJsonFileTypes jsonFileTypes fp =
+  case matchingTypeForNameJson jsonFileTypes fileName of
+    Unknown -> case getExtension fileName of
+                  Just x -> matchingTypeForExtensionJson jsonFileTypes x
+                  Nothing -> Unknown
+    ft -> ft
+  where fileName = takeFileName fp
+
+matchingTypeForNameJson :: [JsonFileType] -> String -> FileType
+matchingTypeForNameJson jsonFileTypes n =
+  case filter (\f -> n `elem` names f) jsonFileTypes of
+    [] -> Unknown
+    fts -> case fileTypeName fts of
+           "archive" -> Archive
+           "binary" -> Binary
+           "code" -> Code
+           "xml" -> Xml
+           tname | tname `elem` ["code", "text", "xml"] -> Text
+           _ -> Unknown
+  where fileTypeName = fileType . head
 
 matchingTypeForExtensionJson :: [JsonFileType] -> String -> FileType
 matchingTypeForExtensionJson jsonFileTypes x =
