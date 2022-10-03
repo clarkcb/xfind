@@ -38,7 +38,7 @@ async def main():
         settings = findoptions.find_settings_from_args(sys.argv[1:])
     except FindException as e:
         log(f'\nERROR: {e}\n')
-        findoptions.usage()
+        findoptions.usage(1)
 
     if settings.debug:
         log(f'settings: {settings}')
@@ -74,7 +74,7 @@ async def main():
 
     except AssertionError as e:
         log(f'\nERROR: {e}\n')
-        findoptions.usage()
+        findoptions.usage(1)
     except KeyboardInterrupt:
         log('')
         sys.exit(0)

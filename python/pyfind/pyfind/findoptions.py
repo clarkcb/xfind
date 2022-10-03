@@ -285,10 +285,10 @@ class FindOptions:
                 settings.paths.add(arg)
         return settings
 
-    def usage(self):
+    def usage(self, exit_code: int = 0):
         """Print the usage string and exit"""
         print(self.__get_usage_string())
-        sys.exit(1)
+        sys.exit(exit_code)
 
     def __get_usage_string(self):
         sio = StringIO()
