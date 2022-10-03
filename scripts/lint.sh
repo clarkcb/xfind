@@ -260,6 +260,12 @@ lint_python () {
     echo
     hdr "lint_python"
 
+    if [ -z "$(which pylint)" ]
+    then
+        echo "You need to install pylint"
+        return
+    fi
+
     log "Linting pyfind"
     cd "$PYFIND_PATH"
     log "pylint pyfind"
