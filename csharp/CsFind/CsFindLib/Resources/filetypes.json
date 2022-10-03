@@ -8,10 +8,12 @@
         "cpio", "deb", "dgc", "dmg", "ear", "egg", "esd", "ez3", "gca", "gtar",
         "gz", "hqx", "ipa", "ipg", "ipk", "iso", "jar", "joda", "lbr", "lha",
         "lqr", "lz", "lzh", "lzma", "lzop", "lzr", "maff", "mbw", "mgp", "mpq",
-        "msi", "oar", "pax", "phar", "pyz", "pyzw", "rar", "rpm", "shar",
-        "sit", "sitx", "smzip", "sq", "sqx", "ssa", "swc", "tao", "tar", "tgz",
-        "udeb", "war", "whl", "wim", "xap", "xz", "Z", "zip", "zipx", "zoo"
-      ]
+        "msi", "oar", "obr", "pax", "phar", "pyz", "pyzw", "rar", "rpm",
+        "shar", "sit", "sitx", "smzip", "sq", "sqx", "ssa", "swc", "tao",
+        "tar", "tgz", "udeb", "war", "whl", "wim", "xap", "xz", "Z", "zip",
+        "zipx", "zoo"
+      ],
+      "names": []
     },
     {
       "type": "binary",
@@ -32,7 +34,7 @@
         "ei6", "elc", "emf", "emz", "eps", "epub", "esa", "esf", "eva", "evy",
         "exe", "exi", "ext", "ez", "ez2", "fcdt", "fcs", "fdf", "fe_launch",
         "fg5", "fgd", "fig", "flo", "flw", "fm", "fnc", "frame", "fsc", "ftc",
-        "fti", "fxp", "fxpl", "fzs", "g2w", "g3w", "gac", "gam", "gbr", "geo",
+        "fti", "fxp", "fxpl", "fzs", "g2w", "g3w", "gac", "gam", "gbr", "gem", "geo",
         "gex", "ggb", "ggt", "ghf", "gim", "gmx", "gnumeric", "gph", "gqf",
         "gqs", "gram", "gramps", "gre", "grv", "gtm", "gxf", "gxt", "hbci",
         "hdf", "hi", "hlp", "hpgl", "hpid", "hps", "htke", "hvd", "hvp", "hvs",
@@ -78,7 +80,8 @@
         "xfdf", "xfdl", "xla", "xlam", "xlb", "xlc", "xlm", "xls", "xlsb",
         "xlsm", "xlt", "xltm", "xlw", "xo", "xpi", "xpr", "xpw", "xpx", "yang",
         "z1", "z2", "z3", "z4", "z5", "z6", "z7", "z8", "zir", "zirz"
-      ]
+      ],
+      "names": []
     },
     {
       "type": "code",
@@ -102,7 +105,12 @@
         "stm", "swift", "tbc", "tcl", "tk", "ts", "tsx", "u3", "vb", "vbs",
         "vue", "xht", "xhtml", "y"
       ],
-      "names": []
+      "names": [
+        ".bashrc", ".bash_profile", ".bzrignore", ".editorconfig", ".env",
+        ".gitattributes", ".gitignore", ".gitkeep", ".profile", "Dockerfile",
+        "Gemfile", "Jenkinsfile", "Makefile", "MANIFEST", "mime.types",
+        "Pipfile", "PKG-INFO", "Rakefile"
+      ]
     },
     {
       "type": "nosearch",
@@ -133,9 +141,7 @@
         "wml", "wmls", "wsc", "wsd", "xsp", "yaml", "yml"
       ],
       "names": [
-        ".bashrc", ".bash_profile", ".gitattributes", ".gitignore", ".gitkeep",
-        ".profile", "Dockerfile", "Jenkinsfile", "LICENSE", "Makefile",
-        "mime.types", "README"
+        "AUTHORS", "LICENSE", "README"
       ]
     },
     {
@@ -143,31 +149,33 @@
       "extensions": [
         "adm", "aps", "cli", "clw", "df2", "ncb", "nt", "nt2", "orig", "pc",
         "plg", "sun"
-      ]
+      ],
+      "names": []
     },
     {
       "type": "xml",
       "extensions": [
         "ant", "atom", "atomcat", "atomsrv", "atomsvc", "bdsproj", "ccxml",
         "cdxml", "config", "csproj", "dae", "davmount", "dbk", "dbproj", "dd2",
-        "docx", "dotx", "dtb", "dtd", "emma", "es3", "et3", "fsproj", "fxml",
-        "gml", "gpx", "grxml", "hal", "iml", "ink", "inkml", "irp", "jhm",
-        "jnlp", "kml", "lasxml", "lbe", "link66", "lostxml", "mads", "mathml",
-        "meta4", "metalink", "mets", "mm", "mods", "mpkg", "mrcx", "mscml",
-        "musicxml", "mxml", "ncx", "omdoc", "opf", "opml", "osfpvg", "plist",
-        "pls", "pom", "potx", "ppsx", "pptx", "ps1xml", "pskcxml", "qrc",
-        "rdf", "res", "resx", "rif", "rl", "rld", "rng", "rs", "rsd", "rss",
-        "sbml", "sdkd", "sdkm", "settings", "shf", "sldx", "smi", "smil",
-        "sru", "srx", "ssdl", "ssml", "stc", "std", "sti", "stw", "svg",
-        "svgz", "sxc", "sxd", "sxg", "sxi", "sxm", "sxw", "tei", "teicorpus",
-        "tfi", "tld", "uoml", "uvt", "uvvt", "vbproj", "vcproj", "vdproj",
-        "vxml", "wadl", "wbs", "wsdd", "wsdl", "wsf", "wspolicy", "x3d",
-        "x3dz", "xaml", "xcbkptlist", "xcscheme", "xcworkspacedata", "xdf",
-        "xdm", "xdp", "xdssc", "xenc", "xer", "xht", "xhtml", "xhvml", "xjb",
-        "xlf", "xlsx", "xltx", "xml", "xop", "xpdl", "xpl", "xps", "xsd",
-        "xsl", "xslt", "xsm", "xspf", "xul", "xvm", "xvml", "yin", "zaz",
-        "zmm"
-      ]
+        "docx", "dotx", "dtb", "dtd", "edmx", "emma", "es3", "et3", "fsproj",
+        "fxml", "gml", "gpx", "grxml", "hal", "iml", "ink", "inkml", "irp",
+        "jhm", "jnlp", "kml", "lasxml", "lbe", "link66", "lostxml", "mads",
+        "mathml", "meta4", "metalink", "mets", "mm", "mods", "mpkg", "mrcx",
+        "mscml", "musicxml", "mxml", "ncx", "omdoc", "opf", "opml", "osfpvg",
+        "plist", "pls", "pom", "potx", "ppsx", "pptx", "ps1xml", "pskcxml",
+        "qrc", "rdf", "res", "resx", "rif", "rl", "rld", "rng", "rs", "rsd",
+        "rss", "sbml", "sdkd", "sdkm", "settings", "shf", "sldx", "smi",
+        "smil", "sru", "srx", "ssdl", "ssml", "stc", "std", "sti", "stw",
+        "svg", "svgz", "sxc", "sxd", "sxg", "sxi", "sxm", "sxw", "tei",
+        "teicorpus", "tfi", "tld", "uoml", "uvt", "uvvt", "vbproj", "vcproj",
+        "vdproj", "vxml", "wadl", "wbs", "wsdd", "wsdl", "wsf", "wspolicy",
+        "x3d", "x3dz", "xaml", "xcbkptlist", "xcscheme", "xcworkspacedata",
+        "xdf", "xdm", "xdp", "xdssc", "xenc", "xer", "xht", "xhtml", "xhvml",
+        "xjb", "xlf", "xlsx", "xltx", "xml", "xop", "xpdl", "xpl", "xps",
+        "xsd", "xsl", "xslt", "xsm", "xspf", "xul", "xvm", "xvml", "yin",
+        "zaz", "zmm"
+      ],
+      "names": []
     }
   ]
 }
