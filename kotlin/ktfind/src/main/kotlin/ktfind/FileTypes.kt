@@ -1,9 +1,8 @@
 package ktfind
 
-import org.json.simple.JSONArray
-import org.json.simple.JSONObject
-import org.json.simple.parser.JSONParser
-import org.json.simple.parser.ParseException
+import com.beust.klaxon.JsonObject
+import com.beust.klaxon.KlaxonException
+import com.beust.klaxon.Parser
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
@@ -66,17 +65,15 @@ class FileTypes {
     private fun setFileTypeMapsFromJson() {
         try {
             val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
-            val obj: Any = JSONParser().parse(InputStreamReader(fileTypesInputStream!!))
-            val jsonObj = obj as JSONObject
-            val filetypesArray = jsonObj["filetypes"] as JSONArray
-            for (o in filetypesArray) {
-                val filetypeMap = o as Map<*, *>
-                val typeName = filetypeMap["type"] as String
-                val extArray = filetypeMap["extensions"] as JSONArray
-                val extSet: Set<String> = extArray.map { e -> e.toString() }.toSet()
+            val jsonObj: JsonObject = Parser.default().parse(InputStreamReader(fileTypesInputStream!!)) as JsonObject
+            val filetypesArray = jsonObj.array<JsonObject>("filetypes")!!
+            filetypesArray.forEach {
+                val typeName = it.string("type")!!
+                val extArray = it.array<String>("extensions")!!
+                val extSet: Set<String> = extArray.toSet()
                 fileTypeExtMap[typeName] = extSet
-                val nameArray = filetypeMap["names"] as JSONArray
-                val nameSet: Set<String> = nameArray.map { e -> e.toString() }.toSet()
+                val nameArray = it.array<String>("names")!!
+                val nameSet: Set<String> = nameArray.toSet()
                 fileTypeNameMap[typeName] = nameSet
             }
             val allTextExts: MutableSet<String> = mutableSetOf()
@@ -94,7 +91,8 @@ class FileTypes {
             // allFindable.addAll(fileTypeExtMap["binary"]!!)
             // allFindable.addAll(fileTypeExtMap["text"]!!)
             // fileTypeExtMap["findable"] = allFindable
-        } catch (e: ParseException) {
+//        } catch (e: ParseException) {
+        } catch (e: KlaxonException) {
             e.printStackTrace()
         } catch (e: IOException) {
             e.printStackTrace()
