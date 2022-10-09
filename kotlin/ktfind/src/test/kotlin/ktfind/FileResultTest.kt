@@ -1,8 +1,8 @@
 package ktfind
 
-import org.junit.Assert.assertEquals
-import org.junit.Test
 import java.io.File
+import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class FileResultTest {
 

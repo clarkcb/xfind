@@ -1,8 +1,7 @@
 package ktfind
 
-import org.junit.Assert.*
-import org.junit.Test
 import java.io.File
+import kotlin.test.*
 
 /**
  * @author cary on 7/30/16.
