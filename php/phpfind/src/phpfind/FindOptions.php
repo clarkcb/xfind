@@ -31,6 +31,7 @@ class FindOptions
             'in-filepattern' =>
                 fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_file_patterns),
             'in-filetype' => fn (string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->in_file_types),
+            'in-mimetype' => fn (string $s, FindSettings $fs) => $fs->in_mime_types[] = $s,
             'maxdepth' => fn (string $s, FindSettings $fs) => $fs->max_depth = intval($s),
             'maxlastmod' => fn (string $s, FindSettings $fs) => $fs->max_last_mod = new \DateTime($s),
             'maxsize' => fn (string $s, FindSettings $fs) => $fs->max_size = intval($s),
@@ -46,6 +47,7 @@ class FindOptions
             'out-filepattern' =>
                 fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
             'out-filetype' => fn (string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
+            'out-mimetype' => fn (string $s, FindSettings $fs) => $fs->out_mime_types[] = $s,
             'path' => fn (string $s, FindSettings $fs) => $fs->paths[] = $s,
             'settings-file' => fn (string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
             'sort-by' => fn (string $s, FindSettings $fs) => $fs->set_sort_by($s)

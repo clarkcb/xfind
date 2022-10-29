@@ -2,16 +2,20 @@
 
 namespace phpfind;
 
+use finfo;
+
 /**
  * Class Finder
  *
  * @property FindSettings $settings
  * @property FileTypes $file_types
+ * @property finfo $finfo
  */
 class Finder
 {
     private readonly FindSettings $settings;
     private readonly FileTypes $file_types;
+    private readonly finfo $finfo;
 
     /**
      * @param FindSettings $settings
@@ -21,6 +25,7 @@ class Finder
     {
         $this->settings = $settings;
         $this->file_types = new FileTypes();
+        $this->finfo = new finfo(FILEINFO_MIME_TYPE);
         $this->validate_settings();
     }
 
@@ -165,6 +170,18 @@ class Finder
         if ($this->settings->in_file_types && !in_array($fr->file_type, $this->settings->in_file_types)) {
             return false;
         }
+
+        $mime_type = $this->finfo->file($fr->file_path());
+        if ($this->settings->debug) {
+            Logger::log_msg(sprintf("%s: %s", $fr->file_name, $mime_type));
+        }
+        if ($this->settings->in_mime_types && !in_array($mime_type, $this->settings->in_mime_types)) {
+            return false;
+        }
+        if ($this->settings->out_mime_types && in_array($mime_type, $this->settings->out_mime_types)) {
+            return false;
+        }
+
         if ($this->settings->out_file_types && in_array($fr->file_type, $this->settings->out_file_types)) {
             return false;
         }
@@ -176,6 +193,7 @@ class Finder
             || ($this->settings->min_last_mod != null && $fr->last_mod < $this->settings->min_last_mod->getTimestamp())) {
             return false;
         }
+
         return true;
     }
 

@@ -17,6 +17,7 @@ class FindSettings
     public array $in_extensions = array();
     public array $in_file_patterns = array();
     public array $in_file_types = array();
+    public array $in_mime_types = array();
     public bool $include_archives = false;
     public bool $include_hidden = false;
     public int $max_depth = -1;
@@ -31,6 +32,7 @@ class FindSettings
     public array $out_extensions = array();
     public array $out_file_patterns = array();
     public array $out_file_types = array();
+    public array $out_mime_types = array();
     public array $paths = array();
     public bool $print_dirs = false;
     public bool $print_files = false;
@@ -163,6 +165,7 @@ class FindSettings
             ', in_extensions=' . StringUtil::string_array_to_string($this->in_extensions) .
             ', in_file_patterns=' . StringUtil::string_array_to_string($this->in_file_patterns) .
             ', in_file_types=' . StringUtil::file_type_array_to_string($this->in_file_types) .
+            ', in_mime_types=' . StringUtil::file_type_array_to_string($this->in_mime_types) .
             ', include_archives=' . StringUtil::bool_to_string($this->include_archives) .
             ', include_hidden=' . StringUtil::bool_to_string($this->include_hidden) .
             ', max_depth=' . $this->max_depth .
@@ -177,6 +180,7 @@ class FindSettings
             ', out_extensions=' . StringUtil::string_array_to_string($this->out_extensions) .
             ', out_file_patterns=' . StringUtil::string_array_to_string($this->out_file_patterns) .
             ', out_file_types=' . StringUtil::file_type_array_to_string($this->out_file_types) .
+            ', out_mime_types=' . StringUtil::file_type_array_to_string($this->out_mime_types) .
             ', paths=' . StringUtil::string_array_to_string($this->paths) .
             ', print_dirs=' . StringUtil::bool_to_string($this->print_dirs) .
             ', print_files=' . StringUtil::bool_to_string($this->print_files) .
