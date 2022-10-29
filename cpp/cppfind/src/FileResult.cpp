@@ -32,7 +32,7 @@ namespace cppfind {
         return m_filename;
     }
 
-    FileType FileResult::filetype() {
+    FileType FileResult::filetype() const {
         return m_filetype;
     }
 

@@ -21,7 +21,7 @@ namespace cppfind {
         FileResult(const std::vector<std::string> &containers, const std::string& path, const std::string& filename, FileType filetype);
         std::string path() const;
         std::string filename() const;
-        FileType filetype();
+        FileType filetype() const;
         const std::string string() const;
     };
 }
