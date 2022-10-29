@@ -10,6 +10,7 @@ const path = require('path');
 const { promisify } = require('util');
 const fsStatAsync = promisify(fs.stat);
 const fsReaddirAsync = promisify(fs.readdir);
+const mmm = require('mmmagic');
 
 const {FileResult} = require('./fileresult');
 const {FileType} = require("./filetype");
@@ -25,6 +26,16 @@ class Finder {
     constructor(settings) {
         this.settings = settings;
         this.fileTypes = new FileTypes();
+        this.magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
+        // TODO: not sure why the explicit Promise version works but not the promisify version
+        // this.detectFileAsync = promisify(this.magic.detectFile);
+        this.detectMimeType = (filepath) =>
+            new Promise((resolve, reject) => {
+                this.magic.detectFile(filepath, (err, result) => {
+                    if (err) return reject(err);
+                    resolve(result);
+                });
+            });
         this.validateSettings();
     }
 
@@ -141,6 +152,13 @@ class Finder {
         }
         if ((this.settings.maxSize > 0 && fr.fileSize > this.settings.maxSize) ||
           (this.settings.minSize > 0 && fr.fileSize < this.settings.minSize)) {
+            return false;
+        }
+
+        if ((this.settings.inMimeTypes.length &&
+            !this.matchesAnyElement(fr.mimeType, this.settings.inMimeTypes)) ||
+            (this.settings.outMimeTypes.length &&
+                this.matchesAnyElement(fr.mimeType, this.settings.outMimeTypes))) {
             return false;
         }
         return true;

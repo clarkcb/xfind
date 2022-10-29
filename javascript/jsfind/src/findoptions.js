@@ -29,6 +29,8 @@ class FindOptions {
                 (x, settings) => { settings.addInFilePatterns(x); },
             'in-filetype':
                 (x, settings) => { settings.addInFileTypes(x); },
+            'in-mimetype':
+                (x, settings) => { settings.inMimeTypes.push(x); },
             'maxdepth':
                 (x, settings) => { settings.maxDepth = parseInt(x, 10); },
             'maxlastmod':
@@ -53,6 +55,8 @@ class FindOptions {
                 (x, settings) => { settings.addOutFilePatterns(x); },
             'out-filetype':
                 (x, settings) => { settings.addOutFileTypes(x); },
+            'out-mimetype':
+                (x, settings) => { settings.outMimeTypes.push(x); },
             'path':
                 (x, settings) => { settings.paths.push(x); },
             'settings-file':

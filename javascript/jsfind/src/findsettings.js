@@ -17,6 +17,7 @@ class FindSettings {
     inExtensions = [];
     inFilePatterns = [];
     inFileTypes = [];
+    inMimeTypes = [];
     includeArchives = false;
     includeHidden = false;
     maxDepth = -1;
@@ -31,6 +32,7 @@ class FindSettings {
     outExtensions = [];
     outFilePatterns = [];
     outFileTypes = [];
+    outMimeTypes = [];
     paths = [];
     printDirs = false;
     printFiles = false;
@@ -166,6 +168,7 @@ class FindSettings {
           ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions) +
           ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns) +
           ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
+          ', ' + StringUtil.stringListToString('inMimeTypes', this.inMimeTypes) +
           ', includeArchives=' + this.includeArchives +
           ', includeHidden=' + this.includeHidden +
           ', maxDepth=' + this.maxDepth +
@@ -180,6 +183,7 @@ class FindSettings {
           ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions) +
           ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns) +
           ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
+          ', ' + StringUtil.stringListToString('outMimeTypes', this.outMimeTypes) +
           ', ' + StringUtil.stringListToString('paths', this.paths) +
           ', printDirs=' + this.printDirs +
           ', printFiles=' + this.printFiles +

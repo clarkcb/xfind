@@ -13,13 +13,15 @@ class FileResult {
     path = '';
     fileName = '';
     fileType = FileType.UNKNOWN;
+    mimeType = '';
     fileSize = 0;
     lastMod = 0;
 
-    constructor(path, fileName, fileType, fileSize, lastMod) {
+    constructor(path, fileName, fileType, mimeType, fileSize, lastMod) {
         this.path = path;
         this.fileName = fileName;
         this.fileType = fileType;
+        this.mimeType = mimeType;
         this.fileSize = fileSize;
         this.lastMod = lastMod;
     }
