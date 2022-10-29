@@ -8,6 +8,7 @@
 #
 ###############################################################################
 """
+import magic
 import os
 import sys
 from pathlib import Path
@@ -22,13 +23,14 @@ from .findsettings import FindSettings, PatternSet, SortBy
 class Finder:
     """Finder is a class to find files based on find settings."""
 
-    __slots__ = ['settings', 'file_types', '__matching_dir_cache']
+    __slots__ = ['settings', 'file_types', 'magic', '__matching_dir_cache']
 
     def __init__(self, settings: FindSettings):
         """Create a new Finder instance."""
         self.settings = settings
         self.__validate_settings()
         self.file_types = FileTypes()
+        self.magic = magic.Magic(mime=True)
         self.__matching_dir_cache = set([])
 
     def __validate_settings(self):
@@ -153,6 +155,7 @@ class Finder:
                 and not self.settings.include_archives \
                 and not self.settings.archives_only:
             return None
+        mime_type = self.magic.from_file(file_path)
         file_size = 0
         last_mod = 0.0
         if self.settings.need_size() or self.settings.need_last_mod():
@@ -164,9 +167,9 @@ class Finder:
         if file_type == FileType.ARCHIVE:
             if not self.is_matching_archive_file_path(file_path, file_size, last_mod):
                 return None
-        elif self.settings.archives_only or not self.is_matching_file_path(file_path, file_type, file_size, last_mod):
+        elif self.settings.archives_only or not self.is_matching_file_path(file_path, file_type, mime_type, file_size, last_mod):
             return None
-        return FileResult(path=file_path, file_type=file_type, file_size=file_size, last_mod=last_mod)
+        return FileResult(path=file_path, file_type=file_type, mime_type=mime_type, file_size=file_size, last_mod=last_mod)
 
     def get_file_results(self, file_path: Path) -> list[FileResult]:
         """Get file results for given file path."""

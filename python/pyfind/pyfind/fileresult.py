@@ -19,17 +19,19 @@ class FileResult:
     """encapsulates a file to evaluate as a find match and return if matching"""
     CONTAINER_SEPARATOR = '!'
 
-    __slots__ = ['containers', 'path', 'file_type', 'file_size', 'last_mod']
+    __slots__ = ['containers', 'path', 'file_type', 'mime_type', 'file_size', 'last_mod']
 
     def __init__(self,
                  containers: list[Path] = None,
                  path: Path = None,
                  file_type: FileType = FileType.UNKNOWN,
+                 mime_type: str = '',
                  file_size: int = 0,
                  last_mod: float = 0.0):
         self.containers = containers if containers else []
         self.path = path
         self.file_type = file_type
+        self.mime_type = mime_type
         self.file_size = file_size
         self.last_mod = last_mod
 

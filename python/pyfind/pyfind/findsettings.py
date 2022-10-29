@@ -55,14 +55,14 @@ class FindSettings:
 
     __slots__ = [
         'archives_only', 'debug', 'in_archive_extensions', 'in_archive_file_patterns',
-        'in_dir_patterns', 'in_extensions', 'in_file_patterns', 'in_file_types',
-        'include_archives', 'include_hidden', 'max_depth', 'max_last_mod', 'max_size',
-        'min_depth', 'min_last_mod', 'min_size', 'out_archive_extensions',
-        'out_archive_file_patterns', 'out_dir_patterns', 'out_extensions',
-        'out_file_patterns', 'out_file_types', 'paths', 'print_dirs', 'print_files',
-        'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
-        'sort_descending', 'verbose'
+        'in_dir_patterns', 'in_extensions', 'in_file_patterns', 'in_file_types', 'in_mime_types',
+        'include_archives', 'include_hidden', 'max_depth', 'max_last_mod', 'max_size', 'min_depth',
+        'min_last_mod', 'min_size', 'out_archive_extensions', 'out_archive_file_patterns',
+        'out_dir_patterns', 'out_extensions', 'out_file_patterns', 'out_file_types',
+        'out_mime_types', 'paths', 'print_dirs', 'print_files', 'print_usage', 'print_version',
+        'recursive', 'sort_by', 'sort_case_insensitive', 'sort_descending', 'verbose'
     ]
+
 
     def __init__(self,
                  archives_only: bool = False,
@@ -73,6 +73,7 @@ class FindSettings:
                  in_extensions: list[str] | set[str] | str = None,
                  in_file_patterns: list | set | str | Pattern = None,
                  in_file_types: list | set | str | FileType = None,
+                 in_mime_types: list[str] | set[str] | str = None,
                  include_archives: bool = False,
                  include_hidden: bool = False,
                  max_depth: int = -1,
@@ -87,6 +88,7 @@ class FindSettings:
                  out_extensions: list[str] | set[str] | str = None,
                  out_file_patterns: list | set | str | Pattern = None,
                  out_file_types: list | set | str | FileType = None,
+                 out_mime_types: list[str] | set[str] | str = None,
                  paths: list[Path] | set[Path] | list[str] | set[str] | str = None,
                  print_dirs: bool = False,
                  print_files: bool = False,
@@ -117,6 +119,9 @@ class FindSettings:
         self.in_file_types: set[FileType] = set()
         if in_file_types:
             self.add_file_types(in_file_types, 'in_file_types')
+        self.in_mime_types = set()
+        if in_mime_types:
+            self.add_mime_types(in_mime_types, 'in_mime_types')
         self.include_archives = include_archives
         self.include_hidden = include_hidden
         self.max_depth = max_depth
@@ -143,6 +148,9 @@ class FindSettings:
         self.out_file_types: set[FileType] = set()
         if out_file_types:
             self.add_file_types(out_file_types, 'out_file_types')
+        self.out_mime_types = set()
+        if out_mime_types:
+            self.add_mime_types(out_mime_types, 'out_mime_types')
         self.paths: set[Path] = set()
         if paths:
             self.add_paths(paths)
@@ -204,7 +212,7 @@ class FindSettings:
         self.add_paths(path)
 
     def add_file_types(self, file_types: list | set | str | FileType, file_type_set_name: str):
-        """Add one or more filetypes"""
+        """Add one or more file types"""
         if isinstance(file_types, (list, set)):
             if all(isinstance(ft, FileType) for ft in file_types):
                 new_file_type_set = set(file_types)
@@ -218,6 +226,17 @@ class FindSettings:
             raise FindException('file_types is an unknown type')
         file_type_set = getattr(self, file_type_set_name)
         file_type_set.update(new_file_type_set)
+
+    def add_mime_types(self, mime_types: list[str] | set[str] | str, mime_type_set_name: str):
+        """Add one or more mime types"""
+        if isinstance(mime_types, (list, set)):
+            mime_type_set = getattr(self, mime_type_set_name)
+            mime_type_set.update(mime_types)
+        elif isinstance(mime_types, str):
+            mime_type_set = getattr(self, mime_type_set_name)
+            mime_type_set.add(mime_types)
+        else:
+            raise FindException('mime_types is an unknown type')
 
     def need_last_mod(self) -> bool:
         return self.sort_by == SortBy.LASTMOD or \
