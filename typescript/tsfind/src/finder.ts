@@ -10,6 +10,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import {stat} from 'fs/promises';
 import * as path from 'path';
+import * as mmm from 'mmmagic';
 
 import * as common from './common';
 import {FileResult} from './fileresult';
@@ -22,9 +23,19 @@ import {SortBy} from "./sortby";
 
 export class Finder {
     _settings: FindSettings;
+    _magic: mmm.Magic;
+    detectMimeType: (filepath: string) => Promise<any>;
 
     constructor(settings: FindSettings) {
         this._settings = settings;
+        this._magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
+        this.detectMimeType = (filepath) =>
+            new Promise((resolve, reject) => {
+                this._magic.detectFile(filepath, (err, result) => {
+                    if (err) return reject(err);
+                    resolve(result);
+                });
+            });
         this.validateSettings();
     }
 
@@ -140,6 +151,14 @@ export class Finder {
                 Finder.matchesAnyFileType(fr.fileType, this._settings.outFileTypes))) {
                     return false;
         }
+
+        if ((this._settings.inMimeTypes.length &&
+            !Finder.matchesAnyString(fr.mimeType, this._settings.inMimeTypes))
+            || (this._settings.outMimeTypes.length &&
+                Finder.matchesAnyString(fr.mimeType, this._settings.outMimeTypes))) {
+                    return false;
+        }
+
         if ((this._settings.maxLastMod > 0 && fr.lastMod > this._settings.maxLastMod) ||
             (this._settings.minLastMod > 0 && fr.lastMod < this._settings.minLastMod)) {
             return false;
@@ -148,6 +167,7 @@ export class Finder {
             (this._settings.minSize > 0 && fr.fileSize < this._settings.minSize)) {
             return false;
         }
+
         return true;
     }
 
@@ -218,7 +238,7 @@ export class Finder {
         }
         const findDirs: string[] = [];
         let fileResults: FileResult[] = [];
-        fs.readdirSync(currentDir).map((f: string) => {
+        const files = fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
         }).forEach((fp: string) => {
             const stats = fs.statSync(fp);

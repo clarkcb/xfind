@@ -16,13 +16,15 @@ export class FileResult {
     path: string;
     fileName: string;
     fileType: FileType;
+    mimeType: string;
     fileSize: number = 0;
     lastMod: number = 0;
 
-    constructor(path: string, fileName: string, fileType: FileType, fileSize: number, lastMod: number) {
+    constructor(path: string, fileName: string, fileType: FileType, mimeType: string, fileSize: number, lastMod: number) {
         this.path = path;
         this.fileName = fileName;
         this.fileType = fileType;
+        this.mimeType = mimeType;
         this.fileSize = fileSize;
         this.lastMod = lastMod;
     }

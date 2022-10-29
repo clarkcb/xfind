@@ -21,6 +21,7 @@ export class FindSettings {
     inExtensions: string[] = [];
     inFilePatterns: RegExp[] = [];
     inFileTypes: FileType[] = [];
+    inMimeTypes: string[] = [];
     includeArchives = false;
     includeHidden = false;
     maxDepth = -1;
@@ -35,6 +36,7 @@ export class FindSettings {
     outExtensions: string[] = [];
     outFilePatterns: RegExp[] = [];
     outFileTypes: FileType[] = [];
+    outMimeTypes: string[] = [];
     paths: string[] = [];
     printDirs = false;
     printFiles = false;
@@ -171,6 +173,7 @@ export class FindSettings {
             + ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions)
             + ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns)
             + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
+            + ', ' + StringUtil.stringListToString('inMimeTypes', this.inMimeTypes)
             + ', includeArchives=' + this.includeArchives
             + ', includeHidden=' + this.includeHidden
             + ', maxDepth=' + this.maxDepth
@@ -185,6 +188,7 @@ export class FindSettings {
             + ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions)
             + ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns)
             + ', ' + StringUtil.fileTypesToString('outFileTypes', this.outFileTypes)
+            + ', ' + StringUtil.stringListToString('outMimeTypes', this.outMimeTypes)
             + ', ' + StringUtil.stringListToString('paths', this.paths)
             + ', printDirs=' + this.printDirs
             + ', printFiles=' + this.printFiles

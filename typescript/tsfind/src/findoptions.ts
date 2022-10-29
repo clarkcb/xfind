@@ -19,7 +19,11 @@ interface StringOptionMap {
 }
 
 interface StringActionMap {
-    [key: string]: any
+    [key: string]: (s: string, settings: FindSettings) => void
+}
+
+interface BooleanActionMap {
+    [key: string]: (b: boolean, settings: FindSettings) => void
 }
 
 export class FindOptions {
@@ -29,7 +33,7 @@ export class FindOptions {
     argMap: StringOptionMap;
     flagMap: StringOptionMap;
     argActionMap: StringActionMap;
-    boolFlagActionMap: StringActionMap;
+    boolFlagActionMap: BooleanActionMap;
 
     constructor() {
         this.options = [];
@@ -50,6 +54,8 @@ export class FindOptions {
                 (x: string, settings: FindSettings) => { settings.addInFilePatterns(x); },
             'in-filetype':
                 (x: string, settings: FindSettings) => { settings.addInFileTypes(x); },
+            'in-mimetype':
+                (x: string, settings: FindSettings) => { settings.inMimeTypes.push(x); },
             'maxdepth':
                 (x: string, settings: FindSettings) => { settings.maxDepth = parseInt(x, 10); },
             'maxlastmod':
@@ -74,6 +80,8 @@ export class FindOptions {
                 (x: string, settings: FindSettings) => { settings.addOutFilePatterns(x); },
             'out-filetype':
                 (x: string, settings: FindSettings) => { settings.addOutFileTypes(x); },
+            'out-mimetype':
+                (x: string, settings: FindSettings) => { settings.outMimeTypes.push(x); },
             'path':
                 (x: string, settings: FindSettings) => { settings.paths.push(x); },
             'settings-file':
@@ -182,7 +190,7 @@ export class FindOptions {
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
                 if (this.argMap[k]) {
                     if (obj[k]) {
-                        err = this.argActionMap[k](obj[k], settings);
+                        this.argActionMap[k](obj[k], settings);
                     } else {
                         err = new Error("Missing argument for option "+k);
                     }
@@ -214,8 +222,9 @@ export class FindOptions {
                 }
                 const longarg = this.argNameMap[arg];
                 if (this.argMap[longarg]) {
-                    if (args.length > 0) {
-                        err = this.argActionMap[longarg](args.shift(), settings);
+                    const nextArg: string|undefined = args.shift();
+                    if (nextArg) {
+                        this.argActionMap[longarg](nextArg, settings);
                     } else {
                         err = new Error("Missing argument for option " + arg);
                     }
