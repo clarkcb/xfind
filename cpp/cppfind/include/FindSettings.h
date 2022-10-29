@@ -58,12 +58,14 @@ namespace cppfind {
         [[nodiscard]] std::unordered_set<std::string> in_extensions() const;
         [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_file_patterns() const;
         [[nodiscard]] std::unordered_set<FileType> in_file_types() const;
+        [[nodiscard]] std::unordered_set<std::string> in_mime_types() const;
         [[nodiscard]] std::unordered_set<std::string> out_archive_extensions() const;
         [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_archive_file_patterns() const;
         [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_dir_patterns() const;
         [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
         [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_file_patterns() const;
         [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
+        [[nodiscard]] std::unordered_set<std::string> out_mime_types() const;
         [[nodiscard]] std::unordered_set<std::filesystem::path, PathHash> paths() const;
 
         // property setters
@@ -74,6 +76,7 @@ namespace cppfind {
         void in_extensions(const std::unordered_set<std::string>& in_extensions);
         void in_file_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& in_file_patterns);
         void in_file_types(const std::unordered_set<FileType>& in_file_types);
+        void in_mime_types(const std::unordered_set<std::string>& in_mime_types);
         void include_archives(bool include_archives);
         void include_hidden(bool include_hidden);
         void max_depth(int max_depth);
@@ -87,6 +90,7 @@ namespace cppfind {
         void out_extensions(const std::unordered_set<std::string>& out_extensions);
         void out_file_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& out_file_patterns);
         void out_file_types(const std::unordered_set<FileType>& out_file_types);
+        void out_mime_types(const std::unordered_set<std::string>& out_mime_types);
         void paths(const std::unordered_set<std::filesystem::path, PathHash>& paths);
         void print_dirs(bool print_dirs);
         void print_files(bool print_files);
@@ -105,12 +109,14 @@ namespace cppfind {
         void add_in_extension(std::string_view ext);
         void add_in_file_pattern(std::string_view pattern);
         void add_in_file_type(FileType file_type);
+        void add_in_mime_type(std::string_view mime_type);
         void add_out_archive_extension(std::string_view ext);
         void add_out_archive_file_pattern(std::string_view pattern);
         void add_out_dir_pattern(std::string_view pattern);
         void add_out_extension(std::string_view ext);
         void add_out_file_pattern(std::string_view pattern);
         void add_out_file_type(FileType file_type);
+        void add_out_mime_type(std::string_view mime_type);
         void add_path(const std::filesystem::path& path);
 
         // need elements methods
@@ -141,6 +147,7 @@ namespace cppfind {
         std::unordered_set<std::string> m_in_extensions;
         std::unordered_set<RegexPattern, RegexPatternHash> m_in_file_patterns;
         std::unordered_set<FileType> m_in_file_types;
+        std::unordered_set<std::string> m_in_mime_types;
 
         bool m_include_archives;
         bool m_include_hidden;
@@ -159,6 +166,7 @@ namespace cppfind {
         std::unordered_set<std::string> m_out_extensions;
         std::unordered_set<RegexPattern, RegexPatternHash> m_out_file_patterns;
         std::unordered_set<FileType> m_out_file_types;
+        std::unordered_set<std::string> m_out_mime_types;
 
         bool m_print_dirs;
         bool m_print_files;

@@ -48,6 +48,7 @@ namespace cppfind {
             {"in-ext", [](const std::string& s, FindSettings& ss) { ss.add_in_extension(s); }},
             {"in-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_in_file_pattern(s); }},
             {"in-filetype", [](const std::string& s, FindSettings& ss) { ss.add_in_file_type(FileTypes::from_name(s)); }},
+            {"in-mimetype", [](const std::string& s, FindSettings& ss) { ss.add_in_mime_type(s); }},
             {"maxlastmod", [](const std::string& s, FindSettings& ss) { ss.max_last_mod(StringUtil::date_str_to_long(s)); }},
             {"minlastmod", [](const std::string& s, FindSettings& ss) { ss.min_last_mod(StringUtil::date_str_to_long(s)); }},
             {"out-archiveext", [](const std::string& s, FindSettings& ss) { ss.add_out_archive_extension(s); }},
@@ -56,6 +57,7 @@ namespace cppfind {
             {"out-ext", [](const std::string& s, FindSettings& ss) { ss.add_out_extension(s); }},
             {"out-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_file_pattern(s); }},
             {"out-filetype", [](const std::string& s, FindSettings& ss) { ss.add_out_file_type(FileTypes::from_name(s)); }},
+            {"out-mimetype", [](const std::string& s, FindSettings& ss) { ss.add_out_mime_type(s); }},
             {"path", [](const std::string& s, FindSettings& ss) { ss.add_path(s); }},
             {"settings-file", [this](const std::string& s, FindSettings& ss) { this->settings_from_file(s, ss); }},
             {"sort-by", [](const std::string& s, FindSettings& ss) { ss.sort_by(FindSettings::sort_by_from_name(s)); }}

@@ -8,6 +8,8 @@
 namespace cppfind {
     Finder::Finder(const FindSettings& settings) : m_settings{settings} {
         validate_settings(settings);
+        m_file_types = FileTypes();
+        m_magic = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
     }
 
     Finder::Finder(const std::unique_ptr<FindSettings>& settings_ptr) : m_settings{*settings_ptr} {

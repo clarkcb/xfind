@@ -16,6 +16,12 @@ else()
         message("XFIND_PATH (from home): ${XFIND_PATH}")
 endif()
 
+find_path(LIBMAGIC_INCLUDE_DIR
+        NAMES magic.h)
+
+find_library(LIBMAGIC_LIBRARY
+        NAMES magic)
+
 include_directories(${XFIND_PATH}/cpp/cppfind/include)
 include_directories(/usr/local/include)
 
@@ -48,6 +54,7 @@ target_sources(${PROJECT_NAME}
         include/Finder.h src/Finder.cpp)
 
 #target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${LIBMAGIC_LIBRARY})
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}Targets

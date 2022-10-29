@@ -299,6 +299,10 @@ namespace cppfind {
         m_in_file_types.emplace(file_type);
     }
 
+    void FindSettings::add_in_mime_type(const std::string_view mime_type) {
+        m_in_mime_types.emplace(mime_type);
+    }
+
     void FindSettings::add_out_archive_extension(const std::string_view ext) {
         add_extensions(ext, m_out_archive_extensions);
     }
@@ -321,6 +325,10 @@ namespace cppfind {
 
     void FindSettings::add_out_file_type(const FileType file_type) {
         m_out_file_types.emplace(file_type);
+    }
+
+    void FindSettings::add_out_mime_type(const std::string_view mime_type) {
+        m_out_mime_types.emplace(mime_type);
     }
 
     void FindSettings::add_path(const std::filesystem::path& path) {
@@ -449,6 +457,7 @@ namespace cppfind {
                 + ", in_extensions=" + StringUtil::unordered_string_set_to_string(m_in_extensions)
                 + ", in_file_patterns=" + patterns_to_string(m_in_file_patterns)
                 + ", in_file_types=" + file_types_to_string(m_in_file_types)
+                + ", in_mime_types=" + StringUtil::unordered_string_set_to_string(m_in_mime_types)
                 + ", include_archives=" + StringUtil::bool_to_string(m_include_archives)
                 + ", include_hidden=" + StringUtil::bool_to_string(m_include_hidden)
                 + ", max_depth=" + std::to_string(m_max_depth)
@@ -463,6 +472,7 @@ namespace cppfind {
                 + ", out_extensions=" + StringUtil::unordered_string_set_to_string(m_out_extensions)
                 + ", out_file_patterns=" + patterns_to_string(m_out_file_patterns)
                 + ", out_file_types=" + file_types_to_string(m_out_file_types)
+                + ", out_mime_types=" + StringUtil::unordered_string_set_to_string(m_out_mime_types)
                 + ", paths=" + paths_to_string(m_paths)
                 + ", print_dirs=" + StringUtil::bool_to_string(m_print_dirs)
                 + ", print_files=" + StringUtil::bool_to_string(m_print_files)
