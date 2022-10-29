@@ -1,9 +1,103 @@
 #include "common.h"
+#include "errno.h"
 #include "finderr.h"
 
 void handle_error(error_t err)
 {
     switch (err) {
+    case EPERM:
+        log_err("Operation not permitted");
+        break;
+    case ENOENT:
+        log_err("No such file or directory");
+        break;
+    case ESRCH:
+        log_err("No such process");
+        break;
+    case EINTR:
+        log_err("Interrupted system call");
+        break;
+    case EIO:
+        log_err("Input/output error");
+        break;
+    case ENXIO:
+        log_err("Device not configured");
+        break;
+    case E2BIG:
+        log_err("Argument list too long");
+        break;
+    case ENOEXEC:
+        log_err("Exec format error");
+        break;
+    case EBADF:
+        log_err("Bad file descriptor");
+        break;
+    case ECHILD:
+        log_err("No child processes");
+        break;
+    case EDEADLK:
+        log_err("Resource deadlock avoided");
+        break;
+    case ENOMEM:
+        log_err("Cannot allocate memory");
+        break;
+    case EACCES:
+        log_err("Permission denied");
+        break;
+    case EFAULT:
+        log_err("Bad address");
+        break;
+    case EBUSY:
+        log_err("Device / Resource busy");
+        break;
+    case EEXIST:
+        log_err("File exists");
+        break;
+    case EXDEV:
+        log_err("Cross-device link");
+        break;
+    case ENODEV:
+        log_err("Operation not supported by device");
+        break;
+    case ENOTDIR:
+        log_err("Not a directory");
+        break;
+    case EISDIR:
+        log_err("Is a directory");
+        break;
+    case EINVAL:
+        log_err("Invalid argument");
+        break;
+    case ENFILE:
+        log_err("Too many open files in system");
+        break;
+    case EMFILE:
+        log_err("Too many open files");
+        break;
+    case ENOTTY:
+        log_err("Inappropriate ioctl for device");
+        break;
+    case ETXTBSY:
+        log_err("Text file busy");
+        break;
+    case EFBIG:
+        log_err("File too large");
+        break;
+    case ENOSPC:
+        log_err("No space left on device");
+        break;
+    case ESPIPE:
+        log_err("Illegal seek");
+        break;
+    case EROFS:
+        log_err("Read-only file system");
+        break;
+    case EMLINK:
+        log_err("Too many links");
+        break;
+    case EPIPE:
+        log_err("Broken pipe");
+        break;
     case E_STARTPATH_NOT_DEFINED:
         log_err("Startpath not defined");
         break;
