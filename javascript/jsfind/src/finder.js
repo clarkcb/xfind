@@ -10,7 +10,7 @@ const path = require('path');
 const { promisify } = require('util');
 const fsStatAsync = promisify(fs.stat);
 const fsReaddirAsync = promisify(fs.readdir);
-const mmm = require('@picturae/mmmagic');
+const mmm = require('mmmagic');
 
 const {FileResult} = require('./fileresult');
 const {FileType} = require("./filetype");
