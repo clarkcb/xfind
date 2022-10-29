@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	magic "github.com/hosom/gomagic"
 	"golang.org/x/text/encoding"
 )
 
@@ -16,6 +17,7 @@ type Finder struct {
 	Settings           *FindSettings
 	fileTypes          *FileTypes
 	fileResults        *FileResults
+	magic              *magic.Magic
 	errors             []error
 	addResultChan      chan *FileResult
 	addResultsDoneChan chan bool
@@ -24,18 +26,23 @@ type Finder struct {
 	textDecoder        *encoding.Decoder
 }
 
-func NewFinder(settings *FindSettings) *Finder {
+func NewFinder(settings *FindSettings) (*Finder, error) {
+	_magic, err := magic.Open(magic.MAGIC_MIME_TYPE | magic.MAGIC_NO_CHECK_ENCODING)
+	if err != nil {
+		return nil, err
+	}
 	return &Finder{
 		settings,               // Settings
 		FileTypesFromJson(),    // fileTypes
 		NewFileResults(),       // fileResults
+		_magic,                 // magic
 		[]error{},              // errors
 		make(chan *FileResult), // addResultChan
 		make(chan bool),        // addResultsDoneChan
 		make(chan bool, 1),     // findDoneChan
 		make(chan error, 1),    // errChan
 		nil,
-	}
+	}, nil
 }
 
 func (f *Finder) isMatchingDir(d string) bool {
@@ -77,6 +84,11 @@ func (f *Finder) hasMatchingFileType(fr *FileResult) bool {
 		(len(f.Settings.OutFileTypes()) == 0 || !ContainsFileType(f.Settings.OutFileTypes(), fr.FileType))
 }
 
+func (f *Finder) hasMatchingMimeType(fr *FileResult) bool {
+	return (len(f.Settings.InMimeTypes()) == 0 || contains(f.Settings.InMimeTypes(), fr.MimeType)) &&
+		(len(f.Settings.OutMimeTypes()) == 0 || !contains(f.Settings.OutMimeTypes(), fr.MimeType))
+}
+
 func (f *Finder) hasMatchingFileSize(fr *FileResult) bool {
 	return (f.Settings.maxSize == 0 || fr.FileSize <= f.Settings.maxSize) &&
 		(f.Settings.minSize == 0 || fr.FileSize >= f.Settings.minSize)
@@ -92,6 +104,7 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 		f.hasMatchingFileName(fr) &&
 		f.hasMatchingFileSize(fr) &&
 		f.hasMatchingFileType(fr) &&
+		f.hasMatchingMimeType(fr) &&
 		f.hasMatchingFileSize(fr) &&
 		f.hasMatchingLastMod(fr)
 }
@@ -110,6 +123,10 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 		fileSize = fi.Size()
 		lastMod = fi.ModTime()
 	}
+	//mimeType, err := f.magic.File(filePath)
+	//if err != nil {
+	//	return nil
+	//}
 	return NewFileResult(dir, file, t, fileSize, lastMod)
 }
 

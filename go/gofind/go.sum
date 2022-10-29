@@ -1,3 +1,4 @@
+github.com/hosom/gomagic v0.0.0-20160718182707-cbc00aac97a4/go.mod h1:2Oan8DZ6RtFP1c8gJGsw1sshEGsuCRzHFCkssb1PPyA=
 github.com/pmylund/sortutil v0.0.0-20120526081524-abeda66eb583 h1:ogHi8YLNeIxABOaH6UgtbwkODheuAK+ErP8gWXYQVj0=
 github.com/pmylund/sortutil v0.0.0-20120526081524-abeda66eb583/go.mod h1:sFPiU/UgDcsQVu3vkqpZLCXWFwUoQRpHGu9ATihPAl0=
 github.com/yuin/goldmark v1.4.13/go.mod h1:6yULJ656Px+3vBD8DxQVa3kxgyrAnzto9xy5taEt/CY=

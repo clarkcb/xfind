@@ -72,6 +72,7 @@ type FindSettings struct {
 	inExtensions           []string
 	inFilePatterns         *Patterns
 	inFileTypes            []FileType
+	inMimeTypes            []string
 	includeArchives        bool
 	includeHidden          bool
 	maxDepth               int
@@ -86,6 +87,7 @@ type FindSettings struct {
 	outExtensions          []string
 	outFilePatterns        *Patterns
 	outFileTypes           []FileType
+	inMimeTypes            []string
 	paths                  []string
 	printDirs              bool
 	printFiles             bool
@@ -108,6 +110,7 @@ func GetDefaultFindSettings() *FindSettings {
 		[]string{},     // InExtensions
 		NewPatterns(),  // InFilePatterns
 		[]FileType{},   // InFileTypes
+		[]string{},     // InMimeTypes
 		false,          // IncludeArchives
 		false,          // IncludeHidden
 		-1,             // MaxDepth
@@ -122,6 +125,7 @@ func GetDefaultFindSettings() *FindSettings {
 		[]string{},     // OutExtensions
 		NewPatterns(),  // OutFilePatterns
 		[]FileType{},   // OutFileTypes
+		[]string{},     // OutMimeTypes
 		[]string{},     // Paths
 		false,          // PrintDirs
 		false,          // PrintFiles
@@ -262,6 +266,14 @@ func (f *FindSettings) SetIncludeHidden(b bool) {
 	f.includeHidden = b
 }
 
+func (f *FindSettings) InMimeTypes() []string {
+	return f.inMimeTypes
+}
+
+func (f *FindSettings) AddInMimeType(m string) {
+	f.inMimeTypes = append(f.inMimeTypes, m)
+}
+
 func (f *FindSettings) MaxDepth() int {
 	return f.maxDepth
 }
@@ -400,6 +412,14 @@ func (f *FindSettings) AddOutFileType(t FileType) {
 	f.outFileTypes = append(f.outFileTypes, t)
 }
 
+func (f *FindSettings) OutMimeTypes() []string {
+	return f.outMimeTypes
+}
+
+func (f *FindSettings) AddOutMimeType(m string) {
+	f.outMimeTypes = append(f.outMimeTypes, m)
+}
+
 func (f *FindSettings) Paths() []string {
 	return f.paths
 }
@@ -526,6 +546,7 @@ func (f *FindSettings) String() string {
 		", InExtensions=%s" +
 		", InFilePatterns=%s" +
 		", InFileTypes=%s" +
+		", InMimeTypes=%s" +
 		", IncludeArchives=%t" +
 		", IncludeHidden=%t" +
 		", MaxDepth=%d" +
@@ -540,6 +561,7 @@ func (f *FindSettings) String() string {
 		", OutExtensions=%s" +
 		", OutFilePatterns=%s" +
 		", OutFileTypes=%s" +
+		", OutMimeTypes=%s" +
 		", Paths=%s" +
 		", PrintDirs=%t" +
 		", PrintFiles=%t" +
@@ -559,6 +581,7 @@ func (f *FindSettings) String() string {
 		StringListToString(f.InExtensions()),
 		PatternsToString(f.InFilePatterns()),
 		FileTypeListToString(f.InFileTypes()),
+		StringListToString(f.InMimeTypes()),
 		f.IncludeArchives(),
 		f.IncludeHidden(),
 		f.MaxDepth(),
@@ -573,6 +596,7 @@ func (f *FindSettings) String() string {
 		StringListToString(f.OutExtensions()),
 		PatternsToString(f.OutFilePatterns()),
 		FileTypeListToString(f.OutFileTypes()),
+		StringListToString(f.OutMimeTypes()),
 		StringListToString(f.Paths()),
 		f.PrintDirs(),
 		f.PrintFiles(),

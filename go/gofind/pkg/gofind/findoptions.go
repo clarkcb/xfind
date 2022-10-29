@@ -233,6 +233,9 @@ func (fo *FindOptions) getArgActionMap() map[string]argAction {
 		"in-filetype": func(s string, settings *FindSettings) {
 			settings.AddInFileType(GetFileTypeForName(s))
 		},
+		"in-mimetype": func(s string, settings *FindSettings) {
+			settings.AddInMimeType(s)
+		},
 		"maxdepth": func(s string, settings *FindSettings) {
 			settings.SetMaxDepthFromString(s)
 		},
@@ -268,6 +271,9 @@ func (fo *FindOptions) getArgActionMap() map[string]argAction {
 		},
 		"out-filetype": func(s string, settings *FindSettings) {
 			settings.AddOutFileType(GetFileTypeForName(s))
+		},
+		"out-mimetype": func(s string, settings *FindSettings) {
+			settings.AddOutMimeType(s)
 		},
 		"path": func(s string, settings *FindSettings) {
 			settings.AddPath(s)

@@ -31,7 +31,11 @@ func main() {
 		fmt.Printf("settings: %s\n", settings.String())
 	}
 
-	finder := gofind.NewFinder(settings)
+	finder, err := gofind.NewFinder(settings)
+	if err != nil {
+		errorAndExit(err, findOptions)
+	}
+
 	fileResults, err := finder.Find()
 	if err != nil {
 		errorAndExit(err, findOptions)
