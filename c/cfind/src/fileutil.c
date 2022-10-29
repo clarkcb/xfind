@@ -110,16 +110,18 @@ void expand_path(const char *filepath, char **expanded)
         // this is probably always true here, but just in case
         if (exp_len > fp_len) {
             *expanded = (char *) realloc(*expanded, (exp_len + 1) * sizeof (char *));
-            *expanded[0] = '\0';
+            (*expanded)[0] = '\0';
         }
 
         for (i = 0; i < p.we_wordc; i++) {
             strcat(*expanded, w[i]);
         }
+        (*expanded)[exp_len] = '\0';
 
         wordfree(&p);
     } else {
         strncpy(*expanded, filepath, fp_len);
+        (*expanded)[fp_len] = '\0';
     }
 }
 

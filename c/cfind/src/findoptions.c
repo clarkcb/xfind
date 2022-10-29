@@ -9,10 +9,7 @@
 #include "config.h"
 #include "filetypes.h"
 #include "fileutil.h"
-#include "finderr.h"
 #include "findoptions.h"
-#include "findsettings.h"
-#include "regexnode.h"
 
 #define ARG_COUNT 12
 const size_t arg_count = ARG_COUNT;

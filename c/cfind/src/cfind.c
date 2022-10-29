@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "fileresults.h"
-#include "finderr.h"
 #include "findsettings.h"
 #include "findoptions.h"
 #include "finder.h"

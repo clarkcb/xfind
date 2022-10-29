@@ -9,11 +9,8 @@
 #include "common.h"
 #include "finderr.h"
 #include "fileresults.h"
-#include "filetypes.h"
 #include "fileutil.h"
 #include "finder.h"
-#include "findsettings.h"
-#include "stringnode.h"
 
 Finder *new_finder(const FindSettings *s, const FileTypes *ft)
 {
@@ -52,20 +49,25 @@ static unsigned short is_matching_dir(const char *dir, const FindSettings *setti
     return res;
 }
 
-static unsigned short is_matching_file(const char *filename, const Finder *finder, FileType *filetype)
+static unsigned short is_matching_file(const char *dir, const char *filename, const Finder *finder, FileType *filetype)
 {
     if (filename == NULL) return 0;
     size_t file_len = strlen(filename);
     if (file_len < 1) return 0;
+    unsigned int ext_size;
     int dot_idx = last_index_of_char_in_string('.', filename);
-    if (dot_idx == 0 || dot_idx == file_len - 1) return 0;
-    unsigned int ext_size = (unsigned int)file_len - (unsigned int)dot_idx + 1; // for final \0
-    char ext[ext_size];
-    get_extension(filename, ext);
+    if (dot_idx == 0 || dot_idx == file_len - 1) ext_size = 0;
+    else ext_size = (unsigned int)file_len - (unsigned int)dot_idx;
+    char ext[ext_size + 1];
+    if (ext_size > 0) get_extension(filename, ext);
+    else ext[0] = '\0';
+
     *filetype = get_filetype_for_filename(filename, finder->filetypes);
     if (*filetype == UNKNOWN) {
         *filetype = get_filetype_for_ext(ext, finder->filetypes);
     }
+    if (*filetype == ARCHIVE && finder->settings->includearchives == 0) return 0;
+    if (*filetype != ARCHIVE && finder->settings->archivesonly == 1) return 0;
     unsigned short res = 0;
     if (((is_null_or_empty_string_node(finder->settings->in_extensions) == 1)
           || (string_matches_string_node(ext, finder->settings->in_extensions) != 0))
@@ -73,10 +75,10 @@ static unsigned short is_matching_file(const char *filename, const Finder *finde
              || (string_matches_string_node(ext, finder->settings->out_extensions) == 0))
         && ((is_null_or_empty_regex_node(finder->settings->in_filepatterns) == 1)
              || (string_matches_regex_node(filename, finder->settings->in_filepatterns) != 0))
-        && ((is_null_or_empty_int_node(finder->settings->in_filetypes) == 1)
-             || (int_matches_int_node((int *)filetype, finder->settings->in_filetypes) != 0))
         && ((is_null_or_empty_regex_node(finder->settings->out_filepatterns) == 1)
              || (string_matches_regex_node(filename, finder->settings->out_filepatterns) == 0))
+        && ((is_null_or_empty_int_node(finder->settings->in_filetypes) == 1)
+             || (int_matches_int_node((int *)filetype, finder->settings->in_filetypes) != 0))
         && ((is_null_or_empty_int_node(finder->settings->out_filetypes) == 1)
              || (int_matches_int_node((int *)filetype, finder->settings->out_filetypes) == 0))) {
         res = 1;
@@ -84,11 +86,11 @@ static unsigned short is_matching_file(const char *filename, const Finder *finde
     return res;
 }
 
-static unsigned short filter_file(const char *filename, const Finder *finder, FileType *filetype)
+static unsigned short filter_file(const char *dir, const char *filename, const Finder *finder, FileType *filetype)
 {
     if (finder->settings->excludehidden && is_hidden(filename))
         return 0;
-    return is_matching_file(filename, finder, filetype);
+    return is_matching_file(dir, filename, finder, filetype);
 }
 
 static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results)
@@ -142,7 +144,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
             }
         } else if (S_ISREG(fpstat.st_mode)) {
             FileType filetype = UNKNOWN;
-            if (filter_file(dent->d_name, finder, &filetype) == 1) {
+            if (filter_file(normpath, dent->d_name, finder, &filetype) == 1) {
                 size_t slen = strlen(dent->d_name);
                 char *filename = (char *)malloc((slen + 1) * sizeof(char));
                 strncpy(filename, dent->d_name, slen);
@@ -182,8 +184,8 @@ error_t find(const FindSettings *settings, FileResults *results)
     StringNode *nextpath = settings->paths;
     while (nextpath != NULL) {
         // expand the path in case it has tilde, etc.
-        size_t path_len = strlen(nextpath->string);
-        char *expanded = malloc((path_len + 1) * (sizeof (char *)));
+        size_t path_len = strlen(nextpath->string) + 1;
+        char *expanded = (char *)malloc((path_len + 10) * (sizeof(char)));
         expanded[0] = '\0';
         expand_path(nextpath->string, &expanded);
 
@@ -193,7 +195,10 @@ error_t find(const FindSettings *settings, FileResults *results)
 
         if (stat(expanded, &st) == -1) {
             // this shouldn't happen if we made it this far
-            return E_STARTPATH_STAT_FAILED;
+            err = errno;
+            destroy_finder(finder);
+            if (err == ENOENT) err = E_STARTPATH_NOT_FOUND;
+            return err;
         }
         if (S_ISDIR(st.st_mode)) {
             err = find_dir(expanded, finder, results);
@@ -203,11 +208,11 @@ error_t find(const FindSettings *settings, FileResults *results)
             }
         } else if (S_ISREG(st.st_mode)) {
             FileType filetype = UNKNOWN;
-            if (filter_file(nextpath->string, finder, &filetype) == 1) {
-                char *p = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
-                char *f = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
-                split_path(nextpath->string, &p, &f);
-                FileResult *r = new_file_result(p, f, filetype);
+            char *d = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
+            char *f = (char *)malloc((strlen(nextpath->string) + 2) * sizeof(char));
+            split_path(nextpath->string, &d, &f);
+            if (filter_file(d, f, finder, &filetype) == 1) {
+                FileResult *r = new_file_result(d, f, filetype);
                 add_to_file_results(r, results);
             } else {
                 return E_STARTPATH_NON_MATCHING;

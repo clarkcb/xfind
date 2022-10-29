@@ -107,6 +107,7 @@ int is_null_or_empty_string_node(StringNode *string_node)
 
 int string_matches_string_node(const char *s, StringNode *string_node)
 {
+    if (s == NULL || string_node == NULL) return 0;
     StringNode *temp = string_node;
     int matches = 0;
     while (matches == 0 && temp != NULL && temp->string != NULL) {

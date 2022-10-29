@@ -5,7 +5,6 @@
 
 #include "common.h"
 #include "fileresults.h"
-#include "stringnode.h"
 
 FileResult *new_file_result(const char *d, const char *fn, FileType ft)
 {
@@ -174,9 +173,11 @@ void print_dir_results(FileResults *results)
 
 void destroy_file_result(FileResult *r)
 {
-    r->dir = NULL;
-    r->filename = NULL;
-    free(r);
+    if (r != NULL) {
+        r->dir = NULL;
+        r->filename = NULL;
+        free(r);
+    }
 }
 
 void destroy_file_results(FileResults *results)

@@ -8,11 +8,7 @@
 #include "config.h"
 #include "fileutil.h"
 #include "filetypes.h"
-#include "finderr.h"
-#include "intnode.h"
-#include "stringarray.h"
 #include "stringnode.h"
-#include "common.h"
 
 FileTypes *new_filetypes(void)
 {
