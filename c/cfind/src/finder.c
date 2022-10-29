@@ -12,12 +12,13 @@
 #include "fileutil.h"
 #include "finder.h"
 
-Finder *new_finder(const FindSettings *s, const FileTypes *ft)
+Finder *new_finder(const FindSettings *s, const FileTypes *ft, const magic_t magic_cookie)
 {
     Finder *f = malloc(sizeof(Finder));
     assert(f != NULL);
     f->settings = (FindSettings *)s;
     f->file_types = (FileTypes *)ft;
+    f->magic_cookie = (magic_t)magic_cookie;
     return f;
 }
 
@@ -105,7 +106,6 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
         || (finder->settings->max_size > 0L && fpstat->st_size > finder->settings->max_size)
         || (finder->settings->min_size > 0L && fpstat->st_size < finder->settings->min_size)) {
         return 0;
-    }
 
     if (*file_type == ARCHIVE) {
         if (finder->settings->include_archives == 0) return 0;
@@ -133,6 +133,22 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
             && string_matches_regex_node(file_name, finder->settings->out_file_patterns) == 1) {
             return 0;
         }
+    }
+
+    // -- from use-libmagic
+    // See https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+    size_t pathlen = strnlen(dir, 260) + strnlen(filename, 260) + 1; // pathsep
+    char filepath[pathlen + 1];
+    sprintf(filepath, "%s/%s", dir, filename);
+    filepath[pathlen] = '\0';
+    const char *mimetype = magic_file(finder->magic_cookie, filepath);
+
+    if (((is_null_or_empty_string_node(finder->settings->in_mimetypes) == 0)
+             && (string_matches_string_node(mimetype, finder->settings->in_mimetypes) == 0))
+        || ((is_null_or_empty_string_node(finder->settings->out_mimetypes) == 0)
+             && (string_matches_string_node(mimetype, finder->settings->out_mimetypes) == 1)))
+    {
+        return 0;
     }
 
     return 1;
@@ -238,7 +254,22 @@ error_t find(const FindSettings *settings, FileResults *results)
         return err;
     }
 
-    Finder *finder = new_finder(settings, file_types);
+//    magic_t magic_cookie = magic_open(MAGIC_MIME | MAGIC_DEBUG | MAGIC_NO_CHECK_ENCODING);
+    magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
+    if (magic_cookie == NULL) {
+        printf("unable to initialize magic library\n");
+        return E_LIBMAGIC_ERROR;
+    }
+
+//    printf("Loading default magic database\n");
+
+    if (magic_load(magic_cookie, NULL) != 0) {
+        printf("cannot load magic database - %s\n", magic_error(magic_cookie));
+        magic_close(magic_cookie);
+        return E_LIBMAGIC_ERROR;
+    }
+
+    Finder *finder = new_finder(settings, filetypes, magic_cookie);
 
     StringNode *nextpath = settings->paths;
     while (nextpath != NULL) {
@@ -292,6 +323,7 @@ error_t find(const FindSettings *settings, FileResults *results)
     }
 
     destroy_finder(finder);
+    magic_close(magic_cookie);
     return err;
 }
 

@@ -1,6 +1,8 @@
 #ifndef FINDER_H
 #define FINDER_H
 
+#include <magic.h>
+
 #include "fileresults.h"
 #include "filetypes.h"
 #include "findsettings.h"
@@ -8,9 +10,10 @@
 typedef struct Finder {
     FindSettings *settings;
     FileTypes *file_types;
+    magic_t magic_cookie;
 } Finder;
 
-Finder *new_finder(const FindSettings *s, const FileTypes *ft);
+Finder *new_finder(const FindSettings *s, const FileTypes *ft, const magic_t magic_cookie);
 
 error_t validate_settings(const FindSettings *settings);
 

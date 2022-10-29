@@ -17,6 +17,7 @@ CFLAGS+=-Wconversion
 #CFLAGS+=-Wl,-rpath=/usr/lib
 
 INCLUDE=-I./include
+INCLUDE+=-I/usr/local/include
 INCLUDE+=-I/usr/local/include/cjson
 
 SRC_FILES=src/common.c
@@ -47,6 +48,7 @@ TEST_FILES+=test/test_findsettings.c
 TEST_EXE=test/test_cfind.c
 
 LINKED_LIBS=-L/usr/local/lib
+LINKED_LIBS+=-lmagic
 LINKED_LIBS+=-lcjson
 #LINKED_LIBS+=-lpcre2-8
 

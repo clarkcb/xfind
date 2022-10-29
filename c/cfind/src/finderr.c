@@ -143,6 +143,9 @@ void handle_error(error_t err)
     case E_INVALID_SIZE_RANGE:
         log_err("Invalid range for minsize and maxsize");
         break;
+    case E_LIBMAGIC_ERROR:
+        log_err("An error occurred trying to use libmagic");
+            break;
     default:
         log_err("Unknown error occurred");
         break;

@@ -23,6 +23,7 @@ FindSettings *default_settings(void)
     settings->in_extensions = NULL;
     settings->in_file_patterns = NULL;
     settings->in_file_types = NULL;
+    settings->in_mime_types = NULL;
     settings->include_archives = 0;
     settings->include_hidden = 0;
     settings->max_depth = -1;
@@ -37,6 +38,7 @@ FindSettings *default_settings(void)
     settings->out_extensions = NULL;
     settings->out_file_patterns = NULL;
     settings->out_file_types = NULL;
+    settings->out_mime_types = NULL;
     settings->paths = NULL;
     settings->print_dirs = 0;
     settings->print_files = 0;
@@ -66,6 +68,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", in_extensions=%s"
             ", in_file_patterns=%s"
             ", in_file_types=%s"
+            ", in_mime_types=%s"
             ", include_archives=%s"
             ", include_hidden=%s"
             ", max_depth=%d"
@@ -80,6 +83,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", out_extensions=%s"
             ", out_file_patterns=%s"
             ", out_file_types=%s"
+            ", out_mime_types=%s"
             ", paths=%s"
             ", print_dirs=%s"
             ", print_files=%s"
@@ -119,14 +123,16 @@ static size_t all_strings_strlen(const FindSettings *settings)
             string_node_strlen(settings->in_extensions) +
             regex_node_strlen(settings->in_file_patterns) +
             file_type_node_strlen(settings->in_file_types) +
+            string_node_strlen(settings->in_mime_types) +
             string_node_strlen(settings->out_archive_extensions) +
             regex_node_strlen(settings->out_archive_file_patterns) +
             regex_node_strlen(settings->out_dir_patterns) +
             string_node_strlen(settings->out_extensions) +
             regex_node_strlen(settings->out_file_patterns) +
             file_type_node_strlen(settings->out_file_types) +
-            sortby_strlen +
-            string_node_strlen(settings->paths);
+            string_node_strlen(settings->out_mime_types) +
+            string_node_strlen(settings->paths) +
+            sortby_strlen;
 }
 
 static size_t last_mod_strlen(long last_mod)
@@ -169,6 +175,9 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *in_file_types_s = malloc(file_type_node_strlen(settings->in_file_types) + 1);
     in_file_types_s[0] = '\0';
     file_type_node_to_string(settings->in_file_types, in_file_types_s);
+    char *in_mime_types_s = malloc(string_node_strlen(settings->in_mime_types) + 1);
+    in_mime_types_s[0] = '\0';
+    string_node_to_string(settings->in_mime_types, in_mime_types_s);
     char *include_archives_s = settings->include_archives == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *include_hidden_s = settings->include_hidden == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
@@ -209,9 +218,12 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *out_file_patterns_s = malloc(regex_node_strlen(settings->out_file_patterns) + 1);
     out_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->out_file_patterns, out_file_patterns_s);
-    char *out_file_types_s = malloc(file_type_node_strlen(settings->out_file_types) + 1);
+    char *out_file_types_s = malloc(filetype_node_strlen(settings->out_file_types) + 1);
     out_file_types_s[0] = '\0';
-    file_type_node_to_string(settings->out_file_types, out_file_types_s);
+    filetype_node_to_string(settings->out_file_types, out_file_types_s);
+    char *out_mime_types_s = malloc(string_node_strlen(settings->out_mime_types) + 1);
+    out_mime_types_s[0] = '\0';
+    string_node_to_string(settings->out_mime_types, out_mime_types_s);
     char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     string_node_to_string(settings->paths, paths_s);
@@ -236,6 +248,7 @@ void settings_to_string(const FindSettings *settings, char *s)
         in_extensions_s,
         in_file_patterns_s,
         in_file_types_s,
+        in_mime_types_s,
         include_archives_s,
         include_hidden_s,
         settings->max_depth,
@@ -250,6 +263,7 @@ void settings_to_string(const FindSettings *settings, char *s)
         out_extensions_s,
         out_file_patterns_s,
         out_file_types_s,
+        out_mime_types_s,
         paths_s,
         print_dirs_s,
         print_files_s,
@@ -271,6 +285,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     free(in_extensions_s);
     free(in_file_patterns_s);
     free(in_file_types_s);
+    free(in_mime_types_s);
     free(max_last_mod_s);
     free(min_last_mod_s);
     free(out_archive_extensions_s);
@@ -279,6 +294,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     free(out_extensions_s);
     free(out_file_patterns_s);
     free(out_file_types_s);
+    free(out_mime_types_s);
     free(paths_s);
     free(sort_by_name);
 }
@@ -302,12 +318,14 @@ void destroy_settings(FindSettings *settings)
         destroy_string_node(settings->in_extensions);
         destroy_regex_node(settings->in_file_patterns);
         destroy_int_node(settings->in_file_types);
+        destroy_string_node(settings->in_mime_types);
         destroy_string_node(settings->out_archive_extensions);
         destroy_regex_node(settings->out_archive_file_patterns);
         destroy_regex_node(settings->out_dir_patterns);
         destroy_string_node(settings->out_extensions);
         destroy_regex_node(settings->out_file_patterns);
         destroy_int_node(settings->out_file_types);
+        destroy_string_node(settings->out_mime_types);
         destroy_string_node(settings->paths);
         free(settings);
     }

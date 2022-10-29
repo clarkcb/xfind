@@ -22,6 +22,7 @@
 #define E_INVALID_DEPTH_RANGE            314 /* Invalid depth range (max_depth < min_depth) */
 #define E_INVALID_LASTMOD_RANGE          315 /* Invalid lastmod range (max_last_mod < min_last_mod) */
 #define E_INVALID_SIZE_RANGE             316 /* Invalid size range (max_size < min_size) */
+#define E_LIBMAGIC_ERROR                 317 /* An error related to libmagic occurred (unable to open, etc.) */
 
 typedef unsigned int error_t;
 

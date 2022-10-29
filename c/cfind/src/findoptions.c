@@ -12,7 +12,7 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define ARG_COUNT 20
+#define ARG_COUNT 22
 const size_t arg_count = ARG_COUNT;
 char **arg_names = (char *[]) {
     "in-archiveext",
@@ -21,6 +21,7 @@ char **arg_names = (char *[]) {
     "in-ext",
     "in-filepattern",
     "in-filetype",
+    "in-mimetype",
     "maxdepth",
     "maxlastmod",
     "maxsize",
@@ -33,8 +34,9 @@ char **arg_names = (char *[]) {
     "out-ext",
     "out-filepattern",
     "out-filetype",
+    "out-mimetype",
     "path",
-    "sort-by",
+    "sort-by"
 };
 char **arg_abbrs = (char *[]) {
     "",  // in-archiveext
@@ -43,6 +45,7 @@ char **arg_abbrs = (char *[]) {
     "x", // in-ext
     "f", // in-filepattern
     "t", // in-filetype
+    "",  // in-mimetype
     "",  // maxdepth
     "",  // maxlastmod
     "",  // maxsize
@@ -55,6 +58,7 @@ char **arg_abbrs = (char *[]) {
     "X", // out-ext
     "F", // out-filepattern
     "T", // out-filetype
+    "",  // out-mimetype
     "",  // path
     ""   // sort-by
 };
@@ -288,6 +292,12 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             add_int_to_int_node(ftint, settings->in_file_types);
         }
         break;
+    case IN_MIME_TYPE:
+        if (settings->in_mimetypes == NULL)
+            settings->in_mimetypes = new_string_node(arg_val);
+        else
+            add_string_to_string_node(arg_val, settings->in_mimetypes);
+        break;
     case MAX_DEPTH:
         settings->max_depth = atoi(arg_val);
         break;
@@ -364,19 +374,23 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             add_int_to_int_node(ftint, settings->out_file_types);
         }
         break;
+    case OUT_MIME_TYPE:
+        if (settings->out_mimetypes == NULL)
+            settings->out_mimetypes = new_string_node(arg_val);
+        else
+            add_string_to_string_node(arg_val, settings->out_mimetypes);
+        break;
     case PATH:
         if (settings->paths == NULL)
             settings->paths = new_string_node(arg_val);
         else
             add_string_to_string_node(arg_val, settings->paths);
-        break;
     case SORT_BY:
         // this is just to wrap in an expression
         if (arg_val) {
             SortBy sort_by = sort_by_from_name(arg_val);
             settings->sort_by = sort_by;
         }
-        break;
     default:
         break;
     }
