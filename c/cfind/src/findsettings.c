@@ -227,7 +227,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *out_file_patterns_s = malloc(regex_node_strlen(settings->out_file_patterns) + 1);
     out_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->out_file_patterns, out_file_patterns_s);
-    char *out_file_types_s = malloc(file_type_node_strlen(settings->out_file_types) + 1);
+    char *out_file_types_s = malloc(filetype_node_strlen(settings->out_file_types) + 1);
     out_file_types_s[0] = '\0';
     file_type_node_to_string(settings->out_file_types, out_file_types_s);
     char *out_mime_types_s = malloc(string_node_strlen(settings->out_mime_types) + 1);

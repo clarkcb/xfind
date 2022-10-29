@@ -153,7 +153,6 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
         || (finder->settings->max_size > 0L && fpstat->st_size > finder->settings->max_size)
         || (finder->settings->min_size > 0L && fpstat->st_size < finder->settings->min_size)) {
         return 0;
-    }
 
     if (*file_type == ARCHIVE) {
         if (finder->settings->include_archives == 0) return 0;
