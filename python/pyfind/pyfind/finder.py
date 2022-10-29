@@ -9,6 +9,7 @@
 ###############################################################################
 """
 from datetime import datetime
+import magic
 import os
 import sys
 from pathlib import Path
