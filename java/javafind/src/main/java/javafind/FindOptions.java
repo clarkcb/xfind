@@ -17,6 +17,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class FindOptions {
@@ -47,7 +50,7 @@ public class FindOptions {
             put("out-ext", (s, settings) -> settings.addOutExtension(s));
             put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
-            put("settings-file", (s, settings) -> settingsFromFile(s, settings));
+            put("settings-file", (s, settings) -> settingsFromFilePath(s, settings));
         }
     };
 
@@ -101,10 +104,10 @@ public class FindOptions {
         return list;
     }
 
-    private void settingsFromFile(final String filePath, final FindSettings settings) {
-        File file = new File(filePath);
+    private void settingsFromFilePath(final String filePath, final FindSettings settings) {
+        Path path = Paths.get(filePath);
         try {
-            if (!file.exists()) {
+            if (!Files.exists(path)) {
                 Logger.log("Settings file not found: " + filePath);
                 System.exit(1);
             }
@@ -112,7 +115,7 @@ public class FindOptions {
                 Logger.log("Invalid settings file type (just be JSON): " + filePath);
                 System.exit(1);
             }
-            settingsFromJson(FileUtil.getFileContents(file), settings);
+            settingsFromJson(FileUtil.getFileContents(path), settings);
         } catch (FileNotFoundException e) {
             Logger.log("Settings file not found: " + filePath);
             System.exit(1);

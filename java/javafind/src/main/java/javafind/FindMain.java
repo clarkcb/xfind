@@ -32,7 +32,8 @@ public class FindMain {
     }
 
     private static List<String> getMatchingDirs(final List<FileResult> fileResults) {
-        return fileResults.stream().map(f -> f.getFile().getParent()).distinct()
+        return fileResults.stream()
+                .map(fr -> fr.getPath().getParent().toString()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 

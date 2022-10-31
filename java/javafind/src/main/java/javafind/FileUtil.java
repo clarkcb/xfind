@@ -15,6 +15,9 @@ import org.apache.commons.io.LineIterator;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 
 public final class FileUtil {
@@ -26,8 +29,8 @@ public final class FileUtil {
     private static final Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
     private static final String DEFAULT_ENCODING = "UTF-8";
 
-    public static String getExtension(final File f) {
-        return getExtension(f.getName());
+    public static String getExtension(final Path path) {
+        return getExtension(path.getFileName().toString());
     }
 
     public static String getExtension(final String fileName) {
@@ -42,10 +45,6 @@ public final class FileUtil {
         return ext;
     }
 
-    public static boolean hasExtension(final File f, final String ext) {
-        return hasExtension(f.getName(), ext);
-    }
-
     public static boolean hasExtension(final String fileName, String ext) {
         if (!ext.equals("Z")) { // the only always-uppercase ext
             ext = ext.toLowerCase();
@@ -57,8 +56,8 @@ public final class FileUtil {
         return dotDirs.contains(f);
     }
 
-    public static boolean isHidden(final File f) {
-        return isHidden(f.getName());
+    public static boolean isHidden(final Path path) {
+        return isHidden(path.getFileName().toString());
     }
 
     public static boolean isHidden(final String f) {
@@ -67,29 +66,35 @@ public final class FileUtil {
 
     // NOTE: if the first item in the returned list is not a dotDir, it should be
     // considered an absolute path
-    public static List<String> splitPath(final String path) {
-        if (path == null || path.isEmpty()) {
-            return new ArrayList<>();
+    public static List<String> splitPath(final Path path) {
+        if (path == null || path.toString().isEmpty()) {
+            return Collections.emptyList();
         }
-        String[] elems = path.split(File.separator);
         List<String> elemList = new ArrayList<>();
-        for (String elem : elems) {
-            if (!elem.isEmpty()) { elemList.add(elem); }
+        for (Path p : path) {
+            elemList.add(p.toString());
         }
         return elemList;
     }
 
-    public static String getFileContents(final File f) throws IOException {
-        return getFileContents(f, DEFAULT_ENCODING);
+    public static List<String> splitPath(final String path) {
+        if (path == null || path.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return splitPath(Paths.get(path));
     }
 
-    public static String getFileContents(final File f, final String enc) throws IOException {
-        return getFileContents(f, Charset.forName(enc));
+    public static String getFileContents(final Path path) throws IOException {
+        return getFileContents(path, DEFAULT_ENCODING);
     }
 
-    public static String getFileContents(final File f, final Charset charset) throws IOException {
+    public static String getFileContents(final Path path, final String enc) throws IOException {
+        return getFileContents(path, Charset.forName(enc));
+    }
+
+    public static String getFileContents(final Path path, final Charset charset) throws IOException {
         String content;
-        try (Scanner scanner = new Scanner(new InputStreamReader(new FileInputStream(f), charset))
+        try (Scanner scanner = new Scanner(new InputStreamReader(Files.newInputStream(path), charset))
                 .useDelimiter("\\Z")) {
             content = getScannerContents(scanner);
         } catch (NoSuchElementException | IllegalStateException e) {
@@ -123,13 +128,13 @@ public final class FileUtil {
     }
 
     // NOTE: user takes responsibility for closing the LineIterator once done
-    public static LineIterator getFileLineIterator(final File f) throws IOException {
-        return getFileLineIterator(f, DEFAULT_ENCODING);
+    public static LineIterator getFileLineIterator(final Path path) throws IOException {
+        return getFileLineIterator(path, DEFAULT_ENCODING);
     }
 
     // NOTE: user takes responsibility for closing the LineIterator once done
-    public static LineIterator getFileLineIterator(final File f, final String enc) throws IOException {
-        return FileUtils.lineIterator(f, enc);
+    public static LineIterator getFileLineIterator(final Path path, final String enc) throws IOException {
+        return FileUtils.lineIterator(path.toFile(), enc);
     }
 
     public static List<String> getStreamLines(final InputStream is) throws IllegalArgumentException {

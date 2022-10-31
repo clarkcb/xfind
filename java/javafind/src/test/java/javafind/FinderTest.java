@@ -2,7 +2,8 @@ package javafind;
 
 import org.junit.Test;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.*;
 
@@ -23,21 +24,21 @@ public class FinderTest {
     public final void testIsMatchingDir_SingleDot_True() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(new File(".")));
+        assertTrue(finder.isMatchingDir(Paths.get(".")));
     }
 
     @Test
     public final void testIsMatchingDir_DoubleDot_True() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(new File("..")));
+        assertTrue(finder.isMatchingDir(Paths.get("..")));
     }
 
     @Test
     public final void testIsMatchingDir_IsHidden_False() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        assertFalse(finder.isMatchingDir(new File(".git")));
+        assertFalse(finder.isMatchingDir(Paths.get(".git")));
     }
 
     @Test
@@ -45,14 +46,14 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.setExcludeHidden(false);
         Finder finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(new File(".git")));
+        assertTrue(finder.isMatchingDir(Paths.get(".git")));
     }
 
     @Test
     public final void testIsMatchingDir_NoPatterns_True() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(new File("/Users")));
+        assertTrue(finder.isMatchingDir(Paths.get("/Users")));
     }
 
     @Test
@@ -60,7 +61,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInDirPattern("Find");
         Finder finder = new Finder(settings);
-        assertTrue(finder.isMatchingDir(new File("CsFind")));
+        assertTrue(finder.isMatchingDir(Paths.get("CsFind")));
     }
 
     @Test
@@ -68,7 +69,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutDirPattern("Find");
         Finder finder = new Finder(settings);
-        assertFalse(finder.isMatchingDir(new File("CsFind")));
+        assertFalse(finder.isMatchingDir(Paths.get("CsFind")));
     }
 
     @Test
@@ -76,7 +77,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInDirPattern("FindFiles");
         Finder finder = new Finder(settings);
-        assertFalse(finder.isMatchingDir(new File("CsFind")));
+        assertFalse(finder.isMatchingDir(Paths.get("CsFind")));
     }
 
     @Test
@@ -84,7 +85,16 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutDirPattern("FindFiles");
         Finder finder = new Finder(settings);
-        File dir = new File("CsFind");
+        Path dir = Paths.get("CsFind");
+        assertTrue(finder.isMatchingDir(dir));
+    }
+
+    @Test
+    public final void testIsMatchingDir_DoesNotMatchOutPattern2_True() {
+        FindSettings settings = getSettings();
+        settings.addOutDirPattern("FindFiles");
+        Finder finder = new Finder(settings);
+        Path dir = Paths.get("/Users/cary/src/xfind/java/javafind/ssrc/main/java/javafind");
         assertTrue(finder.isMatchingDir(dir));
     }
 
@@ -95,8 +105,8 @@ public class FinderTest {
     public final void testIsMatchingFile_NoExtensionsNoPatterns_True() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertTrue(finder.isMatchingFile(path));
     }
 
     @Test
@@ -104,8 +114,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInExtension("cs");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertTrue(finder.isMatchingFile(path));
     }
 
     @Test
@@ -113,8 +123,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInExtension("java");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertFalse(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertFalse(finder.isMatchingFile(path));
     }
 
 
@@ -123,8 +133,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutExtension("cs");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertFalse(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertFalse(finder.isMatchingFile(path));
     }
 
     @Test
@@ -132,8 +142,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutExtension("java");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertTrue(finder.isMatchingFile(path));
     }
 
     @Test
@@ -141,8 +151,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInFilePattern("Find");
         Finder finder = new Finder(settings);
-        File file = new File("Finder.cs");
-        assertTrue(finder.isMatchingFile(file));
+        Path path = Paths.get("Finder.cs");
+        assertTrue(finder.isMatchingFile(path));
     }
 
     @Test
@@ -150,8 +160,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInFilePattern("Find");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertFalse(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertFalse(finder.isMatchingFile(path));
     }
 
     @Test
@@ -159,8 +169,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutFilePattern("Find");
         Finder finder = new Finder(settings);
-        File file = new File("Finder.cs");
-        assertFalse(finder.isMatchingFile(file));
+        Path path = Paths.get("Finder.cs");
+        assertFalse(finder.isMatchingFile(path));
     }
 
     @Test
@@ -168,8 +178,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutFilePattern("Find");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertTrue(finder.isMatchingFile(path));
     }
 
     /*************************************************************
@@ -179,8 +189,8 @@ public class FinderTest {
     public final void testIsMatchingArchiveFile_NoExtensionsNoPatterns_True() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertTrue(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -188,8 +198,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInArchiveExtension("zip");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertTrue(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -197,8 +207,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInArchiveExtension("gz");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertFalse(finder.isMatchingArchiveFile(path));
     }
 
 
@@ -207,8 +217,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutArchiveExtension("zip");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertFalse(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -216,8 +226,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutArchiveExtension("gz");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertTrue(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -225,8 +235,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInArchiveFilePattern("arch");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertTrue(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -234,8 +244,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInArchiveFilePattern("archives");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertFalse(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -243,8 +253,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutArchiveFilePattern("arch");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertFalse(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertFalse(finder.isMatchingArchiveFile(path));
     }
 
     @Test
@@ -252,8 +262,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutArchiveFilePattern("archives");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertTrue(finder.isMatchingArchiveFile(file));
+        Path path = Paths.get("archive.zip");
+        assertTrue(finder.isMatchingArchiveFile(path));
     }
 
     /*************************************************************
@@ -263,8 +273,8 @@ public class FinderTest {
     public final void testFilterToFileResult_IsHidden_Null() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        File file = new File(".gitignore");
-        assertNull(finder.filterToFileResult(file));
+        Path path = Paths.get(".gitignore");
+        assertNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -272,16 +282,16 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.setExcludeHidden(false);
         Finder finder = new Finder(settings);
-        File file = new File(".gitignore");
-        assertNotNull(finder.filterToFileResult(file));
+        Path path = Paths.get(".gitignore");
+        assertNotNull(finder.filterToFileResult(path));
     }
 
     @Test
     public final void testFilterToFileResult_ArchiveNoFindArchives_Null() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertNull(finder.filterToFileResult(file));
+        Path path = Paths.get("archive.zip");
+        assertNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -289,8 +299,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.setIncludeArchives(true);
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertNotNull(finder.filterToFileResult(file));
+        Path path = Paths.get("archive.zip");
+        assertNotNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -299,8 +309,8 @@ public class FinderTest {
         settings.setIncludeArchives(true);
         settings.addInArchiveExtension("zip");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertNotNull(finder.filterToFileResult(file));
+        Path path = Paths.get("archive.zip");
+        assertNotNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -309,8 +319,8 @@ public class FinderTest {
         settings.setIncludeArchives(true);
         settings.addOutArchiveExtension("zip");
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertNull(finder.filterToFileResult(file));
+        Path path = Paths.get("archive.zip");
+        assertNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -318,16 +328,16 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.setArchivesOnly(true);
         Finder finder = new Finder(settings);
-        File file = new File("archive.zip");
-        assertNotNull(finder.filterToFileResult(file));
+        Path path = Paths.get("archive.zip");
+        assertNotNull(finder.filterToFileResult(path));
     }
 
     @Test
     public final void testFilterToFileResult_NoExtensionsNoPatterns_NotNull() {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertNotNull(finder.filterToFileResult(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertNotNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -335,8 +345,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addInExtension("cs");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertNotNull(finder.filterToFileResult(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertNotNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -344,8 +354,8 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.addOutExtension("cs");
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertNull(finder.filterToFileResult(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertNull(finder.filterToFileResult(path));
     }
 
     @Test
@@ -353,7 +363,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         settings.setArchivesOnly(true);
         Finder finder = new Finder(settings);
-        File file = new File("FileUtil.cs");
-        assertNull(finder.filterToFileResult(file));
+        Path path = Paths.get("FileUtil.cs");
+        assertNull(finder.filterToFileResult(path));
     }
 }

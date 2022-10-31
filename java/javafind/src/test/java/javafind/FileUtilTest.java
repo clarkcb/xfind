@@ -2,7 +2,8 @@ package javafind;
 
 import org.junit.Test;
 
-import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -15,38 +16,38 @@ public class FileUtilTest {
      **************************************************************************/
     @Test
     public final void testGetTxtExtension() {
-        File file = new File("filename.txt");
-        assertEquals("txt", FileUtil.getExtension(file));
+        Path path = Paths.get("filename.txt");
+        assertEquals("txt", FileUtil.getExtension(path));
     }
 
     @Test
     public final void testGetMissingExtension() {
-        File file = new File("filename.");
-        assertEquals("", FileUtil.getExtension(file));
+        Path path = Paths.get("filename.");
+        assertEquals("", FileUtil.getExtension(path));
     }
 
     @Test
     public final void testGetNoExtension() {
-        File file = new File("filename");
-        assertEquals("", FileUtil.getExtension(file));
+        Path path = Paths.get("filename");
+        assertEquals("", FileUtil.getExtension(path));
     }
 
     @Test
     public final void testGetHiddenTxtExtension() {
-        File file = new File(".filename.txt");
-        assertEquals("txt", FileUtil.getExtension(file));
+        Path path = Paths.get(".filename.txt");
+        assertEquals("txt", FileUtil.getExtension(path));
     }
 
     @Test
     public final void testGetHiddenMissingExtension() {
-        File file = new File(".filename.");
-        assertEquals("", FileUtil.getExtension(file));
+        Path path = Paths.get(".filename.");
+        assertEquals("", FileUtil.getExtension(path));
     }
 
     @Test
     public final void testGetHiddenNoExtension() {
-        File file = new File(".filename");
-        assertEquals("", FileUtil.getExtension(file));
+        Path path = Paths.get(".filename");
+        assertEquals("", FileUtil.getExtension(path));
     }
 
     /***************************************************************************
@@ -111,14 +112,14 @@ public class FileUtilTest {
 
     @Test
     public final void testIsHiddenHiddenFile() {
-        File file = new File(".gitignore");
-        assertTrue(FileUtil.isHidden(file));
+        Path path = Paths.get(".gitignore");
+        assertTrue(FileUtil.isHidden(path));
     }
 
     @Test
     public final void testIsHiddenNotHiddenFile() {
-        File file = new File("./file.txt");
-        assertFalse(FileUtil.isHidden(file));
+        Path path = Paths.get("./file.txt");
+        assertFalse(FileUtil.isHidden(path));
     }
 
     /***************************************************************************

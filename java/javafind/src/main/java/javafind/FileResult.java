@@ -1,23 +1,23 @@
 package javafind;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FileResult {
     public static final String CONTAINER_SEPARATOR = "!";
     private final List<String> containers;
-    private final File file;
+    private final Path path;
     private final FileType fileType;
 
-    public FileResult(final File file, final FileType fileType) {
-        this(new ArrayList<>(), file, fileType);
+    public FileResult(final Path path, final FileType fileType) {
+        this(new ArrayList<>(), path, fileType);
     }
 
-    public FileResult(final List<String> containers, final File file,
+    public FileResult(final List<String> containers, final Path path,
                       final FileType fileType) {
         this.containers = containers;
-        this.file = file;
+        this.path = path;
         this.fileType = fileType;
     }
 
@@ -25,8 +25,8 @@ public class FileResult {
         return this.containers;
     }
 
-    public final File getFile() {
-        return this.file;
+    public final Path getPath() {
+        return this.path;
     }
 
     public final FileType getFileType() {
@@ -44,11 +44,7 @@ public class FileResult {
             }
             sb.append(CONTAINER_SEPARATOR);
         }
-//        if (path != null && !path.isEmpty()) {
-//            sb.append(path).append(File.separator);
-//        }
-//        sb.append(fileName);
-        sb.append(file.getPath());
+        sb.append(path.toString());
         return sb.toString();
     }
 

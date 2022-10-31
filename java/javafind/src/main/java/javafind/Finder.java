@@ -10,14 +10,13 @@ Class to find matching files
 
 package javafind;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -37,11 +36,11 @@ public class Finder {
             throw new FindException("Startpath not defined");
         }
         for (String p : paths) {
-            File pFile = new File(p);
-            if (!pFile.exists()) {
+            Path path = Paths.get(p);
+            if (!Files.exists(path)) {
                 throw new FindException("Startpath not found");
             }
-            if (!pFile.canRead()) {
+            if (!Files.isReadable(path)) {
                 throw new FindException("Startpath not readable");
             }
         }
@@ -57,8 +56,8 @@ public class Finder {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
-    boolean isMatchingDir(final File d) {
-        List<String> pathElems = FileUtil.splitPath(d.toString());
+    boolean isMatchingDir(final Path path) {
+        List<String> pathElems = FileUtil.splitPath(path);
         if (settings.getExcludeHidden()
                 && pathElems.stream().anyMatch(FileUtil::isHidden)) {
             return false;
@@ -73,13 +72,13 @@ public class Finder {
     }
 
     // this is temporary to appease the tests
-    boolean isMatchingFile(final File f) {
-        FileResult sf = new FileResult(f, fileTypes.getFileType(f));
+    boolean isMatchingFile(final Path path) {
+        FileResult sf = new FileResult(path, fileTypes.getFileType(path));
         return isMatchingFile(sf);
     }
 
     boolean isMatchingFile(final FileResult sf) {
-        String fileName = sf.getFile().getName();
+        String fileName = sf.getPath().getFileName().toString();
         String ext = FileUtil.getExtension(fileName);
         return (settings.getInExtensions().isEmpty()
                 ||
@@ -106,8 +105,8 @@ public class Finder {
                 !settings.getOutFileTypes().contains(sf.getFileType()));
     }
 
-    boolean isMatchingArchiveFile(final File f) {
-        String ext = FileUtil.getExtension(f);
+    boolean isMatchingArchiveFile(final Path path) {
+        String ext = FileUtil.getExtension(path);
         return (settings.getInArchiveExtensions().isEmpty()
                 ||
                 settings.getInArchiveExtensions().contains(ext))
@@ -118,31 +117,31 @@ public class Finder {
                &&
                (settings.getInArchiveFilePatterns().isEmpty()
                 ||
-                matchesAnyPattern(f.getName(), settings.getInArchiveFilePatterns()))
+                matchesAnyPattern(path.getFileName().toString(), settings.getInArchiveFilePatterns()))
                &&
                (settings.getOutArchiveFilePatterns().isEmpty()
                 ||
-                !matchesAnyPattern(f.getName(), settings.getOutArchiveFilePatterns()));
+                !matchesAnyPattern(path.getFileName().toString(), settings.getOutArchiveFilePatterns()));
     }
 
-    boolean filterFile(final File f) {
-        if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
+    boolean filterFile(final Path path) {
+        if (FileUtil.isHidden(path) && settings.getExcludeHidden()) {
             return false;
         }
-        if (fileTypes.getFileType(f) == FileType.ARCHIVE) {
-            return settings.getIncludeArchives() && isMatchingArchiveFile(f);
+        if (fileTypes.getFileType(path) == FileType.ARCHIVE) {
+            return settings.getIncludeArchives() && isMatchingArchiveFile(path);
         }
-        return !settings.getArchivesOnly() && isMatchingFile(f);
+        return !settings.getArchivesOnly() && isMatchingFile(path);
     }
 
-    FileResult filterToFileResult(final File f) {
-        if (FileUtil.isHidden(f) && settings.getExcludeHidden()) {
+    FileResult filterToFileResult(final Path path) {
+        if (FileUtil.isHidden(path) && settings.getExcludeHidden()) {
             return null;
         }
-        FileResult fileResult = new FileResult(f, fileTypes.getFileType(f));
-        if (fileTypes.getFileType(f) == FileType.ARCHIVE) {
+        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path));
+        if (fileResult.getFileType() == FileType.ARCHIVE) {
             if ((settings.getIncludeArchives() || settings.getArchivesOnly())
-                && isMatchingArchiveFile(f)) {
+                && isMatchingArchiveFile(path)) {
                     return fileResult;
             }
             return null;
@@ -156,15 +155,15 @@ public class Finder {
     public final List<FileResult> find() throws FindException {
         List<FileResult> fileResults = new ArrayList<>();
         for (String p : settings.getPaths()) {
-            File pFile = new File(p);
-            if (pFile.isDirectory()) {
-                if (isMatchingDir(pFile)) {
-                    fileResults.addAll(findPath(pFile));
+            Path path = Paths.get(p);
+            if (Files.isDirectory(path)) {
+                if (isMatchingDir(path)) {
+                    fileResults.addAll(findPath(path));
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
-            } else if (pFile.isFile()) {
-                FileResult fileResult = filterToFileResult(pFile);
+            } else if (Files.isRegularFile(path)) {
+                FileResult fileResult = filterToFileResult(path);
                 if (fileResult != null) {
                     fileResults.add(fileResult);
                 } else {
@@ -178,12 +177,12 @@ public class Finder {
     }
 
     private static class FindFindFileVisitor extends SimpleFileVisitor<Path> {
-        Function<File, Boolean> filterDir;
-        Function<File, FileResult> filterToFindFile;
+        Function<Path, Boolean> filterDir;
+        Function<Path, FileResult> filterToFindFile;
         List<FileResult> fileResults;
 
-        FindFindFileVisitor(final Function<File, Boolean> filterDir,
-                            final Function<File, FileResult> filterToFindFile) {
+        FindFindFileVisitor(final Function<Path, Boolean> filterDir,
+                            final Function<Path, FileResult> filterToFindFile) {
             super();
             this.filterDir = filterDir;
             this.filterToFindFile = filterToFindFile;
@@ -194,7 +193,7 @@ public class Finder {
         public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
             Objects.requireNonNull(dir);
             Objects.requireNonNull(attrs);
-            if (filterDir.apply(dir.toFile())) {
+            if (filterDir.apply(dir)) {
                 return FileVisitResult.CONTINUE;
             }
             return FileVisitResult.SKIP_SUBTREE;
@@ -205,10 +204,9 @@ public class Finder {
             Objects.requireNonNull(path);
             Objects.requireNonNull(attrs);
             if (attrs.isRegularFile()) {
-                File f = path.toFile();
-                FileResult ff = filterToFindFile.apply(f);
-                if (ff != null) {
-                    fileResults.add(ff);
+                FileResult fr = filterToFindFile.apply(path);
+                if (fr != null) {
+                    fileResults.add(fr);
                 }
             }
             return FileVisitResult.CONTINUE;
@@ -228,14 +226,13 @@ public class Finder {
         }
     }
 
-    private List<FileResult> findPath(final File filePath) {
-        Path startPath = filePath.toPath();
+    private List<FileResult> findPath(final Path filePath) {
         FindFindFileVisitor findFindFileVisitor = new FindFindFileVisitor(this::isMatchingDir,
                 this::filterToFileResult);
 
         // walk file tree to find files
         try {
-            Files.walkFileTree(startPath, findFindFileVisitor);
+            Files.walkFileTree(filePath, findFindFileVisitor);
         } catch (IOException e) {
             e.printStackTrace();
         }

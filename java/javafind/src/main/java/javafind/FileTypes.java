@@ -5,10 +5,10 @@ import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -77,7 +77,7 @@ public class FileTypes {
         return FileType.UNKNOWN;
     }
 
-    final FileType getFileType(final File f) {
+    final FileType getFileType(final Path f) {
         if (isCodeFile(f)) return FileType.CODE;
         if (isXmlFile(f)) return FileType.XML;
         if (isTextFile(f)) return FileType.TEXT;
@@ -86,32 +86,32 @@ public class FileTypes {
         return FileType.UNKNOWN;
     }
 
-    final boolean isArchiveFile(final File f) {
-        return fileTypeNameMap.get(archive).contains(f.getName())
-            || fileTypeExtMap.get(archive).contains(FileUtil.getExtension(f));
+    final boolean isArchiveFile(final Path path) {
+        return fileTypeNameMap.get(archive).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(archive).contains(FileUtil.getExtension(path));
     }
 
-    final boolean isBinaryFile(final File f) {
-        return fileTypeNameMap.get(binary).contains(f.getName())
-            || fileTypeExtMap.get(binary).contains(FileUtil.getExtension(f));
+    final boolean isBinaryFile(final Path path) {
+        return fileTypeNameMap.get(binary).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(binary).contains(FileUtil.getExtension(path));
     }
 
-    public final boolean isCodeFile(final File f) {
-        return fileTypeNameMap.get(code).contains(f.getName())
-            || fileTypeExtMap.get(code).contains(FileUtil.getExtension(f));
+    public final boolean isCodeFile(final Path path) {
+        return fileTypeNameMap.get(code).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(code).contains(FileUtil.getExtension(path));
     }
 
-    final boolean isTextFile(final File f) {
-        return fileTypeNameMap.get(text).contains(f.getName())
-            || fileTypeExtMap.get(text).contains(FileUtil.getExtension(f));
+    final boolean isTextFile(final Path path) {
+        return fileTypeNameMap.get(text).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(text).contains(FileUtil.getExtension(path));
     }
 
-    final boolean isUnknownFile(final File f) {
-        return getFileType(f) == FileType.UNKNOWN;
+    final boolean isUnknownFile(final Path path) {
+        return getFileType(path) == FileType.UNKNOWN;
     }
 
-    public final boolean isXmlFile(final File f) {
-        return fileTypeNameMap.get(xml).contains(f.getName())
-            || fileTypeExtMap.get(xml).contains(FileUtil.getExtension(f));
+    public final boolean isXmlFile(final Path path) {
+        return fileTypeNameMap.get(xml).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(xml).contains(FileUtil.getExtension(path));
     }
 }
