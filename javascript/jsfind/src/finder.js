@@ -198,6 +198,11 @@ class Finder {
     filePathToFileResult(fp, stat) {
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
+        let fileType = this.fileTypes.getFileType(fileName);
+        let mimeType = '';
+        if (this.settings.inMimeTypes.length || this.settings.outMimeTypes.length) {
+            mimeType = this.detectMimeType(fp);
+        }
         let fileSize = 0;
         let lastMod = 0;
         if (this.settings.needLastMod() || this.settings.needSize()) {
@@ -205,7 +210,7 @@ class Finder {
             fileSize = stat.size;
             lastMod = stat.mtime.getTime();
         }
-        return new FileResult(dirname, fileName, this.fileTypes.getFileType(fileName), fileSize, lastMod);
+        return new FileResult(dirname, fileName, fileType, mimeType, fileSize, lastMod);
     }
 
     async filterToFileResult(fp, stat) {

@@ -8,7 +8,6 @@
 #
 ###############################################################################
 """
-import magic
 import os
 import sys
 from pathlib import Path
@@ -30,7 +29,10 @@ class Finder:
         self.settings = settings
         self.__validate_settings()
         self.file_types = FileTypes()
-        self.magic = magic.Magic(mime=True)
+        self.magic = None
+        if settings.in_mime_types or settings.out_mime_types:
+            import magic
+            self.magic = magic.Magic(mime=True)
         self.__matching_dir_cache = set([])
 
     def __validate_settings(self):
@@ -155,7 +157,9 @@ class Finder:
                 and not self.settings.include_archives \
                 and not self.settings.archives_only:
             return None
-        mime_type = self.magic.from_file(file_path)
+        mime_type = ''
+        if self.settings.in_mime_types or self.settings.out_mime_types:
+            mime_type = self.magic.from_file(file_path)
         file_size = 0
         last_mod = 0.0
         if self.settings.need_size() or self.settings.need_last_mod():

@@ -123,11 +123,15 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 		fileSize = fi.Size()
 		lastMod = fi.ModTime()
 	}
-	//mimeType, err := f.magic.File(filePath)
-	//if err != nil {
-	//	return nil
-	//}
-	return NewFileResult(dir, file, t, fileSize, lastMod)
+	mimeType := ""
+	if len(f.Settings.InMimeTypes) > 0 || len(f.Settings.OutMimeTypes) > 0 {
+		mt, err := f.magic.File(fr.String())
+		if err != nil {
+			return nil
+		}
+		mimeType = mt
+	}
+	return NewFileResult(dir, file, t, mimeType, fileSize, lastMod)
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {

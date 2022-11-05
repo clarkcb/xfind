@@ -141,7 +141,6 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
     char filepath[pathlen + 1];
     sprintf(filepath, "%s/%s", dir, filename);
     filepath[pathlen] = '\0';
-    const char *mimetype = magic_file(finder->magic_cookie, filepath);
 
     if (((is_null_or_empty_string_node(finder->settings->in_mimetypes) == 0)
              && (string_matches_string_node(mimetype, finder->settings->in_mimetypes) == 0))
@@ -254,19 +253,20 @@ error_t find(const FindSettings *settings, FileResults *results)
         return err;
     }
 
-//    magic_t magic_cookie = magic_open(MAGIC_MIME | MAGIC_DEBUG | MAGIC_NO_CHECK_ENCODING);
-    magic_t magic_cookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
-    if (magic_cookie == NULL) {
-        printf("unable to initialize magic library\n");
-        return E_LIBMAGIC_ERROR;
-    }
+    magic_t magic_cookie = NULL;
 
-//    printf("Loading default magic database\n");
+    if (is_null_or_empty_string_node(settings->in_mimetypes) == 0
+        || is_null_or_empty_string_node(settings->out_mimetypes) == 0) {
+//        magic_cookie = magic_open(MAGIC_MIME | MAGIC_DEBUG | MAGIC_NO_CHECK_ENCODING);
+        magic_cookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
+        if (magic_cookie == NULL) {
+            return E_LIBMAGIC_ERROR;
+        }
 
-    if (magic_load(magic_cookie, NULL) != 0) {
-        printf("cannot load magic database - %s\n", magic_error(magic_cookie));
-        magic_close(magic_cookie);
-        return E_LIBMAGIC_ERROR;
+        if (magic_load(magic_cookie, NULL) != 0) {
+            magic_close(magic_cookie);
+            return E_LIBMAGIC_ERROR;
+        }
     }
 
     Finder *finder = new_finder(settings, filetypes, magic_cookie);

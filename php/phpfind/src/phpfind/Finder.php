@@ -171,15 +171,17 @@ class Finder
             return false;
         }
 
-        $mime_type = $this->finfo->file($fr->file_path());
-        if ($this->settings->debug) {
-            Logger::log_msg(sprintf("%s: %s", $fr->file_name, $mime_type));
-        }
-        if ($this->settings->in_mime_types && !in_array($mime_type, $this->settings->in_mime_types)) {
-            return false;
-        }
-        if ($this->settings->out_mime_types && in_array($mime_type, $this->settings->out_mime_types)) {
-            return false;
+        if ($this->settings->in_mime_types || $this->settings->out_mime_types) {
+            $mime_type = $this->finfo->file($fr->file_path());
+            if ($this->settings->debug) {
+                Logger::log_msg(sprintf("%s: %s", $fr->file_name, $mime_type));
+            }
+            if ($this->settings->in_mime_types && !in_array($mime_type, $this->settings->in_mime_types)) {
+                return false;
+            }
+            if ($this->settings->out_mime_types && in_array($mime_type, $this->settings->out_mime_types)) {
+                return false;
+            }
         }
 
         if ($this->settings->out_file_types && in_array($fr->file_type, $this->settings->out_file_types)) {

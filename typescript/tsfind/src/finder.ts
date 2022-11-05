@@ -248,6 +248,10 @@ export class Finder {
                 }
             } else if (stats.isFile()) {
                 if (depth >= this._settings.minDepth) {
+                    let mimetype = '';
+                    if (this._settings.inMimeTypes.length || this._settings.outMimeTypes.length) {
+                        mimetype = await this.detectMimeType(f);
+                    }
                     const fr = this.filterToFileResult(fp);
                     if (fr !== null) {
                         fileResults.push(fr);
