@@ -126,11 +126,14 @@ module RbFind
         'in-ext': lambda { |x, settings|
           settings.add_exts(x, settings.in_extensions)
         },
+        'in-filepattern': lambda { |x, settings|
+          settings.add_patterns(x, settings.in_file_patterns)
+        },
         'in-filetype': lambda { |x, settings|
           settings.add_file_types(x, settings.in_file_types)
         },
-        'in-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_file_patterns)
+        'in-mimetype': lambda { |x, settings|
+          settings.in_mime_types.push(x)
         },
         'maxdepth': lambda { |x, settings|
           settings.max_depth = x.to_i
@@ -167,6 +170,9 @@ module RbFind
         },
         'out-filetype': lambda { |x, settings|
           settings.add_file_types(x, settings.out_file_types)
+        },
+        'out-mimetype': lambda { |x, settings|
+          settings.out_mime_types.push(x)
         },
         'path': lambda { |x, settings|
           settings.paths.add(x)

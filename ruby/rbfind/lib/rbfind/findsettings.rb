@@ -38,6 +38,7 @@ module RbFind
     attr_accessor :in_extensions
     attr_accessor :in_file_patterns
     attr_accessor :in_file_types
+    attr_accessor :in_mime_types
     attr_accessor :include_archives
     attr_accessor :include_hidden
     attr_accessor :max_depth
@@ -52,6 +53,7 @@ module RbFind
     attr_accessor :out_extensions
     attr_accessor :out_file_patterns
     attr_accessor :out_file_types
+    attr_accessor :out_mime_types
     attr_accessor :paths
     attr_accessor :print_dirs
     attr_accessor :print_files
@@ -72,6 +74,7 @@ module RbFind
       @in_extensions = Set::new
       @in_file_patterns = Set::new
       @in_file_types = Set::new
+      @in_mime_types = Set::new
       @include_archives = false
       @include_hidden = false
       @max_depth = -1
@@ -86,6 +89,7 @@ module RbFind
       @out_extensions = Set::new
       @out_file_patterns = Set::new
       @out_file_types = Set::new
+      @out_mime_types = Set::new
       @paths = Set::new
       @print_dirs = false
       @print_files = false
@@ -187,6 +191,7 @@ module RbFind
         ', ' + set_to_s('in_extensions', @in_extensions) +
         ', ' + array_to_s('in_file_patterns', @in_file_patterns.map { |p| p.source }) +
         ', ' + file_types_to_s('in_file_types', @in_file_types) +
+        ', ' + set_to_s('in_mime_types', @in_mime_types) +
         ", include_archives=#{@include_archives}" +
         ", include_hidden=#{@include_hidden}" +
         ", max_depth=#{@max_depth}" +
@@ -201,6 +206,7 @@ module RbFind
         ', ' + set_to_s('out_extensions', @out_extensions) +
         ', ' + array_to_s('out_file_patterns', @out_file_patterns.map { |p| p.source }) +
         ', ' + file_types_to_s('out_file_types', @out_file_types) +
+        ', ' + set_to_s('out_mime_types', @out_mime_types) +
         ', ' + set_to_s('paths', @paths) +
         ", print_dirs=#{@print_dirs}" +
         ", print_files=#{@print_files}" +

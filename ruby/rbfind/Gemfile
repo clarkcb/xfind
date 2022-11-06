@@ -13,4 +13,6 @@ gem "minitest", "~> 5.20"
 
 gem "rubocop", "~> 1.60"
 
+gem "ruby-filemagic", "~> 0.7.3"
+
 ruby "3.3.0"

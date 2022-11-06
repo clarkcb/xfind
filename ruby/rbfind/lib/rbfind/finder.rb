@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require 'filemagic'
 require 'find'
 require 'pathname'
 require 'set'
@@ -14,11 +15,16 @@ module RbFind
   # Finder - finds files according to settings
   class Finder
     attr_reader :settings
+    attr_reader :magic
 
     def initialize(settings)
       @settings = settings
       validate_settings
       @file_types = FileTypes.new
+      @magic = nil
+      if !@settings.in_mimetypes.empty? || !@settings.out_mimetypes.empty?
+        @magic = FileMagic.open(:mime_type)
+      end
     end
 
     def matching_dir?(dir_path)
@@ -80,6 +86,13 @@ module RbFind
           !@settings.out_file_types.include?(file_result.file_type)))
     end
 
+    def has_matching_mime_type?(file_result)
+      ((@settings.in_mime_types.empty? ||
+        @settings.in_mime_types.include?(file_result.mime_type)) and
+        (@settings.out_mime_types.empty? ||
+          !@settings.out_mime_types.include?(file_result.mime_type)))
+    end
+
     def has_matching_file_size?(file_result)
       ((@settings.min_size == 0 ||
         file_result.file_size >= @settings.min_size) and
@@ -105,6 +118,7 @@ module RbFind
       has_matching_ext?(file_result) and
         has_matching_file_name?(file_result) and
         has_matching_file_type?(file_result) and
+        has_matching_mime_type?(file_result) and
         has_matching_file_size?(file_result) and
         has_matching_last_mod?(file_result)
     end
@@ -207,8 +221,12 @@ module RbFind
 
     def file_path_to_file_result(file_path)
       d = File.dirname(file_path) || '.'
-      filename = File.basename(file_path)
+      file_name = File.basename(file_path)
       file_type = @file_types.get_file_type(filename)
+      mime_type = ""
+      if !@settings.in_mimetypes.empty? || !@settings.out_mimetypes.empty?
+        mime_type = @magic.file(file_path)
+      end
       file_size = 0
       last_mod = nil
       if @settings.need_last_mod? || @settings.need_size?
@@ -220,7 +238,7 @@ module RbFind
           file_size = stat.size
         end
       end
-      FileResult.new(d, filename, file_type, file_size, last_mod)
+      FileResult.new(d, filename, file_type, mime_type, file_size, last_mod)
     end
 
     def get_file_results(file_path)
