@@ -10,12 +10,22 @@
 """
 from datetime import datetime
 import re
+from enum import Enum
 from typing import Any, Dict, Optional, Pattern, Set
 
 from .filetypes import FileType
 from .findexception import FindException
 
 PatternSet = Set[Pattern]
+
+
+class SortBy(Enum):
+    """SortBy enum"""
+    FILEPATH = 0
+    FILENAME = 1
+    FILETYPE = 2
+    FILESIZE = 3
+    LASTMOD = 4
 
 
 class FindSettings:
@@ -27,7 +37,8 @@ class FindSettings:
         'in_filetypes', 'includearchives', 'listdirs', 'listfiles', 'maxlastmod',
         'maxsize', 'minlastmod', 'minsize', 'out_archivefilepatterns', 'out_archiveextensions',
         'out_dirpatterns', 'out_extensions', 'out_filepatterns', 'out_filetypes', 'paths',
-        'printresults', 'printusage', 'printversion', 'recursive', 'verbose'
+        'printresults', 'printusage', 'printversion', 'recursive', 'sortby', 'sort_descending',
+        'verbose'
     ]
 
     def __init__(self, archivesonly: bool = False, debug: bool = False,
@@ -43,7 +54,9 @@ class FindSettings:
                  out_dirpatterns: PatternSet = None, out_extensions: Set[str] = None,
                  out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
                  paths: Set[str] = None, printresults: bool = False, printusage: bool = False,
-                 printversion: bool = False, recursive: bool = True, verbose: bool = False):
+                 printversion: bool = False, recursive: bool = True,
+                 sortby: SortBy = SortBy.FILEPATH, sort_descending: bool = False,
+                 verbose: bool = False):
         self.archivesonly = archivesonly
         self.debug = debug
         self.excludehidden = excludehidden
@@ -71,6 +84,8 @@ class FindSettings:
         self.printusage = printusage
         self.printversion = printversion
         self.recursive = recursive
+        self.sortby = sortby
+        self.sort_descending = sort_descending
         self.verbose = verbose
 
     def add_exts(self, exts, ext_set_name: str):
@@ -131,6 +146,20 @@ class FindSettings:
         """Set properties"""
         for p in propdict.keys():
             self.set_property(p, propdict[p])
+
+    def set_sort_by(self, sort_by_name: str):
+        """Set sort-by"""
+        match sort_by_name.strip().upper():
+            case 'LASTMOD':
+                self.sortby = SortBy.LASTMOD
+            case 'NAME':
+                self.sortby = SortBy.FILENAME
+            case 'SIZE':
+                self.sortby = SortBy.FILESIZE
+            case 'TYPE':
+                self.sortby = SortBy.FILETYPE
+            case _:
+                self.sortby = SortBy.FILEPATH
 
     def __str__(self):
         print_dict = {}

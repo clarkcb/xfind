@@ -76,6 +76,9 @@ class FindOptions:
             'recursive':
                 lambda b, settings:
                 settings.set_property('recursive', b),
+            'sort-descending':
+                lambda b, settings:
+                settings.set_property('sort_descending', b),
             'verbose':
                 lambda b, settings:
                 settings.set_property('verbose', b),
@@ -121,6 +124,9 @@ class FindOptions:
             'out-filetype':
                 lambda x, settings:
                 settings.add_filetypes(x, 'out_filetypes'),
+            'sort-by':
+                lambda x, settings:
+                settings.set_sort_by(x),
             'path':
                 lambda x, settings:
                 settings.paths.add(x),

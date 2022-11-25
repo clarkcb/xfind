@@ -20,10 +20,9 @@ from .findexception import FindException
 from .findoptions import FindOptions
 
 
-def get_found_dirs(found_files: List[FileResult]):
+def get_dir_results(file_results: List[FileResult]) -> list[str]:
     """Return unique list of directories from file results"""
-    # return sorted(list(set([f.path for f in found_files])))
-    return sorted(list({f.path for f in found_files}))
+    return sorted(list({f.path for f in file_results}))
 
 
 async def main():
@@ -53,10 +52,10 @@ async def main():
 
     try:
         finder = Finder(settings)
-        found_files = await finder.find()
+        file_results = await finder.find()
 
         if settings.listdirs:
-            dirs = get_found_dirs(found_files)
+            dirs = get_dir_results(file_results)
             if dirs:
                 log(f'\nMatching directories ({len(dirs)}):')
                 for d in dirs:
@@ -65,9 +64,9 @@ async def main():
                 log('\nMatching directories: 0')
 
         if settings.listfiles:
-            if found_files:
-                log(f'\nMatching files ({len(found_files)}):')
-                for f in found_files:
+            if file_results:
+                log(f'\nMatching files ({len(file_results)}):')
+                for f in file_results:
                     log(str(f))
             else:
                 log('\nMatching files: 0')

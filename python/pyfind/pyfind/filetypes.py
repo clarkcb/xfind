@@ -26,6 +26,11 @@ class FileType(Enum):
     TEXT = 4
     XML = 5
 
+    def __lt__(self, other):
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
+
     @classmethod
     def from_name(cls, name):
         """Return FileType for given name if found else raise FindException"""

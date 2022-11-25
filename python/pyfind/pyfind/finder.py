@@ -14,7 +14,7 @@ from typing import List, Optional
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
-from .findsettings import FindSettings, PatternSet
+from .findsettings import FindSettings, PatternSet, SortBy
 
 
 class Finder:
@@ -50,7 +50,7 @@ class Finder:
             return False
         return True
 
-    def is_matching_stat(self, stat) -> bool:
+    def is_matching_stat(self, stat: os.stat_result) -> bool:
         """Check whether the given file stat matches find settings."""
         if (self.settings.minlastmod
             and stat.st_mtime < self.settings.minlastmod.timestamp()) \
@@ -62,7 +62,7 @@ class Finder:
             return False
         return True
 
-    def is_matching_archive_file(self, filename: str, stat) -> bool:
+    def is_matching_archive_file(self, filename: str, stat: os.stat_result) -> bool:
         """Check whether the given archive file matches find settings."""
         ext = FileUtil.get_extension(filename)
         if (self.settings.in_archiveextensions
@@ -76,7 +76,7 @@ class Finder:
             return False
         return self.is_matching_stat(stat)
 
-    def is_matching_file(self, filename: str, filetype: FileType, stat) -> bool:
+    def is_matching_file(self, filename: str, filetype: FileType, stat: os.stat_result) -> bool:
         """Check whether the given file matches find settings."""
         ext = FileUtil.get_extension(filename)
         if (self.settings.in_extensions and ext not in self.settings.in_extensions) \
@@ -150,8 +150,29 @@ class Finder:
 
     async def find(self) -> List[FileResult]:
         """Find matching files under paths."""
-        fileresults = self.find_files()
-        return fileresults
+        file_results = self.sort_file_results(self.find_files())
+        return file_results
+
+    def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
+        match self.settings.sortby:
+            case SortBy.FILEPATH:
+                return sorted(file_results, key=lambda r: (r.path, r.filename),
+                              reverse=self.settings.sort_descending)
+            case SortBy.FILENAME:
+                return sorted(file_results, key=lambda r: (r.filename, r.path),
+                              reverse=self.settings.sort_descending)
+            case SortBy.FILETYPE:
+                return sorted(file_results, key=lambda r: (r.filetype, r.path, r.filename),
+                              reverse=self.settings.sort_descending)
+            case SortBy.LASTMOD:
+                return sorted(file_results, key=lambda r: (r.stat.st_mtime, r.path, r.filename),
+                              reverse=self.settings.sort_descending)
+            case SortBy.FILESIZE:
+                return sorted(file_results, key=lambda r: (r.stat.st_size, r.path, r.filename),
+                              reverse=self.settings.sort_descending)
+            case _:
+                return sorted(file_results, key=lambda r: (r.path, r.filename),
+                              reverse=self.settings.sort_descending)
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:
