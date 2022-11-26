@@ -46,7 +46,8 @@ class FindOptions
                 fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_filepatterns),
             'out-filetype' => fn (string $s, FindSettings $fs) => $fs->add_filetypes($s, $fs->out_filetypes),
             'path' => fn (string $s, FindSettings $fs) => $fs->paths[] = $s,
-            'settings-file' => fn (string $s, FindSettings $fs) => $this->settings_from_file($s, $fs)
+            'settings-file' => fn (string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
+            'sort-by' => fn (string $s, FindSettings $fs) => $fs->set_sort_by($s)
         ];
 
         $this->bool_flag_action_map = [
@@ -61,6 +62,7 @@ class FindOptions
             'listfiles' => fn (bool $b, FindSettings $fs) => $fs->listfiles = $b,
             'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
             'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
+            'sort-descending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = $b,
             'verbose' => fn (bool $b, FindSettings $fs) => $fs->verbose = $b,
             'version' => fn (bool $b, FindSettings $fs) => $fs->printversion = $b
         ];

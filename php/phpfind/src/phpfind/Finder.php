@@ -272,7 +272,50 @@ class Finder
                 }
             }
         }
-        sort($fileresults);
+        return $this->sort_file_results($fileresults);
+    }
+
+    private function cmp_file_result_path(FileResult $fr1, FileResult $fr2): int
+    {
+        if ($fr1->path == $fr2->path) {
+            return ($fr1->filename < $fr2->filename) ? -1 : 1;
+        }
+        return ($fr1->path < $fr2->path) ? -1 : 1;
+    }
+
+    private function cmp_file_result_filename(FileResult $fr1, FileResult $fr2): int
+    {
+        if ($fr1->filename == $fr2->filename) {
+            return ($fr1->path < $fr2->path) ? -1 : 1;
+        }
+        return ($fr1->filename < $fr2->filename) ? -1 : 1;
+    }
+
+    private function cmp_file_result_filetype(FileResult $fr1, FileResult $fr2): int
+    {
+        if ($fr1->filetype == $fr2->filetype) {
+            return $this->cmp_file_result_path($fr1, $fr2);
+        }
+        return ($fr1->filetype < $fr2->filetype) ? -1 : 1;
+    }
+
+    private function sort_file_results(array $fileresults): array
+    {
+        switch ($this->settings->sortby) {
+            case SortBy::Filename:
+                print 'SortBy::Filename';
+                usort($fileresults, 'self::cmp_file_result_filename');
+                break;
+            case SortBy::Filetype:
+                usort($fileresults, 'self::cmp_file_result_filetype');
+                break;
+            default:
+                usort($fileresults, 'self::cmp_file_result_path');
+                break;
+        }
+        if ($this->settings->sort_descending) {
+            return array_reverse($fileresults);
+        }
         return $fileresults;
     }
 
@@ -321,7 +364,6 @@ class Finder
                 $filepaths[] = FileUtil::join_path($f->path, $f->filename);
             }
         }
-        sort($filepaths);
         return $filepaths;
     }
 

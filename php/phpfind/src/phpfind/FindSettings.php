@@ -27,6 +27,8 @@ namespace phpfind;
  * @property bool printusage
  * @property bool printversion
  * @property bool recursive
+ * @property SortBy sortby
+ * @property bool sort_descending
  * @property bool verbose
  */
 class FindSettings
@@ -41,6 +43,7 @@ class FindSettings
     public bool $printversion = false;
     public bool $recursive = true;
     public bool $findarchives = false;
+    public bool $sort_descending = false;
     public bool $verbose = false;
 
     public array $in_archiveextensions = array();
@@ -56,6 +59,7 @@ class FindSettings
     public array $out_filepatterns = array();
     public array $out_filetypes = array();
     public array $paths = array();
+    public SortBy $sortby = SortBy::Filepath;
 
     /**
      * @param $ext
@@ -135,6 +139,21 @@ class FindSettings
         }
     }
 
+    public function set_sort_by(string $sort_by_name): void
+    {
+        switch (strtoupper($sort_by_name)) {
+            case 'NAME':
+                $this->sortby = SortBy::Filename;
+                break;
+            case 'TYPE':
+                $this->sortby = SortBy::Filetype;
+                break;
+            default:
+                $this->sortby = SortBy::Filepath;
+                break;
+        }
+    }
+
     /**
      * @return string
      */
@@ -163,6 +182,8 @@ class FindSettings
             ', printusage: %s' .
             ', printversion: %s' .
             ', recursive: %s' .
+            ', sortby: %s' .
+            ', sort_descending: %s' .
             ', verbose: %s' .
             ')',
             StringUtil::bool_to_string($this->archivesonly),
@@ -187,6 +208,8 @@ class FindSettings
             StringUtil::bool_to_string($this->printusage),
             StringUtil::bool_to_string($this->printversion),
             StringUtil::bool_to_string($this->recursive),
+            $this->sortby->name,
+            StringUtil::bool_to_string($this->sort_descending),
             StringUtil::bool_to_string($this->verbose)
         );
     }
