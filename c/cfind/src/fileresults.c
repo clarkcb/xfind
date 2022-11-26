@@ -5,6 +5,7 @@
 
 #include "common.h"
 #include "fileresults.h"
+#include "findsettings.h"
 
 FileResult *new_file_result(const char *d, const char *fn, FileType ft)
 {
@@ -76,7 +77,7 @@ void file_result_to_string(FileResult *r, char *s)
     s[file_result_strlen(r)] = '\0';
 }
 
-void print_file_results(FileResults *results)
+void print_file_results(FileResults *results, SortBy sortby, unsigned int sort_descending)
 {
     size_t results_count = file_results_count(results);
     FileResult *results_array[results_count];
@@ -88,38 +89,87 @@ void print_file_results(FileResults *results)
     }
 
     if (results_count > 1) {
-        sort_file_result_array(results_array, results_count);
-    }
+        sort_file_result_array(results_array, results_count, sortby);
 
-    printf("\nMatching files (%zu):\n", results_count);
+        if (sort_descending > 0) {
+            reverse_file_result_array(results_array, 0, results_count - 1);
+        }
 
-    for (i = 0; i < results_count; i++) {
-        size_t frlen = file_result_strlen(results_array[i]);
-        char resstr[frlen + 1];
-        file_result_to_string(results_array[i], resstr);
-        resstr[frlen] = '\0';
-        log_msg(resstr);
+        printf("\nMatching files (%zu):\n", results_count);
+
+        for (i = 0; i < results_count; i++) {
+            size_t frlen = file_result_strlen(results_array[i]);
+            char resstr[frlen + 1];
+            file_result_to_string(results_array[i], resstr);
+            resstr[frlen] = '\0';
+            log_msg(resstr);
+        }
+    } else {
+        printf("\nMatching files: 0\n");
     }
 }
 
-// Define comparator function as per the requirement
-static int cmp_file_results(const void *a, const void *b)
+// comparator function for file result paths
+static int cmp_file_results_by_path(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-
     int dircmp = strcmp((*r1)->dir, (*r2)->dir);
     if (dircmp == 0) {
         return strcmp((*r1)->filename, (*r2)->filename);
     }
-  
     return dircmp;
 }
 
-// sort a FileResult array
-void sort_file_result_array(FileResult **arr, size_t n)
+// comparator function for file result filenames
+static int cmp_file_results_by_name(const void *a, const void *b)
 {
-    qsort(arr, n, sizeof(FileResult*), cmp_file_results);
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int namecmp = strcmp((*r1)->filename, (*r2)->filename);
+    if (namecmp == 0) {
+        return strcmp((*r1)->dir, (*r2)->dir);
+    }
+    return namecmp;
+}
+
+// comparator function for file result types
+static int cmp_file_results_by_type(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int typecmp = ((int) ((*r1)->filetype - (*r2)->filetype));
+    if (typecmp == 0) {
+        return cmp_file_results_by_path(a, b);
+    }
+    return typecmp;
+}
+
+// sort a FileResult array
+void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby)
+{
+    switch (sortby) {
+        case FILENAME:
+            qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name);
+            break;
+        case FILETYPE:
+            qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_type);
+            break;
+        default:
+            qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path);
+            break;
+    }
+}
+
+void reverse_file_result_array(FileResult *arr[], size_t low, size_t high) {
+    if (low < high)
+    {
+        FileResult *temp = arr[low];
+        arr[low] = arr[high];
+        arr[high] = temp;
+
+        reverse_file_result_array(arr, low + 1, high - 1);
+    }
 }
 
 StringNode *dir_results(FileResults *results)

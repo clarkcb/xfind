@@ -3,6 +3,7 @@
 
 #include "filetypes.h"
 #include "stringnode.h"
+#include "findsettings.h"
 
 typedef struct FileResult {
     const char *dir;
@@ -31,9 +32,11 @@ size_t file_results_count(FileResults *results);
 
 void file_result_to_string(FileResult *r, char *s);
 
-void print_file_results(FileResults *results);
+void print_file_results(FileResults *results, SortBy sortBy, unsigned int sort_descending);
 
-void sort_file_result_array(FileResult *arr[], size_t n);
+void sort_file_result_array(FileResult *arr[], size_t n, SortBy sortBy);
+
+void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 
 StringNode *dir_results(FileResults *results);
 

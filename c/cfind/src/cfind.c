@@ -1,7 +1,6 @@
 #include <stdio.h>
 
 #include "fileresults.h"
-#include "findsettings.h"
 #include "findoptions.h"
 #include "finder.h"
 
@@ -52,7 +51,7 @@ int main(int argc, char *argv[])
                         destroy_file_results(results);
                     }
                 } else {
-                    print_file_results(results);
+                    print_file_results(results, settings->sortby, settings->sort_descending);
                     destroy_file_results(results);
                 }
             }

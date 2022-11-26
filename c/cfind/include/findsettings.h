@@ -5,6 +5,12 @@
 #include "regexnode.h"
 #include "stringnode.h"
 
+typedef enum {
+    FILEPATH = 0,
+    FILENAME = 1,
+    FILETYPE = 2
+} SortBy;
+
 typedef struct FindSettings {
     unsigned short archivesonly : 1;
     unsigned short debug : 1;
@@ -29,6 +35,8 @@ typedef struct FindSettings {
     unsigned short printusage : 1;
     unsigned short printversion : 1;
     unsigned short recursive : 1;
+    SortBy sortby;
+    unsigned short sort_descending : 1;
     unsigned short verbose : 1;
 } FindSettings;
 
@@ -41,5 +49,9 @@ void settings_to_string(FindSettings *settings, char *s);
 void print_settings(FindSettings *settings);
 
 void destroy_settings(FindSettings *settings);
+
+SortBy sortby_from_name(const char *name);
+
+void sortby_to_name(const SortBy sortby, char *name);
 
 #endif

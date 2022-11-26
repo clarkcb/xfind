@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,13 +36,15 @@ FindSettings *default_settings(void)
     settings->printusage = 0;
     settings->printversion = 0;
     settings->recursive = 1;
+    settings->sortby = FILEPATH;
+    settings->sort_descending = 0;
     settings->verbose = 0;
 
     return settings;
 }
 
-const int SETTINGS_BOOL_FIELD_COUNT = 12;
-const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;
+const int SETTINGS_BOOL_FIELD_COUNT = 14;
+const int SETTINGS_STRING_NODE_FIELD_COUNT = 12;
 const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_STRING_NODE_FIELD_COUNT;
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archivesonly=%d"
@@ -67,11 +70,14 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", printusage=%d"
             ", printversion=%d"
             ", recursive=%d"
+            ", sortby=%s"
+            ", sort_descending=%d"
             ", verbose=%d"
             ")";
 
 static size_t all_strings_strlen(FindSettings *settings)
 {
+    int sortby_strlen = 10;
     return
         string_node_strlen(settings->in_archiveextensions) +
         regex_node_strlen(settings->in_archivefilepatterns) +
@@ -85,6 +91,7 @@ static size_t all_strings_strlen(FindSettings *settings)
         string_node_strlen(settings->out_extensions) +
         regex_node_strlen(settings->out_filepatterns) +
         filetype_node_strlen(settings->out_filetypes) +
+        sortby_strlen +
         string_node_strlen(settings->paths);
 }
 
@@ -138,6 +145,9 @@ void settings_to_string(FindSettings *settings, char *s)
     char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     string_node_to_string(settings->paths, paths_s);
+    char *sortby_name = malloc(10 * sizeof(char));
+    sortby_to_name(settings->sortby, sortby_name);
+
 
     sprintf(s, SETTINGS_TEMPLATE,
         settings->archivesonly,
@@ -163,6 +173,8 @@ void settings_to_string(FindSettings *settings, char *s)
         settings->printusage,
         settings->printversion,
         settings->recursive,
+        sortby_name,
+        settings->sort_descending,
         settings->verbose);
 
     size_t total_len = settings_strlen(settings) + 1;
@@ -182,6 +194,7 @@ void settings_to_string(FindSettings *settings, char *s)
     free(out_filepatterns_s);
     free(out_filetypes_s);
     free(paths_s);
+    free(sortby_name);
 }
 
 void print_settings(FindSettings *settings)
@@ -211,5 +224,53 @@ void destroy_settings(FindSettings *settings)
         destroy_int_node(settings->out_filetypes);
         destroy_string_node(settings->paths);
         free(settings);
+    }
+}
+
+SortBy sortby_from_name(const char *name)
+{
+    //printf("name: %s\n", name);
+    size_t maxlen = 10;
+    size_t namelen = strlen(name);
+    size_t minlen = maxlen < namelen ? maxlen : namelen;
+    char uname[10] = {0};
+    strncpy(uname, name, minlen);
+    //printf("namelen: %zu\n", namelen);
+    //printf("minlen: %zu\n", minlen);
+    for (int i = 0; i < minlen; i++) {
+        char c = (char)toupper(name[i]);
+        uname[i] = c;
+    }
+    //printf("uname: %s\n", uname);
+    if (strncmp(uname, "NAME", maxlen) == 0) {
+        return FILENAME;
+    }
+    if (strncmp(uname, "PATH", maxlen) == 0) {
+        return FILEPATH;
+    }
+    if (strncmp(uname, "TYPE", maxlen) == 0) {
+        return FILETYPE;
+    }
+    return FILEPATH;
+}
+
+void sortby_to_name(const SortBy sortby, char *name)
+{
+    switch(sortby) {
+        case FILEPATH:
+            strncpy(name, "FILEPATH", 8);
+            name[8] = '\0';
+            break;
+        case FILENAME:
+            strncpy(name, "FILENAME", 8);
+            name[8] = '\0';
+            break;
+        case FILETYPE:
+            strncpy(name, "FILETYPE", 8);
+            name[8] = '\0';
+            break;
+        default:
+            strncpy(name, "UNKNOWN", 7);
+            name[7] = '\0';
     }
 }

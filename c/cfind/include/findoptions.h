@@ -26,7 +26,8 @@ typedef enum {
     OUT_DIRPATTERN         = 8,
     OUT_EXTENSION          = 9,
     OUT_FILEPATTERN        = 10,
-    OUT_FILETYPE           = 11
+    OUT_FILETYPE           = 11,
+    SORT_BY                = 12
 } SettingsCollType;
 
 typedef enum {
@@ -41,8 +42,9 @@ typedef enum {
     LISTFILES       = 8,
     NORECURSIVE     = 9,
     RECURSIVE       = 10,
-    VERBOSE         = 11,
-    VERSION         = 12
+    SORT_DESCENDING = 11,
+    VERBOSE         = 12,
+    VERSION         = 13
 } SettingsFlagType;
 
 FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc);

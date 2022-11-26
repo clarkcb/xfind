@@ -11,7 +11,7 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define ARG_COUNT 12
+#define ARG_COUNT 13
 const size_t arg_count = ARG_COUNT;
 char **arg_names = (char *[]) {
     "in-archiveext",
@@ -26,6 +26,7 @@ char **arg_names = (char *[]) {
     "out-ext",
     "out-filepattern",
     "out-filetype",
+    "sort-by",
 };
 char **arg_abbrs = (char *[]) {
     "",  // in-archiveext
@@ -39,10 +40,11 @@ char **arg_abbrs = (char *[]) {
     "D", // out-dirpattern
     "X", // out-ext
     "F", // out-filepattern
-    "T"  // out-filetype
+    "T", // out-filetype
+    ""   // sort-by
 };
 
-#define FLAG_COUNT 15
+#define FLAG_COUNT 14
 const size_t flag_count = FLAG_COUNT;
 char **flag_names = (char *[]) {
     "archivesonly",
@@ -56,6 +58,7 @@ char **flag_names = (char *[]) {
     "listfiles",
     "norecursive",
     "recursive",
+    "sort-descending",
     "verbose",
     "version"
 };
@@ -72,6 +75,7 @@ char **flag_abbrs = (char *[]) {
     "",  // listfiles
     "R", // norecursive
     "r", // recursive
+    "",  // sort-descending
     "v", // verbose
     "V"  // version
 };
@@ -303,6 +307,13 @@ static void set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             add_int_to_int_node(ftint, settings->out_filetypes);
         }
         break;
+    case SORT_BY:
+        // this is just to wrap in an expression
+        if (arg_val) {
+            SortBy sortby = sortby_from_name(arg_val);
+            settings->sortby = sortby;
+        }
+        break;
     default:
         break;
     }
@@ -349,6 +360,9 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
         break;
     case RECURSIVE:
         settings->recursive = flag_val;
+        break;
+    case SORT_DESCENDING:
+        settings->sort_descending = flag_val;
         break;
     case VERBOSE:
         settings->verbose = flag_val;
