@@ -34,34 +34,68 @@ namespace cppfind {
     }
 
     std::vector<FileResult*> Finder::find() {
-        std::vector<FileResult*> findfiles{};
+        std::vector<FileResult*> fileresults{};
 
         for (auto& p : *m_settings->paths()) {
+            // we check using expanded in case p has tilde
             std::string expanded = FileUtil::expand_path(p);
 
-            if (FileUtil::is_directory(p) || FileUtil::is_directory(expanded)) {
-                std::vector<FileResult*> p_files{};
-                if (FileUtil::is_directory(p)) {
-                    p_files = get_file_results(p);
-                } else {
-                    p_files = get_file_results(expanded);
-                }
-                findfiles.insert(findfiles.end(), p_files.begin(), p_files.end());
-
-            } else if (FileUtil::is_regular_file(p)) {
-                auto* sf = get_file_result(p);
-                findfiles.push_back(sf);
+            if (FileUtil::is_directory(expanded)) {
+                std::vector<FileResult*> p_files = get_file_results(expanded);
+                fileresults.insert(fileresults.end(), p_files.begin(), p_files.end());
 
             } else if (FileUtil::is_regular_file(expanded)) {
-                auto* sf = get_file_result(expanded);
-                findfiles.push_back(sf);
+                auto* fr = get_file_result(expanded);
+                fileresults.push_back(fr);
 
             } else {
                 throw FindException("path is an unsupported file type");
             }
         }
 
-        return findfiles;
+        sort_file_results(fileresults);
+        return fileresults;
+    }
+
+    bool cmp_file_results_by_path(const FileResult* fr1, const FileResult* fr2) {
+        if (fr1->path() == fr2->path()) {
+            return (fr1->filename().compare(fr2->filename()) < 0);
+        }
+        return (fr1->path().compare(fr2->path()) < 0);
+    }
+
+    bool cmp_file_results_by_name(const FileResult* fr1, const FileResult* fr2) {
+        if (fr1->filename() == fr2->filename()) {
+            return (fr1->path() < fr2->path());
+        }
+        return (fr1->filename() < fr2->filename());
+    }
+
+    auto cmp_file_results_by_name_lambda = [](const FileResult* fr1, const FileResult* fr2) -> bool {
+        if (fr1->filename() == fr2->filename()) {
+            return (fr1->path() < fr2->path());
+        }
+        return (fr1->filename() < fr2->filename());
+    };
+
+    bool cmp_file_results_by_type(const FileResult* fr1, const FileResult* fr2) {
+        if (fr1->filetype() == fr2->filetype()) {
+            return cmp_file_results_by_path(fr1, fr2);
+        }
+        return (fr1->filetype() < fr2->filetype());
+    }
+
+    void Finder::sort_file_results(std::vector<FileResult*> fileresults) {
+        if (m_settings->sortby() == SortBy::FILEPATH) {
+            std::sort(fileresults.begin(), fileresults.end(), cmp_file_results_by_path);
+        } else if (m_settings->sortby() == SortBy::FILENAME) {
+            std::sort(fileresults.begin(), fileresults.end(), cmp_file_results_by_name);
+        } else if (m_settings->sortby() == SortBy::FILETYPE) {
+            std::sort(fileresults.begin(), fileresults.end(), cmp_file_results_by_type);
+        }
+        if (m_settings->sort_descending()) {
+            std::reverse(fileresults.begin(), fileresults.end());
+        }
     }
 
     bool matches_any_pattern(const std::string& s, const std::vector<FindPattern*>& patterns) {
@@ -168,14 +202,15 @@ namespace cppfind {
 
     std::vector<FileResult*> Finder::get_file_results(const std::string& filepath) {
         boost::filesystem::path p(filepath);
-        std::vector<std::string> finddirs = {};
-        std::vector<FileResult*> fileresults = {};
+        std::vector<std::string> finddirs{};
+        std::vector<FileResult*> fileresults{};
 
-        std::vector<boost::filesystem::directory_entry> v;
-        copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(), back_inserter(v));
+        std::vector<boost::filesystem::directory_entry> dir_entries;
+        copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(),
+             back_inserter(dir_entries));
 
-        for (std::vector<boost::filesystem::directory_entry>::const_iterator it = v.begin(); it != v.end(); ++it) {
-            boost::filesystem::path subpath = (*it).path();
+        for (const auto& de : dir_entries) {
+            const boost::filesystem::path& subpath = de.path();
             if (boost::filesystem::is_directory(subpath) && m_settings->recursive() && is_matching_dir(subpath.string())) {
                 finddirs.push_back(subpath.string());
             } else if (boost::filesystem::is_regular_file(subpath)) {

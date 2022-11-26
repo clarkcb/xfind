@@ -1,3 +1,4 @@
+#include <boost/algorithm/string/case_conv.hpp>
 #include "FileUtil.h"
 #include "StringUtil.h"
 #include "FindSettings.h"
@@ -17,6 +18,7 @@ namespace cppfind {
         m_out_filepatterns = {};
         m_out_filetypes = {};
         m_paths = {};
+        m_sortby = SortBy::FILEPATH;
     }
 
     void FindSettings::add_pattern(const std::string& p, std::vector<FindPattern*>* ps) {
@@ -120,6 +122,14 @@ namespace cppfind {
         return m_recursive;
     }
 
+    bool FindSettings::sort_descending() const {
+        return m_sort_descending;
+    }
+
+    bool FindSettings::verbose() const {
+        return m_verbose;
+    }
+
     std::vector<std::string>* FindSettings::in_archiveextensions() {
         return &m_in_archiveextensions;
     }
@@ -172,8 +182,8 @@ namespace cppfind {
         return &m_paths;
     }
 
-    bool FindSettings::verbose() const {
-        return m_verbose;
+    SortBy FindSettings::sortby() {
+        return m_sortby;
     }
 
     void FindSettings::archivesonly(const bool b) {
@@ -212,6 +222,18 @@ namespace cppfind {
 
     void FindSettings::recursive(const bool b) {
         m_recursive = b;
+    }
+
+    void FindSettings::sortby(const SortBy sortby) {
+        m_sortby = sortby;
+    }
+
+    void FindSettings::set_sortby(const std::string& name) {
+        m_sortby = FindSettings::sortby_from_name(name);
+    }
+
+    void FindSettings::sort_descending(const bool b) {
+        m_sort_descending = b;
     }
 
     void FindSettings::verbose(const bool b) {
@@ -264,6 +286,34 @@ namespace cppfind {
         return ts_string;
     }
 
+    SortBy FindSettings::sortby_from_name(const std::string& name) {
+        std::string uname = boost::to_upper_copy(name);
+        if (uname == "PATH") {
+            return SortBy::FILEPATH;
+        }
+        if (uname == "NAME") {
+            return SortBy::FILENAME;
+        }
+        if (uname == "TYPE") {
+            return SortBy::FILETYPE;
+        }
+        return SortBy::FILEPATH;
+    }
+
+    std::string FindSettings::sortby_to_name(const SortBy sortby) {
+        switch (sortby)
+        {
+            case SortBy::FILEPATH:
+                return "FILEPATH";
+            case SortBy::FILENAME:
+                return "FILENAME";
+            case SortBy::FILETYPE:
+                return "FILETYPE";
+            default:
+                return "UNKNOWN";
+        }
+    }
+
     std::string FindSettings::string() {
         auto settings_str =
                 std::string("FindSettings(")
@@ -289,6 +339,8 @@ namespace cppfind {
                 + ", printusage: " + bool_to_string(m_printusage)
                 + ", printversion: " + bool_to_string(m_printversion)
                 + ", recursive: " + bool_to_string(m_recursive)
+                + ", sortby: " + sortby_to_name(m_sortby)
+                + ", sort_descending: " + bool_to_string(m_sort_descending)
                 + ", verbose: " + bool_to_string(m_verbose)
                 + ")";
         return settings_str;

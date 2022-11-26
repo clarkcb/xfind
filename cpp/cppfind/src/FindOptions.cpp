@@ -27,7 +27,8 @@ namespace cppfind {
                 {"out-filepattern", [](std::string& s, FindSettings* ss) { ss->add_out_filepattern(s); }},
                 {"out-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(t); }},
                 {"path", [](std::string& s, FindSettings* ss) { ss->add_path(s); }},
-                {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }}
+                {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }},
+                {"sort-by", [this](std::string& s, FindSettings* ss) { ss->set_sortby(s); }}
         };
 
         m_bool_arg_map = {
@@ -42,6 +43,7 @@ namespace cppfind {
                 {"listfiles", [](bool b, FindSettings* ss) { ss->listfiles(b); }},
                 {"norecursive", [](bool b, FindSettings* ss) { ss->recursive(!b); }},
                 {"recursive", [](bool b, FindSettings* ss) { ss->recursive(b); }},
+                {"sort-descending", [](bool b, FindSettings* ss) { ss->sort_descending(b); }},
                 {"verbose", [](bool b, FindSettings* ss) { ss->verbose(b); }},
                 {"version", [](bool b, FindSettings* ss) { ss->printversion(b); }},
         };
@@ -236,7 +238,7 @@ namespace cppfind {
         auto sort_option_lambda = [](const FindOption* s1, const FindOption* s2) -> bool {
             return s1->sortarg().compare(s2->sortarg()) < 0;
         };
-        sort(m_options.begin(), m_options.end(), sort_option_lambda);
+        std::sort(m_options.begin(), m_options.end(), sort_option_lambda);
 
         long longest = 0;
         for (auto const& option : m_options) {

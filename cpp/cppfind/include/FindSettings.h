@@ -6,6 +6,8 @@
 #include "FindPattern.h"
 
 namespace cppfind {
+    enum class SortBy {FILEPATH, FILENAME, FILETYPE};
+
     class FindSettings {
     private:
         bool m_archivesonly = false;
@@ -36,6 +38,8 @@ namespace cppfind {
 
         std::vector<std::string> m_paths;
 
+        SortBy m_sortby = SortBy::FILEPATH;
+        bool m_sort_descending = true;
         bool m_verbose = false;
 
         static std::string bool_to_string(bool b);
@@ -77,6 +81,7 @@ namespace cppfind {
         bool printusage() const;
         bool printversion() const;
         bool recursive() const;
+        bool sort_descending() const;
         bool uniquelines() const;
         bool verbose() const;
 
@@ -100,6 +105,8 @@ namespace cppfind {
 
         std::vector<std::string>* paths();
 
+        SortBy sortby();
+
         // bool is_in_archiveextension(const std::string* ext);
         // bool is_in_extension(const std::string* ext);
         // bool is_in_filetype(const FileType* m_filetype);
@@ -115,8 +122,14 @@ namespace cppfind {
         void printusage(bool b);
         void printversion(bool b);
         void recursive(bool b);
+        void sortby(SortBy sortby);
+        void set_sortby(const std::string& name);
+        void sort_descending(bool b);
         void verbose(bool b);
         std::string string();
+
+        static SortBy sortby_from_name(const std::string& name);
+        static std::string sortby_to_name(const SortBy sortby);
     };
 }
 
