@@ -74,6 +74,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         settings_from_file($s, $settings);
     },
+    'sort-by' => sub {
+        my ($s, $settings) = @_;
+        $settings->set_sort_by($s);
+    },
     'path' => sub {
         my ($s, $settings) = @_;
         push(@{$settings->{paths}}, $s);
@@ -124,6 +128,10 @@ my $bool_flag_action_hash = {
     'recursive' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', $b);
+    },
+    'sort-descending' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_descending', $b);
     },
     'verbose' => sub {
         my ($b, $settings) = @_;

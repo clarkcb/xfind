@@ -9,6 +9,7 @@
 package plfind::FindSettings;
 
 use plfind::FileTypes;
+use plfind::SortBy;
 
 use strict;
 use warnings;
@@ -37,6 +38,8 @@ sub new {
         printusage => 0,
         printversion => 0,
         recursive => 1,
+        sortby => plfind::SortBy->FILEPATH,
+        sort_descending => 0,
         paths => [],
         verbose => 0,
     };
@@ -73,6 +76,18 @@ sub set_property {
         } elsif ($name eq 'debug') {
             $self->{verbose} = 1;
         }
+    }
+}
+
+sub set_sort_by {
+    my ($self, $name) = @_;
+    my $uname = uc($name);
+    if ($uname eq 'NAME') {
+        $self->{sortby} = plfind::SortBy->FILENAME;
+    } elsif ($uname eq 'TYPE') {
+        $self->{sortby} = plfind::SortBy->FILETYPE;
+    } else {
+        $self->{sortby} = plfind::SortBy->FILEPATH;
     }
 }
 
@@ -140,6 +155,8 @@ sub to_string {
     $s .= ', printversion=' . $self->bool_to_string($self->{printversion});
     $s .= ', recursive=' . $self->bool_to_string($self->{recursive});
     $s .= ', paths=' . $self->aref_to_string($self->{paths});
+    $s .= ', sortby=' . $self->{sortby};
+    $s .= ', sort_descending=' . $self->bool_to_string($self->{sort_descending});
     $s .= ', verbose=' . $self->bool_to_string($self->{verbose});
     $s .= ')';
     return $s;

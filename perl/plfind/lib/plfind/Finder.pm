@@ -233,19 +233,54 @@ sub find {
             }
         }
     }
-    return $fileresults;
+    return $self->sort_file_results($fileresults);
+}
+
+sub cmp_file_results_by_path {
+    my ($self, $fr1, $fr2) = @_;
+    if ($fr1->{path} eq $fr2->{path}) {
+        return $fr1->{filename} cmp $fr2->{filename};
+    }
+    return $fr1->{path} cmp $fr2->{path};
+}
+
+sub cmp_file_results_by_filename {
+    my ($self, $fr1, $fr2) = @_;
+    if ($fr1->{filename} eq $fr2->{filename}) {
+        return $fr1->{path} cmp $fr2->{path};
+    }
+    return $fr1->{filename} cmp $fr2->{filename};
+}
+
+sub cmp_file_results_by_filetype {
+    my ($self, $fr1, $fr2) = @_;
+    if ($fr1->{filetype} eq $fr2->{filetype}) {
+        return $self->cmp_file_results_by_path($fr1, $fr2);
+    }
+    return $fr1->{filetype} cmp $fr2->{filetype};
+}
+
+sub sort_file_results {
+    my ($self, $fileresults) = @_;
+    my @sorted;
+    if ($self->{settings}->{sortby} eq plfind::SortBy->FILENAME) {
+        @sorted = sort {$self->cmp_file_results_by_filename($a, $b)} @{$fileresults};
+    } elsif ($self->{settings}->{sortby} eq plfind::SortBy->FILETYPE) {
+        @sorted = sort {$self->cmp_file_results_by_filetype($a, $b)} @{$fileresults};
+    } else {
+        @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @{$fileresults};
+    }
+    if ($self->{settings}->{sort_descending}) {
+        @sorted = reverse @sorted;
+    }
+    return \@sorted;
 }
 
 sub get_matching_dirs {
     my ($self, $fileresults) = @_;
-    my $dir_hash = {};
-    foreach my $fr (@{$fileresults}) {
-        my $d = $fr->{path};
-        $dir_hash->{$d}++;
-    }
-    my @dirs = keys %{$dir_hash};
-    @dirs = sort(@dirs);
-    return \@dirs;
+    my @dirs = map {$_->{path}} @{$fileresults};
+    my $uniq = plfind::common::uniq(\@dirs);
+    return $uniq;
 }
 
 sub print_matching_dirs {
@@ -263,13 +298,7 @@ sub print_matching_dirs {
 
 sub get_matching_files {
     my ($self, $fileresults) = @_;
-    my $file_hash = {};
-    foreach my $fr (@{$fileresults}) {
-        my $fp = File::Spec->join($fr->{path}, $fr->{filename});
-        $file_hash->{$fp}++;
-    }
-    my @files = keys %{$file_hash};
-    @files = sort(@files);
+    my @files = map {File::Spec->join($_->{path}, $_->{filename})} @{$fileresults};
     return \@files;
 }
 

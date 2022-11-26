@@ -52,6 +52,14 @@ sub trailing_whitespace_chars($) {
     return $trimmed;
 }
 
+# returns an array with duplicate values removed
+sub uniq($) {
+    my $aref = shift;
+    my %seen;
+    my @uniqs = grep { !$seen{$_}++ } @{$aref};
+    return \@uniqs;
+}
+
 1;
 
 __END__

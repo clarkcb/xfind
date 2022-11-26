@@ -20,15 +20,13 @@ use JSON::PP qw(decode_json);
 
 use plfind::FileUtil;
 
-my $absdir = dirname(abs_path(__FILE__));
-my $share_path = File::Spec->join($absdir, '../../share');
-my $config_json_path = $share_path . '/config.json';
-my $config = decode_json plfind::FileUtil::get_file_contents($config_json_path);
-
-our $XFINDPATH = $config->{xfindpath};
+our $XFINDPATH = $ENV{'XFIND_PATH'};
+if (!$XFINDPATH) {
+    $XFINDPATH = $ENV{'HOME'} . '/src/xfind';
+}
 our $SHAREDPATH = "$XFINDPATH/shared";
-our $FILETYPESPATH = "$share_path/filetypes.json";
-our $FINDOPTIONSPATH = "$share_path/findoptions.json";
+our $FILETYPESPATH = "$SHAREDPATH/filetypes.json";
+our $FINDOPTIONSPATH = "$SHAREDPATH/findoptions.json";
 
 our @EXPORT = qw($XFINDPATH $SHAREDPATH $FILETYPESPATH $FINDOPTIONSPATH);
 
