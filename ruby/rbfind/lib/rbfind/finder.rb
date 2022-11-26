@@ -117,11 +117,21 @@ module RbFind
       @settings.paths.each do |p|
         fileresults = fileresults.concat(get_file_results(p))
       end
-      fileresults.sort_by(&:relativepath)
+      fileresults = sort_file_results(fileresults)
       fileresults
     end
 
     private
+
+    def sort_file_results(file_results)
+      if @settings.sortby == SortBy::FILENAME
+        file_results.sort_by {|r| [r.filename, r.path]}
+      elsif @settings.sortby == SortBy::FILETYPE
+        file_results.sort_by {|r| [r.filetype, r.path, r.filename]}
+      else
+        file_results.sort_by {|r| [r.path, r.filename]}
+      end
+    end
 
     def validate_settings
       raise FindError, 'Startpath not defined' if @settings.paths.empty?

@@ -2,6 +2,14 @@ require_relative 'filetypes'
 
 module RbFind
 
+  module SortBy
+    FILEPATH = 0
+    FILENAME = 1
+    FILETYPE = 2
+    FILESIZE = 3
+    LASTMOD  = 4
+  end
+
   # FindSettings - encapsulates find settings
   class FindSettings
 
@@ -27,6 +35,8 @@ module RbFind
     attr_accessor :printversion
     attr_accessor :recursive
     attr_accessor :paths
+    attr_accessor :sortby
+    attr_accessor :sort_descending
     attr_accessor :verbose
 
     def initialize
@@ -39,6 +49,8 @@ module RbFind
       @printusage = false
       @printversion = false
       @recursive = true
+      @sortby = SortBy::FILETYPE
+      @sort_descending = false
       @verbose = false
 
       @in_archiveextensions = []
@@ -91,6 +103,17 @@ module RbFind
         filetypes.each do |t|
           filetypes_set.push(FileTypes.from_name(t))
         end
+      end
+    end
+
+    def set_sort_by(sort_by_name)
+      sort_by_name = sort_by_name.strip.upcase
+      if sort_by_name == 'NAME'
+        @sortby = SortBy::FILENAME
+      elsif sort_by_name == 'TYPE'
+        @sortby = SortBy::FILETYPE
+      else
+        @sortby = SortBy::FILEPATH
       end
     end
 
