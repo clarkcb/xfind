@@ -129,6 +129,10 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', $b);
     },
+    'sort-ascending' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_descending', !$b);
+    },
     'sort-descending' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('sort_descending', $b);

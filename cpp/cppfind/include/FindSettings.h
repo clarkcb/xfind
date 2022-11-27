@@ -39,7 +39,7 @@ namespace cppfind {
         std::vector<std::string> m_paths;
 
         SortBy m_sortby = SortBy::FILEPATH;
-        bool m_sort_descending = true;
+        bool m_sort_descending = false;
         bool m_verbose = false;
 
         static std::string bool_to_string(bool b);

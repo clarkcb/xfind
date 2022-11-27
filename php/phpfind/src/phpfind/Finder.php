@@ -291,19 +291,25 @@ class Finder
         return ($fr1->filename < $fr2->filename) ? -1 : 1;
     }
 
+    private function cmp_filetype(FileType $ft1, FileType $ft2): int
+    {
+        $filetype_cases = FileType::cases();
+        return array_search($ft1, $filetype_cases) - array_search($ft2, $filetype_cases);
+    }
+
     private function cmp_file_result_filetype(FileResult $fr1, FileResult $fr2): int
     {
-        if ($fr1->filetype == $fr2->filetype) {
+        $ftcmp = $this->cmp_filetype($fr1->filetype, $fr2->filetype);
+        if ($ftcmp == 0) {
             return $this->cmp_file_result_path($fr1, $fr2);
         }
-        return ($fr1->filetype < $fr2->filetype) ? -1 : 1;
+        return $ftcmp;
     }
 
     private function sort_file_results(array $fileresults): array
     {
         switch ($this->settings->sortby) {
             case SortBy::Filename:
-                print 'SortBy::Filename';
                 usort($fileresults, 'self::cmp_file_result_filename');
                 break;
             case SortBy::Filetype:

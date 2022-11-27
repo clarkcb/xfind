@@ -62,6 +62,7 @@ class FindOptions
             'listfiles' => fn (bool $b, FindSettings $fs) => $fs->listfiles = $b,
             'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
             'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
+            'sort-ascending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = !$b,
             'sort-descending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = $b,
             'verbose' => fn (bool $b, FindSettings $fs) => $fs->verbose = $b,
             'version' => fn (bool $b, FindSettings $fs) => $fs->printversion = $b

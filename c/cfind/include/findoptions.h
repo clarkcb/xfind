@@ -42,9 +42,10 @@ typedef enum {
     LISTFILES       = 8,
     NORECURSIVE     = 9,
     RECURSIVE       = 10,
-    SORT_DESCENDING = 11,
-    VERBOSE         = 12,
-    VERSION         = 13
+    SORT_ASCENDING  = 11,
+    SORT_DESCENDING = 12,
+    VERBOSE         = 13,
+    VERSION         = 14
 } SettingsFlagType;
 
 FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc);

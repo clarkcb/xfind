@@ -118,6 +118,9 @@ module RbFind
         fileresults = fileresults.concat(get_file_results(p))
       end
       fileresults = sort_file_results(fileresults)
+      if @settings.sort_descending
+        fileresults.reverse!
+      end
       fileresults
     end
 

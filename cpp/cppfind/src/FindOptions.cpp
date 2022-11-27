@@ -43,6 +43,7 @@ namespace cppfind {
                 {"listfiles", [](bool b, FindSettings* ss) { ss->listfiles(b); }},
                 {"norecursive", [](bool b, FindSettings* ss) { ss->recursive(!b); }},
                 {"recursive", [](bool b, FindSettings* ss) { ss->recursive(b); }},
+                {"sort-ascending", [](bool b, FindSettings* ss) { ss->sort_descending(!b); }},
                 {"sort-descending", [](bool b, FindSettings* ss) { ss->sort_descending(b); }},
                 {"verbose", [](bool b, FindSettings* ss) { ss->verbose(b); }},
                 {"version", [](bool b, FindSettings* ss) { ss->printversion(b); }},

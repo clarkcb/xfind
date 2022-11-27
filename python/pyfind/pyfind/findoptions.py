@@ -76,6 +76,9 @@ class FindOptions:
             'recursive':
                 lambda b, settings:
                 settings.set_property('recursive', b),
+            'sort-ascending':
+                lambda b, settings:
+                settings.set_property('sort_descending', not b),
             'sort-descending':
                 lambda b, settings:
                 settings.set_property('sort_descending', b),

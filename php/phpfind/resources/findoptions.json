@@ -148,8 +148,12 @@
       "desc": "Sort by: PATH, NAME, TYPE, SIZE, LASTMOD"
     },
     {
+      "long": "sort-ascending",
+      "desc": "Sort results in ascending order*"
+    },
+    {
       "long": "sort-descending",
-      "desc": "If true, sort descending, else ascending"
+      "desc": "Sort results in descending order"
     },
     {
       "long": "verbose",

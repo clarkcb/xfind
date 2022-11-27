@@ -44,7 +44,7 @@ char **arg_abbrs = (char *[]) {
     ""   // sort-by
 };
 
-#define FLAG_COUNT 14
+#define FLAG_COUNT 15
 const size_t flag_count = FLAG_COUNT;
 char **flag_names = (char *[]) {
     "archivesonly",
@@ -58,6 +58,7 @@ char **flag_names = (char *[]) {
     "listfiles",
     "norecursive",
     "recursive",
+    "sort-ascending",
     "sort-descending",
     "verbose",
     "version"
@@ -75,6 +76,7 @@ char **flag_abbrs = (char *[]) {
     "",  // listfiles
     "R", // norecursive
     "r", // recursive
+    "",  // sort-ascending
     "",  // sort-descending
     "v", // verbose
     "V"  // version
@@ -360,6 +362,9 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
         break;
     case RECURSIVE:
         settings->recursive = flag_val;
+        break;
+    case SORT_ASCENDING:
+        settings->sort_descending = !flag_val;
         break;
     case SORT_DESCENDING:
         settings->sort_descending = flag_val;

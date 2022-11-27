@@ -85,7 +85,7 @@ namespace cppfind {
         return (fr1->filetype() < fr2->filetype());
     }
 
-    void Finder::sort_file_results(std::vector<FileResult*> fileresults) {
+    void Finder::sort_file_results(std::vector<FileResult*>& fileresults) {
         if (m_settings->sortby() == SortBy::FILEPATH) {
             std::sort(fileresults.begin(), fileresults.end(), cmp_file_results_by_path);
         } else if (m_settings->sortby() == SortBy::FILENAME) {

@@ -167,7 +167,7 @@ module RbFind
           settings_from_file(x, settings)
         },
         'sort-by': lambda { |x, settings|
-          settings_from_file(x, settings)
+          settings.set_sort_by(x)
         }
       }
       @bool_flag_action_dict = {
@@ -184,6 +184,7 @@ module RbFind
         listfiles: ->(b, settings) { settings.listfiles = b },
         norecursive: ->(b, settings) { settings.recursive = !b },
         recursive: ->(b, settings) { settings.recursive = b },
+        'sort-ascending': ->(b, settings) { settings.sort_descending = !b },
         'sort-descending': ->(b, settings) { settings.sort_descending = b },
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.printversion = b }
