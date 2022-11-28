@@ -127,7 +127,57 @@ public class Finder
 	public IEnumerable<FileResult> Find()
 	{
 		var fileResults = GetFileResults().ToList();
+		SortFileResults(fileResults);
 		return fileResults;
+	}
+
+	private static int CompareByPath(FileResult fr1, FileResult fr2)
+	{
+		if (fr1.File.DirectoryName == fr2.File.DirectoryName)
+		{
+			return string.Compare(fr1.File.Name, fr2.File.Name, StringComparison.Ordinal);
+		}
+		return string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, StringComparison.Ordinal);
+	}
+	
+	private static int CompareByName(FileResult fr1, FileResult fr2)
+	{
+		if (fr1.File.Name == fr2.File.Name)
+		{
+			return string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, StringComparison.Ordinal);
+		}
+		return string.Compare(fr1.File.Name, fr2.File.Name, StringComparison.Ordinal);
+	}
+
+	private static int CompareByType(FileResult fr1, FileResult fr2)
+	{
+		if ((int) fr1.Type == (int) fr2.Type)
+		{
+			return CompareByPath(fr1, fr2);
+		}
+
+		return ((int) fr1.Type).CompareTo((int) fr2.Type);
+	}
+	
+	private void SortFileResults(List<FileResult> fileResults)
+	{
+		switch (Settings.SortBy)
+		{
+			case SortBy.FileName:
+				fileResults.Sort(CompareByName);
+				break;
+			case SortBy.FileType:
+				fileResults.Sort(CompareByType);
+				break;
+			default:
+				fileResults.Sort(CompareByPath);
+				break;
+		}
+
+		if (Settings.SortDescending)
+		{
+			fileResults.Reverse();
+		}
 	}
 
 	private static IEnumerable<DirectoryInfo> GetMatchingDirs(IEnumerable<FileResult> fileResults)
@@ -135,8 +185,7 @@ public class Finder
 		return new List<DirectoryInfo>(
 			fileResults.Where(fr => fr.File.Directory != null)
 				.Select(fr => fr.File.Directory!)
-				.Distinct()
-				.OrderBy(d => d.FullName));
+				.DistinctBy(d => d.FullName));
 	}
 
 	private string GetRelativePath(string path)
@@ -156,8 +205,7 @@ public class Finder
 	{
 		var matchingDirs = GetMatchingDirs(fileResults)
 			.Select(d => GetRelativePath(d.FullName))
-			.Distinct()
-			.OrderBy(d => d).ToList();
+			.ToList();
 		if (matchingDirs.Any()) {
 			Common.Log($"\nMatching directories ({matchingDirs.Count}):");
 			foreach (var d in matchingDirs)
@@ -173,17 +221,14 @@ public class Finder
 	{
 		return new List<FileInfo>(
 			fileResults
-				.Select(fr => fr.File.ToString())
-				.Distinct().Select(f => new FileInfo(f))
-				.OrderBy(d => d.FullName));
+				.Select(fr => fr.File));
 	}
 
 	public void PrintMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
 		var matchingFiles = GetMatchingFiles(fileResults)
 			.Select(f => GetRelativePath(f.FullName))
-			.Distinct()
-			.OrderBy(f => f).ToList();
+			.ToList();
 		if (matchingFiles.Any()) {
 			Common.Log($"\nMatching files ({matchingFiles.Count}):");
 			foreach (var f in matchingFiles)
@@ -193,19 +238,5 @@ public class Finder
 		} else {
 			Common.Log("\nMatching files: 0");
 		}
-	}
-}
-
-internal class CaseInsensitiveComparer : IComparer<string>
-{
-	public int Compare(string? a, string? b)
-	{
-		if (a == null && b == null)
-			return 0;
-		if (a == null)
-			return -1;
-		if (b == null)
-			return 1;
-		return string.Compare(a.ToUpper(), b.ToUpper(), StringComparison.Ordinal);
 	}
 }

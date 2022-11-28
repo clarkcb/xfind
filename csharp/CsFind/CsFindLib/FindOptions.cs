@@ -26,6 +26,7 @@ public partial class FindOptions
 			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
 			{ "settings-file", SettingsFromFile },
+			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
 		};
 
 	private static readonly Dictionary<string, Action<bool, FindSettings>> BoolFlagActionDictionary =
@@ -58,6 +59,8 @@ public partial class FindOptions
 			},
 			{ "norecursive", (b, settings) => settings.Recursive = !b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
+			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },
+			{ "sort-descending", (b, settings) => settings.SortDescending = b },
 			{ "verbose", (b, settings) => settings.Verbose = b },
 			{ "version", (b, settings) => settings.PrintVersion = b },
 		};

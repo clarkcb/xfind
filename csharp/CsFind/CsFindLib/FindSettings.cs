@@ -51,6 +51,8 @@ public class FindSettings
 	public bool PrintUsage { get; set; }
 	public bool PrintVersion { get; set; }
 	public bool Recursive { get; set; }
+	public SortBy SortBy { get; set; }
+	public bool SortDescending { get; set; }
 	public bool Verbose { get; set; }
 
 	public FindSettings()
@@ -77,6 +79,8 @@ public class FindSettings
 		PrintUsage = false;
 		PrintVersion = false;
 		Recursive = true;
+		SortBy = SortBy.FilePath;
+		SortDescending = false;
 		Verbose = false;
 	}
 
@@ -103,6 +107,8 @@ public class FindSettings
 		bool printUsage,
 		bool printVersion,
 		bool recursive,
+		SortBy sortBy,
+		bool sortDescending,
 		bool verbose)
 	{
 		ArchivesOnly = archivesOnly;
@@ -127,6 +133,8 @@ public class FindSettings
 		PrintUsage = printUsage;
 		PrintVersion = printVersion;
 		Recursive = recursive;
+		SortBy = sortBy;
+		SortDescending = sortDescending;
 		Verbose = verbose;
 	}
 
@@ -216,6 +224,11 @@ public class FindSettings
 		AddFileType(OutFileTypes, typeName);
 	}
 
+	public void SetSortBy(string sortByName)
+	{
+		SortBy = SortByUtil.GetSortByFromName(sortByName);
+	}
+
 	private static string EnumerableToString<T>(IEnumerable<T> enumerable)
 	{
 		var sb = new StringBuilder("[");
@@ -261,6 +274,8 @@ public class FindSettings
 		       ", PrintUsage: " + PrintUsage +
 		       ", PrintVersion: " + PrintVersion +
 		       ", Recursive: " + Recursive +
+		       ", SortBy: " + SortByUtil.GetNameFromSortBy(SortBy) +
+		       ", SortDescending: " + SortDescending +
 		       ", Verbose: " + Verbose +
 		       ")";
 	}
