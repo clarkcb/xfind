@@ -254,6 +254,9 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 		"settings-file": func(s string, settings *FindSettings) {
 			so.SettingsFromFile(s, settings)
 		},
+		"sort-by": func(s string, settings *FindSettings) {
+			settings.SetSortBy(s)
+		},
 	}
 	for _, o := range so.FindOptions {
 		if o.Short != "" {
@@ -301,6 +304,12 @@ func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"recursive": func(b bool, settings *FindSettings) {
 			settings.Recursive = b
+		},
+		"sort-ascending": func(b bool, settings *FindSettings) {
+			settings.SortDescending = !b
+		},
+		"sort-descending": func(b bool, settings *FindSettings) {
+			settings.SortDescending = b
 		},
 		"verbose": func(b bool, settings *FindSettings) {
 			settings.Verbose = b

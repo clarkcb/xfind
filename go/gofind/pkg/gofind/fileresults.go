@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -60,7 +61,7 @@ func (fr *FileResults) AddResult(r *FileResult) {
 		r.Containers,
 		r.Path,
 		r.Name,
-		r.fileType,
+		r.FileType,
 	})
 }
 
@@ -76,18 +77,12 @@ func (fr *FileResults) Iterator() *FileResultsIterator {
 	return NewFileResultsIterator(fr)
 }
 
-func (fr *FileResults) GetPathCountMap() map[string]int {
-	pathCountMap := make(map[string]int)
-	for _, i := range fr.results {
-		pathCountMap[i.Path]++
-	}
-	return pathCountMap
-}
-
 func (fr *FileResults) GetMatchingDirs() []string {
-	pathCountMap := fr.GetPathCountMap()
-	paths := getSortedCountKeys(pathCountMap)
-	return paths
+	var dirs []string
+	for _, r := range fr.results {
+		dirs = append(dirs, r.Path)
+	}
+	return dirs
 }
 
 func (fr *FileResults) PrintMatchingDirs() {
@@ -102,17 +97,11 @@ func (fr *FileResults) PrintMatchingDirs() {
 	}
 }
 
-func (fr *FileResults) GetFileCountMap() map[string]int {
-	fileCountMap := make(map[string]int)
-	for _, r := range fr.results {
-		fileCountMap[r.String()]++
-	}
-	return fileCountMap
-}
-
 func (fr *FileResults) GetMatchingFiles() []string {
-	fileCountMap := fr.GetFileCountMap()
-	files := getSortedCountKeys(fileCountMap)
+	var files []string
+	for _, r := range fr.results {
+		files = append(files, r.String())
+	}
 	return files
 }
 
@@ -128,11 +117,52 @@ func (fr *FileResults) PrintMatchingFiles() {
 	}
 }
 
+func (fr *FileResults) sortByPath(i, j int) bool {
+	if fr.results[i].Path == fr.results[j].Path {
+		return fr.results[i].Name < fr.results[j].Name
+	}
+	return fr.results[i].Path < fr.results[j].Path
+}
+
+func (fr *FileResults) sortByName(i, j int) bool {
+	if fr.results[i].Name == fr.results[j].Name {
+		return fr.results[i].Path < fr.results[j].Path
+	}
+	return fr.results[i].Name < fr.results[j].Name
+}
+
+func (fr *FileResults) sortByType(i, j int) bool {
+	if fr.results[i].FileType == fr.results[j].FileType {
+		return fr.sortByPath(i, j)
+	}
+	return fr.results[i].FileType < fr.results[j].FileType
+}
+
+func (fr *FileResults) Sort(sortBy SortBy, sortDescending bool) {
+	switch sortBy {
+	case SortByFilename:
+		sort.Slice(fr.results, fr.sortByName)
+	case SortByFiletype:
+		sort.Slice(fr.results, fr.sortByType)
+	default:
+		sort.Slice(fr.results, fr.sortByPath)
+	}
+	if sortDescending {
+		fr.reverse()
+	}
+}
+
+func (fr *FileResults) reverse() {
+	for i, j := 0, len(fr.results)-1; i < j; i, j = i+1, j-1 {
+		fr.results[i], fr.results[j] = fr.results[j], fr.results[i]
+	}
+}
+
 type FileResult struct {
 	Containers []string
 	Path       string
 	Name       string
-	fileType   FileType
+	FileType   FileType
 }
 
 func NewFileResult(path string, name string, fileType FileType) *FileResult {

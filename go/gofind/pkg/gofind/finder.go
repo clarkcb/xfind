@@ -75,8 +75,8 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 	ext := getExtension(fr.Name)
 	return (len(f.Settings.InExtensions) == 0 || contains(f.Settings.InExtensions, ext)) &&
 		(len(f.Settings.OutExtensions) == 0 || !contains(f.Settings.OutExtensions, ext)) &&
-		(len(f.Settings.InFileTypes) == 0 || containsFileType(f.Settings.InFileTypes, fr.fileType)) &&
-		(len(f.Settings.OutFileTypes) == 0 || !containsFileType(f.Settings.OutFileTypes, fr.fileType)) &&
+		(len(f.Settings.InFileTypes) == 0 || containsFileType(f.Settings.InFileTypes, fr.FileType)) &&
+		(len(f.Settings.OutFileTypes) == 0 || !containsFileType(f.Settings.OutFileTypes, fr.FileType)) &&
 		(f.Settings.InFilePatterns.IsEmpty() || f.Settings.InFilePatterns.MatchesAny(fr.Name)) &&
 		(f.Settings.OutFilePatterns.IsEmpty() || !f.Settings.OutFilePatterns.MatchesAny(fr.Name))
 }
@@ -97,7 +97,7 @@ func (f *Finder) filterToFileResult(filePath string) *FileResult {
 		return nil
 	}
 	fr := f.FilePathToFileResult(filePath)
-	if fr.fileType == FiletypeArchive {
+	if fr.FileType == FiletypeArchive {
 		if f.Settings.IncludeArchives && f.isMatchingArchiveFileResult(fr) {
 			return fr
 		}
@@ -199,6 +199,9 @@ func (f *Finder) Find() (*FileResults, error) {
 	if err := f.setFileResults(); err != nil {
 		return nil, err
 	}
+
+	// sort the results
+	f.fileResults.Sort(f.Settings.SortBy, f.Settings.SortDescending)
 
 	return f.fileResults, nil
 }

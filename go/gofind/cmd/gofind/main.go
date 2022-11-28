@@ -31,18 +31,18 @@ func main() {
 	}
 
 	finder := gofind.NewFinder(settings)
-	findItems, err := finder.Find()
+	fileResults, err := finder.Find()
 	if err != nil {
 		errorAndExit(err, findOptions)
 	}
 
 	// print matching dirs
 	if settings.ListDirs {
-		findItems.PrintMatchingDirs()
+		fileResults.PrintMatchingDirs()
 	}
 
 	// print matching files (should default to true)
 	if settings.ListFiles {
-		findItems.PrintMatchingFiles()
+		fileResults.PrintMatchingFiles()
 	}
 }

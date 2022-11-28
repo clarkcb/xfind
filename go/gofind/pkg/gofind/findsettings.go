@@ -5,6 +5,37 @@ import (
 	"strings"
 )
 
+type SortBy int
+
+const (
+	SortByFilepath SortBy = iota
+	SortByFilename SortBy = iota
+	SortByFiletype SortBy = iota
+)
+
+func getSortByForName(name string) SortBy {
+	if strings.ToUpper(name) == "PATH" {
+		return SortByFilepath
+	}
+	if strings.ToUpper(name) == "NAME" {
+		return SortByFilename
+	}
+	if strings.ToUpper(name) == "TYPE" {
+		return SortByFiletype
+	}
+	return SortByFilepath
+}
+
+func getNameForSortBy(sortBy SortBy) string {
+	if sortBy == SortByFilename {
+		return "NAME"
+	}
+	if sortBy == SortByFiletype {
+		return "TYPE"
+	}
+	return "PATH"
+}
+
 // FindSettings - the settings for the find session
 type FindSettings struct {
 	ArchivesOnly           bool
@@ -29,6 +60,8 @@ type FindSettings struct {
 	PrintUsage             bool
 	PrintVersion           bool
 	Recursive              bool
+	SortBy                 SortBy
+	SortDescending         bool
 	Verbose                bool
 }
 
@@ -56,6 +89,8 @@ func GetDefaultFindSettings() *FindSettings {
 		false,             // PrintUsage
 		false,             // PrintVersion
 		true,              // Recursive
+		SortByFilepath,    // SortBy
+		false,             // SortDescending
 		false,             // Verbose
 	}
 }
@@ -146,6 +181,10 @@ func (f *FindSettings) SetDebug(debug bool) {
 	}
 }
 
+func (f *FindSettings) SetSortBy(sortBy string) {
+	f.SortBy = getSortByForName(sortBy)
+}
+
 func (f *FindSettings) String() string {
 	const template = "SearchSettings{" +
 		"ArchivesOnly: %t" +
@@ -170,6 +209,8 @@ func (f *FindSettings) String() string {
 		", PrintUsage: %t" +
 		", PrintVersion: %t" +
 		", Recursive: %t" +
+		", SortBy: %s" +
+		", SortDescending: %t" +
 		", Verbose: %t}"
 	return fmt.Sprintf(template,
 		f.ArchivesOnly,
@@ -194,6 +235,8 @@ func (f *FindSettings) String() string {
 		f.PrintUsage,
 		f.PrintVersion,
 		f.Recursive,
+		getNameForSortBy(f.SortBy),
+		f.SortDescending,
 		f.Verbose,
 	)
 }
