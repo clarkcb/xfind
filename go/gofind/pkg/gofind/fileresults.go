@@ -78,9 +78,13 @@ func (fr *FileResults) Iterator() *FileResultsIterator {
 }
 
 func (fr *FileResults) GetMatchingDirs() []string {
+	keys := make(map[string]bool)
 	var dirs []string
 	for _, r := range fr.results {
-		dirs = append(dirs, r.Path)
+		if _, value := keys[r.Path]; !value {
+			keys[r.Path] = true
+			dirs = append(dirs, r.Path)
+		}
 	}
 	return dirs
 }
