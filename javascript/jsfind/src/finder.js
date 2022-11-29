@@ -16,6 +16,7 @@ const {FileTypes} = require('./filetypes');
 const FileUtil = require('./fileutil');
 const {FindError} = require('./finderror');
 const {FileType} = require("./filetype");
+const {SortBy} = require("./sortby");
 
 class Finder {
     'use strict'
@@ -214,7 +215,42 @@ class Finder {
                 throw new FindError("startPath does not match find criteria");
             }
         }
+        this.sortFileResults(fileResults);
         return fileResults;
+    }
+
+    cmpFileResultsByPath(fr1, fr2) {
+        if (fr1.pathname === fr2.pathname) {
+            return fr1.filename < fr2.filename ? -1 : 1;
+        }
+        return fr1.pathname < fr2.pathname ? -1 : 1;
+    }
+
+    cmpFileResultsByName(fr1, fr2) {
+        if (fr1.filename === fr2.filename) {
+            return fr1.pathname < fr2.pathname ? -1 : 1;
+        }
+        return fr1.filename < fr2.filename ? -1 : 1;
+    }
+
+    cmpFileResultsByType(fr1, fr2) {
+        if (fr1.filetype === fr2.filetype) {
+            return this.cmpFileResultsByPath(fr1, fr2);
+        }
+        return fr1.filetype - fr2.filetype;
+    }
+
+    sortFileResults(fileResults) {
+        if (this.settings.sortBy === SortBy.FILENAME) {
+            fileResults.sort((a, b) => this.cmpFileResultsByName(a, b));
+        } else if (this.settings.sortBy === SortBy.FILETYPE) {
+            fileResults.sort((a, b) => this.cmpFileResultsByType(a, b));
+        } else {
+            fileResults.sort((a, b) => this.cmpFileResultsByPath(a, b));
+        }
+        if (this.settings.sortDescending) {
+            fileResults.reverse();
+        }
     }
 
     async find() {

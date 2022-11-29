@@ -9,6 +9,7 @@ const {expandPath} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {FindOption} = require('./findoption');
 const {FindSettings} = require('./findsettings');
+const {nameToSortBy} = require("./sortby");
 
 class FindOptions {
     'use strict'
@@ -65,7 +66,9 @@ class FindOptions {
             'path':
                 (x, settings) => { settings.paths.push(x); },
             'settings-file':
-                (x, settings) => { this.settingsFromFile(x, settings); }
+                (x, settings) => { this.settingsFromFile(x, settings); },
+            'sort-by':
+                (x, settings) => { settings.sortBy = nameToSortBy(x); }
 
         };
         this.boolFlagActionMap = {
@@ -91,6 +94,10 @@ class FindOptions {
                 (b, settings) => { settings.recursive = !b; },
             'recursive':
                 (b, settings) => { settings.recursive = b; },
+            'sort-ascending':
+                (b, settings) => { settings.sortDescending = !b; },
+            'sort-descending':
+                (b, settings) => { settings.sortDescending = b; },
             'verbose':
                 (b, settings) => { settings.verbose = b; },
             'version':

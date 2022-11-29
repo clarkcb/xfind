@@ -5,6 +5,7 @@
  */
 
 const {FileTypes} = require('./filetypes');
+const {SortBy, sortByToName} = require("./sortby");
 
 class FindSettings {
     constructor() {
@@ -30,6 +31,8 @@ class FindSettings {
         this.printUsage = false;
         this.printVersion = false;
         this.recursive = true;
+        this.sortBy = SortBy.FILEPATH;
+        this.sortDescending = false;
         this.verbose = false;
     }
 
@@ -157,6 +160,8 @@ class FindSettings {
             ', ' + this.listToString('paths', this.paths) +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
+            ', sortBy=' + sortByToName(this.sortBy) +
+            ', sortDescending=' + this.sortDescending +
             ', verbose=' + this.verbose +
             ')';
     }
