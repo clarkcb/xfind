@@ -32,8 +32,7 @@ function printMatchingDirs(findfiles) {
 }
 
 function getMatchingFiles(findfiles) {
-    const files = findfiles.map(f => f.relativePath());
-    return common.setFromArray(files);
+    return findfiles.map(f => f.relativePath());
 }
 
 function printMatchingFiles(findfiles) {

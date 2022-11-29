@@ -18,6 +18,7 @@ import {FileTypes} from './filetypes';
 import {FileUtil} from './fileutil';
 import {FindError} from './finderror';
 import {FindSettings} from './findsettings';
+import {SortBy} from "./sortby";
 
 export class Finder {
     _settings: FindSettings;
@@ -221,6 +222,40 @@ export class Finder {
         return fileResults;
     }
 
+    private cmpFileResultsByPath(fr1: FileResult, fr2: FileResult): number {
+        if (fr1.pathname === fr2.pathname) {
+            return fr1.filename < fr2.filename ? -1 : 1;
+        }
+        return fr1.pathname < fr2.pathname ? -1 : 1;
+    }
+
+    private cmpFileResultsByName(fr1: FileResult, fr2: FileResult): number {
+        if (fr1.filename === fr2.filename) {
+            return fr1.pathname < fr2.pathname ? -1 : 1;
+        }
+        return fr1.filename < fr2.filename ? -1 : 1;
+    }
+
+    private cmpFileResultsByType(fr1: FileResult, fr2: FileResult): number {
+        if (fr1.filetype === fr2.filetype) {
+            return this.cmpFileResultsByPath(fr1, fr2);
+        }
+        return fr1.filetype - fr2.filetype;
+    }
+
+    private sortFileResults(fileResults: FileResult[]): void {
+        if (this._settings.sortBy === SortBy.FileName) {
+            fileResults.sort((a, b) => this.cmpFileResultsByName(a, b));
+        } else if (this._settings.sortBy === SortBy.FileType) {
+            fileResults.sort((a, b) => this.cmpFileResultsByType(a, b));
+        } else {
+            fileResults.sort((a, b) => this.cmpFileResultsByPath(a, b));
+        }
+        if (this._settings.sortDescending) {
+            fileResults.reverse();
+        }
+    }
+
     public async find(): Promise<FileResult[]> {
         // get the file results
         let fileResults: FileResult[] = [];
@@ -230,6 +265,7 @@ export class Finder {
             fileResults = fileResults.concat(pathFileResults);
         });
 
+        this.sortFileResults(fileResults);
         return fileResults;
     }
 
@@ -249,8 +285,7 @@ export class Finder {
     }
 
     public getMatchingFiles(fileResults: FileResult[]): string[] {
-        const files: string[] = fileResults.map(f => f.relativePath());
-        return common.setFromArray(files);
+        return fileResults.map(f => f.relativePath());
     }
 
     public printMatchingFiles(fileResults: FileResult[]): void {

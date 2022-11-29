@@ -12,6 +12,7 @@ import * as config from './config';
 import {FileUtil} from './fileutil';
 import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
+import {nameToSortBy} from "./sortby";
 
 interface StringOptionMap {
     [key: string]: FindOption
@@ -64,7 +65,9 @@ export class FindOptions {
             'path':
                 (x: string, settings: FindSettings) => { settings.paths.push(x); },
             'settings-file':
-                (x: string, settings: FindSettings) => { this.settingsFromFile(x, settings); }
+                (x: string, settings: FindSettings) => { this.settingsFromFile(x, settings); },
+            'sort-by':
+                (x: string, settings: FindSettings) => { settings.sortBy = nameToSortBy(x); }
         };
 
         this.boolFlagActionMap = {
@@ -90,6 +93,10 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.recursive = !b; },
             'recursive':
                 (b: boolean, settings: FindSettings) => { settings.recursive = b; },
+            'sort-ascending':
+                (b: boolean, settings: FindSettings) => { settings.sortDescending = !b; },
+            'sort-descending':
+                (b: boolean, settings: FindSettings) => { settings.sortDescending = b; },
             'verbose':
                 (b: boolean, settings: FindSettings) => { settings.verbose = b; },
             'version':

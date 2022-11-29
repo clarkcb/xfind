@@ -8,6 +8,7 @@
 
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
+import {SortBy, sortByToName} from "./sortby";
 
 export class FindSettings {
     archivesOnly = false;
@@ -19,6 +20,7 @@ export class FindSettings {
     inExtensions: string[] = [];
     inFilePatterns: RegExp[] = [];
     inFileTypes: FileType[] = [];
+    includeArchives = false;
     listDirs = false;
     listFiles = false;
     outArchiveExtensions: string[] = [];
@@ -27,11 +29,12 @@ export class FindSettings {
     outExtensions: string[] = [];
     outFilePatterns: RegExp[] = [];
     outFileTypes: FileType[] = [];
+    paths: string[] = [];
     printUsage = false;
     printVersion = false;
     recursive = true;
-    includeArchives = false;
-    paths: string[] = [];
+    sortBy = SortBy.FilePath;
+    sortDescending = false;
     verbose = false;
 
     private static addExtensions(exts: string|string[], arr: string[]): void {
@@ -157,6 +160,8 @@ export class FindSettings {
             + ', ' + FindSettings.listToString('paths', this.paths)
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive
+            + ', sortBy=' + sortByToName(this.sortBy)
+            + ', sortDescending=' + this.sortDescending
             + ', verbose=' + this.verbose
             + ')';
     }
