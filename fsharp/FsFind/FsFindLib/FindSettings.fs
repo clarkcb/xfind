@@ -22,10 +22,12 @@ module FindSettings =
         OutExtensions : string list;
         OutFilePatterns : Regex list;
         OutFileTypes : FileType list;
+        Paths : string list;
         PrintUsage : bool;
         PrintVersion : bool;
         Recursive : bool;
-        Paths : string list;
+        SortBy : SortBy;
+        SortDescending : bool;
         Verbose : bool
     }
 
@@ -48,10 +50,12 @@ module FindSettings =
         OutExtensions = [];
         OutFilePatterns = [];
         OutFileTypes = [];
+        Paths = [];
         PrintUsage = false;
         PrintVersion = false;
         Recursive = true;
-        Paths = [];
+        SortBy = SortBy.FilePath;
+        SortDescending = false;
         Verbose = false
     }
 
@@ -107,6 +111,8 @@ module FindSettings =
             $", PrintUsage: %b{settings.PrintUsage}";
             $", PrintVersion: %b{settings.PrintVersion}";
             $", Recursive: %b{settings.Recursive}";
+            $", SortBy: %s{SortUtil.NameFromSortBy(settings.SortBy)}";
+            $", SortDescending: %b{settings.SortDescending}";
             $", Verbose: %b{settings.Verbose}";
             ")"
         ]

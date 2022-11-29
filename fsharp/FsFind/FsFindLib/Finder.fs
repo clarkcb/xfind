@@ -86,19 +86,30 @@ type Finder (settings : FindSettings.t) =
             let fileInfo = FileInfo(expandedPath)
             [FileResult.Create fileInfo (_fileTypes.GetFileType fileInfo)]
 
-    member this.Find () : FileResult.t list =
-        settings.Paths
-        |> List.collect this.GetFileResults
+    member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
+        if settings.SortBy = SortBy.FileName then
+            fileResults
+            |> List.sortBy (fun (r : FileResult.t) -> r.File.Name, r.File.DirectoryName)
+        else if settings.SortBy = SortBy.FileType then
+            fileResults
+            |> List.sortBy (fun (r : FileResult.t) -> r.FileType, r.File.DirectoryName, r.File.Name)
+        else
+            fileResults
+            |> List.sortBy (fun (r : FileResult.t) -> r.File.DirectoryName, r.File.Name)
 
-    member this.GetMatchingDirs (findFiles : FileResult.t list) : DirectoryInfo list = 
-        findFiles
+    member this.Find () : FileResult.t list =
+        let fileResults = settings.Paths |> List.collect this.GetFileResults
+        if settings.SortDescending then this.SortFileResults fileResults |> List.rev
+        else this.SortFileResults fileResults
+
+    member this.GetMatchingDirs (fileResults : FileResult.t list) : DirectoryInfo list = 
+        fileResults
         |> Seq.map (fun f -> f.File.Directory)
         |> Seq.distinctBy (fun d -> d.FullName)
-        |> Seq.sortBy (fun d -> d.FullName)
         |> List.ofSeq
 
-    member this.PrintMatchingDirs (findFiles : FileResult.t list) : unit = 
-        let dirs = this.GetMatchingDirs findFiles
+    member this.PrintMatchingDirs (fileResults : FileResult.t list) : unit = 
+        let dirs = this.GetMatchingDirs fileResults
         if dirs.Length > 0 then
             Common.Log $"\nMatching directories (%d{dirs.Length}):"
             for d in dirs do
@@ -110,8 +121,6 @@ type Finder (settings : FindSettings.t) =
     member this.GetMatchingFiles (findFiles : FileResult.t list) : FileInfo list = 
         findFiles
         |> Seq.map (fun f -> f.File)
-        |> Seq.distinctBy (fun f -> f.FullName)
-        |> Seq.sortBy (fun f -> f.FullName)
         |> List.ofSeq
 
     member this.PrintMatchingFiles (findFiles : FileResult.t list) : unit = 

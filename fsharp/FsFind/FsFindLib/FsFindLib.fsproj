@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -11,6 +11,7 @@
     <Compile Include="FindException.fs" />
     <Compile Include="FileUtil.fs" />
     <Compile Include="FileTypes.fs" />
+    <Compile Include="SortBy.fs" />
     <Compile Include="FindSettings.fs" />
     <Compile Include="FileResult.fs" />
     <Compile Include="FindOptions.fs" />

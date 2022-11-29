@@ -52,6 +52,7 @@ module FindOptions =
             // TODO: convert to int
             ("minsize", (fun (s : string) (settings : FindSettings.t) -> settings));
             ("path", (fun (s : string) (settings : FindSettings.t) -> FindSettings.AddPath s settings));
+            ("sort-by", (fun (s : string) (settings : FindSettings.t) -> { settings with SortBy = SortUtil.SortByFromName s }));
         ] |> Map.ofList
 
     let flagActionMap : Map<string, bool -> FindSettings.t -> FindSettings.t> =
@@ -67,6 +68,8 @@ module FindOptions =
             ("listfiles", (fun (b : bool) (settings : FindSettings.t) -> { settings with ListFiles = b }));
             ("norecursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = not b }));
             ("recursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = b }));
+            ("sort-ascending", (fun (b : bool) (settings : FindSettings.t) -> { settings with SortDescending = not b }));
+            ("sort-descending", (fun (b : bool) (settings : FindSettings.t) -> { settings with SortDescending = b }));
             ("verbose", (fun (b : bool) (settings : FindSettings.t) -> { settings with Verbose = b }));
             ("version", (fun (b : bool) (settings : FindSettings.t) -> { settings with PrintVersion = b }));
         ] |> Map.ofList;
