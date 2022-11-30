@@ -88,6 +88,7 @@ class FindOptions {
       'out-filetype': (String s, FindSettings ss) =>
           ss.outFileTypes.add(FileTypes.fromName(s)),
       'path': (String s, FindSettings ss) => ss.paths.add(s),
+      'sort-by': (String s, FindSettings ss) => ss.sortBy = nameToSortBy(s),
     };
 
     boolArgMap = {
@@ -102,6 +103,8 @@ class FindOptions {
       'listfiles': (bool b, FindSettings ss) => ss.listFiles = b,
       'printusage': (bool b, FindSettings ss) => ss.printUsage = b,
       'recursive': (bool b, FindSettings ss) => ss.recursive = b,
+      'sort-ascending': (bool b, FindSettings ss) => ss.sortDescending = !b,
+      'sort-descending': (bool b, FindSettings ss) => ss.sortDescending = b,
       'verbose': (bool b, FindSettings ss) => ss.verbose = b,
       'version': (bool b, FindSettings ss) => ss.printVersion = b,
     };

@@ -1,5 +1,35 @@
 import 'package:dartfind/src/file_types.dart';
 
+enum SortBy {
+  filePath,
+  fileName,
+  fileType,
+}
+
+extension SortByExtension on SortBy {
+  String get name {
+    switch (this) {
+      case SortBy.fileName:
+        return 'NAME';
+      case SortBy.fileType:
+        return 'TYPE';
+      default:
+        return 'PATH';
+    }
+  }
+}
+
+SortBy nameToSortBy(String name) {
+  switch (name.trim().toLowerCase()) {
+    case "name":
+      return SortBy.fileName;
+    case "type":
+      return SortBy.fileType;
+    default:
+      return SortBy.filePath;
+  }
+}
+
 class FindSettings {
   bool _archivesOnly = false;
   bool get archivesOnly => _archivesOnly;
@@ -46,6 +76,10 @@ class FindSettings {
   bool printUsage = false;
   bool printVersion = false;
   bool recursive = true;
+
+  SortBy sortBy = SortBy.filePath;
+
+  bool sortDescending = true;
   bool verbose = false;
 
   void addExtensions(String exts, Set<String> extensions) {
@@ -96,6 +130,8 @@ class FindSettings {
       ', printUsage: $printUsage'
       ', printVersion: $printVersion'
       ', recursive: $recursive'
+      ', sortBy: ${sortBy.name}'
+      ', sortDescending: $sortDescending'
       ', verbose: $verbose'
       ')';
 }

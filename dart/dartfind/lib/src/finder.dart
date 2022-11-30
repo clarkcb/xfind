@@ -140,6 +140,58 @@ class Finder {
     });
   }
 
+  int cmpByFilePath(FileResult fr1, FileResult fr2) {
+    String fp1 = fr1.file.parent.path;
+    String fp2 = fr2.file.parent.path;
+    if (fp1 == fp2) {
+      return path
+          .basename(fr1.file.path)
+          .compareTo(path.basename(fr2.file.path));
+    }
+    return fp1.compareTo(fp2);
+  }
+
+  int cmpByFileName(FileResult fr1, FileResult fr2) {
+    String fn1 = path.basename(fr1.file.path);
+    String fn2 = path.basename(fr2.file.path);
+    if (fn1 == fn2) {
+      return fr1.file.parent.path.compareTo(fr2.file.parent.path);
+    }
+    return fn1.compareTo(fn2);
+  }
+
+  int cmpByFileType(FileResult fr1, FileResult fr2) {
+    if (fr1.fileType == fr2.fileType) {
+      return cmpByFilePath(fr1, fr2);
+    }
+    return fr1.fileType.name.compareTo(fr2.fileType.name);
+  }
+
+  void reverseFileResults(List<FileResult> fileResults) {
+    int i = 0;
+    int j = fileResults.length - 1;
+    while (i < j) {
+      var temp = fileResults[i];
+      fileResults[i] = fileResults[j];
+      fileResults[j] = temp;
+      i++;
+      j--;
+    }
+  }
+
+  void sortFileResults(List<FileResult> fileResults) {
+    if (settings.sortBy == SortBy.fileName) {
+      fileResults.sort(cmpByFileName);
+    } else if (settings.sortBy == SortBy.fileType) {
+      fileResults.sort(cmpByFileType);
+    } else {
+      fileResults.sort(cmpByFilePath);
+    }
+    if (settings.sortDescending) {
+      reverseFileResults(fileResults);
+    }
+  }
+
   Future<List<FileResult>> _findFiles() async {
     var fileResults = <FileResult>[];
     var pathsFileResultsFutures =
@@ -149,6 +201,7 @@ class Finder {
         fileResults.addAll(pathFileResults);
       }
     });
+    sortFileResults(fileResults);
     return fileResults;
   }
 

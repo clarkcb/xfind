@@ -31,18 +31,9 @@ void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
   }
 }
 
-int sortFiles(File f1, File f2) {
-  if (f1.parent.path == f2.parent.path) {
-    return f1.path.compareTo(f2.path);
-  } else {
-    return f1.parent.path.compareTo(f2.parent.path);
-  }
-}
-
 List<String> getMatchingFiles(
     List<FileResult> fileResults, FindSettings settings) {
   var files = fileResults.map((f) => f.file).toSet().toList();
-  files.sort(sortFiles);
   return files.map((f) => f.path).toList();
 }
 
