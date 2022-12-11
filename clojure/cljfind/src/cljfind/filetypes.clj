@@ -108,3 +108,12 @@
       (= XML lname) :xml
       (= ARCHIVE lname) :archive
       :else :unknown)))
+
+(defn to-name [ft]
+  (cond
+    (= :text ft) TEXT
+    (= :binary ft) BINARY
+    (= :code ft) CODE
+    (= :xml ft) XML
+    (= :archive ft) ARCHIVE
+    :else "unknown"))

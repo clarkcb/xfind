@@ -10,8 +10,26 @@
   #^{:author "Cary Clark",
      :doc "Defines the settings for a given find instance"}
   (:use [clojure.set :only (union)]
-        [clojure.string :as str :only (split)]
+        [clojure.string :as str :only (split lower-case)]
         [cljfind.filetypes :only (from-name)]))
+
+;; sort-by names
+(def FILEPATH "path")
+(def FILENAME "name")
+(def FILETYPE "type")
+
+(defn get-sort-by-name [s]
+  (cond
+    (= :filename s) FILENAME
+    (= :filetype s) FILETYPE
+    :else FILEPATH))
+
+(defn sort-by-from-name [^String name]
+  (let [lname (lower-case name)]
+    (cond
+      (= FILENAME lname) :filename
+      (= FILETYPE lname) :filetype
+      :else :filepath)))
 
 (defrecord FindSettings
   [
@@ -36,35 +54,40 @@
     paths
     printusage
     printversion
+    sort-by
+    sort-descending
     recursive
     verbose
   ])
 
-(def DEFAULT-SETTINGS (->FindSettings
-    false   ; archivesonly
-    false   ; debug
-    true    ; excludehidden
-    false   ; includearchives
-    #{}     ; in-archiveextensions
-    #{}     ; in-archivefilepatterns
-    #{}     ; in-dirpatterns
-    #{}     ; in-extensions
-    #{}     ; in-filepatterns
-    #{}     ; in-filetypes
-    false   ; listdirs
-    false   ; listfiles
-    #{}     ; out-archiveextensions
-    #{}     ; out-archivefilepatterns
-    #{}     ; out-dirpatterns
-    #{}     ; out-extensions
-    #{}     ; out-filepatterns
-    #{}     ; out-filetypes
-    #{}     ; paths
-    false   ; printusage
-    false   ; printversion
-    true    ; recursive
-    false   ; verbose
-  ))
+(def DEFAULT-SETTINGS
+  (->FindSettings
+   false     ; archivesonly
+   false     ; debug
+   true      ; excludehidden
+   false     ; includearchives
+   #{}       ; in-archiveextensions
+   #{}       ; in-archivefilepatterns
+   #{}       ; in-dirpatterns
+   #{}       ; in-extensions
+   #{}       ; in-filepatterns
+   #{}       ; in-filetypes
+   false     ; listdirs
+   false     ; listfiles
+   #{}       ; out-archiveextensions
+   #{}       ; out-archivefilepatterns
+   #{}       ; out-dirpatterns
+   #{}       ; out-extensions
+   #{}       ; out-filepatterns
+   #{}       ; out-filetypes
+   #{}       ; paths
+   false     ; printusage
+   false     ; printversion
+   :filepath ; sort-by
+   false     ; sort-descending
+   true      ; recursive
+   false     ; verbose
+   ))
 
 (defn add-element [x coll]
   (conj coll x))

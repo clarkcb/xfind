@@ -15,7 +15,9 @@
   (:use [clojure.java.io :only (file reader)]
         [clojure.string :as str :only (join trim upper-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileresult :only (new-file-result file-result-path)]
+        [cljfind.fileresult :only
+         (new-file-result file-result-path comp-by-name comp-by-path
+           comp-by-type)]
         [cljfind.filetypes :only (archive-file? get-filetype)]
         [cljfind.fileutil :only
           (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
@@ -126,7 +128,16 @@
     (get-file-results settings (:paths settings) []))
   ([settings paths fileresults]
     (if (empty? paths)
-      fileresults
+      (let [sorted-results (cond
+                             (= (:sort-by settings) :filename)
+                               (sort comp-by-name fileresults)
+                             (= (:sort-by settings) :filetype)
+                               (sort comp-by-type fileresults)
+                             :else
+                               (sort comp-by-path fileresults))]
+        (if (:sort-descending settings)
+          (reverse sorted-results)
+          sorted-results))
       (let [nextfileresults (get-file-results-for-path settings (first paths))]
         (get-file-results settings (rest paths) (concat fileresults nextfileresults))))))
 
@@ -148,7 +159,7 @@
         (doseq [d dirs] (log-msg d))))))
 
 (defn get-matching-files [fileresults]
-  (sort (distinct (map #(file-result-path %) fileresults))))
+  (map #(file-result-path %) fileresults))
 
 (defn print-matching-files [fileresults]
   (let [files (get-matching-files fileresults)]

@@ -19,7 +19,7 @@
         [cljfind.fileutil :only (expand-path)]
         [cljfind.findsettings :only
          (->FindSettings DEFAULT-SETTINGS add-extension add-filetype add-path
-            add-pattern set-archivesonly set-debug set-num)]))
+            add-pattern set-archivesonly set-debug set-num sort-by-from-name)]))
 
 (defrecord FindOption [short-arg long-arg desc])
 
@@ -63,6 +63,8 @@
     :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
     :out-filepattern (fn [settings s] (add-pattern settings s :out-filepatterns))
     :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
+    :path (fn [settings s] (add-path settings s))
+    :sort-by (fn [settings s] (assoc settings :sort-by (sort-by-from-name s)))
   })
 
 (def bool-flag-action-map
@@ -77,6 +79,8 @@
     :listfiles (fn [settings b] (assoc settings :listfiles b))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :recursive (fn [settings b] (assoc settings :recursive b))
+    :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
+    :sort-descending (fn [settings b] (assoc settings :sort-descending b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))
   })
