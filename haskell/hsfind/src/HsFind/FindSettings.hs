@@ -1,13 +1,29 @@
 module HsFind.FindSettings
   ( FindSettings(..)
   , defaultFindSettings
+  , getSortByForName
   , newExtensions
+  , SortBy(..)
   ) where
 
+import Data.Char (toLower)
 import Data.List.Split (splitOn)
 
 import HsFind.FileTypes (FileType)
 import HsFind.FileUtil (normalizeExtension)
+
+data SortBy = SortByFilePath
+            | SortByFileName
+            | SortByFileType
+  deriving (Show, Eq)
+
+getSortByForName :: String -> SortBy
+getSortByForName sortByName =
+  case lower sortByName of
+    "name" -> SortByFileName
+    "type" -> SortByFileType
+    _ -> SortByFilePath
+  where lower = map toLower
 
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool
@@ -32,6 +48,8 @@ data FindSettings = FindSettings {
                                  , printUsage :: Bool
                                  , printVersion :: Bool
                                  , recursive :: Bool
+                                 , sortDescending :: Bool
+                                 , sortResultsBy :: SortBy
                                  , verbose :: Bool
                                  } deriving (Show, Eq)
 
@@ -59,6 +77,8 @@ defaultFindSettings = FindSettings {
                                    , printUsage=False
                                    , printVersion=False
                                    , recursive=True
+                                   , sortDescending=False
+                                   , sortResultsBy=SortByFilePath
                                    , verbose=False
                                    }
 

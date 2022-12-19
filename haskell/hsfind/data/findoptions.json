@@ -143,6 +143,19 @@
       "desc": "A path to a JSON file with specified find settings"
     },
     {
+      "long": "sort-by",
+      "arg": "sort",
+      "desc": "Sort by: PATH, NAME, TYPE, SIZE, LASTMOD"
+    },
+    {
+      "long": "sort-ascending",
+      "desc": "Sort results in ascending order*"
+    },
+    {
+      "long": "sort-descending",
+      "desc": "Sort results in descending order"
+    },
+    {
       "long": "verbose",
       "short": "v",
       "desc": "Set output mode to verbose"

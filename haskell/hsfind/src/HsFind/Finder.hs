@@ -10,16 +10,19 @@ module HsFind.Finder
     ) where
 
 import Control.Monad (forM)
+import Data.List (sortBy)
 import Data.Maybe (fromJust, isJust)
 import qualified Data.ByteString as B
+import System.FilePath (dropFileName, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 
 import HsFind.FileTypes (FileType, JsonFileType, getFileTypes, getJsonFileTypes, fileTypeFromJsonFileTypes)
 import HsFind.FileUtil
     (hasExtension, isHiddenFilePath, getRecursiveFilteredContents)
 import HsFind.FileResult
-    (FileResult(fileResultPath), isArchiveFile, newFileResult)
+    (FileResult(..), blankFileResult, isArchiveFile, newFileResult)
 import HsFind.FindSettings
+import GHC.Generics (Generic1(from1))
 
 
 getDirTests :: FindSettings -> [FilePath -> Bool]
@@ -120,8 +123,8 @@ isMatchingArchiveFile settings = matchesArchiveFileTests archiveFileTests
         archiveFileTests = getArchiveFileTests settings
 
 filterFile :: FindSettings -> FileResult -> Bool
-filterFile settings ff | isArchiveFile ff = includeArchiveFile ff
-                       | otherwise        = includeFile ff
+filterFile settings fr | isArchiveFile fr = includeArchiveFile fr
+                       | otherwise        = includeFile fr
   where includeArchiveFile f = includeArchives settings &&
                                isMatchingArchiveFile settings (fileResultPath f)
         includeFile f = not (archivesOnly settings) &&
@@ -149,5 +152,47 @@ getFileResults settings = do
   allFileTypes <- getFileTypes allPaths
   return $ zipWith (curry getFileResult) allPaths allFileTypes
 
+sortFileResultsByPath :: FileResult -> FileResult -> Ordering
+sortFileResultsByPath fr1 fr2 =
+  if p1 == p2
+  then compare f1 f2
+  else compare p1 p2
+  where p1 = dropFileName (fileResultPath fr1)
+        p2 = dropFileName (fileResultPath fr2)
+        f1 = takeFileName (fileResultPath fr1)
+        f2 = takeFileName (fileResultPath fr2)
+
+sortFileResultsByName :: FileResult -> FileResult -> Ordering
+sortFileResultsByName fr1 fr2 =
+  if f1 == f2
+  then compare p1 p2
+  else compare f1 f2
+  where p1 = dropFileName (fileResultPath fr1)
+        p2 = dropFileName (fileResultPath fr2)
+        f1 = takeFileName (fileResultPath fr1)
+        f2 = takeFileName (fileResultPath fr2)
+
+sortFileResultsByType :: FileResult -> FileResult -> Ordering
+sortFileResultsByType fr1 fr2 =
+  if t1 == t2
+  then sortFileResultsByPath fr1 fr2
+  else compare t1 t2
+  where t1 = fileResultType fr1
+        t2 = fileResultType fr2
+
+sortFileResults :: FindSettings -> [FileResult] -> [FileResult]
+sortFileResults settings fileResults =
+  if sortDescending settings
+  then case sortResultsBy settings of
+         SortByFileName -> reverse $ sortBy sortFileResultsByName fileResults
+         SortByFileType -> reverse $ sortBy sortFileResultsByType fileResults
+         _              -> reverse $ sortBy sortFileResultsByPath fileResults
+  else case sortResultsBy settings of
+         SortByFileName -> sortBy sortFileResultsByName fileResults
+         SortByFileType -> sortBy sortFileResultsByType fileResults
+         _              -> sortBy sortFileResultsByPath fileResults
+
 doFind :: FindSettings -> IO [FileResult]
-doFind = getFileResults
+doFind settings = do
+  fileResults <- getFileResults settings
+  return $ sortFileResults settings fileResults

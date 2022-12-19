@@ -111,6 +111,7 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("out-filepattern", \ss s -> ss {outFilePatterns = outFilePatterns ss ++ [s]})
              , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
              , ("path", \ss s -> ss {paths = paths ss ++ [s]})
+             , ("sort-by", \ss s -> ss {sortResultsBy = getSortByForName s})
              ]
 
 flagActions :: [(String, FlagAction)]
@@ -126,6 +127,8 @@ flagActions = [ ("archivesonly", \ss -> ss {archivesOnly=True,
               , ("listfiles", \ss -> ss {listFiles=True})
               , ("norecursive", \ss -> ss {recursive=False})
               , ("recursive", \ss -> ss {recursive=True})
+              , ("sort-ascending", \ss -> ss {sortDescending=False})
+              , ("sort-descending", \ss -> ss {sortDescending=True})
               , ("verbose", \ss -> ss {verbose=True})
               , ("version", \ss -> ss {printVersion=True})
               ]
@@ -143,6 +146,8 @@ boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
                   , ("listfiles", \ss b -> ss {listFiles=b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
                   , ("recursive", \ss b -> ss {recursive=b})
+                  , ("sort-ascending", \ss b -> ss {sortDescending=not b})
+                  , ("sort-descending", \ss b -> ss {sortDescending=b})
                   , ("verbose", \ss b -> ss {verbose=b})
                   , ("version", \ss b -> ss {printVersion=b})
                   ]

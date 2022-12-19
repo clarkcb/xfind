@@ -5,6 +5,7 @@ module HsFind.FileTypes
   , getFileType
   , getFileTypes
   , getFileTypeForName
+  , getFileTypeName
   , getJsonFileTypes
   , fileTypeFromJsonFileTypes
   ) where
@@ -27,7 +28,7 @@ data FileType = Unknown
               | Code
               | Text
               | Xml
-  deriving (Show, Eq)
+  deriving (Show, Eq, Ord)
 
 getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =
@@ -39,6 +40,16 @@ getFileTypeForName typeName =
     "text" -> Text
     _ -> Unknown
   where lower = map toLower
+
+getFileTypeName :: FileType -> String
+getFileTypeName ft =
+  case ft of
+    Archive -> "archive"
+    Binary -> "binary"
+    Code -> "code"
+    Xml -> "xml"
+    Text -> "text"
+    _ -> "unknown"
 
 data JsonFileType = JsonFileType
     { fileType :: String

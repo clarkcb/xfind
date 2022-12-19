@@ -9,6 +9,7 @@ import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 
 import HsFind.FileResult
+import HsFind.FileTypes (getFileTypeName)
 import HsFind.FileUtil (getParentPath, pathExists)
 import HsFind.FindOptions
 import HsFind.Finder (doFind)
@@ -36,24 +37,23 @@ errsOrUsage findOptions settings =
                    _ -> ""
 
 getMatchingDirs :: [FileResult] -> [FilePath]
-  -- return (map (\ff -> findFilePath ff) findFiles)
 getMatchingDirs = sort . nub . map (takeDirectory . fileResultPath)
 
 formatMatchingDirs :: [FileResult] -> String
-formatMatchingDirs findFiles =
+formatMatchingDirs fileResults =
   if not (null matchingDirs) then
     "\nMatching directories (" ++ show (length matchingDirs) ++ "):\n" ++
-    unlines (sort matchingDirs)
+    unlines matchingDirs
   else "\nMatching directories: 0\n"
-  where matchingDirs = getMatchingDirs findFiles
+  where matchingDirs = getMatchingDirs fileResults
 
 formatMatchingFiles :: [FileResult] -> String
-formatMatchingFiles findFiles =
+formatMatchingFiles fileResults =
   if not (null matchingFiles) then
     "\nMatching files (" ++ show (length matchingFiles) ++ "):\n" ++
-    unlines (sort matchingFiles)
+    unlines matchingFiles
   else "\nMatching files: 0\n"
-  where matchingFiles = map fileResultPath findFiles
+  where matchingFiles = map fileResultPath fileResults
 
 logMsg :: String -> IO ()
 logMsg = putStr
