@@ -28,7 +28,7 @@ private const val text = "text"
 private const val xml = "xml"
 //private const val unknown = "unknown"
 
-fun fromName(name: String) : FileType {
+fun fileTypeFromName(name: String) : FileType {
     when (name.trim().lowercase()) {
         text -> {
             return FileType.TEXT

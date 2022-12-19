@@ -5,10 +5,10 @@
       "extensions": [
         "7z", "ace", "air", "ane", "apk", "appx", "arc", "arj", "ark", "ass",
         "b1", "bcpio", "bin", "bke", "bkf", "boz", "bz", "bz2", "cab", "cfs",
-        "cpio", "deb", "dgc", "dmg", "ear", "egg", "esd", "ez3", "gca", "gtar",
-        "gz", "hqx", "ipa", "ipg", "ipk", "iso", "jar", "joda", "lbr", "lha",
-        "lqr", "lz", "lzh", "lzma", "lzop", "lzr", "maff", "mbw", "mgp", "mpq",
-        "msi", "oar", "obr", "pax", "phar", "pyz", "pyzw", "rar", "rpm",
+        "cpio", "deb", "dgc", "dmg", "ear", "egg", "esd", "ez3", "gca", "gem",
+        "gtar", "gz", "hqx", "ipa", "ipg", "ipk", "iso", "jar", "joda", "lbr",
+        "lha", "lqr", "lz", "lzh", "lzma", "lzop", "lzr", "maff", "mbw", "mgp",
+        "mpq", "msi", "oar", "obr", "pax", "phar", "pyz", "pyzw", "rar", "rpm",
         "shar", "sit", "sitx", "smzip", "sq", "sqx", "ssa", "swc", "tao",
         "tar", "tgz", "udeb", "war", "whl", "wim", "xap", "xz", "Z", "zip",
         "zipx", "zoo"
@@ -34,7 +34,7 @@
         "ei6", "elc", "emf", "emz", "eps", "epub", "esa", "esf", "eva", "evy",
         "exe", "exi", "ext", "ez", "ez2", "fcdt", "fcs", "fdf", "fe_launch",
         "fg5", "fgd", "fig", "flo", "flw", "fm", "fnc", "frame", "fsc", "ftc",
-        "fti", "fxp", "fxpl", "fzs", "g2w", "g3w", "gac", "gam", "gbr", "gem", "geo",
+        "fti", "fxp", "fxpl", "fzs", "g2w", "g3w", "gac", "gam", "gbr", "geo",
         "gex", "ggb", "ggt", "ghf", "gim", "gmx", "gnumeric", "gph", "gqf",
         "gqs", "gram", "gramps", "gre", "grv", "gtm", "gxf", "gxt", "hbci",
         "hdf", "hi", "hlp", "hpgl", "hpid", "hps", "htke", "hvd", "hvp", "hvs",

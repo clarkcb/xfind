@@ -1,16 +1,23 @@
 package ktfind
 
 import java.io.File
+import kotlin.io.path.extension
+import kotlin.io.path.name
+import kotlin.streams.toList
 
 /**
  * @author cary on 7/23/16.
  */
 class Finder(val settings: FindSettings) {
     private val fileTypes: FileTypes
+    private val extTests: MutableSet<(String) -> Boolean> = mutableSetOf()
+    private val fileNameTests: MutableSet<(String) -> Boolean> = mutableSetOf()
+    private val fileTypeTests: MutableSet<(FileType) -> Boolean> = mutableSetOf()
 
     init {
         validateSettings(settings)
         fileTypes = FileTypes()
+        setTests()
     }
 
     private fun validateSettings(settings: FindSettings) {
@@ -25,6 +32,24 @@ class Finder(val settings: FindSettings) {
             if (!pFile.canRead()) {
                 throw FindException("Startpath not readable")
             }
+        }
+    }
+
+    private fun setTests() {
+        if (settings.inExtensions.isNotEmpty()) {
+            extTests.add { ext: String -> settings.inExtensions.contains(ext) }
+        } else if (settings.outExtensions.isNotEmpty()) {
+            extTests.add { ext: String -> !settings.outExtensions.contains(ext) }
+        }
+        if (settings.inFilePatterns.isNotEmpty()) {
+            fileNameTests.add { fileName: String -> matchesAnyPattern(fileName, settings.inFilePatterns) }
+        } else if (settings.outFilePatterns.isNotEmpty()) {
+            fileNameTests.add { fileName: String -> !matchesAnyPattern(fileName, settings.outFilePatterns) }
+        }
+        if (settings.inFileTypes.isNotEmpty()) {
+            fileTypeTests.add { fileType: FileType -> settings.inFileTypes.contains(fileType) }
+        } else if (settings.outFileTypes.isNotEmpty()) {
+            fileTypeTests.add { fileType: FileType -> !settings.outFileTypes.contains(fileType) }
         }
     }
 
@@ -49,47 +74,56 @@ class Finder(val settings: FindSettings) {
                         || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
+//    fun isMatchingFile(fr: FileResult): Boolean {
+//        return (settings.inExtensions.isEmpty()
+//                        || settings.inExtensions.contains(fr.file.extension))
+//                &&
+//                (settings.outExtensions.isEmpty()
+//                        || !settings.outExtensions.contains(fr.file.extension))
+//                &&
+//                (settings.inFilePatterns.isEmpty()
+//                        || matchesAnyPattern(fr.file.name, settings.inFilePatterns))
+//                &&
+//                (settings.outFilePatterns.isEmpty()
+//                        || !matchesAnyPattern(fr.file.name, settings.outFilePatterns))
+//                &&
+//                (settings.inFileTypes.isEmpty()
+//                        || settings.inFileTypes.contains(fr.fileType))
+//                &&
+//                (settings.outFileTypes.isEmpty()
+//                        || !settings.outFileTypes.contains(fr.fileType))
+//    }
+
     fun isMatchingFile(fr: FileResult): Boolean {
-        val ext = fr.file.extension
-        return (settings.inExtensions.isEmpty()
-                        || settings.inExtensions.contains(ext))
+        return (extTests.isEmpty()
+                        || extTests.any { t -> t.invoke(fr.path.extension) })
                 &&
-                (settings.outExtensions.isEmpty()
-                        || !settings.outExtensions.contains(ext))
+                (fileNameTests.isEmpty()
+                        || fileNameTests.any {t -> t.invoke(fr.path.fileName.name)})
                 &&
-                (settings.inFilePatterns.isEmpty()
-                        || matchesAnyPattern(fr.file.name, settings.inFilePatterns))
-                &&
-                (settings.outFilePatterns.isEmpty()
-                        || !matchesAnyPattern(fr.file.name, settings.outFilePatterns))
-                &&
-                (settings.inFileTypes.isEmpty()
-                        || settings.inFileTypes.contains(fr.fileType))
-                &&
-                (settings.outFileTypes.isEmpty()
-                        || !settings.outFileTypes.contains(fr.fileType))
+                (fileTypeTests.isEmpty()
+                        || fileTypeTests.any {t -> t.invoke(fr.fileType)})
     }
 
     fun isMatchingArchiveFile(fr: FileResult): Boolean {
-        val ext = fr.file.extension
         return (settings.inArchiveExtensions.isEmpty()
-                        || settings.inArchiveExtensions.contains(ext))
+                        || settings.inArchiveExtensions.contains(fr.path.extension))
                 &&
                 (settings.outArchiveExtensions.isEmpty()
-                        || !settings.outArchiveExtensions.contains(ext))
+                        || !settings.outArchiveExtensions.contains(fr.path.extension))
                 &&
                 (settings.inArchiveFilePatterns.isEmpty()
-                        || matchesAnyPattern(fr.file.name, settings.inArchiveFilePatterns))
+                        || matchesAnyPattern(fr.path.name, settings.inArchiveFilePatterns))
                 &&
                 (settings.outArchiveFilePatterns.isEmpty()
-                        || !matchesAnyPattern(fr.file.name, settings.outArchiveFilePatterns))
+                        || !matchesAnyPattern(fr.path.name, settings.outArchiveFilePatterns))
     }
 
     fun filterToFileResult(f: File): FileResult? {
         if (settings.excludeHidden && f.isHidden) {
             return null
         }
-        val fr = FileResult(f, fileTypes.getFileType(f))
+        val fr = FileResult(f.toPath(), fileTypes.getFileType(f))
         if (fr.fileType === FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFile(fr)) {
                 return fr;
@@ -110,6 +144,27 @@ class Finder(val settings: FindSettings) {
             .toList()
     }
 
+    private fun sortFileResults(fileResults: List<FileResult>): List<FileResult> {
+        val sortedFileResults: MutableList<FileResult> =
+            when (settings.sortBy) {
+                SortBy.FILENAME -> {
+                    fileResults.stream().sorted { fr1, fr2 -> fr1.compareByName(fr2) }.toList()
+                }
+                SortBy.FILETYPE -> {
+                    fileResults.stream().sorted { fr1, fr2 -> fr1.compareByType(fr2) }.toList()
+                }
+                else -> {
+                    fileResults.stream().sorted { fr1, fr2 -> fr1.compareByPath(fr2) }.toList()
+                }
+            }.toMutableList()
+
+        if (settings.sortDescending) {
+            sortedFileResults.reverse()
+        }
+
+        return sortedFileResults.toList()
+    }
+
     fun find(): List<FileResult> {
         val fileResults: MutableList<FileResult> = mutableListOf()
         for (p in settings.paths) {
@@ -127,6 +182,6 @@ class Finder(val settings: FindSettings) {
                 throw FindException("Path is invalid file type: $p")
             }
         }
-        return fileResults.toList()
+        return sortFileResults(fileResults.toList())
     }
 }

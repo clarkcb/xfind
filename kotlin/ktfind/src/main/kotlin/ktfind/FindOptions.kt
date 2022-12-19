@@ -51,50 +51,54 @@ class FindOptions {
     }
 
     private val argActionMap: Map<String, ((String, FindSettings) -> FindSettings)> = mapOf(
-            "in-archiveext" to
-                    { s, ss -> ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions)) },
-            "in-archivefilepattern" to
-                    { s, ss -> ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns.plus(Regex(s))) },
-            "in-dirpattern" to
-                    { s, ss -> ss.copy(inDirPatterns = ss.inDirPatterns.plus(Regex(s))) },
-            "in-ext" to
-                    { s, ss -> ss.copy(inExtensions = addExtensions(s, ss.inExtensions)) },
-            "in-filepattern" to
-                    { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
-            "in-filetype" to
-                    { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
-            "out-archiveext" to
-                    { s, ss -> ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions)) },
-            "out-archivefilepattern" to
-                    { s, ss -> ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns.plus(Regex(s))) },
-            "out-dirpattern" to
-                    { s, ss -> ss.copy(outDirPatterns = ss.outDirPatterns.plus(Regex(s))) },
-            "out-ext" to
-                    { s, ss -> ss.copy(outExtensions = addExtensions(s, ss.outExtensions)) },
-            "out-filepattern" to
-                    { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
-            "out-filetype" to
-                    { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
-            "settings-file" to
-                    { s, ss -> settingsFromFile(s, ss) }
+        "in-archiveext" to
+                { s, ss -> ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions)) },
+        "in-archivefilepattern" to
+                { s, ss -> ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns.plus(Regex(s))) },
+        "in-dirpattern" to
+                { s, ss -> ss.copy(inDirPatterns = ss.inDirPatterns.plus(Regex(s))) },
+        "in-ext" to
+                { s, ss -> ss.copy(inExtensions = addExtensions(s, ss.inExtensions)) },
+        "in-filepattern" to
+                { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
+        "in-filetype" to
+                { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
+        "out-archiveext" to
+                { s, ss -> ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions)) },
+        "out-archivefilepattern" to
+                { s, ss -> ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns.plus(Regex(s))) },
+        "out-dirpattern" to
+                { s, ss -> ss.copy(outDirPatterns = ss.outDirPatterns.plus(Regex(s))) },
+        "out-ext" to
+                { s, ss -> ss.copy(outExtensions = addExtensions(s, ss.outExtensions)) },
+        "out-filepattern" to
+                { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
+        "out-filetype" to
+                { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
+        "settings-file" to
+                { s, ss -> settingsFromFile(s, ss) },
+        "sort-by" to
+                { s, ss -> ss.copy(sortBy = sortByFromName(s)) },
     )
 
     private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
-            "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
-                    includeArchives = b) else ss.copy(archivesOnly = b) },
-            "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
-                ss.copy(debug = b) },
-            "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
-            "excludehidden" to { b, ss -> ss.copy(excludeHidden = b) },
-            "help" to { b, ss -> ss.copy(printUsage = b) },
-            "includehidden" to { b, ss -> ss.copy(excludeHidden = !b) },
-            "listdirs" to { b, ss -> ss.copy(listDirs = b) },
-            "listfiles" to { b, ss -> ss.copy(listFiles = b) },
-            "norecursive" to { b, ss -> ss.copy(recursive = !b) },
-            "recursive" to { b, ss -> ss.copy(recursive = b) },
-            "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
-            "verbose" to { b, ss -> ss.copy(verbose = b) },
-            "version" to { b, ss -> ss.copy(printVersion = b) }
+        "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
+            includeArchives = b) else ss.copy(archivesOnly = b) },
+        "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
+            ss.copy(debug = b) },
+        "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
+        "excludehidden" to { b, ss -> ss.copy(excludeHidden = b) },
+        "help" to { b, ss -> ss.copy(printUsage = b) },
+        "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
+        "includehidden" to { b, ss -> ss.copy(excludeHidden = !b) },
+        "listdirs" to { b, ss -> ss.copy(listDirs = b) },
+        "listfiles" to { b, ss -> ss.copy(listFiles = b) },
+        "norecursive" to { b, ss -> ss.copy(recursive = !b) },
+        "recursive" to { b, ss -> ss.copy(recursive = b) },
+        "sort-ascending" to { b, ss -> ss.copy(sortDescending = !b) },
+        "sort-descending" to { b, ss -> ss.copy(sortDescending = b) },
+        "verbose" to { b, ss -> ss.copy(verbose = b) },
+        "version" to { b, ss -> ss.copy(printVersion = b) }
     )
 
     private fun settingsFromFile(filePath: String, settings: FindSettings) : FindSettings {

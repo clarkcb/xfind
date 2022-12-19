@@ -1,5 +1,7 @@
 package ktfind
 
+import kotlin.io.path.name
+
 fun printUsage(findOptions: FindOptions) {
     log("")
     findOptions.usage()
@@ -12,19 +14,19 @@ fun printErrorWithUsage(err: String, findOptions: FindOptions) {
 }
 
 fun printMatchingDirs(fileResults: List<FileResult>) {
-    val dirs = fileResults.mapNotNull { f -> f.file.parent }.distinct().sorted()
+    val dirs = fileResults.mapNotNull { f -> f.path.parent }.distinct().sorted()
     if (dirs.isEmpty()) {
         log("\nMatching directories: 0")
     } else {
         log("\nMatching directories (${dirs.size}):")
         for (d in dirs) {
-            log(d)
+            log(d.name)
         }
     }
 }
 
 fun printMatchingFiles(fileResults: List<FileResult>) {
-    val files = fileResults.map { f -> f.file }.map { f -> f.toString() }.distinct().sorted()
+    val files = fileResults.map { f -> f.path }.map { f -> f.toString() }
     if (files.isEmpty()) {
         log("\nMatching files: 0")
     } else {
