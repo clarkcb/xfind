@@ -33,6 +33,27 @@ public class FileResult {
         return this.fileType;
     }
 
+    public final int compareByPath(FileResult other) {
+        if (this.path.getParent().equals(other.path.getParent())) {
+            return this.path.getFileName().compareTo(other.path.getFileName());
+        }
+        return this.path.getParent().compareTo(other.path.getParent());
+    }
+
+    public final int compareByName(FileResult other) {
+        if (this.path.getFileName().equals(other.path.getFileName())) {
+            return this.path.getParent().compareTo(other.path.getParent());
+        }
+        return this.path.getFileName().compareTo(other.path.getFileName());
+    }
+
+    public final int compareByType(FileResult other) {
+        if (this.getFileType().equals(other.getFileType())) {
+            return compareByPath(other);
+        }
+        return this.getFileType().compareTo(other.getFileType());
+    }
+
     public final String toString() {
         StringBuilder sb = new StringBuilder();
         if (containers.size() > 0) {

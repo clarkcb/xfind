@@ -51,6 +51,7 @@ public class FindOptions {
             put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
             put("settings-file", (s, settings) -> settingsFromFilePath(s, settings));
+            put("sort-by", (s, settings) -> settings.setSortBy(SortByUtil.fromName(s)));
         }
     };
 
@@ -72,6 +73,8 @@ public class FindOptions {
             put("listfiles", (b, settings) -> settings.setListFiles(b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
+            put("sort-ascending", (b, settings) -> settings.setSortDescending(!b));
+            put("sort-descending", (b, settings) -> settings.setSortDescending(b));
             put("verbose", (b, settings) -> settings.setVerbose(b));
             put("version", (b, settings) -> settings.setPrintVersion(b));
         }
@@ -208,7 +211,7 @@ public class FindOptions {
         while (!queue.isEmpty()) {
             String arg = queue.remove();
             if (arg.startsWith("-")) {
-                while (arg.length() > 0 && arg.startsWith("-")) {
+                while (arg.startsWith("-")) {
                     arg = arg.substring(1);
                 }
                 if (this.argActionMap.containsKey(arg)) {

@@ -50,8 +50,7 @@ public class FindMain {
     }
 
     private static List<String> getMatchingFiles(final List<FileResult> fileResults) {
-        return fileResults.stream().map(f -> f.toString()).distinct()
-                .sorted().collect(Collectors.toList());
+        return fileResults.stream().map(FileResult::toString).collect(Collectors.toList());
     }
 
     private static void printMatchingFiles(final List<FileResult> fileResults) {

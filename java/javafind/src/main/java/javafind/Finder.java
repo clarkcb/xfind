@@ -13,10 +13,7 @@ package javafind;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -57,11 +54,17 @@ public class Finder {
     }
 
     boolean isMatchingDir(final Path path) {
-        List<String> pathElems = FileUtil.splitPath(path);
-        if (settings.getExcludeHidden()
-                && pathElems.stream().anyMatch(FileUtil::isHidden)) {
-            return false;
+        if (settings.getExcludeHidden()) {
+            try {
+                if (Files.isHidden(path)) {
+                    return false;
+                }
+            } catch (IOException e) {
+                Logger.logError(e.getMessage());
+                return false;
+            }
         }
+        List<String> pathElems = FileUtil.splitPath(path);
         return (settings.getInDirPatterns().isEmpty()
                 ||
                 anyMatchesAnyPattern(pathElems, settings.getInDirPatterns()))
@@ -77,18 +80,17 @@ public class Finder {
         return isMatchingFile(sf);
     }
 
-    boolean isMatchingFile(final FileResult sf) {
-        String fileName = sf.getPath().getFileName().toString();
-        String ext = FileUtil.getExtension(fileName);
-        return (settings.getInExtensions().isEmpty()
-                ||
-                settings.getInExtensions().contains(ext))
-               &&
-               (settings.getOutExtensions().isEmpty()
-                ||
-                !settings.getOutExtensions().contains(ext))
-               &&
-               (settings.getInFilePatterns().isEmpty()
+    boolean isMatchingFile(final FileResult fr) {
+        String fileName = fr.getPath().getFileName().toString();
+        if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
+            String ext = FileUtil.getExtension(fileName);
+            if ((!settings.getInExtensions().isEmpty() && !settings.getInExtensions().contains(ext))
+                    ||
+                    (!settings.getOutExtensions().isEmpty() && settings.getOutExtensions().contains(ext))) {
+                return false;
+            }
+        }
+        return (settings.getInFilePatterns().isEmpty()
                 ||
                 matchesAnyPattern(fileName, settings.getInFilePatterns()))
                &&
@@ -98,51 +100,50 @@ public class Finder {
                &&
                (settings.getInFileTypes().isEmpty()
                 ||
-                settings.getInFileTypes().contains(sf.getFileType()))
+                settings.getInFileTypes().contains(fr.getFileType()))
                &&
                (settings.getOutFileTypes().isEmpty()
                 ||
-                !settings.getOutFileTypes().contains(sf.getFileType()));
+                !settings.getOutFileTypes().contains(fr.getFileType()));
     }
 
     boolean isMatchingArchiveFile(final Path path) {
-        String ext = FileUtil.getExtension(path);
-        return (settings.getInArchiveExtensions().isEmpty()
+        String fileName = path.getFileName().toString();
+        if (!settings.getInArchiveExtensions().isEmpty() || !settings.getOutArchiveExtensions().isEmpty()) {
+            String ext = FileUtil.getExtension(fileName);
+            if ((!settings.getInArchiveExtensions().isEmpty() && !settings.getInArchiveExtensions().contains(ext))
+                    ||
+                    (!settings.getOutArchiveExtensions().isEmpty()
+                            &&
+                            settings.getOutArchiveExtensions().contains(ext))) {
+                return false;
+            }
+        }
+        return (settings.getInArchiveFilePatterns().isEmpty()
                 ||
-                settings.getInArchiveExtensions().contains(ext))
-               &&
-               (settings.getOutArchiveExtensions().isEmpty()
-                ||
-                !settings.getOutArchiveExtensions().contains(ext))
-               &&
-               (settings.getInArchiveFilePatterns().isEmpty()
-                ||
-                matchesAnyPattern(path.getFileName().toString(), settings.getInArchiveFilePatterns()))
+                matchesAnyPattern(fileName, settings.getInArchiveFilePatterns()))
                &&
                (settings.getOutArchiveFilePatterns().isEmpty()
                 ||
-                !matchesAnyPattern(path.getFileName().toString(), settings.getOutArchiveFilePatterns()));
-    }
-
-    boolean filterFile(final Path path) {
-        if (FileUtil.isHidden(path) && settings.getExcludeHidden()) {
-            return false;
-        }
-        if (fileTypes.getFileType(path) == FileType.ARCHIVE) {
-            return settings.getIncludeArchives() && isMatchingArchiveFile(path);
-        }
-        return !settings.getArchivesOnly() && isMatchingFile(path);
+                !matchesAnyPattern(fileName, settings.getOutArchiveFilePatterns()));
     }
 
     FileResult filterToFileResult(final Path path) {
-        if (FileUtil.isHidden(path) && settings.getExcludeHidden()) {
-            return null;
+        if (settings.getExcludeHidden()) {
+            try {
+                if (Files.isHidden(path)) {
+                    return null;
+                }
+            } catch (IOException e) {
+                Logger.logError(e.getMessage());
+                return null;
+            }
         }
+
         FileResult fileResult = new FileResult(path, fileTypes.getFileType(path));
         if (fileResult.getFileType() == FileType.ARCHIVE) {
-            if ((settings.getIncludeArchives() || settings.getArchivesOnly())
-                && isMatchingArchiveFile(path)) {
-                    return fileResult;
+            if ((settings.getIncludeArchives() || settings.getArchivesOnly()) && isMatchingArchiveFile(path)) {
+                return fileResult;
             }
             return null;
         }
@@ -150,6 +151,19 @@ public class Finder {
             return fileResult;
         }
         return null;
+    }
+
+    public final void sortFileResults(List<FileResult> fileResults) {
+        if (settings.getSortBy().equals(SortBy.FILENAME)) {
+            fileResults.sort(FileResult::compareByName);
+        } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
+            fileResults.sort(FileResult::compareByType);
+        } else {
+            fileResults.sort(FileResult::compareByPath);
+        }
+        if (settings.getSortDescending()) {
+            Collections.reverse(fileResults);
+        }
     }
 
     public final List<FileResult> find() throws FindException {
@@ -173,19 +187,20 @@ public class Finder {
                 throw new FindException("Startpath is not a findable file type");
             }
         }
+        sortFileResults(fileResults);
         return fileResults;
     }
 
-    private static class FindFindFileVisitor extends SimpleFileVisitor<Path> {
+    private static class FindFileResultsVisitor extends SimpleFileVisitor<Path> {
         Function<Path, Boolean> filterDir;
-        Function<Path, FileResult> filterToFindFile;
+        Function<Path, FileResult> filterToFileResult;
         List<FileResult> fileResults;
 
-        FindFindFileVisitor(final Function<Path, Boolean> filterDir,
-                            final Function<Path, FileResult> filterToFindFile) {
+        FindFileResultsVisitor(final Function<Path, Boolean> filterDir,
+                               final Function<Path, FileResult> filterToFileResult) {
             super();
             this.filterDir = filterDir;
-            this.filterToFindFile = filterToFindFile;
+            this.filterToFileResult = filterToFileResult;
             fileResults = new ArrayList<>();
         }
 
@@ -204,7 +219,7 @@ public class Finder {
             Objects.requireNonNull(path);
             Objects.requireNonNull(attrs);
             if (attrs.isRegularFile()) {
-                FileResult fr = filterToFindFile.apply(path);
+                FileResult fr = filterToFileResult.apply(path);
                 if (fr != null) {
                     fileResults.add(fr);
                 }
@@ -227,17 +242,16 @@ public class Finder {
     }
 
     private List<FileResult> findPath(final Path filePath) {
-        FindFindFileVisitor findFindFileVisitor = new FindFindFileVisitor(this::isMatchingDir,
+        FindFileResultsVisitor findFileResultsVisitor = new FindFileResultsVisitor(this::isMatchingDir,
                 this::filterToFileResult);
 
         // walk file tree to find files
         try {
-            Files.walkFileTree(filePath, findFindFileVisitor);
+            Files.walkFileTree(filePath, findFileResultsVisitor);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        List<FileResult> fileResults = findFindFileVisitor.fileResults;
-        return fileResults;
+        return findFileResultsVisitor.fileResults;
     }
 }

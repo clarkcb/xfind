@@ -38,10 +38,12 @@ public class FindSettings {
     private final Set<String> outExtensions;
     private final Set<Pattern> outFilePatterns;
     private final Set<FileType> outFileTypes;
+    private Set<String> paths;
     private boolean printUsage;
     private boolean printVersion;
     private boolean recursive;
-    private Set<String> paths;
+    private SortBy sortBy;
+    private boolean sortDescending;
     private boolean verbose;
 
     public FindSettings() {
@@ -63,10 +65,12 @@ public class FindSettings {
         this.outExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.paths = new HashSet<>(INITIAL_SET_CAPACITY);
         this.printUsage = DefaultSettings.PRINTUSAGE;
         this.printVersion = DefaultSettings.PRINTVERSION;
         this.recursive = DefaultSettings.RECURSIVE;
-        this.paths = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.sortBy = DefaultSettings.SORT_BY;
+        this.sortDescending = DefaultSettings.SORT_DESCENDING;
         this.verbose = DefaultSettings.VERBOSE;
     }
 
@@ -158,6 +162,22 @@ public class FindSettings {
 
     public final void setRecursive(final boolean recursive) {
         this.recursive = recursive;
+    }
+
+    public final SortBy getSortBy() {
+        return sortBy;
+    }
+
+    public final void setSortBy(final SortBy sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    public final boolean getSortDescending() {
+        return this.sortDescending;
+    }
+
+    public final void setSortDescending(final boolean sortDescending) {
+        this.sortDescending = sortDescending;
     }
 
     public final boolean getVerbose() {
@@ -322,6 +342,20 @@ public class FindSettings {
         return sb.toString();
     }
 
+    private static String fileTypeSetToString(final Set<FileType> set) {
+        StringBuilder sb = new StringBuilder("[");
+        int elemCount = 0;
+        for (FileType ft : set) {
+            if (elemCount > 0) {
+                sb.append(", ");
+            }
+            sb.append(ft.name());
+            elemCount++;
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     public final String toString() {
         return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
@@ -332,6 +366,7 @@ public class FindSettings {
                 + ", inDirPatterns: " + patternSetToString(this.inDirPatterns)
                 + ", inExtensions: " + stringSetToString(this.inExtensions)
                 + ", inFilePatterns: " + patternSetToString(this.inFilePatterns)
+                + ", inFileTypes: " + fileTypeSetToString(this.inFileTypes)
                 + ", includeArchives: " + this.includeArchives
                 + ", listDirs: " + this.listDirs
                 + ", listFiles: " + this.listFiles
@@ -340,10 +375,13 @@ public class FindSettings {
                 + ", outDirPatterns: " + patternSetToString(this.outDirPatterns)
                 + ", outExtensions: " + stringSetToString(this.outExtensions)
                 + ", outFilePatterns: " + patternSetToString(this.outFilePatterns)
+                + ", outFileTypes: " + fileTypeSetToString(this.outFileTypes)
+                + ", paths: " + stringSetToString(this.paths)
                 + ", printUsage: " + this.printUsage
                 + ", printVersion: " + this.printVersion
                 + ", recursive: " + this.recursive
-                + ", paths: " + stringSetToString(this.paths)
+                + ", sortBy: " + SortByUtil.toName(this.sortBy)
+                + ", sortDescending: " + this.sortDescending
                 + ", verbose: " + this.verbose
                 + ")";
     }
