@@ -9,7 +9,9 @@
     if (self) {
         self.fileTypes = [[FileTypes alloc] init];
         self.settings = settings;
-        [self validateSettings:settings error:error];
+        if (![self validateSettings:settings error:error]) {
+            return self;
+        }
     }
     return self;
 }
@@ -20,16 +22,21 @@
     return encoding;
 }
 
-- (void) validateSettings:(FindSettings*)settings error:(NSError**)error {
+- (BOOL) validateSettings:(FindSettings*)settings error:(NSError**)error {
     if (settings == nil) {
         setError(error, @"Settings not defined");
+        return false;
     } else if ([settings.paths count] == 0) {
         setError(error, @"Startpath not defined");
+        return false;
     } else if (![FileUtil allExist:settings.paths]) {
         setError(error, @"Startpath not found");
+        return false;
     } else if (![FileUtil allReadable:settings.paths]) {
         setError(error, @"Startpath not readable");
+        return false;
     }
+    return true;
 }
 
 - (BOOL) matchesAnyPattern:(NSString*)s patterns:(NSArray<Regex*>*)patterns {
@@ -60,10 +67,10 @@
             ([outPatterns count] == 0 || ![self matchesAnyPattern:s patterns:outPatterns]));
 }
 
-- (BOOL) filterByTypes:(FileType)fileType inTypes:(NSArray<NSNumber*>*)inTypes outTypes:(NSArray<NSNumber*>*)outTypes {
+- (BOOL) filterByFileTypes:(FileType)fileType inFileTypes:(NSArray<NSNumber*>*)inFileTypes outFileTypes:(NSArray<NSNumber*>*)outFileTypes {
     NSNumber *num = [NSNumber numberWithInt:fileType];
-    return (([inTypes count] == 0 || [inTypes containsObject:num]) &&
-            ([outTypes count] == 0 || ![outTypes containsObject:num]));
+    return (([inFileTypes count] == 0 || [inFileTypes containsObject:num]) &&
+            ([outFileTypes count] == 0 || ![outFileTypes containsObject:num]));
 }
 
 - (BOOL) isMatchingDir:(NSString*)dirPath {
@@ -103,9 +110,9 @@
     [self filterByPatterns:fileName
                 inPatterns:self.settings.inFilePatterns
                outPatterns:self.settings.outFilePatterns] &&
-    [self filterByTypes:[fileResult fileType]
-                inTypes:self.settings.inFileTypes
-               outTypes:self.settings.outFileTypes];
+    [self filterByFileTypes:[fileResult fileType]
+                inFileTypes:self.settings.inFileTypes
+               outFileTypes:self.settings.outFileTypes];
 }
 
 - (FileResult*) filterToFileResult:(NSString*)filePath {
@@ -163,6 +170,27 @@
     }];
 }
 
+- (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults {
+    NSMutableArray<FileResult*> *sortedFileResults = [NSMutableArray array];
+    if (self.settings.sortBy == SortByFileName) {
+        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+            return [fr1 compareByName:fr2];
+        }]];
+    } else if (self.settings.sortBy == SortByFileType) {
+        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+            return [fr1 compareByType:fr2];
+        }]];
+    } else {
+        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+            return [fr1 compareByPath:fr2];
+        }]];
+    }
+    if (self.settings.sortDescending) {
+        sortedFileResults = [NSMutableArray arrayWithArray:[[sortedFileResults reverseObjectEnumerator] allObjects]];
+    }
+    return [NSArray arrayWithArray:sortedFileResults];
+}
+
 - (NSArray<FileResult*>*) find:(NSError**)error {
     NSMutableArray<FileResult*> *fileResults = [NSMutableArray array];
     for (NSString *p in self.settings.paths) {
@@ -177,7 +205,7 @@
         }
     }
 
-    return [NSArray arrayWithArray:fileResults];
+    return [self sortFileResults:[NSArray arrayWithArray:fileResults]];
 }
 
 @end

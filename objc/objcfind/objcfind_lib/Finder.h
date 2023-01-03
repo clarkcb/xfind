@@ -17,5 +17,6 @@
 - (BOOL) isMatchingArchiveFile:(NSString*)filePath;
 - (BOOL) isMatchingDir:(NSString*)dirPath;
 - (BOOL) isMatchingFile:(NSString*)filePath;
+- (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults;
 
 @end

@@ -175,6 +175,9 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
             ^void (NSString* s, FindSettings *ss) {
                 [ss.paths addObject:s];
             }, @"path",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setSortByFromName:s];
+            }, @"sort-by",
 //            ^void (NSString* s, FindSettings *ss) {
 //                [self settingsFromFile:s settings:ss];
 //            }, @"settings-file",
@@ -202,6 +205,8 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
             [^void (BOOL b, FindSettings *ss) { ss.listFiles = b; } copy], @"listfiles",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
+            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
+            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
             [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy], @"verbose",
             [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy], @"version",
             nil];

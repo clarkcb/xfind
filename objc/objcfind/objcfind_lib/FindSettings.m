@@ -19,6 +19,7 @@
         self.printUsage = false;
         self.printVersion = false;
         self.recursive = true;
+        self.sortDescending = false;
         self.verbose = false;
 
         self.inArchiveExtensions = [[NSMutableArray alloc] init];
@@ -34,6 +35,7 @@
         self.outFilePatterns = [[NSMutableArray alloc] init];
         self.outFileTypes = [[NSMutableArray alloc] init];
         self.paths = [[NSMutableArray alloc] init];
+        self.sortBy = SortByFilePath;
     }
     return self;
 }
@@ -62,6 +64,8 @@
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
     [d appendFormat:@", recursive=%@", boolToNSString(self.recursive)];
+    [d appendFormat:@", sortBy=%@", [FindSettings getNameFromSortBy:self.sortBy]];
+    [d appendFormat:@", sortDescending=%@", boolToNSString(self.sortDescending)];
     [d appendFormat:@", verbose=%@", boolToNSString(self.verbose)];
     [d appendString:@")"];
     return d;
@@ -158,6 +162,32 @@
     if (b) {
         [self setVerbose:b];
     }
+}
+
++ (SortBy)getSortByFromName:(NSString *)sortByName {
+    NSString *lname = [sortByName lowercaseString];
+    if (lname == [NSString stringWithUTF8String:S_FILENAME]) {
+        return SortByFileName;
+    }
+    if (lname == [NSString stringWithUTF8String:S_FILETYPE]) {
+        return SortByFileType;
+    }
+    return SortByFilePath;
+}
+
++ (NSString*) getNameFromSortBy:(SortBy)sortBy {
+    if (sortBy == SortByFileName) {
+        return [NSString stringWithUTF8String:S_FILENAME];
+    }
+    if (sortBy == SortByFileType) {
+        return [NSString stringWithUTF8String:S_FILETYPE];
+    }
+    return [NSString stringWithUTF8String:S_FILEPATH];
+}
+
+- (void) setSortByFromName:(NSString*)sortByName {
+    self.sortBy = [FindSettings getSortByFromName:sortByName];
+
 }
 
 NSString* fileTypesArrayToNSString(NSArray<NSNumber*> *arr) {

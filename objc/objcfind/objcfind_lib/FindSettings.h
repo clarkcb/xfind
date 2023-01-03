@@ -19,6 +19,7 @@
 @property(nonatomic) BOOL printUsage;
 @property(nonatomic) BOOL printVersion;
 @property(nonatomic) BOOL recursive;
+@property(nonatomic) BOOL sortDescending;
 @property(nonatomic) BOOL verbose;
 
 @property(nonatomic) NSMutableArray<NSString*> *inArchiveExtensions;
@@ -34,25 +35,30 @@
 @property(nonatomic) NSMutableArray<Regex*> *outFilePatterns;
 @property(nonatomic) NSMutableArray<NSNumber*> *outFileTypes;
 @property(nonatomic) NSMutableArray<NSString*> *paths;
+@property(nonatomic) SortBy sortBy;
 
 -(NSString *) description;
 
 - (void) addExtensions:(NSString*)ext toArr:(NSMutableArray *)arr;
-- (void) addInArchiveExtension: (NSString*)ext;
-- (void) addInArchiveFilePattern: (NSString*)pattern;
-- (void) addInDirPattern: (NSString*)pattern;
-- (void) addInExtension: (NSString*)ext;
-- (void) addInFilePattern: (NSString*)pattern;
-- (void) addOutArchiveExtension: (NSString*)ext;
-- (void) addOutArchiveFilePattern: (NSString*)pattern;
-- (void) addOutDirPattern: (NSString*)pattern;
-- (void) addOutExtension: (NSString*)ext;
-- (void) addOutFilePattern: (NSString*)pattern;
-- (void) addPath: (NSString*)path;
+- (void) addInArchiveExtension:(NSString*)ext;
+- (void) addInArchiveFilePattern:(NSString*)pattern;
+- (void) addInDirPattern:(NSString*)pattern;
+- (void) addInExtension:(NSString*)ext;
+- (void) addInFilePattern:(NSString*)pattern;
+- (void) addOutArchiveExtension:(NSString*)ext;
+- (void) addOutArchiveFilePattern:(NSString*)pattern;
+- (void) addOutDirPattern:(NSString*)pattern;
+- (void) addOutExtension:(NSString*)ext;
+- (void) addOutFilePattern:(NSString*)pattern;
+- (void) addPath:(NSString*)path;
+
++ (SortBy) getSortByFromName:(NSString*)sortByName;
++ (NSString *) getNameFromSortBy:(SortBy)sortBy;
+- (void) setSortByFromName:(NSString*)sortByName;
 
 - (void) addFileType:(NSString*)typeName toArr:(NSMutableArray *)arr;
-- (void) addInFileType: (NSString*)typeName;
-- (void) addOutFileType: (NSString*)typeName;
+- (void) addInFileType:(NSString*)typeName;
+- (void) addOutFileType:(NSString*)typeName;
 
 //- (void) setArchivesOnly: (BOOL)b;
 

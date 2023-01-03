@@ -19,26 +19,25 @@ void handleError(NSError *error, FindOptions *options) {
     [options usage:1];
 }
 
-NSArray<NSString*>* getMatchingDirs(NSArray<FileResult*> *findfiles) {
-    NSMutableSet<NSString*> *dirs = [NSMutableSet set];
-    for (FileResult *f in findfiles) {
-        [dirs addObject:[[f description] stringByDeletingLastPathComponent]];
+NSArray<NSString*>* getMatchingDirs(NSArray<FileResult*> *fileResults) {
+    NSMutableSet<NSString*> *dirSet = [NSMutableSet set];
+    NSMutableArray<NSString*> *dirs = [NSMutableArray array];
+    for (FileResult *fr in fileResults) {
+        NSString *dir = [[fr description] stringByDeletingLastPathComponent];
+        if (![dirSet doesContain:dir]) {
+            [dirs addObject:dir];
+            [dirSet addObject:dir];
+        }
     }
-    NSArray *dirArr = [NSArray arrayWithArray:[dirs allObjects]];
-    return [dirArr sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
-        return [s1 compare:s2];
-    }];
+    return [NSArray arrayWithArray:dirs];
 }
 
-NSArray<NSString*>* getMatchingFiles(NSArray<FileResult*> *findfiles) {
-    NSMutableSet<NSString*> *files = [NSMutableSet set];
-    for (FileResult *f in findfiles) {
-        [files addObject:[f description]];
+NSArray<NSString*>* getMatchingFiles(NSArray<FileResult*> *fileResults) {
+    NSMutableArray<NSString*> *files = [NSMutableArray array];
+    for (FileResult *fr in fileResults) {
+        [files addObject:[fr description]];
     }
-    NSArray *fileArr = [NSArray arrayWithArray:[files allObjects]];
-    return [fileArr sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
-        return [s1 compare:s2];
-    }];
+    return [NSArray arrayWithArray:files];
 }
 
 int main(int argc, const char * argv[]) {

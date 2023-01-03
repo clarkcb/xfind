@@ -11,6 +11,11 @@
 #define T_UNKNOWN "unknown"
 #define T_XML "xml"
 
+// sort-by names
+#define S_FILEPATH "path"
+#define S_FILENAME "name"
+#define S_FILETYPE "type"
+
 // file type enum
 typedef enum {
     FileTypeUnknown = -1,
@@ -20,6 +25,13 @@ typedef enum {
     FileTypeText,
     FileTypeXml
 } FileType;
+
+// sort-by enum
+typedef enum {
+    SortByFilePath = 1,
+    SortByFileName,
+    SortByFileType
+} SortBy;
 
 // common functions
 void logMsg(NSString *s);
