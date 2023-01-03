@@ -5,6 +5,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
 import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
+import java.nio.file.{Files, Path, Paths}
 
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
@@ -115,26 +116,26 @@ class Finder (settings: FindSettings) {
   }
   validateSettings()
 
-  def isMatchingDir(d: File): Boolean = {
-    isMatchingDir(d.getName)
-  }
-
-  def isMatchingDir(dirName: String): Boolean = {
-    val pathElems = splitPath(dirName)
+  def isMatchingDir(p: Path): Boolean = {
+    val pathElems = splitPath(p.toString)
     if (settings.excludeHidden && pathElems.exists(p => isHidden(p))) {
       false
     } else {
-      filterByPatterns(dirName, settings.inDirPatterns, settings.outDirPatterns)
+      filterByPatterns(p.toString, settings.inDirPatterns, settings.outDirPatterns)
     }
   }
 
   def isMatchingFile(fileResult: FileResult): Boolean = {
-    isMatchingFile(fileResult.file.getName, fileResult.fileType)
+    isMatchingFile(fileResult.path.getFileName().toString(), fileResult.fileType)
   }
 
   def isMatchingFile(fileName: String, fileType: FileType): Boolean = {
-    val ext = getExtension(fileName)
-    fileExtTests.forall(t => t(ext)) &&
+    (if (fileExtTests.nonEmpty) {
+      val ext = getExtension(fileName)
+      fileExtTests.forall(t => t(ext))
+    } else {
+      true
+    }) &&
       fileNameTests.forall(t => t(fileName)) &&
       fileTypeTests.forall(t => t(fileType))
   }
@@ -145,16 +146,16 @@ class Finder (settings: FindSettings) {
       archiveFileNameTests.forall(t => t(fileName))
   }
 
-  def filterToFileResult(f: File): Option[FileResult] = {
-    if (settings.excludeHidden && FileUtil.isHidden(f.getName)) {
+  def filterToFileResult(f: Path): Option[FileResult] = {
+    if (settings.excludeHidden && Files.isHidden(f)) {
       None
     } else {
-      val fileResult = new FileResult(f, FileTypes.getFileType(f.getName))
+      val fileResult = new FileResult(f, FileTypes.getFileType(f.toString))
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None
         case FileType.Archive =>
-          if (settings.includeArchives && isMatchingArchiveFile(f.getName)) {
+          if (settings.includeArchives && isMatchingArchiveFile(f.toString)) {
             Some(fileResult)
           } else {
             None
@@ -169,28 +170,57 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  final def getFileResults(startPathFile: File): Seq[FileResult] = {
-    val files = startPathFile.listFiles.toSeq
-    files.filter(_.isFile).flatMap(filterToFileResult) ++
-      files
-        .filter(_.isDirectory)
-        .filter(_ => settings.recursive)
+  final def getDirFileResults(startPath: Path): Seq[FileResult] = {
+    Files.list(startPath)
+      .filter(!Files.isDirectory(_))
+      .map(filterToFileResult)
+      .filter(_.nonEmpty)
+      .iterator().asScala.flatten.toSeq
+  }
+
+  final def getFileResults(startPath: Path): Seq[FileResult] = {
+    getDirFileResults(startPath) ++
+      Files.list(startPath)
+        .filter(Files.isDirectory(_))
         .filter(isMatchingDir)
+        .iterator()
+        .asScala
+        .toSeq
         .flatMap(getFileResults)
+  }
+
+  def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
+    val sortedFileResults =
+      if (settings.sortBy == SortBy.FileName) {
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2))
+      } else if (settings.sortBy == SortBy.FileType) {
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2))
+      } else {
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2))
+      }
+    if (settings.sortDescending) {
+      sortedFileResults.reverse
+    } else {
+      sortedFileResults
+    }
   }
 
   def find(): Seq[FileResult] = {
     val fileResults = mutable.ArrayBuffer.empty[FileResult]
     settings.paths.foreach { p =>
-      val pFile = new File(p)
-      if (pFile.isDirectory) {
-        if (isMatchingDir(pFile)) {
-          fileResults ++= getFileResults(pFile)
+      val path = Paths.get(p)
+      if (Files.isDirectory(path)) {
+        if (isMatchingDir(path)) {
+          if (settings.recursive) {
+            fileResults ++= getFileResults(path)
+          } else {
+            fileResults ++= getDirFileResults(path)
+          }
         } else {
           throw new FindException("Startpath does not match find settings")
         }
-      } else if (pFile.isFile) {
-        filterToFileResult(pFile) match {
+      } else if (Files.isRegularFile(path)) {
+        filterToFileResult(path) match {
           case Some(findFile) =>
             fileResults += findFile
           case None =>
@@ -200,7 +230,7 @@ class Finder (settings: FindSettings) {
         throw new FindException("Startpath not findable")
       }
     }
-    Seq.empty[FileResult] ++ fileResults
+    sortFileResults(Seq.empty[FileResult] ++ fileResults)
   }
 }
 

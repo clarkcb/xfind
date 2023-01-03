@@ -1,8 +1,24 @@
 package scalafind
 
 import scalafind.FileType.FileType
+import scalafind.SortBy.SortBy
 
 import scala.util.matching.Regex
+
+object SortBy extends Enumeration {
+  type SortBy = Value
+  val FileName: SortBy = Value
+  val FilePath: SortBy = Value
+  val FileType: SortBy = Value
+
+  def fromName(sortByName: String): SortBy = {
+    sortByName.toLowerCase() match {
+      case "name" => SortBy.FileName
+      case "type" => SortBy.FileType
+      case _ => SortBy.FilePath
+    }
+  }
+}
 
 object DefaultSettings {
   val archivesOnly = false
@@ -11,10 +27,12 @@ object DefaultSettings {
   var includeArchives = false
   val listDirs = false
   val listFiles = false
+  var paths: Set[String] = Set.empty[String]
   var printUsage = false
   var printVersion = false
   var recursive = true
-  var paths: Set[String] = Set.empty[String]
+  var sortBy: SortBy = SortBy.FilePath
+  var sortDescending = false
   var verbose = false
 }
 
@@ -40,6 +58,8 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                         printUsage: Boolean = DefaultSettings.printUsage,
                         printVersion: Boolean = DefaultSettings.printVersion,
                         recursive: Boolean = DefaultSettings.recursive,
+                        sortBy: SortBy = DefaultSettings.sortBy,
+                        sortDescending: Boolean = DefaultSettings.sortDescending,
                         var verbose: Boolean = DefaultSettings.verbose) {
 
   includeArchives = archivesOnly || includeArchives
@@ -69,6 +89,8 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", printUsage: " + printUsage +
       ", printVersion: " + printVersion +
       ", recursive: " + recursive +
+      ", sortBy: " + sortBy +
+      ", sortDescending: " + sortDescending +
       ", verbose: " + verbose +
       ")"
   }

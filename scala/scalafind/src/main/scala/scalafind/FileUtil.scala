@@ -1,6 +1,7 @@
 package scalafind
 
 import java.io.File
+import java.nio.file.{Path, Paths}
 import scala.io.{Codec, Source}
 
 object FileUtil {
@@ -9,7 +10,7 @@ object FileUtil {
   val DEFAULT_ENCODING = "UTF-8"
 
   def getExtension(f: FileResult): String = {
-    getExtension(f.file.getName)
+    getExtension(f.path.getFileName.toString)
   }
 
   def getExtension(name: String): String = {
@@ -44,10 +45,10 @@ object FileUtil {
     n.length > 1 && n.startsWith(CURRENT_PATH) && !isDotDir(n)
   }
 
-  def pathOrCurrent(f: File): File = {
-    Option(f.getParentFile) match {
+  def pathOrCurrent(p: Path): Path = {
+    Option(p.getParent) match {
       case Some(dir) => dir
-      case None => new File(CURRENT_PATH)
+      case None => Paths.get(CURRENT_PATH)
     }
   }
   def splitPath(path: String): Iterable[String] = {

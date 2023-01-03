@@ -1,41 +1,23 @@
 package scalafind
 
 import java.io.File
+import java.nio.file.Path
 
 object FindMain {
 
-  def getMatchingDirs(findfiles: Seq[FileResult]): Seq[File] = {
-    findfiles
-      .map(f => FileUtil.pathOrCurrent(f.file))
+  def getMatchingDirs(fileResults: Seq[FileResult]): Seq[Path] = {
+    fileResults
+      .map(fr => FileUtil.pathOrCurrent(fr.path))
       .distinct
       .sortWith(_.toString < _.toString)
-      .toVector
+      .toSeq
   }
 
-  private def cmpFiles(f1: File, f2: File): Boolean = {
-    val (path1, fileName1) = Option(f1) match {
-      case Some(file1) =>
-        (FileUtil.pathOrCurrent(file1).toString, file1.getName.toLowerCase)
-      case None => ("", "")
-    }
-    val (path2, fileName2) = Option(f2) match {
-      case Some(file2) =>
-        (FileUtil.pathOrCurrent(file2).toString, file2.getName.toLowerCase)
-      case None => ("", "")
-    }
-    if (path1 == path2) {
-      fileName1 < fileName2
-    } else {
-      path1 < path2
-    }
-  }
-
-  def getMatchingFiles(findfiles: Seq[FileResult]): Seq[File] = {
-    findfiles
-      .map(_.file)
+  def getMatchingFiles(fileResults: Seq[FileResult]): Seq[Path] = {
+    fileResults
+      .map(_.path)
       .distinct
-      .toVector
-      .sortWith(cmpFiles)
+      .toSeq
   }
 
   def printMatchingDirs(fileResults: Seq[FileResult]): Unit = {

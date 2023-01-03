@@ -88,7 +88,9 @@ object FindOptions {
     "path" ->
       ((s, ss) => ss.copy(paths = ss.paths + s)),
     "settings-file" ->
-      ((s, ss) => settingsFromFile(s, ss))
+      ((s, ss) => settingsFromFile(s, ss)),
+    "sort-by" ->
+      ((s, ss) => ss.copy(sortBy = SortBy.fromName(s))),
   )
 
   type FlagAction = (Boolean, FindSettings) => FindSettings
@@ -106,6 +108,8 @@ object FindOptions {
     "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
+    "sort-ascending" -> ((b, ss) => ss.copy(sortDescending = !b)),
+    "sort-descending" -> ((b, ss) => ss.copy(sortDescending = b)),
     "verbose" -> ((b, ss) => ss.copy(verbose = b)),
     "version" -> ((b, ss) => ss.copy(printVersion = b))
   )
