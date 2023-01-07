@@ -1,5 +1,6 @@
 <?php declare(strict_types=1);
 
+use phpfind\SortBy;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../src/autoload.php';
@@ -31,6 +32,8 @@ class FindSettingsTest extends TestCase
         $this->assertFalse($this->settings->printversion);
         $this->assertTrue($this->settings->recursive);
         $this->assertCount(0, $this->settings->paths);
+        $this->assertEquals(SortBy::Filepath, $this->settings->sortby);
+        $this->assertFalse($this->settings->sort_descending);
         $this->assertFalse($this->settings->verbose);
     }
 

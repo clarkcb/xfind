@@ -310,13 +310,13 @@ class Finder
     {
         switch ($this->settings->sortby) {
             case SortBy::Filename:
-                usort($fileresults, 'self::cmp_file_result_filename');
+                usort($fileresults, self::class . '::cmp_file_result_filename');
                 break;
             case SortBy::Filetype:
-                usort($fileresults, 'self::cmp_file_result_filetype');
+                usort($fileresults, self::class . '::cmp_file_result_filetype');
                 break;
             default:
-                usort($fileresults, 'self::cmp_file_result_path');
+                usort($fileresults, self::class .'::cmp_file_result_path');
                 break;
         }
         if ($this->settings->sort_descending) {

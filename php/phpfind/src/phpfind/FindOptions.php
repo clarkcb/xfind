@@ -83,18 +83,12 @@ class FindOptions
                 $short = '';
                 $long = (string)$so['long'];
                 $desc = (string)$so['desc'];
-                $func = null;
-                if (array_key_exists($long, $this->arg_action_map)) {
-                    $func = $this->arg_action_map[$long];
-                } elseif (array_key_exists($long, $this->bool_flag_action_map)) {
-                    $func = $this->bool_flag_action_map[$long];
-                }
                 $this->longarg_map[$long] = $long;
                 if (array_key_exists('short', $so)) {
                     $short = (string)$so['short'];
                     $this->longarg_map[$short] = $long;
                 }
-                $option = new FindOption($short, $long, $desc, $func);
+                $option = new FindOption($short, $long, $desc);
                 $this->options[] = $option;
             }
             usort($this->options, array('phpfind\FindOptions', 'cmp_findoptions'));

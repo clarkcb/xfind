@@ -8,23 +8,25 @@ namespace phpfind;
  * @property string shortarg
  * @property string longarg
  * @property string desc
- * @property callable func
  * @property string sortarg
  */
 class FindOption
 {
+    public string $shortarg;
+    public string $longarg;
+    public string $desc;
+    public string $sortarg;
+
     /**
      * @param string $shortarg
      * @param string $longarg
      * @param string $desc
-     * @param $func
      */
-    public function __construct(string $shortarg, string $longarg, string $desc, $func)
+    public function __construct(string $shortarg, string $longarg, string $desc)
     {
         $this->shortarg = $shortarg;
         $this->longarg = $longarg;
         $this->desc = $desc;
-        $this->func = $func;
         $this->sortarg = $this->__sortarg();
     }
 
