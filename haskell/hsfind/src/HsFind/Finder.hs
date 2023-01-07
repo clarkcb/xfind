@@ -16,7 +16,7 @@ import qualified Data.ByteString as B
 import System.FilePath (dropFileName, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 
-import HsFind.FileTypes (FileType, JsonFileType, getFileTypes, getJsonFileTypes, fileTypeFromJsonFileTypes)
+import HsFind.FileTypes (FileType(..), JsonFileType, getFileTypes, getJsonFileTypes, fileTypeFromJsonFileTypes)
 import HsFind.FileUtil
     (hasExtension, isHiddenFilePath, getRecursiveFilteredContents)
 import HsFind.FileResult
@@ -64,8 +64,8 @@ getFileTests settings =
 
 getAllFileTests :: FindSettings -> [JsonFileType] -> [FilePath -> Bool]
 getAllFileTests settings jsonFileTypes =
-  hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests ++
-    inFileTypeTests ++ outFileTypeTests
+  archiveFileTests ++ hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++
+    outPatternTests ++ inFileTypeTests ++ outFileTypeTests
   where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
         includeHidden = not $ excludeHidden settings
         inExtTests       | null inExts = []
@@ -80,6 +80,7 @@ getAllFileTests settings jsonFileTypes =
                          | otherwise = [\fp -> getFileType fp `elem` inTypes]
         outFileTypeTests | null outTypes = []
                          | otherwise = [\fp -> getFileType fp `notElem` outTypes]
+        archiveFileTests = getArchiveFileTests settings
         inExts = inExtensions settings
         outExts = outExtensions settings
         inPatterns = inFilePatterns settings
@@ -150,7 +151,10 @@ getFileResults settings = do
     getRecursiveFilteredContents path (matchesDirTests dirTests) (matchesFileTests fileTests)
   let allPaths = concat paths
   allFileTypes <- getFileTypes allPaths
-  return $ zipWith (curry getFileResult) allPaths allFileTypes
+  let fileResults = zipWith (curry getFileResult) allPaths allFileTypes
+  if not (includeArchives settings) && Archive `elem` allFileTypes
+  then return $ filter (not . isArchiveFile) fileResults
+  else return fileResults
 
 sortFileResultsByPath :: FileResult -> FileResult -> Ordering
 sortFileResultsByPath fr1 fr2 =
