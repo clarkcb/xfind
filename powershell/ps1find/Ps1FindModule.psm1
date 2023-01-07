@@ -170,6 +170,25 @@ class FileTypes {
 ########################################
 # FindSettings
 ########################################
+enum SortBy {
+    FilePath
+    FileName
+    FileType
+}
+
+function GetSortByFromName {
+    [OutputType([SortBy])]
+    param([string]$name)
+
+    switch ($name.ToUpper())
+    {
+        'PATH' {return [SortBy]::FilePath}
+        'NAME' {return [SortBy]::FileName}
+        'TYPE' {return [SortBy]::FileType}
+    }
+    return [SortBy]::FilePath
+}
+
 class FindSettings {
     [bool]$ArchivesOnly
     [bool]$Debug
@@ -193,6 +212,8 @@ class FindSettings {
     [bool]$PrintUsage
     [bool]$PrintVersion
     [bool]$Recursive
+    [SortBy]$SortBy
+    [bool]$SortDescending
     [bool]$Verbose
 
     FindSettings() {
@@ -218,6 +239,8 @@ class FindSettings {
 		$this.PrintUsage = $false
 		$this.PrintVersion = $false
 		$this.Recursive = $true
+		$this.SortBy = [SortBy]::FilePath
+		$this.SortDescending = $false
 		$this.Verbose = $false
     }
 
@@ -279,6 +302,8 @@ class FindSettings {
             ", PrintUsage: $($this.PrintUsage)" +
             ", PrintVersion: $($this.PrintVersion)" +
             ", Recursive: $($this.Recursive)" +
+            ", SortBy: $($this.SortBy)" +
+            ", SortDescending: $($this.SortDescending)" +
             ", Verbose: $($this.Verbose)" +
             ")"
     }
@@ -369,23 +394,19 @@ class FindOptions {
             param([string]$s, [FindSettings]$settings)
             $settings.Paths += $s
         }
+        "sort-by" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.SortBy = GetSortByFromName($s)
+        }
     }
     $BoolFlagActionMap = @{
         "archivesonly" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.SetArchivesOnly($b)
-            # $settings.ArchivesOnly = $b
-            # if ($b) {
-            #     $settings.IncludeArchives = $b
-            # }
         }
         "debug" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.SetDebug($b)
-            # $settings.Debug = $b
-            # if ($b) {
-            #     $settings.Verbose = $b
-            # }
         }
         "excludearchives" = {
             param([bool]$b, [FindSettings]$settings)
@@ -422,6 +443,14 @@ class FindOptions {
         "recursive" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.Recursive = $b
+        }
+        "sort-ascending" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.SortDescending = !$b
+        }
+        "sort-descending" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.SortDescending = $b
         }
         "verbose" = {
             param([bool]$b, [FindSettings]$settings)
@@ -753,8 +782,32 @@ class Finder {
         return $fileResults
     }
 
+    [FileResult[]]SortFileResults([FileResult[]]$fileResults) {
+        $sorted = @()
+        if ($this.settings.SortBy -eq [SortBy]::FileName) {
+            $sorted = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)} |
+                Sort-Object |
+                ForEach-Object {$_[-1]}
+        } elseif ($this.settings.SortBy -eq [SortBy]::FileType) {
+            $sorted = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)} |
+                Sort-Object |
+                ForEach-Object {$_[-1]}
+        } else {
+            $sorted = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)} |
+                Sort-Object |
+                ForEach-Object {$_[-1]}
+        }
+        if ($this.settings.SortDescending) {
+            [array]::Reverse($sorted)
+        }
+        return $sorted
+    }
+
     [FileResult[]]Find() {
-        return $this.GetFileResults()
+        return $this.SortFileResults($this.GetFileResults())
     }
 }
 #endregion
