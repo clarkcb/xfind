@@ -173,6 +173,7 @@ public class FindSettings: CustomStringConvertible {
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +
+            ", sortDescending=\(sortDescending)" +
             ", verbose=\(verbose)" +
             ")"
     }

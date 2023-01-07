@@ -16,7 +16,7 @@ func getMatchingDirs(_ findfiles: [FileResult]) -> [String] {
 }
 
 func getMatchingFiles(_ findfiles: [FileResult]) -> [String] {
-    findfiles.map(\.filePath).sorted().unique()
+    findfiles.map(\.filePath).unique()
 }
 
 func handleError(_ error: FindError, _ options: FindOptions) {

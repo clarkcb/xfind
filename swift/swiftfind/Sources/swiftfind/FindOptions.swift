@@ -99,6 +99,9 @@ public class FindOptions {
             "settings-file": { (str: String, settings: FindSettings) -> Void in
                 try? self.addSettingsFromFile(str, settings: settings)
             },
+            "sort-by": { (str: String, settings: FindSettings) -> Void in
+                settings.setSortBy(str)
+            },
         ]
     }
 
@@ -135,6 +138,12 @@ public class FindOptions {
         },
         "recursive": { (bool: Bool, settings: FindSettings) -> Void in
             settings.recursive = bool
+        },
+        "sort-ascending": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.sortDescending = !bool
+        },
+        "sort-descending": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.sortDescending = bool
         },
         "verbose": { (bool: Bool, settings: FindSettings) -> Void in
             settings.verbose = bool

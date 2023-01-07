@@ -95,6 +95,21 @@ public class Finder {
                                      outFileTypes: settings.outFileTypes))
     }
 
+    public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
+        if settings.excludeHidden, FileUtil.isHiddenFile(fileResult.filePath) {
+            return false
+        }
+        return (filterByExtensions(FileUtil.getExtension(fileResult.filePath),
+                                   inExtensions: settings.inExtensions,
+                                   outExtensions: settings.outExtensions)
+                && filterByPatterns(fileResult.filePath,
+                                    inPatterns: settings.inFilePatterns,
+                                    outPatterns: settings.outFilePatterns)
+                && filterByFileTypes(fileResult.fileType,
+                                     inFileTypes: settings.inFileTypes,
+                                     outFileTypes: settings.outFileTypes))
+    }
+
     public func isMatchingArchiveFile(_ fileName: String) -> Bool {
         if settings.excludeHidden, FileUtil.isHidden(fileName) {
             return false
@@ -106,6 +121,17 @@ public class Finder {
                                     outPatterns: settings.outArchiveFilePatterns))
     }
 
+    public func isMatchingArchiveFileResult(_ fileResult: FileResult) -> Bool {
+        if settings.excludeHidden, FileUtil.isHidden(fileResult.filePath) {
+            return false
+        }
+        return (filterByExtensions(FileUtil.getExtension(fileResult.filePath),
+                                   inExtensions: settings.inArchiveExtensions,
+                                   outExtensions: settings.outArchiveExtensions)
+                && filterByPatterns(fileResult.filePath, inPatterns: settings.inArchiveFilePatterns,
+                                    outPatterns: settings.outArchiveFilePatterns))
+    }
+
     public func filterToFileResult(_ filePath: String) -> FileResult? {
         let fileName = URL(fileURLWithPath: filePath).lastPathComponent
         if settings.excludeHidden, FileUtil.isHidden(fileName) {
@@ -114,12 +140,12 @@ public class Finder {
         let fileType = fileTypes.getFileType(fileName)
         let fr = FileResult(filePath: filePath, fileType: fileType)
         if (fileType == FileType.archive) {
-            if (settings.includeArchives && isMatchingArchiveFile(fileName)) {
+            if (settings.includeArchives && isMatchingArchiveFileResult(fr)) {
                 return fr
             }
             return nil
         }
-        if (!settings.archivesOnly && isMatchingFile(fileName, fileType: fileType)) {
+        if (!settings.archivesOnly && isMatchingFileResult(fr)) {
             return fr
         }
         return nil
@@ -147,6 +173,49 @@ public class Finder {
         return fileResults
     }
 
+    private func sortByFilePath(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
+        let (p1, f1) = FileUtil.splitPath(fr1.filePath)
+        let (p2, f2) = FileUtil.splitPath(fr2.filePath)
+        if p1 == p2 {
+            return f1 < f2
+        }
+        return p1 < p2
+    }
+
+    private func sortByFileName(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
+        let (p1, f1) = FileUtil.splitPath(fr1.filePath)
+        let (p2, f2) = FileUtil.splitPath(fr2.filePath)
+        if f1 == f2 {
+            return p1 < p2
+        }
+        return f1 < f2
+    }
+
+    private func sortByFileType(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
+        if fr1.fileType == fr2.fileType {
+            return sortByFilePath(fr1, fr2)
+        }
+        return FileTypes.toName(fr1.fileType) < FileTypes.toName(fr2.fileType)
+    }
+
+    public func sortFileResults(_ fileResults: [FileResult]) -> [FileResult] {
+        var sortedFileResults = [FileResult]()
+        switch settings.sortBy {
+        case SortBy.fileName:
+            sortedFileResults = fileResults.sorted(by: sortByFileName)
+        case SortBy.fileType:
+            sortedFileResults = fileResults.sorted(by: sortByFileType)
+        default:
+            sortedFileResults = fileResults.sorted(by: sortByFilePath)
+        }
+        
+        if settings.sortDescending {
+            sortedFileResults.reverse()
+        }
+        
+        return sortedFileResults
+    }
+
     public func find() -> [FileResult] {
         var fileResults = [FileResult]()
         for p in settings.paths {
@@ -159,6 +228,6 @@ public class Finder {
                 }
             }
         }
-        return fileResults
+        return sortFileResults(fileResults)
     }
 }

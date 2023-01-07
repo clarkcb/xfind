@@ -55,41 +55,37 @@ public class FileTypes {
 
     public static func fromName(_ typeName: String) -> FileType {
         let lname = typeName.lowercased()
-        if lname == text {
+        switch lname {
+        case text:
             return FileType.text
-        }
-        if lname == binary {
+        case binary:
             return FileType.binary
-        }
-        if lname == archive {
+        case archive:
             return FileType.archive
-        }
-        if lname == code {
+        case code:
             return FileType.code
-        }
-        if lname == xml {
+        case xml:
             return FileType.xml
+        default:
+            return FileType.unknown
         }
-        return FileType.unknown
     }
 
     public static func toName(_ fileType: FileType) -> String {
-        if fileType == FileType.text {
+        switch fileType {
+        case FileType.text:
             return "text"
-        }
-        if fileType == FileType.binary {
+        case FileType.binary:
             return "binary"
-        }
-        if fileType == FileType.archive {
+        case FileType.archive:
             return "archive"
-        }
-        if fileType == FileType.code {
+        case FileType.code:
             return "code"
-        }
-        if fileType == FileType.xml {
+        case FileType.xml:
             return "xml"
+        default:
+            return "unknown"
         }
-        return "unknown"
     }
 
     public func getFileType(_ fileName: String) -> FileType {
