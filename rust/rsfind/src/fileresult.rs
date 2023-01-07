@@ -1,9 +1,9 @@
-use std::cmp::Ordering;
+// use std::cmp::Ordering;
 use std::path::Path;
 
 use crate::filetypes::FileType;
 
-#[derive(Clone, Debug, Eq)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct FileResult {
     pub containers: Vec<String>,
     pub path: String,
@@ -45,24 +45,6 @@ impl FileResult {
                 Path::new(&self.path).join(&self.name).display()
             )
         }
-    }
-}
-
-impl Ord for FileResult {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.filepath().cmp(&other.filepath())
-    }
-}
-
-impl PartialOrd for FileResult {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl PartialEq for FileResult {
-    fn eq(&self, other: &Self) -> bool {
-        self.filepath() == other.filepath()
     }
 }
 

@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::fs;
 use std::io;
 
@@ -8,7 +9,7 @@ use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 use crate::fileresult::FileResult;
-use crate::findsettings::FindSettings;
+use crate::findsettings::{FindSettings, SortBy};
 
 pub struct Finder {
     pub filetypes: FileTypes,
@@ -141,6 +142,38 @@ impl Finder {
         !self.settings.archives_only && self.is_matching_file(fileresult)
     }
 
+    fn cmp_by_path(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        if fr1.path == fr2.path {
+            return fr1.name.cmp(&fr2.name);
+        }
+        fr1.path.cmp(&fr2.path)
+    }
+
+    fn cmp_by_name(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        if fr1.name == fr2.name {
+            return fr1.path.cmp(&fr2.path);
+        }
+        fr1.name.cmp(&fr2.name)
+    }
+
+    fn cmp_by_type(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        if fr1.filetype == fr2.filetype {
+            return Self::cmp_by_path(fr1, fr2);
+        }
+        fr1.filetype.cmp(&fr2.filetype)
+    }
+
+    pub fn sort_file_results(&self, file_results: &mut Vec<FileResult>) {
+        match self.settings.sort_by {
+            SortBy::FileName => file_results.sort_by(Self::cmp_by_name),
+            SortBy::FileType => file_results.sort_by(Self::cmp_by_type),
+            _ => file_results.sort_by(Self::cmp_by_path),
+        }
+        if self.settings.sort_descending {
+            file_results.reverse();
+        }
+    }
+
     /// Initiate a find session for the given settings and get the matching files
     pub fn find(&self) -> Result<Vec<FileResult>, FindError> {
         let mut fileresults: Vec<FileResult> = Vec::new();
@@ -169,18 +202,21 @@ impl Finder {
                 }
             }
         }
+        self.sort_file_results(&mut fileresults);
         Ok(fileresults)
     }
 }
 
 /// Get the unique list of directories for matching files
 pub fn get_matching_dirs(fileresults: &[FileResult]) -> Vec<&String> {
+    let mut dir_set: HashSet<&String> = HashSet::new();
     let mut dirs: Vec<&String> = Vec::new();
     for f in fileresults.iter() {
-        dirs.push(&f.path);
+        if !dir_set.contains(&f.path) {
+            dirs.push(&f.path);
+            dir_set.insert(&f.path);
+        }
     }
-    dirs.sort_unstable();
-    dirs.dedup();
     dirs
 }
 
@@ -191,8 +227,6 @@ pub fn get_matching_files(fileresults: &[FileResult]) -> Vec<String> {
         let filepath = f.filepath();
         files.push(filepath);
     }
-    files.sort_unstable();
-    files.dedup();
     files
 }
 

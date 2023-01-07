@@ -8,7 +8,7 @@ use crate::config::Config;
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub enum FileType {
     Unknown,
     Archive,

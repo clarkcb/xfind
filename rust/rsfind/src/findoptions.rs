@@ -10,6 +10,7 @@ use crate::config::Config;
 use crate::filetypes::FileTypes;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
+use crate::findsettings::sort_by_from_name;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FindOption {
@@ -385,6 +386,12 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             Ok(settings.paths.push(s.to_string()))
         }),
     );
+    arg_map.insert(
+        "sort-by".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            Ok(settings.sort_by = sort_by_from_name(s))
+        }),
+    );
     arg_map
 }
 
@@ -433,6 +440,14 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     flag_map.insert(
         "recursive".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.recursive = b)),
+    );
+    flag_map.insert(
+        "sort-ascending".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_descending = !b)),
+    );
+    flag_map.insert(
+        "sort-descending".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_descending = b)),
     );
     flag_map.insert(
         "verbose".to_string(),

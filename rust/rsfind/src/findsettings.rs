@@ -2,6 +2,29 @@ use regex::Regex;
 
 use crate::filetypes;
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum SortBy {
+    FilePath,
+    FileName,
+    FileType,
+}
+
+pub fn sort_by_from_name(name: &str) -> SortBy {
+    match name.to_ascii_lowercase().as_str() {
+        "name" => SortBy::FileName,
+        "type" => SortBy::FileType,
+        _ => SortBy::FilePath,
+    }
+}
+
+pub fn name_from_sort_by(sort_by: &SortBy) -> String {
+    match sort_by {
+        SortBy::FileName => String::from("name"),
+        SortBy::FileType => String::from("type"),
+        _ => String::from("path"),
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct FindSettings {
     pub archives_only: bool,
@@ -26,6 +49,8 @@ pub struct FindSettings {
     pub print_usage: bool,
     pub print_version: bool,
     pub recursive: bool,
+    pub sort_by: SortBy,
+    pub sort_descending: bool,
     pub verbose: bool,
 }
 
@@ -54,6 +79,8 @@ impl FindSettings {
             print_usage: false,
             print_version: false,
             recursive: true,
+            sort_by: SortBy::FilePath,
+            sort_descending: false,
             verbose: false,
         }
     }
@@ -165,6 +192,8 @@ mod tests {
         assert_eq!(settings.print_usage, false);
         assert_eq!(settings.print_version, false);
         assert_eq!(settings.recursive, true);
+        assert_eq!(settings.sort_by, SortBy::FilePath);
+        assert_eq!(settings.sort_descending, false);
         assert_eq!(settings.verbose, false);
     }
 
