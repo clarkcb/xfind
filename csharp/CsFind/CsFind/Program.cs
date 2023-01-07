@@ -23,16 +23,16 @@ static class Program
 			}
 
 			var finder = new Finder(settings);
-			var files = finder.Find().ToList();
+			var fileResults = finder.Find().ToList();
 
 			if (settings.ListDirs)
 			{
-				finder.PrintMatchingDirs(files);
+				finder.PrintMatchingDirs(fileResults);
 			}
 
 			if (settings.ListFiles)
 			{
-				finder.PrintMatchingFiles(files);
+				finder.PrintMatchingFiles(fileResults);
 			}
 		}
 		catch (FindException e)

@@ -17,6 +17,7 @@ lib/plfind/FindFile.pm
 lib/plfind/FindOption.pm
 lib/plfind/FindOptions.pm
 lib/plfind/FindSettings.pm
+lib/plfind/SortBy.pm
 t/filetypes_test.pl
 t/fileutil_test.pl
 t/searcher_test.pl

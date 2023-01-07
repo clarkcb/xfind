@@ -748,7 +748,7 @@ build_python () {
     hdr "build_python"
 
     # ensure python3.7+ is installed
-    PYTHON_VERSIONS=(python3.9 python3.8 python3.7)
+    PYTHON_VERSIONS=(python3.11 python3.10 python3.9 python3.8 python3.7)
     PYTHON=
     for p in ${PYTHON_VERSIONS[*]}
     do
@@ -787,9 +787,12 @@ build_python () {
             "$PYTHON" -m venv venv
         fi
 
-        # activate the virtual env
-        log "source ./venv/bin/activate"
-        source ./venv/bin/activate
+        # if venv isn't active, activate it
+        if [ -z "$VIRTUAL_ENV" ]
+        then
+            log "source $PYFIND_PATH/venv/bin/activate"
+            source $PYFIND_PATH/venv/bin/activate
+        fi
     fi
 
     # install dependencies in requirements.txt

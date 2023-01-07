@@ -9,7 +9,7 @@ $pyFindExe = Join-Path $env:XFIND_PATH 'python' 'pyfind' 'bin' 'pyfind.py'
 
 if (Test-Path $pyFindExe -PathType Leaf)
 {
-    & python3.9 $pyFindExe $Args
+    & python3 $pyFindExe $Args
 }
 else
 {

@@ -24,7 +24,9 @@ class FileUtil:
            string"""
         ext = ''
         if os.path.basename(filename).rfind('.') > 0:
-            ext = filename.split('.')[-1]
+            ext = filename.rpartition('.')[2]
+            if ext == 'Z':
+                return ext
         return ext.lower()
 
     @staticmethod
