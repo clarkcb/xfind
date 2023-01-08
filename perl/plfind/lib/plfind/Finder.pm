@@ -150,20 +150,21 @@ sub filter_to_file_result {
     my ($self, $fp) = @_;
     my $d = dirname($fp);
     my $f = basename($fp);
-    my $fileresult;
     if ($self->{settings}->{excludehidden} && plfind::FileUtil::is_hidden($f)) {
-        return $fileresult;
+        return;
     }
     my $ft = $self->{filetypes}->get_filetype($f);
+    my $fileresult = new plfind::FileResult($d, $f, $ft);
     if ($ft eq plfind::FileType->ARCHIVE) {
         if ($self->{settings}->{includearchives} && $self->is_matching_archive_file($f)) {
-            $fileresult = new plfind::FileResult($d, $f, $ft);
+            return $fileresult;
         }
+        return;
     }
     if (!$self->{settings}->{archivesonly} && $self->is_matching_file($f)) {
-        $fileresult = new plfind::FileResult($d, $f, $ft);
+        return $fileresult;
     }
-    return $fileresult;
+    return;
 }
 
 sub get_dir_dir_results {
