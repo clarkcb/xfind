@@ -7,10 +7,10 @@ implemented in multiple programming languages, currently these [twenty-one](#why
 | :------------ | :---------- |
 | C | [https://en.wikipedia.org/wiki/C_(programming_language)](https://en.wikipedia.org/wiki/C_(programming_language)) |
 | Clojure | [https://clojure.org/](https://clojure.org/) |
-| C# | [https://docs.microsoft.com/en-us/dotnet/csharp/](https://docs.microsoft.com/en-us/dotnet/csharp/) |
+| C# | [https://learn.microsoft.com/en-us/dotnet/csharp/](https://learn.microsoft.com/en-us/dotnet/csharp/) |
 | C++ | [https://www.stroustrup.com/C++.html](https://www.stroustrup.com/C++.html) |
 | Dart | [https://dart.dev/](https://dart.dev/) |
-| F# | [https://docs.microsoft.com/en-us/dotnet/fsharp/](https://docs.microsoft.com/en-us/dotnet/fsharp/) |
+| F# | [https://learn.microsoft.com/en-us/dotnet/fsharp/](https://learn.microsoft.com/en-us/dotnet/fsharp/) |
 | Go | [https://golang.org/](https://golang.org/) |
 | Haskell | [https://www.haskell.org/](https://www.haskell.org/) |
 | Java | [https://www.java.com/](https://www.java.com/) |
@@ -20,6 +20,7 @@ implemented in multiple programming languages, currently these [twenty-one](#why
 | OCaml | [https://ocaml.org/](https://ocaml.org/) |
 | Perl | [https://www.perl.org/](https://www.perl.org/) |
 | PHP | [https://www.php.net/](https://www.php.net/) |
+| PowerShell | [https://learn.microsoft.com/en-us/powershell/](https://learn.microsoft.com/en-us/powershell/) |
 | Python | [https://www.python.org/](https://www.python.org/) |
 | Ruby | [https://www.ruby-lang.org/](https://www.ruby-lang.org/) |
 | Rust | [https://www.rust-lang.org/](https://www.rust-lang.org/) |
@@ -224,12 +225,9 @@ $ ./scripts/build.sh typescript
 $ ./scripts/build.sh ts
 ```
 
-You can build all language versions together by not passing an argument or passing
-`'all'`:
+You can build all language versions together by passing `'all'`:
 
 ```sh
-$ ./scripts/build.sh
-# -or-
 $ ./scripts/build.sh all
 ```
 
@@ -297,6 +295,9 @@ Options:
  -R,--norecursive          Do not find recursively (no subdirectories)
  -r,--recursive            Find recursively through subdirectories*
  --settings-file           A path to a JSON file with specified find settings
+ --sort-ascending          Sort results in ascending order*
+ --sort-by                 Sort by: PATH, NAME, TYPE, SIZE, LASTMOD
+ --sort-descending         Sort results in descending order
  -t,--in-filetype          File type to find (text, binary)
  -T,--out-filetype         File type not to find (text, binary)
  -v,--verbose              Set output mode to verbose
@@ -389,7 +390,7 @@ The _benchmark.py_ script executes a series of "scenarios" for each configured l
 version, and outputs whether the results of all versions match with a table of ranked
 performance. At the end, the performances values from all scenarios are summed and
 averaged and a final summary table is presented. Here's an example of the final output
-(from 2021-11-25; ocaml version excluded due to currently unresolved issues):
+(from 2023-01-07; ocaml version excluded due to currently unresolved issues):
 
 ```sh
 $ python3 ./scripts/benchmark.py
@@ -400,28 +401,29 @@ Outputs of all versions in all scenarios match
 
 Total results for 10 out of 10 scenarios with 100 out of 100 total runs
 
-             real     avg  rank    sys     avg  rank    user     avg  rank    total     avg  rank
----------  ------  ------  ----  -----  ------  ----  ------  ------  ----  -------  ------  ----
-cfind        0.39  0.0039     1   0     0          2    0     0          1     0.39  0.0039     1
-cljfind    109.6   1.096     20  23.08  0.2308    20  196.34  1.9634    20   329.02  3.2902    20
-cppfind      1.58  0.0158     2   0     0          1    0.8   0.008      2     2.38  0.0238     2
-csfind      19.08  0.1908    12   4.94  0.0494    15   12.41  0.1241    13    36.43  0.3643    12
-dartfind    51.35  0.5135    19  13.1   0.131     19   56.16  0.5616    19   120.61  1.2061    19
-fsfind      28.8   0.288     17   4.53  0.0453    12   22.32  0.2232    17    55.65  0.5565    17
-gofind       3.95  0.0395     5   2.4   0.024     11    0.8   0.008      4     7.15  0.0715     6
-hsfind       4.37  0.0437     7   1.51  0.0151     7    1.6   0.016      7     7.48  0.0748     7
-javafind    20.47  0.2047    14   5.8   0.058     16   19.81  0.1981    15    46.08  0.4608    14
-jsfind      14.63  0.1463    10   2.2   0.022      9   10.6   0.106     10    27.43  0.2743    10
-ktfind      22.82  0.2282    15   6.01  0.0601    17   22.3   0.223     16    51.13  0.5113    16
-objcfind     2.74  0.0274     3   0.8   0.008      4    0.8   0.008      5     4.34  0.0434     3
-phpfind      8.18  0.0818     8   2.32  0.0232    10    4.01  0.0401     8    14.51  0.1451     8
-plfind      10.11  0.1011     9   1.28  0.0128     6    7.06  0.0706     9    18.45  0.1845     9
-pyfind      26.02  0.2602    16   4.88  0.0488    14   18.59  0.1859    14    49.49  0.4949    15
-rbfind      19.39  0.1939    13   4.78  0.0478    13   12.27  0.1227    12    36.44  0.3644    13
-rsfind       2.93  0.0293     4   0.85  0.0085     5    0.8   0.008      3     4.58  0.0458     4
-scalafind   39     0.39      18   7.36  0.0736    18   49.45  0.4945    18    95.81  0.9581    18
-swiftfind    3.96  0.0396     6   0.8   0.008      3    1.6   0.016      6     6.36  0.0636     5
-tsfind      14.7   0.147     11   2.04  0.0204     8   10.72  0.1072    11    27.46  0.2746    11
+             real     avg    rank    sys     avg    rank    user     avg    rank    total     avg    rank
+---------  ------  ------  ------  -----  ------  ------  ------  ------  ------  -------  ------  ------
+cfind        0.16  0.0016       1   0     0            3    0     0            2     0.16  0.0016       1
+cljfind    142.92  1.4292      20  30.02  0.3002      20  278.67  2.7867      21   451.61  4.5161      21
+cppfind      2.2   0.022        3   0     0            2    0.8   0.008        5     3     0.03         3
+csfind      24.39  0.2439      12   6.8   0.068       13   14.16  0.1416      12    45.35  0.4535      12
+dartfind    68.79  0.6879      19  15.4   0.154       19   67.74  0.6774      18   151.93  1.5193      18
+fsfind      38.35  0.3835      15   7.01  0.0701      14   26.79  0.2679      14    72.15  0.7215      14
+gofind       0.74  0.0074       2   0     0            1    0     0            1     0.74  0.0074       2
+hsfind       5.38  0.0538       6   1.8   0.018        7    2.56  0.0256       7     9.74  0.0974       6
+javafind    30.82  0.3082      13   7.53  0.0753      15   36.41  0.3641      16    74.76  0.7476      15
+jsfind      18.47  0.1847      10   2.81  0.0281      10   13.69  0.1369      10    34.97  0.3497      10
+ktfind      40.15  0.4015      16   8.93  0.0893      16   51.01  0.5101      17   100.09  1.0009      16
+objcfind     4.16  0.0416       4   0.83  0.0083       4    0.8   0.008        3     5.79  0.0579       4
+phpfind     12.17  0.1217       9   2.8   0.028        9    7.74  0.0774       9    22.71  0.2271       9
+plfind      11.3   0.113        8   1.81  0.0181       8    7.53  0.0753       8    20.64  0.2064       8
+ps1find    156.72  1.5672      21  45.62  0.4562      21  151.4   1.514       20   353.74  3.5374      20
+pyfind      38.29  0.3829      14   6.67  0.0667      12   26.73  0.2673      13    71.69  0.7169      13
+rbfind      62.22  0.6222      17  11.06  0.1106      17   36.23  0.3623      15   109.51  1.0951      17
+rsfind       5.02  0.0502       5   1.6   0.016        6    0.8   0.008        4     7.42  0.0742       5
+scalafind   62.28  0.6228      18  12.47  0.1247      18   86.06  0.8606      19   160.81  1.6081      19
+swiftfind    6.93  0.0693       7   1.53  0.0153       5    2.42  0.0242       6    10.88  0.1088       7
+tsfind      19.04  0.1904      11   2.82  0.0282      11   14     0.14        11    35.86  0.3586      11
 ```
 
 Notice the line above the table that says "Output of all versions in all scenarios match". It is

@@ -21,15 +21,13 @@ void handleError(NSError *error, FindOptions *options) {
 
 NSArray<NSString*>* getMatchingDirs(NSArray<FileResult*> *fileResults) {
     NSMutableSet<NSString*> *dirSet = [NSMutableSet set];
-    NSMutableArray<NSString*> *dirs = [NSMutableArray array];
     for (FileResult *fr in fileResults) {
-        NSString *dir = [[fr description] stringByDeletingLastPathComponent];
-        if (![dirSet doesContain:dir]) {
-            [dirs addObject:dir];
-            [dirSet addObject:dir];
-        }
+        [dirSet addObject:[[fr description] stringByDeletingLastPathComponent]];
     }
-    return [NSArray arrayWithArray:dirs];
+    NSArray *dirArr = [NSArray arrayWithArray:[dirSet allObjects]];
+    return [dirArr sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+        return [s1 compare:s2];
+    }];
 }
 
 NSArray<NSString*>* getMatchingFiles(NSArray<FileResult*> *fileResults) {

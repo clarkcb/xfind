@@ -20,7 +20,7 @@ fun printMatchingDirs(fileResults: List<FileResult>) {
     } else {
         log("\nMatching directories (${dirs.size}):")
         for (d in dirs) {
-            log(d.name)
+            log(d.toString())
         }
     }
 }

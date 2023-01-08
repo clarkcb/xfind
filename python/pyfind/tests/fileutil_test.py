@@ -21,7 +21,9 @@ class FileUtilTest(unittest.TestCase):
     ############################################################################
     def test_get_extension_has_txt_extension(self):
         filename = 'filename.txt'
-        self.assertEqual(FileUtil.get_extension(filename), 'txt')
+        expected_ext = 'txt'
+        actual_ext = FileUtil.get_extension(filename)
+        self.assertEqual(expected_ext, actual_ext)
 
     def test_get_extension_missing_extension(self):
         filename = 'filename.'

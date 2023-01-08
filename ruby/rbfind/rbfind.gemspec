@@ -7,9 +7,9 @@ Gem::Specification.new do |spec|
   spec.email       = 'clarkcb@gmail.com'
 
   spec.summary     = 'ruby version of xfind'
-  spec.homepage    = 'http://github.com/clarkcb/xfind'
+  spec.homepage    = 'https://github.com/clarkcb/xfind'
   spec.license     = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.3.3')
+  spec.required_ruby_version = Gem::Requirement.new('>= 2.7.2')
 
   spec.files       = `git ls-files`.split($/)
   spec.test_files  = spec.files.grep(%r{^(test|spec|features)/})

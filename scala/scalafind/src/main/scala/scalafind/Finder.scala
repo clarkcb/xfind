@@ -147,21 +147,22 @@ class Finder (settings: FindSettings) {
   }
 
   def filterToFileResult(f: Path): Option[FileResult] = {
+    val fileName = f.getFileName().toString()
     if (settings.excludeHidden && Files.isHidden(f)) {
       None
     } else {
-      val fileResult = new FileResult(f, FileTypes.getFileType(f.toString))
+      val fileResult = new FileResult(f, FileTypes.getFileType(fileName))
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None
         case FileType.Archive =>
-          if (settings.includeArchives && isMatchingArchiveFile(f.toString)) {
+          if (settings.includeArchives && isMatchingArchiveFile(fileName)) {
             Some(fileResult)
           } else {
             None
           }
         case _ =>
-          if (!settings.archivesOnly && isMatchingFile(fileResult)) {
+          if (!settings.archivesOnly && isMatchingFile(fileName, fileResult.fileType)) {
             Some(fileResult)
           } else {
             None

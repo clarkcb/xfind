@@ -57,8 +57,8 @@ public class Finder {
     private func filterByPatterns(_ str: String, inPatterns: [Regex],
                                   outPatterns: [Regex]) -> Bool
     {
-        ((inPatterns.isEmpty || matchesAnyPattern(str, Array(inPatterns)))
-            && (outPatterns.isEmpty || !matchesAnyPattern(str, Array(outPatterns))))
+        ((inPatterns.isEmpty || matchesAnyPattern(str, inPatterns))
+            && (outPatterns.isEmpty || !matchesAnyPattern(str, outPatterns)))
     }
 
     private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
@@ -96,13 +96,14 @@ public class Finder {
     }
 
     public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
-        if settings.excludeHidden, FileUtil.isHiddenFile(fileResult.filePath) {
+        let fileName = URL(fileURLWithPath: fileResult.filePath).lastPathComponent
+        if settings.excludeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
-        return (filterByExtensions(FileUtil.getExtension(fileResult.filePath),
+        return (filterByExtensions(FileUtil.getExtension(fileName),
                                    inExtensions: settings.inExtensions,
                                    outExtensions: settings.outExtensions)
-                && filterByPatterns(fileResult.filePath,
+                && filterByPatterns(fileName,
                                     inPatterns: settings.inFilePatterns,
                                     outPatterns: settings.outFilePatterns)
                 && filterByFileTypes(fileResult.fileType,

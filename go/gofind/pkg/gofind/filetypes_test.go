@@ -8,7 +8,7 @@ func TestGetFileType(t *testing.T) {
 		"filetypes.go":          FiletypeCode,
 		"markup.xml":            FiletypeXml,
 		"lib.a":                 FiletypeBinary,
-		"noext":                 FiletypeBinary,
+		"noext":                 FiletypeUnknown,
 		"archive.tar.gz":        FiletypeArchive,
 		"nonsense.zippitydooda": FiletypeUnknown,
 	}

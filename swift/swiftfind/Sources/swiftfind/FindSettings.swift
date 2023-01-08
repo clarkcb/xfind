@@ -8,6 +8,33 @@
 
 // import Foundation
 
+public enum SortBy {
+    case filePath, fileName, fileType
+}
+
+func nameToSortBy(_ sortByName: String) -> SortBy {
+    let lname = sortByName.lowercased()
+    switch lname {
+    case "name":
+        return SortBy.fileName
+    case "type":
+        return SortBy.fileType
+    default:
+        return SortBy.filePath
+    }
+}
+
+func sortByToName(_ sortBy: SortBy) -> String {
+    switch sortBy {
+    case SortBy.fileName:
+        return "name"
+    case SortBy.fileType:
+        return "type"
+    default:
+        return "path"
+    }
+}
+
 public enum DefaultSettings {
     public static let archivesOnly = false
     public static let debug = false
@@ -18,6 +45,7 @@ public enum DefaultSettings {
     public static let printUsage = false
     public static let printVersion = false
     public static let recursive = true
+    public static let sortDescending = false
     public static let verbose = false
 }
 
@@ -31,6 +59,7 @@ public class FindSettings: CustomStringConvertible {
     public var printUsage: Bool = DefaultSettings.printUsage
     public var printVersion: Bool = DefaultSettings.printVersion
     public var recursive: Bool = DefaultSettings.recursive
+    public var sortDescending: Bool = DefaultSettings.sortDescending
     public var verbose: Bool = DefaultSettings.verbose
 
     public var inArchiveExtensions = Set<String>()
@@ -46,6 +75,7 @@ public class FindSettings: CustomStringConvertible {
     public var outFilePatterns = [Regex]()
     public var outFileTypes = [FileType]()
     public var paths = Set<String>()
+    public var sortBy = SortBy.filePath
 
     public init() {}
 
@@ -125,6 +155,10 @@ public class FindSettings: CustomStringConvertible {
         paths.insert(path)
     }
 
+    public func setSortBy(_ sortByName: String) {
+        sortBy = nameToSortBy(sortByName)
+    }
+
     public var archivesOnly: Bool {
         get {
             _archivesOnly
@@ -173,6 +207,7 @@ public class FindSettings: CustomStringConvertible {
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +
+            ", sortBy=\(sortByToName(sortBy))" +
             ", sortDescending=\(sortDescending)" +
             ", verbose=\(verbose)" +
             ")"

@@ -14,9 +14,9 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
-VENV_PATH=$DIR/venv
-PYTHON_EXE=python3.9
-PIP_EXE=pip3.9
+VENV_PATH=$PYFIND_PATH/venv
+PYTHON_EXE=python3.11
+PIP_EXE=pip3.11
 REQUIREMENTS_PATH=$PYFIND_PATH/requirements.txt
 
 
@@ -33,15 +33,15 @@ create_activate_venv () {
     then
         log "$VENV_PATH not found, creating..."
 
-        log "$PYTHON_EXE -m venv venv"
-        "$PYTHON_EXE" -m venv venv
+        log "$PYTHON_EXE -m venv $PYFIND_PATH/venv"
+        "$PYTHON_EXE" -m venv "$PYFIND_PATH/venv"
     fi
 
     # if venv isn't active, activate it
     if [ -z "$VIRTUAL_ENV" ]
     then
-        log "source ./venv/bin/activate"
-        source ./venv/bin/activate
+        log "source $PYFIND_PATH/venv/bin/activate"
+        source "$PYFIND_PATH/venv/bin/activate"
 
         # try to upgrade pip
         log "$PYTHON_EXE -m pip install --upgrade pip"
