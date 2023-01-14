@@ -79,6 +79,12 @@ class FindOptions:
             'sort-ascending':
                 lambda b, settings:
                 settings.set_property('sort_descending', not b),
+            'sort-caseinsensitive':
+                lambda b, settings:
+                settings.set_property('sort_caseinsensitive', b),
+            'sort-casesensitive':
+                lambda b, settings:
+                settings.set_property('sort_caseinsensitive', not b),
             'sort-descending':
                 lambda b, settings:
                 settings.set_property('sort_descending', b),

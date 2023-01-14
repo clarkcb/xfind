@@ -146,32 +146,35 @@ class Finder:
                 fr = self.filter_to_file_result(p)
                 if fr:
                     fileresults.append(fr)
-        return sorted(fileresults, key=lambda fr: (fr.path, fr.filename))
+        return fileresults
 
     async def find(self) -> List[FileResult]:
         """Find matching files under paths."""
-        file_results = self.sort_file_results(self.find_files())
-        return file_results
+        return self.sort_file_results(self.find_files())
 
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
+        def c(s: str) -> str:
+            if self.settings.sort_caseinsensitive:
+                return s.lower()
+            return s
         match self.settings.sortby:
             case SortBy.FILEPATH:
-                return sorted(file_results, key=lambda r: (r.path, r.filename),
+                return sorted(file_results, key=lambda r: (c(r.path), c(r.filename)),
                               reverse=self.settings.sort_descending)
             case SortBy.FILENAME:
-                return sorted(file_results, key=lambda r: (r.filename, r.path),
-                              reverse=self.settings.sort_descending)
-            case SortBy.FILETYPE:
-                return sorted(file_results, key=lambda r: (r.filetype, r.path, r.filename),
-                              reverse=self.settings.sort_descending)
-            case SortBy.LASTMOD:
-                return sorted(file_results, key=lambda r: (r.stat.st_mtime, r.path, r.filename),
+                return sorted(file_results, key=lambda r: (c(r.filename), c(r.path)),
                               reverse=self.settings.sort_descending)
             case SortBy.FILESIZE:
-                return sorted(file_results, key=lambda r: (r.stat.st_size, r.path, r.filename),
+                return sorted(file_results, key=lambda r: (r.stat.st_size, c(r.path), c(r.filename)),
+                              reverse=self.settings.sort_descending)
+            case SortBy.FILETYPE:
+                return sorted(file_results, key=lambda r: (r.filetype, c(r.path), c(r.filename)),
+                              reverse=self.settings.sort_descending)
+            case SortBy.LASTMOD:
+                return sorted(file_results, key=lambda r: (r.stat.st_mtime, c(r.path), c(r.filename)),
                               reverse=self.settings.sort_descending)
             case _:
-                return sorted(file_results, key=lambda r: (r.path, r.filename),
+                return sorted(file_results, key=lambda r: (c(r.path), c(r.filename)),
                               reverse=self.settings.sort_descending)
 
 

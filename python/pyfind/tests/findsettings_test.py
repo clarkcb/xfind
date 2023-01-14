@@ -30,6 +30,8 @@ class FindSettingsTest(unittest.TestCase):
         self.assertFalse(self.settings.printusage)
         self.assertFalse(self.settings.printversion)
         self.assertTrue(self.settings.recursive)
+        self.assertFalse(self.settings.sort_caseinsensitive)
+        self.assertFalse(self.settings.sort_descending)
         self.assertFalse(self.settings.verbose)
         # test the extension and pattern sets
         self.assertFalse(self.settings.in_archiveextensions)

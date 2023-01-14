@@ -37,8 +37,8 @@ class FindSettings:
         'in_filetypes', 'includearchives', 'listdirs', 'listfiles', 'maxlastmod',
         'maxsize', 'minlastmod', 'minsize', 'out_archivefilepatterns', 'out_archiveextensions',
         'out_dirpatterns', 'out_extensions', 'out_filepatterns', 'out_filetypes', 'paths',
-        'printresults', 'printusage', 'printversion', 'recursive', 'sortby', 'sort_descending',
-        'verbose'
+        'printresults', 'printusage', 'printversion', 'recursive', 'sortby',
+        'sort_caseinsensitive', 'sort_descending', 'verbose'
     ]
 
     def __init__(self, archivesonly: bool = False, debug: bool = False,
@@ -55,8 +55,8 @@ class FindSettings:
                  out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
                  paths: Set[str] = None, printresults: bool = False, printusage: bool = False,
                  printversion: bool = False, recursive: bool = True,
-                 sortby: SortBy = SortBy.FILEPATH, sort_descending: bool = False,
-                 verbose: bool = False):
+                 sortby: SortBy = SortBy.FILEPATH, sort_caseinsensitive: bool = False,
+                 sort_descending: bool = False, verbose: bool = False):
         self.archivesonly = archivesonly
         self.debug = debug
         self.excludehidden = excludehidden
@@ -85,6 +85,7 @@ class FindSettings:
         self.printversion = printversion
         self.recursive = recursive
         self.sortby = sortby
+        self.sort_caseinsensitive = sort_caseinsensitive
         self.sort_descending = sort_descending
         self.verbose = verbose
 
