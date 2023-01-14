@@ -63,6 +63,8 @@ class FindOptions
             'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
             'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
             'sort-ascending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = !$b,
+            'sort-caseinsensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_caseinsensitive = $b,
+            'sort-casesensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_caseinsensitive = !$b,
             'sort-descending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = $b,
             'verbose' => fn (bool $b, FindSettings $fs) => $fs->verbose = $b,
             'version' => fn (bool $b, FindSettings $fs) => $fs->printversion = $b

@@ -9,7 +9,7 @@ enum SortBy
 {
     case Filepath;
     case Filename;
-    case Filetype;
     case Filesize;
+    case Filetype;
     case LastMod;
 }

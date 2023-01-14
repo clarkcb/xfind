@@ -28,6 +28,7 @@ namespace phpfind;
  * @property bool printversion
  * @property bool recursive
  * @property SortBy sortby
+ * @property bool sort_caseinsensitive
  * @property bool sort_descending
  * @property bool verbose
  */
@@ -43,6 +44,7 @@ class FindSettings
     public bool $printversion = false;
     public bool $recursive = true;
     public bool $findarchives = false;
+    public bool $sort_caseinsensitive = false;
     public bool $sort_descending = false;
     public bool $verbose = false;
 
@@ -183,6 +185,7 @@ class FindSettings
             ', printversion: %s' .
             ', recursive: %s' .
             ', sortby: %s' .
+            ', sort_caseinsensitive: %s' .
             ', sort_descending: %s' .
             ', verbose: %s' .
             ')',
@@ -209,6 +212,7 @@ class FindSettings
             StringUtil::bool_to_string($this->printversion),
             StringUtil::bool_to_string($this->recursive),
             $this->sortby->name,
+            StringUtil::bool_to_string($this->sort_caseinsensitive),
             StringUtil::bool_to_string($this->sort_descending),
             StringUtil::bool_to_string($this->verbose)
         );

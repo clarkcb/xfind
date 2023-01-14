@@ -33,6 +33,7 @@ class FindSettingsTest extends TestCase
         $this->assertTrue($this->settings->recursive);
         $this->assertCount(0, $this->settings->paths);
         $this->assertEquals(SortBy::Filepath, $this->settings->sortby);
+        $this->assertFalse($this->settings->sort_caseinsensitive);
         $this->assertFalse($this->settings->sort_descending);
         $this->assertFalse($this->settings->verbose);
     }
