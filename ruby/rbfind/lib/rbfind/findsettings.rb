@@ -36,6 +36,7 @@ module RbFind
     attr_accessor :recursive
     attr_accessor :paths
     attr_accessor :sortby
+    attr_accessor :sort_caseinsensitive
     attr_accessor :sort_descending
     attr_accessor :verbose
 
@@ -50,6 +51,7 @@ module RbFind
       @printversion = false
       @recursive = true
       @sortby = SortBy::FILETYPE
+      @sort_caseinsensitive = false
       @sort_descending = false
       @verbose = false
 
@@ -151,6 +153,9 @@ module RbFind
       s << ", printusage: #{@printusage}"
       s << ", printversion: #{@printversion}"
       s << ", recursive: #{@recursive}"
+      s << ", sortby: #{@sortby}"
+      s << ", sort_caseinsensitive: #{@sort_caseinsensitive}"
+      s << ", sort_descending: #{@sort_descending}"
       s << ", verbose: #{@verbose}"
       s << ')'
       s

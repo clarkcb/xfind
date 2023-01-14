@@ -127,12 +127,23 @@ module RbFind
     private
 
     def sort_file_results(file_results)
+      def c(s)
+        if @settings.sort_caseinsensitive
+          s.downcase
+        else
+          s
+        end
+      end
       if @settings.sortby == SortBy::FILENAME
-        file_results.sort_by {|r| [r.filename, r.path]}
+        file_results.sort_by {|r| [c(r.filename), c(r.path)]}
+      elsif @settings.sortby == SortBy::FILESIZE
+        file_results.sort_by {|r| [r.stat.size, c(r.path), c(r.filename)]}
       elsif @settings.sortby == SortBy::FILETYPE
-        file_results.sort_by {|r| [r.filetype, r.path, r.filename]}
+        file_results.sort_by {|r| [r.filetype, c(r.path), c(r.filename)]}
+      elsif @settings.sortby == SortBy::LASTMOD
+        file_results.sort_by {|r| [r.stat.mtime, c(r.path), c(r.filename)]}
       else
-        file_results.sort_by {|r| [r.path, r.filename]}
+        file_results.sort_by {|r| [c(r.path), c(r.filename)]}
       end
     end
 

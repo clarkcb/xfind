@@ -185,6 +185,8 @@ module RbFind
         norecursive: ->(b, settings) { settings.recursive = !b },
         recursive: ->(b, settings) { settings.recursive = b },
         'sort-ascending': ->(b, settings) { settings.sort_descending = !b },
+        'sort-caseinsensitive': ->(b, settings) { settings.sort_caseinsensitive = b },
+        'sort-casesensitive': ->(b, settings) { settings.sort_caseinsensitive = !b },
         'sort-descending': ->(b, settings) { settings.sort_descending = b },
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.printversion = b }
