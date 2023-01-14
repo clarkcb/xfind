@@ -44,14 +44,16 @@ module RbFind
     end
 
     def matching_fileresult?(fileresult)
-      ext = FileUtil.get_extension(fileresult.filename)
-      if !@settings.in_extensions.empty? &&
-        !@settings.in_extensions.include?(ext)
-        return false
-      end
-      if !@settings.out_extensions.empty? &&
-        @settings.out_extensions.include?(ext)
-        return false
+      if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
+        ext = FileUtil.get_extension(fileresult.filename)
+        if !@settings.in_extensions.empty? &&
+          !@settings.in_extensions.include?(ext)
+          return false
+        end
+        if !@settings.out_extensions.empty? &&
+          @settings.out_extensions.include?(ext)
+          return false
+        end
       end
       if !@settings.in_filepatterns.empty? &&
         !matches_any_pattern(fileresult.filename, @settings.in_filepatterns)
@@ -67,6 +69,18 @@ module RbFind
       end
       if !@settings.out_filetypes.empty? &&
         @settings.out_filetypes.include?(fileresult.filetype)
+        return false
+      end
+      if @settings.maxlastmod && fileresult.stat.mtime > @settings.maxlastmod.to_time
+        return false
+      end
+      if @settings.maxsize > 0 && fileresult.stat.size > @settings.maxsize
+        return false
+      end
+      if @settings.minlastmod && fileresult.stat.mtime < @settings.minlastmod.to_time
+        return false
+      end
+      if @settings.minsize > 0 && fileresult.stat.size < @settings.minsize
         return false
       end
       true
@@ -153,6 +167,12 @@ module RbFind
         raise FindError, 'Startpath not found' unless Pathname.new(p).exist?
         raise FindError, 'Startpath not readable' unless File.readable?(p)
       end
+      if @settings.maxlastmod && @settings.minlastmod && @settings.maxlastmod <= @settings.minlastmod
+        raise FindError, 'Invalid range for minlastmod and maxlastmod'
+      end
+      if @settings.maxsize > 0 && @settings.minsize > 0 && @settings.maxsize <= @settings.minsize
+        raise FindError, 'Invalid range for minsize and maxsize'
+      end
     end
 
     def matches_any_pattern(str, pattern_set)
@@ -170,7 +190,11 @@ module RbFind
       d = File.dirname(filepath) || '.'
       filename = File.basename(filepath)
       filetype = @filetypes.get_filetype(filename)
-      FileResult.new(d, filename, filetype)
+      stat = nil
+      if @settings.need_stat?
+        stat = File.stat(filepath)
+      end
+      FileResult.new(d, filename, filetype, stat)
     end
 
     def get_file_results(filepath)

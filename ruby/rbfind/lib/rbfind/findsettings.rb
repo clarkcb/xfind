@@ -5,8 +5,8 @@ module RbFind
   module SortBy
     FILEPATH = 0
     FILENAME = 1
-    FILETYPE = 2
-    FILESIZE = 3
+    FILESIZE = 2
+    FILETYPE = 3
     LASTMOD  = 4
   end
 
@@ -25,6 +25,10 @@ module RbFind
     attr_accessor :includearchives
     attr_accessor :listdirs
     attr_accessor :listfiles
+    attr_accessor :maxlastmod
+    attr_accessor :maxsize
+    attr_accessor :minlastmod
+    attr_accessor :minsize
     attr_accessor :out_archiveextensions
     attr_accessor :out_archivefilepatterns
     attr_accessor :out_dirpatterns
@@ -47,6 +51,11 @@ module RbFind
       @includearchives = false
       @listdirs = false
       @listfiles = false
+      @listfiles = false
+      @maxlastmod = nil
+      @maxsize = 0
+      @minlastmod = nil
+      @minsize = 0
       @printusage = false
       @printversion = false
       @recursive = true
@@ -108,12 +117,26 @@ module RbFind
       end
     end
 
+    def need_stat?
+      if @sortby == SortBy::FILESIZE || @sortby == SortBy::LASTMOD
+        return true
+      end
+      if @maxlastmod || @maxsize > 0 || @minlastmod || @minsize > 0
+        return true
+      end
+      false
+    end
+
     def set_sort_by(sort_by_name)
       sort_by_name = sort_by_name.strip.upcase
       if sort_by_name == 'NAME'
         @sortby = SortBy::FILENAME
+      elsif sort_by_name == 'SIZE'
+        @sortby = SortBy::FILESIZE
       elsif sort_by_name == 'TYPE'
         @sortby = SortBy::FILETYPE
+      elsif sort_by_name == 'LASTMOD'
+        @sortby = SortBy::LASTMOD
       else
         @sortby = SortBy::FILEPATH
       end
@@ -143,6 +166,10 @@ module RbFind
       s << ", includearchives: #{@includearchives}"
       s << ", listdirs: #{@listdirs}"
       s << ", listfiles: #{@listfiles}"
+      s << ", maxlastmod: #{@maxlastmod}"
+      s << ", maxsize: #{@maxsize}"
+      s << ", minlastmod: #{@minlastmod}"
+      s << ", minsize: #{@minsize}"
       s << ', ' + list_to_s('out_archiveextensions', @out_archiveextensions)
       s << ', ' + list_to_s('out_archivefilepatterns', @out_archivefilepatterns)
       s << ', ' + list_to_s('out_dirpatterns', @out_dirpatterns)

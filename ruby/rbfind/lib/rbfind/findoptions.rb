@@ -1,4 +1,5 @@
 # FindOptions - generate help, create settings from CLI args
+require 'date'
 require 'json'
 
 require_relative 'common'
@@ -131,16 +132,16 @@ module RbFind
           settings.add_patterns(x, settings.in_filepatterns)
         },
         'maxlastmod': lambda { |x, settings|
-          # TODO: add maxlastmod to settings as date/time
+          settings.maxlastmod = DateTime.parse(x)
         },
         'maxsize': lambda { |x, settings|
-          # TODO: add maxsize to settings as int
+          settings.maxsize = x.to_i
         },
         'minlastmod': lambda { |x, settings|
-          # TODO: add minlastmod to settings as date/time
+          settings.minlastmod = DateTime.parse(x)
         },
         'minsize': lambda { |x, settings|
-          # TODO: add minsize to settings as int
+          settings.minsize = x.to_i
         },
         'out-archiveext': lambda { |x, settings|
           settings.add_exts(x, settings.out_archiveextensions)

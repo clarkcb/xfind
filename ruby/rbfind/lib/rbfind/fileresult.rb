@@ -8,14 +8,16 @@ module RbFind
     attr_reader :path
     attr_reader :filename
     attr_reader :filetype
+    attr_reader :stat
 
     CONTAINER_SEPARATOR = '!'
 
-    def initialize(path, filename, filetype)
+    def initialize(path, filename, filetype, stat)
       @containers = []
       @path = path
       @filename = filename
       @filetype = filetype # FileType
+      @stat = stat
     end
 
     def relativepath
