@@ -34,6 +34,12 @@ class Finder:
         for p in self.settings.paths:
             assert os.path.exists(p), 'Startpath not found'
             assert os.access(p, os.R_OK), 'Startpath not readable'
+        if self.settings.maxlastmod and self.settings.minlastmod:
+            assert self.settings.maxlastmod > self.settings.minlastmod, \
+                'Invalid range for minlastmod and maxlastmod'
+        if self.settings.maxsize > 0 and self.settings.minsize > 0:
+            assert self.settings.maxsize > self.settings.minsize, \
+                'Invalid range for minsize and maxsize'
 
     def is_matching_dir(self, d: str) -> bool:
         """Check whether the given directory matches find settings."""
@@ -78,17 +84,21 @@ class Finder:
 
     def is_matching_file(self, filename: str, filetype: FileType, stat: os.stat_result) -> bool:
         """Check whether the given file matches find settings."""
-        ext = FileUtil.get_extension(filename)
-        if (self.settings.in_extensions and ext not in self.settings.in_extensions) \
-                or (self.settings.out_extensions and ext in self.settings.out_extensions) \
-                or (self.settings.in_filepatterns and
-                    not matches_any_pattern(filename, self.settings.in_filepatterns)) \
+        if self.settings.in_extensions or self.settings.out_extensions:
+            ext = FileUtil.get_extension(filename)
+            if (self.settings.in_extensions and ext not in self.settings.in_extensions) \
+                    or (self.settings.out_extensions and ext in self.settings.out_extensions):
+                return False
+        if (self.settings.in_filepatterns and
+                not matches_any_pattern(filename, self.settings.in_filepatterns)) \
                 or (self.settings.out_filepatterns and
                     matches_any_pattern(filename, self.settings.out_filepatterns)) \
                 or (self.settings.in_filetypes and filetype not in self.settings.in_filetypes) \
                 or (self.settings.out_filetypes and filetype in self.settings.out_filetypes):
             return False
-        return self.is_matching_stat(stat)
+        if stat:
+            return self.is_matching_stat(stat)
+        return True
 
     def filter_to_file_result(self, filepath: str) -> Optional[FileResult]:
         """Return a FileResult instance if the given filepath matches find settings, else None."""
@@ -100,7 +110,9 @@ class Finder:
            and not self.settings.includearchives \
            and not self.settings.archivesonly:
             return None
-        stat = os.stat(filepath)
+        stat = None
+        if self.settings.need_stat():
+            stat = os.stat(filepath)
         if filetype == FileType.ARCHIVE:
             if not self.is_matching_archive_file(filename, stat):
                 return None
