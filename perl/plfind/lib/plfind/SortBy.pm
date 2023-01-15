@@ -14,7 +14,9 @@ use warnings;
 use constant {
     FILEPATH => 'Filepath',
     FILENAME => 'Filename',
+    FILESIZE => 'Filesize',
     FILETYPE => 'Filetype',
+    LASTMOD => 'Lastmod',
 };
 
 1;

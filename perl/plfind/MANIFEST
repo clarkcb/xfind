@@ -6,14 +6,13 @@ README
 bin/plfind
 bin/plfind.bat
 lib/plfind.pm
-lib/plfind/Color.pm
 lib/plfind/common.pm
 lib/plfind/config.pm
+lib/plfind/FileResult.pm
 lib/plfind/FileType.pm
 lib/plfind/FileTypes.pm
 lib/plfind/FileUtil.pm
 lib/plfind/Finder.pm
-lib/plfind/FindFile.pm
 lib/plfind/FindOption.pm
 lib/plfind/FindOptions.pm
 lib/plfind/FindSettings.pm

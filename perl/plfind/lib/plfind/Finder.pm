@@ -13,6 +13,7 @@ use warnings;
 
 use File::Spec;
 use File::Basename;
+use Scalar::Util qw(blessed);
 
 use plfind::common;
 use plfind::FileResult;
@@ -93,33 +94,50 @@ sub is_matching_dir {
     return 1;
 }
 
-sub is_matching_file {
-    my ($self, $f) = @_;
-    my $ext = plfind::FileUtil::get_extension($f);
-    if (scalar @{$self->{settings}->{in_extensions}} &&
-        !(grep {$_ eq $ext} @{$self->{settings}->{in_extensions}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_extensions}} &&
-        (grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})) {
-        return 0;
+sub is_matching_file_result {
+    my ($self, $fr) = @_;
+    if (scalar @{$self->{settings}->{in_extensions}} || scalar @{$self->{settings}->{out_extensions}}) {
+        my $ext = plfind::FileUtil::get_extension($fr->{filename});
+        if (scalar @{$self->{settings}->{in_extensions}} &&
+            !(grep {$_ eq $ext} @{$self->{settings}->{in_extensions}})) {
+            return 0;
+        }
+        if (scalar @{$self->{settings}->{out_extensions}} &&
+            (grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})) {
+            return 0;
+        }
     }
     if (scalar @{$self->{settings}->{in_filepatterns}} &&
-        !$self->matches_any_pattern($f, $self->{settings}->{in_filepatterns})) {
+        !$self->matches_any_pattern($fr->{filename}, $self->{settings}->{in_filepatterns})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_filepatterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_filepatterns})) {
+        $self->matches_any_pattern($fr->{filename}, $self->{settings}->{out_filepatterns})) {
         return 0;
     }
-    my $type = $self->{filetypes}->get_filetype($f);
     if (scalar @{$self->{settings}->{in_filetypes}} &&
-        !(grep {$_ eq $type} @{$self->{settings}->{in_filetypes}})) {
+        !(grep {$_ eq $fr->{filetype}} @{$self->{settings}->{in_filetypes}})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_filetypes}} &&
-        (grep {$_ eq $type} @{$self->{settings}->{out_filetypes}})) {
+        (grep {$_ eq $fr->{filetype}} @{$self->{settings}->{out_filetypes}})) {
         return 0;
+    }
+    if (scalar @{$fr->{stat}}) {
+        # stat index 7 == size
+        if ($self->{settings}->{maxsize} > 0 && $fr->{stat}[7] > $self->{settings}->{maxsize}) {
+            return 0;
+        }
+        if ($self->{settings}->{minsize} > 0 && $fr->{stat}[7] < $self->{settings}->{minsize}) {
+            return 0;
+        }
+        # stat index 9 == mtime
+        if (blessed($self->{settings}->{maxlastmod}) && $fr->{stat}[9] > $self->{settings}->{maxlastmod}->epoch) {
+            return 0;
+        }
+        if (blessed($self->{settings}->{minlastmod}) && $fr->{stat}[9] < $self->{settings}->{minlastmod}->epoch) {
+            return 0;
+        }
     }
     return 1;
 }
@@ -153,15 +171,20 @@ sub filter_to_file_result {
     if ($self->{settings}->{excludehidden} && plfind::FileUtil::is_hidden($f)) {
         return;
     }
-    my $ft = $self->{filetypes}->get_filetype($f);
-    my $fileresult = new plfind::FileResult($d, $f, $ft);
-    if ($ft eq plfind::FileType->ARCHIVE) {
+    my $filetype = $self->{filetypes}->get_filetype($f);
+    my $stat = [];
+    if ($self->{settings}->needs_stat) {
+        my @fpstat = stat($fp);
+        $stat = \@fpstat;
+    }
+    my $fileresult = new plfind::FileResult($d, $f, $filetype, $stat);
+    if ($filetype eq plfind::FileType->ARCHIVE) {
         if ($self->{settings}->{includearchives} && $self->is_matching_archive_file($f)) {
             return $fileresult;
         }
         return;
     }
-    if (!$self->{settings}->{archivesonly} && $self->is_matching_file($f)) {
+    if (!$self->{settings}->{archivesonly} && $self->is_matching_file_result($fileresult)) {
         return $fileresult;
     }
     return;
@@ -265,6 +288,14 @@ sub cmp_file_results_by_filename {
     return $filename1 cmp $filename2;
 }
 
+sub cmp_file_results_by_filesize {
+    my ($self, $fr1, $fr2) = @_;
+    if ($fr1->{stat}[7] == $fr2->{stat}[7]) {
+        return $self->cmp_file_results_by_path($fr1, $fr2);
+    }
+    return $fr1->{stat}[7] <=> $fr2->{stat}[7];
+}
+
 sub cmp_file_results_by_filetype {
     my ($self, $fr1, $fr2) = @_;
     if ($fr1->{filetype} eq $fr2->{filetype}) {
@@ -273,13 +304,25 @@ sub cmp_file_results_by_filetype {
     return $fr1->{filetype} cmp $fr2->{filetype};
 }
 
+sub cmp_file_results_by_lastmod {
+    my ($self, $fr1, $fr2) = @_;
+    if ($fr1->{stat}[9] == $fr2->{stat}[9]) {
+        return $self->cmp_file_results_by_path($fr1, $fr2);
+    }
+    return $fr1->{stat}[9] <=> $fr2->{stat}[9];
+}
+
 sub sort_file_results {
     my ($self, $fileresults) = @_;
     my @sorted;
     if ($self->{settings}->{sortby} eq plfind::SortBy->FILENAME) {
         @sorted = sort {$self->cmp_file_results_by_filename($a, $b)} @{$fileresults};
+    } elsif ($self->{settings}->{sortby} eq plfind::SortBy->FILESIZE) {
+        @sorted = sort {$self->cmp_file_results_by_filesize($a, $b)} @{$fileresults};
     } elsif ($self->{settings}->{sortby} eq plfind::SortBy->FILETYPE) {
         @sorted = sort {$self->cmp_file_results_by_filetype($a, $b)} @{$fileresults};
+    } elsif ($self->{settings}->{sortby} eq plfind::SortBy->LASTMOD) {
+        @sorted = sort {$self->cmp_file_results_by_lastmod($a, $b)} @{$fileresults};
     } else {
         @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @{$fileresults};
     }

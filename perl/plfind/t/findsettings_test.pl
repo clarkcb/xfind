@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 22;
+use Test::Simple tests => 23;
 
 use plfind::FindSettings;
 
@@ -29,10 +29,12 @@ sub test_default_settings {
     ok(!$settings->{includearchives}, "includearchives is false by default");
     ok(!$settings->{listdirs}, "listdirs is false by default");
     ok(!$settings->{listfiles}, "listfiles is false by default");
+    ok(@{$settings->{paths}} eq 0, "paths are empty by default");
     ok(!$settings->{printusage}, "printusage is false by default");
     ok(!$settings->{printversion}, "printversion is false by default");
     ok($settings->{recursive}, "recursive is true by default");
-    ok(@{$settings->{paths}} eq 0, "paths are empty by default");
+    ok(!$settings->{sort_caseinsensitive}, "sort_caseinsensitive is false by default");
+    ok(!$settings->{sort_descending}, "sort_descending is false by default");
     ok(!$settings->{verbose}, "verbose is false by default");
 }
 

@@ -13,6 +13,7 @@ use warnings;
 
 # use XML::Simple;
 use Data::Dumper;
+use DateTime::Format::DateParse;
 use JSON::PP qw(decode_json);
 
 use plfind::common;
@@ -46,6 +47,22 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_filetypes($s, $settings->{in_filetypes});
     },
+    'maxlastmod' => sub {
+        my ($s, $settings) = @_;
+        $settings->{maxlastmod} = DateTime::Format::DateParse->parse_datetime($s);
+    },
+    'maxsize' => sub {
+        my ($s, $settings) = @_;
+        $settings->{maxsize} = int($s);
+    },
+    'minlastmod' => sub {
+        my ($s, $settings) = @_;
+        $settings->{minlastmod} = DateTime::Format::DateParse->parse_datetime($s);
+    },
+    'minsize' => sub {
+        my ($s, $settings) = @_;
+        $settings->{minsize} = int($s);
+    },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;
         $settings->add_exts($s, $settings->{out_archiveextensions});
@@ -70,6 +87,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_filetypes($s, $settings->{out_filetypes});
     },
+    'path' => sub {
+        my ($s, $settings) = @_;
+        push(@{$settings->{paths}}, $s);
+    },
     'settings-file' => sub {
         my ($s, $settings) = @_;
         settings_from_file($s, $settings);
@@ -78,10 +99,6 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->set_sort_by($s);
     },
-    'path' => sub {
-        my ($s, $settings) = @_;
-        push(@{$settings->{paths}}, $s);
-    }
 };
 
 my $bool_flag_action_hash = {

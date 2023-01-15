@@ -18,6 +18,7 @@ sub new {
         path => shift,
         filename => shift,
         filetype => shift,
+        stat => shift,
     };
     bless $self, $class;
     return $self;
