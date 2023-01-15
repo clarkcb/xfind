@@ -23,6 +23,10 @@ export class FindSettings {
     includeArchives = false;
     listDirs = false;
     listFiles = false;
+    maxLastMod: Date | null = null;
+    maxSize = 0;
+    minLastMod: Date | null = null;
+    minSize = 0;
     outArchiveExtensions: string[] = [];
     outArchiveFilePatterns: RegExp[] = [];
     outDirPatterns: RegExp[] = [];
@@ -120,6 +124,38 @@ export class FindSettings {
         if (b) this.verbose = b;
     }
 
+    public getDateForString(s: string): Date {
+        const d = new Date();
+        d.setTime(Date.parse(s));
+        return d;
+    }
+
+    public setMaxLastMod(s: string): void {
+        this.maxLastMod = this.getDateForString(s);
+    }
+
+    public setMinLastMod(s: string): void {
+        this.minLastMod = this.getDateForString(s);
+    }
+
+    public needStat(): boolean {
+        return this.sortBy === SortBy.FileSize ||
+            this.sortBy === SortBy.LastMod ||
+            this.maxLastMod !== null ||
+            this.maxSize > 0 ||
+            this.minLastMod !== null ||
+            this.minSize > 0;
+    }
+
+    private static dateToString(name: string, dt: Date | null): string {
+        let s = `${name}=`;
+        if (dt === null)
+            s += '0';
+        else
+            s += `"${dt.toISOString()}"`;
+        return s;
+    }
+
     private static listToString(name: string, lst: string[]|RegExp[]): string {
         let s = `${name}=[`;
         if (lst.length)
@@ -152,6 +188,10 @@ export class FindSettings {
             + ', includeArchives=' + this.includeArchives
             + ', listDirs=' + this.listDirs
             + ', listFiles=' + this.listFiles
+            + ', ' + FindSettings.dateToString('maxLastMod', this.maxLastMod)
+            + ', maxSize=' + this.maxSize
+            + ', ' + FindSettings.dateToString('minLastMod', this.minLastMod)
+            + ', minSize=' + this.minSize
             + ', ' + FindSettings.listToString('outArchiveExtensions', this.outArchiveExtensions)
             + ', ' + FindSettings.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
             + ', ' + FindSettings.listToString('outDirPatterns', this.outDirPatterns)

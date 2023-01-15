@@ -99,13 +99,17 @@ export class Finder {
         // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
         //     return false;
         // }
-        const ext: string = FileUtil.getExtension(file);
-        if ((this._settings.inExtensions.length &&
-            !Finder.matchesAnyString(ext, this._settings.inExtensions))
-            || (this._settings.outExtensions.length &&
-                Finder.matchesAnyString(ext, this._settings.outExtensions))
-            || (this._settings.inFilePatterns.length &&
-                !Finder.matchesAnyPattern(file, this._settings.inFilePatterns))
+        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
+            const ext: string = FileUtil.getExtension(file);
+            if ((this._settings.inExtensions.length &&
+                    !Finder.matchesAnyString(ext, this._settings.inExtensions))
+                || (this._settings.outExtensions.length &&
+                    Finder.matchesAnyString(ext, this._settings.outExtensions))) {
+                return false;
+            }
+        }
+        if ((this._settings.inFilePatterns.length &&
+            !Finder.matchesAnyPattern(file, this._settings.inFilePatterns))
             || (this._settings.outFilePatterns.length &&
                 Finder.matchesAnyPattern(file, this._settings.outFilePatterns))) {
             return false;
@@ -116,6 +120,44 @@ export class Finder {
             || (this._settings.outFileTypes.length &&
                 Finder.matchesAnyFileType(filetype, this._settings.outFileTypes))) {
                     return false;
+        }
+        return true;
+    }
+
+    public isMatchingFileResult(fr: FileResult): boolean {
+        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
+        //     return false;
+        // }
+        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
+            const ext: string = FileUtil.getExtension(fr.filename);
+            if ((this._settings.inExtensions.length &&
+                    !Finder.matchesAnyString(ext, this._settings.inExtensions))
+                || (this._settings.outExtensions.length &&
+                    Finder.matchesAnyString(ext, this._settings.outExtensions))) {
+                return false;
+            }
+        }
+        if ((this._settings.inFilePatterns.length &&
+            !Finder.matchesAnyPattern(fr.filename, this._settings.inFilePatterns))
+            || (this._settings.outFilePatterns.length &&
+                Finder.matchesAnyPattern(fr.filename, this._settings.outFilePatterns))) {
+            return false;
+        }
+        if ((this._settings.inFileTypes.length &&
+            !Finder.matchesAnyFileType(fr.filetype, this._settings.inFileTypes))
+            || (this._settings.outFileTypes.length &&
+                Finder.matchesAnyFileType(fr.filetype, this._settings.outFileTypes))) {
+                    return false;
+        }
+        if (fr.stat !== null) {
+            if ((this._settings.maxLastMod !== null && fr.stat.mtime.getTime() > this._settings.maxLastMod.getTime()) ||
+                (this._settings.minLastMod !== null && fr.stat.mtime.getTime() < this._settings.minLastMod.getTime())) {
+                return false;
+            }
+            if ((this._settings.maxSize > 0 && fr.stat.size > this._settings.maxSize) ||
+                (this._settings.minSize > 0 && fr.stat.size < this._settings.minSize)) {
+                return false;
+            }
         }
         return true;
     }
@@ -151,20 +193,24 @@ export class Finder {
         return (!this._settings.archivesOnly && this.isMatchingFile(f));
     }
 
-    public filterToFileResult(f: string): FileResult | null {
-        if (this._settings.excludeHidden && FileUtil.isHidden(f)) {
+    public filterToFileResult(fp: string): FileResult | null {
+        if (this._settings.excludeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
-        const dirname = path.dirname(f) || '.';
-        const filename = path.basename(f);
-        const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename));
+        const dirname = path.dirname(fp) || '.';
+        const filename = path.basename(fp);
+        let stat: fs.Stats | null = null;
+        if (this._settings.needStat()) {
+            stat = fs.statSync(fp);
+        }
+        const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename), stat);
         if (fr.filetype === FileType.Archive) {
             if (this._settings.includeArchives && this.isMatchingArchiveFile(fr.filename)) {
                 return fr;
             }
             return null;
         }
-        if (!this._settings.archivesOnly && this.isMatchingFile(fr.filename)) {
+        if (!this._settings.archivesOnly && this.isMatchingFileResult(fr)) {
             return fr;
         }
         return null;
@@ -175,10 +221,10 @@ export class Finder {
         let fileResults: FileResult[] = [];
         fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
-        }).forEach((f: string) => {
-            const stats = fs.statSync(f);
-            if (stats.isDirectory() && this._settings.recursive && this.isMatchingDir(f)) {
-                findDirs.push(f);
+        }).forEach((fp: string) => {
+            const stats = fs.statSync(fp);
+            if (stats.isDirectory() && this._settings.recursive && this.isMatchingDir(fp)) {
+                findDirs.push(fp);
             } else if (stats.isFile()) {
                 // const dirname = path.dirname(f) || '.';
                 // const filename = path.basename(f);
@@ -187,7 +233,7 @@ export class Finder {
                 //     const fr = new FileResult(dirname, filename, filetype);
                 //     fileResults.push(fr);
                 // }
-                const fr = this.filterToFileResult(f);
+                const fr = this.filterToFileResult(fp);
                 if (fr !== null) {
                     fileResults.push(fr);
                 }
@@ -209,12 +255,16 @@ export class Finder {
                 throw new FindError('startPath does not match find criteria');
             }
         } else if (stats.isFile()) {
+            // TODO: can I use filterToFileResult here?
             const dirname = path.dirname(startPath) || '.';
             const filename = path.basename(startPath);
             if (this.isMatchingDir(dirname) && this.filterFile(filename)) {
-                const filetype = FileTypes.getFileType(filename);
-                const sf = new FileResult(dirname, filename, filetype);
-                fileResults.push(sf);
+                let stat: fs.Stats | null = null;
+                if (this._settings.needStat()) {
+                    stat = fs.statSync(startPath);
+                }
+                const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename), stat);
+                fileResults.push(fr);
             } else {
                 throw new FindError('startPath does not match find criteria');
             }
@@ -248,6 +298,16 @@ export class Finder {
         return filename1 < filename2 ? -1 : 1;
     }
 
+    private cmpFileResultsBySize(fr1: FileResult, fr2: FileResult): number {
+        if (fr1.stat !== null && fr2.stat !== null) {
+            if (fr1.stat.size === fr2.stat.size) {
+                return this.cmpFileResultsByPath(fr1, fr2);
+            }
+            return fr1.stat.size - fr2.stat.size;
+        }
+        return 0;
+    }
+
     private cmpFileResultsByType(fr1: FileResult, fr2: FileResult): number {
         if (fr1.filetype === fr2.filetype) {
             return this.cmpFileResultsByPath(fr1, fr2);
@@ -255,11 +315,25 @@ export class Finder {
         return fr1.filetype - fr2.filetype;
     }
 
+    private cmpFileResultsByLastMod(fr1: FileResult, fr2: FileResult): number {
+        if (fr1.stat !== null && fr2.stat !== null) {
+            if (fr1.stat.mtime.getTime() === fr2.stat.mtime.getTime()) {
+                return this.cmpFileResultsByPath(fr1, fr2);
+            }
+            return fr1.stat.mtime.getTime() - fr2.stat.mtime.getTime();
+        }
+        return 0;
+    }
+
     private sortFileResults(fileResults: FileResult[]): void {
         if (this._settings.sortBy === SortBy.FileName) {
             fileResults.sort((a, b) => this.cmpFileResultsByName(a, b));
+        } else if (this._settings.sortBy === SortBy.FileSize) {
+            fileResults.sort((a, b) => this.cmpFileResultsBySize(a, b));
         } else if (this._settings.sortBy === SortBy.FileType) {
             fileResults.sort((a, b) => this.cmpFileResultsByType(a, b));
+        } else if (this._settings.sortBy === SortBy.LastMod) {
+            fileResults.sort((a, b) => this.cmpFileResultsByLastMod(a, b));
         } else {
             fileResults.sort((a, b) => this.cmpFileResultsByPath(a, b));
         }
