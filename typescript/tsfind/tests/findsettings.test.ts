@@ -12,13 +12,15 @@ describe('testing findsettings', () => {
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.debug).toBeFalsy();
         expect(settings.excludeHidden).toBeTruthy();
+        expect(settings.includeArchives).toBeFalsy();
         expect(settings.listDirs).toBeFalsy();
         expect(settings.listFiles).toBeFalsy();
+        expect(settings.paths.length).toEqual(0);
         expect(settings.printUsage).toBeFalsy();
         expect(settings.printVersion).toBeFalsy();
         expect(settings.recursive).toBeTruthy();
-        expect(settings.includeArchives).toBeFalsy();
-        expect(settings.paths.length).toEqual(0);
+        expect(settings.sortCaseInsensitive).toBeFalsy();
+        expect(settings.sortDescending).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
     });
 

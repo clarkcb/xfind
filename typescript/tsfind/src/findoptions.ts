@@ -95,6 +95,10 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.recursive = b; },
             'sort-ascending':
                 (b: boolean, settings: FindSettings) => { settings.sortDescending = !b; },
+            'sort-caseinsensitive':
+                (b: boolean, settings: FindSettings) => { settings.sortCaseInsensitive = b; },
+            'sort-casesensitive':
+                (b: boolean, settings: FindSettings) => { settings.sortCaseInsensitive = !b; },
             'sort-descending':
                 (b: boolean, settings: FindSettings) => { settings.sortDescending = b; },
             'verbose':

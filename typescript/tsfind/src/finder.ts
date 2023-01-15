@@ -223,17 +223,29 @@ export class Finder {
     }
 
     private cmpFileResultsByPath(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.pathname === fr2.pathname) {
-            return fr1.filename < fr2.filename ? -1 : 1;
+        const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
+            [fr1.pathname.toLowerCase(), fr2.pathname.toLowerCase()] :
+            [fr1.pathname, fr2.pathname];
+        if (path1 === path2) {
+            const [filename1, filename2]: string[] = this._settings.sortCaseInsensitive ?
+                [fr1.filename.toLowerCase(), fr2.filename.toLowerCase()] :
+                [fr1.filename, fr2.filename];
+            return filename1 < filename2 ? -1 : 1;
         }
-        return fr1.pathname < fr2.pathname ? -1 : 1;
+        return path1 < path2 ? -1 : 1;
     }
 
     private cmpFileResultsByName(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.filename === fr2.filename) {
-            return fr1.pathname < fr2.pathname ? -1 : 1;
+        const [filename1, filename2]: string[] = this._settings.sortCaseInsensitive ?
+            [fr1.filename.toLowerCase(), fr2.filename.toLowerCase()] :
+            [fr1.filename, fr2.filename];
+        if (filename1 === filename2) {
+            const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
+                [fr1.pathname.toLowerCase(), fr2.pathname.toLowerCase()] :
+                [fr1.pathname, fr2.pathname];
+            return path1 < path2 ? -1 : 1;
         }
-        return fr1.filename < fr2.filename ? -1 : 1;
+        return filename1 < filename2 ? -1 : 1;
     }
 
     private cmpFileResultsByType(fr1: FileResult, fr2: FileResult): number {
