@@ -21,6 +21,10 @@ class FindSettings {
         this.includeArchives = false;
         this.listDirs = false;
         this.listFiles = false;
+        this.maxLastMod = null;
+        this.maxSize = 0;
+        this.minLastMod = null;
+        this.minSize = 0;
         this.outArchiveExtensions = [];
         this.outArchiveFilePatterns = [];
         this.outDirPatterns = [];
@@ -120,6 +124,38 @@ class FindSettings {
         if (b) this.verbose = b;
     }
 
+    getDateForString(s) {
+        const d = new Date();
+        d.setTime(Date.parse(s));
+        return d;
+    }
+
+    setMaxLastMod(s) {
+        this.maxLastMod = this.getDateForString(s);
+    }
+
+    setMinLastMod(s) {
+        this.minLastMod = this.getDateForString(s);
+    }
+
+    needStat() {
+        return this.sortBy === SortBy.FILESIZE ||
+            this.sortBy === SortBy.LASTMOD ||
+            this.maxLastMod !== null ||
+            this.maxSize > 0 ||
+            this.minLastMod !== null ||
+            this.minSize > 0;
+    }
+
+    dateToString(name, dt) {
+        let s = `${name}=`;
+        if (dt === null)
+            s += '0';
+        else
+            s += `"${dt.toISOString()}"`;
+        return s;
+    }
+
     listToString(name, lst) {
         if (lst.length) return `${name}=["${lst.join('","')}"]`;
         return `${name}=[]`;
@@ -127,8 +163,8 @@ class FindSettings {
 
     fileTypesToString(name, fileTypes) {
         if (fileTypes.length) {
-            var s = `${name}=[`;
-            for (var i=0; i < fileTypes.length; i++) {
+            let s = `${name}=[`;
+            for (let i=0; i < fileTypes.length; i++) {
                 if (i > 0) s += ', ';
                 s += '"' + FileTypes.toName(fileTypes[i]) + '"';
             }
@@ -152,6 +188,10 @@ class FindSettings {
             ', includeArchives=' + this.includeArchives +
             ', listDirs=' + this.listDirs +
             ', listFiles=' + this.listFiles +
+            ', ' + this.dateToString('maxLastMod', this.maxLastMod) +
+            ', maxSize=' + this.maxSize +
+            ', ' + this.dateToString('minLastMod', this.minLastMod) +
+            ', minSize=' + this.minSize +
             ', ' + this.listToString('outArchiveExtensions', this.outArchiveExtensions) +
             ', ' + this.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
             ', ' + this.listToString('outDirPatterns', this.outDirPatterns) +

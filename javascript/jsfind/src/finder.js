@@ -93,12 +93,16 @@ class Finder {
         // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
         //     return false;
         // }
-        let ext = FileUtil.getExtension(file);
-        if ((this.settings.inExtensions.length &&
-            !this.matchesAnyElement(ext, this.settings.inExtensions))
-            || (this.settings.outExtensions.length &&
-                this.matchesAnyElement(ext, this.settings.outExtensions))
-            || (this.settings.inFilePatterns.length &&
+        if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
+            let ext = FileUtil.getExtension(file);
+            if ((this.settings.inExtensions.length &&
+                    !this.matchesAnyElement(ext, this.settings.inExtensions))
+                || (this.settings.outExtensions.length &&
+                    this.matchesAnyElement(ext, this.settings.outExtensions))) {
+                return false;
+            }
+        }
+        if ((this.settings.inFilePatterns.length &&
                 !this.matchesAnyPattern(file, this.settings.inFilePatterns))
             || (this.settings.outFilePatterns.length &&
                 this.matchesAnyPattern(file, this.settings.outFilePatterns))) {
@@ -109,6 +113,44 @@ class Finder {
             !this.matchesAnyElement(filetype, this.settings.inFileTypes))
             || (this.settings.outFileTypes.length &&
                 this.matchesAnyElement(filetype, this.settings.outFileTypes)));
+    }
+
+    isMatchingFileResult(fr) {
+        // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
+        //     return false;
+        // }
+        if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
+            let ext = FileUtil.getExtension(fr.filename);
+            if ((this.settings.inExtensions.length &&
+                    !this.matchesAnyElement(ext, this.settings.inExtensions))
+                || (this.settings.outExtensions.length &&
+                    this.matchesAnyElement(ext, this.settings.outExtensions))) {
+                return false;
+            }
+        }
+        if ((this.settings.inFilePatterns.length &&
+                !this.matchesAnyPattern(fr.filename, this.settings.inFilePatterns))
+            || (this.settings.outFilePatterns.length &&
+                this.matchesAnyPattern(fr.filename, this.settings.outFilePatterns))) {
+            return false;
+        }
+        if ((this.settings.inFileTypes.length &&
+            !this.matchesAnyElement(fr.filetype, this.settings.inFileTypes))
+            || (this.settings.outFileTypes.length &&
+                this.matchesAnyElement(fr.filetype, this.settings.outFileTypes))) {
+            return false;
+        }
+        if (fr.stat !== null) {
+            if ((this.settings.maxLastMod !== null && fr.stat.mtime.getTime() > this.settings.maxLastMod.getTime()) ||
+                (this.settings.minLastMod !== null && fr.stat.mtime.getTime() < this.settings.minLastMod.getTime())) {
+                return false;
+            }
+            if ((this.settings.maxSize > 0 && fr.stat.size > this.settings.maxSize) ||
+                (this.settings.minSize > 0 && fr.stat.size < this.settings.minSize)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     isMatchingArchiveFile(file) {
@@ -142,20 +184,24 @@ class Finder {
         return (!this.settings.archivesOnly && this.isMatchingFile(f));
     }
 
-    filterToFileResult(f) {
-        if (this.settings.excludeHidden && FileUtil.isHidden(f)) {
+    filterToFileResult(fp) {
+        if (this.settings.excludeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
-        const dirname = path.dirname(f) || '.';
-        const filename = path.basename(f);
-        let fr = new FileResult(dirname, filename, this.filetypes.getFileType(filename));
+        const dirname = path.dirname(fp) || '.';
+        const filename = path.basename(fp);
+        let stat = null;
+        if (this.settings.needStat()) {
+            stat = fs.statSync(fp);
+        }
+        let fr = new FileResult(dirname, filename, this.filetypes.getFileType(filename), stat);
         if (fr.filetype === FileType.ARCHIVE) {
             if (this.settings.findArchives && this.isMatchingArchiveFile(fr.filename)) {
                 return fr;
             }
             return null;
         }
-        if (!this.settings.archivesOnly && this.isMatchingFile(fr.filename)) {
+        if (!this.settings.archivesOnly && this.isMatchingFileResult(fr)) {
             return fr;
         }
         return null;
@@ -205,7 +251,7 @@ class Finder {
         } else if (stats.isFile()) {
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(f);
+                let fr = this.filterToFileResult(startPath);
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {
@@ -245,6 +291,16 @@ class Finder {
         return filename1 < filename2 ? -1 : 1;
     }
 
+    cmpFileResultsBySize(fr1, fr2) {
+        if (fr1.stat !== null && fr2.stat !== null) {
+            if (fr1.stat.size === fr2.stat.size) {
+                return this.cmpFileResultsByPath(fr1, fr2);
+            }
+            return fr1.stat.size - fr2.stat.size;
+        }
+        return 0;
+    }
+
     cmpFileResultsByType(fr1, fr2) {
         if (fr1.filetype === fr2.filetype) {
             return this.cmpFileResultsByPath(fr1, fr2);
@@ -252,11 +308,25 @@ class Finder {
         return fr1.filetype - fr2.filetype;
     }
 
+    cmpFileResultsByLastMod(fr1, fr2) {
+        if (fr1.stat !== null && fr2.stat !== null) {
+            if (fr1.stat.mtime.getTime() === fr2.stat.mtime.getTime()) {
+                return this.cmpFileResultsByPath(fr1, fr2);
+            }
+            return fr1.stat.mtime.getTime() - fr2.stat.mtime.getTime();
+        }
+        return 0;
+    }
+
     sortFileResults(fileResults) {
         if (this.settings.sortBy === SortBy.FILENAME) {
             fileResults.sort((a, b) => this.cmpFileResultsByName(a, b));
+        } else if (this.settings.sortBy === SortBy.FILESIZE) {
+            fileResults.sort((a, b) => this.cmpFileResultsBySize(a, b));
         } else if (this.settings.sortBy === SortBy.FILETYPE) {
             fileResults.sort((a, b) => this.cmpFileResultsByType(a, b));
+        } else if (this.settings.sortBy === SortBy.LASTMOD) {
+            fileResults.sort((a, b) => this.cmpFileResultsByLastMod(a, b));
         } else {
             fileResults.sort((a, b) => this.cmpFileResultsByPath(a, b));
         }

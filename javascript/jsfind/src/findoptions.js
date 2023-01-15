@@ -32,24 +32,16 @@ class FindOptions {
             'in-filetype':
                 (x, settings) => { settings.addInFileTypes(x); },
             'maxlastmod':
-                (x, settings) => {
-                    /* TODO: add maxlastmod as date/time */
-                    x != null; settings != null;
-                },
+                (x, settings) => { settings.setMaxLastMod(x); },
             'maxsize':
                 (x, settings) => {
-                    /* TODO: add maxsize as int */
-                    x != null; settings != null;
+                    settings.maxSize = parseInt(x, 10);
                 },
             'minlastmod':
-                (x, settings) => {
-                    /* TODO: add minlastmod as date/time */
-                    x != null; settings != null;
-                },
+                (x, settings) => { settings.setMinLastMod(x); },
             'minsize':
                 (x, settings) => {
-                    /* TODO: add minsize as int */
-                    x != null; settings != null;
+                    settings.minSize = parseInt(x, 10);
                 },
             'out-dirpattern':
                 (x, settings) => { settings.addOutDirPatterns(x); },
