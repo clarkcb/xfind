@@ -32,6 +32,7 @@ class FindSettings {
         this.printVersion = false;
         this.recursive = true;
         this.sortBy = SortBy.FILEPATH;
+        this.sortCaseInsensitive = false;
         this.sortDescending = false;
         this.verbose = false;
     }
@@ -161,6 +162,7 @@ class FindSettings {
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
             ', sortBy=' + sortByToName(this.sortBy) +
+            ', sortCaseInsensitive=' + this.sortCaseInsensitive +
             ', sortDescending=' + this.sortDescending +
             ', verbose=' + this.verbose +
             ')';

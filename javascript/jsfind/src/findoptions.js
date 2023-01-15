@@ -96,6 +96,10 @@ class FindOptions {
                 (b, settings) => { settings.recursive = b; },
             'sort-ascending':
                 (b, settings) => { settings.sortDescending = !b; },
+            'sort-caseinsensitive':
+                (b, settings) => { settings.sortCaseInsensitive = b; },
+            'sort-casesensitive':
+                (b, settings) => { settings.sortCaseInsensitive = !b; },
             'sort-descending':
                 (b, settings) => { settings.sortDescending = b; },
             'verbose':
