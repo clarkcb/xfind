@@ -36,6 +36,10 @@ class FindOptions
             'in-filepattern' =>
                 fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_filepatterns),
             'in-filetype' => fn (string $s, FindSettings $fs) => $fs->add_filetypes($s, $fs->in_filetypes),
+            'maxlastmod' => fn (string $s, FindSettings $fs) => $fs->maxlastmod = new \DateTime($s),
+            'maxsize' => fn (string $s, FindSettings $fs) => $fs->maxsize = intval($s),
+            'minlastmod' => fn (string $s, FindSettings $fs) => $fs->minlastmod = new \DateTime($s),
+            'minsize' => fn (string $s, FindSettings $fs) => $fs->minsize = intval($s),
             'out-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archiveextensions),
             'out-archivefilepattern' =>
                 fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archivefilepatterns),

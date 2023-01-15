@@ -147,6 +147,14 @@ class Finder
         if ($this->settings->out_filetypes && in_array($fr->filetype, $this->settings->out_filetypes)) {
             return false;
         }
+        if ($fr->stat) {
+            if (($this->settings->maxlastmod != null && $fr->stat['mtime'] > $this->settings->maxlastmod->getTimestamp())
+                || ($this->settings->minlastmod != null && $fr->stat['mtime'] < $this->settings->minlastmod->getTimestamp())
+                || ($this->settings->maxsize > 0 && $fr->stat['size'] > $this->settings->maxsize)
+                || ($this->settings->minsize > 0 && $fr->stat['size'] < $this->settings->minsize)) {
+                return false;
+            }
+        }
         return true;
     }
 
@@ -187,7 +195,11 @@ class Finder
         if ($this->settings->excludehidden && FileUtil::is_hidden($filepath)) {
             return null;
         }
-        $fileresult = new FileResult($dir, $filename, $this->filetypes->get_filetype($filename));
+        $stat = false;
+        if ($this->settings->need_stat()) {
+            $stat = stat($filepath);
+        }
+        $fileresult = new FileResult($dir, $filename, $this->filetypes->get_filetype($filename), $stat);
         if ($fileresult->filetype == FileType::Archive) {
             if ($this->settings->includearchives && $this->is_matching_archive_file($filepath)) {
                 return $fileresult;
@@ -303,6 +315,14 @@ class Finder
         return ($filename1 < $filename2) ? -1 : 1;
     }
 
+    private function cmp_file_result_filesize(FileResult $fr1, FileResult $fr2): int
+    {
+        if ($fr1->stat['size'] == $fr2->stat['size']) {
+            return $this->cmp_file_result_path($fr1, $fr2);
+        }
+        return ($fr1->stat['size'] < $fr2->stat['size']) ? -1 : 1;
+    }
+
     private function cmp_filetype(FileType $ft1, FileType $ft2): int
     {
         $filetype_cases = FileType::cases();
@@ -318,14 +338,28 @@ class Finder
         return $ftcmp;
     }
 
+    private function cmp_file_result_lastmod(FileResult $fr1, FileResult $fr2): int
+    {
+        if ($fr1->stat['mtime'] == $fr2->stat['mtime']) {
+            return $this->cmp_file_result_path($fr1, $fr2);
+        }
+        return ($fr1->stat['mtime'] < $fr2->stat['mtime']) ? -1 : 1;
+    }
+
     private function sort_file_results(array $fileresults): array
     {
         switch ($this->settings->sortby) {
             case SortBy::Filename:
                 usort($fileresults, self::class . '::cmp_file_result_filename');
                 break;
+            case SortBy::Filesize:
+                usort($fileresults, self::class . '::cmp_file_result_filesize');
+                break;
             case SortBy::Filetype:
                 usort($fileresults, self::class . '::cmp_file_result_filetype');
+                break;
+            case SortBy::LastMod:
+                usort($fileresults, self::class . '::cmp_file_result_lastmod');
                 break;
             default:
                 usort($fileresults, self::class .'::cmp_file_result_path');

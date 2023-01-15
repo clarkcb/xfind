@@ -2,6 +2,8 @@
 
 namespace phpfind;
 
+use DateTime;
+
 /**
  * Class FindSettings
  *
@@ -17,6 +19,10 @@ namespace phpfind;
  * @property bool includearchives
  * @property bool listdirs
  * @property bool listfiles
+ * @property DateTime maxlastmod
+ * @property int maxsize
+ * @property DateTime minlastmod
+ * @property int minsize
  * @property array out_archiveextensions
  * @property array out_archivefilepatterns
  * @property array out_dirpatterns
@@ -37,23 +43,19 @@ class FindSettings
     public bool $archivesonly = false;
     public bool $debug = false;
     public bool $excludehidden = true;
-    public bool $includearchives = false;
-    public bool $listdirs = false;
-    public bool $listfiles = false;
-    public bool $printusage = false;
-    public bool $printversion = false;
-    public bool $recursive = true;
-    public bool $findarchives = false;
-    public bool $sort_caseinsensitive = false;
-    public bool $sort_descending = false;
-    public bool $verbose = false;
-
     public array $in_archiveextensions = array();
     public array $in_archivefilepatterns = array();
     public array $in_dirpatterns = array();
     public array $in_extensions = array();
     public array $in_filepatterns = array();
     public array $in_filetypes = array();
+    public bool $includearchives = false;
+    public bool $listdirs = false;
+    public bool $listfiles = false;
+    public ?DateTime $maxlastmod = null;
+    public int $maxsize = 0;
+    public ?DateTime $minlastmod = null;
+    public int $minsize = 0;
     public array $out_archiveextensions = array();
     public array $out_archivefilepatterns = array();
     public array $out_dirpatterns = array();
@@ -61,7 +63,13 @@ class FindSettings
     public array $out_filepatterns = array();
     public array $out_filetypes = array();
     public array $paths = array();
+    public bool $printusage = false;
+    public bool $printversion = false;
+    public bool $recursive = true;
+    public bool $sort_caseinsensitive = false;
+    public bool $sort_descending = false;
     public SortBy $sortby = SortBy::Filepath;
+    public bool $verbose = false;
 
     /**
      * @param $ext
@@ -117,6 +125,13 @@ class FindSettings
         }
     }
 
+    public function need_stat(): bool
+    {
+        return $this->sortby == SortBy::Filesize || $this->sortby == SortBy::LastMod ||
+            $this->maxlastmod != null || $this->minlastmod != null ||
+            $this->maxsize > 0 || $this->minsize > 0;
+    }
+
     /**
      * @param bool $b
      * @return void
@@ -125,7 +140,7 @@ class FindSettings
     {
         $this->archivesonly = $b;
         if ($b) {
-            $this->findarchives = $b;
+            $this->includearchives = $b;
         }
     }
 
@@ -147,8 +162,14 @@ class FindSettings
             case 'NAME':
                 $this->sortby = SortBy::Filename;
                 break;
+            case 'SIZE':
+                $this->sortby = SortBy::Filesize;
+                break;
             case 'TYPE':
                 $this->sortby = SortBy::Filetype;
+                break;
+            case 'LASTMOD':
+                $this->sortby = SortBy::LastMod;
                 break;
             default:
                 $this->sortby = SortBy::Filepath;
@@ -174,6 +195,10 @@ class FindSettings
             ', includearchives: %s' .
             ', listdirs: %s' .
             ', listfiles: %s' .
+            ', maxlastmod: %s' .
+            ', maxsize: %d' .
+            ', minlastmod: %s' .
+            ', minsize: %d' .
             ', out_archiveextensions: %s' .
             ', out_archivefilepatterns: %s' .
             ', out_dirpatterns: %s' .
@@ -184,9 +209,9 @@ class FindSettings
             ', printusage: %s' .
             ', printversion: %s' .
             ', recursive: %s' .
-            ', sortby: %s' .
             ', sort_caseinsensitive: %s' .
             ', sort_descending: %s' .
+            ', sortby: %s' .
             ', verbose: %s' .
             ')',
             StringUtil::bool_to_string($this->archivesonly),
@@ -197,23 +222,27 @@ class FindSettings
             StringUtil::string_array_to_string($this->in_dirpatterns),
             StringUtil::string_array_to_string($this->in_extensions),
             StringUtil::string_array_to_string($this->in_filepatterns),
-            StringUtil::string_array_to_string($this->in_filetypes),
+            StringUtil::filetype_array_to_string($this->in_filetypes),
             StringUtil::bool_to_string($this->includearchives),
             StringUtil::bool_to_string($this->listdirs),
             StringUtil::bool_to_string($this->listfiles),
+            StringUtil::datetime_to_string($this->maxlastmod),
+            $this->maxsize,
+            StringUtil::datetime_to_string($this->minlastmod),
+            $this->minsize,
             StringUtil::string_array_to_string($this->out_archiveextensions),
             StringUtil::string_array_to_string($this->out_archivefilepatterns),
             StringUtil::string_array_to_string($this->out_dirpatterns),
             StringUtil::string_array_to_string($this->out_extensions),
             StringUtil::string_array_to_string($this->out_filepatterns),
-            StringUtil::string_array_to_string($this->out_filetypes),
+            StringUtil::filetype_array_to_string($this->out_filetypes),
             StringUtil::string_array_to_string($this->paths),
             StringUtil::bool_to_string($this->printusage),
             StringUtil::bool_to_string($this->printversion),
             StringUtil::bool_to_string($this->recursive),
-            $this->sortby->name,
             StringUtil::bool_to_string($this->sort_caseinsensitive),
             StringUtil::bool_to_string($this->sort_descending),
+            $this->sortby->name,
             StringUtil::bool_to_string($this->verbose)
         );
     }

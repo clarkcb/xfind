@@ -53,7 +53,7 @@ class FindOptionsTest extends TestCase
         $args = ['--archivesonly'];
         $settings = $this->findoptions->settings_from_args($args);
         $this->assertTrue($settings->archivesonly);
-        $this->assertTrue($settings->findarchives);
+        $this->assertTrue($settings->includearchives);
     }
 
     public function test_debug_arg()

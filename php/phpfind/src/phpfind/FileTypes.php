@@ -76,6 +76,22 @@ class FileTypes
     }
 
     /**
+     * @param FileType $type
+     * @return string
+     */
+    public static function to_name(FileType $type): string
+    {
+        return match ($type) {
+            FileType::Archive => 'Archive',
+            FileType::Binary => 'Binary',
+            FileType::Code => 'Code',
+            FileType::Text => 'Text',
+            FileType::Xml => 'Xml',
+            default => 'Unknown'
+        };
+    }
+
+    /**
      * @param string $filename
      * @return FileType
      */

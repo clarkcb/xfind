@@ -9,6 +9,7 @@ namespace phpfind;
  * @property string path
  * @property string filename
  * @property FileType filetype
+ * @property array|false stat
  */
 class FileResult
 {
@@ -18,18 +19,21 @@ class FileResult
     public readonly string $path;
     public readonly string $filename;
     public readonly FileType $filetype;
+    public readonly array|false $stat;
 
     /**
      * @param string $path
      * @param string $filename
      * @param FileType $filetype
+     * @param array|false $stat
      */
-    public function __construct(string $path, string $filename, FileType $filetype)
+    public function __construct(string $path, string $filename, FileType $filetype, array|false $stat)
     {
         $this->containers = array();
         $this->path = $path;
         $this->filename = $filename;
         $this->filetype = $filetype;
+        $this->stat = $stat;
     }
 
     /**
