@@ -133,6 +133,14 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('sort_descending', !$b);
     },
+    'sort-caseinsensitive' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_caseinsensitive', $b);
+    },
+    'sort-casesensitive' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('sort_caseinsensitive', !$b);
+    },
     'sort-descending' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('sort_descending', $b);

@@ -38,8 +38,9 @@ sub new {
         printusage => 0,
         printversion => 0,
         recursive => 1,
-        sortby => plfind::SortBy->FILEPATH,
+        sort_caseinsensitive => 0,
         sort_descending => 0,
+        sortby => plfind::SortBy->FILEPATH,
         paths => [],
         verbose => 0,
     };
@@ -155,8 +156,9 @@ sub to_string {
     $s .= ', printversion=' . $self->bool_to_string($self->{printversion});
     $s .= ', recursive=' . $self->bool_to_string($self->{recursive});
     $s .= ', paths=' . $self->aref_to_string($self->{paths});
-    $s .= ', sortby=' . $self->{sortby};
+    $s .= ', sort_caseinsensitive=' . $self->bool_to_string($self->{sort_caseinsensitive});
     $s .= ', sort_descending=' . $self->bool_to_string($self->{sort_descending});
+    $s .= ', sortby=' . $self->{sortby};
     $s .= ', verbose=' . $self->bool_to_string($self->{verbose});
     $s .= ')';
     return $s;

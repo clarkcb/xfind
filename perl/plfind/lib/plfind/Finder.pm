@@ -239,18 +239,30 @@ sub find {
 
 sub cmp_file_results_by_path {
     my ($self, $fr1, $fr2) = @_;
-    if ($fr1->{path} eq $fr2->{path}) {
-        return $fr1->{filename} cmp $fr2->{filename};
+    my ($path1, $path2) = $self->{settings}->{sort_caseinsensitive} ?
+        (lc($fr1->{path}), lc($fr2->{path})) :
+        ($fr1->{path}, $fr2->{path});
+    if ($path1 eq $path2) {
+        my ($filename1, $filename2) = $self->{settings}->{sort_caseinsensitive} ?
+            (lc($fr1->{filename}), lc($fr2->{filename})) :
+            ($fr1->{filename}, $fr2->{filename});
+        return $filename1 cmp $filename2;
     }
-    return $fr1->{path} cmp $fr2->{path};
+    return $path1 cmp $path2;
 }
 
 sub cmp_file_results_by_filename {
     my ($self, $fr1, $fr2) = @_;
-    if ($fr1->{filename} eq $fr2->{filename}) {
-        return $fr1->{path} cmp $fr2->{path};
+    my ($filename1, $filename2) = $self->{settings}->{sort_caseinsensitive} ?
+        (lc($fr1->{filename}), lc($fr2->{filename})) :
+        ($fr1->{filename}, $fr2->{filename});
+    if ($filename1 eq $filename2) {
+        my ($path1, $path2) = $self->{settings}->{sort_caseinsensitive} ?
+            (lc($fr1->{path}), lc($fr2->{path})) :
+            ($fr1->{path}, $fr2->{path});
+        return $path1 cmp $path2;
     }
-    return $fr1->{filename} cmp $fr2->{filename};
+    return $filename1 cmp $filename2;
 }
 
 sub cmp_file_results_by_filetype {
