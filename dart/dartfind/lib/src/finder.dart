@@ -10,14 +10,13 @@ import 'package:path/path.dart' as path;
 
 class Finder {
   final FindSettings settings;
-  FileTypes _fileTypes;
-  Future validated;
+  final FileTypes _fileTypes = FileTypes();
   // whether to allow invalid/malformed characters in encoding/decoding
   // setting to false means find will end once an attempt is made to read
   // a file in an incompatible encoding
   final bool allowInvalid = true;
+  late Future validated;
   Finder(this.settings) {
-    _fileTypes = FileTypes();
     validated = _validateSettings();
   }
 
@@ -54,21 +53,42 @@ class Finder {
             !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
   }
 
-  bool isMatchingFile(FileResult sf) {
-    var fileName = path.basename(sf.file.path);
-    var ext = FileUtil.extension(fileName);
-    return (settings.inExtensions.isEmpty ||
-            settings.inExtensions.contains(ext)) &&
-        (settings.outExtensions.isEmpty ||
-            !settings.outExtensions.contains(ext)) &&
-        (settings.inFilePatterns.isEmpty ||
-            _matchesAnyPattern(fileName, settings.inFilePatterns)) &&
-        (settings.outFilePatterns.isEmpty ||
-            !_matchesAnyPattern(fileName, settings.outFilePatterns)) &&
-        (settings.inFileTypes.isEmpty ||
-            settings.inFileTypes.contains(sf.fileType)) &&
-        (settings.outFileTypes.isEmpty ||
-            !settings.outFileTypes.contains(sf.fileType));
+  bool isMatchingFileResult(FileResult fr) {
+    var fileName = path.basename(fr.file.path);
+    if (settings.inExtensions.isNotEmpty || settings.outExtensions.isNotEmpty) {
+      var ext = FileUtil.extension(fileName);
+      if ((settings.inExtensions.isNotEmpty &&
+              !settings.inExtensions.contains(ext)) ||
+          (settings.outExtensions.isNotEmpty ||
+              settings.outExtensions.contains(ext))) {
+        return false;
+      }
+    }
+    if ((settings.inFilePatterns.isNotEmpty &&
+            !_matchesAnyPattern(fileName, settings.inFilePatterns)) ||
+        (settings.outFilePatterns.isNotEmpty &&
+            _matchesAnyPattern(fileName, settings.outFilePatterns))) {
+      return false;
+    }
+    if ((settings.inFileTypes.isNotEmpty &&
+            !settings.inFileTypes.contains(fr.fileType)) ||
+        (settings.outFileTypes.isNotEmpty &&
+            settings.outFileTypes.contains(fr.fileType))) {
+      return false;
+    }
+    if (fr.stat != null) {
+      if ((settings.maxLastMod != null &&
+              fr.stat!.changed.isAfter(settings.maxLastMod!)) ||
+          (settings.minLastMod != null &&
+              fr.stat!.changed.isBefore(settings.minLastMod!))) {
+        return false;
+      }
+      if ((settings.maxSize > 0 && fr.stat!.size > settings.maxSize) ||
+          (settings.minSize > 0 && fr.stat!.size < settings.minSize)) {
+        return false;
+      }
+    }
+    return true;
   }
 
   bool isMatchingArchiveFile(FileResult sf) {
@@ -87,23 +107,27 @@ class Finder {
             !_matchesAnyPattern(fileName, settings.outArchiveFilePatterns));
   }
 
-  Future<FileResult> filterToFileResult(File f) {
+  Future<FileResult?> filterToFileResult(File f) {
     var fileName = path.basename(f.path);
     if (settings.excludeHidden && FileUtil.isHidden(fileName)) {
-      return null;
+      return Future.value(null);
+    }
+    FileStat? stat;
+    if (settings.needStat()) {
+      stat = FileStat.statSync(f.path);
     }
     return _fileTypes.getFileType(fileName).then((fileType) {
-      var findFile = FileResult(f, fileType);
-      if (findFile.fileType == FileType.archive) {
+      var fileResult = FileResult(f, fileType, stat);
+      if (fileResult.fileType == FileType.archive) {
         if (settings.includeArchives) {
-          return findFile;
+          return fileResult;
         }
-        return null;
+        return Future.value(null);
       }
-      if (!settings.archivesOnly && isMatchingFile(findFile)) {
-        return findFile;
+      if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
+        return fileResult;
       }
-      return null;
+      return Future.value(null);
     });
   }
 
@@ -125,9 +149,13 @@ class Finder {
       } else if (res.last) {
         var startFile = File(startPath);
         if (isMatchingDir(startFile.parent)) {
+          FileStat? stat;
+          if (settings.needStat()) {
+            stat = FileStat.statSync(startPath);
+          }
           return _fileTypes.getFileType(startPath).then((fileType) {
-            var fileResult = FileResult(startFile, fileType);
-            if (isMatchingFile(fileResult)) {
+            var fileResult = FileResult(startFile, fileType, stat);
+            if (isMatchingFileResult(fileResult)) {
               return [fileResult];
             }
             return [];
@@ -178,8 +206,14 @@ class Finder {
     return f1.compareTo(f2);
   }
 
+  int cmpByFileSize(FileResult fr1, FileResult fr2) {
+    if (fr1.stat != null && fr2.stat != null) {
+      if (fr1.stat!.size == fr2.stat!.size) {
+        return cmpByFilePath(fr1, fr2);
+      }
+      return fr1.stat!.size - fr2.stat!.size;
     }
-    return fn1.compareTo(fn2);
+    return 0;
   }
 
   int cmpByFileType(FileResult fr1, FileResult fr2) {
@@ -187,6 +221,16 @@ class Finder {
       return cmpByFilePath(fr1, fr2);
     }
     return fr1.fileType.name.compareTo(fr2.fileType.name);
+  }
+
+  int cmpByLastMod(FileResult fr1, FileResult fr2) {
+    if (fr1.stat != null && fr2.stat != null) {
+      if (fr1.stat!.changed == fr2.stat!.changed) {
+        return cmpByFilePath(fr1, fr2);
+      }
+      return fr1.stat!.changed.isBefore(fr2.stat!.changed) ? -1 : 1;
+    }
+    return 0;
   }
 
   void reverseFileResults(List<FileResult> fileResults) {
@@ -204,8 +248,12 @@ class Finder {
   void sortFileResults(List<FileResult> fileResults) {
     if (settings.sortBy == SortBy.fileName) {
       fileResults.sort(cmpByFileName);
+    } else if (settings.sortBy == SortBy.fileSize) {
+      fileResults.sort(cmpByFileSize);
     } else if (settings.sortBy == SortBy.fileType) {
       fileResults.sort(cmpByFileType);
+    } else if (settings.sortBy == SortBy.lastMod) {
+      fileResults.sort(cmpByLastMod);
     } else {
       fileResults.sort(cmpByFilePath);
     }

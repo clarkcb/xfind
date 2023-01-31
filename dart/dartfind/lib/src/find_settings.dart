@@ -3,7 +3,9 @@ import 'package:dartfind/src/file_types.dart';
 enum SortBy {
   filePath,
   fileName,
+  fileSize,
   fileType,
+  lastMod,
 }
 
 extension SortByExtension on SortBy {
@@ -11,8 +13,12 @@ extension SortByExtension on SortBy {
     switch (this) {
       case SortBy.fileName:
         return 'NAME';
+      case SortBy.fileSize:
+        return 'SIZE';
       case SortBy.fileType:
         return 'TYPE';
+      case SortBy.lastMod:
+        return 'LASTMOD';
       default:
         return 'PATH';
     }
@@ -23,8 +29,12 @@ SortBy nameToSortBy(String name) {
   switch (name.trim().toLowerCase()) {
     case "name":
       return SortBy.fileName;
+    case "size":
+      return SortBy.fileSize;
     case "type":
       return SortBy.fileType;
+    case "lastmod":
+      return SortBy.lastMod;
     default:
       return SortBy.filePath;
   }
@@ -63,6 +73,11 @@ class FindSettings {
   bool listDirs = false;
   bool listFiles = false;
 
+  DateTime? maxLastMod;
+  int maxSize = 0;
+  DateTime? minLastMod;
+  int minSize = 0;
+
   var outArchiveExtensions = <String>{};
   var outArchiveFilePatterns = <Pattern>{};
   var outDirPatterns = <Pattern>{};
@@ -95,7 +110,23 @@ class FindSettings {
   }
 
   void addPattern(Pattern pattern, Set<Pattern> patterns) {
-    patterns.add(RegExp(pattern, multiLine: true));
+    patterns.add(RegExp(pattern.toString(), multiLine: true));
+  }
+
+  bool needStat() {
+    return sortBy == SortBy.fileSize ||
+        sortBy == SortBy.lastMod ||
+        maxLastMod != null ||
+        maxSize > 0 ||
+        minLastMod != null ||
+        minSize > 0;
+  }
+
+  String dateTimeToString(DateTime? dt) {
+    if (dt == null) {
+      return '0';
+    }
+    return '"$dt"';
   }
 
   String patternSetToString(Set<Pattern> patterns) {
@@ -107,30 +138,35 @@ class FindSettings {
   }
 
   @override
-  String toString() => 'FindSettings(archivesOnly: $archivesOnly'
-      ', debug: $debug'
-      ', excludeHidden: $excludeHidden'
-      ', inArchiveExtensions: ${stringSetToString(inArchiveExtensions)}'
-      ', inArchiveFilePatterns: ${patternSetToString(inArchiveFilePatterns)}'
-      ', inDirPatterns: ${patternSetToString(inDirPatterns)}'
-      ', inExtensions: ${stringSetToString(inExtensions)}'
-      ', inFilePatterns: ${patternSetToString(inFilePatterns)}'
-      ', inFileTypes: $inFileTypes'
-      ', includeArchives: $includeArchives'
-      ', listDirs: $listDirs'
-      ', listFiles: $listFiles'
-      ', outArchiveExtensions: ${stringSetToString(outArchiveExtensions)}'
-      ', outArchiveFilePatterns: ${patternSetToString(outArchiveFilePatterns)}'
-      ', outDirPatterns: ${patternSetToString(outDirPatterns)}'
-      ', outExtensions: ${stringSetToString(outExtensions)}'
-      ', outFilePatterns: ${patternSetToString(outFilePatterns)}'
-      ', outFileTypes: $outFileTypes'
-      ', paths: ${stringSetToString(paths)}'
-      ', printUsage: $printUsage'
-      ', printVersion: $printVersion'
-      ', recursive: $recursive'
-      ', sortBy: ${sortBy.name}'
-      ', sortDescending: $sortDescending'
-      ', verbose: $verbose'
+  String toString() => 'FindSettings(archivesOnly=$archivesOnly'
+      ', debug=$debug'
+      ', excludeHidden=$excludeHidden'
+      ', inArchiveExtensions=${stringSetToString(inArchiveExtensions)}'
+      ', inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}'
+      ', inDirPatterns=${patternSetToString(inDirPatterns)}'
+      ', inExtensions=${stringSetToString(inExtensions)}'
+      ', inFilePatterns=${patternSetToString(inFilePatterns)}'
+      ', inFileTypes=$inFileTypes'
+      ', includeArchives=$includeArchives'
+      ', listDirs=$listDirs'
+      ', listFiles=$listFiles'
+      ', maxLastMod=${dateTimeToString(maxLastMod)}'
+      ', maxSize=$maxSize'
+      ', minLastMod=${dateTimeToString(minLastMod)}'
+      ', minSize=$minSize'
+      ', outArchiveExtensions=${stringSetToString(outArchiveExtensions)}'
+      ', outArchiveFilePatterns=${patternSetToString(outArchiveFilePatterns)}'
+      ', outDirPatterns=${patternSetToString(outDirPatterns)}'
+      ', outExtensions=${stringSetToString(outExtensions)}'
+      ', outFilePatterns=${patternSetToString(outFilePatterns)}'
+      ', outFileTypes=$outFileTypes'
+      ', paths=${stringSetToString(paths)}'
+      ', printUsage=$printUsage'
+      ', printVersion=$printVersion'
+      ', recursive=$recursive'
+      ', sortBy=${sortBy.name}'
+      ', sortCaseInsensitive=$sortCaseInsensitive'
+      ', sortDescending=$sortDescending'
+      ', verbose=$verbose'
       ')';
 }

@@ -42,7 +42,7 @@ class FileTypes {
 
   var fileTypeExtMap = {};
   var fileTypeNameMap = {};
-  Future ready;
+  late Future ready;
 
   FileTypes() {
     ready = loadFileTypesFromJson();
@@ -71,19 +71,14 @@ class FileTypes {
     switch (typeName.trim().toLowerCase()) {
       case FileTypes.text:
         return FileType.text;
-        break;
       case FileTypes.code:
         return FileType.code;
-        break;
       case FileTypes.xml:
         return FileType.xml;
-        break;
       case FileTypes.binary:
         return FileType.binary;
-        break;
       case FileTypes.archive:
         return FileType.archive;
-        break;
       default:
         return FileType.unknown;
     }

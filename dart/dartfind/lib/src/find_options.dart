@@ -75,6 +75,12 @@ class FindOptions {
           ss.addPattern(s, ss.inFilePatterns),
       'in-filetype': (String s, FindSettings ss) =>
           ss.inFileTypes.add(FileTypes.fromName(s)),
+      'maxlastmod': (String s, FindSettings ss) =>
+          ss.maxLastMod = DateTime.parse(s),
+      'maxsize': (String s, FindSettings ss) => ss.maxSize = int.parse(s),
+      'minlastmod': (String s, FindSettings ss) =>
+          ss.minLastMod = DateTime.parse(s),
+      'minsize': (String s, FindSettings ss) => ss.minSize = int.parse(s),
       'out-archiveext': (String s, FindSettings ss) =>
           ss.addExtensions(s, ss.outArchiveExtensions),
       'out-archivefilepattern': (String s, FindSettings ss) =>
