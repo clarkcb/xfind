@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +25,7 @@ public partial class FindOptions
 			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
 			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
+			{ "path", (s, settings) => settings.Paths.Add(s) },
 			{ "settings-file", SettingsFromFile },
 			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
 		};
@@ -60,6 +61,8 @@ public partial class FindOptions
 			{ "norecursive", (b, settings) => settings.Recursive = !b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
 			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },
+			{ "sort-caseinsensitive", (b, settings) => settings.SortCaseInsensitive = b },
+			{ "sort-casesensitive", (b, settings) => settings.SortCaseInsensitive = !b },
 			{ "sort-descending", (b, settings) => settings.SortDescending = b },
 			{ "verbose", (b, settings) => settings.Verbose = b },
 			{ "version", (b, settings) => settings.PrintVersion = b },
@@ -110,7 +113,7 @@ public partial class FindOptions
 	{
 		var fileInfo = new FileInfo(filePath);
 		if (!fileInfo.Exists)
-			throw new FindException("Settings fie not found: " + filePath);
+			throw new FindException($"Settings fie not found: {filePath}");
 		var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
 		SettingsFromJson(contents, settings);
 	}
@@ -172,7 +175,7 @@ public partial class FindOptions
 		}
 		else
 		{
-			throw new FindException("Invalid option: " + arg);
+			throw new FindException($"Invalid option: {arg}");
 		}
 	}
 
@@ -184,7 +187,7 @@ public partial class FindOptions
 		}
 		else
 		{
-			throw new FindException("Invalid option: " + arg);
+			throw new FindException($"Invalid option: {arg}");
 		}
 	}
 
@@ -238,7 +241,7 @@ public partial class FindOptions
 				}
 				else
 				{
-					throw new FindException("Invalid option: " + s);
+					throw new FindException($"Invalid option: {s}");
 				}
 			}
 			else
@@ -269,9 +272,9 @@ public partial class FindOptions
 			var optString = new StringBuilder();
 			if (!string.IsNullOrWhiteSpace(opt.ShortArg))
 			{
-				optString.Append("-" + opt.ShortArg + ",");
+				optString.Append($"-{opt.ShortArg},");
 			}
-			optString.Append("--" + opt.LongArg);
+			optString.Append($"--{opt.LongArg}");
 			if (optString.Length > longest)
 			{
 				longest = optString.Length;

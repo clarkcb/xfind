@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -52,6 +52,7 @@ public class FindSettings
 	public bool PrintVersion { get; set; }
 	public bool Recursive { get; set; }
 	public SortBy SortBy { get; set; }
+	public bool SortCaseInsensitive { get; set; }
 	public bool SortDescending { get; set; }
 	public bool Verbose { get; set; }
 
@@ -80,6 +81,7 @@ public class FindSettings
 		PrintVersion = false;
 		Recursive = true;
 		SortBy = SortBy.FilePath;
+		SortCaseInsensitive = false;
 		SortDescending = false;
 		Verbose = false;
 	}
@@ -108,6 +110,7 @@ public class FindSettings
 		bool printVersion,
 		bool recursive,
 		SortBy sortBy,
+		bool sortCaseInsensitive,
 		bool sortDescending,
 		bool verbose)
 	{
@@ -134,6 +137,7 @@ public class FindSettings
 		PrintVersion = printVersion;
 		Recursive = recursive;
 		SortBy = sortBy;
+		SortCaseInsensitive = sortCaseInsensitive;
 		SortDescending = sortDescending;
 		Verbose = verbose;
 	}
@@ -275,6 +279,7 @@ public class FindSettings
 		       ", PrintVersion: " + PrintVersion +
 		       ", Recursive: " + Recursive +
 		       ", SortBy: " + SortByUtil.GetNameFromSortBy(SortBy) +
+		       ", SortCaseInsensitive: " + SortCaseInsensitive +
 		       ", SortDescending: " + SortDescending +
 		       ", Verbose: " + Verbose +
 		       ")";

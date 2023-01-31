@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -131,22 +131,18 @@ public class Finder
 		return fileResults;
 	}
 
-	private static int CompareByPath(FileResult fr1, FileResult fr2)
+	private int CompareByPath(FileResult fr1, FileResult fr2)
 	{
-		if (fr1.File.DirectoryName == fr2.File.DirectoryName)
-		{
-			return string.Compare(fr1.File.Name, fr2.File.Name, StringComparison.Ordinal);
-		}
-		return string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, StringComparison.Ordinal);
+		var cmp = Settings.SortCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		var dirNameCmp = string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp);
+		return dirNameCmp == 0 ? string.Compare(fr1.File.Name, fr2.File.Name, cmp) : dirNameCmp;
 	}
 	
-	private static int CompareByName(FileResult fr1, FileResult fr2)
+	private int CompareByName(FileResult fr1, FileResult fr2)
 	{
-		if (fr1.File.Name == fr2.File.Name)
-		{
-			return string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, StringComparison.Ordinal);
-		}
-		return string.Compare(fr1.File.Name, fr2.File.Name, StringComparison.Ordinal);
+		var cmp = Settings.SortCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		var fileNameCmp = string.Compare(fr1.File.Name, fr2.File.Name, cmp);
+		return fileNameCmp == 0 ? string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) : fileNameCmp;
 	}
 
 	private static int CompareByType(FileResult fr1, FileResult fr2)
