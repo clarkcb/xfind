@@ -1,4 +1,4 @@
-﻿namespace FsFind
+namespace FsFind
 
 open System.Text.RegularExpressions
 
@@ -27,6 +27,7 @@ module FindSettings =
         PrintVersion : bool;
         Recursive : bool;
         SortBy : SortBy;
+        SortCaseInsensitive : bool;
         SortDescending : bool;
         Verbose : bool
     }
@@ -55,6 +56,7 @@ module FindSettings =
         PrintVersion = false;
         Recursive = true;
         SortBy = SortBy.FilePath;
+        SortCaseInsensitive = false;
         SortDescending = false;
         Verbose = false
     }
@@ -112,6 +114,7 @@ module FindSettings =
             $", PrintVersion: %b{settings.PrintVersion}";
             $", Recursive: %b{settings.Recursive}";
             $", SortBy: %s{SortUtil.NameFromSortBy(settings.SortBy)}";
+            $", SortCaseInsensitive: %b{settings.SortCaseInsensitive}";
             $", SortDescending: %b{settings.SortDescending}";
             $", Verbose: %b{settings.Verbose}";
             ")"

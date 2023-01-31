@@ -1,4 +1,4 @@
-﻿namespace FsFind
+namespace FsFind
 
 open System
 open System.IO
@@ -85,6 +85,16 @@ type Finder (settings : FindSettings.t) =
         else
             let fileInfo = FileInfo(expandedPath)
             [FileResult.Create fileInfo (_fileTypes.GetFileType fileInfo)]
+
+    member this.SortByPath (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
+        let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
+        let dirNameCmp = String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp)
+        if dirNameCmp = 0 then String.Compare(fr1.File.Name, fr2.File.Name, cmp) else dirNameCmp
+
+    member this.SortByName (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
+        let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
+        let fileNameCmp = String.Compare(fr1.File.Name, fr2.File.Name, cmp)
+        if fileNameCmp = 0 then String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) else fileNameCmp
 
     member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
         if settings.SortBy = SortBy.FileName then

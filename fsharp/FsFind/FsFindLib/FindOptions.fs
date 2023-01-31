@@ -1,4 +1,4 @@
-﻿namespace FsFind
+namespace FsFind
 
 open System
 open System.Text.Json
@@ -69,6 +69,8 @@ module FindOptions =
             ("norecursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = not b }));
             ("recursive", (fun (b : bool) (settings : FindSettings.t) -> { settings with Recursive = b }));
             ("sort-ascending", (fun (b : bool) (settings : FindSettings.t) -> { settings with SortDescending = not b }));
+            ("sort-caseinsensitive", (fun (b : bool) (settings : FindSettings.t) -> { settings with SortCaseInsensitive = b }));
+            ("sort-casesensitive", (fun (b : bool) (settings : FindSettings.t) -> { settings with SortCaseInsensitive = not b }));
             ("sort-descending", (fun (b : bool) (settings : FindSettings.t) -> { settings with SortDescending = b }));
             ("verbose", (fun (b : bool) (settings : FindSettings.t) -> { settings with Verbose = b }));
             ("version", (fun (b : bool) (settings : FindSettings.t) -> { settings with PrintVersion = b }));

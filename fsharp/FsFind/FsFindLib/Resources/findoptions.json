@@ -152,6 +152,14 @@
       "desc": "Sort results in ascending order*"
     },
     {
+      "long": "sort-casesensitive",
+      "desc": "Sort results case-sensitive*"
+    },
+    {
+      "long": "sort-caseinsensitive",
+      "desc": "Sort results case-insensitive"
+    },
+    {
       "long": "sort-descending",
       "desc": "Sort results in descending order"
     },
