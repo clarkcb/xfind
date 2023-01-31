@@ -79,7 +79,8 @@ class FindSettings {
 
   SortBy sortBy = SortBy.filePath;
 
-  bool sortDescending = true;
+  bool sortCaseInsensitive = false;
+  bool sortDescending = false;
   bool verbose = false;
 
   void addExtensions(String exts, Set<String> extensions) {
@@ -88,9 +89,9 @@ class FindSettings {
   }
 
   void addExtensionsList(List<String> exts, Set<String> extensions) {
-    exts.forEach((ext) {
+    for (var ext in exts) {
       extensions.add(ext);
-    });
+    }
   }
 
   void addPattern(Pattern pattern, Set<Pattern> patterns) {
@@ -98,13 +99,11 @@ class FindSettings {
   }
 
   String patternSetToString(Set<Pattern> patterns) {
-    return '{' +
-        patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ') +
-        '}';
+    return '{${patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ')}}';
   }
 
   String stringSetToString(Set<String> set) {
-    return '{' + set.map((s) => '"$s"').join(', ') + '}';
+    return '{${set.map((s) => '"$s"').join(', ')}}';
   }
 
   @override

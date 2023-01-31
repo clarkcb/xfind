@@ -4,7 +4,7 @@ import 'package:dartfind/dartfind.dart';
 
 void _handleError(err, FindOptions options) {
   log('');
-  logError(err.toString() + '\n');
+  logError('$err\n');
   options.usage();
   exitCode = 1;
 }
@@ -20,9 +20,9 @@ void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
   if (dirs.isNotEmpty) {
     log('\nMatching directories (${dirs.length}):');
     if (settings.paths.any((p) => p.startsWith('~'))) {
-      dirs.forEach((d) {
+      for (var d in dirs) {
         log(FileUtil.contractPath(d));
-      });
+      }
     } else {
       dirs.forEach(log);
     }
@@ -31,20 +31,18 @@ void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
   }
 }
 
-List<String> getMatchingFiles(
-    List<FileResult> fileResults, FindSettings settings) {
-  var files = fileResults.map((f) => f.file).toSet().toList();
-  return files.map((f) => f.path).toList();
+List<String> getMatchingFiles(List<FileResult> fileResults) {
+  return fileResults.map((f) => f.file.path).toList();
 }
 
 void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {
-  var files = getMatchingFiles(fileResults, settings);
+  var files = getMatchingFiles(fileResults);
   if (files.isNotEmpty) {
     log('\nMatching files (${files.length}):');
     if (settings.paths.any((p) => p.startsWith('~'))) {
-      files.forEach((f) {
+      for (var f in files) {
         log(FileUtil.contractPath(f));
-      });
+      }
     } else {
       files.forEach(log);
     }
@@ -56,14 +54,14 @@ void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {
 Future<void> find(FindSettings settings, FindOptions options) async {
   try {
     var finder = Finder(settings);
-    await finder.find().then((findFiles) {
-      if (findFiles.isNotEmpty) {
+    await finder.find().then((fileResults) {
+      if (fileResults.isNotEmpty) {
         if (settings.listDirs) {
-          printMatchingDirs(findFiles, settings);
+          printMatchingDirs(fileResults, settings);
         }
 
         if (settings.listFiles) {
-          printMatchingFiles(findFiles, settings);
+          printMatchingFiles(fileResults, settings);
         }
       }
     });

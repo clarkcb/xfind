@@ -8,7 +8,7 @@ import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
 
 class FindOption {
-  final String shortArg;
+  final String? shortArg;
   final String longArg;
   final String desc;
 
@@ -18,7 +18,7 @@ class FindOption {
     if (shortArg == null) {
       return longArg.toLowerCase();
     } else {
-      return shortArg.toLowerCase() + '@' + longArg.toLowerCase();
+      return '${shortArg!.toLowerCase()}@${longArg.toLowerCase()}';
     }
   }
 
@@ -36,7 +36,7 @@ class FindOptions {
   var stringArgMap = {};
   var boolArgMap = {};
   var longArgMap = {};
-  Future ready;
+  late Future ready;
 
   FindOptions() {
     ready = loadFindOptionsFromJson().then((f) => setMaps());
@@ -46,18 +46,18 @@ class FindOptions {
     var contents = await File(FINDOPTIONSPATH).readAsString();
     Map soMap = json.decode(contents);
     if (soMap.containsKey('findoptions')) {
-      var soList = soMap['findoptions'] as List;
-      soList.forEach((so) {
-        var longArg = (so as Map)['long'];
+      var soList = soMap['findoptions']! as List;
+      for (var so in soList) {
+        var longArg = (so as Map)['long']!;
         longArgMap[longArg] = longArg;
-        var desc = (so as Map)['desc'];
+        var desc = (so as Map)['desc']!;
         var shortArg;
         if ((so as Map).containsKey('short')) {
-          shortArg = (so as Map)['short'];
+          shortArg = (so as Map)['short']!;
           longArgMap[shortArg] = longArg;
         }
         findOptions.add(FindOption(shortArg, longArg, desc));
-      });
+      }
     }
   }
 
@@ -104,6 +104,10 @@ class FindOptions {
       'printusage': (bool b, FindSettings ss) => ss.printUsage = b,
       'recursive': (bool b, FindSettings ss) => ss.recursive = b,
       'sort-ascending': (bool b, FindSettings ss) => ss.sortDescending = !b,
+      'sort-caseinsensitive': (bool b, FindSettings ss) =>
+          ss.sortCaseInsensitive = b,
+      'sort-casesensitive': (bool b, FindSettings ss) =>
+          ss.sortCaseInsensitive = !b,
       'sort-descending': (bool b, FindSettings ss) => ss.sortDescending = b,
       'verbose': (bool b, FindSettings ss) => ss.verbose = b,
       'version': (bool b, FindSettings ss) => ss.printVersion = b,
@@ -198,8 +202,8 @@ class FindOptions {
       var longest = optStrings.reduce((value, optString) =>
           (optString.length > value.length) ? optString : value);
       for (var i = 0; i < findOptions.length; i++) {
-        s += ' ' + optStrings[i].padRight(longest.length + 2, ' ');
-        s += findOptions[i].desc + '\n';
+        s += ' ${optStrings[i].padRight(longest.length + 2, ' ')}';
+        s += '${findOptions[i].desc}\n';
       }
       return s;
     });

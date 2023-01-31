@@ -141,21 +141,43 @@ class Finder {
   }
 
   int cmpByFilePath(FileResult fr1, FileResult fr2) {
-    String fp1 = fr1.file.parent.path;
-    String fp2 = fr2.file.parent.path;
-    if (fp1 == fp2) {
-      return path
-          .basename(fr1.file.path)
-          .compareTo(path.basename(fr2.file.path));
+    String p1 = fr1.file.parent.path;
+    String p2 = fr2.file.parent.path;
+    if (settings.sortCaseInsensitive) {
+      p1 = p1.toLowerCase();
+      p2 = p2.toLowerCase();
     }
-    return fp1.compareTo(fp2);
+    if (p1 == p2) {
+      String f1 = path.basename(fr1.file.path);
+      String f2 = path.basename(fr2.file.path);
+      if (settings.sortCaseInsensitive) {
+        f1 = f1.toLowerCase();
+        f2 = f2.toLowerCase();
+      }
+      return f1.compareTo(f2);
+    }
+    return p1.compareTo(p2);
   }
 
   int cmpByFileName(FileResult fr1, FileResult fr2) {
-    String fn1 = path.basename(fr1.file.path);
-    String fn2 = path.basename(fr2.file.path);
-    if (fn1 == fn2) {
-      return fr1.file.parent.path.compareTo(fr2.file.parent.path);
+    String f1 = path.basename(fr1.file.path);
+    String f2 = path.basename(fr2.file.path);
+    if (settings.sortCaseInsensitive) {
+      f1 = f1.toLowerCase();
+      f2 = f2.toLowerCase();
+    }
+    if (f1 == f2) {
+      String p1 = fr1.file.parent.path;
+      String p2 = fr2.file.parent.path;
+      if (settings.sortCaseInsensitive) {
+        p1 = p1.toLowerCase();
+        p2 = p2.toLowerCase();
+      }
+      return p1.compareTo(p2);
+    }
+    return f1.compareTo(f2);
+  }
+
     }
     return fn1.compareTo(fn2);
   }

@@ -1,6 +1,7 @@
 import 'dart:io' show Platform;
 
 import 'package:path/path.dart' as path;
+import 'package:dartfind/src/find_exception.dart';
 
 class FileUtil {
   static final dotDirs = {'.', '..'};
@@ -14,11 +15,12 @@ class FileUtil {
   }
 
   static String homePath() {
-    if (Platform.isWindows) {
-      return path.absolute(Platform.environment['USERPROFILE']);
-    } else {
-      return path.absolute(Platform.environment['HOME']);
+    if (Platform.environment.containsKey('HOME')) {
+      return path.absolute(Platform.environment['HOME']!);
+    } else if (Platform.environment.containsKey('USERPROFILE')) {
+      return path.absolute(Platform.environment['USERPROFILE']!);
     }
+    throw FindException('Home path not found');
   }
 
   static String expandPath(String filePath) {
