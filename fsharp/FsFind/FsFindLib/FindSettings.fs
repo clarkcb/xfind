@@ -1,4 +1,4 @@
-namespace FsFind
+﻿namespace FsFind
 
 open System.Text.RegularExpressions
 
@@ -16,6 +16,10 @@ module FindSettings =
         IncludeArchives : bool;
         ListDirs : bool;
         ListFiles : bool;
+        MaxLastMod : System.DateTime option;
+        MaxSize : int;
+        MinLastMod : System.DateTime option;
+        MinSize : int;
         OutArchiveExtensions : string list;
         OutArchiveFilePatterns : Regex list;
         OutDirPatterns : Regex list;
@@ -45,6 +49,10 @@ module FindSettings =
         IncludeArchives = false;
         ListDirs = false;
         ListFiles = false;
+        MaxLastMod = None;
+        MaxSize = 0;
+        MinLastMod = None;
+        MinSize = 0;
         OutArchiveExtensions = [];
         OutArchiveFilePatterns = [];
         OutDirPatterns = [];
@@ -80,6 +88,11 @@ module FindSettings =
         | true -> { settings with Debug=true; Verbose=true }
         | _ -> { settings with Debug=false }
 
+    let DateTimeOptionListToString (dt : System.DateTime option) : string =
+        match dt with
+        | Some(d) -> $"\"%s{d.ToString()}\""
+        | None    -> "0"
+
     let FileTypesListToString (lst : FileType list) : string = 
         let rec recListToString (acc : string) (lst : FileType list) =
             match lst with
@@ -103,6 +116,10 @@ module FindSettings =
             $", IncludeArchives: %b{settings.IncludeArchives}";
             $", ListDirs: %b{settings.ListDirs}";
             $", ListFiles: %b{settings.ListFiles}";
+            $", MaxLastMod: %s{DateTimeOptionListToString settings.MaxLastMod}";
+            $", MaxSize: %i{settings.MaxSize}";
+            $", MinLastMod: %s{DateTimeOptionListToString settings.MinLastMod}";
+            $", MinSize: %i{settings.MinSize}";
             $", OutArchiveExtensions: %s{Common.list_to_string(settings.OutArchiveExtensions)}";
             $", OutArchiveFilePatterns: %s{Common.list_to_string(settings.OutArchiveFilePatterns)}";
             $", OutDirPatterns: %s{Common.list_to_string(settings.OutDirPatterns)}";

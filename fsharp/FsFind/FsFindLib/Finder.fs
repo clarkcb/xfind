@@ -1,4 +1,4 @@
-namespace FsFind
+﻿namespace FsFind
 
 open System
 open System.IO
@@ -31,29 +31,33 @@ type Finder (settings : FindSettings.t) =
         (Seq.isEmpty settings.OutDirPatterns ||
          not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
 
-    member this.IsMatchingFile (f : FileResult.t) : bool =
+    member this.IsMatchingFileResult (fr : FileResult.t) : bool =
         (List.isEmpty settings.InExtensions ||
-         List.exists (fun x -> x = f.File.Extension) settings.InExtensions) &&
+         List.exists (fun x -> x = fr.File.Extension) settings.InExtensions) &&
         (List.isEmpty settings.OutExtensions ||
-         not (List.exists (fun x -> x = f.File.Extension) settings.OutExtensions)) &&
+         not (List.exists (fun x -> x = fr.File.Extension) settings.OutExtensions)) &&
         (List.isEmpty settings.InFilePatterns ||
-         List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.InFilePatterns) &&
+         List.exists (fun p -> (p:Regex).Match(fr.File.Name).Success) settings.InFilePatterns) &&
         (List.isEmpty settings.OutFilePatterns ||
-         not (List.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutFilePatterns)) &&
+         not (List.exists (fun p -> (p:Regex).Match(fr.File.Name).Success) settings.OutFilePatterns)) &&
         (List.isEmpty settings.InFileTypes ||
-         List.exists (fun ft -> ft = f.FileType) settings.InFileTypes) &&
+         List.exists (fun ft -> ft = fr.FileType) settings.InFileTypes) &&
         (List.isEmpty settings.OutFileTypes ||
-         not (List.exists (fun ft -> ft = f.FileType) settings.OutFileTypes))
+         not (List.exists (fun ft -> ft = fr.FileType) settings.OutFileTypes)) &&
+        (settings.MaxLastMod.IsNone || fr.File.LastWriteTimeUtc <= settings.MaxLastMod.Value) &&
+        (settings.MaxSize = 0 || fr.File.Length <= settings.MaxSize) &&
+        (settings.MinLastMod.IsNone || fr.File.LastWriteTimeUtc >= settings.MinLastMod.Value) &&
+        (settings.MinSize = 0 || fr.File.Length >= settings.MinSize)
 
-    member this.IsMatchingArchiveFile (f : FileResult.t) : bool =
+    member this.IsMatchingArchiveFile (fr : FileResult.t) : bool =
         (Seq.isEmpty settings.InArchiveExtensions ||
-         Seq.exists (fun x -> x = f.File.Extension) settings.InArchiveExtensions) &&
+         Seq.exists (fun x -> x = fr.File.Extension) settings.InArchiveExtensions) &&
         (Seq.isEmpty settings.OutArchiveExtensions ||
-         not (Seq.exists (fun x -> x = f.File.Extension) settings.OutArchiveExtensions)) &&
+         not (Seq.exists (fun x -> x = fr.File.Extension) settings.OutArchiveExtensions)) &&
         (Seq.isEmpty settings.InArchiveFilePatterns ||
-         Seq.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.InArchiveFilePatterns) &&
+         Seq.exists (fun p -> (p:Regex).Match(fr.File.Name).Success) settings.InArchiveFilePatterns) &&
         (Seq.isEmpty settings.OutArchiveFilePatterns ||
-         not (Seq.exists (fun p -> (p:Regex).Match(f.File.Name).Success) settings.OutArchiveFilePatterns))
+         not (Seq.exists (fun p -> (p:Regex).Match(fr.File.Name).Success) settings.OutArchiveFilePatterns))
 
     member this.FilterToFileResult (f: FileInfo) : FileResult.t Option = 
         if settings.ExcludeHidden && FileUtil.IsHiddenFile f then
@@ -66,7 +70,7 @@ type Finder (settings : FindSettings.t) =
                 else
                     None
             else
-                if not settings.ArchivesOnly && this.IsMatchingFile fr then
+                if not settings.ArchivesOnly && this.IsMatchingFileResult fr then
                     Some fr
                 else
                     None
@@ -96,16 +100,33 @@ type Finder (settings : FindSettings.t) =
         let fileNameCmp = String.Compare(fr1.File.Name, fr2.File.Name, cmp)
         if fileNameCmp = 0 then String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) else fileNameCmp
 
+    member this.SortBySize (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
+        if fr1.File.Length = fr1.File.Length then (this.SortByPath fr1 fr2) else fr1.File.Length.CompareTo(fr2.File.Length)
+
+    member this.SortByType (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
+        if fr1.FileType = fr1.FileType then (this.SortByPath fr1 fr2) else fr1.FileType.CompareTo(fr2.FileType)
+
+    member this.SortByLastMod (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
+        if fr1.File.LastWriteTimeUtc = fr1.File.LastWriteTimeUtc
+            then (this.SortByPath fr1 fr2)
+            else fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
+
     member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
         if settings.SortBy = SortBy.FileName then
             fileResults
-            |> List.sortBy (fun (r : FileResult.t) -> r.File.Name, r.File.DirectoryName)
+            |> List.sortWith this.SortByName
+        else if settings.SortBy = SortBy.FileSize then
+            fileResults
+            |> List.sortWith this.SortBySize
         else if settings.SortBy = SortBy.FileType then
             fileResults
-            |> List.sortBy (fun (r : FileResult.t) -> r.FileType, r.File.DirectoryName, r.File.Name)
+            |> List.sortWith this.SortByType
+        else if settings.SortBy = SortBy.LastMod then
+            fileResults
+            |> List.sortWith this.SortByLastMod
         else
             fileResults
-            |> List.sortBy (fun (r : FileResult.t) -> r.File.DirectoryName, r.File.Name)
+            |> List.sortWith this.SortByPath
 
     member this.Find () : FileResult.t list =
         let fileResults = settings.Paths |> List.collect this.GetFileResults

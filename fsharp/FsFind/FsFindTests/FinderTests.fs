@@ -106,7 +106,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(finder.IsMatchingFile(sf))
+        Assert.True(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -116,7 +116,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(finder.IsMatchingFile(sf))
+        Assert.True(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -126,7 +126,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(finder.IsMatchingFile(sf))
+        Assert.False(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -136,7 +136,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(finder.IsMatchingFile(sf))
+        Assert.False(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -146,7 +146,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(finder.IsMatchingFile(sf))
+        Assert.True(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -156,7 +156,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("Finder.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(finder.IsMatchingFile(sf))
+        Assert.True(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -166,7 +166,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(finder.IsMatchingFile(sf))
+        Assert.False(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -176,7 +176,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("Finder.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.False(finder.IsMatchingFile(sf))
+        Assert.False(finder.IsMatchingFileResult(sf))
         ()
 
     [<Test>]
@@ -186,7 +186,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.True(finder.IsMatchingFile(sf))
+        Assert.True(finder.IsMatchingFileResult(sf))
         ()
 
 

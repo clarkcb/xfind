@@ -1,4 +1,4 @@
-namespace FsFind
+﻿namespace FsFind
 
 open System
 open System.Text.Json
@@ -43,14 +43,10 @@ module FindOptions =
             ("out-ext", (fun (s : string) (settings : FindSettings.t) -> { settings with OutExtensions = AddExtensions s settings.OutExtensions }));
             ("out-filepattern", (fun (s : string) (settings : FindSettings.t) -> { settings with OutFilePatterns = AddPattern s settings.OutFilePatterns }));
             ("out-filetype", (fun (s : string) (settings : FindSettings.t) -> { settings with OutFileTypes = AddFileTypes s settings.OutFileTypes }));
-            // TODO: convert to datetime
-            ("maxlastmod", (fun (s : string) (settings : FindSettings.t) -> settings));
-            // TODO: convert to int
-            ("maxsize", (fun (s : string) (settings : FindSettings.t) -> settings));
-            // TODO: convert to datetime
-            ("minlastmod", (fun (s : string) (settings : FindSettings.t) -> settings));
-            // TODO: convert to int
-            ("minsize", (fun (s : string) (settings : FindSettings.t) -> settings));
+            ("maxlastmod", (fun (s : string) (settings : FindSettings.t) -> { settings with MaxLastMod = Some(DateTime.Parse(s)) }));
+            ("maxsize", (fun (s : string) (settings : FindSettings.t) -> { settings with MaxSize = int s }));
+            ("minlastmod", (fun (s : string) (settings : FindSettings.t) -> { settings with MinLastMod = Some(DateTime.Parse(s)) }));
+            ("minsize", (fun (s : string) (settings : FindSettings.t) -> { settings with MinSize = int s }));
             ("path", (fun (s : string) (settings : FindSettings.t) -> FindSettings.AddPath s settings));
             ("sort-by", (fun (s : string) (settings : FindSettings.t) -> { settings with SortBy = SortUtil.SortByFromName s }));
         ] |> Map.ofList
