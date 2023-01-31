@@ -4,7 +4,9 @@ public enum SortBy
 {
 	FilePath,
 	FileName,
-	FileType
+	FileSize,
+	FileType,
+	LastMod
 }
 
 public static class SortByUtil
@@ -14,7 +16,9 @@ public static class SortByUtil
 		return sortByName.ToUpper() switch
 		{
 			"NAME" => SortBy.FileName,
+			"SIZE" => SortBy.FileSize,
 			"TYPE" => SortBy.FileType,
+			"LASTMOD" => SortBy.LastMod,
 			_ => SortBy.FilePath
 		};
 	}
@@ -24,7 +28,9 @@ public static class SortByUtil
 		return sortBy switch
 		{
 			SortBy.FileName => "NAME",
+			SortBy.FileSize => "SIZE",
 			SortBy.FileType => "TYPE",
+			SortBy.LastMod => "LASTMOD",
 			_ => "PATH"
 		};
 	}

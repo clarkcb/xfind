@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -41,6 +41,10 @@ public class FindSettings
 	public bool IncludeArchives { get; set; }
 	public bool ListDirs { get; set; }
 	public bool ListFiles { get; set; }
+	public System.DateTime? MaxLastMod { get; set; }
+	public int MaxSize { get; set; }
+	public System.DateTime? MinLastMod { get; set; }
+	public int MinSize { get; set; }
 	public ISet<string> OutArchiveExtensions { get; private set; }
 	public ISet<Regex> OutArchiveFilePatterns { get; private set; }
 	public ISet<Regex> OutDirPatterns { get; private set; }
@@ -70,6 +74,10 @@ public class FindSettings
 		IncludeArchives = false;
 		ListDirs = false;
 		ListFiles = false;
+		MaxLastMod = null;
+		MaxSize = 0;
+		MinLastMod = null;
+		MinSize = 0;
 		OutArchiveExtensions = new HashSet<string>();
 		OutArchiveFilePatterns = new HashSet<Regex>();
 		OutDirPatterns = new HashSet<Regex>();
@@ -99,6 +107,10 @@ public class FindSettings
 		bool includeArchives,
 		bool listDirs,
 		bool listFiles,
+		System.DateTime? maxLastMod,
+		int maxSize,
+		System.DateTime? minLastMod,
+		int minSize,
 		ISet<string> outArchiveExtensions,
 		ISet<Regex> outArchiveFilePatterns,
 		ISet<Regex> outDirPatterns,
@@ -126,6 +138,10 @@ public class FindSettings
 		IncludeArchives = includeArchives;
 		ListDirs = listDirs;
 		ListFiles = listFiles;
+		MaxLastMod = maxLastMod;
+		MaxSize = maxSize;
+		MinLastMod = minLastMod;
+		MinSize = minSize;
 		OutArchiveExtensions = outArchiveExtensions;
 		OutArchiveFilePatterns = outArchiveFilePatterns;
 		OutDirPatterns = outDirPatterns;
@@ -233,6 +249,15 @@ public class FindSettings
 		SortBy = SortByUtil.GetSortByFromName(sortByName);
 	}
 
+	private static string DateTimeToString(System.DateTime? dt)
+	{
+		if (dt == null)
+		{
+			return "0";
+		}
+		return $"\"{dt}\"";
+	}
+
 	private static string EnumerableToString<T>(IEnumerable<T> enumerable)
 	{
 		var sb = new StringBuilder("[");
@@ -268,6 +293,10 @@ public class FindSettings
 		       ", IncludeArchives: " + IncludeArchives +
 		       ", ListDirs: " + ListDirs +
 		       ", ListFiles: " + ListFiles +
+		       ", MaxLastMod: " + DateTimeToString(MaxLastMod) +
+		       ", MaxSize: " + MaxSize +
+		       ", MinLastMod: " + DateTimeToString(MinLastMod) +
+		       ", MinSize: " + MinSize +
 		       ", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions) +
 		       ", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns) +
 		       ", OutDirPatterns: " + EnumerableToString(OutDirPatterns) +

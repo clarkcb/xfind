@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
-using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>>>;
 
 namespace CsFindLib;
 
@@ -19,6 +18,16 @@ public partial class FindOptions
 			{ "in-ext", (s, settings) => settings.AddInExtension(s) },
 			{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
 			{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
+			{ "maxlastmod", (s, settings) => {
+					settings.MaxLastMod = DateTime.Parse(s);
+				}
+			},
+			{ "maxsize", (s, settings) => settings.MaxSize = int.Parse(s) },
+			{ "minlastmod", (s, settings) => {
+					settings.MinLastMod = DateTime.Parse(s);
+				}
+			},
+			{ "minsize", (s, settings) => settings.MinSize = int.Parse(s) },
 			{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
 			{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
 			{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
@@ -42,22 +51,6 @@ public partial class FindOptions
 			{ "includehidden", (b, settings) => settings.ExcludeHidden = !b },
 			{ "listdirs", (b, settings) => settings.ListDirs = b },
 			{ "listfiles", (b, settings) => settings.ListFiles = b },
-			{ "maxlastmod", (b, settings) => {
-					// TODO: convert to datetime
-				}
-			},
-			{ "maxsize", (b, settings) => {
-					// TODO: convert to int
-				}
-			},
-			{ "minlastmod", (b, settings) => {
-					// TODO: convert to datetime
-				}
-			},
-			{ "minsize", (b, settings) => {
-					// TODO: convert to int
-				}
-			},
 			{ "norecursive", (b, settings) => settings.Recursive = !b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
 			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },

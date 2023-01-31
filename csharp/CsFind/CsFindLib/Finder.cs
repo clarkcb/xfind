@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,20 +44,40 @@ public class Finder
 		        !Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0));
 	}
 
-	public bool IsMatchingFile(FileResult fr)
+	public bool IsMatchingFileResult(FileResult fr)
 	{
-		return (Settings.InExtensions.Count == 0 ||
-		        Settings.InExtensions.Contains(fr.File.Extension)) &&
-		       (Settings.OutExtensions.Count == 0 ||
-		        !Settings.OutExtensions.Contains(fr.File.Extension)) &&
-		       (Settings.InFilePatterns.Count == 0 ||
-		        Settings.InFilePatterns.Any(p => p.Match(fr.File.Name).Success)) &&
-		       (Settings.OutFilePatterns.Count == 0 ||
-		        !Settings.OutFilePatterns.Any(p => p.Match(fr.File.Name).Success)) &&
-		       (Settings.InFileTypes.Count == 0 ||
-		        Settings.InFileTypes.Contains(fr.Type)) &&
-		       (Settings.OutFileTypes.Count == 0 ||
-		        !Settings.OutFileTypes.Contains(fr.Type));
+		if ((Settings.InExtensions.Count > 0 &&
+			!Settings.InExtensions.Contains(fr.File.Extension)) ||
+			(Settings.OutExtensions.Count > 0 &&
+			Settings.OutExtensions.Contains(fr.File.Extension)))
+		{
+			return false;
+		}
+		if ((Settings.InFilePatterns.Count > 0 &&
+			!Settings.InFilePatterns.Any(p => p.Match(fr.File.Name).Success)) ||
+			(Settings.OutFilePatterns.Count > 0 &&
+			Settings.OutFilePatterns.Any(p => p.Match(fr.File.Name).Success)))
+		{
+			return false;
+		}
+		if ((Settings.InFileTypes.Count > 0 &&
+			!Settings.InFileTypes.Contains(fr.Type)) ||
+			(Settings.OutFileTypes.Count > 0 &&
+			Settings.OutFileTypes.Contains(fr.Type)))
+		{
+			return false;
+		}
+		if ((Settings.MaxLastMod != null && fr.File.LastWriteTimeUtc > Settings.MaxLastMod) ||
+			(Settings.MinLastMod != null && fr.File.LastWriteTimeUtc < Settings.MinLastMod))
+		{
+			return false;
+		}
+		if ((Settings.MaxSize > 0 && fr.File.Length > Settings.MaxSize) ||
+			(Settings.MinSize > 0 && fr.File.Length < Settings.MinSize))
+		{
+			return false;
+		}
+		return true;
 	}
 
 	public bool IsMatchingArchiveFile(FileResult fr)
@@ -86,7 +106,7 @@ public class Finder
 
 			return null;
 		}
-		if (!Settings.ArchivesOnly && IsMatchingFile(fr))
+		if (!Settings.ArchivesOnly && IsMatchingFileResult(fr))
 		{
 			return fr;
 		}
@@ -145,14 +165,19 @@ public class Finder
 		return fileNameCmp == 0 ? string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) : fileNameCmp;
 	}
 
-	private static int CompareByType(FileResult fr1, FileResult fr2)
+	private int CompareBySize(FileResult fr1, FileResult fr2)
 	{
-		if ((int) fr1.Type == (int) fr2.Type)
-		{
-			return CompareByPath(fr1, fr2);
-		}
+		return fr1.File.Length == fr2.File.Length ? CompareByPath(fr1, fr2) : fr1.File.Length.CompareTo(fr2.File.Length);
+	}
 
-		return ((int) fr1.Type).CompareTo((int) fr2.Type);
+	private int CompareByType(FileResult fr1, FileResult fr2)
+	{
+		return (int) fr1.Type == (int) fr2.Type ? CompareByPath(fr1, fr2) : ((int) fr1.Type).CompareTo((int) fr2.Type);
+	}
+
+	private int CompareByLastMod(FileResult fr1, FileResult fr2)
+	{
+		return fr1.File.LastWriteTimeUtc == fr2.File.LastWriteTimeUtc ? CompareByPath(fr1, fr2) : fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc);
 	}
 	
 	private void SortFileResults(List<FileResult> fileResults)
@@ -162,8 +187,14 @@ public class Finder
 			case SortBy.FileName:
 				fileResults.Sort(CompareByName);
 				break;
+			case SortBy.FileSize:
+				fileResults.Sort(CompareBySize);
+				break;
 			case SortBy.FileType:
 				fileResults.Sort(CompareByType);
+				break;
+			case SortBy.LastMod:
+				fileResults.Sort(CompareByLastMod);
 				break;
 			default:
 				fileResults.Sort(CompareByPath);

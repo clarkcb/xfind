@@ -125,7 +125,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFile(sf));
+		Assert.True(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -136,7 +136,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFile(sf));
+		Assert.True(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -147,7 +147,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFile(sf));
+		Assert.False(finder.IsMatchingFileResult(sf));
 	}
 
 
@@ -159,7 +159,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFile(sf));
+		Assert.False(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -170,7 +170,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFile(sf));
+		Assert.True(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -181,7 +181,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("Finder.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFile(sf));
+		Assert.True(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -192,7 +192,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFile(sf));
+		Assert.False(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -203,7 +203,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("Finder.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFile(sf));
+		Assert.False(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -214,7 +214,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFile(sf));
+		Assert.True(finder.IsMatchingFileResult(sf));
 	}
 
 
