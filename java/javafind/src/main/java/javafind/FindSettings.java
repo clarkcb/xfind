@@ -43,6 +43,7 @@ public class FindSettings {
     private boolean printVersion;
     private boolean recursive;
     private SortBy sortBy;
+    private boolean sortCaseInsensitive;
     private boolean sortDescending;
     private boolean verbose;
 
@@ -70,6 +71,7 @@ public class FindSettings {
         this.printVersion = DefaultSettings.PRINTVERSION;
         this.recursive = DefaultSettings.RECURSIVE;
         this.sortBy = DefaultSettings.SORT_BY;
+        this.sortCaseInsensitive = DefaultSettings.SORT_CASEINSENSITIVE;
         this.sortDescending = DefaultSettings.SORT_DESCENDING;
         this.verbose = DefaultSettings.VERBOSE;
     }
@@ -170,6 +172,14 @@ public class FindSettings {
 
     public final void setSortBy(final SortBy sortBy) {
         this.sortBy = sortBy;
+    }
+
+    public final boolean getSortCaseInsensitive() {
+        return this.sortCaseInsensitive;
+    }
+
+    public final void setSortCaseInsensitive(final boolean sortCaseInsensitive) {
+        this.sortCaseInsensitive = sortCaseInsensitive;
     }
 
     public final boolean getSortDescending() {
@@ -381,6 +391,7 @@ public class FindSettings {
                 + ", printVersion: " + this.printVersion
                 + ", recursive: " + this.recursive
                 + ", sortBy: " + SortByUtil.toName(this.sortBy)
+                + ", sortCaseInsensitive: " + this.sortCaseInsensitive
                 + ", sortDescending: " + this.sortDescending
                 + ", verbose: " + this.verbose
                 + ")";

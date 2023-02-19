@@ -74,6 +74,8 @@ public class FindOptions {
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("sort-ascending", (b, settings) -> settings.setSortDescending(!b));
+            put("sort-caseinsensitive", (b, settings) -> settings.setSortCaseInsensitive(b));
+            put("sort-casesensitive", (b, settings) -> settings.setSortCaseInsensitive(!b));
             put("sort-descending", (b, settings) -> settings.setSortDescending(b));
             put("verbose", (b, settings) -> settings.setVerbose(b));
             put("version", (b, settings) -> settings.setPrintVersion(b));

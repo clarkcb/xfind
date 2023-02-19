@@ -15,6 +15,7 @@ public final class DefaultSettings {
     public static final boolean PRINTVERSION = false;
     public static final boolean RECURSIVE = true;
     public static final SortBy SORT_BY = SortBy.FILEPATH;
+    public static final boolean SORT_CASEINSENSITIVE = false;
     public static final boolean SORT_DESCENDING = false;
     public static final boolean VERBOSE = false;
 }

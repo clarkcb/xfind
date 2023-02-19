@@ -25,6 +25,8 @@ public class FindSettingsTest {
         assertEquals(DefaultSettings.LISTFILES, settings.getListFiles());
         assertEquals(DefaultSettings.PRINTUSAGE, settings.getPrintUsage());
         assertEquals(DefaultSettings.PRINTVERSION, settings.getPrintVersion());
+        assertEquals(DefaultSettings.SORT_CASEINSENSITIVE, settings.getSortCaseInsensitive());
+        assertEquals(DefaultSettings.SORT_DESCENDING, settings.getSortDescending());
         assertEquals(DefaultSettings.VERBOSE, settings.getVerbose());
     }
 
