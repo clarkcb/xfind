@@ -10,7 +10,7 @@ namespace phpfind;
  * @property string desc
  * @property string sortarg
  */
-class FindOption
+readonly class FindOption
 {
     public string $shortarg;
     public string $longarg;

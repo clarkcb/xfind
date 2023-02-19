@@ -104,11 +104,15 @@ class Finder
      * @param string $filepath
      * @return FileResult
      */
-    private function filepath_to_fileresult(string $filepath) {
+    private function filepath_to_fileresult(string $filepath): FileResult {
         $path_and_filename = FileUtil::split_to_path_and_filename($filepath);
         $path = $path_and_filename[0];
         $filename = $path_and_filename[1];
-        return new FileResult($path, $filename, $this->filetypes->get_filetype($filename));
+        $stat = false;
+        if ($this->settings->need_stat()) {
+            $stat = stat($filepath);
+        }
+        return new FileResult($path, $filename, $this->filetypes->get_filetype($filename), $stat);
     }
 
     /**
@@ -126,12 +130,14 @@ class Finder
      */
     public function is_matching_file_result(FileResult $fr): bool
     {
-        $ext = FileUtil::get_extension($fr->filename);
-        if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions)) {
-            return false;
-        }
-        if ($this->settings->out_extensions && in_array($ext, $this->settings->out_extensions)) {
-            return false;
+        if ($this->settings->in_extensions || $this->settings->out_extensions) {
+            $ext = FileUtil::get_extension($fr->filename);
+            if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions)) {
+                return false;
+            }
+            if ($this->settings->out_extensions && in_array($ext, $this->settings->out_extensions)) {
+                return false;
+            }
         }
         if ($this->settings->in_filepatterns &&
             !$this->matches_any_pattern($fr->filename, $this->settings->in_filepatterns)) {
