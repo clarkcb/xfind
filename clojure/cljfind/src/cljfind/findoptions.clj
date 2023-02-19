@@ -80,6 +80,8 @@
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
+    :sort-caseinsensitive (fn [settings b] (assoc settings :sort-caseinsensitive b))
+    :sort-casesensitive (fn [settings b] (assoc settings :sort-caseinsensitive (not b)))
     :sort-descending (fn [settings b] (assoc settings :sort-descending b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))

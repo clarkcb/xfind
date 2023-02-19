@@ -55,6 +55,7 @@
     printusage
     printversion
     sort-by
+    sort-caseinsensitive
     sort-descending
     recursive
     verbose
@@ -84,6 +85,7 @@
    false     ; printusage
    false     ; printversion
    :filepath ; sort-by
+   false     ; sort-caseinsensitive
    false     ; sort-descending
    true      ; recursive
    false     ; verbose
