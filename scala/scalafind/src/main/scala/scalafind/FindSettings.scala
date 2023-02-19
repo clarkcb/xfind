@@ -32,6 +32,7 @@ object DefaultSettings {
   var printVersion = false
   var recursive = true
   var sortBy: SortBy = SortBy.FilePath
+  var sortCaseInsensitive = false
   var sortDescending = false
   var verbose = false
 }
@@ -59,6 +60,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                         printVersion: Boolean = DefaultSettings.printVersion,
                         recursive: Boolean = DefaultSettings.recursive,
                         sortBy: SortBy = DefaultSettings.sortBy,
+                        sortCaseInsensitive: Boolean = DefaultSettings.sortCaseInsensitive,
                         sortDescending: Boolean = DefaultSettings.sortDescending,
                         var verbose: Boolean = DefaultSettings.verbose) {
 
@@ -90,6 +92,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", printVersion: " + printVersion +
       ", recursive: " + recursive +
       ", sortBy: " + sortBy +
+      ", sortCaseInsensitive: " + sortCaseInsensitive +
       ", sortDescending: " + sortDescending +
       ", verbose: " + verbose +
       ")"
