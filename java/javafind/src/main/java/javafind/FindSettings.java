@@ -10,10 +10,11 @@ Class to encapsulate find settings
 
 package javafind;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class FindSettings {
@@ -32,6 +33,10 @@ public class FindSettings {
     private boolean includeArchives;
     private boolean listDirs;
     private boolean listFiles;
+    private LocalDateTime maxLastMod;
+    private int maxSize;
+    private LocalDateTime minLastMod;
+    private int minSize;
     private final Set<String> outArchiveExtensions;
     private final Set<Pattern> outArchiveFilePatterns;
     private final Set<Pattern> outDirPatterns;
@@ -60,6 +65,10 @@ public class FindSettings {
         this.includeArchives = DefaultSettings.INCLUDEARCHIVES;
         this.listDirs = DefaultSettings.LISTDIRS;
         this.listFiles = DefaultSettings.LISTFILES;
+        this.maxLastMod = null;
+        this.maxSize = DefaultSettings.MAXSIZE;
+        this.minLastMod = null;
+        this.minSize = DefaultSettings.MINSIZE;
         this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -140,6 +149,61 @@ public class FindSettings {
 
     public final void setListFiles(final boolean listFiles) {
         this.listFiles = listFiles;
+    }
+
+    public LocalDateTime getMaxLastMod() {
+        return maxLastMod;
+    }
+
+    private LocalDateTime getLastModFromString(String lastModString) {
+        LocalDateTime lastMod = null;
+        try {
+            lastMod = LocalDateTime.parse(lastModString);
+        } catch (DateTimeParseException e) {
+            try {
+                LocalDate maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE);
+                lastMod = maxLastModDate.atTime(0, 0, 0);
+            } catch (DateTimeParseException e2) {
+                System.out.println("Unable to parse lastModString");
+            }
+        }
+        return lastMod;
+    }
+
+    public void setMaxLastMod(String maxLastModString) {
+        this.maxLastMod = getLastModFromString(maxLastModString);
+    }
+
+    public void setMaxLastMod(LocalDateTime maxLastMod) {
+        this.maxLastMod = maxLastMod;
+    }
+
+    public int getMaxSize() {
+        return maxSize;
+    }
+
+    public void setMaxSize(int maxSize) {
+        this.maxSize = maxSize;
+    }
+
+    public LocalDateTime getMinLastMod() {
+        return minLastMod;
+    }
+
+    public void setMinLastMod(String minLastModString) {
+        this.minLastMod = getLastModFromString(minLastModString);
+    }
+
+    public void setMinLastMod(LocalDateTime minLastMod) {
+        this.minLastMod = minLastMod;
+    }
+
+    public int getMinSize() {
+        return minSize;
+    }
+
+    public void setMinSize(int minSize) {
+        this.minSize = minSize;
     }
 
     public final boolean getPrintUsage() {
@@ -324,6 +388,12 @@ public class FindSettings {
         addFileTypes(this.outFileTypes, ft);
     }
 
+    public boolean needStat() {
+        return this.sortBy.equals(SortBy.FILESIZE) || this.sortBy.equals(SortBy.LASTMOD) ||
+                this.maxLastMod != null || this.minLastMod != null ||
+                this.maxSize > 0 || this.minSize > 0;
+    }
+
     private static String stringSetToString(final Set<String> set) {
         StringBuilder sb = new StringBuilder("[");
         int elemCount = 0;
@@ -366,6 +436,13 @@ public class FindSettings {
         return sb.toString();
     }
 
+    private static String localDateTimeToString(final LocalDateTime dt) {
+        if (dt == null) {
+            return "0";
+        }
+        return String.format("\"%s\"", dt);
+    }
+
     public final String toString() {
         return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
@@ -380,6 +457,10 @@ public class FindSettings {
                 + ", includeArchives: " + this.includeArchives
                 + ", listDirs: " + this.listDirs
                 + ", listFiles: " + this.listFiles
+                + ", maxLastMod: " + localDateTimeToString(this.maxLastMod)
+                + ", maxSize: " + this.maxSize
+                + ", minLastMod: " + localDateTimeToString(this.minLastMod)
+                + ", minSize: " + this.minSize
                 + ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions)
                 + ", outArchiveFilePatterns: " + patternSetToString(this.outArchiveFilePatterns)
                 + ", outDirPatterns: " + patternSetToString(this.outDirPatterns)

@@ -16,7 +16,10 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -44,6 +47,10 @@ public class FindOptions {
             put("in-ext", (s, settings) -> settings.addInExtension(s));
             put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
             put("in-filetype", (s, settings) -> settings.addInFileType(s));
+            put("maxlastmod", (s, settings) -> settings.setMaxLastMod(s));
+            put("maxsize", (s, settings) -> settings.setMaxSize(Integer.parseInt(s)));
+            put("minlastmod", (s, settings) -> settings.setMinLastMod(s));
+            put("minsize", (s, settings) -> settings.setMinSize(Integer.parseInt(s)));
             put("out-archiveext", (s, settings) -> settings.addOutArchiveExtension(s));
             put("out-archivefilepattern", (s, settings) -> settings.addOutArchiveFilePattern(s));
             put("out-dirpattern", (s, settings) -> settings.addOutDirPattern(s));

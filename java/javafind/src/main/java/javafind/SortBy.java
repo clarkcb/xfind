@@ -3,5 +3,7 @@ package javafind;
 public enum SortBy {
     FILEPATH,
     FILENAME,
-    FILETYPE
+    FILESIZE,
+    FILETYPE,
+    LASTMOD
 }

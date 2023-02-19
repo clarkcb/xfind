@@ -2,6 +2,7 @@ package javafind;
 
 import org.junit.Test;
 
+import java.time.temporal.ChronoField;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -23,6 +24,8 @@ public class FindSettingsTest {
         assertEquals(DefaultSettings.INCLUDEARCHIVES, settings.getIncludeArchives());
         assertEquals(DefaultSettings.LISTDIRS, settings.getListDirs());
         assertEquals(DefaultSettings.LISTFILES, settings.getListFiles());
+        assertEquals(DefaultSettings.MAXSIZE, settings.getMaxSize());
+        assertEquals(DefaultSettings.MINSIZE, settings.getMinSize());
         assertEquals(DefaultSettings.PRINTUSAGE, settings.getPrintUsage());
         assertEquals(DefaultSettings.PRINTVERSION, settings.getPrintVersion());
         assertEquals(DefaultSettings.SORT_CASEINSENSITIVE, settings.getSortCaseInsensitive());
@@ -35,7 +38,7 @@ public class FindSettingsTest {
         FindSettings settings = new FindSettings();
         settings.addInExtension("java,scala");
         Set<String> inExtensions = settings.getInExtensions();
-        assertEquals(inExtensions.size(), 2);
+        assertEquals(2, inExtensions.size());
         assertTrue(inExtensions.contains("java"));
         assertTrue(inExtensions.contains("scala"));
     }
@@ -45,7 +48,7 @@ public class FindSettingsTest {
         FindSettings settings = new FindSettings();
         settings.addInFilePattern("Find");
         Set<Pattern> inFilePatterns = settings.getInFilePatterns();
-        assertEquals(inFilePatterns.size(), 1);
+        assertEquals(1, inFilePatterns.size());
     }
 
     @Test
@@ -62,5 +65,18 @@ public class FindSettingsTest {
         settings.setDebug(true);
         assertTrue(settings.getDebug());
         assertTrue(settings.getVerbose());
+    }
+
+    @Test
+    public final void testSetLastModFromString() {
+        FindSettings settings = new FindSettings();
+        settings.setMaxLastMod("2023-01-01");
+        assertEquals(1, settings.getMaxLastMod().get(ChronoField.DAY_OF_MONTH));
+        assertEquals(1, settings.getMaxLastMod().get(ChronoField.MONTH_OF_YEAR));
+        assertEquals(2023, settings.getMaxLastMod().get(ChronoField.YEAR));
+        settings.setMinLastMod("2022-06-01");
+        assertEquals(1, settings.getMinLastMod().get(ChronoField.DAY_OF_MONTH));
+        assertEquals(6, settings.getMinLastMod().get(ChronoField.MONTH_OF_YEAR));
+        assertEquals(2022, settings.getMinLastMod().get(ChronoField.YEAR));
     }
 }

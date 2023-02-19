@@ -13,6 +13,7 @@ package javafind;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -76,11 +77,11 @@ public class Finder {
 
     // this is temporary to appease the tests
     boolean isMatchingFile(final Path path) {
-        FileResult sf = new FileResult(path, fileTypes.getFileType(path));
-        return isMatchingFile(sf);
+        FileResult fr = new FileResult(path, fileTypes.getFileType(path));
+        return isMatchingFileResult(fr);
     }
 
-    boolean isMatchingFile(final FileResult fr) {
+    boolean isMatchingFileResult(final FileResult fr) {
         String fileName = fr.getPath().getFileName().toString();
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
             String ext = FileUtil.getExtension(fileName);
@@ -90,21 +91,35 @@ public class Finder {
                 return false;
             }
         }
-        return (settings.getInFilePatterns().isEmpty()
+        if ((!settings.getInFilePatterns().isEmpty()
+                && !matchesAnyPattern(fileName, settings.getInFilePatterns()))
                 ||
-                matchesAnyPattern(fileName, settings.getInFilePatterns()))
-               &&
-               (settings.getOutFilePatterns().isEmpty()
+                (!settings.getOutFilePatterns().isEmpty()
+                        &&
+                        matchesAnyPattern(fileName, settings.getOutFilePatterns()))) {
+            return false;
+        }
+        if ((!settings.getInFileTypes().isEmpty()
+                &&
+                !settings.getInFileTypes().contains(fr.getFileType()))
                 ||
-                !matchesAnyPattern(fileName, settings.getOutFilePatterns()))
-               &&
-               (settings.getInFileTypes().isEmpty()
-                ||
-                settings.getInFileTypes().contains(fr.getFileType()))
-               &&
-               (settings.getOutFileTypes().isEmpty()
-                ||
-                !settings.getOutFileTypes().contains(fr.getFileType()));
+                (!settings.getOutFileTypes().isEmpty()
+                        &&
+                        settings.getOutFileTypes().contains(fr.getFileType()))) {
+            return false;
+        }
+        if (fr.getStat() != null) {
+            BasicFileAttributes stat = fr.getStat();
+            if ((settings.getMaxLastMod() != null
+                    && stat.lastModifiedTime().toInstant().compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) > 0)
+                    || (settings.getMinLastMod() != null
+                    && stat.lastModifiedTime().toInstant().compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) < 0)
+                    || (settings.getMaxSize() > 0 && stat.size() > settings.getMaxSize())
+                    || (settings.getMinSize() > 0 && stat.size() < settings.getMinSize())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     boolean isMatchingArchiveFile(final Path path) {
@@ -128,38 +143,52 @@ public class Finder {
                 !matchesAnyPattern(fileName, settings.getOutArchiveFilePatterns()));
     }
 
-    FileResult filterToFileResult(final Path path) {
+    Optional<FileResult> filterToFileResult(final Path path) {
         if (settings.getExcludeHidden()) {
             try {
                 if (Files.isHidden(path)) {
-                    return null;
+                    return Optional.empty();
                 }
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
-                return null;
+                return Optional.empty();
             }
         }
 
-        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path));
+        BasicFileAttributes stat = null;
+        if (settings.needStat()) {
+            try {
+                stat = Files.readAttributes(path, BasicFileAttributes.class);
+            } catch (IOException e) {
+                Logger.logError(e.getMessage());
+                return Optional.empty();
+            }
+        }
+
+        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path), stat);
         if (fileResult.getFileType() == FileType.ARCHIVE) {
             if ((settings.getIncludeArchives() || settings.getArchivesOnly()) && isMatchingArchiveFile(path)) {
-                return fileResult;
+                return Optional.of(fileResult);
             }
-            return null;
+            return Optional.empty();
         }
-        if (!settings.getArchivesOnly() && isMatchingFile(fileResult)) {
-            return fileResult;
+        if (!settings.getArchivesOnly() && isMatchingFileResult(fileResult)) {
+            return Optional.of(fileResult);
         }
-        return null;
+        return Optional.empty();
     }
 
     public final void sortFileResults(List<FileResult> fileResults) {
         if (settings.getSortBy().equals(SortBy.FILENAME)) {
-            fileResults.sort(FileResult::compareByName);
+            fileResults.sort((fr1, fr2) -> fr1.compareByName(fr2, settings.getSortCaseInsensitive()));
+        } else if (settings.getSortBy().equals(SortBy.FILESIZE)) {
+            fileResults.sort((fr1, fr2) -> fr1.compareBySize(fr2, settings.getSortCaseInsensitive()));
         } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
-            fileResults.sort(FileResult::compareByType);
+            fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.getSortCaseInsensitive()));
+        } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
+            fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive()));
         } else {
-            fileResults.sort(FileResult::compareByPath);
+            fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.getSortCaseInsensitive()));
         }
         if (settings.getSortDescending()) {
             Collections.reverse(fileResults);
@@ -177,9 +206,9 @@ public class Finder {
                     throw new FindException("Startpath does not match find settings");
                 }
             } else if (Files.isRegularFile(path)) {
-                FileResult fileResult = filterToFileResult(path);
-                if (fileResult != null) {
-                    fileResults.add(fileResult);
+                Optional<FileResult> optFileResult = filterToFileResult(path);
+                if (optFileResult.isPresent()) {
+                    fileResults.add(optFileResult.get());
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
@@ -193,11 +222,11 @@ public class Finder {
 
     private static class FindFileResultsVisitor extends SimpleFileVisitor<Path> {
         Function<Path, Boolean> filterDir;
-        Function<Path, FileResult> filterToFileResult;
+        Function<Path, Optional<FileResult>> filterToFileResult;
         List<FileResult> fileResults;
 
         FindFileResultsVisitor(final Function<Path, Boolean> filterDir,
-                               final Function<Path, FileResult> filterToFileResult) {
+                               final Function<Path, Optional<FileResult>> filterToFileResult) {
             super();
             this.filterDir = filterDir;
             this.filterToFileResult = filterToFileResult;
@@ -219,10 +248,8 @@ public class Finder {
             Objects.requireNonNull(path);
             Objects.requireNonNull(attrs);
             if (attrs.isRegularFile()) {
-                FileResult fr = filterToFileResult.apply(path);
-                if (fr != null) {
-                    fileResults.add(fr);
-                }
+                Optional<FileResult> optFileResult = filterToFileResult.apply(path);
+                optFileResult.ifPresent(fileResult -> fileResults.add(fileResult));
             }
             return FileVisitResult.CONTINUE;
         }
