@@ -96,6 +96,8 @@ class FindOptions {
         "norecursive" to { b, ss -> ss.copy(recursive = !b) },
         "recursive" to { b, ss -> ss.copy(recursive = b) },
         "sort-ascending" to { b, ss -> ss.copy(sortDescending = !b) },
+        "sort-caseinsensitive" to { b, ss -> ss.copy(sortCaseInsensitive = b) },
+        "sort-casesensitive" to { b, ss -> ss.copy(sortCaseInsensitive = !b) },
         "sort-descending" to { b, ss -> ss.copy(sortDescending = b) },
         "verbose" to { b, ss -> ss.copy(verbose = b) },
         "version" to { b, ss -> ss.copy(printVersion = b) }

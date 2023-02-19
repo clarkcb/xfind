@@ -50,6 +50,7 @@ data class FindSettings(val archivesOnly: Boolean,
                         val printVersion: Boolean,
                         val recursive: Boolean,
                         val sortBy: SortBy,
+                        val sortCaseInsensitive: Boolean,
                         val sortDescending: Boolean,
                         val verbose: Boolean)
 
