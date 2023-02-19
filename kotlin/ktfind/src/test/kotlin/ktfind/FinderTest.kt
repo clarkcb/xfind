@@ -180,7 +180,7 @@ class FinderTest {
         val settings = getSettings()
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(finder.isMatchingFile(fileResult))
+        assertTrue(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -188,7 +188,7 @@ class FinderTest {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(finder.isMatchingFile(fileResult))
+        assertTrue(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -196,7 +196,7 @@ class FinderTest {
         val settings = getSettings().copy(inExtensions = setOf("java"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertFalse(finder.isMatchingFile(fileResult))
+        assertFalse(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -204,7 +204,7 @@ class FinderTest {
         val settings = getSettings().copy(outExtensions = setOf("cs"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertFalse(finder.isMatchingFile(fileResult))
+        assertFalse(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -212,7 +212,7 @@ class FinderTest {
         val settings = getSettings().copy(outExtensions = setOf("java"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(finder.isMatchingFile(fileResult))
+        assertTrue(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -220,7 +220,7 @@ class FinderTest {
         val settings = getSettings().copy(inFilePatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("Finder.cs"), FileType.CODE)
-        assertTrue(finder.isMatchingFile(fileResult))
+        assertTrue(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -228,7 +228,7 @@ class FinderTest {
         val settings = getSettings().copy(inFilePatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertFalse(finder.isMatchingFile(fileResult))
+        assertFalse(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -236,7 +236,7 @@ class FinderTest {
         val settings = getSettings().copy(outFilePatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("Finder.cs"), FileType.CODE)
-        assertFalse(finder.isMatchingFile(fileResult))
+        assertFalse(finder.isMatchingFileResult(fileResult))
     }
 
     @Test
@@ -244,7 +244,7 @@ class FinderTest {
         val settings = getSettings().copy(outFilePatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("FileUtil.cs"), FileType.CODE)
-        assertTrue(finder.isMatchingFile(fileResult))
+        assertTrue(finder.isMatchingFileResult(fileResult))
     }
 
     /***************************************************************************
@@ -255,7 +255,7 @@ class FinderTest {
         val settings = getSettings()
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(finder.isMatchingArchiveFile(fileResult))
+        assertTrue(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -263,7 +263,7 @@ class FinderTest {
         val settings = getSettings().copy(inArchiveExtensions = setOf("zip"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(finder.isMatchingArchiveFile(fileResult))
+        assertTrue(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -271,7 +271,7 @@ class FinderTest {
         val settings = getSettings().copy(inArchiveExtensions = setOf("gz"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(finder.isMatchingArchiveFile(fileResult))
+        assertFalse(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -279,7 +279,7 @@ class FinderTest {
         val settings = getSettings().copy(outArchiveExtensions = setOf("zip"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(finder.isMatchingArchiveFile(fileResult))
+        assertFalse(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -287,7 +287,7 @@ class FinderTest {
         val settings = getSettings().copy(outArchiveExtensions = setOf("gz"))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(finder.isMatchingArchiveFile(fileResult))
+        assertTrue(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -295,7 +295,7 @@ class FinderTest {
         val settings = getSettings().copy(inArchiveFilePatterns = setOf(Regex("arch")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(finder.isMatchingArchiveFile(fileResult))
+        assertTrue(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -303,7 +303,7 @@ class FinderTest {
         val settings = getSettings().copy(inArchiveFilePatterns = setOf(Regex("archives")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(finder.isMatchingArchiveFile(fileResult))
+        assertFalse(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -311,7 +311,7 @@ class FinderTest {
         val settings = getSettings().copy(outArchiveFilePatterns = setOf(Regex("arch")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertFalse(finder.isMatchingArchiveFile(fileResult))
+        assertFalse(finder.isMatchingArchiveFileResult(fileResult))
     }
 
     @Test
@@ -319,6 +319,6 @@ class FinderTest {
         val settings = getSettings().copy(outArchiveFilePatterns = setOf(Regex("archives")))
         val finder = Finder(settings)
         val fileResult = FileResult(File("archive.zip"), FileType.ARCHIVE)
-        assertTrue(finder.isMatchingArchiveFile(fileResult))
+        assertTrue(finder.isMatchingArchiveFileResult(fileResult))
     }
 }

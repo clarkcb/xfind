@@ -1,25 +1,40 @@
 package ktfind
 
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+
 /**
  * @author cary on 7/23/16.
  */
 enum class SortBy {
     FILEPATH,
     FILENAME,
-    FILETYPE
+    FILESIZE,
+    FILETYPE,
+    LASTMOD
 }
 
-private const val name = "name"
-private const val path = "path"
-private const val type = "type"
+private const val NAME = "name"
+private const val PATH = "path"
+private const val SIZE = "size"
+private const val TYPE = "type"
+private const val LASTMOD = "lastmod"
 
 fun sortByFromName(sortByName: String) : SortBy {
     return when (sortByName.trim().lowercase()) {
-        name -> {
+        NAME -> {
             SortBy.FILENAME
         }
-        type -> {
+        SIZE -> {
+            SortBy.FILESIZE
+        }
+        TYPE -> {
             SortBy.FILETYPE
+        }
+        LASTMOD -> {
+            SortBy.LASTMOD
         }
         else -> {
             SortBy.FILEPATH
@@ -39,6 +54,10 @@ data class FindSettings(val archivesOnly: Boolean,
                         val includeArchives: Boolean,
                         val listDirs: Boolean,
                         val listFiles: Boolean,
+                        val maxLastMod: LocalDateTime?,
+                        val maxSize: Int,
+                        val minLastMod: LocalDateTime?,
+                        val minSize: Int,
                         val outArchiveExtensions: Set<String>,
                         val outArchiveFilePatterns: Set<Regex>,
                         val outDirPatterns: Set<Regex>,
@@ -56,31 +75,36 @@ data class FindSettings(val archivesOnly: Boolean,
 
 fun getDefaultSettings() : FindSettings {
     return FindSettings(
-            archivesOnly = false,
-            debug = false,
-            excludeHidden = true,
-            inArchiveExtensions = setOf(),
-            inArchiveFilePatterns = setOf(),
-            inDirPatterns = setOf(),
-            inExtensions = setOf(),
-            inFilePatterns = setOf(),
-            inFileTypes = setOf(),
-            includeArchives = false,
-            listDirs = false,
-            listFiles = false,
-            outArchiveExtensions = setOf(),
-            outArchiveFilePatterns = setOf(),
-            outDirPatterns = setOf(),
-            outExtensions = setOf(),
-            outFilePatterns = setOf(),
-            outFileTypes = setOf(),
-            paths = setOf(),
-            printUsage = false,
-            printVersion = false,
-            recursive = true,
-            sortBy = SortBy.FILEPATH,
-            sortDescending = false,
-            verbose = false)
+        archivesOnly = false,
+        debug = false,
+        excludeHidden = true,
+        inArchiveExtensions = setOf(),
+        inArchiveFilePatterns = setOf(),
+        inDirPatterns = setOf(),
+        inExtensions = setOf(),
+        inFilePatterns = setOf(),
+        inFileTypes = setOf(),
+        includeArchives = false,
+        listDirs = false,
+        listFiles = false,
+        maxLastMod = null,
+        maxSize = 0,
+        minLastMod = null,
+        minSize = 0,
+        outArchiveExtensions = setOf(),
+        outArchiveFilePatterns = setOf(),
+        outDirPatterns = setOf(),
+        outExtensions = setOf(),
+        outFilePatterns = setOf(),
+        outFileTypes = setOf(),
+        paths = setOf(),
+        printUsage = false,
+        printVersion = false,
+        recursive = true,
+        sortBy = SortBy.FILEPATH,
+        sortCaseInsensitive = false,
+        sortDescending = false,
+        verbose = false)
 }
 
 fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
@@ -99,4 +123,25 @@ fun setArchivesOnly(ss: FindSettings, archivesOnly: Boolean): FindSettings {
 
 fun setDebug(ss: FindSettings, debug: Boolean): FindSettings {
     return ss.copy(debug = debug, verbose = debug || ss.verbose)
+}
+
+fun needStat(ss: FindSettings): Boolean {
+    return ss.sortBy == SortBy.FILESIZE || ss.sortBy == SortBy.LASTMOD
+            || ss.maxLastMod != null || ss.minLastMod != null
+            || ss.maxSize > 0 || ss.minSize > 0
+}
+
+fun getLastModFromString(lastModString: String): LocalDateTime {
+    var lastMod: LocalDateTime? = null
+    try {
+        lastMod = LocalDateTime.parse(lastModString)
+    } catch (e: DateTimeParseException) {
+        try {
+            val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+            lastMod = maxLastModDate.atTime(0, 0, 0)
+        } catch (e2: DateTimeParseException) {
+            println("Unable to parse lastModString")
+        }
+    }
+    return lastMod!!
 }

@@ -1,31 +1,63 @@
 package ktfind
 
 import java.nio.file.Path
+import java.nio.file.attribute.BasicFileAttributes
+import java.util.*
 
 /**
  * @author cary on 7/24/16.
  */
-class FileResult(val containers: List<String>, val path: Path, val fileType: FileType) {
+class FileResult(val containers: List<String>,
+                 val path: Path,
+                 val fileType: FileType,
+                 val stat: BasicFileAttributes? = null) {
     val CONTAINER_SEPARATOR = "!"
 
     constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType)
+    constructor(path: Path, fileType: FileType, stat: BasicFileAttributes?) : this(listOf(), path, fileType, stat)
 
-    fun compareByPath(other: FileResult): Int {
-        return if (path.parent == other.path.parent) {
-            path.fileName.compareTo(other.path.fileName)
-        } else path.parent.compareTo(other.path.parent)
+    private fun compareStrings(str1: String, str2: String, sortCaseInsensitive: Boolean): Int {
+        val s1 =
+            if (sortCaseInsensitive) str1.lowercase(Locale.getDefault())
+            else str1
+        val s2 =
+            if (sortCaseInsensitive) str2.lowercase(Locale.getDefault())
+            else str2
+        return s1.compareTo(s2)
     }
 
-    fun compareByName(other: FileResult): Int {
-        return if (path.fileName == other.path.fileName) {
-            path.parent.compareTo(other.path.parent)
-        } else path.fileName.compareTo(other.path.fileName)
+    fun compareByPath(other: FileResult, sortCaseInsensitive: Boolean): Int {
+        val pres = compareStrings(path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
+        return if (pres == 0) {
+            compareStrings(path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
+        } else pres
     }
 
-    fun compareByType(other: FileResult): Int {
+    fun compareByName(other: FileResult, sortCaseInsensitive: Boolean): Int {
+        val fres = compareStrings(path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
+        return if (fres == 0) {
+            compareStrings(path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
+        } else fres
+    }
+
+    fun compareBySize(other: FileResult, sortCaseInsensitive: Boolean): Int {
+        if (stat == null || other.stat == null) return 0
+        return if (stat.size() == other.stat.size()) {
+            compareByPath(other, sortCaseInsensitive)
+        } else stat.size().compareTo(other.stat.size())
+    }
+
+    fun compareByType(other: FileResult, sortCaseInsensitive: Boolean): Int {
         return if (fileType == other.fileType) {
-            compareByPath(other)
+            compareByPath(other, sortCaseInsensitive)
         } else fileType.compareTo(other.fileType)
+    }
+
+    fun compareByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Int {
+        if (stat == null || other.stat == null) return 0
+        return if (stat.lastModifiedTime() == other.stat.lastModifiedTime()) {
+            compareByPath(other, sortCaseInsensitive)
+        } else stat.lastModifiedTime().compareTo(other.stat.lastModifiedTime())
     }
 
     override fun toString(): String {

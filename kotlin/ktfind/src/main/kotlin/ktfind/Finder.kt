@@ -1,6 +1,9 @@
 package ktfind
 
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.attribute.BasicFileAttributes
+import java.time.ZoneOffset
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.streams.toList
@@ -43,7 +46,8 @@ class Finder(val settings: FindSettings) {
         }
         if (settings.inFilePatterns.isNotEmpty()) {
             fileNameTests.add { fileName: String -> matchesAnyPattern(fileName, settings.inFilePatterns) }
-        } else if (settings.outFilePatterns.isNotEmpty()) {
+        }
+        if (settings.outFilePatterns.isNotEmpty()) {
             fileNameTests.add { fileName: String -> !matchesAnyPattern(fileName, settings.outFilePatterns) }
         }
         if (settings.inFileTypes.isNotEmpty()) {
@@ -74,38 +78,53 @@ class Finder(val settings: FindSettings) {
                         || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
-//    fun isMatchingFile(fr: FileResult): Boolean {
-//        return (settings.inExtensions.isEmpty()
-//                        || settings.inExtensions.contains(fr.file.extension))
-//                &&
-//                (settings.outExtensions.isEmpty()
-//                        || !settings.outExtensions.contains(fr.file.extension))
-//                &&
-//                (settings.inFilePatterns.isEmpty()
-//                        || matchesAnyPattern(fr.file.name, settings.inFilePatterns))
-//                &&
-//                (settings.outFilePatterns.isEmpty()
-//                        || !matchesAnyPattern(fr.file.name, settings.outFilePatterns))
-//                &&
-//                (settings.inFileTypes.isEmpty()
-//                        || settings.inFileTypes.contains(fr.fileType))
-//                &&
-//                (settings.outFileTypes.isEmpty()
-//                        || !settings.outFileTypes.contains(fr.fileType))
-//    }
-
-    fun isMatchingFile(fr: FileResult): Boolean {
-        return (extTests.isEmpty()
-                        || extTests.any { t -> t.invoke(fr.path.extension) })
-                &&
-                (fileNameTests.isEmpty()
-                        || fileNameTests.any {t -> t.invoke(fr.path.fileName.name)})
-                &&
-                (fileTypeTests.isEmpty()
-                        || fileTypeTests.any {t -> t.invoke(fr.fileType)})
+    fun isMatchingFileResult(fr: FileResult): Boolean {
+        if ((settings.inExtensions.isNotEmpty()
+                    && !settings.inExtensions.contains(fr.path.extension))
+            ||
+            (settings.outExtensions.isNotEmpty()
+                    && settings.outExtensions.contains(fr.path.extension))) {
+            return false
+        }
+        if ((settings.inFilePatterns.isNotEmpty()
+                    && !matchesAnyPattern(fr.path.fileName.toString(), settings.inFilePatterns))
+            ||
+            (settings.outFilePatterns.isNotEmpty()
+                    && matchesAnyPattern(fr.path.fileName.toString(), settings.outFilePatterns))) {
+            return false
+        }
+        if ((settings.inFileTypes.isNotEmpty()
+                    && !settings.inFileTypes.contains(fr.fileType))
+            ||
+            (settings.outFileTypes.isNotEmpty()
+                    && settings.outFileTypes.contains(fr.fileType))) {
+            return false
+        }
+        if (fr.stat != null) {
+            if ((settings.maxLastMod != null
+                        && fr.stat.lastModifiedTime().toInstant() > settings.maxLastMod.toInstant(ZoneOffset.UTC))
+                || (settings.minLastMod != null
+                        && fr.stat.lastModifiedTime().toInstant() < settings.minLastMod.toInstant(ZoneOffset.UTC))
+                || (settings.maxSize > 0 && fr.stat.size() > settings.maxSize)
+                || (settings.minSize > 0 && fr.stat.size() < settings.minSize)) {
+                return false
+            }
+        }
+        return true
     }
 
-    fun isMatchingArchiveFile(fr: FileResult): Boolean {
+//    fun isMatchingFileResult(fr: FileResult): Boolean {
+//        return (extTests.isEmpty()
+//                        || extTests.any { t -> t.invoke(fr.path.extension) })
+//                &&
+//                (fileNameTests.isEmpty()
+//                        || fileNameTests.any {t -> t.invoke(fr.path.fileName.name)})
+//                &&
+//                (fileTypeTests.isEmpty()
+//                        || fileTypeTests.any {t -> t.invoke(fr.fileType)})
+//    }
+
+    fun isMatchingArchiveFileResult(fr: FileResult): Boolean {
         return (settings.inArchiveExtensions.isEmpty()
                         || settings.inArchiveExtensions.contains(fr.path.extension))
                 &&
@@ -123,14 +142,17 @@ class Finder(val settings: FindSettings) {
         if (settings.excludeHidden && f.isHidden) {
             return null
         }
-        val fr = FileResult(f.toPath(), fileTypes.getFileType(f))
+        val stat: BasicFileAttributes? =
+            if (needStat(settings)) Files.readAttributes(f.toPath(), BasicFileAttributes::class.java)
+            else null
+        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), stat)
         if (fr.fileType === FileType.ARCHIVE) {
-            if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFile(fr)) {
+            if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
             return null;
         }
-        if (!settings.archivesOnly && isMatchingFile(fr)) {
+        if (!settings.archivesOnly && isMatchingFileResult(fr)) {
             return fr
         }
         return null
@@ -148,13 +170,24 @@ class Finder(val settings: FindSettings) {
         val sortedFileResults: MutableList<FileResult> =
             when (settings.sortBy) {
                 SortBy.FILENAME -> {
-                    fileResults.stream().sorted { fr1, fr2 -> fr1.compareByName(fr2) }.toList()
+                    fileResults.stream()
+                        .sorted { fr1, fr2 -> fr1.compareByName(fr2, settings.sortCaseInsensitive) }.toList()
+                }
+                SortBy.FILESIZE -> {
+                    fileResults.stream()
+                        .sorted { fr1, fr2 -> fr1.compareBySize(fr2, settings.sortCaseInsensitive) }.toList()
                 }
                 SortBy.FILETYPE -> {
-                    fileResults.stream().sorted { fr1, fr2 -> fr1.compareByType(fr2) }.toList()
+                    fileResults.stream()
+                        .sorted { fr1, fr2 -> fr1.compareByType(fr2, settings.sortCaseInsensitive) }.toList()
+                }
+                SortBy.LASTMOD -> {
+                    fileResults.stream()
+                        .sorted { fr1, fr2 -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive) }.toList()
                 }
                 else -> {
-                    fileResults.stream().sorted { fr1, fr2 -> fr1.compareByPath(fr2) }.toList()
+                    fileResults.stream()
+                        .sorted { fr1, fr2 -> fr1.compareByPath(fr2, settings.sortCaseInsensitive) }.toList()
                 }
             }.toMutableList()
 
