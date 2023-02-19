@@ -5,7 +5,7 @@
         [cljfind.config :only (SHAREDPATH)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.finder :only
-         (filter-file? is-matching-archive-file? is-matching-dir? is-matching-file?)]
+         (filter-file? is-matching-archive-file-result? is-matching-dir? is-matching-file?)]
         [cljfind.findsettings :only
           (DEFAULT-SETTINGS add-extension add-pattern set-archivesonly)]))
 
@@ -87,35 +87,35 @@
 ;; *****************************************************************************
 (deftest test-is-matching-archive-file?-default-settings
   (testing "test-is-matching-archive-file?-default-settings"
-    (is (is-matching-archive-file? (file "archive.zip") DEFAULT-SETTINGS))))
+           (is (is-matching-archive-file-result? (file "archive.zip") DEFAULT-SETTINGS))))
 
 (deftest test-iis-matching-archive-file?-with-in-earchivextensions
   (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archiveextensions)]
     (testing "test-is-matching-archive-file?-with-in-archiveextensions"
-      (is (is-matching-archive-file? (file "archive.zip") settings))
-      (is (is-matching-archive-file? (file "archive.bz2") settings))
-      (is (not (is-matching-archive-file? (file "archive.gz") settings))))))
+             (is (is-matching-archive-file-result? (file "archive.zip") settings))
+             (is (is-matching-archive-file-result? (file "archive.bz2") settings))
+             (is (not (is-matching-archive-file-result? (file "archive.gz") settings))))))
 
 (deftest test-is-matching-archive-file?-with-out-archiveextensions
   (let [settings (add-extension DEFAULT-SETTINGS "gz" :out-archiveextensions)]
     (testing "test-is-matching-archive-file?-with-out-archiveextensions"
-      (is (is-matching-archive-file? (file "archive.zip") settings))
-      (is (is-matching-archive-file? (file "archive.bz2") settings))
-      (is (not (is-matching-archive-file? (file "archive.gz") settings))))))
+             (is (is-matching-archive-file-result? (file "archive.zip") settings))
+             (is (is-matching-archive-file-result? (file "archive.bz2") settings))
+             (is (not (is-matching-archive-file-result? (file "archive.gz") settings))))))
 
 (deftest test-is-matching-archive-file?-with-in-archivefilepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "arch" :in-archivefilepatterns)]
     (testing "test-is-matching-archive-file?-with-in-archivefilepatterns"
-      (is (is-matching-archive-file? (file "archive.zip") settings))
-      (is (is-matching-archive-file? (file "arch.bz2") settings))
-      (is (not (is-matching-archive-file? (file "compressed.gz") settings))))))
+             (is (is-matching-archive-file-result? (file "archive.zip") settings))
+             (is (is-matching-archive-file-result? (file "arch.bz2") settings))
+             (is (not (is-matching-archive-file-result? (file "compressed.gz") settings))))))
 
 (deftest test-is-matching-archive-file?-with-out-archivefilepatterns
   (let [settings (add-pattern DEFAULT-SETTINGS "compress" :out-archivefilepatterns)]
     (testing "test-is-matching-archive-file?-with-out-archivefilepatterns"
-      (is (is-matching-archive-file? (file "archive.zip") settings))
-      (is (is-matching-archive-file? (file "arch.bz2") settings))
-      (is (not (is-matching-archive-file? (file "compressed.gz") settings))))))
+             (is (is-matching-archive-file-result? (file "archive.zip") settings))
+             (is (is-matching-archive-file-result? (file "arch.bz2") settings))
+             (is (not (is-matching-archive-file-result? (file "compressed.gz") settings))))))
 
 ;; *****************************************************************************
 ;; filter-file? tests

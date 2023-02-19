@@ -16,19 +16,25 @@
 ;; sort-by names
 (def FILEPATH "path")
 (def FILENAME "name")
+(def FILESIZE "size")
 (def FILETYPE "type")
+(def LASTMOD "lastmod")
 
 (defn get-sort-by-name [s]
   (cond
     (= :filename s) FILENAME
+    (= :filesize s) FILESIZE
     (= :filetype s) FILETYPE
+    (= :lastmod s) LASTMOD
     :else FILEPATH))
 
 (defn sort-by-from-name [^String name]
   (let [lname (lower-case name)]
     (cond
       (= FILENAME lname) :filename
+      (= FILESIZE lname) :filesize
       (= FILETYPE lname) :filetype
+      (= LASTMOD lname) :lastmod
       :else :filepath)))
 
 (defrecord FindSettings
@@ -45,6 +51,10 @@
     in-filetypes
     listdirs
     listfiles
+    maxlastmod
+    maxsize
+    minlastmod
+    minsize
     out-archiveextensions
     out-archivefilepatterns
     out-dirpatterns
@@ -75,6 +85,10 @@
    #{}       ; in-filetypes
    false     ; listdirs
    false     ; listfiles
+   nil       ; maxlastmod
+   0         ; maxsize
+   nil       ; minlastmod
+   0         ; minsize
    #{}       ; out-archiveextensions
    #{}       ; out-archivefilepatterns
    #{}       ; out-dirpatterns
@@ -149,6 +163,15 @@
         (add-patterns settings p patname)
       :else
         (add-patterns settings [p] patname))))
+
+(defn need-stat [^FindSettings settings]
+  (or
+   (= :filesize (:sort-by settings))
+   (= :lastmod (:sort-by settings))
+   (> 0 (:maxlastmod settings))
+   (> 0 (:minlastmod settings))
+   (> 0 (:maxsize settings))
+   (> 0 (:minsize settings))))
 
 (defn set-num [^FindSettings settings n numname]
   (let [t (type n)]

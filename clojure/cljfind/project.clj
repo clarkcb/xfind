@@ -6,6 +6,7 @@
   :dependencies [
                   [org.clojure/clojure "1.10.3"]
                   [org.clojure/data.json "2.4.0"]
+                  [clojure.java-time "1.2.0"]
                 ]
   :main ^:skip-aot cljfind.cljfind
   :target-path "target/%s"
