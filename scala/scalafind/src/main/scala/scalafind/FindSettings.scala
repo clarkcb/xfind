@@ -2,6 +2,7 @@ package scalafind
 
 import scalafind.FileType.FileType
 import scalafind.SortBy.SortBy
+import java.time.LocalDateTime
 
 import scala.util.matching.Regex
 
@@ -9,12 +10,16 @@ object SortBy extends Enumeration {
   type SortBy = Value
   val FileName: SortBy = Value
   val FilePath: SortBy = Value
+  val FileSize: SortBy = Value
   val FileType: SortBy = Value
+  val LastMod: SortBy = Value
 
   def fromName(sortByName: String): SortBy = {
     sortByName.toLowerCase() match {
       case "name" => SortBy.FileName
+      case "size" => SortBy.FileSize
       case "type" => SortBy.FileType
+      case "lastmod" => SortBy.LastMod
       case _ => SortBy.FilePath
     }
   }
@@ -27,6 +32,8 @@ object DefaultSettings {
   var includeArchives = false
   val listDirs = false
   val listFiles = false
+  val maxSize = 0
+  val minSize = 0
   var paths: Set[String] = Set.empty[String]
   var printUsage = false
   var printVersion = false
@@ -49,6 +56,10 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                         var includeArchives: Boolean = DefaultSettings.includeArchives,
                         listDirs: Boolean = DefaultSettings.listDirs,
                         listFiles: Boolean = DefaultSettings.listFiles,
+                        maxLastMod: Option[LocalDateTime] = None,
+                        maxSize: Int = DefaultSettings.maxSize,
+                        minLastMod: Option[LocalDateTime] = None,
+                        minSize: Int = DefaultSettings.minSize,
                         outArchiveExtensions: Set[String] = Set.empty[String],
                         outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                         outDirPatterns: Set[Regex] = Set.empty[Regex],
@@ -67,6 +78,12 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
   includeArchives = archivesOnly || includeArchives
   verbose = debug || verbose
 
+  def needStat: Boolean = {
+    sortBy == SortBy.FileSize || sortBy == SortBy.LastMod
+      || maxLastMod.nonEmpty || minLastMod.nonEmpty
+      || maxSize > 0 || minSize > 0
+  }
+
   override def toString: String = {
     "FindSettings(" +
       "archivesOnly: " + archivesOnly +
@@ -81,6 +98,10 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", includeArchives: " + includeArchives +
       ", listDirs: " + listDirs +
       ", listFiles: " + listFiles +
+      ", maxLastMod: " + maxLastMod +
+      ", maxSize: " + maxSize +
+      ", minLastMod: " + minLastMod +
+      ", minSize: " + minSize +
       ", outArchiveExtensions: " + outArchiveExtensions +
       ", outArchiveFilePatterns: " + outArchiveFilePatterns +
       ", outDirPatterns: " + outDirPatterns +

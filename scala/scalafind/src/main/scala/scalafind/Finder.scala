@@ -6,7 +6,8 @@ import scalafind.Common.log
 import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
 import java.nio.file.{Files, Path, Paths}
-
+import java.nio.file.attribute.BasicFileAttributes
+import java.time.ZoneOffset
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
 import java.util.zip.{GZIPInputStream, ZipFile}
@@ -21,92 +22,7 @@ class Finder (settings: FindSettings) {
   import FileUtil.splitPath
   import Finder._
 
-  val fileExtTests: Seq[String => Boolean] = {
-    val _fileExtTests = mutable.ArrayBuffer.empty[String => Boolean]
-    if (settings.inExtensions.nonEmpty) {
-      val extTest = (ext: String) => settings.inExtensions.contains(ext)
-      _fileExtTests += extTest
-    }
-    if (settings.outExtensions.nonEmpty) {
-      val extTest = (ext: String) => !settings.outExtensions.contains(ext)
-      _fileExtTests += extTest
-    }
-    if (_fileExtTests.isEmpty) {
-      val extTest = (ext: String) => true
-      _fileExtTests += extTest
-    }
-    Seq.empty[String => Boolean] ++ _fileExtTests
-  }
-
-  val fileNameTests: Seq[String => Boolean] = {
-    val _fileNameTests = mutable.ArrayBuffer.empty[String => Boolean]
-    if (settings.inFilePatterns.nonEmpty) {
-      val nameTest = (fileName: String) => matchesAnyPattern(fileName, settings.inFilePatterns)
-      _fileNameTests += nameTest
-    }
-    if (settings.outFilePatterns.nonEmpty) {
-      val nameTest = (fileName: String) => !matchesAnyPattern(fileName, settings.outFilePatterns)
-      _fileNameTests += nameTest
-    }
-    if (_fileNameTests.isEmpty) {
-      val nameTest = (fileName: String) => true
-      _fileNameTests += nameTest
-    }
-    Seq.empty[String => Boolean] ++ _fileNameTests
-  }
-
-  val fileTypeTests: Seq[FileType => Boolean] = {
-    val _fileTypeTests = mutable.ArrayBuffer.empty[FileType => Boolean]
-    if (settings.inFileTypes.nonEmpty) {
-      val typeTest = (fileType: FileType) => settings.inFileTypes.contains(fileType)
-      _fileTypeTests += typeTest
-    }
-    if (settings.outFileTypes.nonEmpty) {
-      val typeTest = (fileType: FileType) => !settings.outFileTypes.contains(fileType)
-      _fileTypeTests += typeTest
-    }
-    if (_fileTypeTests.isEmpty) {
-      val typeTest = (fileType: FileType) => true
-      _fileTypeTests += typeTest
-    }
-    Seq.empty[FileType => Boolean] ++ _fileTypeTests
-  }
-
-  val archiveFileExtTests: Seq[String => Boolean] = {
-    val _archiveFileExtTests = mutable.ArrayBuffer.empty[String => Boolean]
-    if (settings.inArchiveExtensions.nonEmpty) {
-      val extTest = (ext: String) => settings.inArchiveExtensions.contains(ext)
-      _archiveFileExtTests += extTest
-    }
-    if (settings.outArchiveExtensions.nonEmpty) {
-      val extTest = (ext: String) => !settings.outArchiveExtensions.contains(ext)
-      _archiveFileExtTests += extTest
-    }
-    if (_archiveFileExtTests.isEmpty) {
-      val extTest = (ext: String) => true
-      _archiveFileExtTests += extTest
-    }
-    Seq.empty[String => Boolean] ++ _archiveFileExtTests
-  }
-
-  val archiveFileNameTests: Seq[String => Boolean] = {
-    val _archiveFileNameTests = mutable.ArrayBuffer.empty[String => Boolean]
-    if (settings.inArchiveFilePatterns.nonEmpty) {
-      val nameTest = (fileName: String) => matchesAnyPattern(fileName, settings.inArchiveFilePatterns)
-      _archiveFileNameTests += nameTest
-    }
-    if (settings.outArchiveFilePatterns.nonEmpty) {
-      val nameTest = (fileName: String) => !matchesAnyPattern(fileName, settings.outArchiveFilePatterns)
-      _archiveFileNameTests += nameTest
-    }
-    if (_archiveFileNameTests.isEmpty) {
-      val nameTest = (fileName: String) => true
-      _archiveFileNameTests += nameTest
-    }
-    Seq.empty[String => Boolean] ++ _archiveFileNameTests
-  }
-
-  def validateSettings(): Unit = {
+  private def validateSettings(): Unit = {
     settingsTests.foreach { t =>
       t(settings) match {
         case Some(err) => throw new FindException(err)
@@ -125,44 +41,85 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  def isMatchingFile(fileResult: FileResult): Boolean = {
-    isMatchingFile(fileResult.path.getFileName().toString(), fileResult.fileType)
-  }
-
-  def isMatchingFile(fileName: String, fileType: FileType): Boolean = {
-    (if (fileExtTests.nonEmpty) {
-      val ext = getExtension(fileName)
-      fileExtTests.forall(t => t(ext))
+  private def matchesExtension(fr: FileResult, inExtensions: Set[String], outExtensions: Set[String]): Boolean = {
+    if (inExtensions.nonEmpty || outExtensions.nonEmpty) {
+      val ext = getExtension(fr.path.getFileName().toString())
+      (inExtensions.isEmpty || inExtensions.contains(ext))
+        && (outExtensions.isEmpty || !outExtensions.contains(ext))
     } else {
       true
-    }) &&
-      fileNameTests.forall(t => t(fileName)) &&
-      fileTypeTests.forall(t => t(fileType))
+    }
   }
 
-  def isMatchingArchiveFile(fileName: String): Boolean = {
-    val ext = getExtension(fileName)
-    archiveFileExtTests.forall(t => t(ext)) &&
-      archiveFileNameTests.forall(t => t(fileName))
+  private def matchesPattern(fr: FileResult, inFilePatterns: Set[Regex], outFilePatterns: Set[Regex]): Boolean = {
+    if (inFilePatterns.nonEmpty || outFilePatterns.nonEmpty) {
+      val fileName = fr.path.getFileName().toString()
+      (inFilePatterns.isEmpty || matchesAnyPattern(fileName, inFilePatterns))
+        && (outFilePatterns.isEmpty || !matchesAnyPattern(fileName, outFilePatterns))
+    } else {
+      true
+    }
+  }
+
+  private def matchesFileType(fr: FileResult): Boolean = {
+    (settings.inFileTypes.isEmpty || settings.inFileTypes.contains(fr.fileType))
+      && (settings.outFileTypes.isEmpty || !settings.outFileTypes.contains(fr.fileType))
+  }
+
+  private def matchesStat(fr: FileResult): Boolean = {
+    (fr.stat: Option[BasicFileAttributes]) match {
+      case Some(st) =>
+        (settings.maxLastMod.isEmpty
+          || st.lastModifiedTime().toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) <= 0)
+        && (settings.minLastMod.isEmpty
+          || st.lastModifiedTime().toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
+        && (settings.maxSize == 0
+          || st.size.compareTo(settings.maxSize.toLong) <= 0)
+        && (settings.minSize == 0
+          || st.size.compareTo(settings.minSize.toLong) >= 0)
+      case _ => true
+    }
+  }
+
+  def isMatchingFileResult(fr: FileResult): Boolean = {
+    matchesExtension(fr, settings.inExtensions, settings.outExtensions)
+      && matchesPattern(fr, settings.inFilePatterns, settings.outFilePatterns)
+      && matchesFileType(fr)
+      && matchesStat(fr)
+  }
+
+  def isMatchingArchiveFileResult(fr: FileResult): Boolean = {
+    matchesExtension(fr, settings.inArchiveExtensions, settings.outArchiveExtensions)
+      && matchesPattern(fr, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
+//      && matchesStat(fr)
   }
 
   def filterToFileResult(f: Path): Option[FileResult] = {
-    val fileName = f.getFileName().toString()
     if (settings.excludeHidden && Files.isHidden(f)) {
       None
     } else {
-      val fileResult = new FileResult(f, FileTypes.getFileType(fileName))
+      val stat: Option[BasicFileAttributes] =
+        if (settings.needStat) {
+          try {
+            Some(Files.readAttributes(f, classOf[BasicFileAttributes]))
+          } catch {
+            _ => None
+          }
+        } else {
+          None
+        }
+      val fileResult = new FileResult(f, FileTypes.getFileType(f.getFileName().toString()), stat)
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None
         case FileType.Archive =>
-          if (settings.includeArchives && isMatchingArchiveFile(fileName)) {
+          if (settings.includeArchives && isMatchingArchiveFileResult(fileResult)) {
             Some(fileResult)
           } else {
             None
           }
         case _ =>
-          if (!settings.archivesOnly && isMatchingFile(fileName, fileResult.fileType)) {
+          if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
             Some(fileResult)
           } else {
             None
@@ -193,11 +150,15 @@ class Finder (settings: FindSettings) {
   def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
     val sortedFileResults =
       if (settings.sortBy == SortBy.FileName) {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2))
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2, settings.sortCaseInsensitive))
+      } else if (settings.sortBy == SortBy.FileSize) {
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareBySize(fr2, settings.sortCaseInsensitive))
       } else if (settings.sortBy == SortBy.FileType) {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2))
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2, settings.sortCaseInsensitive))
+      } else if (settings.sortBy == SortBy.LastMod) {
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
       } else {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2))
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2, settings.sortCaseInsensitive))
       }
     if (settings.sortDescending) {
       sortedFileResults.reverse
@@ -236,8 +197,6 @@ class Finder (settings: FindSettings) {
 }
 
 object Finder {
-  val currentPath = "."
-  val tarExtension = "tar"
 
   val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
     ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
@@ -245,38 +204,13 @@ object Finder {
     ss => if (ss.paths.forall { p => new File(p).canRead }) None else Some("Startpath not readable"),
   )
 
-  def listToString(stringList: Iterable[Any]): String = {
-    stringList.mkString("[\"", "\", \"", "\"]")
-  }
-
   def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
     patterns exists (_.findFirstMatchIn(s).isDefined)
-  }
-
-  def anyMatchesAnyPattern(strings: Seq[String], patterns: Set[Regex]): Boolean = {
-    strings exists (matchesAnyPattern(_, patterns))
   }
 
   def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]): Boolean = {
     ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
       &&
       (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
-  }
-
-  def linesMatch(lines: Seq[String], inPatterns: Set[Regex],
-                         outPatterns: Set[Regex]): Boolean = {
-    (inPatterns.isEmpty || anyMatchesAnyPattern(lines, inPatterns)) &&
-      (outPatterns.isEmpty || !anyMatchesAnyPattern(lines, outPatterns))
-  }
-
-  def getLineIndices(contents:String): Seq[(Int,Int)] = {
-    val newLineIndices = contents.zipWithIndex.collect { case ('\n',i) => i }
-    if (newLineIndices.nonEmpty) {
-      val lineIndices = mutable.ArrayBuffer[(Int,Int)]((0,newLineIndices.head))
-      lineIndices ++= newLineIndices.map(_ + 1).zip(newLineIndices.tail :+ contents.length)
-      lineIndices.toSeq
-    } else {
-      Seq[(Int,Int)]((0,contents.length-1))
-    }
   }
 }

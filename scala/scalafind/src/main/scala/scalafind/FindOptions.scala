@@ -7,6 +7,9 @@ import java.io.{File, IOException, InputStreamReader}
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
+import java.time.{LocalDateTime, LocalDate}
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
 
 case class FindOption(shortarg: Option[String], longarg: String, desc: String) {
   val sortarg: String = shortarg match {
@@ -27,7 +30,7 @@ object FindOptions {
     List.empty[FindOption] ++ _findOptions.sortWith(_.sortarg < _.sortarg)
   }
 
-  private def loadFindOptionsFromJson() = {
+  private def loadFindOptionsFromJson(): Unit = {
     try {
       val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
       val obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream))
@@ -58,6 +61,19 @@ object FindOptions {
     extensions ++ exts.split(",").filterNot(_.isEmpty)
   }
 
+  private def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
+    try {
+      Some(LocalDateTime.parse(lastModString))
+    } catch {
+      _ => try {
+        val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+        Some(maxLastModDate.atTime(0, 0, 0))
+      } catch {
+        _ => None
+      }
+    }
+  }
+
   type ArgAction = (String, FindSettings) => FindSettings
 
   private val argActionMap = Map[String, ArgAction](
@@ -73,6 +89,14 @@ object FindOptions {
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
       ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileTypes.fromName(s))),
+    "maxlastmod" ->
+      ((s, ss) => ss.copy(maxLastMod = getLastModFromString(s))),
+    "maxsize" ->
+      ((s, ss) => ss.copy(maxSize = s.toInt)),
+    "minlastmod" ->
+      ((s, ss) => ss.copy(minLastMod = getLastModFromString(s))),
+    "minsize" ->
+      ((s, ss) => ss.copy(minSize = s.toInt)),
     "out-archiveext" ->
       ((s, ss) => ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions))),
     "out-archivefilepattern" ->
