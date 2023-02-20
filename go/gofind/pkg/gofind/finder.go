@@ -201,7 +201,7 @@ func (f *Finder) Find() (*FileResults, error) {
 	}
 
 	// sort the results
-	f.fileResults.Sort(f.Settings.SortBy, f.Settings.SortDescending)
+	f.fileResults.Sort(f.Settings)
 
 	return f.fileResults, nil
 }

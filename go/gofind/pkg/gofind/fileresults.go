@@ -121,37 +121,66 @@ func (fr *FileResults) PrintMatchingFiles() {
 	}
 }
 
-func (fr *FileResults) sortByPath(i, j int) bool {
-	if fr.results[i].Path == fr.results[j].Path {
-		return fr.results[i].Name < fr.results[j].Name
+func compareStrings(str1, str2 string, sortCaseInsensitive bool) int {
+	s1 := str1
+	if sortCaseInsensitive {
+		s1 = strings.ToLower(s1)
 	}
-	return fr.results[i].Path < fr.results[j].Path
+	s2 := str2
+	if sortCaseInsensitive {
+		s2 = strings.ToLower(s2)
+	}
+	if s1 == s2 {
+		return 0
+	}
+	if s1 < s2 {
+		return -1
+	}
+	return 1
 }
 
-func (fr *FileResults) sortByName(i, j int) bool {
-	if fr.results[i].Name == fr.results[j].Name {
-		return fr.results[i].Path < fr.results[j].Path
+func (fr *FileResults) getSortByPath(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		pres := compareStrings(fr.results[i].Path, fr.results[j].Path, sortCaseInsensitive)
+		if pres == 0 {
+			fres := compareStrings(fr.results[i].Name, fr.results[j].Name, sortCaseInsensitive)
+			return fres < 0
+		}
+		return pres < 0
 	}
-	return fr.results[i].Name < fr.results[j].Name
 }
 
-func (fr *FileResults) sortByType(i, j int) bool {
-	if fr.results[i].FileType == fr.results[j].FileType {
-		return fr.sortByPath(i, j)
+func (fr *FileResults) getSortByName(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		fres := compareStrings(fr.results[i].Name, fr.results[j].Name, sortCaseInsensitive)
+		if fres == 0 {
+			pres := compareStrings(fr.results[i].Path, fr.results[j].Path, sortCaseInsensitive)
+			return pres < 0
+		}
+		return fres < 0
 	}
-	return fr.results[i].FileType < fr.results[j].FileType
 }
 
-func (fr *FileResults) Sort(sortBy SortBy, sortDescending bool) {
-	switch sortBy {
+func (fr *FileResults) getSortByType(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		if fr.results[i].FileType == fr.results[j].FileType {
+			sortByPath := fr.getSortByPath(sortCaseInsensitive)
+			return sortByPath(i, j)
+		}
+		return fr.results[i].FileType < fr.results[j].FileType
+	}
+}
+
+func (fr *FileResults) Sort(settings *FindSettings) {
+	switch settings.SortBy {
 	case SortByFilename:
-		sort.Slice(fr.results, fr.sortByName)
+		sort.Slice(fr.results, fr.getSortByName(settings.SortCaseInsensitive))
 	case SortByFiletype:
-		sort.Slice(fr.results, fr.sortByType)
+		sort.Slice(fr.results, fr.getSortByType(settings.SortCaseInsensitive))
 	default:
-		sort.Slice(fr.results, fr.sortByPath)
+		sort.Slice(fr.results, fr.getSortByPath(settings.SortCaseInsensitive))
 	}
-	if sortDescending {
+	if settings.SortDescending {
 		fr.reverse()
 	}
 }

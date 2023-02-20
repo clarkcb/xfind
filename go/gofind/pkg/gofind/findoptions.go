@@ -308,6 +308,12 @@ func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"sort-ascending": func(b bool, settings *FindSettings) {
 			settings.SortDescending = !b
 		},
+		"sort-caseinsensitive": func(b bool, settings *FindSettings) {
+			settings.SortCaseInsensitive = b
+		},
+		"sort-casesensitive": func(b bool, settings *FindSettings) {
+			settings.SortCaseInsensitive = !b
+		},
 		"sort-descending": func(b bool, settings *FindSettings) {
 			settings.SortDescending = b
 		},

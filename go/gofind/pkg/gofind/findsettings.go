@@ -61,6 +61,7 @@ type FindSettings struct {
 	PrintVersion           bool
 	Recursive              bool
 	SortBy                 SortBy
+	SortCaseInsensitive    bool
 	SortDescending         bool
 	Verbose                bool
 }
@@ -90,6 +91,7 @@ func GetDefaultFindSettings() *FindSettings {
 		false,             // PrintVersion
 		true,              // Recursive
 		SortByFilepath,    // SortBy
+		false,             // SortCaseInsensitive
 		false,             // SortDescending
 		false,             // Verbose
 	}
@@ -210,6 +212,7 @@ func (f *FindSettings) String() string {
 		", PrintVersion: %t" +
 		", Recursive: %t" +
 		", SortBy: %s" +
+		", SortCaseInsensitive: %t" +
 		", SortDescending: %t" +
 		", Verbose: %t}"
 	return fmt.Sprintf(template,
@@ -236,6 +239,7 @@ func (f *FindSettings) String() string {
 		f.PrintVersion,
 		f.Recursive,
 		getNameForSortBy(f.SortBy),
+		f.SortCaseInsensitive,
 		f.SortDescending,
 		f.Verbose,
 	)
