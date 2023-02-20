@@ -62,6 +62,7 @@ func (fr *FileResults) AddResult(r *FileResult) {
 		r.Path,
 		r.Name,
 		r.FileType,
+		r.FileInfo,
 	})
 }
 
@@ -161,6 +162,16 @@ func (fr *FileResults) getSortByName(sortCaseInsensitive bool) func(i, j int) bo
 	}
 }
 
+func (fr *FileResults) getSortBySize(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		if fr.results[i].FileInfo.Size() == fr.results[j].FileInfo.Size() {
+			sortByPath := fr.getSortByPath(sortCaseInsensitive)
+			return sortByPath(i, j)
+		}
+		return fr.results[i].FileInfo.Size() < fr.results[j].FileInfo.Size()
+	}
+}
+
 func (fr *FileResults) getSortByType(sortCaseInsensitive bool) func(i, j int) bool {
 	return func(i, j int) bool {
 		if fr.results[i].FileType == fr.results[j].FileType {
@@ -171,12 +182,26 @@ func (fr *FileResults) getSortByType(sortCaseInsensitive bool) func(i, j int) bo
 	}
 }
 
+func (fr *FileResults) getSortByLastMod(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		if fr.results[i].FileInfo.ModTime().Equal(fr.results[j].FileInfo.ModTime()) {
+			sortByPath := fr.getSortByPath(sortCaseInsensitive)
+			return sortByPath(i, j)
+		}
+		return fr.results[i].FileInfo.ModTime().Before(fr.results[j].FileInfo.ModTime())
+	}
+}
+
 func (fr *FileResults) Sort(settings *FindSettings) {
 	switch settings.SortBy {
 	case SortByFilename:
 		sort.Slice(fr.results, fr.getSortByName(settings.SortCaseInsensitive))
+	case SortByFilesize:
+		sort.Slice(fr.results, fr.getSortBySize(settings.SortCaseInsensitive))
 	case SortByFiletype:
 		sort.Slice(fr.results, fr.getSortByType(settings.SortCaseInsensitive))
+	case SortByLastmod:
+		sort.Slice(fr.results, fr.getSortByLastMod(settings.SortCaseInsensitive))
 	default:
 		sort.Slice(fr.results, fr.getSortByPath(settings.SortCaseInsensitive))
 	}
@@ -196,14 +221,16 @@ type FileResult struct {
 	Path       string
 	Name       string
 	FileType   FileType
+	FileInfo   os.FileInfo
 }
 
-func NewFileResult(path string, name string, fileType FileType) *FileResult {
+func NewFileResult(path string, name string, fileType FileType, fi os.FileInfo) *FileResult {
 	return &FileResult{
 		[]string{},
 		path,
 		name,
 		fileType,
+		fi,
 	}
 }
 

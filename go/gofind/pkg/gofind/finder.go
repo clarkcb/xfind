@@ -81,7 +81,7 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 		(f.Settings.OutFilePatterns.IsEmpty() || !f.Settings.OutFilePatterns.MatchesAny(fr.Name))
 }
 
-func (f *Finder) FilePathToFileResult(filePath string) *FileResult {
+func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResult {
 	dir, file := filepath.Split(filePath)
 	if dir == "" {
 		dir = "."
@@ -89,14 +89,26 @@ func (f *Finder) FilePathToFileResult(filePath string) *FileResult {
 		dir = normalizePath(dir)
 	}
 	t := f.fileTypes.getFileType(file)
-	return NewFileResult(dir, file, t)
+	return NewFileResult(dir, file, t, fi)
 }
 
-func (f *Finder) filterToFileResult(filePath string) *FileResult {
+func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
 	if f.Settings.ExcludeHidden && isHidden(filePath) {
 		return nil
 	}
-	fr := f.FilePathToFileResult(filePath)
+	if !f.Settings.MaxLastMod.IsZero() && fi.ModTime().After(f.Settings.MaxLastMod) {
+		return nil
+	}
+	if !f.Settings.MinLastMod.IsZero() && fi.ModTime().Before(f.Settings.MinLastMod) {
+		return nil
+	}
+	if f.Settings.MaxSize > 0 && fi.Size() > f.Settings.MaxSize {
+		return nil
+	}
+	if f.Settings.MinSize > 0 && fi.Size() < f.Settings.MinSize {
+		return nil
+	}
+	fr := f.FilePathToFileResult(filePath, fi)
 	if fr.FileType == FiletypeArchive {
 		if f.Settings.IncludeArchives && f.isMatchingArchiveFileResult(fr) {
 			return fr
@@ -109,10 +121,10 @@ func (f *Finder) filterToFileResult(filePath string) *FileResult {
 	return nil
 }
 
-func (f *Finder) checkAddFileResult(filePath string) {
+func (f *Finder) checkAddFileResult(filePath string, fi os.FileInfo) {
 	path, _ := filepath.Split(filePath)
 	if f.isMatchingDir(path) {
-		fileResult := f.filterToFileResult(filePath)
+		fileResult := f.filterToFileResult(filePath, fi)
 		if fileResult != nil {
 			f.addResultChan <- fileResult
 		}
@@ -128,7 +140,7 @@ func (f *Finder) checkAddFindWalkFile(filePath string, fi os.FileInfo, err error
 	if fi.IsDir() && !f.isMatchingDir(fi.Name()) {
 		return filepath.SkipDir
 	} else if fi.Mode().IsRegular() {
-		f.checkAddFileResult(filePath)
+		f.checkAddFileResult(filePath, fi)
 	}
 	return nil
 }
@@ -157,11 +169,11 @@ func (f *Finder) setFileResults() error {
 				}
 
 				for _, entry := range entries {
-					f.checkAddFileResult(filepath.Join(p, entry.Name()))
+					f.checkAddFileResult(filepath.Join(p, entry.Name()), fi)
 				}
 			}
 		} else if fi.Mode().IsRegular() {
-			f.checkAddFileResult(p)
+			f.checkAddFileResult(p, fi)
 		}
 	}
 

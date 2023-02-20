@@ -2,7 +2,9 @@ package gofind
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type SortBy int
@@ -10,18 +12,23 @@ type SortBy int
 const (
 	SortByFilepath SortBy = iota
 	SortByFilename SortBy = iota
+	SortByFilesize SortBy = iota
 	SortByFiletype SortBy = iota
+	SortByLastmod  SortBy = iota
 )
 
 func getSortByForName(name string) SortBy {
-	if strings.ToUpper(name) == "PATH" {
-		return SortByFilepath
-	}
 	if strings.ToUpper(name) == "NAME" {
 		return SortByFilename
 	}
+	if strings.ToUpper(name) == "SIZE" {
+		return SortByFilesize
+	}
 	if strings.ToUpper(name) == "TYPE" {
 		return SortByFiletype
+	}
+	if strings.ToUpper(name) == "LASTMOD" {
+		return SortByLastmod
 	}
 	return SortByFilepath
 }
@@ -30,8 +37,14 @@ func getNameForSortBy(sortBy SortBy) string {
 	if sortBy == SortByFilename {
 		return "NAME"
 	}
+	if sortBy == SortByFilesize {
+		return "SIZE"
+	}
 	if sortBy == SortByFiletype {
 		return "TYPE"
+	}
+	if sortBy == SortByLastmod {
+		return "LASTMOD"
 	}
 	return "PATH"
 }
@@ -50,6 +63,10 @@ type FindSettings struct {
 	IncludeArchives        bool
 	ListDirs               bool
 	ListFiles              bool
+	MaxLastMod             time.Time
+	MaxSize                int64
+	MinLastMod             time.Time
+	MinSize                int64
 	OutArchiveExtensions   []string
 	OutArchiveFilePatterns *FindPatterns
 	OutDirPatterns         *FindPatterns
@@ -80,6 +97,10 @@ func GetDefaultFindSettings() *FindSettings {
 		false,             // IncludeArchives
 		false,             // ListDirs
 		false,             // ListFiles
+		time.Time{},       // MaxLastMod
+		0,                 // MaxSize
+		time.Time{},       // MinLastMod
+		0,                 // MinSize
 		[]string{},        // OutArchiveExtensions
 		NewFindPatterns(), // OutArchiveFilePatterns
 		NewFindPatterns(), // OutDirPatterns
@@ -183,8 +204,52 @@ func (f *FindSettings) SetDebug(debug bool) {
 	}
 }
 
+func (f *FindSettings) getLastMod(timeStr string) time.Time {
+	t, err := time.Parse(time.RFC3339, timeStr)
+	if err != nil {
+		t, err = time.Parse("2006-01-02", timeStr)
+	}
+	if err != nil {
+		//fmt.Print(fmt.Sprintf("error: %s", err))
+		return time.Time{}
+	}
+	return t
+}
+
+func (f *FindSettings) SetMaxLastMod(timeStr string) {
+	f.MaxLastMod = f.getLastMod(timeStr)
+}
+
+func (f *FindSettings) SetMinLastMod(timeStr string) {
+	f.MinLastMod = f.getLastMod(timeStr)
+}
+
+func (f *FindSettings) getSize(sizeStr string) int64 {
+	size, err := strconv.ParseInt(sizeStr, 0, 64)
+	if err != nil {
+		//fmt.Print(fmt.Sprintf("error: %s", err))
+		return 0
+	}
+	return size
+}
+
+func (f *FindSettings) SetMaxSize(sizeStr string) {
+	f.MaxSize = f.getSize(sizeStr)
+}
+
+func (f *FindSettings) SetMinSize(sizeStr string) {
+	f.MinSize = f.getSize(sizeStr)
+}
+
 func (f *FindSettings) SetSortBy(sortBy string) {
 	f.SortBy = getSortByForName(sortBy)
+}
+
+func lastModToString(t time.Time) string {
+	if t.IsZero() {
+		return "0"
+	}
+	return fmt.Sprintf("\"%s\"", t.String())
 }
 
 func (f *FindSettings) String() string {
@@ -201,6 +266,10 @@ func (f *FindSettings) String() string {
 		", IncludeArchives: %t" +
 		", ListDirs: %t" +
 		", ListFiles: %t" +
+		", MaxLastMod: %s" +
+		", MaxSize: %d" +
+		", MinLastMod: %s" +
+		", MinSize: %d" +
 		", OutArchiveExtensions: %s" +
 		", OutArchiveFilePatterns: %s" +
 		", OutDirPatterns: %s" +
@@ -228,6 +297,10 @@ func (f *FindSettings) String() string {
 		f.IncludeArchives,
 		f.ListDirs,
 		f.ListFiles,
+		lastModToString(f.MaxLastMod),
+		f.MaxSize,
+		lastModToString(f.MinLastMod),
+		f.MinSize,
 		stringListToString(f.OutArchiveExtensions),
 		findPatternsToString(f.OutArchiveFilePatterns),
 		findPatternsToString(f.OutDirPatterns),

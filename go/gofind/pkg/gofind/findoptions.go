@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -23,7 +22,7 @@ type FindOptions struct {
 
 func FindOptionsFromJson() (*FindOptions, error) {
 	config := NewConfig()
-	data, err := ioutil.ReadFile(config.FINDOPTIONSPATH)
+	data, err := os.ReadFile(config.FINDOPTIONSPATH)
 	if err != nil {
 		return &FindOptions{}, err
 	}
@@ -43,7 +42,7 @@ func NewFindOptions() *FindOptions {
 }
 
 func (so *FindOptions) SettingsFromFile(filepath string, settings *FindSettings) error {
-	if data, err := ioutil.ReadFile(filepath); err != nil {
+	if data, err := os.ReadFile(filepath); err != nil {
 		return err
 	} else {
 		return so.SettingsFromJson(data, settings)
@@ -229,6 +228,18 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 		},
 		"in-filetype": func(s string, settings *FindSettings) {
 			settings.AddInFileType(getFileTypeForName(s))
+		},
+		"maxlastmod": func(s string, settings *FindSettings) {
+			settings.SetMaxLastMod(s)
+		},
+		"maxsize": func(s string, settings *FindSettings) {
+			settings.SetMaxSize(s)
+		},
+		"minlastmod": func(s string, settings *FindSettings) {
+			settings.SetMinLastMod(s)
+		},
+		"minsize": func(s string, settings *FindSettings) {
+			settings.SetMinSize(s)
 		},
 		"out-archiveext": func(s string, settings *FindSettings) {
 			settings.AddOutArchiveExtension(s)
