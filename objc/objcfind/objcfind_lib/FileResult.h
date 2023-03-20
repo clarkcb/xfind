@@ -6,11 +6,14 @@
 @property NSArray<NSString*> *containers;
 @property NSString *filePath;
 @property FileType fileType;
+@property NSDictionary<NSFileAttributeKey, id> *stat;
 
-- (instancetype) initWithFilePath:(NSString*)filePath fileType:(FileType)fileType;
+- (instancetype) initWithFilePath:(NSString*)filePath fileType:(FileType)fileType stat:(NSDictionary<NSFileAttributeKey, id>*)stat;
 - (NSString *) description;
-- (NSComparisonResult)compareByPath:(FileResult *)otherFileResult;
-- (NSComparisonResult)compareByName:(FileResult *)otherFileResult;
-- (NSComparisonResult)compareByType:(FileResult *)otherFileResult;
+- (NSComparisonResult)compareByPath:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareByName:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareBySize:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareByType:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
+- (NSComparisonResult)compareByLastMod:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
 
 @end

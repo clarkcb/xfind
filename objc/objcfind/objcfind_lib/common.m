@@ -40,3 +40,21 @@ NSString* arrayToNSString(NSArray *arr) {
     [arrString appendString:@"]"];
     return [NSString stringWithString:arrString];
 }
+
+NSString* dateToNSString(NSDate *date) {
+    if (date == nil) {
+        return @"";
+    }
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:[NSString stringWithUTF8String:DATE_FORMAT]];
+    return [dateFormat stringFromDate:date];
+}
+
+NSDate* stringToNSDate(NSString *dateStr) {
+    if (dateStr == nil) {
+        return nil;
+    }
+    NSDateFormatter *dateFormat = [[NSDateFormatter alloc] init];
+    [dateFormat setDateFormat:[NSString stringWithUTF8String:DATE_FORMAT]];
+    return [dateFormat dateFromString:dateStr];
+}

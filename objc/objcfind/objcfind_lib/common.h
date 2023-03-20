@@ -14,7 +14,12 @@
 // sort-by names
 #define S_FILEPATH "path"
 #define S_FILENAME "name"
+#define S_FILESIZE "size"
 #define S_FILETYPE "type"
+#define S_LASTMOD "lastmod"
+
+// the accepted date format
+#define DATE_FORMAT "yyyy-MM-dd"
 
 // file type enum
 typedef enum {
@@ -30,7 +35,9 @@ typedef enum {
 typedef enum {
     SortByFilePath = 1,
     SortByFileName,
-    SortByFileType
+    SortByFileSize,
+    SortByFileType,
+    SortByLastMod
 } SortBy;
 
 // common functions
@@ -39,5 +46,7 @@ void logError(NSString *s);
 void setError(NSError **e, NSString *msg);
 NSString * boolToNSString(BOOL b);
 NSString * arrayToNSString(NSArray *arr);
+NSString* dateToNSString(NSDate *date);
+NSDate* stringToNSDate(NSString *dateStr);
 
 #endif /* common_h */

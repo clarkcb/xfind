@@ -23,6 +23,11 @@
 @property(nonatomic) BOOL sortDescending;
 @property(nonatomic) BOOL verbose;
 
+@property(nonatomic) NSDate *maxLastMod;
+@property(nonatomic) NSInteger maxSize;
+@property(nonatomic) NSDate *minLastMod;
+@property(nonatomic) NSInteger minSize;
+
 @property(nonatomic) NSMutableArray<NSString*> *inArchiveExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *inArchiveFilePatterns;
 @property(nonatomic) NSMutableArray<Regex*> *inDirPatterns;
@@ -53,6 +58,11 @@
 - (void) addOutFilePattern:(NSString*)pattern;
 - (void) addPath:(NSString*)path;
 
+- (void) setMaxLastModFromString:(NSString*)sizeStr;
+- (void) setMaxSizeFromString:(NSString*)sizeStr;
+- (void) setMinLastModFromString:(NSString*)sizeStr;
+- (void) setMinSizeFromString:(NSString*)sizeStr;
+
 + (SortBy) getSortByFromName:(NSString*)sortByName;
 + (NSString *) getNameFromSortBy:(SortBy)sortBy;
 - (void) setSortByFromName:(NSString*)sortByName;
@@ -60,6 +70,8 @@
 - (void) addFileType:(NSString*)typeName toArr:(NSMutableArray *)arr;
 - (void) addInFileType:(NSString*)typeName;
 - (void) addOutFileType:(NSString*)typeName;
+
+- (BOOL) needStat;
 
 //- (void) setArchivesOnly: (BOOL)b;
 

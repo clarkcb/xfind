@@ -73,6 +73,26 @@
             ([outFileTypes count] == 0 || ![outFileTypes containsObject:num]));
 }
 
+- (BOOL) filterByStat:(NSDictionary<NSFileAttributeKey, id>*)stat {
+    if (stat != nil) {
+        if ([self.settings maxLastMod] != nil || [self.settings minLastMod] != nil) {
+            NSDate *lastMod = [stat fileModificationDate];
+            if (([self.settings maxLastMod] != nil && [lastMod isGreaterThan:[self.settings maxLastMod]]) ||
+                ([self.settings minLastMod] != nil && [lastMod isLessThan:[self.settings minLastMod]])) {
+                return false;
+            }
+        }
+        if ([self.settings maxSize] > 0 || [self.settings minSize] > 0) {
+            NSNumber *fileSize = [[NSNumber alloc] initWithUnsignedLongLong:[stat fileSize]];
+            if (([self.settings maxSize] > 0 && [fileSize longValue] > (long)[self.settings maxSize]) ||
+                ([self.settings minSize] > 0 && [fileSize longValue] < (long)[self.settings minSize])) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
 - (BOOL) isMatchingDir:(NSString*)dirPath {
     if (self.settings.excludeHidden && [FileUtil isHidden:dirPath]) {
         return false;
@@ -104,15 +124,20 @@
 
 - (BOOL) isMatchingFileResult:(FileResult*)fileResult {
     NSString *fileName = [[fileResult filePath] lastPathComponent];
-    return [self filterByExtensions:[FileUtil getExtension:fileName]
-                       inExtensions:self.settings.inExtensions
-                      outExtensions:self.settings.outExtensions] &&
+    BOOL filterByExtensions = true;
+    if ([self.settings.inExtensions count] > 0 || [self.settings.outExtensions count] > 0) {
+        filterByExtensions = [self filterByExtensions:[FileUtil getExtension:fileName]
+                                         inExtensions:self.settings.inExtensions
+                                        outExtensions:self.settings.outExtensions];
+    }
+    return filterByExtensions &&
     [self filterByPatterns:fileName
                 inPatterns:self.settings.inFilePatterns
                outPatterns:self.settings.outFilePatterns] &&
     [self filterByFileTypes:[fileResult fileType]
                 inFileTypes:self.settings.inFileTypes
-               outFileTypes:self.settings.outFileTypes];
+               outFileTypes:self.settings.outFileTypes] &&
+    [self filterByStat:[fileResult stat]];
 }
 
 - (FileResult*) filterToFileResult:(NSString*)filePath {
@@ -120,7 +145,11 @@
         return false;
     }
     FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
-    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType];
+    NSDictionary<NSFileAttributeKey, id> *stat = nil;
+    if ([self.settings needStat]) {
+        stat = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:nil];
+    }
+    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType stat:stat];
     if (fileType == FileTypeArchive) {
         if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {
             return fr;
@@ -157,32 +186,30 @@
         }
         element = (NSURL*)[enumerator nextObject];
     }
-    return [[NSArray arrayWithArray:fileResults]
-            sortedArrayUsingComparator:^NSComparisonResult(FileResult *sf1, FileResult *sf2) {
-        NSString *p1 = [[sf1 description] stringByDeletingLastPathComponent];
-        NSString *p2 = [[sf2 description] stringByDeletingLastPathComponent];
-        if ([p1 isEqualToString:p2]) {
-            NSString *f1 = [[sf1 description] lastPathComponent];
-            NSString *f2 = [[sf2 description] lastPathComponent];
-            return [f1 compare:f2];
-        }
-        return [p1 compare:p2];
-    }];
+    return [NSArray arrayWithArray:fileResults];
 }
 
 - (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults {
-    NSMutableArray<FileResult*> *sortedFileResults = [NSMutableArray array];
+    NSMutableArray<FileResult*> *sortedFileResults;
     if (self.settings.sortBy == SortByFileName) {
         sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByName:fr2];
+            return [fr1 compareByName:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+        }]];
+    } else if (self.settings.sortBy == SortByFileSize) {
+        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+            return [fr1 compareBySize:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
         }]];
     } else if (self.settings.sortBy == SortByFileType) {
         sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByType:fr2];
+            return [fr1 compareByType:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+        }]];
+    } else if (self.settings.sortBy == SortByLastMod) {
+        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+            return [fr1 compareByLastMod:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
         }]];
     } else {
         sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByPath:fr2];
+            return [fr1 compareByPath:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
         }]];
     }
     if (self.settings.sortDescending) {

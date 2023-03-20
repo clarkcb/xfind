@@ -12,7 +12,8 @@
     NSString *path = @"/Users/cary/src/xfind/objc/objcfind/objcfind/FileResult.m";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
-                              fileType:FileTypeCode];
+                              fileType:FileTypeCode
+                              stat:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }
@@ -21,7 +22,8 @@
     NSString *path = @"~/src/xfind/objc/objcfind/objcfind/FileResult.m";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
-                              fileType:FileTypeCode];
+                              fileType:FileTypeCode
+                              stat:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }
@@ -30,7 +32,8 @@
     NSString *path = @"./FileResult.m";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
-                              fileType:FileTypeCode];
+                              fileType:FileTypeCode
+                              stat:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }
@@ -39,7 +42,8 @@
     NSString *path = @"../FileResult.m";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
-                              fileType:FileTypeCode];
+                              fileType:FileTypeCode
+                              stat:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }

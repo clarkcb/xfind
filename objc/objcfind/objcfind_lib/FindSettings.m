@@ -23,6 +23,11 @@
         self.sortDescending = false;
         self.verbose = false;
 
+        self.maxLastMod = nil;
+        self.maxSize = 0;
+        self.minLastMod = nil;
+        self.minSize = 0;
+
         self.inArchiveExtensions = [[NSMutableArray alloc] init];
         self.inArchiveFilePatterns = [[NSMutableArray alloc] init];
         self.inDirPatterns = [[NSMutableArray alloc] init];
@@ -55,6 +60,10 @@
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
     [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
     [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
+    [d appendFormat:@", maxLastMod=%@", lastModToNSString(self.maxLastMod)];
+    [d appendFormat:@", maxSize=%lu", (long)self.maxSize];
+    [d appendFormat:@", minLastMod=%@", lastModToNSString(self.minLastMod)];
+    [d appendFormat:@", minSize=%lu", (long)self.minSize];
     [d appendFormat:@", outArchiveExtensions=%@", arrayToNSString(self.outArchiveExtensions)];
     [d appendFormat:@", outArchiveFilePatterns=%@", arrayToNSString(self.outArchiveFilePatterns)];
     [d appendFormat:@", outDirPatterns=%@", arrayToNSString(self.outDirPatterns)];
@@ -166,13 +175,35 @@
     }
 }
 
+- (void) setMaxLastModFromString:(NSString*)dateStr {
+    [self setMaxLastMod:stringToNSDate(dateStr)];
+}
+
+- (void) setMaxSizeFromString:(NSString*)sizeStr {
+    [self setMaxSize:[sizeStr intValue]];
+}
+
+- (void) setMinLastModFromString:(NSString*)dateStr {
+    [self setMinLastMod:stringToNSDate(dateStr)];
+}
+
+- (void) setMinSizeFromString:(NSString*)sizeStr {
+    [self setMinSize:[sizeStr intValue]];
+}
+
 + (SortBy)getSortByFromName:(NSString *)sortByName {
     NSString *lname = [sortByName lowercaseString];
     if (lname == [NSString stringWithUTF8String:S_FILENAME]) {
         return SortByFileName;
     }
+    if (lname == [NSString stringWithUTF8String:S_FILESIZE]) {
+        return SortByFileSize;
+    }
     if (lname == [NSString stringWithUTF8String:S_FILETYPE]) {
         return SortByFileType;
+    }
+    if (lname == [NSString stringWithUTF8String:S_LASTMOD]) {
+        return SortByLastMod;
     }
     return SortByFilePath;
 }
@@ -181,8 +212,14 @@
     if (sortBy == SortByFileName) {
         return [NSString stringWithUTF8String:S_FILENAME];
     }
+    if (sortBy == SortByFileSize) {
+        return [NSString stringWithUTF8String:S_FILESIZE];
+    }
     if (sortBy == SortByFileType) {
         return [NSString stringWithUTF8String:S_FILETYPE];
+    }
+    if (sortBy == SortByLastMod) {
+        return [NSString stringWithUTF8String:S_LASTMOD];
     }
     return [NSString stringWithUTF8String:S_FILEPATH];
 }
@@ -190,6 +227,13 @@
 - (void) setSortByFromName:(NSString*)sortByName {
     self.sortBy = [FindSettings getSortByFromName:sortByName];
 
+}
+
+NSString* lastModToNSString(NSDate *lastMod) {
+    if (lastMod == nil) {
+        return @"0";
+    }
+    return dateToNSString(lastMod);
 }
 
 NSString* fileTypesArrayToNSString(NSArray<NSNumber*> *arr) {
@@ -203,6 +247,12 @@ NSString* fileTypesArrayToNSString(NSArray<NSNumber*> *arr) {
     }
     [arrString appendString:@"]"];
     return [NSString stringWithString:arrString];
+}
+
+- (BOOL) needStat {
+    return self.sortBy == SortByFileSize || self.sortBy == SortByLastMod ||
+    self.maxLastMod != nil || self.minLastMod != nil ||
+    self.maxSize > 0 || self.minSize > 0;
 }
 
 @end
