@@ -9,12 +9,15 @@
 import Foundation
 
 struct FindOption {
-    let short: String
-    let long: String
+    let shortArg: String?
+    let longArg: String
     let desc: String
 
     var sortArg: String {
-        (short.isEmpty ? short.lowercased() + "@" : "") + long
+        if shortArg != nil && !shortArg!.isEmpty {
+            return shortArg!.lowercased() + "@" + longArg.lowercased()
+        }
+        return longArg.lowercased()
     }
 }
 
@@ -36,15 +39,14 @@ public class FindOptions {
                 if let options = json["findoptions"] as? [[String: Any]] {
                     for so in options {
                         let longArg = so["long"] as! String
-                        let shortArg = so.index(forKey: "short") != nil ? so["short"] as! String : ""
+                        let shortArg = so.index(forKey: "short") != nil ? (so["short"] as! String) : nil
                         let desc = so["desc"] as! String
-                        findOptions.append(FindOption(short: shortArg, long: longArg, desc: desc))
+                        findOptions.append(FindOption(shortArg: shortArg, longArg: longArg, desc: desc))
                     }
-                    findOptions.sort(by: { $0.sortArg < $1.sortArg })
                     for opt in findOptions {
-                        longArgDict[opt.long] = opt.long
-                        if !opt.short.isEmpty {
-                            longArgDict[opt.short] = opt.long
+                        longArgDict[opt.longArg] = opt.longArg
+                        if opt.shortArg != nil && !opt.shortArg!.isEmpty {
+                            longArgDict[opt.shortArg!] = opt.longArg
                         }
                     }
                 }
@@ -77,6 +79,18 @@ public class FindOptions {
             },
             "out-archiveext": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutArchiveExtension(str)
+            },
+            "maxlastmod": { (str: String, settings: FindSettings) -> Void in
+                settings.setMaxLastModFromString(str)
+            },
+            "maxsize": { (str: String, settings: FindSettings) -> Void in
+                settings.setMaxSizeFromString(str)
+            },
+            "minlastmod": { (str: String, settings: FindSettings) -> Void in
+                settings.setMinSizeFromString(str)
+            },
+            "minsize": { (str: String, settings: FindSettings) -> Void in
+                settings.setMinSizeFromString(str)
             },
             "out-archivefilepattern": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutArchiveFilePattern(str)
@@ -273,9 +287,20 @@ public class FindOptions {
     func getUsageString() -> String {
         var str = "\nUsage:\n swiftfind [options] <path> [<path> ...]\n\n"
         str += "Options:\n"
+        findOptions.sort(by: { $0.sortArg < $1.sortArg })
+
         let optStrings = findOptions.map {
-            $0.short.isEmpty ? "--\($0.long)" : "-\($0.short),--\($0.long)"
+            switch ($0.shortArg, $0.longArg) {
+                // Order errors by code
+            case let (nil, longArg):
+                return "--\(longArg)"
+            case let ("", longArg):
+                return "--\(longArg)"
+            case let (shortArg, longArg):
+                return "-\(shortArg!),--\(longArg)"
+            }
         }
+
         let optDescs = findOptions.map(\.desc)
         let longest = optStrings.map { $0.lengthOfBytes(using: String.Encoding.utf8) }.max()!
         for i in 0 ..< optStrings.count {

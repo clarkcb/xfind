@@ -8,6 +8,8 @@
 
 import Foundation
 
+public let ISO_DATE_FORMAT = "yyyy-MM-dd"
+
 public let whitespace = CharacterSet(charactersIn: " \t\r\n")
 
 public func logMsg(_ str: String) {
@@ -52,6 +54,20 @@ func arrayToString(_ arr: [Regex]) -> String {
 
 func setToString(_ set: Set<String>) -> String {
     arrayToString(Array(set.sorted()))
+}
+
+func dateToString(_ date: Date?) -> String {
+    if date == nil {
+        return "0"
+    } else {
+        return date!.description
+    }
+}
+
+func stringToDate(_ s: String) -> Date? {
+    let formatter: DateFormatter = DateFormatter()
+    formatter.dateFormat = ISO_DATE_FORMAT
+    return formatter.date(from: s)
 }
 
 func take<T>(_ seq: [T], num: Int) -> [T] {

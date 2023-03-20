@@ -6,10 +6,10 @@
 //  Copyright (c) 2015 Cary Clark. All rights reserved.
 //
 
-// import Foundation
+import Foundation
 
 public enum SortBy {
-    case filePath, fileName, fileType
+    case filePath, fileName, fileSize, fileType, lastMod
 }
 
 func nameToSortBy(_ sortByName: String) -> SortBy {
@@ -17,8 +17,12 @@ func nameToSortBy(_ sortByName: String) -> SortBy {
     switch lname {
     case "name":
         return SortBy.fileName
+    case "size":
+        return SortBy.fileSize
     case "type":
         return SortBy.fileType
+    case "lastmod":
+        return SortBy.lastMod
     default:
         return SortBy.filePath
     }
@@ -28,8 +32,12 @@ func sortByToName(_ sortBy: SortBy) -> String {
     switch sortBy {
     case SortBy.fileName:
         return "name"
+    case SortBy.fileSize:
+        return "size"
     case SortBy.fileType:
         return "type"
+    case SortBy.lastMod:
+        return "lastmod"
     default:
         return "path"
     }
@@ -42,6 +50,10 @@ public enum DefaultSettings {
     public static let includeArchives = false
     public static let listDirs = false
     public static let listFiles = false
+    public static let maxLastMod: Date? = nil
+    public static let maxSize: UInt64 = 0
+    public static let minLastMod: Date? = nil
+    public static let minSize: UInt64 = 0
     public static let printUsage = false
     public static let printVersion = false
     public static let recursive = true
@@ -57,6 +69,10 @@ public class FindSettings: CustomStringConvertible {
     public var includeArchives: Bool = DefaultSettings.includeArchives
     public var listDirs: Bool = DefaultSettings.listDirs
     public var listFiles: Bool = DefaultSettings.listFiles
+    public var maxLastMod: Date? = DefaultSettings.maxLastMod
+    public var maxSize: UInt64 = DefaultSettings.maxSize
+    public var minLastMod: Date? = DefaultSettings.minLastMod
+    public var minSize: UInt64 = DefaultSettings.minSize
     public var printUsage: Bool = DefaultSettings.printUsage
     public var printVersion: Bool = DefaultSettings.printVersion
     public var recursive: Bool = DefaultSettings.recursive
@@ -153,6 +169,28 @@ public class FindSettings: CustomStringConvertible {
         }
     }
 
+    public func setMaxLastModFromString(_ maxLastModStr: String) {
+        maxLastMod = stringToDate(maxLastModStr)
+    }
+
+    public func setMaxSizeFromString(_ maxSizeStr: String) {
+        maxSize = UInt64(maxSizeStr) ?? 0
+    }
+
+    public func setMinLastModFromString(_ minLastModStr: String) {
+        minLastMod = stringToDate(minLastModStr)
+    }
+
+    public func setMinSizeFromString(_ minSizeStr: String) {
+        minSize = UInt64(minSizeStr) ?? 0
+    }
+
+    public func needStat() -> Bool {
+        return self.sortBy == SortBy.fileSize || self.sortBy == SortBy.lastMod ||
+        self.maxLastMod != nil || self.minLastMod != nil ||
+        self.maxSize > 0 || self.minSize > 0
+    }
+
     public func addPath(_ path: String) {
         paths.insert(path)
     }
@@ -199,6 +237,10 @@ public class FindSettings: CustomStringConvertible {
             ", includeArchives=\(includeArchives)" +
             ", listDirs=\(listDirs)" +
             ", listFiles=\(listFiles)" +
+            ", maxLastMod=\(dateToString(maxLastMod))" +
+            ", maxSize=\(maxSize)" +
+            ", minLastMod=\(dateToString(minLastMod))" +
+            ", minSize=\(minSize)" +
             ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
             ", outArchiveFilePatterns=\(arrayToString(outArchiveFilePatterns))" +
             ", outDirPatterns=\(arrayToString(outDirPatterns))" +
