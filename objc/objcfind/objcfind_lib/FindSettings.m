@@ -19,6 +19,7 @@
         self.printUsage = false;
         self.printVersion = false;
         self.recursive = true;
+        self.sortCaseInsensitive = false;
         self.sortDescending = false;
         self.verbose = false;
 
@@ -65,6 +66,7 @@
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
     [d appendFormat:@", recursive=%@", boolToNSString(self.recursive)];
     [d appendFormat:@", sortBy=%@", [FindSettings getNameFromSortBy:self.sortBy]];
+    [d appendFormat:@", sortCaseInsensitive=%@", boolToNSString(self.sortCaseInsensitive)];
     [d appendFormat:@", sortDescending=%@", boolToNSString(self.sortDescending)];
     [d appendFormat:@", verbose=%@", boolToNSString(self.verbose)];
     [d appendString:@")"];

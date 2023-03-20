@@ -207,6 +207,8 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
             [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
             [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
             [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
+            [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = b; } copy], @"sort-caseinsensitive",
+            [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = !b; } copy], @"sort-casesensitive",
             [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy], @"verbose",
             [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy], @"version",
             nil];

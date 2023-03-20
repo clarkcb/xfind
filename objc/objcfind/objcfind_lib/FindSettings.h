@@ -19,6 +19,7 @@
 @property(nonatomic) BOOL printUsage;
 @property(nonatomic) BOOL printVersion;
 @property(nonatomic) BOOL recursive;
+@property(nonatomic) BOOL sortCaseInsensitive;
 @property(nonatomic) BOOL sortDescending;
 @property(nonatomic) BOOL verbose;
 
