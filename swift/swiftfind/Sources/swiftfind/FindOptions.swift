@@ -142,6 +142,12 @@ public class FindOptions {
         "sort-ascending": { (bool: Bool, settings: FindSettings) -> Void in
             settings.sortDescending = !bool
         },
+        "sort-caseinsensitive": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.sortCaseInsensitive = bool
+        },
+        "sort-casesensitive": { (bool: Bool, settings: FindSettings) -> Void in
+            settings.sortCaseInsensitive = !bool
+        },
         "sort-descending": { (bool: Bool, settings: FindSettings) -> Void in
             settings.sortDescending = bool
         },

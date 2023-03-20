@@ -45,6 +45,7 @@ public enum DefaultSettings {
     public static let printUsage = false
     public static let printVersion = false
     public static let recursive = true
+    public static let sortCaseInsensitive = false
     public static let sortDescending = false
     public static let verbose = false
 }
@@ -59,6 +60,7 @@ public class FindSettings: CustomStringConvertible {
     public var printUsage: Bool = DefaultSettings.printUsage
     public var printVersion: Bool = DefaultSettings.printVersion
     public var recursive: Bool = DefaultSettings.recursive
+    public var sortCaseInsensitive: Bool = DefaultSettings.sortCaseInsensitive
     public var sortDescending: Bool = DefaultSettings.sortDescending
     public var verbose: Bool = DefaultSettings.verbose
 
@@ -208,6 +210,7 @@ public class FindSettings: CustomStringConvertible {
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +
             ", sortBy=\(sortByToName(sortBy))" +
+            ", sortCaseInsensitive=\(sortCaseInsensitive)" +
             ", sortDescending=\(sortDescending)" +
             ", verbose=\(verbose)" +
             ")"
