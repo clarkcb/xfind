@@ -36,6 +36,7 @@ typedef struct FindSettings {
     unsigned short printversion : 1;
     unsigned short recursive : 1;
     SortBy sortby;
+    unsigned short sort_caseinsensitive : 1;
     unsigned short sort_descending : 1;
     unsigned short verbose : 1;
 } FindSettings;

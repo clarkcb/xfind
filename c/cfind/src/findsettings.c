@@ -37,6 +37,7 @@ FindSettings *default_settings(void)
     settings->printversion = 0;
     settings->recursive = 1;
     settings->sortby = FILEPATH;
+    settings->sort_caseinsensitive = 0;
     settings->sort_descending = 0;
     settings->verbose = 0;
 
@@ -71,6 +72,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", printversion=%d"
             ", recursive=%d"
             ", sortby=%s"
+            ", sort_caseinsensitive=%d"
             ", sort_descending=%d"
             ", verbose=%d"
             ")";
@@ -174,6 +176,7 @@ void settings_to_string(FindSettings *settings, char *s)
         settings->printversion,
         settings->recursive,
         sortby_name,
+        settings->sort_caseinsensitive,
         settings->sort_descending,
         settings->verbose);
 

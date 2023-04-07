@@ -51,7 +51,8 @@ int main(int argc, char *argv[])
                         destroy_file_results(results);
                     }
                 } else {
-                    print_file_results(results, settings->sortby, settings->sort_descending);
+                    print_file_results(results, settings->sortby, settings->sort_caseinsensitive,
+                                       settings->sort_descending);
                     destroy_file_results(results);
                 }
             }

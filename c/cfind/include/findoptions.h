@@ -31,21 +31,23 @@ typedef enum {
 } SettingsCollType;
 
 typedef enum {
-    ARCHIVESONLY    = 0,
-    DEBUG           = 1,
-    EXCLUDEARCHIVES = 2,
-    EXCLUDEHIDDEN   = 3,
-    INCLUDEARCHIVES = 4,
-    INCLUDEHIDDEN   = 5,
-    HELP            = 6,
-    LISTDIRS        = 7,
-    LISTFILES       = 8,
-    NORECURSIVE     = 9,
-    RECURSIVE       = 10,
-    SORT_ASCENDING  = 11,
-    SORT_DESCENDING = 12,
-    VERBOSE         = 13,
-    VERSION         = 14
+    ARCHIVESONLY         = 0,
+    DEBUG                = 1,
+    EXCLUDEARCHIVES      = 2,
+    EXCLUDEHIDDEN        = 3,
+    INCLUDEARCHIVES      = 4,
+    INCLUDEHIDDEN        = 5,
+    HELP                 = 6,
+    LISTDIRS             = 7,
+    LISTFILES            = 8,
+    NORECURSIVE          = 9,
+    RECURSIVE            = 10,
+    SORT_ASCENDING       = 11,
+    SORT_CASEINSENSITIVE = 12,
+    SORT_CASESENSITIVE   = 13,
+    SORT_DESCENDING      = 14,
+    VERBOSE              = 15,
+    VERSION              = 16
 } SettingsFlagType;
 
 FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc);

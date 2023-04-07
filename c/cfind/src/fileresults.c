@@ -77,7 +77,8 @@ void file_result_to_string(FileResult *r, char *s)
     s[file_result_strlen(r)] = '\0';
 }
 
-void print_file_results(FileResults *results, SortBy sortby, unsigned int sort_descending)
+void print_file_results(FileResults *results, SortBy sortby, unsigned short sort_caseinsensitive,
+                        unsigned short sort_descending)
 {
     size_t results_count = file_results_count(results);
     FileResult *results_array[results_count];
@@ -89,7 +90,7 @@ void print_file_results(FileResults *results, SortBy sortby, unsigned int sort_d
     }
 
     if (results_count > 1) {
-        sort_file_result_array(results_array, results_count, sortby);
+        sort_file_result_array(results_array, results_count, sortby, sort_caseinsensitive);
 
         if (sort_descending > 0) {
             reverse_file_result_array(results_array, 0, results_count - 1);
@@ -109,6 +110,9 @@ void print_file_results(FileResults *results, SortBy sortby, unsigned int sort_d
     }
 }
 
+// -----------------------------------------------------------------------------
+// Case-sensitive comparisons
+// -----------------------------------------------------------------------------
 // comparator function for file result paths
 static int cmp_file_results_by_path(const void *a, const void *b)
 {
@@ -145,19 +149,72 @@ static int cmp_file_results_by_type(const void *a, const void *b)
     return typecmp;
 }
 
-// sort a FileResult array
-void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby)
+// -----------------------------------------------------------------------------
+// Case-insensitive comparisons
+// -----------------------------------------------------------------------------
+// comparator function for file result paths
+static int cmp_file_results_by_path_ci(const void *a, const void *b)
 {
-    switch (sortby) {
-        case FILENAME:
-            qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name);
-            break;
-        case FILETYPE:
-            qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_type);
-            break;
-        default:
-            qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path);
-            break;
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int dircmp = strcasecmp((*r1)->dir, (*r2)->dir);
+    if (dircmp == 0) {
+        return strcasecmp((*r1)->filename, (*r2)->filename);
+    }
+    return dircmp;
+}
+
+// comparator function for file result filenames
+static int cmp_file_results_by_name_ci(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int namecmp = strcasecmp((*r1)->filename, (*r2)->filename);
+    if (namecmp == 0) {
+        return strcasecmp((*r1)->dir, (*r2)->dir);
+    }
+    return namecmp;
+}
+
+// comparator function for file result types
+static int cmp_file_results_by_type_ci(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int typecmp = ((int) ((*r1)->filetype - (*r2)->filetype));
+    if (typecmp == 0) {
+        return cmp_file_results_by_path_ci(a, b);
+    }
+    return typecmp;
+}
+
+// sort a FileResult array
+void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned short case_insensitive)
+{
+    if (case_insensitive == 1) {
+        switch (sortby) {
+            case FILENAME:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name_ci);
+                break;
+            case FILETYPE:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_type_ci);
+                break;
+            default:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path_ci);
+                break;
+        }
+    } else {
+        switch (sortby) {
+            case FILENAME:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name);
+                break;
+            case FILETYPE:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_type);
+                break;
+            default:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path);
+                break;
+        }
     }
 }
 

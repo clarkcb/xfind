@@ -31,6 +31,8 @@ void test_default_settings(void)
     assert(settings->printusage == 0);
     assert(settings->printversion == 0);
     assert(settings->recursive == 1);
+    assert(settings->sort_caseinsensitive == 0);
+    assert(settings->sort_descending == 0);
     assert(settings->verbose == 0);
     destroy_settings(settings);
 }

@@ -32,9 +32,10 @@ size_t file_results_count(FileResults *results);
 
 void file_result_to_string(FileResult *r, char *s);
 
-void print_file_results(FileResults *results, SortBy sortBy, unsigned int sort_descending);
+void print_file_results(FileResults *results, SortBy sortBy, unsigned short sort_caseinsensitive,
+                        unsigned short sort_descending);
 
-void sort_file_result_array(FileResult *arr[], size_t n, SortBy sortBy);
+void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned short case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 

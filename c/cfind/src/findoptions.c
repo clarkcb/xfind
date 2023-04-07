@@ -44,7 +44,7 @@ char **arg_abbrs = (char *[]) {
     ""   // sort-by
 };
 
-#define FLAG_COUNT 15
+#define FLAG_COUNT 17
 const size_t flag_count = FLAG_COUNT;
 char **flag_names = (char *[]) {
     "archivesonly",
@@ -59,6 +59,8 @@ char **flag_names = (char *[]) {
     "norecursive",
     "recursive",
     "sort-ascending",
+    "sort-caseinsensitive",
+    "sort-casesensitive",
     "sort-descending",
     "verbose",
     "version"
@@ -77,6 +79,8 @@ char **flag_abbrs = (char *[]) {
     "R", // norecursive
     "r", // recursive
     "",  // sort-ascending
+    "",  // sort-caseinsensitive
+    "",  // sort-casesensitive
     "",  // sort-descending
     "v", // verbose
     "V"  // version
@@ -222,7 +226,7 @@ error_t get_find_options(FindOptions *options)
     return err;
 }
 
-static void set_arg(int arg_idx, char *arg_val, FindSettings *settings)
+static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
 {
     switch (arg_idx) {
     case IN_ARCHIVEEXTENSION:
@@ -319,9 +323,10 @@ static void set_arg(int arg_idx, char *arg_val, FindSettings *settings)
     default:
         break;
     }
+    return E_OK;
 }
 
-static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *settings)
+static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings *settings)
 {
     switch (flag_idx) {
     case ARCHIVESONLY:
@@ -366,6 +371,12 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
     case SORT_ASCENDING:
         settings->sort_descending = !flag_val;
         break;
+    case SORT_CASEINSENSITIVE:
+        settings->sort_caseinsensitive = flag_val;
+        break;
+    case SORT_CASESENSITIVE:
+        settings->sort_caseinsensitive = !flag_val;
+        break;
     case SORT_DESCENDING:
         settings->sort_descending = flag_val;
         break;
@@ -378,6 +389,7 @@ static void set_flag(int flag_idx, unsigned short int flag_val, FindSettings *se
     default:
         break;
     }
+    return E_OK;
 }
 
 error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
@@ -408,7 +420,8 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
             if (arg_idx > -1) {
                 if (i < argc - 1) {
                     if (strlen(argv[i+1]) > 0) {
-                        set_arg(arg_idx, argv[i+1], settings);
+                        error_t e = set_arg(arg_idx, argv[i+1], settings);
+                        if (e != E_OK) return e;
                         i += 2;
                     } else {
                         return E_INVALID_ARG;
@@ -424,11 +437,13 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
                     flag_idx = index_of_string_in_array(arg_name, flag_abbrs, flag_count);
                 }
                 if (flag_idx > -1) {
-                    set_flag(flag_idx, 1, settings);
+                    error_t e = set_flag(flag_idx, 1, settings);
+                    if (e != E_OK) return e;
                     i++;
                 } else {
                     char err[50];
                     sprintf(err, "Invalid option: %s", arg_name);
+                    printf("Error: %s\n", err);
                     return E_INVALID_OPTION;
                 }
             }
