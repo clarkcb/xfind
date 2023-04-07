@@ -8,7 +8,9 @@
 typedef enum {
     FILEPATH = 0,
     FILENAME = 1,
-    FILETYPE = 2
+    FILESIZE = 2,
+    FILETYPE = 3,
+    LASTMOD  = 4
 } SortBy;
 
 typedef struct FindSettings {
@@ -24,6 +26,10 @@ typedef struct FindSettings {
     unsigned short includearchives : 1;
     unsigned short listdirs : 1;
     unsigned short listfiles : 1;
+    long maxlastmod;
+    unsigned long maxsize;
+    long minlastmod;
+    unsigned long minsize;
     StringNode *out_archiveextensions;
     RegexNode *out_archivefilepatterns;
     RegexNode *out_dirpatterns;

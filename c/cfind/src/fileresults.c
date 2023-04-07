@@ -5,15 +5,16 @@
 
 #include "common.h"
 #include "fileresults.h"
-#include "findsettings.h"
 
-FileResult *new_file_result(const char *d, const char *fn, FileType ft)
+FileResult *new_file_result(const char *d, const char *fn, FileType ft, uint64_t fsize, long mtime)
 {
     FileResult *r = malloc(sizeof(FileResult));
     assert(r != NULL);
     r->dir = d;
     r->filename = fn;
     r->filetype = ft;
+    r->filesize = fsize;
+    r->mtime = mtime;
     return r;
 }
 
@@ -137,6 +138,18 @@ static int cmp_file_results_by_name(const void *a, const void *b)
     return namecmp;
 }
 
+// comparator function for file result sizes
+static int cmp_file_results_by_size(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int sizecmp = ((int) ((*r1)->filesize - (*r2)->filesize));
+    if (sizecmp == 0) {
+        return cmp_file_results_by_path(a, b);
+    }
+    return sizecmp;
+}
+
 // comparator function for file result types
 static int cmp_file_results_by_type(const void *a, const void *b)
 {
@@ -147,6 +160,18 @@ static int cmp_file_results_by_type(const void *a, const void *b)
         return cmp_file_results_by_path(a, b);
     }
     return typecmp;
+}
+
+// comparator function for file result lastmod
+static int cmp_file_results_by_lastmod(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int timecmp = ((int) ((*r1)->mtime - (*r2)->mtime));
+    if (timecmp == 0) {
+        return cmp_file_results_by_path(a, b);
+    }
+    return timecmp;
 }
 
 // -----------------------------------------------------------------------------
@@ -176,6 +201,18 @@ static int cmp_file_results_by_name_ci(const void *a, const void *b)
     return namecmp;
 }
 
+// comparator function for file result sizes
+static int cmp_file_results_by_size_ci(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int sizecmp = ((int) ((*r1)->filesize - (*r2)->filesize));
+    if (sizecmp == 0) {
+        return cmp_file_results_by_path_ci(a, b);
+    }
+    return sizecmp;
+}
+
 // comparator function for file result types
 static int cmp_file_results_by_type_ci(const void *a, const void *b)
 {
@@ -188,6 +225,18 @@ static int cmp_file_results_by_type_ci(const void *a, const void *b)
     return typecmp;
 }
 
+// comparator function for file result lastmod
+static int cmp_file_results_by_lastmod_ci(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int timecmp = ((int) ((*r1)->mtime - (*r2)->mtime));
+    if (timecmp == 0) {
+        return cmp_file_results_by_path_ci(a, b);
+    }
+    return timecmp;
+}
+
 // sort a FileResult array
 void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned short case_insensitive)
 {
@@ -196,8 +245,14 @@ void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned 
             case FILENAME:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name_ci);
                 break;
+            case FILESIZE:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_size_ci);
+                break;
             case FILETYPE:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_type_ci);
+                break;
+            case LASTMOD:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_lastmod_ci);
                 break;
             default:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path_ci);
@@ -208,8 +263,14 @@ void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned 
             case FILENAME:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name);
                 break;
+            case FILESIZE:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_size);
+                break;
             case FILETYPE:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_type);
+                break;
+            case LASTMOD:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_lastmod);
                 break;
             default:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path);

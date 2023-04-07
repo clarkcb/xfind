@@ -2,9 +2,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <wordexp.h>
+#include <printf.h>
 
 #include "common.h"
 #include "fileutil.h"
+#include "stringarray.h"
 
 const char *DOT_DIRS[] = {".", "..", "./", "../"};
 
@@ -62,30 +64,49 @@ void get_extension(const char *filename, char *ext)
 
 unsigned short is_hidden(const char *filepath)
 {
+    // if NULL or empty, return false
     if (filepath == NULL) return 0;
     size_t fplen = strlen(filepath);
-    if (fplen < 1 || is_dot_dir(filepath)) return 0;
-    char testpath[fplen];
-    strncpy(testpath, filepath, fplen);
-    int idx = last_index_of_char_in_string(PATH_SEPARATOR, testpath);
-    while (idx > 0 && idx == fplen - 1) {
-        testpath[idx] = '\0';
-        idx = last_index_of_char_in_string(PATH_SEPARATOR, testpath);
-        fplen--;
-    }
-    if (idx == -1) {
-        idx = 0;
+    if (fplen < 1) return 0;
+
+    // if filepath has any path separators, call is_hidden on each path segment
+    int sep_count = char_count_in_string(PATH_SEPARATOR, filepath);
+    if (sep_count > 0) {
+        int startidx = 0;
+        int nextidx = 0;
+        while (nextidx < strlen(filepath)) {
+            if (filepath[nextidx] == PATH_SEPARATOR) {
+                int seglen = nextidx - startidx;
+                char seg[seglen + 1];
+                memcpy(seg, &filepath[startidx], seglen);
+                seg[seglen] = '\0';
+                // printf("seg: \"%s\"\n", seg);
+                if (is_hidden(seg)) {
+                    return 1;
+                }
+                startidx += seglen + 1;
+            } else if (nextidx == strlen(filepath) - 1) {
+                int seglen = nextidx - startidx + 1;
+                char seg[seglen + 1];
+                memcpy(seg, &filepath[startidx], seglen);
+                seg[seglen] = '\0';
+                // printf("seg: \"%s\"\n", seg);
+                if (is_hidden(seg)) {
+                    return 1;
+                }
+                startidx += seglen + 1;
+            }
+            nextidx++;
+        }
+
     } else {
-        idx++;
-    }
-    if (idx < fplen && filepath[idx] == '.') {
-        // it might be hidden
-        if (fplen - (size_t)idx == 1)
-            return 0;
-        if (fplen - (size_t)idx == 2 && filepath[idx+1] == '.')
-            return 0;
+        // check the string as an individual path element
+        if (filepath[0] != '.') return 0;
+        if (is_dot_dir(filepath)) return 0;
+        // if it starts with a dot and isn't a dot dir, it must be a hidden dir/file
         return 1;
     }
+
     return 0;
 }
 

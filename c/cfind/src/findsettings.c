@@ -8,6 +8,8 @@
 #include "filetypes.h"
 #include "findsettings.h"
 
+unsigned int num_digits_ulong(unsigned long num);
+
 FindSettings *default_settings(void)
 {
     FindSettings *settings = malloc(sizeof(FindSettings));
@@ -25,6 +27,10 @@ FindSettings *default_settings(void)
     settings->includearchives = 0;
     settings->listdirs = 0;
     settings->listfiles = 0;
+    settings->maxlastmod = 0L;
+    settings->maxsize = 0L;
+    settings->minlastmod = 0L;
+    settings->minsize = 0L;
     settings->out_archiveextensions = NULL;
     settings->out_archivefilepatterns = NULL;
     settings->out_dirpatterns = NULL;
@@ -44,9 +50,11 @@ FindSettings *default_settings(void)
     return settings;
 }
 
-const int SETTINGS_BOOL_FIELD_COUNT = 14;
-const int SETTINGS_STRING_NODE_FIELD_COUNT = 12;
-const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_STRING_NODE_FIELD_COUNT;
+const int SETTINGS_BOOL_FIELD_COUNT = 13;
+const int SETTINGS_LONG_FIELD_COUNT = 4;
+const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;
+const int SETTINGS_SORTBY_FIELD_COUNT = 1;
+const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG_FIELD_COUNT + SETTINGS_STRING_NODE_FIELD_COUNT + SETTINGS_SORTBY_FIELD_COUNT;
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archivesonly=%d"
             ", debug=%d"
@@ -60,6 +68,12 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", includearchives=%d"
             ", listdirs=%d"
             ", listfiles=%d"
+            // ", maxlastmod=%lu"
+            ", maxlastmod=%s"
+            ", maxsize=%lu"
+//            ", minlastmod=%lu"
+            ", minlastmod=%s"
+            ", minsize=%lu"
             ", out_archiveextensions=%s"
             ", out_archivefilepatterns=%s"
             ", out_dirpatterns=%s"
@@ -79,7 +93,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
 
 static size_t all_strings_strlen(FindSettings *settings)
 {
-    int sortby_strlen = 10;
+    size_t sortby_strlen = 10;
     return
         string_node_strlen(settings->in_archiveextensions) +
         regex_node_strlen(settings->in_archivefilepatterns) +
@@ -97,11 +111,25 @@ static size_t all_strings_strlen(FindSettings *settings)
         string_node_strlen(settings->paths);
 }
 
+static size_t lastmod_strlen(long lastmod)
+{
+    return lastmod == 0 ? 1 : 10;
+}
+
 size_t settings_strlen(FindSettings *settings)
 {
+    size_t maxlastmod_strlen = lastmod_strlen(settings->maxlastmod);
+    if (maxlastmod_strlen > 1) maxlastmod_strlen += 2; // for surrounding double quotes
+    size_t minlastmod_strlen = lastmod_strlen(settings->minlastmod);
+    if (minlastmod_strlen > 1) minlastmod_strlen += 2; // for surrounding double quotes
+
     return strlen(SETTINGS_TEMPLATE)
-        - (SETTINGS_TOTAL_FIELD_COUNT * 2)
+        - (SETTINGS_TOTAL_FIELD_COUNT * 2 + 4) // the + 4 is for the extra formatting letter for each long (%lu)
         + SETTINGS_BOOL_FIELD_COUNT
+        + maxlastmod_strlen
+        + num_digits_ulong(settings->maxsize)
+        + minlastmod_strlen
+        + num_digits_ulong(settings->minsize)
         + all_strings_strlen(settings);
 }
 
@@ -126,6 +154,29 @@ void settings_to_string(FindSettings *settings, char *s)
     char *in_filetypes_s = malloc(filetype_node_strlen(settings->in_filetypes) + 1);
     in_filetypes_s[0] = '\0';
     filetype_node_to_string(settings->in_filetypes, in_filetypes_s);
+
+    size_t maxlastmod_strlen = lastmod_strlen(settings->maxlastmod);
+    char *maxlastmod_s = malloc(maxlastmod_strlen + 1);
+    maxlastmod_s[0] = '\0';
+    time_to_datestring(settings->maxlastmod, maxlastmod_s);
+    if (maxlastmod_strlen > 1) {
+        char *quoted_maxlastmod_s = malloc(maxlastmod_strlen + 3);
+        sprintf(quoted_maxlastmod_s, "\"%s\"", maxlastmod_s);
+        free(maxlastmod_s);
+        maxlastmod_s = quoted_maxlastmod_s;
+    }
+
+    size_t minlastmod_strlen = lastmod_strlen(settings->minlastmod);
+    char *minlastmod_s = malloc(minlastmod_strlen + 1);
+    minlastmod_s[0] = '\0';
+    time_to_datestring(settings->minlastmod, minlastmod_s);
+    if (minlastmod_strlen > 1) {
+        char *quoted_minlastmod_s = malloc(minlastmod_strlen + 3);
+        sprintf(quoted_minlastmod_s, "\"%s\"", minlastmod_s);
+        free(minlastmod_s);
+        minlastmod_s = quoted_minlastmod_s;
+    }
+
     char *out_archiveextensions_s = malloc(string_node_strlen(settings->out_archiveextensions) + 1);
     out_archiveextensions_s[0] = '\0';
     string_node_to_string(settings->out_archiveextensions, out_archiveextensions_s);
@@ -164,6 +215,12 @@ void settings_to_string(FindSettings *settings, char *s)
         settings->includearchives,
         settings->listdirs,
         settings->listfiles,
+        // settings->maxlastmod,
+        maxlastmod_s,
+        settings->maxsize,
+//        settings->minlastmod,
+        minlastmod_s,
+        settings->minsize,
         out_archiveextensions_s,
         out_archivefilepatterns_s,
         out_dirpatterns_s,
@@ -190,6 +247,8 @@ void settings_to_string(FindSettings *settings, char *s)
     free(in_extensions_s);
     free(in_filepatterns_s);
     free(in_filetypes_s);
+    free(maxlastmod_s);
+    free(minlastmod_s);
     free(out_archiveextensions_s);
     free(out_archivefilepatterns_s);
     free(out_dirpatterns_s);
@@ -251,8 +310,14 @@ SortBy sortby_from_name(const char *name)
     if (strncmp(uname, "PATH", maxlen) == 0) {
         return FILEPATH;
     }
+    if (strncmp(uname, "SIZE", maxlen) == 0) {
+        return FILESIZE;
+    }
     if (strncmp(uname, "TYPE", maxlen) == 0) {
         return FILETYPE;
+    }
+    if (strncmp(uname, "LASTMOD", maxlen) == 0) {
+        return LASTMOD;
     }
     return FILEPATH;
 }
@@ -268,9 +333,17 @@ void sortby_to_name(const SortBy sortby, char *name)
             strncpy(name, "FILENAME", 8);
             name[8] = '\0';
             break;
+        case FILESIZE:
+            strncpy(name, "FILESIZE", 8);
+            name[8] = '\0';
+            break;
         case FILETYPE:
             strncpy(name, "FILETYPE", 8);
             name[8] = '\0';
+            break;
+        case LASTMOD:
+            strncpy(name, "LASTMOD", 7);
+            name[7] = '\0';
             break;
         default:
             strncpy(name, "UNKNOWN", 7);

@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <cjson/cJSON.h>
 
 #include "common.h"
@@ -11,7 +12,7 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define ARG_COUNT 13
+#define ARG_COUNT 18
 const size_t arg_count = ARG_COUNT;
 char **arg_names = (char *[]) {
     "in-archiveext",
@@ -20,12 +21,17 @@ char **arg_names = (char *[]) {
     "in-ext",
     "in-filepattern",
     "in-filetype",
+    "maxlastmod",
+    "maxsize",
+    "minlastmod",
+    "minsize",
     "out-archiveext",
     "out-archivefilepattern",
     "out-dirpattern",
     "out-ext",
     "out-filepattern",
     "out-filetype",
+    "path",
     "sort-by",
 };
 char **arg_abbrs = (char *[]) {
@@ -35,12 +41,17 @@ char **arg_abbrs = (char *[]) {
     "x", // in-ext
     "f", // in-filepattern
     "t", // in-filetype
+    "",  // maxlastmod
+    "",  // maxsize
+    "",  // minlastmod
+    "",  // minsize
     "",  // out-archiveext
     "",  // out-archivefilepattern
     "D", // out-dirpattern
     "X", // out-ext
     "F", // out-filepattern
     "T", // out-filetype
+    "",  // path
     ""   // sort-by
 };
 
@@ -195,6 +206,8 @@ error_t get_find_options(FindOptions *options)
 
     if (!dir_or_file_exists(fullpath)) {
         err = E_FILE_NOT_FOUND;
+        free(fullpath);
+        free(xfindpath);
         return err;
     }
 
@@ -216,6 +229,9 @@ error_t get_find_options(FindOptions *options)
         char *errmsg = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
         sprintf(errmsg, "Unable to load %s", fullpath);
         err = E_UNKNOWN_ERROR;
+        free(errmsg);
+        free(fullpath);
+        free(xfindpath);
         return err;
     }
 
@@ -271,6 +287,34 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             add_int_to_int_node(ftint, settings->in_filetypes);
         }
         break;
+    case MAXLASTMOD:
+        if (arg_val) {
+            struct tm tm;
+            memset(&tm, 0, sizeof(tm));
+            if (strptime(arg_val, "%Y-%m-%d", &tm) == NULL) {
+                return E_INVALID_DATESTRING;
+            } else {
+                settings->maxlastmod = mktime(&tm);
+            }
+        } 
+        break;
+    case MAXSIZE:
+        settings->maxsize = (unsigned long)atoi(arg_val);
+        break;
+    case MINLASTMOD:
+        if (arg_val) {
+            struct tm tm;
+            memset(&tm, 0, sizeof(tm));
+            if (strptime(arg_val, "%Y-%m-%d", &tm) == NULL) {
+                return E_INVALID_DATESTRING;
+            } else {
+                settings->minlastmod = mktime(&tm);
+            }
+        } 
+        break;
+    case MINSIZE:
+        settings->minsize = (unsigned long)atoi(arg_val);
+        break;
     case OUT_ARCHIVEEXT:
         if (settings->out_archiveextensions == NULL)
             settings->out_archiveextensions = new_string_node_from_char_split(',', arg_val);
@@ -312,6 +356,12 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             *ftint = (int)filetype;
             add_int_to_int_node(ftint, settings->out_filetypes);
         }
+        break;
+    case PATH:
+        if (settings->paths == NULL)
+            settings->paths = new_string_node(arg_val);
+        else
+            add_string_to_string_node(arg_val, settings->paths);
         break;
     case SORT_BY:
         // this is just to wrap in an expression
@@ -538,7 +588,7 @@ static int cmp_find_option(const void *a, const void *b)
     char opt1[o1_len];
     if ((*o1)->shortarg != NULL) {
         char c1 = (char)tolower((*o1)->shortarg[0]);
-        snprintf(opt1, o1_len, "%c%s", c1, (*o1)->longarg);
+        snprintf(opt1, o1_len, "%c@%s", c1, (*o1)->longarg);
     } else {
         snprintf(opt1, o1_len, "%s", (*o1)->longarg);
     }
@@ -547,7 +597,7 @@ static int cmp_find_option(const void *a, const void *b)
     char opt2[o2_len];
     if ((*o2)->shortarg != NULL) {
         char c2 = (char)tolower((*o2)->shortarg[0]);
-        snprintf(opt2, o2_len, "%c%s", c2, (*o2)->longarg);
+        snprintf(opt2, o2_len, "%c@%s", c2, (*o2)->longarg);
     } else {
         snprintf(opt2, o2_len, "%s", (*o2)->longarg);
     }

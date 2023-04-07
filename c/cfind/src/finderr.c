@@ -131,6 +131,9 @@ void handle_error(error_t err)
     case E_FILENAME_TOO_LONG:
         log_err("Filename is too long");
         break;
+    case E_INVALID_DATESTRING:
+        log_err("Invalid date string");
+        break;
     default:
         log_err("Unknown error occurred");
         break;

@@ -1,6 +1,9 @@
 #ifndef FILERESULTS_H
 #define FILERESULTS_H
 
+#include <stdint.h>
+#include <sys/stat.h>
+
 #include "filetypes.h"
 #include "stringnode.h"
 #include "findsettings.h"
@@ -9,6 +12,8 @@ typedef struct FileResult {
     const char *dir;
     const char *filename;
     FileType filetype;
+    uint64_t filesize;
+    long mtime;
 } FileResult;
 
 typedef struct FileResults {
@@ -16,7 +21,7 @@ typedef struct FileResults {
     struct FileResults *next;
 } FileResults;
 
-FileResult *new_file_result(const char *dir, const char *filename, FileType filetype);
+FileResult *new_file_result(const char *dir, const char *filename, FileType filetype, uint64_t filesize, long mtime);
 
 FileResults *empty_file_results(void);
 

@@ -43,6 +43,8 @@ error_t get_filetypes(FileTypes *filetypes)
 
     if (!dir_or_file_exists(fullpath)) {
         err = E_FILE_NOT_FOUND;
+        free(fullpath);
+        free(xfindpath);
         return err;
     }
 
@@ -64,6 +66,9 @@ error_t get_filetypes(FileTypes *filetypes)
         char *errmsg = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
         sprintf(errmsg, "Unable to load %s", fullpath);
         err = E_UNKNOWN_ERROR;
+        free(errmsg);
+        free(fullpath);
+        free(xfindpath);
         return err;
     }
 
