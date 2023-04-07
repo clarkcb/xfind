@@ -4,6 +4,7 @@
 #include <iostream>
 #include <boost/format.hpp>
 #include "rapidjson/filereadstream.h"
+#include "common.h"
 #include "config.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
@@ -13,13 +14,17 @@
 
 namespace cppfind {
     FindOptions::FindOptions() {
-        m_coll_arg_map = {
+        m_str_arg_map = {
                 {"in-archiveext", [](std::string& s, FindSettings* ss) { ss->add_in_archiveextension(s); }},
                 {"in-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_in_archivefilepattern(s); }},
                 {"in-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_in_dirpattern(s); }},
                 {"in-ext", [](std::string& s, FindSettings* ss) { ss->add_in_extension(s); }},
                 {"in-filepattern", [](std::string& s, FindSettings* ss) { ss->add_in_filepattern(s); }},
                 {"in-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(t); }},
+                {"maxlastmod", [](std::string& s, FindSettings* ss) { ss->maxlastmod(datestr_to_long(s)); }},
+                {"maxsize", [](std::string& s, FindSettings* ss) { ss->maxsize(std::stol(s)); }},
+                {"minlastmod", [](std::string& s, FindSettings* ss) { ss->minlastmod(datestr_to_long(s)); }},
+                {"minsize", [](std::string& s, FindSettings* ss) { ss->minsize(std::stol(s)); }},
                 {"out-archiveext", [](std::string& s, FindSettings* ss) { ss->add_out_archiveextension(s); }},
                 {"out-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_out_archivefilepattern(s); }},
                 {"out-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_out_dirpattern(s); }},
@@ -63,7 +68,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        long file_size = FileUtil::file_length(filepath);
+        uint64_t file_size = FileUtil::file_size(filepath);
         FILE *fp = fopen(filepath.c_str(), "r");
 
         char readBuffer[file_size];
@@ -89,12 +94,12 @@ namespace cppfind {
             std::string name = it->name.GetString();
 
             if (it->value.IsArray()) {
-                assert(m_coll_arg_map.find(name) != m_coll_arg_map.end());
+                assert(m_str_arg_map.find(name) != m_str_arg_map.end());
                 const auto& arr = it->value.GetArray();
                 for (SizeType i = 0; i < arr.Size(); i++) {
                     assert(arr[i].IsString());
                     auto* s = new std::string(arr[i].GetString());
-                    m_coll_arg_map[name](*s, settings);
+                    m_str_arg_map[name](*s, settings);
                 }
 
             } else if (it->value.IsBool()) {
@@ -104,8 +109,8 @@ namespace cppfind {
 
             } else if (it->value.IsString()) {
                 auto* s = new std::string(it->value.GetString());
-                if (m_coll_arg_map.find(name) != m_coll_arg_map.end()) {
-                    m_coll_arg_map[name](*s, settings);
+                if (m_str_arg_map.find(name) != m_str_arg_map.end()) {
+                    m_str_arg_map[name](*s, settings);
                 } else {
                     std::string msg = "Invalid option: " + name;
                     throw FindException(msg);
@@ -125,7 +130,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        long file_size = FileUtil::file_length(findoptions_path);
+        uint64_t file_size = FileUtil::file_size(findoptions_path);
         FILE* fp = fopen(findoptions_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -193,11 +198,11 @@ namespace cppfind {
                     auto longarg = m_long_arg_map[*next_arg];
 
                     auto bool_arg_found = m_bool_arg_map.find(longarg);
-                    auto coll_arg_found = m_coll_arg_map.find(longarg);
+                    auto coll_arg_found = m_str_arg_map.find(longarg);
 
                     if (bool_arg_found != m_bool_arg_map.end()) {
                         m_bool_arg_map[longarg](true, settings);
-                    } else if (coll_arg_found != m_coll_arg_map.end()) {
+                    } else if (coll_arg_found != m_str_arg_map.end()) {
                         if (arg_deque.empty()) {
                             std::string msg = "Missing value for option ";
                             msg.append(*next_arg);
@@ -205,8 +210,8 @@ namespace cppfind {
                         } else {
                             auto* arg_val = new std::string(arg_deque.front());
                             arg_deque.pop_front();
-                            if (coll_arg_found != m_coll_arg_map.end()) {
-                                m_coll_arg_map[longarg](*arg_val, settings);
+                            if (coll_arg_found != m_str_arg_map.end()) {
+                                m_str_arg_map[longarg](*arg_val, settings);
                             }
                         }
                     } else { // shouldn't be possible to get here

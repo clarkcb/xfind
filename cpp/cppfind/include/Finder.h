@@ -1,6 +1,7 @@
 #ifndef CPPFIND_FINDER_H
 #define CPPFIND_FINDER_H
 
+#include <sys/stat.h>
 #include "FileResult.h"
 #include "FindSettings.h"
 
@@ -20,7 +21,7 @@ namespace cppfind {
         std::optional<FileResult*> filter_to_file_result(const std::string& filepath);
         bool is_matching_archive_file(const std::string& filename);
         bool is_matching_dir(const std::string& filepath);
-        bool is_matching_file(const std::string& filename, const FileType filetype);
+        bool is_matching_file(const std::string& filename, const FileType filetype, const struct stat*);
         std::vector<FileResult*> find();
     };
 }

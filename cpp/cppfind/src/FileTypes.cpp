@@ -35,7 +35,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        long file_size = FileUtil::file_length(filetypes_path);
+        uint64_t file_size = FileUtil::file_size(filetypes_path);
         FILE* fp = fopen(filetypes_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -116,22 +116,16 @@ namespace cppfind {
         {
         case FileType::ARCHIVE:
             return "ARCHIVE";
-            break;
         case FileType::CODE:
             return "CODE";
-            break;
         case FileType::BINARY:
             return "BINARY";
-            break;
         case FileType::TEXT:
             return "TEXT";
-            break;
         case FileType::XML:
             return "XML";
-            break;
         default:
             return "UNKNOWN";
-            break;
         }
     }
 

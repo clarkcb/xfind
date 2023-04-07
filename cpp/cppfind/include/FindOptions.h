@@ -12,7 +12,7 @@ using namespace rapidjson;
 namespace cppfind {
     class FindOptions {
     private:
-        std::unordered_map<std::string, std::function<void(std::string&, FindSettings*)>> m_coll_arg_map;
+        std::unordered_map<std::string, std::function<void(std::string&, FindSettings*)>> m_str_arg_map;
         std::unordered_map<std::string, std::function<void(bool, FindSettings*)>> m_bool_arg_map;
         // std::unordered_map<std::string, std::function<void(unsigned int, FindSettings*)>> m_int_arg_map;
         // std::unordered_map<std::string, std::function<void(std::string&, FindSettings*)>> m_str_arg_map;

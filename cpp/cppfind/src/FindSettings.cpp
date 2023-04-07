@@ -1,4 +1,5 @@
 #include <boost/algorithm/string/case_conv.hpp>
+#include "common.h"
 #include "FileUtil.h"
 #include "StringUtil.h"
 #include "FindSettings.h"
@@ -110,6 +111,22 @@ namespace cppfind {
         return m_listfiles;
     }
 
+    long FindSettings::maxlastmod() const {
+        return m_maxlastmod;
+    }
+
+    long FindSettings::maxsize() const {
+        return m_maxsize;
+    }
+
+    long FindSettings::minlastmod() const {
+        return m_minlastmod;
+    }
+
+    long FindSettings::minsize() const {
+        return m_minsize;
+    }
+
     bool FindSettings::printusage() const {
         return m_printusage;
     }
@@ -216,6 +233,22 @@ namespace cppfind {
         m_listfiles = b;
     }
 
+    void FindSettings::maxlastmod(const long maxlastmod) {
+        m_maxlastmod = maxlastmod;
+    }
+
+    void FindSettings::maxsize(const long maxsize) {
+        m_maxsize = maxsize;
+    }
+
+    void FindSettings::minlastmod(const long minlastmod) {
+        m_minlastmod = minlastmod;
+    }
+
+    void FindSettings::minsize(const long minsize) {
+        m_minsize = minsize;
+    }
+
     void FindSettings::printusage(const bool b) {
         m_printusage = b;
     }
@@ -302,8 +335,14 @@ namespace cppfind {
         if (uname == "NAME") {
             return SortBy::FILENAME;
         }
+        if (uname == "SIZE") {
+            return SortBy::FILESIZE;
+        }
         if (uname == "TYPE") {
             return SortBy::FILETYPE;
+        }
+        if (uname == "LASTMOD") {
+            return SortBy::LASTMOD;
         }
         return SortBy::FILEPATH;
     }
@@ -315,8 +354,12 @@ namespace cppfind {
                 return "FILEPATH";
             case SortBy::FILENAME:
                 return "FILENAME";
+            case SortBy::FILESIZE:
+                return "FILESIZE";
             case SortBy::FILETYPE:
                 return "FILETYPE";
+            case SortBy::LASTMOD:
+                return "LASTMOD";
             default:
                 return "UNKNOWN";
         }
@@ -337,6 +380,10 @@ namespace cppfind {
                 + ", includearchives: " + bool_to_string(m_includearchives)
                 + ", listdirs: " + bool_to_string(m_listdirs)
                 + ", listfiles: " + bool_to_string(m_listfiles)
+                + ", maxlastmod: \"" + long_to_datestr(m_maxlastmod) + "\""
+                + ", maxsize: " + std::to_string(m_maxsize)
+                + ", minlastmod: \"" + long_to_datestr(m_minlastmod) + "\""
+                + ", minsize: " + std::to_string(m_minsize)
                 + ", out_archiveextensions: " + string_vector_to_string(&m_out_archiveextensions)
                 + ", out_archivefilepatterns: " + findpatterns_to_string(&m_out_archivefilepatterns)
                 + ", out_dirpatterns: " + findpatterns_to_string(&m_out_dirpatterns)

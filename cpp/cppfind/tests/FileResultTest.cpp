@@ -4,21 +4,29 @@
 TEST_CASE("Verify fullpath findfile string equals expected", "[FileResult]") {
     std::string path = "~/src/xfind/cpp/cppfind/src";
     std::string filename = "Finder.cpp";
-    auto *findfile = new cppfind::FileResult(path, filename, cppfind::FileType::CODE);
+    uint64_t filesize = 1000;
+    long modtime = 1000;
+    auto *fr = new cppfind::FileResult(path, filename, cppfind::FileType::CODE, filesize, modtime);
 
-    REQUIRE(findfile->path() == "~/src/xfind/cpp/cppfind/src");
-    REQUIRE(findfile->filename() == "Finder.cpp");
-    REQUIRE(findfile->filetype() == cppfind::FileType::CODE);
-    REQUIRE(findfile->string() == "~/src/xfind/cpp/cppfind/src/Finder.cpp");
+    REQUIRE(fr->path() == "~/src/xfind/cpp/cppfind/src");
+    REQUIRE(fr->filename() == "Finder.cpp");
+    REQUIRE(fr->filetype() == cppfind::FileType::CODE);
+    REQUIRE(fr->filesize() == 1000);
+    REQUIRE(fr->modtime() == 1000);
+    REQUIRE(fr->string() == "~/src/xfind/cpp/cppfind/src/Finder.cpp");
 }
 
 TEST_CASE("Verify relative path findfile string equals expected", "[FileResult]") {
     std::string path = ".";
     std::string filename = "Finder.cpp";
-    auto *findfile = new cppfind::FileResult(path, filename, cppfind::FileType::CODE);
+    uint64_t filesize = 1000;
+    long modtime = 1000;
+    auto *fr = new cppfind::FileResult(path, filename, cppfind::FileType::CODE, filesize, modtime);
 
-    REQUIRE(findfile->path() == ".");
-    REQUIRE(findfile->filename() == "Finder.cpp");
-    REQUIRE(findfile->filetype() == cppfind::FileType::CODE);
-    REQUIRE(findfile->string() == "./Finder.cpp");
+    REQUIRE(fr->path() == ".");
+    REQUIRE(fr->filename() == "Finder.cpp");
+    REQUIRE(fr->filetype() == cppfind::FileType::CODE);
+    REQUIRE(fr->filesize() == 1000);
+    REQUIRE(fr->modtime() == 1000);
+    REQUIRE(fr->string() == "./Finder.cpp");
 }

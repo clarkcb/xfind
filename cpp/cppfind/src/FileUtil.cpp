@@ -22,11 +22,11 @@ namespace cppfind {
         return (stat(filepath.c_str(), &st) == 0);
     }
 
-    long FileUtil::file_length(const std::string& filepath) {
+    uint64_t FileUtil::file_size(const std::string& filepath) {
         struct stat st;
         if (stat(filepath.c_str(), &st)) /*failure*/
             return -1; // when file does not exist or is not accessible
-        return (long) st.st_size;
+        return (uint64_t) st.st_size;
     }
 
     std::string FileUtil::get_contents(const std::string& filepath) {

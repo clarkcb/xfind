@@ -6,7 +6,7 @@
 #include "FindPattern.h"
 
 namespace cppfind {
-    enum class SortBy {FILEPATH, FILENAME, FILETYPE};
+    enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
 
     class FindSettings {
     private:
@@ -24,6 +24,11 @@ namespace cppfind {
         bool m_includearchives = false;
         bool m_listdirs = false;
         bool m_listfiles = false;
+
+        long m_maxlastmod = 0L;
+        long m_maxsize = 0L;
+        long m_minlastmod = 0L;
+        long m_minsize = 0L;
 
         std::vector<std::string> m_out_archiveextensions;
         std::vector<FindPattern*> m_out_archivefilepatterns;
@@ -79,6 +84,10 @@ namespace cppfind {
         bool includearchives() const;
         bool listdirs() const;
         bool listfiles() const;
+        long maxlastmod() const;
+        long maxsize() const;
+        long minlastmod() const;
+        long minsize() const;
         bool printusage() const;
         bool printversion() const;
         bool recursive() const;
@@ -121,6 +130,10 @@ namespace cppfind {
         void includearchives(bool b);
         void listdirs(bool b);
         void listfiles(bool b);
+        void maxlastmod(long maxlastmod);
+        void maxsize(long maxsize);
+        void minlastmod(long minlastmod);
+        void minsize(long minsize);
         void printusage(bool b);
         void printversion(bool b);
         void recursive(bool b);

@@ -232,8 +232,10 @@ TEST_CASE("Test is_matching_file no exts no patterns should be true", "[Finder]"
     std::string startpath = ".";
     settings->add_path(startpath);
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file matches in-ext should be true", "[Finder]") {
@@ -242,8 +244,10 @@ TEST_CASE("Test is_matching_file matches in-ext should be true", "[Finder]") {
     settings->add_path(startpath);
     settings->add_in_extension("cs");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file does not match in-ext should be false", "[Finder]") {
@@ -252,8 +256,10 @@ TEST_CASE("Test is_matching_file does not match in-ext should be false", "[Finde
     settings->add_path(startpath);
     settings->add_in_extension("java");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(!finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(!finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file matches out-ext should be false", "[Finder]") {
@@ -262,8 +268,10 @@ TEST_CASE("Test is_matching_file matches out-ext should be false", "[Finder]") {
     settings->add_path(startpath);
     settings->add_out_extension("cs");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(!finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(!finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file does not match out-ext should be true", "[Finder]") {
@@ -272,8 +280,10 @@ TEST_CASE("Test is_matching_file does not match out-ext should be true", "[Finde
     settings->add_path(startpath);
     settings->add_out_extension("java");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file matches in-pattern should be true", "[Finder]") {
@@ -282,8 +292,10 @@ TEST_CASE("Test is_matching_file matches in-pattern should be true", "[Finder]")
     settings->add_path(startpath);
     settings->add_in_filepattern("Finder");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(finder->is_matching_file("Finder.cs", cppfind::FileType::CODE));
+    REQUIRE(finder->is_matching_file("Finder.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file does not match in-pattern should be false", "[Finder]") {
@@ -292,8 +304,10 @@ TEST_CASE("Test is_matching_file does not match in-pattern should be false", "[F
     settings->add_path(startpath);
     settings->add_in_filepattern("Finder");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(!finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(!finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file matches out-pattern should be false", "[Finder]") {
@@ -302,8 +316,10 @@ TEST_CASE("Test is_matching_file matches out-pattern should be false", "[Finder]
     settings->add_path(startpath);
     settings->add_out_filepattern("Finder");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(!finder->is_matching_file("Finder.cs", cppfind::FileType::CODE));
+    REQUIRE(!finder->is_matching_file("Finder.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 TEST_CASE("Test is_matching_file does not match out-pattern should be true", "[Finder]") {
@@ -312,8 +328,10 @@ TEST_CASE("Test is_matching_file does not match out-pattern should be true", "[F
     settings->add_path(startpath);
     settings->add_out_filepattern("Finder");
     auto *finder = new cppfind::Finder(settings);
+    struct stat fpstat;
+    fpstat.st_size = 1000;
 
-    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE));
+    REQUIRE(finder->is_matching_file("FileUtil.cs", cppfind::FileType::CODE, &fpstat));
 }
 
 /***************************************************************************

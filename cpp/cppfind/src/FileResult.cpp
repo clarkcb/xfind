@@ -2,26 +2,30 @@
 #include "FileResult.h"
 
 namespace cppfind {
-    FileResult::FileResult(std::string& p, std::string& f, FileType ft) {
+    FileResult::FileResult(std::string& p, std::string& f, FileType ft, uint64_t filesize, long modtime) {
         std::vector<std::string> containers = {};
-        init(containers, p, f, ft);
+        init(containers, p, f, ft, filesize, modtime);
     }
 
-    FileResult::FileResult(const std::vector<std::string>& cs, const std::string& p, const std::string& f, const FileType ft) {
-        init(cs, p, f, ft);
+    FileResult::FileResult(const std::vector<std::string>& cs, const std::string& p, const std::string& f,
+                           const FileType ft, const uint64_t filesize, long modtime) {
+        init(cs, p, f, ft, filesize, modtime);
     }
 
-    FileResult::FileResult(const std::vector<std::string>& cs, std::string& p, std::string& f, FileType ft) {
-        init(cs, p, f, ft);
+    FileResult::FileResult(const std::vector<std::string>& cs, std::string& p, std::string& f, FileType ft,
+                           uint64_t filesize, long modtime) {
+        init(cs, p, f, ft, filesize, modtime);
     }
 
 
     void FileResult::init(const std::vector<std::string>& cs, const std::string& p, const std::string& f,
-                          const FileType ft) {
+                          const FileType ft, const uint64_t filesize, long modtime) {
         m_containers = cs;
         m_path = p;
         m_filename = f;
         m_filetype = ft;
+        m_filesize = filesize;
+        m_modtime = modtime;
     }
 
     std::string FileResult::path() const {
@@ -34,6 +38,14 @@ namespace cppfind {
 
     FileType FileResult::filetype() const {
         return m_filetype;
+    }
+
+    uint64_t FileResult::filesize() const {
+        return m_filesize;
+    }
+
+    long FileResult::modtime() const {
+        return m_modtime;
     }
 
     const std::string FileResult::string() const {
