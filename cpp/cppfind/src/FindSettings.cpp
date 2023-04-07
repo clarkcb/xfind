@@ -122,6 +122,10 @@ namespace cppfind {
         return m_recursive;
     }
 
+    bool FindSettings::sort_caseinsensitive() const {
+        return m_sort_caseinsensitive;
+    }
+
     bool FindSettings::sort_descending() const {
         return m_sort_descending;
     }
@@ -232,6 +236,10 @@ namespace cppfind {
         m_sortby = FindSettings::sortby_from_name(name);
     }
 
+    void FindSettings::sort_caseinsensitive(const bool b) {
+        m_sort_caseinsensitive = b;
+    }
+
     void FindSettings::sort_descending(const bool b) {
         m_sort_descending = b;
     }
@@ -340,6 +348,7 @@ namespace cppfind {
                 + ", printversion: " + bool_to_string(m_printversion)
                 + ", recursive: " + bool_to_string(m_recursive)
                 + ", sortby: " + sortby_to_name(m_sortby)
+                + ", sort_caseinsensitive: " + bool_to_string(m_sort_caseinsensitive)
                 + ", sort_descending: " + bool_to_string(m_sort_descending)
                 + ", verbose: " + bool_to_string(m_verbose)
                 + ")";

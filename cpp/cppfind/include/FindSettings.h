@@ -39,6 +39,7 @@ namespace cppfind {
         std::vector<std::string> m_paths;
 
         SortBy m_sortby = SortBy::FILEPATH;
+        bool m_sort_caseinsensitive = false;
         bool m_sort_descending = false;
         bool m_verbose = false;
 
@@ -81,6 +82,7 @@ namespace cppfind {
         bool printusage() const;
         bool printversion() const;
         bool recursive() const;
+        bool sort_caseinsensitive() const;
         bool sort_descending() const;
         bool uniquelines() const;
         bool verbose() const;
@@ -124,6 +126,7 @@ namespace cppfind {
         void recursive(bool b);
         void sortby(SortBy sortby);
         void set_sortby(const std::string& name);
+        void sort_caseinsensitive(bool b);
         void sort_descending(bool b);
         void verbose(bool b);
         std::string string();
