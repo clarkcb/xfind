@@ -38,7 +38,11 @@ func NewFindPatterns() *FindPatterns {
 	}
 }
 
-func (fp *FindPatterns) AddPattern(s string) {
+func (fp *FindPatterns) AddPattern(r *regexp.Regexp) {
+	fp.patterns = append(fp.patterns, r)
+}
+
+func (fp *FindPatterns) AddPatternString(s string) {
 	fp.patterns = append(fp.patterns, regexp.MustCompile(s))
 }
 

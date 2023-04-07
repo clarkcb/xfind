@@ -137,7 +137,7 @@ func (f *FindSettings) AddOutExtension(xs string) {
 }
 
 func addPattern(p string, sp *FindPatterns) {
-	sp.AddPattern(p)
+	sp.AddPatternString(p)
 }
 
 func (f *FindSettings) AddInDirPattern(p string) {

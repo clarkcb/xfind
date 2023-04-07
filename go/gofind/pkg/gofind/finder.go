@@ -64,19 +64,27 @@ func (f *Finder) isMatchingDir(d string) bool {
 }
 
 func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
-	ext := getExtension(fr.Name)
-	return (len(f.Settings.InArchiveExtensions) == 0 || contains(f.Settings.InArchiveExtensions, ext)) &&
-		(len(f.Settings.OutArchiveExtensions) == 0 || !contains(f.Settings.OutArchiveExtensions, ext)) &&
-		(f.Settings.InArchiveFilePatterns.IsEmpty() || f.Settings.InArchiveFilePatterns.MatchesAny(fr.Name)) &&
+	if len(f.Settings.InArchiveExtensions) > 0 || len(f.Settings.InArchiveExtensions) > 0 {
+		ext := getExtension(fr.Name)
+		if (len(f.Settings.InArchiveExtensions) > 0 && !contains(f.Settings.InArchiveExtensions, ext)) ||
+			(len(f.Settings.InArchiveExtensions) > 0 && contains(f.Settings.InArchiveExtensions, ext)) {
+			return false
+		}
+	}
+	return (f.Settings.InArchiveFilePatterns.IsEmpty() || f.Settings.InArchiveFilePatterns.MatchesAny(fr.Name)) &&
 		(f.Settings.OutArchiveFilePatterns.IsEmpty() || !f.Settings.OutArchiveFilePatterns.MatchesAny(fr.Name))
 }
 
 func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
-	ext := getExtension(fr.Name)
-	return (len(f.Settings.InExtensions) == 0 || contains(f.Settings.InExtensions, ext)) &&
-		(len(f.Settings.OutExtensions) == 0 || !contains(f.Settings.OutExtensions, ext)) &&
-		(len(f.Settings.InFileTypes) == 0 || containsFileType(f.Settings.InFileTypes, fr.FileType)) &&
-		(len(f.Settings.OutFileTypes) == 0 || !containsFileType(f.Settings.OutFileTypes, fr.FileType)) &&
+	if len(f.Settings.InExtensions) > 0 || len(f.Settings.OutExtensions) > 0 {
+		ext := getExtension(fr.Name)
+		if (len(f.Settings.InExtensions) > 0 && !contains(f.Settings.InExtensions, ext)) ||
+			(len(f.Settings.OutExtensions) > 0 && contains(f.Settings.OutExtensions, ext)) {
+			return false
+		}
+	}
+	return (len(f.Settings.InFileTypes) == 0 || ContainsFileType(f.Settings.InFileTypes, fr.FileType)) &&
+		(len(f.Settings.OutFileTypes) == 0 || !ContainsFileType(f.Settings.OutFileTypes, fr.FileType)) &&
 		(f.Settings.InFilePatterns.IsEmpty() || f.Settings.InFilePatterns.MatchesAny(fr.Name)) &&
 		(f.Settings.OutFilePatterns.IsEmpty() || !f.Settings.OutFilePatterns.MatchesAny(fr.Name))
 }
