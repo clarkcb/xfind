@@ -7,4 +7,6 @@ void test_filetype_from_name(void);
 
 void test_get_filetype_for_ext(void);
 
+void test_is_filetype_for_ext(void);
+
 #endif

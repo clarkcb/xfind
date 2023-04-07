@@ -245,7 +245,6 @@ error_t find(const FindSettings *settings, FileResults *results)
             char *f = (char *)malloc(nextpath_len);
             split_path(nextpath->string, &d, &f);
             if (filter_file(d, f, finder, &filetype, &st) == 1) {
-                // FileResult *r = new_file_result(d, f, filetype, &st);
                 FileResult *r = new_file_result(d, f, filetype, (uint64_t) st.st_size,
                                                 st.st_mtime);
                 add_to_file_results(r, results);

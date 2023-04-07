@@ -40,6 +40,7 @@ TEST_INCLUDE=-I./test
 TEST_FILES=test/test_common.c
 TEST_FILES+=test/test_filetypes.c
 TEST_FILES+=test/test_fileutil.c
+TEST_FILES+=test/test_finder.c
 TEST_FILES+=test/test_findoptions.c
 TEST_FILES+=test/test_findsettings.c
 

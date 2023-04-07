@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "common.h"
 #include "test_common.h"
 
 void test_last_index_of_char_in_string(void)

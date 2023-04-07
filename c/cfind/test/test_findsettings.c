@@ -20,6 +20,10 @@ void test_default_settings(void)
     assert(settings->includearchives == 0);
     assert(settings->listdirs == 0);
     assert(settings->listfiles == 0);
+    assert(settings->maxlastmod == 0L);
+    assert(settings->maxsize == 0L);
+    assert(settings->minlastmod == 0L);
+    assert(settings->minsize == 0L);
     assert(settings->out_archiveextensions == NULL);
     assert(settings->out_archivefilepatterns == NULL);
     assert(settings->out_dirpatterns == NULL);

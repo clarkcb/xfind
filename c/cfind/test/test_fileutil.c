@@ -132,15 +132,19 @@ void test_is_hidden(void)
         "../filename.txt",
         "../.filename.txt",
         "/filename.txt",
-        "/.filename.txt"
+        "/.filename.txt",
+        "/path/to/a/filename.txt",
+        "/path/to/a/.filename.txt"
     };
-    const size_t arrlen = 15;
-    int expected[15] = {
+    const size_t arrlen = 17;
+    int expected[17] = {
         0,
         0,
         0,
         0,
         0,
+        0,
+        1,
         0,
         1,
         0,
@@ -160,4 +164,73 @@ void test_is_hidden(void)
         printf("actual res:   %d\n", res);
         assert(res == expected[i]);
     }
+}
+
+void test_expand_path(void)
+{
+    printf("\ntest_expand_path()\n");
+
+    char *expanded = (char *)malloc(50);
+    expanded[0] = '\0';
+
+    char *tilde = "~";
+    expand_path(tilde, &expanded);
+    printf("original path: %s\n", tilde);
+    printf("expanded path: %s\n", expanded);
+    assert(strlen(expanded) > strlen(tilde));
+
+    char *homepath = "/home/path";
+    expand_path(homepath, &expanded);
+    printf("original path: %s\n", homepath);
+    printf("expanded path: %s\n", expanded);
+    assert(strlen(expanded) == strlen(homepath));
+    assert(strcmp(expanded, homepath) == 0);
+
+    free(expanded);
+}
+
+void test_join_path(void)
+{
+    printf("\ntest_join_path()\n");
+
+    char *joined_path = (char *)malloc(100 * sizeof(char));
+
+    char *path1 = "/home";
+    char *path2 = "path";
+
+    join_path(path1, path2, joined_path);
+    printf("path1: %s\n", path1);
+    printf("path2: %s\n", path2);
+    printf("joined_path: %s\n", joined_path);
+    assert(strcmp(joined_path, "/home/path") == 0);
+
+    // TODO: fix - need to normalize paths before joining
+//    path1 = "/home/";
+//
+//    join_path(path1, path2, joined_path);
+//    printf("path1: %s\n", path1);
+//    printf("path2: %s\n", path2);
+//    printf("joined_path: %s\n", joined_path);
+//    assert(strcmp(joined_path, "/home/path") == 0);
+
+    free(joined_path);
+}
+
+void test_split_path(void)
+{
+    printf("\ntest_split_path()\n");
+
+    char *path = "/home/profile";
+
+    char *d = (char *)malloc(50);
+    char *f = (char *)malloc(50);
+    split_path(path, &d, &f);
+    printf("path: %s\n", path);
+    printf("d: %s\n", d);
+    printf("f: %s\n", f);
+    assert(strcmp(d, "/home") == 0);
+    assert(strcmp(f, "profile") == 0);
+
+    free(d);
+    free(f);
 }
