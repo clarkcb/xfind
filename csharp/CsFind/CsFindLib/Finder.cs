@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -119,27 +119,38 @@ public class Finder
 		var fileResults = new List<FileResult>();
 		var findOption = Settings.Recursive ? SearchOption.AllDirectories :
 			SearchOption.TopDirectoryOnly;
+		var findTasks = new Task<List<FileResult>>[Settings.Paths.Count];
+		var currentTask = 0;
 		foreach (var p in Settings.Paths)
 		{
-			var expandedPath = FileUtil.ExpandPath(p);
-			if (Directory.Exists(expandedPath))
+			findTasks[currentTask] = Task<List<FileResult>>.Factory.StartNew(() =>
 			{
-				fileResults.AddRange(new DirectoryInfo(expandedPath).
-					EnumerateFiles("*", findOption).
-					Where(f => f.Directory == null || IsMatchingDirectory(f.Directory)).
-					Select(f => FilterToFileResult(f)).
-					Where(fr => fr != null).
-					Select(f => f!));
-			}
-			else if (File.Exists(expandedPath))
-			{
-				var fi = new FileInfo(expandedPath);
-				var fr = FilterToFileResult(fi);
-				if (fr != null)
+				var expandedPath = FileUtil.ExpandPath(p);
+				var pathResults = new List<FileResult>();
+				if (Directory.Exists(expandedPath))
 				{
-					fileResults.Add(fr);
+					pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
+						.Where(f => f.Directory == null || IsMatchingDirectory(f.Directory))
+						.Select(f => FilterToFileResult(f)).Where(fr => fr != null).Select(f => f!));
 				}
-			}
+				else if (File.Exists(expandedPath))
+				{
+					var fi = new FileInfo(expandedPath);
+					var fr = FilterToFileResult(fi);
+					if (fr != null)
+					{
+						pathResults.Add(fr);
+					}
+				}
+
+				return pathResults;
+			});
+			currentTask++;
+		}
+		Task.WaitAll(findTasks);
+		foreach (var findTask in findTasks)
+		{
+			fileResults.AddRange(findTask.Result);
 		}
 		return fileResults;
 	}
