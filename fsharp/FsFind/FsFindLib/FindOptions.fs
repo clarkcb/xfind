@@ -13,6 +13,11 @@ module FindOptions =
         Description : string
     }
 
+    let SortOption (o1 : FindOption) (o2 : FindOption) : int =
+        let os1 = if o1.ShortArg <> "" then o1.ShortArg + "@" + o1.LongArg else o1.LongArg
+        let os2 = if o2.ShortArg <> "" then o2.ShortArg + "@" + o2.LongArg else o2.LongArg
+        String.Compare(os1, os2, StringComparison.OrdinalIgnoreCase)
+
     let AddExtensions (exts : string) (extList : string list) : string list =
         List.append extList (FileUtil.ExtensionsListFromString exts)
 
@@ -127,8 +132,9 @@ module FindOptions =
         recSettingsFromArgs (Array.toList args) { FindSettings.DefaultSettings with ListFiles = true }
 
     let GetUsageString () : string =
+        let sortedOptions = options |> List.sortWith SortOption
         let optStringMap =
-            [ for opt in options do
+            [ for opt in sortedOptions do
                 let shortstring : string = 
                     if opt.ShortArg <> "" then "-" + opt.ShortArg + ","
                     else ""
@@ -137,7 +143,7 @@ module FindOptions =
             |> Map.ofList
 
         let optDescMap =
-            [ for opt in options do
+            [ for opt in sortedOptions do
                 yield (opt.LongArg, opt.Description) ]
             |> Map.ofList
 
@@ -154,7 +160,7 @@ module FindOptions =
         let format = " {0,-" + longest.ToString() + "}  {1}"
 
         let usageStrings =
-            [for o in options do
+            [for o in sortedOptions do
                 yield String.Format(format, optStringMap.[o.LongArg], optDescMap.[o.LongArg])]
 
         let usageString = 
