@@ -50,6 +50,7 @@ pub struct FindSettings {
     pub print_version: bool,
     pub recursive: bool,
     pub sort_by: SortBy,
+    pub sort_caseinsensitive: bool,
     pub sort_descending: bool,
     pub verbose: bool,
 }
@@ -80,6 +81,7 @@ impl FindSettings {
             print_version: false,
             recursive: true,
             sort_by: SortBy::FilePath,
+            sort_caseinsensitive: false,
             sort_descending: false,
             verbose: false,
         }
@@ -193,6 +195,7 @@ mod tests {
         assert_eq!(settings.print_version, false);
         assert_eq!(settings.recursive, true);
         assert_eq!(settings.sort_by, SortBy::FilePath);
+        assert_eq!(settings.sort_caseinsensitive, false);
         assert_eq!(settings.sort_descending, false);
         assert_eq!(settings.verbose, false);
     }

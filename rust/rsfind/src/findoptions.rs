@@ -446,6 +446,14 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_descending = !b)),
     );
     flag_map.insert(
+        "sort-caseinsensitive".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_caseinsensitive = b)),
+    );
+    flag_map.insert(
+        "sort-casesensitive".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_caseinsensitive = !b)),
+    );
+    flag_map.insert(
         "sort-descending".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_descending = b)),
     );

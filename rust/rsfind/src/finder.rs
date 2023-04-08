@@ -143,17 +143,53 @@ impl Finder {
     }
 
     fn cmp_by_path(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        if fr1.path == fr2.path {
+        let pathcmp = fr1.path.cmp(&fr2.path);
+        if pathcmp.is_eq() {
             return fr1.name.cmp(&fr2.name);
         }
-        fr1.path.cmp(&fr2.path)
+        pathcmp
+    }
+
+    fn cmp_by_path_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        let pathcmp = fr1.path.to_lowercase().cmp(&fr2.path.to_lowercase());
+        if pathcmp.is_eq() {
+            return fr1.name.to_lowercase().cmp(&fr2.name.to_lowercase());
+        }
+        pathcmp
+    }
+
+    fn get_cmp_by_path(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+        return if self.settings.sort_caseinsensitive {
+            Self::cmp_by_path_ci
+        } else {
+            Self::cmp_by_path
+        }
     }
 
     fn cmp_by_name(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        if fr1.name == fr2.name {
+        let namecmp = fr1.name.cmp(&fr2.name);
+        if namecmp.is_eq() {
             return fr1.path.cmp(&fr2.path);
         }
-        fr1.name.cmp(&fr2.name)
+        namecmp
+    }
+
+    fn cmp_by_name_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        let namecmp = fr1.name.to_lowercase().cmp(&fr2.name.to_lowercase());
+        if namecmp.is_eq() {
+            return fr1.path.to_lowercase().cmp(&fr2.path.to_lowercase());
+        }
+        namecmp
+    }
+
+    fn get_cmp_by_name(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+        return if self.settings.sort_caseinsensitive {
+            Self::cmp_by_name_ci
+        } else {
+            Self::cmp_by_name
+        }
+    }
+
     }
 
     fn cmp_by_type(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
