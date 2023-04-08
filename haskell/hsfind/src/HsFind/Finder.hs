@@ -154,23 +154,29 @@ getFileResults settings = do
   let fileResults = zipWith (curry getFileResult) allPaths allFileTypes
   if not (includeArchives settings) && Archive `elem` allFileTypes
   then return $ filter (not . isArchiveFile) fileResults
-  else return fileResults
 
-sortFileResultsByPath :: FileResult -> FileResult -> Ordering
-sortFileResultsByPath fr1 fr2 =
+compareStrings :: FindSettings -> String -> String -> Ordering
+compareStrings settings s1 s2 =
+  if sortCaseInsensitive settings
+    then compare (lower s1) (lower s2)
+    else compare s1 s2
+  where lower = map toLower
+
+sortFileResultsByPath :: FindSettings -> FileResult -> FileResult -> Ordering
+sortFileResultsByPath settings fr1 fr2 =
   if p1 == p2
-  then compare f1 f2
-  else compare p1 p2
+  then compareStrings settings f1 f2
+  else compareStrings settings p1 p2
   where p1 = dropFileName (fileResultPath fr1)
         p2 = dropFileName (fileResultPath fr2)
         f1 = takeFileName (fileResultPath fr1)
         f2 = takeFileName (fileResultPath fr2)
 
-sortFileResultsByName :: FileResult -> FileResult -> Ordering
-sortFileResultsByName fr1 fr2 =
+sortFileResultsByName :: FindSettings -> FileResult -> FileResult -> Ordering
+sortFileResultsByName settings fr1 fr2 =
   if f1 == f2
-  then compare p1 p2
-  else compare f1 f2
+  then compareStrings settings p1 p2
+  else compareStrings settings f1 f2
   where p1 = dropFileName (fileResultPath fr1)
         p2 = dropFileName (fileResultPath fr2)
         f1 = takeFileName (fileResultPath fr1)

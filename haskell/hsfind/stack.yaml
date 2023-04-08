@@ -41,6 +41,16 @@ packages:
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
 # extra-deps: []
+extra-deps:
+# - aeson-2.1.2.1
+# - directory-1.3.8.1
+- extra-1.7.9
+# - filepath-1.4.100.3
+# - hxt-9.3.1.22
+# - time-1.9.1
+# - unix-2.8.1.1
+# - filepath-1.4.100.3@sha256:ab6e3330c42817b0effb14cae9c60d5cdc41d61f7354d04bc529ed031113f27c,5623
+# - time-1.12.2@sha256:88e8493d9130038d3b9968a2530a0900141cd3d938483c83dde56e12b875ebc8,6510
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
@@ -53,7 +63,7 @@ packages:
 #
 # Require a specific version of stack, using version ranges
 # require-stack-version: -any # Default
-# require-stack-version: ">=2.7"
+# require-stack-version: ">=2.9"
 #
 # Override the architecture used by stack, especially useful on Windows
 # arch: i386
@@ -65,3 +75,7 @@ packages:
 #
 # Allow a newer minor version of GHC than the snapshot specifies
 # compiler-check: newer-minor
+allow-newer: true
+
+# compiler: ghc-9.2.5
+# compiler-check: match-exact

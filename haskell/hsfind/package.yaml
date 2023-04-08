@@ -26,13 +26,25 @@ dependencies:
 - directory
 - filepath
 - hxt
-- regex-pcre-builtin >=0.94.4
-- split >= 0.2.3.4
+- regex-pcre-builtin >=0.95.2
+- split >= 0.2.3
 - text
-- timeit
+- time
+- timeit >=2.0
 
 data-files:
   - data/*.json
+
+ghc-options:
+- -Wall
+- -Wcompat
+- -Widentities
+- -Wincomplete-record-updates
+- -Wincomplete-uni-patterns
+- -Wmissing-export-lists
+- -Wmissing-home-modules
+- -Wpartial-fields
+- -Wredundant-constraints
 
 library:
   source-dirs: src

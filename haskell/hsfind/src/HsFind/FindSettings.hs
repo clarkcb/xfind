@@ -48,6 +48,7 @@ data FindSettings = FindSettings {
                                  , printUsage :: Bool
                                  , printVersion :: Bool
                                  , recursive :: Bool
+                                 , sortCaseInsensitive :: Bool
                                  , sortDescending :: Bool
                                  , sortResultsBy :: SortBy
                                  , verbose :: Bool
@@ -77,6 +78,7 @@ defaultFindSettings = FindSettings {
                                    , printUsage=False
                                    , printVersion=False
                                    , recursive=True
+                                   , sortCaseInsensitive=False
                                    , sortDescending=False
                                    , sortResultsBy=SortByFilePath
                                    , verbose=False
