@@ -5,7 +5,7 @@ use std::fs;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use crate::common::log;
+use crate::common::{log, timestamp_from_date_string};
 use crate::config::Config;
 use crate::filetypes::FileTypes;
 use crate::finderror::FindError;
@@ -341,6 +341,48 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
         Box::new(|s: &str, settings: &mut FindSettings| {
             let filetype = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_in_file_type(filetype))
+        }),
+    );
+    arg_map.insert(
+        "maxlastmod".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            let res = timestamp_from_date_string(s);
+            match res {
+                Ok(t) => {
+                    settings.max_lastmod = t as u64;
+                    Ok(())
+                },
+                Err(_) => {
+                    res.map(|_t| ()).map_err(|_e| FindError {description: String::from("Unable to get timestamp from string")})
+                }
+            }
+        }),
+    );
+    arg_map.insert(
+        "maxsize".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            Ok(settings.max_size = s.parse::<u64>().unwrap())
+        }),
+    );
+    arg_map.insert(
+        "minlastmod".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            let res = timestamp_from_date_string(s);
+            match res {
+                Ok(t) => {
+                    settings.min_lastmod = t as u64;
+                    Ok(())
+                },
+                Err(_) => {
+                    res.map(|_t| ()).map_err(|_e| FindError {description: String::from("Unable to get timestamp from string")})
+                }
+            }
+        }),
+    );
+    arg_map.insert(
+        "minsize".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            Ok(settings.min_size = s.parse::<u64>().unwrap())
         }),
     );
     arg_map.insert(

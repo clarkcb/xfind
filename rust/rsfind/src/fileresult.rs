@@ -1,4 +1,3 @@
-// use std::cmp::Ordering;
 use std::path::Path;
 
 use crate::filetypes::FileType;
@@ -9,11 +8,13 @@ pub struct FileResult {
     pub path: String,
     pub name: String,
     pub filetype: FileType,
+    pub filesize: u64,
+    pub modtime: u64,
 }
 
 impl FileResult {
-    pub fn new(path: String, name: String, filetype: FileType) -> FileResult {
-        FileResult::with_containers(Vec::new(), path, name, filetype)
+    pub fn new(path: String, name: String, filetype: FileType, filesize: u64, modtime: u64) -> FileResult {
+        FileResult::with_containers(Vec::new(), path, name, filetype, filesize, modtime)
     }
 
     pub fn with_containers(
@@ -21,12 +22,16 @@ impl FileResult {
         path: String,
         name: String,
         filetype: FileType,
+        filesize: u64,
+        modtime: u64,
     ) -> FileResult {
         FileResult {
             containers,
             path,
             name,
             filetype,
+            filesize,
+            modtime,
         }
     }
 
@@ -56,20 +61,28 @@ mod tests {
 
     #[test]
     fn test_find_file_abs_path() {
-        let sf = FileResult::new(
+        let fr = FileResult::new(
             "~/src/xfind/rust/rsfind/src".to_string(),
             "finder.rs".to_string(),
             FileType::Code,
+            1000,
+            SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()
         );
         assert_eq!(
-            sf.filepath(),
+            fr.filepath(),
             "~/src/xfind/rust/rsfind/src/finder.rs"
         );
     }
 
     #[test]
     fn test_find_file_rel_path() {
-        let sf = FileResult::new(".".to_string(), "finder.rs".to_string(), FileType::Code);
-        assert_eq!(sf.filepath(), "./finder.rs");
+        let fr = FileResult::new(
+            ".".to_string(),
+            "finder.rs".to_string(),
+            FileType::Code,
+            1000,
+            SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()
+        );
+        assert_eq!(fr.filepath(), "./finder.rs");
     }
 }

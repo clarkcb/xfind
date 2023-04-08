@@ -6,13 +6,17 @@ use crate::filetypes;
 pub enum SortBy {
     FilePath,
     FileName,
+    FileSize,
     FileType,
+    LastMod,
 }
 
 pub fn sort_by_from_name(name: &str) -> SortBy {
     match name.to_ascii_lowercase().as_str() {
         "name" => SortBy::FileName,
+        "size" => SortBy::FileSize,
         "type" => SortBy::FileType,
+        "lastmod" => SortBy::LastMod,
         _ => SortBy::FilePath,
     }
 }
@@ -20,7 +24,9 @@ pub fn sort_by_from_name(name: &str) -> SortBy {
 pub fn name_from_sort_by(sort_by: &SortBy) -> String {
     match sort_by {
         SortBy::FileName => String::from("name"),
+        SortBy::FileSize => String::from("size"),
         SortBy::FileType => String::from("type"),
+        SortBy::LastMod => String::from("lastmod"),
         _ => String::from("path"),
     }
 }
@@ -39,6 +45,10 @@ pub struct FindSettings {
     pub include_archives: bool,
     pub list_dirs: bool,
     pub list_files: bool,
+    pub max_lastmod: u64,
+    pub max_size: u64,
+    pub min_lastmod: u64,
+    pub min_size: u64,
     pub out_archive_extensions: Vec<String>,
     pub out_archive_file_patterns: Vec<Regex>,
     pub out_dir_patterns: Vec<Regex>,
@@ -70,6 +80,10 @@ impl FindSettings {
             include_archives: false,
             list_dirs: false,
             list_files: false,
+            max_lastmod: 0u64,
+            max_size: 0u64,
+            min_lastmod: 0u64,
+            min_size: 0u64,
             out_archive_extensions: Vec::new(),
             out_archive_file_patterns: Vec::new(),
             out_dir_patterns: Vec::new(),
@@ -184,6 +198,10 @@ mod tests {
         assert_eq!(settings.include_archives, false);
         assert_eq!(settings.list_dirs, false);
         assert_eq!(settings.list_files, false);
+        assert_eq!(settings.max_lastmod, 0);
+        assert_eq!(settings.max_size, 0);
+        assert_eq!(settings.min_lastmod, 0);
+        assert_eq!(settings.min_size, 0);
         assert!(settings.out_archive_extensions.is_empty());
         assert!(settings.out_archive_file_patterns.is_empty());
         assert!(settings.out_dir_patterns.is_empty());
