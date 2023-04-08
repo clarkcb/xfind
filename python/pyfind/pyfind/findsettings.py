@@ -183,6 +183,11 @@ class FindSettings:
                     print_dict[p] = f'"{val}"'
                 else:
                     print_dict[p] = '""'
+            elif isinstance(val, Optional[datetime]):
+                if val:
+                    print_dict[p] = f'"{val}"'
+                else:
+                    print_dict[p] = '0'
             else:
                 print_dict[p] = f'{val}'
         next_elem = 0

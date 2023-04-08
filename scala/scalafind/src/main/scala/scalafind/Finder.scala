@@ -5,6 +5,7 @@ import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
 import scalafind.Common.log
 import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
+import java.io.IOException
 import java.nio.file.{Files, Path, Paths}
 import java.nio.file.attribute.BasicFileAttributes
 import java.time.ZoneOffset
@@ -72,7 +73,7 @@ class Finder (settings: FindSettings) {
         (settings.maxLastMod.isEmpty
           || st.lastModifiedTime().toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) <= 0)
         && (settings.minLastMod.isEmpty
-          || st.lastModifiedTime().toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
+          || st.lastModifiedTime().toInstant.compareTo(settings.minLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
         && (settings.maxSize == 0
           || st.size.compareTo(settings.maxSize.toLong) <= 0)
         && (settings.minSize == 0
@@ -94,21 +95,21 @@ class Finder (settings: FindSettings) {
 //      && matchesStat(fr)
   }
 
-  def filterToFileResult(f: Path): Option[FileResult] = {
-    if (settings.excludeHidden && Files.isHidden(f)) {
+  def filterToFileResult(p: Path): Option[FileResult] = {
+    if (settings.excludeHidden && Files.isHidden(p)) {
       None
     } else {
       val stat: Option[BasicFileAttributes] =
         if (settings.needStat) {
           try {
-            Some(Files.readAttributes(f, classOf[BasicFileAttributes]))
+            Some(Files.readAttributes(p, classOf[BasicFileAttributes]))
           } catch {
-            _ => None
+            case _: IOException => None
           }
         } else {
           None
         }
-      val fileResult = new FileResult(f, FileTypes.getFileType(f.getFileName().toString()), stat)
+      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), stat)
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None

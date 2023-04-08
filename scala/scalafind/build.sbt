@@ -1,4 +1,4 @@
-val scala3Version = "3.0.1"
+val scala3Version = "3.2.0"
 
 ThisBuild / scalaVersion := scala3Version
 ThisBuild / organization := "xsearch"

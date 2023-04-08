@@ -5,7 +5,7 @@ if (-not (Test-Path Env:XFIND_PATH))
     $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
 }
 
-$scalaVersion = '3.0.1'
+$scalaVersion = '3.2.0'
 $scalaFindJarPath = Join-Path $env:XFIND_PATH 'scala' 'scalafind' 'target' "scala-$scalaVersion"
 $scalaFindJars = @(Get-ChildItem $scalaFindJarPath) |
     Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.jar' -and $_ -match 'scalafind-assembly' }

@@ -59,7 +59,7 @@ module RbFind
       @printusage = false
       @printversion = false
       @recursive = true
-      @sortby = SortBy::FILETYPE
+      @sortby = SortBy::FILEPATH
       @sort_caseinsensitive = false
       @sort_descending = false
       @verbose = false

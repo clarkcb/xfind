@@ -255,16 +255,14 @@ export class Finder {
                 throw new FindError('startPath does not match find criteria');
             }
         } else if (stats.isFile()) {
-            // TODO: can I use filterToFileResult here?
             const dirname = path.dirname(startPath) || '.';
-            const filename = path.basename(startPath);
-            if (this.isMatchingDir(dirname) && this.filterFile(filename)) {
-                let stat: fs.Stats | null = null;
-                if (this._settings.needStat()) {
-                    stat = fs.statSync(startPath);
+            if (this.isMatchingDir(dirname)) {
+                const fr = this.filterToFileResult(startPath);
+                if (fr !== null) {
+                    fileResults.push(fr);
+                } else {
+                    throw new FindError('startPath does not match find criteria');
                 }
-                const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename), stat);
-                fileResults.push(fr);
             } else {
                 throw new FindError('startPath does not match find criteria');
             }

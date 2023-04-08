@@ -1,7 +1,8 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace CsFindLib;
 
@@ -164,14 +165,24 @@ public class Finder
 
 	private int CompareByPath(FileResult fr1, FileResult fr2)
 	{
-		var cmp = Settings.SortCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		// var cmp = Settings.SortCaseInsensitive ?
+		// 	StringComparison.InvariantCultureIgnoreCase :
+		// 	StringComparison.InvariantCulture;
+		var cmp = Settings.SortCaseInsensitive ?
+			StringComparison.OrdinalIgnoreCase :
+			StringComparison.Ordinal;
 		var dirNameCmp = string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp);
 		return dirNameCmp == 0 ? string.Compare(fr1.File.Name, fr2.File.Name, cmp) : dirNameCmp;
 	}
 	
 	private int CompareByName(FileResult fr1, FileResult fr2)
 	{
-		var cmp = Settings.SortCaseInsensitive ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+		// var cmp = Settings.SortCaseInsensitive ?
+		// 	StringComparison.InvariantCultureIgnoreCase :
+		// 	StringComparison.InvariantCulture;
+		var cmp = Settings.SortCaseInsensitive ?
+			StringComparison.OrdinalIgnoreCase :
+			StringComparison.Ordinal;
 		var fileNameCmp = string.Compare(fr1.File.Name, fr2.File.Name, cmp);
 		return fileNameCmp == 0 ? string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) : fileNameCmp;
 	}
