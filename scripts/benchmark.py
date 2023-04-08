@@ -29,6 +29,8 @@ Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'])
 exts = ','.join('py rb'.split())
 
 startpaths = [os.path.join(XFINDPATH, d) for d in ('python', 'ruby')]
+scriptpath = os.path.join(XFINDPATH, 'scripts')
+sharedpath = os.path.join(XFINDPATH, 'shared')
 
 default_runs = 10
 
@@ -37,21 +39,50 @@ core_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in
 ext_args = ['-x', exts]
 common_args = core_args + ext_args + startpaths
 
-# Scenarios to add:
-#     -x js,ts -s "Finder" /Users/cary/src/xfind/typescript
+# Scenarios
 scenarios = [
     Scenario('no args', [], replace_xfind_name=True),
     Scenario('help', ['-h'], replace_xfind_name=True),
+
+    # match extensions
     Scenario('find matching "{}" extensions'.format(exts), common_args, replace_xfind_name=False),
     Scenario('find not matching "{}" extensions'.format(exts), core_args + ['-X', exts] + startpaths,
         replace_xfind_name=False),
+
+    # match filename
     Scenario('find with "find" in filename', common_args + ['-f', 'find'], replace_xfind_name=False),
     Scenario('find with "find" not in filename', common_args + ['-F', 'find'], replace_xfind_name=False),
+
+    # match filetype
     Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths, replace_xfind_name=False),
     Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths, replace_xfind_name=False),
+
+    # list dirs
     Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs'], replace_xfind_name=False),
     Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
         replace_xfind_name=False),
+
+    # sorting scenarios
+    Scenario('sort shared files by path', ['--sort-by', 'path', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by filename', ['--sort-by', 'name', sharedpath], replace_xfind_name=False),
+    Scenario('sort scripts files by path case-insensitive', ['--sort-by', 'path', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
+    Scenario('sort scripts files by filename case-insensitive', ['--sort-by', 'name', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
+    Scenario('sort shared files by filesize', ['--sort-by', 'size', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by filesize descending', ['--sort-by', 'size', '--sort-descending', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by filetype', ['--sort-by', 'type', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by filetype descending', ['--sort-by', 'type', '--sort-descending', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by lastmod', ['--sort-by', 'lastmod', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by lastmod descending', ['--sort-by', 'lastmod', '--sort-descending', sharedpath], replace_xfind_name=False),
+
+    # filter by maxlastmod/minlastmod
+    Scenario('filter files with lastmod < maxlastmod', ['--maxlastmod', '2022-12-30', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with lastmod > minlastmod', ['--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by maxlastmod and minlastmod', ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
+
+    # filter by maxsize/minsize
+    Scenario('filter files with size < maxsize', ['--maxsize', '10000', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with size > minsize', ['--minsize', '1000', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by maxsize and minsize', ['--maxsize', '10000', '--minsize', '5000', scriptpath], replace_xfind_name=False),
 ]
 
 time_keys = {'real', 'sys', 'user', 'total'}
@@ -269,6 +300,7 @@ class Benchmarker(object):
         self.runs = default_runs
         self.debug = True
         self.exit_on_diff = True
+        self.exit_on_sort_diff = True
         self.diff_outputs = []
         self.__dict__.update(kwargs)
 
@@ -419,6 +451,32 @@ class Benchmarker(object):
                     print('{} output:\n"{}"'.format(x, xfind_output[x]))
                     print('{} output:\n"{}"'.format(y, xfind_output[y]))
                     self.diff_outputs.append((sn, x, y))
+            for x in xs:
+                if nonmatching[x]:
+                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(nonmatching[x]), str(nonmatching[x])))
+            return False
+        else:
+            print('\nOutputs of all versions match')
+            return True
+
+    def compare_output_lens(self, sn: int, xfind_output) -> bool:
+        nonmatching = nonmatching_lens(xfind_output)
+        if nonmatching:
+            xs = []
+            if len(nonmatching) == 2:
+                xs = sorted(nonmatching.keys())
+            elif len(nonmatching) > 2:
+                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
+            print()
+            for x in xs:
+                for y in sorted(nonmatching[x]):
+                    print('{} output != {} output'.format(x, y))
+                    print('{} output:\n"{}"'.format(x, xfind_output[x]))
+                    print('{} output:\n"{}"'.format(y, xfind_output[y]))
+                    self.diff_outputs.append((sn, x, y))
+            for x in xs:
+                if nonmatching[x]:
+                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(nonmatching[x]), str(nonmatching[x])))
             return False
         else:
             print('\nOutputs of all versions match')
@@ -463,7 +521,8 @@ class Benchmarker(object):
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
-            output = '\n'.join(sorted(output_lines))
+            # output = '\n'.join(sorted(output_lines))
+            output = '\n'.join(output_lines)
             if s.replace_xfind_name:
                 output = xfind_name_regex.sub('xfind', output)
             xfind_output[x] = output
@@ -475,7 +534,8 @@ class Benchmarker(object):
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
         if not self.compare_outputs(sn, xfind_output) and self.exit_on_diff:
-            raise KeyboardInterrupt
+            if not self.compare_output_lens(sn, xfind_output) and self.exit_on_sort_diff:
+                raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
     def do_run_seq(self, s: Scenario, sn: int, rn: int) -> RunResult:
@@ -511,9 +571,9 @@ class Benchmarker(object):
             time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
         if not self.compare_outputs(sn, xfind_output) and self.exit_on_diff:
-            raise KeyboardInterrupt
+            if not self.compare_output_lens(sn, xfind_output) and self.exit_on_sort_diff:
+                raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
-
 
     def activate_pyvenv(self):
         if 'VIRTUAL_ENV' not in os.environ:

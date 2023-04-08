@@ -104,7 +104,7 @@ unittest_csharp () {
     # run dotnet test
     log "Unit-testing csfind"
     log "dotnet test $CSFIND_PATH/CsFind.sln --verbosity $VERBOSITY"
-    dotnet test $CSFIND_PATH/CsFind.sln --verbosity $VERBOSITY
+    dotnet test "$CSFIND_PATH/CsFind.sln" --verbosity $VERBOSITY
 }
 
 unittest_dart () {
@@ -113,8 +113,8 @@ unittest_dart () {
 
     cd "$DARTFIND_PATH"
     log "Unit-testing dartfind"
-    log "pub run test"
-    pub run test
+    log "dart run test"
+    dart run test
     cd -
 }
 
@@ -137,7 +137,7 @@ unittest_fsharp () {
     # run dotnet test
     log "Unit-testing fsfind"
     log "dotnet test $FSFIND_PATH/FsFind.sln --verbosity $VERBOSITY"
-    dotnet test $FSFIND_PATH/FsFind.sln --verbosity $VERBOSITY
+    dotnet test "$FSFIND_PATH/FsFind.sln" --verbosity $VERBOSITY
 }
 
 unittest_go () {
@@ -224,7 +224,7 @@ unittest_kotlin () {
         return
     fi
 
-    cd $KTFIND_PATH
+    cd "$KTFIND_PATH"
     # run tests via gradle
     log "Unit-testing ktfind"
     log "gradle --warning-mode all test"
@@ -245,26 +245,26 @@ unittest_objc () {
 
     cd "$OBJCFIND_PATH"
     log "Unit-testing objcfind"
-    log "xcodebuild test -project objcfind.xcodeproj -scheme objcfind"
-    xcodebuild test -project objcfind.xcodeproj -scheme objcfind
+    log "xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests"
+    xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests
     cd -
 }
 
-unittest_ocaml () {
-    echo
-    hdr "unittest_ocaml"
+# unittest_ocaml () {
+#     echo
+#     hdr "unittest_ocaml"
 
-    cd "$MLFIND_PATH"
-    log "Unit-testing mlfind"
-    ./unittest.sh
-    cd -
-}
+#     cd "$MLFIND_PATH"
+#     log "Unit-testing mlfind"
+#     ./unittest.sh
+#     cd -
+# }
 
 unittest_perl () {
     echo
     hdr "unittest_perl"
 
-    TESTS_PATH=$PLFIND_PATH/t
+    TESTS_PATH="$PLFIND_PATH/t"
 
     # run tests using Test::Simple
     log "Unit-testing plfind"
@@ -318,8 +318,8 @@ unittest_python () {
 
     # Run the individual tests
     log "Unit-testing pyfind"
-    log "nosetests"
-    nosetests
+    log "pytest"
+    pytest
 
     # deactivate the virtualenv
     log "deactivate"
@@ -450,7 +450,7 @@ unittest_all () {
 
     unittest_objc
 
-    unittest_ocaml
+    # unittest_ocaml
 
     unittest_perl
 
@@ -503,9 +503,9 @@ case $ARG in
     all)
         unittest_all
         ;;
-    linux)
-        unittest_linux
-        ;;
+    # linux)
+    #     unittest_linux
+    #     ;;
     c)
         unittest_c
         ;;
@@ -542,9 +542,9 @@ case $ARG in
     objc)
         unittest_objc
         ;;
-    ocaml | ml)
-        unittest_ocaml
-        ;;
+    # ocaml | ml)
+    #     unittest_ocaml
+    #     ;;
     perl | pl)
         unittest_perl
         ;;

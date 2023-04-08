@@ -46,8 +46,9 @@ function UnitTestC
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
-    # Log('Unit-testing cfind')
-    Log('not implemented at this time')
+    Log('Unit-testing cfind')
+    Log('make run_tests')
+    make run_tests
 
     Set-Location $oldPwd
 }
@@ -124,8 +125,8 @@ function UnitTestDart
     Set-Location $dartfindPath
 
     Log('Unit-testing dartfind')
-    Log('pub run test')
-    pub run test
+    Log('dart run test')
+    dart run test
 
     Set-Location $oldPwd
 }
@@ -246,17 +247,37 @@ function UnitTestKotlin
         return
     }
 
+    $oldPwd = Get-Location
+    Set-Location $ktfindPath
+
     # run tests via gradle
     Log('Unit-testing ktfind')
-    $buildGradlePath = Join-Path $ktfindPath 'build.gradle'
-    Log("gradle -b $buildGradlePath test")
-    gradle -b $buildGradlePath test
+    # $buildGradlePath = Join-Path $ktfindPath 'build.gradle'
+    Log('gradle --warning-mode all test')
+    gradle --warning-mode all test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestObjc
 {
     Write-Host
-    Hdr('UnitTestObjc - currently unimplemented')
+    Hdr('UnitTestObjc')
+
+    if (-not (Get-Command 'xcodebuild' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install xcode')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $objcfindPath
+
+    Log('Unit-testing objcfind')
+    Log('xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests')
+    xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests
+
+    Set-Location $oldPwd
 }
 
 function UnitTestOcaml
@@ -346,8 +367,8 @@ function UnitTestPython
 
     Log('Unit-testing pyfind')
     # Run the individual tests
-    Log('nosetests')
-    nosetests
+    Log('pytest')
+    pytest
 
     # deactivate at end of setup process
     Log('deactivate')
@@ -490,7 +511,7 @@ function UnitTestAll
 
     UnitTestObjc
 
-    UnitTestOcaml
+    # UnitTestOcaml
 
     UnitTestPerl
 
@@ -538,7 +559,7 @@ function UnitTestMain
         'kotlin'     { UnitTestKotlin }
         'kt'         { UnitTestKotlin }
         'objc'       { UnitTestObjc }
-        'ocaml'      { UnitTestOcaml }
+        # 'ocaml'      { UnitTestOcaml }
         'perl'       { UnitTestPerl }
         'php'        { UnitTestPhp }
         'powershell' { UnitTestPowershell }

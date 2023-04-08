@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 ################################################################################
 #
 # build.sh
@@ -387,15 +387,15 @@ build_go () {
     fi
 
     # if GOBIN not defined, set to BIN_PATH
-    if [ ! -d "$GOBIN" ]
-    then
-        export GOBIN="$BIN_PATH"
-    fi
+    # if [ ! -d "$GOBIN" ]
+    # then
+    #     export GOBIN="$BIN_PATH"
+    # fi
 
     # now build/install gofind
     log "Building gofind"
     log "go install ./..."
-    go install ./...
+    GOBIN="$BIN_PATH" go install ./...
 
     cd -
 }
@@ -1088,7 +1088,7 @@ build_all () {
 
     time build_objc
 
-    time build_ocaml
+    # time build_ocaml
 
     time build_perl
 
@@ -1199,9 +1199,9 @@ case $ARG in
     objc)
         build_objc
         ;;
-    ocaml | ml)
-        build_ocaml
-        ;;
+    # ocaml | ml)
+    #     build_ocaml
+    #     ;;
     perl | pl)
         build_perl
         ;;

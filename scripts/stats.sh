@@ -28,10 +28,13 @@ word_counts () {
         WC=$(wc $f)
         # echo "$WC"
         ARR=($WC)
+        # flen=${#files[*]}
+        flen=$#
         lines=$(($lines + ${ARR[0]}))
         words=$(($words + ${ARR[1]}))
         chars=$(($chars + ${ARR[2]}))
     done
+    log "files: $flen"
     log "lines: $lines"
     log "words: $words"
     log "chars: $chars"
@@ -94,7 +97,8 @@ stats_csharp () {
     echo
     hdr "stats_csharp"
     CSFIND_SRCPATH=$CSFIND_PATH/CsFind
-    CSFILES=$(find $CSFIND_SRCPATH -type f -iname "*.cs" | grep -v /obj/)
+    CSFINDLIB_SRCPATH=$CSFIND_PATH/CsFindLib
+    CSFILES=$(find $CSFIND_SRCPATH $CSFINDLIB_SRCPATH -type f -iname "*.cs" | grep -v /obj/)
     log "Main source counts"
     word_counts $CSFILES
     CSFIND_TESTPATH=$CSFIND_PATH/CsFindTests
@@ -120,7 +124,8 @@ stats_fsharp () {
     echo
     hdr "stats_fsharp"
     FSFIND_SRCPATH=$FSFIND_PATH/FsFind
-    FSFILES=$(find $FSFIND_SRCPATH -type f -iname "*.fs")
+    FSFINDLIB_SRCPATH=$FSFIND_PATH/FsFindLib
+    FSFILES=$(find $FSFIND_SRCPATH $FSFINDLIB_SRCPATH -type f -iname "*.fs")
     log "Main source counts"
     word_counts $FSFILES
     FSFIND_TESTPATH=$FSFIND_PATH/FsFindTests
@@ -204,6 +209,19 @@ stats_objc () {
     log "Test source counts"
     word_counts $OBJCTESTFILES
 }
+
+# stats_ocaml () {
+#     echo
+#     hdr "stats_ocaml"
+#     OCAMLFIND_SRCPATH=$OCAMLFIND_PATH/src
+#     OCAMLFILES=$(find $OCAMLFIND_SRCPATH -type f \( -iname \*.ml -o -iname \*.mli \))
+#     log "Main source counts"
+#     word_counts $OCAMLFILES
+#     OCAMLFIND_TESTPATH=$OCAMLFIND_PATH/tests
+#     OCAMLFILES=$(find $OCAMLFIND_TESTPATH -type f -iname "*.ml")
+#     log "Test source counts"
+#     word_counts $OCAMLFILES
+# }
 
 stats_perl () {
     echo
@@ -332,6 +350,8 @@ stats_all () {
 
     stats_objc
 
+    # stats_ocaml
+
     stats_perl
 
     stats_php
@@ -400,6 +420,9 @@ then
 elif [ "$ARG" == "objc" ]
 then
     stats_objc
+# elif [ "$ARG" == "ocaml" ]
+# then
+#     stats_ocaml
 elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
 then
     stats_perl

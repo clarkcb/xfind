@@ -686,7 +686,7 @@ function BuildObjc
         $configurations += 'Release'
     }
 
-    # run dotnet build for selected configurations
+    # run build for selected configurations
     ForEach ($c in $configurations)
     {
         if ($target -eq 'alltargets')
@@ -859,7 +859,7 @@ function BuildPython
     Hdr('BuildPython')
 
     # ensure python3.7+ is installed
-    $pythonVersions = @('python3.9', 'python3.8', 'python3.7')
+    $pythonVersions = @('python3.11', 'python3.10', 'python3.9', 'python3.8', 'python3.7')
     $python = ''
     ForEach ($p in $pythonVersions)
     {
@@ -1203,7 +1203,7 @@ function BuildAll
 
     Measure-Command { BuildObjc }
 
-    Measure-Command { BuildOcaml }
+    # Measure-Command { BuildOcaml }
 
     Measure-Command { BuildPerl }
 
@@ -1230,7 +1230,7 @@ function BuildAll
 
 function BuildMain
 {
-    param($lang='all')
+    param($lang='')
 
     switch ($lang)
     {

@@ -84,15 +84,15 @@ def nonmatching_lens(xfind_output):
     xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
+        x_len = len(xfind_output[x])
         for y in xs:
-            x_len = len(xfind_output[x])
             y_len = len(xfind_output[y])
             if x_len != y_len:
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
     return nonmatching
 
-def nonmatching_outputs(xfind_output):
+def nonmatching_outputs(xfind_output: dict[str, list[str]]):
     """Examines xfind_output (a dict of {xfind_name : [lines]})
        and returns a dict of xfind instances with non-matching
        output ({xfind_name: [non_matching_xfind_names]})
@@ -101,8 +101,8 @@ def nonmatching_outputs(xfind_output):
     xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
+        x_output = xfind_output[x]
         for y in xs:
-            x_output = xfind_output[x]
             y_output = xfind_output[y]
             if x_output != y_output:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
