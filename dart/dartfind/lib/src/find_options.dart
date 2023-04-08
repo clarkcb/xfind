@@ -32,7 +32,7 @@ class FindOption {
 }
 
 class FindOptions {
-  var findOptions = [];
+  List<FindOption> findOptions = [];
   var stringArgMap = {};
   var boolArgMap = {};
   var longArgMap = {};
@@ -204,6 +204,7 @@ class FindOptions {
       var s = 'Usage:\n'
           ' dartfind [options] <path> [<path> ...]\n\n'
           'Options:\n';
+      findOptions.sort((o1, o2) => o1.sortarg().compareTo(o2.sortarg()));
       var optStrings = findOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) =>
           (optString.length > value.length) ? optString : value);
