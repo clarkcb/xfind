@@ -173,7 +173,9 @@ class FileTypes {
 enum SortBy {
     FilePath
     FileName
+    FileSize
     FileType
+    LastMod
 }
 
 function GetSortByFromName {
@@ -184,7 +186,9 @@ function GetSortByFromName {
     {
         'PATH' {return [SortBy]::FilePath}
         'NAME' {return [SortBy]::FileName}
+        'SIZE' {return [SortBy]::FileSize}
         'TYPE' {return [SortBy]::FileType}
+        'LASTMOD' {return [SortBy]::LastMod}
     }
     return [SortBy]::FilePath
 }
@@ -202,6 +206,10 @@ class FindSettings {
     [bool]$IncludeArchives
     [bool]$ListDirs
     [bool]$ListFiles
+    [DateTime]$MaxLastMod
+    [long]$MaxSize
+    [DateTime]$MinLastMod
+    [long]$MinSize
     [string[]]$OutArchiveExtensions
     [Regex[]]$OutArchiveFilePatterns
     [Regex[]]$OutDirPatterns
@@ -230,6 +238,8 @@ class FindSettings {
 		$this.IncludeArchives = $false
 		$this.ListDirs = $false
 		$this.ListFiles = $false
+		$this.MaxSize = 0
+		$this.MinSize = 0
 		$this.OutArchiveExtensions = @()
 		$this.OutArchiveFilePatterns = @()
 		$this.OutDirPatterns = @()
@@ -280,6 +290,13 @@ class FindSettings {
         return '[' + ($arr -join ', ' ) + ']'
     }
 
+    [string]DateTimeToString([DateTime]$dt) {
+        if ($dt.ToString('yyyy-MM-dd') -eq '0001-01-01') {
+            return '0'
+        }
+        return $dt.ToString('yyyy-MM-dd')
+    }
+
     [string]ToString() {
         return "FindSettings(" +
             "ArchivesOnly: $($this.ArchivesOnly)" +
@@ -294,6 +311,10 @@ class FindSettings {
             ", IncludeArchives: $($this.IncludeArchives)" +
             ", ListDirs: $($this.ListDirs)" +
             ", ListFiles: $($this.ListFiles)" +
+            ", MaxLastMod: $($this.DateTimeToString($this.MaxLastMod))" +
+            ", MaxSize: $($this.MaxSize)" +
+            ", MinLastMod: $($this.DateTimeToString($this.MinLastMod))" +
+            ", MinSize: $($this.MinSize)" +
             ", OutArchiveExtensions: $($this.StringArrayToString($this.OutArchiveExtensions))" +
             ", OutArchiveFilePatterns: $($this.StringArrayToString($this.OutArchiveFilePatterns))" +
             ", OutDirPatterns: $($this.StringArrayToString($this.OutDirPatterns))" +
@@ -368,6 +389,22 @@ class FindOptions {
         "in-filetype" = {
             param([string]$s, [FindSettings]$settings)
             $settings.InFileTypes += GetFileTypeFromName($s)
+        }
+        "maxlastmod" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MaxLastMod = [DateTime]$s
+        }
+        "maxsize" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MaxSize = [int]$s
+        }
+        "minlastmod" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MinLastMod = [DateTime]$s
+        }
+        "minsize" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MinSize = [int]$s
         }
         "out-archiveext" = {
             param([string]$s, [FindSettings]$settings)
@@ -706,11 +743,40 @@ class Finder {
                 return !$this.settings.OutFileTypes.Contains($f.Type)
             }
         }
+        if ($this.settings.MaxLastMod) {
+            $tests += {
+                param([FileResult]$f)
+                return $f.File.LastWriteTimeUtc -le $this.settings.MaxLastMod
+            }
+        }
+        if ($this.settings.MinLastMod) {
+            $tests += {
+                param([FileResult]$f)
+                return $f.File.LastWriteTimeUtc -ge $this.settings.MinLastMod
+            }
+        }
+        if ($this.settings.MaxSize -gt 0) {
+            $tests += {
+                param([FileResult]$f)
+                return $f.File.Length -le $this.settings.MaxSize
+            }
+        }
+        if ($this.settings.MinSize -gt 0) {
+            $tests += {
+                param([FileResult]$f)
+                return $f.File.Length -ge $this.settings.MinSize
+            }
+        }
         return $tests
     }
 
-    [bool]IsMatchingFile([FileResult]$f) {
-        return @($this.fileTests | Where-Object { $_.Invoke($f) }).Count -eq $this.fileTests.Count
+    [bool]IsMatchingFileResult([FileResult]$f) {
+        foreach ($t in $this.fileTests) {
+            if (-not $t.Invoke($f)) {
+                return $false
+            }
+        }
+        return $true
     }
 
     [FileResult]FilterToFileResult([System.IO.FileInfo]$file) {
@@ -721,7 +787,7 @@ class Finder {
             }
             return $null
         }
-        if (-not $this.settings.ArchivesOnly -and $this.IsMatchingFile($fileResult)) {
+        if (-not $this.settings.ArchivesOnly -and $this.IsMatchingFileResult($fileResult)) {
             return $fileResult
         }
         return $null
@@ -783,7 +849,7 @@ class Finder {
             } elseif (Test-Path -Path $path -PathType Leaf) {
                 $pathFile = [System.IO.FileInfo]::new($path)
                 $pathFileResult = [FileResult]::new($pathFile, $this.fileTypes.GetFileType($pathFile))
-                if ($this.IsMatchingFile($pathFileResult)) {
+                if ($this.IsMatchingFileResult($pathFileResult)) {
                     $fileResults += $pathFileResult
                 }
             } else {
@@ -794,22 +860,22 @@ class Finder {
     }
 
     [FileResult[]]SortFileResults([FileResult[]]$fileResults) {
-        $sorted = @()
+        $listToSort = @()
         if ($this.settings.SortBy -eq [SortBy]::FileName) {
-            $sorted = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)} |
-                Sort-Object |
-                ForEach-Object {$_[-1]}
+            $listToSort = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)}
+        } elseif ($this.settings.SortBy -eq [SortBy]::FileSize) {
+            $listToSort = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.File.Length, $_.File.DirectoryName, $_.File.Name, $_)}
         } elseif ($this.settings.SortBy -eq [SortBy]::FileType) {
-            $sorted = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)} |
-                Sort-Object |
-                ForEach-Object {$_[-1]}
+            $listToSort = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)}
+        } elseif ($this.settings.SortBy -eq [SortBy]::LastMod) {
+            $listToSort = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.File.LastWriteTimeUtc, $_.File.DirectoryName, $_.File.Name, $_)}
         } else {
-            $sorted = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)} |
-                Sort-Object |
-                ForEach-Object {$_[-1]}
+            $listToSort = $fileResults |
+                ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)}
         }
         $sorted = @()
         if ($this.settings.SortCaseInsensitive -and $this.settings.SortDescending) {
