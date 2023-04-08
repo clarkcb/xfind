@@ -18,6 +18,7 @@ import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (getFileString)
 import HsFind.FindSettings
+import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)
 
 data FindOption = FindOption
   { long :: String
@@ -87,6 +88,10 @@ findOptionsToString findOptions =
     longest = maximum $ map length optStrings
     formatOptLine o d = " " ++ padString o longest ++ "  " ++ d
 
+parseDateToUtc :: String -> Maybe UTCTime
+parseDateToUtc dateString = 
+  parseTimeM True defaultTimeLocale "%Y-%-m-%-d" dateString :: Maybe UTCTime
+
 data ActionType = ArgActionType
                 | BoolFlagActionType
                 | FlagActionType
@@ -104,6 +109,10 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ newExtensions s})
              , ("in-filepattern", \ss s -> ss {inFilePatterns = inFilePatterns ss ++ [s]})
              , ("in-filetype", \ss s -> ss {inFileTypes = inFileTypes ss ++ [getFileTypeForName s]})
+             , ("maxlastmod", \ss s -> ss {maxLastMod = parseDateToUtc s})
+             , ("maxsize", \ss s -> ss {maxSize = read s})
+             , ("minlastmod", \ss s -> ss {minLastMod = parseDateToUtc s})
+             , ("minsize", \ss s -> ss {minSize = read s})
              , ("out-archiveext", \ss s -> ss {outArchiveExtensions = outArchiveExtensions ss ++ newExtensions s})
              , ("out-archivefilepattern", \ss s -> ss {outArchiveFilePatterns = outArchiveFilePatterns ss ++ [s]})
              , ("out-dirpattern", \ss s -> ss {outDirPatterns = outDirPatterns ss ++ [s]})

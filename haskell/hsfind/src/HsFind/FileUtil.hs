@@ -8,7 +8,9 @@ module HsFind.FileUtil
     , getExtension
     , getFileByteString
     , getFileLines
+    , getFileSizes
     , getFileString
+    , getModificationTimes
     , getNonDotDirectoryContents
     , getParentPath
     , getRecursiveContents
@@ -29,9 +31,10 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
-import System.Directory (doesDirectoryExist, doesFileExist, getDirectoryContents)
+import System.Directory (doesDirectoryExist, doesFileExist, getDirectoryContents, getFileSize, getModificationTime)
 import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
+import Data.Time (UTCTime)
 
 -- preferring this over System.FilePath (takeExtension)
 getExtension :: FilePath -> Maybe String
@@ -74,6 +77,14 @@ getDirectoryFiles dir = do
   names <- getNonDotDirectoryContents dir
   filterFiles names
 
+getFileSizes :: [FilePath] -> IO [Integer]
+getFileSizes files = do
+  mapM getFileSize files
+
+getModificationTimes :: [FilePath] -> IO [UTCTime]
+getModificationTimes files = do
+  mapM getModificationTime files
+
 getNonDotDirectoryContents :: FilePath -> IO [FilePath]
 getNonDotDirectoryContents dir = do
   names <- getDirectoryContents dir
@@ -95,10 +106,9 @@ isFile = doesFileExist
 pathExists :: FilePath -> IO Bool
 pathExists fp = do
   foundDir <- doesDirectoryExist fp
-  foundFile <- doesFileExist fp
-  case (foundDir, foundFile) of
-    (False, False) -> return False
-    (_, _) -> return True
+  if foundDir
+    then return True
+    else doesFileExist fp
 
 getRecursiveContents :: FilePath -> IO [FilePath]
 getRecursiveContents dir = do

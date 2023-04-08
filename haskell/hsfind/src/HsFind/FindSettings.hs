@@ -11,17 +11,22 @@ import Data.List.Split (splitOn)
 
 import HsFind.FileTypes (FileType)
 import HsFind.FileUtil (normalizeExtension)
+import Data.Time (UTCTime)
 
 data SortBy = SortByFilePath
             | SortByFileName
+            | SortByFileSize
             | SortByFileType
+            | SortByLastMod
   deriving (Show, Eq)
 
 getSortByForName :: String -> SortBy
 getSortByForName sortByName =
   case lower sortByName of
     "name" -> SortByFileName
+    "size" -> SortByFileSize
     "type" -> SortByFileType
+    "lastmod" -> SortByLastMod
     _ -> SortByFilePath
   where lower = map toLower
 
@@ -38,6 +43,10 @@ data FindSettings = FindSettings {
                                  , includeArchives :: Bool
                                  , listDirs :: Bool
                                  , listFiles :: Bool
+                                 , maxLastMod :: Maybe UTCTime
+                                 , maxSize :: Integer
+                                 , minLastMod :: Maybe UTCTime
+                                 , minSize :: Integer
                                  , outArchiveExtensions :: [String]
                                  , outArchiveFilePatterns :: [String]
                                  , outDirPatterns :: [String]
@@ -68,6 +77,10 @@ defaultFindSettings = FindSettings {
                                    , includeArchives=False
                                    , listDirs=False
                                    , listFiles=False
+                                   , maxLastMod=Nothing
+                                   , maxSize=0
+                                   , minLastMod=Nothing
+                                   , minSize=0
                                    , outArchiveExtensions=[]
                                    , outArchiveFilePatterns=[]
                                    , outDirPatterns=[]
@@ -83,7 +96,6 @@ defaultFindSettings = FindSettings {
                                    , sortResultsBy=SortByFilePath
                                    , verbose=False
                                    }
-
 
 newExtensions :: String -> [String]
 newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "," x)

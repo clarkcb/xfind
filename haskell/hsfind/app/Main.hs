@@ -1,16 +1,12 @@
 module Main (main) where
 
 import Control.Monad (filterM)
-import qualified Data.ByteString as B
-import qualified Data.ByteString.Char8 as BC
-import Data.Char (isSpace, toUpper)
-import Data.List (nub, sort, sortBy)
+import Data.List (nub, sort)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 
 import HsFind.FileResult
-import HsFind.FileTypes (getFileTypeName)
-import HsFind.FileUtil (getParentPath, pathExists)
+import HsFind.FileUtil (pathExists)
 import HsFind.FindOptions
 import HsFind.Finder (doFind)
 import HsFind.FindSettings

@@ -10,19 +10,20 @@ module HsFind.Finder
     ) where
 
 import Control.Monad (forM)
-import Data.List (sortBy)
-import Data.Maybe (fromJust, isJust)
-import qualified Data.ByteString as B
+import Data.Char (toLower)
+import Data.List (sortBy, zipWith4)
+import Data.Maybe (isJust, isNothing)
+
 import System.FilePath (dropFileName, takeFileName)
 import Text.Regex.PCRE ( (=~) )
+import Data.Time (UTCTime)
 
 import HsFind.FileTypes (FileType(..), JsonFileType, getFileTypes, getJsonFileTypes, fileTypeFromJsonFileTypes)
 import HsFind.FileUtil
-    (hasExtension, isHiddenFilePath, getRecursiveFilteredContents)
+    (hasExtension, isHiddenFilePath, getRecursiveFilteredContents, getFileSizes, getModificationTimes)
 import HsFind.FileResult
-    (FileResult(..), blankFileResult, isArchiveFile, newFileResult)
+    (FileResult(..), isArchiveFile, newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
-import GHC.Generics (Generic1(from1))
 
 
 getDirTests :: FindSettings -> [FilePath -> Bool]
@@ -123,6 +124,21 @@ isMatchingArchiveFile settings = matchesArchiveFileTests archiveFileTests
   where archiveFileTests :: [FilePath -> Bool]
         archiveFileTests = getArchiveFileTests settings
 
+getFileResultTests :: FindSettings -> [FileResult -> Bool]
+getFileResultTests settings =
+  maxSizeTests ++ minSizeTests ++ maxLastModTests ++ minLastModTests
+  where maxSizeTests    | maxSize settings == 0 = []
+                        | otherwise = [\fr -> fileResultSize fr < maxSize settings]
+        minSizeTests    | minSize settings == 0 = []
+                        | otherwise = [\fr -> fileResultSize fr > minSize settings]
+        maxLastModTests | isNothing (maxLastMod settings) = []
+                        | otherwise = [\fr -> fileLastMod fr < maxLastMod settings]
+        minLastModTests | isNothing (minLastMod settings) = []
+                        | otherwise = [\fr -> fileLastMod fr > minLastMod settings]
+
+matchesFileResultTests :: [FileResult -> Bool] -> FileResult -> Bool
+matchesFileResultTests tests fr = all ($fr) tests
+
 filterFile :: FindSettings -> FileResult -> Bool
 filterFile settings fr | isArchiveFile fr = includeArchiveFile fr
                        | otherwise        = includeFile fr
@@ -139,21 +155,37 @@ filterToFileResult settings jsonFileTypes ft =
   where inTypes = inFileTypes settings
         outTypes = outFileTypes settings
 
-getFileResult :: (FilePath,FileType) -> FileResult
-getFileResult = uncurry newFileResult
+curry4 :: ((a, b, c, d) -> e) -> a -> b -> c -> d -> e
+curry4 f a b c d = f (a,b,c,d)
+
+uncurry4 :: (a -> b -> c -> d -> e) -> ((a, b, c, d) -> e)
+uncurry4 f ~(a,b,c,d) = f a b c d
+
+getFileResultWithSizeAndLastMod :: (FilePath,FileType,Integer,Maybe UTCTime) -> FileResult
+getFileResultWithSizeAndLastMod = uncurry4 newFileResultWithSizeAndLastMod
 
 getFileResults :: FindSettings -> IO [FileResult]
 getFileResults settings = do
   let dirTests = getDirTests settings
   jsonFileTypes <- getJsonFileTypes
   let fileTests = getAllFileTests settings jsonFileTypes
-  paths <- forM (paths settings) $ \path ->
+  pathLists <- forM (paths settings) $ \path ->
     getRecursiveFilteredContents path (matchesDirTests dirTests) (matchesFileTests fileTests)
-  let allPaths = concat paths
+  let allPaths = concat pathLists
   allFileTypes <- getFileTypes allPaths
-  let fileResults = zipWith (curry getFileResult) allPaths allFileTypes
+  allFileSizes <- if maxSize settings > 0 || minSize settings > 0 || sortResultsBy settings == SortByFileSize
+                  then getFileSizes allPaths
+                  else return $ replicate (length allPaths) 0
+  allLastMods <- if isJust (maxLastMod settings) || isJust (minLastMod settings) || sortResultsBy settings == SortByLastMod
+                 then do
+                  _allLastMods <- getModificationTimes allPaths
+                  return $ map Just _allLastMods
+                 else return $ replicate (length allPaths) Nothing
+  let fileResultsTests = getFileResultTests settings
+  let fileResults = zipWith4 (curry4 getFileResultWithSizeAndLastMod) allPaths allFileTypes allFileSizes allLastMods
   if not (includeArchives settings) && Archive `elem` allFileTypes
   then return $ filter (not . isArchiveFile) fileResults
+  else return $ filter (matchesFileResultTests fileResultsTests) fileResults
 
 compareStrings :: FindSettings -> String -> String -> Ordering
 compareStrings settings s1 s2 =
@@ -182,25 +214,44 @@ sortFileResultsByName settings fr1 fr2 =
         f1 = takeFileName (fileResultPath fr1)
         f2 = takeFileName (fileResultPath fr2)
 
-sortFileResultsByType :: FileResult -> FileResult -> Ordering
-sortFileResultsByType fr1 fr2 =
+sortFileResultsBySize :: FindSettings -> FileResult -> FileResult -> Ordering
+sortFileResultsBySize settings fr1 fr2 =
+  if s1 == s2
+  then sortFileResultsByPath settings fr1 fr2
+  else compare s1 s2
+  where s1 = fileResultSize fr1
+        s2 = fileResultSize fr2
+
+sortFileResultsByType :: FindSettings -> FileResult -> FileResult -> Ordering
+sortFileResultsByType settings fr1 fr2 =
   if t1 == t2
-  then sortFileResultsByPath fr1 fr2
+  then sortFileResultsByPath settings fr1 fr2
   else compare t1 t2
   where t1 = fileResultType fr1
         t2 = fileResultType fr2
 
+sortFileResultsByLastMod :: FindSettings -> FileResult -> FileResult -> Ordering
+sortFileResultsByLastMod settings fr1 fr2 =
+  if m1 == m2
+  then sortFileResultsByPath settings fr1 fr2
+  else compare m1 m2
+  where m1 = fileLastMod fr1
+        m2 = fileLastMod fr2
+
+doSortByFileResults :: FindSettings -> [FileResult] -> [FileResult]
+doSortByFileResults settings fileResults =
+  case sortResultsBy settings of
+   SortByFileName -> sortBy (sortFileResultsByName settings) fileResults
+   SortByFileSize -> sortBy (sortFileResultsBySize settings) fileResults
+   SortByFileType -> sortBy (sortFileResultsByType settings) fileResults
+   SortByLastMod  -> sortBy (sortFileResultsByLastMod settings) fileResults
+   _              -> sortBy (sortFileResultsByPath settings) fileResults
+
 sortFileResults :: FindSettings -> [FileResult] -> [FileResult]
 sortFileResults settings fileResults =
   if sortDescending settings
-  then case sortResultsBy settings of
-         SortByFileName -> reverse $ sortBy sortFileResultsByName fileResults
-         SortByFileType -> reverse $ sortBy sortFileResultsByType fileResults
-         _              -> reverse $ sortBy sortFileResultsByPath fileResults
-  else case sortResultsBy settings of
-         SortByFileName -> sortBy sortFileResultsByName fileResults
-         SortByFileType -> sortBy sortFileResultsByType fileResults
-         _              -> sortBy sortFileResultsByPath fileResults
+    then reverse $ doSortByFileResults settings fileResults
+    else doSortByFileResults settings fileResults
 
 doFind :: FindSettings -> IO [FileResult]
 doFind settings = do
