@@ -168,8 +168,8 @@
   (or
    (= :filesize (:sort-by settings))
    (= :lastmod (:sort-by settings))
-   (> 0 (:maxlastmod settings))
-   (> 0 (:minlastmod settings))
+   (not (nil? (:maxlastmod settings)))
+   (not (nil? (:minlastmod settings)))
    (> 0 (:maxsize settings))
    (> 0 (:minsize settings))))
 
