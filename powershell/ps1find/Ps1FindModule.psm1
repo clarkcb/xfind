@@ -213,6 +213,7 @@ class FindSettings {
     [bool]$PrintVersion
     [bool]$Recursive
     [SortBy]$SortBy
+    [bool]$SortCaseInsensitive
     [bool]$SortDescending
     [bool]$Verbose
 
@@ -240,6 +241,7 @@ class FindSettings {
 		$this.PrintVersion = $false
 		$this.Recursive = $true
 		$this.SortBy = [SortBy]::FilePath
+		$this.SortCaseInsensitive = $false
 		$this.SortDescending = $false
 		$this.Verbose = $false
     }
@@ -303,6 +305,7 @@ class FindSettings {
             ", PrintVersion: $($this.PrintVersion)" +
             ", Recursive: $($this.Recursive)" +
             ", SortBy: $($this.SortBy)" +
+            ", SortCaseInsensitive: $($this.SortCaseInsensitive)" +
             ", SortDescending: $($this.SortDescending)" +
             ", Verbose: $($this.Verbose)" +
             ")"
@@ -447,6 +450,14 @@ class FindOptions {
         "sort-ascending" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.SortDescending = !$b
+        }
+        "sort-caseinsensitive" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.SortCaseInsensitive = $b
+        }
+        "sort-casesensitive" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.SortCaseInsensitive = !$b
         }
         "sort-descending" = {
             param([bool]$b, [FindSettings]$settings)
@@ -800,8 +811,15 @@ class Finder {
                 Sort-Object |
                 ForEach-Object {$_[-1]}
         }
-        if ($this.settings.SortDescending) {
-            [array]::Reverse($sorted)
+        $sorted = @()
+        if ($this.settings.SortCaseInsensitive -and $this.settings.SortDescending) {
+            $sorted = $listToSort | Sort-Object -Descending | ForEach-Object {$_[-1]}
+        } elseif ($this.settings.SortCaseInsensitive) {
+            $sorted = $listToSort | Sort-Object | ForEach-Object {$_[-1]}
+        } elseif ($this.settings.SortDescending) {
+            $sorted = $listToSort | Sort-Object -Descending | ForEach-Object {$_[-1]}
+        } else {
+            $sorted = $listToSort | Sort-Object -CaseSensitive | ForEach-Object {$_[-1]}
         }
         return $sorted
     }
