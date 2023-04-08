@@ -1,5 +1,6 @@
 module Main (main) where
 
+import HsFind.FileResultTest
 import HsFind.FileTypesTest
 import HsFind.FileUtilTest
 import HsFind.FinderTest
@@ -12,6 +13,10 @@ import Test.HUnit hiding (Test)
 
 main :: IO ()
 main = do
+  -- FileResult tests
+  fileResultTests <- getFileResultTests
+  fileResultWithSizeTests <- getFileResultWithSizeTests
+
   -- FileTypes tests
   fileTypeTests <- getFileTypeTests
   fileTypeFromNameTests <- getFileTypeFromNameTests
@@ -35,8 +40,9 @@ main = do
   defaultFindSettingsTests <- getDefaultFindSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
-  defaultMain (fileTypeTests ++ fileTypeFromNameTests ++ fileUtilTests ++
-    isMatchingDirTests ++ isMatchingFileTests ++ isMatchingArchiveFileTests ++
+  defaultMain (fileResultTests ++ fileResultWithSizeTests ++ fileTypeTests ++
+    fileTypeFromNameTests ++ fileUtilTests ++ isMatchingDirTests ++ isMatchingFileTests ++
+    isMatchingArchiveFileTests ++
     -- filterFileTests ++ settingsFromArgsTests ++ settingsFromNoArgsTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
