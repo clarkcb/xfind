@@ -20,7 +20,7 @@ class FileTypesTest extends TestCase
         $this->filetypes = new FileTypes();
     }
 
-    public function test_getfiletype_archive_file()
+    public function test_getfiletype_archive_file(): void
     {
         $filename = 'archive.zip';
         $this->assertEquals(true, $this->filetypes->is_archive($filename));
@@ -28,7 +28,7 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Archive, $filetype);
     }
 
-    public function test_getfiletype_binary_file()
+    public function test_getfiletype_binary_file(): void
     {
         $filename = 'binary.exe';
         $this->assertEquals(true, $this->filetypes->is_binary($filename));
@@ -36,7 +36,7 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Binary, $filetype);
     }
 
-    public function test_getfiletype_code_file()
+    public function test_getfiletype_code_file(): void
     {
         $filename = 'code.php';
         $this->assertEquals(true, $this->filetypes->is_code($filename));
@@ -44,7 +44,7 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Code, $filetype);
     }
 
-    public function test_getfiletype_text_file()
+    public function test_getfiletype_text_file(): void
     {
         $filename = 'text.txt';
         $this->assertEquals(true, $this->filetypes->is_text($filename));
@@ -52,7 +52,7 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Text, $filetype);
     }
 
-    public function test_getfiletype_xml_file()
+    public function test_getfiletype_xml_file(): void
     {
         $filename = 'content.xml';
         $this->assertEquals(true, $this->filetypes->is_xml($filename));
@@ -60,7 +60,7 @@ class FileTypesTest extends TestCase
         $this->assertEquals(FileType::Xml, $filetype);
     }
 
-    public function test_getfiletype_unknown_file()
+    public function test_getfiletype_unknown_file(): void
     {
         $filename = 'unknown.xyz';
         $this->assertEquals(true, $this->filetypes->is_unknown($filename));

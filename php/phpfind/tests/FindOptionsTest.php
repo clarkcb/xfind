@@ -21,7 +21,7 @@ class FindOptionsTest extends TestCase
         $this->findoptions = new FindOptions();
     }
 
-    public function test_settings_from_args_no_args()
+    public function test_settings_from_args_no_args(): void
     {
         $settings = $this->findoptions->settings_from_args([]);
         $this->assertFalse($settings->archivesonly);
@@ -37,7 +37,7 @@ class FindOptionsTest extends TestCase
         $this->assertFalse($settings->verbose);
     }
 
-    public function test_settings_from_args_valid_args()
+    public function test_settings_from_args_valid_args(): void
     {
         $args = ['-x', 'php,py', '.'];
         $settings = $this->findoptions->settings_from_args($args);
@@ -48,7 +48,7 @@ class FindOptionsTest extends TestCase
         $this->assertEquals('.', $settings->paths[0]);
     }
 
-    public function test_archivesonly_arg()
+    public function test_archivesonly_arg(): void
     {
         $args = ['--archivesonly'];
         $settings = $this->findoptions->settings_from_args($args);
@@ -56,7 +56,7 @@ class FindOptionsTest extends TestCase
         $this->assertTrue($settings->includearchives);
     }
 
-    public function test_debug_arg()
+    public function test_debug_arg(): void
     {
         $args = ['--debug'];
         $settings = $this->findoptions->settings_from_args($args);
@@ -64,21 +64,21 @@ class FindOptionsTest extends TestCase
         $this->assertTrue($settings->verbose);
     }
 
-    public function test_missing_arg()
+    public function test_missing_arg(): void
     {
         $this->expectException(FindException::class);
         $args = ['-x', 'php,py', '.', '-D'];
         $this->findoptions->settings_from_args($args);
     }
 
-    public function test_invalid_arg()
+    public function test_invalid_arg(): void
     {
         $this->expectException(FindException::class);
         $args = ['-x', 'php,py', '.', '-Q'];
         $this->findoptions->settings_from_args($args);
     }
 
-    public function test_settings_from_json()
+    public function test_settings_from_json(): void
     {
         $settings = new FindSettings();
         $json = <<<"END_JSON"

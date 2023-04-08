@@ -8,7 +8,7 @@ use phpfind\FileType;
 
 class FileResultTest extends TestCase
 {
-    public function test_fileresult_abs_path()
+    public function test_fileresult_abs_path(): void
     {
         $home = getenv('HOME');
         $path = "$home/src/xfind/php/phpfind/src/phpfind";
@@ -18,7 +18,7 @@ class FileResultTest extends TestCase
             $fileresult->filepath());
     }
 
-    public function test_fileresult_rel_path1()
+    public function test_fileresult_rel_path1(): void
     {
         $path = '.';
         $filename = 'FileResult.php';
@@ -26,7 +26,7 @@ class FileResultTest extends TestCase
         $this->assertEquals('./FileResult.php', $fileresult->filepath());
     }
 
-    public function test_fileresult_rel_path2()
+    public function test_fileresult_rel_path2(): void
     {
         $path = './';
         $filename = 'FileResult.php';
@@ -34,7 +34,7 @@ class FileResultTest extends TestCase
         $this->assertEquals('./FileResult.php', $fileresult->filepath());
     }
 
-    public function test_fileresult_rel_path3()
+    public function test_fileresult_rel_path3(): void
     {
         $path = '..';
         $filename = 'FileResult.php';

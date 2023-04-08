@@ -47,7 +47,7 @@ class Finder
 
     /**
      * @param string $s
-     * @param array $patterns
+     * @param string[] $patterns
      * @return bool
      */
     private function matches_any_pattern(string $s, array $patterns): bool
@@ -62,8 +62,8 @@ class Finder
     }
 
     /**
-     * @param array $slist
-     * @param array $patterns
+     * @param string[] $slist
+     * @param string[] $patterns
      * @return bool
      */
     private function any_matches_any_pattern(array $slist, array $patterns): bool
@@ -218,6 +218,10 @@ class Finder
         return null;
     }
 
+    /**
+     * @param string $dir
+     * @return string[]
+     */
     private function get_non_dot_dirs(string $dir): array
     {
         $filter_non_dot_dirs = function ($f) use ($dir) {
@@ -226,6 +230,10 @@ class Finder
         return array_filter(scandir($dir), $filter_non_dot_dirs);
     }
 
+    /**
+     * @param string $dir
+     * @return string[]
+     */
     private function get_dir_dir_results(string $dir): array
     {
         $filter_dirs = function ($f) use ($dir) {
@@ -238,6 +246,10 @@ class Finder
         return array_map($join_path, $dirresults);
     }
 
+    /**
+     * @param string $dir
+     * @return FileResult[]
+     */
     private function get_dir_file_results(string $dir): array
     {
         $fileresults = array();
@@ -252,6 +264,10 @@ class Finder
         return $fileresults;
     }
 
+    /**
+     * @param string $dir
+     * @return FileResult[]
+     */
     private function rec_get_file_results(string $dir): array
     {
         $dirresults = $this->get_dir_dir_results($dir);
@@ -263,6 +279,7 @@ class Finder
     }
 
     /**
+     * @return FileResult[]
      * @throws FindException
      */
     public function find(): array
@@ -293,6 +310,11 @@ class Finder
         return $this->sort_file_results($fileresults);
     }
 
+    /**
+     * @param FileResult $fr1
+     * @param FileResult $fr2
+     * @return int
+     */
     private function cmp_file_result_path(FileResult $fr1, FileResult $fr2): int
     {
         [$path1, $path2] = $this->settings->sort_caseinsensitive ?
@@ -307,6 +329,11 @@ class Finder
         return ($path1 < $path2) ? -1 : 1;
     }
 
+    /**
+     * @param FileResult $fr1
+     * @param FileResult $fr2
+     * @return int
+     */
     private function cmp_file_result_filename(FileResult $fr1, FileResult $fr2): int
     {
         [$filename1, $filename2] = $this->settings->sort_caseinsensitive ?
@@ -321,6 +348,11 @@ class Finder
         return ($filename1 < $filename2) ? -1 : 1;
     }
 
+    /**
+     * @param FileResult $fr1
+     * @param FileResult $fr2
+     * @return int
+     */
     private function cmp_file_result_filesize(FileResult $fr1, FileResult $fr2): int
     {
         if ($fr1->stat['size'] == $fr2->stat['size']) {
@@ -329,12 +361,22 @@ class Finder
         return ($fr1->stat['size'] < $fr2->stat['size']) ? -1 : 1;
     }
 
+    /**
+     * @param FileType $ft1
+     * @param FileType $ft2
+     * @return int
+     */
     private function cmp_filetype(FileType $ft1, FileType $ft2): int
     {
         $filetype_cases = FileType::cases();
         return array_search($ft1, $filetype_cases) - array_search($ft2, $filetype_cases);
     }
 
+    /**
+     * @param FileResult $fr1
+     * @param FileResult $fr2
+     * @return int
+     */
     private function cmp_file_result_filetype(FileResult $fr1, FileResult $fr2): int
     {
         $ftcmp = $this->cmp_filetype($fr1->filetype, $fr2->filetype);
@@ -344,6 +386,11 @@ class Finder
         return $ftcmp;
     }
 
+    /**
+     * @param FileResult $fr1
+     * @param FileResult $fr2
+     * @return int
+     */
     private function cmp_file_result_lastmod(FileResult $fr1, FileResult $fr2): int
     {
         if ($fr1->stat['mtime'] == $fr2->stat['mtime']) {
@@ -352,23 +399,27 @@ class Finder
         return ($fr1->stat['mtime'] < $fr2->stat['mtime']) ? -1 : 1;
     }
 
+    /**
+     * @param FileResult[] $fileresults
+     * @return FileResult[]
+     */
     private function sort_file_results(array $fileresults): array
     {
         switch ($this->settings->sortby) {
             case SortBy::Filename:
-                usort($fileresults, self::class . '::cmp_file_result_filename');
+                usort($fileresults, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_filename($fr1, $fr2));
                 break;
             case SortBy::Filesize:
-                usort($fileresults, self::class . '::cmp_file_result_filesize');
+                usort($fileresults, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_filesize($fr1, $fr2));
                 break;
             case SortBy::Filetype:
-                usort($fileresults, self::class . '::cmp_file_result_filetype');
+                usort($fileresults, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_filetype($fr1, $fr2));
                 break;
             case SortBy::LastMod:
-                usort($fileresults, self::class . '::cmp_file_result_lastmod');
+                usort($fileresults, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_lastmod($fr1, $fr2));
                 break;
             default:
-                usort($fileresults, self::class .'::cmp_file_result_path');
+                usort($fileresults, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr1, $fr2));
                 break;
         }
         if ($this->settings->sort_descending) {
@@ -378,8 +429,8 @@ class Finder
     }
 
     /**
-     * @param array $fileresults
-     * @return array
+     * @param FileResult[] $fileresults
+     * @return string[]
      */
     public function get_matching_dirs(array $fileresults): array
     {
@@ -394,7 +445,7 @@ class Finder
     }
 
     /**
-     * @param array $fileresults
+     * @param FileResult[] $fileresults
      * @return void
      */
     public function print_matching_dirs(array $fileresults): void
@@ -411,8 +462,8 @@ class Finder
     }
 
     /**
-     * @param array $fileresults
-     * @return array
+     * @param FileResult[] $fileresults
+     * @return string[]
      */
     public function get_matching_files(array $fileresults): array
     {
@@ -426,7 +477,7 @@ class Finder
     }
 
     /**
-     * @param array $fileresults
+     * @param FileResult[] $fileresults
      * @return void
      */
     public function print_matching_files(array $fileresults): void

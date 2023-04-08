@@ -11,37 +11,37 @@ class FileUtilTest extends TestCase
     /***************************************************************************
      * get_extension tests
      **************************************************************************/
-    public function test_get_extension_has_txt_extension()
+    public function test_get_extension_has_txt_extension(): void
     {
         $filename = 'filename.txt';
         $this->assertEquals("txt", FileUtil::get_extension($filename));
     }
 
-    public function test_get_extension_missing_extension()
+    public function test_get_extension_missing_extension(): void
     {
         $filename = 'filename.';
         $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
-    public function test_get_extension_no_extension()
+    public function test_get_extension_no_extension(): void
     {
         $filename = 'filename';
         $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
-    public function test_get_extension_hidden_txt_extension()
+    public function test_get_extension_hidden_txt_extension(): void
     {
         $filename = '.filename.txt';
         $this->assertEquals("txt", FileUtil::get_extension($filename));
     }
 
-    public function test_get_extension_hidden_missing_extension()
+    public function test_get_extension_hidden_missing_extension(): void
     {
         $filename = '.filename.';
         $this->assertEquals("", FileUtil::get_extension($filename));
     }
 
-    public function test_get_extension_hidden_no_extension()
+    public function test_get_extension_hidden_no_extension(): void
     {
         $filename = '.filename';
         $this->assertEquals("", FileUtil::get_extension($filename));
@@ -50,19 +50,19 @@ class FileUtilTest extends TestCase
     /***************************************************************************
      * is_dot_dir tests
      **************************************************************************/
-    public function test_is_dot_dir_single_dot()
+    public function test_is_dot_dir_single_dot(): void
     {
         $filename = '.';
         $this->assertTrue(FileUtil::is_dot_dir($filename));
     }
 
-    public function test_is_dot_dir_double_dot()
+    public function test_is_dot_dir_double_dot(): void
     {
         $filename = '..';
         $this->assertTrue(FileUtil::is_dot_dir($filename));
     }
 
-    public function test_is_dot_dir_non_dot_dir()
+    public function test_is_dot_dir_non_dot_dir(): void
     {
         $filename = '.git';
         $this->assertFalse(FileUtil::is_dot_dir($filename));
@@ -71,25 +71,25 @@ class FileUtilTest extends TestCase
     /***************************************************************************
      * is_hidden tests
      **************************************************************************/
-    public function test_is_hidden_hidden_file()
+    public function test_is_hidden_hidden_file(): void
     {
         $filename = '.filename.txt';
         $this->assertTrue(FileUtil::is_hidden($filename));
     }
 
-    public function test_is_hidden_not_hidden_file()
+    public function test_is_hidden_not_hidden_file(): void
     {
         $filename = 'filename.txt';
         $this->assertFalse(FileUtil::is_hidden($filename));
     }
 
-    public function test_is_hidden_single_dot()
+    public function test_is_hidden_single_dot(): void
     {
         $filename = '.';
         $this->assertFalse(FileUtil::is_hidden($filename));
     }
 
-    public function test_is_hidden_double_dot()
+    public function test_is_hidden_double_dot(): void
     {
         $filename = '..';
         $this->assertFalse(FileUtil::is_hidden($filename));
@@ -98,7 +98,7 @@ class FileUtilTest extends TestCase
     /***************************************************************************
      * join_path tests
      **************************************************************************/
-    public function test_join_path_forward_slashes()
+    public function test_join_path_forward_slashes(): void
     {
         $path = '/path/to/nowhere';
         $file = 'nowhere.txt';
@@ -106,7 +106,7 @@ class FileUtilTest extends TestCase
         $this->assertEquals('/path/to/nowhere/nowhere.txt', $joined);
     }
 
-    public function test_join_path_backslashes()
+    public function test_join_path_backslashes(): void
     {
         $path = 'C:\\path\\to\\nowhere';
         $file = 'nowhere.txt';
@@ -114,7 +114,7 @@ class FileUtilTest extends TestCase
         $this->assertEquals('C:\\path\\to\\nowhere\\nowhere.txt', $joined);
     }
 
-    public function test_join_path_no_slashes()
+    public function test_join_path_no_slashes(): void
     {
         $path = 'nowhere';
         $file = 'nowhere.txt';
@@ -125,13 +125,13 @@ class FileUtilTest extends TestCase
     /***************************************************************************
      * normalize_path tests
      **************************************************************************/
-    public function test_normalize_path_no_trailing_slash()
+    public function test_normalize_path_no_trailing_slash(): void
     {
         $path = '/path/to/nowhere';
         $this->assertEquals(FileUtil::normalize_path($path), $path);
     }
 
-    public function test_normalize_path_trailing_slash()
+    public function test_normalize_path_trailing_slash(): void
     {
         $path = '/path/to/nowhere/';
         $this->assertEquals(
@@ -140,7 +140,7 @@ class FileUtilTest extends TestCase
         );
     }
 
-    public function test_normalize_path_trailing_backslash()
+    public function test_normalize_path_trailing_backslash(): void
     {
         $path = 'C:\\path\\to\\nowhere\\';
         $this->assertEquals(
@@ -152,7 +152,7 @@ class FileUtilTest extends TestCase
     /***************************************************************************
      * split_path tests
      **************************************************************************/
-    public function test_split_path_no_sep()
+    public function test_split_path_no_sep(): void
     {
         $path = 'nowhere';
         $split = FileUtil::split_path($path);
@@ -160,7 +160,7 @@ class FileUtilTest extends TestCase
         $this->assertEquals('nowhere', $split[0]);
     }
 
-    public function test_split_path_slashes()
+    public function test_split_path_slashes(): void
     {
         $path = '/path/to/nowhere';
         $split = FileUtil::split_path($path);

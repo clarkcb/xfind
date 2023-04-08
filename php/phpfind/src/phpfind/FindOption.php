@@ -4,11 +4,6 @@ namespace phpfind;
 
 /**
  * Class FindOption
- *
- * @property string shortarg
- * @property string longarg
- * @property string desc
- * @property string sortarg
  */
 readonly class FindOption
 {

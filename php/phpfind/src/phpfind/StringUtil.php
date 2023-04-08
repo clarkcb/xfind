@@ -22,7 +22,7 @@ class StringUtil
     }
 
     /**
-     * @param array $arr
+     * @param string[] $arr
      * @return string
      */
     public static function string_array_to_string(array $arr): string
@@ -33,6 +33,10 @@ class StringUtil
         return '[]';
     }
 
+    /**
+     * @param FileType[] $arr
+     * @return string
+     */
     public static function filetype_array_to_string(array $arr): string
     {
         if (count($arr)) {

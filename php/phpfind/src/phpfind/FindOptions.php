@@ -7,11 +7,6 @@ require_once __DIR__ . '/../autoload.php';
 
 /**
  * Class FindOptions
- *
- * @property array options
- * @property array arg_action_map
- * @property array bool_flag_action_map
- * @property array longarg_map
  */
 class FindOptions
 {
@@ -80,7 +75,7 @@ class FindOptions
     /**
      * @throws FindException
      */
-    private function set_options_from_json()
+    private function set_options_from_json(): void
     {
         $findoptionspath = FileUtil::expand_user_home_path(Config::FINDOPTIONSPATH);
         if (file_exists($findoptionspath)) {
@@ -132,7 +127,7 @@ class FindOptions
                 if (gettype($json_obj[$k]) == 'string') {
                     $this->arg_action_map[$k]($json_obj[$k], $settings);
                 } elseif (gettype($json_obj[$k]) == 'integer') {
-                    $this->arg_action_map[$k](sprintf($json_obj[$k]), $settings);
+                    $this->arg_action_map[$k](sprintf('%d', $json_obj[$k]), $settings);
                 } elseif (gettype($json_obj[$k]) == 'array') {
                     foreach ($json_obj[$k] as $s) {
                         $this->arg_action_map[$k]($s, $settings);
@@ -149,7 +144,7 @@ class FindOptions
     }
 
     /**
-     * @param array $args
+     * @param string[] $args
      * @return FindSettings
      * @throws FindException
      */

@@ -20,7 +20,7 @@ class FindSettingsTest extends TestCase
         $this->settings = new FindSettings();
     }
 
-    public function test_default_settings()
+    public function test_default_settings(): void
     {
         $this->assertFalse($this->settings->archivesonly);
         $this->assertFalse($this->settings->debug);
@@ -38,14 +38,14 @@ class FindSettingsTest extends TestCase
         $this->assertFalse($this->settings->verbose);
     }
 
-    public function test_add_single_extension()
+    public function test_add_single_extension(): void
     {
         $this->settings->add_exts('php', $this->settings->in_extensions);
         $this->assertCount(1, $this->settings->in_extensions);
         $this->assertEquals('php', $this->settings->in_extensions[0]);
     }
 
-    public function test_add_comma_delimited_extensions()
+    public function test_add_comma_delimited_extensions(): void
     {
         $this->settings->add_exts('php,py', $this->settings->in_extensions);
         $this->assertCount(2, $this->settings->in_extensions);
@@ -53,7 +53,7 @@ class FindSettingsTest extends TestCase
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
 
-    public function test_add_extensions_array()
+    public function test_add_extensions_array(): void
     {
         $this->settings->add_exts(['php','py'], $this->settings->in_extensions);
         $this->assertCount(2, $this->settings->in_extensions);
@@ -61,14 +61,14 @@ class FindSettingsTest extends TestCase
         $this->assertTrue(in_array('py', $this->settings->in_extensions));
     }
 
-    public function test_add_patterns_string()
+    public function test_add_patterns_string(): void
     {
         $this->settings->add_patterns('Finder', $this->settings->in_filepatterns);
         $this->assertCount(1, $this->settings->in_filepatterns);
         $this->assertTrue(in_array('Finder', $this->settings->in_filepatterns));
     }
 
-    public function test_add_patterns_array()
+    public function test_add_patterns_array(): void
     {
         $this->settings->add_patterns(['Finder'], $this->settings->in_filepatterns);
         $this->assertCount(1, $this->settings->in_filepatterns);

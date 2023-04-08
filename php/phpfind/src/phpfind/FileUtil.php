@@ -92,7 +92,7 @@ class FileUtil
 
     /**
      * @param string $path
-     * @return array
+     * @return string[]
      */
     public static function split_path(string $path): array
     {
@@ -105,7 +105,7 @@ class FileUtil
 
     /**
      * @param string $filepath
-     * @return array
+     * @return string[]
      */
     public static function split_to_path_and_filename(string $filepath): array
     {

@@ -5,11 +5,8 @@ namespace phpfind;
 /**
  * Class FindFile
  *
- * @property array containers
- * @property string path
- * @property string filename
- * @property FileType filetype
- * @property array|false stat
+ * @property string[] $containers
+ * @property array<string, int>|false $stat
  */
 class FileResult
 {

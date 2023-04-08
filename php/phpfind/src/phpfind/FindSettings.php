@@ -6,37 +6,6 @@ use DateTime;
 
 /**
  * Class FindSettings
- *
- * @property bool archivesonly
- * @property bool debug
- * @property bool excludehidden
- * @property array in_archiveextensions
- * @property array in_archivefilepatterns
- * @property array in_dirpatterns
- * @property array in_extensions
- * @property array in_filepatterns
- * @property array in_filetypes
- * @property bool includearchives
- * @property bool listdirs
- * @property bool listfiles
- * @property DateTime maxlastmod
- * @property int maxsize
- * @property DateTime minlastmod
- * @property int minsize
- * @property array out_archiveextensions
- * @property array out_archivefilepatterns
- * @property array out_dirpatterns
- * @property array out_extensions
- * @property array out_filepatterns
- * @property array out_filetypes
- * @property array paths
- * @property bool printusage
- * @property bool printversion
- * @property bool recursive
- * @property SortBy sortby
- * @property bool sort_caseinsensitive
- * @property bool sort_descending
- * @property bool verbose
  */
 class FindSettings
 {
@@ -72,11 +41,11 @@ class FindSettings
     public bool $verbose = false;
 
     /**
-     * @param $ext
-     * @param $exts
+     * @param string|string[] $ext
+     * @param string[] $exts
      * @return void
      */
-    public function add_exts($ext, &$exts): void
+    public function add_exts(string|array $ext, array &$exts): void
     {
         if (gettype($ext) == 'string') {
             $xs = explode(',', $ext);
@@ -91,11 +60,11 @@ class FindSettings
     }
 
     /**
-     * @param $filetype
-     * @param $filetypes
+     * @param string|string[] $filetype
+     * @param FileType[] $filetypes
      * @return void
      */
-    public function add_filetypes($filetype, &$filetypes): void
+    public function add_filetypes(string|array $filetype, array &$filetypes): void
     {
         if (gettype($filetype) == 'string') {
             $fts = explode(',', $filetype);
@@ -110,11 +79,11 @@ class FindSettings
     }
 
     /**
-     * @param $pattern
-     * @param $patterns
+     * @param string|string[] $pattern
+     * @param string[] $patterns
      * @return void
      */
-    public function add_patterns($pattern, &$patterns): void
+    public function add_patterns(string|array $pattern, array &$patterns): void
     {
         if (gettype($pattern) == 'string') {
             $patterns[] = $pattern;
