@@ -80,6 +80,13 @@
             <version>20240303</version>
         </dependency>
 
+        <!-- this is for detecting mime type, see: https://www.baeldung.com/java-file-mime-type#apache-tika -->
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+
         <!-- testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
