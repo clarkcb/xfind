@@ -10,22 +10,24 @@ public class FileResult {
     private final List<String> containers;
     private final Path path;
     private final FileType fileType;
+    private final String mimeType;
     private final long fileSize;
     private final FileTime lastMod;
 
     public FileResult(final Path path, final FileType fileType) {
-        this(new ArrayList<>(), path, fileType, 0L,null);
+        this(new ArrayList<>(), path, fileType, "", 0L, null);
     }
 
-    public FileResult(final Path path, final FileType fileType, final long fileSize, final FileTime lastMod) {
-        this(new ArrayList<>(), path, fileType, fileSize, lastMod);
+    public FileResult(final Path path, final FileType fileType, final String mimeType, final long fileSize, final FileTime lastMod) {
+        this(new ArrayList<>(), path, fileType, mimeType, fileSize, lastMod);
     }
 
     public FileResult(final List<String> containers, final Path path, final FileType fileType,
-                      final long fileSize, final FileTime lastMod) {
+                      final String mimeType, final long fileSize, final FileTime lastMod) {
         this.containers = containers;
         this.path = path;
         this.fileType = fileType;
+        this.mimeType = mimeType;
         this.fileSize = fileSize;
         this.lastMod = lastMod;
     }
@@ -40,6 +42,10 @@ public class FileResult {
 
     public final FileType getFileType() {
         return this.fileType;
+    }
+
+    public final String getMimeType() {
+        return this.mimeType;
     }
 
     public final long getFileSize() {

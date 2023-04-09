@@ -43,6 +43,7 @@ public class FindOptions {
             put("in-ext", (s, settings) -> settings.addInExtension(s));
             put("in-filepattern", (s, settings) -> settings.addInFilePattern(s));
             put("in-filetype", (s, settings) -> settings.addInFileType(s));
+            put("in-mimetype", (s, settings) -> settings.addInMimeType(s));
             put("maxdepth", (s, settings) -> settings.setMaxDepth(Integer.parseInt(s)));
             put("maxlastmod", (s, settings) -> settings.setMaxLastMod(s));
             put("maxsize", (s, settings) -> settings.setMaxSize(Integer.parseInt(s)));
@@ -55,6 +56,7 @@ public class FindOptions {
             put("out-ext", (s, settings) -> settings.addOutExtension(s));
             put("out-filepattern", (s, settings) -> settings.addOutFilePattern(s));
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
+            put("out-mimetype", (s, settings) -> settings.addOutMimeType(s));
             put("path", (s, settings) -> settings.addPath(s));
             put("settings-file", (s, settings) -> settingsFromFilePath(s, settings));
             put("sort-by", (s, settings) -> settings.setSortBy(SortBy.forName(s)));

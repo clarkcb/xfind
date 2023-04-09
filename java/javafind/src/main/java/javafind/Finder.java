@@ -10,6 +10,8 @@ Class to find matching files
 
 package javafind;
 
+import org.apache.tika.Tika;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -27,10 +29,19 @@ public class Finder {
 
     final private FindSettings settings;
     final private FileTypes fileTypes;
+    final private Tika tika;
 
     public Finder(final FindSettings settings) {
         this.settings = settings;
         this.fileTypes = new FileTypes();
+
+        // MimeTypesFileTypeMap mimeTypesFileTypeMap = new MimeTypesFileTypeMap();
+
+        if (!settings.getInMimeTypes().isEmpty() || !settings.getOutMimeTypes().isEmpty()) {
+            tika = new Tika();
+        } else {
+            tika = null;
+        }
     }
 
     final void validateSettings() throws FindException {
@@ -124,6 +135,14 @@ public class Finder {
                         || !settings.getOutFileTypes().contains(fr.getFileType())));
     }
 
+    boolean hasMatchingMimeType(final FileResult fr) {
+        return ((settings.getInMimeTypes().isEmpty()
+                || settings.getInMimeTypes().contains(fr.getMimeType()))
+                &&
+                (settings.getOutMimeTypes().isEmpty()
+                        || !settings.getOutMimeTypes().contains(fr.getMimeType())));
+    }
+
     boolean hasMatchingFileSize(final FileResult fr) {
         return ((settings.getMaxSize() <= 0 || fr.getFileSize() <= settings.getMaxSize())
                 &&
@@ -142,6 +161,7 @@ public class Finder {
         return hasMatchingExtension(fr)
                 && hasMatchingFileName(fr)
                 && hasMatchingFileType(fr)
+                && hasMatchingMimeType(fr)
                 && hasMatchingFileSize(fr)
                 && hasMatchingLastMod(fr);
     }
@@ -179,9 +199,34 @@ public class Finder {
             }
         }
 
+        String mimeType = "";
+        if (settings.hasMimeType()) {
+            // Option 1: Files.probeContentType(path) - this requires one or more FileTypeDetector instances to be loaded
+            //           which apparently doesn't happen in OSX
+//            try {
+//                // mimeType == null after tests with a number of different file types
+//                mimeType = Files.probeContentType(path);
+//            } catch (IOException e) {
+//                Logger.logError(e.getMessage());
+//            }
+
+            // Option 2: Tika - this seems to work, but I wonder about how bulky it might be
+            try {
+                mimeType = tika.detect(path.toFile());
+            } catch (IOException e) {
+                Logger.logError(e.getMessage());
+            }
+
+//            // Option 3: j256/simplemagic - haven't tried it yet; see: https://github.com/j256/simplemagic
+//            try {
+//                mimeType = tika.detect(path.toFile());
+//            } catch (IOException e) {
+//                Logger.logError(e.getMessage());
+//            }
+        }
+
         long fileSize = 0L;
         FileTime lastMod = null;
-
         if (settings.needLastMod() || settings.needSize()) {
             try {
                 BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class);
@@ -193,7 +238,7 @@ public class Finder {
             }
         }
 
-        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path), fileSize, lastMod);
+        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path), mimeType, fileSize, lastMod);
         if (fileResult.getFileType() == FileType.ARCHIVE) {
             if ((settings.getIncludeArchives() || settings.getArchivesOnly()) && isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult);
