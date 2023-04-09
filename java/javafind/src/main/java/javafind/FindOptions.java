@@ -38,7 +38,7 @@ public class FindOptions {
         void set(String s, FindSettings settings);
     }
 
-    private final int actionMapSize = 24;
+    private final int actionMapSize = 20;
     private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
         {
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
@@ -67,7 +67,7 @@ public class FindOptions {
         void set(Boolean b, FindSettings settings);
     }
 
-    private final int flagMapSize = 22;
+    private final int flagMapSize = 16;
     private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));

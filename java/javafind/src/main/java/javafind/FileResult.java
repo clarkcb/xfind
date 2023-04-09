@@ -44,7 +44,7 @@ public class FileResult {
         return stat;
     }
 
-    public final int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
+    public int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
         String p1 = this.path.getParent().toString();
         String p2 = other.path.getParent().toString();
         if (sortCaseInsensitive) {
@@ -63,7 +63,7 @@ public class FileResult {
         return p1.compareTo(p2);
     }
 
-    public final int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
+    public int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
         String f1 = this.path.getFileName().toString();
         String f2 = other.path.getFileName().toString();
         if (sortCaseInsensitive) {
@@ -82,7 +82,7 @@ public class FileResult {
         return f1.compareTo(f2);
     }
 
-    public final int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
+    public int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
         if (this.stat != null && other.stat != null) {
             if (this.stat.size() == other.stat.size()) {
                 return compareByPath(other, sortCaseInsensitive);
@@ -92,16 +92,16 @@ public class FileResult {
         return 0;
     }
 
-    public final int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
+    public int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
         if (this.getFileType().equals(other.getFileType())) {
             return compareByPath(other, sortCaseInsensitive);
         }
         return this.getFileType().compareTo(other.getFileType());
     }
 
-    public final int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
+    public int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
         if (this.stat != null && other.stat != null) {
-            if (this.stat.lastModifiedTime() == other.stat.lastModifiedTime()) {
+            if (this.stat.lastModifiedTime().equals(other.stat.lastModifiedTime())) {
                 return compareByPath(other, sortCaseInsensitive);
             }
             return this.stat.lastModifiedTime().compareTo(other.stat.lastModifiedTime());
@@ -109,7 +109,7 @@ public class FileResult {
         return 0;
     }
 
-    public final String toString() {
+    public String toString() {
         StringBuilder sb = new StringBuilder();
         if (containers.size() > 0) {
             for (int i = 0; i < containers.size(); i++) {
@@ -121,7 +121,9 @@ public class FileResult {
             sb.append(CONTAINER_SEPARATOR);
         }
         sb.append(path.toString());
+//        if (stat != null) {
+//            sb.append(" (").append(stat.lastModifiedTime().toInstant().getEpochSecond()).append(")");
+//        }
         return sb.toString();
     }
-
 }

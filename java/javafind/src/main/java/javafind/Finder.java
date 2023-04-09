@@ -15,6 +15,10 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.time.ZoneOffset;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
@@ -30,7 +34,7 @@ public class Finder {
 
     final void validateSettings() throws FindException {
         Set<String> paths = settings.getPaths();
-        if (paths.isEmpty()) {
+        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
             throw new FindException("Startpath not defined");
         }
         for (String p : paths) {
@@ -197,11 +201,16 @@ public class Finder {
 
     public final List<FileResult> find() throws FindException {
         List<FileResult> fileResults = new ArrayList<>();
+
+        // get thread pool the size of the number of paths to find
+        ExecutorService executorService = Executors.newFixedThreadPool(settings.getPaths().size());
+        List<Future<List<FileResult>>> futures = new ArrayList<>();
+
         for (String p : settings.getPaths()) {
             Path path = Paths.get(p);
             if (Files.isDirectory(path)) {
                 if (isMatchingDir(path)) {
-                    fileResults.addAll(findPath(path));
+                    futures.add(executorService.submit(() -> findPath(path)));
                 } else {
                     throw new FindException("Startpath does not match find settings");
                 }
@@ -216,6 +225,17 @@ public class Finder {
                 throw new FindException("Startpath is not a findable file type");
             }
         }
+
+        for (Future<List<FileResult>> future : futures) {
+            try {
+                fileResults.addAll(future.get());
+            } catch (InterruptedException | ExecutionException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        executorService.shutdown();
+
         sortFileResults(fileResults);
         return fileResults;
     }
