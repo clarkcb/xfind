@@ -26,7 +26,7 @@ fun printMatchingDirs(fileResults: List<FileResult>) {
 }
 
 fun printMatchingFiles(fileResults: List<FileResult>) {
-    val files = fileResults.map { f -> f.path }.map { f -> f.toString() }
+    val files = fileResults.map { fr -> fr.toString() }
     if (files.isEmpty()) {
         log("\nMatching files: 0")
     } else {

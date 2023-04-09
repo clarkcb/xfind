@@ -7,6 +7,8 @@ import java.time.ZoneOffset
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.streams.toList
+import kotlinx.coroutines.*
+import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -198,23 +200,29 @@ class Finder(val settings: FindSettings) {
         return sortedFileResults.toList()
     }
 
-    fun find(): List<FileResult> {
-        val fileResults: MutableList<FileResult> = mutableListOf()
+    private fun findAsync(fileResults: MutableList<FileResult>): Unit = runBlocking {
         for (p in settings.paths) {
-            val pFile = File(p)
-            if (pFile.isDirectory) {
-                fileResults.addAll(getFileResults(pFile))
-            } else if (pFile.isFile) {
-                val fr = filterToFileResult(pFile)
-                if (fr != null) {
-                    fileResults.add(fr)
+            launch {
+                val path = Paths.get(p)
+                if (Files.isDirectory(path)) {
+                        fileResults.addAll(getFileResults(path.toFile()))
+                } else if (Files.isReadable(path)) {
+                    val fr = filterToFileResult(path.toFile())
+                    if (fr != null) {
+                        fileResults.add(fr)
+                    } else {
+                        throw FindException("Startpath does not match find settings")
+                    }
                 } else {
-                    throw FindException("Startpath does not match find settings")
+                    throw FindException("Path is invalid file type: $p")
                 }
-            } else {
-                throw FindException("Path is invalid file type: $p")
             }
         }
+    }
+
+    fun find(): List<FileResult> {
+        val fileResults: MutableList<FileResult> = mutableListOf()
+        findAsync(fileResults)
         return sortFileResults(fileResults.toList())
     }
 }
