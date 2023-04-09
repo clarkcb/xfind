@@ -227,7 +227,7 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 			settings.AddInFilePattern(s)
 		},
 		"in-filetype": func(s string, settings *FindSettings) {
-			settings.AddInFileType(getFileTypeForName(s))
+			settings.AddInFileType(GetFileTypeForName(s))
 		},
 		"maxlastmod": func(s string, settings *FindSettings) {
 			settings.SetMaxLastMod(s)
@@ -257,7 +257,7 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 			settings.AddOutFilePattern(s)
 		},
 		"out-filetype": func(s string, settings *FindSettings) {
-			settings.AddOutFileType(getFileTypeForName(s))
+			settings.AddOutFileType(GetFileTypeForName(s))
 		},
 		"path": func(s string, settings *FindSettings) {
 			settings.AddPath(s)

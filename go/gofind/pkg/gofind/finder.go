@@ -2,9 +2,10 @@ package gofind
 
 import (
 	"fmt"
-	"golang.org/x/text/encoding"
 	"os"
 	"path/filepath"
+
+	"golang.org/x/text/encoding"
 )
 
 // Finder - the find executor
@@ -96,7 +97,7 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 	} else {
 		dir = normalizePath(dir)
 	}
-	t := f.fileTypes.getFileType(file)
+	t := f.fileTypes.GetFileType(file)
 	return NewFileResult(dir, file, t, fi)
 }
 

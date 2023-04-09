@@ -54,26 +54,26 @@ func FileTypesFromJson() *FileTypes {
 	return &fileTypes
 }
 
-func (f *FileTypes) getFileType(file string) FileType {
-	if f.IsCodeFile(file) {
+func (ft *FileTypes) GetFileType(file string) FileType {
+	if ft.IsCodeFile(file) {
 		return FiletypeCode
 	}
-	if f.IsXmlFile(file) {
+	if ft.IsXmlFile(file) {
 		return FiletypeXml
 	}
-	if f.IsTextFile(file) {
+	if ft.IsTextFile(file) {
 		return FiletypeText
 	}
-	if f.IsBinaryFile(file) {
+	if ft.IsBinaryFile(file) {
 		return FiletypeBinary
 	}
-	if f.IsArchiveFile(file) {
+	if ft.IsArchiveFile(file) {
 		return FiletypeArchive
 	}
 	return FiletypeUnknown
 }
 
-func getFileTypeForName(name string) FileType {
+func GetFileTypeForName(name string) FileType {
 	if strings.ToUpper(name) == "TEXT" {
 		return FiletypeText
 	}
@@ -92,7 +92,7 @@ func getFileTypeForName(name string) FileType {
 	return FiletypeUnknown
 }
 
-func getNameForFileType(fileType FileType) string {
+func GetNameForFileType(fileType FileType) string {
 	if fileType == FiletypeText {
 		return "TEXT"
 	}
@@ -111,37 +111,46 @@ func getNameForFileType(fileType FileType) string {
 	return "UNKNOWN"
 }
 
-func (f *FileTypes) isFileType(filetype string, file string) bool {
-	return f.fileTypeNameMap[filetype][file] || f.fileTypeExtMap[filetype][getExtension(file)]
+func (ft *FileTypes) isFileType(filetype string, file string) bool {
+	return ft.fileTypeNameMap[filetype][file] || ft.fileTypeExtMap[filetype][getExtension(file)]
 }
 
-func (f *FileTypes) IsArchiveFile(file string) bool {
-	return f.isFileType("archive", file)
+func (ft *FileTypes) IsArchiveFile(file string) bool {
+	return ft.isFileType("archive", file)
 }
 
 // IsBinaryFile going to assume file is binary if it has no extension (for now)
-func (f *FileTypes) IsBinaryFile(file string) bool {
-	return f.isFileType("binary", file)
+func (ft *FileTypes) IsBinaryFile(file string) bool {
+	return ft.isFileType("binary", file)
 }
 
-func (f *FileTypes) IsCodeFile(file string) bool {
-	return f.isFileType("code", file)
+func (ft *FileTypes) IsCodeFile(file string) bool {
+	return ft.isFileType("code", file)
 }
 
-func (f *FileTypes) IsTextFile(file string) bool {
+func (ft *FileTypes) IsTextFile(file string) bool {
 	textTypes := [...]string{"code", "text", "xml"}
 	for _, t := range textTypes {
-		if f.isFileType(t, file) {
+		if ft.isFileType(t, file) {
 			return true
 		}
 	}
 	return false
 }
 
-func (f *FileTypes) IsXmlFile(file string) bool {
-	return f.isFileType("xml", file)
+func (ft *FileTypes) IsXmlFile(file string) bool {
+	return ft.isFileType("xml", file)
 }
 
-func (f *FileTypes) IsUnknownFile(file string) bool {
-	return f.getFileType(file) == FiletypeUnknown
+func (ft *FileTypes) IsUnknownFile(file string) bool {
+	return ft.GetFileType(file) == FiletypeUnknown
+}
+
+func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
+	for _, ft := range fileTypes {
+		if fileType == ft {
+			return true
+		}
+	}
+	return false
 }

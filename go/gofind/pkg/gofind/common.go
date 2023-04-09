@@ -51,15 +51,6 @@ func contains(slice []string, s string) bool {
 	return false
 }
 
-func containsFileType(fileTypes []FileType, fileType FileType) bool {
-	for _, ft := range fileTypes {
-		if fileType == ft {
-			return true
-		}
-	}
-	return false
-}
-
 func containsV(slice []string, s string) bool {
 	for _, as := range slice {
 		if s == as {

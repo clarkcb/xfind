@@ -23,7 +23,7 @@ func fileTypeListToString(list []FileType) string {
 	buffer.WriteString("[")
 	var elems []string
 	for _, ft := range list {
-		elems = append(elems, fmt.Sprintf("\"%s\"", getNameForFileType(ft)))
+		elems = append(elems, fmt.Sprintf("\"%s\"", GetNameForFileType(ft)))
 	}
 	buffer.WriteString(strings.Join(elems, ","))
 	buffer.WriteString("]")
