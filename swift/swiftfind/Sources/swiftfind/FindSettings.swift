@@ -100,12 +100,14 @@ open class FindSettings: CustomStringConvertible {
     open var inExtensions = Set<String>()
     open var inFilePatterns = [Regex]()
     open var inFileTypes = [FileType]()
+    open var inMimeTypes = Set<String>()
     open var outArchiveExtensions = Set<String>()
     open var outArchiveFilePatterns = [Regex]()
     open var outDirPatterns = [Regex]()
     open var outExtensions = Set<String>()
     open var outFilePatterns = [Regex]()
     open var outFileTypes = [FileType]()
+    open var outMimeTypes = Set<String>()
     open var paths = Set<String>()
     open var sortBy = SortBy.filePath
 
@@ -150,6 +152,10 @@ open class FindSettings: CustomStringConvertible {
 //        }
     }
 
+    public func addInMimeType(_ mimeType: String) {
+        inMimeTypes.insert(mimeType)
+    }
+
     public func addOutArchiveExtension(_ exts: String) {
         for ext in splitExtensions(exts) {
             outArchiveExtensions.insert(ext)
@@ -183,6 +189,10 @@ open class FindSettings: CustomStringConvertible {
 //            outFileTypes.append(FileType.code)
 //            outFileTypes.append(FileType.xml)
 //        }
+    }
+
+    public func addOutMimeType(_ mimeType: String) {
+        outMimeTypes.insert(mimeType)
     }
 
     public func setMaxDepthFromString(_ maxDepthStr: String) {
@@ -257,10 +267,12 @@ open class FindSettings: CustomStringConvertible {
             ", debug=\(debug)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
             ", inArchiveFilePatterns=\(arrayToString(inArchiveFilePatterns))" +
+            ", includeArchives=\(includeArchives)" +
             ", inDirPatterns=\(arrayToString(inDirPatterns))" +
             ", inExtensions=\(setToString(inExtensions))" +
             ", inFilePatterns=\(arrayToString(inFilePatterns))" +
             ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }, false))" +
+            ", inMimeTypes=\(setToString(inMimeTypes))" +
             ", includeArchives=\(includeArchives)" +
             ", includeHidden=\(includeHidden)" +
             ", maxDepth=\(maxDepth)" +
@@ -275,6 +287,7 @@ open class FindSettings: CustomStringConvertible {
             ", outExtensions=\(setToString(outExtensions))" +
             ", outFilePatterns=\(arrayToString(outFilePatterns))" +
             ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }, false))" +
+            ", outMimeTypes=\(setToString(outMimeTypes))" +
             ", paths=\(setToString(paths))" +
             ", printDirs=\(printDirs)" +
             ", printFiles=\(printFiles)" +

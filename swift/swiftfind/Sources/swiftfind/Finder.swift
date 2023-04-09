@@ -7,6 +7,8 @@
 //
 
 import Foundation
+//import SwiftMagicNew
+
 // FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
 // Consider refactoring the code to use the non-optional operators.
 private func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
@@ -69,6 +71,13 @@ public class Finder {
                                    outFileTypes: [FileType]) -> Bool {
         (inFileTypes.isEmpty || inFileTypes.contains(fileType))
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType))
+    }
+
+    private func filterByMimeTypes(_ mimeType: String, inMimeTypes: Set<String>,
+                                   outMimeTypes: Set<String>) -> Bool
+    {
+        ((inMimeTypes.isEmpty || inMimeTypes.contains(mimeType))
+            && (outMimeTypes.isEmpty || !outMimeTypes.contains(mimeType)))
     }
 
     private func filterBySize(_ fileSize: UInt64, maxSize: UInt64, minSize: UInt64) -> Bool {
@@ -175,6 +184,8 @@ public class Finder {
             return nil
         }
         let fileType = fileTypes.getFileType(fileName)
+//        let mimeType = try Magic.shared.file(filePath, flags: .mimeType)
+        let mimeType = ""
         var fileSize: UInt64 = 0
         var lastMod: Date? = nil
         if self.settings.needSize() || self.settings.needLastMod() {
@@ -187,7 +198,7 @@ public class Finder {
                 print("Error: \(error)")
             }
         }
-        let fr = FileResult(filePath: filePath, fileType: fileType, fileSize: fileSize, lastMod: lastMod)
+        let fr = FileResult(filePath: filePath, fileType: fileType, mimeType: mimeType, fileSize: fileSize, lastMod: lastMod)
         if fileType == FileType.archive {
             if settings.includeArchives && isMatchingArchiveFileResult(fr) {
                 return fr

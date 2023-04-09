@@ -77,6 +77,9 @@ public class FindOptions {
             "in-filetype": { (str: String, settings: FindSettings) in
                 settings.addInFileType(str)
             },
+            "in-mimetype": { (str: String, settings: FindSettings) in
+                settings.addInMimeType(str)
+            },
             "out-archiveext": { (str: String, settings: FindSettings) in
                 settings.addOutArchiveExtension(str)
             },
@@ -112,6 +115,9 @@ public class FindOptions {
             },
             "out-filetype": { (str: String, settings: FindSettings) in
                 settings.addOutFileType(str)
+            },
+            "out-mimetype": { (str: String, settings: FindSettings) in
+                settings.addOutMimeType(str)
             },
             "path": { (str: String, settings: FindSettings) in
                 settings.addPath(str)
