@@ -20,6 +20,7 @@ sub new {
         path => shift,
         file_name => shift,
         file_type => shift,
+        mime_type => shift,
         file_size => shift,
         last_mod => shift,
     };

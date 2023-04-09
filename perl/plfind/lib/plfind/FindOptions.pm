@@ -46,6 +46,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_file_types($s, $settings->{in_file_types});
     },
+    'in-mimetype' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_mimetypes($s, $settings->{in_mimetypes});
+    },
     'maxdepth' => sub {
         my ($s, $settings) = @_;
         $settings->{max_depth} = int($s);
@@ -93,6 +97,10 @@ my $arg_action_hash = {
     'out-filetype' => sub {
         my ($s, $settings) = @_;
         $settings->add_file_types($s, $settings->{out_file_types});
+    },
+    'out-mimetype' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_mimetypes($s, $settings->{out_mimetypes});
     },
     'path' => sub {
         my ($s, $settings) = @_;

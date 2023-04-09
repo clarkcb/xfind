@@ -14,6 +14,7 @@ use warnings;
 use Data::Dumper;
 use File::Spec;
 use File::Basename;
+# use File::LibMagic;
 use Scalar::Util qw(blessed);
 
 use plfind::common;
@@ -27,6 +28,7 @@ sub new {
     my $self = {
         settings => shift,
         file_types => plfind::FileTypes->new(),
+        # magic => File::LibMagic->new,
         results => [],
     };
     bless $self, $class;
@@ -136,6 +138,14 @@ sub is_matching_file_result {
         (grep {$_ eq $fr->{file_type}} @{$self->{settings}->{out_file_types}})) {
         return 0;
     }
+    # if (scalar @{$self->{settings}->{in_mime_types}} &&
+    #     !(grep {$_ eq $mime_type} @{$self->{settings}->{in_mime_types}})) {
+    #     return 0;
+    # }
+    # if (scalar @{$self->{settings}->{out_mime_types}} &&
+    #     (grep {$_ eq $mime_type} @{$self->{settings}->{out_mime_types}})) {
+    #     return 0;
+    # }
     if ($self->{settings}->{max_size} > 0 && $fr->{file_size} > $self->{settings}->{max_size}) {
         return 0;
     }
@@ -183,6 +193,8 @@ sub filter_to_file_result {
         return;
     }
     my $file_type = $self->{file_types}->get_file_type($f);
+    # my $mimetype = $magic->info_from_filename($fp)->{mime_type};
+    # my $mimetype = '';
     my $file_size = 0;
     my $last_mod = 0;
     if ($self->{settings}->needs_last_mod || $self->{settings}->needs_size) {

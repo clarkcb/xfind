@@ -28,6 +28,7 @@ sub new {
         in_extensions => [],
         in_file_patterns => [],
         in_file_types => [],
+        in_mime_types => [],
         include_archives => 0,
         include_hidden => 0,
         max_depth => -1,
@@ -42,6 +43,7 @@ sub new {
         out_extensions => [],
         out_file_patterns => [],
         out_file_types => [],
+        out_mime_types => [],
         print_dirs => 0,
         print_files => 0,
         print_usage => 0,
@@ -102,6 +104,20 @@ sub add_file_types {
     }
 }
 
+sub add_mimetypes {
+    my ($self, $mimetypes, $mtaref) = @_;
+    my $mts = [];
+    if (ref($mimetypes) eq 'ARRAY') {
+        $mts = $mimetypes;
+    } else { # treat as a string
+        my @split = split(',', $mimetypes);
+        $mts = \@split;
+    }
+    foreach my $mt (@{$mts}) {
+        push(@{$mtaref}, $mt);
+    }
+}
+
 sub add_patterns {
     my ($self, $pats, $pataref) = @_;
     if (ref($pats) eq 'ARRAY') {
@@ -145,6 +161,7 @@ sub to_string {
         ', in_extensions=' . plfind::common::strings_aref_to_string($self->{in_extensions}) .
         ', in_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_file_patterns}) .
         ', in_file_types=' . plfind::common::file_types_aref_to_string($self->{in_file_types}) .
+        ', in_mime_types=' . plfind::common::strings_aref_to_string($self->{in_mime_types}) .
         ', include_archives=' . plfind::common::bool_to_string($self->{include_archives}) .
         ', max_depth=' . $self->{max_depth} .
         ', max_last_mod=' . plfind::common::datetime_to_string($self->{max_last_mod}) .
@@ -158,6 +175,7 @@ sub to_string {
         ', out_extensions=' . plfind::common::strings_aref_to_string($self->{out_extensions}) .
         ', out_file_patterns=' . plfind::common::strings_aref_to_string($self->{out_file_patterns}) .
         ', out_file_types=' . plfind::common::file_types_aref_to_string($self->{out_file_types}) .
+        ', out_mime_types=' . plfind::common::strings_aref_to_string($self->{out_mime_types}) .
         ', paths=' . plfind::common::strings_aref_to_string($self->{paths}) .
         ', print_dirs=' . plfind::common::bool_to_string($self->{print_dirs}) .
         ', print_files=' . plfind::common::bool_to_string($self->{print_files}) .

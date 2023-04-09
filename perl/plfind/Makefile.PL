@@ -9,6 +9,9 @@ WriteMakefile(
     CONFIGURE_REQUIRES => {
         'ExtUtils::MakeMaker' => 7.70,
     },
+    PREREQ_PM => {
+        'File::LibMagic' => 1.23,
+    },
     TEST_REQUIRES => {
         'Test'           => 0,
     },
