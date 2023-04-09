@@ -39,12 +39,14 @@
 @property(nonatomic) NSMutableArray<NSString*> *inExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *inFilePatterns;
 @property(nonatomic) NSMutableArray<NSNumber*> *inFileTypes;
+@property(nonatomic) NSMutableArray<NSString*> *inMimeTypes;
 @property(nonatomic) NSMutableArray<NSString*> *outArchiveExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *outArchiveFilePatterns;
 @property(nonatomic) NSMutableArray<Regex*> *outDirPatterns;
 @property(nonatomic) NSMutableArray<NSString*> *outExtensions;
 @property(nonatomic) NSMutableArray<Regex*> *outFilePatterns;
 @property(nonatomic) NSMutableArray<NSNumber*> *outFileTypes;
+@property(nonatomic) NSMutableArray<NSString*> *outMimeTypes;
 @property(nonatomic) NSMutableArray<NSString*> *paths;
 @property(nonatomic) SortBy sortBy;
 
@@ -78,6 +80,8 @@
 - (void) addFileType:(NSString*)typeName toArr:(NSMutableArray *)arr;
 - (void) addInFileType:(NSString*)typeName;
 - (void) addOutFileType:(NSString*)typeName;
+- (void) addInMimeType:(NSString*)typeName;
+- (void) addOutMimeType:(NSString*)typeName;
 
 - (BOOL) needLastMod;
 - (BOOL) needSize;

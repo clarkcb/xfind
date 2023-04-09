@@ -36,12 +36,14 @@
         self.inExtensions = [[NSMutableArray alloc] init];
         self.inFilePatterns = [[NSMutableArray alloc] init];
         self.inFileTypes = [[NSMutableArray alloc] init];
+        self.inMimeTypes = [[NSMutableArray alloc] init];
         self.outArchiveExtensions = [[NSMutableArray alloc] init];
         self.outArchiveFilePatterns = [[NSMutableArray alloc] init];
         self.outDirPatterns = [[NSMutableArray alloc] init];
         self.outExtensions = [[NSMutableArray alloc] init];
         self.outFilePatterns = [[NSMutableArray alloc] init];
         self.outFileTypes = [[NSMutableArray alloc] init];
+        self.outMimeTypes = [[NSMutableArray alloc] init];
         self.paths = [[NSMutableArray alloc] init];
         self.sortBy = SortByFilePath;
     }
@@ -58,6 +60,7 @@
     [d appendFormat:@", inExtensions=%@", arrayToNSString(self.inExtensions)];
     [d appendFormat:@", inFilePatterns=%@", arrayToNSString(self.inFilePatterns)];
     [d appendFormat:@", inFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.inFileTypes]];
+    [d appendFormat:@", inMimeTypes=%@", arrayToNSString(self.inMimeTypes)];
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
     [d appendFormat:@", includeHidden=%@", boolToNSString(self.includeHidden)];
     [d appendFormat:@", maxDepth=%ld", (long)self.maxDepth];
@@ -72,6 +75,7 @@
     [d appendFormat:@", outExtensions=%@", arrayToNSString(self.outExtensions)];
     [d appendFormat:@", outFilePatterns=%@", arrayToNSString(self.outFilePatterns)];
     [d appendFormat:@", outFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.outFileTypes]];
+    [d appendFormat:@", outMimeTypes=%@", arrayToNSString(self.outMimeTypes)];
     [d appendFormat:@", paths=%@", arrayToNSString(self.paths)];
     [d appendFormat:@", printDirs=%@", boolToNSString(self.printDirs)];
     [d appendFormat:@", printFiles=%@", boolToNSString(self.printFiles)];
@@ -156,6 +160,14 @@
 
 - (void) addPath:(NSString *)path {
     [self.paths addObject:path];
+}
+
+- (void) addInMimeType:(NSString *)typeName {
+    [self.inMimeTypes addObject:typeName];
+}
+
+- (void) addOutMimeType:(NSString *)typeName {
+    [self.outMimeTypes addObject:typeName];
 }
 
 - (BOOL) archivesOnly {

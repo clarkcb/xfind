@@ -12,6 +12,12 @@
         if (![self validateSettings:settings error:error]) {
             return self;
         }
+//        if ([self.settings.inMimeTypes count] > 0 || [self.settings.outMimeTypes count] > 0) {
+//            self.magicCookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
+//            if (self.magicCookie == NULL || magic_load(self.magicCookie, NULL) != 0) {
+//                setError(error, @"An error occurred trying to load libmagic");
+//            }
+//        }
     }
     return self;
 }
@@ -82,6 +88,11 @@
             ([outFileTypes count] == 0 || ![outFileTypes containsObject:num]));
 }
 
+- (BOOL) filterByMimeTypes:(NSString*)mimeType inMimeTypes:(NSArray<NSString*>*)inMimeTypes outMimeTypes:(NSArray<NSString*>*)outMimeTypes {
+    return (([inMimeTypes count] == 0 || [inMimeTypes containsObject:mimeType]) &&
+            ([outMimeTypes count] == 0 || ![outMimeTypes containsObject:mimeType]));
+}
+
 - (BOOL) filterByLastMod:(NSDate*)lastMod {
     if ([self.settings maxLastMod] != nil || [self.settings minLastMod] != nil) {
         return (([self.settings maxLastMod] == nil || [lastMod isLessThanOrEqualTo:[self.settings maxLastMod]]) &&
@@ -147,6 +158,9 @@
     [self filterByFileTypes:[fileResult fileType]
                 inFileTypes:self.settings.inFileTypes
                outFileTypes:self.settings.outFileTypes] &&
+//    [self filterByMimeTypes:[fileResult mimeType]
+//                inMimeTypes:self.settings.inMimeTypes
+//               outMimeTypes:self.settings.outMimeTypes] &&
     [self filterByFileSize:[fileResult fileSize]] &&
     [self filterByLastMod:[fileResult lastMod]];
 }
@@ -163,7 +177,12 @@
         if ([self.settings needSize]) fileSize = stat.fileSize;
         if ([self.settings needLastMod]) lastMod = stat.fileModificationDate;
     }
-    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType fileSize:fileSize lastMod:lastMod];
+    NSString *mimeType = @"";
+//    if ([self.settings.inMimeTypes count] > 0 || [self.settings.outMimeTypes count] > 0) {
+//        mimeType = [NSString stringWithCString:magic_file(self.magicCookie, [filePath cStringUsingEncoding:NSUTF8StringEncoding]) encoding:NSUTF8StringEncoding];
+//    }
+//    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType mimeType:mimeType];
+    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType mimeType:mimeType fileSize:fileSize lastMod:lastMod];
     if (fileType == FileTypeArchive) {
         if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {
             return fr;

@@ -3,12 +3,13 @@
 
 @implementation FileResult
 
-- (instancetype) initWithFilePath:(NSString *)filePath fileType:(FileType)fileType fileSize:(unsigned long long)fileSize lastMod:(NSDate*)lastMod {
+- (instancetype) initWithFilePath:(NSString *)filePath fileType:(FileType)fileType mimeType:(NSString*)mimeType fileSize:(unsigned long long)fileSize lastMod:(NSDate*)lastMod {
     self = [super init];
     if (self) {
         self.containers = [NSArray array];
         self.filePath = filePath;
         self.fileType = fileType;
+        self.mimeType = mimeType;
         self.fileSize = fileSize;
         self.lastMod = lastMod;
     }

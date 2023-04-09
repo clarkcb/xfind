@@ -2,6 +2,7 @@
 #define Finder_h
 
 #import <Foundation/Foundation.h>
+//#import "magic.h"
 #import "FileTypes.h"
 #import "FileResult.h"
 #import "FindSettings.h"
@@ -11,6 +12,7 @@
 @property FileTypes *fileTypes;
 @property FindSettings *settings;
 @property NSStringEncoding textFileEncoding;
+//@property magic_t magicCookie;
 
 - (instancetype) initWithSettings:(FindSettings*)settings error:(NSError**)error;
 - (NSArray<FileResult*>*) find:(NSError**)error;
