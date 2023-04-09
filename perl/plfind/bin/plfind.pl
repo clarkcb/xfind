@@ -27,7 +27,7 @@ sub log_error {
 }
 
 sub main {
-    my $findoptions = new plfind::FindOptions();
+    my $findoptions = plfind::FindOptions->new();
     my ($settings, $errs) = $findoptions->settings_from_args(\@ARGV);
 
     if (scalar @{$errs}) {
@@ -50,7 +50,7 @@ sub main {
         exit;
     }
 
-    my ($finder, $errs2) = new plfind::Finder($settings);
+    my ($finder, $errs2) = plfind::Finder->new($settings);
 
     if (scalar @{$errs2}) {
         plfind::common::log('');

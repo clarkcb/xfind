@@ -1,11 +1,17 @@
-use 5.005;
-use ExtUtils::MakeMaker;
+use strict;
+use warnings FATAL => 'all';
+use ExtUtils::MakeMaker 6.64;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'plfind',
     VERSION_FROM      => 'lib/plfind.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
-    PREREQ_PM         => {'Test'        =>  0, }, # e.g., Module::Name => 1.1
+    CONFIGURE_REQUIRES => {
+        'ExtUtils::MakeMaker' => 6.64,
+    },
+    TEST_REQUIRES => {
+        'Test'           => 0,
+    },
     ABSTRACT_FROM     => 'lib/plfind.pm', # retrieve abstract from module
     AUTHOR            => 'Cary Clark <clarkcb@gmail.com>',
     #LICENSE           => 'perl',

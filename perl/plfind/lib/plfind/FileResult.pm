@@ -11,6 +11,8 @@ package plfind::FileResult;
 use strict;
 use warnings;
 
+use File::Spec;
+
 sub new {
     my $class = shift;
     my $self = {
@@ -22,6 +24,12 @@ sub new {
     };
     bless $self, $class;
     return $self;
+}
+
+sub to_string {
+    my $self = shift @_;
+    my $s = File::Spec->join($self->{path}, $self->{filename});
+    return $s;
 }
 
 1;

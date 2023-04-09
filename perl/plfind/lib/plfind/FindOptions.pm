@@ -196,7 +196,7 @@ sub set_options_from_xml {
         } elsif (exists $bool_flag_action_hash->{$long}) {
             $func = $bool_flag_action_hash->{$long};
         }
-        my $opt = new plfind::FindOption($short, $long, $desc, $func);
+        my $opt = plfind::FindOption->new($short, $long, $desc, $func);
         $options_hash->{$long} = $opt;
         if ($short) {
             $options_hash->{$short} = $options_hash->{$long};
@@ -218,7 +218,7 @@ sub set_options_from_json {
         } elsif (exists $bool_flag_action_hash->{$long}) {
             $func = $bool_flag_action_hash->{$long};
         }
-        my $opt = new plfind::FindOption($short, $long, $desc, $func);
+        my $opt = plfind::FindOption->new($short, $long, $desc, $func);
         $options_hash->{$long} = $opt;
         if ($short) {
             $options_hash->{$short} = $options_hash->{$long};
@@ -266,7 +266,7 @@ sub settings_from_json {
 
 sub settings_from_args {
     my ($self, $args) = @_;
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     # default listfiles to true since running as cli
     $settings->set_property('listfiles', 1);
     my @errs;

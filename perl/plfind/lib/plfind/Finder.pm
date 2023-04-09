@@ -11,6 +11,7 @@ package plfind::Finder;
 use strict;
 use warnings;
 
+use Data::Dumper;
 use File::Spec;
 use File::Basename;
 use Scalar::Util qw(blessed);
@@ -25,7 +26,7 @@ sub new {
     my $class = shift;
     my $self = {
         settings => shift,
-        filetypes => new plfind::FileTypes(),
+        filetypes => plfind::FileTypes->new(),
         results => [],
     };
     bless $self, $class;
@@ -177,7 +178,7 @@ sub filter_to_file_result {
         my @fpstat = stat($fp);
         $stat = \@fpstat;
     }
-    my $fileresult = new plfind::FileResult($d, $f, $filetype, $stat);
+    my $fileresult = plfind::FileResult->new($d, $f, $filetype, $stat);
     if ($filetype eq plfind::FileType->ARCHIVE) {
         if ($self->{settings}->{includearchives} && $self->is_matching_archive_file($f)) {
             return $fileresult;
@@ -354,7 +355,7 @@ sub print_matching_dirs {
 
 sub get_matching_files {
     my ($self, $fileresults) = @_;
-    my @files = map {File::Spec->join($_->{path}, $_->{filename})} @{$fileresults};
+    my @files = map {$_->to_string()} @{$fileresults};
     return \@files;
 }
 
