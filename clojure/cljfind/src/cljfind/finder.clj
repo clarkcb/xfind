@@ -15,13 +15,12 @@
            (java.util.jar JarFile)
            (java.util.zip ZipFile))
   (:use [clojure.java.io :only (file reader)]
-        [clojure.string :as str :only (join trim upper-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only
          (new-file-result file-result-path sort-results)]
-        [cljfind.filetypes :only (archive-file? get-filetype)]
+        [cljfind.filetypes :only (get-filetype)]
         [cljfind.fileutil :only
-          (get-ext get-files-in-directory get-name hidden-dir? hidden-file?
+          (get-ext get-name hidden-dir? hidden-file?
             is-dot-dir?)]
         [cljfind.findsettings :only (need-stat)])
   (:require [java-time.api :as jt]))
@@ -160,7 +159,7 @@
      (not (has-matching-dir? (:file fr) settings))
      (not (has-matching-ext? (:file fr) (:in-archiveextensions settings) (:out-archiveextensions settings)))
      (not (has-matching-filepattern? (:file fr) (:in-archivefilepatterns settings) (:out-archivefilepatterns settings)))
-     (not (is-matching-stat? (:stat fr) settings)))
+     (not (has-matching-stat? fr settings)))
     false
     true))
 
@@ -168,9 +167,9 @@
   (if
     (or
      (not (has-matching-dir? (:file fr) settings))
-     (not (has-matching-ext? (:file fr) settings))
-     (not (has-matching-filepattern? (:file fr) settings))
-     (not (is-matching-filetype? (:filetype fr) settings))
+     (not (has-matching-ext? (:file fr) (:in-extensions settings) (:out-extensions settings)))
+     (not (has-matching-filepattern? (:file fr) (:in-filepatterns settings) (:out-filepatterns settings)))
+     (not (is-matching-filetype? (:filetype fr) (:in-filetypes settings) (:out-filetypes settings)))
      (not (has-matching-stat? fr settings)))
     false
     true))
@@ -188,12 +187,13 @@
           stat (if (need-stat settings) (get-stat f) nil)
           fr (new-file-result f filetype stat)]
       (if
-        (and
-         (= :archive filetype)
-         (or
-          (not (:includearchives settings))
-          (not (is-matching-archive-file-result? f settings))))
-        nil
+        (= :archive filetype)
+        (if
+          (or
+            (not (:includearchives settings))
+            (not (is-matching-archive-file-result? fr settings)))
+          nil
+          fr)
         (if
           (or
            (:archivesonly settings)
@@ -224,8 +224,7 @@
   ([settings paths fileresults]
     (if (empty? paths)
       (sort-results fileresults settings)
-      (let [nextfileresults (get-file-results-for-path settings (first paths))]
-        (get-file-results settings (rest paths) (concat fileresults nextfileresults))))))
+      (get-file-results settings (rest paths) (concat fileresults (get-file-results-for-path settings (first paths)))))))
 
 (defn find-files [settings]
   (let [errs (validate-settings settings)]

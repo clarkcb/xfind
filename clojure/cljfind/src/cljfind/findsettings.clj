@@ -170,8 +170,8 @@
    (= :lastmod (:sort-by settings))
    (not (nil? (:maxlastmod settings)))
    (not (nil? (:minlastmod settings)))
-   (> 0 (:maxsize settings))
-   (> 0 (:minsize settings))))
+   (> (:maxsize settings) 0)
+   (> (:minsize settings) 0)))
 
 (defn set-num [^FindSettings settings n numname]
   (let [t (type n)]

@@ -13,8 +13,8 @@
   (:require [clojure.java.io :as io])
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
-        [clojure.string :only (split lower-case)]
-        [cljfind.fileutil :only (expand-path get-ext get-name)]))
+        [clojure.string :only (lower-case)]
+        [cljfind.fileutil :only (get-ext get-name)]))
 
 (def ARCHIVE "archive")
 (def BINARY "binary")
