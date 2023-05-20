@@ -10,10 +10,10 @@
 
 const char *DOT_DIRS[] = {".", "..", "./", "../"};
 
-unsigned short dir_or_file_exists(const char *filepath)
+unsigned short dir_or_file_exists(const char *file_path)
 {
     struct stat statbuf;
-    if (stat(filepath, &statbuf) == -1) {
+    if (stat(file_path, &statbuf) == -1) {
         if (ENOENT == errno) {
             return 0; // does not exist
         }
@@ -21,16 +21,16 @@ unsigned short dir_or_file_exists(const char *filepath)
     return 1;
 }
 
-unsigned short is_dot_dir(const char *filepath)
+unsigned short is_dot_dir(const char *file_path)
 {
-    if (filepath == NULL || strlen(filepath) < 1) return 0;
-    return index_of_string_in_array(filepath, (char **) DOT_DIRS, 4) > -1;
+    if (file_path == NULL || strlen(file_path) < 1) return 0;
+    return index_of_string_in_array(file_path, (char **) DOT_DIRS, 4) > -1;
 }
 
-long file_size(const char *filepath)
+long file_size(const char *file_path)
 {
     struct stat st;
-    if (stat(filepath, &st) == -1) {
+    if (stat(file_path, &st) == -1) {
         if (ENOENT == errno) {
             return 0; // does not exist
         }
@@ -39,56 +39,56 @@ long file_size(const char *filepath)
 }
 
 /*
- * get_extension - get a filename's extension, if defined, otherwise an empty string
+ * get_extension - get a file_name's extension, if defined, otherwise an empty string
  *
  * NOTE: ext is expected to have enough allocated to contain the extension; the
- *       easy way to ensure that is to alloc to the size of the filename
+ *       easy way to ensure that is to alloc to the size of the file_name
  */
-void get_extension(const char *filename, char *ext)
+void get_extension(const char *file_name, char *ext)
 {
-    if (filename == NULL) return;
-    size_t fnlen = strlen(filename);
-    // b.c is the shortest a filename can be with ext, so skip if shorter than 3
+    if (file_name == NULL) return;
+    size_t fnlen = strlen(file_name);
+    // b.c is the shortest a file_name can be with ext, so skip if shorter than 3
     if (fnlen < 3) return;
-    int idx = last_index_of_char_in_string('.', filename);
-    if (idx < 1 || (idx == 1 && filename[0] == '.') || idx >= (fnlen - 1)) {
+    int idx = last_index_of_char_in_string('.', file_name);
+    if (idx < 1 || (idx == 1 && file_name[0] == '.') || idx >= (fnlen - 1)) {
         ext = "";
     } else {
         int c = 0;
         for (int i = idx+1; i < fnlen; i++) {
-            ext[c++] = filename[i];
+            ext[c++] = file_name[i];
         }
         ext[c] = '\0';
     }
 }
 
-unsigned short is_hidden(const char *filepath)
+unsigned short is_hidden(const char *file_path)
 {
     // if NULL or empty, return false
-    if (filepath == NULL) return 0;
-    size_t fplen = strlen(filepath);
+    if (file_path == NULL) return 0;
+    size_t fplen = strlen(file_path);
     if (fplen < 1) return 0;
 
-    // if filepath has any path separators, call is_hidden on each path segment
-    int sep_count = char_count_in_string(PATH_SEPARATOR, filepath);
+    // if file_path has any path separators, call is_hidden on each path segment
+    int sep_count = char_count_in_string(PATH_SEPARATOR, file_path);
     if (sep_count > 0) {
         int startidx = 0;
         int nextidx = 0;
-        while (nextidx < strlen(filepath)) {
-            if (filepath[nextidx] == PATH_SEPARATOR) {
+        while (nextidx < strlen(file_path)) {
+            if (file_path[nextidx] == PATH_SEPARATOR) {
                 int seglen = nextidx - startidx;
                 char seg[seglen + 1];
-                memcpy(seg, &filepath[startidx], seglen);
+                memcpy(seg, &file_path[startidx], seglen);
                 seg[seglen] = '\0';
                 // printf("seg: \"%s\"\n", seg);
                 if (is_hidden(seg)) {
                     return 1;
                 }
                 startidx += seglen + 1;
-            } else if (nextidx == strlen(filepath) - 1) {
+            } else if (nextidx == strlen(file_path) - 1) {
                 int seglen = nextidx - startidx + 1;
                 char seg[seglen + 1];
-                memcpy(seg, &filepath[startidx], seglen);
+                memcpy(seg, &file_path[startidx], seglen);
                 seg[seglen] = '\0';
                 // printf("seg: \"%s\"\n", seg);
                 if (is_hidden(seg)) {
@@ -101,8 +101,8 @@ unsigned short is_hidden(const char *filepath)
 
     } else {
         // check the string as an individual path element
-        if (filepath[0] != '.') return 0;
-        if (is_dot_dir(filepath)) return 0;
+        if (file_path[0] != '.') return 0;
+        if (is_dot_dir(file_path)) return 0;
         // if it starts with a dot and isn't a dot dir, it must be a hidden dir/file
         return 1;
     }
@@ -110,19 +110,19 @@ unsigned short is_hidden(const char *filepath)
     return 0;
 }
 
-void expand_path(const char *filepath, char **expanded)
+void expand_path(const char *file_path, char **expanded)
 {
-    if (filepath == NULL) return;
-    size_t fp_len = strlen(filepath);
+    if (file_path == NULL) return;
+    size_t fp_len = strlen(file_path);
     if (fp_len < 1) return;
 
-    if (filepath[0] == '~') {
+    if (file_path[0] == '~') {
         wordexp_t p;
         char **w;
         int i;
         size_t exp_len = 0;
 
-        wordexp(filepath, &p, 0);
+        wordexp(file_path, &p, 0);
         w = p.we_wordv;
         for (i = 0; i < p.we_wordc; i++) {
             exp_len += strlen(w[i]);
@@ -141,7 +141,7 @@ void expand_path(const char *filepath, char **expanded)
 
         wordfree(&p);
     } else {
-        strncpy(*expanded, filepath, fp_len);
+        strncpy(*expanded, file_path, fp_len);
         (*expanded)[fp_len] = '\0';
     }
 }

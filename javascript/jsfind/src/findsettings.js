@@ -97,21 +97,21 @@ class FindSettings {
         this.addPatterns(pattern, this.outArchiveFilePatterns);
     }
 
-    addFileTypes(filetypes, arr) {
-        if (typeof(filetypes) === 'string') {
-            filetypes.split(/,/).filter(ft => ft !== '').
+    addFileTypes(fileTypes, arr) {
+        if (typeof(fileTypes) === 'string') {
+            fileTypes.split(/,/).filter(ft => ft !== '').
             forEach(ft => arr.push(FileTypes.fromName(ft)));
-        } else if (filetypes.constructor === Array) {
-            filetypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
+        } else if (fileTypes.constructor === Array) {
+            fileTypes.forEach(ft => arr.push(FileTypes.fromName(ft)));
         }
     }
 
-    addInFileTypes(filetype) {
-        this.addFileTypes(filetype, this.inFileTypes);
+    addInFileTypes(fileType) {
+        this.addFileTypes(fileType, this.inFileTypes);
     }
 
-    addOutFileTypes(filetype) {
-        this.addFileTypes(filetype, this.outFileTypes);
+    addOutFileTypes(fileType) {
+        this.addFileTypes(fileType, this.outFileTypes);
     }
 
     setArchivesOnly(b = true) {

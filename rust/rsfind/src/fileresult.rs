@@ -6,48 +6,48 @@ use crate::filetypes::FileType;
 pub struct FileResult {
     pub containers: Vec<String>,
     pub path: String,
-    pub name: String,
-    pub filetype: FileType,
-    pub filesize: u64,
-    pub modtime: u64,
+    pub file_name: String,
+    pub file_type: FileType,
+    pub file_size: u64,
+    pub mod_time: u64,
 }
 
 impl FileResult {
-    pub fn new(path: String, name: String, filetype: FileType, filesize: u64, modtime: u64) -> FileResult {
-        FileResult::with_containers(Vec::new(), path, name, filetype, filesize, modtime)
+    pub fn new(path: String, file_name: String, file_type: FileType, file_size: u64, mod_time: u64) -> FileResult {
+        FileResult::with_containers(Vec::new(), path, file_name, file_type, file_size, mod_time)
     }
 
     pub fn with_containers(
         containers: Vec<String>,
         path: String,
-        name: String,
-        filetype: FileType,
-        filesize: u64,
-        modtime: u64,
+        file_name: String,
+        file_type: FileType,
+        file_size: u64,
+        mod_time: u64,
     ) -> FileResult {
         FileResult {
             containers,
             path,
-            name,
-            filetype,
-            filesize,
-            modtime,
+            file_name,
+            file_type,
+            file_size,
+            mod_time,
         }
     }
 
-    pub fn filepath(&self) -> String {
-        format!("{}", Path::new(&self.path).join(&self.name).display())
+    pub fn file_path(&self) -> String {
+        format!("{}", Path::new(&self.path).join(&self.file_name).display())
     }
 
-    pub fn fullpath(&self) -> String {
+    pub fn full_path(&self) -> String {
         if self.containers.is_empty() {
-            format!("{}", Path::new(&self.path).join(&self.name).display())
+            format!("{}", Path::new(&self.path).join(&self.file_name).display())
         } else {
             let container_str = self.containers.join("!");
             format!(
                 "{}!{}",
                 container_str,
-                Path::new(&self.path).join(&self.name).display()
+                Path::new(&self.path).join(&self.file_name).display()
             )
         }
     }
@@ -69,7 +69,7 @@ mod tests {
             SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()
         );
         assert_eq!(
-            fr.filepath(),
+            fr.file_path(),
             "~/src/xfind/rust/rsfind/src/finder.rs"
         );
     }
@@ -83,6 +83,6 @@ mod tests {
             1000,
             SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()
         );
-        assert_eq!(fr.filepath(), "./finder.rs");
+        assert_eq!(fr.file_path(), "./finder.rs");
     }
 }

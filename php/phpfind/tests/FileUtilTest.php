@@ -13,38 +13,38 @@ class FileUtilTest extends TestCase
      **************************************************************************/
     public function test_get_extension_has_txt_extension(): void
     {
-        $filename = 'filename.txt';
-        $this->assertEquals("txt", FileUtil::get_extension($filename));
+        $file_name = 'filename.txt';
+        $this->assertEquals("txt", FileUtil::get_extension($file_name));
     }
 
     public function test_get_extension_missing_extension(): void
     {
-        $filename = 'filename.';
-        $this->assertEquals("", FileUtil::get_extension($filename));
+        $file_name = 'filename.';
+        $this->assertEquals("", FileUtil::get_extension($file_name));
     }
 
     public function test_get_extension_no_extension(): void
     {
-        $filename = 'filename';
-        $this->assertEquals("", FileUtil::get_extension($filename));
+        $file_name = 'filename';
+        $this->assertEquals("", FileUtil::get_extension($file_name));
     }
 
     public function test_get_extension_hidden_txt_extension(): void
     {
-        $filename = '.filename.txt';
-        $this->assertEquals("txt", FileUtil::get_extension($filename));
+        $file_name = '.filename.txt';
+        $this->assertEquals("txt", FileUtil::get_extension($file_name));
     }
 
     public function test_get_extension_hidden_missing_extension(): void
     {
-        $filename = '.filename.';
-        $this->assertEquals("", FileUtil::get_extension($filename));
+        $file_name = '.filename.';
+        $this->assertEquals("", FileUtil::get_extension($file_name));
     }
 
     public function test_get_extension_hidden_no_extension(): void
     {
-        $filename = '.filename';
-        $this->assertEquals("", FileUtil::get_extension($filename));
+        $file_name = '.filename';
+        $this->assertEquals("", FileUtil::get_extension($file_name));
     }
 
     /***************************************************************************
@@ -52,20 +52,20 @@ class FileUtilTest extends TestCase
      **************************************************************************/
     public function test_is_dot_dir_single_dot(): void
     {
-        $filename = '.';
-        $this->assertTrue(FileUtil::is_dot_dir($filename));
+        $file_name = '.';
+        $this->assertTrue(FileUtil::is_dot_dir($file_name));
     }
 
     public function test_is_dot_dir_double_dot(): void
     {
-        $filename = '..';
-        $this->assertTrue(FileUtil::is_dot_dir($filename));
+        $file_name = '..';
+        $this->assertTrue(FileUtil::is_dot_dir($file_name));
     }
 
     public function test_is_dot_dir_non_dot_dir(): void
     {
-        $filename = '.git';
-        $this->assertFalse(FileUtil::is_dot_dir($filename));
+        $file_name = '.git';
+        $this->assertFalse(FileUtil::is_dot_dir($file_name));
     }
 
     /***************************************************************************
@@ -73,26 +73,26 @@ class FileUtilTest extends TestCase
      **************************************************************************/
     public function test_is_hidden_hidden_file(): void
     {
-        $filename = '.filename.txt';
-        $this->assertTrue(FileUtil::is_hidden($filename));
+        $file_name = '.filename.txt';
+        $this->assertTrue(FileUtil::is_hidden($file_name));
     }
 
     public function test_is_hidden_not_hidden_file(): void
     {
-        $filename = 'filename.txt';
-        $this->assertFalse(FileUtil::is_hidden($filename));
+        $file_name = 'filename.txt';
+        $this->assertFalse(FileUtil::is_hidden($file_name));
     }
 
     public function test_is_hidden_single_dot(): void
     {
-        $filename = '.';
-        $this->assertFalse(FileUtil::is_hidden($filename));
+        $file_name = '.';
+        $this->assertFalse(FileUtil::is_hidden($file_name));
     }
 
     public function test_is_hidden_double_dot(): void
     {
-        $filename = '..';
-        $this->assertFalse(FileUtil::is_hidden($filename));
+        $file_name = '..';
+        $this->assertFalse(FileUtil::is_hidden($file_name));
     }
 
     /***************************************************************************

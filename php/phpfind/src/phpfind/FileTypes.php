@@ -33,9 +33,9 @@ class FileTypes
     {
         $file_type_ext_map = array();
         $file_type_name_map = array();
-        $filetypespath = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
-        if (file_exists($filetypespath)) {
-            $json_obj = json_decode(file_get_contents($filetypespath), true);
+        $file_types_path = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
+        if (file_exists($file_types_path)) {
+            $json_obj = json_decode(file_get_contents($file_types_path), true);
             foreach ($json_obj['filetypes'] as $ft) {
                 $type = (string)$ft['type'];
                 $exts = $ft['extensions'];
@@ -54,7 +54,7 @@ class FileTypes
                 $file_type_name_map['xml']
             );
         } else {
-            throw new FindException('File not found: ' . $filetypespath);
+            throw new FindException('File not found: ' . $file_types_path);
         }
         return [$file_type_ext_map, $file_type_name_map];
     }
@@ -92,85 +92,85 @@ class FileTypes
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return FileType
      */
-    public function get_filetype(string $filename): FileType
+    public function get_file_type(string $file_name): FileType
     {
-        if ($this->is_code($filename)) {
+        if ($this->is_code($file_name)) {
             return FileType::Code;
         }
-        if ($this->is_xml($filename)) {
+        if ($this->is_xml($file_name)) {
             return FileType::Xml;
         }
-        if ($this->is_text($filename)) {
+        if ($this->is_text($file_name)) {
             return FileType::Text;
         }
-        if ($this->is_binary($filename)) {
+        if ($this->is_binary($file_name)) {
             return FileType::Binary;
         }
-        if ($this->is_archive($filename)) {
+        if ($this->is_archive($file_name)) {
             return FileType::Archive;
         }
         return FileType::Unknown;
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return bool
      */
-    public function is_archive(string $filename): bool
+    public function is_archive(string $file_name): bool
     {
-        return in_array($filename, $this->file_type_name_map['archive'])
-            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['archive']);
+        return in_array($file_name, $this->file_type_name_map['archive'])
+            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['archive']);
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return bool
      */
-    public function is_binary(string $filename): bool
+    public function is_binary(string $file_name): bool
     {
-        return in_array($filename, $this->file_type_name_map['binary'])
-            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['binary']);
+        return in_array($file_name, $this->file_type_name_map['binary'])
+            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['binary']);
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return bool
      */
-    public function is_code(string $filename): bool
+    public function is_code(string $file_name): bool
     {
-        return in_array($filename, $this->file_type_name_map['code'])
-            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['code']);
+        return in_array($file_name, $this->file_type_name_map['code'])
+            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['code']);
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return bool
      */
-    public function is_text(string $filename): bool
+    public function is_text(string $file_name): bool
     {
-        return in_array($filename, $this->file_type_name_map['text'])
-            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['text']);
+        return in_array($file_name, $this->file_type_name_map['text'])
+            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['text']);
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return bool
      */
-    public function is_xml(string $filename): bool
+    public function is_xml(string $file_name): bool
     {
-        return in_array($filename, $this->file_type_name_map['xml'])
-            || in_array(FileUtil::get_extension($filename), $this->file_type_ext_map['xml']);
+        return in_array($file_name, $this->file_type_name_map['xml'])
+            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['xml']);
     }
 
     /**
-     * @param string $filename
+     * @param string $file_name
      * @return bool
      */
-    public function is_unknown(string $filename): bool
+    public function is_unknown(string $file_name): bool
     {
-        return $this->get_filetype($filename) == FileType::Unknown;
+        return $this->get_file_type($file_name) == FileType::Unknown;
     }
 }

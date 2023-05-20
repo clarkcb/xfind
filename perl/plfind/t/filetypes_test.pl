@@ -22,63 +22,63 @@ use Test::Simple tests => 12;
 use plfind::FileType;
 use plfind::FileTypes;
 
-my $filetypes = new plfind::FileTypes();
+my $file_types = new plfind::FileTypes();
 
-sub test_getfiletype_archive_file {
+sub test_get_file_type_archive_file {
     my $filename = 'archive.zip';
-    my $ok = $filetypes->is_archive($filename);
+    my $ok = $file_types->is_archive($filename);
     ok($ok > 0, "$filename is archive file");
-    my $type = $filetypes->get_filetype($filename);
+    my $type = $file_types->get_file_type($filename);
     ok($type eq plfind::FileType->ARCHIVE, "FileType of $filename is $type");
 }
 
-sub test_getfiletype_binary_file {
+sub test_get_file_type_binary_file {
     my $filename = 'binary.exe';
-    my $ok = $filetypes->is_binary($filename);
+    my $ok = $file_types->is_binary($filename);
     ok($ok > 0, "$filename is binary file");
-    my $type = $filetypes->get_filetype($filename);
+    my $type = $file_types->get_file_type($filename);
     ok($type eq plfind::FileType->BINARY, "FileType of $filename is $type");
 }
 
-sub test_getfiletype_code_file {
+sub test_get_file_type_code_file {
     my $filename = 'code.pl';
-    my $ok = $filetypes->is_code($filename);
+    my $ok = $file_types->is_code($filename);
     ok($ok > 0, "$filename is code file");
-    my $type = $filetypes->get_filetype($filename);
+    my $type = $file_types->get_file_type($filename);
     ok($type eq plfind::FileType->CODE, "FileType of $filename is $type");
 }
 
-sub test_getfiletype_text_file {
+sub test_get_file_type_text_file {
     my $filename = 'text.txt';
-    my $ok = $filetypes->is_text($filename);
+    my $ok = $file_types->is_text($filename);
     ok($ok > 0, "$filename is text file");
-    my $type = $filetypes->get_filetype($filename);
+    my $type = $file_types->get_file_type($filename);
     ok($type eq plfind::FileType->TEXT, "FileType of $filename is $type");
 }
 
-sub test_getfiletype_xml_file {
+sub test_get_file_type_xml_file {
     my $filename = 'markup.xml';
-    my $ok = $filetypes->is_xml($filename);
+    my $ok = $file_types->is_xml($filename);
     ok($ok > 0, "$filename is xml file");
-    my $type = $filetypes->get_filetype($filename);
+    my $type = $file_types->get_file_type($filename);
     ok($type eq plfind::FileType->XML, "FileType of $filename is $type");
 }
 
-sub test_getfiletype_unknown_file {
+sub test_get_file_type_unknown_file {
     my $filename = 'unknown.xyz';
-    my $ok = $filetypes->is_unknown($filename);
+    my $ok = $file_types->is_unknown($filename);
     ok($ok > 0, "$filename is unknown file");
-    my $type = $filetypes->get_filetype($filename);
+    my $type = $file_types->get_file_type($filename);
     ok($type eq plfind::FileType->UNKNOWN, "FileType of $filename is $type");
 }
 
 sub main {
-    test_getfiletype_archive_file();
-    test_getfiletype_binary_file();
-    test_getfiletype_code_file();
-    test_getfiletype_text_file();
-    test_getfiletype_xml_file();
-    test_getfiletype_unknown_file();
+    test_get_file_type_archive_file();
+    test_get_file_type_binary_file();
+    test_get_file_type_code_file();
+    test_get_file_type_text_file();
+    test_get_file_type_xml_file();
+    test_get_file_type_unknown_file();
 }
 
 main();

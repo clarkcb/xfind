@@ -6,20 +6,20 @@
 
 namespace cppfind {
     FindSettings::FindSettings() {
-        m_in_archiveextensions = {};
-        m_in_archivefilepatterns = {};
-        m_in_dirpatterns = {};
+        m_in_archive_extensions = {};
+        m_in_archive_file_patterns = {};
+        m_in_dir_patterns = {};
         m_in_extensions = {};
-        m_in_filepatterns = {};
-        m_in_filetypes = {};
-        m_out_archiveextensions = {};
-        m_out_archivefilepatterns = {};
-        m_out_dirpatterns = {};
+        m_in_file_patterns = {};
+        m_in_file_types = {};
+        m_out_archive_extensions = {};
+        m_out_archive_file_patterns = {};
+        m_out_dir_patterns = {};
         m_out_extensions = {};
-        m_out_filepatterns = {};
-        m_out_filetypes = {};
+        m_out_file_patterns = {};
+        m_out_file_types = {};
         m_paths = {};
-        m_sortby = SortBy::FILEPATH;
+        m_sort_by = SortBy::FILEPATH;
     }
 
     void FindSettings::add_pattern(const std::string& p, std::vector<FindPattern*>* ps) {
@@ -35,112 +35,112 @@ namespace cppfind {
         }
     }
 
-    void FindSettings::add_in_archiveextension(const std::string& ext) {
-        add_extensions(ext, &m_in_archiveextensions);
+    void FindSettings::add_in_archive_extension(const std::string& ext) {
+        add_extensions(ext, &m_in_archive_extensions);
     }
 
-    void FindSettings::add_in_archivefilepattern(const std::string& p) {
-        add_pattern(p, &m_in_archivefilepatterns);
+    void FindSettings::add_in_archive_file_pattern(const std::string& p) {
+        add_pattern(p, &m_in_archive_file_patterns);
     }
 
-    void FindSettings::add_in_dirpattern(const std::string& p) {
-        add_pattern(p, &m_in_dirpatterns);
+    void FindSettings::add_in_dir_pattern(const std::string& p) {
+        add_pattern(p, &m_in_dir_patterns);
     }
 
     void FindSettings::add_in_extension(const std::string& ext) {
         add_extensions(ext, &m_in_extensions);
     }
 
-    void FindSettings::add_in_filepattern(const std::string& p) {
-        add_pattern(p, &m_in_filepatterns);
+    void FindSettings::add_in_file_pattern(const std::string& p) {
+        add_pattern(p, &m_in_file_patterns);
     }
 
-    void FindSettings::add_in_filetype(const FileType filetype) {
-        m_in_filetypes.push_back(filetype);
+    void FindSettings::add_in_file_type(const FileType filetype) {
+        m_in_file_types.push_back(filetype);
     }
 
-    void FindSettings::add_out_archiveextension(const std::string& ext) {
-        add_extensions(ext, &m_out_archiveextensions);
+    void FindSettings::add_out_archive_extension(const std::string& ext) {
+        add_extensions(ext, &m_out_archive_extensions);
     }
 
-    void FindSettings::add_out_archivefilepattern(const std::string& p) {
-        add_pattern(p, &m_out_archivefilepatterns);
+    void FindSettings::add_out_archive_file_pattern(const std::string& p) {
+        add_pattern(p, &m_out_archive_file_patterns);
     }
 
-    void FindSettings::add_out_dirpattern(const std::string& p) {
-        add_pattern(p, &m_out_dirpatterns);
+    void FindSettings::add_out_dir_pattern(const std::string& p) {
+        add_pattern(p, &m_out_dir_patterns);
     }
 
     void FindSettings::add_out_extension(const std::string& ext) {
         add_extensions(ext, &m_out_extensions);
     }
 
-    void FindSettings::add_out_filepattern(const std::string& p) {
-        add_pattern(p, &m_out_filepatterns);
+    void FindSettings::add_out_file_pattern(const std::string& p) {
+        add_pattern(p, &m_out_file_patterns);
     }
 
-    void FindSettings::add_out_filetype(const FileType filetype) {
-        m_out_filetypes.push_back(filetype);
+    void FindSettings::add_out_file_type(const FileType file_type) {
+        m_out_file_types.push_back(file_type);
     }
 
     void FindSettings::add_path(const std::string& p) {
         m_paths.push_back(p);
     }
 
-    bool FindSettings::archivesonly() const {
-        return m_archivesonly;
+    bool FindSettings::archives_only() const {
+        return m_archives_only;
     }
 
     bool FindSettings::debug() const {
         return m_debug;
     }
 
-    bool FindSettings::excludehidden() const {
-        return m_excludehidden;
+    bool FindSettings::exclude_hidden() const {
+        return m_exclude_hidden;
     }
 
-    bool FindSettings::includearchives() const {
-        return m_includearchives;
+    bool FindSettings::include_archives() const {
+        return m_include_archives;
     }
 
-    bool FindSettings::listdirs() const {
-        return m_listdirs;
+    bool FindSettings::list_dirs() const {
+        return m_list_dirs;
     }
 
-    bool FindSettings::listfiles() const {
-        return m_listfiles;
+    bool FindSettings::list_files() const {
+        return m_list_files;
     }
 
-    long FindSettings::maxlastmod() const {
-        return m_maxlastmod;
+    long FindSettings::max_last_mod() const {
+        return m_max_last_mod;
     }
 
-    long FindSettings::maxsize() const {
-        return m_maxsize;
+    long FindSettings::max_size() const {
+        return m_max_size;
     }
 
-    long FindSettings::minlastmod() const {
-        return m_minlastmod;
+    long FindSettings::min_last_mod() const {
+        return m_min_last_mod;
     }
 
-    long FindSettings::minsize() const {
-        return m_minsize;
+    long FindSettings::min_size() const {
+        return m_min_size;
     }
 
-    bool FindSettings::printusage() const {
-        return m_printusage;
+    bool FindSettings::print_usage() const {
+        return m_print_usage;
     }
 
-    bool FindSettings::printversion() const {
-        return m_printversion;
+    bool FindSettings::print_version() const {
+        return m_print_version;
     }
 
     bool FindSettings::recursive() const {
         return m_recursive;
     }
 
-    bool FindSettings::sort_caseinsensitive() const {
-        return m_sort_caseinsensitive;
+    bool FindSettings::sort_case_insensitive() const {
+        return m_sort_case_insensitive;
     }
 
     bool FindSettings::sort_descending() const {
@@ -151,65 +151,65 @@ namespace cppfind {
         return m_verbose;
     }
 
-    std::vector<std::string>* FindSettings::in_archiveextensions() {
-        return &m_in_archiveextensions;
+    std::vector<std::string>* FindSettings::in_archive_extensions() {
+        return &m_in_archive_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_archivefilepatterns() {
-        return &m_in_archivefilepatterns;
+    std::vector<FindPattern*>* FindSettings::in_archive_file_patterns() {
+        return &m_in_archive_file_patterns;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_dirpatterns() {
-        return &m_in_dirpatterns;
+    std::vector<FindPattern*>* FindSettings::in_dir_patterns() {
+        return &m_in_dir_patterns;
     }
 
     std::vector<std::string>* FindSettings::in_extensions() {
         return &m_in_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_filepatterns() {
-        return &m_in_filepatterns;
+    std::vector<FindPattern*>* FindSettings::in_file_patterns() {
+        return &m_in_file_patterns;
     }
 
-    std::vector<FileType>* FindSettings::in_filetypes() {
-        return &m_in_filetypes;
+    std::vector<FileType>* FindSettings::in_file_types() {
+        return &m_in_file_types;
     }
 
-    std::vector<std::string>* FindSettings::out_archiveextensions() {
-        return &m_out_archiveextensions;
+    std::vector<std::string>* FindSettings::out_archive_extensions() {
+        return &m_out_archive_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_archivefilepatterns() {
-        return &m_out_archivefilepatterns;
+    std::vector<FindPattern*>* FindSettings::out_archive_file_patterns() {
+        return &m_out_archive_file_patterns;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_dirpatterns() {
-        return &m_out_dirpatterns;
+    std::vector<FindPattern*>* FindSettings::out_dir_patterns() {
+        return &m_out_dir_patterns;
     }
 
     std::vector<std::string>* FindSettings::out_extensions() {
         return &m_out_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_filepatterns() {
-        return &m_out_filepatterns;
+    std::vector<FindPattern*>* FindSettings::out_file_patterns() {
+        return &m_out_file_patterns;
     }
 
-    std::vector<FileType>* FindSettings::out_filetypes() {
-        return &m_out_filetypes;
+    std::vector<FileType>* FindSettings::out_file_types() {
+        return &m_out_file_types;
     }
 
     std::vector<std::string>* FindSettings::paths() {
         return &m_paths;
     }
 
-    SortBy FindSettings::sortby() {
-        return m_sortby;
+    SortBy FindSettings::sort_by() {
+        return m_sort_by;
     }
 
-    void FindSettings::archivesonly(const bool b) {
-        m_archivesonly = b;
-        if (b) m_includearchives = b;
+    void FindSettings::archives_only(const bool b) {
+        m_archives_only = b;
+        if (b) m_include_archives = b;
     }
 
     void FindSettings::debug(const bool b) {
@@ -217,60 +217,60 @@ namespace cppfind {
         if (b) m_verbose = b;
     }
 
-    void FindSettings::excludehidden(const bool b) {
-        m_excludehidden = b;
+    void FindSettings::exclude_hidden(const bool b) {
+        m_exclude_hidden = b;
     }
 
-    void FindSettings::includearchives(const bool b) {
-        m_includearchives = b;
+    void FindSettings::include_archives(bool b) {
+        m_include_archives = b;
     }
 
-    void FindSettings::listdirs(const bool b) {
-        m_listdirs = b;
+    void FindSettings::list_dirs(const bool b) {
+        m_list_dirs = b;
     }
 
-    void FindSettings::listfiles(const bool b) {
-        m_listfiles = b;
+    void FindSettings::list_files(const bool b) {
+        m_list_files = b;
     }
 
-    void FindSettings::maxlastmod(const long maxlastmod) {
-        m_maxlastmod = maxlastmod;
+    void FindSettings::max_last_mod(const long max_last_mod) {
+        m_max_last_mod = max_last_mod;
     }
 
-    void FindSettings::maxsize(const long maxsize) {
-        m_maxsize = maxsize;
+    void FindSettings::max_size(const long max_size) {
+        m_max_size = max_size;
     }
 
-    void FindSettings::minlastmod(const long minlastmod) {
-        m_minlastmod = minlastmod;
+    void FindSettings::min_last_mod(const long min_last_mod) {
+        m_min_last_mod = min_last_mod;
     }
 
-    void FindSettings::minsize(const long minsize) {
-        m_minsize = minsize;
+    void FindSettings::min_size(const long min_size) {
+        m_min_size = min_size;
     }
 
-    void FindSettings::printusage(const bool b) {
-        m_printusage = b;
+    void FindSettings::print_usage(const bool b) {
+        m_print_usage = b;
     }
 
-    void FindSettings::printversion(const bool b) {
-        m_printversion = b;
+    void FindSettings::print_version(const bool b) {
+        m_print_version = b;
     }
 
     void FindSettings::recursive(const bool b) {
         m_recursive = b;
     }
 
-    void FindSettings::sortby(const SortBy sortby) {
-        m_sortby = sortby;
+    void FindSettings::sort_by(const SortBy sort_by) {
+        m_sort_by = sort_by;
     }
 
-    void FindSettings::set_sortby(const std::string& name) {
-        m_sortby = FindSettings::sortby_from_name(name);
+    void FindSettings::set_sort_by(const std::string& name) {
+        m_sort_by = FindSettings::sort_by_from_name(name);
     }
 
-    void FindSettings::sort_caseinsensitive(const bool b) {
-        m_sort_caseinsensitive = b;
+    void FindSettings::sort_case_insensitive(const bool b) {
+        m_sort_case_insensitive = b;
     }
 
     void FindSettings::sort_descending(const bool b) {
@@ -299,7 +299,7 @@ namespace cppfind {
         return ss_string;
     }
 
-    std::string FindSettings::findpatterns_to_string(std::vector<FindPattern*>* ps) {
+    std::string FindSettings::find_patterns_to_string(std::vector<FindPattern*>* ps) {
         std::string ps_string = "[";
         int count = 0;
         for (auto const& p : *ps) {
@@ -313,7 +313,7 @@ namespace cppfind {
         return ps_string;
     }
 
-    std::string FindSettings::filetypes_to_string(std::vector<FileType>* ts) {
+    std::string FindSettings::file_types_to_string(std::vector<FileType>* ts) {
         std::string ts_string = "[";
         int count = 0;
         for (auto const& t : *ts) {
@@ -327,7 +327,7 @@ namespace cppfind {
         return ts_string;
     }
 
-    SortBy FindSettings::sortby_from_name(const std::string& name) {
+    SortBy FindSettings::sort_by_from_name(const std::string& name) {
         std::string uname = boost::to_upper_copy(name);
         if (uname == "PATH") {
             return SortBy::FILEPATH;
@@ -347,7 +347,7 @@ namespace cppfind {
         return SortBy::FILEPATH;
     }
 
-    std::string FindSettings::sortby_to_name(const SortBy sortby) {
+    std::string FindSettings::sort_by_to_name(const SortBy sortby) {
         switch (sortby)
         {
             case SortBy::FILEPATH:
@@ -368,34 +368,34 @@ namespace cppfind {
     std::string FindSettings::string() {
         auto settings_str =
                 std::string("FindSettings(")
-                + "archivesonly: " + bool_to_string(m_archivesonly)
+                + "archives_only: " + bool_to_string(m_archives_only)
                 + ", debug: " + bool_to_string(m_debug)
-                + ", excludehidden: " + bool_to_string(m_excludehidden)
-                + ", in_archiveextensions: " + string_vector_to_string(&m_in_archiveextensions)
-                + ", in_archivefilepatterns: " + findpatterns_to_string(&m_in_archivefilepatterns)
-                + ", in_dirpatterns: " + findpatterns_to_string(&m_in_dirpatterns)
+                + ", exclude_hidden: " + bool_to_string(m_exclude_hidden)
+                + ", in_archive_extensions: " + string_vector_to_string(&m_in_archive_extensions)
+                + ", in_archive_file_patterns: " + find_patterns_to_string(&m_in_archive_file_patterns)
+                + ", in_dir_patterns: " + find_patterns_to_string(&m_in_dir_patterns)
                 + ", in_extensions: " + string_vector_to_string(&m_in_extensions)
-                + ", in_filepatterns: " + findpatterns_to_string(&m_in_filepatterns)
-                + ", in_filetypes: " + filetypes_to_string(&m_in_filetypes)
-                + ", includearchives: " + bool_to_string(m_includearchives)
-                + ", listdirs: " + bool_to_string(m_listdirs)
-                + ", listfiles: " + bool_to_string(m_listfiles)
-                + ", maxlastmod: \"" + long_to_datestr(m_maxlastmod) + "\""
-                + ", maxsize: " + std::to_string(m_maxsize)
-                + ", minlastmod: \"" + long_to_datestr(m_minlastmod) + "\""
-                + ", minsize: " + std::to_string(m_minsize)
-                + ", out_archiveextensions: " + string_vector_to_string(&m_out_archiveextensions)
-                + ", out_archivefilepatterns: " + findpatterns_to_string(&m_out_archivefilepatterns)
-                + ", out_dirpatterns: " + findpatterns_to_string(&m_out_dirpatterns)
+                + ", in_file_patterns: " + find_patterns_to_string(&m_in_file_patterns)
+                + ", in_file_types: " + file_types_to_string(&m_in_file_types)
+                + ", includearchives: " + bool_to_string(m_include_archives)
+                + ", listdirs: " + bool_to_string(m_list_dirs)
+                + ", listfiles: " + bool_to_string(m_list_files)
+                + ", max_last_mod: \"" + long_to_datestr(m_max_last_mod) + "\""
+                + ", max_size: " + std::to_string(m_max_size)
+                + ", min_last_mod: \"" + long_to_datestr(m_min_last_mod) + "\""
+                + ", min_size: " + std::to_string(m_min_size)
+                + ", out_archive_extensions: " + string_vector_to_string(&m_out_archive_extensions)
+                + ", out_archive_file_patterns: " + find_patterns_to_string(&m_out_archive_file_patterns)
+                + ", out_dir_patterns: " + find_patterns_to_string(&m_out_dir_patterns)
                 + ", out_extensions: " + string_vector_to_string(&m_out_extensions)
-                + ", out_filepatterns: " + findpatterns_to_string(&m_out_filepatterns)
-                + ", out_filetypes: " + filetypes_to_string(&m_out_filetypes)
+                + ", out_file_patterns: " + find_patterns_to_string(&m_out_file_patterns)
+                + ", out_file_types: " + file_types_to_string(&m_out_file_types)
                 + ", paths: " + string_vector_to_string(&m_paths)
-                + ", printusage: " + bool_to_string(m_printusage)
-                + ", printversion: " + bool_to_string(m_printversion)
+                + ", print_usage: " + bool_to_string(m_print_usage)
+                + ", print_version: " + bool_to_string(m_print_version)
                 + ", recursive: " + bool_to_string(m_recursive)
-                + ", sortby: " + sortby_to_name(m_sortby)
-                + ", sort_caseinsensitive: " + bool_to_string(m_sort_caseinsensitive)
+                + ", sort_by: " + sort_by_to_name(m_sort_by)
+                + ", sort_case_insensitive: " + bool_to_string(m_sort_case_insensitive)
                 + ", sort_descending: " + bool_to_string(m_sort_descending)
                 + ", verbose: " + bool_to_string(m_verbose)
                 + ")";

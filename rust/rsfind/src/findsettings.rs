@@ -45,9 +45,9 @@ pub struct FindSettings {
     pub include_archives: bool,
     pub list_dirs: bool,
     pub list_files: bool,
-    pub max_lastmod: u64,
+    pub max_last_mod: u64,
     pub max_size: u64,
-    pub min_lastmod: u64,
+    pub min_last_mod: u64,
     pub min_size: u64,
     pub out_archive_extensions: Vec<String>,
     pub out_archive_file_patterns: Vec<Regex>,
@@ -60,7 +60,7 @@ pub struct FindSettings {
     pub print_version: bool,
     pub recursive: bool,
     pub sort_by: SortBy,
-    pub sort_caseinsensitive: bool,
+    pub sort_case_insensitive: bool,
     pub sort_descending: bool,
     pub verbose: bool,
 }
@@ -80,9 +80,9 @@ impl FindSettings {
             include_archives: false,
             list_dirs: false,
             list_files: false,
-            max_lastmod: 0u64,
+            max_last_mod: 0u64,
             max_size: 0u64,
-            min_lastmod: 0u64,
+            min_last_mod: 0u64,
             min_size: 0u64,
             out_archive_extensions: Vec::new(),
             out_archive_file_patterns: Vec::new(),
@@ -95,7 +95,7 @@ impl FindSettings {
             print_version: false,
             recursive: true,
             sort_by: SortBy::FilePath,
-            sort_caseinsensitive: false,
+            sort_case_insensitive: false,
             sort_descending: false,
             verbose: false,
         }
@@ -155,12 +155,12 @@ impl FindSettings {
         add_pattern(pattern, &mut self.out_file_patterns);
     }
 
-    pub fn add_in_file_type(&mut self, filetype: filetypes::FileType) {
-        self.in_file_types.push(filetype)
+    pub fn add_in_file_type(&mut self, file_type: filetypes::FileType) {
+        self.in_file_types.push(file_type)
     }
 
-    pub fn add_out_file_type(&mut self, filetype: filetypes::FileType) {
-        self.out_file_types.push(filetype)
+    pub fn add_out_file_type(&mut self, file_type: filetypes::FileType) {
+        self.out_file_types.push(file_type)
     }
 
     pub fn add_path(&mut self, path: String) {
@@ -198,9 +198,9 @@ mod tests {
         assert_eq!(settings.include_archives, false);
         assert_eq!(settings.list_dirs, false);
         assert_eq!(settings.list_files, false);
-        assert_eq!(settings.max_lastmod, 0);
+        assert_eq!(settings.max_last_mod, 0);
         assert_eq!(settings.max_size, 0);
-        assert_eq!(settings.min_lastmod, 0);
+        assert_eq!(settings.min_last_mod, 0);
         assert_eq!(settings.min_size, 0);
         assert!(settings.out_archive_extensions.is_empty());
         assert!(settings.out_archive_file_patterns.is_empty());
@@ -213,7 +213,7 @@ mod tests {
         assert_eq!(settings.print_version, false);
         assert_eq!(settings.recursive, true);
         assert_eq!(settings.sort_by, SortBy::FilePath);
-        assert_eq!(settings.sort_caseinsensitive, false);
+        assert_eq!(settings.sort_case_insensitive, false);
         assert_eq!(settings.sort_descending, false);
         assert_eq!(settings.verbose, false);
     }

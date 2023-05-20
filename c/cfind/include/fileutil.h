@@ -9,17 +9,17 @@
 #define PATH_SEPARATOR '/'
 #endif
 
-unsigned short dir_or_file_exists(const char *filepath);
+unsigned short dir_or_file_exists(const char *file_path);
 
-unsigned short is_dot_dir(const char *filepath);
+unsigned short is_dot_dir(const char *file_path);
 
-long file_size(const char *filepath);
+long file_size(const char *file_path);
 
-void get_extension(const char *filename, char *ext);
+void get_extension(const char *file_name, char *ext);
 
-unsigned short is_hidden(const char *filename);
+unsigned short is_hidden(const char *file_path);
 
-void expand_path(const char *filepath, char **expanded);
+void expand_path(const char *file_path, char **expanded);
 
 void join_path(const char *path1, const char *path2, char *joined);
 

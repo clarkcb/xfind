@@ -19,7 +19,7 @@ namespace cppfind {
         std::unordered_map<std::string, std::string> m_long_arg_map;
         std::vector<FindOption*> m_options;
         void load_options();
-        void settings_from_file(std::string& filepath, FindSettings* ss);
+        void settings_from_file(std::string& file_path, FindSettings* ss);
         void settings_from_document(Document* document, FindSettings* settings);
 
     public:

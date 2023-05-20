@@ -32,60 +32,60 @@ class FindSettings:
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
-        'archivesonly', 'debug', 'excludehidden', 'in_archiveextensions',
-        'in_archivefilepatterns', 'in_dirpatterns', 'in_extensions', 'in_filepatterns',
-        'in_filetypes', 'includearchives', 'listdirs', 'listfiles', 'maxlastmod',
-        'maxsize', 'minlastmod', 'minsize', 'out_archivefilepatterns', 'out_archiveextensions',
-        'out_dirpatterns', 'out_extensions', 'out_filepatterns', 'out_filetypes', 'paths',
-        'printresults', 'printusage', 'printversion', 'recursive', 'sortby',
-        'sort_caseinsensitive', 'sort_descending', 'verbose'
+        'archives_only', 'debug', 'exclude_hidden', 'in_archive_extensions',
+        'in_archive_file_patterns', 'in_dir_patterns', 'in_extensions', 'in_file_patterns',
+        'in_file_types', 'include_archives', 'list_dirs', 'list_files', 'max_last_mod',
+        'max_size', 'min_last_mod', 'min_size', 'out_archive_file_patterns', 'out_archive_extensions',
+        'out_dir_patterns', 'out_extensions', 'out_file_patterns', 'out_file_types', 'paths',
+        'print_results', 'print_usage', 'print_version', 'recursive', 'sort_by',
+        'sort_case_insensitive', 'sort_descending', 'verbose'
     ]
 
-    def __init__(self, archivesonly: bool = False, debug: bool = False,
-                 excludehidden: bool = True, in_archiveextensions: Set[str] = None,
-                 in_archivefilepatterns: PatternSet = None, in_dirpatterns: PatternSet = None,
-                 in_extensions: Set[str] = None, in_filepatterns: PatternSet = None,
-                 in_filetypes: Set[str] = None, includearchives: bool = False,
-                 listdirs: bool = False, listfiles: bool = False,
-                 maxlastmod: Optional[datetime] = None, maxsize: int = 0,
-                 minlastmod: Optional[datetime] = None, minsize: int = 0,
-                 out_archiveextensions: Set[str] = None,
-                 out_archivefilepatterns: PatternSet = None,
-                 out_dirpatterns: PatternSet = None, out_extensions: Set[str] = None,
-                 out_filepatterns: PatternSet = None, out_filetypes: Set[str] = None,
-                 paths: Set[str] = None, printresults: bool = False, printusage: bool = False,
-                 printversion: bool = False, recursive: bool = True,
-                 sortby: SortBy = SortBy.FILEPATH, sort_caseinsensitive: bool = False,
+    def __init__(self, archives_only: bool = False, debug: bool = False,
+                 exclude_hidden: bool = True, in_archive_extensions: Set[str] = None,
+                 in_archive_file_patterns: PatternSet = None, in_dir_patterns: PatternSet = None,
+                 in_extensions: Set[str] = None, in_file_patterns: PatternSet = None,
+                 in_file_types: Set[str] = None, include_archives: bool = False,
+                 list_dirs: bool = False, list_files: bool = False,
+                 max_last_mod: Optional[datetime] = None, max_size: int = 0,
+                 min_last_mod: Optional[datetime] = None, min_size: int = 0,
+                 out_archive_extensions: Set[str] = None,
+                 out_archive_file_patterns: PatternSet = None,
+                 out_dir_patterns: PatternSet = None, out_extensions: Set[str] = None,
+                 out_file_patterns: PatternSet = None, out_file_types: Set[str] = None,
+                 paths: Set[str] = None, print_results: bool = False, print_usage: bool = False,
+                 print_version: bool = False, recursive: bool = True,
+                 sort_by: SortBy = SortBy.FILEPATH, sort_case_insensitive: bool = False,
                  sort_descending: bool = False, verbose: bool = False):
-        self.archivesonly = archivesonly
+        self.archives_only = archives_only
         self.debug = debug
-        self.excludehidden = excludehidden
-        self.in_archiveextensions = in_archiveextensions if in_archiveextensions else set()
-        self.in_archivefilepatterns: PatternSet = in_archivefilepatterns if in_archivefilepatterns else set()
-        self.in_dirpatterns: PatternSet = in_dirpatterns if in_dirpatterns else set()
+        self.exclude_hidden = exclude_hidden
+        self.in_archive_extensions = in_archive_extensions if in_archive_extensions else set()
+        self.in_archive_file_patterns: PatternSet = in_archive_file_patterns if in_archive_file_patterns else set()
+        self.in_dir_patterns: PatternSet = in_dir_patterns if in_dir_patterns else set()
         self.in_extensions = in_extensions if in_extensions else set()
-        self.in_filepatterns: PatternSet = in_filepatterns if in_filepatterns else set()
-        self.in_filetypes = in_filetypes if in_filetypes else set()
-        self.includearchives = includearchives
-        self.listdirs = listdirs
-        self.listfiles = listfiles
-        self.maxlastmod = maxlastmod
-        self.maxsize = maxsize
-        self.minlastmod = minlastmod
-        self.minsize = minsize
-        self.out_archiveextensions = out_archiveextensions if out_archiveextensions else set()
-        self.out_archivefilepatterns: PatternSet = out_archivefilepatterns if out_archivefilepatterns else set()
-        self.out_dirpatterns: PatternSet = out_dirpatterns if out_dirpatterns else set()
+        self.in_file_patterns: PatternSet = in_file_patterns if in_file_patterns else set()
+        self.in_file_types = in_file_types if in_file_types else set()
+        self.include_archives = include_archives
+        self.list_dirs = list_dirs
+        self.list_files = list_files
+        self.max_last_mod = max_last_mod
+        self.max_size = max_size
+        self.min_last_mod = min_last_mod
+        self.min_size = min_size
+        self.out_archive_extensions = out_archive_extensions if out_archive_extensions else set()
+        self.out_archive_file_patterns: PatternSet = out_archive_file_patterns if out_archive_file_patterns else set()
+        self.out_dir_patterns: PatternSet = out_dir_patterns if out_dir_patterns else set()
         self.out_extensions = out_extensions if out_extensions else set()
-        self.out_filepatterns: PatternSet = out_filepatterns if out_filepatterns else set()
-        self.out_filetypes = out_filetypes if out_filetypes else set()
+        self.out_file_patterns: PatternSet = out_file_patterns if out_file_patterns else set()
+        self.out_file_types = out_file_types if out_file_types else set()
         self.paths = paths if paths else set()
-        self.printresults = printresults
-        self.printusage = printusage
-        self.printversion = printversion
+        self.print_results = print_results
+        self.print_usage = print_usage
+        self.print_version = print_version
         self.recursive = recursive
-        self.sortby = sortby
-        self.sort_caseinsensitive = sort_caseinsensitive
+        self.sort_by = sort_by
+        self.sort_case_insensitive = sort_case_insensitive
         self.sort_descending = sort_descending
         self.verbose = verbose
 
@@ -122,30 +122,30 @@ class FindSettings:
         else:
             raise FindException('paths is an unknown type')
 
-    def add_filetypes(self, filetypes, filetype_set_name: str):
+    def add_file_types(self, file_types, file_type_set_name: str):
         """Add one or more filetypes"""
-        if isinstance(filetypes, (list, set)):
-            new_filetype_set = {FileType.from_name(ft) for ft in filetypes}
-        elif isinstance(filetypes, str):
-            new_filetype_set = {FileType.from_name(ft) for ft in filetypes.split(',') if ft}
+        if isinstance(file_types, (list, set)):
+            new_file_type_set = {FileType.from_name(ft) for ft in file_types}
+        elif isinstance(file_types, str):
+            new_file_type_set = {FileType.from_name(ft) for ft in file_types.split(',') if ft}
         else:
-            raise FindException('filetypes is an unknown type')
-        filetype_set = getattr(self, filetype_set_name)
-        filetype_set.update(new_filetype_set)
+            raise FindException('file_types is an unknown type')
+        file_type_set = getattr(self, file_type_set_name)
+        file_type_set.update(new_file_type_set)
 
     def need_stat(self) -> bool:
-        return self.sortby == SortBy.FILESIZE or \
-               self.sortby == SortBy.LASTMOD or \
-               self.maxlastmod or self.minlastmod or \
-               self.maxsize > 0 or self.minsize > 0
+        return self.sort_by == SortBy.FILESIZE or \
+               self.sort_by == SortBy.LASTMOD or \
+               self.max_last_mod or self.min_last_mod or \
+               self.max_size > 0 or self.min_size > 0
 
     def set_property(self, name: str, val):
         """Set a property"""
         setattr(self, name, val)
         # some trues trigger others
         if isinstance(val, bool) and val:
-            if name == 'archivesonly':
-                self.includearchives = True
+            if name == 'archives_only':
+                self.include_archives = True
             elif name == 'debug':
                 self.verbose = True
 
@@ -158,15 +158,15 @@ class FindSettings:
         """Set sort-by"""
         match sort_by_name.strip().upper():
             case 'LASTMOD':
-                self.sortby = SortBy.LASTMOD
+                self.sort_by = SortBy.LASTMOD
             case 'NAME':
-                self.sortby = SortBy.FILENAME
+                self.sort_by = SortBy.FILENAME
             case 'SIZE':
-                self.sortby = SortBy.FILESIZE
+                self.sort_by = SortBy.FILESIZE
             case 'TYPE':
-                self.sortby = SortBy.FILETYPE
+                self.sort_by = SortBy.FILETYPE
             case _:
-                self.sortby = SortBy.FILEPATH
+                self.sort_by = SortBy.FILEPATH
 
     def __str__(self):
         print_dict = {}

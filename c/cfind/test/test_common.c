@@ -26,7 +26,7 @@ void test_last_index_of_char_in_string(void)
         0
     };
     for (int i=0; i < arrlen; i++) {
-        printf("filename: \"%s\"\n", filenames[i]);
+        printf("file_name: \"%s\"\n", filenames[i]);
         int res = last_index_of_char_in_string('.', filenames[i]);
         printf("expected res: %d\n", expected[i]);
         printf("actual res:   %d\n", res);

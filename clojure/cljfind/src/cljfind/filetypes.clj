@@ -22,28 +22,28 @@
 (def TEXT "text")
 (def XML "xml")
 
-(defn get-filetype-maps-from-json []
+(defn get-file-type-maps-from-json []
   (let [contents (slurp (io/resource "filetypes.json"))
-        filetypes-objs (:filetypes (json/read-str contents :key-fn keyword))
-        typenames (map :type filetypes-objs)
-        extension-sets (map #(set %) (map :extensions filetypes-objs))
-        filetype-ext-map (zipmap typenames extension-sets)
+        file-types-objs (:filetypes (json/read-str contents :key-fn keyword))
+        typenames (map :type file-types-objs)
+        extension-sets (map #(set %) (map :extensions file-types-objs))
+        file-type-ext-map (zipmap typenames extension-sets)
         text-ext-map (hash-map "all-text"
-                       (union (get filetype-ext-map TEXT)
-                              (get filetype-ext-map CODE)
-                              (get filetype-ext-map XML)))
-        full-ext-map (merge filetype-ext-map text-ext-map)
-        name-sets (map #(set %) (map :names filetypes-objs))
-        filetype-name-map (zipmap typenames name-sets)
+                       (union (get file-type-ext-map TEXT)
+                              (get file-type-ext-map CODE)
+                              (get file-type-ext-map XML)))
+        full-ext-map (merge file-type-ext-map text-ext-map)
+        name-sets (map #(set %) (map :names file-types-objs))
+        file-type-name-map (zipmap typenames name-sets)
         text-name-map (hash-map "all-text"
-                        (union (get filetype-name-map TEXT)
-                               (get filetype-name-map CODE)
-                               (get filetype-name-map XML)))
-        full-name-map (merge filetype-name-map text-name-map)
+                        (union (get file-type-name-map TEXT)
+                               (get file-type-name-map CODE)
+                               (get file-type-name-map XML)))
+        full-name-map (merge file-type-name-map text-name-map)
        ]
     [full-ext-map full-name-map]))
 
-(def FILETYPEMAPS (get-filetype-maps-from-json))
+(def FILETYPEMAPS (get-file-type-maps-from-json))
 (def FILETYPEEXTMAP (first FILETYPEMAPS))
 (def FILETYPENAMEMAP (last FILETYPEMAPS))
 
@@ -87,7 +87,7 @@
    (contains? (get FILETYPENAMEMAP XML) (get-name f))
    (contains? (get FILETYPEEXTMAP XML) (get-ext f))))
 
-(defn get-filetype [f]
+(defn get-file-type [f]
   (cond
     (binary-file? f) :binary
     (code-file? f) :code
@@ -97,7 +97,7 @@
     :else :unknown))
 
 (defn unknown-file? [f]
-  (= :unknown (get-filetype f)))
+  (= :unknown (get-file-type f)))
 
 (defn from-name [^String name]
   (let [lname (lower-case name)]

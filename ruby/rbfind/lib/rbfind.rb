@@ -30,12 +30,12 @@ def main
 
   RbFind::log("settings: #{settings}") if settings.debug
 
-  if settings.printusage
+  if settings.print_usage
     RbFind::log("\n")
     options.usage
   end
 
-  if settings.printversion
+  if settings.print_version
     RbFind::log("Version: #{RbFind::VERSION}")
     abort
   end
@@ -57,26 +57,26 @@ def find(options, settings)
     rescue => e
       handle_error(e, options)
     end
-  fileresults = finder.find
+  file_results = finder.find
 
-  if settings.listdirs
-    finddirs = fileresults.map(&:path).uniq.sort
-    if finddirs.empty?
+  if settings.list_dirs
+    find_dirs = file_results.map(&:path).uniq.sort
+    if find_dirs.empty?
       RbFind::log("\nMatching directories: 0")
     else
-      RbFind::log("\nMatching directories (#{finddirs.size}):")
-      finddirs.each do |d|
+      RbFind::log("\nMatching directories (#{find_dirs.size}):")
+      find_dirs.each do |d|
         RbFind::log("#{d}\n")
       end
     end
   end
 
-  if settings.listfiles
-    if fileresults.empty?
+  if settings.list_files
+    if file_results.empty?
       RbFind::log("\nMatching files: 0")
     else
-      RbFind::log("\nMatching files (#{fileresults.size}):")
-      fileresults.each do |f|
+      RbFind::log("\nMatching files (#{file_results.size}):")
+      file_results.each do |f|
         RbFind::log("#{f}\n")
       end
     end

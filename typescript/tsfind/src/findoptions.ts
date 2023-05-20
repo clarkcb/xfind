@@ -157,9 +157,9 @@ export class FindOptions {
         this.options.sort(FindOptions.optcmp);
     }
 
-    private settingsFromFile(filepath: string, settings: FindSettings): Error | undefined {
-        if (fs.existsSync(filepath)) {
-            const json: string = FileUtil.getFileContents(filepath);
+    private settingsFromFile(filePath: string, settings: FindSettings): Error | undefined {
+        if (fs.existsSync(filePath)) {
+            const json: string = FileUtil.getFileContents(filePath);
             return this.settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');

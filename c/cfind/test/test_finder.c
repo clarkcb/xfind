@@ -67,20 +67,20 @@ void test_is_matching_dir(void) {
     destroy_settings(settings);
 }
 
-void test_is_matching_dir_in_dirpatterns(void) {
-    printf("\ntest_is_matching_dir_in_dirpatterns()\n");
+void test_is_matching_dir_in_dir_patterns(void) {
+    printf("\ntest_is_matching_dir_in_dir_patterns()\n");
 
     FindSettings *settings = default_settings();
     char* p = ".";
     settings->paths = new_string_node(p);
 
-    // test "test" dir with "test" in_dirpattern
+    // test "test" dir with "test" in_dir_pattern
     char* test_dir = "test";
-    settings->in_dirpatterns = new_regex_node_from_string("test");
+    settings->in_dir_patterns = new_regex_node_from_string("test");
     unsigned short res1 = is_matching_dir(test_dir, settings);
     assert(res1 == 1);
 
-    // test "other" dir with "test" in_dirpattern
+    // test "other" dir with "test" in_dir_pattern
     char* other_dir = "other";
     unsigned short res2 = is_matching_dir(other_dir, settings);
     assert(res2 == 0);
@@ -88,20 +88,20 @@ void test_is_matching_dir_in_dirpatterns(void) {
     destroy_settings(settings);
 }
 
-void test_is_matching_dir_out_dirpatterns(void) {
-    printf("\ntest_is_matching_dir_out_dirpatterns()\n");
+void test_is_matching_dir_out_dir_patterns(void) {
+    printf("\ntest_is_matching_dir_out_dir_patterns()\n");
 
     FindSettings *settings = default_settings();
     char* p = ".";
     settings->paths = new_string_node(p);
 
-    // test "test" dir with "test" out_dirpattern
+    // test "test" dir with "test" out_dir_pattern
     char* test_dir = "test";
-    settings->out_dirpatterns = new_regex_node_from_string("test");
+    settings->out_dir_patterns = new_regex_node_from_string("test");
     unsigned short res1 = is_matching_dir(test_dir, settings);
     assert(res1 == 0);
 
-    // test "other" dir with "test" out_dirpattern
+    // test "other" dir with "test" out_dir_pattern
     char* other_dir = "other";
     unsigned short res2 = is_matching_dir(other_dir, settings);
     assert(res2 == 1);
@@ -116,11 +116,11 @@ void test_filter_file(void) {
     char* p = ".";
     settings->paths = new_string_node(p);
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* test_file = "test_finder.c";
@@ -145,11 +145,11 @@ void test_is_matching_file_in_extensions(void) {
     settings->paths = new_string_node(p);
     settings->in_extensions = new_string_node("c");
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
@@ -174,11 +174,11 @@ void test_is_matching_file_out_extensions(void) {
     settings->paths = new_string_node(p);
     settings->out_extensions = new_string_node("c");
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
@@ -195,19 +195,19 @@ void test_is_matching_file_out_extensions(void) {
     destroy_settings(settings);
 }
 
-void test_is_matching_file_in_filepatterns(void) {
-    printf("\ntest_is_matching_file_in_filepatterns()\n");
+void test_is_matching_file_in_file_patterns(void) {
+    printf("\ntest_is_matching_file_in_file_patterns()\n");
 
     FindSettings *settings = default_settings();
     char* p = ".";
     settings->paths = new_string_node(p);
-    settings->in_filepatterns = new_regex_node_from_string("test");
+    settings->in_file_patterns = new_regex_node_from_string("test");
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
@@ -224,19 +224,19 @@ void test_is_matching_file_in_filepatterns(void) {
     destroy_settings(settings);
 }
 
-void test_is_matching_file_out_filepatterns(void) {
-    printf("\ntest_is_matching_file_out_filepatterns()\n");
+void test_is_matching_file_out_file_patterns(void) {
+    printf("\ntest_is_matching_file_out_file_patterns()\n");
 
     FindSettings *settings = default_settings();
     char* p = ".";
     settings->paths = new_string_node(p);
-    settings->out_filepatterns = new_regex_node_from_string("test");
+    settings->out_file_patterns = new_regex_node_from_string("test");
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
@@ -253,23 +253,23 @@ void test_is_matching_file_out_filepatterns(void) {
     destroy_settings(settings);
 }
 
-void test_is_matching_file_in_filetypes(void) {
-    printf("\ntest_is_matching_file_in_filetypes()\n");
+void test_is_matching_file_in_file_types(void) {
+    printf("\ntest_is_matching_file_in_file_types()\n");
 
     FindSettings *settings = default_settings();
     char* p = ".";
     settings->paths = new_string_node(p);
-    FileType filetype = CODE;
+    FileType file_type = CODE;
     int *ftint = malloc(sizeof(int));
-    *ftint = (int)filetype;
-    settings->in_filetypes = empty_int_node();
-    add_int_to_int_node(ftint, settings->in_filetypes);
+    *ftint = (int)file_type;
+    settings->in_file_types = empty_int_node();
+    add_int_to_int_node(ftint, settings->in_file_types);
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* matching_file = "finder.c";
@@ -287,23 +287,23 @@ void test_is_matching_file_in_filetypes(void) {
     destroy_settings(settings);
 }
 
-void test_is_matching_file_out_filetypes(void) {
-    printf("\ntest_is_matching_file_out_filetypes()\n");
+void test_is_matching_file_out_file_types(void) {
+    printf("\ntest_is_matching_file_out_file_types()\n");
 
     FindSettings *settings = default_settings();
     char* p = ".";
     settings->paths = new_string_node(p);
-    FileType filetype = CODE;
+    FileType file_type = CODE;
     int *ftint = malloc(sizeof(int));
-    *ftint = (int)filetype;
-    settings->out_filetypes = empty_int_node();
-    add_int_to_int_node(ftint, settings->out_filetypes);
+    *ftint = (int)file_type;
+    settings->out_file_types = empty_int_node();
+    add_int_to_int_node(ftint, settings->out_file_types);
 
-    FileTypes *filetypes = new_filetypes();
-    error_t err = get_filetypes(filetypes);
+    FileTypes *file_types = new_file_types();
+    error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, filetypes);
+    Finder *finder = new_finder(settings, file_types);
 
     char* test_dir = ".";
     char* non_matching_file = "finder.c";
@@ -341,9 +341,9 @@ void test_is_matching_file_out_filetypes(void) {
 //         print_settings(settings);
 //     }
 
-//     if (settings->printusage) {
+//     if (settings->print_usage) {
 //         print_usage();
-//     } else if (settings->printversion) {
+//     } else if (settings->print_version) {
 //         // TODO
 //     } else {
 
@@ -352,7 +352,7 @@ void test_is_matching_file_out_filetypes(void) {
 
 //         err = find(settings, results);
 //         if (err == E_OK) {
-//             if (settings->listdirs) {
+//             if (settings->list_dirs) {
 //                 if (is_null_or_empty_file_results(results)) {
 //                     printf("\nMatching directories: 0\n");
 //                 } else {
@@ -360,14 +360,14 @@ void test_is_matching_file_out_filetypes(void) {
 //                 }
 //             }
 
-//             if (settings->listfiles) {
+//             if (settings->list_files) {
 //                 if (is_null_or_empty_file_results(results)) {
 //                     printf("\nMatching files: 0\n");
 //                     if (results != NULL) {
 //                         destroy_file_results(results);
 //                     }
 //                 } else {
-//                     print_file_results(results, settings->sortby, settings->sort_caseinsensitive,
+//                     print_file_results(results, settings->sort_by, settings->sort_case_insensitive,
 //                                        settings->sort_descending);
 //                     destroy_file_results(results);
 //                 }

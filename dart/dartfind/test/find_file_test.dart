@@ -5,8 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   test('test FindFile with absolute path', () {
-    var path = Platform.environment['HOME'] +
-        '/src/xfind/dart/dartfind/lib/src/find_file.dart';
+    var path = '${Platform.environment['HOME']}/src/xfind/dart/dartfind/lib/src/find_file.dart';
     var findFile = FileResult(File(path), FileType.code);
     expect(findFile.toString(), path);
   });

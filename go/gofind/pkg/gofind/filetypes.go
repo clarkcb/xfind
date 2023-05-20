@@ -111,8 +111,8 @@ func GetNameForFileType(fileType FileType) string {
 	return "UNKNOWN"
 }
 
-func (ft *FileTypes) isFileType(filetype string, file string) bool {
-	return ft.fileTypeNameMap[filetype][file] || ft.fileTypeExtMap[filetype][getExtension(file)]
+func (ft *FileTypes) isFileType(fileType string, file string) bool {
+	return ft.fileTypeNameMap[fileType][file] || ft.fileTypeExtMap[fileType][getExtension(file)]
 }
 
 func (ft *FileTypes) IsArchiveFile(file string) bool {

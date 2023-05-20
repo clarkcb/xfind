@@ -41,13 +41,13 @@ function findMain() {
 
         try {
             const finder: Finder = new Finder(settings);
-            const findfiles = await finder.find();
+            const fileResults = await finder.find();
 
             if (settings.listDirs) {
-                finder.printMatchingDirs(findfiles);
+                finder.printMatchingDirs(fileResults);
             }
             if (settings.listFiles) {
-                finder.printMatchingFiles(findfiles);
+                finder.printMatchingFiles(fileResults);
             }
 
         } catch (err2) {

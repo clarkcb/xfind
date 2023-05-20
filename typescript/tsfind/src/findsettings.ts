@@ -58,21 +58,21 @@ export class FindSettings {
         FindSettings.addExtensions(ext, this.outExtensions);
     }
 
-    private static addFileTypes(filetypes: string|string[], arr: FileType[]): void {
-        if (typeof(filetypes) === 'string') {
-            filetypes.split(/,/).filter(ft => ft !== '').
+    private static addFileTypes(fileTypes: string|string[], arr: FileType[]): void {
+        if (typeof(fileTypes) === 'string') {
+            fileTypes.split(/,/).filter(ft => ft !== '').
                 forEach(ft => arr.push(FileTypes.fromName(ft)));
-        } else if (filetypes.constructor === Array) {
-            filetypes.forEach((ft: string) => arr.push(FileTypes.fromName(ft)));
+        } else if (fileTypes.constructor === Array) {
+            fileTypes.forEach((ft: string) => arr.push(FileTypes.fromName(ft)));
         }
     }
 
-    public addInFileTypes(filetype: string|string[]): void {
-        FindSettings.addFileTypes(filetype, this.inFileTypes);
+    public addInFileTypes(fileType: string|string[]): void {
+        FindSettings.addFileTypes(fileType, this.inFileTypes);
     }
 
-    public addOutFileTypes(filetype: string|string[]): void {
-        FindSettings.addFileTypes(filetype, this.outFileTypes);
+    public addOutFileTypes(fileType: string|string[]): void {
+        FindSettings.addFileTypes(fileType, this.outFileTypes);
     }
 
     private static addPatterns(patterns: string|string[], arr: RegExp[]): void {

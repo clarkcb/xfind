@@ -11,14 +11,14 @@ namespace cppfind {
     public:
         FileTypes();
         static FileType from_name(const std::string& name);
-        static std::string to_name(const FileType filetype);
-        FileType get_filetype(const std::string& filepath);
-        bool is_archive_file(const std::string& filepath);
-        bool is_binary_file(const std::string& filepath);
-        bool is_code_file(const std::string& filepath);
-        bool is_text_file(const std::string& filepath);
-        bool is_unknown_file(const std::string& filepath);
-        bool is_xml_file(const std::string& filepath);
+        static std::string to_name(const FileType file_type);
+        FileType get_file_type(const std::string& file_path);
+        bool is_archive_file(const std::string& file_path);
+        bool is_binary_file(const std::string& file_path);
+        bool is_code_file(const std::string& file_path);
+        bool is_text_file(const std::string& file_path);
+        bool is_unknown_file(const std::string& file_path);
+        bool is_xml_file(const std::string& file_path);
 
     private:
         std::set<std::string> m_archive_extensions;
@@ -31,7 +31,7 @@ namespace cppfind {
         std::set<std::string> m_text_names;
         std::set<std::string> m_xml_extensions;
         std::set<std::string> m_xml_names;
-        void load_filetypes();
+        void load_file_types();
         static bool string_in_set(const std::set<std::string>* set, const std::string& ext);
     };
 }

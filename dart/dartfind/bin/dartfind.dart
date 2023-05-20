@@ -10,7 +10,7 @@ void _handleError(err, FindOptions options) {
 }
 
 List<String> getMatchingDirs(List<FileResult> fileResults) {
-  var dirs = fileResults.map((f) => f.file.parent.path).toSet().toList();
+  var dirs = fileResults.map((fr) => fr.file.parent.path).toSet().toList();
   dirs.sort();
   return dirs;
 }
@@ -32,7 +32,7 @@ void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
 }
 
 List<String> getMatchingFiles(List<FileResult> fileResults) {
-  return fileResults.map((f) => f.file.path).toList();
+  return fileResults.map((fr) => fr.toString()).toList();
 }
 
 void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {

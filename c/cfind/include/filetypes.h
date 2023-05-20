@@ -28,42 +28,42 @@ typedef struct FileTypes {
     StringArray *xml_names;
 } FileTypes;
 
-FileTypes *new_filetypes(void);
+FileTypes *new_file_types(void);
 
-error_t get_filetypes(FileTypes *filetypes);
+error_t get_file_types(FileTypes *file_types);
 
-unsigned short is_archive_ext(const char *ext, FileTypes *filetypes);
+unsigned short is_archive_ext(const char *ext, FileTypes *file_types);
 
-unsigned short is_archive_name(const char *name, FileTypes *filetypes);
+unsigned short is_archive_name(const char *name, FileTypes *file_types);
 
-unsigned short is_binary_ext(const char *ext, FileTypes *filetypes);
+unsigned short is_binary_ext(const char *ext, FileTypes *file_types);
 
-unsigned short is_binary_name(const char *name, FileTypes *filetypes);
+unsigned short is_binary_name(const char *name, FileTypes *file_types);
 
-unsigned short is_code_ext(const char *ext, FileTypes *filetypes);
+unsigned short is_code_ext(const char *ext, FileTypes *file_types);
 
-unsigned short is_code_name(const char *name, FileTypes *filetypes);
+unsigned short is_code_name(const char *name, FileTypes *file_types);
 
-unsigned short is_text_ext(const char *ext, FileTypes *filetypes);
+unsigned short is_text_ext(const char *ext, FileTypes *file_types);
 
-unsigned short is_text_name(const char *name, FileTypes *filetypes);
+unsigned short is_text_name(const char *name, FileTypes *file_types);
 
-unsigned short is_xml_ext(const char *ext, FileTypes *filetypes);
+unsigned short is_xml_ext(const char *ext, FileTypes *file_types);
 
-unsigned short is_xml_name(const char *name, FileTypes *filetypes);
+unsigned short is_xml_name(const char *name, FileTypes *file_types);
 
-FileType get_filetype_for_filename(const char *filename, FileTypes *filetypes);
+FileType get_file_type_for_filename(const char *filename, FileTypes *file_types);
 
-FileType get_filetype_for_ext(const char *ext, FileTypes *filetypes);
+FileType get_file_type_for_ext(const char *ext, FileTypes *file_types);
 
-FileType filetype_from_name(const char *name);
+FileType file_type_from_name(const char *name);
 
-void filetype_to_name(const FileType filetype, char *name);
+void file_type_to_name(const FileType file_type, char *name);
 
-size_t filetype_node_strlen(IntNode *filetype_node);
+size_t file_type_node_strlen(IntNode *file_type_node);
 
-void filetype_node_to_string(IntNode *filetype_node, char *s);
+void file_type_node_to_string(IntNode *file_type_node, char *s);
 
-void destroy_filetypes(FileTypes *filetypes);
+void destroy_file_types(FileTypes *file_types);
 
 #endif

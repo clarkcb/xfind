@@ -16,13 +16,13 @@ function handleError(err, findOptions) {
     findOptions.usageWithCode(1);
 }
 
-function getMatchingDirs(findfiles) {
-    const dirs = findfiles.map(f => f.pathname);
+function getMatchingDirs(fileResults) {
+    const dirs = fileResults.map(f => f.path);
     return common.setFromArray(dirs);
 }
 
-function printMatchingDirs(findfiles) {
-    const dirs = getMatchingDirs(findfiles);
+function printMatchingDirs(fileResults) {
+    const dirs = getMatchingDirs(fileResults);
     if (dirs.length > 0) {
         common.log(`\nMatching directories (${dirs.length}):`);
         dirs.forEach(d => common.log(d));
@@ -31,12 +31,12 @@ function printMatchingDirs(findfiles) {
     }
 }
 
-function getMatchingFiles(findfiles) {
-    return findfiles.map(f => f.relativePath());
+function getMatchingFiles(fileResults) {
+    return fileResults.map(f => f.relativePath());
 }
 
-function printMatchingFiles(findfiles) {
-    const files = getMatchingFiles(findfiles);
+function printMatchingFiles(fileResults) {
+    const files = getMatchingFiles(fileResults);
     if (files.length > 0) {
         common.log(`\nMatching files (${files.length}):`);
         files.forEach(f => common.log(f));
@@ -69,13 +69,13 @@ const findMain = async () => {
 
         try {
             const finder = new Finder(settings);
-            let findfiles = await finder.find();
+            let fileResults = await finder.find();
 
             if (settings.listDirs) {
-                printMatchingDirs(findfiles);
+                printMatchingDirs(fileResults);
             }
             if (settings.listFiles) {
-                printMatchingFiles(findfiles);
+                printMatchingFiles(fileResults);
             }
 
         } catch (err2) {

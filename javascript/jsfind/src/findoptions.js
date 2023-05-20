@@ -146,10 +146,10 @@ class FindOptions {
         return a.localeCompare(b);
     }
 
-    settingsFromFile(filepath, settings) {
+    settingsFromFile(filePath, settings) {
         const fs = require('fs');
-        if (fs.existsSync(filepath)) {
-            let json = fs.readFileSync(filepath).toString();
+        if (fs.existsSync(filePath)) {
+            let json = fs.readFileSync(filePath).toString();
             return this.settingsFromJson(json, settings);
         } else {
             throw new FindError('Settings file not found');

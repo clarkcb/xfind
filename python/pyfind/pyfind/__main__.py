@@ -42,11 +42,11 @@ async def main():
     if settings.debug:
         log(f'settings: {settings}')
 
-    if settings.printusage:
+    if settings.print_usage:
         log('')
         findoptions.usage()
 
-    if settings.printversion:
+    if settings.print_version:
         log(f'xfind version {VERSION}')
         sys.exit(0)
 
@@ -54,7 +54,7 @@ async def main():
         finder = Finder(settings)
         file_results = await finder.find()
 
-        if settings.listdirs:
+        if settings.list_dirs:
             dirs = get_dir_results(file_results)
             if dirs:
                 log(f'\nMatching directories ({len(dirs)}):')
@@ -63,7 +63,7 @@ async def main():
             else:
                 log('\nMatching directories: 0')
 
-        if settings.listfiles:
+        if settings.list_files:
             if file_results:
                 log(f'\nMatching files ({len(file_results)}):')
                 for f in file_results:

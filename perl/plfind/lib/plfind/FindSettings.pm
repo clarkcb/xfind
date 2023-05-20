@@ -19,34 +19,34 @@ use warnings;
 sub new {
     my $class = shift;
     my $self = {
-        archivesonly => 0,
+        archives_only => 0,
         debug => 0,
-        excludehidden => 1,
-        in_archiveextensions => [],
-        in_archivefilepatterns => [],
-        in_dirpatterns => [],
+        exclude_hidden => 1,
+        in_archive_extensions => [],
+        in_archive_file_patterns => [],
+        in_dir_patterns => [],
         in_extensions => [],
-        in_filepatterns => [],
-        in_filetypes => [],
-        includearchives => 0,
-        listdirs => 0,
-        listfiles => 0,
-        maxlastmod => 0,
-        maxsize => 0,
-        minlastmod => 0,
-        minsize => 0,
-        out_archiveextensions => [],
-        out_archivefilepatterns => [],
-        out_dirpatterns => [],
+        in_file_patterns => [],
+        in_file_types => [],
+        include_archives => 0,
+        list_dirs => 0,
+        list_files => 0,
+        max_last_mod => 0,
+        max_size => 0,
+        min_last_mod => 0,
+        min_size => 0,
+        out_archive_extensions => [],
+        out_archive_patterns => [],
+        out_dir_patterns => [],
         out_extensions => [],
-        out_filepatterns => [],
-        out_filetypes => [],
-        printusage => 0,
-        printversion => 0,
+        out_file_patterns => [],
+        out_file_types => [],
+        print_usage => 0,
+        print_version => 0,
         recursive => 1,
-        sort_caseinsensitive => 0,
+        sort_case_insensitive => 0,
         sort_descending => 0,
-        sortby => plfind::SortBy->FILEPATH,
+        sort_by => plfind::SortBy->FILEPATH,
         paths => [],
         verbose => 0,
     };
@@ -91,7 +91,7 @@ sub strings_aref_to_string {
     return $self->aref_to_string($aref, 1);
 }
 
-sub filetypes_aref_to_string {
+sub file_types_aref_to_string {
     my ($self, $aref) = @_;
     return $self->aref_to_string($aref, 0);
 }
@@ -100,8 +100,8 @@ sub set_property {
     my ($self, $name, $val) = @_;
     $self->{$name} = $val;
     if ($val == 1) {
-        if ($name eq 'archivesonly') {
-            $self->{includearchives} = 1;
+        if ($name eq 'archives_only') {
+            $self->{include_archives} = 1;
         } elsif ($name eq 'debug') {
             $self->{verbose} = 1;
         }
@@ -112,15 +112,15 @@ sub set_sort_by {
     my ($self, $name) = @_;
     my $uname = uc($name);
     if ($uname eq 'NAME') {
-        $self->{sortby} = plfind::SortBy->FILENAME;
+        $self->{sort_by} = plfind::SortBy->FILENAME;
     } elsif ($uname eq 'SIZE') {
-        $self->{sortby} = plfind::SortBy->FILESIZE;
+        $self->{sort_by} = plfind::SortBy->FILESIZE;
     } elsif ($uname eq 'TYPE') {
-        $self->{sortby} = plfind::SortBy->FILETYPE;
+        $self->{sort_by} = plfind::SortBy->FILETYPE;
     } elsif ($uname eq 'LASTMOD') {
-        $self->{sortby} = plfind::SortBy->LASTMOD;
+        $self->{sort_by} = plfind::SortBy->LASTMOD;
     } else {
-        $self->{sortby} = plfind::SortBy->FILEPATH;
+        $self->{sort_by} = plfind::SortBy->FILEPATH;
     }
 }
 
@@ -138,13 +138,13 @@ sub add_exts {
     }
 }
 
-sub add_filetypes {
-    my ($self, $filetypes, $ftaref) = @_;
+sub add_file_types {
+    my ($self, $file_types, $ftaref) = @_;
     my $fts = [];
-    if (ref($filetypes) eq 'ARRAY') {
-        $fts = $filetypes;
+    if (ref($file_types) eq 'ARRAY') {
+        $fts = $file_types;
     } else { # treat as a string
-        my @split = split(',', $filetypes);
+        my @split = split(',', $file_types);
         $fts = \@split;
     }
     foreach my $ft (@{$fts}) {
@@ -165,48 +165,48 @@ sub add_patterns {
 
 sub needs_stat {
     my $self = shift;
-    return $self->{sortby} eq plfind::SortBy->FILESIZE ||
-           $self->{sortby} eq plfind::SortBy->LASTMOD ||
-           blessed($self->{maxlastmod}) ||
-           blessed($self->{minlastmod}) ||
-           $self->{maxsize} > 0 ||
-           $self->{minsize} > 0;
+    return $self->{sort_by} eq plfind::SortBy->FILESIZE ||
+           $self->{sort_by} eq plfind::SortBy->LASTMOD ||
+           blessed($self->{max_last_mod}) ||
+           blessed($self->{min_last_mod}) ||
+           $self->{max_size} > 0 ||
+           $self->{min_size} > 0;
 }
 
 sub to_string {
     my $self = shift @_;
-    my $s = "FindSettings(";
-    $s .= 'archivesonly=' . $self->bool_to_string($self->{archivesonly});
-    $s .= ', debug=' . $self->bool_to_string($self->{debug});
-    $s .= ', excludehidden=' . $self->bool_to_string($self->{excludehidden});
-    $s .= ', in_archiveextensions=' . $self->strings_aref_to_string($self->{in_archiveextensions});
-    $s .= ', in_archivefilepatterns=' . $self->strings_aref_to_string($self->{in_archivefilepatterns});
-    $s .= ', in_dirpatterns=' . $self->strings_aref_to_string($self->{in_dirpatterns});
-    $s .= ', in_extensions=' . $self->strings_aref_to_string($self->{in_extensions});
-    $s .= ', in_filepatterns=' . $self->strings_aref_to_string($self->{in_filepatterns});
-    $s .= ', in_filetypes=' . $self->filetypes_aref_to_string($self->{in_filetypes});
-    $s .= ', includearchives=' . $self->bool_to_string($self->{includearchives});
-    $s .= ', listdirs=' . $self->bool_to_string($self->{listdirs});
-    $s .= ', listfiles=' . $self->bool_to_string($self->{listfiles});
-    $s .= ', maxlastmod=' . $self->datetime_to_string($self->{maxlastmod});
-    $s .= ', maxsize=' . $self->{maxsize};
-    $s .= ', minlastmod=' . $self->datetime_to_string($self->{minlastmod});
-    $s .= ', minsize=' . $self->{minsize};
-    $s .= ', out_archiveextensions=' . $self->strings_aref_to_string($self->{out_archiveextensions});
-    $s .= ', out_archivefilepatterns=' . $self->strings_aref_to_string($self->{out_archivefilepatterns});
-    $s .= ', out_dirpatterns=' . $self->strings_aref_to_string($self->{out_dirpatterns});
-    $s .= ', out_extensions=' . $self->strings_aref_to_string($self->{out_extensions});
-    $s .= ', out_filepatterns=' . $self->strings_aref_to_string($self->{out_filepatterns});
-    $s .= ', out_filetypes=' . $self->filetypes_aref_to_string($self->{out_filetypes});
-    $s .= ', printusage=' . $self->bool_to_string($self->{printusage});
-    $s .= ', printversion=' . $self->bool_to_string($self->{printversion});
-    $s .= ', recursive=' . $self->bool_to_string($self->{recursive});
-    $s .= ', paths=' . $self->strings_aref_to_string($self->{paths});
-    $s .= ', sort_caseinsensitive=' . $self->bool_to_string($self->{sort_caseinsensitive});
-    $s .= ', sort_descending=' . $self->bool_to_string($self->{sort_descending});
-    $s .= ', sortby=' . $self->{sortby};
-    $s .= ', verbose=' . $self->bool_to_string($self->{verbose});
-    $s .= ')';
+    my $s = "FindSettings(" .
+        'archives_only=' . $self->bool_to_string($self->{archives_only}) .
+        ', debug=' . $self->bool_to_string($self->{debug}) .
+        ', exclude_hidden=' . $self->bool_to_string($self->{exclude_hidden}) .
+        ', in_archive_extensions=' . $self->strings_aref_to_string($self->{in_archive_extensions}) .
+        ', in_archive_file_patterns=' . $self->strings_aref_to_string($self->{in_archive_file_patterns}) .
+        ', in_dir_patterns=' . $self->strings_aref_to_string($self->{in_dir_patterns}) .
+        ', in_extensions=' . $self->strings_aref_to_string($self->{in_extensions}) .
+        ', in_file_patterns=' . $self->strings_aref_to_string($self->{in_file_patterns}) .
+        ', in_file_types=' . $self->file_types_aref_to_string($self->{in_file_types}) .
+        ', include_archives=' . $self->bool_to_string($self->{include_archives}) .
+        ', list_dirs=' . $self->bool_to_string($self->{list_dirs}) .
+        ', list_files=' . $self->bool_to_string($self->{list_files}) .
+        ', max_last_mod=' . $self->datetime_to_string($self->{max_last_mod}) .
+        ', max_size=' . $self->{max_size} .
+        ', min_last_mod=' . $self->datetime_to_string($self->{min_last_mod}) .
+        ', min_size=' . $self->{min_size} .
+        ', out_archive_extensions=' . $self->strings_aref_to_string($self->{out_archive_extensions}) .
+        ', out_archive__patterns=' . $self->strings_aref_to_string($self->{out_archive_patterns}) .
+        ', out_dir_patterns=' . $self->strings_aref_to_string($self->{out_dir_patterns}) .
+        ', out_extensions=' . $self->strings_aref_to_string($self->{out_extensions}) .
+        ', out_file_patterns=' . $self->strings_aref_to_string($self->{out_file_patterns}) .
+        ', out_file_types=' . $self->file_types_aref_to_string($self->{out_file_types}) .
+        ', print_usage=' . $self->bool_to_string($self->{print_usage}) .
+        ', print_version=' . $self->bool_to_string($self->{print_version}) .
+        ', recursive=' . $self->bool_to_string($self->{recursive}) .
+        ', paths=' . $self->strings_aref_to_string($self->{paths}) .
+        ', sort_case_insensitive=' . $self->bool_to_string($self->{sort_case_insensitive}) .
+        ', sort_descending=' . $self->bool_to_string($self->{sort_descending}) .
+        ', sort_by=' . $self->{sort_by} .
+        ', verbose=' . $self->bool_to_string($self->{verbose}) .
+        ')';
     return $s;
 }
 

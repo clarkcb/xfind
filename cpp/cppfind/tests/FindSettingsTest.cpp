@@ -4,39 +4,39 @@
 TEST_CASE("Get default FindSettings", "[FindSettings]") {
     auto* settings = new cppfind::FindSettings();
 
-    REQUIRE(!settings->archivesonly());
+    REQUIRE(!settings->archives_only());
     REQUIRE(!settings->debug());
-    REQUIRE(settings->excludehidden());
-    REQUIRE(!settings->listdirs());
-    REQUIRE(!settings->listfiles());
-    REQUIRE(!settings->printusage());
-    REQUIRE(!settings->printversion());
-    REQUIRE(!settings->includearchives());
+    REQUIRE(settings->exclude_hidden());
+    REQUIRE(!settings->list_dirs());
+    REQUIRE(!settings->list_files());
+    REQUIRE(!settings->print_usage());
+    REQUIRE(!settings->print_version());
+    REQUIRE(!settings->include_archives());
     REQUIRE(!settings->verbose());
 
-    REQUIRE(settings->in_archiveextensions()->empty());
-    REQUIRE(settings->in_archivefilepatterns()->empty());
-    REQUIRE(settings->in_dirpatterns()->empty());
+    REQUIRE(settings->in_archive_extensions()->empty());
+    REQUIRE(settings->in_archive_file_patterns()->empty());
+    REQUIRE(settings->in_dir_patterns()->empty());
     REQUIRE(settings->in_extensions()->empty());
-    REQUIRE(settings->in_filepatterns()->empty());
-    REQUIRE(settings->out_archiveextensions()->empty());
-    REQUIRE(settings->out_archivefilepatterns()->empty());
-    REQUIRE(settings->out_dirpatterns()->empty());
+    REQUIRE(settings->in_file_patterns()->empty());
+    REQUIRE(settings->out_archive_extensions()->empty());
+    REQUIRE(settings->out_archive_file_patterns()->empty());
+    REQUIRE(settings->out_dir_patterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
-    REQUIRE(settings->out_filepatterns()->empty());
+    REQUIRE(settings->out_file_patterns()->empty());
     REQUIRE(settings->paths()->empty());
 }
 
 TEST_CASE("Add extensions to FindSettings", "[FindSettings]") {
     auto *settings = new cppfind::FindSettings();
 
-    REQUIRE(settings->in_archiveextensions()->empty());
-    settings->add_in_archiveextension("zip,gz");
-    REQUIRE(settings->in_archiveextensions()->size() == 2);
+    REQUIRE(settings->in_archive_extensions()->empty());
+    settings->add_in_archive_extension("zip,gz");
+    REQUIRE(settings->in_archive_extensions()->size() == 2);
 
-    REQUIRE(settings->out_archiveextensions()->empty());
-    settings->add_out_archiveextension("rar,");
-    REQUIRE(settings->out_archiveextensions()->size() == 1);
+    REQUIRE(settings->out_archive_extensions()->empty());
+    settings->add_out_archive_extension("rar,");
+    REQUIRE(settings->out_archive_extensions()->size() == 1);
 
     REQUIRE(settings->in_extensions()->empty());
     settings->add_in_extension("cpp,h");
@@ -50,39 +50,39 @@ TEST_CASE("Add extensions to FindSettings", "[FindSettings]") {
 TEST_CASE("Add patterns to FindSettings", "[FindSettings]") {
     auto *settings = new cppfind::FindSettings();
 
-    REQUIRE(settings->in_archivefilepatterns()->empty());
-    settings->add_in_archivefilepattern("archive");
-    REQUIRE(settings->in_archivefilepatterns()->size() == 1);
+    REQUIRE(settings->in_archive_file_patterns()->empty());
+    settings->add_in_archive_file_pattern("archive");
+    REQUIRE(settings->in_archive_file_patterns()->size() == 1);
 
-    REQUIRE(settings->out_archivefilepatterns()->empty());
-    settings->add_out_archivefilepattern("old");
-    REQUIRE(settings->out_archivefilepatterns()->size() == 1);
+    REQUIRE(settings->out_archive_file_patterns()->empty());
+    settings->add_out_archive_file_pattern("old");
+    REQUIRE(settings->out_archive_file_patterns()->size() == 1);
 
-    REQUIRE(settings->in_dirpatterns()->empty());
-    settings->add_in_dirpattern("dir");
-    REQUIRE(settings->in_dirpatterns()->size() == 1);
+    REQUIRE(settings->in_dir_patterns()->empty());
+    settings->add_in_dir_pattern("dir");
+    REQUIRE(settings->in_dir_patterns()->size() == 1);
 
-    REQUIRE(settings->out_dirpatterns()->empty());
-    settings->add_out_dirpattern("tmp");
-    REQUIRE(settings->out_dirpatterns()->size() == 1);
+    REQUIRE(settings->out_dir_patterns()->empty());
+    settings->add_out_dir_pattern("tmp");
+    REQUIRE(settings->out_dir_patterns()->size() == 1);
 
-    REQUIRE(settings->in_filepatterns()->empty());
-    settings->add_in_filepattern("file");
-    REQUIRE(settings->in_filepatterns()->size() == 1);
+    REQUIRE(settings->in_file_patterns()->empty());
+    settings->add_in_file_pattern("file");
+    REQUIRE(settings->in_file_patterns()->size() == 1);
 
-    REQUIRE(settings->out_filepatterns()->empty());
-    settings->add_out_filepattern("stream");
-    REQUIRE(settings->out_filepatterns()->size() == 1);
+    REQUIRE(settings->out_file_patterns()->empty());
+    settings->add_out_file_pattern("stream");
+    REQUIRE(settings->out_file_patterns()->size() == 1);
 }
 
 TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     auto *settings = new cppfind::FindSettings();
 
-    REQUIRE(!settings->archivesonly());
-    REQUIRE(!settings->includearchives());
-    settings->archivesonly(true);
-    REQUIRE(settings->archivesonly());
-    REQUIRE(settings->includearchives());
+    REQUIRE(!settings->archives_only());
+    REQUIRE(!settings->include_archives());
+    settings->archives_only(true);
+    REQUIRE(settings->archives_only());
+    REQUIRE(settings->include_archives());
 
     REQUIRE(!settings->debug());
     REQUIRE(!settings->verbose());
@@ -90,25 +90,25 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     REQUIRE(settings->debug());
     REQUIRE(settings->verbose());
 
-    REQUIRE(settings->excludehidden());
-    settings->excludehidden(false);
-    REQUIRE(!settings->excludehidden());
+    REQUIRE(settings->exclude_hidden());
+    settings->exclude_hidden(false);
+    REQUIRE(!settings->exclude_hidden());
 
-    REQUIRE(!settings->listdirs());
-    settings->listdirs(true);
-    REQUIRE(settings->listdirs());
+    REQUIRE(!settings->list_dirs());
+    settings->list_dirs(true);
+    REQUIRE(settings->list_dirs());
 
-    REQUIRE(!settings->listfiles());
-    settings->listfiles(true);
-    REQUIRE(settings->listfiles());
+    REQUIRE(!settings->list_files());
+    settings->list_files(true);
+    REQUIRE(settings->list_files());
 
-    REQUIRE(!settings->printusage());
-    settings->printusage(true);
-    REQUIRE(settings->printusage());
+    REQUIRE(!settings->print_usage());
+    settings->print_usage(true);
+    REQUIRE(settings->print_usage());
 
-    REQUIRE(!settings->printversion());
-    settings->printversion(true);
-    REQUIRE(settings->printversion());
+    REQUIRE(!settings->print_version());
+    settings->print_version(true);
+    REQUIRE(settings->print_version());
 
     REQUIRE(settings->recursive());
     settings->recursive(false);

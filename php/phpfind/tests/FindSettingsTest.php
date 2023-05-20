@@ -22,18 +22,18 @@ class FindSettingsTest extends TestCase
 
     public function test_default_settings(): void
     {
-        $this->assertFalse($this->settings->archivesonly);
+        $this->assertFalse($this->settings->archives_only);
         $this->assertFalse($this->settings->debug);
-        $this->assertTrue($this->settings->excludehidden);
-        $this->assertFalse($this->settings->includearchives);
-        $this->assertFalse($this->settings->listdirs);
-        $this->assertFalse($this->settings->listfiles);
-        $this->assertFalse($this->settings->printusage);
-        $this->assertFalse($this->settings->printversion);
+        $this->assertTrue($this->settings->exclude_hidden);
+        $this->assertFalse($this->settings->include_archives);
+        $this->assertFalse($this->settings->list_dirs);
+        $this->assertFalse($this->settings->list_files);
+        $this->assertFalse($this->settings->print_usage);
+        $this->assertFalse($this->settings->print_version);
         $this->assertTrue($this->settings->recursive);
         $this->assertCount(0, $this->settings->paths);
-        $this->assertEquals(SortBy::Filepath, $this->settings->sortby);
-        $this->assertFalse($this->settings->sort_caseinsensitive);
+        $this->assertEquals(SortBy::Filepath, $this->settings->sort_by);
+        $this->assertFalse($this->settings->sort_case_insensitive);
         $this->assertFalse($this->settings->sort_descending);
         $this->assertFalse($this->settings->verbose);
     }
@@ -63,15 +63,15 @@ class FindSettingsTest extends TestCase
 
     public function test_add_patterns_string(): void
     {
-        $this->settings->add_patterns('Finder', $this->settings->in_filepatterns);
-        $this->assertCount(1, $this->settings->in_filepatterns);
-        $this->assertTrue(in_array('Finder', $this->settings->in_filepatterns));
+        $this->settings->add_patterns('Finder', $this->settings->in_file_patterns);
+        $this->assertCount(1, $this->settings->in_file_patterns);
+        $this->assertTrue(in_array('Finder', $this->settings->in_file_patterns));
     }
 
     public function test_add_patterns_array(): void
     {
-        $this->settings->add_patterns(['Finder'], $this->settings->in_filepatterns);
-        $this->assertCount(1, $this->settings->in_filepatterns);
-        $this->assertTrue(in_array('Finder', $this->settings->in_filepatterns));
+        $this->settings->add_patterns(['Finder'], $this->settings->in_file_patterns);
+        $this->assertCount(1, $this->settings->in_file_patterns);
+        $this->assertTrue(in_array('Finder', $this->settings->in_file_patterns));
     }
 }

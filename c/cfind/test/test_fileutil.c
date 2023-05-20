@@ -49,12 +49,12 @@ void test_get_extension(void)
 
     const size_t arrlen = 6;
     char **filenames = (char *[]) {
-        "filename.txt",
-        "filename.",
-        "filename",
-        ".filename.txt",
-        ".filename.",
-        ".filename"
+        "file_name.txt",
+        "file_name.",
+        "file_name",
+        ".file_name.txt",
+        ".file_name.",
+        ".file_name"
     };
     char **exts = (char *[]) {
         "txt",
@@ -65,7 +65,7 @@ void test_get_extension(void)
         ""
     };
     for (int i=0; i < arrlen; i++) {
-        printf("filename: \"%s\"\n", filenames[i]);
+        printf("file_name: \"%s\"\n", filenames[i]);
         char *ext = malloc(4 * sizeof(char *));
         get_extension(filenames[i], ext);
         printf("expected ext: \"%s\"\n", exts[i]);
@@ -125,16 +125,16 @@ void test_is_hidden(void)
         "./",
         "../",
         ".gitignore",
-        "filename.txt",
-        ".filename.txt",
-        "./filename.txt",
-        "./.filename.txt",
-        "../filename.txt",
-        "../.filename.txt",
-        "/filename.txt",
-        "/.filename.txt",
-        "/path/to/a/filename.txt",
-        "/path/to/a/.filename.txt"
+        "file_name.txt",
+        ".file_name.txt",
+        "./file_name.txt",
+        "./.file_name.txt",
+        "../file_name.txt",
+        "../.file_name.txt",
+        "/file_name.txt",
+        "/.file_name.txt",
+        "/path/to/a/file_name.txt",
+        "/path/to/a/.file_name.txt"
     };
     const size_t arrlen = 17;
     int expected[17] = {
@@ -158,7 +158,7 @@ void test_is_hidden(void)
     };
 
     for (int i=0; i < arrlen; i++) {
-        printf("filename: \"%s\"\n", filenames[i]);
+        printf("file_name: \"%s\"\n", filenames[i]);
         int res = is_hidden(filenames[i]);
         printf("expected res: %d\n", expected[i]);
         printf("actual res:   %d\n", res);

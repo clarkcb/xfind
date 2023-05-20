@@ -17,33 +17,33 @@ from pyfind import FileType, FileResult, XFINDPATH
 
 class FileResultTest(unittest.TestCase):
 
-    def test_fileresult_abs_path(self):
+    def test_file_result_abs_path(self):
         path = XFINDPATH + '/python/pyfind/pyfind'
-        filename = 'fileresult.py'
-        fileresult = FileResult(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual(XFINDPATH + '/python/pyfind/pyfind/fileresult.py', fileresult.relativepath)
-        self.assertEqual(XFINDPATH + '/python/pyfind/pyfind/fileresult.py', str(fileresult))
+        file_name = 'fileresult.py'
+        file_result = FileResult(path=path, file_name=file_name, file_type=FileType.CODE)
+        self.assertEqual(XFINDPATH + '/python/pyfind/pyfind/fileresult.py', file_result.relative_path)
+        self.assertEqual(XFINDPATH + '/python/pyfind/pyfind/fileresult.py', str(file_result))
 
-    def test_fileresult_rel_path1(self):
+    def test_file_result_rel_path1(self):
         path = '.'
-        filename = 'fileresult.py'
-        fileresult = FileResult(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('./fileresult.py', fileresult.relativepath)
-        self.assertEqual('./fileresult.py', str(fileresult))
+        file_name = 'fileresult.py'
+        file_result = FileResult(path=path, file_name=file_name, file_type=FileType.CODE)
+        self.assertEqual('./fileresult.py', file_result.relative_path)
+        self.assertEqual('./fileresult.py', str(file_result))
 
-    def test_fileresult_rel_path2(self):
+    def test_file_result_rel_path2(self):
         path = './'
-        filename = 'fileresult.py'
-        fileresult = FileResult(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('./fileresult.py', fileresult.relativepath)
-        self.assertEqual('./fileresult.py', str(fileresult))
+        file_name = 'fileresult.py'
+        file_result = FileResult(path=path, file_name=file_name, file_type=FileType.CODE)
+        self.assertEqual('./fileresult.py', file_result.relative_path)
+        self.assertEqual('./fileresult.py', str(file_result))
 
-    def test_fileresult_rel_path3(self):
+    def test_file_result_rel_path3(self):
         path = '..'
-        filename = 'fileresult.py'
-        fileresult = FileResult(path=path, filename=filename, filetype=FileType.CODE)
-        self.assertEqual('../fileresult.py', fileresult.relativepath)
-        self.assertEqual('../fileresult.py', str(fileresult))
+        file_name = 'fileresult.py'
+        file_result = FileResult(path=path, file_name=file_name, file_type=FileType.CODE)
+        self.assertEqual('../fileresult.py', file_result.relative_path)
+        self.assertEqual('../fileresult.py', str(file_result))
 
 
 if __name__ == '__main__':

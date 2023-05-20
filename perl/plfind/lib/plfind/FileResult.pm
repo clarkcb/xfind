@@ -18,8 +18,8 @@ sub new {
     my $self = {
         containers => [],
         path => shift,
-        filename => shift,
-        filetype => shift,
+        file_name => shift,
+        file_type => shift,
         stat => shift,
     };
     bless $self, $class;
@@ -28,7 +28,7 @@ sub new {
 
 sub to_string {
     my $self = shift @_;
-    my $s = File::Spec->join($self->{path}, $self->{filename});
+    my $s = File::Spec->join($self->{path}, $self->{file_name});
     return $s;
 }
 

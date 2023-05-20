@@ -41,8 +41,8 @@ func NewFindOptions() *FindOptions {
 	return findOptions
 }
 
-func (so *FindOptions) SettingsFromFile(filepath string, settings *FindSettings) error {
-	if data, err := os.ReadFile(filepath); err != nil {
+func (so *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
+	if data, err := os.ReadFile(filePath); err != nil {
 		return err
 	} else {
 		return so.SettingsFromJson(data, settings)

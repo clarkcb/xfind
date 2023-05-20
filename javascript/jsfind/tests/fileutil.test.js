@@ -11,12 +11,12 @@ describe('testing fileutil', () => {
      * getExtension tests
      **************************************************************************/
     it('testGetTxtExtension', () => {
-        const file = 'filename.txt';
+        const file = 'fileName.txt';
         expect(FileUtil.getExtension(file)).toEqual('txt');
     });
 
     it('testGetTxtExtensionAsync', () => {
-        const file = 'filename.txt';
+        const file = 'fileName.txt';
         FileUtil.getExtensionAsync(file, (err, ext) => {
             expect(err).toBeNull();
             expect(ext).toBe('txt');
@@ -24,12 +24,12 @@ describe('testing fileutil', () => {
     });
 
     it('testGetMissingExtension', () => {
-        const file = 'filename.';
+        const file = 'fileName.';
         expect(FileUtil.getExtension(file)).toEqual('');
     });
 
     it('testGetMissingExtensionAsync', () => {
-        const file = 'filename.';
+        const file = 'fileName.';
         FileUtil.getExtensionAsync(file, (err, ext) => {
             expect(err).toBeNull();
             expect(ext).toBe('');
@@ -50,12 +50,12 @@ describe('testing fileutil', () => {
     });
 
     it('testGetHiddenTxtExtension', () => {
-        const file = '.filename.txt';
+        const file = '.fileName.txt';
         expect(FileUtil.getExtension(file)).toEqual('txt');
     });
 
     it('testGetHiddenTxtExtensionAsync', () => {
-        const file = '.filename.txt';
+        const file = '.fileName.txt';
         FileUtil.getExtensionAsync(file, (err, ext) => {
             expect(err).toBeNull();
             expect(ext).toBe('txt');
@@ -63,12 +63,12 @@ describe('testing fileutil', () => {
     });
 
     it('testGetHiddenMissingExtension', () => {
-        const file = 'filename.';
+        const file = 'fileName.';
         expect(FileUtil.getExtension(file)).toEqual('');
     });
 
     it('testGetHiddenMissingExtensionAsync', () => {
-        const file = 'filename.';
+        const file = 'fileName.';
         FileUtil.getExtensionAsync(file, (err, ext) => {
             expect(err).toBeNull();
             expect(ext).toBe('');
@@ -110,72 +110,72 @@ describe('testing fileutil', () => {
      * getRelativePath tests
      **************************************************************************/
     it('testGetRelativePath', () => {
-        const filepath = `${process.env.HOME}/filename.txt`;
-        expect(FileUtil.getRelativePath(filepath, '.')).toEqual("./filename.txt");
+        const filePath = `${process.env.HOME}/filename.txt`;
+        expect(FileUtil.getRelativePath(filePath, '.')).toEqual("./fileName.txt");
     });
 
     /***************************************************************************
      * isDotDir tests
      **************************************************************************/
     it('testIsDotDirSingleDot', () => {
-        const filename = ".";
-        expect(FileUtil.isDotDir(filename)).toBeTruthy();
+        const fileName = ".";
+        expect(FileUtil.isDotDir(fileName)).toBeTruthy();
     });
 
     it('testIsDotDirDoubleDot', () => {
-        const filename = "..";
-        expect(FileUtil.isDotDir(filename)).toBeTruthy();
+        const fileName = "..";
+        expect(FileUtil.isDotDir(fileName)).toBeTruthy();
     });
 
     it('testIsDotDirNotDotDir', () => {
-        const filename = "~/path";
-        expect(FileUtil.isDotDir(filename)).toBeFalsy();
+        const fileName = "~/path";
+        expect(FileUtil.isDotDir(fileName)).toBeFalsy();
     });
 
     it('testIsDotDirPathWithDot', () => {
-        const filename = "./path";
-        expect(FileUtil.isDotDir(filename)).toBeFalsy();
+        const fileName = "./path";
+        expect(FileUtil.isDotDir(fileName)).toBeFalsy();
     });
 
     it('testIsDotDirHiddenFile', () => {
-        const filename = ".gitignore";
-        expect(FileUtil.isDotDir(filename)).toBeFalsy();
+        const fileName = ".gitignore";
+        expect(FileUtil.isDotDir(fileName)).toBeFalsy();
     });
 
     /***************************************************************************
      * isHidden tests
      **************************************************************************/
     it('testIsHiddenSingleDot', () => {
-        const filename = ".";
-        expect(FileUtil.isHidden(filename)).toBeFalsy();
+        const fileName = ".";
+        expect(FileUtil.isHidden(fileName)).toBeFalsy();
     });
 
     it('testIsHiddenDoubleDot', () => {
-        const filename = "..";
-        expect(FileUtil.isHidden(filename)).toBeFalsy();
+        const fileName = "..";
+        expect(FileUtil.isHidden(fileName)).toBeFalsy();
     });
 
     it('testIsHiddenHiddenFile', () => {
-        const filename = ".gitignore";
-        expect(FileUtil.isHidden(filename)).toBeTruthy();
+        const fileName = ".gitignore";
+        expect(FileUtil.isHidden(fileName)).toBeTruthy();
     });
 
     it('testIsHiddenNotHiddenFile', () => {
-        const filename = "file.txt";
-        expect(FileUtil.isHidden(filename)).toBeFalsy();
+        const fileName = "file.txt";
+        expect(FileUtil.isHidden(fileName)).toBeFalsy();
     });
 
     /***************************************************************************
      * expandPath tests
      **************************************************************************/
     it('testExpandPathPathWithTilde', () => {
-        const filepath = "~/filename.txt";
+        const filePath = "~/fileName.txt";
         const expected = `${process.env.HOME}/filename.txt`;
-        expect(FileUtil.expandPath(filepath) === expected).toBeTruthy();
+        expect(FileUtil.expandPath(filePath) === expected).toBeTruthy();
     });
 
     it('testExpandPathPathNoTilde', () => {
-        const filepath = "./filename.txt";
-        expect(FileUtil.expandPath(filepath) === filepath).toBeTruthy();
+        const filePath = "./fileName.txt";
+        expect(FileUtil.expandPath(filePath) === filePath).toBeTruthy();
     });
 });

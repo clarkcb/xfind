@@ -1,7 +1,7 @@
 /*
- * filetype.ts
+ * sortby.ts
  *
- * FileType enum
+ * SortBy enum
  *
  */
 

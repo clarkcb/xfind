@@ -94,7 +94,7 @@ build_c () {
     # ensure make is installed
     if [ -z "$(which make)" ]
     then
-        echo "You need to install make"
+        log_error "You need to install make"
         return
     fi
 
@@ -104,6 +104,15 @@ build_c () {
     log "Building cfind"
     log "make"
     make
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$CFIND_PATH/cfind"
@@ -118,7 +127,7 @@ build_clojure () {
     # ensure leiningen is installed
     if [ -z "$(which lein)" ]
     then
-        echo "You need to install leiningen"
+        log_error "You need to install leiningen"
         return
     fi
 
@@ -136,6 +145,15 @@ build_clojure () {
     log "lein uberjar"
     lein uberjar
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$CLJFIND_PATH/bin/cljfind.sh"
 
@@ -149,7 +167,7 @@ build_cpp () {
     # ensure cmake is installed
     if [ -z "$(which cmake)" ]
     then
-        echo "You need to install cmake"
+        log_error "You need to install cmake"
         return
     fi
 
@@ -198,7 +216,16 @@ build_cpp () {
             do
                 log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
                 cmake --build "$CMAKE_BUILD_DIR" --target "$t" -- -W -Wall -Werror
-                [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
+
+                # check for success/failure
+                # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
+                if [ "$?" -eq 0 ]
+                then
+                    log "Build succeeded"
+                else
+                    log_error "Build failed"
+                    return
+                fi
             done
         fi
     done
@@ -222,7 +249,7 @@ build_csharp () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
         return
     fi
 
@@ -273,7 +300,7 @@ build_dart () {
     # ensure dart is installed
     if [ -z "$(which dart)" ]
     then
-        echo "You need to install dart"
+        log_error "You need to install dart"
         return
     fi
 
@@ -308,7 +335,7 @@ build_fsharp () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
         return
     fi
 
@@ -359,7 +386,7 @@ build_go () {
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
-        echo "You need to install go"
+        log_error "You need to install go"
         return
     fi
 
@@ -397,6 +424,15 @@ build_go () {
     log "go install ./..."
     GOBIN="$BIN_PATH" go install ./...
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     cd -
 }
 
@@ -407,7 +443,7 @@ build_haskell () {
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
-        echo "You need to install stack"
+        log_error "You need to install stack"
         return
     fi
 
@@ -460,7 +496,7 @@ build_java () {
     # ensure mvn is installed
     if [ -z "$(which mvn)" ]
     then
-        echo "You need to install maven"
+        log_error "You need to install maven"
         return
     fi
 
@@ -477,8 +513,17 @@ build_java () {
 
     # run a maven clean build
     log "Building javafind"
-    log "mvn -f $JAVAFIND_PATH/pom.xml clean package -Dmaven.test.skip=true"
-    mvn -f "$JAVAFIND_PATH/pom.xml" clean package -Dmaven.test.skip=true
+    log "mvn -f $JAVAFIND_PATH/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT"
+    mvn -f "$JAVAFIND_PATH/pom.xml" clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$JAVAFIND_PATH/bin/javafind.sh"
@@ -491,7 +536,7 @@ build_javascript () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install node.js/npm"
+        log_error "You need to install node.js/npm"
         return
     fi
 
@@ -510,6 +555,15 @@ build_javascript () {
     log "npm run build"
     npm run build
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$JSFIND_PATH/bin/jsfind.sh"
 
@@ -523,7 +577,7 @@ build_kotlin () {
     # ensure gradle is installed
     if [ -z "$(which gradle)" ]
     then
-        echo "You need to install gradle"
+        log_error "You need to install gradle"
         return
     fi
 
@@ -546,6 +600,15 @@ build_kotlin () {
     log "gradle --warning-mode all clean jar"
     gradle --warning-mode all clean jar
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$KTFIND_PATH/bin/ktfind.sh"
 
@@ -559,7 +622,7 @@ build_objc () {
     # ensure xcode is installed
     if [ -z "$(which xcodebuild)" ]
     then
-        echo "You need to install Xcode"
+        log_error "You need to install Xcode"
         return
     fi
 
@@ -590,6 +653,15 @@ build_objc () {
         else
             log "xcodebuild -target $TARGET -configuration $c"
             xcodebuild -target "$TARGET" -configuration "$c"
+        fi
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
         fi
     done
 
@@ -626,13 +698,13 @@ build_perl () {
     # ensure perl is installed
     if [ -z "$(which perl)" ]
     then
-        echo "You need to install perl"
+        log_error "You need to install perl"
         return
     fi
 
     if [ -z "$(perl -v | grep 'This is perl 5')" ]
     then
-        echo "A 5.x version of perl is required"
+        log_error "A 5.x version of perl is required"
         return
     fi
 
@@ -657,21 +729,21 @@ build_php () {
     # ensure php is installed
     if [ -z "$(which php)" ]
     then
-        echo "You need to install PHP"
+        log_error "You need to install PHP"
         return
     fi
 
     # TODO: do a real version check
     if [ -z "$(php -v | grep 'cli')" ]
     then
-        echo "A version of PHP >= 7.x is required"
+        log_error "A version of PHP >= 7.x is required"
         return
     fi
 
     # ensure composer is installed
     if [ -z "$(which composer)" ]
     then
-        echo "Need to install composer"
+        log_error "Need to install composer"
         return
     fi
 
@@ -704,6 +776,15 @@ build_php () {
         composer install
     fi
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$PHPFIND_PATH/bin/phpfind.sh"
 
@@ -717,7 +798,7 @@ build_powershell () {
     # ensure pwsh is installed
     if [ -z "$(which pwsh)" ]
     then
-        echo "You need to install powershell"
+        log_error "You need to install powershell"
         return
     fi
 
@@ -725,7 +806,7 @@ build_powershell () {
 
     if [ -z "$MODULEPATH" ]
     then
-        echo "Unable to get powershell module path"
+        log_error "Unable to get powershell module path"
         return
     fi
 
@@ -761,7 +842,7 @@ build_python () {
 
     if [ -z "$PYTHON" ]
     then
-        log "A version of python >= 3.7 is required"
+        log_error "A version of python >= 3.7 is required"
         return
     else
         PYTHON=$(basename "$PYTHON")
@@ -821,20 +902,20 @@ build_ruby () {
     # ensure ruby2.x+ is installed
     if [ -z "$(which ruby)" ]
     then
-        echo "You need to install ruby"
+        log_error "You need to install ruby"
         return
     fi
 
     # TODO: do a real version check (first determine minimum needed version)
     if [ -z "$(ruby -v | grep 'ruby 2')" ]
     then
-        echo "A version of ruby >= 2.x is required"
+        log_error "A version of ruby >= 2.x is required"
         return
     fi
 
     # if [ -z "$(which bundle)" ]
     # then
-    #     echo "You need to install bundler: https://bundler.io/"
+    #     log_error "You need to install bundler: https://bundler.io/"
     #     return
     # fi
 
@@ -866,7 +947,7 @@ build_rust () {
     # ensure cargo/rust is installed
     if [ -z "$(which cargo)" ]
     then
-        echo "You need to install rust"
+        log_error "You need to install rust"
         return
     fi
 
@@ -877,11 +958,29 @@ build_rust () {
     then
         log "cargo build"
         cargo build
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     fi
     if [ -n "$RELEASE" ]
     then
         log "cargo build --release"
         cargo build --release
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
 
         # add release to bin
         add_to_bin "$RSFIND_PATH/bin/rsfind.release.sh"
@@ -900,7 +999,7 @@ build_scala () {
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        echo "You need to install scala + sbt"
+        log_error "You need to install scala + sbt"
         return
     fi
 
@@ -925,6 +1024,15 @@ build_scala () {
     log "sbt 'set test in assembly := {}' clean assembly"
     sbt 'set test in assembly := {}' clean assembly
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$SCALAFIND_PATH/bin/scalafind.sh"
 
@@ -938,7 +1046,7 @@ build_swift () {
     # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
-        echo "You need to install swift"
+        log_error "You need to install swift"
         return
     fi
 
@@ -953,11 +1061,29 @@ build_swift () {
     then
         log "swift build"
         swift build
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     fi
     if [ -n "$RELEASE" ]
     then
         log "swift build --configuration release"
         swift build --configuration release
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
 
         # add release to bin
         add_to_bin "$SWIFTFIND_PATH/bin/swiftfind.release.sh"
@@ -976,7 +1102,7 @@ build_typescript () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install node.js/npm"
+        log_error "You need to install node.js/npm"
         return
     fi
 
@@ -993,6 +1119,15 @@ build_typescript () {
     npm install
     log "npm run build"
     npm run build
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     # add to bin
     add_to_bin "$TSFIND_PATH/bin/tsfind.sh"
@@ -1230,6 +1365,6 @@ case $ARG in
         build_typescript
         ;;
     *)
-        echo -n "ERROR: unknown xfind build argument: $ARG"
+        log_error "ERROR: unknown xfind build argument: $ARG"
         ;;
 esac

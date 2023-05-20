@@ -25,8 +25,8 @@ module RbFind
 
     def find_settings_from_args(args)
       settings = FindSettings.new
-      # default listfiles to true since running as cli
-      settings.listfiles = true
+      # default list_files to true since running as cli
+      settings.list_files = true
       until args.empty?
         arg = args.shift
         if arg.start_with?('-')
@@ -49,16 +49,16 @@ module RbFind
       settings
     end
 
-    def settings_from_file(filepath, settings)
-      f = File.open(filepath, mode: 'r')
+    def settings_from_file(file_path, settings)
+      f = File.open(file_path, mode: 'r')
       json = f.read
       settings_from_json(json, settings)
     rescue IOError => e
-      raise FindError, "#{e} (file: #{filepath})"
+      raise FindError, "#{e} (file: #{file_path})"
     rescue ArgumentError => e
-      raise FindError, "#{e} (file: #{filepath})"
+      raise FindError, "#{e} (file: #{file_path})"
     rescue FindError => e
-      raise FindError, "#{e} (file: #{filepath})"
+      raise FindError, "#{e} (file: #{file_path})"
     ensure
       f&.close
     end
@@ -114,52 +114,52 @@ module RbFind
     def set_actions
       @arg_action_dict = {
         'in-archiveext': lambda { |x, settings|
-          settings.add_exts(x, settings.in_archiveextensions)
+          settings.add_exts(x, settings.in_archive_extensions)
         },
         'in-archivefilepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_archivefilepatterns)
+          settings.add_patterns(x, settings.in_archive_file_patterns)
         },
         'in-dirpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_dirpatterns)
+          settings.add_patterns(x, settings.in_dir_patterns)
         },
         'in-ext': lambda { |x, settings|
           settings.add_exts(x, settings.in_extensions)
         },
         'in-filetype': lambda { |x, settings|
-          settings.add_filetypes(x, settings.in_filetypes)
+          settings.add_file_types(x, settings.in_file_types)
         },
         'in-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_filepatterns)
+          settings.add_patterns(x, settings.in_file_patterns)
         },
         'maxlastmod': lambda { |x, settings|
-          settings.maxlastmod = DateTime.parse(x)
+          settings.max_last_mod = DateTime.parse(x)
         },
         'maxsize': lambda { |x, settings|
-          settings.maxsize = x.to_i
+          settings.max_size = x.to_i
         },
         'minlastmod': lambda { |x, settings|
-          settings.minlastmod = DateTime.parse(x)
+          settings.min_last_mod = DateTime.parse(x)
         },
         'minsize': lambda { |x, settings|
-          settings.minsize = x.to_i
+          settings.min_size = x.to_i
         },
         'out-archiveext': lambda { |x, settings|
-          settings.add_exts(x, settings.out_archiveextensions)
+          settings.add_exts(x, settings.out_archive_extensions)
         },
         'out-archivefilepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_archivefilepatterns)
+          settings.add_patterns(x, settings.out_archive_file_patterns)
         },
         'out-dirpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_dirpatterns)
+          settings.add_patterns(x, settings.out_dir_patterns)
         },
         'out-ext': lambda { |x, settings|
           settings.add_exts(x, settings.out_extensions)
         },
         'out-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_filepatterns)
+          settings.add_patterns(x, settings.out_file_patterns)
         },
         'out-filetype': lambda { |x, settings|
-          settings.add_filetypes(x, settings.out_filetypes)
+          settings.add_file_types(x, settings.out_file_types)
         },
         'path': lambda { |x, settings|
           settings.paths.push(x)
@@ -172,25 +172,25 @@ module RbFind
         }
       }
       @bool_flag_action_dict = {
-        archivesonly: ->(b, settings) { settings.archivesonly = b },
-        caseinsensitive: ->(b, settings) { settings.casesensitive = !b },
-        casesensitive: ->(b, settings) { settings.casesensitive = b },
+        archivesonly: ->(b, settings) { settings.archives_only = b },
+        caseinsensitive: ->(b, settings) { settings.sort_case_insensitive = b },
+        casesensitive: ->(b, settings) { settings.sort_case_insensitive = !b },
         debug: ->(b, settings) { settings.debug = b },
-        excludearchives: ->(b, settings) { settings.includearchives = !b },
-        excludehidden: ->(b, settings) { settings.excludehidden = b },
-        help: ->(b, settings) { settings.printusage = b },
-        includearchives: ->(b, settings) { settings.includearchives = b },
-        includehidden: ->(b, settings) { settings.excludehidden = !b },
-        listdirs: ->(b, settings) { settings.listdirs = b },
-        listfiles: ->(b, settings) { settings.listfiles = b },
+        excludearchives: ->(b, settings) { settings.include_archives = !b },
+        excludehidden: ->(b, settings) { settings.exclude_hidden = b },
+        help: ->(b, settings) { settings.print_usage = b },
+        includearchives: ->(b, settings) { settings.include_archives = b },
+        includehidden: ->(b, settings) { settings.exclude_hidden = !b },
+        listdirs: ->(b, settings) { settings.list_dirs = b },
+        listfiles: ->(b, settings) { settings.list_files = b },
         norecursive: ->(b, settings) { settings.recursive = !b },
         recursive: ->(b, settings) { settings.recursive = b },
         'sort-ascending': ->(b, settings) { settings.sort_descending = !b },
-        'sort-caseinsensitive': ->(b, settings) { settings.sort_caseinsensitive = b },
-        'sort-casesensitive': ->(b, settings) { settings.sort_caseinsensitive = !b },
+        'sort-caseinsensitive': ->(b, settings) { settings.sort_case_insensitive = b },
+        'sort-casesensitive': ->(b, settings) { settings.sort_case_insensitive = !b },
         'sort-descending': ->(b, settings) { settings.sort_descending = b },
         verbose: ->(b, settings) { settings.verbose = b },
-        version: ->(b, settings) { settings.printversion = b }
+        version: ->(b, settings) { settings.print_version = b }
       }
       @longarg_dict = {}
     end

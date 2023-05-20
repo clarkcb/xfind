@@ -218,11 +218,9 @@ error_t get_find_options(FindOptions *options)
     contents[0] = '\0';
     FILE *fp = fopen(fullpath, "r");
     int c;
-    int i = 0;
     if (fp != NULL) {
         while((c = getc(fp)) != EOF) {
             strcat(contents, (char *)&c);
-            i++;
         }
         fclose(fp);
     } else {
@@ -245,23 +243,23 @@ error_t get_find_options(FindOptions *options)
 static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
 {
     switch (arg_idx) {
-    case IN_ARCHIVEEXTENSION:
-        if (settings->in_archiveextensions == NULL)
-            settings->in_archiveextensions = new_string_node_from_char_split(',', arg_val);
+    case IN_ARCHIVE_EXTENSION:
+        if (settings->in_archive_extensions == NULL)
+            settings->in_archive_extensions = new_string_node_from_char_split(',', arg_val);
         else
-            add_char_split_to_string_node(',', arg_val, settings->in_archiveextensions);
+            add_char_split_to_string_node(',', arg_val, settings->in_archive_extensions);
         break;
-    case IN_ARCHIVEFILEPATTERN:
-        if (settings->in_archivefilepatterns == NULL)
-            settings->in_archivefilepatterns = new_regex_node_from_string(arg_val);
+    case IN_ARCHIVE_FILE_PATTERN:
+        if (settings->in_archive_file_patterns == NULL)
+            settings->in_archive_file_patterns = new_regex_node_from_string(arg_val);
         else
-            add_string_to_regex_node(arg_val, settings->in_archivefilepatterns);
+            add_string_to_regex_node(arg_val, settings->in_archive_file_patterns);
         break;
-    case IN_DIRPATTERN:
-        if (settings->in_dirpatterns == NULL)
-            settings->in_dirpatterns = new_regex_node_from_string(arg_val);
+    case IN_DIR_PATTERN:
+        if (settings->in_dir_patterns == NULL)
+            settings->in_dir_patterns = new_regex_node_from_string(arg_val);
         else
-            add_string_to_regex_node(arg_val, settings->in_dirpatterns);
+            add_string_to_regex_node(arg_val, settings->in_dir_patterns);
         break;
     case IN_EXTENSION:
         if (settings->in_extensions == NULL)
@@ -269,69 +267,69 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         else
             add_char_split_to_string_node(',', arg_val, settings->in_extensions);
         break;
-    case IN_FILEPATTERN:
-        if (settings->in_filepatterns == NULL)
-            settings->in_filepatterns = new_regex_node_from_string(arg_val);
+    case IN_FILE_PATTERN:
+        if (settings->in_file_patterns == NULL)
+            settings->in_file_patterns = new_regex_node_from_string(arg_val);
         else
-            add_string_to_regex_node(arg_val, settings->in_filepatterns);
+            add_string_to_regex_node(arg_val, settings->in_file_patterns);
         break;
-    case IN_FILETYPE:
+    case IN_FILE_TYPE:
         // this is just to wrap in an expression
         if (arg_val) {
-            if (settings->in_filetypes == NULL) {
-                settings->in_filetypes = empty_int_node();
+            if (settings->in_file_types == NULL) {
+                settings->in_file_types = empty_int_node();
             }
-            FileType filetype = filetype_from_name(arg_val);
+            FileType file_type = file_type_from_name(arg_val);
             int *ftint = malloc(sizeof(int));
-            *ftint = (int)filetype;
-            add_int_to_int_node(ftint, settings->in_filetypes);
+            *ftint = (int)file_type;
+            add_int_to_int_node(ftint, settings->in_file_types);
         }
         break;
-    case MAXLASTMOD:
+    case MAX_LAST_MOD:
         if (arg_val) {
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
             if (strptime(arg_val, "%Y-%m-%d", &tm) == NULL) {
                 return E_INVALID_DATESTRING;
             } else {
-                settings->maxlastmod = mktime(&tm);
+                settings->max_last_mod = mktime(&tm);
             }
         } 
         break;
-    case MAXSIZE:
-        settings->maxsize = (unsigned long)atoi(arg_val);
+    case MAX_SIZE:
+        settings->max_size = (unsigned long)atoi(arg_val);
         break;
-    case MINLASTMOD:
+    case MIN_LAST_MOD:
         if (arg_val) {
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
             if (strptime(arg_val, "%Y-%m-%d", &tm) == NULL) {
                 return E_INVALID_DATESTRING;
             } else {
-                settings->minlastmod = mktime(&tm);
+                settings->min_last_mod = mktime(&tm);
             }
         } 
         break;
-    case MINSIZE:
-        settings->minsize = (unsigned long)atoi(arg_val);
+    case MIN_SIZE:
+        settings->min_size = (unsigned long)atoi(arg_val);
         break;
-    case OUT_ARCHIVEEXT:
-        if (settings->out_archiveextensions == NULL)
-            settings->out_archiveextensions = new_string_node_from_char_split(',', arg_val);
+    case OUT_ARCHIVE_EXT:
+        if (settings->out_archive_extensions == NULL)
+            settings->out_archive_extensions = new_string_node_from_char_split(',', arg_val);
         else
-            add_char_split_to_string_node(',', arg_val, settings->out_archiveextensions);
+            add_char_split_to_string_node(',', arg_val, settings->out_archive_extensions);
         break;
-    case OUT_ARCHIVEFILEPATTERN:
-        if (settings->out_archivefilepatterns == NULL)
-            settings->out_archivefilepatterns = new_regex_node_from_string(arg_val);
+    case OUT_ARCHIVE_FILE_PATTERN:
+        if (settings->out_archive_file_patterns == NULL)
+            settings->out_archive_file_patterns = new_regex_node_from_string(arg_val);
         else
-            add_string_to_regex_node(arg_val, settings->out_archivefilepatterns);
+            add_string_to_regex_node(arg_val, settings->out_archive_file_patterns);
         break;
-    case OUT_DIRPATTERN:
-        if (settings->out_dirpatterns == NULL)
-            settings->out_dirpatterns = new_regex_node_from_string(arg_val);
+    case OUT_DIR_PATTERN:
+        if (settings->out_dir_patterns == NULL)
+            settings->out_dir_patterns = new_regex_node_from_string(arg_val);
         else
-            add_string_to_regex_node(arg_val, settings->out_dirpatterns);
+            add_string_to_regex_node(arg_val, settings->out_dir_patterns);
         break;
     case OUT_EXTENSION:
         if (settings->out_extensions == NULL)
@@ -339,22 +337,22 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         else
             add_char_split_to_string_node(',', arg_val, settings->out_extensions);
         break;
-    case OUT_FILEPATTERN:
-        if (settings->out_filepatterns == NULL)
-            settings->out_filepatterns = new_regex_node_from_string(arg_val);
+    case OUT_FILE_PATTERN:
+        if (settings->out_file_patterns == NULL)
+            settings->out_file_patterns = new_regex_node_from_string(arg_val);
         else
-            add_string_to_regex_node(arg_val, settings->out_filepatterns);
+            add_string_to_regex_node(arg_val, settings->out_file_patterns);
         break;
-    case OUT_FILETYPE:
+    case OUT_FILE_TYPE:
         // this is just to wrap in an expression
         if (arg_val) {
-            if (settings->out_filetypes == NULL) {
-                settings->out_filetypes = empty_int_node();
+            if (settings->out_file_types == NULL) {
+                settings->out_file_types = empty_int_node();
             }
-            FileType filetype = filetype_from_name(arg_val);
+            FileType file_type = file_type_from_name(arg_val);
             int *ftint = malloc(sizeof(int));
-            *ftint = (int)filetype;
-            add_int_to_int_node(ftint, settings->out_filetypes);
+            *ftint = (int)file_type;
+            add_int_to_int_node(ftint, settings->out_file_types);
         }
         break;
     case PATH:
@@ -366,8 +364,8 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
     case SORT_BY:
         // this is just to wrap in an expression
         if (arg_val) {
-            SortBy sortby = sortby_from_name(arg_val);
-            settings->sortby = sortby;
+            SortBy sort_by = sort_by_from_name(arg_val);
+            settings->sort_by = sort_by;
         }
         break;
     default:
@@ -379,10 +377,10 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
 static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings *settings)
 {
     switch (flag_idx) {
-    case ARCHIVESONLY:
-        settings->archivesonly = flag_val;
+    case ARCHIVES_ONLY:
+        settings->archives_only = flag_val;
         if (flag_val) {
-            settings->includearchives = flag_val;
+            settings->include_archives = flag_val;
         }
         break;
     case DEBUG:
@@ -391,28 +389,28 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
             settings->verbose = flag_val;
         }
         break;
-    case EXCLUDEARCHIVES:
-        settings->includearchives = !flag_val;
+    case EXCLUDE_ARCHIVES:
+        settings->include_archives = !flag_val;
         break;
-    case EXCLUDEHIDDEN:
-        settings->excludehidden = flag_val;
+    case EXCLUDE_HIDDEN:
+        settings->exclude_hidden = flag_val;
         break;
-    case INCLUDEARCHIVES:
-        settings->includearchives = flag_val;
+    case INCLUDE_ARCHIVES:
+        settings->include_archives = flag_val;
         break;
-    case INCLUDEHIDDEN:
-        settings->excludehidden = !flag_val;
+    case INCLUDE_HIDDEN:
+        settings->exclude_hidden = !flag_val;
         break;
     case HELP:
-        settings->printusage = flag_val;
+        settings->print_usage = flag_val;
         break;
-    case LISTDIRS:
-        settings->listdirs = flag_val;
+    case LIST_DIRS:
+        settings->list_dirs = flag_val;
         break;
-    case LISTFILES:
-        settings->listfiles = flag_val;
+    case LIST_FILES:
+        settings->list_files = flag_val;
         break;
-    case NORECURSIVE:
+    case NO_RECURSIVE:
         settings->recursive = !flag_val;
         break;
     case RECURSIVE:
@@ -421,11 +419,11 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
     case SORT_ASCENDING:
         settings->sort_descending = !flag_val;
         break;
-    case SORT_CASEINSENSITIVE:
-        settings->sort_caseinsensitive = flag_val;
+    case SORT_CASE_INSENSITIVE:
+        settings->sort_case_insensitive = flag_val;
         break;
-    case SORT_CASESENSITIVE:
-        settings->sort_caseinsensitive = !flag_val;
+    case SORT_CASE_SENSITIVE:
+        settings->sort_case_insensitive = !flag_val;
         break;
     case SORT_DESCENDING:
         settings->sort_descending = flag_val;
@@ -434,7 +432,7 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         settings->verbose = flag_val;
         break;
     case VERSION:
-        settings->printversion = flag_val;
+        settings->print_version = flag_val;
         break;
     default:
         break;
@@ -445,7 +443,7 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
 error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
 {
     int i = 0;
-    settings->listfiles = 1;
+    settings->list_files = 1;
     while (i < argc) {
         size_t arglen = strlen(argv[i]);
         if (arglen < 1) {

@@ -14,7 +14,7 @@ import Data.Char (toLower)
 import Data.List (sortBy, zipWith4)
 import Data.Maybe (isJust, isNothing)
 
-import System.FilePath (dropFileName, takeFileName)
+import System.FilePath (dropFileName, pathSeparator, splitPath, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
@@ -194,25 +194,36 @@ compareStrings settings s1 s2 =
     else compare s1 s2
   where lower = map toLower
 
+comparePaths :: FindSettings -> String -> String -> Ordering
+comparePaths settings p1 p2 =
+  if sortCaseInsensitive settings
+    then compare (map lower elems1) (map lower elems2)
+    else compare elems1 elems2
+  where lower = map toLower
+        elems1 = splitPath p1
+        elems2 = splitPath p2
+
 sortFileResultsByPath :: FindSettings -> FileResult -> FileResult -> Ordering
 sortFileResultsByPath settings fr1 fr2 =
-  if p1 == p2
+  if pcmp == EQ
   then compareStrings settings f1 f2
-  else compareStrings settings p1 p2
+  else comparePaths settings p1 p2
   where p1 = dropFileName (fileResultPath fr1)
         p2 = dropFileName (fileResultPath fr2)
         f1 = takeFileName (fileResultPath fr1)
         f2 = takeFileName (fileResultPath fr2)
+        pcmp = compareStrings settings p1 p2
 
 sortFileResultsByName :: FindSettings -> FileResult -> FileResult -> Ordering
 sortFileResultsByName settings fr1 fr2 =
-  if f1 == f2
-  then compareStrings settings p1 p2
+  if fcmp == EQ
+  then comparePaths settings p1 p2
   else compareStrings settings f1 f2
   where p1 = dropFileName (fileResultPath fr1)
         p2 = dropFileName (fileResultPath fr2)
         f1 = takeFileName (fileResultPath fr1)
         f2 = takeFileName (fileResultPath fr2)
+        fcmp = compareStrings settings f1 f2
 
 sortFileResultsBySize :: FindSettings -> FileResult -> FileResult -> Ordering
 sortFileResultsBySize settings fr1 fr2 =

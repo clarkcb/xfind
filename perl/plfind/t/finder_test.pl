@@ -54,38 +54,38 @@ sub test_is_matching_dir_no_patterns {
 
 sub test_is_matching_dir_matches_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_dirpatterns}}, 'plfind');
+    push(@{$settings->{in_dir_patterns}}, 'plfind');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'plfind';
-    ok($finder->is_matching_dir($dir), "$dir matches in_dirpatterns");
+    ok($finder->is_matching_dir($dir), "$dir matches in_dir_patterns");
 }
 
 sub test_is_matching_dir_no_match_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_dirpatterns}}, 'plfind');
+    push(@{$settings->{in_dir_patterns}}, 'plfind');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'pyfind';
-    ok(!$finder->is_matching_dir($dir), "$dir does not match in_dirpatterns");
+    ok(!$finder->is_matching_dir($dir), "$dir does not match in_dir_patterns");
 }
 
 sub test_is_matching_dir_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_dirpatterns}}, 'pyfind');
+    push(@{$settings->{out_dir_patterns}}, 'pyfind');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'pyfind';
-    ok(!$finder->is_matching_dir($dir), "$dir matches out_dirpatterns");
+    ok(!$finder->is_matching_dir($dir), "$dir matches out_dir_patterns");
 }
 
 sub test_is_matching_dir_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_dirpatterns}}, 'pyfind');
+    push(@{$settings->{out_dir_patterns}}, 'pyfind');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'plfind';
-    ok($finder->is_matching_dir($dir), "$dir does not match out_dirpatterns");
+    ok($finder->is_matching_dir($dir), "$dir does not match out_dir_patterns");
 }
 
 sub test_is_matching_dir_single_dot {
@@ -114,12 +114,12 @@ sub test_is_matching_dir_hidden_dir {
 
 sub test_is_matching_dir_hidden_dir_include_hidden {
     my $settings = get_settings();
-    $settings->{excludehidden} = 0;
+    $settings->{exclude_hidden} = 0;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = '.git';
     ok($finder->is_matching_dir($dir),
-        "Hidden dir $dir is find dir with excludehidden set to false");
+        "Hidden dir $dir is find dir with exclude_hidden set to false");
 }
 
 ################################################################################
@@ -171,38 +171,38 @@ sub test_is_matching_file_no_match_out_extension {
 
 sub test_is_matching_file_matches_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_filepatterns}}, 'Find');
+    push(@{$settings->{in_file_patterns}}, 'Find');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'Finder.pm';
-    ok($finder->is_matching_file($file), "$file matches in_filepatterns");
+    ok($finder->is_matching_file($file), "$file matches in_file_patterns");
 }
 
 sub test_is_matching_file_no_match_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_filepatterns}}, 'Find');
+    push(@{$settings->{in_file_patterns}}, 'Find');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
-    ok(!$finder->is_matching_file($file), "$file does not match in_filepatterns");
+    ok(!$finder->is_matching_file($file), "$file does not match in_file_patterns");
 }
 
 sub test_is_matching_file_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_filepatterns}}, 'Find');
+    push(@{$settings->{out_file_patterns}}, 'Find');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'Finder.pm';
-    ok(!$finder->is_matching_file($file), "$file matches out_filepatterns");
+    ok(!$finder->is_matching_file($file), "$file matches out_file_patterns");
 }
 
 sub test_is_matching_file_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_filepatterns}}, 'Find');
+    push(@{$settings->{out_file_patterns}}, 'Find');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
-    ok($finder->is_matching_file($file), "$file does not match out_filepatterns");
+    ok($finder->is_matching_file($file), "$file does not match out_file_patterns");
 }
 
 ################################################################################
@@ -218,74 +218,74 @@ sub test_is_matching_archive_file_matches_by_default {
 
 sub test_is_matching_archive_file_matches_in_extension {
     my $settings = get_settings();
-    push(@{$settings->{in_archiveextensions}}, 'zip');
+    push(@{$settings->{in_archive_extensions}}, 'zip');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file matches in_archiveextensions");
+    ok($finder->is_matching_archive_file($file), "$file matches in_archive_extensions");
 }
 
 sub test_is_matching_archive_file_no_match_in_extension {
     my $settings = get_settings();
-    push(@{$settings->{in_archiveextensions}}, 'gz');
+    push(@{$settings->{in_archive_extensions}}, 'gz');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file does not match in_archiveextensions");
+    ok(!$finder->is_matching_archive_file($file), "$file does not match in_archive_extensions");
 }
 
 sub test_is_matching_archive_file_matches_out_extension {
     my $settings = get_settings();
-    push(@{$settings->{out_archiveextensions}}, 'zip');
+    push(@{$settings->{out_archive_extensions}}, 'zip');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file matches out_archiveextensions");
+    ok(!$finder->is_matching_archive_file($file), "$file matches out_archive_extensions");
 }
 
 sub test_is_matching_archive_file_no_match_out_extension {
     my $settings = get_settings();
-    push(@{$settings->{out_archiveextensions}}, 'gz');
+    push(@{$settings->{out_archive_extensions}}, 'gz');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file does not match out_archiveextensions");
+    ok($finder->is_matching_archive_file($file), "$file does not match out_archive_extensions");
 }
 
 sub test_is_matching_archive_file_matches_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_archivefilepatterns}}, 'arch');
+    push(@{$settings->{in_archive_file_patterns}}, 'arch');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file matches in_archivefilepatterns");
+    ok($finder->is_matching_archive_file($file), "$file matches in_archive_file_patterns");
 }
 
 sub test_is_matching_archive_file_no_match_in_pattern {
     my $settings = get_settings();
-    push(@{$settings->{in_archivefilepatterns}}, 'archives');
+    push(@{$settings->{in_archive_file_patterns}}, 'archives');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file does not match in_archivefilepatterns");
+    ok(!$finder->is_matching_archive_file($file), "$file does not match in_archive_file_patterns");
 }
 
 sub test_is_matching_archive_file_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_archivefilepatterns}}, 'arch');
+    push(@{$settings->{out_archive__patterns}}, 'arch');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file matches out_archivefilepatterns");
+    ok(!$finder->is_matching_archive_file($file), "$file matches out_archive__patterns");
 }
 
 sub test_is_matching_archive_file_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_archivefilepatterns}}, 'archives');
+    push(@{$settings->{out_archive__patterns}}, 'archives');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file does not match out_archivefilepatterns");
+    ok($finder->is_matching_archive_file($file), "$file does not match out_archive__patterns");
 }
 
 ################################################################################
@@ -322,54 +322,54 @@ sub test_filter_file_is_hidden_file {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when excludehidden=1");
+    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when exclude_hidden=1");
 }
 
 sub test_filter_file_hidden_includehidden {
     my $settings = get_settings();
-    $settings->{excludehidden} = 0;
+    $settings->{exclude_hidden} = 0;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when hidden and excludehidden=0");
+    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when hidden and exclude_hidden=0");
 }
 
-sub test_filter_file_archive_no_includearchives {
+sub test_filter_file_archive_no_include_archives {
     my $settings = get_settings();
-    $settings->{includearchives} = 0;
+    $settings->{include_archives} = 0;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when includearchives=0");
+    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when include_archives=0");
 }
 
-sub test_filter_file_archive_includearchives {
+sub test_filter_file_archive_include_archives {
     my $settings = get_settings();
-    $settings->{includearchives} = 1;
+    $settings->{include_archives} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when includearchives=1");
+    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when include_archives=1");
 }
 
-sub test_filter_file_archive_archivesonly {
+sub test_filter_file_archive_archives_only {
     my $settings = get_settings();
-    $settings->{archivesonly} = 1;
-    $settings->{includearchives} = 1;
+    $settings->{archives_only} = 1;
+    $settings->{include_archives} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when archivesonly=1");
+    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when archives_only=1");
 }
 
-sub test_filter_file_nonarchive_archivesonly {
+sub test_filter_file_nonarchive_archives_only {
     my $settings = get_settings();
-    $settings->{archivesonly} = 1;
-    $settings->{includearchives} = 1;
+    $settings->{archives_only} = 1;
+    $settings->{include_archives} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'FileUtil.pm';
-    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when archivesonly=1");
+    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when archives_only=1");
 }
 
 ################################################################################
@@ -418,10 +418,10 @@ sub main {
     test_filter_file_not_is_matching_file();                # 2 tests
     test_filter_file_is_hidden_file();                      # 2 tests
     test_filter_file_hidden_includehidden();                # 2 tests
-    test_filter_file_archive_no_includearchives();          # 2 tests
-    test_filter_file_archive_includearchives();             # 2 tests
-    test_filter_file_archive_archivesonly();                # 2 tests
-    test_filter_file_nonarchive_archivesonly();             # 2 tests
+    test_filter_file_archive_no_include_archives();          # 2 tests
+    test_filter_file_archive_include_archives();             # 2 tests
+    test_filter_file_archive_archives_only();                # 2 tests
+    test_filter_file_nonarchive_archives_only();             # 2 tests
 }
 
 main();

@@ -22,12 +22,12 @@ class FileUtil
     }
 
     /**
-     * @param string $filepath
+     * @param string $file_path
      * @return string
      */
-    public static function get_extension(string $filepath): string
+    public static function get_extension(string $file_path): string
     {
-        $f = basename($filepath);
+        $f = basename($file_path);
         $ext = '';
         $dot_idx = strrpos($f, '.');
         if ($dot_idx !== false && $dot_idx > 0 && $dot_idx < strlen($f)) {
@@ -46,23 +46,23 @@ class FileUtil
     }
 
     /**
-     * @param string $filepath
+     * @param string $file_path
      * @return bool
      */
-    public static function is_hidden(string $filepath): bool
+    public static function is_hidden(string $file_path): bool
     {
-        $f = basename($filepath);
+        $f = basename($file_path);
         return strlen($f) > 1 && $f[0] ==='.' && !self::is_dot_dir($f);
     }
 
     /**
      * @param string $path
-     * @param string $filename
+     * @param string $file_name
      * @return string
      */
-    public static function join_path(string $path, string $filename): string
+    public static function join_path(string $path, string $file_name): string
     {
-        return self::normalize_path($path) . self::get_separator($path) . $filename;
+        return self::normalize_path($path) . self::get_separator($path) . $file_name;
     }
 
     /**
@@ -104,18 +104,18 @@ class FileUtil
     }
 
     /**
-     * @param string $filepath
+     * @param string $file_path
      * @return string[]
      */
-    public static function split_to_path_and_filename(string $filepath): array
+    public static function split_to_path_and_filename(string $file_path): array
     {
-        $elems = self::split_path($filepath);
-        $filename = $elems[count($elems)-1];
-        $filepath = '.';
+        $elems = self::split_path($file_path);
+        $file_name = $elems[count($elems)-1];
+        $file_path = '.';
         if (count($elems) > 1) {
             array_pop($elems);
-            $filepath = implode(['/'], $elems);
+            $file_path = implode(['/'], $elems);
         }
-        return [$filepath, $filename];
+        return [$file_path, $file_name];
     }
 }

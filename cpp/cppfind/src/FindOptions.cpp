@@ -15,45 +15,45 @@
 namespace cppfind {
     FindOptions::FindOptions() {
         m_str_arg_map = {
-                {"in-archiveext", [](std::string& s, FindSettings* ss) { ss->add_in_archiveextension(s); }},
-                {"in-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_in_archivefilepattern(s); }},
-                {"in-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_in_dirpattern(s); }},
+                {"in-archiveext", [](std::string& s, FindSettings* ss) { ss->add_in_archive_extension(s); }},
+                {"in-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_in_archive_file_pattern(s); }},
+                {"in-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_in_dir_pattern(s); }},
                 {"in-ext", [](std::string& s, FindSettings* ss) { ss->add_in_extension(s); }},
-                {"in-filepattern", [](std::string& s, FindSettings* ss) { ss->add_in_filepattern(s); }},
-                {"in-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_filetype(t); }},
-                {"maxlastmod", [](std::string& s, FindSettings* ss) { ss->maxlastmod(datestr_to_long(s)); }},
-                {"maxsize", [](std::string& s, FindSettings* ss) { ss->maxsize(std::stol(s)); }},
-                {"minlastmod", [](std::string& s, FindSettings* ss) { ss->minlastmod(datestr_to_long(s)); }},
-                {"minsize", [](std::string& s, FindSettings* ss) { ss->minsize(std::stol(s)); }},
-                {"out-archiveext", [](std::string& s, FindSettings* ss) { ss->add_out_archiveextension(s); }},
-                {"out-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_out_archivefilepattern(s); }},
-                {"out-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_out_dirpattern(s); }},
+                {"in-filepattern", [](std::string& s, FindSettings* ss) { ss->add_in_file_pattern(s); }},
+                {"in-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_in_file_type(t); }},
+                {"maxlastmod", [](std::string& s, FindSettings* ss) { ss->max_last_mod(datestr_to_long(s)); }},
+                {"maxsize", [](std::string& s, FindSettings* ss) { ss->max_size(std::stol(s)); }},
+                {"minlastmod", [](std::string& s, FindSettings* ss) { ss->min_last_mod(datestr_to_long(s)); }},
+                {"minsize", [](std::string& s, FindSettings* ss) { ss->min_size(std::stol(s)); }},
+                {"out-archiveext", [](std::string& s, FindSettings* ss) { ss->add_out_archive_extension(s); }},
+                {"out-archivefilepattern", [](std::string& s, FindSettings* ss) { ss->add_out_archive_file_pattern(s); }},
+                {"out-dirpattern", [](std::string& s, FindSettings* ss) { ss->add_out_dir_pattern(s); }},
                 {"out-ext", [](std::string& s, FindSettings* ss) { ss->add_out_extension(s); }},
-                {"out-filepattern", [](std::string& s, FindSettings* ss) { ss->add_out_filepattern(s); }},
-                {"out-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_filetype(t); }},
+                {"out-filepattern", [](std::string& s, FindSettings* ss) { ss->add_out_file_pattern(s); }},
+                {"out-filetype", [](std::string& s, FindSettings* ss) { auto t = FileTypes::from_name(s); ss->add_out_file_type(t); }},
                 {"path", [](std::string& s, FindSettings* ss) { ss->add_path(s); }},
                 {"settings-file", [this](std::string& s, FindSettings* ss) { this->settings_from_file(s, ss); }},
-                {"sort-by", [this](std::string& s, FindSettings* ss) { ss->set_sortby(s); }}
+                {"sort-by", [this](std::string& s, FindSettings* ss) { ss->set_sort_by(s); }}
         };
 
         m_bool_arg_map = {
-                {"archivesonly", [](bool b, FindSettings* ss) { ss->archivesonly(b); }},
+                {"archivesonly", [](bool b, FindSettings* ss) { ss->archives_only(b); }},
                 {"debug", [](bool b, FindSettings* ss) { ss->debug(b); }},
-                {"excludearchives", [](bool b, FindSettings* ss) { ss->includearchives(!b); }},
-                {"excludehidden", [](bool b, FindSettings* ss) { ss->excludehidden(b); }},
-                {"help", [](bool b, FindSettings* ss) { ss->printusage(b); }},
-                {"includearchives", [](bool b, FindSettings* ss) { ss->includearchives(b); }},
-                {"includehidden", [](bool b, FindSettings* ss) { ss->excludehidden(!b); }},
-                {"listdirs", [](bool b, FindSettings* ss) { ss->listdirs(b); }},
-                {"listfiles", [](bool b, FindSettings* ss) { ss->listfiles(b); }},
+                {"excludearchives", [](bool b, FindSettings* ss) { ss->include_archives(!b); }},
+                {"excludehidden", [](bool b, FindSettings* ss) { ss->exclude_hidden(b); }},
+                {"help", [](bool b, FindSettings* ss) { ss->print_usage(b); }},
+                {"includearchives", [](bool b, FindSettings* ss) { ss->include_archives(b); }},
+                {"includehidden", [](bool b, FindSettings* ss) { ss->exclude_hidden(!b); }},
+                {"listdirs", [](bool b, FindSettings* ss) { ss->list_dirs(b); }},
+                {"listfiles", [](bool b, FindSettings* ss) { ss->list_files(b); }},
                 {"norecursive", [](bool b, FindSettings* ss) { ss->recursive(!b); }},
                 {"recursive", [](bool b, FindSettings* ss) { ss->recursive(b); }},
                 {"sort-ascending", [](bool b, FindSettings* ss) { ss->sort_descending(!b); }},
-                {"sort-caseinsensitive", [](bool b, FindSettings* ss) { ss->sort_caseinsensitive(b); }},
-                {"sort-casesensitive", [](bool b, FindSettings* ss) { ss->sort_caseinsensitive(!b); }},
+                {"sort-caseinsensitive", [](bool b, FindSettings* ss) { ss->sort_case_insensitive(b); }},
+                {"sort-casesensitive", [](bool b, FindSettings* ss) { ss->sort_case_insensitive(!b); }},
                 {"sort-descending", [](bool b, FindSettings* ss) { ss->sort_descending(b); }},
                 {"verbose", [](bool b, FindSettings* ss) { ss->verbose(b); }},
-                {"version", [](bool b, FindSettings* ss) { ss->printversion(b); }},
+                {"version", [](bool b, FindSettings* ss) { ss->print_version(b); }},
         };
 
         m_long_arg_map = {};
@@ -61,15 +61,15 @@ namespace cppfind {
         load_options();
     }
 
-    void FindOptions::settings_from_file(std::string& filepath, FindSettings* settings) {
-        if (!FileUtil::file_exists(filepath)) {
+    void FindOptions::settings_from_file(std::string& file_path, FindSettings* settings) {
+        if (!FileUtil::file_exists(file_path)) {
             std::string msg = "Settings file not found: ";
-            msg.append(filepath);
+            msg.append(file_path);
             throw FindException(msg);
         }
 
-        uint64_t file_size = FileUtil::file_size(filepath);
-        FILE *fp = fopen(filepath.c_str(), "r");
+        uint64_t file_size = FileUtil::file_size(file_path);
+        FILE *fp = fopen(file_path.c_str(), "r");
 
         char readBuffer[file_size];
         FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -172,8 +172,8 @@ namespace cppfind {
     FindSettings* FindOptions::settings_from_args(int &argc, char **argv) {
         auto *settings = new FindSettings();
 
-        // set listfiles to true since we are running the executable
-        settings->listfiles(true);
+        // set list_files to true since we are running the executable
+        settings->list_files(true);
 
         std::deque<std::string> arg_deque;
         unsigned int i;

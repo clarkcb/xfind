@@ -8,37 +8,37 @@ use phpfind\FileType;
 
 class FileResultTest extends TestCase
 {
-    public function test_fileresult_abs_path(): void
+    public function test_file_result_abs_path(): void
     {
         $home = getenv('HOME');
         $path = "$home/src/xfind/php/phpfind/src/phpfind";
-        $filename = 'FileResult.php';
-        $fileresult = new FileResult($path, $filename, FileType::Code, false);
+        $file_name = 'FileResult.php';
+        $file_result = new FileResult($path, $file_name, FileType::Code, false);
         $this->assertEquals("$home/src/xfind/php/phpfind/src/phpfind/FileResult.php",
-            $fileresult->filepath());
+            $file_result->file_path());
     }
 
-    public function test_fileresult_rel_path1(): void
+    public function test_file_result_rel_path1(): void
     {
         $path = '.';
-        $filename = 'FileResult.php';
-        $fileresult = new FileResult($path, $filename, FileType::Code, false);
-        $this->assertEquals('./FileResult.php', $fileresult->filepath());
+        $file_name = 'FileResult.php';
+        $file_result = new FileResult($path, $file_name, FileType::Code, false);
+        $this->assertEquals('./FileResult.php', $file_result->file_path());
     }
 
-    public function test_fileresult_rel_path2(): void
+    public function test_file_result_rel_path2(): void
     {
         $path = './';
-        $filename = 'FileResult.php';
-        $fileresult = new FileResult($path, $filename, FileType::Code, false);
-        $this->assertEquals('./FileResult.php', $fileresult->filepath());
+        $file_name = 'FileResult.php';
+        $file_result = new FileResult($path, $file_name, FileType::Code, false);
+        $this->assertEquals('./FileResult.php', $file_result->file_path());
     }
 
-    public function test_fileresult_rel_path3(): void
+    public function test_file_result_rel_path3(): void
     {
         $path = '..';
-        $filename = 'FileResult.php';
-        $fileresult = new FileResult($path, $filename, FileType::Code, false);
-        $this->assertEquals('../FileResult.php', $fileresult->filepath());
+        $file_name = 'FileResult.php';
+        $file_result = new FileResult($path, $file_name, FileType::Code, false);
+        $this->assertEquals('../FileResult.php', $file_result->file_path());
     }
 }

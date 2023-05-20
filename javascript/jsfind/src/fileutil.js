@@ -14,19 +14,19 @@ const common = require('./common');
 const { promisify } = require('util');
 const readFileAsync = promisify(fs.readFile);
 
-exports.expandPath = filepath => {
-    let idx = filepath.indexOf('~');
-    return idx === 0 ? process.env.HOME + filepath.substring(1) : filepath;
+exports.expandPath = filePath => {
+    let idx = filePath.indexOf('~');
+    return idx === 0 ? process.env.HOME + filePath.substring(1) : filePath;
 };
 
-exports.expandPathAsync = (filepath, cb) => {
-    let idx = filepath.indexOf('~');
-    return cb(null, idx === 0 ? process.env.HOME + filepath.substring(1) : filepath);
+exports.expandPathAsync = (filePath, cb) => {
+    let idx = filePath.indexOf('~');
+    return cb(null, idx === 0 ? process.env.HOME + filePath.substring(1) : filePath);
 };
 
-exports.getExtension = filepath => {
+exports.getExtension = filePath => {
     try {
-        let f = path.basename(filepath);
+        let f = path.basename(filePath);
         let idx = f.lastIndexOf('.');
         if (idx > 0 && idx < f.length-1) {
             return f.substring(idx+1);
@@ -38,9 +38,9 @@ exports.getExtension = filepath => {
     }
 };
 
-exports.getExtensionAsync = (filepath, cb) => {
+exports.getExtensionAsync = (filePath, cb) => {
     try {
-        let f = path.basename(filepath);
+        let f = path.basename(filePath);
         let idx = f.lastIndexOf('.');
         if (idx > 0 && idx < f.length-1) {
             return cb(null, f.substring(idx+1));
@@ -52,35 +52,35 @@ exports.getExtensionAsync = (filepath, cb) => {
     }
 };
 
-exports.getFileContents = (filepath, encoding) => {
-    return fs.readFileSync(filepath, encoding).toString();
+exports.getFileContents = (filePath, encoding) => {
+    return fs.readFileSync(filePath, encoding).toString();
 };
 
-exports.getFileContentsAsync = async (filepath, encoding) => {
+exports.getFileContentsAsync = async (filePath, encoding) => {
     try {
-        let data = await readFileAsync(filepath, encoding);
+        let data = await readFileAsync(filePath, encoding);
         return data;
     } catch (err) {
         throw err;
     }
 };
 
-exports.getFileContentsCallback = (filepath, encoding, cb) => {
-    fs.readFile(filepath, encoding, (err, data) => {
+exports.getFileContentsCallback = (filePath, encoding, cb) => {
+    fs.readFile(filePath, encoding, (err, data) => {
         if (err) {
-            common.log('An error occurred trying to read file: ' + filepath);
+            common.log('An error occurred trying to read file: ' + filePath);
             cb(err);
         }
         cb(null, data.toString());
     });
 };
 
-exports.getFileLines = (filepath, encoding) => {
-    return exports.getFileContents(filepath, encoding).split(/\r?\n/);
+exports.getFileLines = (filePath, encoding) => {
+    return exports.getFileContents(filePath, encoding).split(/\r?\n/);
 };
 
-exports.getFileLinesAsync = (filepath, encoding, cb) => {
-    exports.getFileContentsCallback(filepath, encoding, (err, contents) => {
+exports.getFileLinesAsync = (filePath, encoding, cb) => {
+    exports.getFileContentsCallback(filePath, encoding, (err, contents) => {
         if (err) {
             cb(err);
         }
@@ -88,17 +88,17 @@ exports.getFileLinesAsync = (filepath, encoding, cb) => {
     });
 };
 
-exports.getRelativePath = (filepath, startpath) => {
-    if (startpath === '.' && filepath.startsWith(process.env.HOME)) {
-        return '.' + filepath.substring(process.env.HOME.length);
+exports.getRelativePath = (filePath, startpath) => {
+    if (startpath === '.' && filePath.startsWith(process.env.HOME)) {
+        return '.' + filePath.substring(process.env.HOME.length);
     }
 };
 
-exports.isDotDir = filepath => {
-    return ['.', '..', './', '../'].indexOf(filepath) > -1;
+exports.isDotDir = filePath => {
+    return ['.', '..', './', '../'].indexOf(filePath) > -1;
 };
 
-exports.isHidden = filepath => {
-    let f = path.basename(filepath);
+exports.isHidden = filePath => {
+    let f = path.basename(filePath);
     return f.length > 1 && f.charAt(0) === '.' && !exports.isDotDir(f);
 };

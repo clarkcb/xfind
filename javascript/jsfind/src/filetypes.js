@@ -28,9 +28,9 @@ class FileTypes {
 
             let obj = JSON.parse(json);
             if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
-                obj['filetypes'].forEach(ft => {
-                    let typename = ft['type'];
-                    let extensions = ft['extensions'];
+                obj.filetypes.forEach(ft => {
+                    let typename = ft.type;
+                    let extensions = ft.extensions;
                     fileTypeExtMap[typename] = common.setFromArray(extensions);
                     if (ft.hasOwnProperty('names')) {
                         fileTypeNameMap[typename] = common.setFromArray(ft['names']);
@@ -80,28 +80,28 @@ class FileTypes {
     }
 
     isArchiveFile(filename) {
-        return this.fileTypeNameMap.archive.indexOf(filename) > -1
-            || this.fileTypeExtMap.archive.indexOf(getExtension(filename)) > -1;
+        return this.fileTypeNameMap.archive.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.archive.indexOf(getExtension(filename)) > -1;
     }
 
     isBinaryFile(filename) {
-        return this.fileTypeNameMap.binary.indexOf(filename) > -1
-            || this.fileTypeExtMap.binary.indexOf(getExtension(filename)) > -1;
+        return this.fileTypeNameMap.binary.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.binary.indexOf(getExtension(filename)) > -1;
     }
 
     isCodeFile(filename) {
-        return this.fileTypeNameMap.code.indexOf(filename) > -1
-            || this.fileTypeExtMap.code.indexOf(getExtension(filename)) > -1;
+        return this.fileTypeNameMap.code.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.code.indexOf(getExtension(filename)) > -1;
     }
 
     isTextFile(filename) {
-        return this.fileTypeNameMap.text.indexOf(filename) > -1
-            || this.fileTypeExtMap.text.indexOf(getExtension(filename)) > -1;
+        return this.fileTypeNameMap.text.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.text.indexOf(getExtension(filename)) > -1;
     }
 
     isXmlFile(filename) {
-        return this.fileTypeNameMap.xml.indexOf(filename) > -1
-            || this.fileTypeExtMap.xml.indexOf(getExtension(filename)) > -1;
+        return this.fileTypeNameMap.xml.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.xml.indexOf(getExtension(filename)) > -1;
     }
 
     isUnknownFile(filename) {

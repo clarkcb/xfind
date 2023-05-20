@@ -20,8 +20,8 @@ pub enum FileType {
 
 #[derive(Debug)]
 pub struct FileTypes {
-    pub filetype_ext_map: HashMap<String, HashSet<String>>,
-    pub filetype_name_map: HashMap<String, HashSet<String>>,
+    pub file_type_ext_map: HashMap<String, HashSet<String>>,
+    pub file_type_name_map: HashMap<String, HashSet<String>>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -47,21 +47,21 @@ impl FileTypes {
             Ok(deserialized) => deserialized,
             Err(error) => return Err(FindError::new(&error.to_string())),
         };
-        let mut filetypes = FileTypes {
-            filetype_ext_map: HashMap::new(),
-            filetype_name_map: HashMap::new(),
+        let mut file_types = FileTypes {
+            file_type_ext_map: HashMap::new(),
+            file_type_name_map: HashMap::new(),
         };
         for json_filetype in jft.filetypes.iter() {
             let extset: HashSet<String> = json_filetype.extensions.iter().cloned().collect();
-            filetypes
-                .filetype_ext_map
+            file_types
+                .file_type_ext_map
                 .insert(json_filetype.r#type.clone(), extset);
             let nameset: HashSet<String> = json_filetype.names.iter().cloned().collect();
-            filetypes
-                .filetype_name_map
+            file_types
+                .file_type_name_map
                 .insert(json_filetype.r#type.clone(), nameset);
             }
-        Ok(filetypes)
+        Ok(file_types)
     }
 
     /// Get a FileType for a given filename
@@ -69,26 +69,26 @@ impl FileTypes {
     /// # Examples
     ///
     /// ```
-    /// let filetypes = FileTypes::new();
-    /// let filename = "codefile.rs";
-    /// let filetype = filetypes.get_file_type(filename);
+    /// let file_types = FileTypes::new();
+    /// let file_name = "codefile.rs";
+    /// let file_type = file_types.get_file_type(file_name);
     ///
-    /// assert_eq!(filetype, FileType::Code);
+    /// assert_eq!(file_type, FileType::Code);
     /// ```
-    pub fn get_file_type(&self, filename: &str) -> FileType {
-        if self.is_code_file(filename) {
+    pub fn get_file_type(&self, file_name: &str) -> FileType {
+        if self.is_code_file(file_name) {
             return FileType::Code;
         }
-        if self.is_xml_file(filename) {
+        if self.is_xml_file(file_name) {
             return FileType::Xml;
         }
-        if self.is_text_file(filename) {
+        if self.is_text_file(file_name) {
             return FileType::Text;
         }
-        if self.is_binary_file(filename) {
+        if self.is_binary_file(file_name) {
             return FileType::Binary;
         }
-        if self.is_archive_file(filename) {
+        if self.is_archive_file(file_name) {
             return FileType::Archive;
         }
         FileType::Unknown
@@ -99,9 +99,9 @@ impl FileTypes {
     /// # Examples
     ///
     /// ```
-    /// let filetype = file_type_for_name("binary");
+    /// let file_type = file_type_for_name("binary");
     ///
-    /// assert_eq!(filetype, FileType::Binary);
+    /// assert_eq!(file_type, FileType::Binary);
     /// ```
     pub fn file_type_for_name(name: &str) -> FileType {
         match name.to_ascii_lowercase().as_str() {
@@ -114,41 +114,41 @@ impl FileTypes {
         }
     }
 
-    fn is_file_type(&self, typename: &str, filename: &str) -> bool {
-        let has_ext = match FileUtil::get_extension(&filename) {
-            Some(ext) => self.filetype_ext_map.get(typename).unwrap().contains(ext),
+    fn is_file_type(&self, type_name: &str, file_name: &str) -> bool {
+        let has_ext = match FileUtil::get_extension(&file_name) {
+            Some(ext) => self.file_type_ext_map.get(type_name).unwrap().contains(ext),
             None => false,
         };
         if has_ext {
             return true
         }
-        self.filetype_name_map.get(typename).unwrap().contains(filename)
+        self.file_type_name_map.get(type_name).unwrap().contains(file_name)
     }
 
-    pub fn is_archive_file(&self, filename: &str) -> bool {
-        self.is_file_type("archive", filename)
+    pub fn is_archive_file(&self, file_name: &str) -> bool {
+        self.is_file_type("archive", file_name)
     }
 
-    pub fn is_binary_file(&self, filename: &str) -> bool {
-        self.is_file_type("binary", filename)
+    pub fn is_binary_file(&self, file_name: &str) -> bool {
+        self.is_file_type("binary", file_name)
     }
 
-    pub fn is_code_file(&self, filename: &str) -> bool {
-        self.is_file_type("code", filename)
+    pub fn is_code_file(&self, file_name: &str) -> bool {
+        self.is_file_type("code", file_name)
     }
 
-    pub fn is_xml_file(&self, filename: &str) -> bool {
-        self.is_file_type("xml", filename)
+    pub fn is_xml_file(&self, file_name: &str) -> bool {
+        self.is_file_type("xml", file_name)
     }
 
-    pub fn is_text_file(&self, filename: &str) -> bool {
-        self.is_file_type("text", filename)
-            || self.is_file_type("code", filename)
-            || self.is_file_type("xml", filename)
+    pub fn is_text_file(&self, file_name: &str) -> bool {
+        self.is_file_type("text", file_name)
+            || self.is_file_type("code", file_name)
+            || self.is_file_type("xml", file_name)
     }
 
-    pub fn is_unknown_file(&self, filename: &str) -> bool {
-        self.get_file_type(filename) == FileType::Unknown
+    pub fn is_unknown_file(&self, file_name: &str) -> bool {
+        self.get_file_type(file_name) == FileType::Unknown
     }
 }
 
@@ -158,85 +158,85 @@ mod tests {
 
     #[test]
     fn get_file_type_archive_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "archive.zip";
-        assert!(filetypes.is_archive_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Archive);
-        let filename = "archive.tar.gz";
-        assert!(filetypes.is_archive_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Archive);
-        let filename = "archive.tar";
-        assert!(filetypes.is_archive_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Archive);
-        let filename = "archive.bz2";
-        assert!(filetypes.is_archive_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Archive);
-        let filename = "archive.Z";
-        assert!(filetypes.is_archive_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Archive);
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "archive.zip";
+        assert!(file_types.is_archive_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Archive);
+        let file_name = "archive.tar.gz";
+        assert!(file_types.is_archive_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Archive);
+        let file_name = "archive.tar";
+        assert!(file_types.is_archive_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Archive);
+        let file_name = "archive.bz2";
+        assert!(file_types.is_archive_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Archive);
+        let file_name = "archive.Z";
+        assert!(file_types.is_archive_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Archive);
     }
 
     #[test]
     fn get_file_type_binary_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "binary.exe";
-        assert!(filetypes.is_binary_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Binary);
-        let filename = "binary.o";
-        assert!(filetypes.is_binary_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Binary);
-        let filename = "binary.dylib";
-        assert!(filetypes.is_binary_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Binary);
-        let filename = "binary.so";
-        assert!(filetypes.is_binary_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Binary);
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "binary.exe";
+        assert!(file_types.is_binary_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Binary);
+        let file_name = "binary.o";
+        assert!(file_types.is_binary_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Binary);
+        let file_name = "binary.dylib";
+        assert!(file_types.is_binary_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Binary);
+        let file_name = "binary.so";
+        assert!(file_types.is_binary_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Binary);
     }
 
     #[test]
     fn get_file_type_text_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "text.txt";
-        assert!(filetypes.is_text_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Text);
-        let filename = "text.md";
-        assert!(filetypes.is_text_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Text);
-        let filename = "text.rtf";
-        assert!(filetypes.is_text_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Text);
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "text.txt";
+        assert!(file_types.is_text_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
+        let file_name = "text.md";
+        assert!(file_types.is_text_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
+        let file_name = "text.rtf";
+        assert!(file_types.is_text_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
     }
 
     #[test]
     fn get_file_type_code_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "code.c";
-        assert!(filetypes.is_code_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Code);
-        let filename = "code.html";
-        assert!(filetypes.is_code_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Code);
-        let filename = "code.rs";
-        assert!(filetypes.is_code_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Code);
-        let filename = "code.swift";
-        assert!(filetypes.is_code_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Code);
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "code.c";
+        assert!(file_types.is_code_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Code);
+        let file_name = "code.html";
+        assert!(file_types.is_code_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Code);
+        let file_name = "code.rs";
+        assert!(file_types.is_code_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Code);
+        let file_name = "code.swift";
+        assert!(file_types.is_code_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Code);
     }
 
     #[test]
     fn get_file_type_xml_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "markup.xml";
-        assert!(filetypes.is_xml_file(&filename));
-        assert_eq!(filetypes.get_file_type(&filename), FileType::Xml);
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "markup.xml";
+        assert!(file_types.is_xml_file(&file_name));
+        assert_eq!(file_types.get_file_type(&file_name), FileType::Xml);
     }
 
     #[test]
     fn get_file_type_unknown_file() {
-        let filetypes = FileTypes::new().ok().unwrap();
-        let filename = "unknown.xyz";
-        assert!(filetypes.is_unknown_file(filename));
-        assert_eq!(filetypes.get_file_type(filename), FileType::Unknown);
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "unknown.xyz";
+        assert!(file_types.is_unknown_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Unknown);
     }
 }

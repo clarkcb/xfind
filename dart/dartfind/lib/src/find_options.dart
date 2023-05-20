@@ -50,10 +50,10 @@ class FindOptions {
       for (var so in soList) {
         var longArg = (so as Map)['long']!;
         longArgMap[longArg] = longArg;
-        var desc = (so as Map)['desc']!;
+        var desc = (so)['desc']!;
         var shortArg;
-        if ((so as Map).containsKey('short')) {
-          shortArg = (so as Map)['short']!;
+        if ((so).containsKey('short')) {
+          shortArg = (so)['short']!;
           longArgMap[shortArg] = longArg;
         }
         findOptions.add(FindOption(shortArg, longArg, desc));

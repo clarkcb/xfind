@@ -23,10 +23,10 @@ module FileUtil =
         | home when home <> null -> home
         | _ -> Environment.GetEnvironmentVariable("USERPROFILE")
 
-    let GetFileContents (filepath : string) (encoding : Encoding) : string =
+    let GetFileContents (filePath : string) (encoding : Encoding) : string =
         let contents =
             try
-                use sr = new StreamReader (filepath, encoding)
+                use sr = new StreamReader (filePath, encoding)
                 sr.ReadToEnd()
             with
             | :? IOException as e -> printfn $"%s{e.Message}"; ""
@@ -48,29 +48,29 @@ module FileUtil =
             if path2.[0] = forwardSlash || path2.[0] = backSlash then path2.Substring(1) else path2
         String.Format("{0}{1}{2}", NormalizePath path1, dirSep, p2)
 
-    let ExpandPath (filepath : string) : string =
-        if filepath.[0] = '~' then JoinPath (GetHomePath()) (filepath.Substring(1))
-        else filepath
+    let ExpandPath (filePath : string) : string =
+        if filePath.[0] = '~' then JoinPath (GetHomePath()) (filePath.Substring(1))
+        else filePath
 
-    let ContractPath (filepath : string) : string =
-        if filepath.[0] = '~' then filepath 
-        else filepath.Replace(GetHomePath(), "~")
+    let ContractPath (filePath : string) : string =
+        if filePath.[0] = '~' then filePath 
+        else filePath.Replace(GetHomePath(), "~")
 
-    let GetRelativePath (fullpath : string) (startpath : string) : string =
-        let startFullPath = NormalizePath (new DirectoryInfo (startpath)).FullName
-        let normStartPath = NormalizePath startpath
+    let GetRelativePath (fullPath : string) (startPath : string) : string =
+        let startFullPath = NormalizePath (new DirectoryInfo (startPath)).FullName
+        let normStartPath = NormalizePath startPath
         if startFullPath <> normStartPath
-        then fullpath.Replace (startFullPath, normStartPath)
-        else fullpath
+        then fullPath.Replace (startFullPath, normStartPath)
+        else fullPath
 
-    let ContractOrRelativePath (fullpath : string) (startpath : string) : string =
-        if startpath.[0] = '~' then ContractPath fullpath 
-        else GetRelativePath fullpath startpath
+    let ContractOrRelativePath (fullPath : string) (startPath : string) : string =
+        if startPath.[0] = '~' then ContractPath fullPath 
+        else GetRelativePath fullPath startPath
         
-    let IsDotDir (filepath : string): bool = dotDirs.Contains(filepath)
+    let IsDotDir (filePath : string): bool = dotDirs.Contains(filePath)
 
-    let IsHidden (filepath : string) : bool = 
-        let startsWithDot = filepath.[0] = '.' && not (IsDotDir filepath)
+    let IsHidden (filePath : string) : bool = 
+        let startsWithDot = filePath.[0] = '.' && not (IsDotDir filePath)
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
         startsWithDot
 

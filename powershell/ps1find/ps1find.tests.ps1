@@ -157,8 +157,8 @@ Describe -tag "FindSettings" -name "test_add_patterns_array" {
     }
 }
 
-Describe -tag "FindSettings" -name "test_set_archivesonly" {
-    It "archivesonly and includearchives are true" {
+Describe -tag "FindSettings" -name "test_set_archives_only" {
+    It "archives_only and include_archives are true" {
         $settings = [FindSettings]::new()
         $settings.SetArchivesOnly($true)
         $settings.ArchivesOnly | Should -BeTrue
@@ -178,7 +178,7 @@ Describe -tag "FindSettings" -name "test_set_debug" {
 
 
 #region FileResult
-Describe -tag "FileResult" -name "test_fileresult_abs_path" {
+Describe -tag "FileResult" -name "test_file_result_abs_path" {
     It "matches by default" {
         $path = "/home/user/src/xfind/powershell/ps1find";
         $filename = 'ps1find.ps1';
@@ -336,7 +336,7 @@ Describe -tag "Finder" -name "test_filter_to_file_result_is_hidden_file" {
     }
 }
 
-Describe -tag "Finder" -name "test_filter_to_file_result_hidden_includehidden" {
+Describe -tag "Finder" -name "test_filter_to_file_result_hidden_include_hidden" {
     It "matches because includehidden" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
@@ -347,7 +347,7 @@ Describe -tag "Finder" -name "test_filter_to_file_result_hidden_includehidden" {
     }
 }
 
-Describe -tag "Finder" -name "test_filter_to_file_result_archive_no_includearchives" {
+Describe -tag "Finder" -name "test_filter_to_file_result_archive_no_include_archives" {
     It "does not match because archive" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
@@ -357,8 +357,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_no_includearchi
     }
 }
 
-Describe -tag "Finder" -name "test_filter_to_file_result_archive_includearchives" {
-    It "matches because includehidden" {
+Describe -tag "Finder" -name "test_filter_to_file_result_archive_include_archives" {
+    It "matches because include_hidden" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeArchives = $true
@@ -368,8 +368,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_includearchives
     }
 }
 
-Describe -tag "Finder" -name "test_filter_to_file_result_archive_archivesonly" {
-    It "matches because archive + setarchivesonly" {
+Describe -tag "Finder" -name "test_filter_to_file_result_archive_archives_only" {
+    It "matches because archive + set_archives_only" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.SetArchivesOnly($true)
@@ -379,8 +379,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_archivesonly" {
     }
 }
 
-Describe -tag "Finder" -name "test_filter_to_file_result_nonarchive_archivesonly" {
-    It "does not match because non-archive + setarchivesonly" {
+Describe -tag "Finder" -name "test_filter_to_file_result_nonarchive_archives_only" {
+    It "does not match because non-archive + set_archives_only" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.SetArchivesOnly($true)

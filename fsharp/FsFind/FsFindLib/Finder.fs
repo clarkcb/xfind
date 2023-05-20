@@ -101,32 +101,24 @@ type Finder (settings : FindSettings.t) =
         if fileNameCmp = 0 then String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) else fileNameCmp
 
     member this.SortBySize (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        if fr1.File.Length = fr1.File.Length then (this.SortByPath fr1 fr2) else fr1.File.Length.CompareTo(fr2.File.Length)
+        let sizeCmp = fr1.File.Length.CompareTo(fr2.File.Length)
+        if sizeCmp = 0 then (this.SortByPath fr1 fr2) else sizeCmp
 
     member this.SortByType (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        if fr1.FileType = fr1.FileType then (this.SortByPath fr1 fr2) else fr1.FileType.CompareTo(fr2.FileType)
+        let typeCmp = fr1.FileType.CompareTo(fr2.FileType)
+        if typeCmp = 0 then (this.SortByPath fr1 fr2) else typeCmp
 
     member this.SortByLastMod (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        if fr1.File.LastWriteTimeUtc = fr1.File.LastWriteTimeUtc
-            then (this.SortByPath fr1 fr2)
-            else fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
+        let lastModCmp = fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
+        if lastModCmp = 0 then (this.SortByPath fr1 fr2) else lastModCmp
 
     member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
-        if settings.SortBy = SortBy.FileName then
-            fileResults
-            |> List.sortWith this.SortByName
-        else if settings.SortBy = SortBy.FileSize then
-            fileResults
-            |> List.sortWith this.SortBySize
-        else if settings.SortBy = SortBy.FileType then
-            fileResults
-            |> List.sortWith this.SortByType
-        else if settings.SortBy = SortBy.LastMod then
-            fileResults
-            |> List.sortWith this.SortByLastMod
-        else
-            fileResults
-            |> List.sortWith this.SortByPath
+        match settings.SortBy with
+        | SortBy.FileName -> List.sortWith this.SortByName fileResults
+        | SortBy.FileSize -> List.sortWith this.SortBySize fileResults
+        | SortBy.FileType -> List.sortWith this.SortByType fileResults
+        | SortBy.LastMod  -> List.sortWith this.SortByLastMod fileResults
+        | _               -> List.sortWith this.SortByPath fileResults
 
     member this.Find () : FileResult.t list =
         let fileResults = settings.Paths |> List.collect this.GetFileResults

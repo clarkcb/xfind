@@ -25,15 +25,15 @@ use plfind::FindSettings;
 my $arg_action_hash = {
     'in-archiveext' => sub {
         my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{in_archiveextensions});
+        $settings->add_exts($s, $settings->{in_archive_extensions});
     },
     'in-archivefilepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{n_archivefilepatterns});
+        $settings->add_patterns($s, $settings->{in_archive_file_patterns});
     },
     'in-dirpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_dirpatterns});
+        $settings->add_patterns($s, $settings->{in_dir_patterns});
     },
     'in-ext' => sub {
         my ($s, $settings) = @_;
@@ -41,39 +41,39 @@ my $arg_action_hash = {
     },
     'in-filepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_filepatterns});
+        $settings->add_patterns($s, $settings->{in_file_patterns});
     },
     'in-filetype' => sub {
         my ($s, $settings) = @_;
-        $settings->add_filetypes($s, $settings->{in_filetypes});
+        $settings->add_file_types($s, $settings->{in_file_types});
     },
     'maxlastmod' => sub {
         my ($s, $settings) = @_;
-        $settings->{maxlastmod} = DateTime::Format::DateParse->parse_datetime($s);
+        $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
     },
     'maxsize' => sub {
         my ($s, $settings) = @_;
-        $settings->{maxsize} = int($s);
+        $settings->{max_size} = int($s);
     },
     'minlastmod' => sub {
         my ($s, $settings) = @_;
-        $settings->{minlastmod} = DateTime::Format::DateParse->parse_datetime($s);
+        $settings->{min_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
     },
     'minsize' => sub {
         my ($s, $settings) = @_;
-        $settings->{minsize} = int($s);
+        $settings->{min_size} = int($s);
     },
     'out-archiveext' => sub {
         my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{out_archiveextensions});
+        $settings->add_exts($s, $settings->{out_archive_extensions});
     },
     'out-archivefilepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_archivefilepatterns});
+        $settings->add_patterns($s, $settings->{out_archive_patterns});
     },
     'out-dirpattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_dirpatterns});
+        $settings->add_patterns($s, $settings->{out_dir_patterns});
     },
     'out-ext' => sub {
         my ($s, $settings) = @_;
@@ -81,11 +81,11 @@ my $arg_action_hash = {
     },
     'out-filepattern' => sub {
         my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_filepatterns});
+        $settings->add_patterns($s, $settings->{out_file_patterns});
     },
     'out-filetype' => sub {
         my ($s, $settings) = @_;
-        $settings->add_filetypes($s, $settings->{out_filetypes});
+        $settings->add_file_types($s, $settings->{out_file_types});
     },
     'path' => sub {
         my ($s, $settings) = @_;
@@ -104,7 +104,7 @@ my $arg_action_hash = {
 my $bool_flag_action_hash = {
     'archivesonly' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('archivesonly', $b);
+        $settings->set_property('archives_only', $b);
     },
     'debug' => sub {
         my ($b, $settings) = @_;
@@ -112,31 +112,31 @@ my $bool_flag_action_hash = {
     },
     'excludearchives' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('includearchives', !$b);
+        $settings->set_property('include_archives', !$b);
     },
     'excludehidden' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('excludehidden', $b);
+        $settings->set_property('exclude_hidden', $b);
     },
     'help' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('printusage', $b);
+        $settings->set_property('print_usage', $b);
     },
     'includearchives' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('includearchives', $b);
+        $settings->set_property('include_archives', $b);
     },
     'includehidden' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('excludehidden', !$b);
+        $settings->set_property('exclude_hidden', !$b);
     },
     'listdirs' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('listdirs', $b);
+        $settings->set_property('list_dirs', $b);
     },
     'listfiles' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('listfiles', $b);
+        $settings->set_property('list_files', $b);
     },
     'norecursive' => sub {
         my ($b, $settings) = @_;
@@ -152,11 +152,11 @@ my $bool_flag_action_hash = {
     },
     'sort-caseinsensitive' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('sort_caseinsensitive', $b);
+        $settings->set_property('sort_case_insensitive', $b);
     },
     'sort-casesensitive' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('sort_caseinsensitive', !$b);
+        $settings->set_property('sort_case_insensitive', !$b);
     },
     'sort-descending' => sub {
         my ($b, $settings) = @_;
@@ -168,7 +168,7 @@ my $bool_flag_action_hash = {
     },
     'version' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('printversion', $b);
+        $settings->set_property('print_version', $b);
     }
 };
 
@@ -228,13 +228,13 @@ sub set_options_from_json {
 }
 
 sub settings_from_file {
-    my ($filepath, $settings) = @_;
+    my ($file_path, $settings) = @_;
     my $errs = [];
-    unless (-e $filepath) {
-        push(@{$errs}, 'Settings file not found: ' . $filepath);
+    unless (-e $file_path) {
+        push(@{$errs}, 'Settings file not found: ' . $file_path);
         return $errs;
     }
-    my $json = plfind::FileUtil::get_file_contents($filepath);
+    my $json = plfind::FileUtil::get_file_contents($file_path);
     return __from_json($json, $settings);
 }
 
@@ -267,8 +267,8 @@ sub settings_from_json {
 sub settings_from_args {
     my ($self, $args) = @_;
     my $settings = plfind::FindSettings->new();
-    # default listfiles to true since running as cli
-    $settings->set_property('listfiles', 1);
+    # default list_files to true since running as cli
+    $settings->set_property('list_files', 1);
     my @errs;
     while (scalar @{$args}) {
         my $arg = shift @{$args};

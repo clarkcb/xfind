@@ -14,21 +14,21 @@ import * as fs from "fs";
 export class FileResult {
     containerSeparator = '!';
     containers: string[] = [];
-    pathname: string;
-    filename: string;
-    filetype: FileType;
+    path: string;
+    fileName: string;
+    fileType: FileType;
     stat: fs.Stats | null;
 
     constructor(pathname: string, filename: string, filetype: FileType, stat: fs.Stats | null) {
-        this.pathname = pathname;
-        this.filename = filename;
-        this.filetype = filetype;
+        this.path = pathname;
+        this.fileName = filename;
+        this.fileType = filetype;
         this.stat = stat;
     }
 
     public relativePath(): string {
-        if (this.pathname === '.' || this.pathname === './') return './' + this.filename;
-        return path.join(this.pathname, this.filename);
+        if (this.path === '.' || this.path === './') return './' + this.fileName;
+        return path.join(this.path, this.fileName);
     }
 
     public toString(): string {
@@ -36,7 +36,7 @@ export class FileResult {
         if (this.containers.length > 0) {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }
-        s += path.join(this.pathname, this.filename);
+        s += path.join(this.path, this.fileName);
         return s;
     }
 }

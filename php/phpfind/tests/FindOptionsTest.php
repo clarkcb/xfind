@@ -24,14 +24,14 @@ class FindOptionsTest extends TestCase
     public function test_settings_from_args_no_args(): void
     {
         $settings = $this->findoptions->settings_from_args([]);
-        $this->assertFalse($settings->archivesonly);
+        $this->assertFalse($settings->archives_only);
         $this->assertFalse($settings->debug);
-        $this->assertTrue($settings->excludehidden);
-        $this->assertFalse($settings->includearchives);
-        $this->assertFalse($settings->listdirs);
-        $this->assertTrue($settings->listfiles);
-        $this->assertFalse($settings->printusage);
-        $this->assertFalse($settings->printversion);
+        $this->assertTrue($settings->exclude_hidden);
+        $this->assertFalse($settings->include_archives);
+        $this->assertFalse($settings->list_dirs);
+        $this->assertTrue($settings->list_files);
+        $this->assertFalse($settings->print_usage);
+        $this->assertFalse($settings->print_version);
         $this->assertCount(0, $settings->paths);
         $this->assertTrue($settings->recursive);
         $this->assertFalse($settings->verbose);
@@ -48,12 +48,12 @@ class FindOptionsTest extends TestCase
         $this->assertEquals('.', $settings->paths[0]);
     }
 
-    public function test_archivesonly_arg(): void
+    public function test_archives_only_arg(): void
     {
-        $args = ['--archivesonly'];
+        $args = ['--archives_only'];
         $settings = $this->findoptions->settings_from_args($args);
-        $this->assertTrue($settings->archivesonly);
-        $this->assertTrue($settings->includearchives);
+        $this->assertTrue($settings->archives_only);
+        $this->assertTrue($settings->include_archives);
     }
 
     public function test_debug_arg(): void
@@ -97,12 +97,12 @@ END_JSON;
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('js', $settings->in_extensions));
         $this->assertTrue(in_array('ts', $settings->in_extensions));
-        $this->assertCount(1, $settings->out_dirpatterns);
-        $this->assertEquals('node_module', $settings->out_dirpatterns[0]);
-        $this->assertCount(1, $settings->out_filepatterns);
-        $this->assertEquals('temp', $settings->out_filepatterns[0]);
+        $this->assertCount(1, $settings->out_dir_patterns);
+        $this->assertEquals('node_module', $settings->out_dir_patterns[0]);
+        $this->assertCount(1, $settings->out_file_patterns);
+        $this->assertEquals('temp', $settings->out_file_patterns[0]);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
-        $this->assertFalse($settings->excludehidden);
+        $this->assertFalse($settings->exclude_hidden);
     }
 }

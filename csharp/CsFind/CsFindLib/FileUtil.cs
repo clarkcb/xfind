@@ -27,9 +27,9 @@ public static class FileUtil
 		return EnumerableStringFromFile(f.FullName, enc);
 	}
 
-	public static IEnumerable<string> EnumerableStringFromFile(string filepath, Encoding enc)
+	public static IEnumerable<string> EnumerableStringFromFile(string filePath, Encoding enc)
 	{
-		using var sr = new StreamReader(filepath, enc);
+		using var sr = new StreamReader(filePath, enc);
 		// read each line, ensuring not null (EOF)
 		string? line;
 		while ((line = sr.ReadLine()) != null)
@@ -39,11 +39,11 @@ public static class FileUtil
 		}
 	}
 
-	public static string GetFileContents(string filepath, Encoding encoding)
+	public static string GetFileContents(string filePath, Encoding encoding)
 	{
 		try
 		{
-			using var sr = new StreamReader(filepath, encoding);
+			using var sr = new StreamReader(filePath, encoding);
 			var contents = sr.ReadToEnd();
 			return contents;
 		}
@@ -58,24 +58,24 @@ public static class FileUtil
 		return GetFileContents(f.FullName, encoding);
 	}
 
-	public static string ExpandPath(string filepath)
+	public static string ExpandPath(string filePath)
 	{
-		return filepath[0] == '~' ? JoinPath(GetHomePath(), filepath.Substring(1)) : filepath;
+		return filePath[0] == '~' ? JoinPath(GetHomePath(), filePath.Substring(1)) : filePath;
 	}
 
-	public static string ContractPath(string filepath)
+	public static string ContractPath(string filePath)
 	{
-		return filepath[0] == '~' ? filepath : filepath.Replace(GetHomePath(), "~");
+		return filePath[0] == '~' ? filePath : filePath.Replace(GetHomePath(), "~");
 	}
 
-	public static string GetRelativePath(string fullPath, string startpath)
+	public static string GetRelativePath(string fullPath, string startPath)
 	{
 		var filePath = NormalizePath(fullPath);
-		startpath = NormalizePath(startpath);
-		var startFullPath = NormalizePath(new DirectoryInfo(startpath).FullName);
-		if (startFullPath != startpath)
+		startPath = NormalizePath(startPath);
+		var startFullPath = NormalizePath(new DirectoryInfo(startPath).FullName);
+		if (startFullPath != startPath)
 		{
-			filePath = filePath.Replace(startFullPath, startpath);
+			filePath = filePath.Replace(startFullPath, startPath);
 		}
 		return filePath;
 	}
@@ -93,9 +93,9 @@ public static class FileUtil
 		return path;
 	}
 
-	public static string ContractOrRelativePath(string fullPath, string startpath)
+	public static string ContractOrRelativePath(string fullPath, string startPath)
 	{
-		return startpath[0] == '~' ? ContractPath(fullPath) : GetRelativePath(fullPath, startpath);
+		return startPath[0] == '~' ? ContractPath(fullPath) : GetRelativePath(fullPath, startPath);
 	}
 
 	public static string ContractOrRelativePath(string fullPath, IEnumerable<string> paths)
@@ -111,14 +111,14 @@ public static class FileUtil
 		return fullPath;
 	}
 
-	public static bool IsDotDir(string filename)
+	public static bool IsDotDir(string fileName)
 	{
-		return DotDirs.Contains(NormalizePath(filename));
+		return DotDirs.Contains(NormalizePath(fileName));
 	}
 
-	public static bool IsHidden(string filepath)
+	public static bool IsHidden(string filePath)
 	{
-		return (filepath.StartsWith(CurrentPath) && !IsDotDir(filepath));
+		return (filePath.StartsWith(CurrentPath) && !IsDotDir(filePath));
 	}
 
 	public static bool IsHiddenFile(FileSystemInfo f)

@@ -27,14 +27,14 @@ sub test_no_args {
     my $args = [];
     my ($settings, $errs) = $findoptions->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from empty args');
-    ok(!$settings->{archivesonly}, 'archivesonly is false by default');
+    ok(!$settings->{archives_only}, 'archives_only is false by default');
     ok(!$settings->{debug}, 'debug is false by default');
-    ok($settings->{excludehidden}, 'excludehidden is true by default');
-    ok(!$settings->{includearchives}, 'includearchives is false by default');
-    ok(!$settings->{listdirs}, 'listdirs is false by default');
-    ok($settings->{listfiles}, 'listfiles is true by default');
-    ok(!$settings->{printusage}, 'printusage is false by default');
-    ok(!$settings->{printversion}, 'printversion is false by default');
+    ok($settings->{exclude_hidden}, 'exclude_hidden is true by default');
+    ok(!$settings->{include_archives}, 'include_archives is false by default');
+    ok(!$settings->{list_dirs}, 'list_dirs is false by default');
+    ok($settings->{list_files}, 'list_files is true by default');
+    ok(!$settings->{print_usage}, 'print_usage is false by default');
+    ok(!$settings->{print_version}, 'print_version is false by default');
     ok($settings->{recursive}, 'recursive is true by default');
     ok(scalar @{$settings->{paths}} == 0, 'paths are empty by default');
     ok(!$settings->{verbose}, 'verbose is false by default');
@@ -50,12 +50,12 @@ sub test_valid_args {
     ok(${$settings->{paths}}[0] eq '.', 'paths[0] eq '.'');
 }
 
-sub test_archivesonly_arg {
+sub test_archives_only_arg {
     my $args = ['--archivesonly'];
     my ($settings, $errs) = $findoptions->settings_from_args($args);
-    ok(scalar @{$errs} == 0, 'No errors from valid archivesonly arg');
-    ok($settings->{archivesonly}, 'archivesonly is true');
-    ok($settings->{includearchives}, 'includearchives is true');
+    ok(scalar @{$errs} == 0, 'No errors from valid archives_only arg');
+    ok($settings->{archives_only}, 'archives_only is true');
+    ok($settings->{include_archives}, 'include_archives is true');
 }
 
 sub test_debug_arg {
@@ -97,19 +97,19 @@ END_JSON
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");
     ok($settings->{in_extensions}->[1] eq 'ts', "in_extensions contains ts extension");
-    ok(scalar @{$settings->{out_dirpatterns}} == 1, "out_dirpatterns has one pattern");
-    ok($settings->{out_dirpatterns}->[0] eq 'node_module', "out_dirpatterns[0] is node_module");
-    ok(scalar @{$settings->{out_filepatterns}} == 1, "out_filepatterns has one pattern");
-    ok($settings->{out_filepatterns}->[0] eq 'temp', "out_filepatterns[0] is temp");
+    ok(scalar @{$settings->{out_dir_patterns}} == 1, "out_dir_patterns has one pattern");
+    ok($settings->{out_dir_patterns}->[0] eq 'node_module', "out_dir_patterns[0] is node_module");
+    ok(scalar @{$settings->{out_file_patterns}} == 1, "out_file_patterns has one pattern");
+    ok($settings->{out_file_patterns}->[0] eq 'temp', "out_file_patterns[0] is temp");
     ok($settings->{debug} == 1, "debug is set to true");
     ok($settings->{verbose} == 1, "verbose is set to true");
-    ok($settings->{excludehidden} == 0, 'excludehidden is set to false by setting includehidden to true');
+    ok($settings->{exclude_hidden} == 0, 'exclude_hidden is set to false by setting includehidden to true');
 }
 
 sub main {
     test_no_args();
     test_valid_args();
-    test_archivesonly_arg();
+    test_archives_only_arg();
     test_debug_arg();
     test_missing_arg();
     test_invalid_arg();

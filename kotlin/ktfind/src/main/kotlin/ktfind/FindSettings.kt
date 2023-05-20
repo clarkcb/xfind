@@ -112,9 +112,9 @@ fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
     return extensions.plus(exts)
 }
 
-fun addFileTypes(ft: String, filetypes: Set<FileType>): Set<FileType> {
+fun addFileTypes(ft: String, fileTypes: Set<FileType>): Set<FileType> {
     val fts = ft.split(',').filter { it.isNotEmpty() }.map { fileTypeFromName(it) }
-    return filetypes.plus(fts)
+    return fileTypes.plus(fts)
 }
 
 fun setArchivesOnly(ss: FindSettings, archivesOnly: Boolean): FindSettings {

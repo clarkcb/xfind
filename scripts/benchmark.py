@@ -436,7 +436,7 @@ class Benchmarker(object):
         # print('time_dict: {}'.format(time_dict))
         return time_dict
 
-    def compare_outputs(self, sn: int, xfind_output) -> bool:
+    def compare_outputs(self, s: Scenario, sn: int, xfind_output) -> bool:
         nonmatching = nonmatching_outputs(xfind_output)
         if nonmatching:
             xs = []
@@ -447,7 +447,7 @@ class Benchmarker(object):
             print()
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print('{} output != {} output'.format(x, y))
+                    print('\n{} output != {} output for args: {}'.format(x, y, ' '.join(s.args)))
                     print('{} output:\n"{}"'.format(x, xfind_output[x]))
                     print('{} output:\n"{}"'.format(y, xfind_output[y]))
                     self.diff_outputs.append((sn, x, y))
@@ -533,7 +533,7 @@ class Benchmarker(object):
             treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
-        if not self.compare_outputs(sn, xfind_output) and self.exit_on_diff:
+        if not self.compare_outputs(s, sn, xfind_output) and self.exit_on_diff:
             if not self.compare_output_lens(sn, xfind_output) and self.exit_on_sort_diff:
                 raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
@@ -570,7 +570,7 @@ class Benchmarker(object):
             xfind_times[x] = self.times_from_lines(time_lines)
             time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
-        if not self.compare_outputs(sn, xfind_output) and self.exit_on_diff:
+        if not self.compare_outputs(s, sn, xfind_output) and self.exit_on_diff:
             if not self.compare_output_lens(sn, xfind_output) and self.exit_on_sort_diff:
                 raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)

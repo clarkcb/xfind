@@ -11,9 +11,9 @@ FileResult *new_file_result(const char *d, const char *fn, FileType ft, uint64_t
     FileResult *r = malloc(sizeof(FileResult));
     assert(r != NULL);
     r->dir = d;
-    r->filename = fn;
-    r->filetype = ft;
-    r->filesize = fsize;
+    r->file_name = fn;
+    r->file_type = ft;
+    r->file_size = fsize;
     r->mtime = mtime;
     return r;
 }
@@ -58,7 +58,11 @@ void add_to_file_results(FileResult *r, FileResults *results)
 
 size_t file_result_strlen(FileResult *r)
 {
-    return strlen(r->dir) + strlen(r->filename) + 1;
+    return strlen(r->dir) + strlen(r->file_name) + 1;
+    // Include file_size: + 3 is for the space and parens
+    // return strlen(r->dir) + strlen(r->file_name) + num_digits_ulong(r->file_size) + 3 + 1;
+    // Include mtime: + 3 is for the space and parens
+    // return strlen(r->dir) + strlen(r->file_name) + num_digits_ulong(r->mtime) + 3 + 1;
 }
 
 size_t file_results_count(FileResults *results)
@@ -74,11 +78,13 @@ size_t file_results_count(FileResults *results)
 
 void file_result_to_string(FileResult *r, char *s)
 {
-    sprintf(s, "%s/%s", r->dir, r->filename);
+    sprintf(s, "%s/%s", r->dir, r->file_name);
+    // sprintf(s, "%s/%s (%llu)", r->dir, r->file_name, r->file_size);
+    // sprintf(s, "%s/%s (%lu)", r->dir, r->file_name, r->mtime);
     s[file_result_strlen(r)] = '\0';
 }
 
-void print_file_results(FileResults *results, SortBy sortby, unsigned short sort_caseinsensitive,
+void print_file_results(FileResults *results, SortBy sortby, unsigned short sort_case_insensitive,
                         unsigned short sort_descending)
 {
     size_t results_count = file_results_count(results);
@@ -91,7 +97,7 @@ void print_file_results(FileResults *results, SortBy sortby, unsigned short sort
     }
 
     if (results_count > 1) {
-        sort_file_result_array(results_array, results_count, sortby, sort_caseinsensitive);
+        sort_file_result_array(results_array, results_count, sortby, sort_case_insensitive);
 
         if (sort_descending > 0) {
             reverse_file_result_array(results_array, 0, results_count - 1);
@@ -121,7 +127,7 @@ static int cmp_file_results_by_path(const void *a, const void *b)
     FileResult **r2 = (FileResult **)b;
     int dircmp = strcmp((*r1)->dir, (*r2)->dir);
     if (dircmp == 0) {
-        return strcmp((*r1)->filename, (*r2)->filename);
+        return strcmp((*r1)->file_name, (*r2)->file_name);
     }
     return dircmp;
 }
@@ -131,7 +137,7 @@ static int cmp_file_results_by_name(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int namecmp = strcmp((*r1)->filename, (*r2)->filename);
+    int namecmp = strcmp((*r1)->file_name, (*r2)->file_name);
     if (namecmp == 0) {
         return strcmp((*r1)->dir, (*r2)->dir);
     }
@@ -143,7 +149,7 @@ static int cmp_file_results_by_size(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int sizecmp = ((int) ((*r1)->filesize - (*r2)->filesize));
+    int sizecmp = ((int) ((*r1)->file_size - (*r2)->file_size));
     if (sizecmp == 0) {
         return cmp_file_results_by_path(a, b);
     }
@@ -155,7 +161,7 @@ static int cmp_file_results_by_type(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int typecmp = ((int) ((*r1)->filetype - (*r2)->filetype));
+    int typecmp = ((int) ((*r1)->file_type - (*r2)->file_type));
     if (typecmp == 0) {
         return cmp_file_results_by_path(a, b);
     }
@@ -184,7 +190,7 @@ static int cmp_file_results_by_path_ci(const void *a, const void *b)
     FileResult **r2 = (FileResult **)b;
     int dircmp = strcasecmp((*r1)->dir, (*r2)->dir);
     if (dircmp == 0) {
-        return strcasecmp((*r1)->filename, (*r2)->filename);
+        return strcasecmp((*r1)->file_name, (*r2)->file_name);
     }
     return dircmp;
 }
@@ -194,7 +200,7 @@ static int cmp_file_results_by_name_ci(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int namecmp = strcasecmp((*r1)->filename, (*r2)->filename);
+    int namecmp = strcasecmp((*r1)->file_name, (*r2)->file_name);
     if (namecmp == 0) {
         return strcasecmp((*r1)->dir, (*r2)->dir);
     }
@@ -206,7 +212,7 @@ static int cmp_file_results_by_size_ci(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int sizecmp = ((int) ((*r1)->filesize - (*r2)->filesize));
+    int sizecmp = ((int) ((*r1)->file_size - (*r2)->file_size));
     if (sizecmp == 0) {
         return cmp_file_results_by_path_ci(a, b);
     }
@@ -218,7 +224,7 @@ static int cmp_file_results_by_type_ci(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int typecmp = ((int) ((*r1)->filetype - (*r2)->filetype));
+    int typecmp = ((int) ((*r1)->file_type - (*r2)->file_type));
     if (typecmp == 0) {
         return cmp_file_results_by_path_ci(a, b);
     }
@@ -343,7 +349,7 @@ void destroy_file_result(FileResult *r)
 {
     if (r != NULL) {
         r->dir = NULL;
-        r->filename = NULL;
+        r->file_name = NULL;
         free(r);
     }
 }

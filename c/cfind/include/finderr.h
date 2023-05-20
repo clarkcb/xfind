@@ -18,7 +18,7 @@
 #define E_DIRECTORY_NOT_FOUND            310 /* Directory not found */
 #define E_FILE_NOT_FOUND                 311 /* File not found */
 #define E_FILENAME_TOO_LONG              312 /* Filename is too long */
-#define E_INVALID_DATESTRING             313 /* Invalid date string (for maxlastmod/minlastmod) */
+#define E_INVALID_DATESTRING             313 /* Invalid date string (for max_last_mod/min_last_mod) */
 
 typedef unsigned int error_t;
 

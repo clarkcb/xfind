@@ -12,32 +12,32 @@ require 'minitest/autorun'
 module RbFind
 
   class FileResultTest < Minitest::Test
-    def test_fileresult_abs_path
+    def test_file_result_abs_path
       path = ENV['HOME'] + '/src/xfind/ruby/rbfind'
-      filename = 'fileresult.rb'
-      fileresult = FileResult.new(path, filename, FileType::CODE)
-      assert_equal(ENV['HOME'] + '/src/xfind/ruby/rbfind/fileresult.rb', fileresult.relativepath)
+      file_name = 'fileresult.rb'
+      file_result = FileResult.new(path, file_name, FileType::CODE, nil)
+      assert_equal(ENV['HOME'] + '/src/xfind/ruby/rbfind/fileresult.rb', file_result.relative_path)
     end
 
-    def test_fileresult_rel_path1
+    def test_file_result_rel_path1
       path = '.'
-      filename = 'fileresult.rb'
-      fileresult = FileResult.new(path, filename, FileType::CODE)
-      assert_equal('./fileresult.rb', fileresult.relativepath)
+      file_name = 'fileresult.rb'
+      file_result = FileResult.new(path, file_name, FileType::CODE, nil)
+      assert_equal('./fileresult.rb', file_result.relative_path)
     end
 
-    def test_fileresult_rel_path2
+    def test_file_result_rel_path2
       path = './'
-      filename = 'fileresult.rb'
-      fileresult = FileResult.new(path, filename, FileType::CODE)
-      assert_equal('./fileresult.rb', fileresult.relativepath)
+      file_name = 'fileresult.rb'
+      file_result = FileResult.new(path, file_name, FileType::CODE, nil)
+      assert_equal('./fileresult.rb', file_result.relative_path)
     end
 
-    def test_fileresult_rel_path3
+    def test_file_result_rel_path3
       path = '..'
-      filename = 'fileresult.rb'
-      fileresult = FileResult.new(path, filename, FileType::CODE)
-      assert_equal('../fileresult.rb', fileresult.relativepath)
+      file_name = 'fileresult.rb'
+      file_result = FileResult.new(path, file_name, FileType::CODE, nil)
+      assert_equal('../fileresult.rb', file_result.relative_path)
     end
   end
 end

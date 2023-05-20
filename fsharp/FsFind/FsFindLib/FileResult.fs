@@ -10,11 +10,11 @@ module FileResult =
         FileType : FileType;
     }
 
-    let Create (file : FileInfo) (filetype : FileType) : t =
+    let Create (file : FileInfo) (fileType : FileType) : t =
         {
             Containers=[];
             File=file;
-            FileType=filetype
+            FileType=fileType
         }
 
     let ToString (sf : t) : string =

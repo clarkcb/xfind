@@ -26,8 +26,8 @@ fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
     process::exit(1);
 }
 
-fn print_matching_dirs(fileresults: &Vec<fileresult::FileResult>) {
-    let dirs = get_matching_dirs(fileresults);
+fn print_matching_dirs(file_results: &Vec<fileresult::FileResult>) {
+    let dirs = get_matching_dirs(file_results);
     if dirs.is_empty() {
         log("\nMatching directories: 0");
     } else {
@@ -38,8 +38,8 @@ fn print_matching_dirs(fileresults: &Vec<fileresult::FileResult>) {
     }
 }
 
-fn print_matching_files(fileresults: &Vec<fileresult::FileResult>) {
-    let files = get_matching_files(fileresults);
+fn print_matching_files(file_results: &Vec<fileresult::FileResult>) {
+    let files = get_matching_files(file_results);
     if files.is_empty() {
         log("\nMatching files: 0");
     } else {
@@ -82,14 +82,14 @@ fn find(args: Iter<String>) {
             };
 
             match finder.find() {
-                Ok(fileresults) => {
+                Ok(file_results) => {
                     if finder.settings.list_dirs {
-                        print_matching_dirs(&fileresults);
+                        print_matching_dirs(&file_results);
                     }
                     if finder.settings.list_files {
-                        print_matching_files(&fileresults);
+                        print_matching_files(&file_results);
                     }
-                },
+                }
                 Err(error) => error_and_exit(error, &options),
             }
         }
@@ -110,11 +110,11 @@ mod tests {
 
     #[test]
     fn test_find_code_files() {
-        let startpath = "/Users/cary/src/xfind/rust";
+        let start_path = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
             "rsfind", "-x", "rs", "-D", "debug", "-f", "find", "--debug",
-            startpath,
+            start_path,
         ]
         .into_iter()
         .map(|a| a.to_string())
@@ -125,10 +125,10 @@ mod tests {
 
     #[test]
     fn test_find_binary_files() {
-        let startpath = "/Users/cary/src/xfind/rust";
+        let start_path = "/Users/cary/src/xfind/rust";
 
         let args: Vec<String> = vec![
-            "rsfind", "-x", "rlib", "-f", "find", "--debug", startpath,
+            "rsfind", "-x", "rlib", "-f", "find", "--debug", start_path,
         ]
         .into_iter()
         .map(|a| a.to_string())

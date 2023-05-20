@@ -9,18 +9,18 @@ const path = require('path');
 class FileResult {
     'use strict'
 
-    constructor(pathname, filename, filetype, stat) {
+    constructor(path, fileName, fileType, stat) {
         this.containerSeparator = '!';
         this.containers = [];
-        this.pathname = pathname;
-        this.filename = filename;
-        this.filetype = filetype;
+        this.path = path;
+        this.fileName = fileName;
+        this.fileType = fileType;
         this.stat = stat;
     }
 
     relativePath() {
-        if (this.pathname === '.' || this.pathname === './') return './' + this.filename;
-        return path.join(this.pathname, this.filename);
+        if (this.path === '.' || this.path === './') return './' + this.fileName;
+        return path.join(this.path, this.fileName);
     }
 
     toString() {

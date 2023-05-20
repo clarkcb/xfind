@@ -36,43 +36,43 @@ class FindOptions:
         self.__bool_arg_dict = {
             'archivesonly':
                 lambda b, settings:
-                settings.set_property('archivesonly', b),
+                settings.set_property('archives_only', b),
             'debug':
                 lambda b, settings:
                 settings.set_property('debug', b),
             'excludearchives':
                 lambda b, settings:
-                settings.set_property('includehidden', not b),
+                settings.set_property('include_archives', not b),
             'excludehidden':
                 lambda b, settings:
-                settings.set_property('excludehidden', b),
+                settings.set_property('exclude_hidden', b),
             'help':
                 lambda b, settings:
-                settings.set_property('printusage', b),
+                settings.set_property('print_usage', b),
             'includearchives':
                 lambda b, settings:
-                settings.set_property('includearchives', b),
+                settings.set_property('include_archives', b),
             'includehidden':
                 lambda b, settings:
-                settings.set_property('excludehidden', not b),
+                settings.set_property('exclude_hidden', not b),
             'listdirs':
                 lambda b, settings:
-                settings.set_property('listdirs', b),
+                settings.set_property('list_dirs', b),
             'listfiles':
                 lambda b, settings:
-                settings.set_property('listfiles', b),
+                settings.set_property('list_files', b),
             'noincludearchives':
                 lambda b, settings:
-                settings.set_property('includearchives', not b),
+                settings.set_property('include_archives', not b),
             'noprintmatches':
                 lambda b, settings:
-                settings.set_property('printresults', not b),
+                settings.set_property('print_results', not b),
             'norecursive':
                 lambda b, settings:
                 settings.set_property('recursive', not b),
             'printmatches':
                 lambda b, settings:
-                settings.set_property('printresults', b),
+                settings.set_property('print_results', b),
             'recursive':
                 lambda b, settings:
                 settings.set_property('recursive', b),
@@ -81,10 +81,10 @@ class FindOptions:
                 settings.set_property('sort_descending', not b),
             'sort-caseinsensitive':
                 lambda b, settings:
-                settings.set_property('sort_caseinsensitive', b),
+                settings.set_property('sort_case_insensitive', b),
             'sort-casesensitive':
                 lambda b, settings:
-                settings.set_property('sort_caseinsensitive', not b),
+                settings.set_property('sort_case_insensitive', not b),
             'sort-descending':
                 lambda b, settings:
                 settings.set_property('sort_descending', b),
@@ -93,46 +93,46 @@ class FindOptions:
                 settings.set_property('verbose', b),
             'version':
                 lambda b, settings:
-                settings.set_property('printversion', b)
+                settings.set_property('print_version', b)
         }
 
         self.__coll_arg_dict = {
             'in-archiveext':
                 lambda x, settings:
-                settings.add_exts(x, 'in_archiveextensions'),
+                settings.add_exts(x, 'in_archive_extensions'),
             'in-archivefilepattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'in_archivefilepatterns'),
+                settings.add_patterns(x, 'in_archive_file_patterns'),
             'in-dirpattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'in_dirpatterns'),
+                settings.add_patterns(x, 'in_dir_patterns'),
             'in-ext':
                 lambda x, settings:
                 settings.add_exts(x, 'in_extensions'),
             'in-filepattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'in_filepatterns'),
+                settings.add_patterns(x, 'in_file_patterns'),
             'in-filetype':
                 lambda x, settings:
-                settings.add_filetypes(x, 'in_filetypes'),
+                settings.add_file_types(x, 'in_file_types'),
             'out-archiveext':
                 lambda x, settings:
-                settings.add_exts(x, 'out_archiveextensions'),
+                settings.add_exts(x, 'out_archive_extensions'),
             'out-archivefilepattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'out_archivefilepatterns'),
+                settings.add_patterns(x, 'out_archive_file_patterns'),
             'out-dirpattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'out_dirpatterns'),
+                settings.add_patterns(x, 'out_dir_patterns'),
             'out-ext':
                 lambda x, settings:
                 settings.add_exts(x, 'out_extensions'),
             'out-filepattern':
                 lambda x, settings:
-                settings.add_patterns(x, 'out_filepatterns'),
+                settings.add_patterns(x, 'out_file_patterns'),
             'out-filetype':
                 lambda x, settings:
-                settings.add_filetypes(x, 'out_filetypes'),
+                settings.add_file_types(x, 'out_file_types'),
             'sort-by':
                 lambda x, settings:
                 settings.set_sort_by(x),
@@ -150,19 +150,19 @@ class FindOptions:
                 settings.set_property('lastmod_before', x),
             'maxlastmod':
                 lambda x, settings:
-                settings.set_property('maxlastmod', x),
+                settings.set_property('max_last_mod', x),
             'minlastmod':
                 lambda x, settings:
-                settings.set_property('minlastmod', x),
+                settings.set_property('min_last_mod', x),
         }
 
         self.__int_arg_dict = {
             'maxsize':
                 lambda x, settings:
-                settings.set_property('maxsize', int(x)),
+                settings.set_property('max_size', int(x)),
             'minsize':
                 lambda x, settings:
-                settings.set_property('minsize', int(x)),
+                settings.set_property('min_size', int(x)),
         }
 
         self.__str_arg_dict = {
@@ -173,16 +173,16 @@ class FindOptions:
 
         self.__longarg_dict = {}
 
-    def settings_from_file(self, filepath: str, settings: FindSettings):
+    def settings_from_file(self, file_path: str, settings: FindSettings):
         """Read settings from a JSON file"""
-        assert os.path.exists(filepath), f'Settings file not found: {filepath}'
-        with open(filepath) as f:
+        assert os.path.exists(file_path), f'Settings file not found: {file_path}'
+        with open(file_path) as f:
             jsonstr = f.read()
         self.settings_from_json(jsonstr, settings)
 
-    def settings_from_json(self, jsonstr: str, settings: FindSettings):
+    def settings_from_json(self, json_str: str, settings: FindSettings):
         """Read settings from a JSON string"""
-        json_dict = json.loads(jsonstr)
+        json_dict = json.loads(json_str)
         for arg in json_dict:
             if arg in self.__bool_arg_dict:
                 self.__bool_arg_dict[arg](json_dict[arg], settings)
@@ -229,8 +229,8 @@ class FindOptions:
 
     def find_settings_from_args(self, args: List[str]) -> FindSettings:
         """Returns a FindSettings instance for a given list of args"""
-        # default listfiles to True since running from command line
-        settings = FindSettings(listfiles=True)
+        # default list_files to True since running from command line
+        settings = FindSettings(list_files=True)
         return self.update_settings_from_args(settings, args)
 
     def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:

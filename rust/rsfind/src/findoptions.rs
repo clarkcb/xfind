@@ -339,8 +339,8 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
     arg_map.insert(
         "in-filetype".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
-            let filetype = FileTypes::file_type_for_name(&s.to_string());
-            Ok(settings.add_in_file_type(filetype))
+            let file_type = FileTypes::file_type_for_name(&s.to_string());
+            Ok(settings.add_in_file_type(file_type))
         }),
     );
     arg_map.insert(
@@ -349,7 +349,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             let res = timestamp_from_date_string(s);
             match res {
                 Ok(t) => {
-                    settings.max_lastmod = t as u64;
+                    settings.max_last_mod = t as u64;
                     Ok(())
                 },
                 Err(_) => {
@@ -370,7 +370,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             let res = timestamp_from_date_string(s);
             match res {
                 Ok(t) => {
-                    settings.min_lastmod = t as u64;
+                    settings.min_last_mod = t as u64;
                     Ok(())
                 },
                 Err(_) => {
@@ -418,8 +418,8 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
     arg_map.insert(
         "out-filetype".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
-            let filetype = FileTypes::file_type_for_name(&s.to_string());
-            Ok(settings.add_out_file_type(filetype))
+            let file_type = FileTypes::file_type_for_name(&s.to_string());
+            Ok(settings.add_out_file_type(file_type))
         }),
     );
     arg_map.insert(
@@ -489,11 +489,11 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     );
     flag_map.insert(
         "sort-caseinsensitive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_caseinsensitive = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_case_insensitive = b)),
     );
     flag_map.insert(
         "sort-casesensitive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_caseinsensitive = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_case_insensitive = !b)),
     );
     flag_map.insert(
         "sort-descending".to_string(),

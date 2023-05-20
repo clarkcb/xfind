@@ -9,35 +9,35 @@ use DateTime;
  */
 class FindSettings
 {
-    public bool $archivesonly = false;
+    public bool $archives_only = false;
     public bool $debug = false;
-    public bool $excludehidden = true;
-    public array $in_archiveextensions = array();
-    public array $in_archivefilepatterns = array();
-    public array $in_dirpatterns = array();
+    public bool $exclude_hidden = true;
+    public array $in_archive_extensions = array();
+    public array $in_archive_file_patterns = array();
+    public array $in_dir_patterns = array();
     public array $in_extensions = array();
-    public array $in_filepatterns = array();
-    public array $in_filetypes = array();
-    public bool $includearchives = false;
-    public bool $listdirs = false;
-    public bool $listfiles = false;
-    public ?DateTime $maxlastmod = null;
-    public int $maxsize = 0;
-    public ?DateTime $minlastmod = null;
-    public int $minsize = 0;
-    public array $out_archiveextensions = array();
-    public array $out_archivefilepatterns = array();
-    public array $out_dirpatterns = array();
+    public array $in_file_patterns = array();
+    public array $in_file_types = array();
+    public bool $include_archives = false;
+    public bool $list_dirs = false;
+    public bool $list_files = false;
+    public ?DateTime $max_last_mod = null;
+    public int $max_size = 0;
+    public ?DateTime $min_last_mod = null;
+    public int $min_size = 0;
+    public array $out_archive_extensions = array();
+    public array $out_archive_patterns = array();
+    public array $out_dir_patterns = array();
     public array $out_extensions = array();
-    public array $out_filepatterns = array();
-    public array $out_filetypes = array();
+    public array $out_file_patterns = array();
+    public array $out_file_types = array();
     public array $paths = array();
-    public bool $printusage = false;
-    public bool $printversion = false;
+    public bool $print_usage = false;
+    public bool $print_version = false;
     public bool $recursive = true;
-    public bool $sort_caseinsensitive = false;
+    public bool $sort_case_insensitive = false;
     public bool $sort_descending = false;
-    public SortBy $sortby = SortBy::Filepath;
+    public SortBy $sort_by = SortBy::Filepath;
     public bool $verbose = false;
 
     /**
@@ -60,20 +60,20 @@ class FindSettings
     }
 
     /**
-     * @param string|string[] $filetype
-     * @param FileType[] $filetypes
+     * @param string|string[] $file_type
+     * @param FileType[] $file_types
      * @return void
      */
-    public function add_filetypes(string|array $filetype, array &$filetypes): void
+    public function add_file_types(string|array $file_type, array &$file_types): void
     {
-        if (gettype($filetype) == 'string') {
-            $fts = explode(',', $filetype);
+        if (gettype($file_type) == 'string') {
+            $fts = explode(',', $file_type);
             foreach ($fts as $ft) {
-                $filetypes[] = FileTypes::from_name($ft);
+                $file_types[] = FileTypes::from_name($ft);
             }
-        } elseif (gettype($filetype) == 'array') {
-            foreach ($filetype as $ft) {
-                $filetypes[] = FileTypes::from_name($ft);
+        } elseif (gettype($file_type) == 'array') {
+            foreach ($file_type as $ft) {
+                $file_types[] = FileTypes::from_name($ft);
             }
         }
     }
@@ -96,20 +96,20 @@ class FindSettings
 
     public function need_stat(): bool
     {
-        return $this->sortby == SortBy::Filesize || $this->sortby == SortBy::LastMod ||
-            $this->maxlastmod != null || $this->minlastmod != null ||
-            $this->maxsize > 0 || $this->minsize > 0;
+        return $this->sort_by == SortBy::Filesize || $this->sort_by == SortBy::LastMod ||
+            $this->max_last_mod != null || $this->min_last_mod != null ||
+            $this->max_size > 0 || $this->min_size > 0;
     }
 
     /**
      * @param bool $b
      * @return void
      */
-    public function set_archivesonly(bool $b): void
+    public function set_archives_only(bool $b): void
     {
-        $this->archivesonly = $b;
+        $this->archives_only = $b;
         if ($b) {
-            $this->includearchives = $b;
+            $this->include_archives = $b;
         }
     }
 
@@ -129,19 +129,19 @@ class FindSettings
     {
         switch (strtoupper($sort_by_name)) {
             case 'NAME':
-                $this->sortby = SortBy::Filename;
+                $this->sort_by = SortBy::Filename;
                 break;
             case 'SIZE':
-                $this->sortby = SortBy::Filesize;
+                $this->sort_by = SortBy::Filesize;
                 break;
             case 'TYPE':
-                $this->sortby = SortBy::Filetype;
+                $this->sort_by = SortBy::Filetype;
                 break;
             case 'LASTMOD':
-                $this->sortby = SortBy::LastMod;
+                $this->sort_by = SortBy::LastMod;
                 break;
             default:
-                $this->sortby = SortBy::Filepath;
+                $this->sort_by = SortBy::Filepath;
                 break;
         }
     }
@@ -152,66 +152,66 @@ class FindSettings
     public function __toString(): string
     {
         return sprintf('FindSettings(' .
-            'archivesonly: %s' .
+            'archives_only: %s' .
             ', debug: %s' .
-            ', excludehidden: %s' .
-            ', in_archiveextensions: %s' .
-            ', in_archivefilepatterns: %s' .
-            ', in_dirpatterns: %s' .
+            ', exclude_hidden: %s' .
+            ', in_archive_extensions: %s' .
+            ', in_archive_file_patterns: %s' .
+            ', in_dir_patterns: %s' .
             ', in_extensions: %s' .
-            ', in_filepatterns: %s' .
-            ', in_filetypes: %s' .
-            ', includearchives: %s' .
-            ', listdirs: %s' .
-            ', listfiles: %s' .
-            ', maxlastmod: %s' .
-            ', maxsize: %d' .
-            ', minlastmod: %s' .
-            ', minsize: %d' .
-            ', out_archiveextensions: %s' .
-            ', out_archivefilepatterns: %s' .
-            ', out_dirpatterns: %s' .
+            ', in_file_patterns: %s' .
+            ', in_file_types: %s' .
+            ', include_archives: %s' .
+            ', list_dirs: %s' .
+            ', list_files: %s' .
+            ', max_last_mod: %s' .
+            ', max_size: %d' .
+            ', min_last_mod: %s' .
+            ', min_size: %d' .
+            ', out_archive_extensions: %s' .
+            ', out_archive_patterns: %s' .
+            ', out_dir_patterns: %s' .
             ', out_extensions: %s' .
-            ', out_filepatterns: %s' .
-            ', out_filetypes: %s' .
+            ', out_file_patterns: %s' .
+            ', out_file_types: %s' .
             ', paths: %s' .
-            ', printusage: %s' .
-            ', printversion: %s' .
+            ', print_usage: %s' .
+            ', print_version: %s' .
             ', recursive: %s' .
-            ', sort_caseinsensitive: %s' .
+            ', sort_case_insensitive: %s' .
             ', sort_descending: %s' .
-            ', sortby: %s' .
+            ', sort_by: %s' .
             ', verbose: %s' .
             ')',
-            StringUtil::bool_to_string($this->archivesonly),
+            StringUtil::bool_to_string($this->archives_only),
             StringUtil::bool_to_string($this->debug),
-            StringUtil::bool_to_string($this->excludehidden),
-            StringUtil::string_array_to_string($this->in_archiveextensions),
-            StringUtil::string_array_to_string($this->in_archivefilepatterns),
-            StringUtil::string_array_to_string($this->in_dirpatterns),
+            StringUtil::bool_to_string($this->exclude_hidden),
+            StringUtil::string_array_to_string($this->in_archive_extensions),
+            StringUtil::string_array_to_string($this->in_archive_file_patterns),
+            StringUtil::string_array_to_string($this->in_dir_patterns),
             StringUtil::string_array_to_string($this->in_extensions),
-            StringUtil::string_array_to_string($this->in_filepatterns),
-            StringUtil::filetype_array_to_string($this->in_filetypes),
-            StringUtil::bool_to_string($this->includearchives),
-            StringUtil::bool_to_string($this->listdirs),
-            StringUtil::bool_to_string($this->listfiles),
-            StringUtil::datetime_to_string($this->maxlastmod),
-            $this->maxsize,
-            StringUtil::datetime_to_string($this->minlastmod),
-            $this->minsize,
-            StringUtil::string_array_to_string($this->out_archiveextensions),
-            StringUtil::string_array_to_string($this->out_archivefilepatterns),
-            StringUtil::string_array_to_string($this->out_dirpatterns),
+            StringUtil::string_array_to_string($this->in_file_patterns),
+            StringUtil::file_type_array_to_string($this->in_file_types),
+            StringUtil::bool_to_string($this->include_archives),
+            StringUtil::bool_to_string($this->list_dirs),
+            StringUtil::bool_to_string($this->list_files),
+            StringUtil::datetime_to_string($this->max_last_mod),
+            $this->max_size,
+            StringUtil::datetime_to_string($this->min_last_mod),
+            $this->min_size,
+            StringUtil::string_array_to_string($this->out_archive_extensions),
+            StringUtil::string_array_to_string($this->out_archive_patterns),
+            StringUtil::string_array_to_string($this->out_dir_patterns),
             StringUtil::string_array_to_string($this->out_extensions),
-            StringUtil::string_array_to_string($this->out_filepatterns),
-            StringUtil::filetype_array_to_string($this->out_filetypes),
+            StringUtil::string_array_to_string($this->out_file_patterns),
+            StringUtil::file_type_array_to_string($this->out_file_types),
             StringUtil::string_array_to_string($this->paths),
-            StringUtil::bool_to_string($this->printusage),
-            StringUtil::bool_to_string($this->printversion),
+            StringUtil::bool_to_string($this->print_usage),
+            StringUtil::bool_to_string($this->print_version),
             StringUtil::bool_to_string($this->recursive),
-            StringUtil::bool_to_string($this->sort_caseinsensitive),
+            StringUtil::bool_to_string($this->sort_case_insensitive),
             StringUtil::bool_to_string($this->sort_descending),
-            $this->sortby->name,
+            $this->sort_by->name,
             StringUtil::bool_to_string($this->verbose)
         );
     }

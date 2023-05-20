@@ -23,17 +23,17 @@ use plfind::FindSettings;
 
 sub test_default_settings {
     my $settings = new plfind::FindSettings();
-    ok(!$settings->{archivesonly}, "archivesonly is false by default");
+    ok(!$settings->{archives_only}, "archives_only is false by default");
     ok(!$settings->{debug}, "debug is false by default");
-    ok($settings->{excludehidden}, "excludehidden is true by default");
-    ok(!$settings->{includearchives}, "includearchives is false by default");
-    ok(!$settings->{listdirs}, "listdirs is false by default");
-    ok(!$settings->{listfiles}, "listfiles is false by default");
+    ok($settings->{exclude_hidden}, "exclude_hidden is true by default");
+    ok(!$settings->{include_archives}, "include_archives is false by default");
+    ok(!$settings->{list_dirs}, "list_dirs is false by default");
+    ok(!$settings->{list_files}, "list_files is false by default");
     ok(@{$settings->{paths}} eq 0, "paths are empty by default");
-    ok(!$settings->{printusage}, "printusage is false by default");
-    ok(!$settings->{printversion}, "printversion is false by default");
+    ok(!$settings->{print_usage}, "print_usage is false by default");
+    ok(!$settings->{print_version}, "print_version is false by default");
     ok($settings->{recursive}, "recursive is true by default");
-    ok(!$settings->{sort_caseinsensitive}, "sort_caseinsensitive is false by default");
+    ok(!$settings->{sort_case_insensitive}, "sort_case_insensitive is false by default");
     ok(!$settings->{sort_descending}, "sort_descending is false by default");
     ok(!$settings->{verbose}, "verbose is false by default");
 }
@@ -63,14 +63,14 @@ sub test_add_array_extensions {
 
 sub test_add_single_pattern {
     my $settings = new plfind::FindSettings();
-    $settings->add_patterns('Find', $settings->{in_filepatterns});
-    ok(scalar @{$settings->{in_filepatterns}} == 1, "in_filepatterns has one pattern");
+    $settings->add_patterns('Find', $settings->{in_file_patterns});
+    ok(scalar @{$settings->{in_file_patterns}} == 1, "in_file_patterns has one pattern");
 }
 
 sub test_add_array_patterns {
     my $settings = new plfind::FindSettings();
-    $settings->add_patterns(['Finder', 'Result'], $settings->{in_filepatterns});
-    ok(scalar @{$settings->{in_filepatterns}} == 2, "in_filepatterns has two patterns");
+    $settings->add_patterns(['Finder', 'Result'], $settings->{in_file_patterns});
+    ok(scalar @{$settings->{in_file_patterns}} == 2, "in_file_patterns has two patterns");
 }
 
 sub main {

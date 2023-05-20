@@ -22,30 +22,30 @@ namespace cppfind {
                           const FileType ft, const uint64_t filesize, long modtime) {
         m_containers = cs;
         m_path = p;
-        m_filename = f;
-        m_filetype = ft;
-        m_filesize = filesize;
-        m_modtime = modtime;
+        m_file_name = f;
+        m_file_type = ft;
+        m_file_size = filesize;
+        m_mod_time = modtime;
     }
 
     std::string FileResult::path() const {
         return m_path;
     }
 
-    std::string FileResult::filename() const {
-        return m_filename;
+    std::string FileResult::file_name() const {
+        return m_file_name;
     }
 
-    FileType FileResult::filetype() const {
-        return m_filetype;
+    FileType FileResult::file_type() const {
+        return m_file_type;
     }
 
-    uint64_t FileResult::filesize() const {
-        return m_filesize;
+    uint64_t FileResult::file_size() const {
+        return m_file_size;
     }
 
-    long FileResult::modtime() const {
-        return m_modtime;
+    long FileResult::mod_time() const {
+        return m_mod_time;
     }
 
     const std::string FileResult::string() const {
@@ -54,7 +54,7 @@ namespace cppfind {
             fullpath.append(c).append(CONTAINER_SEPARATOR);
         }
         boost::filesystem::path p(m_path);
-        p.append(m_filename);
+        p.append(m_file_name);
         fullpath.append(p.string());
         return fullpath;
     }

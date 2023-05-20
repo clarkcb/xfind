@@ -3,10 +3,10 @@
 
 #include "../include/filetypes.h"
 
-void test_filetype_from_name(void);
+void test_file_type_from_name(void);
 
-void test_get_filetype_for_ext(void);
+void test_get_file_type_for_ext(void);
 
-void test_is_filetype_for_ext(void);
+void test_is_file_type_for_ext(void);
 
 #endif

@@ -11,20 +11,20 @@ import java.nio.file.{Files, Path, Paths}
 class FileResultTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   test("test_fileresult_abs_path") {
-    val filepath = "~/src/xfind/scala/scalafind/src/main/scala/scalafind/FileResult.scala"
-    val fileResult = new FileResult(Paths.get(filepath), FileType.Code)
-    assertEquals(filepath, fileResult.toString())
+    val filePath = "~/src/xfind/scala/scalafind/src/main/scala/scalafind/FileResult.scala"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Code)
+    assertEquals(filePath, fileResult.toString())
   }
 
   test("test_fileresult_rel_path1") {
-    val filepath = "./FileResult.scala"
-    val fileResult = new FileResult(Paths.get(filepath), FileType.Code)
-    assertEquals(filepath, fileResult.toString())
+    val filePath = "./FileResult.scala"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Code)
+    assertEquals(filePath, fileResult.toString())
   }
 
   test("test_fileresult_rel_path2") {
-    val filepath = "../FileResult.scala"
-    val fileResult = new FileResult(Paths.get(filepath), FileType.Code)
-    assertEquals(filepath, fileResult.toString())
+    val filePath = "../FileResult.scala"
+    val fileResult = new FileResult(Paths.get(filePath), FileType.Code)
+    assertEquals(filePath, fileResult.toString())
   }
 }

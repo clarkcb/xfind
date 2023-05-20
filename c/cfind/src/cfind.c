@@ -25,9 +25,9 @@ int main(int argc, char *argv[])
         print_settings(settings);
     }
 
-    if (settings->printusage) {
+    if (settings->print_usage) {
         print_usage();
-    } else if (settings->printversion) {
+    } else if (settings->print_version) {
         // TODO
     } else {
 
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
         err = find(settings, results);
         if (err == E_OK) {
-            if (settings->listdirs) {
+            if (settings->list_dirs) {
                 if (is_null_or_empty_file_results(results)) {
                     printf("\nMatching directories: 0\n");
                 } else {
@@ -44,14 +44,14 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (settings->listfiles) {
+            if (settings->list_files) {
                 if (is_null_or_empty_file_results(results)) {
                     printf("\nMatching files: 0\n");
                     if (results != NULL) {
                         destroy_file_results(results);
                     }
                 } else {
-                    print_file_results(results, settings->sortby, settings->sort_caseinsensitive,
+                    print_file_results(results, settings->sort_by, settings->sort_case_insensitive,
                                        settings->sort_descending);
                     destroy_file_results(results);
                 }

@@ -98,6 +98,8 @@ class FindSettings {
   bool sortDescending = false;
   bool verbose = false;
 
+  bool? _needStat;
+
   void addExtensions(String exts, Set<String> extensions) {
     var extList = exts.split(',').where((ext) => ext.isNotEmpty).toList();
     addExtensionsList(extList, extensions);
@@ -114,12 +116,13 @@ class FindSettings {
   }
 
   bool needStat() {
-    return sortBy == SortBy.fileSize ||
+    _needStat ??= sortBy == SortBy.fileSize ||
         sortBy == SortBy.lastMod ||
         maxLastMod != null ||
         maxSize > 0 ||
         minLastMod != null ||
         minSize > 0;
+    return _needStat!;
   }
 
   String dateTimeToString(DateTime? dt) {

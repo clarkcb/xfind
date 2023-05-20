@@ -17,7 +17,7 @@ function main($argv)
             Logger::log_msg("settings: $settings");
         }
 
-        if ($settings->printusage) {
+        if ($settings->print_usage) {
             Logger::log_msg('');
             $findoptions->usage_and_exit(0);
         }
@@ -26,12 +26,12 @@ function main($argv)
         $file_results = $finder->find();
 
         // print matching dirs
-        if ($settings->listdirs) {
+        if ($settings->list_dirs) {
             $finder->print_matching_dirs($file_results);
         }
 
         // print matching files
-        if ($settings->listfiles) {
+        if ($settings->list_files) {
             $finder->print_matching_files($file_results);
         }
     } catch (FindException $e) {

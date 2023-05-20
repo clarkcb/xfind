@@ -37,7 +37,7 @@ class StringUtil
      * @param FileType[] $arr
      * @return string
      */
-    public static function filetype_array_to_string(array $arr): string
+    public static function file_type_array_to_string(array $arr): string
     {
         if (count($arr)) {
             $names = array_map(fn (FileType $ft) => FileTypes::to_name($ft), $arr);

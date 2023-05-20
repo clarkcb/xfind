@@ -114,11 +114,11 @@ export class Finder {
                 Finder.matchesAnyPattern(file, this._settings.outFilePatterns))) {
             return false;
         }
-        const filetype: FileType = FileTypes.getFileType(file);
+        const fileType: FileType = FileTypes.getFileType(file);
         if ((this._settings.inFileTypes.length &&
-            !Finder.matchesAnyFileType(filetype, this._settings.inFileTypes))
+            !Finder.matchesAnyFileType(fileType, this._settings.inFileTypes))
             || (this._settings.outFileTypes.length &&
-                Finder.matchesAnyFileType(filetype, this._settings.outFileTypes))) {
+                Finder.matchesAnyFileType(fileType, this._settings.outFileTypes))) {
                     return false;
         }
         return true;
@@ -129,7 +129,7 @@ export class Finder {
         //     return false;
         // }
         if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
-            const ext: string = FileUtil.getExtension(fr.filename);
+            const ext: string = FileUtil.getExtension(fr.fileName);
             if ((this._settings.inExtensions.length &&
                     !Finder.matchesAnyString(ext, this._settings.inExtensions))
                 || (this._settings.outExtensions.length &&
@@ -138,15 +138,15 @@ export class Finder {
             }
         }
         if ((this._settings.inFilePatterns.length &&
-            !Finder.matchesAnyPattern(fr.filename, this._settings.inFilePatterns))
+            !Finder.matchesAnyPattern(fr.fileName, this._settings.inFilePatterns))
             || (this._settings.outFilePatterns.length &&
-                Finder.matchesAnyPattern(fr.filename, this._settings.outFilePatterns))) {
+                Finder.matchesAnyPattern(fr.fileName, this._settings.outFilePatterns))) {
             return false;
         }
         if ((this._settings.inFileTypes.length &&
-            !Finder.matchesAnyFileType(fr.filetype, this._settings.inFileTypes))
+            !Finder.matchesAnyFileType(fr.fileType, this._settings.inFileTypes))
             || (this._settings.outFileTypes.length &&
-                Finder.matchesAnyFileType(fr.filetype, this._settings.outFileTypes))) {
+                Finder.matchesAnyFileType(fr.fileType, this._settings.outFileTypes))) {
                     return false;
         }
         if (fr.stat !== null) {
@@ -204,8 +204,8 @@ export class Finder {
             stat = fs.statSync(fp);
         }
         const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename), stat);
-        if (fr.filetype === FileType.Archive) {
-            if (this._settings.includeArchives && this.isMatchingArchiveFile(fr.filename)) {
+        if (fr.fileType === FileType.Archive) {
+            if (this._settings.includeArchives && this.isMatchingArchiveFile(fr.fileName)) {
                 return fr;
             }
             return null;
@@ -227,10 +227,10 @@ export class Finder {
                 findDirs.push(fp);
             } else if (stats.isFile()) {
                 // const dirname = path.dirname(f) || '.';
-                // const filename = path.basename(f);
-                // if (this.filterFile(filename)) {
-                //     const filetype = FileTypes.getFileType(filename);
-                //     const fr = new FileResult(dirname, filename, filetype);
+                // const fileName = path.basename(f);
+                // if (this.filterFile(fileName)) {
+                //     const fileType = FileTypes.getFileType(fileName);
+                //     const fr = new FileResult(dirname, fileName, fileType);
                 //     fileResults.push(fr);
                 // }
                 const fr = this.filterToFileResult(fp);
@@ -272,12 +272,12 @@ export class Finder {
 
     private cmpFileResultsByPath(fr1: FileResult, fr2: FileResult): number {
         const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
-            [fr1.pathname.toLowerCase(), fr2.pathname.toLowerCase()] :
-            [fr1.pathname, fr2.pathname];
+            [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
+            [fr1.path, fr2.path];
         if (path1 === path2) {
             const [filename1, filename2]: string[] = this._settings.sortCaseInsensitive ?
-                [fr1.filename.toLowerCase(), fr2.filename.toLowerCase()] :
-                [fr1.filename, fr2.filename];
+                [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
+                [fr1.fileName, fr2.fileName];
             return filename1 < filename2 ? -1 : 1;
         }
         return path1 < path2 ? -1 : 1;
@@ -285,12 +285,12 @@ export class Finder {
 
     private cmpFileResultsByName(fr1: FileResult, fr2: FileResult): number {
         const [filename1, filename2]: string[] = this._settings.sortCaseInsensitive ?
-            [fr1.filename.toLowerCase(), fr2.filename.toLowerCase()] :
-            [fr1.filename, fr2.filename];
+            [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
+            [fr1.fileName, fr2.fileName];
         if (filename1 === filename2) {
             const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
-                [fr1.pathname.toLowerCase(), fr2.pathname.toLowerCase()] :
-                [fr1.pathname, fr2.pathname];
+                [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
+                [fr1.path, fr2.path];
             return path1 < path2 ? -1 : 1;
         }
         return filename1 < filename2 ? -1 : 1;
@@ -307,10 +307,10 @@ export class Finder {
     }
 
     private cmpFileResultsByType(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.filetype === fr2.filetype) {
+        if (fr1.fileType === fr2.fileType) {
             return this.cmpFileResultsByPath(fr1, fr2);
         }
-        return fr1.filetype - fr2.filetype;
+        return fr1.fileType - fr2.fileType;
     }
 
     private cmpFileResultsByLastMod(fr1: FileResult, fr2: FileResult): number {
@@ -354,7 +354,7 @@ export class Finder {
     }
 
     public getMatchingDirs(fileResults: FileResult[]): string[] {
-        const dirs: string[] = fileResults.map(f => f.pathname);
+        const dirs: string[] = fileResults.map(f => f.path);
         return common.setFromArray(dirs);
     }
 

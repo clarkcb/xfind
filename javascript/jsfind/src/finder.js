@@ -23,7 +23,7 @@ class Finder {
 
     constructor(settings) {
         this.settings = settings;
-        this.filetypes = new FileTypes();
+        this.fileTypes = new FileTypes();
         this.validateSettings();
     }
 
@@ -96,23 +96,23 @@ class Finder {
         if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
             let ext = FileUtil.getExtension(file);
             if ((this.settings.inExtensions.length &&
-                    !this.matchesAnyElement(ext, this.settings.inExtensions))
-                || (this.settings.outExtensions.length &&
+                    !this.matchesAnyElement(ext, this.settings.inExtensions)) ||
+                (this.settings.outExtensions.length &&
                     this.matchesAnyElement(ext, this.settings.outExtensions))) {
                 return false;
             }
         }
         if ((this.settings.inFilePatterns.length &&
-                !this.matchesAnyPattern(file, this.settings.inFilePatterns))
-            || (this.settings.outFilePatterns.length &&
+                !this.matchesAnyPattern(file, this.settings.inFilePatterns)) ||
+            (this.settings.outFilePatterns.length &&
                 this.matchesAnyPattern(file, this.settings.outFilePatterns))) {
             return false;
         }
-        let filetype = this.filetypes.getFileType(file);
+        let fileType = this.fileTypes.getFileType(file);
         return !((this.settings.inFileTypes.length &&
-            !this.matchesAnyElement(filetype, this.settings.inFileTypes))
-            || (this.settings.outFileTypes.length &&
-                this.matchesAnyElement(filetype, this.settings.outFileTypes)));
+            !this.matchesAnyElement(fileType, this.settings.inFileTypes)) ||
+            (this.settings.outFileTypes.length &&
+                this.matchesAnyElement(fileType, this.settings.outFileTypes)));
     }
 
     isMatchingFileResult(fr) {
@@ -120,24 +120,24 @@ class Finder {
         //     return false;
         // }
         if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
-            let ext = FileUtil.getExtension(fr.filename);
+            let ext = FileUtil.getExtension(fr.fileName);
             if ((this.settings.inExtensions.length &&
-                    !this.matchesAnyElement(ext, this.settings.inExtensions))
-                || (this.settings.outExtensions.length &&
+                    !this.matchesAnyElement(ext, this.settings.inExtensions)) ||
+                (this.settings.outExtensions.length &&
                     this.matchesAnyElement(ext, this.settings.outExtensions))) {
                 return false;
             }
         }
         if ((this.settings.inFilePatterns.length &&
-                !this.matchesAnyPattern(fr.filename, this.settings.inFilePatterns))
-            || (this.settings.outFilePatterns.length &&
-                this.matchesAnyPattern(fr.filename, this.settings.outFilePatterns))) {
+                !this.matchesAnyPattern(fr.fileName, this.settings.inFilePatterns)) ||
+            (this.settings.outFilePatterns.length &&
+                this.matchesAnyPattern(fr.fileName, this.settings.outFilePatterns))) {
             return false;
         }
         if ((this.settings.inFileTypes.length &&
-            !this.matchesAnyElement(fr.filetype, this.settings.inFileTypes))
-            || (this.settings.outFileTypes.length &&
-                this.matchesAnyElement(fr.filetype, this.settings.outFileTypes))) {
+            !this.matchesAnyElement(fr.fileType, this.settings.inFileTypes)) ||
+            (this.settings.outFileTypes.length &&
+                this.matchesAnyElement(fr.fileType, this.settings.outFileTypes))) {
             return false;
         }
         if (fr.stat !== null) {
@@ -178,7 +178,7 @@ class Finder {
         if (this.settings.excludeHidden && FileUtil.isHidden(f)) {
             return false;
         }
-        if (this.filetypes.isArchiveFile(f)) {
+        if (this.fileTypes.isArchiveFile(f)) {
             return (this.settings.findArchives && this.isMatchingArchiveFile(f));
         }
         return (!this.settings.archivesOnly && this.isMatchingFile(f));
@@ -189,14 +189,14 @@ class Finder {
             return null;
         }
         const dirname = path.dirname(fp) || '.';
-        const filename = path.basename(fp);
+        const fileName = path.basename(fp);
         let stat = null;
         if (this.settings.needStat()) {
             stat = fs.statSync(fp);
         }
-        let fr = new FileResult(dirname, filename, this.filetypes.getFileType(filename), stat);
-        if (fr.filetype === FileType.ARCHIVE) {
-            if (this.settings.findArchives && this.isMatchingArchiveFile(fr.filename)) {
+        let fr = new FileResult(dirname, fileName, this.fileTypes.getFileType(fileName), stat);
+        if (fr.fileType === FileType.ARCHIVE) {
+            if (this.settings.findArchives && this.isMatchingArchiveFile(fr.fileName)) {
                 return fr;
             }
             return null;
@@ -219,10 +219,10 @@ class Finder {
                 findDirs.push(f);
             } else if (stats.isFile()) {
                 // const dirname = path.dirname(f) || '.';
-                // const filename = path.basename(f);
-                // if (this.filterFile(filename)) {
-                //     const filetype = this.filetypes.getFileType(filename);
-                //     const sf = new FileResult(dirname, filename, filetype);
+                // const fileName = path.basename(f);
+                // if (this.filterFile(fileName)) {
+                //     const fileType = this.fileTypes.getFileType(fileName);
+                //     const sf = new FileResult(dirname, fileName, fileType);
                 //     fileResults.push(sf);
                 // }
                 let fr = this.filterToFileResult(f);
@@ -267,28 +267,28 @@ class Finder {
 
     cmpFileResultsByPath(fr1, fr2) {
         const [path1, path2] = this.settings.sortCaseInsensitive ?
-            [fr1.pathname.toLowerCase(), fr2.pathname.toLowerCase()] :
-            [fr1.pathname, fr2.pathname];
+            [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
+            [fr1.path, fr2.path];
         if (path1 === path2) {
-            const [filename1, filename2] = this.settings.sortCaseInsensitive ?
-                [fr1.filename.toLowerCase(), fr2.filename.toLowerCase()] :
-                [fr1.filename, fr2.filename];
-            return filename1 < filename2 ? -1 : 1;
+            const [fileName1, fileName2] = this.settings.sortCaseInsensitive ?
+                [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
+                [fr1.fileName, fr2.fileName];
+            return fileName1 < fileName2 ? -1 : 1;
         }
         return path1 < path2 ? -1 : 1;
     }
 
     cmpFileResultsByName(fr1, fr2) {
-        const [filename1, filename2] = this.settings.sortCaseInsensitive ?
-            [fr1.filename.toLowerCase(), fr2.filename.toLowerCase()] :
-            [fr1.filename, fr2.filename];
-        if (filename1 === filename2) {
+        const [fileName1, fileName2] = this.settings.sortCaseInsensitive ?
+            [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
+            [fr1.fileName, fr2.fileName];
+        if (fileName1 === fileName2) {
             const [path1, path2] = this.settings.sortCaseInsensitive ?
-                [fr1.pathname.toLowerCase(), fr2.pathname.toLowerCase()] :
-                [fr1.pathname, fr2.pathname];
+                [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
+                [fr1.path, fr2.path];
             return path1 < path2 ? -1 : 1;
         }
-        return filename1 < filename2 ? -1 : 1;
+        return fileName1 < fileName2 ? -1 : 1;
     }
 
     cmpFileResultsBySize(fr1, fr2) {
@@ -302,10 +302,10 @@ class Finder {
     }
 
     cmpFileResultsByType(fr1, fr2) {
-        if (fr1.filetype === fr2.filetype) {
+        if (fr1.fileType === fr2.fileType) {
             return this.cmpFileResultsByPath(fr1, fr2);
         }
-        return fr1.filetype - fr2.filetype;
+        return fr1.fileType - fr2.fileType;
     }
 
     cmpFileResultsByLastMod(fr1, fr2) {

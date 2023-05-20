@@ -6,15 +6,15 @@
 (deftest test-no-args
   (let [[ss errs] (settings-from-args [])]
     (testing "test-no-args"
-      (is (not (:archivesonly ss)))
+      (is (not (:archives-only ss)))
       (is (not (:debug ss)))
-      (is (:excludehidden ss))
-      (is (not (:listdirs ss)))
-      (is (:listfiles ss))
-      (is (not (:printusage ss)))
-      (is (not (:printversion ss)))
+      (is (:exclude-hidden ss))
+      (is (not (:list-dirs ss)))
+      (is (:list-files ss))
+      (is (not (:print-usage ss)))
+      (is (not (:print-version ss)))
       (is (:recursive ss))
-      (is (not (:includearchives ss)))
+      (is (not (:include-archives ss)))
       (is (empty? (:path ss)))
       (is (not (:verbose ss))))))
 
@@ -39,11 +39,11 @@
       (is (= (count errs) 1))
       (is (= (first errs) "Invalid option: Q")))))
 
-(deftest test-archivesonly
+(deftest test-archives-only
   (let [[ss errs] (settings-from-args ["--archivesonly"])]
-    (testing "test-archivesonly"
-      (is (= (:archivesonly ss) true))
-      (is (= (:includearchives ss) true)))))
+    (testing "test-archives-only"
+      (is (= (:archives-only ss) true))
+      (is (= (:include-archives ss) true)))))
 
 (deftest test-debug
   (let [[ss errs] (settings-from-args ["--debug"])]
@@ -68,8 +68,8 @@
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "js"))
       (is (contains? (:in-extensions ss) "ts"))
-      (is (= (count (:out-dirpatterns ss)) 1))
-      (is (= (count (:out-filepatterns ss)) 1))
+      (is (= (count (:out-dir-patterns ss)) 1))
+      (is (= (count (:out-file-patterns ss)) 1))
       (is (= (:debug ss) true))
       (is (= (:verbose ss) true))
-      (is (= (:excludehidden ss) false)))))
+      (is (= (:exclude-hidden ss) false)))))

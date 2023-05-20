@@ -39,33 +39,33 @@
 
 (defrecord FindSettings
   [
-    archivesonly
+    archives-only
     debug
-    excludehidden
-    includearchives
-    in-archiveextensions
-    in-archivefilepatterns
-    in-dirpatterns
+    exclude-hidden
+    include-archives
+    in-archive-extensions
+    in-archive-file-patterns
+    in-dir-patterns
     in-extensions
-    in-filepatterns
-    in-filetypes
-    listdirs
-    listfiles
-    maxlastmod
-    maxsize
-    minlastmod
-    minsize
-    out-archiveextensions
-    out-archivefilepatterns
-    out-dirpatterns
+    in-file-patterns
+    in-file-types
+    list-dirs
+    list-files
+    max-last-mod
+    max-size
+    min-last-mod
+    min-size
+    out-archive-extensions
+    out-archive-patterns
+    out-dir-patterns
     out-extensions
-    out-filepatterns
-    out-filetypes
+    out-file-patterns
+    out-file-types
     paths
-    printusage
-    printversion
+    print-usage
+    print-version
     sort-by
-    sort-caseinsensitive
+    sort-case-insensitive
     sort-descending
     recursive
     verbose
@@ -73,33 +73,33 @@
 
 (def DEFAULT-SETTINGS
   (->FindSettings
-   false     ; archivesonly
+   false     ; archives-only
    false     ; debug
-   true      ; excludehidden
-   false     ; includearchives
-   #{}       ; in-archiveextensions
-   #{}       ; in-archivefilepatterns
-   #{}       ; in-dirpatterns
+   true      ; exclude-hidden
+   false     ; include-archives
+   #{}       ; in-archive-extensions
+   #{}       ; in-archive-file-patterns
+   #{}       ; in-dir-patterns
    #{}       ; in-extensions
-   #{}       ; in-filepatterns
-   #{}       ; in-filetypes
-   false     ; listdirs
-   false     ; listfiles
-   nil       ; maxlastmod
-   0         ; maxsize
-   nil       ; minlastmod
-   0         ; minsize
-   #{}       ; out-archiveextensions
-   #{}       ; out-archivefilepatterns
-   #{}       ; out-dirpatterns
+   #{}       ; in-file-patterns
+   #{}       ; in-file-types
+   false     ; list-dirs
+   false     ; list-files
+   nil       ; max-last-mod
+   0         ; max-size
+   nil       ; min-last-mod
+   0         ; min-size
+   #{}       ; out-archive-extensions
+   #{}       ; out-archive-patterns
+   #{}       ; out-dir-patterns
    #{}       ; out-extensions
-   #{}       ; out-filepatterns
-   #{}       ; out-filetypes
+   #{}       ; out-file-patterns
+   #{}       ; out-file-types
    #{}       ; paths
-   false     ; printusage
-   false     ; printversion
+   false     ; print-usage
+   false     ; print-version
    :filepath ; sort-by
-   false     ; sort-caseinsensitive
+   false     ; sort-case-insensitive
    false     ; sort-descending
    true      ; recursive
    false     ; verbose
@@ -122,19 +122,19 @@
       :else
         (add-extensions settings (str/split ext #",") extname))))
 
-(defn add-filetypes [^FindSettings settings types typesname]
+(defn add-file-types [^FindSettings settings types typesname]
   (if (empty? types)
     settings
-    (add-filetypes
+    (add-file-types
      (update-in settings [typesname] #(add-element (from-name (first types)) %)) (rest types) typesname)))
 
-(defn add-filetype [^FindSettings settings typ typesname]
+(defn add-file-type [^FindSettings settings typ typesname]
   (let [t (type typ)]
     (cond
       (= t (type []))
-      (add-filetypes settings typ typesname)
+      (add-file-types settings typ typesname)
       :else
-      (add-filetypes settings (str/split typ #",") typesname))))
+      (add-file-types settings (str/split typ #",") typesname))))
 
 (defn add-paths [^FindSettings settings paths]
   (if (empty? paths)
@@ -168,10 +168,10 @@
   (or
    (= :filesize (:sort-by settings))
    (= :lastmod (:sort-by settings))
-   (not (nil? (:maxlastmod settings)))
-   (not (nil? (:minlastmod settings)))
-   (> (:maxsize settings) 0)
-   (> (:minsize settings) 0)))
+   (not (nil? (:max-last-mod settings)))
+   (not (nil? (:min-last-mod settings)))
+   (> (:max-size settings) 0)
+   (> (:min-size settings) 0)))
 
 (defn set-num [^FindSettings settings n numname]
   (let [t (type n)]
@@ -181,11 +181,11 @@
       :else
         (assoc settings numname (read-string n)))))
 
-(defn set-archivesonly [^FindSettings settings b]
-  (let [with-archivesonly (assoc settings :archivesonly b)]
+(defn set-archives-only [^FindSettings settings b]
+  (let [with-archives-only (assoc settings :archives-only b)]
     (if b
-      (assoc with-archivesonly :includearchives true)
-      with-archivesonly)))
+      (assoc with-archives-only :include-archives true)
+      with-archives-only)))
 
 (defn set-debug [^FindSettings settings b]
   (let [with-debug (assoc settings :debug true)]

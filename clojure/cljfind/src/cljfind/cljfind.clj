@@ -12,12 +12,12 @@
     (if (:debug settings) (log-msg settings))
     (if (empty? errs)
       (do
-        (if (:printusage settings) (usage))
+        (if (:print-usage settings) (usage))
         (let [[files errs] (find-files settings)]
           (if (empty? errs)
             (do
-              (if (:listdirs settings) (print-matching-dirs files))
-              (if (:listfiles settings) (print-matching-files files)))
+              (if (:list-dirs settings) (print-matching-dirs files))
+              (if (:list-files settings) (print-matching-files files)))
             (do
               (log-errors errs)
               (usage)))))

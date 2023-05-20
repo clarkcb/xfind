@@ -80,60 +80,60 @@ export class FileTypes {
         return 'UNKNOWN';
     }
 
-    public static getFileType(filename: string): FileType {
-        if (FileTypes.isCodeFile(filename))
+    public static getFileType(fileName: string): FileType {
+        if (FileTypes.isCodeFile(fileName))
             return FileType.Code;
-        if (FileTypes.isXmlFile(filename))
+        if (FileTypes.isXmlFile(fileName))
             return FileType.Xml;
-        if (FileTypes.isTextFile(filename))
+        if (FileTypes.isTextFile(fileName))
             return FileType.Text;
-        if (FileTypes.isBinaryFile(filename))
+        if (FileTypes.isBinaryFile(fileName))
             return FileType.Binary;
-        if (FileTypes.isArchiveFile(filename))
+        if (FileTypes.isArchiveFile(fileName))
             return FileType.Archive;
         return FileType.Unknown;
     }
 
-    public static getFileTypeAsync(filename: string, cb: (ft: FileType) => void): void {
-        if (FileTypes.isCodeFile(filename))
+    public static getFileTypeAsync(fileName: string, cb: (ft: FileType) => void): void {
+        if (FileTypes.isCodeFile(fileName))
             return cb(FileType.Code);
-        if (FileTypes.isXmlFile(filename))
+        if (FileTypes.isXmlFile(fileName))
             return cb(FileType.Xml);
-        if (FileTypes.isTextFile(filename))
+        if (FileTypes.isTextFile(fileName))
             return cb(FileType.Text);
-        if (FileTypes.isBinaryFile(filename))
+        if (FileTypes.isBinaryFile(fileName))
             return cb(FileType.Binary);
-        if (FileTypes.isArchiveFile(filename))
+        if (FileTypes.isArchiveFile(fileName))
             return cb(FileType.Archive);
         cb(FileType.Unknown);
     }
 
-    public static isArchiveFile(filename: string): boolean {
-        return FileTypes.fileTypeExtMap['archive'].indexOf(FileUtil.getExtension(filename)) > -1
-            || FileTypes.fileTypeNameMap['archive'].indexOf(filename) > -1;
+    public static isArchiveFile(fileName: string): boolean {
+        return FileTypes.fileTypeExtMap['archive'].indexOf(FileUtil.getExtension(fileName)) > -1
+            || FileTypes.fileTypeNameMap['archive'].indexOf(fileName) > -1;
     }
 
-    public static isBinaryFile(filename: string): boolean {
-        return FileTypes.fileTypeNameMap['binary'].indexOf(filename) > -1
-            || FileTypes.fileTypeExtMap['binary'].indexOf(FileUtil.getExtension(filename)) > -1;
+    public static isBinaryFile(fileName: string): boolean {
+        return FileTypes.fileTypeNameMap['binary'].indexOf(fileName) > -1
+            || FileTypes.fileTypeExtMap['binary'].indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    public static isCodeFile(filename: string): boolean {
-        return FileTypes.fileTypeNameMap['code'].indexOf(filename) > -1
-            || FileTypes.fileTypeExtMap['code'].indexOf(FileUtil.getExtension(filename)) > -1;
+    public static isCodeFile(fileName: string): boolean {
+        return FileTypes.fileTypeNameMap['code'].indexOf(fileName) > -1
+            || FileTypes.fileTypeExtMap['code'].indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    public static isTextFile(filename: string): boolean {
-        return FileTypes.fileTypeNameMap['text'].indexOf(filename) > -1
-            || FileTypes.fileTypeExtMap['text'].indexOf(FileUtil.getExtension(filename)) > -1;
+    public static isTextFile(fileName: string): boolean {
+        return FileTypes.fileTypeNameMap['text'].indexOf(fileName) > -1
+            || FileTypes.fileTypeExtMap['text'].indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    public static isXmlFile(filename: string): boolean {
-        return FileTypes.fileTypeNameMap['xml'].indexOf(filename) > -1
-            || FileTypes.fileTypeExtMap['xml'].indexOf(FileUtil.getExtension(filename)) > -1;
+    public static isXmlFile(fileName: string): boolean {
+        return FileTypes.fileTypeNameMap['xml'].indexOf(fileName) > -1
+            || FileTypes.fileTypeExtMap['xml'].indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    public static isUnknownFile(filename: string): boolean {
-        return FileTypes.getFileType(filename) === FileType.Unknown;
+    public static isUnknownFile(fileName: string): boolean {
+        return FileTypes.getFileType(fileName) === FileType.Unknown;
     }
 }

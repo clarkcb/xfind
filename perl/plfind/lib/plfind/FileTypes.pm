@@ -89,7 +89,7 @@ sub from_name {
     return plfind::FileType->UNKNOWN;
 }
 
-sub get_filetype {
+sub get_file_type {
     my ($self, $file) = @_;
     if ($self->is_code($file)) {
         return plfind::FileType->CODE;
@@ -171,7 +171,7 @@ sub is_xml {
 
 sub is_unknown {
     my ($self, $file) = @_;
-    my $file_type = $self->get_filetype($file);
+    my $file_type = $self->get_file_type($file);
     if ($file_type eq plfind::FileType->UNKNOWN) {
         return 1;
     }

@@ -53,13 +53,13 @@ class FileTypes {
     Map jsonFileTypesMap = json.decode(contents);
     if (jsonFileTypesMap.containsKey('filetypes')) {
       var ftList = jsonFileTypesMap['filetypes'] as List;
-      ftList.forEach((ft) {
+      for (var ft in ftList) {
         var typeName = (ft as Map)['type'];
-        var extensions = (ft as Map)['extensions'].toSet();
+        var extensions = (ft)['extensions'].toSet();
         fileTypeExtMap[typeName] = extensions;
-        var names = (ft as Map)['names'].toSet();
+        var names = (ft)['names'].toSet();
         fileTypeNameMap[typeName] = names;
-      });
+      }
       fileTypeExtMap[text] = fileTypeExtMap[text]
           .union(fileTypeExtMap[code].union(fileTypeExtMap[xml]));
       fileTypeNameMap[text] = fileTypeNameMap[text]

@@ -19,33 +19,33 @@ module RbFind
     def initialize(settings)
       @settings = settings
       validate_settings
-      @filetypes = FileTypes.new
+      @file_types = FileTypes.new
       @results = []
     end
 
     def matching_dir?(dirname)
       path_elems = dirname.split(File::SEPARATOR) - FileUtil.dot_dirs
-      if @settings.excludehidden && path_elems.any? { |p| FileUtil.hidden?(p) }
+      if @settings.exclude_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
         return false
       end
-      if !@settings.in_dirpatterns.empty? &&
-        !any_matches_any_pattern(path_elems, @settings.in_dirpatterns)
+      if !@settings.in_dir_patterns.empty? &&
+        !any_matches_any_pattern(path_elems, @settings.in_dir_patterns)
         return false
       end
-      if !@settings.out_dirpatterns.empty? &&
-        any_matches_any_pattern(path_elems, @settings.out_dirpatterns)
+      if !@settings.out_dir_patterns.empty? &&
+        any_matches_any_pattern(path_elems, @settings.out_dir_patterns)
         return false
       end
       true
     end
 
-    def matching_file?(filepath)
-      matching_fileresult?(filepath_to_fileresult(filepath))
+    def matching_file?(file_path)
+      matching_file_result?(file_path_to_file_result(file_path))
     end
 
-    def matching_fileresult?(fileresult)
+    def matching_file_result?(file_result)
       if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
-        ext = FileUtil.get_extension(fileresult.filename)
+        ext = FileUtil.get_extension(file_result.file_name)
         if !@settings.in_extensions.empty? &&
           !@settings.in_extensions.include?(ext)
           return false
@@ -55,115 +55,115 @@ module RbFind
           return false
         end
       end
-      if !@settings.in_filepatterns.empty? &&
-        !matches_any_pattern(fileresult.filename, @settings.in_filepatterns)
+      if !@settings.in_file_patterns.empty? &&
+        !matches_any_pattern(file_result.file_name, @settings.in_file_patterns)
         return false
       end
-      if !@settings.out_filepatterns.empty? &&
-        matches_any_pattern(fileresult.filename, @settings.out_filepatterns)
+      if !@settings.out_file_patterns.empty? &&
+        matches_any_pattern(file_result.file_name, @settings.out_file_patterns)
         return false
       end
-      if !@settings.in_filetypes.empty? &&
-        !@settings.in_filetypes.include?(fileresult.filetype)
+      if !@settings.in_file_types.empty? &&
+        !@settings.in_file_types.include?(file_result.file_type)
         return false
       end
-      if !@settings.out_filetypes.empty? &&
-        @settings.out_filetypes.include?(fileresult.filetype)
+      if !@settings.out_file_types.empty? &&
+        @settings.out_file_types.include?(file_result.file_type)
         return false
       end
-      if @settings.maxlastmod && fileresult.stat.mtime > @settings.maxlastmod.to_time
+      if @settings.max_last_mod && file_result.stat.mtime > @settings.max_last_mod.to_time
         return false
       end
-      if @settings.maxsize > 0 && fileresult.stat.size > @settings.maxsize
+      if @settings.max_size > 0 && file_result.stat.size > @settings.max_size
         return false
       end
-      if @settings.minlastmod && fileresult.stat.mtime < @settings.minlastmod.to_time
+      if @settings.min_last_mod && file_result.stat.mtime < @settings.min_last_mod.to_time
         return false
       end
-      if @settings.minsize > 0 && fileresult.stat.size < @settings.minsize
+      if @settings.min_size > 0 && file_result.stat.size < @settings.min_size
         return false
       end
       true
     end
 
-    def matching_archive_file?(filepath)
-      filename = File.basename(filepath)
+    def matching_archive_file?(file_path)
+      filename = File.basename(file_path)
       ext = FileUtil.get_extension(filename)
-      if !@settings.in_archiveextensions.empty? &&
-        !@settings.in_archiveextensions.include?(ext)
+      if !@settings.in_archive_extensions.empty? &&
+        !@settings.in_archive_extensions.include?(ext)
         return false
       end
-      if !@settings.out_archiveextensions.empty? &&
-        @settings.out_archiveextensions.include?(ext)
+      if !@settings.out_archive_extensions.empty? &&
+        @settings.out_archive_extensions.include?(ext)
         return false
       end
-      if !@settings.in_archivefilepatterns.empty? &&
-        !matches_any_pattern(filename, @settings.in_archivefilepatterns)
+      if !@settings.in_archive_file_patterns.empty? &&
+        !matches_any_pattern(filename, @settings.in_archive_file_patterns)
         return false
       end
-      if !@settings.out_archivefilepatterns.empty? &&
-        matches_any_pattern(filename, @settings.out_archivefilepatterns)
+      if !@settings.out_archive_file_patterns.empty? &&
+        matches_any_pattern(filename, @settings.out_archive_file_patterns)
         return false
       end
       true
     end
 
-    def filter_to_fileresult(filepath)
-      filename = File.basename(filepath)
-      if @settings.excludehidden && FileUtil.hidden?(filename)
+    def filter_to_file_result(file_path)
+      filename = File.basename(file_path)
+      if @settings.exclude_hidden && FileUtil.hidden?(filename)
         return nil
       end
-      fileresult = filepath_to_fileresult(filepath)
-      if fileresult.filetype == FileType::ARCHIVE
-        if @settings.includearchives && matching_archive_file?(filename)
-          return fileresult
+      file_result = file_path_to_file_result(file_path)
+      if file_result.file_type == FileType::ARCHIVE
+        if @settings.include_archives && matching_archive_file?(filename)
+          return file_result
         end
         return nil
       end
-      if !@settings.archivesonly && matching_fileresult?(fileresult)
-        return fileresult
+      if !@settings.archives_only && matching_file_result?(file_result)
+        return file_result
       end
       nil
     end
 
     def find
-      fileresults = []
+      file_results = []
       @settings.paths.each do |p|
-        fileresults = fileresults.concat(get_file_results(p))
+        file_results = file_results.concat(get_file_results(p))
       end
-      fileresults = sort_file_results(fileresults)
+      file_results = sort_file_results(file_results)
       if @settings.sort_descending
-        fileresults.reverse!
+        file_results.reverse!
       end
-      fileresults
+      file_results
     end
 
     private
 
     def sort_file_results(file_results)
-      if @settings.sort_caseinsensitive
-        if @settings.sortby == SortBy::FILENAME
-          file_results.sort_by {|r| [r.filename.downcase, r.path.downcase]}
-        elsif @settings.sortby == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.stat.size, r.path.downcase, r.filename.downcase]}
-        elsif @settings.sortby == SortBy::FILETYPE
-          file_results.sort_by {|r| [r.filetype, r.path.downcase, r.filename.downcase]}
-        elsif @settings.sortby == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.stat.mtime, r.path.downcase, r.filename.downcase]}
+      if @settings.sort_case_insensitive
+        if @settings.sort_by == SortBy::FILENAME
+          file_results.sort_by {|r| [r.file_name.downcase, r.path.downcase]}
+        elsif @settings.sort_by == SortBy::FILESIZE
+          file_results.sort_by {|r| [r.stat.size, r.path.downcase, r.file_name.downcase]}
+        elsif @settings.sort_by == SortBy::FILETYPE
+          file_results.sort_by {|r| [r.file_type, r.path.downcase, r.file_name.downcase]}
+        elsif @settings.sort_by == SortBy::LASTMOD
+          file_results.sort_by {|r| [r.stat.mtime, r.path.downcase, r.file_name.downcase]}
         else
-          file_results.sort_by {|r| [r.path.downcase, r.filename.downcase]}
+          file_results.sort_by {|r| [r.path.downcase, r.file_name.downcase]}
         end
       else
-        if @settings.sortby == SortBy::FILENAME
-          file_results.sort_by {|r| [r.filename, r.path]}
-        elsif @settings.sortby == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.stat.size, r.path, r.filename]}
-        elsif @settings.sortby == SortBy::FILETYPE
-          file_results.sort_by {|r| [r.filetype, r.path, r.filename]}
-        elsif @settings.sortby == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.stat.mtime, r.path, r.filename]}
+        if @settings.sort_by == SortBy::FILENAME
+          file_results.sort_by {|r| [r.file_name, r.path]}
+        elsif @settings.sort_by == SortBy::FILESIZE
+          file_results.sort_by {|r| [r.stat.size, r.path, r.file_name]}
+        elsif @settings.sort_by == SortBy::FILETYPE
+          file_results.sort_by {|r| [r.file_type, r.path, r.file_name]}
+        elsif @settings.sort_by == SortBy::LASTMOD
+          file_results.sort_by {|r| [r.stat.mtime, r.path, r.file_name]}
         else
-          file_results.sort_by {|r| [r.path, r.filename]}
+          file_results.sort_by {|r| [r.path, r.file_name]}
         end
       end
 
@@ -175,11 +175,11 @@ module RbFind
         raise FindError, 'Startpath not found' unless Pathname.new(p).exist?
         raise FindError, 'Startpath not readable' unless File.readable?(p)
       end
-      if @settings.maxlastmod && @settings.minlastmod && @settings.maxlastmod <= @settings.minlastmod
-        raise FindError, 'Invalid range for minlastmod and maxlastmod'
+      if @settings.max_last_mod && @settings.min_last_mod && @settings.max_last_mod <= @settings.min_last_mod
+        raise FindError, 'Invalid range for min_last_mod and max_last_mod'
       end
-      if @settings.maxsize > 0 && @settings.minsize > 0 && @settings.maxsize <= @settings.minsize
-        raise FindError, 'Invalid range for minsize and maxsize'
+      if @settings.max_size > 0 && @settings.min_size > 0 && @settings.max_size <= @settings.min_size
+        raise FindError, 'Invalid range for minsmin_sizeize and max_size'
       end
     end
 
@@ -194,50 +194,50 @@ module RbFind
       false
     end
 
-    def filepath_to_fileresult(filepath)
-      d = File.dirname(filepath) || '.'
-      filename = File.basename(filepath)
-      filetype = @filetypes.get_filetype(filename)
+    def file_path_to_file_result(file_path)
+      d = File.dirname(file_path) || '.'
+      filename = File.basename(file_path)
+      file_type = @file_types.get_file_type(filename)
       stat = nil
       if @settings.need_stat?
-        stat = File.stat(filepath)
+        stat = File.stat(file_path)
       end
-      FileResult.new(d, filename, filetype, stat)
+      FileResult.new(d, filename, file_type, stat)
     end
 
-    def get_file_results(filepath)
-      fileresults = []
-      if FileTest.directory?(filepath)
+    def get_file_results(file_path)
+      file_results = []
+      if FileTest.directory?(file_path)
         if @settings.recursive
-          Find.find(filepath) do |f|
+          Find.find(file_path) do |f|
             if FileTest.directory?(f)
               Find.prune unless matching_dir?(f)
             elsif FileTest.file?(f)
-              fileresult = filter_to_fileresult(f)
-              if fileresult != nil
-                fileresults.push(fileresult)
+              file_result = filter_to_file_result(f)
+              if file_result != nil
+                file_results.push(file_result)
               end
             end
           end
         else
-          Find.find(filepath) do |f|
+          Find.find(file_path) do |f|
             if FileTest.directory?(f)
               Find.prune
             else
-              fileresult = filter_to_fileresult(f)
-              if fileresult != nil
-                fileresults.push(fileresult)
+              file_result = filter_to_file_result(f)
+              if file_result != nil
+                file_results.push(file_result)
               end
             end
           end
         end
-      elsif FileTest.file?(filepath)
-        fileresult = filter_to_fileresult(f)
-        if fileresult != nil
-          fileresults.push(fileresult)
+      elsif FileTest.file?(file_path)
+        file_result = filter_to_file_result(file_path)
+        if file_result != nil
+          file_results.push(file_result)
         end
       end
-      fileresults
+      file_results
     end
 
   end

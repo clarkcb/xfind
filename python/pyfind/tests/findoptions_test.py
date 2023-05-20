@@ -23,25 +23,25 @@ class FindOptionsTest(unittest.TestCase):
     def test_no_args(self):
         # test the props
         settings = self.findoptions.find_settings_from_args([])
-        self.assertFalse(settings.archivesonly)
+        self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
-        self.assertTrue(settings.excludehidden)
-        self.assertFalse(settings.includearchives)
-        self.assertFalse(settings.listdirs)
-        self.assertTrue(settings.listfiles)
-        self.assertFalse(settings.printusage)
-        self.assertFalse(settings.printversion)
+        self.assertTrue(settings.exclude_hidden)
+        self.assertFalse(settings.include_archives)
+        self.assertFalse(settings.list_dirs)
+        self.assertTrue(settings.list_files)
+        self.assertFalse(settings.print_usage)
+        self.assertFalse(settings.print_version)
         self.assertTrue(settings.recursive)
         self.assertFalse(settings.verbose)
         # test the extension and pattern sets
-        self.assertFalse(settings.in_archiveextensions)
-        self.assertFalse(settings.in_archivefilepatterns)
-        self.assertFalse(settings.in_dirpatterns)
-        self.assertFalse(settings.in_filepatterns)
-        self.assertFalse(settings.out_archiveextensions)
-        self.assertFalse(settings.out_archivefilepatterns)
-        self.assertFalse(settings.out_dirpatterns)
-        self.assertFalse(settings.out_filepatterns)
+        self.assertFalse(settings.in_archive_extensions)
+        self.assertFalse(settings.in_archive_file_patterns)
+        self.assertFalse(settings.in_dir_patterns)
+        self.assertFalse(settings.in_file_patterns)
+        self.assertFalse(settings.out_archive_extensions)
+        self.assertFalse(settings.out_archive_file_patterns)
+        self.assertFalse(settings.out_dir_patterns)
+        self.assertFalse(settings.out_file_patterns)
 
     def test_valid_args(self):
         args = ['-x', 'py,rb', '.']
@@ -51,11 +51,11 @@ class FindOptionsTest(unittest.TestCase):
         self.assertEqual(1, len(settings.paths))
         self.assertIn('.', settings.paths)
 
-    def test_archivesonly_arg(self):
+    def test_archives_only_arg(self):
         args = ['--archivesonly']
         settings = self.findoptions.find_settings_from_args(args)
-        self.assertTrue(settings.archivesonly)
-        self.assertTrue(settings.includearchives)
+        self.assertTrue(settings.archives_only)
+        self.assertTrue(settings.include_archives)
 
     def test_debug_arg(self):
         args = ['--debug']
@@ -90,11 +90,11 @@ class FindOptionsTest(unittest.TestCase):
         self.assertIn('~/src/xfind/', settings.paths)
         for x in {'js', 'ts'}:
             self.assertIn(x, settings.in_extensions)
-        self.assertEqual(list(settings.out_dirpatterns)[0].pattern, 'node_module')
-        self.assertEqual(list(settings.out_filepatterns)[0].pattern, 'temp')
+        self.assertEqual(list(settings.out_dir_patterns)[0].pattern, 'node_module')
+        self.assertEqual(list(settings.out_file_patterns)[0].pattern, 'temp')
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
-        self.assertFalse(settings.excludehidden)
+        self.assertFalse(settings.exclude_hidden)
 
 
 if __name__ == '__main__':

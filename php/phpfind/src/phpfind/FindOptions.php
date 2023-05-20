@@ -23,50 +23,50 @@ class FindOptions
         $this->options = array();
 
         $this->arg_action_map = [
-            'in-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_archiveextensions),
+            'in-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_archive_extensions),
             'in-archivefilepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_archivefilepatterns),
-            'in-dirpattern' => fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_dirpatterns),
+                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_archive_file_patterns),
+            'in-dirpattern' => fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_dir_patterns),
             'in-ext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_extensions),
             'in-filepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_filepatterns),
-            'in-filetype' => fn (string $s, FindSettings $fs) => $fs->add_filetypes($s, $fs->in_filetypes),
-            'maxlastmod' => fn (string $s, FindSettings $fs) => $fs->maxlastmod = new \DateTime($s),
-            'maxsize' => fn (string $s, FindSettings $fs) => $fs->maxsize = intval($s),
-            'minlastmod' => fn (string $s, FindSettings $fs) => $fs->minlastmod = new \DateTime($s),
-            'minsize' => fn (string $s, FindSettings $fs) => $fs->minsize = intval($s),
-            'out-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archiveextensions),
+                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_file_patterns),
+            'in-filetype' => fn (string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->in_file_types),
+            'maxlastmod' => fn (string $s, FindSettings $fs) => $fs->max_last_mod = new \DateTime($s),
+            'maxsize' => fn (string $s, FindSettings $fs) => $fs->max_size = intval($s),
+            'minlastmod' => fn (string $s, FindSettings $fs) => $fs->min_last_mod = new \DateTime($s),
+            'minsize' => fn (string $s, FindSettings $fs) => $fs->min_size = intval($s),
+            'out-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archive_extensions),
             'out-archivefilepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archivefilepatterns),
+                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_patterns),
             'out-dirpattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dirpatterns),
+                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dir_patterns),
             'out-ext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_extensions),
             'out-filepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_filepatterns),
-            'out-filetype' => fn (string $s, FindSettings $fs) => $fs->add_filetypes($s, $fs->out_filetypes),
+                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
+            'out-filetype' => fn (string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
             'path' => fn (string $s, FindSettings $fs) => $fs->paths[] = $s,
             'settings-file' => fn (string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
             'sort-by' => fn (string $s, FindSettings $fs) => $fs->set_sort_by($s)
         ];
 
         $this->bool_flag_action_map = [
-            'archivesonly' => fn (bool $b, FindSettings $fs) => $fs->set_archivesonly($b),
+            'archivesonly' => fn (bool $b, FindSettings $fs) => $fs->set_archives_only($b),
             'debug' => fn (bool $b, FindSettings $fs) => $fs->set_debug($b),
-            'excludearchives' => fn (bool $b, FindSettings $fs) => $fs->includearchives = !$b,
-            'excludehidden' => fn (bool $b, FindSettings $fs) => $fs->excludehidden = $b,
-            'help' => fn (bool $b, FindSettings $fs) => $fs->printusage = $b,
-            'includearchives' => fn (bool $b, FindSettings $fs) => $fs->includearchives = $b,
-            'includehidden' => fn (bool $b, FindSettings $fs) => $fs->excludehidden = !$b,
-            'listdirs' => fn (bool $b, FindSettings $fs) => $fs->listdirs = $b,
-            'listfiles' => fn (bool $b, FindSettings $fs) => $fs->listfiles = $b,
+            'excludearchives' => fn (bool $b, FindSettings $fs) => $fs->include_archives = !$b,
+            'excludehidden' => fn (bool $b, FindSettings $fs) => $fs->exclude_hidden = $b,
+            'help' => fn (bool $b, FindSettings $fs) => $fs->print_usage = $b,
+            'includearchives' => fn (bool $b, FindSettings $fs) => $fs->include_archives = $b,
+            'includehidden' => fn (bool $b, FindSettings $fs) => $fs->exclude_hidden = !$b,
+            'listdirs' => fn (bool $b, FindSettings $fs) => $fs->list_dirs = $b,
+            'listfiles' => fn (bool $b, FindSettings $fs) => $fs->list_files = $b,
             'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
             'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
             'sort-ascending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = !$b,
-            'sort-caseinsensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_caseinsensitive = $b,
-            'sort-casesensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_caseinsensitive = !$b,
+            'sort-caseinsensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_case_insensitive = $b,
+            'sort-casesensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_case_insensitive = !$b,
             'sort-descending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = $b,
             'verbose' => fn (bool $b, FindSettings $fs) => $fs->verbose = $b,
-            'version' => fn (bool $b, FindSettings $fs) => $fs->printversion = $b
+            'version' => fn (bool $b, FindSettings $fs) => $fs->print_version = $b
         ];
         $this->longarg_map = array();
         $this->set_options_from_json();
@@ -99,17 +99,17 @@ class FindOptions
     }
 
     /**
-     * @param string $filepath
+     * @param string $file_path
      * @param FindSettings $settings
      * @return void
      * @throws FindException
      */
-    private function settings_from_file(string $filepath, FindSettings $settings): void
+    private function settings_from_file(string $file_path, FindSettings $settings): void
     {
-        if (!file_exists($filepath)) {
+        if (!file_exists($file_path)) {
             throw new FindException('Settings file not found');
         }
-        $json = file_get_contents($filepath);
+        $json = file_get_contents($file_path);
         $this->settings_from_json($json, $settings);
     }
 
@@ -151,8 +151,8 @@ class FindOptions
     public function settings_from_args(array $args): FindSettings
     {
         $settings = new FindSettings();
-        // default listfiles to true since running as cli
-        $settings->listfiles = true;
+        // default list_files to true since running as cli
+        $settings->list_files = true;
         while (count($args) > 0) {
             $arg = array_shift($args);
             if ($arg[0] == '-') {

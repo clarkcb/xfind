@@ -9,14 +9,14 @@
 import Foundation
 import swiftfind
 
-func getMatchingDirs(_ findfiles: [FileResult]) -> [String] {
-    findfiles.map {
+func getMatchingDirs(_ fileResults: [FileResult]) -> [String] {
+    fileResults.map {
         URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
     }.sorted().unique()
 }
 
-func getMatchingFiles(_ findfiles: [FileResult]) -> [String] {
-    findfiles.map(\.filePath)
+func getMatchingFiles(_ fileResults: [FileResult]) -> [String] {
+    fileResults.map(\.filePath)
 }
 
 func handleError(_ error: FindError, _ options: FindOptions) {

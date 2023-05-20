@@ -10,9 +10,9 @@
 
 typedef struct FileResult {
     const char *dir;
-    const char *filename;
-    FileType filetype;
-    uint64_t filesize;
+    const char *file_name;
+    FileType file_type;
+    uint64_t file_size;
     long mtime;
 } FileResult;
 
@@ -21,7 +21,7 @@ typedef struct FileResults {
     struct FileResults *next;
 } FileResults;
 
-FileResult *new_file_result(const char *dir, const char *filename, FileType filetype, uint64_t filesize, long mtime);
+FileResult *new_file_result(const char *dir, const char *file_name, FileType file_type, uint64_t file_size, long mtime);
 
 FileResults *empty_file_results(void);
 
@@ -37,10 +37,10 @@ size_t file_results_count(FileResults *results);
 
 void file_result_to_string(FileResult *r, char *s);
 
-void print_file_results(FileResults *results, SortBy sortBy, unsigned short sort_caseinsensitive,
+void print_file_results(FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
                         unsigned short sort_descending);
 
-void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned short case_insensitive);
+void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, unsigned short case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 

@@ -18,8 +18,8 @@
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.findsettings :only
-         (->FindSettings DEFAULT-SETTINGS add-extension add-filetype add-path
-            add-pattern set-archivesonly set-debug set-num sort-by-from-name)]))
+         (->FindSettings DEFAULT-SETTINGS add-extension add-file-type add-path
+            add-pattern set-archives-only set-debug set-num sort-by-from-name)]))
 
 (defrecord FindOption [short-arg long-arg desc])
 
@@ -51,41 +51,41 @@
   (doseq [o OPTIONS] (print-option o)))
 
 (def arg-action-map
-  { :in-archiveext (fn [settings s] (add-extension settings s :in-archiveextensions))
-    :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archivefilepatterns))
-    :in-dirpattern (fn [settings s] (add-pattern settings s :in-dirpatterns))
+  { :in-archiveext (fn [settings s] (add-extension settings s :in-archive-extensions))
+    :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archive-file-patterns))
+    :in-dirpattern (fn [settings s] (add-pattern settings s :in-dir-patterns))
     :in-ext (fn [settings s] (add-extension settings s :in-extensions))
-    :in-filepattern (fn [settings s] (add-pattern settings s :in-filepatterns))
-    :in-filetype (fn [settings s] (add-filetype settings s :in-filetypes))
-    :maxlastmod (fn [settings s] (assoc settings :maxlastmod (clojure.instant/read-instant-date s)))
-    :maxsize (fn [settings s] (assoc settings :maxsize (Integer/parseInt s)))
-    :minlastmod (fn [settings s] (assoc settings :minlastmod (clojure.instant/read-instant-date s)))
-    :minsize (fn [settings s] (assoc settings :minsize (Integer/parseInt s)))
-    :out-archiveext (fn [settings s] (add-extension settings s :out-archiveextensions))
-    :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archivefilepattern))
-    :out-dirpattern (fn [settings s] (add-pattern settings s :out-dirpatterns))
+    :in-filepattern (fn [settings s] (add-pattern settings s :in-file-patterns))
+    :in-filetype (fn [settings s] (add-file-type settings s :in-file-types))
+    :maxlastmod (fn [settings s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
+    :maxsize (fn [settings s] (assoc settings :max-size (Integer/parseInt s)))
+    :minlastmod (fn [settings s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
+    :minsize (fn [settings s] (assoc settings :min-size (Integer/parseInt s)))
+    :out-archiveext (fn [settings s] (add-extension settings s :out-archive-extensions))
+    :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archive-file-pattern))
+    :out-dirpattern (fn [settings s] (add-pattern settings s :out-dir-patterns))
     :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
-    :out-filepattern (fn [settings s] (add-pattern settings s :out-filepatterns))
-    :out-filetype (fn [settings s] (add-filetype settings s :out-filetypes))
+    :out-filepattern (fn [settings s] (add-pattern settings s :out-file-patterns))
+    :out-filetype (fn [settings s] (add-file-type settings s :out-file-types))
     :path (fn [settings s] (add-path settings s))
     :sort-by (fn [settings s] (assoc settings :sort-by (sort-by-from-name s)))
   })
 
 (def bool-flag-action-map
-  { :archivesonly (fn [settings b] (set-archivesonly settings b))
+  { :archivesonly (fn [settings b] (set-archives-only settings b))
     :debug (fn [settings b] (set-debug settings b))
-    :excludearchives (fn [settings b] (assoc settings :includearchives (not b)))
-    :excludehidden (fn [settings b] (assoc settings :excludehidden b))
-    :help (fn [settings b] (assoc settings :printusage b))
-    :includearchives (fn [settings b] (assoc settings :includearchives b))
-    :includehidden (fn [settings b] (assoc settings :excludehidden (not b)))
-    :listdirs (fn [settings b] (assoc settings :listdirs b))
-    :listfiles (fn [settings b] (assoc settings :listfiles b))
+    :excludearchives (fn [settings b] (assoc settings :include-archives (not b)))
+    :excludehidden (fn [settings b] (assoc settings :exclude-hidden b))
+    :help (fn [settings b] (assoc settings :print-usage b))
+    :includearchives (fn [settings b] (assoc settings :include-archives b))
+    :includehidden (fn [settings b] (assoc settings :exclude-hidden (not b)))
+    :listdirs (fn [settings b] (assoc settings :list-dirs b))
+    :listfiles (fn [settings b] (assoc settings :list-files b))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
-    :sort-caseinsensitive (fn [settings b] (assoc settings :sort-caseinsensitive b))
-    :sort-casesensitive (fn [settings b] (assoc settings :sort-caseinsensitive (not b)))
+    :sort-caseinsensitive (fn [settings b] (assoc settings :sort-case-insensitive b))
+    :sort-casesensitive (fn [settings b] (assoc settings :sort-case-insensitive (not b)))
     :sort-descending (fn [settings b] (assoc settings :sort-descending b))
     :verbose (fn [settings b] (assoc settings :verbose b))
     :version (fn [settings b] (assoc settings :version b))
@@ -131,8 +131,8 @@
 
 (defn settings-from-args
   ([args]
-    ;; default listfiles to true since running as cli
-    (settings-from-args (assoc DEFAULT-SETTINGS :listfiles true) args []))
+    ;; default list-files to true since running as cli
+    (settings-from-args (assoc DEFAULT-SETTINGS :list-files true) args []))
   ([settings args errs]
     (if (or (empty? args) (not (empty? errs)))
       [settings errs]

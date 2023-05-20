@@ -15,14 +15,14 @@
         ))
 
 ; record to hold a file result (file is a File object)
-(defrecord FileResult [containers, ^java.io.File file, filetype,
+(defrecord FileResult [containers, ^java.io.File file, file-type,
                        ^java.nio.file.attribute.BasicFileAttributes stat])
 
 (defn new-file-result
-  ([^java.io.File file, filetype, stat]
-   (->FileResult [] file filetype stat))
-  ([containers, ^java.io.File file, filetype stat]
-   (->FileResult containers file filetype stat)))
+  ([^java.io.File file, file-type, stat]
+   (->FileResult [] file file-type stat))
+  ([containers, ^java.io.File file, file-type stat]
+   (->FileResult containers file file-type stat)))
 
 (defn file-result-path [^FileResult fr]
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
@@ -31,7 +31,7 @@
 (defn get-comp-by-path
   "get a filepath comparator"
   [settings]
-  (let [case-insensitive (:sort-caseinsensitive settings)]
+  (let [case-insensitive (:sort-case-insensitive settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
       (let [_p1 (.getParent (:file fr1))
             p1 (if (nil? _p1) "" (if case-insensitive (string/lower-case _p1) _p1))
@@ -49,7 +49,7 @@
 (defn get-comp-by-name
   "get a filename comparator"
   [settings]
-  (let [case-insensitive (:sort-caseinsensitive settings)]
+  (let [case-insensitive (:sort-case-insensitive settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
       (let [_n1 (get-name (:file fr1))
             n1 (if case-insensitive (string/lower-case _n1) _n1)
@@ -75,11 +75,11 @@
           res)))))
 
 (defn get-comp-by-type
-  "get a filetype comparator"
+  "get a file-type comparator"
   [settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (compare (to-name (:filetype fr1)) (to-name (:filetype fr2)))]
+      (let [res (compare (to-name (:file-type fr1)) (to-name (:file-type fr2)))]
         (if (= 0 res)
           (comp-by-path fr1 fr2)
           res)))))

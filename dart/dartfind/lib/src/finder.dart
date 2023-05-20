@@ -59,7 +59,7 @@ class Finder {
       var ext = FileUtil.extension(fileName);
       if ((settings.inExtensions.isNotEmpty &&
               !settings.inExtensions.contains(ext)) ||
-          (settings.outExtensions.isNotEmpty ||
+          (settings.outExtensions.isNotEmpty &&
               settings.outExtensions.contains(ext))) {
         return false;
       }
@@ -207,30 +207,28 @@ class Finder {
   }
 
   int cmpByFileSize(FileResult fr1, FileResult fr2) {
-    if (fr1.stat != null && fr2.stat != null) {
-      if (fr1.stat!.size == fr2.stat!.size) {
-        return cmpByFilePath(fr1, fr2);
-      }
-      return fr1.stat!.size - fr2.stat!.size;
+    if (fr1.stat != null &&
+        fr2.stat != null &&
+        fr1.stat!.size != fr2.stat!.size) {
+      return fr1.stat!.size < fr2.stat!.size ? -1 : 1;
     }
-    return 0;
+    return cmpByFilePath(fr1, fr2);
   }
 
   int cmpByFileType(FileResult fr1, FileResult fr2) {
-    if (fr1.fileType == fr2.fileType) {
-      return cmpByFilePath(fr1, fr2);
+    if (fr1.fileType != fr2.fileType) {
+      return fr1.fileType.index.compareTo(fr2.fileType.index);
     }
-    return fr1.fileType.name.compareTo(fr2.fileType.name);
+    return cmpByFilePath(fr1, fr2);
   }
 
   int cmpByLastMod(FileResult fr1, FileResult fr2) {
-    if (fr1.stat != null && fr2.stat != null) {
-      if (fr1.stat!.changed == fr2.stat!.changed) {
-        return cmpByFilePath(fr1, fr2);
-      }
-      return fr1.stat!.changed.isBefore(fr2.stat!.changed) ? -1 : 1;
+    if (fr1.stat != null &&
+        fr2.stat != null &&
+        !fr1.stat!.modified.isAtSameMomentAs(fr2.stat!.modified)) {
+      return fr1.stat!.modified.compareTo(fr2.stat!.modified);
     }
-    return 0;
+    return cmpByFilePath(fr1, fr2);
   }
 
   void reverseFileResults(List<FileResult> fileResults) {

@@ -4,11 +4,11 @@
 
 TEST_CASE("Expand paths", "[FileUtil]") {
     std::string HOME = getenv("HOME");
-    std::string fullpath = HOME + "/filename.txt";
+    std::string full_path = HOME + "/filename.txt";
     REQUIRE(cppfind::FileUtil::expand_path("filename.txt") == "filename.txt");
     REQUIRE(cppfind::FileUtil::expand_path("./filename.txt") == "./filename.txt");
-    REQUIRE(cppfind::FileUtil::expand_path(fullpath) == fullpath);
-    REQUIRE(cppfind::FileUtil::expand_path("~/filename.txt") == fullpath);
+    REQUIRE(cppfind::FileUtil::expand_path(full_path) == full_path);
+    REQUIRE(cppfind::FileUtil::expand_path("~/filename.txt") == full_path);
     REQUIRE(cppfind::FileUtil::expand_path("~") == HOME);
     REQUIRE(cppfind::FileUtil::expand_path("~/") == HOME + "/");
 }

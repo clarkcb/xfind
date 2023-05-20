@@ -12,32 +12,32 @@ public class FileResultTest {
     public FileResultTest() {}
 
     @Test
-    public final void test_fileresult_abs_path() {
+    public final void test_file_result_abs_path() {
         String dir = "~/src/xfind/java/javafind/src/main/java/javafind";
-        String filename = "FileResult.java";
-        Path path = Paths.get(dir + "/" + filename);
+        String fileName = "FileResult.java";
+        Path path = Paths.get(dir + "/" + fileName);
         FileResult fileResult = new FileResult(path, FileType.CODE);
-        String expectedFilePath = dir + "/" + filename;
+        String expectedFilePath = dir + "/" + fileName;
         assertEquals(expectedFilePath, fileResult.toString());
     }
 
     @Test
-    public final void test_fileresult_rel_path1() {
+    public final void test_file_result_rel_path1() {
         String dir = ".";
-        String filename = "FileResult.java";
-        Path path = Paths.get(dir + "/" + filename);
+        String fileName = "FileResult.java";
+        Path path = Paths.get(dir + "/" + fileName);
         FileResult fileResult = new FileResult(path, FileType.CODE);
-        String expectedFilePath = dir + "/" + filename;
+        String expectedFilePath = dir + "/" + fileName;
         assertEquals(expectedFilePath, fileResult.toString());
     }
 
     @Test
-    public final void test_fileresult_rel_path2() {
+    public final void test_file_result_rel_path2() {
         String dir = "..";
-        String filename = "FileResult.java";
-        Path path = Paths.get(dir + "/" + filename);
+        String fileName = "FileResult.java";
+        Path path = Paths.get(dir + "/" + fileName);
         FileResult fileResult = new FileResult(path, FileType.CODE);
-        String expectedFilePath = dir + "/" + filename;
+        String expectedFilePath = dir + "/" + fileName;
         assertEquals(expectedFilePath, fileResult.toString());
     }
 }

@@ -23,20 +23,20 @@ use plfind::FileResult;
 use plfind::FileType;
 # use plfind::FileTypes;
 
-sub test_fileresult_abspath {
-    my $pathname = "$lib_path/plfind";
-    my $filename = 'FileResult.pm';
-    my $filetype = plfind::FileType->CODE;
+sub test_file_result_abspath {
+    my $path = "$lib_path/plfind";
+    my $file_name = 'FileResult.pm';
+    my $file_type = plfind::FileType->CODE;
     my $stat = undef;
-    my $fileresult = new plfind::FileResult($pathname, $filename, $filetype, $stat);
-    my $expected = "$pathname/FileResult.pm";
+    my $file_result = new plfind::FileResult($path, $file_name, $file_type, $stat);
+    my $expected = "$path/FileResult.pm";
 
-    ok($expected eq $fileresult->to_string(), "\$fileresult->to_string() eq $expected");
-    ok(plfind::FileType->CODE eq $fileresult->{filetype}, "FileType of $filename is $filetype");
+    ok($expected eq $file_result->to_string(), "\$file_result->to_string() eq $expected");
+    ok(plfind::FileType->CODE eq $file_result->{file_type}, "FileType of $file_name is $file_type");
 }
 
 sub main {
-    test_fileresult_abspath();
+    test_file_result_abspath();
 }
 
 main();

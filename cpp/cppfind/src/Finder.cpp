@@ -9,17 +9,17 @@
 #include "Finder.h"
 
 namespace cppfind {
-    Finder::Finder(FindSettings* ss) {
-        validate_settings(ss);
-        m_settings = ss;
-        m_filetypes = new FileTypes();
+    Finder::Finder(FindSettings* settings) {
+        validate_settings(settings);
+        m_settings = settings;
+        m_file_types = new FileTypes();
     }
 
-    void Finder::validate_settings(FindSettings* ss) {
-        if (ss->paths()->empty()) {
+    void Finder::validate_settings(FindSettings* settings) {
+        if (settings->paths()->empty()) {
             throw FindException("Startpath not defined");
         }
-        for (auto& p : *ss->paths()) {
+        for (auto& p : *settings->paths()) {
             if (!FileUtil::file_exists(p)) {
                 std::string expanded = FileUtil::expand_path(p);
                 if (!FileUtil::file_exists(expanded)) {
@@ -29,21 +29,21 @@ namespace cppfind {
         }
     }
 
-    FileResult* Finder::get_file_result(std::string& filepath) {
-        boost::filesystem::path path(filepath);
+    FileResult* Finder::get_file_result(std::string& file_path) {
+        boost::filesystem::path path(file_path);
         std::string parent_path = path.parent_path().string();
-        std::string filename = path.filename().string();
-        FileType filetype = m_filetypes->get_filetype(filepath);
+        std::string file_name = path.filename().string();
+        FileType file_type = m_file_types->get_file_type(file_path);
         struct stat st;
-        if (stat(filepath.c_str(), &st))
+        if (stat(file_path.c_str(), &st))
             return nullptr;
-        auto filesize = (uint64_t) st.st_size;
-        auto modtime =  (long) st.st_mtime;
-        return new FileResult(parent_path, filename, filetype, filesize, modtime);
+        auto file_size = (uint64_t) st.st_size;
+        auto mod_time = (long) st.st_mtime;
+        return new FileResult(parent_path, file_name, file_type, file_size, mod_time);
     }
 
     std::vector<FileResult*> Finder::find() {
-        std::vector<FileResult*> fileresults{};
+        std::vector<FileResult*> file_results{};
 
         for (auto& p : *m_settings->paths()) {
             // we check using expanded in case p has tilde
@@ -51,24 +51,24 @@ namespace cppfind {
 
             if (FileUtil::is_directory(expanded)) {
                 std::vector<FileResult*> p_files = get_file_results(expanded);
-                fileresults.insert(fileresults.end(), p_files.begin(), p_files.end());
+                file_results.insert(file_results.end(), p_files.begin(), p_files.end());
 
             } else if (FileUtil::is_regular_file(expanded)) {
                 auto* fr = get_file_result(expanded);
-                fileresults.push_back(fr);
+                file_results.push_back(fr);
 
             } else {
                 throw FindException("path is an unsupported file type");
             }
         }
 
-        sort_file_results(fileresults);
-        return fileresults;
+        sort_file_results(file_results);
+        return file_results;
     }
 
     bool cmp_file_results_by_path(const FileResult* fr1, const FileResult* fr2) {
         if (fr1->path() == fr2->path()) {
-            return (fr1->filename().compare(fr2->filename()) < 0);
+            return (fr1->file_name().compare(fr2->file_name()) < 0);
         }
         return (fr1->path().compare(fr2->path()) < 0);
     }
@@ -76,13 +76,13 @@ namespace cppfind {
     bool cmp_file_results_by_path_ci(const FileResult* fr1, const FileResult* fr2) {
         int pathcmp = strcasecmp(fr1->path().c_str(), fr2->path().c_str());
         if (pathcmp == 0) {
-            return strcasecmp(fr1->filename().c_str(), fr2->filename().c_str()) < 0;
+            return strcasecmp(fr1->file_name().c_str(), fr2->file_name().c_str()) < 0;
         }
         return pathcmp < 0;
     }
 
     std::function<bool(FileResult*, FileResult*)> get_cmp_file_results_by_path(FindSettings* settings) {
-        if (settings->sort_caseinsensitive()) {
+        if (settings->sort_case_insensitive()) {
             return cmp_file_results_by_path_ci;
         } else {
             return cmp_file_results_by_path;
@@ -90,14 +90,14 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_name(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->filename() == fr2->filename()) {
+        if (fr1->file_name() == fr2->file_name()) {
             return (fr1->path() < fr2->path());
         }
-        return (fr1->filename() < fr2->filename());
+        return (fr1->file_name() < fr2->file_name());
     }
 
     bool cmp_file_results_by_name_ci(const FileResult* fr1, const FileResult* fr2) {
-        int filecmp = strcasecmp(fr1->filename().c_str(), fr2->filename().c_str());
+        int filecmp = strcasecmp(fr1->file_name().c_str(), fr2->file_name().c_str());
         if (filecmp == 0) {
             return strcasecmp(fr1->path().c_str(), fr2->path().c_str()) < 0;
         }
@@ -105,7 +105,7 @@ namespace cppfind {
     }
 
     std::function<bool(FileResult*, FileResult*)> get_cmp_file_results_by_name(FindSettings* settings) {
-        if (settings->sort_caseinsensitive()) {
+        if (settings->sort_case_insensitive()) {
             return cmp_file_results_by_name_ci;
         } else {
             return cmp_file_results_by_name;
@@ -113,21 +113,21 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_size(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->filesize() == fr2->filesize()) {
+        if (fr1->file_size() == fr2->file_size()) {
             return cmp_file_results_by_path(fr1, fr2);
         }
-        return (fr1->filesize() < fr2->filesize());
+        return (fr1->file_size() < fr2->file_size());
     }
 
     bool cmp_file_results_by_size_ci(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->filetype() == fr2->filetype()) {
+        if (fr1->file_type() == fr2->file_type()) {
             return cmp_file_results_by_path_ci(fr1, fr2);
         }
-        return (fr1->filetype() < fr2->filetype());
+        return (fr1->file_type() < fr2->file_type());
     }
 
     std::function<bool(FileResult*, FileResult*)> get_cmp_file_results_by_size(FindSettings* settings) {
-        if (settings->sort_caseinsensitive()) {
+        if (settings->sort_case_insensitive()) {
             return cmp_file_results_by_size_ci;
         } else {
             return cmp_file_results_by_size;
@@ -135,21 +135,21 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_type(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->filetype() == fr2->filetype()) {
+        if (fr1->file_type() == fr2->file_type()) {
             return cmp_file_results_by_path(fr1, fr2);
         }
-        return (fr1->filetype() < fr2->filetype());
+        return (fr1->file_type() < fr2->file_type());
     }
 
     bool cmp_file_results_by_type_ci(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->filetype() == fr2->filetype()) {
+        if (fr1->file_type() == fr2->file_type()) {
             return cmp_file_results_by_path_ci(fr1, fr2);
         }
-        return (fr1->filetype() < fr2->filetype());
+        return (fr1->file_type() < fr2->file_type());
     }
 
     std::function<bool(FileResult*, FileResult*)> get_cmp_file_results_by_type(FindSettings* settings) {
-        if (settings->sort_caseinsensitive()) {
+        if (settings->sort_case_insensitive()) {
             return cmp_file_results_by_type_ci;
         } else {
             return cmp_file_results_by_type;
@@ -157,41 +157,41 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_lastmod(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->modtime() == fr2->modtime()) {
+        if (fr1->mod_time() == fr2->mod_time()) {
             return cmp_file_results_by_path(fr1, fr2);
         }
-        return (fr1->modtime() < fr2->modtime());
+        return (fr1->mod_time() < fr2->mod_time());
     }
 
     bool cmp_file_results_by_lastmod_ci(const FileResult* fr1, const FileResult* fr2) {
-        if (fr1->modtime() == fr2->modtime()) {
+        if (fr1->mod_time() == fr2->mod_time()) {
             return cmp_file_results_by_path_ci(fr1, fr2);
         }
-        return (fr1->modtime() < fr2->modtime());
+        return (fr1->mod_time() < fr2->mod_time());
     }
 
     std::function<bool(FileResult*, FileResult*)> get_cmp_file_results_by_lastmod(FindSettings* settings) {
-        if (settings->sort_caseinsensitive()) {
+        if (settings->sort_case_insensitive()) {
             return cmp_file_results_by_lastmod_ci;
         } else {
             return cmp_file_results_by_lastmod;
         }
     }
 
-    void Finder::sort_file_results(std::vector<FileResult*>& fileresults) {
-        if (m_settings->sortby() == SortBy::FILEPATH) {
-            std::sort(fileresults.begin(), fileresults.end(), get_cmp_file_results_by_path(m_settings));
-        } else if (m_settings->sortby() == SortBy::FILENAME) {
-            std::sort(fileresults.begin(), fileresults.end(), get_cmp_file_results_by_name(m_settings));
-        } else if (m_settings->sortby() == SortBy::FILESIZE) {
-            std::sort(fileresults.begin(), fileresults.end(), get_cmp_file_results_by_size(m_settings));
-        } else if (m_settings->sortby() == SortBy::FILETYPE) {
-            std::sort(fileresults.begin(), fileresults.end(), get_cmp_file_results_by_type(m_settings));
-        } else if (m_settings->sortby() == SortBy::LASTMOD) {
-            std::sort(fileresults.begin(), fileresults.end(), get_cmp_file_results_by_lastmod(m_settings));
+    void Finder::sort_file_results(std::vector<FileResult*>& file_results) {
+        if (m_settings->sort_by() == SortBy::FILEPATH) {
+            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_path(m_settings));
+        } else if (m_settings->sort_by() == SortBy::FILENAME) {
+            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_name(m_settings));
+        } else if (m_settings->sort_by() == SortBy::FILESIZE) {
+            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_size(m_settings));
+        } else if (m_settings->sort_by() == SortBy::FILETYPE) {
+            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_type(m_settings));
+        } else if (m_settings->sort_by() == SortBy::LASTMOD) {
+            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_lastmod(m_settings));
         }
         if (m_settings->sort_descending()) {
-            std::reverse(fileresults.begin(), fileresults.end());
+            std::reverse(file_results.begin(), file_results.end());
         }
     }
 
@@ -211,38 +211,38 @@ namespace cppfind {
         });
     }
 
-    bool Finder::is_matching_dir(const std::string& filepath) {
-        std::vector<std::string> elems = FileUtil::split_path(filepath);
-        if (m_settings->excludehidden()) {
+    bool Finder::is_matching_dir(const std::string& file_path) {
+        std::vector<std::string> elems = FileUtil::split_path(file_path);
+        if (m_settings->exclude_hidden()) {
             for (auto& elem : elems) {
                 if (FileUtil::is_hidden(elem)) {
                     return false;
                 }
             }
         }
-        std::vector<FindPattern*>* in_dirpatterns = m_settings->in_dirpatterns();
-        std::vector<FindPattern*>* out_dirpatterns = m_settings->out_dirpatterns();
-        return ((in_dirpatterns->empty() || any_matches_any_pattern(elems, *in_dirpatterns))
-                && (out_dirpatterns->empty() || !any_matches_any_pattern(elems, *out_dirpatterns)));
+        std::vector<FindPattern*>* in_dir_patterns = m_settings->in_dir_patterns();
+        std::vector<FindPattern*>* out_dir_patterns = m_settings->out_dir_patterns();
+        return ((in_dir_patterns->empty() || any_matches_any_pattern(elems, *in_dir_patterns))
+                && (out_dir_patterns->empty() || !any_matches_any_pattern(elems, *out_dir_patterns)));
     }
 
-    bool Finder::is_matching_archive_file(const std::string& filename) {
-        std::string ext = FileUtil::get_extension(filename);
-        std::vector <std::string>* in_exts = m_settings->in_archiveextensions();
-        std::vector <std::string>* out_exts = m_settings->out_archiveextensions();
+    bool Finder::is_matching_archive_file(const std::string& file_name) {
+        std::string ext = FileUtil::get_extension(file_name);
+        std::vector <std::string>* in_exts = m_settings->in_archive_extensions();
+        std::vector <std::string>* out_exts = m_settings->out_archive_extensions();
         if ((!in_exts->empty() && std::find(in_exts->begin(), in_exts->end(), ext) == in_exts->end())
             || (!out_exts->empty() && std::find(out_exts->begin(), out_exts->end(), ext) != out_exts->end())) {
             return false;
         }
-        std::vector<FindPattern*>* in_filepatterns = m_settings->in_archivefilepatterns();
-        std::vector<FindPattern*>* out_filepatterns = m_settings->out_archivefilepatterns();
-        return ((in_filepatterns->empty() || matches_any_pattern(filename, *in_filepatterns))
-                && (out_filepatterns->empty() || !matches_any_pattern(filename, *out_filepatterns)));
+        std::vector<FindPattern*>* in_file_patterns = m_settings->in_archive_file_patterns();
+        std::vector<FindPattern*>* out_file_patterns = m_settings->out_archive_file_patterns();
+        return ((in_file_patterns->empty() || matches_any_pattern(file_name, *in_file_patterns))
+                && (out_file_patterns->empty() || !matches_any_pattern(file_name, *out_file_patterns)));
     }
 
-    bool Finder::is_matching_file(const std::string& filename, const FileType filetype, const struct stat* fpstat) {
+    bool Finder::is_matching_file(const std::string& file_name, const FileType file_type, const struct stat* fpstat) {
         if (!m_settings->in_extensions()->empty() || !m_settings->out_extensions()->empty()) {
-            std::string ext = FileUtil::get_extension(filename);
+            std::string ext = FileUtil::get_extension(file_name);
             std::vector <std::string>* in_exts = m_settings->in_extensions();
             std::vector <std::string>* out_exts = m_settings->out_extensions();
             if ((!in_exts->empty() && std::find(in_exts->begin(), in_exts->end(), ext) == in_exts->end())
@@ -250,143 +250,81 @@ namespace cppfind {
                 return false;
             }
         }
-        std::vector<FindPattern*>* in_filepatterns = m_settings->in_filepatterns();
-        std::vector<FindPattern*>* out_filepatterns = m_settings->out_filepatterns();
-        if ((!in_filepatterns->empty() && !matches_any_pattern(filename, *in_filepatterns))
-            || (!out_filepatterns->empty() && matches_any_pattern(filename, *out_filepatterns))) {
+        std::vector<FindPattern*>* in_file_patterns = m_settings->in_file_patterns();
+        std::vector<FindPattern*>* out_file_patterns = m_settings->out_file_patterns();
+        if ((!in_file_patterns->empty() && !matches_any_pattern(file_name, *in_file_patterns))
+            || (!out_file_patterns->empty() && matches_any_pattern(file_name, *out_file_patterns))) {
             return false;
         }
-        std::vector<FileType>* in_filetypes = m_settings->in_filetypes();
-        std::vector<FileType>* out_filetypes = m_settings->out_filetypes();
-        if ((!in_filetypes->empty() && std::find(in_filetypes->begin(), in_filetypes->end(), filetype) == in_filetypes->end())
-            || (!out_filetypes->empty() && std::find(out_filetypes->begin(), out_filetypes->end(), filetype) != out_filetypes->end())) {
+        std::vector<FileType>* in_file_types = m_settings->in_file_types();
+        std::vector<FileType>* out_file_types = m_settings->out_file_types();
+        if ((!in_file_types->empty() && std::find(in_file_types->begin(), in_file_types->end(), file_type) == in_file_types->end())
+            || (!out_file_types->empty() && std::find(out_file_types->begin(), out_file_types->end(), file_type) != out_file_types->end())) {
             return false;
         }
-        if ((m_settings->maxlastmod() > 0 && fpstat->st_mtime > m_settings->maxlastmod())
-            || (m_settings->minlastmod() > 0 && fpstat->st_mtime < m_settings->minlastmod())
-            || (m_settings->maxsize() > 0 && fpstat->st_size > m_settings->maxsize())
-               || (m_settings->minsize() > 0 && fpstat->st_size < m_settings->minsize())) {
+        if ((m_settings->max_last_mod() > 0 && fpstat->st_mtime > m_settings->max_last_mod())
+            || (m_settings->min_last_mod() > 0 && fpstat->st_mtime < m_settings->min_last_mod())
+            || (m_settings->max_size() > 0 && fpstat->st_size > m_settings->max_size())
+               || (m_settings->min_size() > 0 && fpstat->st_size < m_settings->min_size())) {
             return false;
         }
         return true;
     }
 
-    bool Finder::filter_file(const std::string& filepath) {
-        boost::filesystem::path p(filepath);
-        std::string filename = p.filename().string();
-        if (m_settings->excludehidden() && FileUtil::is_hidden(filename)) {
-            return false;
-        }
-        auto filetype = m_filetypes->get_filetype(filename);
-        struct stat fpstat;
-        if (stat(filepath.c_str(), &fpstat) == -1) {
-            // TODO: report error
-            return false;
-        }
-
-        if (filetype == FileType::ARCHIVE) {
-            return m_settings->includearchives() && is_matching_archive_file(filename);
-        }
-        return !m_settings->archivesonly() && is_matching_file(filename, filetype, &fpstat);
-    }
-
-    std::optional<FileResult*> Finder::filter_to_file_result(const std::string& filepath) {
-        boost::filesystem::path p(filepath);
-        std::string filename = p.filename().string();
-        if (m_settings->excludehidden() && FileUtil::is_hidden(filename)) {
+    std::optional<FileResult*> Finder::filter_to_file_result(const std::string& file_path) {
+        boost::filesystem::path p(file_path);
+        std::string file_name = p.filename().string();
+        if (m_settings->exclude_hidden() && FileUtil::is_hidden(file_name)) {
             return std::nullopt;
         }
         std::string parent_path = p.parent_path().string();
-        auto filetype = m_filetypes->get_filetype(filename);
+        auto file_type = m_file_types->get_file_type(file_name);
         struct stat fpstat;
-        if (stat(filepath.c_str(), &fpstat) == -1) {
+        if (stat(file_path.c_str(), &fpstat) == -1) {
             // TODO: report error
             return std::nullopt;
         }
-        auto filesize = (uint64_t) fpstat.st_size;
-        auto modtime =  (long) fpstat.st_mtime;
-        auto fileresult = new FileResult(parent_path, filename, filetype, filesize, modtime);
-        if (filetype == FileType::ARCHIVE) {
-            if (m_settings->includearchives() && is_matching_archive_file(filename)) {
-                return std::optional<FileResult*>{fileresult};
+        auto file_size = (uint64_t) fpstat.st_size;
+        auto mod_time = (long) fpstat.st_mtime;
+        auto file_result = new FileResult(parent_path, file_name, file_type, file_size, mod_time);
+        if (file_type == FileType::ARCHIVE) {
+            if (m_settings->include_archives() && is_matching_archive_file(file_name)) {
+                return std::optional<FileResult*>{file_result};
             }
             return std::nullopt;
         }
-        if (!m_settings->archivesonly() && is_matching_file(filename, filetype, &fpstat)) {
-            return std::optional<FileResult*>{fileresult};
+        if (!m_settings->archives_only() && is_matching_file(file_name, file_type, &fpstat)) {
+            return std::optional<FileResult*>{file_result};
         }
         return std::nullopt;
     }
 
-    std::vector<FileResult*> Finder::get_file_results(const std::string& filepath) {
-        boost::filesystem::path p(filepath);
-        std::vector<std::string> finddirs{};
-        std::vector<FileResult*> fileresults{};
+    std::vector<FileResult*> Finder::get_file_results(const std::string& file_path) {
+        boost::filesystem::path p(file_path);
+        std::vector<std::string> find_dirs{};
+        std::vector<FileResult*> file_results{};
 
         std::vector<boost::filesystem::directory_entry> dir_entries;
         copy(boost::filesystem::directory_iterator(p), boost::filesystem::directory_iterator(),
              back_inserter(dir_entries));
 
         for (const auto& de : dir_entries) {
-            const boost::filesystem::path& subpath = de.path();
-            if (boost::filesystem::is_directory(subpath) && m_settings->recursive() && is_matching_dir(subpath.string())) {
-                finddirs.push_back(subpath.string());
-            } else if (boost::filesystem::is_regular_file(subpath)) {
-                std::optional<FileResult*> optFileResult = filter_to_file_result(subpath.string());
+            const boost::filesystem::path& sub_path = de.path();
+            if (boost::filesystem::is_directory(sub_path) && m_settings->recursive() && is_matching_dir(sub_path.string())) {
+                find_dirs.push_back(sub_path.string());
+            } else if (boost::filesystem::is_regular_file(sub_path)) {
+                std::optional<FileResult*> optFileResult = filter_to_file_result(sub_path.string());
                 if (optFileResult.has_value()) {
-                    fileresults.push_back(optFileResult.value());
+                    file_results.push_back(optFileResult.value());
                 }
             }
         }
 
-        for (const auto& finddir : finddirs) {
-            std::vector<FileResult*> subfileresults = get_file_results(finddir);
-            fileresults.insert(fileresults.end(), subfileresults.begin(), subfileresults.end());
+        for (const auto& find_dir : find_dirs) {
+            std::vector<FileResult*> sub_file_results = get_file_results(find_dir);
+            file_results.insert(file_results.end(), sub_file_results.begin(), sub_file_results.end());
         }
 
-        return fileresults;
+        return file_results;
     }
-
-    // std::vector<FindResult*> Finder::find_path(const std::string& filepath) {
-    //     std::vector<FindResult*> results = {};
-    //     std::vector<FileResult*> findfiles = get_file_results(filepath);
-
-    //     // sort using a lambda expression
-    //     std::sort(findfiles.begin(), findfiles.end(), [](FileResult* sf1, FileResult* sf2) {
-    //         if (sf1->path() == sf2->path()) {
-    //             return sf1->filename() < sf2->filename();
-    //         }
-    //         return sf1->path() < sf2->path();
-    //     });
-
-    //     if (m_settings->verbose()) {
-    //         std::set<std::string> finddir_set = {};
-    //         for (const auto& findfile : findfiles) {
-    //             finddir_set.insert(findfile->path());
-    //         }
-    //         std::vector<std::string> finddirs(finddir_set.begin(), finddir_set.end());
-
-    //         std::string msg = "\nDirectories to be found (";
-    //         msg.append(std::to_string(finddirs.size())).append("):");
-    //         log(msg);
-    //         for (const auto& finddir : finddirs) {
-    //             log(finddir);
-    //         }
-
-    //         msg = "\nFiles to be found (";
-    //         msg.append(std::to_string(findfiles.size())).append("):");
-    //         log(msg);
-    //         for (const auto& findfile : findfiles) {
-    //             log(findfile->string());
-    //         }
-    //     }
-
-    //     for (const auto& findfile : findfiles) {
-    //         std::vector<FindResult*> fileresults = find_file(findfile);
-    //         if (!fileresults.empty()) {
-    //             results.insert(results.end(), fileresults.begin(), fileresults.end());
-    //         }
-    //     }
-    //     return results;
-    // }
 }

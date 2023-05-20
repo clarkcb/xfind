@@ -43,7 +43,7 @@ sub main {
         print 'settings: ' . $settings->to_string() . "\n";
     }
 
-    if ($settings->{printusage}) {
+    if ($settings->{print_usage}) {
         plfind::common::log('');
         $findoptions->usage();
         plfind::common::log('');
@@ -64,12 +64,12 @@ sub main {
     my $fileresults = $finder->find();
 
     # print matching dirs
-    if ($settings->{listdirs}) {
+    if ($settings->{list_dirs}) {
         $finder->print_matching_dirs($fileresults);
     }
 
     # print matching files
-    if ($settings->{listfiles}) {
+    if ($settings->{list_files}) {
         $finder->print_matching_files($fileresults);
     }
 }

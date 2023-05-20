@@ -14,35 +14,35 @@ typedef enum {
 } SortBy;
 
 typedef struct FindSettings {
-    unsigned short archivesonly : 1;
+    unsigned short archives_only : 1;
     unsigned short debug : 1;
-    unsigned short excludehidden : 1;
-    StringNode *in_archiveextensions;
-    RegexNode *in_archivefilepatterns;
-    RegexNode *in_dirpatterns;
+    unsigned short exclude_hidden : 1;
+    StringNode *in_archive_extensions;
+    RegexNode *in_archive_file_patterns;
+    RegexNode *in_dir_patterns;
     StringNode *in_extensions;
-    RegexNode *in_filepatterns;
-    IntNode *in_filetypes;
-    unsigned short includearchives : 1;
-    unsigned short listdirs : 1;
-    unsigned short listfiles : 1;
-    long maxlastmod;
-    unsigned long maxsize;
-    long minlastmod;
-    unsigned long minsize;
-    StringNode *out_archiveextensions;
-    RegexNode *out_archivefilepatterns;
-    RegexNode *out_dirpatterns;
+    RegexNode *in_file_patterns;
+    IntNode *in_file_types;
+    unsigned short include_archives : 1;
+    unsigned short list_dirs : 1;
+    unsigned short list_files : 1;
+    long max_last_mod;
+    unsigned long max_size;
+    long min_last_mod;
+    unsigned long min_size;
+    StringNode *out_archive_extensions;
+    RegexNode *out_archive_file_patterns;
+    RegexNode *out_dir_patterns;
     StringNode *out_extensions;
-    RegexNode *out_filepatterns;
-    IntNode *out_filetypes;
+    RegexNode *out_file_patterns;
+    IntNode *out_file_types;
     StringNode *paths;
-    unsigned short printresults : 1;
-    unsigned short printusage : 1;
-    unsigned short printversion : 1;
+    unsigned short print_results : 1;
+    unsigned short print_usage : 1;
+    unsigned short print_version : 1;
     unsigned short recursive : 1;
-    SortBy sortby;
-    unsigned short sort_caseinsensitive : 1;
+    SortBy sort_by;
+    unsigned short sort_case_insensitive : 1;
     unsigned short sort_descending : 1;
     unsigned short verbose : 1;
 } FindSettings;
@@ -57,8 +57,8 @@ void print_settings(FindSettings *settings);
 
 void destroy_settings(FindSettings *settings);
 
-SortBy sortby_from_name(const char *name);
+SortBy sort_by_from_name(const char *name);
 
-void sortby_to_name(const SortBy sortby, char *name);
+void sort_by_to_name(const SortBy sort_by, char *name);
 
 #endif

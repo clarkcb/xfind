@@ -18,24 +18,24 @@ module RbFind
 
     def test_no_args
       settings = @findoptions.find_settings_from_args([])
-      assert_equal(false, settings.archivesonly)
+      assert_equal(false, settings.archives_only)
       assert_equal(false, settings.debug)
-      assert_equal(true, settings.excludehidden)
-      assert_equal(false, settings.includearchives)
-      assert_equal(false, settings.listdirs)
-      assert_equal(true, settings.listfiles)
-      assert_equal(false, settings.printusage)
-      assert_equal(false, settings.printversion)
+      assert_equal(true, settings.exclude_hidden)
+      assert_equal(false, settings.include_archives)
+      assert_equal(false, settings.list_dirs)
+      assert_equal(true, settings.list_files)
+      assert_equal(false, settings.print_usage)
+      assert_equal(false, settings.print_version)
       assert_equal(true, settings.recursive)
       assert_equal(false, settings.verbose)
-      assert(settings.in_archiveextensions.empty?)
-      assert(settings.in_archivefilepatterns.empty?)
-      assert(settings.in_dirpatterns.empty?)
-      assert(settings.in_filepatterns.empty?)
-      assert(settings.out_archiveextensions.empty?)
-      assert(settings.out_archivefilepatterns.empty?)
-      assert(settings.out_dirpatterns.empty?)
-      assert(settings.out_filepatterns.empty?)
+      assert(settings.in_archive_extensions.empty?)
+      assert(settings.in_archive_file_patterns.empty?)
+      assert(settings.in_dir_patterns.empty?)
+      assert(settings.in_file_patterns.empty?)
+      assert(settings.out_archive_extensions.empty?)
+      assert(settings.out_archive_file_patterns.empty?)
+      assert(settings.out_dir_patterns.empty?)
+      assert(settings.out_file_patterns.empty?)
       assert(settings.paths.empty?)
     end
 
@@ -49,11 +49,11 @@ module RbFind
       assert(settings.in_extensions.include?('rb'))
     end
 
-    def test_archivesonly_arg
+    def test_archives_only_arg
       args = ['--archivesonly']
       settings = @findoptions.find_settings_from_args(args)
-      assert(settings.archivesonly)
-      assert(settings.includearchives)
+      assert(settings.archives_only)
+      assert(settings.include_archives)
     end
 
     def test_debug_arg
@@ -91,10 +91,10 @@ module RbFind
       assert_equal(2, settings.in_extensions.length)
       assert(settings.in_extensions.include?('js'))
       assert(settings.in_extensions.include?('ts'))
-      assert_equal(1, settings.out_dirpatterns.length)
-      assert_equal('node_module', settings.out_dirpatterns.first.source)
-      assert_equal(1, settings.out_filepatterns.length)
-      assert_equal('temp', settings.out_filepatterns.first.source)
+      assert_equal(1, settings.out_dir_patterns.length)
+      assert_equal('node_module', settings.out_dir_patterns.first.source)
+      assert_equal(1, settings.out_file_patterns.length)
+      assert_equal('temp', settings.out_file_patterns.first.source)
       assert(settings.debug)
       assert(settings.verbose)
     end

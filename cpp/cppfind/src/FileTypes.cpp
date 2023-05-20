@@ -21,22 +21,22 @@ namespace cppfind {
         m_text_names = {};
         m_xml_extensions = {};
         m_xml_names = {};
-        load_filetypes();
+        load_file_types();
     }
 
-    void FileTypes::load_filetypes() {
+    void FileTypes::load_file_types() {
         auto xfind_path = xfindpath();
         auto sub_path = "shared/filetypes.json";
-        auto filetypes_path = FileUtil::join_path(xfind_path, sub_path);
+        auto file_types_path = FileUtil::join_path(xfind_path, sub_path);
 
-        if (!FileUtil::file_exists(filetypes_path)) {
+        if (!FileUtil::file_exists(file_types_path)) {
             std::string msg = "Filetypes file not found: ";
-            msg.append(filetypes_path);
+            msg.append(file_types_path);
             throw FindException(msg);
         }
 
-        uint64_t file_size = FileUtil::file_size(filetypes_path);
-        FILE* fp = fopen(filetypes_path.c_str(), "r");
+        uint64_t file_size = FileUtil::file_size(file_types_path);
+        FILE* fp = fopen(file_types_path.c_str(), "r");
 
         char readBuffer[file_size];
         FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -111,8 +111,8 @@ namespace cppfind {
         return FileType::UNKNOWN;
     }
 
-    std::string FileTypes::to_name(const FileType filetype) {
-        switch (filetype)
+    std::string FileTypes::to_name(const FileType file_type) {
+        switch (file_type)
         {
         case FileType::ARCHIVE:
             return "ARCHIVE";
@@ -129,20 +129,20 @@ namespace cppfind {
         }
     }
 
-    FileType FileTypes::get_filetype(const std::string& filepath) {
-        if (is_code_file(filepath)) {
+    FileType FileTypes::get_file_type(const std::string& file_path) {
+        if (is_code_file(file_path)) {
             return FileType::CODE;
         }
-        if (is_xml_file(filepath)) {
+        if (is_xml_file(file_path)) {
             return FileType::XML;
         }
-        if (is_text_file(filepath)) {
+        if (is_text_file(file_path)) {
             return FileType::TEXT;
         }
-        if (is_binary_file(filepath)) {
+        if (is_binary_file(file_path)) {
             return FileType::BINARY;
         }
-        if (is_archive_file(filepath)) {
+        if (is_archive_file(file_path)) {
             return FileType::ARCHIVE;
         }
         return FileType::UNKNOWN;
@@ -153,38 +153,38 @@ namespace cppfind {
         return found != set->end();
     }
 
-    bool FileTypes::is_archive_file(const std::string& filepath) {
-        return string_in_set(&m_archive_extensions, FileUtil::get_extension(filepath))
-               || string_in_set(&m_archive_names, FileUtil::get_filename(filepath));
+    bool FileTypes::is_archive_file(const std::string& file_path) {
+        return string_in_set(&m_archive_extensions, FileUtil::get_extension(file_path))
+               || string_in_set(&m_archive_names, FileUtil::get_file_name(file_path));
     }
 
-    bool FileTypes::is_binary_file(const std::string& filepath) {
-        return string_in_set(&m_binary_extensions, FileUtil::get_extension(filepath))
-               || string_in_set(&m_binary_names, FileUtil::get_filename(filepath));
+    bool FileTypes::is_binary_file(const std::string& file_path) {
+        return string_in_set(&m_binary_extensions, FileUtil::get_extension(file_path))
+               || string_in_set(&m_binary_names, FileUtil::get_file_name(file_path));
     }
 
-    bool FileTypes::is_code_file(const std::string& filepath) {
-        return string_in_set(&m_code_extensions, FileUtil::get_extension(filepath))
-               || string_in_set(&m_code_names, FileUtil::get_filename(filepath));
+    bool FileTypes::is_code_file(const std::string& file_path) {
+        return string_in_set(&m_code_extensions, FileUtil::get_extension(file_path))
+               || string_in_set(&m_code_names, FileUtil::get_file_name(file_path));
     }
 
-    bool FileTypes::is_text_file(const std::string& filepath) {
-        std::string ext = FileUtil::get_extension(filepath);
-        std::string filename = FileUtil::get_filename(filepath);
+    bool FileTypes::is_text_file(const std::string& file_path) {
+        std::string ext = FileUtil::get_extension(file_path);
+        std::string file_name = FileUtil::get_file_name(file_path);
         return string_in_set(&m_text_extensions, ext)
-               || string_in_set(&m_text_names, filename)
+               || string_in_set(&m_text_names, file_name)
                || string_in_set(&m_code_extensions, ext)
-               || string_in_set(&m_code_names, filename)
+               || string_in_set(&m_code_names, file_name)
                || string_in_set(&m_xml_extensions, ext)
-               || string_in_set(&m_xml_names, filename);
+               || string_in_set(&m_xml_names, file_name);
     }
 
-    bool FileTypes::is_unknown_file(const std::string& filepath) {
-        return get_filetype(filepath) == FileType::UNKNOWN;
+    bool FileTypes::is_unknown_file(const std::string& file_path) {
+        return get_file_type(file_path) == FileType::UNKNOWN;
     }
 
-    bool FileTypes::is_xml_file(const std::string& filepath) {
-        return string_in_set(&m_xml_extensions, FileUtil::get_extension(filepath))
-               || string_in_set(&m_xml_names, FileUtil::get_filename(filepath));
+    bool FileTypes::is_xml_file(const std::string& file_path) {
+        return string_in_set(&m_xml_extensions, FileUtil::get_extension(file_path))
+               || string_in_set(&m_xml_names, FileUtil::get_file_name(file_path));
     }
 }
