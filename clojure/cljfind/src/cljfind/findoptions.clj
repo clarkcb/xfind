@@ -23,24 +23,24 @@
 
 (defrecord FindOption [short-arg long-arg desc])
 
-(defn get-sortarg [^FindOption fo]
+(defn get-sort-arg [^FindOption fo]
   (if (= "" (:short-arg fo))
     (:long-arg fo)
     (str (str/lower-case (:short-arg fo)) "a" (:long-arg fo))))
 
-(defn get-findoptions-from-json []
+(defn get-find-options-from-json []
   (let [contents (slurp (io/resource "findoptions.json"))
-        findoptions-objs (:findoptions (json/read-str contents :key-fn keyword))
-        longnames (map #(get % :long) findoptions-objs)
-        shortnames (map #(get % :short "") findoptions-objs)
-        longshortmap (zipmap longnames shortnames)
-        descs (map #(.trim %) (map :desc findoptions-objs))
-        longdescmap (zipmap longnames descs)
-        get-short (fn [l] (get longshortmap l))
-        get-desc (fn [l] (get longdescmap l))]
-    (sort-by get-sortarg (map #(FindOption. (get-short %) % (get-desc %)) longnames))))
+        find-options-objs (:findoptions (json/read-str contents :key-fn keyword))
+        long-names (map #(get % :long) find-options-objs)
+        short-names (map #(get % :short "") find-options-objs)
+        long-short-map (zipmap long-names short-names)
+        descs (map #(.trim %) (map :desc find-options-objs))
+        long-desc-map (zipmap long-names descs)
+        get-short (fn [l] (get long-short-map l))
+        get-desc (fn [l] (get long-desc-map l))]
+    (sort-by get-sort-arg (map #(FindOption. (get-short %) % (get-desc %)) long-names))))
 
-(def OPTIONS (get-findoptions-from-json))
+(def OPTIONS (get-find-options-from-json))
 
 (defn print-option [opt]
   (let [format-string "(FindOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
@@ -92,13 +92,13 @@
   })
 
 (defn get-long-arg [^String arg]
-  (let [longnames (map :long-arg OPTIONS)
-        longmap (zipmap longnames (repeat 1))
-        shortoptions (remove #(= (:short-arg %) "") OPTIONS)
-        shortlongmap (zipmap (map :short-arg shortoptions) (map :long-arg shortoptions))]
+  (let [long-names     (map :long-arg OPTIONS)
+        long-map       (zipmap long-names (repeat 1))
+        short-options  (remove #(= (:short-arg %) "") OPTIONS)
+        short-long-map (zipmap (map :short-arg short-options) (map :long-arg short-options))]
     (cond
-      (contains? longmap arg) (keyword arg)
-      (contains? shortlongmap arg) (keyword (get shortlongmap arg))
+      (contains? long-map arg) (keyword arg)
+      (contains? short-long-map arg) (keyword (get short-long-map arg))
       :else nil)))
 
 (defn settings-from-map [settings ks m errs]
@@ -176,6 +176,9 @@
       "Options:\n "
       (str/join "\n " (map #(option-to-string % longest) OPTIONS)))))
 
-(defn usage []
-  (log-msg "" (usage-string) "")
-  (System/exit 0))
+(defn usage
+  ([exit-code]
+    (log-msg "" (usage-string) "")
+    (System/exit 0))
+  ([]
+   (usage 0)))

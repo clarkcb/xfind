@@ -10,7 +10,6 @@
 ###############################################################################
 """
 import os
-from typing import List
 
 
 class FileUtil:
@@ -49,6 +48,6 @@ class FileUtil:
         return len(dot_elems) > 0
 
     @staticmethod
-    def path_elems(file_path: str) -> List[str]:
+    def path_elems(file_path: str) -> list[str]:
         """Returns list of separate path elements of file_path"""
         return [p for p in file_path.split(os.sep) if p and p not in FileUtil.DOT_DIRS]

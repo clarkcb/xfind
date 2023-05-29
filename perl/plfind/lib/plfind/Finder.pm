@@ -158,8 +158,8 @@ sub is_matching_archive_file {
         !$self->matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_archive__patterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_archive__patterns})) {
+    if (scalar @{$self->{settings}->{out_archive_patterns}} &&
+        $self->matches_any_pattern($f, $self->{settings}->{out_archive_patterns})) {
         return 0;
     }
     return 1;

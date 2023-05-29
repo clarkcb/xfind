@@ -8,10 +8,9 @@
 #
 ###############################################################################
 """
+import importlib.resources
 import json
 from enum import Enum
-
-import pkg_resources
 
 from .fileutil import FileUtil
 from .findexception import FindException
@@ -97,14 +96,14 @@ class FileTypes:
         return self.get_file_type(f) == FileType.UNKNOWN
 
     def __populate_file_types_from_json(self):
-        filetypes_dict = {}
-        with pkg_resources.resource_stream(__name__, 'data/filetypes.json') as stream:
-            filetypes_dict = json.load(stream)
-        for filetype_obj in filetypes_dict['filetypes']:
-            typename = filetype_obj['type']
-            self.__file_type_exts[typename] = set(filetype_obj['extensions'])
-            if 'names' in filetype_obj:
-                self.__file_type_names[typename] = set(filetype_obj['names'])
+        data = importlib.resources.files('pyfind').joinpath('data')
+        file_types_json = data.joinpath('filetypes.json').read_text()
+        file_types_dict = json.loads(file_types_json)
+        for file_type_obj in file_types_dict['filetypes']:
+            typename = file_type_obj['type']
+            self.__file_type_exts[typename] = set(file_type_obj['extensions'])
+            if 'names' in file_type_obj:
+                self.__file_type_names[typename] = set(file_type_obj['names'])
             else:
                 self.__file_type_names[typename] = set([])
         self.__file_type_exts['text'].update(self.__file_type_exts['code'],

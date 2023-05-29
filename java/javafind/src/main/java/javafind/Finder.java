@@ -61,10 +61,15 @@ public class Finder {
     boolean isMatchingDir(final Path path) {
         if (settings.getExcludeHidden()) {
             try {
-                if (Files.isHidden(path)) {
+                // This erroneously returns true for . and ..
+//                if (Files.isHidden(path)) {
+//                    return false;
+//                }
+                if (FileUtil.isHidden(path.toString())) {
                     return false;
                 }
-            } catch (IOException e) {
+//            } catch (IOException e) {
+            } catch (Exception e) {
                 Logger.logError(e.getMessage());
                 return false;
             }

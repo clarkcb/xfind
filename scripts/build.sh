@@ -857,11 +857,19 @@ build_python () {
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
+    log "cd $PYFIND_PATH"
     cd "$PYFIND_PATH"
 
     if [ "$USE_VENV" == 'yes' ]
     then
-        # create a virtual env to run from and install to
+        # if venv is active, deactivate it (in case it happens to be another venv that is active)
+        if [ -n "$VIRTUAL_ENV" ]
+        then
+            deactivate
+        fi
+
+        # create a virtual env to run from and install to if it doesn't already exist
+        PYFIND_VENV="$PYFIND_PATH/venv"
         if [ ! -d "$PYFIND_PATH/venv" ]
         then
             log "$PYTHON -m venv venv"
@@ -869,6 +877,7 @@ build_python () {
         fi
 
         # if venv isn't active, activate it
+        # (TODO: this is probably always true because of earlier deactivation)
         if [ -z "$VIRTUAL_ENV" ]
         then
             log "source $PYFIND_PATH/venv/bin/activate"

@@ -104,6 +104,7 @@ namespace cppfind {
         std::vector<FindPattern*>* out_file_patterns();
         std::vector<FileType>* out_file_types();
 
+        bool need_stat();
         std::vector<std::string>* paths();
 
         SortBy sort_by();

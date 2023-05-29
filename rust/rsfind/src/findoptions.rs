@@ -37,7 +37,7 @@ pub struct JsonFindOptions {
 impl FindOptions {
     pub fn new() -> Result<FindOptions, FindError> {
         let config = Config::new();
-        let contents: String = match fs::read_to_string(config.findoptions_path) {
+        let contents: String = match fs::read_to_string(config.find_options_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),
         };

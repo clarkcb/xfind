@@ -9,14 +9,13 @@
 #
 ###############################################################################
 """
+import importlib.resources
 import json
 import os
 import sys
 from collections import deque
 from io import StringIO
 from typing import List
-
-import pkg_resources
 
 from .common import parse_datetime_str
 from .findexception import FindException
@@ -171,14 +170,14 @@ class FindOptions:
                 settings.paths.add(x),
         }
 
-        self.__longarg_dict = {}
+        self.__long_arg_dict = {}
 
     def settings_from_file(self, file_path: str, settings: FindSettings):
         """Read settings from a JSON file"""
         assert os.path.exists(file_path), f'Settings file not found: {file_path}'
         with open(file_path) as f:
-            jsonstr = f.read()
-        self.settings_from_json(jsonstr, settings)
+            json_str = f.read()
+        self.settings_from_json(json_str, settings)
 
     def settings_from_json(self, json_str: str, settings: FindSettings):
         """Read settings from a JSON string"""
@@ -198,34 +197,35 @@ class FindOptions:
                 raise FindException(f'Invalid option: {arg}')
 
     def __set_options_from_json(self):
-        stream = pkg_resources.resource_stream(__name__, 'data/findoptions.json')
-        findoptions_dict = json.load(stream)
-        for findoption_obj in findoptions_dict['findoptions']:
-            longarg = findoption_obj['long']
-            shortarg = ''
-            if 'short' in findoption_obj:
-                shortarg = findoption_obj['short']
-            desc = findoption_obj['desc']
-            if longarg in self.__bool_arg_dict:
-                func = self.__bool_arg_dict[longarg]
-            elif longarg in self.__coll_arg_dict:
-                func = self.__coll_arg_dict[longarg]
-            elif longarg in self.__dt_arg_dict:
-                func = self.__dt_arg_dict[longarg]
-            elif longarg in self.__int_arg_dict:
-                func = self.__int_arg_dict[longarg]
-            elif longarg in self.__str_arg_dict:
-                func = self.__str_arg_dict[longarg]
-            elif longarg in self.__str_arg_dict:
-                func = self.__str_arg_dict[longarg]
-            elif longarg == 'settings-file':
+        data = importlib.resources.files('pyfind').joinpath('data')
+        find_options_json = data.joinpath('findoptions.json').read_text()
+        find_options_dict = json.loads(find_options_json)
+        for find_option_obj in find_options_dict['findoptions']:
+            long_arg = find_option_obj['long']
+            short_arg = ''
+            if 'short' in find_option_obj:
+                short_arg = find_option_obj['short']
+            desc = find_option_obj['desc']
+            if long_arg in self.__bool_arg_dict:
+                func = self.__bool_arg_dict[long_arg]
+            elif long_arg in self.__coll_arg_dict:
+                func = self.__coll_arg_dict[long_arg]
+            elif long_arg in self.__dt_arg_dict:
+                func = self.__dt_arg_dict[long_arg]
+            elif long_arg in self.__int_arg_dict:
+                func = self.__int_arg_dict[long_arg]
+            elif long_arg in self.__str_arg_dict:
+                func = self.__str_arg_dict[long_arg]
+            elif long_arg in self.__str_arg_dict:
+                func = self.__str_arg_dict[long_arg]
+            elif long_arg == 'settings-file':
                 func = self.settings_from_file
             else:
-                raise FindException(f'Unknown find option: {longarg}')
-            self.options.append(FindOption(shortarg, longarg, desc, func))
-            self.__longarg_dict[longarg] = longarg
-            if shortarg:
-                self.__longarg_dict[shortarg] = longarg
+                raise FindException(f'Unknown find option: {long_arg}')
+            self.options.append(FindOption(short_arg, long_arg, desc, func))
+            self.__long_arg_dict[long_arg] = long_arg
+            if short_arg:
+                self.__long_arg_dict[short_arg] = long_arg
 
     def find_settings_from_args(self, args: List[str]) -> FindSettings:
         """Returns a FindSettings instance for a given list of args"""
@@ -235,9 +235,9 @@ class FindOptions:
 
     def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:
         """Updates a FindSettings instance from a given list of args"""
-        argdeque = deque(args)
-        while argdeque:
-            arg = argdeque.popleft()
+        arg_deque = deque(args)
+        while arg_deque:
+            arg = arg_deque.popleft()
             if arg.startswith('-'):
                 arg_names = []
                 if arg.startswith('--'):
@@ -247,49 +247,49 @@ class FindOptions:
                             arg_nv = arg_name.split('=', 1)
                             arg_name = arg_nv[0]
                             if arg_nv[1]:
-                                argdeque.appendleft(arg_nv[1])
+                                arg_deque.appendleft(arg_nv[1])
                         arg_names.append(arg[2:])
                 elif len(arg) > 1:
                     arg_names.extend(list(arg[1:]))
                 for a in arg_names:
-                    if a in self.__longarg_dict:
-                        longarg = self.__longarg_dict[a]
-                        if longarg in self.__bool_arg_dict:
-                            self.__bool_arg_dict[longarg](True, settings)
-                            if longarg in ('help', 'version'):
+                    if a in self.__long_arg_dict:
+                        long_arg = self.__long_arg_dict[a]
+                        if long_arg in self.__bool_arg_dict:
+                            self.__bool_arg_dict[long_arg](True, settings)
+                            if long_arg in ('help', 'version'):
                                 return settings
-                        elif longarg in self.__coll_arg_dict or \
-                                longarg in self.__dt_arg_dict or \
-                                longarg in self.__int_arg_dict or \
-                                longarg in self.__str_arg_dict or \
-                                longarg == 'settings-file':
-                            if argdeque:
-                                argval = argdeque.popleft()
-                                if longarg in self.__coll_arg_dict:
-                                    self.__coll_arg_dict[longarg](
-                                        argval, settings)
-                                elif longarg in self.__dt_arg_dict:
-                                    self.__dt_arg_dict[longarg](
-                                        parse_datetime_str(argval), settings)
-                                elif longarg in self.__int_arg_dict:
+                        elif long_arg in self.__coll_arg_dict or \
+                                long_arg in self.__dt_arg_dict or \
+                                long_arg in self.__int_arg_dict or \
+                                long_arg in self.__str_arg_dict or \
+                                long_arg == 'settings-file':
+                            if arg_deque:
+                                arg_val = arg_deque.popleft()
+                                if long_arg in self.__coll_arg_dict:
+                                    self.__coll_arg_dict[long_arg](
+                                        arg_val, settings)
+                                elif long_arg in self.__dt_arg_dict:
+                                    self.__dt_arg_dict[long_arg](
+                                        parse_datetime_str(arg_val), settings)
+                                elif long_arg in self.__int_arg_dict:
                                     invalid_int = False
                                     try:
-                                        i = int(argval)
+                                        i = int(arg_val)
                                     except ValueError:
                                         invalid_int = True
                                     else:
                                         if i < 0:
                                             invalid_int = True
                                     if invalid_int:
-                                        err = f'Invalid value for option {arg}: {argval}'
+                                        err = f'Invalid value for option {arg}: {arg_val}'
                                         raise FindException(err)
-                                    self.__int_arg_dict[longarg](
-                                        argval, settings)
-                                elif longarg in self.__str_arg_dict:
-                                    self.__str_arg_dict[longarg](
-                                        argval, settings)
-                                elif longarg == 'settings-file':
-                                    self.settings_from_file(argval, settings)
+                                    self.__int_arg_dict[long_arg](
+                                        arg_val, settings)
+                                elif long_arg in self.__str_arg_dict:
+                                    self.__str_arg_dict[long_arg](
+                                        arg_val, settings)
+                                elif long_arg == 'settings-file':
+                                    self.settings_from_file(arg_val, settings)
                             else:
                                 raise FindException(f'Missing value for option {a}')
                         else:
@@ -312,11 +312,11 @@ class FindOptions:
             ' pyfind [options] <path> [<path> ...]\n\nOptions:\n')
         opt_pairs = []
         longest = 0
-        for opt in sorted(self.options, key=lambda o: o.sortarg):
+        for opt in sorted(self.options, key=lambda o: o.sort_arg):
             opt_string = ''
-            if opt.shortarg:
-                opt_string += f'-{opt.shortarg},'
-            opt_string += f'--{opt.longarg}'
+            if opt.short_arg:
+                opt_string += f'-{opt.short_arg},'
+            opt_string += f'--{opt.long_arg}'
             if len(opt_string) > longest:
                 longest = len(opt_string)
             opt_pairs.append((opt_string, opt.desc))

@@ -14,7 +14,7 @@ import Data.Char (toLower)
 import Data.List (sortBy, zipWith4)
 import Data.Maybe (isJust, isNothing)
 
-import System.FilePath (dropFileName, pathSeparator, splitPath, takeFileName)
+import System.FilePath (dropFileName, splitPath, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 

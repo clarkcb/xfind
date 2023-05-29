@@ -199,6 +199,15 @@ namespace cppfind {
         return &m_out_file_types;
     }
 
+    bool FindSettings::need_stat() {
+        return m_sort_by == SortBy::FILESIZE
+            || m_sort_by == SortBy::LASTMOD
+            || m_max_last_mod != 0
+            || m_min_last_mod != 0
+            || m_max_size > 0
+            || m_min_size > 0;
+    }
+
     std::vector<std::string>* FindSettings::paths() {
         return &m_paths;
     }

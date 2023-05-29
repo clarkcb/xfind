@@ -39,7 +39,7 @@ pub struct JsonFileTypes {
 impl FileTypes {
     pub fn new() -> Result<FileTypes, FindError> {
         let config = Config::new();
-        let contents: String = match fs::read_to_string(config.filetypes_path) {
+        let contents: String = match fs::read_to_string(config.file_types_path) {
             Ok(contents) => contents,
             Err(error) => return Err(FindError::new(&error.to_string())),
         };

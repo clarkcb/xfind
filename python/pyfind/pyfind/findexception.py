@@ -8,6 +8,8 @@
 #
 ###############################################################################
 """
+
+
 class FindException(Exception):
     """a class to represent an exception to raise for find issues"""
     def __init__(self, *args):

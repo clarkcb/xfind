@@ -123,10 +123,9 @@ public static class FileUtil
 
 	public static bool IsHiddenFile(FileSystemInfo f)
 	{
-		// return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
-		//         || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
-		return (((f.Attributes & FileAttributes.Hidden) != 0)
-		        || (f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name)));
+		// TODO: the attributes check seems to return some false positives
+		return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
+		        || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
 	}
 
 	public static string JoinPath(string path1, string path2)

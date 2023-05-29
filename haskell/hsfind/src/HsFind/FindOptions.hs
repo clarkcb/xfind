@@ -94,13 +94,11 @@ parseDateToUtc dateString =
 
 data ActionType = ArgActionType
                 | BoolFlagActionType
-                | FlagActionType
                 | UnknownActionType
   deriving (Show, Eq)
 
 type ArgAction = FindSettings -> String -> FindSettings
 type BoolFlagAction = FindSettings -> Bool -> FindSettings
-type FlagAction = FindSettings -> FindSettings
 
 argActions :: [(String, ArgAction)]
 argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExtensions ss ++ newExtensions s})
@@ -122,27 +120,6 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("path", \ss s -> ss {paths = paths ss ++ [s]})
              , ("sort-by", \ss s -> ss {sortResultsBy = getSortByForName s})
              ]
-
-flagActions :: [(String, FlagAction)]
-flagActions = [ ("archivesonly", \ss -> ss {archivesOnly=True,
-                                            includeArchives=True})
-              , ("debug", \ss -> ss {debug=True, verbose=True})
-              , ("excludearchives", \ss -> ss {includeArchives=False})
-              , ("excludehidden", \ss -> ss {excludeHidden=True})
-              , ("help", \ss -> ss {printUsage=True})
-              , ("includearchives", \ss -> ss {includeArchives=True})
-              , ("includehidden", \ss -> ss {excludeHidden=False})
-              , ("listdirs", \ss -> ss {listDirs=True})
-              , ("listfiles", \ss -> ss {listFiles=True})
-              , ("norecursive", \ss -> ss {recursive=False})
-              , ("recursive", \ss -> ss {recursive=True})
-              , ("sort-ascending", \ss -> ss {sortDescending=False})
-              , ("sort-caseinsensitive", \ss -> ss {sortCaseInsensitive=True})
-              , ("sort-casesensitive", \ss -> ss {sortCaseInsensitive=False})
-              , ("sort-descending", \ss -> ss {sortDescending=True})
-              , ("verbose", \ss -> ss {verbose=True})
-              , ("version", \ss -> ss {printVersion=True})
-              ]
 
 boolFlagActions :: [(String, BoolFlagAction)]
 boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
@@ -190,13 +167,11 @@ settingsFromArgs opts arguments =
             case getActionType (argName a) of
               ArgActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
               BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) []
-              FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) []
               UnknownActionType -> Left $ "Invalid option: " ++ a ++ "\n"
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               ArgActionType -> recSettingsFromArgs (getArgAction (argName a) settings (head as)) (tail as)
               BoolFlagActionType -> recSettingsFromArgs (getBoolFlagAction (argName a) settings True) as
-              FlagActionType -> recSettingsFromArgs (getFlagAction (argName a) settings) as
               UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
           a:as -> recSettingsFromArgs (settings {paths = paths settings ++ [a]}) as
         longArgs :: [Either String String]
@@ -205,7 +180,6 @@ settingsFromArgs opts arguments =
         getActionType a
           | isArgAction a = ArgActionType
           | isBoolFlagAction a = BoolFlagActionType
-          | isFlagAction a = FlagActionType
           | otherwise = UnknownActionType
         argName :: String -> String
         argName = dropWhile (=='-')
@@ -213,11 +187,7 @@ settingsFromArgs opts arguments =
         getArgAction a = snd $ head $ filter (\(x,_) -> a==x) argActions
         getBoolFlagAction :: String -> BoolFlagAction
         getBoolFlagAction a = snd $ head $ filter (\(x,_) -> a==x) boolFlagActions
-        getFlagAction :: String -> FlagAction
-        getFlagAction a = snd $ head $ filter (\(x,_) -> a==x) flagActions
         isArgAction :: String -> Bool
         isArgAction a = isJust $ lookup a argActions
         isBoolFlagAction :: String -> Bool
         isBoolFlagAction a = isJust $ lookup a boolFlagActions
-        isFlagAction :: String -> Bool
-        isFlagAction a = isJust $ lookup a flagActions

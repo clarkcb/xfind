@@ -280,12 +280,16 @@ namespace cppfind {
         std::string parent_path = p.parent_path().string();
         auto file_type = m_file_types->get_file_type(file_name);
         struct stat fpstat;
-        if (stat(file_path.c_str(), &fpstat) == -1) {
-            // TODO: report error
-            return std::nullopt;
+        uint64_t file_size = 0;
+        long mod_time = 0;
+        if (m_settings->need_stat()) {
+            if (stat(file_path.c_str(), &fpstat) == -1) {
+                // TODO: report error
+                return std::nullopt;
+            }
+            file_size = (uint64_t) fpstat.st_size;
+            mod_time = (long) fpstat.st_mtime;
         }
-        auto file_size = (uint64_t) fpstat.st_size;
-        auto mod_time = (long) fpstat.st_mtime;
         auto file_result = new FileResult(parent_path, file_name, file_type, file_size, mod_time);
         if (file_type == FileType::ARCHIVE) {
             if (m_settings->include_archives() && is_matching_archive_file(file_name)) {
