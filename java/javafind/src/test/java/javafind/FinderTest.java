@@ -5,7 +5,8 @@ import org.junit.Test;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class FinderTest {
 
@@ -274,7 +275,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
         Path path = Paths.get(".gitignore");
-        assertNull(finder.filterToFileResult(path));
+        assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -283,7 +284,7 @@ public class FinderTest {
         settings.setExcludeHidden(false);
         Finder finder = new Finder(settings);
         Path path = Paths.get(".gitignore");
-        assertNotNull(finder.filterToFileResult(path));
+        assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -291,7 +292,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
         Path path = Paths.get("archive.zip");
-        assertNull(finder.filterToFileResult(path));
+        assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -300,7 +301,7 @@ public class FinderTest {
         settings.setIncludeArchives(true);
         Finder finder = new Finder(settings);
         Path path = Paths.get("archive.zip");
-        assertNotNull(finder.filterToFileResult(path));
+        assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -310,7 +311,7 @@ public class FinderTest {
         settings.addInArchiveExtension("zip");
         Finder finder = new Finder(settings);
         Path path = Paths.get("archive.zip");
-        assertNotNull(finder.filterToFileResult(path));
+        assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -320,7 +321,7 @@ public class FinderTest {
         settings.addOutArchiveExtension("zip");
         Finder finder = new Finder(settings);
         Path path = Paths.get("archive.zip");
-        assertNull(finder.filterToFileResult(path));
+        assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -329,7 +330,7 @@ public class FinderTest {
         settings.setArchivesOnly(true);
         Finder finder = new Finder(settings);
         Path path = Paths.get("archive.zip");
-        assertNotNull(finder.filterToFileResult(path));
+        assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -337,7 +338,7 @@ public class FinderTest {
         FindSettings settings = getSettings();
         Finder finder = new Finder(settings);
         Path path = Paths.get("FileUtil.cs");
-        assertNotNull(finder.filterToFileResult(path));
+        assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -346,7 +347,7 @@ public class FinderTest {
         settings.addInExtension("cs");
         Finder finder = new Finder(settings);
         Path path = Paths.get("FileUtil.cs");
-        assertNotNull(finder.filterToFileResult(path));
+        assertTrue(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -355,7 +356,7 @@ public class FinderTest {
         settings.addOutExtension("cs");
         Finder finder = new Finder(settings);
         Path path = Paths.get("FileUtil.cs");
-        assertNull(finder.filterToFileResult(path));
+        assertFalse(finder.filterToFileResult(path).isPresent());
     }
 
     @Test
@@ -364,6 +365,6 @@ public class FinderTest {
         settings.setArchivesOnly(true);
         Finder finder = new Finder(settings);
         Path path = Paths.get("FileUtil.cs");
-        assertNull(finder.filterToFileResult(path));
+        assertFalse(finder.filterToFileResult(path).isPresent());
     }
 }

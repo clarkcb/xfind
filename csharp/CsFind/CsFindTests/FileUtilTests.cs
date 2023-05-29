@@ -83,7 +83,8 @@ class FileUtilTests
 	[Test]
 	public void IsHidden_NotStartsWithDot_NotIsHidden()
 	{
-		var hiddenFile = new FileInfo("FileUtilTests.cs");
+		var csFindTestsPath = Environment.GetEnvironmentVariable("XFIND_PATH") + "/csharp/CsFind/CsFindTests";
+		var hiddenFile = new FileInfo(csFindTestsPath + "/FileUtilTests.cs");
 		Assert.IsFalse(FileUtil.IsHiddenFile(hiddenFile));
 	}
 

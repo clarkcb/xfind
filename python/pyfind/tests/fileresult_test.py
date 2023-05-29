@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ################################################################################
 #
 # fileresult_test.py
@@ -6,11 +7,12 @@
 # class FileResultTest: testing of FileResult
 #
 ################################################################################
+"""
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
 from pyfind import FileType, FileResult, XFINDPATH
 

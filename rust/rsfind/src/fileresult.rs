@@ -55,18 +55,23 @@ impl FileResult {
 
 #[cfg(test)]
 mod tests {
+    use std::time::SystemTime;
     use crate::filetypes::FileType;
 
     use super::*;
 
     #[test]
     fn test_find_file_abs_path() {
+        let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+            Ok(duration) => duration.as_secs(),
+            Err(error) => 0,
+        };
         let fr = FileResult::new(
             "~/src/xfind/rust/rsfind/src".to_string(),
             "finder.rs".to_string(),
             FileType::Code,
             1000,
-            SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()
+            mod_time
         );
         assert_eq!(
             fr.file_path(),
@@ -81,7 +86,7 @@ mod tests {
             "finder.rs".to_string(),
             FileType::Code,
             1000,
-            SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?.as_secs()
+            0
         );
         assert_eq!(fr.file_path(), "./finder.rs");
     }

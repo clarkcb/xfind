@@ -111,7 +111,7 @@ describe('testing fileutil', () => {
      **************************************************************************/
     it('testGetRelativePath', () => {
         const filePath = `${process.env.HOME}/filename.txt`;
-        expect(FileUtil.getRelativePath(filePath, '.')).toEqual("./fileName.txt");
+        expect(FileUtil.getRelativePath(filePath, '.')).toEqual("./filename.txt");
     });
 
     /***************************************************************************
@@ -169,7 +169,7 @@ describe('testing fileutil', () => {
      * expandPath tests
      **************************************************************************/
     it('testExpandPathPathWithTilde', () => {
-        const filePath = "~/fileName.txt";
+        const filePath = "~/filename.txt";
         const expected = `${process.env.HOME}/filename.txt`;
         expect(FileUtil.expandPath(filePath) === expected).toBeTruthy();
     });

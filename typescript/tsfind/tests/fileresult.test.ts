@@ -9,42 +9,42 @@ import {FileResult} from '../src/fileresult';
 
 describe('testing fileresult', () => {
     it('testFileResultAbsPath', () => {
-        const pathname = `${process.env.HOME}/src/xfind/javascript/jsfind/src`;
-        const filename = 'fileresult.js';
-        const fileresult = new FileResult(pathname, filename, FileType.Code);
+        const path = `${process.env.HOME}/src/xfind/javascript/jsfind/src`;
+        const fileName = 'fileresult.js';
+        const fileResult = new FileResult(path, fileName, FileType.Code, null);
         const expected = `${process.env.HOME}/src/xfind/javascript/jsfind/src/fileresult.js`;
-        expect(fileresult.relativePath()).toEqual(expected);
+        expect(fileResult.relativePath()).toEqual(expected);
     });
 
     it('testFileResultTildePath', () => {
-        const pathname = '~/src/xfind/javascript/jsfind/src';
-        const filename = 'fileresult.js';
-        const fileresult = new FileResult(pathname, filename, FileType.Code);
+        const path = '~/src/xfind/javascript/jsfind/src';
+        const fileName = 'fileresult.js';
+        const fileResult = new FileResult(path, fileName, FileType.Code, null);
         const expected = '~/src/xfind/javascript/jsfind/src/fileresult.js';
-        expect(fileresult.relativePath()).toEqual(expected);
+        expect(fileResult.relativePath()).toEqual(expected);
     });
 
     it('testFileResultRelPath1', () => {
-        const pathname = '.';
-        const filename = 'fileresult.js';
-        const fileresult = new FileResult(pathname, filename, FileType.Code);
+        const path = '.';
+        const fileName = 'fileresult.js';
+        const fileResult = new FileResult(path, fileName, FileType.Code, null);
         const expected = './fileresult.js';
-        expect(fileresult.relativePath()).toEqual(expected);
+        expect(fileResult.relativePath()).toEqual(expected);
     });
 
     it('testFileResultRelPath2', () => {
-        const pathname = './';
-        const filename = 'fileresult.js';
-        const fileresult = new FileResult(pathname, filename, FileType.Code);
+        const path = './';
+        const fileName = 'fileresult.js';
+        const fileResult = new FileResult(path, fileName, FileType.Code, null);
         const expected = './fileresult.js';
-        expect(fileresult.relativePath()).toEqual(expected);
+        expect(fileResult.relativePath()).toEqual(expected);
     });
 
     it('testFileResultRelPath3', () => {
-        const pathname = '..';
-        const filename = 'fileresult.js';
-        const fileresult = new FileResult(pathname, filename, FileType.Code);
+        const path = '..';
+        const fileName = 'fileresult.js';
+        const fileResult = new FileResult(path, fileName, FileType.Code, null);
         const expected = '../fileresult.js';
-        expect(fileresult.relativePath()).toEqual(expected);
+        expect(fileResult.relativePath()).toEqual(expected);
     });
 });

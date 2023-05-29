@@ -50,7 +50,7 @@ class FindOptionsTest extends TestCase
 
     public function test_archives_only_arg(): void
     {
-        $args = ['--archives_only'];
+        $args = ['--archivesonly'];
         $settings = $this->findoptions->settings_from_args($args);
         $this->assertTrue($settings->archives_only);
         $this->assertTrue($settings->include_archives);

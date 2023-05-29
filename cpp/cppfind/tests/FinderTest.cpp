@@ -22,7 +22,7 @@ TEST_CASE("Test filter_to_file_result hidden file include-hidden should be true"
     settings->exclude_hidden(false);
     auto *finder = new cppfind::Finder(settings);
 
-    REQUIRE(finder->filter_to_file_result(".hidden.txt").has_value());
+    REQUIRE(finder->filter_to_file_result("./.hidden.txt").has_value());
 }
 
 TEST_CASE("Test filter_to_file_result archive file should be false", "[Finder]") {

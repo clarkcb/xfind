@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ################################################################################
 #
 # findsettings_test.py
@@ -6,11 +7,12 @@
 # class FindSettingsTest: testing of FindSettings class
 #
 ################################################################################
+"""
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
 from pyfind import FindSettings
 
@@ -45,14 +47,14 @@ class FindSettingsTest(unittest.TestCase):
 
     def test_set_properties(self):
         props = {
-            'archivesonly': True,
+            'archives_only': True,
             'debug': True,
-            'excludehidden': False,
-            'includearchives': True,
-            'listdirs': True,
-            'listfiles': True,
-            'printusage': True,
-            'printversion': True,
+            'exclude_hidden': False,
+            'include_archives': True,
+            'list_dirs': True,
+            'list_files': True,
+            'print_usage': True,
+            'print_version': True,
             'recursive': False,
             'verbose': True,
         }

@@ -19,10 +19,10 @@ export class FileResult {
     fileType: FileType;
     stat: fs.Stats | null;
 
-    constructor(pathname: string, filename: string, filetype: FileType, stat: fs.Stats | null) {
-        this.path = pathname;
-        this.fileName = filename;
-        this.fileType = filetype;
+    constructor(path: string, fileName: string, fileType: FileType, stat: fs.Stats | null) {
+        this.path = path;
+        this.fileName = fileName;
+        this.fileType = fileType;
         this.stat = stat;
     }
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""
 ################################################################################
 #
 # filetypes_test.py
@@ -6,19 +7,20 @@
 # class FileTypesTest: testing of FileTypes
 #
 ################################################################################
+"""
 import os
 import sys
 import unittest
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
 from pyfind import FileType, FileTypes
 
 
 class FileTypesTest(unittest.TestCase):
     @classmethod
-    def setUpClass(self):
-        self.file_types = FileTypes()
+    def setUpClass(cls):
+        cls.file_types = FileTypes()
 
     def test_get_file_type_archive_file(self):
         file_name = 'archive.zip'
