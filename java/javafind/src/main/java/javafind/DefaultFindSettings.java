@@ -1,7 +1,7 @@
 package javafind;
 
-public final class DefaultSettings {
-    private DefaultSettings() {
+public final class DefaultFindSettings {
+    private DefaultFindSettings() {
         // inaccessible constructor for utility class
     }
 

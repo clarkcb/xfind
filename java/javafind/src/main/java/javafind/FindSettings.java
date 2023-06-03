@@ -53,22 +53,22 @@ public class FindSettings {
     private boolean verbose;
 
     public FindSettings() {
-        this.archivesOnly = DefaultSettings.ARCHIVESONLY;
-        this.debug = DefaultSettings.DEBUG;
-        this.excludeHidden = DefaultSettings.EXCLUDEHIDDEN;
+        this.archivesOnly = DefaultFindSettings.ARCHIVESONLY;
+        this.debug = DefaultFindSettings.DEBUG;
+        this.excludeHidden = DefaultFindSettings.EXCLUDEHIDDEN;
         this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.includeArchives = DefaultSettings.INCLUDEARCHIVES;
-        this.listDirs = DefaultSettings.LISTDIRS;
-        this.listFiles = DefaultSettings.LISTFILES;
+        this.includeArchives = DefaultFindSettings.INCLUDEARCHIVES;
+        this.listDirs = DefaultFindSettings.LISTDIRS;
+        this.listFiles = DefaultFindSettings.LISTFILES;
         this.maxLastMod = null;
-        this.maxSize = DefaultSettings.MAXSIZE;
+        this.maxSize = DefaultFindSettings.MAXSIZE;
         this.minLastMod = null;
-        this.minSize = DefaultSettings.MINSIZE;
+        this.minSize = DefaultFindSettings.MINSIZE;
         this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -76,13 +76,13 @@ public class FindSettings {
         this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
         this.paths = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.printUsage = DefaultSettings.PRINTUSAGE;
-        this.printVersion = DefaultSettings.PRINTVERSION;
-        this.recursive = DefaultSettings.RECURSIVE;
-        this.sortBy = DefaultSettings.SORT_BY;
-        this.sortCaseInsensitive = DefaultSettings.SORT_CASEINSENSITIVE;
-        this.sortDescending = DefaultSettings.SORT_DESCENDING;
-        this.verbose = DefaultSettings.VERBOSE;
+        this.printUsage = DefaultFindSettings.PRINTUSAGE;
+        this.printVersion = DefaultFindSettings.PRINTVERSION;
+        this.recursive = DefaultFindSettings.RECURSIVE;
+        this.sortBy = DefaultFindSettings.SORT_BY;
+        this.sortCaseInsensitive = DefaultFindSettings.SORT_CASEINSENSITIVE;
+        this.sortDescending = DefaultFindSettings.SORT_DESCENDING;
+        this.verbose = DefaultFindSettings.VERBOSE;
     }
 
     public final Set<String> getPaths() {
@@ -443,7 +443,7 @@ public class FindSettings {
         return String.format("\"%s\"", dt);
     }
 
-    public final String toString() {
+    public String toString() {
         return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
                 + ", debug: " + this.debug

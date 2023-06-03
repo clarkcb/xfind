@@ -18,19 +18,19 @@ public class FindSettingsTest {
     @Test
     public final void testDefaultSettings() {
         FindSettings settings = new FindSettings();
-        assertEquals(DefaultSettings.ARCHIVESONLY, settings.getArchivesOnly());
-        assertEquals(DefaultSettings.DEBUG, settings.getDebug());
-        assertEquals(DefaultSettings.EXCLUDEHIDDEN, settings.getExcludeHidden());
-        assertEquals(DefaultSettings.INCLUDEARCHIVES, settings.getIncludeArchives());
-        assertEquals(DefaultSettings.LISTDIRS, settings.getListDirs());
-        assertEquals(DefaultSettings.LISTFILES, settings.getListFiles());
-        assertEquals(DefaultSettings.MAXSIZE, settings.getMaxSize());
-        assertEquals(DefaultSettings.MINSIZE, settings.getMinSize());
-        assertEquals(DefaultSettings.PRINTUSAGE, settings.getPrintUsage());
-        assertEquals(DefaultSettings.PRINTVERSION, settings.getPrintVersion());
-        assertEquals(DefaultSettings.SORT_CASEINSENSITIVE, settings.getSortCaseInsensitive());
-        assertEquals(DefaultSettings.SORT_DESCENDING, settings.getSortDescending());
-        assertEquals(DefaultSettings.VERBOSE, settings.getVerbose());
+        assertEquals(DefaultFindSettings.ARCHIVESONLY, settings.getArchivesOnly());
+        assertEquals(DefaultFindSettings.DEBUG, settings.getDebug());
+        assertEquals(DefaultFindSettings.EXCLUDEHIDDEN, settings.getExcludeHidden());
+        assertEquals(DefaultFindSettings.INCLUDEARCHIVES, settings.getIncludeArchives());
+        assertEquals(DefaultFindSettings.LISTDIRS, settings.getListDirs());
+        assertEquals(DefaultFindSettings.LISTFILES, settings.getListFiles());
+        assertEquals(DefaultFindSettings.MAXSIZE, settings.getMaxSize());
+        assertEquals(DefaultFindSettings.MINSIZE, settings.getMinSize());
+        assertEquals(DefaultFindSettings.PRINTUSAGE, settings.getPrintUsage());
+        assertEquals(DefaultFindSettings.PRINTVERSION, settings.getPrintVersion());
+        assertEquals(DefaultFindSettings.SORT_CASEINSENSITIVE, settings.getSortCaseInsensitive());
+        assertEquals(DefaultFindSettings.SORT_DESCENDING, settings.getSortDescending());
+        assertEquals(DefaultFindSettings.VERBOSE, settings.getVerbose());
     }
 
     @Test

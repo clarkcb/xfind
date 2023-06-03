@@ -187,6 +187,20 @@ public class Finder {
         return Optional.empty();
     }
 
+    public final int compareFileResults(FileResult fr1, FileResult fr2) {
+        if (settings.getSortBy().equals(SortBy.FILENAME)) {
+            return fr1.compareByName(fr2, settings.getSortCaseInsensitive());
+        } else if (settings.getSortBy().equals(SortBy.FILESIZE)) {
+            return fr1.compareBySize(fr2, settings.getSortCaseInsensitive());
+        } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
+            return fr1.compareByType(fr2, settings.getSortCaseInsensitive());
+        } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
+            return fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive());
+        } else {
+            return fr1.compareByPath(fr2, settings.getSortCaseInsensitive());
+        }
+    }
+
     public final void sortFileResults(List<FileResult> fileResults) {
         if (settings.getSortBy().equals(SortBy.FILENAME)) {
             fileResults.sort((fr1, fr2) -> fr1.compareByName(fr2, settings.getSortCaseInsensitive()));
