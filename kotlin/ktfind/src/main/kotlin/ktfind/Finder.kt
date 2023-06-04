@@ -1,14 +1,14 @@
 package ktfind
 
+import kotlinx.coroutines.*
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.time.ZoneOffset
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.streams.toList
-import kotlinx.coroutines.*
-import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -166,6 +166,16 @@ class Finder(val settings: FindSettings) {
             .filter { it.isFile }
             .mapNotNull { filterToFileResult(it) }
             .toList()
+    }
+
+    fun compareFileResults(fr1: FileResult, fr2: FileResult?): Int {
+        return when (settings.sortBy) {
+            SortBy.FILENAME -> fr1.compareByName(fr2!!, settings.sortCaseInsensitive)
+            SortBy.FILESIZE -> fr1.compareBySize(fr2!!, settings.sortCaseInsensitive)
+            SortBy.FILETYPE -> fr1.compareByType(fr2!!, settings.sortCaseInsensitive)
+            SortBy.LASTMOD -> fr1.compareByLastMod(fr2!!, settings.sortCaseInsensitive)
+            else -> fr1.compareByPath(fr2!!, settings.sortCaseInsensitive)
+        }
     }
 
     private fun sortFileResults(fileResults: List<FileResult>): List<FileResult> {

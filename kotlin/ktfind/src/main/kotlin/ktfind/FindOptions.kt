@@ -120,7 +120,6 @@ class FindOptions {
             throw FindException("Settings file not found: $filePath")
         } catch (e: IOException) {
             throw FindException("IOException reading settings file: $filePath")
-//        } catch (e: ParseException) {
         } catch (e: KlaxonException) {
             throw FindException("KlaxonException trying to parse the JSON in $filePath")
         }

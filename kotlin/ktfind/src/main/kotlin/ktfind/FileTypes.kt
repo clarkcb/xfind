@@ -24,9 +24,10 @@ private const val archive = "archive"
 private const val code = "code"
 private const val binary = "binary"
 // private const val findable = "findable"
+private const val searchable = "searchable"
 private const val text = "text"
 private const val xml = "xml"
-//private const val unknown = "unknown"
+private const val unknown = "unknown"
 
 fun fileTypeFromName(name: String) : FileType {
     when (name.trim().lowercase()) {
