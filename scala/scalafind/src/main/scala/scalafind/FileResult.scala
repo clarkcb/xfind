@@ -22,21 +22,21 @@ class FileResult(val containers: List[String],
   private def comparePaths(path1: Path, path2: Path, sortCaseInsensitive: Boolean): Int = {
     val p1 = (Option(path1), sortCaseInsensitive) match {
       case (None, _) => ""
-      case (Some(p), true) => p.toString().toLowerCase()
-      case (Some(p), false) => p.toString()
+      case (Some(p), true) => p.toString.toLowerCase
+      case (Some(p), false) => p.toString
     }
     val p2 = (Option(path2), sortCaseInsensitive) match {
       case (None, _) => ""
-      case (Some(p), true) => p.toString().toLowerCase()
-      case (Some(p), false) => p.toString()
+      case (Some(p), true) => p.toString.toLowerCase
+      case (Some(p), false) => p.toString
     }
     p1.compareTo(p2)
   }
 
   def compareByPath(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
-    val pres = comparePaths(this.path.getParent(), other.path.getParent(), sortCaseInsensitive)
+    val pres = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
     if (pres == 0) {
-      val fres = comparePaths(this.path.getFileName(), other.path.getFileName(), sortCaseInsensitive)
+      val fres = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
       fres < 0
     } else {
       pres < 0
@@ -44,9 +44,9 @@ class FileResult(val containers: List[String],
   }
 
   def compareByName(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
-    val fres = comparePaths(this.path.getFileName(), other.path.getFileName(), sortCaseInsensitive)
+    val fres = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
     if (fres == 0) {
-      val pres = comparePaths(this.path.getParent(), other.path.getParent(), sortCaseInsensitive)
+      val pres = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
       pres < 0
     } else {
       fres < 0

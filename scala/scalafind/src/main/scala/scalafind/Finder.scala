@@ -148,6 +148,20 @@ class Finder (settings: FindSettings) {
         .flatMap(getFileResults)
   }
 
+  def cmpFileResults(fr1: FileResult, fr2: FileResult): Boolean = {
+    if (settings.sortBy == SortBy.FileName) {
+      fr1.compareByName(fr2, settings.sortCaseInsensitive)
+    } else if (settings.sortBy == SortBy.FileSize) {
+      fr1.compareBySize(fr2, settings.sortCaseInsensitive)
+    } else if (settings.sortBy == SortBy.FileType) {
+      fr1.compareByType(fr2, settings.sortCaseInsensitive)
+    } else if (settings.sortBy == SortBy.LastMod) {
+      fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
+    } else {
+      fr1.compareByPath(fr2, settings.sortCaseInsensitive)
+    }
+  }
+
   def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
     val sortedFileResults =
       if (settings.sortBy == SortBy.FileName) {

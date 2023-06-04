@@ -22,6 +22,7 @@ object FileTypes {
   private val archive = "archive"
   private val binary = "binary"
   private val code = "code"
+  private val searchable = "searchable"
   private val text = "text"
   private val unknown = "unknown"
   private val xml = "xml"
