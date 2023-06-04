@@ -19,6 +19,8 @@
                        ^java.nio.file.attribute.BasicFileAttributes stat])
 
 (defn new-file-result
+  ([^java.io.File file, file-type]
+   (->FileResult [] file file-type nil))
   ([^java.io.File file, file-type, stat]
    (->FileResult [] file file-type stat))
   ([containers, ^java.io.File file, file-type stat]
