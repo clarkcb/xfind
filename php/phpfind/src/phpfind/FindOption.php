@@ -7,32 +7,32 @@ namespace phpfind;
  */
 readonly class FindOption
 {
-    public string $shortarg;
-    public string $longarg;
+    public string $short_arg;
+    public string $long_arg;
     public string $desc;
-    public string $sortarg;
+    public string $sort_arg;
 
     /**
-     * @param string $shortarg
-     * @param string $longarg
+     * @param string $short_arg
+     * @param string $long_arg
      * @param string $desc
      */
-    public function __construct(string $shortarg, string $longarg, string $desc)
+    public function __construct(string $short_arg, string $long_arg, string $desc)
     {
-        $this->shortarg = $shortarg;
-        $this->longarg = $longarg;
+        $this->short_arg = $short_arg;
+        $this->long_arg = $long_arg;
         $this->desc = $desc;
-        $this->sortarg = $this->__sortarg();
+        $this->sort_arg = $this->__sort_arg();
     }
 
     /**
      * @return string
      */
-    private function __sortarg(): string
+    private function __sort_arg(): string
     {
-        if ($this->shortarg) {
-            return strtolower($this->shortarg) . 'a' . $this->longarg;
+        if ($this->short_arg) {
+            return strtolower($this->short_arg) . 'a' . $this->long_arg;
         }
-        return $this->longarg;
+        return $this->long_arg;
     }
 }

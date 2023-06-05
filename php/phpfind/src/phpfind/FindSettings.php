@@ -26,7 +26,7 @@ class FindSettings
     public ?DateTime $min_last_mod = null;
     public int $min_size = 0;
     public array $out_archive_extensions = array();
-    public array $out_archive_patterns = array();
+    public array $out_archive_file_patterns = array();
     public array $out_dir_patterns = array();
     public array $out_extensions = array();
     public array $out_file_patterns = array();
@@ -35,9 +35,9 @@ class FindSettings
     public bool $print_usage = false;
     public bool $print_version = false;
     public bool $recursive = true;
+    public SortBy $sort_by = SortBy::Filepath;
     public bool $sort_case_insensitive = false;
     public bool $sort_descending = false;
-    public SortBy $sort_by = SortBy::Filepath;
     public bool $verbose = false;
 
     /**
@@ -178,9 +178,9 @@ class FindSettings
             ', print_usage: %s' .
             ', print_version: %s' .
             ', recursive: %s' .
+            ', sort_by: %s' .
             ', sort_case_insensitive: %s' .
             ', sort_descending: %s' .
-            ', sort_by: %s' .
             ', verbose: %s' .
             ')',
             StringUtil::bool_to_string($this->archives_only),
@@ -209,9 +209,9 @@ class FindSettings
             StringUtil::bool_to_string($this->print_usage),
             StringUtil::bool_to_string($this->print_version),
             StringUtil::bool_to_string($this->recursive),
+            $this->sort_by->name,
             StringUtil::bool_to_string($this->sort_case_insensitive),
             StringUtil::bool_to_string($this->sort_descending),
-            $this->sort_by->name,
             StringUtil::bool_to_string($this->verbose)
         );
     }

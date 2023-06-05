@@ -3,10 +3,7 @@
 namespace phpfind;
 
 /**
- * Class FindFile
- *
- * @property string[] $containers
- * @property array<string, int>|false $stat
+ * Class FileResult
  */
 class FileResult
 {

@@ -180,8 +180,8 @@ class Finder
             !$this->matches_any_pattern($file_name, $this->settings->in_archive_file_patterns)) {
             return false;
         }
-        if ($this->settings->out_archive_patterns &&
-            $this->matches_any_pattern($file_name, $this->settings->out_archive_patterns)) {
+        if ($this->settings->out_archive_file_patterns &&
+            $this->matches_any_pattern($file_name, $this->settings->out_archive_file_patterns)) {
             return false;
         }
         return true;
@@ -267,10 +267,10 @@ class Finder
      */
     private function rec_get_file_results(string $dir): array
     {
-        $dirresults = $this->get_dir_dir_results($dir);
+        $dir_results = $this->get_dir_dir_results($dir);
         $file_results = $this->get_dir_file_results($dir);
-        foreach ($dirresults as $dirresult) {
-            $file_results = array_merge($file_results, $this->rec_get_file_results($dirresult));
+        foreach ($dir_results as $dir_result) {
+            $file_results = array_merge($file_results, $this->rec_get_file_results($dir_result));
         }
         return $file_results;
     }

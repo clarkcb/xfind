@@ -13,7 +13,7 @@ class FindOptions
     private array $options;
     private readonly array $arg_action_map;
     private readonly array $bool_flag_action_map;
-    private array $longarg_map;
+    private array $long_arg_map;
 
     /**
      * @throws FindException
@@ -37,7 +37,7 @@ class FindOptions
             'minsize' => fn (string $s, FindSettings $fs) => $fs->min_size = intval($s),
             'out-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archive_extensions),
             'out-archivefilepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_patterns),
+                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_file_patterns),
             'out-dirpattern' =>
                 fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dir_patterns),
             'out-ext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_extensions),
@@ -68,7 +68,7 @@ class FindOptions
             'verbose' => fn (bool $b, FindSettings $fs) => $fs->verbose = $b,
             'version' => fn (bool $b, FindSettings $fs) => $fs->print_version = $b
         ];
-        $this->longarg_map = array();
+        $this->long_arg_map = array();
         $this->set_options_from_json();
     }
 
@@ -77,24 +77,24 @@ class FindOptions
      */
     private function set_options_from_json(): void
     {
-        $findoptionspath = FileUtil::expand_user_home_path(Config::FINDOPTIONSPATH);
-        if (file_exists($findoptionspath)) {
-            $json_obj = json_decode(file_get_contents($findoptionspath), true);
+        $find_options_path = FileUtil::expand_user_home_path(Config::FINDOPTIONSPATH);
+        if (file_exists($find_options_path)) {
+            $json_obj = json_decode(file_get_contents($find_options_path), true);
             foreach ($json_obj['findoptions'] as $so) {
                 $short = '';
                 $long = (string)$so['long'];
                 $desc = (string)$so['desc'];
-                $this->longarg_map[$long] = $long;
+                $this->long_arg_map[$long] = $long;
                 if (array_key_exists('short', $so)) {
                     $short = (string)$so['short'];
-                    $this->longarg_map[$short] = $long;
+                    $this->long_arg_map[$short] = $long;
                 }
                 $option = new FindOption($short, $long, $desc);
                 $this->options[] = $option;
             }
-            usort($this->options, array('phpfind\FindOptions', 'cmp_findoptions'));
+            usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
         } else {
-            throw new FindException('File not found: ' . $findoptionspath);
+            throw new FindException('File not found: ' . $find_options_path);
         }
     }
 
@@ -159,20 +159,20 @@ class FindOptions
                 while ($arg[0] == '-') {
                     $arg = substr($arg, 1);
                 }
-                if (!array_key_exists($arg, $this->longarg_map)) {
+                if (!array_key_exists($arg, $this->long_arg_map)) {
                     throw new FindException("Invalid option: $arg");
                 }
-                $longarg = $this->longarg_map[$arg];
-                if (array_key_exists($longarg, $this->arg_action_map)) {
+                $long_arg = $this->long_arg_map[$arg];
+                if (array_key_exists($long_arg, $this->arg_action_map)) {
                     if (count($args) > 0) {
                         $val = array_shift($args);
-                        $this->arg_action_map[$longarg]($val, $settings);
+                        $this->arg_action_map[$long_arg]($val, $settings);
                     } else {
                         throw new FindException("Missing value for $arg");
                     }
-                } elseif (array_key_exists($longarg, $this->bool_flag_action_map)) {
-                    $this->bool_flag_action_map[$longarg](true, $settings);
-                    if (in_array($longarg, array("help", "version"))) {
+                } elseif (array_key_exists($long_arg, $this->bool_flag_action_map)) {
+                    $this->bool_flag_action_map[$long_arg](true, $settings);
+                    if (in_array($long_arg, array("help", "version"))) {
                         break;
                     }
                 } else {
@@ -190,9 +190,9 @@ class FindOptions
      * @param FindOption $o2
      * @return int
      */
-    private static function cmp_findoptions(FindOption $o1, FindOption $o2): int
+    private static function cmp_find_options(FindOption $o1, FindOption $o2): int
     {
-        return strcmp($o1->sortarg, $o2->sortarg);
+        return strcmp($o1->sort_arg, $o2->sort_arg);
     }
 
     /**
@@ -206,10 +206,10 @@ class FindOptions
         $longest = 0;
         foreach ($this->options as $option) {
             $opt_str = '';
-            if ($option->shortarg) {
-                $opt_str = '-' . $option->shortarg . ',';
+            if ($option->short_arg) {
+                $opt_str = '-' . $option->short_arg . ',';
             }
-            $opt_str .= '--' . $option->longarg;
+            $opt_str .= '--' . $option->long_arg;
             if (strlen($opt_str) > $longest) {
                 $longest = strlen($opt_str);
             }
