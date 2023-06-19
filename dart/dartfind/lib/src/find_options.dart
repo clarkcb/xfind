@@ -2,7 +2,7 @@ import 'dart:convert' show json;
 import 'dart:io' show File;
 
 import 'package:dartfind/src/common.dart';
-import 'package:dartfind/src/config.dart' show FINDOPTIONSPATH;
+import 'package:dartfind/src/config.dart' show findOptionsPath;
 import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
@@ -14,7 +14,7 @@ class FindOption {
 
   const FindOption(this.shortArg, this.longArg, this.desc);
 
-  String sortarg() {
+  String sortArg() {
     if (shortArg == null) {
       return longArg.toLowerCase();
     } else {
@@ -43,7 +43,7 @@ class FindOptions {
   }
 
   Future<void> loadFindOptionsFromJson() async {
-    var contents = await File(FINDOPTIONSPATH).readAsString();
+    var contents = await File(findOptionsPath).readAsString();
     Map soMap = json.decode(contents);
     if (soMap.containsKey('findoptions')) {
       var soList = soMap['findoptions']! as List;
@@ -51,7 +51,7 @@ class FindOptions {
         var longArg = (so as Map)['long']!;
         longArgMap[longArg] = longArg;
         var desc = (so)['desc']!;
-        var shortArg;
+        String? shortArg;
         if ((so).containsKey('short')) {
           shortArg = (so)['short']!;
           longArgMap[shortArg] = longArg;
@@ -196,7 +196,7 @@ class FindOptions {
   }
 
   void usage() async {
-    log(await getUsageString());
+    logMsg(await getUsageString());
   }
 
   Future<String> getUsageString() async {
@@ -204,7 +204,7 @@ class FindOptions {
       var s = 'Usage:\n'
           ' dartfind [options] <path> [<path> ...]\n\n'
           'Options:\n';
-      findOptions.sort((o1, o2) => o1.sortarg().compareTo(o2.sortarg()));
+      findOptions.sort((o1, o2) => o1.sortArg().compareTo(o2.sortArg()));
       var optStrings = findOptions.map((so) => so.optString()).toList();
       var longest = optStrings.reduce((value, optString) =>
           (optString.length > value.length) ? optString : value);

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-void log(String msg) {
+void logMsg(String msg) {
   stdout.writeln(msg);
 }
 

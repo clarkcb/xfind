@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:dartfind/dartfind.dart';
 
 void _handleError(err, FindOptions options) {
-  log('');
+  logMsg('');
   logError('$err\n');
   options.usage();
   exitCode = 1;
@@ -18,16 +18,16 @@ List<String> getMatchingDirs(List<FileResult> fileResults) {
 void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
   var dirs = getMatchingDirs(fileResults);
   if (dirs.isNotEmpty) {
-    log('\nMatching directories (${dirs.length}):');
+    logMsg('\nMatching directories (${dirs.length}):');
     if (settings.paths.any((p) => p.startsWith('~'))) {
       for (var d in dirs) {
-        log(FileUtil.contractPath(d));
+        logMsg(FileUtil.contractPath(d));
       }
     } else {
-      dirs.forEach(log);
+      dirs.forEach(logMsg);
     }
   } else {
-    log('\nMatching directories: 0');
+    logMsg('\nMatching directories: 0');
   }
 }
 
@@ -38,16 +38,16 @@ List<String> getMatchingFiles(List<FileResult> fileResults) {
 void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {
   var files = getMatchingFiles(fileResults);
   if (files.isNotEmpty) {
-    log('\nMatching files (${files.length}):');
+    logMsg('\nMatching files (${files.length}):');
     if (settings.paths.any((p) => p.startsWith('~'))) {
       for (var f in files) {
-        log(FileUtil.contractPath(f));
+        logMsg(FileUtil.contractPath(f));
       }
     } else {
-      files.forEach(log);
+      files.forEach(logMsg);
     }
   } else {
-    log('\nMatching files: 0');
+    logMsg('\nMatching files: 0');
   }
 }
 
@@ -82,9 +82,9 @@ Future<void> main(List<String> arguments) async {
   var options = FindOptions();
 
   await options.settingsFromArgs(arguments).then((settings) {
-    if (settings.debug) log('settings: $settings');
+    if (settings.debug) logMsg('settings: $settings');
     if (settings.printUsage) {
-      log('');
+      logMsg('');
       options.usage();
     } else {
       find(settings, options);

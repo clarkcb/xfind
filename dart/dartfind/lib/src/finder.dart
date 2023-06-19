@@ -15,18 +15,17 @@ class Finder {
   // setting to false means find will end once an attempt is made to read
   // a file in an incompatible encoding
   final bool allowInvalid = true;
-  late Future validated;
   Finder(this.settings) {
-    validated = _validateSettings();
+    _validateSettings();
   }
 
-  Future<void> _validateSettings() async {
+  void _validateSettings() {
     if (settings.paths.isEmpty) {
       throw FindException('Startpath not defined');
     }
-    settings.paths.forEach((p) async {
+    settings.paths.forEach((p) {
       var startPath = FileUtil.expandPath(p);
-      if (await FileSystemEntity.type(startPath) ==
+      if (FileSystemEntity.typeSync(startPath) ==
           FileSystemEntityType.notFound) {
         throw FindException('Startpath not found');
       }
@@ -274,7 +273,7 @@ class Finder {
   }
 
   Future<List<FileResult>> find() async {
-    return Future.wait([_fileTypes.ready, validated]).then((res) {
+    return Future.wait([_fileTypes.ready]).then((res) {
       return _findFiles();
     });
   }

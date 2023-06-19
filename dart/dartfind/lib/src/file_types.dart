@@ -1,7 +1,7 @@
 import 'dart:convert' show json;
 import 'dart:io' show File;
 
-import 'package:dartfind/src/config.dart' show FILETYPESPATH;
+import 'package:dartfind/src/config.dart' show fileTypesPath;
 import 'package:dartfind/src/file_util.dart';
 
 enum FileType {
@@ -49,7 +49,7 @@ class FileTypes {
   }
 
   Future<void> loadFileTypesFromJson() async {
-    var contents = await File(FILETYPESPATH).readAsString();
+    var contents = await File(fileTypesPath).readAsString();
     Map jsonFileTypesMap = json.decode(contents);
     if (jsonFileTypesMap.containsKey('filetypes')) {
       var ftList = jsonFileTypesMap['filetypes'] as List;
