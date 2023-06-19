@@ -130,7 +130,7 @@ class FinderTest(unittest.TestCase):
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
-    def test_filter_to_file_result_hidden_includehidden(self):
+    def test_filter_to_file_result_hidden_include_hidden(self):
         settings = self.get_settings()
         settings.exclude_hidden = False
         finder = Finder(settings)

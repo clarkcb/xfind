@@ -77,7 +77,8 @@ class FindSettings:
         self.debug = debug
         self.exclude_hidden = exclude_hidden
         self.in_archive_extensions = in_archive_extensions if in_archive_extensions else set()
-        self.in_archive_file_patterns: PatternSet = in_archive_file_patterns if in_archive_file_patterns else set()
+        self.in_archive_file_patterns: PatternSet = \
+            in_archive_file_patterns if in_archive_file_patterns else set()
         self.in_dir_patterns: PatternSet = in_dir_patterns if in_dir_patterns else set()
         self.in_extensions = in_extensions if in_extensions else set()
         self.in_file_patterns: PatternSet = in_file_patterns if in_file_patterns else set()
@@ -90,7 +91,8 @@ class FindSettings:
         self.min_last_mod = min_last_mod
         self.min_size = min_size
         self.out_archive_extensions = out_archive_extensions if out_archive_extensions else set()
-        self.out_archive_file_patterns: PatternSet = out_archive_file_patterns if out_archive_file_patterns else set()
+        self.out_archive_file_patterns: PatternSet = \
+            out_archive_file_patterns if out_archive_file_patterns else set()
         self.out_dir_patterns: PatternSet = out_dir_patterns if out_dir_patterns else set()
         self.out_extensions = out_extensions if out_extensions else set()
         self.out_file_patterns: PatternSet = out_file_patterns if out_file_patterns else set()

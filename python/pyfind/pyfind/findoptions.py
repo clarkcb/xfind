@@ -132,12 +132,12 @@ class FindOptions:
             'out-filetype':
                 lambda x, settings:
                 settings.add_file_types(x, 'out_file_types'),
-            'sort-by':
-                lambda x, settings:
-                settings.set_sort_by(x),
             'path':
                 lambda x, settings:
                 settings.paths.add(x),
+            'sort-by':
+                lambda x, settings:
+                settings.set_sort_by(x),
         }
 
         self.__dt_arg_dict = {
