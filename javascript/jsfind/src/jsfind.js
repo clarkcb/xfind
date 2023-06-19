@@ -1,3 +1,4 @@
+/*jslint node: true */
 /*
  * jsfind.js
  *
@@ -9,6 +10,7 @@
 const common = require('./common');
 const {Finder} = require('./finder');
 const {FindOptions} = require('./findoptions');
+//const {FindSettings} = require('./findsettings');
 
 function handleError(err, findOptions) {
     const errMsg = 'ERROR: ' + err.message;
@@ -85,6 +87,6 @@ const findMain = async () => {
 };
 
 // node.js equivalent of python's if __name__ == '__main__'
-if (!module.parent) {
-    findMain();
+if (require.main === module) {
+    findMain().catch((err) => common.log(err));
 }

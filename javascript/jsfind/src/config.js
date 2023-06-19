@@ -4,8 +4,6 @@
  * Configuration values
  */
 
-'use strict';
-
 const config = require('../data/config.json');
 
 // const isWin = /^win/.test(process.platform);
@@ -19,6 +17,6 @@ if (process.env.XFIND_PATH) {
 }
 
 exports.XFINDPATH = config.xfindpath;
-exports.SHAREDPATH = exports.XFINDPATH + '/shared';
+// exports.SHAREDPATH = exports.XFINDPATH + '/shared';
 exports.FILETYPESJSONPATH = __dirname + '/../data/filetypes.json';
 exports.FINDOPTIONSJSONPATH = __dirname + '/../data/findoptions.json';

@@ -5,7 +5,7 @@
  */
 
 const config = require('./config');
-const {expandPath} = require('./fileutil');
+const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {FindOption} = require('./findoption');
 const {FindSettings} = require('./findsettings');
@@ -32,13 +32,13 @@ class FindOptions {
             'in-filetype':
                 (x, settings) => { settings.addInFileTypes(x); },
             'maxlastmod':
-                (x, settings) => { settings.setMaxLastMod(x); },
+                (x, settings) => { settings.maxLastModFromString(x); },
             'maxsize':
                 (x, settings) => {
                     settings.maxSize = parseInt(x, 10);
                 },
             'minlastmod':
-                (x, settings) => { settings.setMinLastMod(x); },
+                (x, settings) => { settings.minLastModFromString(x); },
             'minsize':
                 (x, settings) => {
                     settings.minSize = parseInt(x, 10);
@@ -65,9 +65,9 @@ class FindOptions {
         };
         this.boolFlagActionMap = {
             'archivesonly':
-                (b, settings) => { settings.setArchivesOnly(b); },
+                (b, settings) => { settings.archivesOnly = b; },
             'debug':
-                (b, settings) => { settings.setDebug(b); },
+                (b, settings) => { settings.debug = b; },
             'excludearchives':
                 (b, settings) => { settings.includeArchives = !b; },
             'excludehidden':
@@ -105,15 +105,15 @@ class FindOptions {
             const fs = require('fs');
 
             let json = '';
-            if (fs.existsSync(expandPath(config.FINDOPTIONSJSONPATH))) {
-                json = fs.readFileSync(expandPath(config.FINDOPTIONSJSONPATH)).toString();
+            if (fs.existsSync(FileUtil.expandPath(config.FINDOPTIONSJSONPATH))) {
+                json = fs.readFileSync(FileUtil.expandPath(config.FINDOPTIONSJSONPATH)).toString();
             } else {
                 throw new FindError(`File not found: ${config.FINDOPTIONSJSONPATH}`);
             }
 
             let obj = JSON.parse(json);
-            if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj['findoptions'])) {
-                obj['findoptions'].forEach(so => {
+            if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj.findoptions)) {
+                obj.findoptions.forEach(so => {
                     let longArg = so['long'];
                     let shortArg = '';
                     if (Object.prototype.hasOwnProperty.call(so, 'short'))
@@ -141,8 +141,8 @@ class FindOptions {
     }
 
     optcmp(o1, o2) {
-        const a = o1.sortarg;
-        const b = o2.sortarg;
+        const a = o1.sortArg;
+        const b = o2.sortArg;
         return a.localeCompare(b);
     }
 

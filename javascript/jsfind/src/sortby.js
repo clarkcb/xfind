@@ -15,9 +15,9 @@ const SortBy = {
 };
 Object.freeze(SortBy);
 
-exports.SortBy = SortBy;
+// exports.SortBy = SortBy;
 
-exports.nameToSortBy = name => {
+const nameToSortBy = name => {
     if (name.toUpperCase() === 'NAME')
         return SortBy.FILENAME;
     if (name.toUpperCase() === 'SIZE')
@@ -29,7 +29,7 @@ exports.nameToSortBy = name => {
     return SortBy.FILEPATH;
 };
 
-exports.sortByToName = (sortBy) => {
+const sortByToName = (sortBy) => {
     if (sortBy === SortBy.FILENAME)
         return 'NAME';
     if (sortBy === SortBy.FILESIZE)
@@ -40,3 +40,5 @@ exports.sortByToName = (sortBy) => {
         return 'LASTMOD';
     return 'PATH';
 };
+
+module.exports = {SortBy, nameToSortBy, sortByToName};

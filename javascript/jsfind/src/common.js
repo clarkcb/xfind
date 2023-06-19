@@ -4,8 +4,6 @@
  * Some common functions, etc.
  */
 
-'use strict';
-
 // add a startsWith method to String type
 if (typeof String.prototype.startsWith !== 'function') {
     String.prototype.startsWith = (str) => {
@@ -14,14 +12,12 @@ if (typeof String.prototype.startsWith !== 'function') {
 }
 
 const log = (message) => console.log(message);
-exports.log = log;
 
 const boolHashFromArray = (arr) => {
     const hash = {};
     arr.forEach(a => hash[a] = true);
     return hash;
 };
-exports.boolHashFromArray = boolHashFromArray;
 
 const setFromArray = (arr) => {
     let hash = boolHashFromArray(arr);
@@ -33,4 +29,5 @@ const setFromArray = (arr) => {
     }
     return set;
 };
-exports.setFromArray = setFromArray;
+
+module.exports = {log, boolHashFromArray, setFromArray};

@@ -6,39 +6,61 @@
 
 const {FileTypes} = require('./filetypes');
 const {SortBy, sortByToName} = require("./sortby");
+const StringUtil = require('./stringutil');
 
 class FindSettings {
+    'use strict'
+
+    #archivesOnly = false;
+    #debug = false;
+    excludeHidden = true;
+    inArchiveExtensions = [];
+    inArchiveFilePatterns = [];
+    inDirPatterns = [];
+    inExtensions = [];
+    inFilePatterns = [];
+    inFileTypes = [];
+    includeArchives = false;
+    listDirs = false;
+    listFiles = false;
+    #maxLastMod = null;
+    maxSize = 0;
+    #minLastMod = null;
+    minSize = 0;
+    outArchiveExtensions = [];
+    outArchiveFilePatterns = [];
+    outDirPatterns = [];
+    outExtensions = [];
+    outFilePatterns = [];
+    outFileTypes = [];
+    paths = [];
+    printUsage = false;
+    printVersion = false;
+    recursive = true;
+    sortBy = SortBy.FILEPATH;
+    sortCaseInsensitive = false;
+    sortDescending = false;
+    verbose = false;
+
     constructor() {
-        this.archivesOnly = false;
-        this.debug = false;
-        this.excludeHidden = true;
-        this.inArchiveExtensions = [];
-        this.inArchiveFilePatterns = [];
-        this.inDirPatterns = [];
-        this.inExtensions = [];
-        this.inFilePatterns = [];
-        this.inFileTypes = [];
-        this.includeArchives = false;
-        this.listDirs = false;
-        this.listFiles = false;
-        this.maxLastMod = null;
-        this.maxSize = 0;
-        this.minLastMod = null;
-        this.minSize = 0;
-        this.outArchiveExtensions = [];
-        this.outArchiveFilePatterns = [];
-        this.outDirPatterns = [];
-        this.outExtensions = [];
-        this.outFilePatterns = [];
-        this.outFileTypes = [];
-        this.paths = [];
-        this.printUsage = false;
-        this.printVersion = false;
-        this.recursive = true;
-        this.sortBy = SortBy.FILEPATH;
-        this.sortCaseInsensitive = false;
-        this.sortDescending = false;
-        this.verbose = false;
+    }
+
+    get archivesOnly() {
+        return this.#archivesOnly;
+    }
+
+    set archivesOnly(value) {
+        this.#archivesOnly = value;
+        if (value) this.includeArchives = value;
+    }
+
+    get debug() {
+        return this.#debug;
+    }
+
+    set debug(value) {
+        this.#debug = value;
+        if (value) this.verbose = value;
     }
 
     addExtensions(exts, arr) {
@@ -114,64 +136,37 @@ class FindSettings {
         this.addFileTypes(fileType, this.outFileTypes);
     }
 
-    setArchivesOnly(b = true) {
-        this.archivesOnly = b;
-        if (b) this.includeArchives = b;
+    get maxLastMod() {
+        return this.#maxLastMod;
     }
 
-    setDebug(b = true) {
-        this.debug = b;
-        if (b) this.verbose = b;
+    set maxLastMod(value) {
+        this.#maxLastMod = value;
     }
 
-    getDateForString(s) {
-        const d = new Date();
-        d.setTime(Date.parse(s));
-        return d;
+    maxLastModFromString(s) {
+        this.#maxLastMod = StringUtil.getDateForString(s);
     }
 
-    setMaxLastMod(s) {
-        this.maxLastMod = this.getDateForString(s);
+    get minLastMod() {
+        return this.#minLastMod;
     }
 
-    setMinLastMod(s) {
-        this.minLastMod = this.getDateForString(s);
+    set minLastMod(value) {
+        this.#minLastMod = value;
+    }
+
+    minLastModFromString(s) {
+        this.#minLastMod = StringUtil.getDateForString(s);
     }
 
     needStat() {
         return this.sortBy === SortBy.FILESIZE ||
             this.sortBy === SortBy.LASTMOD ||
-            this.maxLastMod !== null ||
+            this.#maxLastMod !== null ||
             this.maxSize > 0 ||
-            this.minLastMod !== null ||
+            this.#minLastMod !== null ||
             this.minSize > 0;
-    }
-
-    dateToString(name, dt) {
-        let s = `${name}=`;
-        if (dt === null)
-            s += '0';
-        else
-            s += `"${dt.toISOString()}"`;
-        return s;
-    }
-
-    listToString(name, lst) {
-        if (lst.length) return `${name}=["${lst.join('","')}"]`;
-        return `${name}=[]`;
-    }
-
-    fileTypesToString(name, fileTypes) {
-        if (fileTypes.length) {
-            let s = `${name}=[`;
-            for (let i=0; i < fileTypes.length; i++) {
-                if (i > 0) s += ', ';
-                s += '"' + FileTypes.toName(fileTypes[i]) + '"';
-            }
-            s += ']';
-            return s;
-        }
-        return `${name}=[]`;
     }
 
     toString() {
@@ -179,26 +174,26 @@ class FindSettings {
             'archivesOnly=' + this.archivesOnly +
             ', debug=' + this.debug +
             ', excludeHidden=' + this.excludeHidden +
-            ', ' + this.listToString('inArchiveExtensions', this.inArchiveExtensions) +
-            ', ' + this.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
-            ', ' + this.listToString('inDirPatterns', this.inDirPatterns) +
-            ', ' + this.listToString('inExtensions', this.inExtensions) +
-            ', ' + this.listToString('inFilePatterns', this.inFilePatterns) +
-            ', ' + this.fileTypesToString('inFileTypes', this.inFileTypes) +
+            ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions) +
+            ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
+            ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns) +
+            ', ' + StringUtil.listToString('inExtensions', this.inExtensions) +
+            ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns) +
+            ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
             ', includeArchives=' + this.includeArchives +
             ', listDirs=' + this.listDirs +
             ', listFiles=' + this.listFiles +
-            ', ' + this.dateToString('maxLastMod', this.maxLastMod) +
+            ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
             ', maxSize=' + this.maxSize +
-            ', ' + this.dateToString('minLastMod', this.minLastMod) +
+            ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
             ', minSize=' + this.minSize +
-            ', ' + this.listToString('outArchiveExtensions', this.outArchiveExtensions) +
-            ', ' + this.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
-            ', ' + this.listToString('outDirPatterns', this.outDirPatterns) +
-            ', ' + this.listToString('outExtensions', this.outExtensions) +
-            ', ' + this.listToString('outFilePatterns', this.outFilePatterns) +
-            ', ' + this.fileTypesToString('outFileTypes', this.outFileTypes) +
-            ', ' + this.listToString('paths', this.paths) +
+            ', ' + StringUtil.listToString('outArchiveExtensions', this.outArchiveExtensions) +
+            ', ' + StringUtil.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
+            ', ' + StringUtil.listToString('outDirPatterns', this.outDirPatterns) +
+            ', ' + StringUtil.listToString('outExtensions', this.outExtensions) +
+            ', ' + StringUtil.listToString('outFilePatterns', this.outFilePatterns) +
+            ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
+            ', ' + StringUtil.listToString('paths', this.paths) +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +
             ', sortBy=' + sortByToName(this.sortBy) +

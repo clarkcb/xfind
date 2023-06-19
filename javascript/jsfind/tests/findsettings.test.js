@@ -4,7 +4,7 @@
  * Some tests of findsettings.js
  */
 
-const FindSettings = require('../src/findsettings').FindSettings;
+const {FindSettings} = require('../src/findsettings');
 
 describe('testing findsettings', () => {
     it('testDefaultSettings', () => {
@@ -19,7 +19,6 @@ describe('testing findsettings', () => {
         expect(settings.printVersion).toBeFalsy();
         expect(settings.recursive).toBeTruthy();
         expect(settings.paths.length).toEqual(0);
-        expect(settings.uniqueLines).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
     });
 
@@ -54,20 +53,20 @@ describe('testing findsettings', () => {
         expect(settings.inFilePatterns[1].source).toEqual('FileTypes');
     });
 
-    it('testSetArchivesOnly', () => {
+    it('testArchivesOnly', () => {
         let settings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.includeArchives).toBeFalsy();
-        settings.setArchivesOnly();
+        settings.archivesOnly = true;
         expect(settings.archivesOnly).toBeTruthy();
         expect(settings.includeArchives).toBeTruthy();
     });
 
-    it('testSetDebug', () => {
+    it('testDebug', () => {
         let settings = new FindSettings();
         expect(settings.debug).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
-        settings.setDebug();
+        settings.debug = true;
         expect(settings.debug).toBeTruthy();
         expect(settings.verbose).toBeTruthy();
     });

@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/clarkcb/xfind.git"
   },
-  "main": "./dist/jsfind.js",
+  "main": "./dist/api.js",
   "bin": {
     "jsfind": "bin/jsfind"
   },
@@ -26,22 +26,26 @@
     "javascript",
     "node.js"
   ],
+  "files": [
+    "data/",
+    "dist/"
+  ],
   "license": "MIT",
   "devDependencies": {
-    "@babel/cli": "^7.18.10",
-    "@babel/core": "^7.19.0",
-    "@babel/eslint-parser": "^7.18.9",
+    "@babel/cli": "^7.22.5",
+    "@babel/core": "^7.22.5",
+    "@babel/eslint-parser": "^7.22.5",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
     "babel-preset-minify": "^0.5.2",
-    "eslint": "^8.23.0",
-    "eslint-config-standard": "^17.0.0",
-    "eslint-plugin-import": "^2.26.0",
+    "eslint": "^8.42.0",
+    "eslint-config-standard": "^17.1.0",
+    "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-promise": "^6.0.1",
-    "jest": "^29.0.3",
-    "standard": "^17.0.0"
+    "eslint-plugin-promise": "^6.1.1",
+    "jest": "^29.5.0",
+    "standard": "^17.1.0"
   },
   "dependencies": {
-    "jshint": "^2.13.5"
+    "jshint": "^2.13.6"
   }
 }

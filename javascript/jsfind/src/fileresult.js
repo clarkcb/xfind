@@ -9,9 +9,13 @@ const path = require('path');
 class FileResult {
     'use strict'
 
+    containerSeparator = '!';
+    containers = [];
+    path = '';
+    fileName = '';
+    stat = null;
+
     constructor(path, fileName, fileType, stat) {
-        this.containerSeparator = '!';
-        this.containers = [];
         this.path = path;
         this.fileName = fileName;
         this.fileType = fileType;

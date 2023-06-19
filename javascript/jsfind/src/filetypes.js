@@ -7,7 +7,7 @@
 const common = require('./common');
 const config = require('./config');
 const {FileType} = require('./filetype');
-const {expandPath, getExtension} = require('./fileutil');
+const {FileUtil} = require('./fileutil');
 
 class FileTypes {
     'use strict'
@@ -17,8 +17,8 @@ class FileTypes {
             let fs = require('fs');
 
             let json = '';
-            if (fs.existsSync(expandPath(config.FILETYPESJSONPATH))) {
-                json = fs.readFileSync(expandPath(config.FILETYPESJSONPATH)).toString();
+            if (fs.existsSync(FileUtil.expandPath(config.FILETYPESJSONPATH))) {
+                json = fs.readFileSync(FileUtil.expandPath(config.FILETYPESJSONPATH)).toString();
             } else {
                 throw new Error('File not found: ' + config.FILETYPESJSONPATH);
             }
@@ -81,60 +81,78 @@ class FileTypes {
 
     isArchiveFile(filename) {
         return this.fileTypeNameMap.archive.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.archive.indexOf(getExtension(filename)) > -1;
+            this.fileTypeExtMap.archive.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     isBinaryFile(filename) {
         return this.fileTypeNameMap.binary.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.binary.indexOf(getExtension(filename)) > -1;
+            this.fileTypeExtMap.binary.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     isCodeFile(filename) {
         return this.fileTypeNameMap.code.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.code.indexOf(getExtension(filename)) > -1;
+            this.fileTypeExtMap.code.indexOf(FileUtil.getExtension(filename)) > -1;
+    }
+
+    isSearchableFile(filename) {
+        let ext = FileUtil.getExtension(filename);
+        return this.fileTypeMap.searchable.indexOf(ext) > -1;
     }
 
     isTextFile(filename) {
         return this.fileTypeNameMap.text.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.text.indexOf(getExtension(filename)) > -1;
+            this.fileTypeExtMap.text.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     isXmlFile(filename) {
         return this.fileTypeNameMap.xml.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.xml.indexOf(getExtension(filename)) > -1;
+            this.fileTypeExtMap.xml.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     isUnknownFile(filename) {
         return this.getFileType(filename) === FileType.UNKNOWN;
     }
+
+    static fromName(name) {
+        if (name.toUpperCase() === 'TEXT')
+            return FileType.TEXT;
+        if (name.toUpperCase() === 'BINARY')
+            return FileType.BINARY;
+        if (name.toUpperCase() === 'ARCHIVE')
+            return FileType.ARCHIVE;
+        if (name.toUpperCase() === 'CODE')
+            return FileType.CODE;
+        if (name.toUpperCase() === 'XML')
+            return FileType.XML;
+        return FileType.UNKNOWN;
+    }
+
+    static toName(fileType) {
+        if (fileType === FileType.ARCHIVE)
+            return 'ARCHIVE';
+        if (fileType === FileType.BINARY)
+            return 'BINARY';
+        if (fileType === FileType.CODE)
+            return 'CODE';
+        if (fileType === FileType.TEXT)
+            return 'TEXT';
+        if (fileType === FileType.XML)
+            return 'XML';
+        return 'UNKNOWN';
+    }
+
+    static fileTypesToString(name, fileTypes) {
+        if (fileTypes.length) {
+            let s = `${name}=[`;
+            for (let i=0; i < fileTypes.length; i++) {
+                if (i > 0) s += ', ';
+                s += '"' + FileTypes.toName(fileTypes[i]) + '"';
+            }
+            s += ']';
+            return s;
+        }
+        return `${name}=[]`;
+    }
 }
-
-FileTypes.fromName = (name) => {
-    if (name.toUpperCase() === 'TEXT')
-        return FileType.TEXT;
-    if (name.toUpperCase() === 'BINARY')
-        return FileType.BINARY;
-    if (name.toUpperCase() === 'ARCHIVE')
-        return FileType.ARCHIVE;
-    if (name.toUpperCase() === 'CODE')
-        return FileType.CODE;
-    if (name.toUpperCase() === 'XML')
-        return FileType.XML;
-    return FileType.UNKNOWN;
-};
-
-FileTypes.toName = (fileType) => {
-    if (fileType === FileType.ARCHIVE)
-        return 'ARCHIVE';
-    if (fileType === FileType.BINARY)
-        return 'BINARY';
-    if (fileType === FileType.CODE)
-        return 'CODE';
-    if (fileType === FileType.TEXT)
-        return 'TEXT';
-    if (fileType === FileType.XML)
-        return 'XML';
-    return 'UNKNOWN';
-};
 
 exports.FileTypes = FileTypes;

@@ -4,7 +4,7 @@
  * Some tests of fileutil.js
  */
 
-const FileUtil = require('../src/fileutil');
+const {FileUtil} = require('../src/fileutil');
 
 describe('testing fileutil', () => {
     /***************************************************************************

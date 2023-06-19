@@ -4,8 +4,9 @@
  * Some tests of finder.js
  */
 
-const Finder = require('../src/finder').Finder;
-const FindSettings = require('../src/findsettings').FindSettings;
+const {Finder} = require('../src/finder');
+const {FindSettings} = require('../src/findsettings');
+// const expect = require("expect");
 
 const getSettings = () => {
     let settings = new FindSettings();

@@ -13,13 +13,16 @@ const fsReaddirAsync = promisify(fs.readdir);
 
 const {FileResult} = require('./fileresult');
 const {FileTypes} = require('./filetypes');
-const FileUtil = require('./fileutil');
+const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {FileType} = require("./filetype");
 const {SortBy} = require("./sortby");
 
 class Finder {
     'use strict'
+
+    settings = null;
+    fileTypes = null;
 
     constructor(settings) {
         this.settings = settings;

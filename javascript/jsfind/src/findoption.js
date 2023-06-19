@@ -7,16 +7,16 @@
 class FindOption {
     'use strict'
 
-    constructor(shortarg, longarg, desc, func) {
-        this.shortarg = shortarg;
-        this.longarg = longarg;
+    constructor(shortArg, longArg, desc, func) {
+        this.shortArg = shortArg;
+        this.longArg = longArg;
         this.desc = desc;
         this.func = func;
 
-        this.sortarg = (() => {
-            if (this.shortarg)
-                return this.shortarg.toLowerCase() + 'a' + this.longarg.toLowerCase();
-            return this.longarg.toLowerCase();
+        this.sortArg = (() => {
+            if (this.shortArg)
+                return this.shortArg.toLowerCase() + 'a' + this.longArg.toLowerCase();
+            return this.longArg.toLowerCase();
         })();
     }
 }
