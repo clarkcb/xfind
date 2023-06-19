@@ -21,7 +21,7 @@ type FindOptions struct {
 }
 
 func FindOptionsFromJson() (*FindOptions, error) {
-	config := NewConfig()
+	config := NewFindConfig()
 	data, err := os.ReadFile(config.FINDOPTIONSPATH)
 	if err != nil {
 		return &FindOptions{}, err
@@ -30,6 +30,10 @@ func FindOptionsFromJson() (*FindOptions, error) {
 	if err = json.Unmarshal(data, &findOptions); err != nil {
 		return &FindOptions{}, err
 	}
+
+	// TEMPORARY
+	//findOptions.generateCodeFile("/Users/cary/src/xfind/go/gofind/pkg/gofind/findoptionsgen.go")
+
 	return &findOptions, nil
 }
 
@@ -41,17 +45,17 @@ func NewFindOptions() *FindOptions {
 	return findOptions
 }
 
-func (so *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
+func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
 	if data, err := os.ReadFile(filePath); err != nil {
 		return err
 	} else {
-		return so.SettingsFromJson(data, settings)
+		return fo.SettingsFromJson(data, settings)
 	}
 }
 
-func (so *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) error {
-	argActionMap := so.getArgActionMap()
-	boolFlagActionMap := so.getBoolFlagActionMap()
+func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) error {
+	argActionMap := fo.getArgActionMap()
+	boolFlagActionMap := fo.getBoolFlagActionMap()
 	type JsonSettings map[string]interface{}
 	var jsonSettings JsonSettings
 	if err := json.Unmarshal(data, &jsonSettings); err != nil {
@@ -72,26 +76,26 @@ func (so *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 						af(v[i].(string), settings)
 					}
 				default:
-					log(fmt.Sprintf("k: %v", k))
-					log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					Log(fmt.Sprintf("k: %v", k))
+					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
 					errMsg := fmt.Sprintf("Unknown data type in settings file")
-					log(errMsg)
+					Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				log(fmt.Sprintf("value for %v is invalid", k))
+				Log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if ff, isFlag := boolFlagActionMap[k]; isFlag {
 			if v, hasVal := jsonSettings[k]; hasVal {
 				ff(v.(bool), settings)
 			} else {
-				log(fmt.Sprintf("value for %v is invalid", k))
+				Log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if k == "path" {
 			if sp, hasStartPath := jsonSettings[k]; hasStartPath {
 				settings.AddPath(sp.(string))
 			} else {
-				log("path value is invalid")
+				Log("path value is invalid")
 			}
 		} else {
 			return fmt.Errorf("Invalid option: %s", k)
@@ -100,23 +104,23 @@ func (so *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 	return nil
 }
 
-func (so *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
+func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
 	settings := GetDefaultFindSettings()
 	// default listFiles to true since running as cli
-	settings.ListFiles = true
-	argActionMap := so.getArgActionMap()
-	flagActionMap := so.getBoolFlagActionMap()
+	settings.SetListFiles(true)
+	argActionMap := fo.getArgActionMap()
+	flagActionMap := fo.getBoolFlagActionMap()
 
 	if false {
-		log(fmt.Sprintf("argActionMap: %v", argActionMap))
-		log(fmt.Sprintf("flagActionMap: %v", flagActionMap))
+		Log(fmt.Sprintf("argActionMap: %v", argActionMap))
+		Log(fmt.Sprintf("flagActionMap: %v", flagActionMap))
 	}
 
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
 			k := strings.TrimLeft(args[i], "-")
 			if false {
-				log(fmt.Sprintf("k: %s\n", k))
+				Log(fmt.Sprintf("k: %s\n", k))
 			}
 			if af, isAction := argActionMap[k]; isAction {
 				i++
@@ -135,22 +139,22 @@ func (so *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 		}
 		i++
 	}
-	if settings.Debug {
-		settings.Verbose = true
+	if settings.Debug() {
+		settings.SetVerbose(true)
 	}
 	return settings, nil
 }
 
-func (so *FindOptions) getUsageString() string {
+func (fo *FindOptions) getUsageString() string {
 	var buffer bytes.Buffer
 	buffer.WriteString("\nUsage:\n")
 	buffer.WriteString(" gofind [options] <path> [<path> ...]\n\nOptions:\n")
-	sortKeyMap := so.getSortKeyMap()
-	optStringMap := so.getOptStringMap()
-	optDescMap := so.getOptDescMap()
-	sortedKeys := getSortedKeys(sortKeyMap)
-	optStrings := getMapValues(optStringMap)
-	longestLen := getLongestLen(optStrings)
+	sortKeyMap := fo.getSortKeyMap()
+	optStringMap := fo.getOptStringMap()
+	optDescMap := fo.getOptDescMap()
+	sortedKeys := GetSortedKeys(sortKeyMap)
+	optStrings := GetMapValues(optStringMap)
+	longestLen := GetLongestLen(optStrings)
 	optFormat := fmt.Sprintf(" %%-%ds  %%s\n", longestLen)
 	for _, k := range sortedKeys {
 		o := optStringMap[sortKeyMap[k]]
@@ -160,20 +164,20 @@ func (so *FindOptions) getUsageString() string {
 	return buffer.String()
 }
 
-func (so *FindOptions) PrintUsage() {
-	log(so.getUsageString())
+func (fo *FindOptions) PrintUsage() {
+	Log(fo.getUsageString())
 	os.Exit(0)
 }
 
-func (so *FindOptions) PrintVersion() {
-	config := NewConfig()
-	log(fmt.Sprintf("xfind version %s", config.VERSION))
+func (fo *FindOptions) PrintVersion() {
+	config := NewFindConfig()
+	Log(fmt.Sprintf("xfind version %s", config.VERSION))
 	os.Exit(0)
 }
 
-func (so *FindOptions) getSortKeyMap() map[string]string {
+func (fo *FindOptions) getSortKeyMap() map[string]string {
 	m := map[string]string{}
-	for _, o := range so.FindOptions {
+	for _, o := range fo.FindOptions {
 		sortKey := ""
 		if o.Short == "" {
 			sortKey = strings.ToLower(o.Long)
@@ -186,9 +190,9 @@ func (so *FindOptions) getSortKeyMap() map[string]string {
 	return m
 }
 
-func (so *FindOptions) getOptStringMap() map[string]string {
+func (fo *FindOptions) getOptStringMap() map[string]string {
 	m := map[string]string{}
-	for _, o := range so.FindOptions {
+	for _, o := range fo.FindOptions {
 		optString := ""
 		if o.Short != "" {
 			optString = fmt.Sprintf("-%s,", o.Short)
@@ -199,9 +203,9 @@ func (so *FindOptions) getOptStringMap() map[string]string {
 	return m
 }
 
-func (so *FindOptions) getOptDescMap() map[string]string {
+func (fo *FindOptions) getOptDescMap() map[string]string {
 	m := map[string]string{}
-	for _, o := range so.FindOptions {
+	for _, o := range fo.FindOptions {
 		m[o.Long] = o.Desc
 	}
 	return m
@@ -209,7 +213,7 @@ func (so *FindOptions) getOptDescMap() map[string]string {
 
 type argAction func(s string, settings *FindSettings)
 
-func (so *FindOptions) getArgActionMap() map[string]argAction {
+func (fo *FindOptions) getArgActionMap() map[string]argAction {
 	m := map[string]argAction{
 		"in-archiveext": func(s string, settings *FindSettings) {
 			settings.AddInArchiveExtension(s)
@@ -230,16 +234,16 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 			settings.AddInFileType(GetFileTypeForName(s))
 		},
 		"maxlastmod": func(s string, settings *FindSettings) {
-			settings.SetMaxLastMod(s)
+			settings.SetMaxLastModFromString(s)
 		},
 		"maxsize": func(s string, settings *FindSettings) {
-			settings.SetMaxSize(s)
+			settings.SetMaxSizeFromString(s)
 		},
 		"minlastmod": func(s string, settings *FindSettings) {
-			settings.SetMinLastMod(s)
+			settings.SetMinLastModFromString(s)
 		},
 		"minsize": func(s string, settings *FindSettings) {
-			settings.SetMinSize(s)
+			settings.SetMinSizeFromString(s)
 		},
 		"out-archiveext": func(s string, settings *FindSettings) {
 			settings.AddOutArchiveExtension(s)
@@ -263,13 +267,13 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 			settings.AddPath(s)
 		},
 		"settings-file": func(s string, settings *FindSettings) {
-			so.SettingsFromFile(s, settings)
+			fo.SettingsFromFile(s, settings)
 		},
 		"sort-by": func(s string, settings *FindSettings) {
-			settings.SetSortBy(s)
+			settings.SetSortByFromString(s)
 		},
 	}
-	for _, o := range so.FindOptions {
+	for _, o := range fo.FindOptions {
 		if o.Short != "" {
 			if f, ok := m[o.Long]; ok {
 				m[o.Short] = f
@@ -281,7 +285,7 @@ func (so *FindOptions) getArgActionMap() map[string]argAction {
 
 type boolFlagAction func(b bool, settings *FindSettings)
 
-func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
+func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 	m := map[string]boolFlagAction{
 		"archivesonly": func(b bool, settings *FindSettings) {
 			settings.SetArchivesOnly(b)
@@ -290,52 +294,52 @@ func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.SetDebug(b)
 		},
 		"excludearchives": func(b bool, settings *FindSettings) {
-			settings.IncludeArchives = !b
+			settings.SetIncludeArchives(!b)
 		},
 		"excludehidden": func(b bool, settings *FindSettings) {
-			settings.ExcludeHidden = b
+			settings.SetExcludeHidden(b)
 		},
 		"help": func(b bool, settings *FindSettings) {
-			settings.PrintUsage = b
+			settings.SetPrintUsage(b)
 		},
 		"includearchives": func(b bool, settings *FindSettings) {
-			settings.IncludeArchives = b
+			settings.SetIncludeArchives(b)
 		},
 		"includehidden": func(b bool, settings *FindSettings) {
-			settings.ExcludeHidden = !b
+			settings.SetExcludeHidden(!b)
 		},
 		"listdirs": func(b bool, settings *FindSettings) {
-			settings.ListDirs = b
+			settings.SetListDirs(b)
 		},
 		"listfiles": func(b bool, settings *FindSettings) {
-			settings.ListFiles = b
+			settings.SetListFiles(b)
 		},
 		"norecursive": func(b bool, settings *FindSettings) {
-			settings.Recursive = !b
+			settings.SetRecursive(!b)
 		},
 		"recursive": func(b bool, settings *FindSettings) {
-			settings.Recursive = b
+			settings.SetRecursive(b)
 		},
 		"sort-ascending": func(b bool, settings *FindSettings) {
-			settings.SortDescending = !b
+			settings.SetSortDescending(!b)
 		},
 		"sort-caseinsensitive": func(b bool, settings *FindSettings) {
-			settings.SortCaseInsensitive = b
+			settings.SetSortCaseInsensitive(b)
 		},
 		"sort-casesensitive": func(b bool, settings *FindSettings) {
-			settings.SortCaseInsensitive = !b
+			settings.SetSortCaseInsensitive(!b)
 		},
 		"sort-descending": func(b bool, settings *FindSettings) {
-			settings.SortDescending = b
+			settings.SetSortDescending(b)
 		},
 		"verbose": func(b bool, settings *FindSettings) {
-			settings.Verbose = b
+			settings.SetVerbose(b)
 		},
 		"version": func(b bool, settings *FindSettings) {
-			settings.PrintVersion = b
+			settings.SetPrintVersion(b)
 		},
 	}
-	for _, o := range so.FindOptions {
+	for _, o := range fo.FindOptions {
 		if o.Short != "" {
 			if f, ok := m[o.Long]; ok {
 				m[o.Short] = f
@@ -343,4 +347,25 @@ func (so *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		}
 	}
 	return m
+}
+
+func (fo *FindOptions) generateCodeFile(filePath string) {
+	var buffer bytes.Buffer
+	depth := 0
+	buffer.WriteString("package gofind\n\n")
+	buffer.WriteString("func GetFindOptions() *FindOptions {\n")
+	depth++
+	buffer.WriteString(fmt.Sprintf("%sreturn &FindOptions{\n", strings.Repeat("\t", depth)))
+	depth++
+	buffer.WriteString(fmt.Sprintf("%s[]*FindOption{\n", strings.Repeat("\t", depth)))
+	depth++
+	for _, so := range fo.FindOptions {
+		buffer.WriteString(fmt.Sprintf("%s{\"%s\", \"%s\", \"%s\"},\n",
+			strings.Repeat("\t", depth), so.Short, so.Long, EscapeQuotes(so.Desc)))
+	}
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s}\n}\n", strings.Repeat("\t", depth)))
+	os.WriteFile(filePath, buffer.Bytes(), 0644)
 }

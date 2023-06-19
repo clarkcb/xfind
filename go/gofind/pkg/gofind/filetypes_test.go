@@ -16,8 +16,8 @@ func TestGetFileType(t *testing.T) {
 	fileTypes := FileTypesFromJson()
 
 	for k, v := range expected {
-		if ft := fileTypes.getFileType(k); ft != v {
-			t.Errorf("getFileType(\"%s\")=\"%v\", expected=\"%v\"", k, ft, v)
+		if ft := fileTypes.GetFileType(k); ft != v {
+			t.Errorf("GetFileType(\"%s\")=\"%v\", expected=\"%v\"", k, ft, v)
 		}
 	}
 }

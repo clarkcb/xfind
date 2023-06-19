@@ -33,6 +33,16 @@ func (it *FileResultsIterator) Value() *FileResult {
 	return it.results.results[it.idx]
 }
 
+func (it *FileResultsIterator) Take(count int) []*FileResult {
+	if it.idx < 0 {
+		it.idx = 0
+	}
+	maxCount := GetMinInt(count, len(it.results.results)-it.idx)
+	fileResults := it.results.results[it.idx : maxCount+it.idx]
+	it.idx += maxCount
+	return fileResults
+}
+
 type FileResults struct {
 	results   []*FileResult
 	strPtrMap map[string]*string
@@ -93,12 +103,12 @@ func (fr *FileResults) GetMatchingDirs() []string {
 func (fr *FileResults) PrintMatchingDirs() {
 	paths := fr.GetMatchingDirs()
 	if len(paths) > 0 {
-		log(fmt.Sprintf("\nMatching directories (%d):", len(paths)))
+		Log(fmt.Sprintf("\nMatching directories (%d):", len(paths)))
 		for _, p := range paths {
-			log(p)
+			Log(p)
 		}
 	} else {
-		log("\nMatching directories: 0")
+		Log("\nMatching directories: 0")
 	}
 }
 
@@ -113,12 +123,12 @@ func (fr *FileResults) GetMatchingFiles() []string {
 func (fr *FileResults) PrintMatchingFiles() {
 	files := fr.GetMatchingFiles()
 	if len(files) > 0 {
-		log(fmt.Sprintf("\nMatching files (%d):", len(files)))
+		Log(fmt.Sprintf("\nMatching files (%d):", len(files)))
 		for _, f := range files {
-			log(f)
+			Log(f)
 		}
 	} else {
-		log("\nMatching files: 0")
+		Log("\nMatching files: 0")
 	}
 }
 
@@ -193,19 +203,19 @@ func (fr *FileResults) getSortByLastMod(sortCaseInsensitive bool) func(i, j int)
 }
 
 func (fr *FileResults) Sort(settings *FindSettings) {
-	switch settings.SortBy {
+	switch settings.SortBy() {
 	case SortByFilename:
-		sort.Slice(fr.results, fr.getSortByName(settings.SortCaseInsensitive))
+		sort.Slice(fr.results, fr.getSortByName(settings.SortCaseInsensitive()))
 	case SortByFilesize:
-		sort.Slice(fr.results, fr.getSortBySize(settings.SortCaseInsensitive))
+		sort.Slice(fr.results, fr.getSortBySize(settings.SortCaseInsensitive()))
 	case SortByFiletype:
-		sort.Slice(fr.results, fr.getSortByType(settings.SortCaseInsensitive))
+		sort.Slice(fr.results, fr.getSortByType(settings.SortCaseInsensitive()))
 	case SortByLastmod:
-		sort.Slice(fr.results, fr.getSortByLastMod(settings.SortCaseInsensitive))
+		sort.Slice(fr.results, fr.getSortByLastMod(settings.SortCaseInsensitive()))
 	default:
-		sort.Slice(fr.results, fr.getSortByPath(settings.SortCaseInsensitive))
+		sort.Slice(fr.results, fr.getSortByPath(settings.SortCaseInsensitive()))
 	}
-	if settings.SortDescending {
+	if settings.SortDescending() {
 		fr.reverse()
 	}
 }

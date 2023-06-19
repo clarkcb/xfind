@@ -1,8 +1,10 @@
 package gofind
 
 import (
+	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"os"
 	"strings"
 )
 
@@ -34,12 +36,12 @@ type JsonFileTypes struct {
 }
 
 func FileTypesFromJson() *FileTypes {
-	config := NewConfig()
+	config := NewFindConfig()
 
 	var fileTypes FileTypes
 	fileTypes.fileTypeExtMap = make(map[string]set)
 	fileTypes.fileTypeNameMap = make(map[string]set)
-	data, err := ioutil.ReadFile(config.FILETYPESPATH)
+	data, err := os.ReadFile(config.FILETYPESPATH)
 	if err != nil {
 		return &fileTypes
 	}
@@ -48,9 +50,13 @@ func FileTypesFromJson() *FileTypes {
 		return &fileTypes
 	}
 	for _, ft := range jsonFileTypes.FileTypes {
-		fileTypes.fileTypeExtMap[ft.Type] = makeSet(ft.Extensions)
-		fileTypes.fileTypeNameMap[ft.Type] = makeSet(ft.Names)
+		fileTypes.fileTypeExtMap[ft.Type] = MakeStringSet(ft.Extensions)
+		fileTypes.fileTypeNameMap[ft.Type] = MakeStringSet(ft.Names)
 	}
+
+	// TEMPORARY
+	//fileTypes.generateCodeFile("/Users/cary/src/xfind/go/gofind/pkg/gofind/filetypesgen.go")
+
 	return &fileTypes
 }
 
@@ -112,7 +118,7 @@ func GetNameForFileType(fileType FileType) string {
 }
 
 func (ft *FileTypes) isFileType(fileType string, file string) bool {
-	return ft.fileTypeNameMap[fileType][file] || ft.fileTypeExtMap[fileType][getExtension(file)]
+	return ft.fileTypeNameMap[fileType][file] || ft.fileTypeExtMap[fileType][GetExtension(file)]
 }
 
 func (ft *FileTypes) IsArchiveFile(file string) bool {
@@ -153,4 +159,35 @@ func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 		}
 	}
 	return false
+}
+
+func (ft *FileTypes) generateCodeFile(filePath string) {
+	var buffer bytes.Buffer
+	depth := 0
+	buffer.WriteString("package gofind\n\n")
+	buffer.WriteString("func GetFileTypes() *FileTypes {\n")
+	depth++
+	buffer.WriteString(fmt.Sprintf("%sreturn &FileTypes{\n", strings.Repeat("\t", depth)))
+	depth++
+	buffer.WriteString(fmt.Sprintf("%smap[string]set{\n", strings.Repeat("\t", depth)))
+	depth++
+	for k, exts := range ft.fileTypeExtMap {
+		buffer.WriteString(fmt.Sprintf("%s\"%s\": MakeStringSet([]string{\"%s\"}),\n",
+			strings.Repeat("\t", depth), k, strings.Join(getSortedSetValues(exts), "\", \"")))
+	}
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
+	depth--
+	depth++
+	buffer.WriteString(fmt.Sprintf("%smap[string]set{\n", strings.Repeat("\t", depth)))
+	depth++
+	for k, names := range ft.fileTypeNameMap {
+		buffer.WriteString(fmt.Sprintf("%s\"%s\": MakeStringSet([]string{\"%s\"}),\n",
+			strings.Repeat("\t", depth), k, strings.Join(getSortedSetValues(names), "\", \"")))
+	}
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
+	depth--
+	buffer.WriteString(fmt.Sprintf("%s}\n}\n", strings.Repeat("\t", depth)))
+	os.WriteFile(filePath, buffer.Bytes(), 0644)
 }

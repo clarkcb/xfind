@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 )
 
-type Config struct {
+type FindConfig struct {
 	XFINDPATH       string
 	SHAREDPATH      string
 	FILETYPESPATH   string
@@ -13,14 +13,14 @@ type Config struct {
 	VERSION         string
 }
 
-func NewConfig() *Config {
+func NewFindConfig() *FindConfig {
 	xFindPath := os.Getenv("XFIND_PATH")
 	if xFindPath == "" {
 		xFindPath = filepath.Join(os.Getenv("HOME"), "src/xfind")
 	}
 	sharedPath := filepath.Join(xFindPath, "shared")
 
-	return &Config{
+	return &FindConfig{
 		xFindPath,
 		sharedPath,
 		filepath.Join(sharedPath, "filetypes.json"),

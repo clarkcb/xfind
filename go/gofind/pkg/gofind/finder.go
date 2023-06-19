@@ -36,11 +36,11 @@ func NewFinder(settings *FindSettings) *Finder {
 }
 
 func (f *Finder) validateSettings() error {
-	if len(f.Settings.Paths) < 1 {
+	if len(f.Settings.Paths()) < 1 {
 		return fmt.Errorf("Startpath not defined")
 	}
 
-	for _, p := range f.Settings.Paths {
+	for _, p := range f.Settings.Paths() {
 		_, err := os.Stat(p)
 		if err != nil {
 			if os.IsNotExist(err) {
@@ -57,37 +57,37 @@ func (f *Finder) validateSettings() error {
 }
 
 func (f *Finder) isMatchingDir(d string) bool {
-	if f.Settings.ExcludeHidden && isHidden(d) {
+	if f.Settings.ExcludeHidden() && isHidden(d) {
 		return false
 	}
-	return (f.Settings.InDirPatterns.IsEmpty() || f.Settings.InDirPatterns.MatchesAny(d)) &&
-		(f.Settings.OutDirPatterns.IsEmpty() || !f.Settings.OutDirPatterns.MatchesAny(d))
+	return (f.Settings.InDirPatterns().IsEmpty() || f.Settings.InDirPatterns().MatchesAny(d)) &&
+		(f.Settings.OutDirPatterns().IsEmpty() || !f.Settings.OutDirPatterns().MatchesAny(d))
 }
 
 func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
-	if len(f.Settings.InArchiveExtensions) > 0 || len(f.Settings.InArchiveExtensions) > 0 {
-		ext := getExtension(fr.Name)
-		if (len(f.Settings.InArchiveExtensions) > 0 && !contains(f.Settings.InArchiveExtensions, ext)) ||
-			(len(f.Settings.InArchiveExtensions) > 0 && contains(f.Settings.InArchiveExtensions, ext)) {
+	if len(f.Settings.InArchiveExtensions()) > 0 || len(f.Settings.InArchiveExtensions()) > 0 {
+		ext := GetExtension(fr.Name)
+		if (len(f.Settings.InArchiveExtensions()) > 0 && !Contains(f.Settings.InArchiveExtensions(), ext)) ||
+			(len(f.Settings.InArchiveExtensions()) > 0 && Contains(f.Settings.InArchiveExtensions(), ext)) {
 			return false
 		}
 	}
-	return (f.Settings.InArchiveFilePatterns.IsEmpty() || f.Settings.InArchiveFilePatterns.MatchesAny(fr.Name)) &&
-		(f.Settings.OutArchiveFilePatterns.IsEmpty() || !f.Settings.OutArchiveFilePatterns.MatchesAny(fr.Name))
+	return (f.Settings.InArchiveFilePatterns().IsEmpty() || f.Settings.InArchiveFilePatterns().MatchesAny(fr.Name)) &&
+		(f.Settings.OutArchiveFilePatterns().IsEmpty() || !f.Settings.OutArchiveFilePatterns().MatchesAny(fr.Name))
 }
 
 func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
-	if len(f.Settings.InExtensions) > 0 || len(f.Settings.OutExtensions) > 0 {
-		ext := getExtension(fr.Name)
-		if (len(f.Settings.InExtensions) > 0 && !contains(f.Settings.InExtensions, ext)) ||
-			(len(f.Settings.OutExtensions) > 0 && contains(f.Settings.OutExtensions, ext)) {
+	if len(f.Settings.InExtensions()) > 0 || len(f.Settings.OutExtensions()) > 0 {
+		ext := GetExtension(fr.Name)
+		if (len(f.Settings.InExtensions()) > 0 && !Contains(f.Settings.InExtensions(), ext)) ||
+			(len(f.Settings.OutExtensions()) > 0 && Contains(f.Settings.OutExtensions(), ext)) {
 			return false
 		}
 	}
-	return (len(f.Settings.InFileTypes) == 0 || ContainsFileType(f.Settings.InFileTypes, fr.FileType)) &&
-		(len(f.Settings.OutFileTypes) == 0 || !ContainsFileType(f.Settings.OutFileTypes, fr.FileType)) &&
-		(f.Settings.InFilePatterns.IsEmpty() || f.Settings.InFilePatterns.MatchesAny(fr.Name)) &&
-		(f.Settings.OutFilePatterns.IsEmpty() || !f.Settings.OutFilePatterns.MatchesAny(fr.Name))
+	return (len(f.Settings.InFileTypes()) == 0 || ContainsFileType(f.Settings.InFileTypes(), fr.FileType)) &&
+		(len(f.Settings.OutFileTypes()) == 0 || !ContainsFileType(f.Settings.OutFileTypes(), fr.FileType)) &&
+		(f.Settings.InFilePatterns().IsEmpty() || f.Settings.InFilePatterns().MatchesAny(fr.Name)) &&
+		(f.Settings.OutFilePatterns().IsEmpty() || !f.Settings.OutFilePatterns().MatchesAny(fr.Name))
 }
 
 func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResult {
@@ -102,29 +102,29 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
-	if f.Settings.ExcludeHidden && isHidden(filePath) {
+	if f.Settings.ExcludeHidden() && isHidden(filePath) {
 		return nil
 	}
-	if !f.Settings.MaxLastMod.IsZero() && fi.ModTime().After(f.Settings.MaxLastMod) {
+	if !f.Settings.MaxLastMod().IsZero() && fi.ModTime().After(f.Settings.MaxLastMod()) {
 		return nil
 	}
-	if !f.Settings.MinLastMod.IsZero() && fi.ModTime().Before(f.Settings.MinLastMod) {
+	if !f.Settings.MinLastMod().IsZero() && fi.ModTime().Before(f.Settings.MinLastMod()) {
 		return nil
 	}
-	if f.Settings.MaxSize > 0 && fi.Size() > f.Settings.MaxSize {
+	if f.Settings.MaxSize() > 0 && fi.Size() > f.Settings.MaxSize() {
 		return nil
 	}
-	if f.Settings.MinSize > 0 && fi.Size() < f.Settings.MinSize {
+	if f.Settings.MinSize() > 0 && fi.Size() < f.Settings.MinSize() {
 		return nil
 	}
 	fr := f.FilePathToFileResult(filePath, fi)
 	if fr.FileType == FiletypeArchive {
-		if f.Settings.IncludeArchives && f.isMatchingArchiveFileResult(fr) {
+		if f.Settings.IncludeArchives() && f.isMatchingArchiveFileResult(fr) {
 			return fr
 		}
 		return nil
 	}
-	if !f.Settings.ArchivesOnly && f.isMatchingFileResult(fr) {
+	if !f.Settings.ArchivesOnly() && f.isMatchingFileResult(fr) {
 		return fr
 	}
 	return nil
@@ -155,18 +155,18 @@ func (f *Finder) checkAddFindWalkFile(filePath string, fi os.FileInfo, err error
 }
 
 func (f *Finder) setFileResults() error {
-	if f.Settings.Verbose {
-		log("\nBuilding file result list")
+	if f.Settings.Verbose() {
+		Log("\nBuilding file result list")
 	}
 
-	for _, p := range f.Settings.Paths {
+	for _, p := range f.Settings.Paths() {
 		normPath := normalizePath(p)
 		fi, err := os.Stat(normPath)
 		if err != nil {
 			return err
 		}
 		if fi.IsDir() {
-			if f.Settings.Recursive {
+			if f.Settings.Recursive() {
 				err := filepath.Walk(normPath, f.checkAddFindWalkFile)
 				if err != nil {
 					return err

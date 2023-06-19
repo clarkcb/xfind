@@ -33,15 +33,15 @@ func TestGetExtension(t *testing.T) {
 	}
 
 	for k, v := range expected {
-		if ext := getExtension(k); ext != v {
-			t.Errorf("getExtension(\"%s\")=\"%s\", expected=\"%s\"", k, ext, v)
+		if ext := GetExtension(k); ext != v {
+			t.Errorf("GetExtension(\"%s\")=\"%s\", expected=\"%s\"", k, ext, v)
 		}
 	}
 }
 
 func TestGetHome(t *testing.T) {
 	homePath := getHome()
-	log(fmt.Sprintf("homePath: %s\n", homePath))
+	Log(fmt.Sprintf("homePath: %s\n", homePath))
 	if homePath := getHome(); homePath == "" {
 		t.Errorf("getHome()=\"%s\", expected non-blank", homePath)
 	}

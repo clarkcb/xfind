@@ -16,7 +16,7 @@ func expandPath(filePath string) string {
 	return filePath
 }
 
-func getExtension(file string) string {
+func GetExtension(file string) string {
 	ext := filepath.Ext(filepath.Base(file))
 	return strings.ToLower(strings.TrimLeft(ext, "."))
 }
@@ -64,10 +64,10 @@ func normalizePath(path string) string {
 
 func relativePath(path string, startPath string) string {
 	homePath := getHome()
-	log(fmt.Sprintf("homePath:%s", homePath))
+	Log(fmt.Sprintf("homePath:%s", homePath))
 	relativePath := path
 	if startPath == "." && strings.HasPrefix(path, homePath) {
-		log("path starts with homePath")
+		Log("path starts with homePath")
 		relativePath = "." + strings.TrimPrefix(path, homePath)
 	}
 	return relativePath

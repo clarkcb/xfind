@@ -2,16 +2,17 @@ package gofind
 
 import (
 	"fmt"
+	"github.com/pmylund/sortutil"
 	"sort"
 )
 
-func log(message string) {
+func Log(message string) {
 	fmt.Println(message)
 }
 
 type set map[string]bool
 
-func makeSet(slice []string) set {
+func MakeStringSet(slice []string) set {
 	s := make(map[string]bool)
 	for _, v := range slice {
 		if v != "" {
@@ -21,7 +22,7 @@ func makeSet(slice []string) set {
 	return s
 }
 
-func makeMap(slice []string) map[string]string {
+func MakeStringMap(slice []string) map[string]string {
 	s := make(map[string]string)
 	for _, v := range slice {
 		if v != "" {
@@ -42,7 +43,7 @@ func union(s1, s2 set) set {
 	return s
 }
 
-func contains(slice []string, s string) bool {
+func Contains(slice []string, s string) bool {
 	for _, as := range slice {
 		if s == as {
 			return true
@@ -60,7 +61,7 @@ func containsV(slice []string, s string) bool {
 	return false
 }
 
-func getLongestLen(slice []string) int {
+func GetLongestLen(slice []string) int {
 	longestLen := 0
 	for _, s := range slice {
 		if len(s) > longestLen {
@@ -70,7 +71,7 @@ func getLongestLen(slice []string) int {
 	return longestLen
 }
 
-func getMapKeys(m map[string]string) []string {
+func GetMapKeys(m map[string]string) []string {
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
@@ -78,7 +79,7 @@ func getMapKeys(m map[string]string) []string {
 	return keys
 }
 
-func getMapValues(m map[string]string) []string {
+func GetMapValues(m map[string]string) []string {
 	var values []string
 	for _, v := range m {
 		values = append(values, v)
@@ -86,13 +87,22 @@ func getMapValues(m map[string]string) []string {
 	return values
 }
 
-func getSortedKeys(m map[string]string) []string {
-	keys := getMapKeys(m)
+func GetSortedKeys(m map[string]string) []string {
+	keys := GetMapKeys(m)
 	sort.Strings(keys)
 	return keys
 }
 
-func getCountMapKeys(m map[string]int) []string {
+func getSortedSetValues(s set) []string {
+	keys := []string{}
+	for k := range s {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
+}
+
+func GetCountMapKeys(m map[string]int) []string {
 	var keys []string
 	for k := range m {
 		keys = append(keys, k)
@@ -100,8 +110,26 @@ func getCountMapKeys(m map[string]int) []string {
 	return keys
 }
 
-func getSortedCountKeys(m map[string]int) []string {
-	keys := getCountMapKeys(m)
+func GetSortedCountKeys(m map[string]int) []string {
+	keys := GetCountMapKeys(m)
 	sort.Strings(keys)
 	return keys
+}
+
+func GetCaseInsensitiveSortedCountKeys(m map[string]int) []string {
+	mk := make([]string, len(m))
+	i := 0
+	for k, _ := range m {
+		mk[i] = k
+		i++
+	}
+	sortutil.CiAsc(mk)
+	return mk
+}
+
+func GetMinInt(x int, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }

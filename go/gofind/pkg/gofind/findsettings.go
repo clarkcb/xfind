@@ -51,157 +51,357 @@ func getNameForSortBy(sortBy SortBy) string {
 
 // FindSettings - the settings for the find session
 type FindSettings struct {
-	ArchivesOnly           bool
-	Debug                  bool
-	ExcludeHidden          bool
-	InArchiveExtensions    []string
-	InArchiveFilePatterns  *FindPatterns
-	InDirPatterns          *FindPatterns
-	InExtensions           []string
-	InFilePatterns         *FindPatterns
-	InFileTypes            []FileType
-	IncludeArchives        bool
-	ListDirs               bool
-	ListFiles              bool
-	MaxLastMod             time.Time
-	MaxSize                int64
-	MinLastMod             time.Time
-	MinSize                int64
-	OutArchiveExtensions   []string
-	OutArchiveFilePatterns *FindPatterns
-	OutDirPatterns         *FindPatterns
-	OutExtensions          []string
-	OutFilePatterns        *FindPatterns
-	OutFileTypes           []FileType
-	Paths                  []string
-	PrintUsage             bool
-	PrintVersion           bool
-	Recursive              bool
-	SortBy                 SortBy
-	SortCaseInsensitive    bool
-	SortDescending         bool
-	Verbose                bool
+	archivesOnly           bool
+	debug                  bool
+	excludeHidden          bool
+	inArchiveExtensions    []string
+	inArchiveFilePatterns  *Patterns
+	inDirPatterns          *Patterns
+	inExtensions           []string
+	inFilePatterns         *Patterns
+	inFileTypes            []FileType
+	includeArchives        bool
+	listDirs               bool
+	listFiles              bool
+	maxLastMod             time.Time
+	maxSize                int64
+	minLastMod             time.Time
+	minSize                int64
+	outArchiveExtensions   []string
+	outArchiveFilePatterns *Patterns
+	outDirPatterns         *Patterns
+	outExtensions          []string
+	outFilePatterns        *Patterns
+	outFileTypes           []FileType
+	paths                  []string
+	printUsage             bool
+	printVersion           bool
+	recursive              bool
+	sortBy                 SortBy
+	sortCaseInsensitive    bool
+	sortDescending         bool
+	verbose                bool
 }
 
 func GetDefaultFindSettings() *FindSettings {
 	return &FindSettings{
-		false,             // ArchivesOnly
-		false,             // Debug
-		true,              // ExcludeHidden
-		[]string{},        // InArchiveExtensions
-		NewFindPatterns(), // InArchiveFilePatterns
-		NewFindPatterns(), // InDirPatterns
-		[]string{},        // InExtensions
-		NewFindPatterns(), // InFilePatterns
-		[]FileType{},      // InFileTypes
-		false,             // IncludeArchives
-		false,             // ListDirs
-		false,             // ListFiles
-		time.Time{},       // MaxLastMod
-		0,                 // MaxSize
-		time.Time{},       // MinLastMod
-		0,                 // MinSize
-		[]string{},        // OutArchiveExtensions
-		NewFindPatterns(), // OutArchiveFilePatterns
-		NewFindPatterns(), // OutDirPatterns
-		[]string{},        // OutExtensions
-		NewFindPatterns(), // OutFilePatterns
-		[]FileType{},      // OutFileTypes
-		[]string{},        // Paths
-		false,             // PrintUsage
-		false,             // PrintVersion
-		true,              // Recursive
-		SortByFilepath,    // SortBy
-		false,             // SortCaseInsensitive
-		false,             // SortDescending
-		false,             // Verbose
+		false,          // ArchivesOnly
+		false,          // Debug
+		true,           // ExcludeHidden
+		[]string{},     // InArchiveExtensions
+		NewPatterns(),  // InArchiveFilePatterns
+		NewPatterns(),  // InDirPatterns
+		[]string{},     // InExtensions
+		NewPatterns(),  // InFilePatterns
+		[]FileType{},   // InFileTypes
+		false,          // IncludeArchives
+		false,          // ListDirs
+		false,          // ListFiles
+		time.Time{},    // MaxLastMod
+		0,              // MaxSize
+		time.Time{},    // MinLastMod
+		0,              // MinSize
+		[]string{},     // OutArchiveExtensions
+		NewPatterns(),  // OutArchiveFilePatterns
+		NewPatterns(),  // OutDirPatterns
+		[]string{},     // OutExtensions
+		NewPatterns(),  // OutFilePatterns
+		[]FileType{},   // OutFileTypes
+		[]string{},     // Paths
+		false,          // PrintUsage
+		false,          // PrintVersion
+		true,           // Recursive
+		SortByFilepath, // SortBy
+		false,          // SortCaseInsensitive
+		false,          // SortDescending
+		false,          // Verbose
 	}
+}
+
+func (f *FindSettings) ArchivesOnly() bool {
+	return f.archivesOnly
+}
+
+func (f *FindSettings) SetArchivesOnly(archivesOnly bool) {
+	f.archivesOnly = archivesOnly
+	if archivesOnly {
+		f.includeArchives = true
+	}
+}
+
+func (f *FindSettings) Debug() bool {
+	return f.debug
+}
+
+func (f *FindSettings) SetDebug(debug bool) {
+	f.debug = debug
+	if debug {
+		f.verbose = true
+	}
+}
+
+func (f *FindSettings) ExcludeHidden() bool {
+	return f.excludeHidden
+}
+
+func (f *FindSettings) SetExcludeHidden(b bool) {
+	f.excludeHidden = b
+}
+
+func (f *FindSettings) InArchiveExtensions() []string {
+	return f.inArchiveExtensions
+}
+
+func (f *FindSettings) AddInArchiveExtension(xs string) {
+	for _, x := range strings.Split(xs, ",") {
+		if x != "" {
+			ext := strings.ToLower(x)
+			f.inArchiveExtensions = append(f.inArchiveExtensions, ext)
+		}
+	}
+}
+
+func (f *FindSettings) InArchiveFilePatterns() *Patterns {
+	return f.inArchiveFilePatterns
+}
+
+func (f *FindSettings) AddInArchiveFilePattern(p string) {
+	addPattern(p, f.inArchiveFilePatterns)
+}
+
+func (f *FindSettings) InDirPatterns() *Patterns {
+	return f.inDirPatterns
+}
+
+func (f *FindSettings) AddInDirPattern(p string) {
+	addPattern(p, f.inDirPatterns)
+}
+
+func (f *FindSettings) InExtensions() []string {
+	return f.inExtensions
 }
 
 func (f *FindSettings) AddInExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
 		if x != "" {
 			ext := strings.ToLower(x)
-			f.InExtensions = append(f.InExtensions, ext)
+			f.inExtensions = append(f.inExtensions, ext)
 		}
 	}
+}
+
+func (f *FindSettings) InFilePatterns() *Patterns {
+	return f.inFilePatterns
+}
+
+func (f *FindSettings) AddInFilePattern(p string) {
+	addPattern(p, f.inFilePatterns)
+}
+
+func (f *FindSettings) InFileTypes() []FileType {
+	return f.inFileTypes
+}
+
+func (f *FindSettings) AddInFileType(t FileType) {
+	f.inFileTypes = append(f.inFileTypes, t)
+}
+
+func (f *FindSettings) IncludeArchives() bool {
+	return f.includeArchives
+}
+
+func (f *FindSettings) SetIncludeArchives(b bool) {
+	f.includeArchives = b
+}
+
+func (f *FindSettings) ListDirs() bool {
+	return f.listDirs
+}
+
+func (f *FindSettings) SetListDirs(b bool) {
+	f.listDirs = b
+}
+
+func (f *FindSettings) ListFiles() bool {
+	return f.listFiles
+}
+
+func (f *FindSettings) SetListFiles(b bool) {
+	f.listFiles = b
+}
+
+func (f *FindSettings) MaxLastMod() time.Time {
+	return f.maxLastMod
+}
+
+func (f *FindSettings) SetMaxLastMod(t time.Time) {
+	f.maxLastMod = t
+}
+
+func (f *FindSettings) SetMaxLastModFromString(timeStr string) {
+	f.maxLastMod = f.getLastMod(timeStr)
+}
+
+func (f *FindSettings) MaxSize() int64 {
+	return f.maxSize
+}
+
+func (f *FindSettings) SetMaxSize(i int64) {
+	f.maxSize = i
+}
+
+func (f *FindSettings) SetMaxSizeFromString(sizeStr string) {
+	f.maxSize = f.getSize(sizeStr)
+}
+
+func (f *FindSettings) MinLastMod() time.Time {
+	return f.minLastMod
+}
+
+func (f *FindSettings) SetMinLastMod(t time.Time) {
+	f.minLastMod = t
+}
+
+func (f *FindSettings) SetMinLastModFromString(timeStr string) {
+	f.minLastMod = f.getLastMod(timeStr)
+}
+
+func (f *FindSettings) MinSize() int64 {
+	return f.minSize
+}
+
+func (f *FindSettings) SetMinSize(i int64) {
+	f.minSize = i
+}
+
+func (f *FindSettings) SetMinSizeFromString(sizeStr string) {
+	f.minSize = f.getSize(sizeStr)
+}
+
+func (f *FindSettings) OutArchiveExtensions() []string {
+	return f.outArchiveExtensions
+}
+
+func (f *FindSettings) AddOutArchiveExtension(xs string) {
+	for _, x := range strings.Split(xs, ",") {
+		if x != "" {
+			ext := strings.ToLower(x)
+			f.outArchiveExtensions = append(f.outArchiveExtensions, ext)
+		}
+	}
+}
+
+func (f *FindSettings) OutArchiveFilePatterns() *Patterns {
+	return f.outArchiveFilePatterns
+}
+
+func (f *FindSettings) AddOutArchiveFilePattern(p string) {
+	addPattern(p, f.outArchiveFilePatterns)
+}
+
+func (f *FindSettings) OutDirPatterns() *Patterns {
+	return f.outDirPatterns
+}
+
+func (f *FindSettings) AddOutDirPattern(p string) {
+	addPattern(p, f.outDirPatterns)
+}
+
+func (f *FindSettings) OutExtensions() []string {
+	return f.outExtensions
 }
 
 func (f *FindSettings) AddOutExtension(xs string) {
 	for _, x := range strings.Split(xs, ",") {
 		if x != "" {
 			ext := strings.ToLower(x)
-			f.OutExtensions = append(f.OutExtensions, ext)
+			f.outExtensions = append(f.outExtensions, ext)
 		}
 	}
 }
 
-func addPattern(p string, sp *FindPatterns) {
-	sp.AddPatternString(p)
-}
-
-func (f *FindSettings) AddInDirPattern(p string) {
-	addPattern(p, f.InDirPatterns)
-}
-
-func (f *FindSettings) AddOutDirPattern(p string) {
-	addPattern(p, f.OutDirPatterns)
-}
-
-func (f *FindSettings) AddInFilePattern(p string) {
-	addPattern(p, f.InFilePatterns)
+func (f *FindSettings) OutFilePatterns() *Patterns {
+	return f.outFilePatterns
 }
 
 func (f *FindSettings) AddOutFilePattern(p string) {
-	addPattern(p, f.OutFilePatterns)
+	addPattern(p, f.outFilePatterns)
 }
 
-func (f *FindSettings) AddInFileType(t FileType) {
-	f.InFileTypes = append(f.InFileTypes, t)
+func (f *FindSettings) OutFileTypes() []FileType {
+	return f.outFileTypes
 }
 
 func (f *FindSettings) AddOutFileType(t FileType) {
-	f.OutFileTypes = append(f.OutFileTypes, t)
+	f.inFileTypes = append(f.outFileTypes, t)
 }
 
-func (f *FindSettings) AddInArchiveExtension(xs string) {
-	for _, x := range strings.Split(xs, ",") {
-		ext := strings.ToLower(x)
-		f.InArchiveExtensions = append(f.InArchiveExtensions, ext)
-	}
-}
-
-func (f *FindSettings) AddOutArchiveExtension(xs string) {
-	for _, x := range strings.Split(xs, ",") {
-		ext := strings.ToLower(x)
-		f.OutArchiveExtensions = append(f.OutArchiveExtensions, ext)
-	}
-}
-
-func (f *FindSettings) AddInArchiveFilePattern(p string) {
-	addPattern(p, f.InArchiveFilePatterns)
-}
-
-func (f *FindSettings) AddOutArchiveFilePattern(p string) {
-	addPattern(p, f.OutArchiveFilePatterns)
+func (f *FindSettings) Paths() []string {
+	return f.paths
 }
 
 func (f *FindSettings) AddPath(p string) {
-	f.Paths = append(f.Paths, p)
+	f.paths = append(f.paths, p)
 }
 
-func (f *FindSettings) SetArchivesOnly(archivesOnly bool) {
-	f.ArchivesOnly = archivesOnly
-	if archivesOnly {
-		f.IncludeArchives = true
-	}
+func (f *FindSettings) PrintUsage() bool {
+	return f.printUsage
 }
 
-func (f *FindSettings) SetDebug(debug bool) {
-	f.Debug = debug
-	if debug {
-		f.Verbose = true
-	}
+func (f *FindSettings) SetPrintUsage(b bool) {
+	f.printUsage = b
+}
+
+func (f *FindSettings) PrintVersion() bool {
+	return f.printVersion
+}
+
+func (f *FindSettings) SetPrintVersion(b bool) {
+	f.printVersion = b
+}
+
+func (f *FindSettings) Recursive() bool {
+	return f.recursive
+}
+
+func (f *FindSettings) SetRecursive(b bool) {
+	f.recursive = b
+}
+
+func (f *FindSettings) SortBy() SortBy {
+	return f.sortBy
+}
+
+func (f *FindSettings) SetSortBy(sortBy SortBy) {
+	f.sortBy = sortBy
+}
+
+func (f *FindSettings) SetSortByFromString(sortByStr string) {
+	f.sortBy = getSortByForName(sortByStr)
+}
+
+func (f *FindSettings) SortCaseInsensitive() bool {
+	return f.sortCaseInsensitive
+}
+
+func (f *FindSettings) SetSortCaseInsensitive(b bool) {
+	f.sortCaseInsensitive = b
+}
+
+func (f *FindSettings) SortDescending() bool {
+	return f.sortDescending
+}
+
+func (f *FindSettings) SetSortDescending(b bool) {
+	f.sortDescending = b
+}
+
+func (f *FindSettings) Verbose() bool {
+	return f.verbose
+}
+
+func (f *FindSettings) SetVerbose(b bool) {
+	f.verbose = b
 }
 
 func (f *FindSettings) getLastMod(timeStr string) time.Time {
@@ -216,14 +416,6 @@ func (f *FindSettings) getLastMod(timeStr string) time.Time {
 	return t
 }
 
-func (f *FindSettings) SetMaxLastMod(timeStr string) {
-	f.MaxLastMod = f.getLastMod(timeStr)
-}
-
-func (f *FindSettings) SetMinLastMod(timeStr string) {
-	f.MinLastMod = f.getLastMod(timeStr)
-}
-
 func (f *FindSettings) getSize(sizeStr string) int64 {
 	size, err := strconv.ParseInt(sizeStr, 0, 64)
 	if err != nil {
@@ -233,23 +425,24 @@ func (f *FindSettings) getSize(sizeStr string) int64 {
 	return size
 }
 
-func (f *FindSettings) SetMaxSize(sizeStr string) {
-	f.MaxSize = f.getSize(sizeStr)
-}
-
-func (f *FindSettings) SetMinSize(sizeStr string) {
-	f.MinSize = f.getSize(sizeStr)
-}
-
-func (f *FindSettings) SetSortBy(sortBy string) {
-	f.SortBy = getSortByForName(sortBy)
-}
-
-func lastModToString(t time.Time) string {
+func LastModToString(t time.Time) string {
 	if t.IsZero() {
 		return "0"
 	}
 	return fmt.Sprintf("\"%s\"", t.String())
+}
+
+//func addExtensions(xs string, extensions []string) {
+//	for _, x := range strings.Split(xs, ",") {
+//		if x != "" {
+//			ext := strings.ToLower(x)
+//			extensions = append(extensions, ext)
+//		}
+//	}
+//}
+
+func addPattern(p string, sp *Patterns) {
+	sp.AddPatternString(p)
 }
 
 func (f *FindSettings) String() string {
@@ -285,35 +478,35 @@ func (f *FindSettings) String() string {
 		", SortDescending: %t" +
 		", Verbose: %t}"
 	return fmt.Sprintf(template,
-		f.ArchivesOnly,
-		f.Debug,
-		f.ExcludeHidden,
-		stringListToString(f.InArchiveExtensions),
-		findPatternsToString(f.InArchiveFilePatterns),
-		findPatternsToString(f.InDirPatterns),
-		stringListToString(f.InExtensions),
-		findPatternsToString(f.InFilePatterns),
-		fileTypeListToString(f.InFileTypes),
-		f.IncludeArchives,
-		f.ListDirs,
-		f.ListFiles,
-		lastModToString(f.MaxLastMod),
-		f.MaxSize,
-		lastModToString(f.MinLastMod),
-		f.MinSize,
-		stringListToString(f.OutArchiveExtensions),
-		findPatternsToString(f.OutArchiveFilePatterns),
-		findPatternsToString(f.OutDirPatterns),
-		stringListToString(f.OutExtensions),
-		findPatternsToString(f.OutFilePatterns),
-		fileTypeListToString(f.OutFileTypes),
-		stringListToString(f.Paths),
-		f.PrintUsage,
-		f.PrintVersion,
-		f.Recursive,
-		getNameForSortBy(f.SortBy),
-		f.SortCaseInsensitive,
-		f.SortDescending,
-		f.Verbose,
+		f.ArchivesOnly(),
+		f.Debug(),
+		f.ExcludeHidden(),
+		StringListToString(f.InArchiveExtensions()),
+		PatternsToString(f.InArchiveFilePatterns()),
+		PatternsToString(f.InDirPatterns()),
+		StringListToString(f.InExtensions()),
+		PatternsToString(f.InFilePatterns()),
+		FileTypeListToString(f.InFileTypes()),
+		f.IncludeArchives(),
+		f.ListDirs(),
+		f.ListFiles(),
+		LastModToString(f.MaxLastMod()),
+		f.MaxSize(),
+		LastModToString(f.MinLastMod()),
+		f.MinSize(),
+		StringListToString(f.OutArchiveExtensions()),
+		PatternsToString(f.OutArchiveFilePatterns()),
+		PatternsToString(f.OutDirPatterns()),
+		StringListToString(f.OutExtensions()),
+		PatternsToString(f.OutFilePatterns()),
+		FileTypeListToString(f.OutFileTypes()),
+		StringListToString(f.Paths()),
+		f.PrintUsage(),
+		f.PrintVersion(),
+		f.Recursive(),
+		getNameForSortBy(f.SortBy()),
+		f.SortCaseInsensitive(),
+		f.SortDescending(),
+		f.Verbose(),
 	)
 }

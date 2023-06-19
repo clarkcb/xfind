@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func stringListToString(list []string) string {
+func StringListToString(list []string) string {
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
 	var elems []string
@@ -18,7 +18,7 @@ func stringListToString(list []string) string {
 	return buffer.String()
 }
 
-func fileTypeListToString(list []FileType) string {
+func FileTypeListToString(list []FileType) string {
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
 	var elems []string
@@ -30,7 +30,7 @@ func fileTypeListToString(list []FileType) string {
 	return buffer.String()
 }
 
-func findPatternsToString(fp *FindPatterns) string {
+func PatternsToString(fp *Patterns) string {
 	var buffer bytes.Buffer
 	buffer.WriteString("[")
 	for i, r := range fp.patterns {
@@ -41,4 +41,8 @@ func findPatternsToString(fp *FindPatterns) string {
 	}
 	buffer.WriteString("]")
 	return buffer.String()
+}
+
+func EscapeQuotes(s string) string {
+	return strings.Replace(s, "\"", "\\\"", -1)
 }

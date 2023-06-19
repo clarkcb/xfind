@@ -14,13 +14,13 @@ func TestContains(t *testing.T) {
 	b := false
 	for _, g := range greetings {
 		if b = containsV(greetings, g); !b {
-			t.Errorf("contains(greetings, \"%s\")=%t, expected=true", g, b)
+			t.Errorf("Contains(greetings, \"%s\")=%t, expected=true", g, b)
 		}
 	}
 
 	for _, g := range others {
 		if b = containsV(greetings, g); b {
-			t.Errorf("contains(greetings, \"%s\")=%t, expected=false", g, b)
+			t.Errorf("Contains(greetings, \"%s\")=%t, expected=false", g, b)
 		}
 	}
 }
@@ -30,7 +30,7 @@ func TestGetLongestLen(t *testing.T) {
 		"hi", "hello", "g'day", "ahoy", "greetings", "hey",
 	}
 
-	longestLen := getLongestLen(greetings)
+	longestLen := GetLongestLen(greetings)
 	expectedLongestLen := 9
 
 	if longestLen != expectedLongestLen {
@@ -47,7 +47,7 @@ func TestGetSortedKeys(t *testing.T) {
 		greetingsMap[g] = g
 	}
 
-	sortedGreetings := getSortedKeys(greetingsMap)
+	sortedGreetings := GetSortedKeys(greetingsMap)
 
 	if sortedGreetings[0] != "ahoy" {
 		t.Errorf("sortedGreetings[0]=\"%s\", expected=\"ahoy\"",

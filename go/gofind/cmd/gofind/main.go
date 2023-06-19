@@ -18,15 +18,15 @@ func main() {
 		errorAndExit(err, findOptions)
 	}
 
-	if settings.PrintUsage {
+	if settings.PrintUsage() {
 		findOptions.PrintUsage()
 	}
 
-	if settings.PrintVersion {
+	if settings.PrintVersion() {
 		findOptions.PrintVersion()
 	}
 
-	if settings.Debug {
+	if settings.Debug() {
 		fmt.Printf("settings: %s\n", settings.String())
 	}
 
@@ -37,12 +37,12 @@ func main() {
 	}
 
 	// print matching dirs
-	if settings.ListDirs {
+	if settings.ListDirs() {
 		fileResults.PrintMatchingDirs()
 	}
 
 	// print matching files (should default to true)
-	if settings.ListFiles {
+	if settings.ListFiles() {
 		fileResults.PrintMatchingFiles()
 	}
 }
