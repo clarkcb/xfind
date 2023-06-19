@@ -5,7 +5,7 @@ if (-not (Test-Path Env:XFIND_PATH))
     $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
 }
 
-$tsFindExe = Join-Path $env:XFIND_PATH 'typescript' 'tsfind' 'dist' 'tsfind.js'
+$tsFindExe = Join-Path $env:XFIND_PATH 'typescript' 'tsfind' 'dist' 'src' 'tsfind.js'
 
 if (Test-Path $tsFindExe -PathType Leaf)
 {

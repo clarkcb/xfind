@@ -7,4 +7,4 @@ fi
 
 TSFIND_PATH=$XFIND_PATH/typescript/tsfind
 
-node $TSFIND_PATH/dist/tsfind.js "$@"
+node $TSFIND_PATH/dist/src/tsfind.js "$@"

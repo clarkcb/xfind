@@ -12,7 +12,7 @@ import * as config from './config';
 import {FileUtil} from './fileutil';
 import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
-import {nameToSortBy} from "./sortby";
+import {SortUtil} from "./sortutil";
 
 interface StringOptionMap {
     [key: string]: FindOption
@@ -51,11 +51,11 @@ export class FindOptions {
             'in-filetype':
                 (x: string, settings: FindSettings) => { settings.addInFileTypes(x); },
             'maxlastmod':
-                (x: string, settings: FindSettings) => { settings.setMaxLastMod(x); },
+                (x: string, settings: FindSettings) => { settings.maxLastModFromString(x); },
             'maxsize':
                 (x: string, settings: FindSettings) => { settings.maxSize = parseInt(x, 10); },
             'minlastmod':
-                (x: string, settings: FindSettings) => { settings.setMinLastMod(x); },
+                (x: string, settings: FindSettings) => { settings.minLastModFromString(x); },
             'minsize':
                 (x: string, settings: FindSettings) => { settings.minSize = parseInt(x, 10); },
             'out-dirpattern':
@@ -75,14 +75,14 @@ export class FindOptions {
             'settings-file':
                 (x: string, settings: FindSettings) => { this.settingsFromFile(x, settings); },
             'sort-by':
-                (x: string, settings: FindSettings) => { settings.sortBy = nameToSortBy(x); }
+                (x: string, settings: FindSettings) => { settings.sortBy = SortUtil.nameToSortBy(x); }
         };
 
         this.boolFlagActionMap = {
             'archivesonly':
-                (b: boolean, settings: FindSettings) => { settings.setArchivesOnly(b); },
+                (b: boolean, settings: FindSettings) => { settings.archivesOnly = b; },
             'debug':
-                (b: boolean, settings: FindSettings) => { settings.setDebug(b); },
+                (b: boolean, settings: FindSettings) => { settings.debug = b; },
             'excludearchives':
                 (b: boolean, settings: FindSettings) => { settings.includeArchives = !b; },
             'excludehidden':

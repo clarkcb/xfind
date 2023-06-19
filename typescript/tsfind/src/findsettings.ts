@@ -8,11 +8,13 @@
 
 import {FileType} from './filetype';
 import {FileTypes} from './filetypes';
-import {SortBy, sortByToName} from "./sortby";
+import {SortBy} from "./sortby";
+import {SortUtil} from "./sortutil";
+import {StringUtil} from "./stringutil";
 
 export class FindSettings {
-    archivesOnly = false;
-    debug = false;
+    #archivesOnly = false;
+    #debug = false;
     excludeHidden = true;
     inArchiveExtensions: string[] = [];
     inArchiveFilePatterns: RegExp[] = [];
@@ -23,9 +25,9 @@ export class FindSettings {
     includeArchives = false;
     listDirs = false;
     listFiles = false;
-    maxLastMod: Date | null = null;
+    #maxLastMod: Date | null = null;
     maxSize = 0;
-    minLastMod: Date | null = null;
+    #minLastMod: Date | null = null;
     minSize = 0;
     outArchiveExtensions: string[] = [];
     outArchiveFilePatterns: RegExp[] = [];
@@ -50,29 +52,13 @@ export class FindSettings {
         }
     }
 
-    public addInExtensions(ext: string|string[]): void {
-        FindSettings.addExtensions(ext, this.inExtensions);
-    }
-
-    public addOutExtensions(ext: string|string[]): void {
-        FindSettings.addExtensions(ext, this.outExtensions);
-    }
-
     private static addFileTypes(fileTypes: string|string[], arr: FileType[]): void {
         if (typeof(fileTypes) === 'string') {
             fileTypes.split(/,/).filter(ft => ft !== '').
-                forEach(ft => arr.push(FileTypes.fromName(ft)));
+            forEach(ft => arr.push(FileTypes.fromName(ft)));
         } else if (fileTypes.constructor === Array) {
             fileTypes.forEach((ft: string) => arr.push(FileTypes.fromName(ft)));
         }
-    }
-
-    public addInFileTypes(fileType: string|string[]): void {
-        FindSettings.addFileTypes(fileType, this.inFileTypes);
-    }
-
-    public addOutFileTypes(fileType: string|string[]): void {
-        FindSettings.addFileTypes(fileType, this.outFileTypes);
     }
 
     private static addPatterns(patterns: string|string[], arr: RegExp[]): void {
@@ -83,59 +69,94 @@ export class FindSettings {
         }
     }
 
+    public addInArchiveExtensions(ext: string|string[]): void {
+        FindSettings.addExtensions(ext, this.inArchiveExtensions);
+    }
+
+    public addInArchiveFilePatterns(pattern: string|string[]): void {
+        FindSettings.addPatterns(pattern, this.inArchiveFilePatterns);
+    }
+
     public addInDirPatterns(pattern: string|string[]): void {
         FindSettings.addPatterns(pattern, this.inDirPatterns);
     }
 
-    public addOutDirPatterns(pattern: string|string[]): void {
-        FindSettings.addPatterns(pattern, this.outDirPatterns);
+    public addInExtensions(ext: string|string[]): void {
+        FindSettings.addExtensions(ext, this.inExtensions);
     }
 
     public addInFilePatterns(pattern: string|string[]): void {
         FindSettings.addPatterns(pattern, this.inFilePatterns);
     }
 
-    public addOutFilePatterns(pattern: string|string[]): void {
-        FindSettings.addPatterns(pattern, this.outFilePatterns);
-    }
-
-    public addInArchiveExtensions(ext: string|string[]): void {
-        FindSettings.addExtensions(ext, this.inArchiveExtensions);
+    public addInFileTypes(fileType: string|string[]): void {
+        FindSettings.addFileTypes(fileType, this.inFileTypes);
     }
 
     public addOutArchiveExtensions(ext: string|string[]): void {
         FindSettings.addExtensions(ext, this.outArchiveExtensions);
     }
 
-    public addInArchiveFilePatterns(pattern: string|string[]): void {
-        FindSettings.addPatterns(pattern, this.inArchiveFilePatterns);
-    }
     public addOutArchiveFilePatterns(pattern: string|string[]): void {
         FindSettings.addPatterns(pattern, this.outArchiveFilePatterns);
     }
 
-    public setArchivesOnly(b: boolean): void {
-        this.archivesOnly = b;
-        if (b) this.includeArchives = b;
+    public addOutDirPatterns(pattern: string|string[]): void {
+        FindSettings.addPatterns(pattern, this.outDirPatterns);
     }
 
-    public setDebug(b: boolean): void {
-        this.debug = b;
-        if (b) this.verbose = b;
+    public addOutExtensions(ext: string|string[]): void {
+        FindSettings.addExtensions(ext, this.outExtensions);
     }
 
-    public getDateForString(s: string): Date {
-        const d = new Date();
-        d.setTime(Date.parse(s));
-        return d;
+    public addOutFilePatterns(pattern: string|string[]): void {
+        FindSettings.addPatterns(pattern, this.outFilePatterns);
     }
 
-    public setMaxLastMod(s: string): void {
-        this.maxLastMod = this.getDateForString(s);
+    public addOutFileTypes(fileType: string|string[]): void {
+        FindSettings.addFileTypes(fileType, this.outFileTypes);
     }
 
-    public setMinLastMod(s: string): void {
-        this.minLastMod = this.getDateForString(s);
+    public get archivesOnly(): boolean {
+        return this.#archivesOnly;
+    }
+
+    public set archivesOnly(value: boolean) {
+        this.#archivesOnly = value;
+        if (value) this.includeArchives = value;
+    }
+
+    public get debug() {
+        return this.#debug;
+    }
+
+    public set debug(value: boolean) {
+        this.#debug = value;
+        if (value) this.verbose = value;
+    }
+
+    public get maxLastMod(): Date | null {
+        return this.#maxLastMod;
+    }
+
+    public set maxLastMod(value: Date | null) {
+        this.#maxLastMod = value;
+    }
+
+    public maxLastModFromString(value: string) {
+        this.#maxLastMod = StringUtil.getDateForString(value);
+    }
+
+    public get minLastMod(): Date | null {
+        return this.#minLastMod;
+    }
+
+    public set minLastMod(value: Date | null) {
+        this.#minLastMod = value;
+    }
+
+    public minLastModFromString(value: string) {
+        this.#minLastMod = StringUtil.getDateForString(value);
     }
 
     public needStat(): boolean {
@@ -147,61 +168,34 @@ export class FindSettings {
             this.minSize > 0;
     }
 
-    private static dateToString(name: string, dt: Date | null): string {
-        let s = `${name}=`;
-        if (dt === null)
-            s += '0';
-        else
-            s += `"${dt.toISOString()}"`;
-        return s;
-    }
-
-    private static listToString(name: string, lst: string[]|RegExp[]): string {
-        let s = `${name}=[`;
-        if (lst.length)
-            s += `"${lst.join('","')}"`;
-        s += ']';
-        return s;
-    }
-
-    private static fileTypesToString(name: string, fileTypes: FileType[]): string {
-        let s = `${name}=[`;
-        for (let i=0; i < fileTypes.length; i++) {
-            if (i > 0) s += ', ';
-            s += `"${FileTypes.toName(fileTypes[i])}"`;
-        }
-        s += ']';
-        return s;
-    }
-
     public toString(): string {
         return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
             + ', debug=' + this.debug
             + ', excludeHidden=' + this.excludeHidden
-            + ', ' + FindSettings.listToString('inArchiveExtensions', this.inArchiveExtensions)
-            + ', ' + FindSettings.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
-            + ', ' + FindSettings.listToString('inDirPatterns', this.inDirPatterns)
-            + ', ' + FindSettings.listToString('inExtensions', this.inExtensions)
-            + ', ' + FindSettings.listToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + FindSettings.fileTypesToString('inFileTypes', this.inFileTypes)
+            + ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions)
+            + ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns)
+            + ', ' + StringUtil.listToString('inExtensions', this.inExtensions)
+            + ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns)
+            + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', includeArchives=' + this.includeArchives
             + ', listDirs=' + this.listDirs
             + ', listFiles=' + this.listFiles
-            + ', ' + FindSettings.dateToString('maxLastMod', this.maxLastMod)
+            + ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod)
             + ', maxSize=' + this.maxSize
-            + ', ' + FindSettings.dateToString('minLastMod', this.minLastMod)
+            + ', ' + StringUtil.dateToString('minLastMod', this.minLastMod)
             + ', minSize=' + this.minSize
-            + ', ' + FindSettings.listToString('outArchiveExtensions', this.outArchiveExtensions)
-            + ', ' + FindSettings.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
-            + ', ' + FindSettings.listToString('outDirPatterns', this.outDirPatterns)
-            + ', ' + FindSettings.listToString('outExtensions', this.outExtensions)
-            + ', ' + FindSettings.listToString('outFilePatterns', this.outFilePatterns)
-            + ', ' + FindSettings.fileTypesToString('outFileTypes', this.outFileTypes)
-            + ', ' + FindSettings.listToString('paths', this.paths)
+            + ', ' + StringUtil.listToString('outArchiveExtensions', this.outArchiveExtensions)
+            + ', ' + StringUtil.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
+            + ', ' + StringUtil.listToString('outDirPatterns', this.outDirPatterns)
+            + ', ' + StringUtil.listToString('outExtensions', this.outExtensions)
+            + ', ' + StringUtil.listToString('outFilePatterns', this.outFilePatterns)
+            + ', ' + StringUtil.fileTypesToString('outFileTypes', this.outFileTypes)
+            + ', ' + StringUtil.listToString('paths', this.paths)
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive
-            + ', sortBy=' + sortByToName(this.sortBy)
+            + ', sortBy=' + SortUtil.sortByToName(this.sortBy)
             + ', sortCaseInsensitive=' + this.sortCaseInsensitive
             + ', sortDescending=' + this.sortDescending
             + ', verbose=' + this.verbose
