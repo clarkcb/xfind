@@ -101,7 +101,7 @@ public class FindSettings {
         return this.archivesOnly;
     }
 
-    public final void setArchivesOnly(final boolean archivesOnly) {
+    public void setArchivesOnly(final boolean archivesOnly) {
         this.archivesOnly = archivesOnly;
         if (archivesOnly) {
             this.includeArchives = true;
