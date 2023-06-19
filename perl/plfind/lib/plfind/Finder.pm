@@ -158,8 +158,8 @@ sub is_matching_archive_file {
         !$self->matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{out_archive_patterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_archive_patterns})) {
+    if (scalar @{$self->{settings}->{out_archive_file_patterns}} &&
+        $self->matches_any_pattern($f, $self->{settings}->{out_archive_file_patterns})) {
         return 0;
     }
     return 1;
@@ -254,7 +254,7 @@ sub find {
             if (defined $file_result) {
                 push(@{$file_results}, $file_result);
             } else {
-                plfind::common::log("ERROR: Startpath does not match find settings");
+                plfind::common::log_msg("ERROR: Startpath does not match find settings");
             }
         }
     }
@@ -331,45 +331,6 @@ sub sort_file_results {
         @sorted = reverse @sorted;
     }
     return \@sorted;
-}
-
-sub get_matching_dirs {
-    my ($self, $file_results) = @_;
-    my @dirs = map {$_->{path}} @{$file_results};
-    my $uniq = plfind::common::uniq(\@dirs);
-    return $uniq;
-}
-
-sub print_matching_dirs {
-    my ($self, $file_results) = @_;
-    my $dirs = $self->get_matching_dirs($file_results);
-    if (scalar @{$dirs}) {
-        plfind::common::log(sprintf("\nMatching directories (%d):", scalar @{$dirs}));
-        foreach my $d (@{$dirs}) {
-            plfind::common::log($d);
-        }
-    } else {
-        plfind::common::log("\nMatching directories: 0");
-    }
-}
-
-sub get_matching_files {
-    my ($self, $file_results) = @_;
-    my @files = map {$_->to_string()} @{$file_results};
-    return \@files;
-}
-
-sub print_matching_files {
-    my ($self, $file_results) = @_;
-    my $files = $self->get_matching_files($file_results);
-    if (scalar @{$files}) {
-        plfind::common::log(sprintf("\nMatching files (%d):", scalar @{$files}));
-        foreach my $f (@{$files}) {
-            plfind::common::log($f);
-        }
-    } else {
-        plfind::common::log("\nMatching files: 0");
-    }
 }
 
 1;

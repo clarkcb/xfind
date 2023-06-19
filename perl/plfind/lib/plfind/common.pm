@@ -11,11 +11,6 @@ package plfind::common;
 use strict;
 use warnings;
 
-sub log($) {
-    my $msg = shift;
-    print $msg . "\n";
-}
-
 sub log_msg($) {
     my $msg = shift;
     print $msg . "\n";

@@ -23,7 +23,46 @@ use plfind::FindOptions;
 
 sub log_error {
     my $err = shift;
-    plfind::common::log('ERROR: '.$err);
+    plfind::common::log_msg('ERROR: '.$err);
+}
+
+sub get_matching_dirs {
+    my ($file_results) = @_;
+    my @dirs = map {$_->{path}} @{$file_results};
+    my $uniq = plfind::common::uniq(\@dirs);
+    return $uniq;
+}
+
+sub print_matching_dirs {
+    my ($file_results) = @_;
+    my $dirs = get_matching_dirs($file_results);
+    if (scalar @{$dirs}) {
+        plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @{$dirs}));
+        foreach my $d (@{$dirs}) {
+            plfind::common::log_msg($d);
+        }
+    } else {
+        plfind::common::log_msg("\nMatching directories: 0");
+    }
+}
+
+sub get_matching_files {
+    my ($file_results) = @_;
+    my @files = map {$_->to_string()} @{$file_results};
+    return \@files;
+}
+
+sub print_matching_files {
+    my ($file_results) = @_;
+    my $files = get_matching_files($file_results);
+    if (scalar @{$files}) {
+        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @{$files}));
+        foreach my $f (@{$files}) {
+            plfind::common::log_msg($f);
+        }
+    } else {
+        plfind::common::log_msg("\nMatching files: 0");
+    }
 }
 
 sub main {
@@ -31,11 +70,11 @@ sub main {
     my ($settings, $errs) = $findoptions->settings_from_args(\@ARGV);
 
     if (scalar @{$errs}) {
-        plfind::common::log('');
+        plfind::common::log_msg('');
         log_error($errs->[0]);
-        plfind::common::log('');
+        plfind::common::log_msg('');
         $findoptions->usage();
-        plfind::common::log('');
+        plfind::common::log_msg('');
         exit;
     }
 
@@ -44,20 +83,20 @@ sub main {
     }
 
     if ($settings->{print_usage}) {
-        plfind::common::log('');
+        plfind::common::log_msg('');
         $findoptions->usage();
-        plfind::common::log('');
+        plfind::common::log_msg('');
         exit;
     }
 
     my ($finder, $errs2) = plfind::Finder->new($settings);
 
     if (scalar @{$errs2}) {
-        plfind::common::log('');
+        plfind::common::log_msg('');
         log_error($errs2->[0]);
-        plfind::common::log('');
+        plfind::common::log_msg('');
         $findoptions->usage();
-        plfind::common::log('');
+        plfind::common::log_msg('');
         exit;
     }
 
@@ -65,12 +104,12 @@ sub main {
 
     # print matching dirs
     if ($settings->{list_dirs}) {
-        $finder->print_matching_dirs($fileresults);
+        print_matching_dirs($fileresults);
     }
 
     # print matching files
     if ($settings->{list_files}) {
-        $finder->print_matching_files($fileresults);
+        print_matching_files($fileresults);
     }
 }
 

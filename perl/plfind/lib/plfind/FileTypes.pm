@@ -11,7 +11,6 @@ package plfind::FileTypes;
 use strict;
 use warnings;
 
-# use XML::Simple;
 use Data::Dumper;
 use JSON::PP qw(decode_json);
 use plfind::common;
@@ -19,23 +18,7 @@ use plfind::config;
 use plfind::FileType;
 use plfind::FileUtil;
 
-sub get_xml_file_type_hash {
-    my $file_type_hash = {};
-    my $file_type_xml_hash = XMLin($FILETYPESPATH);
-    $file_type_xml_hash = $file_type_xml_hash->{filetype};
-    my @types = keys %{$file_type_xml_hash};
-    foreach my $t (@types) {
-        my @exts = split(/\s+/, $file_type_xml_hash->{$t}->{extensions});
-        $file_type_hash->{$t} = \@exts;
-    }
-    my @text = (@{$file_type_hash->{text}}, @{$file_type_hash->{code}},
-        @{$file_type_hash->{xml}});
-    $file_type_hash->{text} = \@text;
-    return $file_type_hash;
-}
-
 sub get_json_file_type_hashes {
-    # print "get_json_file_type_hashes\n";
     my $file_type_ext_hash = {};
     my $file_type_name_hash = {};
     my $json_file_type_hash = decode_json plfind::FileUtil::get_file_contents($FILETYPESPATH);
@@ -60,7 +43,6 @@ sub new {
     my $class = shift;
     my $hashes = get_json_file_type_hashes();
     my $self = {
-        # file_types => get_xml_file_type_hash(),
         file_type_exts => $hashes->[0],
         file_type_names => $hashes->[1],
     };
@@ -173,6 +155,15 @@ sub is_unknown {
     my ($self, $file) = @_;
     my $file_type = $self->get_file_type($file);
     if ($file_type eq plfind::FileType->UNKNOWN) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_searchable {
+    my ($self, $file) = @_;
+    my $file_type = $self->get_file_type($file);
+    if ($file_type ne plfind::FileType->UNKNOWN) {
         return 1;
     }
     return 0;

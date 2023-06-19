@@ -10,6 +10,7 @@ package plfind::FindSettings;
 
 use Scalar::Util qw(blessed);
 
+use plfind::common;
 use plfind::FileTypes;
 use plfind::SortBy;
 
@@ -36,7 +37,7 @@ sub new {
         min_last_mod => 0,
         min_size => 0,
         out_archive_extensions => [],
-        out_archive_patterns => [],
+        out_archive_file_patterns => [],
         out_dir_patterns => [],
         out_extensions => [],
         out_file_patterns => [],
@@ -175,6 +176,7 @@ sub needs_stat {
 
 sub to_string {
     my $self = shift @_;
+    print "FindSettings\n";
     my $s = "FindSettings(" .
         'archives_only=' . $self->bool_to_string($self->{archives_only}) .
         ', debug=' . $self->bool_to_string($self->{debug}) .
@@ -193,18 +195,18 @@ sub to_string {
         ', min_last_mod=' . $self->datetime_to_string($self->{min_last_mod}) .
         ', min_size=' . $self->{min_size} .
         ', out_archive_extensions=' . $self->strings_aref_to_string($self->{out_archive_extensions}) .
-        ', out_archive__patterns=' . $self->strings_aref_to_string($self->{out_archive_patterns}) .
+        ', out_archive_file_patterns=' . $self->strings_aref_to_string($self->{out_archive_file_patterns}) .
         ', out_dir_patterns=' . $self->strings_aref_to_string($self->{out_dir_patterns}) .
         ', out_extensions=' . $self->strings_aref_to_string($self->{out_extensions}) .
         ', out_file_patterns=' . $self->strings_aref_to_string($self->{out_file_patterns}) .
         ', out_file_types=' . $self->file_types_aref_to_string($self->{out_file_types}) .
+        ', paths=' . $self->strings_aref_to_string($self->{paths}) .
         ', print_usage=' . $self->bool_to_string($self->{print_usage}) .
         ', print_version=' . $self->bool_to_string($self->{print_version}) .
         ', recursive=' . $self->bool_to_string($self->{recursive}) .
-        ', paths=' . $self->strings_aref_to_string($self->{paths}) .
+        ', sort_by=' . $self->{sort_by} .
         ', sort_case_insensitive=' . $self->bool_to_string($self->{sort_case_insensitive}) .
         ', sort_descending=' . $self->bool_to_string($self->{sort_descending}) .
-        ', sort_by=' . $self->{sort_by} .
         ', verbose=' . $self->bool_to_string($self->{verbose}) .
         ')';
     return $s;

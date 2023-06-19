@@ -308,20 +308,20 @@ sub test_is_matching_archive_file_no_match_in_pattern {
 
 sub test_is_matching_archive_file_matches_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_archive_patterns}}, 'arch');
+    push(@{$settings->{out_archive_file_patterns}}, 'arch');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file matches out_archive_patterns");
+    ok(!$finder->is_matching_archive_file($file), "$file matches out_archive_file_patterns");
 }
 
 sub test_is_matching_archive_file_no_match_out_pattern {
     my $settings = get_settings();
-    push(@{$settings->{out_archive_patterns}}, 'archives');
+    push(@{$settings->{out_archive_file_patterns}}, 'archives');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file does not match out_archive_patterns");
+    ok($finder->is_matching_archive_file($file), "$file does not match out_archive_file_patterns");
 }
 
 ################################################################################

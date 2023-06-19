@@ -11,7 +11,6 @@ package plfind::FileUtil;
 use strict;
 use warnings;
 
-# use XML::Simple;
 use Data::Dumper;
 use File::Basename;
 use plfind::common;

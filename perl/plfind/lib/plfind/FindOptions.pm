@@ -11,7 +11,6 @@ package plfind::FindOptions;
 use strict;
 use warnings;
 
-# use XML::Simple;
 use Data::Dumper;
 use DateTime::Format::DateParse;
 use JSON::PP qw(decode_json);
@@ -175,34 +174,10 @@ my $bool_flag_action_hash = {
 sub new {
     my $class = shift;
     my $self = {
-        # options => set_options_from_xml(),
         options => set_options_from_json(),
     };
     bless $self, $class;
     return $self;
-}
-
-sub set_options_from_xml {
-    my $options_hash = {};
-    my $options_xml_hash = XMLin($FINDOPTIONSPATH);
-    foreach my $i (0..$#{$options_xml_hash->{findoption}}) {
-        my $short = $options_xml_hash->{findoption}->[$i]->{short};
-        my $long = $options_xml_hash->{findoption}->[$i]->{long};
-        my $desc = $options_xml_hash->{findoption}->[$i]->{content};
-        $desc = plfind::common::trim($desc);
-        my $func = sub {};
-        if (exists $arg_action_hash->{$long}) {
-            $func = $arg_action_hash->{$long};
-        } elsif (exists $bool_flag_action_hash->{$long}) {
-            $func = $bool_flag_action_hash->{$long};
-        }
-        my $opt = plfind::FindOption->new($short, $long, $desc, $func);
-        $options_hash->{$long} = $opt;
-        if ($short) {
-            $options_hash->{$short} = $options_hash->{$long};
-        }
-    }
-    return $options_hash;
 }
 
 sub set_options_from_json {
