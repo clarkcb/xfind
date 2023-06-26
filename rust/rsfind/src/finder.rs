@@ -10,7 +10,8 @@ use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 use crate::fileresult::FileResult;
-use crate::findsettings::{FindSettings, SortBy};
+use crate::findsettings::FindSettings;
+use crate::sortby::SortBy;
 
 pub struct Finder {
     pub file_types: FileTypes,
@@ -36,10 +37,10 @@ impl Finder {
     }
 
     fn validate_settings(settings: &FindSettings) -> Result<(), FindError> {
-        if settings.paths.len() < 1 {
+        if settings.paths().len() < 1 {
             return Err(FindError::new("Startpath not defined"));
         }
-        for path in settings.paths.iter() {
+        for path in settings.paths().iter() {
             if path == "" {
                 return Err(FindError::new("Startpath not defined"));
             }
@@ -76,28 +77,28 @@ impl Finder {
     }
 
     fn is_matching_dir(&self, dir: &String) -> bool {
-        if self.settings.exclude_hidden && FileUtil::is_hidden(&dir) {
+        if self.settings.exclude_hidden() && FileUtil::is_hidden(&dir) {
             return false;
         }
-        (self.settings.in_dir_patterns.is_empty()
-            || self.matches_any_pattern(&dir, &self.settings.in_dir_patterns))
-            && (self.settings.out_dir_patterns.is_empty()
-                || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns))
+        (self.settings.in_dir_patterns().is_empty()
+            || self.matches_any_pattern(&dir, &self.settings.in_dir_patterns()))
+            && (self.settings.out_dir_patterns().is_empty()
+                || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns()))
     }
 
     fn is_matching_archive_file(&self, file_result: &FileResult) -> bool {
         if !self.is_matching_dir(&file_result.path) {
             return false;
         }
-        if FileUtil::is_hidden(&file_result.file_name) && self.settings.exclude_hidden {
+        if FileUtil::is_hidden(&file_result.file_name) && self.settings.exclude_hidden() {
             return false;
         }
-        (self.settings.in_archive_file_patterns.is_empty()
-            || self.matches_any_pattern(&file_result.file_name, &self.settings.in_archive_file_patterns))
-            && (self.settings.out_archive_file_patterns.is_empty()
+        (self.settings.in_archive_file_patterns().is_empty()
+            || self.matches_any_pattern(&file_result.file_name, &self.settings.in_archive_file_patterns()))
+            && (self.settings.out_archive_file_patterns().is_empty()
                 || !self.matches_any_pattern(
             &file_result.file_name,
-            &self.settings.out_archive_file_patterns,
+            &self.settings.out_archive_file_patterns(),
                 ))
     }
 
@@ -105,51 +106,51 @@ impl Finder {
         if !self.is_matching_dir(&file_result.path) {
             return false;
         }
-        if self.settings.exclude_hidden && FileUtil::is_hidden(&file_result.file_name) {
+        if self.settings.exclude_hidden() && FileUtil::is_hidden(&file_result.file_name) {
             return false;
         }
 
-        if !self.settings.in_extensions.is_empty() || !self.settings.out_extensions.is_empty() {
+        if !self.settings.in_extensions().is_empty() || !self.settings.out_extensions().is_empty() {
             match FileUtil::get_extension(&file_result.file_name) {
                 Some(ext) => {
-                    if (!self.settings.in_extensions.is_empty()
-                        && !self.matches_any_string(ext, &self.settings.in_extensions))
-                        || (!self.settings.out_extensions.is_empty()
-                        && self.matches_any_string(ext, &self.settings.out_extensions))
+                    if (!self.settings.in_extensions().is_empty()
+                        && !self.matches_any_string(ext, &self.settings.in_extensions()))
+                        || (!self.settings.out_extensions().is_empty()
+                        && self.matches_any_string(ext, &self.settings.out_extensions()))
                     {
                         return false;
                     }
                 },
                 None => {
-                    if !self.settings.in_extensions.is_empty() {
+                    if !self.settings.in_extensions().is_empty() {
                         return false;
                     }
                 },
             }
         }
 
-        if (self.settings.max_last_mod > 0 && file_result.mod_time > self.settings.max_last_mod)
-            || (self.settings.min_last_mod > 0 && file_result.mod_time < self.settings.min_last_mod)
-            || (self.settings.max_size > 0 && file_result.file_size > self.settings.max_size)
-            || (self.settings.min_size > 0 && file_result.file_size < self.settings.min_size) {
+        if (self.settings.max_last_mod() > 0 && file_result.mod_time > self.settings.max_last_mod())
+            || (self.settings.min_last_mod() > 0 && file_result.mod_time < self.settings.min_last_mod())
+            || (self.settings.max_size() > 0 && file_result.file_size > self.settings.max_size())
+            || (self.settings.min_size() > 0 && file_result.file_size < self.settings.min_size()) {
             return false;
         }
 
-        (self.settings.in_file_patterns.is_empty()
-            || self.matches_any_pattern(&file_result.file_name, &self.settings.in_file_patterns))
-            && (self.settings.in_file_types.is_empty()
-                || self.settings.in_file_types.contains(&file_result.file_type))
-            && (self.settings.out_file_patterns.is_empty()
-                || !self.matches_any_pattern(&file_result.file_name, &self.settings.out_file_patterns))
-            && (self.settings.out_file_types.is_empty()
-                || !self.settings.out_file_types.contains(&file_result.file_type))
+        (self.settings.in_file_patterns().is_empty()
+            || self.matches_any_pattern(&file_result.file_name, &self.settings.in_file_patterns()))
+            && (self.settings.in_file_types().is_empty()
+                || self.settings.in_file_types().contains(&file_result.file_type))
+            && (self.settings.out_file_patterns().is_empty()
+                || !self.matches_any_pattern(&file_result.file_name, &self.settings.out_file_patterns()))
+            && (self.settings.out_file_types().is_empty()
+                || !self.settings.out_file_types().contains(&file_result.file_type))
     }
 
     fn filter_file(&self, file_result: &FileResult) -> bool {
         if file_result.file_type == FileType::Archive {
-            return self.settings.include_archives && self.is_matching_archive_file(file_result);
+            return self.settings.include_archives() && self.is_matching_archive_file(file_result);
         }
-        !self.settings.archives_only && self.is_matching_file(file_result)
+        !self.settings.archives_only() && self.is_matching_file(file_result)
     }
 
     fn cmp_by_path(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
@@ -169,7 +170,7 @@ impl Finder {
     }
 
     fn get_cmp_by_path(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive {
+        return if self.settings.sort_case_insensitive() {
             Self::cmp_by_path_ci
         } else {
             Self::cmp_by_path
@@ -193,7 +194,7 @@ impl Finder {
     }
 
     fn get_cmp_by_name(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive {
+        return if self.settings.sort_case_insensitive() {
             Self::cmp_by_name_ci
         } else {
             Self::cmp_by_name
@@ -217,7 +218,7 @@ impl Finder {
     }
 
     fn get_cmp_by_size(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive {
+        return if self.settings.sort_case_insensitive() {
             Self::cmp_by_size_ci
         } else {
             Self::cmp_by_size
@@ -241,7 +242,7 @@ impl Finder {
     }
 
     fn get_cmp_by_type(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive {
+        return if self.settings.sort_case_insensitive() {
             Self::cmp_by_type_ci
         } else {
             Self::cmp_by_type
@@ -265,7 +266,7 @@ impl Finder {
     }
 
     fn get_cmp_by_last_mod(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive {
+        return if self.settings.sort_case_insensitive() {
             Self::cmp_by_last_mod_ci
         } else {
             Self::cmp_by_last_mod
@@ -273,14 +274,14 @@ impl Finder {
     }
 
     pub fn sort_file_results(&self, file_results: &mut Vec<FileResult>) {
-        match self.settings.sort_by {
+        match self.settings.sort_by() {
             SortBy::FileName => file_results.sort_by(self.get_cmp_by_name()),
             SortBy::FileSize => file_results.sort_by(self.get_cmp_by_size()),
             SortBy::FileType => file_results.sort_by(self.get_cmp_by_type()),
             SortBy::LastMod => file_results.sort_by(self.get_cmp_by_last_mod()),
             _ => file_results.sort_by(self.get_cmp_by_path()),
         }
-        if self.settings.sort_descending {
+        if self.settings.sort_descending() {
             file_results.reverse();
         }
     }
@@ -288,7 +289,7 @@ impl Finder {
     /// Initiate a find session for the given settings and get the matching files
     pub fn find(&self) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
-        for p in self.settings.paths.iter() {
+        for p in self.settings.paths().iter() {
             let ep = FileUtil::expand_path(p);
             for entry in WalkDir::new(&ep)
                 .into_iter()
@@ -386,7 +387,7 @@ mod tests {
         let filesize: u64 = 1000;
         let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
-            Err(error) => 0,
+            Err(_error) => 0,
         };
         let fr = FileResult::new(path, file_name, FileType::Code, filesize,
                                    mod_time);
@@ -423,7 +424,7 @@ mod tests {
         assert!(!finder.filter_file(&fr));
 
         let mut settings = get_default_test_settings();
-        settings.include_archives = true;
+        settings.set_include_archives(true);
         let finder = Finder::new(settings).ok().unwrap();
 
         let path = String::from(".");
@@ -462,7 +463,7 @@ mod tests {
         let file_size: u64 = 1000;
         let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
-            Err(error) => 0,
+            Err(_error) => 0,
         };
         let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
                                           mod_time);
@@ -590,7 +591,7 @@ mod tests {
             String::from("../../shared")
         };
         settings.add_path(pathstring);
-        settings.include_archives = true;
+        settings.set_include_archives(true);
         let finder = Finder::new(settings).ok().unwrap();
 
         let file_results = finder.find();

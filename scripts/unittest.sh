@@ -362,8 +362,8 @@ unittest_rust () {
     # Run cargo test
     log "Unit-testing rsfind"
     cd "$RSFIND_PATH"
-    log "cargo test"
-    cargo test
+    log "cargo test --package rsfind --bin rsfind"
+    cargo test --package rsfind --bin rsfind
     cd -
 }
 

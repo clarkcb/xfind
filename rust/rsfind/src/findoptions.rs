@@ -10,7 +10,7 @@ use crate::config::Config;
 use crate::filetypes::FileTypes;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
-use crate::findsettings::sort_by_from_name;
+use crate::sortby::sort_by_from_name;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct FindOption {
@@ -73,7 +73,7 @@ impl FindOptions {
 
     pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
         let mut settings = FindSettings::default();
-        settings.list_files = true; // default to true when running from main
+        settings.set_list_files(true); // default to true when running from main
         match serde_json::from_str(json_string) {
             Ok(value) => {
                 if let Err(error) = self.settings_from_value(&value, &mut settings) {
@@ -149,38 +149,38 @@ impl FindOptions {
     ) -> Result<FindSettings, FindError> {
         args.next(); // the first arg is assumed to be the executable name/path
         let mut settings = FindSettings::default();
-        settings.list_files = true; // default to true when running from main
+        settings.set_list_files(true); // default to true when running from main
 
         let long_map = self.get_long_map();
 
         loop {
-            if settings.print_usage || settings.print_version {
+            if settings.print_usage() || settings.print_version() {
                 return Ok(settings);
             }
             match args.next() {
-                Some(nextarg) if nextarg.starts_with("-") => {
-                    let longarg = nextarg.trim_start_matches('-');
-                    match long_map.get(longarg) {
+                Some(next_arg) if next_arg.starts_with("-") => {
+                    let long_arg = next_arg.trim_start_matches('-');
+                    match long_map.get(long_arg) {
                         Some(arg) if arg == "settings-file" => match args.next() {
-                            Some(argval) => match self.settings_from_file(&argval) {
+                            Some(arg_val) => match self.settings_from_file(&arg_val) {
                                 Ok(file_settings) => settings = file_settings,
                                 Err(error) => return Err(error),
                             },
                             None => {
                                 return Err(FindError::new(
-                                    format!("Missing value for option {}", &nextarg).as_str(),
+                                    format!("Missing value for option {}", &next_arg).as_str(),
                                 ));
                             }
                         },
                         Some(arg) if self.arg_map.contains_key(arg) => match args.next() {
-                            Some(argval) => {
-                                if let Err(error) = self.apply_arg(arg, &argval, &mut settings) {
+                            Some(arg_val) => {
+                                if let Err(error) = self.apply_arg(arg, &arg_val, &mut settings) {
                                     return Err(error);
                                 }
-                            },
+                            }
                             None => {
                                 return Err(FindError::new(
-                                    format!("Missing value for option {}", &nextarg).as_str(),
+                                    format!("Missing value for option {}", &next_arg).as_str(),
                                 ));
                             }
                         },
@@ -191,11 +191,11 @@ impl FindOptions {
                         },
                         _ => {
                             return Err(FindError::new(
-                                format!("Invalid option: {}", &nextarg).as_str(),
+                                format!("Invalid option: {}", &next_arg).as_str(),
                             ))
                         }
                     }
-                },
+                }
                 Some(nextarg) => {
                     // settings.startpath = String::from(nextarg);
                     if let Err(error) = self.apply_arg("path", &nextarg, &mut settings) {
@@ -267,18 +267,18 @@ impl FindOptions {
 
     fn apply_arg(
         &self,
-        argname: &str,
+        arg_name: &str,
         s: &str,
         settings: &mut FindSettings,
     ) -> Result<(), FindError> {
-        match self.arg_map.get(argname) {
+        return match self.arg_map.get(arg_name) {
             Some(arg_fn) => match arg_fn(&s, settings) {
-                Ok(_) => return Ok(()),
-                Err(error) => return Err(error),
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
             },
             None => {
-                return Err(FindError::new(
-                    format!("Invalid option: {}", argname).as_str(),
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
                 ))
             }
         }
@@ -286,18 +286,18 @@ impl FindOptions {
 
     fn apply_flag(
         &self,
-        argname: &str,
+        arg_name: &str,
         b: bool,
         settings: &mut FindSettings,
     ) -> Result<(), FindError> {
-        match self.flag_map.get(argname) {
+        return match self.flag_map.get(arg_name) {
             Some(arg_fn) => match arg_fn(b, settings) {
-                Ok(_) => return Ok(()),
-                Err(error) => return Err(error),
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
             },
             None => {
-                return Err(FindError::new(
-                    format!("Invalid option: {}", argname).as_str(),
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
                 ))
             }
         }
@@ -349,7 +349,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             let res = timestamp_from_date_string(s);
             match res {
                 Ok(t) => {
-                    settings.max_last_mod = t as u64;
+                    settings.set_max_last_mod(t as u64);
                     Ok(())
                 },
                 Err(_) => {
@@ -361,7 +361,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
     arg_map.insert(
         "maxsize".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.max_size = s.parse::<u64>().unwrap())
+            Ok(settings.set_max_size(s.parse::<u64>().unwrap()))
         }),
     );
     arg_map.insert(
@@ -370,7 +370,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             let res = timestamp_from_date_string(s);
             match res {
                 Ok(t) => {
-                    settings.min_last_mod = t as u64;
+                    settings.set_min_last_mod(t as u64);
                     Ok(())
                 },
                 Err(_) => {
@@ -382,7 +382,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
     arg_map.insert(
         "minsize".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.min_size = s.parse::<u64>().unwrap())
+            Ok(settings.set_min_size(s.parse::<u64>().unwrap()))
         }),
     );
     arg_map.insert(
@@ -425,13 +425,13 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
     arg_map.insert(
         "path".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.paths.push(s.to_string()))
+            Ok(settings.add_path(s.to_string()))
         }),
     );
     arg_map.insert(
         "sort-by".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.sort_by = sort_by_from_name(s))
+            Ok(settings.set_sort_by(sort_by_from_name(s)))
         }),
     );
     arg_map
@@ -449,63 +449,63 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     );
     flag_map.insert(
         "excludearchives".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.include_archives = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_archives(!b))),
     );
     flag_map.insert(
         "excludehidden".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.exclude_hidden = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_exclude_hidden(b))),
     );
     flag_map.insert(
         "help".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.print_usage = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_usage(b))),
     );
     flag_map.insert(
         "includearchives".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.include_archives = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_archives(b))),
     );
     flag_map.insert(
         "includehidden".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.exclude_hidden = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_exclude_hidden(!b))),
     );
     flag_map.insert(
         "listdirs".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.list_dirs = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_dirs(b))),
     );
     flag_map.insert(
         "listfiles".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.list_files = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_files(b))),
     );
     flag_map.insert(
         "norecursive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.recursive = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(!b))),
     );
     flag_map.insert(
         "recursive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.recursive = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(b))),
     );
     flag_map.insert(
         "sort-ascending".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_descending = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_descending(!b))),
     );
     flag_map.insert(
         "sort-caseinsensitive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_case_insensitive = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_case_insensitive(b))),
     );
     flag_map.insert(
         "sort-casesensitive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_case_insensitive = !b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_case_insensitive(!b))),
     );
     flag_map.insert(
         "sort-descending".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.sort_descending = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_descending(b))),
     );
     flag_map.insert(
         "verbose".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.verbose = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_verbose(b))),
     );
     flag_map.insert(
         "version".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.print_version = b)),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_version(b))),
     );
     flag_map
 }
@@ -543,29 +543,29 @@ mod tests {
         let settings = result.ok().unwrap();
 
         // verify these defaults
-        assert_eq!(settings.include_archives, false);
-        assert_eq!(settings.list_dirs, false);
-        assert_eq!(settings.list_files, true);
+        assert_eq!(settings.include_archives(), false);
+        assert_eq!(settings.list_dirs(), false);
+        assert_eq!(settings.list_files(), true);
 
-        assert_eq!(settings.in_extensions.len(), 2);
-        assert_eq!(settings.in_extensions[0], String::from("php"));
-        assert_eq!(settings.in_extensions[1], String::from("rs"));
-        assert_eq!(settings.out_dir_patterns.len(), 1);
+        assert_eq!(settings.in_extensions().len(), 2);
+        assert_eq!(settings.in_extensions()[0], String::from("php"));
+        assert_eq!(settings.in_extensions()[1], String::from("rs"));
+        assert_eq!(settings.out_dir_patterns().len(), 1);
         assert_eq!(
-            settings.out_dir_patterns[0].to_string(),
+            settings.out_dir_patterns()[0].to_string(),
             String::from("debug")
         );
-        assert_eq!(settings.in_file_patterns.len(), 1);
+        assert_eq!(settings.in_file_patterns().len(), 1);
         assert_eq!(
-            settings.in_file_patterns[0].to_string(),
+            settings.in_file_patterns()[0].to_string(),
             String::from("find")
         );
-        assert_eq!(settings.in_file_types.len(), 1);
-        assert_eq!(settings.in_file_types[0], FileType::Code);
-        assert!(settings.debug);
-        assert!(settings.verbose);
-        assert_eq!(settings.paths.len(), 1);
-        assert_eq!(settings.paths[0], String::from("."));
+        assert_eq!(settings.in_file_types().len(), 1);
+        assert_eq!(settings.in_file_types()[0], FileType::Code);
+        assert!(settings.debug());
+        assert!(settings.verbose());
+        assert_eq!(settings.paths().len(), 1);
+        assert_eq!(settings.paths()[0], String::from("."));
     }
 
     #[test]
@@ -592,24 +592,24 @@ mod tests {
 
         match options.settings_from_json(&json.to_string()) {
             Ok(settings) => {
-                assert!(settings.debug);
-                assert_eq!(settings.in_extensions.len(), 2);
-                assert_eq!(settings.in_extensions[0], String::from("js"));
-                assert_eq!(settings.in_extensions[1], String::from("ts"));
-                assert!(!settings.exclude_hidden);
-                assert_eq!(settings.out_dir_patterns.len(), 1);
+                assert!(settings.debug());
+                assert_eq!(settings.in_extensions().len(), 2);
+                assert_eq!(settings.in_extensions()[0], String::from("js"));
+                assert_eq!(settings.in_extensions()[1], String::from("ts"));
+                assert!(!settings.exclude_hidden());
+                assert_eq!(settings.out_dir_patterns().len(), 1);
                 assert_eq!(
-                    settings.out_dir_patterns[0].to_string(),
+                    settings.out_dir_patterns()[0].to_string(),
                     String::from("node_module")
                 );
-                assert_eq!(settings.out_file_patterns.len(), 1);
+                assert_eq!(settings.out_file_patterns().len(), 1);
                 assert_eq!(
-                    settings.out_file_patterns[0].to_string(),
+                    settings.out_file_patterns()[0].to_string(),
                     String::from("temp")
                 );
-                assert_eq!(settings.paths.len(), 1);
-                assert_eq!(settings.paths[0], String::from("~/src/xfind/"));
-                assert!(settings.verbose);
+                assert_eq!(settings.paths().len(), 1);
+                assert_eq!(settings.paths()[0], String::from("~/src/xfind/"));
+                assert!(settings.verbose());
             },
             Err(error) => {
                 log(&error.to_string());
@@ -639,21 +639,21 @@ mod tests {
         let args: Vec<String> = args.into_iter().map(|a| a.to_string()).collect();
         match options.settings_from_args(args.iter()) {
             Ok(settings) => {
-                assert!(settings.debug);
-                assert!(settings.exclude_hidden);
-                assert_eq!(settings.in_extensions.len(), 2);
-                assert_eq!(settings.in_extensions[0], String::from("js"));
-                assert_eq!(settings.in_extensions[1], String::from("ts"));
-                assert!(settings.list_dirs);
-                assert!(settings.list_files);
-                assert!(settings.out_dir_patterns.len() > 7);
-                assert_eq!(settings.out_dir_patterns[0].to_string(), String::from("_"));
-                assert_eq!(settings.paths.len(), 1);
+                assert!(settings.debug());
+                assert!(settings.exclude_hidden());
+                assert_eq!(settings.in_extensions().len(), 2);
+                assert_eq!(settings.in_extensions()[0], String::from("js"));
+                assert_eq!(settings.in_extensions()[1], String::from("ts"));
+                assert!(settings.list_dirs());
+                assert!(settings.list_files());
+                assert!(settings.out_dir_patterns().len() > 7);
+                assert_eq!(settings.out_dir_patterns()[0].to_string(), String::from("_"));
+                assert_eq!(settings.paths().len(), 1);
                 assert_eq!(
-                    settings.paths[0],
+                    settings.paths()[0],
                     String::from("~/src/xfind/")
                 );
-                assert!(settings.verbose);
+                assert!(settings.verbose());
             },
             Err(error) => {
                 log(&error.to_string());

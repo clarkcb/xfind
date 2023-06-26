@@ -64,7 +64,7 @@ mod tests {
     fn test_find_file_abs_path() {
         let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
-            Err(error) => 0,
+            Err(_error) => 0,
         };
         let fr = FileResult::new(
             "~/src/xfind/rust/rsfind/src".to_string(),

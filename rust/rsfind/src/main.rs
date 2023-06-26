@@ -15,6 +15,7 @@ pub mod finderror;
 pub mod fileresult;
 pub mod findoptions;
 pub mod findsettings;
+pub mod sortby;
 
 fn print_error(error: FindError, options: &findoptions::FindOptions) {
     log(format!("\nERROR: {}", error.description).as_str());
@@ -61,14 +62,14 @@ fn find(args: Iter<String>) {
 
     match options.settings_from_args(args) {
         Ok(settings) => {
-            if settings.debug {
+            if settings.debug() {
                 log(format!("settings: {:?}", settings).as_str());
             }
-            if settings.print_usage {
+            if settings.print_usage() {
                 options.print_usage();
                 process::exit(0);
             }
-            if settings.print_version {
+            if settings.print_version() {
                 options.print_version();
                 process::exit(0);
             }
@@ -83,10 +84,10 @@ fn find(args: Iter<String>) {
 
             match finder.find() {
                 Ok(file_results) => {
-                    if finder.settings.list_dirs {
+                    if finder.settings.list_dirs() {
                         print_matching_dirs(&file_results);
                     }
-                    if finder.settings.list_files {
+                    if finder.settings.list_files() {
                         print_matching_files(&file_results);
                     }
                 }
