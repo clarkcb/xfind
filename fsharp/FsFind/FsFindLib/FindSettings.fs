@@ -1,99 +1,70 @@
 ﻿namespace FsFind
 
+open System
 open System.Text.RegularExpressions
 
-module FindSettings =
-    type t = {
-        ArchivesOnly : bool;
-        Debug : bool;
-        ExcludeHidden : bool;
-        InArchiveExtensions : string list;
-        InArchiveFilePatterns : Regex list;
-        InDirPatterns : Regex list;
-        InExtensions : string list;
-        InFilePatterns : Regex list;
-        InFileTypes : FileType list;
-        IncludeArchives : bool;
-        ListDirs : bool;
-        ListFiles : bool;
-        MaxLastMod : System.DateTime option;
-        MaxSize : int;
-        MinLastMod : System.DateTime option;
-        MinSize : int;
-        OutArchiveExtensions : string list;
-        OutArchiveFilePatterns : Regex list;
-        OutDirPatterns : Regex list;
-        OutExtensions : string list;
-        OutFilePatterns : Regex list;
-        OutFileTypes : FileType list;
-        Paths : string list;
-        PrintUsage : bool;
-        PrintVersion : bool;
-        Recursive : bool;
-        SortBy : SortBy;
-        SortCaseInsensitive : bool;
-        SortDescending : bool;
-        Verbose : bool
-    }
+type FindSettings() =
+    let mutable _archivesOnly : bool = false
+    let mutable _debug : bool = false
 
-    let DefaultSettings = {
-        ArchivesOnly = false;
-        Debug = false;
-        ExcludeHidden = true;
-        InArchiveExtensions = [];
-        InArchiveFilePatterns = [];
-        InDirPatterns = [];
-        InExtensions = [];
-        InFilePatterns = [];
-        InFileTypes = [];
-        IncludeArchives = false;
-        ListDirs = false;
-        ListFiles = false;
-        MaxLastMod = None;
-        MaxSize = 0;
-        MinLastMod = None;
-        MinSize = 0;
-        OutArchiveExtensions = [];
-        OutArchiveFilePatterns = [];
-        OutDirPatterns = [];
-        OutExtensions = [];
-        OutFilePatterns = [];
-        OutFileTypes = [];
-        Paths = [];
-        PrintUsage = false;
-        PrintVersion = false;
-        Recursive = true;
-        SortBy = SortBy.FilePath;
-        SortCaseInsensitive = false;
-        SortDescending = false;
-        Verbose = false
-    }
+    member this.ArchivesOnly
+        with get () = _archivesOnly
+        and set value =
+            _archivesOnly <- value
+            if value then
+                this.IncludeArchives <- value
 
-    let AddExtensions (exts : string) (extList : string list) : string list =
+    member this.Debug
+        with get () = _debug
+        and set value =
+            _debug <- value
+            this.Verbose <- value
+
+
+    member val ExcludeHidden : bool = true with get, set
+    member val InArchiveExtensions : string list = [] with get, set
+    member val InArchiveFilePatterns : Regex list = [] with get, set
+    member val InDirPatterns : Regex list = [] with get, set
+    member val InExtensions : string list = [] with get, set
+    member val InFilePatterns : Regex list = [] with get, set
+    member val InFileTypes : FileType list = [] with get, set
+    member val IncludeArchives : bool = false with get, set
+    member val ListDirs : bool = false with get, set
+    member val ListFiles : bool = false with get, set
+    member val MaxLastMod : DateTime option = None with get, set
+    member val MaxSize : int = 0 with get, set
+    member val MinLastMod : DateTime option = None with get, set
+    member val MinSize : int = 0 with get, set
+    member val OutArchiveExtensions : string list = [] with get, set
+    member val OutArchiveFilePatterns : Regex list = [] with get, set
+    member val OutDirPatterns : Regex list = [] with get, set
+    member val OutExtensions : string list = [] with get, set
+    member val OutFilePatterns : Regex list = [] with get, set
+    member val OutFileTypes : FileType list = [] with get, set
+    member val Paths : string list = [] with get, set
+    member val PrintUsage : bool = false with get, set
+    member val PrintVersion : bool = false with get, set
+    member val Recursive : bool = true with get, set
+    member val SortBy : SortBy = SortBy.FilePath with get, set
+    member val SortCaseInsensitive : bool = false with get, set
+    member val SortDescending : bool = false with get, set
+    member val Verbose : bool = false with get, set
+    
+    member this.AddExtensions (exts : string) (extList : string list) : string list =
         List.append extList (FileUtil.ExtensionsListFromString exts)
 
-    let AddPath (path : string) (settings : t) : t =
-        { settings with Paths=(List.append settings.Paths [path]) }
+    member this.AddPath (path : string) (paths : string list) : string list =
+        List.append paths [path]
 
-    let AddPattern (pattern : string) (patternList : Regex list) : Regex list =
+    member this.AddPattern (pattern : string) (patternList : Regex list) : Regex list =
         List.append patternList [Regex(pattern, RegexOptions.Compiled)]
 
-    let SetArchivesOnly (archivesOnly : bool) (settings : t) : t =
-        match archivesOnly with
-        | true -> { settings with ArchivesOnly=true; IncludeArchives=true }
-        | _ -> { settings with ArchivesOnly=false }
-
-    let SetDebug (debug : bool) (settings : t) : t =
-        match debug with
-        | true -> { settings with Debug=true; Verbose=true }
-        | _ -> { settings with Debug=false }
-
-    let DateTimeOptionListToString (dt : System.DateTime option) : string =
+    member this.DateTimeOptionListToString (dt : DateTime option) : string =
         match dt with
         | Some(d) -> $"\"%s{d.ToString()}\""
         | None    -> "0"
 
-    let FileTypesListToString (lst : FileType list) : string = 
+    member this.FileTypesListToString (lst : FileType list) : string = 
         let rec recListToString (acc : string) (lst : FileType list) =
             match lst with
             | []     -> acc.Trim()
@@ -101,39 +72,49 @@ module FindSettings =
             | h :: t -> (recListToString (acc + " \"" + (FileTypes.ToName h) + "\";") t) in
         sprintf "[%s]" (recListToString "" lst)
 
-    let ToString settings =
+    member this.FileTypesListFromString (fts : string) : FileType list =
+        let nonWord = Regex(@"\W+")
+        nonWord.Split(fts)
+        |> Array.toList
+        |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
+        |> List.map (fun (x : string) -> FileTypes.FromName x)
+
+    member this.AddFileTypes (fts : string) (ftList : FileType list) : FileType list =
+        List.append ftList (this.FileTypesListFromString fts)
+
+    member this.ToString =
         String.concat "" [
             "FindSettings(";
-            $"ArchivesOnly: %b{settings.ArchivesOnly}";
-            $", Debug: %b{settings.Debug}";
-            $", ExcludeHidden: %b{settings.ExcludeHidden}";
-            $", InArchiveExtensions: %s{Common.list_to_string(settings.InArchiveExtensions)}";
-            $", InArchiveFilePatterns: %s{Common.list_to_string(settings.InArchiveFilePatterns)}";
-            $", InDirPatterns: %s{Common.list_to_string(settings.InDirPatterns)}";
-            $", InExtensions: %s{Common.list_to_string(settings.InExtensions)}";
-            $", InFilePatterns: %s{Common.list_to_string(settings.InFilePatterns)}";
-            $", InFileTypes: %s{FileTypesListToString settings.InFileTypes}";
-            $", IncludeArchives: %b{settings.IncludeArchives}";
-            $", ListDirs: %b{settings.ListDirs}";
-            $", ListFiles: %b{settings.ListFiles}";
-            $", MaxLastMod: %s{DateTimeOptionListToString settings.MaxLastMod}";
-            $", MaxSize: %i{settings.MaxSize}";
-            $", MinLastMod: %s{DateTimeOptionListToString settings.MinLastMod}";
-            $", MinSize: %i{settings.MinSize}";
-            $", OutArchiveExtensions: %s{Common.list_to_string(settings.OutArchiveExtensions)}";
-            $", OutArchiveFilePatterns: %s{Common.list_to_string(settings.OutArchiveFilePatterns)}";
-            $", OutDirPatterns: %s{Common.list_to_string(settings.OutDirPatterns)}";
-            $", OutExtensions: %s{Common.list_to_string(settings.OutExtensions)}";
-            $", OutFilePatterns: %s{Common.list_to_string(settings.OutFilePatterns)}";
-            $", OutFileTypes: %s{FileTypesListToString settings.OutFileTypes}";
-            $", Paths: %s{Common.list_to_string(settings.Paths)}";
-            $", PrintUsage: %b{settings.PrintUsage}";
-            $", PrintVersion: %b{settings.PrintVersion}";
-            $", Recursive: %b{settings.Recursive}";
-            $", SortBy: %s{SortUtil.NameFromSortBy(settings.SortBy)}";
-            $", SortCaseInsensitive: %b{settings.SortCaseInsensitive}";
-            $", SortDescending: %b{settings.SortDescending}";
-            $", Verbose: %b{settings.Verbose}";
+            $"ArchivesOnly: %b{this.ArchivesOnly}";
+            $", Debug: %b{this.Debug}";
+            $", ExcludeHidden: %b{this.ExcludeHidden}";
+            $", InArchiveExtensions: %s{Common.ListToString(this.InArchiveExtensions)}";
+            $", InArchiveFilePatterns: %s{Common.ListToString(this.InArchiveFilePatterns)}";
+            $", InDirPatterns: %s{Common.ListToString(this.InDirPatterns)}";
+            $", InExtensions: %s{Common.ListToString(this.InExtensions)}";
+            $", InFilePatterns: %s{Common.ListToString(this.InFilePatterns)}";
+            $", InFileTypes: %s{this.FileTypesListToString this.InFileTypes}";
+            $", IncludeArchives: %b{this.IncludeArchives}";
+            $", ListDirs: %b{this.ListDirs}";
+            $", ListFiles: %b{this.ListFiles}";
+            $", MaxLastMod: %s{this.DateTimeOptionListToString this.MaxLastMod}";
+            $", MaxSize: %i{this.MaxSize}";
+            $", MinLastMod: %s{this.DateTimeOptionListToString this.MinLastMod}";
+            $", MinSize: %i{this.MinSize}";
+            $", OutArchiveExtensions: %s{Common.ListToString(this.OutArchiveExtensions)}";
+            $", OutArchiveFilePatterns: %s{Common.ListToString(this.OutArchiveFilePatterns)}";
+            $", OutDirPatterns: %s{Common.ListToString(this.OutDirPatterns)}";
+            $", OutExtensions: %s{Common.ListToString(this.OutExtensions)}";
+            $", OutFilePatterns: %s{Common.ListToString(this.OutFilePatterns)}";
+            $", OutFileTypes: %s{this.FileTypesListToString this.OutFileTypes}";
+            $", Paths: %s{Common.ListToString(this.Paths)}";
+            $", PrintUsage: %b{this.PrintUsage}";
+            $", PrintVersion: %b{this.PrintVersion}";
+            $", Recursive: %b{this.Recursive}";
+            $", SortBy: %s{SortUtil.NameFromSortBy(this.SortBy)}";
+            $", SortCaseInsensitive: %b{this.SortCaseInsensitive}";
+            $", SortDescending: %b{this.SortDescending}";
+            $", Verbose: %b{this.Verbose}";
             ")"
         ]
 ;;

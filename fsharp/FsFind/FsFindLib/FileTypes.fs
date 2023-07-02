@@ -26,25 +26,25 @@ type FileTypes() =
         let fileTypeExtDictionary = Dictionary<string, ISet<string>>()
         let fileTypeNameDictionary = Dictionary<string, ISet<string>>()
         let filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(jsonString)
-        let filetypeDicts = filetypesDict.["filetypes"]
+        let filetypeDicts = filetypesDict["filetypes"]
         for filetypeDict in filetypeDicts do
-            let typeName = (filetypeDict.["type"] :?> JsonElement).GetString()
+            let typeName = (filetypeDict["type"] :?> JsonElement).GetString()
             let extensions =
-                [ for x in (filetypeDict.["extensions"] :?> JsonElement).EnumerateArray() do
+                [ for x in (filetypeDict["extensions"] :?> JsonElement).EnumerateArray() do
                     yield "." + x.GetString() ]
             fileTypeExtDictionary.Add(typeName, HashSet<String>(extensions))
             let names =
-                [ for x in (filetypeDict.["names"] :?> JsonElement).EnumerateArray() do
+                [ for x in (filetypeDict["names"] :?> JsonElement).EnumerateArray() do
                     yield x.GetString() ]
             fileTypeNameDictionary.Add(typeName, HashSet<String>(names))
-        let allTextExts = HashSet<String>(fileTypeExtDictionary.[text])
-        allTextExts.UnionWith(fileTypeExtDictionary.[code])
-        allTextExts.UnionWith(fileTypeExtDictionary.[xml])
+        let allTextExts = HashSet<String>(fileTypeExtDictionary[text])
+        allTextExts.UnionWith(fileTypeExtDictionary[code])
+        allTextExts.UnionWith(fileTypeExtDictionary[xml])
         if fileTypeExtDictionary.Remove(text) then
             fileTypeExtDictionary.Add(text, allTextExts)
-        let allTextNames = HashSet<String>(fileTypeNameDictionary.[text])
-        allTextNames.UnionWith(fileTypeNameDictionary.[code])
-        allTextNames.UnionWith(fileTypeNameDictionary.[xml])
+        let allTextNames = HashSet<String>(fileTypeNameDictionary[text])
+        allTextNames.UnionWith(fileTypeNameDictionary[code])
+        allTextNames.UnionWith(fileTypeNameDictionary[xml])
         if fileTypeNameDictionary.Remove(text) then
             fileTypeNameDictionary.Add(text, allTextNames)
         (fileTypeExtDictionary, fileTypeNameDictionary)
@@ -83,25 +83,25 @@ type FileTypes() =
         else FileType.Unknown
 
     member this.IsArchiveFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary.[archive] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary.[archive]
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[archive] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[archive]
 
     member this.IsBinaryFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary.[binary] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary.[binary]
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[binary] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[binary]
 
     member this.IsCodeFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary.[code] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary.[code]
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[code] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[code]
 
     member this.IsTextFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary.[text] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary.[text]
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[text] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[text]
 
     member this.IsUnknownFile (f : FileInfo) : bool =
         (this.GetFileType f) = FileType.Unknown
 
     member this.IsXmlFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary.[xml] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary.[xml]
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[xml] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[xml]
     ;;

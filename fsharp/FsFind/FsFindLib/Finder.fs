@@ -4,7 +4,7 @@ open System
 open System.IO
 open System.Text.RegularExpressions
 
-type Finder (settings : FindSettings.t) =
+type Finder (settings : FindSettings) =
     let _fileTypes = FileTypes()
 
     // member methods
@@ -13,6 +13,8 @@ type Finder (settings : FindSettings.t) =
             (if List.isEmpty settings.Paths then (Some "Startpath not defined") else None);
             (if (List.exists (fun p -> not (Directory.Exists(p)) && not (File.Exists(p))) settings.Paths)
              then (Some "Startpath not found") else None);
+            (if settings.MaxSize < 0 then (Some "Invalid maxsize") else None);
+            (if settings.MinSize < 0 then (Some "Invalid minsize") else None);
         ]
         |> List.choose id
 
@@ -25,7 +27,7 @@ type Finder (settings : FindSettings.t) =
     member this.IsMatchingDir (d : DirectoryInfo) : bool =
         let elems = d.FullName.Split('/', '\\') |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
         (not settings.ExcludeHidden ||
-         not (Seq.exists (FileUtil.IsHidden) elems)) &&
+         not (Seq.exists FileUtil.IsHidden elems)) &&
         (Seq.isEmpty settings.InDirPatterns ||
          this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
         (Seq.isEmpty settings.OutDirPatterns ||
@@ -141,13 +143,13 @@ type Finder (settings : FindSettings.t) =
             Common.Log "\nMatching directories: 0"
 
 
-    member this.GetMatchingFiles (findFiles : FileResult.t list) : FileInfo list = 
-        findFiles
+    member this.GetMatchingFiles (fileResults : FileResult.t list) : FileInfo list = 
+        fileResults
         |> Seq.map (fun f -> f.File)
         |> List.ofSeq
 
-    member this.PrintMatchingFiles (findFiles : FileResult.t list) : unit = 
-        let files = this.GetMatchingFiles findFiles
+    member this.PrintMatchingFiles (fileResults : FileResult.t list) : unit = 
+        let files = this.GetMatchingFiles fileResults
         if files.Length > 0 then
             Common.Log $"\nMatching files (%d{files.Length}):"
             for f in files do

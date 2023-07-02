@@ -89,3 +89,10 @@ type FileTypesTests () =
         let xmlFile = FileInfo("markup.xml")
         Assert.IsTrue(this.FileTypes.IsXmlFile(xmlFile))
         ()
+
+    // [<Test>]
+    // member this.IsSearchableFile_XmlFile_True () =
+    //     printfn "IsSearchableFile_XmlFile_True"
+    //     let xmlFile = FileInfo("markup.xml")
+    //     Assert.IsTrue(this.FileTypes.IsSearchableFile(xmlFile))
+    //     ()

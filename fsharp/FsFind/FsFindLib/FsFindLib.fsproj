@@ -17,11 +17,8 @@
     <Compile Include="FindOptions.fs" />
     <Compile Include="Finder.fs" />
     <None Remove="Resources\filetypes.json" />
-    <None Remove="Resources\filetypes.xml" />
     <None Remove="Resources\findoptions.json" />
-    <None Remove="Resources\findoptions.xml" />
     <EmbeddedResource Include="Resources\filetypes.json" />
-    <EmbeddedResource Include="Resources\filetypes.xml" />
     <EmbeddedResource Include="Resources\findoptions.json" />
     <EmbeddedResource Include="Resources\findoptions.xml" />
   </ItemGroup>

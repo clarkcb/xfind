@@ -45,37 +45,37 @@ module FileUtil =
         let dirSep =
             if path1.IndexOf(backSlash) > -1 then backSlash else forwardSlash
         let p2 =
-            if path2.[0] = forwardSlash || path2.[0] = backSlash then path2.Substring(1) else path2
+            if path2[0] = forwardSlash || path2[0] = backSlash then path2.Substring(1) else path2
         String.Format("{0}{1}{2}", NormalizePath path1, dirSep, p2)
 
     let ExpandPath (filePath : string) : string =
-        if filePath.[0] = '~' then JoinPath (GetHomePath()) (filePath.Substring(1))
+        if filePath[0] = '~' then JoinPath (GetHomePath()) (filePath.Substring(1))
         else filePath
 
     let ContractPath (filePath : string) : string =
-        if filePath.[0] = '~' then filePath 
+        if filePath[0] = '~' then filePath 
         else filePath.Replace(GetHomePath(), "~")
 
     let GetRelativePath (fullPath : string) (startPath : string) : string =
-        let startFullPath = NormalizePath (new DirectoryInfo (startPath)).FullName
+        let startFullPath = NormalizePath (DirectoryInfo startPath).FullName
         let normStartPath = NormalizePath startPath
         if startFullPath <> normStartPath
         then fullPath.Replace (startFullPath, normStartPath)
         else fullPath
 
     let ContractOrRelativePath (fullPath : string) (startPath : string) : string =
-        if startPath.[0] = '~' then ContractPath fullPath 
+        if startPath[0] = '~' then ContractPath fullPath 
         else GetRelativePath fullPath startPath
         
     let IsDotDir (filePath : string): bool = dotDirs.Contains(filePath)
 
     let IsHidden (filePath : string) : bool = 
-        let startsWithDot = filePath.[0] = '.' && not (IsDotDir filePath)
+        let startsWithDot = filePath[0] = '.' && not (IsDotDir filePath)
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
         startsWithDot
 
     let IsHiddenFile (f : FileSystemInfo) : bool = 
-        (f.Name.[0] = '.' && not (IsDotDir f.Name)) ||
+        (f.Name[0] = '.' && not (IsDotDir f.Name)) ||
         (f.Exists && (f.Attributes &&& FileAttributes.Hidden) = FileAttributes.Hidden)
 
     let ExtensionsListFromString (exts : string) : string list =
@@ -83,6 +83,6 @@ module FileUtil =
         nonWord.Split(exts)
         |> Array.toList
         |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
-        |> List.map (fun (x : string) -> if (x.StartsWith(".")) then x else "." + x)
+        |> List.map (fun (x : string) -> if x.StartsWith(".") then x else "." + x)
 
 ;;

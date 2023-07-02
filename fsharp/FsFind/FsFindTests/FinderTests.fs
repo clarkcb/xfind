@@ -20,8 +20,9 @@ type FinderTests () =
         | :? IOException as e -> raise e
         | :? FindException as e -> raise e
 
-    member this.GetSettings () : FindSettings.t =
-        let settings = { FindSettings.DefaultSettings with Paths = ["."] }
+    member this.GetSettings () : FindSettings =
+        let settings = FindSettings()
+        settings.Paths <- ["."]
         settings
 
 
@@ -51,7 +52,8 @@ type FinderTests () =
 
     [<Test>]
     member this.TestIsMatchingDir_IsHiddenIncludeHidden_True () =
-        let settings = { this.GetSettings() with ExcludeHidden = false }
+        let settings = this.GetSettings()
+        settings.ExcludeHidden <- false
         let finder = Finder(settings)
         Assert.True(finder.IsMatchingDir(DirectoryInfo(".git")))
         ()
@@ -66,7 +68,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingDir_MatchesInPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InDirPatterns = FindSettings.AddPattern "Find" settings.InDirPatterns }
+        settings.InDirPatterns <- settings.AddPattern "Find" settings.InDirPatterns 
         let finder = Finder(settings)
         Assert.True(finder.IsMatchingDir(DirectoryInfo("CsFind")))
         ()
@@ -74,7 +76,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingDir_MatchesOutPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutDirPatterns = FindSettings.AddPattern "Find" settings.OutDirPatterns }
+        settings.OutDirPatterns <- settings.AddPattern "Find" settings.OutDirPatterns 
         let finder = Finder(settings)
         Assert.False(finder.IsMatchingDir(DirectoryInfo("CsFind")))
         ()
@@ -82,7 +84,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingDir_DoesNotMatchInPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InDirPatterns = FindSettings.AddPattern "FindFiles" settings.InDirPatterns }
+        settings.InDirPatterns <- settings.AddPattern "FindFiles" settings.InDirPatterns 
         let finder = Finder(settings)
         Assert.False(finder.IsMatchingDir(DirectoryInfo("CsFind")))
         ()
@@ -90,7 +92,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingDir_DoesNotMatchOutPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutDirPatterns = FindSettings.AddPattern "FindFiles" settings.OutDirPatterns }
+        settings.OutDirPatterns <- settings.AddPattern "FindFiles" settings.OutDirPatterns 
         let finder = Finder(settings)
         let dir = DirectoryInfo("CsFind")
         Assert.True(finder.IsMatchingDir(dir))
@@ -112,7 +114,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_MatchesInExtension_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InExtensions = FindSettings.AddExtensions "cs" settings.InExtensions }
+        settings.InExtensions <- settings.AddExtensions "cs" settings.InExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -122,7 +124,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_DoesNotMatchInExtension_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InExtensions = FindSettings.AddExtensions "java" settings.InExtensions }
+        settings.InExtensions <- settings.AddExtensions "java" settings.InExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -132,7 +134,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_MatchesOutExtension_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutExtensions = FindSettings.AddExtensions "cs" settings.OutExtensions }
+        settings.OutExtensions <- settings.AddExtensions "cs" settings.OutExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -142,7 +144,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_DoesNotMatchOutExtension_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutExtensions = FindSettings.AddExtensions "java" settings.OutExtensions }
+        settings.OutExtensions <- settings.AddExtensions "java" settings.OutExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -152,7 +154,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_MatchesInPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InFilePatterns = FindSettings.AddPattern "Find" settings.InFilePatterns }
+        settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("Finder.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -162,7 +164,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_DoesNotMatchInPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InFilePatterns = FindSettings.AddPattern "Find" settings.InFilePatterns }
+        settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -172,7 +174,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_MatchesOutPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutFilePatterns = FindSettings.AddPattern "Find" settings.OutFilePatterns }
+        settings.OutFilePatterns <- settings.AddPattern "Find" settings.OutFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("Finder.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -182,7 +184,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_DoesNotMatchOutPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutFilePatterns = FindSettings.AddPattern "Find" settings.OutFilePatterns }
+        settings.OutFilePatterns <- settings.AddPattern "Find" settings.OutFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -205,7 +207,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_MatchesInExtension_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "zip" settings.InArchiveExtensions }
+        settings.InArchiveExtensions <- settings.AddExtensions "zip" settings.InArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -215,7 +217,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_DoesNotMatchInExtension_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "gz" settings.InArchiveExtensions }
+        settings.InArchiveExtensions <- settings.AddExtensions "gz" settings.InArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -226,7 +228,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_MatchesOutExtension_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "zip" settings.OutArchiveExtensions }
+        settings.OutArchiveExtensions <- settings.AddExtensions "zip" settings.OutArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -236,7 +238,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_DoesNotMatchOutExtension_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "gz" settings.OutArchiveExtensions }
+        settings.OutArchiveExtensions <- settings.AddExtensions "gz" settings.OutArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -246,7 +248,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_MatchesInPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveFilePatterns = FindSettings.AddPattern "arch" settings.InArchiveFilePatterns }
+        settings.InArchiveFilePatterns <- settings.AddPattern "arch" settings.InArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -256,7 +258,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_DoesNotMatchInPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with InArchiveFilePatterns = FindSettings.AddPattern "archives" settings.InArchiveFilePatterns }
+        settings.InArchiveFilePatterns <- settings.AddPattern "archives" settings.InArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -266,7 +268,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_MatchesOutPattern_False () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveFilePatterns = FindSettings.AddPattern "arch" settings.OutArchiveFilePatterns }
+        settings.OutArchiveFilePatterns <- settings.AddPattern "arch" settings.OutArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -276,7 +278,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingArchiveFile_DoesNotMatchOutPattern_True () =
         let settings = this.GetSettings()
-        let settings = { settings with OutArchiveFilePatterns = FindSettings.AddPattern "archives" settings.OutArchiveFilePatterns }
+        settings.OutArchiveFilePatterns <- settings.AddPattern "archives" settings.OutArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
@@ -297,7 +299,8 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterToFileResult_IsHiddenIncludeHidden_IsSome () =
-        let settings = { this.GetSettings() with ExcludeHidden = false }
+        let settings = this.GetSettings()
+        settings.ExcludeHidden <- false
         let finder = Finder(settings)
         let file = FileInfo(".gitignore")
         let fr = finder.FilterToFileResult file
@@ -315,7 +318,8 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterToFileResult_ArchiveIncludeArchives_IsSome () =
-        let settings = { this.GetSettings() with IncludeArchives = true }
+        let settings = this.GetSettings()
+        settings.IncludeArchives <- true
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let fr = finder.FilterToFileResult file
@@ -324,8 +328,9 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterToFileResult_IsMatchingArchiveFile_IsSome () =
-        let settings = { this.GetSettings() with IncludeArchives = true }
-        let settings = { settings with InArchiveExtensions = FindSettings.AddExtensions "zip" settings.InArchiveExtensions }
+        let settings = this.GetSettings()
+        settings.IncludeArchives <- true
+        settings.InArchiveExtensions <- settings.AddExtensions "zip" settings.InArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let fr = finder.FilterToFileResult file
@@ -334,8 +339,9 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterToFileResult_NotIsMatchingArchiveFile_IsNone () =
-        let settings = { this.GetSettings() with IncludeArchives = true }
-        let settings = { settings with OutArchiveExtensions = FindSettings.AddExtensions "zip" settings.OutArchiveExtensions }
+        let settings = this.GetSettings()
+        settings.IncludeArchives <- true
+        settings.OutArchiveExtensions <- settings.AddExtensions "zip" settings.OutArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let fr = finder.FilterToFileResult file
@@ -344,7 +350,8 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterToFileResult_ArchiveFileArchivesOnly_IsSome () =
-        let settings = { this.GetSettings() with ArchivesOnly = true; IncludeArchives = true }
+        let settings = this.GetSettings()
+        settings.ArchivesOnly <- true
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let fr = finder.FilterToFileResult file
@@ -363,7 +370,7 @@ type FinderTests () =
     [<Test>]
     member this.TestFilterToFileResult_MatchesInExtension_IsSome () =
         let settings = this.GetSettings()
-        let settings = { settings with InExtensions = FindSettings.AddExtensions "cs" settings.InExtensions }
+        settings.InExtensions <- settings.AddExtensions "cs" settings.InExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let fr = finder.FilterToFileResult file
@@ -373,7 +380,7 @@ type FinderTests () =
     [<Test>]
     member this.TestFilterToFileResult_MatchesOutExtension_IsNone () =
         let settings = this.GetSettings()
-        let settings = { settings with OutExtensions = FindSettings.AddExtensions "cs" settings.OutExtensions }
+        settings.OutExtensions <- settings.AddExtensions "cs" settings.OutExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let fr = finder.FilterToFileResult file
@@ -382,7 +389,8 @@ type FinderTests () =
 
     [<Test>]
     member this.TestFilterToFileResult_NonArchiveFileArchivesOnly_IsNone () =
-        let settings = { this.GetSettings() with ArchivesOnly = true; IncludeArchives = true }
+        let settings = this.GetSettings()
+        settings.ArchivesOnly <- true
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
         let fr = finder.FilterToFileResult file

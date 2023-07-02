@@ -6,20 +6,20 @@ module Main =
         Common.Log $"\nERROR: %s{err}"
         FindOptions.Usage(1)
 
-    let Find (settings : FindSettings.t) : unit =
+    let Find (settings : FindSettings) : unit =
         let finder = Finder(settings)
 
         let errs = finder.ValidateSettings()
         if errs.Length > 0 then
             HandleError errs.Head
 
-        let findFiles = finder.Find()
+        let files = finder.Find()
 
         if settings.ListDirs then
-            finder.PrintMatchingDirs findFiles
+            finder.PrintMatchingDirs files
 
         if settings.ListFiles then
-            finder.PrintMatchingFiles findFiles
+            finder.PrintMatchingFiles files
 
 
     [<EntryPoint>]
@@ -33,7 +33,7 @@ module Main =
                 HandleError err
 
             if settings.Debug then
-                Common.Log $"settings: %s{FindSettings.ToString settings}"
+                Common.Log $"settings: %s{settings.ToString}"
 
             if settings.PrintUsage then
                 FindOptions.Usage(0)
