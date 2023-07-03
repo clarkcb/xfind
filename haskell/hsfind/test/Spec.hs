@@ -8,8 +8,6 @@ import HsFind.FindOptionsTest
 import HsFind.FindSettingsTest
 
 import Test.Framework
-import Test.Framework.Providers.HUnit
-import Test.HUnit hiding (Test)
 
 main :: IO ()
 main = do
@@ -43,7 +41,6 @@ main = do
   defaultMain (fileResultTests ++ fileResultWithSizeTests ++ fileTypeTests ++
     fileTypeFromNameTests ++ fileUtilTests ++ isMatchingDirTests ++ isMatchingFileTests ++
     isMatchingArchiveFileTests ++
-    -- filterFileTests ++ settingsFromArgsTests ++ settingsFromNoArgsTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
     defaultFindSettingsTests ++ newExtensionsTests)

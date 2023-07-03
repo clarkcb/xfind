@@ -5,7 +5,6 @@ module HsFind.FindOptionsTest
   , getSettingsFromNoArgsTests
   ) where
 
-import HsFind.Finder
 import HsFind.FindOptions
 import HsFind.FindSettings
 
@@ -16,7 +15,6 @@ import Test.HUnit hiding (Test)
 getSettingsFromNoArgsTests :: IO [Test]
 getSettingsFromNoArgsTests = do
   findOptions <- getFindOptions
-  --let settings = settingsFromArgs findOptions []
   case settingsFromArgs findOptions [] of
     Left errMsg -> return []
     Right settings ->
@@ -36,7 +34,6 @@ getSettingsFromArgsTests :: IO [Test]
 getSettingsFromArgsTests = do
   let args = ["-x","hs","-X","hi,o","."]
   findOptions <- getFindOptions
-  --let settings = settingsFromArgs findOptions args
   case settingsFromArgs findOptions args of
     Left errMsg -> return []
     Right settings ->
@@ -49,7 +46,6 @@ getArchivesOnlyTests :: IO [Test]
 getArchivesOnlyTests = do
   let args = ["--archivesonly"]
   findOptions <- getFindOptions
-  --let settings = settingsFromArgs findOptions args
   case settingsFromArgs findOptions args of
     Left errMsg -> return []
     Right settings ->
@@ -61,7 +57,6 @@ getDebugTests :: IO [Test]
 getDebugTests = do
   let args = ["--debug"]
   findOptions <- getFindOptions
-  --let settings = settingsFromArgs findOptions args
   case settingsFromArgs findOptions args of
     Left errMsg -> return []
     Right settings ->

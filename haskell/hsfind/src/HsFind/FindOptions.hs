@@ -3,6 +3,7 @@ module HsFind.FindOptions (
     FindOption(..)
   , getFindOptions
   , getUsage
+  , parseDateToUtc
   , settingsFromArgs) where
 
 import qualified Data.ByteString.Lazy.Char8 as BC

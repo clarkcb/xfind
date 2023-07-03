@@ -18,9 +18,13 @@ getDefaultFindSettingsTests = do
          , testCase "includeArchives" (includeArchives settings @?= False)
          , testCase "listDirs" (listDirs settings @?= False)
          , testCase "listFiles" (listFiles settings @?= False)
+         , testCase "maxSize" (maxSize settings @?= 0)
+         , testCase "minSize" (minSize settings @?= 0)
          , testCase "printUsage" (printUsage settings @?= False)
          , testCase "printVersion" (printVersion settings @?= False)
          , testCase "recursive" (recursive settings @?= True)
+         , testCase "sortCaseInsensitive" (sortCaseInsensitive settings @?= False)
+         , testCase "sortDescending" (sortDescending settings @?= False)
          , testCase "verbose" (verbose settings @?= False)
          ]
 

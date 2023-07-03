@@ -30,6 +30,12 @@ data FileType = Unknown
               | Xml
   deriving (Show, Eq, Ord)
 
+-- searchableFileTypes :: [FileType]
+-- searchableFileTypes = [Archive, Binary, Code, Text, Xml]
+
+-- isSearchableFileType :: FileType -> Bool
+-- isSearchableFileType t = t `elem` searchableFileTypes
+
 getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =
   case lower typeName of

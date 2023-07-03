@@ -6,29 +6,12 @@ module HsFind.FindSettings
   , SortBy(..)
   ) where
 
-import Data.Char (toLower)
 import Data.List.Split (splitOn)
+import Data.Time (UTCTime)
 
 import HsFind.FileTypes (FileType)
 import HsFind.FileUtil (normalizeExtension)
-import Data.Time (UTCTime)
-
-data SortBy = SortByFilePath
-            | SortByFileName
-            | SortByFileSize
-            | SortByFileType
-            | SortByLastMod
-  deriving (Show, Eq)
-
-getSortByForName :: String -> SortBy
-getSortByForName sortByName =
-  case lower sortByName of
-    "name" -> SortByFileName
-    "size" -> SortByFileSize
-    "type" -> SortByFileType
-    "lastmod" -> SortByLastMod
-    _ -> SortByFilePath
-  where lower = map toLower
+import HsFind.SortBy (SortBy(..), getSortByForName)
 
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool

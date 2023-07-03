@@ -7,6 +7,7 @@ module HsFind.Finder
     , isMatchingArchiveFile
     , isMatchingDir
     , isMatchingFile
+    , validateSettings
     ) where
 
 import Control.Monad (forM)
@@ -25,6 +26,14 @@ import HsFind.FileResult
     (FileResult(..), isArchiveFile, newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
 
+
+-- TODO: need to also validate existence of paths, but since IO is involved, might have to approach differently
+validateSettings :: FindSettings -> [String]
+validateSettings settings = concatMap ($settings) validators
+  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
+                     , \s -> ["Invalid maxsize" | maxSize s < 0]
+                     , \s -> ["Invalid minsize" | maxSize s < 0]
+                     ]
 
 getDirTests :: FindSettings -> [FilePath -> Bool]
 getDirTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests

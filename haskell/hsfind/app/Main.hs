@@ -8,15 +8,9 @@ import System.FilePath (takeDirectory)
 import HsFind.FileResult
 import HsFind.FileUtil (pathExists)
 import HsFind.FindOptions
-import HsFind.Finder (doFind)
+import HsFind.Finder (doFind, validateSettings)
 import HsFind.FindSettings
 
-
--- TODO: need to also validate existence of paths, but since IO is involved, might have to approach differently
-validateSettings :: FindSettings -> [String]
-validateSettings settings = concatMap ($settings) validators
-  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
-                     ]
 
 errsOrUsage :: [FindOption] -> FindSettings -> Maybe String
 errsOrUsage findOptions settings =

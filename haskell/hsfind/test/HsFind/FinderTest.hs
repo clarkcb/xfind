@@ -5,14 +5,11 @@ module HsFind.FinderTest
   , getIsMatchingFileTests
   ) where
 
-import HsFind.Config
--- import HsFind.FileResult
 import HsFind.FileTypes
-import HsFind.FileUtil
 import HsFind.FindSettings
 import HsFind.Finder
 
-import qualified Data.ByteString as B
+-- import qualified Data.ByteString as B
 import Data.Maybe (isJust)
 import Test.Framework
 import Test.Framework.Providers.HUnit (testCase)
