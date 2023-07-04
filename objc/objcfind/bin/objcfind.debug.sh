@@ -6,11 +6,6 @@ then
 fi
 
 OBJCFIND_PATH=$XFIND_PATH/objc/objcfind
+OBJCFIND_EXE=$OBJCFIND_PATH/.build/debug/objcfindApp
 
-# Debug exe location (when compiling from within Xcode)
-#OBJCFINDEXE=$HOME/Library/Developer/Xcode/DerivedData/objcfind-ahhnhqcmbhdevtgqfhmgnnerqaln/Build/Products/Debug/objcfind
-
-# Release exe location (when compiling from command line (scripts/build.sh objc))
-OBJCFIND_EXE=$OBJCFIND_PATH/build/Debug/objcfind
-
-$OBJCFIND_EXE $@
+$OBJCFIND_EXE "$@"
