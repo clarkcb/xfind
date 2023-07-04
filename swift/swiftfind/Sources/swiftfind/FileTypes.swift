@@ -20,12 +20,12 @@ public class FileTypes {
     fileprivate static let unknown = "unknown"
     fileprivate static let xml = "xml"
 
-    private var config: Config
+    private var config: FindConfig
     private var fileTypeExtDict = [String: Set<String>]()
     private var fileTypeNameDict = [String: Set<String>]()
 
     public init() {
-        self.config = Config()
+        self.config = FindConfig()
         setFileTypesFromJson()
     }
 

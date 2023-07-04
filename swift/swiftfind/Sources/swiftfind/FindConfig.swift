@@ -8,7 +8,7 @@
 
 import Foundation
 
-public struct Config {
+public struct FindConfig {
     public let xfindPath: String
     public let sharedPath: String
     public let fileTypesPath: String

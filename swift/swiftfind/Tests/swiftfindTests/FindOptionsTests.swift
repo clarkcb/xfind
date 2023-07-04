@@ -24,18 +24,18 @@ class FindOptionsTests: XCTestCase {
         super.tearDown()
     }
 
-    func testSettingsEqualDefaultSettings() {
+    func testSettingsEqualDefaultFindSettings() {
         let settings: FindSettings = try! options.settingsFromArgs(requiredArgs)
-        XCTAssert(settings.archivesOnly == DefaultSettings.archivesOnly, "archivesOnly == false")
-        XCTAssert(settings.debug == DefaultSettings.debug, "debug == false")
-        XCTAssert(settings.excludeHidden == DefaultSettings.excludeHidden, "excludeHidden == true")
-        XCTAssert(settings.listDirs == DefaultSettings.listDirs, "listDirs == false")
+        XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
+        XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
+        XCTAssert(settings.excludeHidden == DefaultFindSettings.excludeHidden, "excludeHidden == true")
+        XCTAssert(settings.listDirs == DefaultFindSettings.listDirs, "listDirs == false")
         XCTAssert(settings.listFiles == true, "listFiles == true")
-        XCTAssert(settings.printUsage == DefaultSettings.printUsage, "printUsage == false")
-        XCTAssert(settings.printVersion == DefaultSettings.printVersion, "printVersion == false")
-        XCTAssert(settings.includeArchives == DefaultSettings.includeArchives,
+        XCTAssert(settings.printUsage == DefaultFindSettings.printUsage, "printUsage == false")
+        XCTAssert(settings.printVersion == DefaultFindSettings.printVersion, "printVersion == false")
+        XCTAssert(settings.includeArchives == DefaultFindSettings.includeArchives,
                   "includeArchives == false")
-        XCTAssert(settings.verbose == DefaultSettings.verbose, "verbose == false")
+        XCTAssert(settings.verbose == DefaultFindSettings.verbose, "verbose == false")
     }
 
     func testSettingsFromArgs() {
@@ -80,7 +80,7 @@ class FindOptionsTests: XCTestCase {
     }
 
     static var allTests = [
-        ("testSettingsEqualDefaultSettings", testSettingsEqualDefaultSettings),
+        ("testSettingsEqualDefaultFindSettings", testSettingsEqualDefaultFindSettings),
         ("testSettingsFromArgs", testSettingsFromArgs),
         ("testSettingsFromJson", testSettingsFromJson),
     ]

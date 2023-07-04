@@ -34,7 +34,7 @@ func toDictionary<E, K, V>(
     }
 }
 
-func arrayToString(_ arr: [String]) -> String {
+public func arrayToString(_ arr: [String]) -> String {
     var str: String = "["
     var count: Int = 0
     for elem in arr {
@@ -48,15 +48,15 @@ func arrayToString(_ arr: [String]) -> String {
     return str
 }
 
-func arrayToString(_ arr: [Regex]) -> String {
+public func arrayToString(_ arr: [Regex]) -> String {
     arrayToString(arr.map(\.pattern))
 }
 
-func setToString(_ set: Set<String>) -> String {
+public func setToString(_ set: Set<String>) -> String {
     arrayToString(Array(set.sorted()))
 }
 
-func dateToString(_ date: Date?) -> String {
+public func dateToString(_ date: Date?) -> String {
     if date == nil {
         return "0"
     } else {
@@ -64,13 +64,13 @@ func dateToString(_ date: Date?) -> String {
     }
 }
 
-func stringToDate(_ s: String) -> Date? {
+public func stringToDate(_ s: String) -> Date? {
     let formatter: DateFormatter = DateFormatter()
     formatter.dateFormat = ISO_DATE_FORMAT
     return formatter.date(from: s)
 }
 
-func take<T>(_ seq: [T], num: Int) -> [T] {
+public func take<T>(_ seq: [T], num: Int) -> [T] {
     var newSeq: [T] = []
     var taken = 0
     while taken < num, taken < seq.count {
@@ -80,7 +80,7 @@ func take<T>(_ seq: [T], num: Int) -> [T] {
     return newSeq
 }
 
-func takeRight<T>(_ seq: [T], num: Int) -> [T] {
+public func takeRight<T>(_ seq: [T], num: Int) -> [T] {
     var right: [T] = []
     var sub = 1
     while sub <= num, sub <= seq.count {
@@ -92,7 +92,7 @@ func takeRight<T>(_ seq: [T], num: Int) -> [T] {
 
 // for printing the borders in multiline find results
 extension String {
-    func `repeat`(_ n: Int) -> String {
+    public func `repeat`(_ n: Int) -> String {
         var result = self
         for _ in 1 ..< n {
             result += self
@@ -108,3 +108,6 @@ public extension Sequence where Iterator.Element: Hashable {
         return filter { seen.insert($0).inserted }
     }
 }
+
+// let array: [Int] = [1, 1, 1, 2, 2, 2, 3, 3, 3]
+// print(array.unique()) // prints: [1, 2, 3]

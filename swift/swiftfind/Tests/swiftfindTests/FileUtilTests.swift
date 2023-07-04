@@ -49,13 +49,13 @@ class FileUtilTests: XCTestCase {
      * exist tests
      ========================================================================= */
     func testExistsExistingFile() {
-        let config = Config()
+        let config = FindConfig()
         let fileTypesFile = FileUtil.joinPath(config.sharedPath, childPath: "filetypes.json")
         XCTAssertTrue(FileUtil.exists(fileTypesFile))
     }
 
     func testExistsNonexistingFile() {
-        let config = Config()
+        let config = FindConfig()
         let fileTypesFile = FileUtil.joinPath(config.sharedPath, childPath: "filetypes.ZZZ")
         XCTAssertFalse(FileUtil.exists(fileTypesFile))
     }

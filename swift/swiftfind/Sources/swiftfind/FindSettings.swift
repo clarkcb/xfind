@@ -12,7 +12,7 @@ public enum SortBy {
     case filePath, fileName, fileSize, fileType, lastMod
 }
 
-func nameToSortBy(_ sortByName: String) -> SortBy {
+public func nameToSortBy(_ sortByName: String) -> SortBy {
     let lname = sortByName.lowercased()
     switch lname {
     case "name":
@@ -28,7 +28,7 @@ func nameToSortBy(_ sortByName: String) -> SortBy {
     }
 }
 
-func sortByToName(_ sortBy: SortBy) -> String {
+public func sortByToName(_ sortBy: SortBy) -> String {
     switch sortBy {
     case SortBy.fileName:
         return "name"
@@ -43,7 +43,7 @@ func sortByToName(_ sortBy: SortBy) -> String {
     }
 }
 
-public enum DefaultSettings {
+public enum DefaultFindSettings {
     public static let archivesOnly = false
     public static let debug = false
     public static let excludeHidden = true
@@ -62,42 +62,43 @@ public enum DefaultSettings {
     public static let verbose = false
 }
 
-public class FindSettings: CustomStringConvertible {
-    private var _archivesOnly: Bool = DefaultSettings.archivesOnly
-    private var _debug: Bool = DefaultSettings.debug
-    public var excludeHidden: Bool = DefaultSettings.excludeHidden
-    public var includeArchives: Bool = DefaultSettings.includeArchives
-    public var listDirs: Bool = DefaultSettings.listDirs
-    public var listFiles: Bool = DefaultSettings.listFiles
-    public var maxLastMod: Date? = DefaultSettings.maxLastMod
-    public var maxSize: UInt64 = DefaultSettings.maxSize
-    public var minLastMod: Date? = DefaultSettings.minLastMod
-    public var minSize: UInt64 = DefaultSettings.minSize
-    public var printUsage: Bool = DefaultSettings.printUsage
-    public var printVersion: Bool = DefaultSettings.printVersion
-    public var recursive: Bool = DefaultSettings.recursive
-    public var sortCaseInsensitive: Bool = DefaultSettings.sortCaseInsensitive
-    public var sortDescending: Bool = DefaultSettings.sortDescending
-    public var verbose: Bool = DefaultSettings.verbose
+open class FindSettings: CustomStringConvertible {
+    // these are public because they must be accessible outside the package
+    public var _archivesOnly: Bool = DefaultFindSettings.archivesOnly
+    public var _debug: Bool = DefaultFindSettings.debug
+    open var excludeHidden: Bool = DefaultFindSettings.excludeHidden
+    open var includeArchives: Bool = DefaultFindSettings.includeArchives
+    open var listDirs: Bool = DefaultFindSettings.listDirs
+    open var listFiles: Bool = DefaultFindSettings.listFiles
+    open var maxLastMod: Date? = DefaultFindSettings.maxLastMod
+    open var maxSize: UInt64 = DefaultFindSettings.maxSize
+    open var minLastMod: Date? = DefaultFindSettings.minLastMod
+    open var minSize: UInt64 = DefaultFindSettings.minSize
+    open var printUsage: Bool = DefaultFindSettings.printUsage
+    open var printVersion: Bool = DefaultFindSettings.printVersion
+    open var recursive: Bool = DefaultFindSettings.recursive
+    open var sortCaseInsensitive: Bool = DefaultFindSettings.sortCaseInsensitive
+    open var sortDescending: Bool = DefaultFindSettings.sortDescending
+    open var verbose: Bool = DefaultFindSettings.verbose
 
-    public var inArchiveExtensions = Set<String>()
-    public var inArchiveFilePatterns = [Regex]()
-    public var inDirPatterns = [Regex]()
-    public var inExtensions = Set<String>()
-    public var inFilePatterns = [Regex]()
-    public var inFileTypes = [FileType]()
-    public var outArchiveExtensions = Set<String>()
-    public var outArchiveFilePatterns = [Regex]()
-    public var outDirPatterns = [Regex]()
-    public var outExtensions = Set<String>()
-    public var outFilePatterns = [Regex]()
-    public var outFileTypes = [FileType]()
-    public var paths = Set<String>()
-    public var sortBy = SortBy.filePath
+    open var inArchiveExtensions = Set<String>()
+    open var inArchiveFilePatterns = [Regex]()
+    open var inDirPatterns = [Regex]()
+    open var inExtensions = Set<String>()
+    open var inFilePatterns = [Regex]()
+    open var inFileTypes = [FileType]()
+    open var outArchiveExtensions = Set<String>()
+    open var outArchiveFilePatterns = [Regex]()
+    open var outDirPatterns = [Regex]()
+    open var outExtensions = Set<String>()
+    open var outFilePatterns = [Regex]()
+    open var outFileTypes = [FileType]()
+    open var paths = Set<String>()
+    open var sortBy = SortBy.filePath
 
     public init() {}
 
-    fileprivate func splitExtensions(_ exts: String) -> [String] {
+    func splitExtensions(_ exts: String) -> [String] {
         exts.split { $0 == "," }.map { String($0) }
     }
 
@@ -199,7 +200,7 @@ public class FindSettings: CustomStringConvertible {
         sortBy = nameToSortBy(sortByName)
     }
 
-    public var archivesOnly: Bool {
+    open var archivesOnly: Bool {
         get {
             _archivesOnly
         }
@@ -211,7 +212,7 @@ public class FindSettings: CustomStringConvertible {
         }
     }
 
-    public var debug: Bool {
+    open var debug: Bool {
         get {
             _debug
         }
@@ -223,7 +224,7 @@ public class FindSettings: CustomStringConvertible {
         }
     }
 
-    public var description: String {
+    open var description: String {
         "FindSettings(" +
             "archivesOnly=\(archivesOnly)" +
             ", debug=\(debug)" +

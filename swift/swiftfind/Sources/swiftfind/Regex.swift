@@ -8,11 +8,11 @@
 import Foundation
 
 public struct Regex {
-    let pattern: String
+    let _pattern: String
     let expression: NSRegularExpression
 
     public init(_ pattern: String) {
-        self.pattern = pattern
+        self._pattern = pattern
         // var error: NSError?
         expression = try! NSRegularExpression(pattern: pattern,
                                               options: .dotMatchesLineSeparators)
@@ -20,6 +20,15 @@ public struct Regex {
 
     private func strRange(_ str: String) -> NSRange {
         NSMakeRange(0, str.count)
+    }
+
+    public var pattern: String {
+        get {
+            _pattern
+        }
+        // set {
+        //     _pattern = newValue
+        // }
     }
 
     public func matches(_ str: String) -> [NSTextCheckingResult] {

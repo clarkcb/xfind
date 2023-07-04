@@ -22,12 +22,12 @@ struct FindOption {
 }
 
 public class FindOptions {
-    private var config: Config
+    private var config: FindConfig
     private var findOptions = [FindOption]()
     private var longArgDict: [String: String] = [:]
 
     public init() {
-        self.config = Config()
+        self.config = FindConfig()
         setFindOptionsFromJson()
     }
 
