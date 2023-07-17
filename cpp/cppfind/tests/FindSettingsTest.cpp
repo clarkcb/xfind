@@ -7,11 +7,18 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
     REQUIRE(!settings->archives_only());
     REQUIRE(!settings->debug());
     REQUIRE(settings->exclude_hidden());
+    REQUIRE(!settings->include_archives());
     REQUIRE(!settings->list_dirs());
     REQUIRE(!settings->list_files());
+    REQUIRE(settings->max_last_mod() == 0);
+    REQUIRE(settings->max_size() == 0);
+    REQUIRE(settings->min_last_mod() == 0);
+    REQUIRE(settings->min_size() == 0);
     REQUIRE(!settings->print_usage());
     REQUIRE(!settings->print_version());
-    REQUIRE(!settings->include_archives());
+    REQUIRE(settings->sort_by() == cppfind::SortBy::FILEPATH);
+    REQUIRE(!settings->sort_case_insensitive());
+    REQUIRE(!settings->sort_descending());
     REQUIRE(!settings->verbose());
 
     REQUIRE(settings->in_archive_extensions()->empty());
@@ -19,11 +26,13 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
     REQUIRE(settings->in_dir_patterns()->empty());
     REQUIRE(settings->in_extensions()->empty());
     REQUIRE(settings->in_file_patterns()->empty());
+    REQUIRE(settings->in_file_types()->empty());
     REQUIRE(settings->out_archive_extensions()->empty());
     REQUIRE(settings->out_archive_file_patterns()->empty());
     REQUIRE(settings->out_dir_patterns()->empty());
     REQUIRE(settings->out_extensions()->empty());
     REQUIRE(settings->out_file_patterns()->empty());
+    REQUIRE(settings->out_file_types()->empty());
     REQUIRE(settings->paths()->empty());
 }
 

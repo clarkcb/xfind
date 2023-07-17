@@ -10,7 +10,7 @@ $cppFindPath = Join-Path $env:XFIND_PATH 'cpp' 'cppfind'
 $configuration = 'debug'
 # $configuration = 'release'
 $cmakeBuildPath = Join-Path $cppFindPath "cmake-build-$configuration"
-$cppFindExe = Join-Path $cmakeBuildPath 'cppfind'
+$cppFindExe = Join-Path $cmakeBuildPath 'cppfindapp'
 
 if (Test-Path $cppFindExe -PathType Leaf)
 {

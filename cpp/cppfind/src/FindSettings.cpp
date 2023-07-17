@@ -1,6 +1,5 @@
 #include <boost/algorithm/string/case_conv.hpp>
 #include "common.h"
-#include "FileUtil.h"
 #include "StringUtil.h"
 #include "FindSettings.h"
 
@@ -22,8 +21,8 @@ namespace cppfind {
         m_sort_by = SortBy::FILEPATH;
     }
 
-    void FindSettings::add_pattern(const std::string& p, std::vector<FindPattern*>* ps) {
-        ps->push_back(new FindPattern(p));
+    void FindSettings::add_pattern(const std::string& p, std::vector<RegexPattern*>* ps) {
+        ps->push_back(new RegexPattern(p));
     }
 
     void FindSettings::add_extensions(const std::string& exts, std::vector<std::string>* extensions) {
@@ -155,11 +154,11 @@ namespace cppfind {
         return &m_in_archive_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_archive_file_patterns() {
+    std::vector<RegexPattern*>* FindSettings::in_archive_file_patterns() {
         return &m_in_archive_file_patterns;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_dir_patterns() {
+    std::vector<RegexPattern*>* FindSettings::in_dir_patterns() {
         return &m_in_dir_patterns;
     }
 
@@ -167,7 +166,7 @@ namespace cppfind {
         return &m_in_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::in_file_patterns() {
+    std::vector<RegexPattern*>* FindSettings::in_file_patterns() {
         return &m_in_file_patterns;
     }
 
@@ -179,11 +178,11 @@ namespace cppfind {
         return &m_out_archive_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_archive_file_patterns() {
+    std::vector<RegexPattern*>* FindSettings::out_archive_file_patterns() {
         return &m_out_archive_file_patterns;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_dir_patterns() {
+    std::vector<RegexPattern*>* FindSettings::out_dir_patterns() {
         return &m_out_dir_patterns;
     }
 
@@ -191,7 +190,7 @@ namespace cppfind {
         return &m_out_extensions;
     }
 
-    std::vector<FindPattern*>* FindSettings::out_file_patterns() {
+    std::vector<RegexPattern*>* FindSettings::out_file_patterns() {
         return &m_out_file_patterns;
     }
 
@@ -275,7 +274,7 @@ namespace cppfind {
     }
 
     void FindSettings::set_sort_by(const std::string& name) {
-        m_sort_by = FindSettings::sort_by_from_name(name);
+        sort_by(FindSettings::sort_by_from_name(name));
     }
 
     void FindSettings::sort_case_insensitive(const bool b) {
@@ -308,7 +307,7 @@ namespace cppfind {
         return ss_string;
     }
 
-    std::string FindSettings::find_patterns_to_string(std::vector<FindPattern*>* ps) {
+    std::string FindSettings::find_patterns_to_string(std::vector<RegexPattern*>* ps) {
         std::string ps_string = "[";
         int count = 0;
         for (auto const& p : *ps) {
@@ -386,9 +385,9 @@ namespace cppfind {
                 + ", in_extensions: " + string_vector_to_string(&m_in_extensions)
                 + ", in_file_patterns: " + find_patterns_to_string(&m_in_file_patterns)
                 + ", in_file_types: " + file_types_to_string(&m_in_file_types)
-                + ", includearchives: " + bool_to_string(m_include_archives)
-                + ", listdirs: " + bool_to_string(m_list_dirs)
-                + ", listfiles: " + bool_to_string(m_list_files)
+                + ", include_archives: " + bool_to_string(m_include_archives)
+                + ", list_dirs: " + bool_to_string(m_list_dirs)
+                + ", list_files: " + bool_to_string(m_list_files)
                 + ", max_last_mod: \"" + long_to_datestr(m_max_last_mod) + "\""
                 + ", max_size: " + std::to_string(m_max_size)
                 + ", min_last_mod: \"" + long_to_datestr(m_min_last_mod) + "\""

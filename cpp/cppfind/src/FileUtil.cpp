@@ -2,6 +2,7 @@
 #include <boost/filesystem.hpp>
 #include <sys/stat.h>
 #include <fstream>
+#include <sstream>
 #include "FileUtil.h"
 
 namespace cppfind {

@@ -195,7 +195,7 @@ namespace cppfind {
         }
     }
 
-    bool matches_any_pattern(const std::string& s, const std::vector<FindPattern*>& patterns) {
+    bool matches_any_pattern(const std::string& s, const std::vector<RegexPattern*>& patterns) {
         std::smatch pmatch;
         for (auto& p : patterns) {
             if (regex_search(s, pmatch, p->r())) {
@@ -205,7 +205,7 @@ namespace cppfind {
         return false;
     }
 
-    bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::vector<FindPattern*>& patterns) {
+    bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::vector<RegexPattern*>& patterns) {
         return std::any_of(ss.begin(), ss.end(), [patterns](const std::string& s) {
             return matches_any_pattern(s, patterns);
         });
@@ -220,8 +220,8 @@ namespace cppfind {
                 }
             }
         }
-        std::vector<FindPattern*>* in_dir_patterns = m_settings->in_dir_patterns();
-        std::vector<FindPattern*>* out_dir_patterns = m_settings->out_dir_patterns();
+        std::vector<RegexPattern*>* in_dir_patterns = m_settings->in_dir_patterns();
+        std::vector<RegexPattern*>* out_dir_patterns = m_settings->out_dir_patterns();
         return ((in_dir_patterns->empty() || any_matches_any_pattern(elems, *in_dir_patterns))
                 && (out_dir_patterns->empty() || !any_matches_any_pattern(elems, *out_dir_patterns)));
     }
@@ -234,8 +234,8 @@ namespace cppfind {
             || (!out_exts->empty() && std::find(out_exts->begin(), out_exts->end(), ext) != out_exts->end())) {
             return false;
         }
-        std::vector<FindPattern*>* in_file_patterns = m_settings->in_archive_file_patterns();
-        std::vector<FindPattern*>* out_file_patterns = m_settings->out_archive_file_patterns();
+        std::vector<RegexPattern*>* in_file_patterns = m_settings->in_archive_file_patterns();
+        std::vector<RegexPattern*>* out_file_patterns = m_settings->out_archive_file_patterns();
         return ((in_file_patterns->empty() || matches_any_pattern(file_name, *in_file_patterns))
                 && (out_file_patterns->empty() || !matches_any_pattern(file_name, *out_file_patterns)));
     }
@@ -250,8 +250,8 @@ namespace cppfind {
                 return false;
             }
         }
-        std::vector<FindPattern*>* in_file_patterns = m_settings->in_file_patterns();
-        std::vector<FindPattern*>* out_file_patterns = m_settings->out_file_patterns();
+        std::vector<RegexPattern*>* in_file_patterns = m_settings->in_file_patterns();
+        std::vector<RegexPattern*>* out_file_patterns = m_settings->out_file_patterns();
         if ((!in_file_patterns->empty() && !matches_any_pattern(file_name, *in_file_patterns))
             || (!out_file_patterns->empty() && matches_any_pattern(file_name, *out_file_patterns))) {
             return false;
