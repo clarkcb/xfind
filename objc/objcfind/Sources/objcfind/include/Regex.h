@@ -1,3 +1,6 @@
+#ifndef Regex_h
+#define Regex_h
+
 #import <Foundation/Foundation.h>
 
 @interface Regex : NSObject
@@ -11,3 +14,5 @@
 - (BOOL) test:(NSString*) s;
 
 @end
+
+#endif /* Regex_h */

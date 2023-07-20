@@ -1,3 +1,6 @@
+#ifndef Finder_h
+#define Finder_h
+
 #import <Foundation/Foundation.h>
 #import "FileTypes.h"
 #import "FileResult.h"
@@ -20,3 +23,5 @@
 - (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults;
 
 @end
+
+#endif /* Finder_h */

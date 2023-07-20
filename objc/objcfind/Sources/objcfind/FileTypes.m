@@ -1,4 +1,4 @@
-#import "config.h"
+#import "FindConfig.h"
 #import "FileTypes.h"
 #import "FileUtil.h"
 
@@ -37,7 +37,7 @@
 }
 
 - (NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*>*) fileTypesFromJson {
-    NSMutableString *fileTypesJsonPath = [NSMutableString stringWithUTF8String:SHAREDPATH];
+    NSMutableString *fileTypesJsonPath = [NSMutableString stringWithString:getXfindSharedPath()];
     [fileTypesJsonPath appendString:@"/filetypes.json"];
 
     NSMutableDictionary *fileTypeExtDict = [[NSMutableDictionary alloc] init];

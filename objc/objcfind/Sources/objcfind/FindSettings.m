@@ -56,20 +56,20 @@
     [d appendFormat:@", inDirPatterns=%@", arrayToNSString(self.inDirPatterns)];
     [d appendFormat:@", inExtensions=%@", arrayToNSString(self.inExtensions)];
     [d appendFormat:@", inFilePatterns=%@", arrayToNSString(self.inFilePatterns)];
-    [d appendFormat:@", inFileTypes=%@", fileTypesArrayToNSString(self.inFileTypes)];
+    [d appendFormat:@", inFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.inFileTypes]];
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
     [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
     [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
-    [d appendFormat:@", maxLastMod=%@", lastModToNSString(self.maxLastMod)];
+    [d appendFormat:@", maxLastMod=%@", [FindSettings lastModToNSString:self.maxLastMod]];
     [d appendFormat:@", maxSize=%lu", (long)self.maxSize];
-    [d appendFormat:@", minLastMod=%@", lastModToNSString(self.minLastMod)];
+    [d appendFormat:@", minLastMod=%@", [FindSettings lastModToNSString:self.minLastMod]];
     [d appendFormat:@", minSize=%lu", (long)self.minSize];
     [d appendFormat:@", outArchiveExtensions=%@", arrayToNSString(self.outArchiveExtensions)];
     [d appendFormat:@", outArchiveFilePatterns=%@", arrayToNSString(self.outArchiveFilePatterns)];
     [d appendFormat:@", outDirPatterns=%@", arrayToNSString(self.outDirPatterns)];
     [d appendFormat:@", outExtensions=%@", arrayToNSString(self.outExtensions)];
     [d appendFormat:@", outFilePatterns=%@", arrayToNSString(self.outFilePatterns)];
-    [d appendFormat:@", outFileTypes=%@", fileTypesArrayToNSString(self.outFileTypes)];
+    [d appendFormat:@", outFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.outFileTypes]];
     [d appendFormat:@", paths=%@", arrayToNSString(self.paths)];
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
@@ -229,14 +229,14 @@
 
 }
 
-NSString* lastModToNSString(NSDate *lastMod) {
++ (NSString*) lastModToNSString:(NSDate *)lastMod {
     if (lastMod == nil) {
         return @"0";
     }
     return dateToNSString(lastMod);
 }
 
-NSString* fileTypesArrayToNSString(NSArray<NSNumber*> *arr) {
++ (NSString*) fileTypesArrayToNSString:(NSArray<NSNumber*>*)arr {
     NSMutableString *arrString = [NSMutableString stringWithString:@"["];
     for (int i=0; i < [arr count]; i++) {
         if (i > 0) {

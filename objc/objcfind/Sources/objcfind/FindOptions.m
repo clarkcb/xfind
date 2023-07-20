@@ -1,4 +1,4 @@
-#import "config.h"
+#import "FindConfig.h"
 #import "Regex.h"
 #import "FindOptions.h"
 
@@ -25,7 +25,7 @@
 }
 
 - (NSArray<FindOption*>*) findOptionsFromJson {
-    NSMutableString *findOptionsJsonPath = [NSMutableString stringWithUTF8String:SHAREDPATH];
+    NSMutableString *findOptionsJsonPath = [NSMutableString stringWithString:getXfindSharedPath()];
     [findOptionsJsonPath appendString:@"/findoptions.json"];
     
     if (![[NSFileManager defaultManager] fileExistsAtPath:findOptionsJsonPath]) {
@@ -218,9 +218,9 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
             [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
             [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
-            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
             [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = b; } copy], @"sort-caseinsensitive",
             [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = !b; } copy], @"sort-casesensitive",
+            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
             [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy], @"verbose",
             [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy], @"version",
             nil];

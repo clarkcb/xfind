@@ -1,3 +1,6 @@
+#ifndef FindSettings_h
+#define FindSettings_h
+
 #import <Foundation/Foundation.h>
 #import "common.h"
 #import "FileTypes.h"
@@ -43,6 +46,7 @@
 @property(nonatomic) NSMutableArray<NSString*> *paths;
 @property(nonatomic) SortBy sortBy;
 
+- (instancetype) init;
 -(NSString *) description;
 
 - (void) addExtensions:(NSString*)ext toArr:(NSMutableArray *)arr;
@@ -73,6 +77,10 @@
 
 - (BOOL) needStat;
 
++ (NSString *) lastModToNSString:(NSDate *)lastMod;
++ (NSString *) fileTypesArrayToNSString:(NSArray<NSNumber*>*)arr;
 //- (void) setArchivesOnly: (BOOL)b;
 
 @end
+
+#endif /* FindSettings_h */

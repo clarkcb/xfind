@@ -1,3 +1,6 @@
+#ifndef FileUtil_h
+#define FileUtil_h
+
 //
 //  FileUtil.h
 //  objcfind
@@ -7,7 +10,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "config.h"
+#import "FindConfig.h"
 #import "FindSettings.h"
 
 @interface FileUtil : NSObject
@@ -34,3 +37,5 @@
 + (NSDirectoryEnumerationOptions) optionsForSettings:(FindSettings*)settings;
 
 @end
+
+#endif /* FileUtil_h */

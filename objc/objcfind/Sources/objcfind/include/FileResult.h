@@ -1,3 +1,6 @@
+#ifndef FileResult_h
+#define FileResult_h
+
 #import <Foundation/Foundation.h>
 #import "common.h"
 
@@ -17,3 +20,5 @@
 - (NSComparisonResult)compareByLastMod:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
 
 @end
+
+#endif /* FileResult_h */

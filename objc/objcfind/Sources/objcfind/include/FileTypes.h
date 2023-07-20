@@ -1,3 +1,6 @@
+#ifndef FileTypes_h
+#define FileTypes_h
+
 #import <Foundation/Foundation.h>
 #import "common.h"
 
@@ -14,3 +17,5 @@
 - (BOOL) isXmlFile:(NSString*)fileName;
 
 @end
+
+#endif /* FileTypes_h */

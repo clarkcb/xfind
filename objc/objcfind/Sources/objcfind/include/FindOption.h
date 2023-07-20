@@ -1,3 +1,6 @@
+#ifndef FindOption_h
+#define FindOption_h
+
 #import <Foundation/Foundation.h>
 
 @interface FindOption : NSObject
@@ -11,3 +14,5 @@
 - (NSString *) sortArg;
 
 @end
+
+#endif /* FindOption_h */
