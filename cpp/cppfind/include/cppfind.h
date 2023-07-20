@@ -120,7 +120,8 @@ namespace cppfind {
     class FindException : public std::exception {
     public:
         explicit FindException(const std::string& message);
-        const char *what() const throw();
+        [[nodiscard]] std::string msg() const noexcept;
+        [[nodiscard]] const char *what() const noexcept override;
     };
 
     // RegexPattern.h

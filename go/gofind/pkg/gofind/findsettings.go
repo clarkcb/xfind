@@ -333,7 +333,7 @@ func (f *FindSettings) OutFileTypes() []FileType {
 }
 
 func (f *FindSettings) AddOutFileType(t FileType) {
-	f.inFileTypes = append(f.outFileTypes, t)
+	f.outFileTypes = append(f.outFileTypes, t)
 }
 
 func (f *FindSettings) Paths() []string {

@@ -659,13 +659,16 @@ void print_usage(void)
     log_msg("\nUsage:\n cfind [options] <path> [<path> ...]\n\nOptions:");
     log_msg(usage_str);
     destroy_find_options(options);
+    free(usage_str);
 }
 
 void destroy_find_option(FindOption *o)
 {
-    o->shortarg = NULL;
-    o->longarg = NULL;
-    o->description = NULL;
+    if (o->shortarg != NULL) {
+        free(o->shortarg);
+    }
+    free(o->longarg);
+    free(o->description);
     free(o);
 }
 

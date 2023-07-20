@@ -114,7 +114,6 @@ class FileUtilTests: XCTestCase {
         XCTAssertFalse(FileUtil.isDirectory("filename.txt"))
     }
 
-
     /* ==========================================================================
      * isDotDir tests
      ========================================================================= */
@@ -225,6 +224,6 @@ class FileUtilTests: XCTestCase {
         ("testJoinPathDir", testJoinPathDir),
         ("testJoinPathFile", testJoinPathFile),
         ("testSplitPathDir", testSplitPathDir),
-        ("testSplitPathFile", testSplitPathFile),
+        ("testSplitPathFile", testSplitPathFile)
     ]
 }

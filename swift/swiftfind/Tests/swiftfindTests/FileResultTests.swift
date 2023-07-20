@@ -40,6 +40,6 @@ class FileResultTests: XCTestCase {
         ("testFileResultAbsPath", testFileResultAbsPath),
         ("testFileResultTildePath", testFileResultTildePath),
         ("testFileResultRelPath1", testFileResultRelPath1),
-        ("testFileResultRelPath2", testFileResultRelPath2),
+        ("testFileResultRelPath2", testFileResultRelPath2)
     ]
 }

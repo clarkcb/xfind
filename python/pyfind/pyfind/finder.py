@@ -127,7 +127,8 @@ class Finder:
             if os.path.isdir(p):
                 if self.is_matching_dir(os.path.abspath(p)):
                     if self.settings.recursive:
-                        for root, dirs, files in os.walk(p, topdown=True):
+                        # TODO: add follow_symlinks to FindSettings and set here
+                        for root, dirs, files in os.walk(p, topdown=True, followlinks=False):
                             # NOTE: skipping self.is_find_dir(root) and checking dirs,
                             #       this has the effect of limiting checks to subdirs
                             #       and removing duplicate checks of settings.paths
@@ -150,7 +151,7 @@ class Finder:
                         files = [
                             os.path.join(p, f) for f in os.listdir(p)
                             if os.path.isfile(os.path.join(p, f))
-                                and not os.path.islink(os.path.join(p, f))
+                            and not os.path.islink(os.path.join(p, f))
                         ]
                         new_file_results = [self.filter_to_file_result(f) for f in files]
                         file_results.extend([fr for fr in new_file_results if fr])

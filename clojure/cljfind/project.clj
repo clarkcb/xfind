@@ -10,4 +10,5 @@
                 ]
   :main ^:skip-aot cljfind.cljfind
   :target-path "target/%s"
+  :plugins [[jonase/eastwood "1.4.0"]]
   :profiles {:uberjar {:aot :all}})

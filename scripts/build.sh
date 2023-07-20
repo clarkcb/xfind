@@ -188,6 +188,7 @@ build_cpp () {
     do
         CMAKE_BUILD_DIR="cmake-build-$c"
         CMAKE_BUILD_PATH="$CPPFIND_PATH/$CMAKE_BUILD_DIR"
+        CMAKE_BUILD_TYPE="$c"
 
         if [ ! -d "$CMAKE_BUILD_PATH" ]
         then
@@ -197,25 +198,25 @@ build_cpp () {
             log "cd $CMAKE_BUILD_PATH"
             cd "$CMAKE_BUILD_PATH"
 
-            log "cmake -G \"Unix Makefiles\" .."
-            cmake -G "Unix Makefiles" ..
+            log "cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=$c .."
+            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
 
             # exec 5>&1
-            log "make -f Makefile"
+            # log "make -f Makefile"
             # OUTPUT=$(make -f Makefile | tee >(cat - >&5))
             # I=$(echo "$OUTPUT" | grep "\[100%\] Built target ")
-            make -f Makefile
+            # make -f Makefile
 
             cd -
         fi
 
         if [ -d "$CMAKE_BUILD_PATH" ]
         then
-            TARGETS=(clean cppfind cppfind-tests)
+            TARGETS=(clean cppfind cppfindapp cppfind-tests)
             for t in ${TARGETS[*]}
             do
-                log "cmake --build $CMAKE_BUILD_DIR --target $t -- -W -Wall -Werror"
-                cmake --build "$CMAKE_BUILD_DIR" --target "$t" -- -W -Wall -Werror
+                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- -W -Wall -Werror"
+                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- -W -Wall -Werror
 
                 # check for success/failure
                 # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
@@ -227,6 +228,15 @@ build_cpp () {
                     return
                 fi
             done
+
+            # now do the install
+            INSTALL_FILES=Y
+            if [ -n "$INSTALL_FILES" ]
+            then
+                log "Installing cppfind files"
+                log "cmake --build $CMAKE_BUILD_DIR --config $c --prefix /usr/local"
+                cmake --install "$CMAKE_BUILD_DIR" --config "$c" --prefix /usr/local
+            fi
         fi
     done
 
@@ -513,8 +523,8 @@ build_java () {
 
     # run a maven clean build
     log "Building javafind"
-    log "mvn -f $JAVAFIND_PATH/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT"
-    mvn -f "$JAVAFIND_PATH/pom.xml" clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT
+    log "mvn -f $JAVAFIND_PATH/pom.xml clean package install -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT"
+    mvn -f "$JAVAFIND_PATH/pom.xml" clean package install -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -524,6 +534,10 @@ build_java () {
         log_error "Build failed"
         return
     fi
+
+    # # install to local repo so it can be added as a dependency to javasearch
+    # log "mvn -f $JAVAFIND_PATH/pom.xml install"
+    # mvn -f "$JAVAFIND_PATH/pom.xml" install
 
     # add to bin
     add_to_bin "$JAVAFIND_PATH/bin/javafind.sh"
@@ -619,41 +633,27 @@ build_objc () {
     echo
     hdr "build_objc"
 
-    # ensure xcode is installed
-    if [ -z "$(which xcodebuild)" ]
-    then
-        log_error "You need to install Xcode"
-        return
-    fi
-
     TARGET=alltargets
 
     # TODO: copy resource files locally?
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        log_error "You need to install swift"
+        return
+    fi
+
+    # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
     cd "$OBJCFIND_PATH"
 
-    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Debug Release)
-    elif [ -n "$DEBUG" ]
-    then
-        CONFIGURATIONS=(Debug)
-    elif [ -n "$RELEASE" ]
-    then
-        CONFIGURATIONS=(Release)
-    fi
+    # run swift build
+    log "Building objcfind"
 
-    # run xcodebuild for selected configurations
-    for c in ${CONFIGURATIONS[*]}
-    do
-        if [ $TARGET == "alltargets" ]
-        then
-            log "xcodebuild -alltargets -configuration $c"
-            xcodebuild -alltargets -configuration "$c"
-        else
-            log "xcodebuild -target $TARGET -configuration $c"
-            xcodebuild -target "$TARGET" -configuration "$c"
-        fi
+    if [ -n "$DEBUG" ]
+    then
+        log "swift build"
+        swift build
 
         # check for success/failure
         if [ "$?" -eq 0 ]
@@ -663,10 +663,21 @@ build_objc () {
             log_error "Build failed"
             return
         fi
-    done
-
+    fi
     if [ -n "$RELEASE" ]
     then
+        log "swift build --configuration release"
+        swift build --configuration release
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
+
         # add release to bin
         add_to_bin "$OBJCFIND_PATH/bin/objcfind.release.sh"
     else
@@ -857,7 +868,6 @@ build_python () {
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
 
-    log "cd $PYFIND_PATH"
     cd "$PYFIND_PATH"
 
     if [ "$USE_VENV" == 'yes' ]
@@ -869,7 +879,6 @@ build_python () {
         fi
 
         # create a virtual env to run from and install to if it doesn't already exist
-        PYFIND_VENV="$PYFIND_PATH/venv"
         if [ ! -d "$PYFIND_PATH/venv" ]
         then
             log "$PYTHON -m venv venv"
@@ -884,6 +893,11 @@ build_python () {
             source $PYFIND_PATH/venv/bin/activate
         fi
     fi
+
+    # install wheel - this seems to fix problems with installing local dependencies,
+    # which pyfind will be for pysearch
+    log "pip3 install wheel"
+    pip3 install wheel
 
     # install dependencies in requirements.txt
     log "pip3 install -r requirements.txt"

@@ -232,9 +232,9 @@ class FindOptions {
         let longest = 0;
         this.options.forEach(opt => {
             let optString = ' ';
-            if (opt.shortarg)
-                optString += '-' + opt.shortarg + ',';
-            optString += '--' + opt.longarg;
+            if (opt.shortArg)
+                optString += '-' + opt.shortArg + ',';
+            optString += '--' + opt.longArg;
             if (optString.length > longest)
                 longest = optString.length;
             optStrings.push(optString);

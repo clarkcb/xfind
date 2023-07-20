@@ -221,7 +221,10 @@ clean_objc () {
     echo
     hdr "clean_objc"
 
-    # TODO: is there a clean command for xcodebuild?
+    cd "$OBJCFIND_PATH"
+    log "swift package clean"
+    swift package clean
+    cd -
 }
 
 clean_ocaml () {
@@ -301,7 +304,10 @@ clean_swift () {
     echo
     hdr "clean_swift"
 
-    # TODO: is there a clean command for swift?
+    cd "$SWIFTFIND_PATH"
+    log "swift package clean"
+    swift package clean
+    cd -
 }
 
 clean_typescript () {

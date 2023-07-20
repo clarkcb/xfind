@@ -80,6 +80,6 @@ class FileTypesTests: XCTestCase {
         ("testCodeFile", testCodeFile),
         ("testTextFile", testTextFile),
         ("testXmlFile", testXmlFile),
-        ("testUnknownFile", testUnknownFile),
+        ("testUnknownFile", testUnknownFile)
     ]
 }

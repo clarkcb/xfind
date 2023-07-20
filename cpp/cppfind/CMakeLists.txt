@@ -84,7 +84,7 @@ target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME})
 
 
 ################################################################################
-## Testing section
+# Testing section
 ################################################################################
 
 Include(FetchContent)

@@ -13,9 +13,9 @@ public struct FileResult {
     public let containers: [String]
     public let filePath: String
     public let fileType: FileType
-    public let stat: [FileAttributeKey : Any]?
+    public let stat: [FileAttributeKey: Any]?
 
-    public init(filePath: String, fileType: FileType, stat: [FileAttributeKey : Any]?=nil) {
+    public init(filePath: String, fileType: FileType, stat: [FileAttributeKey: Any]?=nil) {
         self.filePath = filePath
         self.fileType = fileType
         self.stat = stat

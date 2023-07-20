@@ -349,7 +349,7 @@ void destroy_file_result(FileResult *r)
 {
     if (r != NULL) {
         r->dir = NULL;
-        r->file_name = NULL;
+        free(r->file_name);
         free(r);
     }
 }

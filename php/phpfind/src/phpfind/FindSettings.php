@@ -200,7 +200,7 @@ class FindSettings
             StringUtil::datetime_to_string($this->min_last_mod),
             $this->min_size,
             StringUtil::string_array_to_string($this->out_archive_extensions),
-            StringUtil::string_array_to_string($this->out_archive_patterns),
+            StringUtil::string_array_to_string($this->out_archive_file_patterns),
             StringUtil::string_array_to_string($this->out_dir_patterns),
             StringUtil::string_array_to_string($this->out_extensions),
             StringUtil::string_array_to_string($this->out_file_patterns),

@@ -68,6 +68,9 @@ char *string_array_to_string(char *s, StringArray *arr)
 
 void destroy_string_array(StringArray *arr)
 {
-    arr->strings = NULL;
+    for (int i = 0; i < arr->size; i++) {
+        free(arr->strings[i]);
+    }
+    free(arr->strings);
     free(arr);
 }

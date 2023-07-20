@@ -9,7 +9,6 @@ import HsFind.FileTypes
 import HsFind.FindSettings
 import HsFind.Finder
 
--- import qualified Data.ByteString as B
 import Data.Maybe (isJust)
 import Test.Framework
 import Test.Framework.Providers.HUnit (testCase)

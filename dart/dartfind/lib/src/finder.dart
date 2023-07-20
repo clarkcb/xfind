@@ -23,13 +23,13 @@ class Finder {
     if (settings.paths.isEmpty) {
       throw FindException('Startpath not defined');
     }
-    settings.paths.forEach((p) {
+    for (var p in settings.paths) {
       var startPath = FileUtil.expandPath(p);
       if (FileSystemEntity.typeSync(startPath) ==
           FileSystemEntityType.notFound) {
         throw FindException('Startpath not found');
       }
-    });
+    }
   }
 
   bool _anyMatchesAnyPattern(Iterable<String> elems, Set<Pattern> patterns) {

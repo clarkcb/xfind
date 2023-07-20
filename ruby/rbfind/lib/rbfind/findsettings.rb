@@ -190,7 +190,11 @@ module RbFind
     private
 
     def list_to_s(name, lst)
-      "#{name}=[\"#{lst.join('", "')}\"]"
+      if lst.empty?
+        "#{name}=[]"
+      else
+        "#{name}=[\"#{lst.join('", "')}\"]"
+        end
     end
 
     def file_types_to_s(name, file_types)

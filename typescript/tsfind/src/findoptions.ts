@@ -119,8 +119,8 @@ export class FindOptions {
     }
 
     private static optcmp(o1: FindOption, o2: FindOption) {
-        const a: string = o1.sortarg;
-        const b: string = o2.sortarg;
+        const a: string = o1.sortArg;
+        const b: string = o2.sortArg;
         return a.localeCompare(b);
     }
 
@@ -240,9 +240,9 @@ export class FindOptions {
         let longest = 0;
         this.options.forEach((opt: FindOption) => {
             let optString = ' ';
-            if (opt.shortarg)
-                optString += '-' + opt.shortarg + ',';
-            optString += '--' + opt.longarg;
+            if (opt.shortArg)
+                optString += '-' + opt.shortArg + ',';
+            optString += '--' + opt.longArg;
             if (optString.length > longest)
                 longest = optString.length;
             optStrings.push(optString);
