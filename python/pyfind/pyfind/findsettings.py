@@ -35,10 +35,11 @@ class FindSettings:
         'archives_only', 'debug', 'exclude_hidden', 'in_archive_extensions',
         'in_archive_file_patterns', 'in_dir_patterns', 'in_extensions', 'in_file_patterns',
         'in_file_types', 'include_archives', 'list_dirs', 'list_files', 'max_last_mod',
-        'max_size', 'min_last_mod', 'min_size', 'out_archive_file_patterns', 'out_archive_extensions',
-        'out_dir_patterns', 'out_extensions', 'out_file_patterns', 'out_file_types', 'paths',
-        'print_results', 'print_usage', 'print_version', 'recursive', 'sort_by',
-        'sort_case_insensitive', 'sort_descending', 'verbose'
+        'max_depth', 'max_size', 'min_last_mod', 'min_depth', 'min_size',
+        'out_archive_file_patterns', 'out_archive_extensions', 'out_dir_patterns',
+        'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_results',
+        'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
+        'sort_descending', 'verbose'
     ]
 
     def __init__(self,
@@ -54,8 +55,10 @@ class FindSettings:
                  include_archives: bool = False,
                  list_dirs: bool = False,
                  list_files: bool = False,
+                 max_depth: int = -1,
                  max_last_mod: Optional[datetime] = None,
                  max_size: int = 0,
+                 min_depth: int = -1,
                  min_last_mod: Optional[datetime] = None,
                  min_size: int = 0,
                  out_archive_extensions: set[str] = None,
@@ -86,8 +89,10 @@ class FindSettings:
         self.include_archives = include_archives
         self.list_dirs = list_dirs
         self.list_files = list_files
+        self.max_depth = max_depth
         self.max_last_mod = max_last_mod
         self.max_size = max_size
+        self.min_depth = min_depth
         self.min_last_mod = min_last_mod
         self.min_size = min_size
         self.out_archive_extensions = out_archive_extensions if out_archive_extensions else set()

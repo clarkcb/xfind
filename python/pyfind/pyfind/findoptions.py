@@ -156,9 +156,15 @@ class FindOptions:
         }
 
         self.__int_arg_dict = {
+            'maxdepth':
+                lambda x, settings:
+                settings.set_property('max_depth', int(x)),
             'maxsize':
                 lambda x, settings:
                 settings.set_property('max_size', int(x)),
+            'mindepth':
+                lambda x, settings:
+                settings.set_property('min_depth', int(x)),
             'minsize':
                 lambda x, settings:
                 settings.set_property('min_size', int(x)),
