@@ -2,10 +2,10 @@ package gofind
 
 import (
 	"fmt"
+	"golang.org/x/text/encoding"
+	"io/fs"
 	"os"
 	"path/filepath"
-
-	"golang.org/x/text/encoding"
 )
 
 // Finder - the find executor
@@ -16,7 +16,7 @@ type Finder struct {
 	errors             []error
 	addResultChan      chan *FileResult
 	addResultsDoneChan chan bool
-	doneChan           chan string
+	findDoneChan       chan bool
 	errChan            chan error
 	textDecoder        *encoding.Decoder
 }
@@ -29,31 +29,10 @@ func NewFinder(settings *FindSettings) *Finder {
 		[]error{},              // errors
 		make(chan *FileResult), // addResultChan
 		make(chan bool),        // addResultsDoneChan
-		make(chan string, 1),   // doneChan
+		make(chan bool, 1),     // findDoneChan
 		make(chan error, 1),    // errChan
 		nil,
 	}
-}
-
-func (f *Finder) validateSettings() error {
-	if len(f.Settings.Paths()) < 1 {
-		return fmt.Errorf("Startpath not defined")
-	}
-
-	for _, p := range f.Settings.Paths() {
-		_, err := os.Stat(p)
-		if err != nil {
-			if os.IsNotExist(err) {
-				return fmt.Errorf("Startpath not found")
-			}
-			if os.IsPermission(err) {
-				return fmt.Errorf("Startpath not readable")
-			}
-			return err
-		}
-	}
-
-	return nil
 }
 
 func (f *Finder) isMatchingDir(d string) bool {
@@ -140,18 +119,40 @@ func (f *Finder) checkAddFileResult(filePath string, fi os.FileInfo) {
 	}
 }
 
-// this method passed to the filepath.Walk method, it must have this signature
-func (f *Finder) checkAddFindWalkFile(filePath string, fi os.FileInfo, err error) error {
+// this method passed to the filepath.WalkDir method, it must have this signature
+func (f *Finder) checkAddFindWalkFile(filePath string, entry fs.DirEntry, err error) error {
 	if err != nil {
 		fmt.Printf("an error occurred accessing path %q: %v\n", filePath, err)
 		return err
 	}
-	if fi.IsDir() && !f.isMatchingDir(fi.Name()) {
+	if entry.IsDir() && !f.isMatchingDir(entry.Name()) {
 		return filepath.SkipDir
-	} else if fi.Mode().IsRegular() {
+	} else if entry.Type().IsRegular() {
+		fi, err := entry.Info()
+		if err != nil {
+			return err
+		}
 		f.checkAddFileResult(filePath, fi)
 	}
 	return nil
+}
+
+// if we get true from addResultsDoneChan, set addResultsDone to true
+// if we get a result from addResultChan channel, add to fileResults
+// if we get an error from errChan channel, add to errors
+func (f *Finder) activateFindChannels() {
+	addResultsDone := false
+	for !addResultsDone {
+		select {
+		case b := <-f.addResultsDoneChan:
+			addResultsDone = b
+			f.findDoneChan <- b
+		case r := <-f.addResultChan:
+			f.fileResults.AddResult(r)
+		case e := <-f.errChan:
+			f.errors = append(f.errors, e)
+		}
+	}
 }
 
 func (f *Finder) setFileResults() error {
@@ -167,7 +168,7 @@ func (f *Finder) setFileResults() error {
 		}
 		if fi.IsDir() {
 			if f.Settings.Recursive() {
-				err := filepath.Walk(normPath, f.checkAddFindWalkFile)
+				err := filepath.WalkDir(normPath, f.checkAddFindWalkFile)
 				if err != nil {
 					return err
 				}
@@ -178,6 +179,10 @@ func (f *Finder) setFileResults() error {
 				}
 
 				for _, entry := range entries {
+					fi, err := entry.Info()
+					if err != nil {
+						return err
+					}
 					f.checkAddFileResult(filepath.Join(p, entry.Name()), fi)
 				}
 			}
@@ -208,8 +213,7 @@ func (f *Finder) activateFindChannels() {
 }
 
 func (f *Finder) Find() (*FileResults, error) {
-	// validate the settings
-	if err := f.validateSettings(); err != nil {
+	if err := f.Settings.Validate(); err != nil {
 		return nil, err
 	}
 
@@ -221,7 +225,15 @@ func (f *Finder) Find() (*FileResults, error) {
 		return nil, err
 	}
 
-	// sort the results
+	findDone := false
+	for !findDone {
+		select {
+		case b := <-f.findDoneChan:
+			findDone = b
+		}
+	}
+
+	// sort the FileResults
 	f.fileResults.Sort(f.Settings)
 
 	return f.fileResults, nil

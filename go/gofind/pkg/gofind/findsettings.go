@@ -2,6 +2,7 @@ package gofind
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -17,7 +18,7 @@ const (
 	SortByLastmod  SortBy = iota
 )
 
-func getSortByForName(name string) SortBy {
+func SortByForName(name string) SortBy {
 	if strings.ToUpper(name) == "NAME" {
 		return SortByFilename
 	}
@@ -33,7 +34,7 @@ func getSortByForName(name string) SortBy {
 	return SortByFilepath
 }
 
-func getNameForSortBy(sortBy SortBy) string {
+func NameForSortBy(sortBy SortBy) string {
 	if sortBy == SortByFilename {
 		return "NAME"
 	}
@@ -116,6 +117,27 @@ func GetDefaultFindSettings() *FindSettings {
 		false,          // SortDescending
 		false,          // Verbose
 	}
+}
+
+func (f *FindSettings) Validate() error {
+	if len(f.Paths()) < 1 {
+		return fmt.Errorf("Startpath not defined")
+	}
+
+	for _, p := range f.Paths() {
+		_, err := os.Stat(p)
+		if err != nil {
+			if os.IsNotExist(err) {
+				return fmt.Errorf("Startpath not found")
+			}
+			if os.IsPermission(err) {
+				return fmt.Errorf("Startpath not readable")
+			}
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (f *FindSettings) ArchivesOnly() bool {
@@ -377,7 +399,7 @@ func (f *FindSettings) SetSortBy(sortBy SortBy) {
 }
 
 func (f *FindSettings) SetSortByFromString(sortByStr string) {
-	f.sortBy = getSortByForName(sortByStr)
+	f.sortBy = SortByForName(sortByStr)
 }
 
 func (f *FindSettings) SortCaseInsensitive() bool {
@@ -431,15 +453,6 @@ func LastModToString(t time.Time) string {
 	}
 	return fmt.Sprintf("\"%s\"", t.String())
 }
-
-//func addExtensions(xs string, extensions []string) {
-//	for _, x := range strings.Split(xs, ",") {
-//		if x != "" {
-//			ext := strings.ToLower(x)
-//			extensions = append(extensions, ext)
-//		}
-//	}
-//}
 
 func addPattern(p string, sp *Patterns) {
 	sp.AddPatternString(p)
@@ -504,7 +517,7 @@ func (f *FindSettings) String() string {
 		f.PrintUsage(),
 		f.PrintVersion(),
 		f.Recursive(),
-		getNameForSortBy(f.SortBy()),
+		NameForSortBy(f.SortBy()),
 		f.SortCaseInsensitive(),
 		f.SortDescending(),
 		f.Verbose(),
