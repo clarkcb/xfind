@@ -18,6 +18,14 @@ class FileUtil:
     DOT_DIRS = frozenset(['.', '..'])
 
     @staticmethod
+    def expand_path(file_path: str) -> str:
+        """Returns expanded version of path: ~ substitution and absolute path"""
+        expanded = file_path
+        if expanded.startswith('~'):
+            expanded = FileUtil.get_home() + expanded[1:]
+        return expanded
+
+    @staticmethod
     def get_extension(file_name: str) -> str:
         """Returns the extension for a given file_name, if any, else empty
            string"""
@@ -27,6 +35,14 @@ class FileUtil:
             if ext == 'Z':
                 return ext
         return ext.lower()
+
+    @staticmethod
+    def get_home() -> str:
+        """Returns user's home path, e.g. /home/cary"""
+        home = os.getenv('HOME')
+        if not home:
+            home = os.getenv('USERPROFILE')
+        return home
 
     @staticmethod
     def is_dot_dir(file_path: str) -> bool:
@@ -46,6 +62,12 @@ class FileUtil:
             if e.startswith('.') and not FileUtil.is_dot_dir(e)
         ]
         return len(dot_elems) > 0
+
+    @staticmethod
+    def path_depth(file_path: str) -> int:
+        """Returns the number of path elements of file_path"""
+        return len([c for c in file_path if c == os.sep])
+        # return [p for p in file_path.split(os.sep) if p and p not in FileUtil.DOT_DIRS]
 
     @staticmethod
     def path_elems(file_path: str) -> list[str]:

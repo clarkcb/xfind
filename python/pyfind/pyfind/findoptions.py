@@ -176,7 +176,7 @@ class FindOptions:
         self.__str_arg_dict = {
             'path':
                 lambda x, settings:
-                settings.paths.add(x),
+                settings.add_paths(x),
         }
 
         self.__long_arg_dict = {}
@@ -306,7 +306,7 @@ class FindOptions:
                     else:
                         raise FindException(f'Invalid option: {a}')
             else:
-                settings.paths.add(arg)
+                settings.add_paths(arg)
         return settings
 
     def usage(self, exit_code: int = 0):

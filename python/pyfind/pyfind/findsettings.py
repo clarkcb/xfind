@@ -17,6 +17,7 @@ from typing import Any, Optional, Pattern
 from .common import list_to_str
 from .filetypes import FileType
 from .findexception import FindException
+from .findpath import FindPath
 
 PatternSet = set[Pattern]
 
@@ -165,12 +166,12 @@ class FindSettings:
         else:
             raise FindException('patterns is an unknown type')
 
-    def add_paths(self, paths):
+    def add_paths(self, paths: list | set | str):
         """Add one or more paths"""
         if isinstance(paths, (list, set)):
-            self.paths.update(paths)
+            self.paths.update({FindPath(p) for p in paths})
         elif isinstance(paths, str):
-            self.paths.add(paths)
+            self.paths.add(FindPath(paths))
         else:
             raise FindException('paths is an unknown type')
 

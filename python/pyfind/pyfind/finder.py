@@ -9,11 +9,13 @@
 ###############################################################################
 """
 import os
+from pathlib import Path
 from typing import List, Optional
 
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
+from .findpath import FindPath
 from .findsettings import FindSettings, PatternSet, SortBy
 
 
@@ -32,7 +34,8 @@ class Finder:
         """Validate the required settings in the FindSettings instance."""
         assert len(self.settings.paths) > 0, 'Startpath not defined'
         for p in self.settings.paths:
-            assert os.path.exists(p), 'Startpath not found'
+            assert p.exists(), 'Startpath not found'
+            # assert os.access(p, os.R_OK) or os.access(p.expanduser(), os.R_OK), 'Startpath not readable'
             assert os.access(p, os.R_OK), 'Startpath not readable'
         if self.settings.max_depth > -1 and self.settings.min_depth > -1:
             assert self.settings.max_depth >= self.settings.min_depth, \
@@ -140,6 +143,27 @@ class Finder:
             return None
         return FileResult(path=path, file_name=file_name, file_type=file_type, stat=stat)
 
+    def filter_path_to_file_result(self, file_path: FindPath) -> Optional[FileResult]:
+        """Return a FileResult instance if the given file_path matches find settings, else None."""
+        # (path, file_name) = os.path.split(file_path)
+        file_name = file_path.name
+        if self.settings.exclude_hidden and FileUtil.is_hidden(file_name):
+            return None
+        file_type = self.file_types.get_file_type(file_name)
+        if file_type == FileType.ARCHIVE \
+           and not self.settings.include_archives \
+           and not self.settings.archives_only:
+            return None
+        stat = None
+        if self.settings.need_stat():
+            stat = file_path.stat()
+        if file_type == FileType.ARCHIVE:
+            if not self.is_matching_archive_file(file_name, stat):
+                return None
+        elif self.settings.archives_only or not self.is_matching_file(file_name, file_type, stat):
+            return None
+        return FileResult(path=file_path, file_type=file_type, stat=stat)
+
     def get_file_results(self, file_path: str) -> List[FileResult]:
         """Get file results for given file path."""
         file_results = []
@@ -214,22 +238,22 @@ class Finder:
             return s
         match self.settings.sort_by:
             case SortBy.FILEPATH:
-                return sorted(file_results, key=lambda r: (c(r.path), c(r.file_name)),
+                return sorted(file_results, key=lambda r: c(r.path),
                               reverse=self.settings.sort_descending)
             case SortBy.FILENAME:
-                return sorted(file_results, key=lambda r: (c(r.file_name), c(r.path)),
+                return sorted(file_results, key=lambda r: c(r.path.name),
                               reverse=self.settings.sort_descending)
             case SortBy.FILESIZE:
-                return sorted(file_results, key=lambda r: (r.stat.st_size, c(r.path), c(r.file_name)),
+                return sorted(file_results, key=lambda r: (r.stat.st_size, c(r.path)),
                               reverse=self.settings.sort_descending)
             case SortBy.FILETYPE:
-                return sorted(file_results, key=lambda r: (r.file_type, c(r.path), c(r.file_name)),
+                return sorted(file_results, key=lambda r: (r.file_type, c(r.path)),
                               reverse=self.settings.sort_descending)
             case SortBy.LASTMOD:
-                return sorted(file_results, key=lambda r: (r.stat.st_mtime, c(r.path), c(r.file_name)),
+                return sorted(file_results, key=lambda r: (r.stat.st_mtime, c(r.path)),
                               reverse=self.settings.sort_descending)
             case _:
-                return sorted(file_results, key=lambda r: (c(r.path), c(r.file_name)),
+                return sorted(file_results, key=lambda r: c(r.path),
                               reverse=self.settings.sort_descending)
 
 
