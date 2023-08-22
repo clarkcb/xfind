@@ -11,12 +11,12 @@
 from datetime import datetime
 import re
 from enum import Enum
-from typing import Any, Dict, Optional, Pattern, Set
+from typing import Any, Optional, Pattern
 
 from .filetypes import FileType
 from .findexception import FindException
 
-PatternSet = Set[Pattern]
+PatternSet = set[Pattern]
 
 
 class SortBy(Enum):
@@ -45,12 +45,12 @@ class FindSettings:
                  archives_only: bool = False,
                  debug: bool = False,
                  exclude_hidden: bool = True,
-                 in_archive_extensions: Set[str] = None,
+                 in_archive_extensions: set[str] = None,
                  in_archive_file_patterns: PatternSet = None,
                  in_dir_patterns: PatternSet = None,
-                 in_extensions: Set[str] = None,
+                 in_extensions: set[str] = None,
                  in_file_patterns: PatternSet = None,
-                 in_file_types: Set[str] = None,
+                 in_file_types: set[str] = None,
                  include_archives: bool = False,
                  list_dirs: bool = False,
                  list_files: bool = False,
@@ -58,13 +58,13 @@ class FindSettings:
                  max_size: int = 0,
                  min_last_mod: Optional[datetime] = None,
                  min_size: int = 0,
-                 out_archive_extensions: Set[str] = None,
+                 out_archive_extensions: set[str] = None,
                  out_archive_file_patterns: PatternSet = None,
                  out_dir_patterns: PatternSet = None,
-                 out_extensions: Set[str] = None,
+                 out_extensions: set[str] = None,
                  out_file_patterns: PatternSet = None,
-                 out_file_types: Set[str] = None,
-                 paths: Set[str] = None,
+                 out_file_types: set[str] = None,
+                 paths: set[str] = None,
                  print_results: bool = False,
                  print_usage: bool = False,
                  print_version: bool = False,
@@ -107,7 +107,7 @@ class FindSettings:
         self.sort_descending = sort_descending
         self.verbose = verbose
 
-    def add_exts(self, exts, ext_set_name: str):
+    def add_exts(self, exts: list | set | str, ext_set_name: str):
         """Add one or more comma-separated extensions"""
         if isinstance(exts, (list, set)):
             ext_set = getattr(self, ext_set_name)
@@ -119,7 +119,7 @@ class FindSettings:
         else:
             raise FindException('exts is an unknown type')
 
-    def add_patterns(self, patterns, pattern_set_name: str, compile_flag=re.S | re.U):
+    def add_patterns(self, patterns: list | set | str, pattern_set_name: str, compile_flag=re.S | re.U):
         """Add patterns to patternset"""
         if isinstance(patterns, (list, set)):
             new_pattern_set = {re.compile(p, compile_flag) for p in patterns}
@@ -140,7 +140,7 @@ class FindSettings:
         else:
             raise FindException('paths is an unknown type')
 
-    def add_file_types(self, file_types, file_type_set_name: str):
+    def add_file_types(self, file_types: list | set | str, file_type_set_name: str):
         """Add one or more filetypes"""
         if isinstance(file_types, (list, set)):
             new_file_type_set = {FileType.from_name(ft) for ft in file_types}
@@ -157,7 +157,7 @@ class FindSettings:
                self.max_last_mod or self.min_last_mod or \
                self.max_size > 0 or self.min_size > 0
 
-    def set_property(self, name: str, val):
+    def set_property(self, name: str, val: Any):
         """Set a property"""
         setattr(self, name, val)
         # some trues trigger others
@@ -167,7 +167,7 @@ class FindSettings:
             elif name == 'debug':
                 self.verbose = True
 
-    def set_properties(self, propdict: Dict[str, Any]):
+    def set_properties(self, propdict: dict[str, Any]):
         """Set properties"""
         for p in propdict.keys():
             self.set_property(p, propdict[p])
