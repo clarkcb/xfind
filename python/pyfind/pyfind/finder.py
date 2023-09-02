@@ -123,62 +123,66 @@ class Finder:
             return None
         return FileResult(path=path, file_name=file_name, file_type=file_type, stat=stat)
 
+    def get_file_results(self, file_path: str) -> List[FileResult]:
+        """Get file results for given file path."""
+        file_results = []
+        if os.path.isdir(file_path):
+            # if max_depth is zero, we can skip since a directory cannot be a result
+            if self.settings.max_depth == 0:
+                return []
+            if self.is_matching_dir(os.path.abspath(file_path)):
+                if self.settings.recursive:
+                    # TODO: add follow_symlinks to FindSettings and set here
+                    for root, dirs, files in os.walk(file_path, topdown=True, followlinks=False):
+                        if not self.is_matching_dir(root):
+                            dirs[:] = []
+                            continue
+                        if self.settings.max_depth > 0 or self.settings.min_depth > 0:
+                            root_elem_count = FileUtil.sep_count(root)
+                            path_elem_count = FileUtil.sep_count(file_path)
+                            # calculate current depth, adding 1 for the files inside the directory
+                            current_depth = root_elem_count - path_elem_count + 1
+                            # If current_depth == max_depth, set dirs to empty
+                            if current_depth == self.settings.max_depth:
+                                dirs[:] = []
+                            # If current_depth < min_depth, continue
+                            if current_depth < self.settings.min_depth:
+                                continue
+                        # We have to get index for each dir since it changes with each del
+                        del_dirs = [d for d in dirs if not self.is_matching_dir(d)]
+                        for d in del_dirs:
+                            i = dirs.index(d)
+                            del dirs[i]
+
+                        # TODO: add option to follow symlinks? (skipping for now)
+                        files = [
+                            os.path.join(root, f) for f in files
+                            if not os.path.islink(os.path.join(root, f))
+                        ]
+                        new_file_results = [self.filter_to_file_result(f) for f in files]
+                        file_results.extend([fr for fr in new_file_results if fr])
+                else:
+                    files = [
+                        os.path.join(file_path, f) for f in os.listdir(file_path)
+                        if os.path.isfile(os.path.join(file_path, f))
+                        and not os.path.islink(os.path.join(file_path, f))
+                    ]
+                    new_file_results = [self.filter_to_file_result(f) for f in files]
+                    file_results.extend([fr for fr in new_file_results if fr])
+        elif os.path.isfile(file_path):
+            # if min_depth > zero, we can skip since the file is at depth zero
+            if self.settings.min_depth > 0:
+                return []
+            fr = self.filter_to_file_result(file_path)
+            if fr:
+                file_results.append(fr)
+        return file_results
+
     def find_files(self) -> List[FileResult]:
         """Get the list of all files matching find settings."""
         file_results = []
         for p in self.settings.paths:
-            if os.path.isdir(p):
-                # if max_depth is zero, we can skip since a directory cannot be a result
-                if self.settings.max_depth == 0:
-                    continue
-                if self.is_matching_dir(os.path.abspath(p)):
-                    if self.settings.recursive:
-                        # TODO: add follow_symlinks to FindSettings and set here
-                        for root, dirs, files in os.walk(p, topdown=True, followlinks=False):
-                            if self.settings.max_depth > 0 or self.settings.min_depth > 0:
-                                root_elem_count = len(FileUtil.path_elems(root))
-                                path_elem_count = len(FileUtil.path_elems(p))
-                                # calculate current depth, adding 1 for the files inside the directory
-                                current_depth = root_elem_count - path_elem_count + 1
-                                # If max_depth is defined, once reached, delete dirs
-                                if self.settings.max_depth > 0:
-                                    if current_depth == self.settings.max_depth:
-                                        while dirs:
-                                            del(dirs[0])
-                                # If min_depth is defined, if below, continue
-                                if self.settings.min_depth > 0:
-                                    if current_depth < self.settings.min_depth:
-                                        continue
-                            # NOTE: skipping self.is_matching_dir(root) and checking dirs,
-                            #       this has the effect of limiting checks to dirs
-                            #       and removing duplicate checks of settings.paths
-                            del_dirs = [d for d in dirs if not self.is_matching_dir(d)]
-                            for d in del_dirs:
-                                i = dirs.index(d)
-                                del dirs[i]
-
-                            # TODO: add option to follow symlinks? (skipping for now)
-                            files = [
-                                os.path.join(root, f) for f in files
-                                if not os.path.islink(os.path.join(root, f))
-                            ]
-                            new_file_results = [self.filter_to_file_result(f) for f in files]
-                            file_results.extend([fr for fr in new_file_results if fr])
-                    else:
-                        files = [
-                            os.path.join(p, f) for f in os.listdir(p)
-                            if os.path.isfile(os.path.join(p, f))
-                            and not os.path.islink(os.path.join(p, f))
-                        ]
-                        new_file_results = [self.filter_to_file_result(f) for f in files]
-                        file_results.extend([fr for fr in new_file_results if fr])
-            elif os.path.isfile(p):
-                # if min_depth > zero, we can skip since the file is at depth zero
-                if self.settings.min_depth > 0:
-                    continue
-                fr = self.filter_to_file_result(p)
-                if fr:
-                    file_results.append(fr)
+            file_results.extend(self.get_file_results(p))
         return file_results
 
     async def find(self) -> List[FileResult]:

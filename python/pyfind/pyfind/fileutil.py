@@ -51,3 +51,8 @@ class FileUtil:
     def path_elems(file_path: str) -> list[str]:
         """Returns list of separate path elements of file_path"""
         return [p for p in file_path.split(os.sep) if p and p not in FileUtil.DOT_DIRS]
+
+    @staticmethod
+    def sep_count(file_path: str) -> int:
+        """Returns the number of path separators in file_path"""
+        return len([c for c in file_path if c == os.sep])

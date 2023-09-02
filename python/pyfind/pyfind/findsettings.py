@@ -34,8 +34,8 @@ class FindSettings:
     __slots__ = [
         'archives_only', 'debug', 'exclude_hidden', 'in_archive_extensions',
         'in_archive_file_patterns', 'in_dir_patterns', 'in_extensions', 'in_file_patterns',
-        'in_file_types', 'include_archives', 'list_dirs', 'list_files', 'max_last_mod',
-        'max_depth', 'max_size', 'min_last_mod', 'min_depth', 'min_size',
+        'in_file_types', 'include_archives', 'list_dirs', 'list_files', 'max_depth',
+        'max_last_mod', 'max_size', 'min_depth', 'min_last_mod', 'min_size',
         'out_archive_file_patterns', 'out_archive_extensions', 'out_dir_patterns',
         'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_results',
         'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
