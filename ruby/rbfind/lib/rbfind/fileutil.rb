@@ -33,5 +33,13 @@ module RbFind
         false
       end
     end
+
+    def sep_indices(file_path)
+      (0 ... file_path.length).find_all { |i| file_path[i,1] == '/' }
+    end
+
+    def sep_count(file_path)
+      (0 ... file_path.length).find_all { |i| file_path[i,1] == '/' }.count
+    end
   end
 end

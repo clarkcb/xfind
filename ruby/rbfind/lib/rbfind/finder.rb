@@ -208,14 +208,30 @@ module RbFind
     def get_file_results(file_path)
       file_results = []
       if FileTest.directory?(file_path)
+        # if max_depth is zero, we can skip since a directory cannot be a result
+        if @settings.max_depth == 0
+          return []
+        end
         if @settings.recursive
+          # TODO: get depth of file_path, and get depth of every f below
+          file_path_sep_count = FileUtil.sep_count(file_path)
           Find.find(file_path) do |f|
+            f_sep_count = FileUtil.sep_count(f)
             if FileTest.directory?(f)
-              Find.prune unless matching_dir?(f)
+              # The +1 is for files under the directory
+              depth = f_sep_count - file_path_sep_count + 1
+              if depth > @settings.max_depth || !matching_dir?(f)
+                Find.prune
+              end
             elsif FileTest.file?(f)
-              file_result = filter_to_file_result(f)
-              if file_result != nil
-                file_results.push(file_result)
+              depth = f_sep_count - file_path_sep_count
+              if depth > @settings.max_depth || depth < @settings.min_depth
+                Find.prune
+              else
+                file_result = filter_to_file_result(f)
+                if file_result != nil
+                  file_results.push(file_result)
+                end
               end
             end
           end
@@ -232,6 +248,10 @@ module RbFind
           end
         end
       elsif FileTest.file?(file_path)
+        # if min_depth > zero, we can skip since the file is at depth zero
+        if @settings.min_depth > 0
+          return []
+        end
         file_result = filter_to_file_result(file_path)
         if file_result != nil
           file_results.push(file_result)

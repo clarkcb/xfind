@@ -131,11 +131,17 @@ module RbFind
         'in-filepattern': lambda { |x, settings|
           settings.add_patterns(x, settings.in_file_patterns)
         },
+        'maxdepth': lambda { |x, settings|
+          settings.max_depth = x.to_i
+        },
         'maxlastmod': lambda { |x, settings|
           settings.max_last_mod = DateTime.parse(x)
         },
         'maxsize': lambda { |x, settings|
           settings.max_size = x.to_i
+        },
+        'mindepth': lambda { |x, settings|
+          settings.min_depth = x.to_i
         },
         'minlastmod': lambda { |x, settings|
           settings.min_last_mod = DateTime.parse(x)

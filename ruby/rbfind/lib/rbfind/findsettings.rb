@@ -25,8 +25,10 @@ module RbFind
     attr_accessor :include_archives
     attr_accessor :list_dirs
     attr_accessor :list_files
+    attr_accessor :max_depth
     attr_accessor :max_last_mod
     attr_accessor :max_size
+    attr_accessor :min_depth
     attr_accessor :min_last_mod
     attr_accessor :min_size
     attr_accessor :out_archive_extensions
@@ -51,8 +53,10 @@ module RbFind
       @include_archives = false
       @list_dirs = false
       @list_files = false
+      @max_depth = -1
       @max_last_mod = nil
       @max_size = 0
+      @min_depth = -1
       @min_last_mod = nil
       @min_size = 0
       @print_usage = false
@@ -165,8 +169,10 @@ module RbFind
       s << ", include_archives: #{@include_archives}"
       s << ", list_dirs: #{@list_dirs}"
       s << ", list_files: #{@list_files}"
+      s << ", max_depth: #{@max_depth}"
       s << ", max_last_mod: #{@max_last_mod}"
       s << ", max_size: #{@max_size}"
+      s << ", min_depth: #{@min_depth}"
       s << ", min_last_mod: #{@min_last_mod}"
       s << ", min_size: #{@min_size}"
       s << ', ' + list_to_s('out_archive_extensions', @out_archive_extensions)
