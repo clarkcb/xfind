@@ -128,21 +128,26 @@ class Finder:
         file_results = []
         for p in self.settings.paths:
             if os.path.isdir(p):
+                # if max_depth is zero, we can skip since a directory cannot be a result
+                if self.settings.max_depth == 0:
+                    continue
                 if self.is_matching_dir(os.path.abspath(p)):
                     if self.settings.recursive:
                         # TODO: add follow_symlinks to FindSettings and set here
                         for root, dirs, files in os.walk(p, topdown=True, followlinks=False):
-                            if self.settings.max_depth > -1 or self.settings.min_depth > -1:
+                            if self.settings.max_depth > 0 or self.settings.min_depth > 0:
                                 root_elem_count = len(FileUtil.path_elems(root))
                                 path_elem_count = len(FileUtil.path_elems(p))
+                                # calculate current depth, adding 1 for the files inside the directory
+                                current_depth = root_elem_count - path_elem_count + 1
                                 # If max_depth is defined, once reached, delete dirs
-                                if self.settings.max_depth > -1:
-                                    if root_elem_count - path_elem_count == self.settings.max_depth:
+                                if self.settings.max_depth > 0:
+                                    if current_depth == self.settings.max_depth:
                                         while dirs:
                                             del(dirs[0])
                                 # If min_depth is defined, if below, continue
-                                if self.settings.min_depth > -1:
-                                    if root_elem_count - path_elem_count < self.settings.min_depth:
+                                if self.settings.min_depth > 0:
+                                    if current_depth < self.settings.min_depth:
                                         continue
                             # NOTE: skipping self.is_matching_dir(root) and checking dirs,
                             #       this has the effect of limiting checks to dirs
@@ -168,6 +173,9 @@ class Finder:
                         new_file_results = [self.filter_to_file_result(f) for f in files]
                         file_results.extend([fr for fr in new_file_results if fr])
             elif os.path.isfile(p):
+                # if min_depth > zero, we can skip since the file is at depth zero
+                if self.settings.min_depth > 0:
+                    continue
                 fr = self.filter_to_file_result(p)
                 if fr:
                     file_results.append(fr)
