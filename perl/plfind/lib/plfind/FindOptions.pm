@@ -46,6 +46,10 @@ my $arg_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_file_types($s, $settings->{in_file_types});
     },
+    'maxdepth' => sub {
+        my ($s, $settings) = @_;
+        $settings->{max_depth} = int($s);
+    },
     'maxlastmod' => sub {
         my ($s, $settings) = @_;
         $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
@@ -53,6 +57,10 @@ my $arg_action_hash = {
     'maxsize' => sub {
         my ($s, $settings) = @_;
         $settings->{max_size} = int($s);
+    },
+    'mindepth' => sub {
+        my ($s, $settings) = @_;
+        $settings->{min_depth} = int($s);
     },
     'minlastmod' => sub {
         my ($s, $settings) = @_;
@@ -282,7 +290,6 @@ sub get_usage_string {
     my $usage = "Usage:\n plfind [options] <path> [<path> ...]\n\nOptions:\n";
     my $longest = 0;
     my $options_with_sortkey = {};
-    my @opt_strs_with_descs;
     foreach my $opt_key (keys %{$self->{options}}) {
         my $option = $self->{options}->{$opt_key};
         my $long = $option->{longarg};

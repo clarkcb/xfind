@@ -32,8 +32,10 @@ sub new {
         include_archives => 0,
         list_dirs => 0,
         list_files => 0,
+        max_depth => -1,
         max_last_mod => 0,
         max_size => 0,
+        min_depth => -1,
         min_last_mod => 0,
         min_size => 0,
         out_archive_extensions => [],
@@ -56,12 +58,12 @@ sub new {
 }
 
 sub bool_to_string {
-    my ($self, $bool) = @_;
+    my $bool = shift;
     return $bool ? 'true' : 'false';
 }
 
 sub datetime_to_string {
-    my ($self, $dt) = @_;
+    my $dt = shift;
     if (blessed($dt)) {
         return '"' . $dt . '"';
     }
@@ -69,7 +71,7 @@ sub datetime_to_string {
 }
 
 sub aref_to_string {
-    my ($self, $aref, $quoted) = @_;
+    my ($aref, $quoted) = @_;
     my $s = '[';
     if (@$aref) {
         foreach my $i (0..$#{$aref}) {
@@ -88,13 +90,13 @@ sub aref_to_string {
 }
 
 sub strings_aref_to_string {
-    my ($self, $aref) = @_;
-    return $self->aref_to_string($aref, 1);
+    my $aref = shift;
+    return aref_to_string($aref, 1);
 }
 
 sub file_types_aref_to_string {
-    my ($self, $aref) = @_;
-    return $self->aref_to_string($aref, 0);
+    my $aref = shift;
+    return aref_to_string($aref, 0);
 }
 
 sub set_property {
@@ -178,36 +180,38 @@ sub to_string {
     my $self = shift @_;
     print "FindSettings\n";
     my $s = "FindSettings(" .
-        'archives_only=' . $self->bool_to_string($self->{archives_only}) .
-        ', debug=' . $self->bool_to_string($self->{debug}) .
-        ', exclude_hidden=' . $self->bool_to_string($self->{exclude_hidden}) .
-        ', in_archive_extensions=' . $self->strings_aref_to_string($self->{in_archive_extensions}) .
-        ', in_archive_file_patterns=' . $self->strings_aref_to_string($self->{in_archive_file_patterns}) .
-        ', in_dir_patterns=' . $self->strings_aref_to_string($self->{in_dir_patterns}) .
-        ', in_extensions=' . $self->strings_aref_to_string($self->{in_extensions}) .
-        ', in_file_patterns=' . $self->strings_aref_to_string($self->{in_file_patterns}) .
-        ', in_file_types=' . $self->file_types_aref_to_string($self->{in_file_types}) .
-        ', include_archives=' . $self->bool_to_string($self->{include_archives}) .
-        ', list_dirs=' . $self->bool_to_string($self->{list_dirs}) .
-        ', list_files=' . $self->bool_to_string($self->{list_files}) .
-        ', max_last_mod=' . $self->datetime_to_string($self->{max_last_mod}) .
+        'archives_only=' . bool_to_string($self->{archives_only}) .
+        ', debug=' . bool_to_string($self->{debug}) .
+        ', exclude_hidden=' . bool_to_string($self->{exclude_hidden}) .
+        ', in_archive_extensions=' . strings_aref_to_string($self->{in_archive_extensions}) .
+        ', in_archive_file_patterns=' . strings_aref_to_string($self->{in_archive_file_patterns}) .
+        ', in_dir_patterns=' . strings_aref_to_string($self->{in_dir_patterns}) .
+        ', in_extensions=' . strings_aref_to_string($self->{in_extensions}) .
+        ', in_file_patterns=' . strings_aref_to_string($self->{in_file_patterns}) .
+        ', in_file_types=' . file_types_aref_to_string($self->{in_file_types}) .
+        ', include_archives=' . bool_to_string($self->{include_archives}) .
+        ', list_dirs=' . bool_to_string($self->{list_dirs}) .
+        ', list_files=' . bool_to_string($self->{list_files}) .
+        ', max_depth=' . $self->{max_depth} .
+        ', max_last_mod=' . datetime_to_string($self->{max_last_mod}) .
         ', max_size=' . $self->{max_size} .
-        ', min_last_mod=' . $self->datetime_to_string($self->{min_last_mod}) .
+        ', min_depth=' . $self->{min_depth} .
+        ', min_last_mod=' . datetime_to_string($self->{min_last_mod}) .
         ', min_size=' . $self->{min_size} .
-        ', out_archive_extensions=' . $self->strings_aref_to_string($self->{out_archive_extensions}) .
-        ', out_archive_file_patterns=' . $self->strings_aref_to_string($self->{out_archive_file_patterns}) .
-        ', out_dir_patterns=' . $self->strings_aref_to_string($self->{out_dir_patterns}) .
-        ', out_extensions=' . $self->strings_aref_to_string($self->{out_extensions}) .
-        ', out_file_patterns=' . $self->strings_aref_to_string($self->{out_file_patterns}) .
-        ', out_file_types=' . $self->file_types_aref_to_string($self->{out_file_types}) .
-        ', paths=' . $self->strings_aref_to_string($self->{paths}) .
-        ', print_usage=' . $self->bool_to_string($self->{print_usage}) .
-        ', print_version=' . $self->bool_to_string($self->{print_version}) .
-        ', recursive=' . $self->bool_to_string($self->{recursive}) .
+        ', out_archive_extensions=' . strings_aref_to_string($self->{out_archive_extensions}) .
+        ', out_archive_file_patterns=' . strings_aref_to_string($self->{out_archive_file_patterns}) .
+        ', out_dir_patterns=' . strings_aref_to_string($self->{out_dir_patterns}) .
+        ', out_extensions=' . strings_aref_to_string($self->{out_extensions}) .
+        ', out_file_patterns=' . strings_aref_to_string($self->{out_file_patterns}) .
+        ', out_file_types=' . file_types_aref_to_string($self->{out_file_types}) .
+        ', paths=' . strings_aref_to_string($self->{paths}) .
+        ', print_usage=' . bool_to_string($self->{print_usage}) .
+        ', print_version=' . bool_to_string($self->{print_version}) .
+        ', recursive=' . bool_to_string($self->{recursive}) .
         ', sort_by=' . $self->{sort_by} .
-        ', sort_case_insensitive=' . $self->bool_to_string($self->{sort_case_insensitive}) .
-        ', sort_descending=' . $self->bool_to_string($self->{sort_descending}) .
-        ', verbose=' . $self->bool_to_string($self->{verbose}) .
+        ', sort_case_insensitive=' . bool_to_string($self->{sort_case_insensitive}) .
+        ', sort_descending=' . bool_to_string($self->{sort_descending}) .
+        ', verbose=' . bool_to_string($self->{verbose}) .
         ')';
     return $s;
 }

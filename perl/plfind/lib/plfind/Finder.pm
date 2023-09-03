@@ -30,17 +30,17 @@ sub new {
         results => [],
     };
     bless $self, $class;
-    my $errs = $self->validate_settings();
+    my $errs = validate_settings($self->{settings});
     return ($self, $errs);
 }
 
 sub validate_settings {
-    my $self = shift;
+    my $settings = shift;
     my $errs = [];
-    if (scalar @{$self->{settings}->{paths}} < 1) {
+    if (scalar @{$settings->{paths}} < 1) {
         push(@{$errs}, 'Startpath not defined');
     }
-    foreach my $p (@{$self->{settings}->{paths}}) {
+    foreach my $p (@{$settings->{paths}}) {
         unless (-e $p) {
             push(@{$errs}, 'Startpath not found');
         }
@@ -48,11 +48,23 @@ sub validate_settings {
             push(@{$errs}, 'Startpath not readable');
         }
     }
+    if ($settings->{max_depth} > -1 && $settings->{min_depth} > -1
+        && $settings->{max_depth} < $settings->{min_depth}) {
+        push(@{$errs}, 'Invalid range for mindepth and maxdepth');
+    }
+    if ($settings->{max_last_mod} > 0 && $settings->{min_last_mod} > 0
+        && $settings->{max_last_mod} < $settings->{min_last_mod}) {
+        push(@{$errs}, 'Invalid range for minlastmod and maxlastmod');
+    }
+    if ($settings->{max_size} > 0 && $settings->{min_size} > 0
+        && $settings->{max_size} < $settings->{min_size}) {
+        push(@{$errs}, 'Invalid range for minsize and maxsize');
+    }
     return $errs;
 }
 
 sub matches_any_pattern {
-    my ($self, $s, $patterns) = @_;
+    my ($s, $patterns) = @_;
     foreach my $pattern (@{$patterns}) {
         if ($s =~ /$pattern/) {
             return 1;
@@ -62,9 +74,9 @@ sub matches_any_pattern {
 }
 
 sub any_matches_any_pattern {
-    my ($self, $slist, $patterns) = @_;
+    my ($slist, $patterns) = @_;
     foreach my $s (@{$slist}) {
-        if ($self->matches_any_pattern($s, $patterns)) {
+        if (matches_any_pattern($s, $patterns)) {
             return 1;
         }
     }
@@ -85,11 +97,11 @@ sub is_matching_dir {
         }
     }
     if (scalar @{$self->{settings}->{in_dir_patterns}} &&
-        !$self->any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns})) {
+        !any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_dir_patterns}} &&
-        $self->any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})) {
+        any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})) {
         return 0;
     }
     return 1;
@@ -109,11 +121,11 @@ sub is_matching_file_result {
         }
     }
     if (scalar @{$self->{settings}->{in_file_patterns}} &&
-        !$self->matches_any_pattern($fr->{file_name}, $self->{settings}->{in_file_patterns})) {
+        !matches_any_pattern($fr->{file_name}, $self->{settings}->{in_file_patterns})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_file_patterns}} &&
-        $self->matches_any_pattern($fr->{file_name}, $self->{settings}->{out_file_patterns})) {
+        matches_any_pattern($fr->{file_name}, $self->{settings}->{out_file_patterns})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{in_file_types}} &&
@@ -155,11 +167,11 @@ sub is_matching_archive_file {
         return 0;
     }
     if (scalar @{$self->{settings}->{in_archive_file_patterns}} &&
-        !$self->matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
+        !matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_archive_file_patterns}} &&
-        $self->matches_any_pattern($f, $self->{settings}->{out_archive_file_patterns})) {
+        matches_any_pattern($f, $self->{settings}->{out_archive_file_patterns})) {
         return 0;
     }
     return 1;
@@ -228,13 +240,49 @@ sub get_dir_file_results {
 
 sub rec_get_file_results {
     # print "rec_get_file_results\n";
-    my ($self, $d) = @_;
-    # print "d: $d\n";
-    my $dir_results = $self->get_dir_dir_results($d);
-    my $file_results = $self->get_dir_file_results($d);
+    my ($self, $dir, $depth) = @_;
+    # print "dir: $dir\n";
+    my $dir_results = [];
+    if ($self->{settings}->{max_depth} < 1 || $depth <= $self->{settings}->{max_depth}) {
+        $dir_results = $self->get_dir_dir_results($dir);
+    }
+    my $file_results = [];
+    if ($depth >= $self->{settings}->{min_depth}
+        && ($self->{settings}->{max_depth} < 1 || $depth <= $self->{settings}->{max_depth})) {
+        $file_results = $self->get_dir_file_results($dir);
+    }
     foreach my $dir_result (@{$dir_results}) {
-        my $sub_file_results = $self->rec_get_file_results($dir_result);
+        my $sub_file_results = $self->rec_get_file_results($dir_result, $depth + 1);
         push(@{$file_results}, @{$sub_file_results});
+    }
+    return $file_results;
+}
+
+sub get_file_results {
+    my ($self, $file_path) = @_;
+    my $file_results = [];
+    if (-d $file_path) {
+        # if max_depth is zero, we can skip since a directory cannot be a result
+        if ($self->{settings}->{max_depth} == 0) {
+            return [];
+        }
+        if ($self->{settings}->{recursive}) {
+            my $depth = 1;
+            push(@{$file_results}, @{$self->rec_get_file_results($file_path, $depth)});
+        } else {
+            push(@{$file_results}, @{$self->get_dir_file_results($file_path)});
+        }
+    } elsif (-f $file_path) {
+        # if min_depth > zero, we can skip since the file is at depth zero
+        if ($self->{settings}->{min_depth} > 0) {
+            return [];
+        }
+        my $file_result = $self->filter_to_file_result($file_path);
+        if (defined $file_result) {
+            push(@{$file_results}, $file_result);
+        } else {
+            plfind::common::log_msg("ERROR: Startpath does not match find settings");
+        }
     }
     return $file_results;
 }
@@ -243,20 +291,7 @@ sub find {
     my $self = shift;
     my $file_results = [];
     foreach my $p (@{$self->{settings}->{paths}}) {
-        if (-d $p) {
-            if ($self->{settings}->{recursive}) {
-                push(@{$file_results}, @{$self->rec_get_file_results($p)});
-            } else {
-                push(@{$file_results}, @{$self->get_dir_file_results($p)});
-            }
-        } elsif (-f $p) {
-            my $file_result = $self->filter_to_file_result($p);
-            if (defined $file_result) {
-                push(@{$file_results}, $file_result);
-            } else {
-                plfind::common::log_msg("ERROR: Startpath does not match find settings");
-            }
-        }
+        push(@{$file_results}, @{$self->get_file_results($p)});
     }
     return $self->sort_file_results($file_results);
 }

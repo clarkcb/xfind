@@ -2,6 +2,7 @@ package plfind;
 
 use 5.005;
 use strict;
+use warnings;
 
 require Exporter;
 use AutoLoader qw(AUTOLOAD);
