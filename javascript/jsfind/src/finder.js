@@ -48,15 +48,15 @@ class Finder {
                 }
             });
             if (this.settings.maxDepth > -1 && this.settings.minDepth > -1) {
-                assert.ok(this.settings.maxDepth > this.settings.minDepth,
+                assert.ok(this.settings.maxDepth >= this.settings.minDepth,
                   'Invalid range for mindepth and maxdepth');
             }
             if (this.settings.maxLastMod !== null && this.settings.minLastMod !== null) {
-                assert.ok(this.settings.maxLastMod.getTime() > this.settings.minLastMod.getTime(),
+                assert.ok(this.settings.maxLastMod.getTime() >= this.settings.minLastMod.getTime(),
                   'Invalid range for minlastmod and maxlastmod');
             }
             if (this.settings.maxSize > 0 && this.settings.minSize > 0) {
-                assert.ok(this.settings.maxSize > this.settings.minSize,
+                assert.ok(this.settings.maxSize >= this.settings.minSize,
                   'Invalid range for minsize and maxsize');
             }
 

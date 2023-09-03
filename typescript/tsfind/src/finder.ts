@@ -47,15 +47,15 @@ export class Finder {
                 }
             }
             if (this._settings.maxDepth > -1 && this._settings.minDepth > -1) {
-                assert.ok(this._settings.maxDepth > this._settings.minDepth,
+                assert.ok(this._settings.maxDepth >= this._settings.minDepth,
                     'Invalid range for mindepth and maxdepth');
             }
             if (this._settings.maxLastMod !== null && this._settings.minLastMod !== null) {
-                assert.ok(this._settings.maxLastMod.getTime() > this._settings.minLastMod.getTime(),
+                assert.ok(this._settings.maxLastMod.getTime() >= this._settings.minLastMod.getTime(),
                     'Invalid range for minlastmod and maxlastmod');
             }
             if (this._settings.maxSize > 0 && this._settings.minSize > 0) {
-                assert.ok(this._settings.maxSize > this._settings.minSize,
+                assert.ok(this._settings.maxSize >= this._settings.minSize,
                     'Invalid range for minsize and maxsize');
             }
 
