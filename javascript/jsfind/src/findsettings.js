@@ -23,8 +23,10 @@ class FindSettings {
     includeArchives = false;
     listDirs = false;
     listFiles = false;
+    maxDepth = -1;
     #maxLastMod = null;
     maxSize = 0;
+    minDepth = -1;
     #minLastMod = null;
     minSize = 0;
     outArchiveExtensions = [];
@@ -183,8 +185,10 @@ class FindSettings {
             ', includeArchives=' + this.includeArchives +
             ', listDirs=' + this.listDirs +
             ', listFiles=' + this.listFiles +
+            ', maxDepth=' + this.maxDepth +
             ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
             ', maxSize=' + this.maxSize +
+            ', minDepth=' + this.minDepth +
             ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
             ', minSize=' + this.minSize +
             ', ' + StringUtil.listToString('outArchiveExtensions', this.outArchiveExtensions) +

@@ -31,18 +31,18 @@ class FindOptions {
                 (x, settings) => { settings.addInFilePatterns(x); },
             'in-filetype':
                 (x, settings) => { settings.addInFileTypes(x); },
+            'maxdepth':
+                (x, settings) => { settings.maxDepth = parseInt(x, 10); },
             'maxlastmod':
                 (x, settings) => { settings.maxLastModFromString(x); },
             'maxsize':
-                (x, settings) => {
-                    settings.maxSize = parseInt(x, 10);
-                },
+                (x, settings) => { settings.maxSize = parseInt(x, 10); },
+            'mindepth':
+                (x, settings) => { settings.minDepth = parseInt(x, 10); },
             'minlastmod':
                 (x, settings) => { settings.minLastModFromString(x); },
             'minsize':
-                (x, settings) => {
-                    settings.minSize = parseInt(x, 10);
-                },
+                (x, settings) => { settings.minSize = parseInt(x, 10); },
             'out-dirpattern':
                 (x, settings) => { settings.addOutDirPatterns(x); },
             'out-archiveext':
@@ -113,12 +113,12 @@ class FindOptions {
 
             let obj = JSON.parse(json);
             if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj.findoptions)) {
-                obj.findoptions.forEach(so => {
-                    let longArg = so['long'];
+                obj.findoptions.forEach(fo => {
+                    let longArg = fo.long;
                     let shortArg = '';
-                    if (Object.prototype.hasOwnProperty.call(so, 'short'))
-                        shortArg = so['short'];
-                    let desc = so['desc'];
+                    if (Object.prototype.hasOwnProperty.call(fo, 'short'))
+                        shortArg = fo.short;
+                    let desc = fo.desc;
                     let func = null;
                     this.argNameMap[longArg] = longArg;
                     if (shortArg) this.argNameMap[shortArg] = longArg;

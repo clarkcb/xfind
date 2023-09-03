@@ -21,8 +21,8 @@ const {SortBy} = require("./sortby");
 class Finder {
     'use strict'
 
-    settings = null;
-    fileTypes = null;
+    //settings = null;
+    //fileTypes = null;
 
     constructor(settings) {
         this.settings = settings;
@@ -47,6 +47,18 @@ class Finder {
                     assert.ok(false, 'Startpath not findable file type');
                 }
             });
+            if (this.settings.maxDepth > -1 && this.settings.minDepth > -1) {
+                assert.ok(this.settings.maxDepth > this.settings.minDepth,
+                  'Invalid range for mindepth and maxdepth');
+            }
+            if (this.settings.maxLastMod !== null && this.settings.minLastMod !== null) {
+                assert.ok(this.settings.maxLastMod.getTime() > this.settings.minLastMod.getTime(),
+                  'Invalid range for minlastmod and maxlastmod');
+            }
+            if (this.settings.maxSize > 0 && this.settings.minSize > 0) {
+                assert.ok(this.settings.maxSize > this.settings.minSize,
+                  'Invalid range for minsize and maxsize');
+            }
 
         } catch (err) {
             let msg = err.message;
@@ -210,32 +222,32 @@ class Finder {
         return null;
     }
 
-    async recGetFileResults(currentDir) {
+    async recGetFileResults(currentDir, depth) {
+        if (this.settings.maxDepth > 0 && depth > this.settings.maxDepth) {
+            return [];
+        }
         let findDirs = [];
         let fileResults = [];
         let files = await fsReaddirAsync(currentDir);
         files.map(f => {
             return path.join(currentDir, f);
-        }).forEach(f => {
-            let stats = fs.statSync(f);
-            if (stats.isDirectory() && this.settings.recursive && this.isMatchingDir(f)) {
-                findDirs.push(f);
+        }).forEach(fp => {
+            const stats = fs.statSync(fp);
+            if (stats.isDirectory()) {
+                if (this.settings.recursive && this.isMatchingDir(fp)) {
+                    findDirs.push(fp);
+                }
             } else if (stats.isFile()) {
-                // const dirname = path.dirname(f) || '.';
-                // const fileName = path.basename(f);
-                // if (this.filterFile(fileName)) {
-                //     const fileType = this.fileTypes.getFileType(fileName);
-                //     const sf = new FileResult(dirname, fileName, fileType);
-                //     fileResults.push(sf);
-                // }
-                let fr = this.filterToFileResult(f);
-                if (fr !== null) {
-                    fileResults.push(fr);
+                if (depth >= this.settings.minDepth) {
+                    const fr = this.filterToFileResult(fp);
+                    if (fr !== null) {
+                        fileResults.push(fr);
+                    }
                 }
             }
         });
 
-        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d)));
+        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, depth + 1)));
         subDirFindFileArrays.forEach(subDirFindFiles => {
             fileResults = fileResults.concat(subDirFindFiles);
         });
@@ -246,12 +258,20 @@ class Finder {
         let fileResults = [];
         let stats = await fsStatAsync(startPath);
         if (stats.isDirectory()) {
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (this.settings.maxDepth === 0) {
+                return [];
+            }
             if (this.isMatchingDir(startPath)) {
-                fileResults = await this.recGetFileResults(startPath);
+                fileResults = await this.recGetFileResults(startPath, 1);
             } else {
                 throw new FindError("startPath does not match find criteria");
             }
         } else if (stats.isFile()) {
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (this.settings.minDepth > 0) {
+                return [];
+            }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
                 let fr = this.filterToFileResult(startPath);
