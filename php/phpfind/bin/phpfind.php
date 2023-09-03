@@ -8,18 +8,18 @@ use \phpfind\FindOptions;
 use \phpfind\Finder;
 use \phpfind\FindException;
 
-function main($argv)
+function main($argv): void
 {
-    $findoptions = new FindOptions();
+    $find_options = new FindOptions();
     try {
-        $settings = $findoptions->settings_from_args(array_slice($argv, 1));
+        $settings = $find_options->settings_from_args(array_slice($argv, 1));
         if ($settings->debug) {
             Logger::log_msg("settings: $settings");
         }
 
         if ($settings->print_usage) {
             Logger::log_msg('');
-            $findoptions->usage_and_exit(0);
+            $find_options->usage_and_exit(0);
         }
 
         $finder = new Finder($settings);
@@ -36,7 +36,7 @@ function main($argv)
         }
     } catch (FindException $e) {
         Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");
-        $findoptions->usage_and_exit(1);
+        $find_options->usage_and_exit(1);
     }
 }
 

@@ -40,6 +40,18 @@ class Finder
                 throw new FindException('Startpath not readable');
             }
         }
+        if ($this->settings->max_depth > -1 && $this->settings->min_depth > -1
+            && $this->settings->max_depth < $this->settings->min_depth) {
+            throw new FindException('Invalid range for mindepth and maxdepth');
+        }
+        if ($this->settings->max_last_mod != null && $this->settings->min_last_mod != null
+            && $this->settings->max_last_mod->getTimestamp() < $this->settings->min_last_mod->getTimestamp()) {
+            throw new FindException('Invalid range for minlastmod and maxlastmod');
+        }
+        if ($this->settings->max_size > 0 && $this->settings->min_size > 0
+            && $this->settings->max_size < $this->settings->min_size) {
+            throw new FindException('Invalid range for minsize and maxsize');
+        }
     }
 
     /**
@@ -263,14 +275,61 @@ class Finder
 
     /**
      * @param string $dir
+     * @param int $depth
      * @return FileResult[]
      */
-    private function rec_get_file_results(string $dir): array
+    private function rec_get_file_results(string $dir, int $depth): array
     {
-        $dir_results = $this->get_dir_dir_results($dir);
-        $file_results = $this->get_dir_file_results($dir);
+        $dir_results = array();
+        if ($this->settings->max_depth < 1 || $depth <= $this->settings->max_depth) {
+            $dir_results = $this->get_dir_dir_results($dir);
+        }
+        $file_results = array();
+        if ($depth >= $this->settings->min_depth
+            && ($this->settings->max_depth < 1 || $depth <= $this->settings->max_depth)) {
+            $file_results = $this->get_dir_file_results($dir);
+        }
         foreach ($dir_results as $dir_result) {
-            $file_results = array_merge($file_results, $this->rec_get_file_results($dir_result));
+            $file_results = array_merge($file_results, $this->rec_get_file_results($dir_result, $depth + 1));
+        }
+        return $file_results;
+    }
+
+    /**
+     * @return FileResult[]
+     * @throws FindException
+     */
+    public function get_file_results(string $file_path): array
+    {
+        $file_results = array();
+        if (is_dir($file_path)) {
+            # if max_depth is zero, we can skip since a directory cannot be a result
+            if ($this->settings->max_depth == 0) {
+                return [];
+            }
+            if ($this->is_matching_dir($file_path)) {
+                $depth = 1;
+                if ($this->settings->recursive) {
+                    $file_results = array_merge($file_results, $this->rec_get_file_results($file_path, $depth));
+                } else {
+                    $file_results = array_merge($file_results, $this->get_dir_file_results($file_path));
+                }
+            } else {
+                throw new FindException("Startpath does not match find settings");
+            }
+        } elseif (is_file($file_path)) {
+            # if min_depth > zero, we can skip since the file is at depth zero
+            if ($this->settings->min_depth > 0) {
+                return [];
+            }
+            $d = dirname($file_path);
+            $f = basename($file_path);
+            $file_result = $this->filter_to_file_result($d, $f);
+            if ($file_result != null) {
+                $file_results[] = $file_result;
+            } else {
+                throw new FindException("Startpath does not match find settings");
+            }
         }
         return $file_results;
     }
@@ -283,26 +342,7 @@ class Finder
     {
         $file_results = array();
         foreach ($this->settings->paths as $p) {
-            if (is_dir($p)) {
-                if ($this->is_matching_dir($p)) {
-                    if ($this->settings->recursive) {
-                        $file_results = array_merge($file_results, $this->rec_get_file_results($p));
-                    } else {
-                        $file_results = array_merge($file_results, $this->get_dir_file_results($p));
-                    }
-                } else {
-                    throw new FindException("Startpath does not match find settings");
-                }
-            } elseif (is_file($p)) {
-                $d = dirname($p);
-                $f = basename($p);
-                $file_result = $this->filter_to_file_result($d, $f);
-                if ($file_result != null) {
-                    $file_results[] = $file_result;
-                } else {
-                    throw new FindException("Startpath does not match find settings");
-                }
-            }
+            $file_results = array_merge($file_results, $this->get_file_results($p));
         }
         return $this->sort_file_results($file_results);
     }

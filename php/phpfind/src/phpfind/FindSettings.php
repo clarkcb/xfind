@@ -21,8 +21,10 @@ class FindSettings
     public bool $include_archives = false;
     public bool $list_dirs = false;
     public bool $list_files = false;
+    public int $max_depth = -1;
     public ?DateTime $max_last_mod = null;
     public int $max_size = 0;
+    public int $min_depth = -1;
     public ?DateTime $min_last_mod = null;
     public int $min_size = 0;
     public array $out_archive_extensions = array();
@@ -164,8 +166,10 @@ class FindSettings
             ', include_archives: %s' .
             ', list_dirs: %s' .
             ', list_files: %s' .
+            ', max_depth: %d' .
             ', max_last_mod: %s' .
             ', max_size: %d' .
+            ', min_depth: %d' .
             ', min_last_mod: %s' .
             ', min_size: %d' .
             ', out_archive_extensions: %s' .
@@ -195,8 +199,10 @@ class FindSettings
             StringUtil::bool_to_string($this->include_archives),
             StringUtil::bool_to_string($this->list_dirs),
             StringUtil::bool_to_string($this->list_files),
+            $this->max_depth,
             StringUtil::datetime_to_string($this->max_last_mod),
             $this->max_size,
+            $this->min_depth,
             StringUtil::datetime_to_string($this->min_last_mod),
             $this->min_size,
             StringUtil::string_array_to_string($this->out_archive_extensions),
