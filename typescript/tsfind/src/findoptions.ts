@@ -50,10 +50,14 @@ export class FindOptions {
                 (x: string, settings: FindSettings) => { settings.addInFilePatterns(x); },
             'in-filetype':
                 (x: string, settings: FindSettings) => { settings.addInFileTypes(x); },
+            'maxdepth':
+                (x: string, settings: FindSettings) => { settings.maxDepth = parseInt(x, 10); },
             'maxlastmod':
                 (x: string, settings: FindSettings) => { settings.maxLastModFromString(x); },
             'maxsize':
                 (x: string, settings: FindSettings) => { settings.maxSize = parseInt(x, 10); },
+            'mindepth':
+                (x: string, settings: FindSettings) => { settings.minDepth = parseInt(x, 10); },
             'minlastmod':
                 (x: string, settings: FindSettings) => { settings.minLastModFromString(x); },
             'minsize':

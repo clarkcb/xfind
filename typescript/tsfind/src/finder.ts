@@ -46,6 +46,18 @@ export class Finder {
                     assert.ok(false, 'Startpath not findable file type');
                 }
             }
+            if (this._settings.maxDepth > -1 && this._settings.minDepth > -1) {
+                assert.ok(this._settings.maxDepth > this._settings.minDepth,
+                    'Invalid range for mindepth and maxdepth');
+            }
+            if (this._settings.maxLastMod !== null && this._settings.minLastMod !== null) {
+                assert.ok(this._settings.maxLastMod.getTime() > this._settings.minLastMod.getTime(),
+                    'Invalid range for minlastmod and maxlastmod');
+            }
+            if (this._settings.maxSize > 0 && this._settings.minSize > 0) {
+                assert.ok(this._settings.maxSize > this._settings.minSize,
+                    'Invalid range for minsize and maxsize');
+            }
 
         } catch (err: Error | any) {
             let msg = err.message;
@@ -216,31 +228,31 @@ export class Finder {
         return null;
     }
 
-    private recGetFileResults(currentDir: string): FileResult[] {
+    private recGetFileResults(currentDir: string, depth: number): FileResult[] {
+        if (this._settings.maxDepth > 0 && depth > this._settings.maxDepth) {
+            return [];
+        }
         const findDirs: string[] = [];
         let fileResults: FileResult[] = [];
         fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
         }).forEach((fp: string) => {
             const stats = fs.statSync(fp);
-            if (stats.isDirectory() && this._settings.recursive && this.isMatchingDir(fp)) {
-                findDirs.push(fp);
+            if (stats.isDirectory()) {
+                if (this._settings.recursive && this.isMatchingDir(fp)) {
+                    findDirs.push(fp);
+                }
             } else if (stats.isFile()) {
-                // const dirname = path.dirname(f) || '.';
-                // const fileName = path.basename(f);
-                // if (this.filterFile(fileName)) {
-                //     const fileType = FileTypes.getFileType(fileName);
-                //     const fr = new FileResult(dirname, fileName, fileType);
-                //     fileResults.push(fr);
-                // }
-                const fr = this.filterToFileResult(fp);
-                if (fr !== null) {
-                    fileResults.push(fr);
+                if (depth >= this._settings.minDepth) {
+                    const fr = this.filterToFileResult(fp);
+                    if (fr !== null) {
+                        fileResults.push(fr);
+                    }
                 }
             }
         });
         findDirs.forEach(d => {
-            fileResults = fileResults.concat(this.recGetFileResults(d));
+            fileResults = fileResults.concat(this.recGetFileResults(d, depth + 1));
         });
         return fileResults;
     }
@@ -249,12 +261,20 @@ export class Finder {
         let fileResults: FileResult[] = [];
         const stats = await stat(startPath);
         if (stats.isDirectory()) {
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (this._settings.maxDepth === 0) {
+                return [];
+            }
             if (this.isMatchingDir(startPath)) {
-                fileResults = fileResults.concat(this.recGetFileResults(startPath));
+                fileResults = fileResults.concat(this.recGetFileResults(startPath, 1));
             } else {
                 throw new FindError('startPath does not match find criteria');
             }
         } else if (stats.isFile()) {
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (this._settings.minDepth > 0) {
+                return [];
+            }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
                 const fr = this.filterToFileResult(startPath);
