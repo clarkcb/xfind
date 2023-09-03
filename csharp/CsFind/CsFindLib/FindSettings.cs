@@ -41,8 +41,10 @@ public class FindSettings
 	public bool IncludeArchives { get; set; }
 	public bool ListDirs { get; set; }
 	public bool ListFiles { get; set; }
+	public int MaxDepth { get; set; }
 	public System.DateTime? MaxLastMod { get; set; }
 	public int MaxSize { get; set; }
+	public int MinDepth { get; set; }
 	public System.DateTime? MinLastMod { get; set; }
 	public int MinSize { get; set; }
 	public ISet<string> OutArchiveExtensions { get; private set; }
@@ -74,8 +76,10 @@ public class FindSettings
 		IncludeArchives = false;
 		ListDirs = false;
 		ListFiles = false;
+		MaxDepth = -1;
 		MaxLastMod = null;
 		MaxSize = 0;
+		MinDepth = -1;
 		MinLastMod = null;
 		MinSize = 0;
 		OutArchiveExtensions = new HashSet<string>();
@@ -107,8 +111,10 @@ public class FindSettings
 		bool includeArchives,
 		bool listDirs,
 		bool listFiles,
+		int maxDepth,
 		System.DateTime? maxLastMod,
 		int maxSize,
+		int minDepth,
 		System.DateTime? minLastMod,
 		int minSize,
 		ISet<string> outArchiveExtensions,
@@ -138,8 +144,10 @@ public class FindSettings
 		IncludeArchives = includeArchives;
 		ListDirs = listDirs;
 		ListFiles = listFiles;
+		MaxDepth = maxDepth;
 		MaxLastMod = maxLastMod;
 		MaxSize = maxSize;
+		MinDepth = minDepth;
 		MinLastMod = minLastMod;
 		MinSize = minSize;
 		OutArchiveExtensions = outArchiveExtensions;
@@ -293,8 +301,10 @@ public class FindSettings
 		       ", IncludeArchives: " + IncludeArchives +
 		       ", ListDirs: " + ListDirs +
 		       ", ListFiles: " + ListFiles +
+		       ", MaxDepth: " + MaxDepth +
 		       ", MaxLastMod: " + DateTimeToString(MaxLastMod) +
 		       ", MaxSize: " + MaxSize +
+		       ", MinDepth: " + MinDepth +
 		       ", MinLastMod: " + DateTimeToString(MinLastMod) +
 		       ", MinSize: " + MinSize +
 		       ", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions) +

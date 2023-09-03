@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace CsFindLib;
@@ -128,12 +129,18 @@ public static class FileUtil
 		        || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
 	}
 
-	public static string JoinPath(string path1, string path2)
+	public static char GetSeparator(string path)
 	{
 		var dirSep = ForwardSlash;
-		if (path1.IndexOf(BackSlash) > -1)
+		if (path.IndexOf(BackSlash) > -1)
 			dirSep = BackSlash;
-		if (path2[0] == ForwardSlash || path2[0] == BackSlash)
+		return dirSep;
+	}
+
+	public static string JoinPath(string path1, string path2)
+	{
+		var dirSep = GetSeparator(path1);
+		if (path2[0] == dirSep)
 			path2 = path2.Substring(1);
 		return NormalizePath(path1) + dirSep + path2;
 	}
@@ -141,5 +148,11 @@ public static class FileUtil
 	public static string NormalizePath(string path)
 	{
 		return path.TrimEnd(DirSeps);
+	}
+
+	public static int SepCount(string path)
+	{
+		var dirSep = GetSeparator(path);
+		return path.Count(c => c == dirSep);
 	}
 }

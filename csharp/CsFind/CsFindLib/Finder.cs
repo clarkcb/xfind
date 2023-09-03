@@ -127,20 +127,38 @@ public class Finder
 			findTasks[currentTask] = Task<List<FileResult>>.Factory.StartNew(() =>
 			{
 				var expandedPath = FileUtil.ExpandPath(p);
+				var pathSepCount = FileUtil.SepCount(expandedPath);
 				var pathResults = new List<FileResult>();
+				Func<FileInfo, int, bool> matchFile = (f, startPathSepCount) =>
+				{
+					if (f.Directory == null) return true;
+					var fileSepCount = FileUtil.SepCount(f.FullName);
+					var depth = fileSepCount - startPathSepCount;
+					return depth >= Settings.MinDepth
+					       && (Settings.MaxDepth < 1 || depth <= Settings.MaxDepth)
+					       && IsMatchingDirectory(f.Directory);
+				};
 				if (Directory.Exists(expandedPath))
 				{
-					pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
-						.Where(f => f.Directory == null || IsMatchingDirectory(f.Directory))
-						.Select(f => FilterToFileResult(f)).Where(fr => fr != null).Select(f => f!));
+					// if MaxDepth is zero, we can skip since a directory cannot be a result
+					if (Settings.MaxDepth != 0)
+					{
+						pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
+							.Where(f => matchFile(f, pathSepCount))
+							.Select(f => FilterToFileResult(f)).Where(fr => fr != null).Select(f => f!));
+					}
 				}
 				else if (File.Exists(expandedPath))
 				{
-					var fi = new FileInfo(expandedPath);
-					var fr = FilterToFileResult(fi);
-					if (fr != null)
+					// if MinDepth > zero, we can skip since the file is at depth zero
+					if (Settings.MinDepth <= 0)
 					{
-						pathResults.Add(fr);
+						var fi = new FileInfo(expandedPath);
+						var fr = FilterToFileResult(fi);
+						if (fr != null)
+						{
+							pathResults.Add(fr);
+						}
 					}
 				}
 
