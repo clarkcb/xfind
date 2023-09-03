@@ -55,4 +55,8 @@ class FileUtil {
     }
     return filePath;
   }
+
+  static int sepCount(String filePath) {
+    return Platform.pathSeparator.allMatches(filePath).length;
+  }
 }

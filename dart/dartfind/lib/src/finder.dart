@@ -30,6 +30,22 @@ class Finder {
         throw FindException('Startpath not found');
       }
     }
+    if (settings.maxDepth > -1 &&
+        settings.minDepth > -1 &&
+        (settings.maxDepth < settings.minDepth)) {
+      throw FindException('Invalid range for mindepth and maxdepth');
+    }
+    if (settings.maxLastMod != null &&
+        settings.minLastMod != null &&
+        (settings.maxLastMod!.millisecondsSinceEpoch <
+            settings.minLastMod!.millisecondsSinceEpoch)) {
+      throw FindException('Invalid range for minlastmod and maxlastmod');
+    }
+    if (settings.maxSize > 0 &&
+        settings.minSize > 0 &&
+        (settings.maxSize < settings.minSize)) {
+      throw FindException('Invalid range for minsize and maxsize');
+    }
   }
 
   bool _anyMatchesAnyPattern(Iterable<String> elems, Set<Pattern> patterns) {
@@ -135,10 +151,20 @@ class Finder {
     var isFile = FileSystemEntity.isFile(startPath);
     return Future.wait([isDir, isFile]).then((res) {
       var fileResults = <FileResult>[];
+      var startPathSepCount = FileUtil.sepCount(startPath);
       if (res.first) {
+        // if max_depth is zero, we can skip since a directory cannot be a result
+        if (settings.maxDepth == 0) {
+          return [];
+        }
         var dir = Directory(startPath);
         return dir.list(recursive: settings.recursive).listen((f) async {
-          if (f is File && isMatchingDir(f.parent)) {
+          var fileSepCount = FileUtil.sepCount(f.path);
+          var depth = fileSepCount - startPathSepCount;
+          if (f is File &&
+              depth >= settings.minDepth &&
+              depth <= settings.maxDepth &&
+              isMatchingDir(f.parent)) {
             var fileResult = await filterToFileResult(f);
             if (fileResult != null) {
               fileResults.add(fileResult);
@@ -146,6 +172,10 @@ class Finder {
           }
         }).asFuture(fileResults);
       } else if (res.last) {
+        // if min_depth > zero, we can skip since the file is at depth zero
+        if (settings.minDepth > 0) {
+          return [];
+        }
         var startFile = File(startPath);
         if (isMatchingDir(startFile.parent)) {
           FileStat? stat;

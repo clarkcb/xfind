@@ -73,8 +73,10 @@ class FindSettings {
   bool listDirs = false;
   bool listFiles = false;
 
+  int maxDepth = -1;
   DateTime? maxLastMod;
   int maxSize = 0;
+  int minDepth = -1;
   DateTime? minLastMod;
   int minSize = 0;
 
@@ -153,8 +155,10 @@ class FindSettings {
       ', includeArchives=$includeArchives'
       ', listDirs=$listDirs'
       ', listFiles=$listFiles'
+      ', maxDepth=$maxDepth'
       ', maxLastMod=${dateTimeToString(maxLastMod)}'
       ', maxSize=$maxSize'
+      ', minDepth=$minDepth'
       ', minLastMod=${dateTimeToString(minLastMod)}'
       ', minSize=$minSize'
       ', outArchiveExtensions=${stringSetToString(outArchiveExtensions)}'

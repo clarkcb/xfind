@@ -75,9 +75,11 @@ class FindOptions {
           ss.addPattern(s, ss.inFilePatterns),
       'in-filetype': (String s, FindSettings ss) =>
           ss.inFileTypes.add(FileTypes.fromName(s)),
+      'maxdepth': (String s, FindSettings ss) => ss.maxDepth = int.parse(s),
       'maxlastmod': (String s, FindSettings ss) =>
           ss.maxLastMod = DateTime.parse(s),
       'maxsize': (String s, FindSettings ss) => ss.maxSize = int.parse(s),
+      'mindepth': (String s, FindSettings ss) => ss.minDepth = int.parse(s),
       'minlastmod': (String s, FindSettings ss) =>
           ss.minLastMod = DateTime.parse(s),
       'minsize': (String s, FindSettings ss) => ss.minSize = int.parse(s),
