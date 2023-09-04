@@ -154,4 +154,8 @@ public final class FileUtil {
         scanner.close();
         return lines;
     }
+
+    public static long getSepCount(final Path path) {
+        return path.toString().chars().filter(c -> c == File.separatorChar).count();
+    }
 }

@@ -46,6 +46,16 @@ public class Finder {
                 throw new FindException("Startpath not readable");
             }
         }
+        if (settings.getMaxDepth() > -1 && settings.getMaxDepth() < settings.getMinDepth()) {
+            throw new FindException("Invalid range for mindepth and maxdepth");
+        }
+        if (settings.getMaxLastMod() != null && settings.getMinLastMod() != null
+                && settings.getMaxLastMod().toInstant(ZoneOffset.UTC).compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) < 0) {
+            throw new FindException("Invalid range for minlastmod and maxlastmod");
+        }
+        if (settings.getMaxSize() > 0 && settings.getMaxSize() < settings.getMinSize()) {
+            throw new FindException("Invalid range for minsize and maxsize");
+        }
     }
 
     private boolean anyMatchesAnyPattern(final List<String> sList,
@@ -65,10 +75,9 @@ public class Finder {
 //                if (Files.isHidden(path)) {
 //                    return false;
 //                }
-                if (FileUtil.isHidden(path.toString())) {
+                if (FileUtil.isHidden(path)) {
                     return false;
                 }
-//            } catch (IOException e) {
             } catch (Exception e) {
                 Logger.logError(e.getMessage());
                 return false;
@@ -228,17 +237,23 @@ public class Finder {
         for (String p : settings.getPaths()) {
             Path path = Paths.get(p);
             if (Files.isDirectory(path)) {
-                if (isMatchingDir(path)) {
-                    futures.add(executorService.submit(() -> findPath(path)));
-                } else {
-                    throw new FindException("Startpath does not match find settings");
+                // if maxDepth is zero, we can skip since a directory cannot be a result
+                if (settings.getMaxDepth() != 0) {
+                    if (isMatchingDir(path)) {
+                        futures.add(executorService.submit(() -> findPath(path)));
+                    } else {
+                        throw new FindException("Startpath does not match find settings");
+                    }
                 }
             } else if (Files.isRegularFile(path)) {
-                Optional<FileResult> optFileResult = filterToFileResult(path);
-                if (optFileResult.isPresent()) {
-                    fileResults.add(optFileResult.get());
-                } else {
-                    throw new FindException("Startpath does not match find settings");
+                // if minDepth > zero, we can skip since the file is at depth zero
+                if (settings.getMinDepth() <= 0) {
+                    Optional<FileResult> optFileResult = filterToFileResult(path);
+                    if (optFileResult.isPresent()) {
+                        fileResults.add(optFileResult.get());
+                    } else {
+                        throw new FindException("Startpath does not match find settings");
+                    }
                 }
             } else {
                 throw new FindException("Startpath is not a findable file type");
@@ -307,9 +322,29 @@ public class Finder {
         }
     }
 
+    private boolean filterDir(final Path dirPath, long startPathSepCount) {
+        if (dirPath == null) return true;
+        long pathSepCount = FileUtil.getSepCount(dirPath);
+        int depth = (int)(pathSepCount - startPathSepCount);
+        return (settings.getMaxDepth() < 1 || depth <= settings.getMaxDepth())
+                && isMatchingDir(dirPath);
+    }
+
+    private Optional<FileResult> filterFile(final Path filePath, long startPathSepCount) {
+        long pathSepCount = FileUtil.getSepCount(filePath);
+        int depth = (int)(pathSepCount - startPathSepCount);
+        if (depth < settings.getMinDepth() || (settings.getMaxDepth() > 0 && depth > settings.getMaxDepth())) {
+            return Optional.empty();
+        }
+        return filterToFileResult(filePath);
+    }
+
     private List<FileResult> findPath(final Path filePath) {
-        FindFileResultsVisitor findFileResultsVisitor = new FindFileResultsVisitor(this::isMatchingDir,
-                this::filterToFileResult);
+        long filePathSepCount = FileUtil.getSepCount(filePath);
+        Function<Path, Boolean> filterDirFunc = (dirPath) -> filterDir(dirPath, filePathSepCount);
+        Function<Path, Optional<FileResult>> filterFileFunc = (path) -> filterFile(path, filePathSepCount);
+        FindFileResultsVisitor findFileResultsVisitor = new FindFileResultsVisitor(filterDirFunc,
+                filterFileFunc);
 
         // walk file tree to find files
         try {

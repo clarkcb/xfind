@@ -33,8 +33,10 @@ public class FindSettings {
     private boolean includeArchives;
     private boolean listDirs;
     private boolean listFiles;
+    private int maxDepth;
     private LocalDateTime maxLastMod;
     private int maxSize;
+    private int minDepth;
     private LocalDateTime minLastMod;
     private int minSize;
     private final Set<String> outArchiveExtensions;
@@ -65,8 +67,10 @@ public class FindSettings {
         this.includeArchives = DefaultFindSettings.INCLUDEARCHIVES;
         this.listDirs = DefaultFindSettings.LISTDIRS;
         this.listFiles = DefaultFindSettings.LISTFILES;
+        this.maxDepth = DefaultFindSettings.MAXDEPTH;
         this.maxLastMod = null;
         this.maxSize = DefaultFindSettings.MAXSIZE;
+        this.minDepth = DefaultFindSettings.MINDEPTH;
         this.minLastMod = null;
         this.minSize = DefaultFindSettings.MINSIZE;
         this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -151,6 +155,14 @@ public class FindSettings {
         this.listFiles = listFiles;
     }
 
+    public int getMaxDepth() {
+        return maxDepth;
+    }
+
+    public void setMaxDepth(int maxDepth) {
+        this.maxDepth = maxDepth;
+    }
+
     public LocalDateTime getMaxLastMod() {
         return maxLastMod;
     }
@@ -184,6 +196,14 @@ public class FindSettings {
 
     public void setMaxSize(int maxSize) {
         this.maxSize = maxSize;
+    }
+
+    public int getMinDepth() {
+        return minDepth;
+    }
+
+    public void setMinDepth(int minDepth) {
+        this.minDepth = minDepth;
     }
 
     public LocalDateTime getMinLastMod() {
@@ -457,8 +477,10 @@ public class FindSettings {
                 + ", includeArchives: " + this.includeArchives
                 + ", listDirs: " + this.listDirs
                 + ", listFiles: " + this.listFiles
+                + ", maxDepth: " + this.maxDepth
                 + ", maxLastMod: " + localDateTimeToString(this.maxLastMod)
                 + ", maxSize: " + this.maxSize
+                + ", minDepth: " + this.minDepth
                 + ", minLastMod: " + localDateTimeToString(this.minLastMod)
                 + ", minSize: " + this.minSize
                 + ", outArchiveExtensions: " + stringSetToString(this.outArchiveExtensions)

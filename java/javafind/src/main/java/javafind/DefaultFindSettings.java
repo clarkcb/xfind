@@ -11,7 +11,9 @@ public final class DefaultFindSettings {
     public static final boolean INCLUDEARCHIVES = false;
     public static final boolean LISTDIRS = false;
     public static final boolean LISTFILES = false;
+    public static final int MAXDEPTH = -1;
     public static final int MAXSIZE = 0;
+    public static final int MINDEPTH = -1;
     public static final int MINSIZE = 0;
     public static final boolean PRINTUSAGE = false;
     public static final boolean PRINTVERSION = false;
