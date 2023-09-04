@@ -13,8 +13,12 @@ type Finder (settings : FindSettings) =
             (if List.isEmpty settings.Paths then (Some "Startpath not defined") else None);
             (if (List.exists (fun p -> not (Directory.Exists(p)) && not (File.Exists(p))) settings.Paths)
              then (Some "Startpath not found") else None);
-            (if settings.MaxSize < 0 then (Some "Invalid maxsize") else None);
-            (if settings.MinSize < 0 then (Some "Invalid minsize") else None);
+            (if settings.MaxDepth > -1 && settings.MinDepth > -1 && settings.MaxDepth < settings.MinDepth
+             then (Some "Invalid range for mindepth and maxdepth") else None);
+            (if settings.MaxLastMod.IsSome && settings.MinLastMod.IsSome && settings.MaxLastMod.Value < settings.MinLastMod.Value
+             then (Some "Invalid range for minlastmod and maxlastmod") else None);
+            (if settings.MaxSize > 0 && settings.MinSize > 0 && settings.MaxSize < settings.MinSize
+             then (Some "Invalid range for minsize and maxsize") else None);
         ]
         |> List.choose id
 
@@ -77,20 +81,39 @@ type Finder (settings : FindSettings) =
                 else
                     None
 
+    member this.MatchFile (f : FileInfo) (startPathSepCount : int) : bool =
+        if f.Directory = null then
+            true
+        else
+            let fileSepCount = FileUtil.SepCount f.FullName
+            let depth = fileSepCount - startPathSepCount
+            depth >= settings.MinDepth &&
+            (settings.MaxDepth < 1 || depth <= settings.MaxDepth) &&
+            this.IsMatchingDir f.Directory
+        
     member this.GetFileResults (path : string) : FileResult.t list =
         let expandedPath = FileUtil.ExpandPath path
+        let pathSepCount = FileUtil.SepCount path
         if Directory.Exists(expandedPath) then
-            let findOption =
-                if settings.Recursive then SearchOption.AllDirectories
-                else SearchOption.TopDirectoryOnly
-            let dir = DirectoryInfo(expandedPath)
-            dir.EnumerateFiles("*", findOption)
-            |> Seq.filter (fun f -> f.Directory = null || this.IsMatchingDir(f.Directory))
-            |> Seq.choose this.FilterToFileResult
-            |> List.ofSeq
+            // if MaxDepth is zero, we can skip since a directory cannot be a result
+            if settings.MaxDepth <> 0 then
+                let findOption =
+                    if settings.Recursive then SearchOption.AllDirectories
+                    else SearchOption.TopDirectoryOnly
+                let dir = DirectoryInfo(expandedPath)
+                dir.EnumerateFiles("*", findOption)
+                |> Seq.filter (fun f -> this.MatchFile f pathSepCount)
+                |> Seq.choose this.FilterToFileResult
+                |> List.ofSeq
+            else
+                []
         else
-            let fileInfo = FileInfo(expandedPath)
-            [FileResult.Create fileInfo (_fileTypes.GetFileType fileInfo)]
+            // if MinDepth > zero, we can skip since the file is at depth zero
+            if settings.MinDepth <= 0 then
+                let fileInfo = FileInfo(expandedPath)
+                [FileResult.Create fileInfo (_fileTypes.GetFileType fileInfo)]
+            else
+                []
 
     member this.SortByPath (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
         let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal

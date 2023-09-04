@@ -31,8 +31,10 @@ type FindSettings() =
     member val IncludeArchives : bool = false with get, set
     member val ListDirs : bool = false with get, set
     member val ListFiles : bool = false with get, set
+    member val MaxDepth : int = -1 with get, set
     member val MaxLastMod : DateTime option = None with get, set
     member val MaxSize : int = 0 with get, set
+    member val MinDepth : int = -1 with get, set
     member val MinLastMod : DateTime option = None with get, set
     member val MinSize : int = 0 with get, set
     member val OutArchiveExtensions : string list = [] with get, set
@@ -97,8 +99,10 @@ type FindSettings() =
             $", IncludeArchives: %b{this.IncludeArchives}";
             $", ListDirs: %b{this.ListDirs}";
             $", ListFiles: %b{this.ListFiles}";
+            $", MaxDepth: %i{this.MaxDepth}";
             $", MaxLastMod: %s{this.DateTimeOptionListToString this.MaxLastMod}";
             $", MaxSize: %i{this.MaxSize}";
+            $", MinDepth: %i{this.MinDepth}";
             $", MinLastMod: %s{this.DateTimeOptionListToString this.MinLastMod}";
             $", MinSize: %i{this.MinSize}";
             $", OutArchiveExtensions: %s{Common.ListToString(this.OutArchiveExtensions)}";

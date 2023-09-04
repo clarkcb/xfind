@@ -38,12 +38,14 @@ module FileUtil =
             yield sr.ReadLine ()
     }
 
+    let GetSeparator (path : string) : char = 
+        if path.IndexOf(backSlash) > -1 then backSlash else forwardSlash
+
     let NormalizePath (path : string) : string = 
         path.TrimEnd(dirSeps)
 
     let JoinPath (path1 : string) (path2 : string) : string = 
-        let dirSep =
-            if path1.IndexOf(backSlash) > -1 then backSlash else forwardSlash
+        let dirSep = GetSeparator path1
         let p2 =
             if path2[0] = forwardSlash || path2[0] = backSlash then path2.Substring(1) else path2
         String.Format("{0}{1}{2}", NormalizePath path1, dirSep, p2)
@@ -84,5 +86,11 @@ module FileUtil =
         |> Array.toList
         |> List.filter (fun (x : string) -> String.IsNullOrEmpty(x) = false)
         |> List.map (fun (x : string) -> if x.StartsWith(".") then x else "." + x)
+
+    let SepCount (filePath : string) : int =
+        let dirSep = GetSeparator filePath
+        filePath.ToCharArray()
+        |> Array.filter (fun (c : char) -> c = dirSep)
+        |> Array.length
 
 ;;

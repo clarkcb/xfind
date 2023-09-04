@@ -31,8 +31,10 @@ module FindOptions =
             ("out-ext", (fun (s : string) (settings : FindSettings) -> settings.OutExtensions <- settings.AddExtensions s settings.OutExtensions));
             ("out-filepattern", (fun (s : string) (settings : FindSettings) -> settings.OutFilePatterns <- settings.AddPattern s settings.OutFilePatterns));
             ("out-filetype", (fun (s : string) (settings : FindSettings) -> settings.OutFileTypes <- settings.AddFileTypes s settings.OutFileTypes));
+            ("maxdepth", (fun (s : string) (settings : FindSettings) -> settings.MaxDepth <- int s));
             ("maxlastmod", (fun (s : string) (settings : FindSettings) -> settings.MaxLastMod <- Some(DateTime.Parse(s))));
             ("maxsize", (fun (s : string) (settings : FindSettings) -> settings.MaxSize <- int s));
+            ("mindepth", (fun (s : string) (settings : FindSettings) -> settings.MinDepth <- int s));
             ("minlastmod", (fun (s : string) (settings : FindSettings) -> settings.MinLastMod <- Some(DateTime.Parse(s))));
             ("minsize", (fun (s : string) (settings : FindSettings) -> settings.MinSize <- int s));
             ("path", (fun (s : string) (settings : FindSettings) -> settings.Paths <- settings.AddPath s settings.Paths));
