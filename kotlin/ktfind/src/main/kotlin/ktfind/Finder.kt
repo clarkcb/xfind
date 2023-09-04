@@ -38,6 +38,15 @@ class Finder(val settings: FindSettings) {
                 throw FindException("Startpath not readable")
             }
         }
+        if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
+            throw FindException("Invalid range for mindepth and maxdepth");
+        }
+        if (settings.maxLastMod != null && settings.minLastMod != null && settings.maxLastMod < settings.minLastMod) {
+            throw FindException("Invalid range for minlastmod and maxlastmod");
+        }
+        if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
+            throw FindException("Invalid range for minsize and maxsize");
+        }
     }
 
     private fun setTests() {
@@ -160,11 +169,21 @@ class Finder(val settings: FindSettings) {
         return null
     }
 
+    // NOTE: we only look at minDepth here since maxDepth can be specified in FileTreeWalk
+    private fun filterFile(f: File, startPathSepCount: Long): FileResult? {
+        val fileSepCount = FileUtil.sepCount(f.toString())
+        val depth = (fileSepCount - startPathSepCount).toInt()
+        if (depth < settings.minDepth) return null
+        return filterToFileResult(f)
+    }
+
     private fun getFileResults(startPath: File): List<FileResult> {
+        val startPathSepCount = FileUtil.sepCount(startPath.toString())
         return startPath.walk()
+            .maxDepth(if (settings.maxDepth > 0) settings.maxDepth else Int.MAX_VALUE)
             .onEnter { isMatchingDir(it) }
             .filter { it.isFile }
-            .mapNotNull { filterToFileResult(it) }
+            .mapNotNull { filterFile(it, startPathSepCount) }
             .toList()
     }
 
@@ -215,13 +234,19 @@ class Finder(val settings: FindSettings) {
             launch {
                 val path = Paths.get(p)
                 if (Files.isDirectory(path)) {
+                    // if maxDepth is zero, we can skip since a directory cannot be a result
+                    if (settings.maxDepth != 0) {
                         fileResults.addAll(getFileResults(path.toFile()))
+                    }
                 } else if (Files.isReadable(path)) {
-                    val fr = filterToFileResult(path.toFile())
-                    if (fr != null) {
-                        fileResults.add(fr)
-                    } else {
-                        throw FindException("Startpath does not match find settings")
+                    // if minDepth > zero, we can skip since the file is at depth zero
+                    if (settings.minDepth <= 0) {
+                        val fr = filterToFileResult(path.toFile())
+                        if (fr != null) {
+                            fileResults.add(fr)
+                        } else {
+                            throw FindException("Startpath does not match find settings")
+                        }
                     }
                 } else {
                     throw FindException("Path is invalid file type: $p")

@@ -63,10 +63,14 @@ class FindOptions {
                 { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
         "in-filetype" to
                 { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
+        "maxdepth" to
+                { s, ss -> ss.copy(maxDepth = Integer.parseInt(s)) },
         "maxlastmod" to
                 { s, ss -> ss.copy(maxLastMod = getLastModFromString(s)) },
         "maxsize" to
                 { s, ss -> ss.copy(maxSize = Integer.parseInt(s)) },
+        "mindepth" to
+                { s, ss -> ss.copy(minDepth = Integer.parseInt(s)) },
         "minlastmod" to
                 { s, ss -> ss.copy(minLastMod = getLastModFromString(s)) },
         "minsize" to
