@@ -21,7 +21,7 @@
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only
           (get-ext get-name hidden-dir? hidden-file?
-            is-dot-dir?)]
+            is-dot-dir? sep-count)]
         [cljfind.findsettings :only (need-stat)])
   (:require [java-time.api :as jt]))
 
@@ -35,6 +35,18 @@
   (let [paths (:paths settings)
         tests [(fn [ss] (if (empty? paths) "Startpath not defined" nil))
                (fn [ss] (if (some #(not (.exists (file %))) paths) "Startpath not found" nil))
+               (fn [ss]
+                 (if
+                   (and
+                    (> (:max-depth ss) -1)
+                    (> (:min-depth ss) (:max-depth ss))
+                    ) "Invalid range for mindepth and maxdepth" nil))
+               (fn [ss]
+                 (if
+                   (and
+                    (> (:max-size ss) 0)
+                    (> (:min-size ss) (:max-size ss))
+                    ) "Invalid range for minsize and maxsize" nil))
               ]
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
@@ -201,22 +213,48 @@
           nil
           fr)))))
 
+(defn filter-dir-by-depth [d path-sep-count settings]
+  (if (nil? d)
+    true
+    (let [dir-sep-count (sep-count (.toString d))
+          depth (- dir-sep-count path-sep-count)]
+      (or
+       (< (:max-depth settings) 1)
+       (<= depth (:max-depth settings))))))
+
+(defn filter-file-by-depth [f path-sep-count settings]
+  (let [file-sep-count (sep-count (.toString f))
+        depth (- file-sep-count path-sep-count)]
+    (and
+     (>= depth (:min-depth settings))
+     (or
+      (< (:max-depth settings) 1)
+      (<= depth (:max-depth settings))))))
+
 (defn get-file-results-for-path [settings, ^String path]
   (let [pathfile (file path)]
     (if (.isFile pathfile)
-      (vec
-       (filter
-        #(not (nil? %))
-        (map #(filter-to-file-result % settings) [pathfile])))
-      (if (:recursive settings)
+      (if (< (:min-depth settings) 1)
         (vec
          (filter
           #(not (nil? %))
-          (map #(filter-to-file-result % settings) (filter #(.isFile %) (file-seq pathfile)))))
-        (vec
-         (filter
-          #(not (nil? %))
-          (map #(filter-to-file-result % settings) (filter #(.isFile %) (.listFiles pathfile)))))))))
+          (map #(filter-to-file-result % settings) [pathfile])))
+        [])
+      (if (not (= (:max-depth settings) 0))
+        (if (:recursive settings)
+          (let [path-sep-count (sep-count path)]
+            (vec
+             (filter
+              #(not (nil? %))
+              (map #(filter-to-file-result % settings)
+                   (filter #(filter-file-by-depth % path-sep-count settings)
+                           (filter #(filter-dir-by-depth (.getParent %) path-sep-count settings)
+                                   (filter #(.isFile %) (file-seq pathfile))))))))
+          (vec
+           (filter
+            #(not (nil? %))
+            (map #(filter-to-file-result % settings) (filter #(.isFile %) (.listFiles pathfile))))))
+        []))))
 
 (defn get-file-results
   ([settings]

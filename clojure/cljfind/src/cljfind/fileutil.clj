@@ -59,3 +59,6 @@
 
 (defn hidden-file? [f]
   (hidden? (get-name f)))
+
+(defn sep-count [f]
+  (count (filter #(= % (java.io.File/separatorChar)) f)))

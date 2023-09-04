@@ -51,8 +51,10 @@
     in-file-types
     list-dirs
     list-files
+    max-depth
     max-last-mod
     max-size
+    min-depth
     min-last-mod
     min-size
     out-archive-extensions
@@ -85,8 +87,10 @@
    #{}       ; in-file-types
    false     ; list-dirs
    false     ; list-files
+   -1        ; max-depth
    nil       ; max-last-mod
    0         ; max-size
+   -1        ; min-depth
    nil       ; min-last-mod
    0         ; min-size
    #{}       ; out-archive-extensions
