@@ -64,8 +64,10 @@ type FindSettings struct {
 	includeArchives        bool
 	listDirs               bool
 	listFiles              bool
+	maxDepth               int
 	maxLastMod             time.Time
 	maxSize                int64
+	minDepth               int
 	minLastMod             time.Time
 	minSize                int64
 	outArchiveExtensions   []string
@@ -98,8 +100,10 @@ func GetDefaultFindSettings() *FindSettings {
 		false,          // IncludeArchives
 		false,          // ListDirs
 		false,          // ListFiles
+		-1,             // MaxDepth
 		time.Time{},    // MaxLastMod
 		0,              // MaxSize
+		-1,             // MinDepth
 		time.Time{},    // MinLastMod
 		0,              // MinSize
 		[]string{},     // OutArchiveExtensions
@@ -135,6 +139,16 @@ func (f *FindSettings) Validate() error {
 			}
 			return err
 		}
+	}
+
+	if f.maxDepth > -1 && f.maxDepth < f.minDepth {
+		return fmt.Errorf("Invalid range between mindepth and maxdepth")
+	}
+	if !f.maxLastMod.IsZero() && f.minLastMod.After(f.maxLastMod) {
+		return fmt.Errorf("Invalid range between minlastmod and maxlastmod")
+	}
+	if f.maxSize > 0 && f.maxSize < f.minSize {
+		return fmt.Errorf("Invalid range between minsize and maxsize")
 	}
 
 	return nil
@@ -252,6 +266,22 @@ func (f *FindSettings) SetListFiles(b bool) {
 	f.listFiles = b
 }
 
+func (f *FindSettings) MaxDepth() int {
+	return f.maxDepth
+}
+
+func (f *FindSettings) SetMaxDepth(i int) {
+	f.maxDepth = i
+}
+
+func (f *FindSettings) SetMaxDepthFromString(depthStr string) {
+	depth, err := strconv.Atoi(depthStr)
+	if err != nil {
+		depth = 0
+	}
+	f.maxDepth = depth
+}
+
 func (f *FindSettings) MaxLastMod() time.Time {
 	return f.maxLastMod
 }
@@ -274,6 +304,22 @@ func (f *FindSettings) SetMaxSize(i int64) {
 
 func (f *FindSettings) SetMaxSizeFromString(sizeStr string) {
 	f.maxSize = f.getSize(sizeStr)
+}
+
+func (f *FindSettings) MinDepth() int {
+	return f.minDepth
+}
+
+func (f *FindSettings) SetMinDepth(i int) {
+	f.minDepth = i
+}
+
+func (f *FindSettings) SetMinDepthFromString(depthStr string) {
+	depth, err := strconv.Atoi(depthStr)
+	if err != nil {
+		depth = 0
+	}
+	f.minDepth = depth
 }
 
 func (f *FindSettings) MinLastMod() time.Time {
@@ -472,8 +518,10 @@ func (f *FindSettings) String() string {
 		", IncludeArchives: %t" +
 		", ListDirs: %t" +
 		", ListFiles: %t" +
+		", MaxDepth: %d" +
 		", MaxLastMod: %s" +
 		", MaxSize: %d" +
+		", MinDepth: %d" +
 		", MinLastMod: %s" +
 		", MinSize: %d" +
 		", OutArchiveExtensions: %s" +
@@ -503,8 +551,10 @@ func (f *FindSettings) String() string {
 		f.IncludeArchives(),
 		f.ListDirs(),
 		f.ListFiles(),
+		f.MaxDepth(),
 		LastModToString(f.MaxLastMod()),
 		f.MaxSize(),
+		f.MinDepth(),
 		LastModToString(f.MinLastMod()),
 		f.MinSize(),
 		StringListToString(f.OutArchiveExtensions()),

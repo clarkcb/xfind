@@ -2,10 +2,12 @@ package gofind
 
 import (
 	"fmt"
-	"golang.org/x/text/encoding"
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
+
+	"golang.org/x/text/encoding"
 )
 
 // Finder - the find executor
@@ -167,8 +169,34 @@ func (f *Finder) setFileResults() error {
 			return err
 		}
 		if fi.IsDir() {
+			// if MaxDepth is zero, we can skip since a directory cannot be a result
+			if f.Settings.MaxDepth() == 0 {
+				continue
+			}
 			if f.Settings.Recursive() {
-				err := filepath.WalkDir(normPath, f.checkAddFindWalkFile)
+				err := filepath.WalkDir(normPath, func(path string, entry fs.DirEntry, err error) error {
+					if err != nil {
+						fmt.Printf("an error occurred accessing path %q: %v\n", path, err)
+						return err
+					}
+					startPathSepCount := strings.Count(normPath, string(os.PathSeparator))
+					pathSepCount := strings.Count(path, string(os.PathSeparator))
+					depth := pathSepCount - startPathSepCount
+					if entry.IsDir() {
+						if f.Settings.MaxDepth() > -1 && depth > f.Settings.MaxDepth() {
+							return filepath.SkipDir
+						}
+						if !f.isMatchingDir(entry.Name()) {
+							return filepath.SkipDir
+						}
+					} else if entry.Type().IsRegular() {
+						if depth >= f.Settings.MinDepth() && (f.Settings.MaxDepth() < 1 || depth <= f.Settings.MaxDepth()) {
+							fi, _ := entry.Info()
+							f.checkAddFileResult(path, fi)
+						}
+					}
+					return nil
+				})
 				if err != nil {
 					return err
 				}
@@ -179,37 +207,20 @@ func (f *Finder) setFileResults() error {
 				}
 
 				for _, entry := range entries {
-					fi, err := entry.Info()
-					if err != nil {
-						return err
-					}
+					fi, _ := entry.Info()
 					f.checkAddFileResult(filepath.Join(p, entry.Name()), fi)
 				}
 			}
 		} else if fi.Mode().IsRegular() {
-			f.checkAddFileResult(p, fi)
+			// if MinDepth > zero, we can skip since the file is at depth zero
+			if f.Settings.MinDepth() <= 0 {
+				f.checkAddFileResult(p, fi)
+			}
 		}
 	}
 
 	f.addResultsDoneChan <- true
 	return nil
-}
-
-// if we get true from addResultsDoneChan, set addResultsDone to true
-// if we get a result from addResultChan channel, add to fileResults
-// if we get an error from errChan channel, add to errors
-func (f *Finder) activateFindChannels() {
-	addResultsDone := false
-	for !addResultsDone {
-		select {
-		case b := <-f.addResultsDoneChan:
-			addResultsDone = b
-		case r := <-f.addResultChan:
-			f.fileResults.AddResult(r)
-		case e := <-f.errChan:
-			f.errors = append(f.errors, e)
-		}
-	}
 }
 
 func (f *Finder) Find() (*FileResults, error) {

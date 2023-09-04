@@ -233,11 +233,17 @@ func (fo *FindOptions) getArgActionMap() map[string]argAction {
 		"in-filetype": func(s string, settings *FindSettings) {
 			settings.AddInFileType(GetFileTypeForName(s))
 		},
+		"maxdepth": func(s string, settings *FindSettings) {
+			settings.SetMaxDepthFromString(s)
+		},
 		"maxlastmod": func(s string, settings *FindSettings) {
 			settings.SetMaxLastModFromString(s)
 		},
 		"maxsize": func(s string, settings *FindSettings) {
 			settings.SetMaxSizeFromString(s)
+		},
+		"mindepth": func(s string, settings *FindSettings) {
+			settings.SetMinDepthFromString(s)
 		},
 		"minlastmod": func(s string, settings *FindSettings) {
 			settings.SetMinLastModFromString(s)
