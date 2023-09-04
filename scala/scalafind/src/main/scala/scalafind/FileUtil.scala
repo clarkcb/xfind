@@ -51,7 +51,12 @@ object FileUtil {
       case None => Paths.get(CURRENT_PATH)
     }
   }
+
   def splitPath(path: String): Iterable[String] = {
     path.split(File.separator).filterNot(_.isEmpty).filterNot(isDotDir)
+  }
+
+  def sepCount(path: String): Int = {
+    path.count(_ == File.separatorChar)
   }
 }

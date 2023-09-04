@@ -89,10 +89,14 @@ object FindOptions {
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
       ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileTypes.fromName(s))),
+    "maxdepth" ->
+      ((s, ss) => ss.copy(maxDepth = s.toInt)),
     "maxlastmod" ->
       ((s, ss) => ss.copy(maxLastMod = getLastModFromString(s))),
     "maxsize" ->
       ((s, ss) => ss.copy(maxSize = s.toInt)),
+    "mindepth" ->
+      ((s, ss) => ss.copy(minDepth = s.toInt)),
     "minlastmod" ->
       ((s, ss) => ss.copy(minLastMod = getLastModFromString(s))),
     "minsize" ->

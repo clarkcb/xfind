@@ -44,7 +44,7 @@ class Finder (settings: FindSettings) {
 
   private def matchesExtension(fr: FileResult, inExtensions: Set[String], outExtensions: Set[String]): Boolean = {
     if (inExtensions.nonEmpty || outExtensions.nonEmpty) {
-      val ext = getExtension(fr.path.getFileName().toString())
+      val ext = getExtension(fr.path.getFileName.toString)
       (inExtensions.isEmpty || inExtensions.contains(ext))
         && (outExtensions.isEmpty || !outExtensions.contains(ext))
     } else {
@@ -54,7 +54,7 @@ class Finder (settings: FindSettings) {
 
   private def matchesPattern(fr: FileResult, inFilePatterns: Set[Regex], outFilePatterns: Set[Regex]): Boolean = {
     if (inFilePatterns.nonEmpty || outFilePatterns.nonEmpty) {
-      val fileName = fr.path.getFileName().toString()
+      val fileName = fr.path.getFileName.toString
       (inFilePatterns.isEmpty || matchesAnyPattern(fileName, inFilePatterns))
         && (outFilePatterns.isEmpty || !matchesAnyPattern(fileName, outFilePatterns))
     } else {
@@ -130,22 +130,42 @@ class Finder (settings: FindSettings) {
   }
 
   final def getDirFileResults(startPath: Path): Seq[FileResult] = {
-    Files.list(startPath)
-      .filter(!Files.isDirectory(_))
+    Files.list(startPath).iterator().asScala
+      .filter(Files.isRegularFile(_))
       .map(filterToFileResult)
       .filter(_.nonEmpty)
-      .iterator().asScala.flatten.toSeq
+      .flatten.toSeq
+  }
+
+  private final def filterDir(dirPath: Path, startPathSepCount: Int): Boolean = {
+    if (dirPath == null) {
+      true
+    } else {
+      val dirPathSepCount = FileUtil.sepCount(dirPath.toString)
+      val depth = dirPathSepCount - startPathSepCount
+      (settings.maxDepth < 1 || depth <= settings.maxDepth)
+        && isMatchingDir(dirPath)
+    }
+  }
+
+  private final def filterFile(filePath: Path, startPathSepCount: Int): Option[FileResult] = {
+    val filePathSepCount = FileUtil.sepCount(filePath.toString)
+    val depth = filePathSepCount - startPathSepCount
+    if (depth < settings.minDepth || (settings.maxDepth > 0 && depth > settings.maxDepth)) {
+      None
+    } else {
+      filterToFileResult(filePath)
+    }
   }
 
   final def getFileResults(startPath: Path): Seq[FileResult] = {
-    getDirFileResults(startPath) ++
-      Files.list(startPath)
-        .filter(Files.isDirectory(_))
-        .filter(isMatchingDir)
-        .iterator()
-        .asScala
-        .toSeq
-        .flatMap(getFileResults)
+    val startPathSepCount = FileUtil.sepCount(startPath.toString)
+    val fileResults = Files.walk(startPath).iterator().asScala
+      .filter(Files.isRegularFile(_))
+      .filter(f => filterDir(f.getParent, startPathSepCount))
+      .flatMap(f => filterFile(f, startPathSepCount))
+      .toSeq
+    fileResults
   }
 
   def cmpFileResults(fr1: FileResult, fr2: FileResult): Boolean = {
@@ -187,24 +207,30 @@ class Finder (settings: FindSettings) {
     settings.paths.foreach { p =>
       val path = Paths.get(p)
       if (Files.isDirectory(path)) {
-        if (isMatchingDir(path)) {
-          if (settings.recursive) {
-            fileResults ++= getFileResults(path)
+        // if maxDepth is zero, we can skip since a directory cannot be a result
+        if (settings.maxDepth != 0) {
+          if (isMatchingDir(path)) {
+            if (settings.recursive) {
+              fileResults ++= getFileResults(path)
+            } else {
+              fileResults ++= getDirFileResults(path)
+            }
           } else {
-            fileResults ++= getDirFileResults(path)
+            throw new FindException("Startpath does not match find settings")
           }
-        } else {
-          throw new FindException("Startpath does not match find settings")
         }
       } else if (Files.isRegularFile(path)) {
-        filterToFileResult(path) match {
-          case Some(findFile) =>
-            fileResults += findFile
-          case None =>
-            throw new FindException("Startpath does not match find settings")
+        // if minDepth > zero, we can skip since the file is at depth zero
+        if (settings.minDepth <= 0) {
+          filterToFileResult(path) match {
+            case Some(findFile) =>
+              fileResults += findFile
+            case None =>
+              throw new FindException("Startpath does not match find settings")
+          }
         }
       } else {
-        throw new FindException("Startpath not findable")
+        throw new FindException("Startpath is not a findable file type")
       }
     }
     sortFileResults(Seq.empty[FileResult] ++ fileResults)
@@ -217,6 +243,8 @@ object Finder {
     ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
     ss => if (ss.paths.forall { p => new File(p).exists() }) None else Some("Startpath not found"),
     ss => if (ss.paths.forall { p => new File(p).canRead }) None else Some("Startpath not readable"),
+    ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some("Invalid range for mindepth and maxdepth") else None,
+    ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some("Invalid range for minsize and maxsize") else None,
   )
 
   def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {

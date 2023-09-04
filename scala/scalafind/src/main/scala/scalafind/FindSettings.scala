@@ -32,7 +32,9 @@ object DefaultSettings {
   var includeArchives = false
   val listDirs = false
   val listFiles = false
+  val maxDepth: Int = -1
   val maxSize = 0
+  val minDepth: Int = -1
   val minSize = 0
   var paths: Set[String] = Set.empty[String]
   var printUsage = false
@@ -56,8 +58,10 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                         var includeArchives: Boolean = DefaultSettings.includeArchives,
                         listDirs: Boolean = DefaultSettings.listDirs,
                         listFiles: Boolean = DefaultSettings.listFiles,
+                        maxDepth: Int = DefaultSettings.maxDepth,
                         maxLastMod: Option[LocalDateTime] = None,
                         maxSize: Int = DefaultSettings.maxSize,
+                        minDepth: Int = DefaultSettings.minDepth,
                         minLastMod: Option[LocalDateTime] = None,
                         minSize: Int = DefaultSettings.minSize,
                         outArchiveExtensions: Set[String] = Set.empty[String],
@@ -98,8 +102,10 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", includeArchives: " + includeArchives +
       ", listDirs: " + listDirs +
       ", listFiles: " + listFiles +
+      ", maxDepth: " + maxDepth +
       ", maxLastMod: " + maxLastMod +
       ", maxSize: " + maxSize +
+      ", minDepth: " + minDepth +
       ", minLastMod: " + minLastMod +
       ", minSize: " + minSize +
       ", outArchiveExtensions: " + outArchiveExtensions +
