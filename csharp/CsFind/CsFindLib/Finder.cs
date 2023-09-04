@@ -25,6 +25,19 @@ public class Finder
 		{
 			throw new FindException("Startpath not found");
 		}
+		if (Settings is { MaxDepth: > -1, MinDepth: > -1 } && Settings.MaxDepth < Settings.MinDepth)
+		{
+			throw new FindException("Invalid range for mindepth and maxdepth");
+		}
+		if (Settings.MaxLastMod != null && Settings.MinLastMod != null
+		                                && Settings.MaxLastMod < Settings.MinLastMod)
+		{
+			throw new FindException("Invalid range for minlastmod and maxlastmod");
+		}
+		if (Settings is { MaxSize: > 0, MinSize: > 0 } && Settings.MaxSize < Settings.MinSize)
+		{
+			throw new FindException("Invalid range for minsize and maxsize");
+		}
 	}
 
 	public bool IsMatchingDirectory(DirectoryInfo d)
@@ -115,7 +128,52 @@ public class Finder
 		return null;
 	}
 
-	private IEnumerable<FileResult> GetFileResults()
+	private IEnumerable<FileResult> GetFileResults(string filePath)
+	{
+		var findOption = Settings.Recursive ? SearchOption.AllDirectories :
+			SearchOption.TopDirectoryOnly;
+		var expandedPath = FileUtil.ExpandPath(filePath);
+		var pathSepCount = FileUtil.SepCount(expandedPath);
+		var pathResults = new List<FileResult>();
+
+		bool MatchFile(FileInfo f, int startPathSepCount)
+		{
+			if (f.Directory == null) return true;
+			var fileSepCount = FileUtil.SepCount(f.FullName);
+			var depth = fileSepCount - startPathSepCount;
+			return depth >= Settings.MinDepth
+			       && (Settings.MaxDepth < 1 || depth <= Settings.MaxDepth)
+			       && IsMatchingDirectory(f.Directory);
+		}
+
+		if (Directory.Exists(expandedPath))
+		{
+			// if MaxDepth is zero, we can skip since a directory cannot be a result
+			if (Settings.MaxDepth != 0)
+			{
+				pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
+					.Where(f => MatchFile(f, pathSepCount))
+					.Select(f => FilterToFileResult(f)).Where(fr => fr != null).Select(f => f!));
+			}
+		}
+		else if (File.Exists(expandedPath))
+		{
+			// if MinDepth > zero, we can skip since the file is at depth zero
+			if (Settings.MinDepth <= 0)
+			{
+				var fi = new FileInfo(expandedPath);
+				var fr = FilterToFileResult(fi);
+				if (fr != null)
+				{
+					pathResults.Add(fr);
+				}
+			}
+		}
+
+		return pathResults;
+	}
+
+	private IEnumerable<FileResult> GetAllFileResults()
 	{
 		var fileResults = new List<FileResult>();
 		var findOption = Settings.Recursive ? SearchOption.AllDirectories :
@@ -124,46 +182,7 @@ public class Finder
 		var currentTask = 0;
 		foreach (var p in Settings.Paths)
 		{
-			findTasks[currentTask] = Task<List<FileResult>>.Factory.StartNew(() =>
-			{
-				var expandedPath = FileUtil.ExpandPath(p);
-				var pathSepCount = FileUtil.SepCount(expandedPath);
-				var pathResults = new List<FileResult>();
-				Func<FileInfo, int, bool> matchFile = (f, startPathSepCount) =>
-				{
-					if (f.Directory == null) return true;
-					var fileSepCount = FileUtil.SepCount(f.FullName);
-					var depth = fileSepCount - startPathSepCount;
-					return depth >= Settings.MinDepth
-					       && (Settings.MaxDepth < 1 || depth <= Settings.MaxDepth)
-					       && IsMatchingDirectory(f.Directory);
-				};
-				if (Directory.Exists(expandedPath))
-				{
-					// if MaxDepth is zero, we can skip since a directory cannot be a result
-					if (Settings.MaxDepth != 0)
-					{
-						pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
-							.Where(f => matchFile(f, pathSepCount))
-							.Select(f => FilterToFileResult(f)).Where(fr => fr != null).Select(f => f!));
-					}
-				}
-				else if (File.Exists(expandedPath))
-				{
-					// if MinDepth > zero, we can skip since the file is at depth zero
-					if (Settings.MinDepth <= 0)
-					{
-						var fi = new FileInfo(expandedPath);
-						var fr = FilterToFileResult(fi);
-						if (fr != null)
-						{
-							pathResults.Add(fr);
-						}
-					}
-				}
-
-				return pathResults;
-			});
+			findTasks[currentTask] = Task<List<FileResult>>.Factory.StartNew(() => GetFileResults(p).ToList());
 			currentTask++;
 		}
 		Task.WaitAll(findTasks);
@@ -176,7 +195,7 @@ public class Finder
 
 	public IEnumerable<FileResult> Find()
 	{
-		var fileResults = GetFileResults().ToList();
+		var fileResults = GetAllFileResults().ToList();
 		SortFileResults(fileResults);
 		return fileResults;
 	}
