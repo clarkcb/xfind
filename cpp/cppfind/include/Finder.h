@@ -12,7 +12,7 @@ namespace cppfind {
         FindSettings* m_settings;
         static void validate_settings(FindSettings* settings);
         FileResult* get_file_result(std::string& file_path);
-        std::vector<FileResult*> get_file_results(const std::string& file_path);
+        std::vector<FileResult*> get_file_results(const std::string& file_path, const int depth);
         void sort_file_results(std::vector<FileResult*>& file_results);
 
     public:

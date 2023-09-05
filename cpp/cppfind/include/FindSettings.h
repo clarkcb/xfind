@@ -25,8 +25,10 @@ namespace cppfind {
         bool m_list_dirs = false;
         bool m_list_files = false;
 
+        int m_max_depth = 0;
         long m_max_last_mod = 0L;
         long m_max_size = 0L;
+        int m_min_depth = 0;
         long m_min_last_mod = 0L;
         long m_min_size = 0L;
 
@@ -78,8 +80,10 @@ namespace cppfind {
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool list_dirs() const;
         [[nodiscard]] bool list_files() const;
+        [[nodiscard]] int max_depth() const;
         [[nodiscard]] long max_last_mod() const;
         [[nodiscard]] long max_size() const;
+        [[nodiscard]] int min_depth() const;
         [[nodiscard]] long min_last_mod() const;
         [[nodiscard]] long min_size() const;
         [[nodiscard]] bool print_usage() const;
@@ -114,8 +118,10 @@ namespace cppfind {
         void include_archives(bool b);
         void list_dirs(bool b);
         void list_files(bool b);
+        void max_depth(int max_depth);
         void max_last_mod(long max_last_mod);
         void max_size(long max_size);
+        void min_depth(int min_depth);
         void min_last_mod(long min_last_mod);
         void min_size(long min_size);
         void print_usage(bool b);

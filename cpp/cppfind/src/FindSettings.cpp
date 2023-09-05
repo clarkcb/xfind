@@ -11,6 +11,8 @@ namespace cppfind {
         m_in_extensions = {};
         m_in_file_patterns = {};
         m_in_file_types = {};
+        m_max_depth = -1;
+        m_min_depth = -1;
         m_out_archive_extensions = {};
         m_out_archive_file_patterns = {};
         m_out_dir_patterns = {};
@@ -110,12 +112,20 @@ namespace cppfind {
         return m_list_files;
     }
 
+    int FindSettings::max_depth() const {
+        return m_max_depth;
+    }
+
     long FindSettings::max_last_mod() const {
         return m_max_last_mod;
     }
 
     long FindSettings::max_size() const {
         return m_max_size;
+    }
+
+    int FindSettings::min_depth() const {
+        return m_min_depth;
     }
 
     long FindSettings::min_last_mod() const {
@@ -241,12 +251,20 @@ namespace cppfind {
         m_list_files = b;
     }
 
+    void FindSettings::max_depth(const int max_depth) {
+        m_max_depth = max_depth;
+    }
+
     void FindSettings::max_last_mod(const long max_last_mod) {
         m_max_last_mod = max_last_mod;
     }
 
     void FindSettings::max_size(const long max_size) {
         m_max_size = max_size;
+    }
+
+    void FindSettings::min_depth(const int min_depth) {
+        m_min_depth = min_depth;
     }
 
     void FindSettings::min_last_mod(const long min_last_mod) {
@@ -388,8 +406,10 @@ namespace cppfind {
                 + ", include_archives: " + bool_to_string(m_include_archives)
                 + ", list_dirs: " + bool_to_string(m_list_dirs)
                 + ", list_files: " + bool_to_string(m_list_files)
+                + ", max_depth: " + std::to_string(m_max_depth)
                 + ", max_last_mod: \"" + long_to_datestr(m_max_last_mod) + "\""
                 + ", max_size: " + std::to_string(m_max_size)
+                + ", min_depth: " + std::to_string(m_min_depth)
                 + ", min_last_mod: \"" + long_to_datestr(m_min_last_mod) + "\""
                 + ", min_size: " + std::to_string(m_min_size)
                 + ", out_archive_extensions: " + string_vector_to_string(&m_out_archive_extensions)

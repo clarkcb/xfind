@@ -27,6 +27,15 @@ namespace cppfind {
                 }
             }
         }
+        if (settings->max_depth() > -1 && settings->max_depth() < settings->min_depth()) {
+            throw FindException("Invalid range for mindepth and maxdepth");
+        }
+        if (settings->max_last_mod() > 0 && settings->max_last_mod() < settings->min_last_mod()) {
+            throw FindException("Invalid range for minlastmod and maxlastmod");
+        }
+        if (settings->max_size() > 0 && settings->max_size() < settings->min_size()) {
+            throw FindException("Invalid range for minsize and maxsize");
+        }
     }
 
     FileResult* Finder::get_file_result(std::string& file_path) {
@@ -50,12 +59,18 @@ namespace cppfind {
             std::string expanded = FileUtil::expand_path(p);
 
             if (FileUtil::is_directory(expanded)) {
-                std::vector<FileResult*> p_files = get_file_results(expanded);
-                file_results.insert(file_results.end(), p_files.begin(), p_files.end());
+                // if max_depth is zero, we can skip since a directory cannot be a result
+                if (m_settings->max_depth() != 0) {
+                    std::vector<FileResult*> p_files = get_file_results(expanded, 1);
+                    file_results.insert(file_results.end(), p_files.begin(), p_files.end());
+                }
 
             } else if (FileUtil::is_regular_file(expanded)) {
-                auto* fr = get_file_result(expanded);
-                file_results.push_back(fr);
+                // if min_depth > zero, we can skip since the file is at depth zero
+                if (m_settings->min_depth() <= 0) {
+                    auto* fr = get_file_result(expanded);
+                    file_results.push_back(fr);
+                }
 
             } else {
                 throw FindException("path is an unsupported file type");
@@ -303,7 +318,7 @@ namespace cppfind {
         return std::nullopt;
     }
 
-    std::vector<FileResult*> Finder::get_file_results(const std::string& file_path) {
+    std::vector<FileResult*> Finder::get_file_results(const std::string& file_path, const int depth) {
         boost::filesystem::path p(file_path);
         std::vector<std::string> find_dirs{};
         std::vector<FileResult*> file_results{};
@@ -314,9 +329,14 @@ namespace cppfind {
 
         for (const auto& de : dir_entries) {
             const boost::filesystem::path& sub_path = de.path();
-            if (boost::filesystem::is_directory(sub_path) && m_settings->recursive() && is_matching_dir(sub_path.string())) {
+            if (boost::filesystem::is_directory(sub_path)
+                && (m_settings->max_depth() < 1 || depth <= m_settings->max_depth())
+                && m_settings->recursive()
+                && is_matching_dir(sub_path.string())) {
                 find_dirs.push_back(sub_path.string());
-            } else if (boost::filesystem::is_regular_file(sub_path)) {
+            } else if (boost::filesystem::is_regular_file(sub_path)
+                    && depth >= m_settings->min_depth()
+                    && (m_settings->max_depth() < 1 || depth <= m_settings->max_depth())) {
                 std::optional<FileResult*> optFileResult = filter_to_file_result(sub_path.string());
                 if (optFileResult.has_value()) {
                     file_results.push_back(optFileResult.value());
@@ -325,7 +345,7 @@ namespace cppfind {
         }
 
         for (const auto& find_dir : find_dirs) {
-            std::vector<FileResult*> sub_file_results = get_file_results(find_dir);
+            std::vector<FileResult*> sub_file_results = get_file_results(find_dir, depth + 1);
             file_results.insert(file_results.end(), sub_file_results.begin(), sub_file_results.end());
         }
 
