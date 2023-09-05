@@ -12,7 +12,7 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define ARG_COUNT 18
+#define ARG_COUNT 20
 const size_t arg_count = ARG_COUNT;
 char **arg_names = (char *[]) {
     "in-archiveext",
@@ -21,8 +21,10 @@ char **arg_names = (char *[]) {
     "in-ext",
     "in-filepattern",
     "in-filetype",
+    "maxdepth",
     "maxlastmod",
     "maxsize",
+    "mindepth",
     "minlastmod",
     "minsize",
     "out-archiveext",
@@ -41,8 +43,10 @@ char **arg_abbrs = (char *[]) {
     "x", // in-ext
     "f", // in-filepattern
     "t", // in-filetype
+    "",  // maxdepth
     "",  // maxlastmod
     "",  // maxsize
+    "",  // mindepth
     "",  // minlastmod
     "",  // minsize
     "",  // out-archiveext
@@ -285,6 +289,9 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             add_int_to_int_node(ftint, settings->in_file_types);
         }
         break;
+    case MAX_DEPTH:
+        settings->max_depth = atoi(arg_val);
+        break;
     case MAX_LAST_MOD:
         if (arg_val) {
             struct tm tm;
@@ -298,6 +305,9 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         break;
     case MAX_SIZE:
         settings->max_size = (unsigned long)atoi(arg_val);
+        break;
+    case MIN_DEPTH:
+        settings->min_depth = atoi(arg_val);
         break;
     case MIN_LAST_MOD:
         if (arg_val) {

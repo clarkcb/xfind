@@ -27,8 +27,10 @@ FindSettings *default_settings(void)
     settings->include_archives = 0;
     settings->list_dirs = 0;
     settings->list_files = 0;
+    settings->max_depth = -1;
     settings->max_last_mod = 0L;
     settings->max_size = 0L;
+    settings->min_depth = -1;
     settings->min_last_mod = 0L;
     settings->min_size = 0L;
     settings->out_archive_extensions = NULL;
@@ -68,10 +70,10 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", include_archives=%d"
             ", list_dirs=%d"
             ", list_files=%d"
-            // ", max_last_mod=%lu"
+            ", max_depth=%d"
             ", max_last_mod=%s"
             ", max_size=%lu"
-//            ", min_last_mod=%lu"
+            ", min_depth=%d"
             ", min_last_mod=%s"
             ", min_size=%lu"
             ", out_archive_extensions=%s"
@@ -215,10 +217,10 @@ void settings_to_string(FindSettings *settings, char *s)
         settings->include_archives,
         settings->list_dirs,
         settings->list_files,
-        // settings->max_last_mod,
+        settings->max_depth,
         max_last_mod_s,
         settings->max_size,
-//        settings->min_last_mod,
+        settings->min_depth,
         min_last_mod_s,
         settings->min_size,
         out_archive_extensions_s,

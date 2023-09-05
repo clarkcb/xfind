@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <dirent.h>
 #include <errno.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +33,15 @@ error_t validate_settings(const FindSettings *settings)
             return E_STARTPATH_NOT_FOUND;
         }
         temp = temp->next;
+    }
+    if (settings->max_depth > -1 && settings->max_depth < settings->min_depth) {
+        return E_INVALID_DEPTH_RANGE;
+    }
+    if (settings->max_last_mod > 0 && settings->max_last_mod < settings->min_last_mod) {
+        return E_INVALID_LASTMOD_RANGE;
+    }
+    if (settings->max_size > 0 && settings->max_size < settings->min_size) {
+        return E_INVALID_SIZE_RANGE;
     }
     return E_OK;
 }
@@ -119,7 +127,7 @@ unsigned short filter_file(const char *dir, const char *file_name, const Finder 
     return is_matching_file(dir, file_name, finder, file_type, fpstat);
 }
 
-static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results)
+static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results, int depth)
 {
     DIR *dir = opendir(dirpath);
     if (!dir) {
@@ -164,14 +172,17 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
         }
 
         if (S_ISDIR(fpstat.st_mode)) {
-            if (finder->settings->recursive
+            if ((finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
+                && finder->settings->recursive
                 && (!finder->settings->exclude_hidden || !is_hidden(dent->d_name))
                 && is_matching_dir(dent->d_name, finder->settings)) {
                 add_string_to_string_node(file_path, find_dirs);
             }
         } else if (S_ISREG(fpstat.st_mode)) {
             FileType file_type = UNKNOWN;
-            if (filter_file(normpath, dent->d_name, finder, &file_type, &fpstat) == 1) {
+            if (depth >= finder->settings->min_depth
+                && (finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
+                && filter_file(normpath, dent->d_name, finder, &file_type, &fpstat) == 1) {
                 size_t slen = strlen(dent->d_name);
                 char *file_name = (char *)malloc((slen + 1) * sizeof(char));
                 strncpy(file_name, dent->d_name, slen);
@@ -189,7 +200,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
     if (is_null_or_empty_string_node(find_dirs) == 0 && finder->settings->recursive) {
         StringNode *temp = find_dirs;
         while (temp != NULL) {
-            find_dir(temp->string, finder, results);
+            find_dir(temp->string, finder, results, depth + 1);
             temp = temp->next;
         }
     }
@@ -233,23 +244,29 @@ error_t find(const FindSettings *settings, FileResults *results)
             return err;
         }
         if (S_ISDIR(st.st_mode)) {
-            err = find_dir(expanded, finder, results);
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (finder->settings->max_depth != 0) {
+                err = find_dir(expanded, finder, results, 1);
+            }
             if (err != E_OK) {
                 destroy_finder(finder);
                 return err;
             }
         } else if (S_ISREG(st.st_mode)) {
-            FileType file_type = UNKNOWN;
-            size_t nextpath_len = (strlen(nextpath->string) + 2) * sizeof(char);
-            char *d = (char *)malloc(nextpath_len);
-            char *f = (char *)malloc(nextpath_len);
-            split_path(nextpath->string, &d, &f);
-            if (filter_file(d, f, finder, &file_type, &st) == 1) {
-                FileResult *r = new_file_result(d, f, file_type, (uint64_t) st.st_size,
-                                                st.st_mtime);
-                add_to_file_results(r, results);
-            } else {
-                return E_STARTPATH_NON_MATCHING;
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (finder->settings->min_depth <= 0) {
+                FileType file_type = UNKNOWN;
+                size_t nextpath_len = (strlen(nextpath->string) + 2) * sizeof(char);
+                char *d = (char *)malloc(nextpath_len);
+                char *f = (char *)malloc(nextpath_len);
+                split_path(nextpath->string, &d, &f);
+                if (filter_file(d, f, finder, &file_type, &st) == 1) {
+                    FileResult *r = new_file_result(d, f, file_type, (uint64_t) st.st_size,
+                                                    st.st_mtime);
+                    add_to_file_results(r, results);
+                } else {
+                    return E_STARTPATH_NON_MATCHING;
+                }
             }
         } else {
             return E_STARTPATH_UNSUPPORTED_FILETYPE;

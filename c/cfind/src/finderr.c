@@ -134,6 +134,15 @@ void handle_error(error_t err)
     case E_INVALID_DATESTRING:
         log_err("Invalid date string");
         break;
+    case E_INVALID_DEPTH_RANGE:
+        log_err("Invalid range for mindepth and maxdepth");
+        break;
+    case E_INVALID_LASTMOD_RANGE:
+        log_err("Invalid range for minlastmod and maxlastmod");
+        break;
+    case E_INVALID_SIZE_RANGE:
+        log_err("Invalid range for minsize and maxsize");
+        break;
     default:
         log_err("Unknown error occurred");
         break;

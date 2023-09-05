@@ -19,6 +19,9 @@
 #define E_FILE_NOT_FOUND                 311 /* File not found */
 #define E_FILENAME_TOO_LONG              312 /* Filename is too long */
 #define E_INVALID_DATESTRING             313 /* Invalid date string (for max_last_mod/min_last_mod) */
+#define E_INVALID_DEPTH_RANGE            314 /* Invalid depth range (max_depth < min_depth) */
+#define E_INVALID_LASTMOD_RANGE          315 /* Invalid lastmod range (max_last_mod < min_last_mod) */
+#define E_INVALID_SIZE_RANGE             316 /* Invalid size range (max_size < min_size) */
 
 typedef unsigned int error_t;
 

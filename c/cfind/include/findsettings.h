@@ -26,8 +26,10 @@ typedef struct FindSettings {
     unsigned short include_archives : 1;
     unsigned short list_dirs : 1;
     unsigned short list_files : 1;
+    int max_depth;
     long max_last_mod;
     unsigned long max_size;
+    int min_depth;
     long min_last_mod;
     unsigned long min_size;
     StringNode *out_archive_extensions;

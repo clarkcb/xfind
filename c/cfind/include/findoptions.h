@@ -21,18 +21,20 @@ typedef enum {
     IN_EXTENSION             = 3,
     IN_FILE_PATTERN          = 4,
     IN_FILE_TYPE             = 5,
-    MAX_LAST_MOD             = 6,
-    MAX_SIZE                 = 7,
-    MIN_LAST_MOD             = 8,
-    MIN_SIZE                 = 9,
-    OUT_ARCHIVE_EXT          = 10,
-    OUT_ARCHIVE_FILE_PATTERN = 11,
-    OUT_DIR_PATTERN          = 12,
-    OUT_EXTENSION            = 13,
-    OUT_FILE_PATTERN         = 14,
-    OUT_FILE_TYPE            = 15,
-    PATH                     = 16,
-    SORT_BY                  = 17
+    MAX_DEPTH                = 6,
+    MAX_LAST_MOD             = 7,
+    MAX_SIZE                 = 8,
+    MIN_DEPTH                = 9,
+    MIN_LAST_MOD             = 10,
+    MIN_SIZE                 = 11,
+    OUT_ARCHIVE_EXT          = 12,
+    OUT_ARCHIVE_FILE_PATTERN = 13,
+    OUT_DIR_PATTERN          = 14,
+    OUT_EXTENSION            = 15,
+    OUT_FILE_PATTERN         = 16,
+    OUT_FILE_TYPE            = 17,
+    PATH                     = 18,
+    SORT_BY                  = 19
 } SettingsCollType;
 
 typedef enum {
