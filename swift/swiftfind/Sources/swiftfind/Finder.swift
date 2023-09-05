@@ -36,6 +36,12 @@ public class Finder {
             throw FindError(msg: "Startpath not found")
         } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) }) {
             throw FindError(msg: "Startpath not readable")
+        } else if settings.maxDepth > -1 && settings.maxDepth < settings.minDepth {
+            throw FindError(msg: "Invalid range for mindepth and maxdepth")
+        } else if settings.maxLastMod != nil && settings.minLastMod != nil && settings.maxLastMod < settings.minLastMod {
+            throw FindError(msg: "Invalid range for minlastmod and maxlastmod")
+        } else if settings.maxSize > 0 && settings.maxSize < settings.minSize {
+            throw FindError(msg: "Invalid range for minsize and maxsize")
         }
     }
 
@@ -196,12 +202,14 @@ public class Finder {
                 do {
                     let fileAttributes = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey])
                     if fileAttributes.isDirectory! {
-                        if !isMatchingDir(fileURL.path) {
+                        if (settings.maxDepth > 0 && enumerator.level > settings.maxDepth) || !isMatchingDir(fileURL.path) {
                             enumerator.skipDescendants()
                         }
                     } else if fileAttributes.isRegularFile! {
-                        if let fileResult = filterToFileResult(fileURL.path) {
-                            fileResults.append(fileResult)
+                        if enumerator.level >= settings.minDepth && (settings.maxDepth < 1 || enumerator.level <= settings.maxDepth) {
+                            if let fileResult = filterToFileResult(fileURL.path) {
+                                fileResults.append(fileResult)
+                            }
                         }
                     }
                 } catch { print(error, fileURL) }
@@ -294,11 +302,17 @@ public class Finder {
         var fileResults = [FileResult]()
         for p in settings.paths {
             if FileUtil.isDirectory(p) {
-                let pFiles: [FileResult] = getFileResults(p)
-                fileResults.append(contentsOf: pFiles)
+                // if maxDepth is zero, we can skip since a directory cannot be a result
+                if settings.maxDepth != 0 {
+                    let pFiles: [FileResult] = getFileResults(p)
+                    fileResults.append(contentsOf: pFiles)
+                }
             } else {
-                if let fileResult = filterToFileResult(p) {
-                    fileResults.append(fileResult)
+                // if minDepth > zero, we can skip since the file is at depth zero
+                if settings.minDepth <= 0 {
+                    if let fileResult = filterToFileResult(p) {
+                        fileResults.append(fileResult)
+                    }
                 }
             }
         }

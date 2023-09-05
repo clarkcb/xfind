@@ -80,11 +80,17 @@ public class FindOptions {
             "out-archiveext": { (str: String, settings: FindSettings) -> Void in
                 settings.addOutArchiveExtension(str)
             },
+            "maxdepth": { (str: String, settings: FindSettings) -> Void in
+                settings.setMaxDepthFromString(str)
+            },
             "maxlastmod": { (str: String, settings: FindSettings) -> Void in
                 settings.setMaxLastModFromString(str)
             },
             "maxsize": { (str: String, settings: FindSettings) -> Void in
                 settings.setMaxSizeFromString(str)
+            },
+            "mindepth": { (str: String, settings: FindSettings) -> Void in
+                settings.setMinDepthFromString(str)
             },
             "minlastmod": { (str: String, settings: FindSettings) -> Void in
                 settings.setMinSizeFromString(str)

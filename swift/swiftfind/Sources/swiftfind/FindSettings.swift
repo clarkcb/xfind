@@ -50,8 +50,10 @@ public enum DefaultFindSettings {
     public static let includeArchives = false
     public static let listDirs = false
     public static let listFiles = false
+    public static let maxDepth: Int64 = -1
     public static let maxLastMod: Date? = nil
     public static let maxSize: UInt64 = 0
+    public static let minDepth: Int64 = -1
     public static let minLastMod: Date? = nil
     public static let minSize: UInt64 = 0
     public static let printUsage = false
@@ -70,8 +72,10 @@ open class FindSettings: CustomStringConvertible {
     open var includeArchives: Bool = DefaultFindSettings.includeArchives
     open var listDirs: Bool = DefaultFindSettings.listDirs
     open var listFiles: Bool = DefaultFindSettings.listFiles
+    open var maxDepth: Int64 = DefaultFindSettings.maxDepth
     open var maxLastMod: Date? = DefaultFindSettings.maxLastMod
     open var maxSize: UInt64 = DefaultFindSettings.maxSize
+    open var minDepth: Int64 = DefaultFindSettings.minDepth
     open var minLastMod: Date? = DefaultFindSettings.minLastMod
     open var minSize: UInt64 = DefaultFindSettings.minSize
     open var printUsage: Bool = DefaultFindSettings.printUsage
@@ -170,12 +174,20 @@ open class FindSettings: CustomStringConvertible {
         }
     }
 
+    public func setMaxDepthFromString(_ maxDepthStr: String) {
+        maxDepth = Int64(maxDepthStr) ?? 0
+    }
+
     public func setMaxLastModFromString(_ maxLastModStr: String) {
         maxLastMod = stringToDate(maxLastModStr)
     }
 
     public func setMaxSizeFromString(_ maxSizeStr: String) {
         maxSize = UInt64(maxSizeStr) ?? 0
+    }
+
+    public func setMinDepthFromString(_ minDepthStr: String) {
+        minDepth = Int64(minDepthStr) ?? 0
     }
 
     public func setMinLastModFromString(_ minLastModStr: String) {
@@ -238,8 +250,10 @@ open class FindSettings: CustomStringConvertible {
             ", includeArchives=\(includeArchives)" +
             ", listDirs=\(listDirs)" +
             ", listFiles=\(listFiles)" +
+            ", maxDepth=\(maxDepth)" +
             ", maxLastMod=\(dateToString(maxLastMod))" +
             ", maxSize=\(maxSize)" +
+            ", minDepth=\(minDepth)" +
             ", minLastMod=\(dateToString(minLastMod))" +
             ", minSize=\(minSize)" +
             ", outArchiveExtensions=\(setToString(outArchiveExtensions))" +
