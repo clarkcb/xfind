@@ -31,8 +31,8 @@ import HsFind.FindSettings
 validateSettings :: FindSettings -> [String]
 validateSettings settings = concatMap ($settings) validators
   where validators = [ \s -> ["Startpath not defined" | null (paths s)]
-                     , \s -> ["Invalid maxsize" | maxSize s < 0]
-                     , \s -> ["Invalid minsize" | maxSize s < 0]
+                     , \s -> ["Invalid range for mindepth and maxdepth" | maxDepth s > 0 && maxDepth s < minDepth s]
+                     , \s -> ["Invalid range for minsize and maxsize" | maxSize s > 0 && maxSize s < minSize s]
                      ]
 
 getDirTests :: FindSettings -> [FilePath -> Bool]
@@ -179,7 +179,7 @@ getFileResults settings = do
   jsonFileTypes <- getJsonFileTypes
   let fileTests = getAllFileTests settings jsonFileTypes
   pathLists <- forM (paths settings) $ \path ->
-    getRecursiveFilteredContents path (matchesDirTests dirTests) (matchesFileTests fileTests)
+    getRecursiveFilteredContents path 1 (minDepth settings) (maxDepth settings) (matchesDirTests dirTests) (matchesFileTests fileTests)
   let allPaths = concat pathLists
   allFileTypes <- getFileTypes allPaths
   allFileSizes <- if maxSize settings > 0 || minSize settings > 0 || sortResultsBy settings == SortByFileSize

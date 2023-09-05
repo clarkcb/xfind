@@ -26,8 +26,10 @@ data FindSettings = FindSettings {
                                  , includeArchives :: Bool
                                  , listDirs :: Bool
                                  , listFiles :: Bool
+                                 , maxDepth :: Integer
                                  , maxLastMod :: Maybe UTCTime
                                  , maxSize :: Integer
+                                 , minDepth :: Integer
                                  , minLastMod :: Maybe UTCTime
                                  , minSize :: Integer
                                  , outArchiveExtensions :: [String]
@@ -60,8 +62,10 @@ defaultFindSettings = FindSettings {
                                    , includeArchives=False
                                    , listDirs=False
                                    , listFiles=False
+                                   , maxDepth = -1
                                    , maxLastMod=Nothing
                                    , maxSize=0
+                                   , minDepth = -1
                                    , minLastMod=Nothing
                                    , minSize=0
                                    , outArchiveExtensions=[]

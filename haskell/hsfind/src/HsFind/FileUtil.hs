@@ -122,19 +122,19 @@ getRecursiveContents dir = do
     else return [path]
   return (concat paths)
 
-getRecursiveFilteredContents :: FilePath -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
-getRecursiveFilteredContents dir dirFilter fileFilter = do
+getRecursiveFilteredContents :: FilePath -> Integer -> Integer -> Integer -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
+getRecursiveFilteredContents dir depth minDepth maxDepth dirFilter fileFilter = do
   filePaths <- getNonDotDirectoryContents dir
   paths <- forM filePaths $ \path -> do
     d <- doesDirectoryExist path
     f <- doesFileExist path
     case (d, f) of
       (True, False) ->
-        if dirFilter path
-          then getRecursiveFilteredContents path dirFilter fileFilter
+        if (maxDepth < 1 || depth <= maxDepth) && dirFilter path
+          then getRecursiveFilteredContents path (depth + 1) minDepth maxDepth dirFilter fileFilter
         else return []
       (False, True) ->
-        if fileFilter $ takeFileName path
+        if depth >= minDepth && (maxDepth < 1 || depth <= maxDepth) && fileFilter (takeFileName path)
           then
             return [path]
         else return []
