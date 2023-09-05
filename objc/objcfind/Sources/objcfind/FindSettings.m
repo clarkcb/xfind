@@ -23,8 +23,10 @@
         self.sortDescending = false;
         self.verbose = false;
 
+        self.maxDepth = -1;
         self.maxLastMod = nil;
         self.maxSize = 0;
+        self.minDepth = -1;
         self.minLastMod = nil;
         self.minSize = 0;
 
@@ -60,8 +62,10 @@
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
     [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
     [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
+    [d appendFormat:@", maxDepth=%lu", (long)self.maxDepth];
     [d appendFormat:@", maxLastMod=%@", [FindSettings lastModToNSString:self.maxLastMod]];
     [d appendFormat:@", maxSize=%lu", (long)self.maxSize];
+    [d appendFormat:@", minDepth=%lu", (long)self.minDepth];
     [d appendFormat:@", minLastMod=%@", [FindSettings lastModToNSString:self.minLastMod]];
     [d appendFormat:@", minSize=%lu", (long)self.minSize];
     [d appendFormat:@", outArchiveExtensions=%@", arrayToNSString(self.outArchiveExtensions)];
@@ -175,12 +179,20 @@
     }
 }
 
+- (void) setMaxDepthFromString:(NSString*)depthStr {
+    [self setMaxDepth:[depthStr intValue]];
+}
+
 - (void) setMaxLastModFromString:(NSString*)dateStr {
     [self setMaxLastMod:stringToNSDate(dateStr)];
 }
 
 - (void) setMaxSizeFromString:(NSString*)sizeStr {
     [self setMaxSize:[sizeStr intValue]];
+}
+
+- (void) setMinDepthFromString:(NSString*)depthStr {
+    [self setMinDepth:[depthStr intValue]];
 }
 
 - (void) setMinLastModFromString:(NSString*)dateStr {

@@ -155,11 +155,17 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
                 [ss addInFileType:s];
             }, @"in-filetype",
             ^void (NSString* s, FindSettings *ss) {
+                [ss setMaxDepthFromString:s];
+            }, @"maxdepth",
+            ^void (NSString* s, FindSettings *ss) {
                 [ss setMaxLastModFromString:s];
             }, @"maxlastmod",
             ^void (NSString* s, FindSettings *ss) {
                 [ss setMaxSizeFromString:s];
             }, @"maxsize",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss setMinDepthFromString:s];
+            }, @"mindepth",
             ^void (NSString* s, FindSettings *ss) {
                 [ss setMinLastModFromString:s];
             }, @"minlastmod",

@@ -26,8 +26,10 @@
 @property(nonatomic) BOOL sortDescending;
 @property(nonatomic) BOOL verbose;
 
+@property(nonatomic) NSInteger maxDepth;
 @property(nonatomic) NSDate *maxLastMod;
 @property(nonatomic) NSInteger maxSize;
+@property(nonatomic) NSInteger minDepth;
 @property(nonatomic) NSDate *minLastMod;
 @property(nonatomic) NSInteger minSize;
 
@@ -62,8 +64,10 @@
 - (void) addOutFilePattern:(NSString*)pattern;
 - (void) addPath:(NSString*)path;
 
+- (void) setMaxDepthFromString:(NSString*)depthStr;
 - (void) setMaxLastModFromString:(NSString*)sizeStr;
 - (void) setMaxSizeFromString:(NSString*)sizeStr;
+- (void) setMinDepthFromString:(NSString*)depthStr;
 - (void) setMinLastModFromString:(NSString*)sizeStr;
 - (void) setMinSizeFromString:(NSString*)sizeStr;
 

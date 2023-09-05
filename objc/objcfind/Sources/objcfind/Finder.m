@@ -35,6 +35,15 @@
     } else if (![FileUtil allReadable:settings.paths]) {
         setError(error, @"Startpath not readable");
         return false;
+    } else if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
+        setError(error, @"Invalid range for mindepth and maxdepth");
+        return false;
+    } else if (settings.maxLastMod != nil && settings.minLastMod != nil && settings.maxLastMod < settings.minLastMod) {
+        setError(error, @"Invalid range for minlastmod and maxlastmod");
+        return false;
+    } else if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
+        setError(error, @"Invalid range for minsize and maxsize");
+        return false;
     }
     return true;
 }
@@ -170,17 +179,19 @@
         NSNumber *isDirectory = nil;
         [element getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:nil];
         if ([isDirectory boolValue]) {
-            if (![self isMatchingDir:[element path]]) {
+            if ((self.settings.maxDepth > 0 && enumerator.level > self.settings.maxDepth) || ![self isMatchingDir:[element path]]) {
                 [enumerator skipDescendants];
             }
         } else {
             NSNumber *isRegularFile = nil;
             [element getResourceValue:&isRegularFile forKey:NSURLIsRegularFileKey error:nil];
             if ([isRegularFile boolValue]) {
-                NSString *filePath = [element path];
-                FileResult *fileResult = [self filterToFileResult:filePath];
-                if (fileResult != nil) {
-                    [fileResults addObject:fileResult];
+                if (enumerator.level >= self.settings.minDepth && (self.settings.maxDepth < 1 || enumerator.level <= self.settings.maxDepth)) {
+                    NSString *filePath = [element path];
+                    FileResult *fileResult = [self filterToFileResult:filePath];
+                    if (fileResult != nil) {
+                        [fileResults addObject:fileResult];
+                    }
                 }
             }
         }
@@ -222,12 +233,18 @@
     NSMutableArray<FileResult*> *fileResults = [NSMutableArray array];
     for (NSString *p in self.settings.paths) {
         if ([FileUtil isDirectory:p]) {
-            NSArray<FileResult*> *pFiles = [self getFileResults:p];
-            [fileResults addObjectsFromArray:pFiles];
+            // if maxDepth is zero, we can skip since a directory cannot be a result
+            if (self.settings.maxDepth != 0) {
+                NSArray<FileResult*> *pFiles = [self getFileResults:p];
+                [fileResults addObjectsFromArray:pFiles];
+            }
         } else {
-            FileResult *fr = [self filterToFileResult:p];
-            if (fr != nil) {
-                [fileResults addObject:fr];
+            // if minDepth > zero, we can skip since the file is at depth zero
+            if (self.settings.minDepth <= 0) {
+                FileResult *fr = [self filterToFileResult:p];
+                if (fr != nil) {
+                    [fileResults addObject:fr];
+                }
             }
         }
     }
