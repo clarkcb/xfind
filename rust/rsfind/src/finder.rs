@@ -47,18 +47,27 @@ impl Finder {
             let p = FileUtil::expand_path(path);
             let metadata = fs::metadata(&p);
             if metadata.is_err() {
-                match metadata.err().unwrap().kind() {
-                    io::ErrorKind::NotFound => return Err(FindError::new("Startpath not found")),
+                return match metadata.err().unwrap().kind() {
+                    io::ErrorKind::NotFound => Err(FindError::new("Startpath not found")),
                     io::ErrorKind::PermissionDenied => {
-                        return Err(FindError::new("Startpath not readable"))
+                        Err(FindError::new("Startpath not readable"))
                     },
                     _ => {
-                        return Err(FindError::new(
+                        Err(FindError::new(
                             "An unknown error occurred trying to read startpath",
                         ))
                     }
                 }
             }
+        }
+        if settings.max_depth() > -1 && settings.max_depth() < settings.min_depth() {
+            return Err(FindError::new("Invalid range for mindepth and maxdepth"));
+        }
+        if settings.max_last_mod() > 0 && settings.max_last_mod() < settings.min_last_mod() {
+            return Err(FindError::new("Invalid range for minlastmod and maxlastmod"));
+        }
+        if settings.max_size() > 0 && settings.max_size() < settings.min_size() {
+            return Err(FindError::new("Invalid range for minsize and maxsize"));
         }
         Ok(())
     }
@@ -291,7 +300,14 @@ impl Finder {
         let mut file_results: Vec<FileResult> = Vec::new();
         for p in self.settings.paths().iter() {
             let ep = FileUtil::expand_path(p);
-            for entry in WalkDir::new(&ep)
+            let mut dir_walker = WalkDir::new(&ep).follow_links(false); // TODO: add followlinks to settings and use here
+            if self.settings.max_depth() > -1 {
+                dir_walker = dir_walker.max_depth(self.settings.max_depth() as usize)
+            }
+            if self.settings.min_depth() > -1 {
+                dir_walker = dir_walker.min_depth(self.settings.min_depth() as usize)
+            }
+            for entry in dir_walker
                 .into_iter()
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file())

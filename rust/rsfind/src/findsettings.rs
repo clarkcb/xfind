@@ -17,8 +17,10 @@ pub struct FindSettings {
     _include_archives: bool,
     _list_dirs: bool,
     _list_files: bool,
+    _max_depth: i64,
     _max_last_mod: u64,
     _max_size: u64,
+    _min_depth: i64,
     _min_last_mod: u64,
     _min_size: u64,
     _out_archive_extensions: Vec<String>,
@@ -52,8 +54,10 @@ impl FindSettings {
             _include_archives: false,
             _list_dirs: false,
             _list_files: false,
+            _max_depth: -1i64,
             _max_last_mod: 0u64,
             _max_size: 0u64,
+            _min_depth: -1i64,
             _min_last_mod: 0u64,
             _min_size: 0u64,
             _out_archive_extensions: Vec::new(),
@@ -175,6 +179,14 @@ impl FindSettings {
         self._list_files = b
     }
 
+    pub fn max_depth(&self) -> i64 {
+        self._max_depth
+    }
+
+    pub fn set_max_depth(&mut self, m: i64) {
+        self._max_depth = m
+    }
+
     pub fn max_last_mod(&self) -> u64 {
         self._max_last_mod
     }
@@ -189,6 +201,14 @@ impl FindSettings {
 
     pub fn set_max_size(&mut self, m: u64) {
         self._max_size = m
+    }
+
+    pub fn min_depth(&self) -> i64 {
+        self._min_depth
+    }
+
+    pub fn set_min_depth(&mut self, m: i64) {
+        self._min_depth = m
     }
 
     pub fn min_last_mod(&self) -> u64 {
@@ -350,8 +370,10 @@ mod tests {
         assert_eq!(settings.include_archives(), false);
         assert_eq!(settings.list_dirs(), false);
         assert_eq!(settings.list_files(), false);
+        assert_eq!(settings.max_depth(), -1);
         assert_eq!(settings.max_last_mod(), 0);
         assert_eq!(settings.max_size(), 0);
+        assert_eq!(settings.min_depth(), -1);
         assert_eq!(settings.min_last_mod(), 0);
         assert_eq!(settings.min_size(), 0);
         assert!(settings.out_archive_extensions().is_empty());
