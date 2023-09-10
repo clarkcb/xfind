@@ -13,7 +13,7 @@ import {Finder} from './finder';
 
 function handleError(err: Error | any, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
-    common.log('\n' + errMsg + '\n');
+    common.logError('\n' + errMsg + '\n');
     findOptions.usageWithCode(1);
 }
 

@@ -21,6 +21,10 @@ export function log(message: string): void {
     console.log(message);
 }
 
+export function logError(message: string): void {
+    console.error(message);
+}    
+
 export function boolHashFromArray(arr: string[]): {[key:string]: boolean} {
     const hash: {[key:string]: boolean} = {};
     arr.forEach(a => hash[a] = true);
