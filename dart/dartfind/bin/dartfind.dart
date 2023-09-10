@@ -55,14 +55,12 @@ Future<void> find(FindSettings settings, FindOptions options) async {
   try {
     var finder = Finder(settings);
     await finder.find().then((fileResults) {
-      if (fileResults.isNotEmpty) {
-        if (settings.listDirs) {
-          printMatchingDirs(fileResults, settings);
-        }
+      if (settings.listDirs) {
+        printMatchingDirs(fileResults, settings);
+      }
 
-        if (settings.listFiles) {
-          printMatchingFiles(fileResults, settings);
-        }
+      if (settings.listFiles) {
+        printMatchingFiles(fileResults, settings);
       }
     });
   } on FormatException catch (e) {

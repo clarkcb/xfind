@@ -137,12 +137,12 @@ class Finder {
         if (settings.includeArchives) {
           return fileResult;
         }
-        return Future.value(null);
+        return null;
       }
       if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
         return fileResult;
       }
-      return Future.value(null);
+      return null;
     });
   }
 
@@ -163,7 +163,7 @@ class Finder {
           var depth = fileSepCount - startPathSepCount;
           if (f is File &&
               depth >= settings.minDepth &&
-              depth <= settings.maxDepth &&
+              (settings.maxDepth < 1 || depth <= settings.maxDepth) &&
               isMatchingDir(f.parent)) {
             var fileResult = await filterToFileResult(f);
             if (fileResult != null) {
@@ -298,7 +298,9 @@ class Finder {
         fileResults.addAll(pathFileResults);
       }
     });
-    sortFileResults(fileResults);
+    if (fileResults.length > 1) {
+      sortFileResults(fileResults);
+    }
     return fileResults;
   }
 
