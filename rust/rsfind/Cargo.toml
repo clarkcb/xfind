@@ -5,8 +5,8 @@ authors = ["Cary Clark <clarkcb@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-chrono = "0.4.24"
-regex = "1.8.3"
-serde = { version ="1.0.163", features = ["derive"] }
-serde_json = "1.0.96"
+chrono = "0.4.28"
+regex = "1.8.4"
+serde = { version ="1.0.188", features = ["derive"] }
+serde_json = "1.0.105"
 walkdir = "2.3.3"
