@@ -93,7 +93,7 @@ public class FindOptions {
                 settings.setMinDepthFromString(str)
             },
             "minlastmod": { (str: String, settings: FindSettings) -> Void in
-                settings.setMinSizeFromString(str)
+                settings.setMinLastModFromString(str)
             },
             "minsize": { (str: String, settings: FindSettings) -> Void in
                 settings.setMinSizeFromString(str)
