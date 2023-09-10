@@ -35,7 +35,8 @@ sharedpath = os.path.join(XFINDPATH, 'shared')
 default_runs = 10
 
 ignore_dirs = ['node_modules', 'vendor', 'venv']
-core_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
+ignore_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
+core_args = ignore_args
 ext_args = ['-x', exts]
 common_args = core_args + ext_args + startpaths
 
@@ -52,6 +53,7 @@ scenarios = [
     # match filename
     Scenario('find with "find" in filename', common_args + ['-f', 'find'], replace_xfind_name=False),
     Scenario('find with "find" not in filename', common_args + ['-F', 'find'], replace_xfind_name=False),
+    Scenario('find blank filename (should find nothing)', common_args + ['-f', '^$'], replace_xfind_name=False),
 
     # match filetype
     Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths, replace_xfind_name=False),
@@ -65,8 +67,8 @@ scenarios = [
     # sorting scenarios
     Scenario('sort shared files by path', ['--sort-by', 'path', sharedpath], replace_xfind_name=False),
     Scenario('sort shared files by filename', ['--sort-by', 'name', sharedpath], replace_xfind_name=False),
-    Scenario('sort scripts files by path case-insensitive', ['--sort-by', 'path', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
-    Scenario('sort scripts files by filename case-insensitive', ['--sort-by', 'name', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
+    Scenario('sort scripts files by path case-insensitive', ignore_args + ['--sort-by', 'path', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
+    Scenario('sort scripts files by filename case-insensitive', ignore_args + ['--sort-by', 'name', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
     Scenario('sort shared files by filesize', ['--sort-by', 'size', sharedpath], replace_xfind_name=False),
     Scenario('sort shared files by filesize descending', ['--sort-by', 'size', '--sort-descending', sharedpath], replace_xfind_name=False),
     Scenario('sort shared files by filetype', ['--sort-by', 'type', sharedpath], replace_xfind_name=False),
@@ -74,15 +76,23 @@ scenarios = [
     Scenario('sort shared files by lastmod', ['--sort-by', 'lastmod', sharedpath], replace_xfind_name=False),
     Scenario('sort shared files by lastmod descending', ['--sort-by', 'lastmod', '--sort-descending', sharedpath], replace_xfind_name=False),
 
+    # filter by maxdepth/mindepth
+    Scenario('filter files with depth <= maxdepth', ignore_args + ['--maxdepth', '3', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with depth >= mindepth', ignore_args + ['--mindepth', '2', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by maxdepth and mindepth', ignore_args + ['--maxdepth', '3', '--mindepth', '2', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by invalid range maxdepth and mindepth', ignore_args + ['--maxdepth', '2', '--mindepth', '3', scriptpath], replace_xfind_name=True),
+
     # filter by maxlastmod/minlastmod
-    Scenario('filter files with lastmod < maxlastmod', ['--maxlastmod', '2022-12-30', scriptpath], replace_xfind_name=False),
-    Scenario('filter files with lastmod > minlastmod', ['--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by maxlastmod and minlastmod', ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with lastmod <= maxlastmod', ignore_args + ['--maxlastmod', '2022-12-30', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with lastmod >= minlastmod', ignore_args + ['--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by maxlastmod and minlastmod', ignore_args + ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by invalid range maxlastmod and minlastmod', ignore_args + ['--maxlastmod', '2020-01-01', '--minlastmod', '2022-12-30', scriptpath], replace_xfind_name=True),
 
     # filter by maxsize/minsize
-    Scenario('filter files with size < maxsize', ['--maxsize', '10000', scriptpath], replace_xfind_name=False),
-    Scenario('filter files with size > minsize', ['--minsize', '1000', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by maxsize and minsize', ['--maxsize', '10000', '--minsize', '5000', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with size < maxsize', ignore_args + ['--maxsize', '10000', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with size > minsize', ignore_args + ['--minsize', '1000', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by maxsize and minsize', ignore_args + ['--maxsize', '10000', '--minsize', '5000', scriptpath], replace_xfind_name=False),
+    Scenario('filter files by invalid range maxsize and minsize', ignore_args + ['--maxsize', '5000', '--minsize', '10000', scriptpath], replace_xfind_name=True),
 ]
 
 time_keys = {'real', 'sys', 'user', 'total'}
@@ -619,6 +629,7 @@ def get_args(args):
     xfind_names = all_xfind_names
     runs = default_runs
     debug = False
+    exit_on_diff = True
     while args:
         arg = args.pop(0)
         if arg.startswith('-'):
@@ -640,6 +651,8 @@ def get_args(args):
                 else:
                     print('ERROR: missing runs value for -r arg')
                     sys.exit(1)
+            elif arg == '-b':
+                exit_on_diff = True
             elif arg == '--debug':
                 debug = True
             else:
@@ -648,15 +661,17 @@ def get_args(args):
         else:
             print('ERROR: unknown arg: {}'.format(arg))
             sys.exit(1)
-    return xfind_names, runs, debug
+    return xfind_names, runs, exit_on_diff, debug
 
 
 def main():
-    xfind_names, runs, debug = get_args(sys.argv[1:])
+    xfind_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
     print('xfind_names: {}'.format(str(xfind_names)))
     print('runs: {}'.format(runs))
+    print('exit_on_diff: {}'.format(exit_on_diff))
+    print('debug: {}'.format(debug))
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
-        scenarios=scenarios, debug=debug)
+        scenarios=scenarios, exit_on_diff=exit_on_diff, debug=debug)
     benchmarker.run()
 
 
