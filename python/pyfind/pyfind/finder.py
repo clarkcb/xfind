@@ -39,10 +39,10 @@ class Finder:
                 'Invalid range for mindepth and maxdepth'
         if self.settings.max_last_mod and self.settings.min_last_mod:
             assert self.settings.max_last_mod >= self.settings.min_last_mod, \
-                'Invalid range for min_last_mod and max_last_mod'
+                'Invalid range for minlastmod and maxlastmod'
         if self.settings.max_size > 0 and self.settings.min_size > 0:
             assert self.settings.max_size >= self.settings.min_size, \
-                'Invalid range for min_size and max_size'
+                'Invalid range for minsize and maxsize'
 
     def is_matching_dir(self, d: str) -> bool:
         """Check whether the given directory matches find settings."""

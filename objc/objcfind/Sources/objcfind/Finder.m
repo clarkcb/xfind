@@ -38,7 +38,7 @@
     } else if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
         setError(error, @"Invalid range for mindepth and maxdepth");
         return false;
-    } else if (settings.maxLastMod != nil && settings.minLastMod != nil && settings.maxLastMod < settings.minLastMod) {
+    } else if (settings.maxLastMod != nil && settings.minLastMod != nil && [settings.maxLastMod isEqualToDate:[settings.maxLastMod earlierDate:settings.minLastMod]]) {
         setError(error, @"Invalid range for minlastmod and maxlastmod");
         return false;
     } else if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {

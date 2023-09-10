@@ -52,7 +52,7 @@ sub validate_settings {
         && $settings->{max_depth} < $settings->{min_depth}) {
         push(@{$errs}, 'Invalid range for mindepth and maxdepth');
     }
-    if ($settings->{max_last_mod} > 0 && $settings->{min_last_mod} > 0
+    if (blessed($settings->{max_last_mod}) && blessed($settings->{min_last_mod})
         && $settings->{max_last_mod} < $settings->{min_last_mod}) {
         push(@{$errs}, 'Invalid range for minlastmod and maxlastmod');
     }

@@ -40,16 +40,14 @@ class Finder
                 throw new FindException('Startpath not readable');
             }
         }
-        if ($this->settings->max_depth > -1 && $this->settings->min_depth > -1
-            && $this->settings->max_depth < $this->settings->min_depth) {
+        if ($this->settings->max_depth > -1 && $this->settings->max_depth < $this->settings->min_depth) {
             throw new FindException('Invalid range for mindepth and maxdepth');
         }
         if ($this->settings->max_last_mod != null && $this->settings->min_last_mod != null
             && $this->settings->max_last_mod->getTimestamp() < $this->settings->min_last_mod->getTimestamp()) {
             throw new FindException('Invalid range for minlastmod and maxlastmod');
         }
-        if ($this->settings->max_size > 0 && $this->settings->min_size > 0
-            && $this->settings->max_size < $this->settings->min_size) {
+        if ($this->settings->max_size > 0 && $this->settings->max_size < $this->settings->min_size) {
             throw new FindException('Invalid range for minsize and maxsize');
         }
     }

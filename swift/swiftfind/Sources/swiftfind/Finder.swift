@@ -38,7 +38,7 @@ public class Finder {
             throw FindError(msg: "Startpath not readable")
         } else if settings.maxDepth > -1 && settings.maxDepth < settings.minDepth {
             throw FindError(msg: "Invalid range for mindepth and maxdepth")
-        } else if settings.maxLastMod != nil && settings.minLastMod != nil && settings.maxLastMod < settings.minLastMod {
+        } else if settings.maxLastMod != nil && settings.minLastMod != nil && settings.maxLastMod! < settings.minLastMod! {
             throw FindError(msg: "Invalid range for minlastmod and maxlastmod")
         } else if settings.maxSize > 0 && settings.maxSize < settings.minSize {
             throw FindError(msg: "Invalid range for minsize and maxsize")

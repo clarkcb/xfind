@@ -142,13 +142,13 @@ func (f *FindSettings) Validate() error {
 	}
 
 	if f.maxDepth > -1 && f.maxDepth < f.minDepth {
-		return fmt.Errorf("Invalid range between mindepth and maxdepth")
+		return fmt.Errorf("Invalid range for mindepth and maxdepth")
 	}
 	if !f.maxLastMod.IsZero() && f.minLastMod.After(f.maxLastMod) {
-		return fmt.Errorf("Invalid range between minlastmod and maxlastmod")
+		return fmt.Errorf("Invalid range for minlastmod and maxlastmod")
 	}
 	if f.maxSize > 0 && f.maxSize < f.minSize {
-		return fmt.Errorf("Invalid range between minsize and maxsize")
+		return fmt.Errorf("Invalid range for minsize and maxsize")
 	}
 
 	return nil

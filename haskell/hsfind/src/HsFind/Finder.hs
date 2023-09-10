@@ -32,8 +32,10 @@ validateSettings :: FindSettings -> [String]
 validateSettings settings = concatMap ($settings) validators
   where validators = [ \s -> ["Startpath not defined" | null (paths s)]
                      , \s -> ["Invalid range for mindepth and maxdepth" | maxDepth s > 0 && maxDepth s < minDepth s]
+                     , \s -> ["Invalid range for minlastmod and maxlastmod" | invalidLastModRange s]
                      , \s -> ["Invalid range for minsize and maxsize" | maxSize s > 0 && maxSize s < minSize s]
                      ]
+        invalidLastModRange s = isJust (maxLastMod s) && isJust (maxLastMod s) && Just (maxLastMod s) < Just (minLastMod s)
 
 getDirTests :: FindSettings -> [FilePath -> Bool]
 getDirTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests

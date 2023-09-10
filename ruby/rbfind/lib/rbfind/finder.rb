@@ -176,13 +176,13 @@ module RbFind
         raise FindError, 'Startpath not readable' unless File.readable?(p)
       end
       if @settings.max_depth > -1 && @settings.min_depth > -1 && @settings.max_depth < @settings.min_depth
-        raise FindError, 'Invalid range for min_depth and max_depth'
+        raise FindError, 'Invalid range for mindepth and maxdepth'
       end
       if @settings.max_last_mod && @settings.min_last_mod && @settings.max_last_mod <= @settings.min_last_mod
-        raise FindError, 'Invalid range for min_last_mod and max_last_mod'
+        raise FindError, 'Invalid range for minlastmod and maxlastmod'
       end
       if @settings.max_size > 0 && @settings.min_size > 0 && @settings.max_size <= @settings.min_size
-        raise FindError, 'Invalid range for min_size and max_size'
+        raise FindError, 'Invalid range for minsize and maxsize'
       end
     end
 

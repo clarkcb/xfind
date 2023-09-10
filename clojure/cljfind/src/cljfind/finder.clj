@@ -44,6 +44,13 @@
                (fn [ss]
                  (if
                    (and
+                    (not (nil? (:max-last-mod ss)))
+                    (not (nil? (:min-last-mod ss)))
+                    (.before (:max-last-mod ss) (:min-last-mod ss))
+                    ) "Invalid range for minlastmod and maxlastmod" nil))
+               (fn [ss]
+                 (if
+                   (and
                     (> (:max-size ss) 0)
                     (> (:min-size ss) (:max-size ss))
                     ) "Invalid range for minsize and maxsize" nil))
