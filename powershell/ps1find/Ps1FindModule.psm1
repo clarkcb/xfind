@@ -206,8 +206,10 @@ class FindSettings {
     [bool]$IncludeArchives
     [bool]$ListDirs
     [bool]$ListFiles
+    [int]$MaxDepth
     [DateTime]$MaxLastMod
     [long]$MaxSize
+    [int]$MinDepth
     [DateTime]$MinLastMod
     [long]$MinSize
     [string[]]$OutArchiveExtensions
@@ -238,7 +240,9 @@ class FindSettings {
 		$this.IncludeArchives = $false
 		$this.ListDirs = $false
 		$this.ListFiles = $false
+		$this.MaxDepth = -1
 		$this.MaxSize = 0
+		$this.MinDepth = -1
 		$this.MinSize = 0
 		$this.OutArchiveExtensions = @()
 		$this.OutArchiveFilePatterns = @()
@@ -291,7 +295,7 @@ class FindSettings {
     }
 
     [string]DateTimeToString([DateTime]$dt) {
-        if ($dt.ToString('yyyy-MM-dd') -eq '0001-01-01') {
+        if ($null -eq $dt -or $dt.ToString('yyyy-MM-dd') -eq '0001-01-01') {
             return '0'
         }
         return $dt.ToString('yyyy-MM-dd')
@@ -311,8 +315,10 @@ class FindSettings {
             ", IncludeArchives: $($this.IncludeArchives)" +
             ", ListDirs: $($this.ListDirs)" +
             ", ListFiles: $($this.ListFiles)" +
+            ", MaxDepth: $($this.MaxDepth)" +
             ", MaxLastMod: $($this.DateTimeToString($this.MaxLastMod))" +
             ", MaxSize: $($this.MaxSize)" +
+            ", MinDepth: $($this.MinDepth)" +
             ", MinLastMod: $($this.DateTimeToString($this.MinLastMod))" +
             ", MinSize: $($this.MinSize)" +
             ", OutArchiveExtensions: $($this.StringArrayToString($this.OutArchiveExtensions))" +
@@ -390,6 +396,10 @@ class FindOptions {
             param([string]$s, [FindSettings]$settings)
             $settings.InFileTypes += GetFileTypeFromName($s)
         }
+        "maxdepth" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MaxDepth = [int]$s
+        }
         "maxlastmod" = {
             param([string]$s, [FindSettings]$settings)
             $settings.MaxLastMod = [DateTime]$s
@@ -397,6 +407,10 @@ class FindOptions {
         "maxsize" = {
             param([string]$s, [FindSettings]$settings)
             $settings.MaxSize = [int]$s
+        }
+        "mindepth" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MinDepth = [int]$s
         }
         "minlastmod" = {
             param([string]$s, [FindSettings]$settings)
@@ -645,6 +659,15 @@ class Finder {
                 throw "Startpath not found"
             }
         }
+        if ($this.settings.MaxDepth -gt -1 -and $this.settings.MinDepth -gt -1 -and $this.settings.MaxDepth -lt $this.settings.MinDepth) {
+            throw "Invalid range for mindepth and maxdepth"
+        }
+        if ($this.settings.MaxLastMod -gt [DateTime]::MinValue -and $this.settings.MinLastMod -gt [DateTime]::MinValue -and $this.settings.MaxLastMod -lt $this.settings.MinLastMod) {
+            throw "Invalid range for minlastmod and maxlastmod"
+        }
+        if ($this.settings.MaxSize -gt 0 -and $this.settings.MinSize -gt 0 -and $this.settings.MaxSize -lt $this.settings.MinSize) {
+            throw "Invalid range for minsize and maxsize"
+        }
     }
 
     [bool]MatchesAnyPattern([string]$s, [regex[]]$patterns) {
@@ -743,13 +766,13 @@ class Finder {
                 return !$this.settings.OutFileTypes.Contains($f.Type)
             }
         }
-        if ($this.settings.MaxLastMod) {
+        if ($this.settings.MaxLastMod -gt [DateTime]::MinValue) {
             $tests += {
                 param([FileResult]$f)
                 return $f.File.LastWriteTimeUtc -le $this.settings.MaxLastMod
             }
         }
-        if ($this.settings.MinLastMod) {
+        if ($this.settings.MinLastMod -gt [DateTime]::MinValue) {
             $tests += {
                 param([FileResult]$f)
                 return $f.File.LastWriteTimeUtc -ge $this.settings.MinLastMod
@@ -773,6 +796,7 @@ class Finder {
     [bool]IsMatchingFileResult([FileResult]$f) {
         foreach ($t in $this.fileTests) {
             if (-not $t.Invoke($f)) {
+                # Write-Host "$f did not pass test: $t"
                 return $false
             }
         }
@@ -780,6 +804,7 @@ class Finder {
     }
 
     [FileResult]FilterToFileResult([System.IO.FileInfo]$file) {
+        # Write-Host "FilterToFileResult($file)"
         $fileResult = [FileResult]::new($file, $this.fileTypes.GetFileType($file))
         if ($fileResult.Type -eq [FileType]::Archive) {
             if ($this.settings.IncludeArchives -and $this.IsMatchingArchiveFile($fileResult)) {
@@ -811,46 +836,44 @@ class Finder {
         }
         # define the scriptblock that will get the FileResult objects for each path
         $getPathFileResults = {}
-        if ($this.settings.Recursive -and $this.settings.ExcludeHidden) {
-            $getPathFileResults = {
-                param([string]$path)
-                Get-ChildItem -Path $path -File -Recurse:$true |
-                Where-Object -FilterScript $checkDir |
-                ForEach-Object { $this.FilterToFileResult($_) } |
-                Where-Object { $null -ne $_ }
+        $getPathFileResultsString = "param([string]`$path)`nGet-ChildItem -Path `$path -File"
+        if ($this.settings.Recursive) {
+            $getPathFileResultsString += " -Recurse:`$true"
+            # TODO: what to do about MinDepth?
+            if ($this.settings.MaxDepth -gt 0) {
+                $getPathFileResultsString += " -Depth $($this.settings.MaxDepth)"
             }
-        } elseif ($this.settings.Recursive) {
-            $getPathFileResults = {
-                param([string]$path)
-                Get-ChildItem -Path $path -File -Recurse:$true -Force |
-                Where-Object -FilterScript $checkDir |
-                ForEach-Object { $this.FilterToFileResult($_) } |
-                Where-Object { $null -ne $_ }
+            if (-not $this.settings.ExcludeHidden) {
+                $getPathFileResultsString += " -Force"
             }
-        } elseif ($this.settings.ExcludeHidden) {
-            $getPathFileResults = {
-                param([string]$path)
-                Get-ChildItem -Path $path -File -Recurse:$false |
-                ForEach-Object { $this.FilterToFileResult($_) } |
-                Where-Object { $null -ne $_ }
-            }
+            $getPathFileResultsString += " |`n"
+            $getPathFileResultsString += "Where-Object -FilterScript `$checkDir |`n"
         } else {
-            $getPathFileResults = {
-                param([string]$path)
-                Get-ChildItem -Path $path -File -Recurse:$false -Force |
-                ForEach-Object { $this.FilterToFileResult($_) } |
-                Where-Object { $null -ne $_ }
+            $getPathFileResultsString += " -Recurse:`$false"
+            if (-not $this.settings.ExcludeHidden) {
+                $getPathFileResultsString += " -Force"
             }
+            $getPathFileResultsString += " |`n"
         }
+        $getPathFileResultsString += "ForEach-Object { `$this.FilterToFileResult(`$_) } |`n"
+        $getPathFileResultsString += "Where-Object { `$null -ne `$_ }"
+
+        $getPathFileResults = [System.Management.Automation.ScriptBlock]::Create($getPathFileResultsString)
 
         foreach ($path in $this.settings.Paths) {
             if (Test-Path -Path $path -PathType Container) {
-                $fileResults += $getPathFileResults.Invoke($path)
+                # if max_depth is zero, we can skip since a directory cannot be a result
+                if ($this.settings.MaxDepth -ne 0) {
+                    $fileResults += $getPathFileResults.Invoke($path)
+                }
             } elseif (Test-Path -Path $path -PathType Leaf) {
-                $pathFile = [System.IO.FileInfo]::new($path)
-                $pathFileResult = [FileResult]::new($pathFile, $this.fileTypes.GetFileType($pathFile))
-                if ($this.IsMatchingFileResult($pathFileResult)) {
-                    $fileResults += $pathFileResult
+                # if min_depth > zero, we can skip since the file is at depth zero
+                if ($this.settings.MinDepth -lt 1) {
+                    $pathFile = [System.IO.FileInfo]::new($path)
+                    $pathFileResult = [FileResult]::new($pathFile, $this.fileTypes.GetFileType($pathFile))
+                    if ($this.IsMatchingFileResult($pathFileResult)) {
+                        $fileResults += $pathFileResult
+                    }
                 }
             } else {
                 Write-Host "Not container or leaf: $path"

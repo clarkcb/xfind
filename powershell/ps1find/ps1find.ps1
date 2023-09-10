@@ -26,12 +26,12 @@ function LogError {
 
 function PrintMatchingDirs {
     param([FileResult[]]$files)
-
-    $dirs = $files |
-        ForEach-Object { if ($null -eq $_.File.Directory) {"."} else {$_.File.Directory.ToString()} } |
-        # Where-Object { $null -ne $_ } |
-        # Sort-Object -Property FullName |
-        Select-Object -Unique
+    $dirs = @()
+    if ($files.Count -gt 0) {
+        $dirs = $files |
+            ForEach-Object { if ($null -eq $_.File.Directory) {"."} else {$_.File.Directory.ToString()} } |
+            Select-Object -Unique
+    }
     if ($dirs.Count -gt 0) {
         LogMsg("`nMatching directories ($($dirs.Count)):")
         foreach ($d in $dirs) {
