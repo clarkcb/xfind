@@ -166,7 +166,6 @@ module RbFind
           file_results.sort_by {|r| [r.path, r.file_name]}
         end
       end
-
     end
 
     def validate_settings
@@ -223,12 +222,12 @@ module RbFind
             if FileTest.directory?(f)
               # The +1 is for files under the directory
               depth = f_sep_count - file_path_sep_count + 1
-              if depth > @settings.max_depth || !matching_dir?(f)
+              if (@settings.max_depth > 0 && depth > @settings.max_depth) || !matching_dir?(f)
                 Find.prune
               end
             elsif FileTest.file?(f)
               depth = f_sep_count - file_path_sep_count
-              if depth > @settings.max_depth || depth < @settings.min_depth
+              if depth < @settings.min_depth || (@settings.max_depth > 0 && depth > @settings.max_depth)
                 Find.prune
               else
                 file_result = filter_to_file_result(f)
