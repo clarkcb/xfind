@@ -8,7 +8,7 @@ import scalafind.FileUtil.{getExtension, isHidden}
 import java.io.IOException
 import java.nio.file.{Files, Path, Paths}
 import java.nio.file.attribute.BasicFileAttributes
-import java.time.ZoneOffset
+import java.time.{LocalDateTime, ZoneOffset}
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.charset.Charset
 import java.util.zip.{GZIPInputStream, ZipFile}
@@ -239,11 +239,20 @@ class Finder (settings: FindSettings) {
 
 object Finder {
 
+  def compareOptionLocalDateTimes(d1: Option[LocalDateTime], d2: Option[LocalDateTime]): Int = {
+    if (d1.isEmpty || d2.isEmpty) {
+      0
+    } else {
+      d1.get.compareTo(d2.get)
+    }
+  }
+
   val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
     ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
     ss => if (ss.paths.forall { p => new File(p).exists() }) None else Some("Startpath not found"),
     ss => if (ss.paths.forall { p => new File(p).canRead }) None else Some("Startpath not readable"),
     ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some("Invalid range for mindepth and maxdepth") else None,
+    ss => if (compareOptionLocalDateTimes(ss.maxLastMod, ss.minLastMod) < 0) Some("Invalid range for minlastmod and maxlastmod") else None,
     ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some("Invalid range for minsize and maxsize") else None,
   )
 
