@@ -29,7 +29,7 @@ FileResults *empty_file_results(void)
 
 int is_null_or_empty_file_results(FileResults *results)
 {
-    if (results == NULL || (results->result == NULL && results->next == NULL))
+    if (results == NULL || results->result == NULL)
         return 1;
     return 0;
 }
@@ -69,7 +69,7 @@ size_t file_results_count(FileResults *results)
 {
     size_t count = 0;
     FileResults *temp = results;
-    while (temp != NULL) {
+    while (temp != NULL && temp->result != NULL) {
         count++;
         temp = temp->next;
     }
@@ -84,20 +84,22 @@ void file_result_to_string(FileResult *r, char *s)
     s[file_result_strlen(r)] = '\0';
 }
 
-void print_file_results(FileResults *results, SortBy sortby, unsigned short sort_case_insensitive,
+void print_file_results(FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
                         unsigned short sort_descending)
 {
     size_t results_count = file_results_count(results);
     FileResult *results_array[results_count];
     int i = 0;
     FileResults *temp = results;
-    while (temp != NULL) {
+    while (temp != NULL && temp->result != NULL) {
         results_array[i++] = temp->result;
         temp = temp->next;
     }
 
-    if (results_count > 1) {
-        sort_file_result_array(results_array, results_count, sortby, sort_case_insensitive);
+    if (results_count > 0) {
+        if (results_count > 1) {
+            sort_file_result_array(results_array, results_count, sort_by, sort_case_insensitive);
+        }
 
         if (sort_descending > 0) {
             reverse_file_result_array(results_array, 0, results_count - 1);

@@ -580,7 +580,8 @@ size_t find_options_usage_strlen(FindOptions *options)
     size_t usage_len = 0;
     FindOptions *temp = options;
     while (temp != NULL && temp->option != NULL) {
-        usage_len += find_option_usage_strlen(temp->option, longest_opt_len);
+        // +2 for leading space + \n
+        usage_len += find_option_usage_strlen(temp->option, longest_opt_len) + 2;
         temp = temp->next;
     }
     return usage_len;

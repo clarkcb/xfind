@@ -48,20 +48,22 @@ error_t validate_settings(const FindSettings *settings)
 
 unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
 {
-    unsigned short res = 0;
+    if (settings->exclude_hidden && is_hidden(dir)) {
+        return 0;
+    }
     if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 1)
           || (string_matches_regex_node(dir, settings->in_dir_patterns) != 0))
         && ((is_null_or_empty_regex_node(settings->out_dir_patterns) == 1)
              || (string_matches_regex_node(dir, settings->out_dir_patterns) == 0))) {
-        res = 1;
+        return 1;
     }
-    return res;
+    return 0;
 }
 
 unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, struct stat *fpstat)
 {
     if (file_name == NULL) return 0;
-    size_t file_len = strlen(file_name);
+    size_t file_len = strnlen(file_name, 1024);
     if (file_len < 1) return 0;
     unsigned int ext_size;
     int dot_idx = last_index_of_char_in_string('.', file_name);
@@ -174,7 +176,6 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
         if (S_ISDIR(fpstat.st_mode)) {
             if ((finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
                 && finder->settings->recursive
-                && (!finder->settings->exclude_hidden || !is_hidden(dent->d_name))
                 && is_matching_dir(dent->d_name, finder->settings)) {
                 add_string_to_string_node(file_path, find_dirs);
             }
