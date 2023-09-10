@@ -62,10 +62,10 @@
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
     [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
     [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
-    [d appendFormat:@", maxDepth=%lu", (long)self.maxDepth];
+    [d appendFormat:@", maxDepth=%ld", (long)self.maxDepth];
     [d appendFormat:@", maxLastMod=%@", [FindSettings lastModToNSString:self.maxLastMod]];
     [d appendFormat:@", maxSize=%lu", (long)self.maxSize];
-    [d appendFormat:@", minDepth=%lu", (long)self.minDepth];
+    [d appendFormat:@", minDepth=%ld", (long)self.minDepth];
     [d appendFormat:@", minLastMod=%@", [FindSettings lastModToNSString:self.minLastMod]];
     [d appendFormat:@", minSize=%lu", (long)self.minSize];
     [d appendFormat:@", outArchiveExtensions=%@", arrayToNSString(self.outArchiveExtensions)];

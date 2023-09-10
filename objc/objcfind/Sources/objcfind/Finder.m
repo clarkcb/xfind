@@ -186,7 +186,7 @@
             NSNumber *isRegularFile = nil;
             [element getResourceValue:&isRegularFile forKey:NSURLIsRegularFileKey error:nil];
             if ([isRegularFile boolValue]) {
-                if (enumerator.level >= self.settings.minDepth && (self.settings.maxDepth < 1 || enumerator.level <= self.settings.maxDepth)) {
+                if ((self.settings.minDepth < 0 || enumerator.level >= self.settings.minDepth) && (self.settings.maxDepth < 1 || enumerator.level <= self.settings.maxDepth)) {
                     NSString *filePath = [element path];
                     FileResult *fileResult = [self filterToFileResult:filePath];
                     if (fileResult != nil) {

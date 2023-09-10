@@ -89,12 +89,12 @@
  * exist tests
  **************************************************************************/
 - (void)testExistsExistingFile {
-    NSString *fileTypesFile = [FileUtil joinPath:[NSString stringWithUTF8String:SHAREDPATH] childPath:@"filetypes.json"];
+    NSString *fileTypesFile = [FileUtil joinPath:[NSString stringWithString:getXfindSharedPath()] childPath:@"filetypes.json"];
     XCTAssert([FileUtil exists:fileTypesFile]);
 }
 
 - (void)testExistsNonexistingFile {
-    NSString *fileTypesFile = [FileUtil joinPath:[NSString stringWithUTF8String:SHAREDPATH] childPath:@"filetypes.ZZZ"];
+    NSString *fileTypesFile = [FileUtil joinPath:[NSString stringWithString:getXfindSharedPath()] childPath:@"filetypes.ZZZ"];
     XCTAssert(![FileUtil exists:fileTypesFile]);
 }
 
