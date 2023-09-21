@@ -179,6 +179,8 @@ function BuildClojure
     Log('Building cljfind')
     Log('lein clean')
     lein clean
+    Log('lein install')
+    lein install
     Log('lein uberjar')
     lein uberjar
 
@@ -649,8 +651,8 @@ function BuildKotlin
 
     # run a gradle build
     Log('Building ktfind')
-    Log('gradle --warning-mode all clean jar')
-    gradle --warning-mode all clean jar
+    Log('gradle --warning-mode all clean jar publishToMavenLocal')
+    gradle --warning-mode all clean jar publishToMavenLocal
 
     # add to bin
     $ktfindExe = Join-Path $ktfindPath 'bin' 'ktfind.ps1'

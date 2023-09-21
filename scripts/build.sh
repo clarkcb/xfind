@@ -142,6 +142,12 @@ build_clojure () {
     log "Building cljfind"
     log "lein clean"
     lein clean
+
+    # install to local maven repository
+    log "lein install"
+    lein install
+
+    # create uberjar
     log "lein uberjar"
     lein uberjar
 
@@ -611,8 +617,8 @@ build_kotlin () {
 
     cd "$KTFIND_PATH"
 
-    log "gradle --warning-mode all clean jar"
-    gradle --warning-mode all clean jar
+    log "gradle --warning-mode all clean jar publishToMavenLocal"
+    gradle --warning-mode all clean jar publishToMavenLocal
 
     # check for success/failure
     if [ "$?" -eq 0 ]
