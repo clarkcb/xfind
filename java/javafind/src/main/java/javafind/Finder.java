@@ -231,7 +231,12 @@ public class Finder {
         List<FileResult> fileResults = new ArrayList<>();
 
         // get thread pool the size of the number of paths to find
-        ExecutorService executorService = Executors.newFixedThreadPool(settings.getPaths().size());
+        ExecutorService executorService;
+        if (settings.getPaths().size() == 1) {
+            executorService = Executors.newSingleThreadExecutor();
+        } else {
+            executorService = Executors.newFixedThreadPool(settings.getPaths().size());
+        }
         List<Future<List<FileResult>>> futures = new ArrayList<>();
 
         for (String p : settings.getPaths()) {

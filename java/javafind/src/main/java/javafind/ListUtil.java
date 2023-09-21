@@ -27,7 +27,7 @@ public final class ListUtil {
 
     // return a new list with all but the last element in it
     public static <T> List<T> init(final List<T> list) {
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             throw new IllegalArgumentException("init of empty list");
         } else {
             return take(list, list.size() - 1);

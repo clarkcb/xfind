@@ -111,7 +111,7 @@ public class FileResult {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        if (containers.size() > 0) {
+        if (!containers.isEmpty()) {
             for (int i = 0; i < containers.size(); i++) {
                 if (i > 0) {
                     sb.append(CONTAINER_SEPARATOR);

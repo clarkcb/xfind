@@ -39,7 +39,7 @@ public class FindMain {
 
     private static void printMatchingDirs(final List<FileResult> fileResults) {
         List<String> dirs = getMatchingDirs(fileResults);
-        if (dirs.size() > 0) {
+        if (!dirs.isEmpty()) {
             log(String.format("\nMatching directories (%d):", dirs.size()));
             for (String d : dirs) {
                 log(d);
@@ -55,7 +55,7 @@ public class FindMain {
 
     private static void printMatchingFiles(final List<FileResult> fileResults) {
         List<String> files = getMatchingFiles(fileResults);
-        if (files.size() > 0) {
+        if (!files.isEmpty()) {
             log(String.format("\nMatching files (%d):", files.size()));
             for (String f : files) {
                 log(f);

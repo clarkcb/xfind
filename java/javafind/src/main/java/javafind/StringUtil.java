@@ -23,7 +23,7 @@ final class StringUtil {
 
     static String trimNewLine(final String s) {
         String trimmed = s;
-        while (trimmed.length() > 0 && NEWLINECHARS.contains(trimmed.charAt(trimmed.length() - 1))) {
+        while (!trimmed.isEmpty() && NEWLINECHARS.contains(trimmed.charAt(trimmed.length() - 1))) {
             trimmed = trimmed.substring(0, trimmed.length() - 1);
         }
         return trimmed;

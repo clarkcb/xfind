@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     kotlin("jvm") version "1.9.10"
     application
+    `maven-publish`
 }
 
 group = "xfind"
@@ -23,13 +24,12 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "11"
 }
 
 application {
     mainClass.set("ktfind.KtfindKt")
 }
-
 
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
