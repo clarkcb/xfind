@@ -305,7 +305,7 @@ impl FindOptions {
 }
 
 fn get_arg_map() -> HashMap<String, ArgAction> {
-    let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(23);
+    let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(20);
     arg_map.insert(
         "in-archiveext".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
@@ -450,7 +450,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
 }
 
 fn get_flag_map() -> HashMap<String, FlagAction> {
-    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(19);
+    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(17);
     flag_map.insert(
         "archivesonly".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_archives_only(b))),
