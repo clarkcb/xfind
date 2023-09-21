@@ -32,17 +32,17 @@ public class FileTypes {
 
         try {
             assert fileTypesInputStream != null;
-            Object obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream));
-            JSONObject jsonObj = (JSONObject)obj;
-            JSONArray filetypesArray = (JSONArray) jsonObj.get("filetypes");
+            var obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream));
+            var jsonObj = (JSONObject)obj;
+            var filetypesArray = (JSONArray) jsonObj.get("filetypes");
 
             for (Object o : filetypesArray) {
                 Map<String, Object> filetypeMap = (Map<String, Object>) o;
-                String typeName = (String) filetypeMap.get("type");
-                JSONArray extArray = (JSONArray) filetypeMap.get("extensions");
+                var typeName = (String) filetypeMap.get("type");
+                var extArray = (JSONArray) filetypeMap.get("extensions");
                 Set<String> extSet = new HashSet<String>(extArray);
                 fileTypeExtMap.put(typeName, extSet);
-                JSONArray nameArray = (JSONArray) filetypeMap.get("names");
+                var nameArray = (JSONArray) filetypeMap.get("names");
                 Set<String> nameSet = new HashSet<String>(nameArray);
                 fileTypeNameMap.put(typeName, nameSet);
             }
@@ -68,7 +68,7 @@ public class FileTypes {
     }
 
     static FileType fromName(final String name) {
-        String lname = name.toLowerCase();
+        var lname = name.toLowerCase();
         if (lname.equals(code)) return FileType.CODE;
         if (lname.equals(xml)) return FileType.XML;
         if (lname.equals(text)) return FileType.TEXT;

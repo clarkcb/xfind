@@ -93,17 +93,18 @@ public class FindOptions {
     };
 
     private void setOptionsFromJson() throws IOException, ParseException {
-        final String findOptionsJsonPath = "/findoptions.json";
-        InputStream findOptionsInputStream = getClass().getResourceAsStream(findOptionsJsonPath);
-        Object obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream));
-        JSONObject jsonObj = (JSONObject)obj;
-        JSONArray findoptionsArray = (JSONArray) jsonObj.get("findoptions");
+        final var findOptionsJsonPath = "/findoptions.json";
+        var findOptionsInputStream = getClass().getResourceAsStream(findOptionsJsonPath);
+        assert findOptionsInputStream != null;
+        var obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream));
+        var jsonObj = (JSONObject)obj;
+        var findoptionsArray = (JSONArray) jsonObj.get("findoptions");
 
-        for (Object o : findoptionsArray) {
-            Map findoptionMap = (Map) o;
-            String longArg = (String) findoptionMap.get("long");
-            String desc = (String) findoptionMap.get("desc");
-            String shortArg = "";
+        for (var o : findoptionsArray) {
+            var findoptionMap = (Map) o;
+            var longArg = (String) findoptionMap.get("long");
+            var desc = (String) findoptionMap.get("desc");
+            var shortArg = "";
             if (findoptionMap.containsKey("short")) {
                 shortArg = (String) findoptionMap.get("short");
             }
@@ -113,14 +114,14 @@ public class FindOptions {
 
     private List<String> listFromJSONArray(final JSONArray arr) {
         List<String> list = new ArrayList<>();
-        for (Object o : arr) {
+        for (var o : arr) {
             list.add((String)o);
         }
         return list;
     }
 
     private void settingsFromFilePath(final String filePath, final FindSettings settings) {
-        Path path = Paths.get(filePath);
+        var path = Paths.get(filePath);
         try {
             if (!Files.exists(path)) {
                 Logger.log("Settings file not found: " + filePath);
@@ -144,11 +145,11 @@ public class FindOptions {
     }
 
     public void settingsFromJson(final String json, FindSettings settings) throws ParseException {
-        Object obj = JSONValue.parseWithException(json);
-        JSONObject jsonObject = (JSONObject)obj;
-        for (Object ko : jsonObject.keySet()) {
-            String k = (String)ko;
-            Object vo = jsonObject.get(ko);
+        var obj = JSONValue.parseWithException(json);
+        var jsonObject = (JSONObject)obj;
+        for (var ko : jsonObject.keySet()) {
+            var k = (String)ko;
+            var vo = jsonObject.get(ko);
             applySetting(k, vo, settings);
         }
     }
@@ -206,7 +207,7 @@ public class FindOptions {
     }
 
     public final FindSettings settingsFromArgs(final String[] args) throws FindException {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         // default listFiles to true since running from command line
         settings.setListFiles(true);
 
@@ -251,19 +252,19 @@ public class FindOptions {
     }
 
     public final String getUsageString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         sb.append("Usage:\n");
         sb.append(" javafind [options] <path> [<path> ...]\n\n");
         sb.append("Options:\n");
 
         this.options.sort(Comparator.comparing(FindOption::getSortArg));
 
-        List<String> optStrings = new ArrayList<>();
-        List<String> optDescs = new ArrayList<>();
+        var optStrings = new ArrayList<>();
+        var optDescs = new ArrayList<>();
         int longest = 0;
         for (FindOption opt : this.options) {
-            StringBuilder optString = new StringBuilder();
-            String shortArg = opt.getShortArg();
+            var optString = new StringBuilder();
+            var shortArg = opt.getShortArg();
             if (null != shortArg && !shortArg.isEmpty()) {
                 optString.append("-").append(shortArg).append(",");
             }
@@ -274,7 +275,7 @@ public class FindOptions {
             optStrings.add(optString.toString());
             optDescs.add(opt.getDescription());
         }
-        final String format = " %1$-" + longest + "s  %2$s\n";
+        final var format = " %1$-" + longest + "s  %2$s\n";
         for (int i = 0; i < optStrings.size(); i++) {
             sb.append(String.format(format, optStrings.get(i), optDescs.get(i)));
         }

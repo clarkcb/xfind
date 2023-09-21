@@ -45,15 +45,15 @@ public class FileResult {
     }
 
     public int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
-        String p1 = this.path.getParent().toString();
-        String p2 = other.path.getParent().toString();
+        var p1 = this.path.getParent().toString();
+        var p2 = other.path.getParent().toString();
         if (sortCaseInsensitive) {
             p1 = p1.toLowerCase();
             p2 = p2.toLowerCase();
         }
         if (p1.equals(p2)) {
-            String f1 = this.path.getFileName().toString();
-            String f2 = other.path.getFileName().toString();
+            var f1 = this.path.getFileName().toString();
+            var f2 = other.path.getFileName().toString();
             if (sortCaseInsensitive) {
                 f1 = f1.toLowerCase();
                 f2 = f2.toLowerCase();
@@ -64,15 +64,15 @@ public class FileResult {
     }
 
     public int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
-        String f1 = this.path.getFileName().toString();
-        String f2 = other.path.getFileName().toString();
+        var f1 = this.path.getFileName().toString();
+        var f2 = other.path.getFileName().toString();
         if (sortCaseInsensitive) {
             f1 = f1.toLowerCase();
             f2 = f2.toLowerCase();
         }
         if (f1.equals(f2)) {
-            String p1 = this.path.getParent().toString();
-            String p2 = other.path.getParent().toString();
+            var p1 = this.path.getParent().toString();
+            var p2 = other.path.getParent().toString();
             if (sortCaseInsensitive) {
                 p1 = p1.toLowerCase();
                 p2 = p2.toLowerCase();
@@ -110,7 +110,7 @@ public class FileResult {
     }
 
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         if (!containers.isEmpty()) {
             for (int i = 0; i < containers.size(); i++) {
                 if (i > 0) {

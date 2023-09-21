@@ -34,7 +34,7 @@ public final class FileUtil {
     }
 
     public static String getExtension(final String fileName) {
-        String ext = "";
+        var ext = "";
         int lastIndex = fileName.lastIndexOf(".");
         if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
             ext = fileName.substring(lastIndex + 1);
@@ -94,7 +94,7 @@ public final class FileUtil {
 
     public static String getFileContents(final Path path, final Charset charset) throws IOException {
         String content;
-        try (Scanner scanner = new Scanner(new InputStreamReader(Files.newInputStream(path), charset))
+        try (var scanner = new Scanner(new InputStreamReader(Files.newInputStream(path), charset))
                 .useDelimiter("\\Z")) {
             content = getScannerContents(scanner);
         } catch (NoSuchElementException | IllegalStateException e) {

@@ -33,12 +33,12 @@ public class Finder {
     }
 
     final void validateSettings() throws FindException {
-        Set<String> paths = settings.getPaths();
+        var paths = settings.getPaths();
         if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
             throw new FindException("Startpath not defined");
         }
         for (String p : paths) {
-            Path path = Paths.get(p);
+            var path = Paths.get(p);
             if (!Files.exists(path)) {
                 throw new FindException("Startpath not found");
             }
@@ -95,12 +95,12 @@ public class Finder {
 
     // this is temporary to appease the tests
     boolean isMatchingFile(final Path path) {
-        FileResult fr = new FileResult(path, fileTypes.getFileType(path));
+        var fr = new FileResult(path, fileTypes.getFileType(path));
         return isMatchingFileResult(fr);
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
-        String fileName = fr.getPath().getFileName().toString();
+        var fileName = fr.getPath().getFileName().toString();
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
             String ext = FileUtil.getExtension(fileName);
             if ((!settings.getInExtensions().isEmpty() && !settings.getInExtensions().contains(ext))
@@ -141,7 +141,7 @@ public class Finder {
     }
 
     boolean isMatchingArchiveFile(final Path path) {
-        String fileName = path.getFileName().toString();
+        var fileName = path.getFileName().toString();
         if (!settings.getInArchiveExtensions().isEmpty() || !settings.getOutArchiveExtensions().isEmpty()) {
             String ext = FileUtil.getExtension(fileName);
             if ((!settings.getInArchiveExtensions().isEmpty() && !settings.getInArchiveExtensions().contains(ext))
