@@ -25,10 +25,10 @@ namespace cppfind {
         bool m_list_dirs = false;
         bool m_list_files = false;
 
-        int m_max_depth = 0;
+        int m_max_depth = -1;
         long m_max_last_mod = 0L;
         long m_max_size = 0L;
-        int m_min_depth = 0;
+        int m_min_depth = -1;
         long m_min_last_mod = 0L;
         long m_min_size = 0L;
 
