@@ -8,6 +8,8 @@
 
 package plfind::common;
 
+use Scalar::Util qw(blessed reftype);
+
 use strict;
 use warnings;
 
@@ -53,6 +55,52 @@ sub uniq($) {
     my %seen;
     my @uniqs = grep { !$seen{$_}++ } @{$aref};
     return \@uniqs;
+}
+
+sub bool_to_string {
+    my $bool = shift;
+    return $bool ? 'true' : 'false';
+}
+
+sub datetime_to_string {
+    my $dt = shift;
+    if (blessed($dt)) {
+        return '"' . $dt . '"';
+    }
+    return '0';
+}
+
+sub aref_to_string {
+    my ($aref, $quoted) = @_;
+    my $s = '[';
+    my $reftype = reftype($aref);
+    if ($reftype eq 'ARRAY') {
+        foreach my $i (0..$#{$aref}) {
+            if ($i > 0) {
+                $s .= ', ';
+            }
+            if ($quoted) {
+                $s .= '"' . $aref->[$i] . '"';
+            } else {
+                $s .= $aref->[$i];
+            }
+        }
+    } else {
+        $s .= "'$reftype'";
+        # print ref $aref . "\n";
+    }
+    $s .= ']';
+    return $s;
+}
+
+sub strings_aref_to_string {
+    my $aref = shift;
+    return aref_to_string($aref, 1);
+}
+
+sub file_types_aref_to_string {
+    my $aref = shift;
+    return aref_to_string($aref, 0);
 }
 
 1;
