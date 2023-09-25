@@ -35,7 +35,7 @@ public final class FileUtil {
 
     public static String getExtension(final String fileName) {
         var ext = "";
-        int lastIndex = fileName.lastIndexOf(".");
+        var lastIndex = fileName.lastIndexOf(".");
         if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
             ext = fileName.substring(lastIndex + 1);
             if (!ext.equals("Z")) { // the only always-uppercase ext
@@ -71,7 +71,7 @@ public final class FileUtil {
             return Collections.emptyList();
         }
         List<String> elemList = new ArrayList<>();
-        for (Path p : path) {
+        for (var p : path) {
             elemList.add(p.toString());
         }
         return elemList;
@@ -143,7 +143,7 @@ public final class FileUtil {
 
     public static List<String> getStreamLines(final InputStream is, final String enc) throws IllegalArgumentException {
         List<String> lines = new ArrayList<>();
-        Scanner scanner = new Scanner(is, enc).useDelimiter("\r?\n");
+        var scanner = new Scanner(is, enc).useDelimiter("\r?\n");
         while (scanner.hasNext()) {
             try {
                 lines.add(scanner.next());

@@ -11,7 +11,7 @@ public class SortByUtil {
     private SortByUtil() {}
 
     public static SortBy fromName(final String sortByName) {
-        String lname = sortByName.toLowerCase();
+        var lname = sortByName.toLowerCase();
         if (lname.equals(name)) return SortBy.FILENAME;
         if (lname.equals(size)) return SortBy.FILESIZE;
         if (lname.equals(type)) return SortBy.FILETYPE;

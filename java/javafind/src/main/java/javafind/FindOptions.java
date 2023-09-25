@@ -18,10 +18,8 @@ import org.json.simple.parser.ParseException;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -39,7 +37,7 @@ public class FindOptions {
     }
 
     private final int actionMapSize = 20;
-    private final Map<String, ArgSetter> argActionMap = new HashMap<String, ArgSetter>(actionMapSize) {
+    private final Map<String, ArgSetter> argActionMap = new HashMap<>(actionMapSize) {
         {
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
             put("in-archivefilepattern", (s, settings) -> settings.addInArchiveFilePattern(s));
@@ -71,7 +69,7 @@ public class FindOptions {
     }
 
     private final int flagMapSize = 16;
-    private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<String, BooleanFlagSetter>(flagMapSize) {
+    private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("debug", (b, settings) -> settings.setDebug(b));
@@ -262,7 +260,7 @@ public class FindOptions {
         var optStrings = new ArrayList<>();
         var optDescs = new ArrayList<>();
         int longest = 0;
-        for (FindOption opt : this.options) {
+        for (var opt : this.options) {
             var optString = new StringBuilder();
             var shortArg = opt.getShortArg();
             if (null != shortArg && !shortArg.isEmpty()) {

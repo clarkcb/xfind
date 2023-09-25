@@ -66,12 +66,11 @@ public class FindMain {
     }
 
     public static void main(final String[] args) {
-
         try {
-            FindOptions options = new FindOptions();
+            var options = new FindOptions();
 
             try {
-                FindSettings settings = options.settingsFromArgs(args);
+                var settings = options.settingsFromArgs(args);
 
                 if (settings.getDebug()) {
                     log("\nsettings:");
@@ -83,10 +82,9 @@ public class FindMain {
                     options.usage(0);
                 }
 
-                Finder finder = new Finder(settings);
-
+                var finder = new Finder(settings);
                 finder.validateSettings();
-                List<FileResult> fileResults = finder.find();
+                var fileResults = finder.find();
 
                 if (settings.getListDirs()) {
                     printMatchingDirs(fileResults);

@@ -15,10 +15,10 @@ public class FindOptionsTest {
 
     @Test
     public final void testSettingsFromMinimalArgs() {
-        String[] args = new String[]{"."};
+        var args = new String[]{"."};
         try {
-            FindOptions findOptions = new FindOptions();
-            FindSettings settings = findOptions.settingsFromArgs(args);
+            var findOptions = new FindOptions();
+            var settings = findOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
             assertTrue(settings.getExcludeHidden());
@@ -39,10 +39,10 @@ public class FindOptionsTest {
 
     @Test
     public final void testSettingsFromValidArgs() {
-        String[] args = new String[]{"-x", "java,scala", "."};
+        var args = new String[]{"-x", "java,scala", "."};
         try {
-            FindOptions findOptions = new FindOptions();
-            FindSettings settings = findOptions.settingsFromArgs(args);
+            var findOptions = new FindOptions();
+            var settings = findOptions.settingsFromArgs(args);
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("java"));
             assertTrue(settings.getInExtensions().contains("scala"));
@@ -59,7 +59,7 @@ public class FindOptionsTest {
 
     @Test
     public final void testSettingsFromJson() {
-        StringBuilder json = new StringBuilder("{\n")
+        var json = new StringBuilder("{\n")
                 .append("  \"path\": \"~/src/xfind/\",\n")
                 .append("  \"in-ext\": [\"js\",\"ts\"],\n")
                 .append("  \"out-dirpattern\": \"node_module\",\n")
@@ -68,8 +68,8 @@ public class FindOptionsTest {
                 .append("  \"includehidden\": false,\n")
                 .append("}");
         try {
-            FindOptions findOptions = new FindOptions();
-            FindSettings settings = new FindSettings();
+            var findOptions = new FindOptions();
+            var settings = new FindSettings();
             findOptions.settingsFromJson(json.toString(), settings);
 
             assertEquals(1, settings.getPaths().size());

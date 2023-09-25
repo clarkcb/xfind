@@ -17,7 +17,7 @@ public class FindSettingsTest {
 
     @Test
     public final void testDefaultSettings() {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         assertEquals(DefaultFindSettings.ARCHIVESONLY, settings.getArchivesOnly());
         assertEquals(DefaultFindSettings.DEBUG, settings.getDebug());
         assertEquals(DefaultFindSettings.EXCLUDEHIDDEN, settings.getExcludeHidden());
@@ -35,9 +35,9 @@ public class FindSettingsTest {
 
     @Test
     public final void testAddExtensions() {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         settings.addInExtension("java,scala");
-        Set<String> inExtensions = settings.getInExtensions();
+        var inExtensions = settings.getInExtensions();
         assertEquals(2, inExtensions.size());
         assertTrue(inExtensions.contains("java"));
         assertTrue(inExtensions.contains("scala"));
@@ -45,15 +45,15 @@ public class FindSettingsTest {
 
     @Test
     public final void testAddPattern() {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         settings.addInFilePattern("Find");
-        Set<Pattern> inFilePatterns = settings.getInFilePatterns();
+        var inFilePatterns = settings.getInFilePatterns();
         assertEquals(1, inFilePatterns.size());
     }
 
     @Test
     public final void testSetArchivesOnly() {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         settings.setArchivesOnly(true);
         assertTrue(settings.getArchivesOnly());
         assertTrue(settings.getIncludeArchives());
@@ -61,7 +61,7 @@ public class FindSettingsTest {
 
     @Test
     public final void testSetDebug() {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         settings.setDebug(true);
         assertTrue(settings.getDebug());
         assertTrue(settings.getVerbose());
@@ -69,7 +69,7 @@ public class FindSettingsTest {
 
     @Test
     public final void testSetLastModFromString() {
-        FindSettings settings = new FindSettings();
+        var settings = new FindSettings();
         settings.setMaxLastMod("2023-01-01");
         assertEquals(1, settings.getMaxLastMod().get(ChronoField.DAY_OF_MONTH));
         assertEquals(1, settings.getMaxLastMod().get(ChronoField.MONTH_OF_YEAR));

@@ -37,7 +37,7 @@ public class Finder {
         if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
             throw new FindException("Startpath not defined");
         }
-        for (String p : paths) {
+        for (var p : paths) {
             var path = Paths.get(p);
             if (!Files.exists(path)) {
                 throw new FindException("Startpath not found");
@@ -127,7 +127,7 @@ public class Finder {
             return false;
         }
         if (fr.getStat() != null) {
-            BasicFileAttributes stat = fr.getStat();
+            var stat = fr.getStat();
             if ((settings.getMaxLastMod() != null
                     && stat.lastModifiedTime().toInstant().compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) > 0)
                     || (settings.getMinLastMod() != null
@@ -239,8 +239,8 @@ public class Finder {
         }
         List<Future<List<FileResult>>> futures = new ArrayList<>();
 
-        for (String p : settings.getPaths()) {
-            Path path = Paths.get(p);
+        for (var p : settings.getPaths()) {
+            var path = Paths.get(p);
             if (Files.isDirectory(path)) {
                 // if maxDepth is zero, we can skip since a directory cannot be a result
                 if (settings.getMaxDepth() != 0) {
@@ -329,15 +329,15 @@ public class Finder {
 
     private boolean filterDir(final Path dirPath, long startPathSepCount) {
         if (dirPath == null) return true;
-        long pathSepCount = FileUtil.getSepCount(dirPath);
-        int depth = (int)(pathSepCount - startPathSepCount);
+        var pathSepCount = FileUtil.getSepCount(dirPath);
+        var depth = (int)(pathSepCount - startPathSepCount);
         return (settings.getMaxDepth() < 1 || depth <= settings.getMaxDepth())
                 && isMatchingDir(dirPath);
     }
 
     private Optional<FileResult> filterFile(final Path filePath, long startPathSepCount) {
-        long pathSepCount = FileUtil.getSepCount(filePath);
-        int depth = (int)(pathSepCount - startPathSepCount);
+        var pathSepCount = FileUtil.getSepCount(filePath);
+        var depth = (int)(pathSepCount - startPathSepCount);
         if (depth < settings.getMinDepth() || (settings.getMaxDepth() > 0 && depth > settings.getMaxDepth())) {
             return Optional.empty();
         }
@@ -345,11 +345,10 @@ public class Finder {
     }
 
     private List<FileResult> findPath(final Path filePath) {
-        long filePathSepCount = FileUtil.getSepCount(filePath);
+        var filePathSepCount = FileUtil.getSepCount(filePath);
         Function<Path, Boolean> filterDirFunc = (dirPath) -> filterDir(dirPath, filePathSepCount);
         Function<Path, Optional<FileResult>> filterFileFunc = (path) -> filterFile(path, filePathSepCount);
-        FindFileResultsVisitor findFileResultsVisitor = new FindFileResultsVisitor(filterDirFunc,
-                filterFileFunc);
+        var findFileResultsVisitor = new FindFileResultsVisitor(filterDirFunc, filterFileFunc);
 
         // walk file tree to find files
         try {

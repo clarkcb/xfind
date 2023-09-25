@@ -22,7 +22,7 @@ final class StringUtil {
     private static final Set<Character> NEWLINECHARS = new HashSet<>(Arrays.asList('\n', '\r'));
 
     static String trimNewLine(final String s) {
-        String trimmed = s;
+        var trimmed = s;
         while (!trimmed.isEmpty() && NEWLINECHARS.contains(trimmed.charAt(trimmed.length() - 1))) {
             trimmed = trimmed.substring(0, trimmed.length() - 1);
         }
@@ -30,7 +30,7 @@ final class StringUtil {
     }
 
     static String repeatString(final String s, final int times) {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         for (int i = 0; i < times; i++) {
             sb.append(s);
         }

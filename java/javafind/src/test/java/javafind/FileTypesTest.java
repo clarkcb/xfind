@@ -16,7 +16,7 @@ public class FileTypesTest {
 
     @Test
     public final void archiveFileTest() {
-        Path path = Paths.get("test.zip");
+        var path = Paths.get("test.zip");
         assertEquals("zip", FileUtil.getExtension(path));
         assertTrue(fileTypes.isArchiveFile(path));
         assertFalse(fileTypes.isBinaryFile(path));
@@ -28,7 +28,7 @@ public class FileTypesTest {
 
     @Test
     public final void binaryFileTest() {
-        Path path = Paths.get("test.exe");
+        var path = Paths.get("test.exe");
         assertEquals("exe", FileUtil.getExtension(path));
         assertFalse(fileTypes.isArchiveFile(path));
         assertTrue(fileTypes.isBinaryFile(path));
@@ -40,7 +40,7 @@ public class FileTypesTest {
 
     @Test
     public final void codeFileTest() {
-        Path path = Paths.get("Test.java");
+        var path = Paths.get("Test.java");
         assertEquals("java", FileUtil.getExtension(path));
         assertFalse(fileTypes.isArchiveFile(path));
         assertFalse(fileTypes.isBinaryFile(path));
@@ -52,7 +52,7 @@ public class FileTypesTest {
 
     @Test
     public final void textFileTest() {
-        Path path = Paths.get("test.txt");
+        var path = Paths.get("test.txt");
         assertEquals("txt", FileUtil.getExtension(path));
         assertFalse(fileTypes.isArchiveFile(path));
         assertFalse(fileTypes.isBinaryFile(path));
@@ -64,7 +64,7 @@ public class FileTypesTest {
 
     @Test
     public final void xmlFileTest() {
-        Path path = Paths.get("markup.xml");
+        var path = Paths.get("markup.xml");
         assertEquals("xml", FileUtil.getExtension(path));
         assertFalse(fileTypes.isArchiveFile(path));
         assertFalse(fileTypes.isBinaryFile(path));
@@ -76,7 +76,7 @@ public class FileTypesTest {
 
     @Test
     public final void unknownFileTest() {
-        Path path = Paths.get("unknown.ZZZ");
+        var path = Paths.get("unknown.ZZZ");
         assertEquals("zzz", FileUtil.getExtension(path));
         assertFalse(fileTypes.isArchiveFile(path));
         assertFalse(fileTypes.isBinaryFile(path));

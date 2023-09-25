@@ -28,7 +28,7 @@ public class FileTypes {
 
     private void setFileTypeMapsFromJson() {
         // Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeKeys);
-        InputStream fileTypesInputStream = getClass().getResourceAsStream(FILETYPESJSONPATH);
+        var fileTypesInputStream = getClass().getResourceAsStream(FILETYPESJSONPATH);
 
         try {
             assert fileTypesInputStream != null;
@@ -40,20 +40,20 @@ public class FileTypes {
                 Map<String, Object> filetypeMap = (Map<String, Object>) o;
                 var typeName = (String) filetypeMap.get("type");
                 var extArray = (JSONArray) filetypeMap.get("extensions");
-                Set<String> extSet = new HashSet<String>(extArray);
+                var extSet = new HashSet<String>(extArray);
                 fileTypeExtMap.put(typeName, extSet);
                 var nameArray = (JSONArray) filetypeMap.get("names");
-                Set<String> nameSet = new HashSet<String>(nameArray);
+                var nameSet = new HashSet<String>(nameArray);
                 fileTypeNameMap.put(typeName, nameSet);
             }
 
-            Set<String> allTextExts = new HashSet<>();
+            var allTextExts = new HashSet<String>();
             allTextExts.addAll(fileTypeExtMap.get(code));
             allTextExts.addAll(fileTypeExtMap.get(text));
             allTextExts.addAll(fileTypeExtMap.get(xml));
             fileTypeExtMap.put(text, allTextExts);
 
-            Set<String> allTextNames = new HashSet<>();
+            var allTextNames = new HashSet<String>();
             allTextNames.addAll(fileTypeNameMap.get(code));
             allTextNames.addAll(fileTypeNameMap.get(text));
             allTextNames.addAll(fileTypeNameMap.get(xml));

@@ -159,7 +159,7 @@ public class FindSettings {
         return maxDepth;
     }
 
-    public void setMaxDepth(int maxDepth) {
+    public void setMaxDepth(final int maxDepth) {
         this.maxDepth = maxDepth;
     }
 
@@ -167,13 +167,13 @@ public class FindSettings {
         return maxLastMod;
     }
 
-    private LocalDateTime getLastModFromString(String lastModString) {
+    private LocalDateTime getLastModFromString(final String lastModString) {
         LocalDateTime lastMod = null;
         try {
             lastMod = LocalDateTime.parse(lastModString);
         } catch (DateTimeParseException e) {
             try {
-                LocalDate maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE);
+                var maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE);
                 lastMod = maxLastModDate.atTime(0, 0, 0);
             } catch (DateTimeParseException e2) {
                 System.out.println("Unable to parse lastModString");
@@ -182,11 +182,11 @@ public class FindSettings {
         return lastMod;
     }
 
-    public void setMaxLastMod(String maxLastModString) {
+    public void setMaxLastMod(final String maxLastModString) {
         this.maxLastMod = getLastModFromString(maxLastModString);
     }
 
-    public void setMaxLastMod(LocalDateTime maxLastMod) {
+    public void setMaxLastMod(final LocalDateTime maxLastMod) {
         this.maxLastMod = maxLastMod;
     }
 
@@ -194,7 +194,7 @@ public class FindSettings {
         return maxSize;
     }
 
-    public void setMaxSize(int maxSize) {
+    public void setMaxSize(final int maxSize) {
         this.maxSize = maxSize;
     }
 
@@ -202,7 +202,7 @@ public class FindSettings {
         return minDepth;
     }
 
-    public void setMinDepth(int minDepth) {
+    public void setMinDepth(final int minDepth) {
         this.minDepth = minDepth;
     }
 
@@ -210,11 +210,11 @@ public class FindSettings {
         return minLastMod;
     }
 
-    public void setMinLastMod(String minLastModString) {
+    public void setMinLastMod(final String minLastModString) {
         this.minLastMod = getLastModFromString(minLastModString);
     }
 
-    public void setMinLastMod(LocalDateTime minLastMod) {
+    public void setMinLastMod(final LocalDateTime minLastMod) {
         this.minLastMod = minLastMod;
     }
 
@@ -222,7 +222,7 @@ public class FindSettings {
         return minSize;
     }
 
-    public void setMinSize(int minSize) {
+    public void setMinSize(final int minSize) {
         this.minSize = minSize;
     }
 
@@ -288,7 +288,7 @@ public class FindSettings {
     }
 
     private static void addExtensions(Set<String> set, final List<String> exts) {
-        for (String x : exts) {
+        for (var x : exts) {
             if (!x.isEmpty()) {
                 set.add(x.toLowerCase());
             }
@@ -393,7 +393,7 @@ public class FindSettings {
     }
 
     private static void addFileTypes(Set<FileType> set, final List<String> fts) {
-        for (String ft : fts) {
+        for (var ft : fts) {
             if (!ft.isEmpty()) {
                 set.add(FileTypes.fromName(ft));
             }
@@ -415,9 +415,9 @@ public class FindSettings {
     }
 
     private static String stringSetToString(final Set<String> set) {
-        StringBuilder sb = new StringBuilder("[");
+        var sb = new StringBuilder("[");
         int elemCount = 0;
-        for (String s : set) {
+        for (var s : set) {
             if (elemCount > 0) {
                 sb.append(", ");
             }
@@ -429,9 +429,9 @@ public class FindSettings {
     }
 
     private static String patternSetToString(final Set<Pattern> set) {
-        StringBuilder sb = new StringBuilder("[");
+        var sb = new StringBuilder("[");
         int elemCount = 0;
-        for (Pattern p : set) {
+        for (var p : set) {
             if (elemCount > 0) {
                 sb.append(", ");
             }
@@ -443,9 +443,9 @@ public class FindSettings {
     }
 
     private static String fileTypeSetToString(final Set<FileType> set) {
-        StringBuilder sb = new StringBuilder("[");
+        var sb = new StringBuilder("[");
         int elemCount = 0;
-        for (FileType ft : set) {
+        for (var ft : set) {
             if (elemCount > 0) {
                 sb.append(", ");
             }
