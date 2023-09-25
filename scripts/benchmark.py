@@ -7,19 +7,23 @@
 # A simple benchmarking tool for the various xfind language versions
 #
 ################################################################################
+from dataclasses import dataclass
 import os
 import re
 import subprocess
 import sys
-from collections import namedtuple
-from io import StringIO
-from typing import Dict, List, Union
+from typing import Union
 
 from tabulate import tabulate
 
 from xfind import *
 
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'])
+@dataclass
+class Scenario:
+    """Class to define a test scenario"""
+    name: str
+    args: list
+    replace_xfind_name: bool = False
 
 
 ########################################
@@ -46,53 +50,53 @@ scenarios = [
     Scenario('help', ['-h'], replace_xfind_name=True),
 
     # match extensions
-    Scenario('find matching "{}" extensions'.format(exts), common_args, replace_xfind_name=False),
+    Scenario('find matching "{}" extensions'.format(exts), common_args),
     Scenario('find not matching "{}" extensions'.format(exts), core_args + ['-X', exts] + startpaths,
         replace_xfind_name=False),
 
     # match filename
-    Scenario('find with "find" in filename', common_args + ['-f', 'find'], replace_xfind_name=False),
-    Scenario('find with "find" not in filename', common_args + ['-F', 'find'], replace_xfind_name=False),
-    Scenario('find blank filename (should find nothing)', common_args + ['-f', '^$'], replace_xfind_name=False),
+    Scenario('find with "find" in filename', common_args + ['-f', 'find']),
+    Scenario('find with "find" not in filename', common_args + ['-F', 'find']),
+    Scenario('find blank filename (should find nothing)', common_args + ['-f', '^$']),
 
     # match filetype
-    Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths, replace_xfind_name=False),
-    Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths, replace_xfind_name=False),
+    Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths),
+    Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths),
 
     # list dirs
-    Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs'], replace_xfind_name=False),
+    Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs']),
     Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
         replace_xfind_name=False),
 
     # sorting scenarios
-    Scenario('sort shared files by path', ['--sort-by', 'path', sharedpath], replace_xfind_name=False),
-    Scenario('sort shared files by filename', ['--sort-by', 'name', sharedpath], replace_xfind_name=False),
-    Scenario('sort scripts files by path case-insensitive', ignore_args + ['--sort-by', 'path', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
-    Scenario('sort scripts files by filename case-insensitive', ignore_args + ['--sort-by', 'name', '--sort-caseinsensitive', scriptpath], replace_xfind_name=False),
-    Scenario('sort shared files by filesize', ['--sort-by', 'size', sharedpath], replace_xfind_name=False),
-    Scenario('sort shared files by filesize descending', ['--sort-by', 'size', '--sort-descending', sharedpath], replace_xfind_name=False),
-    Scenario('sort shared files by filetype', ['--sort-by', 'type', sharedpath], replace_xfind_name=False),
-    Scenario('sort shared files by filetype descending', ['--sort-by', 'type', '--sort-descending', sharedpath], replace_xfind_name=False),
-    Scenario('sort shared files by lastmod', ['--sort-by', 'lastmod', sharedpath], replace_xfind_name=False),
-    Scenario('sort shared files by lastmod descending', ['--sort-by', 'lastmod', '--sort-descending', sharedpath], replace_xfind_name=False),
+    Scenario('sort shared files by path', ['--sort-by', 'path', sharedpath]),
+    Scenario('sort shared files by filename', ['--sort-by', 'name', sharedpath]),
+    Scenario('sort scripts files by path case-insensitive', core_args + ['--sort-by', 'path', '--sort-caseinsensitive', scriptpath]),
+    Scenario('sort scripts files by filename case-insensitive', core_args + ['--sort-by', 'name', '--sort-caseinsensitive', scriptpath]),
+    Scenario('sort shared files by filesize', ['--sort-by', 'size', sharedpath]),
+    Scenario('sort shared files by filesize descending', ['--sort-by', 'size', '--sort-descending', sharedpath]),
+    Scenario('sort shared files by filetype', ['--sort-by', 'type', sharedpath]),
+    Scenario('sort shared files by filetype descending', ['--sort-by', 'type', '--sort-descending', sharedpath]),
+    Scenario('sort shared files by lastmod', ['--sort-by', 'lastmod', sharedpath]),
+    Scenario('sort shared files by lastmod descending', ['--sort-by', 'lastmod', '--sort-descending', sharedpath]),
 
     # filter by maxdepth/mindepth
-    Scenario('filter files with depth <= maxdepth', ignore_args + ['--maxdepth', '3', scriptpath], replace_xfind_name=False),
-    Scenario('filter files with depth >= mindepth', ignore_args + ['--mindepth', '2', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by maxdepth and mindepth', ignore_args + ['--maxdepth', '3', '--mindepth', '2', scriptpath], replace_xfind_name=False),
+    Scenario('filter files with depth <= maxdepth', core_args + ['--maxdepth', '3', scriptpath]),
+    Scenario('filter files with depth >= mindepth', core_args + ['--mindepth', '2', scriptpath]),
+    Scenario('filter files by maxdepth and mindepth', core_args + ['--maxdepth', '3', '--mindepth', '2', scriptpath]),
     Scenario('filter files by invalid range maxdepth and mindepth', ignore_args + ['--maxdepth', '2', '--mindepth', '3', scriptpath], replace_xfind_name=True),
 
     # filter by maxlastmod/minlastmod
-    Scenario('filter files with lastmod <= maxlastmod', ignore_args + ['--maxlastmod', '2022-12-30', scriptpath], replace_xfind_name=False),
-    Scenario('filter files with lastmod >= minlastmod', ignore_args + ['--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by maxlastmod and minlastmod', ignore_args + ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by invalid range maxlastmod and minlastmod', ignore_args + ['--maxlastmod', '2020-01-01', '--minlastmod', '2022-12-30', scriptpath], replace_xfind_name=True),
+    Scenario('filter files with lastmod <= maxlastmod', core_args + ['--maxlastmod', '2022-12-30', scriptpath]),
+    Scenario('filter files with lastmod >= minlastmod', core_args + ['--minlastmod', '2020-01-01', scriptpath]),
+    Scenario('filter files by maxlastmod and minlastmod', core_args + ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath]),
+    Scenario('filter files by invalid range maxlastmod and minlastmod', core_args + ['--maxlastmod', '2020-01-01', '--minlastmod', '2022-12-30', scriptpath], replace_xfind_name=True),
 
     # filter by maxsize/minsize
-    Scenario('filter files with size < maxsize', ignore_args + ['--maxsize', '10000', scriptpath], replace_xfind_name=False),
-    Scenario('filter files with size > minsize', ignore_args + ['--minsize', '1000', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by maxsize and minsize', ignore_args + ['--maxsize', '10000', '--minsize', '5000', scriptpath], replace_xfind_name=False),
-    Scenario('filter files by invalid range maxsize and minsize', ignore_args + ['--maxsize', '5000', '--minsize', '10000', scriptpath], replace_xfind_name=True),
+    Scenario('filter files with size < maxsize', core_args + ['--maxsize', '10000', scriptpath]),
+    Scenario('filter files with size > minsize', core_args + ['--minsize', '1000', scriptpath]),
+    Scenario('filter files by maxsize and minsize', core_args + ['--maxsize', '10000', '--minsize', '5000', scriptpath]),
+    Scenario('filter files by invalid range maxsize and minsize', core_args + ['--maxsize', '5000', '--minsize', '10000', scriptpath], replace_xfind_name=True),
 ]
 
 time_keys = {'real', 'sys', 'user', 'total'}
@@ -115,7 +119,7 @@ class LangResult(object):
 
 
 class RunResult(object):
-    def __init__(self, scenario: Scenario, run: int, lang_results: List[LangResult], **kwargs):
+    def __init__(self, scenario: Scenario, run: int, lang_results: list[LangResult], **kwargs):
         self.scenario = scenario
         self.run = run
         self.lang_results = lang_results
@@ -149,7 +153,7 @@ class RunResult(object):
 
 
 class ScenarioResult(object):
-    def __init__(self, scenario: Scenario, index: int, run_results: List[RunResult], **kwargs):
+    def __init__(self, scenario: Scenario, index: int, run_results: list[RunResult], **kwargs):
         self.scenario = scenario
         self.index = index
         self.run_results = run_results
@@ -221,7 +225,7 @@ class ScenarioResult(object):
 
 
 class ScenarioResults(object):
-    def __init__(self, scenario_results: List[ScenarioResult] = None, **kwargs):
+    def __init__(self, scenario_results: list[ScenarioResult] = None, **kwargs):
         self.scenario_results = []
         if scenario_results:
             self.scenario_results = scenario_results
@@ -314,7 +318,7 @@ class Benchmarker(object):
         self.diff_outputs = []
         self.__dict__.update(kwargs)
 
-    def __print_data_table(self, title: str, hdr: List[str], data: List[List[Union[float, int]]], col_types: List[type]):
+    def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print('\n{}'.format(title))
         print(tabulate(data, headers=hdr))
 
@@ -417,7 +421,7 @@ class Benchmarker(object):
             data.append([x, xr, xrr, xs, xsr, xu, xur, xt, xtr])
         self.__print_data_table(title, hdr, data, col_types)
 
-    def times_from_lines(self, lines: List[str]) -> Dict[str,float]:
+    def times_from_lines(self, lines: list[str]) -> dict[str,float]:
         time_dict = {}
         times = lines[0].split()
         time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
