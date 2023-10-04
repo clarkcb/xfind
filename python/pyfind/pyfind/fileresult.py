@@ -46,6 +46,8 @@ class FileResult:
             sio.write(self.CONTAINER_SEPARATOR.join([str(c) for c in self.containers]))
             sio.write(self.CONTAINER_SEPARATOR)
         sio.write(str(self.relative_path))
+        if self.mime_type:
+            sio.write(f' ({self.mime_type})')
         return sio.getvalue()
 
     def __lt__(self, other):

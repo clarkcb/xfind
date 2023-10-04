@@ -119,6 +119,26 @@ class Finder:
             and (not self.settings.out_file_types
                  or file_type not in self.settings.out_file_types)
 
+    def is_matching_mime_type(self, mime_type: str) -> bool:
+        if self.settings.in_mime_types:
+            if mime_type in self.settings.in_mime_types or '*/*' in self.settings.in_mime_types:
+                return True
+            wildcard_in_mimetypes = [m for m in self.settings.in_mime_types if m.endswith('/*')]
+            if wildcard_in_mimetypes and '/' in mime_type:
+                mime_type_wildcard = mime_type.split('/')[0] + '/*'
+                if mime_type_wildcard in wildcard_in_mimetypes:
+                    return True
+            return False
+        if self.settings.out_mime_types:
+            if mime_type in self.settings.out_mime_types or '*/*' in self.settings.out_mime_types:
+                return False
+            wildcard_out_mimetypes = [m for m in self.settings.out_mime_types if m.endswith('/*')]
+            if wildcard_out_mimetypes and '/' in mime_type:
+                mime_type_wildcard = mime_type.split('/')[0] + '/*'
+                if mime_type_wildcard in wildcard_out_mimetypes:
+                    return False
+        return True
+
     def is_matching_file_size(self, file_size: int) -> bool:
         """Check whether the given file size matches find settings."""
         return (self.settings.min_size == 0
@@ -140,11 +160,12 @@ class Finder:
             and self.is_matching_file_size(file_size) \
             and self.is_matching_last_mod(last_mod)
 
-    def is_matching_file_path(self, file_path: Path, file_type: FileType, file_size: int, last_mod: float) -> bool:
+    def is_matching_file_path(self, file_path: Path, file_type: FileType, mime_type: str, file_size: int, last_mod: float) -> bool:
         """Check whether the given file matches find settings."""
         return self.has_matching_ext(file_path) \
             and self.is_matching_file_name(file_path.name) \
             and self.is_matching_file_type(file_type) \
+            and self.is_matching_mime_type(mime_type) \
             and self.is_matching_file_size(file_size) \
             and self.is_matching_last_mod(last_mod)
 
