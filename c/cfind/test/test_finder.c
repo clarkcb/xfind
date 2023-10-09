@@ -120,17 +120,20 @@ void test_filter_file(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* test_file = "test_finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = filter_file(test_dir, test_file, finder, &ft, &fpstat);
+    unsigned short res1 = filter_file(test_dir, test_file, finder, &ft, mime_type, &fpstat);
     assert(res1 == 1);
 
     char* hidden_file = ".hidden.c";
-    unsigned short res2 = filter_file(test_dir, hidden_file, finder, &ft, &fpstat);
+    unsigned short res2 = filter_file(test_dir, hidden_file, finder, &ft, mime_type, &fpstat);
     assert(res2 == 0);
 
     destroy_finder(finder);
@@ -149,17 +152,20 @@ void test_is_matching_file_in_extensions(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, mime_type, &fpstat);
     assert(res1 == 1);
 
     char* non_matching_file = "test_finder.h";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, mime_type, &fpstat);
     assert(res2 == 0);
 
     destroy_finder(finder);
@@ -178,17 +184,20 @@ void test_is_matching_file_out_extensions(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, mime_type, &fpstat);
     assert(res1 == 0);
 
     char* non_matching_file = "test_finder.h";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, mime_type, &fpstat);
     assert(res2 == 1);
 
     destroy_finder(finder);
@@ -207,17 +216,20 @@ void test_is_matching_file_in_file_patterns(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, mime_type, &fpstat);
     assert(res1 == 1);
 
     char* non_matching_file = "finder.c";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, mime_type, &fpstat);
     assert(res2 == 0);
 
     destroy_finder(finder);
@@ -236,17 +248,20 @@ void test_is_matching_file_out_file_patterns(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* matching_file = "test_finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, mime_type, &fpstat);
     assert(res1 == 0);
 
     char* non_matching_file = "finder.c";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, mime_type, &fpstat);
     assert(res2 == 1);
 
     destroy_finder(finder);
@@ -269,18 +284,21 @@ void test_is_matching_file_in_file_types(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* matching_file = "finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, mime_type, &fpstat);
     assert(res1 == 1);
 
     char* non_matching_file = "README.md";
     ft = TEXT;
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, mime_type, &fpstat);
     assert(res2 == 0);
 
     destroy_finder(finder);
@@ -303,18 +321,23 @@ void test_is_matching_file_out_file_types(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
+    magic_t magic_cookie = NULL;
+
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     char* test_dir = ".";
     char* non_matching_file = "finder.c";
     FileType ft = CODE;
+    char* mime_type = "";
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(test_dir, non_matching_file, finder, &ft,
+                                           mime_type, &fpstat);
     assert(res1 == 0);
 
     char* matching_file = "README.md";
     ft = TEXT;
-    unsigned short res2 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(test_dir, matching_file, finder, &ft,
+                                           mime_type, &fpstat);
     assert(res2 == 1);
 
     destroy_finder(finder);

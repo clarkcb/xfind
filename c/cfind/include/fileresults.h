@@ -12,6 +12,7 @@ typedef struct FileResult {
     const char *dir;
     const char *file_name;
     FileType file_type;
+    const char *mime_type;
     uint64_t file_size;
     long last_mod;
 } FileResult;
@@ -21,7 +22,8 @@ typedef struct FileResults {
     struct FileResults *next;
 } FileResults;
 
-FileResult *new_file_result(const char *dir, const char *file_name, FileType file_type, uint64_t file_size, long last_mod);
+FileResult *new_file_result(const char *dir, const char *file_name, FileType file_type, const char *mime_type,
+                            uint64_t file_size, long last_mod);
 
 FileResults *empty_file_results(void);
 
@@ -35,7 +37,7 @@ size_t file_result_strlen(const FileResult *r);
 
 size_t file_results_count(FileResults *results);
 
-void file_result_to_string(const FileResult *r, char *s);
+void file_result_to_string(FileResult *r, char *s, size_t slen);
 
 void print_file_results(FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
                         unsigned short sort_descending);

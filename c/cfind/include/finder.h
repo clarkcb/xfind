@@ -19,9 +19,15 @@ error_t validate_settings(const FindSettings *settings);
 
 unsigned short is_matching_dir(const char *dir, const FindSettings *settings);
 
-unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat);
+unsigned short has_matching_wildcard_mime_type(const char *mime_type, const StringNode *mime_types);
 
-unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat);
+unsigned short is_matching_mime_type(const char *mime_type, const FindSettings *settings);
+
+unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type,
+                                char *mime_type, struct stat *fpstat);
+
+unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type,
+                           char *mime_type, struct stat *fpstat);
 
 error_t find(const FindSettings *settings, FileResults *results);
 

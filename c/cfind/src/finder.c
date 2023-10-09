@@ -77,7 +77,54 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
     return matches;
 }
 
-unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat)
+unsigned short has_matching_wildcard_mime_type(const char *mime_type, const StringNode *mime_types)
+{
+    int slash_idx = index_of_char_in_string('/', mime_type);
+    if (slash_idx > 0) {
+        char wildcard_mime_type[slash_idx + 2];
+        strncpy(wildcard_mime_type, mime_type, slash_idx);
+        wildcard_mime_type[slash_idx] = '/';
+        wildcard_mime_type[slash_idx+1] = '*';
+        wildcard_mime_type[slash_idx+2] = '\0';
+        if (string_matches_string_node(wildcard_mime_type, mime_types) == 1) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+unsigned short is_matching_mime_type(const char *mime_type, const FindSettings *settings)
+{
+    if (is_null_or_empty_string_node(settings->in_mime_types) == 0
+        || is_null_or_empty_string_node(settings->out_mime_types) == 0) {
+
+        if (is_null_or_empty_string_node(settings->in_mime_types) == 0) {
+            if (string_matches_string_node(mime_type, settings->in_mime_types) == 1
+                || string_matches_string_node("*/*", settings->in_mime_types) == 1) {
+                return 1;
+            }
+            // Try to match on wildcard
+            if (has_matching_wildcard_mime_type(mime_type, settings->in_mime_types) == 1) {
+                return 1;
+            }
+            return 0;
+        }
+        if (is_null_or_empty_string_node(settings->out_mime_types) == 0) {
+            if (string_matches_string_node(mime_type, settings->out_mime_types) == 1
+                || string_matches_string_node("*/*", settings->out_mime_types) == 1) {
+                return 0;
+            }
+            // Try to match on wildcard
+            if (has_matching_wildcard_mime_type(mime_type, settings->out_mime_types) == 1) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type,
+                                char *mime_type, struct stat *fpstat)
 {
     if (file_name == NULL) return 0;
     size_t file_len = strnlen(file_name, 1024);
@@ -106,6 +153,7 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
         || (finder->settings->max_size > 0L && fpstat->st_size > finder->settings->max_size)
         || (finder->settings->min_size > 0L && fpstat->st_size < finder->settings->min_size)) {
         return 0;
+    }
 
     if (*file_type == ARCHIVE) {
         if (finder->settings->include_archives == 0) return 0;
@@ -135,29 +183,32 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
         }
     }
 
-    // -- from use-libmagic
-    // See https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
-    size_t pathlen = strnlen(dir, 260) + strnlen(filename, 260) + 1; // pathsep
-    char filepath[pathlen + 1];
-    sprintf(filepath, "%s/%s", dir, filename);
-    filepath[pathlen] = '\0';
+    // Get mime type if needed
+    if ((strnlen(mime_type, 100) == 0)
+        && ((is_null_or_empty_string_node(finder->settings->in_mime_types) == 0)
+        || is_null_or_empty_string_node(finder->settings->out_mime_types) == 0)) {
+        // -- from use-libmagic
+        // See https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
+        size_t path_len = strnlen(dir, 260) + strnlen(file_name, 260) + 1; // pathsep
+        char file_path[path_len + 1];
+        sprintf(file_path, "%s/%s", dir, file_name);
+        file_path[path_len] = '\0';
+        strcpy(mime_type, magic_file(finder->magic_cookie, file_path));
 
-    if (((is_null_or_empty_string_node(finder->settings->in_mimetypes) == 0)
-             && (string_matches_string_node(mimetype, finder->settings->in_mimetypes) == 0))
-        || ((is_null_or_empty_string_node(finder->settings->out_mimetypes) == 0)
-             && (string_matches_string_node(mimetype, finder->settings->out_mimetypes) == 1)))
-    {
-        return 0;
+        if (is_matching_mime_type(mime_type, finder->settings) == 0) {
+            return 0;
+        }
     }
 
     return 1;
 }
 
-unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat)
+unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type,
+                           char *mime_type, struct stat *fpstat)
 {
     if (!finder->settings->include_hidden && is_hidden(file_name))
         return 0;
-    return is_matching_file(dir, file_name, finder, file_type, fpstat);
+    return is_matching_file(dir, file_name, finder, file_type, mime_type, fpstat);
 }
 
 static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results, const int depth)
@@ -212,15 +263,18 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
             }
         } else if (S_ISREG(fpstat.st_mode)) {
             FileType file_type = UNKNOWN;
+            // TODO: get mime_type
+            char *mime_type = (char *)malloc(101 * sizeof(char));
+            mime_type[0] = '\0';
             if (depth >= finder->settings->min_depth
                 && (finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
-                && filter_file(normpath, dent->d_name, finder, &file_type, &fpstat) == 1) {
+                && filter_file(normpath, dent->d_name, finder, &file_type, mime_type, &fpstat) == 1) {
                 size_t slen = strlen(dent->d_name);
                 char *file_name = (char *)malloc((slen + 1) * sizeof(char));
                 strncpy(file_name, dent->d_name, slen);
                 file_name[slen] = '\0';
-                FileResult *r = new_file_result(normpath, file_name, file_type, fpstat.st_size,
-                                                fpstat.st_mtime);
+                FileResult *r = new_file_result(normpath, file_name, file_type, mime_type,
+                                                (uint64_t) fpstat.st_size, fpstat.st_mtime);
                 add_to_file_results(r, results);
             }
         }
@@ -255,9 +309,8 @@ error_t find(const FindSettings *settings, FileResults *results)
 
     magic_t magic_cookie = NULL;
 
-    if (is_null_or_empty_string_node(settings->in_mimetypes) == 0
-        || is_null_or_empty_string_node(settings->out_mimetypes) == 0) {
-//        magic_cookie = magic_open(MAGIC_MIME | MAGIC_DEBUG | MAGIC_NO_CHECK_ENCODING);
+    if (is_null_or_empty_string_node(settings->in_mime_types) == 0
+        || is_null_or_empty_string_node(settings->out_mime_types) == 0) {
         magic_cookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
         if (magic_cookie == NULL) {
             return E_LIBMAGIC_ERROR;
@@ -269,7 +322,7 @@ error_t find(const FindSettings *settings, FileResults *results)
         }
     }
 
-    Finder *finder = new_finder(settings, filetypes, magic_cookie);
+    Finder *finder = new_finder(settings, file_types, magic_cookie);
 
     StringNode *nextpath = settings->paths;
     while (nextpath != NULL) {
@@ -303,13 +356,14 @@ error_t find(const FindSettings *settings, FileResults *results)
             // if min_depth > zero, we can skip since the file is at depth zero
             if (finder->settings->min_depth <= 0) {
                 FileType file_type = UNKNOWN;
+                char *mime_type = "";
                 size_t nextpath_len = (strlen(nextpath->string) + 2) * sizeof(char);
                 char *d = (char *)malloc(nextpath_len);
                 char *f = (char *)malloc(nextpath_len);
                 split_path(nextpath->string, &d, &f);
-                if (filter_file(d, f, finder, &file_type, &st) == 1) {
-                    FileResult *r = new_file_result(d, f, file_type, (uint64_t) st.st_size,
-                                                    st.st_mtime);
+                if (filter_file(d, f, finder, &file_type, mime_type, &st) == 1) {
+                    FileResult *r = new_file_result(d, f, file_type, mime_type,
+                                                    (uint64_t) st.st_size, st.st_mtime);
                     add_to_file_results(r, results);
                 } else {
                     return E_STARTPATH_NON_MATCHING;

@@ -6,13 +6,14 @@
 #include "common.h"
 #include "fileresults.h"
 
-FileResult *new_file_result(const char *dir, const char *file_name, const FileType file_type, const uint64_t file_size, const long last_mod)
+FileResult *new_file_result(const char *d, const char *file_name, FileType file_type, const char *mime_type, uint64_t file_size, long last_mod)
 {
     FileResult *r = malloc(sizeof(FileResult));
     assert(r != NULL);
-    r->dir = dir;
+    r->dir = d;
     r->file_name = file_name;
     r->file_type = file_type;
+    r->mime_type = mime_type;
     r->file_size = file_size;
     r->last_mod = last_mod;
     return r;
@@ -58,7 +59,11 @@ void add_to_file_results(FileResult *r, FileResults *results)
 
 size_t file_result_strlen(const FileResult *r)
 {
-    return strlen(r->dir) + strlen(r->file_name) + 1;
+    size_t fr_len = strlen(r->dir) + strlen(r->file_name) + 1;
+    if (r->mime_type != NULL && strnlen(r->mime_type, 100) > 0) {
+        fr_len += strnlen(r->mime_type, 100) + 3; // for space and parens
+    }
+    return fr_len;
     // Include file_size: + 3 is for the space and parens
     // return strlen(r->dir) + strlen(r->file_name) + num_digits_ulong(r->file_size) + 3 + 1;
     // Include mtime: + 3 is for the space and parens
@@ -76,12 +81,16 @@ size_t file_results_count(FileResults *results)
     return count;
 }
 
-void file_result_to_string(const FileResult *r, char *s)
+void file_result_to_string(FileResult *r, char *s, size_t slen)
 {
-    sprintf(s, "%s/%s", r->dir, r->file_name);
+    if (strnlen(r->mime_type, 100) > 0) {
+        sprintf(s, "%s/%s (%s)", r->dir, r->file_name, r->mime_type);
+    } else {
+        sprintf(s, "%s/%s", r->dir, r->file_name);
+    }
     // sprintf(s, "%s/%s (%llu)", r->dir, r->file_name, r->file_size);
     // sprintf(s, "%s/%s (%lu)", r->dir, r->file_name, r->mtime);
-    s[file_result_strlen(r)] = '\0';
+    s[slen] = '\0';
 }
 
 void print_file_results(FileResults *results, const SortBy sort_by, const unsigned short sort_case_insensitive,
@@ -109,10 +118,10 @@ void print_file_results(FileResults *results, const SortBy sort_by, const unsign
 
         for (i = 0; i < results_count; i++) {
             size_t frlen = file_result_strlen(results_array[i]);
-            char resstr[frlen + 1];
-            file_result_to_string(results_array[i], resstr);
-            resstr[frlen] = '\0';
-            log_msg(resstr);
+            char frstr[frlen + 1];
+            file_result_to_string(results_array[i], frstr, frlen);
+            frstr[frlen] = '\0';
+            log_msg(frstr);
         }
     } else {
         printf("\nMatching files: 0\n");
@@ -352,6 +361,7 @@ void destroy_file_result(FileResult *r)
     if (r != NULL) {
         r->dir = NULL;
         free(r->file_name);
+        free(r->mime_type);
         free(r);
     }
 }

@@ -293,10 +293,10 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         }
         break;
     case IN_MIME_TYPE:
-        if (settings->in_mimetypes == NULL)
-            settings->in_mimetypes = new_string_node(arg_val);
+        if (settings->in_mime_types == NULL)
+            settings->in_mime_types = new_string_node(arg_val);
         else
-            add_string_to_string_node(arg_val, settings->in_mimetypes);
+            add_string_to_string_node(arg_val, settings->in_mime_types);
         break;
     case MAX_DEPTH:
         settings->max_depth = atoi(arg_val);
@@ -375,10 +375,10 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         }
         break;
     case OUT_MIME_TYPE:
-        if (settings->out_mimetypes == NULL)
-            settings->out_mimetypes = new_string_node(arg_val);
+        if (settings->out_mime_types == NULL)
+            settings->out_mime_types = new_string_node(arg_val);
         else
-            add_string_to_string_node(arg_val, settings->out_mimetypes);
+            add_string_to_string_node(arg_val, settings->out_mime_types);
         break;
     case PATH:
         if (settings->paths == NULL)
