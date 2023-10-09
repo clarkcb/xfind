@@ -10,7 +10,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import {stat} from 'fs/promises';
 import * as path from 'path';
-import * as mmm from 'mmmagic';
+import * as mmm from '@picturae/mmmagic';
 
 import * as common from './common';
 import {FileResult} from './fileresult';
