@@ -37,6 +37,7 @@ public class FindSettings
 	public ISet<string> InExtensions { get; private set; }
 	public ISet<Regex> InFilePatterns { get; private set; }
 	public ISet<FileType> InFileTypes { get; private set; }
+	public ISet<string> InMimeTypes { get; private set; }
 	public bool IncludeArchives { get; set; }
 	public bool IncludeHidden { get; set; }
 	public int MaxDepth { get; set; }
@@ -51,6 +52,7 @@ public class FindSettings
 	public ISet<string> OutExtensions { get; private set; }
 	public ISet<Regex> OutFilePatterns { get; private set; }
 	public ISet<FileType> OutFileTypes { get; private set; }
+	public ISet<string> OutMimeTypes { get; private set; }
 	public ISet<string> Paths { get; private set; }
 	public bool PrintDirs { get; set; }
 	public bool PrintFiles { get; set; }
@@ -72,6 +74,7 @@ public class FindSettings
 		InExtensions = new HashSet<string>();
 		InFilePatterns = new HashSet<Regex>();
 		InFileTypes = new HashSet<FileType>();
+		InMimeTypes = new HashSet<string>();
 		IncludeArchives = false;
 		IncludeHidden = false;
 		MaxDepth = -1;
@@ -86,6 +89,7 @@ public class FindSettings
 		OutExtensions = new HashSet<string>();
 		OutFilePatterns = new HashSet<Regex>();
 		OutFileTypes = new HashSet<FileType>();
+		OutMimeTypes = new HashSet<string>();
 		Paths = new HashSet<string>();
 		PrintDirs = false;
 		PrintFiles = false;
@@ -107,6 +111,7 @@ public class FindSettings
 		ISet<string> inExtensions,
 		ISet<Regex> inFilePatterns,
 		ISet<FileType> inFileTypes,
+		ISet<string> inMimeTypes,
 		bool includeArchives,
 		bool includeHidden,
 		int maxDepth,
@@ -121,6 +126,7 @@ public class FindSettings
 		ISet<string> outExtensions,
 		ISet<Regex> outFilePatterns,
 		ISet<FileType> outFileTypes,
+		ISet<string> outMimeTypes,
 		ISet<string> paths,
 		bool printDirs,
 		bool printFiles,
@@ -140,6 +146,7 @@ public class FindSettings
 		InExtensions = inExtensions;
 		InFilePatterns = inFilePatterns;
 		InFileTypes = inFileTypes;
+		InMimeTypes = inMimeTypes;
 		IncludeArchives = includeArchives;
 		IncludeHidden = includeHidden;
 		PrintDirs = printDirs;
@@ -156,6 +163,7 @@ public class FindSettings
 		OutExtensions = outExtensions;
 		OutFilePatterns = outFilePatterns;
 		OutFileTypes = outFileTypes;
+		OutMimeTypes = outMimeTypes;
 		Paths = paths;
 		PrintUsage = printUsage;
 		PrintVersion = printVersion;
@@ -257,6 +265,11 @@ public class FindSettings
 		SortBy = SortByUtil.GetSortByFromName(sortByName);
 	}
 
+	public bool NeedMimeType()
+	{
+		return InMimeTypes.Count > 0 || OutMimeTypes.Count > 0;
+	}
+
 	private static string DateTimeToString(System.DateTime? dt)
 	{
 		return dt == null ? "0" : $"\"{dt}\"";
@@ -293,6 +306,7 @@ public class FindSettings
 		       ", InExtensions=" + EnumerableToString(InExtensions) +
 		       ", InFilePatterns=" + EnumerableToString(InFilePatterns) +
 		       ", InFileTypes=" + EnumerableToString(InFileTypes, false) +
+		       ", InMimeTypes=" + EnumerableToString(InMimeTypes) +
 		       ", IncludeArchives=" + IncludeArchives +
 		       ", IncludeHidden=" + IncludeHidden +
 		       ", MaxDepth=" + MaxDepth +
@@ -307,6 +321,7 @@ public class FindSettings
 		       ", OutExtensions=" + EnumerableToString(OutExtensions) +
 		       ", OutFilePatterns=" + EnumerableToString(OutFilePatterns) +
 		       ", OutFileTypes=" + EnumerableToString(OutFileTypes, false) +
+		       ", OutMimeTypes=" + EnumerableToString(OutMimeTypes) +
 		       ", Paths=" + EnumerableToString(Paths) +
 		       ", PrintDirs=" + PrintDirs +
 		       ", PrintFiles=" + PrintFiles +

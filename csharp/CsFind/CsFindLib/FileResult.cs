@@ -12,22 +12,29 @@ public class FileResult
 	public IList<string> Containers { get; }
 	public FileInfo File { get; }
 	public FileType Type { get; }
+	public string MimeType { get; }
 
 	public string FullName => ToString();
 
 	public string PathAndName => File.ToString();
 
-	public FileResult(FileInfo fileInfo, FileType type) :
-		this(new List<string>(), fileInfo, type) {}
+	public FileResult(FileInfo fileInfo, FileType fileType) :
+		this(new List<string>(), fileInfo, fileType, "") {}
 
 	public FileResult(string path, string fileName, FileType type) :
-		this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type) {}
+		this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type, "") {}
 
-	public FileResult(IList<string> containers, FileInfo file, FileType type)
+	public FileResult(FileInfo fileInfo, FileType type, string mimeType) :
+		this(new List<string>(), fileInfo, type, mimeType) {}
+	public FileResult(string path, string fileName, FileType type, string mimeType) :
+		this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type, mimeType) {}
+
+	public FileResult(IList<string> containers, FileInfo file, FileType fileType, string mimeType)
 	{
 		Containers = containers;
 		File = file;
-		Type = type;
+		Type = fileType;
+		MimeType = mimeType;
 	}
 
 	public void AddContainer(string container)
@@ -53,6 +60,10 @@ public class FileResult
 			sb.Append(ContainerSeparator);
 		}
 		sb.Append(PathAndName);
+		if (MimeType != "")
+		{
+			sb.Append(" (").Append(MimeType).Append(')');
+		}
 		return sb.ToString();
 	}
 

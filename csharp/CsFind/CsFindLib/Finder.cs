@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
+using HeyRed.Mime;
 
 namespace CsFindLib;
 
@@ -58,6 +60,44 @@ public class Finder
 		        !Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0));
 	}
 
+	public bool IsMatchingMimeType(string mimeType)
+	{
+		if (Settings.InMimeTypes.Count > 0)
+		{
+			if (Settings.InMimeTypes.Contains(mimeType) || Settings.InMimeTypes.Contains("*/*"))
+			{
+				return true;
+			}
+			// Check for wildcard matches
+			if (Settings.InMimeTypes.Any(m => m.EndsWith("/*")) && mimeType.Contains('/'))
+			{
+				var wildcardMimeType = mimeType.Split('/')[0] + "/*";
+				if (Settings.InMimeTypes.Contains(wildcardMimeType))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		if (Settings.OutMimeTypes.Count > 0)
+		{
+			if (Settings.OutMimeTypes.Contains(mimeType) || Settings.OutMimeTypes.Contains("*/*"))
+			{
+				return false;
+			}
+			// Check for wildcard matches
+			if (Settings.OutMimeTypes.Any(m => m.EndsWith("/*")) && mimeType.Contains('/'))
+			{
+				var wildcardMimeType = mimeType.Split('/')[0] + "/*";
+				if (Settings.OutMimeTypes.Contains(wildcardMimeType))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+	}
+
 	public bool IsMatchingFileResult(FileResult fr)
 	{
 		if ((Settings.InExtensions.Count > 0 &&
@@ -78,6 +118,10 @@ public class Finder
 			!Settings.InFileTypes.Contains(fr.Type)) ||
 			(Settings.OutFileTypes.Count > 0 &&
 			Settings.OutFileTypes.Contains(fr.Type)))
+		{
+			return false;
+		}
+		if (fr.MimeType.Length > 0 && !IsMatchingMimeType(fr.MimeType))
 		{
 			return false;
 		}
@@ -110,7 +154,12 @@ public class Finder
 	{
 		if (!Settings.IncludeHidden && FileUtil.IsHiddenFile(fi))
 			return null;
-		var fr = new FileResult(fi, _fileTypes.GetFileType(fi));
+		var mimeType = "";
+		if (Settings.NeedMimeType())
+		{
+			mimeType = fi.GuessMimeType();
+		}
+		var fr = new FileResult(fi, _fileTypes.GetFileType(fi), mimeType);
 		if (fr.Type.Equals(FileType.Archive))
 		{
 			if (Settings.IncludeArchives && IsMatchingArchiveFile(fr))
@@ -346,8 +395,8 @@ public class Finder
 
 	public void PrintMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
-		var matchingFiles = GetMatchingFiles(fileResults)
-			.Select(f => GetRelativePath(f.FullName))
+		var matchingFiles = fileResults
+			.Select(fr => fr.ToString())
 			.ToList();
 		if (matchingFiles.Any()) {
 			Logger.Log($"\nMatching files ({matchingFiles.Count}):");

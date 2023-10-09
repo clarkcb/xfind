@@ -21,6 +21,7 @@ public class FindOptions
 			{ "in-ext", (s, settings) => settings.AddInExtension(s) },
 			{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
 			{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
+			{ "in-mimetype", (s, settings) => settings.InMimeTypes.Add(s) },
 			{ "maxdepth", (s, settings) => settings.MaxDepth = int.Parse(s) },
 			{ "maxlastmod", (s, settings) => {
 					settings.MaxLastMod = DateTime.Parse(s);
@@ -39,6 +40,7 @@ public class FindOptions
 			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
 			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
+			{ "out-mimetype", (s, settings) => settings.OutMimeTypes.Add(s) },
 			{ "path", (s, settings) => settings.Paths.Add(s) },
 			{ "settings-file", SettingsFromFile },
 			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
@@ -169,9 +171,9 @@ public class FindOptions
 
 	private static void ApplySetting(string arg, string val, FindSettings settings)
 	{
-		if (ArgActionDictionary.ContainsKey(arg))
+		if (ArgActionDictionary.TryGetValue(arg, out var action))
 		{
-			ArgActionDictionary[arg](val, settings);
+			action(val, settings);
 		}
 		else
 		{
@@ -181,9 +183,9 @@ public class FindOptions
 
 	private static void ApplySetting(string arg, bool val, FindSettings settings)
 	{
-		if (BoolFlagActionDictionary.ContainsKey(arg))
+		if (BoolFlagActionDictionary.TryGetValue(arg, out var action))
 		{
-			BoolFlagActionDictionary[arg](val, settings);
+			action(val, settings);
 		}
 		else
 		{
@@ -217,22 +219,22 @@ public class FindOptions
 				{
 					throw new FindException("Invalid option: -");
 				}
-				if (ArgDictionary.ContainsKey(s))
+				if (ArgDictionary.TryGetValue(s, out var findArgOption))
 				{
 					try
 					{
-						((FindArgOption)ArgDictionary[s]).Action(queue.Dequeue(), settings);
+						((FindArgOption)findArgOption).Action(queue.Dequeue(), settings);
 					}
 					catch (InvalidOperationException e)
 					{
 						throw new FindException(e.Message);
 					}
 				}
-				else if (FlagDictionary.ContainsKey(s))
+				else if (FlagDictionary.TryGetValue(s, out var findFlagOption))
 				{
 					try
 					{
-						((FindFlagOption)FlagDictionary[s]).Action(true, settings);
+						((FindFlagOption)findFlagOption).Action(true, settings);
 					}
 					catch (InvalidOperationException e)
 					{

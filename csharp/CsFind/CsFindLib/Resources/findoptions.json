@@ -66,6 +66,11 @@
       "desc": "File type to find (text, binary)"
     },
     {
+      "long": "in-mimetype",
+      "arg": "mimetype",
+      "desc": "MIME type to find (text/plain, application/octet-stream, etc.)"
+    },
+    {
       "long": "maxdepth",
       "arg": "size",
       "desc": "Find files at most maxdepth levels below startpath"
@@ -141,6 +146,11 @@
       "short": "T",
       "arg": "filetype",
       "desc": "File type not to find (text, binary)"
+    },
+    {
+      "long": "out-mimetype",
+      "arg": "mimetype",
+      "desc": "MIME type not to find (text/plain, application/octet-stream, etc.)"
     },
     {
       "long": "printdirs",

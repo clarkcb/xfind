@@ -13,4 +13,8 @@
     <EmbeddedResource Include="Resources\filetypes.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Mime" Version="3.5.2" />
+  </ItemGroup>
+
 </Project>
