@@ -10,7 +10,7 @@ import * as assert from 'assert';
 import * as fs from 'fs';
 import {stat} from 'fs/promises';
 import * as path from 'path';
-import * as mmm from 'mmmagic';
+import * as mmm from '@picturae/mmmagic';
 
 import * as common from './common';
 import {FileResult} from './fileresult';
@@ -23,19 +23,23 @@ import {SortBy} from "./sortby";
 
 export class Finder {
     _settings: FindSettings;
-    _magic: mmm.Magic;
-    detectMimeType: (filepath: string) => Promise<any>;
+    _magic: mmm.Magic | undefined;
+    detectMimeType: ((filepath: string) => Promise<any>) | undefined;
 
     constructor(settings: FindSettings) {
         this._settings = settings;
-        this._magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-        this.detectMimeType = (filepath) =>
-            new Promise((resolve, reject) => {
-                this._magic.detectFile(filepath, (err, result) => {
-                    if (err) return reject(err);
-                    resolve(result);
+        if (settings.needMimeType()) {
+            this._magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_NO_CHECK_ENCODING);
+            this.detectMimeType = (filepath: string) =>
+                new Promise((resolve, reject) => {
+                    if (this._magic !== undefined) {
+                        this._magic.detectFile(filepath, (err: Error, result: string | string[]) => {
+                            if (err) return reject(err);
+                            resolve(result);
+                        });
+                    }
                 });
-            });
+        }
         this.validateSettings();
     }
 
@@ -126,10 +130,36 @@ export class Finder {
         return this.isMatchingFileResult(fr);
     }
 
+    public isMatchingMimeType(mimeType: string): boolean {
+        if (this._settings.inMimeTypes.length) {
+            if (Finder.matchesAnyString(mimeType, this._settings.inMimeTypes) ||
+                Finder.matchesAnyString('*/*', this._settings.inMimeTypes)) {
+                return true;
+            }
+            if (this._settings.inMimeTypes.some((m) => m.endsWith('/*')) && mimeType.indexOf('/') > -1) {
+                const wildcardMimeType = mimeType.split('/')[0] + '/*';
+                if (Finder.matchesAnyString(wildcardMimeType, this._settings.inMimeTypes)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (this._settings.outMimeTypes.length) {
+            if (Finder.matchesAnyString(mimeType, this._settings.outMimeTypes) ||
+                Finder.matchesAnyString('*/*', this._settings.outMimeTypes)) {
+                return false;
+            }
+            if (this._settings.outMimeTypes.some((m) => m.endsWith('/*')) && mimeType.indexOf('/') > -1) {
+                const wildcardMimeType = mimeType.split('/')[0] + '/*';
+                if (Finder.matchesAnyString(wildcardMimeType, this._settings.outMimeTypes)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public isMatchingFileResult(fr: FileResult): boolean {
-        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
-        //     return false;
-        // }
         if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
             const ext: string = FileUtil.getExtension(fr.fileName);
             if ((this._settings.inExtensions.length &&
@@ -152,17 +182,15 @@ export class Finder {
                     return false;
         }
 
-        if ((this._settings.inMimeTypes.length &&
-            !Finder.matchesAnyString(fr.mimeType, this._settings.inMimeTypes))
-            || (this._settings.outMimeTypes.length &&
-                Finder.matchesAnyString(fr.mimeType, this._settings.outMimeTypes))) {
-                    return false;
+        if (fr.mimeType !== '' && !this.isMatchingMimeType(fr.mimeType)) {
+            return false;
         }
 
         if ((this._settings.maxLastMod > 0 && fr.lastMod > this._settings.maxLastMod) ||
             (this._settings.minLastMod > 0 && fr.lastMod < this._settings.minLastMod)) {
             return false;
         }
+
         if ((this._settings.maxSize > 0 && fr.fileSize > this._settings.maxSize) ||
             (this._settings.minSize > 0 && fr.fileSize < this._settings.minSize)) {
             return false;
@@ -205,6 +233,11 @@ export class Finder {
     public filePathToFileResult(fp: string, stat: fs.Stats | null = null): FileResult {
         const dirname = path.dirname(fp) || '.';
         const filename = path.basename(fp);
+        const fileType = FileTypes.getFileType(filename);
+        let mimeType: string = '';
+        if (this._settings.needMimeType() && this.detectMimeType !== undefined) {
+            mimeType = await this.detectMimeType(fp);
+        }
         let fileSize = 0;
         let lastMod = 0;
         if (this._settings.needLastMod() || this._settings.needSize()) {
@@ -212,7 +245,7 @@ export class Finder {
             fileSize = stat.size;
             lastMod = stat.mtime.getTime();
         }
-        return new FileResult(dirname, filename, FileTypes.getFileType(filename), fileSize, lastMod);
+        return new FileResult(dirname, filename, fileType, mimeType, fileSize, lastMod);
     }
 
     public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
@@ -232,36 +265,33 @@ export class Finder {
         return null;
     }
 
-    private recGetFileResults(currentDir: string, depth: number): FileResult[] {
+    private async recGetFileResults(currentDir: string, depth: number): Promise<FileResult[]> {
         if (this._settings.maxDepth > 0 && depth > this._settings.maxDepth) {
             return [];
         }
         const findDirs: string[] = [];
         let fileResults: FileResult[] = [];
-        const files = fs.readdirSync(currentDir).map((f: string) => {
+        const filePaths = fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
-        }).forEach((fp: string) => {
-            const stats = fs.statSync(fp);
+        });
+        for (const filePath of filePaths) {
+            const stats = fs.statSync(filePath);
             if (stats.isDirectory()) {
-                if (this._settings.recursive && this.isMatchingDir(fp)) {
-                    findDirs.push(fp);
+                if (this._settings.recursive && this.isMatchingDir(filePath)) {
+                    findDirs.push(filePath);
                 }
             } else if (stats.isFile()) {
                 if (depth >= this._settings.minDepth) {
-                    let mimetype = '';
-                    if (this._settings.inMimeTypes.length || this._settings.outMimeTypes.length) {
-                        mimetype = await this.detectMimeType(f);
-                    }
-                    const fr = this.filterToFileResult(fp);
+                    const fr = await this.filterToFileResult(filePath);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
                 }
             }
-        });
-        findDirs.forEach(d => {
-            fileResults = fileResults.concat(this.recGetFileResults(d, depth + 1));
-        });
+        }
+        for (const d of findDirs) {
+            fileResults = fileResults.concat(await this.recGetFileResults(d, depth + 1));
+        }
         return fileResults;
     }
 
@@ -274,7 +304,7 @@ export class Finder {
                 return [];
             }
             if (this.isMatchingDir(startPath)) {
-                fileResults = fileResults.concat(this.recGetFileResults(startPath, 1));
+                fileResults = fileResults.concat(await this.recGetFileResults(startPath, 1));
             } else {
                 throw new FindError('startPath does not match find criteria');
             }
@@ -285,7 +315,7 @@ export class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                const fr = this.filterToFileResult(startPath);
+                const fr = await this.filterToFileResult(startPath);
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {

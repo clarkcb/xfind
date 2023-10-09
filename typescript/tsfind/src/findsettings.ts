@@ -159,6 +159,11 @@ export class FindSettings {
             this.minSize > 0;
     }
 
+    public needMimeType(): boolean {
+        return this.inMimeTypes.length > 0 ||
+            this.outMimeTypes.length > 0;
+    }
+
     public needStat(): boolean {
         return this.needLastMod() || this.needSize();
     }
