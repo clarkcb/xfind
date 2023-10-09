@@ -37,7 +37,7 @@ class FileResult {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }
         s += this.relativePath();
-
+        if (this.mimeType) s += ` (${this.mimeType})`;
         return s;
     }
 }

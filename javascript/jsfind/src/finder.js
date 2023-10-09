@@ -10,7 +10,7 @@ const path = require('path');
 const { promisify } = require('util');
 const fsStatAsync = promisify(fs.stat);
 const fsReaddirAsync = promisify(fs.readdir);
-const mmm = require('mmmagic');
+const mmm = require('@picturae/mmmagic');
 
 const {FileResult} = require('./fileresult');
 const {FileType} = require("./filetype");
@@ -26,16 +26,20 @@ class Finder {
     constructor(settings) {
         this.settings = settings;
         this.fileTypes = new FileTypes();
-        this.magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE);
-        // TODO: not sure why the explicit Promise version works but not the promisify version
-        // this.detectFileAsync = promisify(this.magic.detectFile);
-        this.detectMimeType = (filepath) =>
-            new Promise((resolve, reject) => {
-                this.magic.detectFile(filepath, (err, result) => {
-                    if (err) return reject(err);
-                    resolve(result);
-                });
-            });
+        this.magic = null;
+        if (settings.needMimeType()) {
+            this.magic = new mmm.Magic(mmm.MAGIC_MIME_TYPE | mmm.MAGIC_NO_CHECK_ENCODING);
+
+            // TODO: not sure why the explicit Promise version works but not the promisify version
+            // this.detectFileAsync = promisify(this.magic.detectFile);
+            this.detectMimeType = (filepath) =>
+              new Promise((resolve, reject) => {
+                  this.magic.detectFile(filepath, (err, result) => {
+                      if (err) return reject(err);
+                      resolve(result);
+                  });
+              });
+        }
         this.validateSettings();
     }
 
@@ -121,6 +125,35 @@ class Finder {
         return this.isMatchingFileResult(fr);
     }
 
+    isMatchingMimeType(mimeType) {
+        if (this.settings.inMimeTypes.length) {
+            if (this.matchesAnyElement(mimeType, this.settings.inMimeTypes) ||
+              this.matchesAnyElement('*/*', this.settings.inMimeTypes)) {
+                return true;
+            }
+            if (this.settings.inMimeTypes.some((m) => m.endsWith('/*')) && mimeType.indexOf('/') > -1) {
+                const wildcardMimeType = mimeType.split('/')[0] + '/*';
+                if (this.matchesAnyElement(wildcardMimeType, this.settings.inMimeTypes)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (this.settings.outMimeTypes.length) {
+            if (this.matchesAnyElement(mimeType, this.settings.outMimeTypes) ||
+              this.matchesAnyElement('*/*', this.settings.outMimeTypes)) {
+                return false;
+            }
+            if (this.settings.outMimeTypes.some((m) => m.endsWith('/*')) && mimeType.indexOf('/') > -1) {
+                const wildcardMimeType = mimeType.split('/')[0] + '/*';
+                if (this.matchesAnyElement(wildcardMimeType, this.settings.outMimeTypes)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     isMatchingFileResult(fr) {
         // if (!this.settings.includeHidden && FileUtil.isHidden(file)) {
         //     return false;
@@ -146,6 +179,11 @@ class Finder {
                 this.matchesAnyElement(fr.fileType, this.settings.outFileTypes))) {
             return false;
         }
+
+        if (fr.mimeType !== '' && !this.isMatchingMimeType(fr.mimeType)) {
+            return false;
+        }
+
         if ((this.settings.maxLastMod > 0 && fr.lastMod > this.settings.maxLastMod) ||
           (this.settings.minLastMod > 0 && fr.lastMod < this.settings.minLastMod)) {
             return false;
@@ -155,12 +193,6 @@ class Finder {
             return false;
         }
 
-        if ((this.settings.inMimeTypes.length &&
-            !this.matchesAnyElement(fr.mimeType, this.settings.inMimeTypes)) ||
-            (this.settings.outMimeTypes.length &&
-                this.matchesAnyElement(fr.mimeType, this.settings.outMimeTypes))) {
-            return false;
-        }
         return true;
     }
 
@@ -200,7 +232,7 @@ class Finder {
         const fileName = path.basename(fp);
         let fileType = this.fileTypes.getFileType(fileName);
         let mimeType = '';
-        if (this.settings.inMimeTypes.length || this.settings.outMimeTypes.length) {
+        if (this.settings.needMimeType()) {
             mimeType = this.detectMimeType(fp);
         }
         let fileSize = 0;
@@ -240,8 +272,8 @@ class Finder {
         let filePaths = files.map(f => {
             return path.join(currentDir, f);
         });
-        for (let filePath of filePaths) {
-            const stats = fs.statSync(filePath);
+        for (const filePath of filePaths) {
+            const stats = await fsStatAsync(filePath);
             if (stats.isDirectory()) {
                 if (this.settings.recursive && this.isMatchingDir(filePath)) {
                     findDirs.push(filePath);
@@ -255,7 +287,6 @@ class Finder {
                 }
             }
         }
-
         const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, depth + 1)));
         subDirFindFileArrays.forEach(subDirFindFiles => {
             fileResults = fileResults.concat(subDirFindFiles);
@@ -283,7 +314,7 @@ class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(startPath, stats);
+                let fr = await this.filterToFileResult(startPath, stats);
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {

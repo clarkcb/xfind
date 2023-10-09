@@ -152,6 +152,10 @@ class FindSettings {
           this.minLastMod > 0;
     }
 
+    needMimeType() {
+        return this.inMimeTypes.length > 0 || this.outMimeTypes.length > 0;
+    }
+
     needSize() {
         return this.sortBy === SortBy.FILESIZE ||
           this.maxSize > 0 ||

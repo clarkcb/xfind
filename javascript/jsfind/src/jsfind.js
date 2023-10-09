@@ -34,7 +34,7 @@ function printMatchingDirs(fileResults) {
 }
 
 function getMatchingFiles(fileResults) {
-    return fileResults.map(f => f.relativePath());
+    return fileResults.map(fr => fr.toString());
 }
 
 function printMatchingFiles(fileResults) {
