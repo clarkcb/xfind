@@ -28,7 +28,7 @@ func main() {
 	}
 
 	if settings.Debug() {
-		fmt.Printf("settings: %s\n", settings.String())
+		gofind.Log(fmt.Sprintf("settings: %s\n", settings.String()))
 	}
 
 	finder, err := gofind.NewFinder(settings)

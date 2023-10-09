@@ -71,6 +71,36 @@ func (f *Finder) hasMatchingExtension(fr *FileResult) bool {
 		return (len(f.Settings.InExtensions()) == 0 || Contains(f.Settings.InExtensions(), ext)) &&
 			(len(f.Settings.OutExtensions()) == 0 || !Contains(f.Settings.OutExtensions(), ext))
 	}
+}
+
+func (f *Finder) isMatchingMimeType(mimeType string) bool {
+	if len(f.Settings.InMimeTypes()) > 0 {
+		if Contains(f.Settings.InMimeTypes(), mimeType) || Contains(f.Settings.InMimeTypes(), "*/*") {
+			return true
+		}
+		if FindString(f.Settings.InMimeTypes(), func(s string) bool {
+			return strings.HasSuffix(s, "/*")
+		}) > -1 && strings.Contains(mimeType, "/") {
+			wildcardMimeType := strings.Split(mimeType, "/")[0] + "/*"
+			if Contains(f.Settings.InMimeTypes(), wildcardMimeType) {
+				return true
+			}
+		}
+		return false
+	}
+	if len(f.Settings.OutMimeTypes()) > 0 {
+		if Contains(f.Settings.OutMimeTypes(), mimeType) || Contains(f.Settings.OutMimeTypes(), "*/*") {
+			return false
+		}
+		if FindString(f.Settings.OutMimeTypes(), func(s string) bool {
+			return strings.HasSuffix(s, "/*")
+		}) > -1 && strings.Contains(mimeType, "/") {
+			wildcardMimeType := strings.Split(mimeType, "/")[0] + "/*"
+			if Contains(f.Settings.OutMimeTypes(), wildcardMimeType) {
+				return false
+			}
+		}
+	}
 	return true
 }
 
@@ -116,7 +146,7 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 	} else {
 		dir = normalizePath(dir)
 	}
-	t := f.fileTypes.GetFileType(file)
+	fileType := f.fileTypes.GetFileType(file)
 	var fileSize int64 = 0
 	lastMod := time.Time{}
 	if fi != nil {
@@ -124,14 +154,14 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 		lastMod = fi.ModTime()
 	}
 	mimeType := ""
-	if len(f.Settings.InMimeTypes) > 0 || len(f.Settings.OutMimeTypes) > 0 {
-		mt, err := f.magic.File(fr.String())
+	if f.Settings.NeedMimeType() {
+		fpMimeType, err := f.magic.File(filePath)
 		if err != nil {
-			return nil
+			fpMimeType = ""
 		}
-		mimeType = mt
+		mimeType = fpMimeType
 	}
-	return NewFileResult(dir, file, t, mimeType, fileSize, lastMod)
+	return NewFileResult(dir, file, fileType, mimeType, fileSize, lastMod)
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {

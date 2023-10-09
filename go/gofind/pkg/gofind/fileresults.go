@@ -259,16 +259,18 @@ type FileResult struct {
 	Path       string
 	Name       string
 	FileType   FileType
+	MimeType   string
 	FileSize   int64
 	LastMod    time.Time
 }
 
-func NewFileResult(path string, name string, fileType FileType, fileSize int64, lastMod time.Time) *FileResult {
+func NewFileResult(path string, name string, fileType FileType, mimeType string, fileSize int64, lastMod time.Time) *FileResult {
 	return &FileResult{
 		[]string{},
 		path,
 		name,
 		fileType,
+		mimeType,
 		fileSize,
 		lastMod,
 	}
@@ -291,6 +293,9 @@ func (fr *FileResult) String() string {
 		buffer.WriteString(fmt.Sprintf("%s%c%s", path, os.PathSeparator, fr.Name))
 	} else {
 		buffer.WriteString(filepath.Join(fr.Path, fr.Name))
+	}
+	if fr.MimeType != "" {
+		buffer.WriteString(fmt.Sprintf(" (%s)", fr.MimeType))
 	}
 	return buffer.String()
 }

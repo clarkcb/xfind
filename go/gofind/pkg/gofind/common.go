@@ -141,3 +141,22 @@ func GetMinInt(x int, y int) int {
 	}
 	return y
 }
+
+func FilterStrings(vs []string, f func(string) bool) []string {
+	filtered := make([]string, 0)
+	for _, v := range vs {
+		if f(v) {
+			filtered = append(filtered, v)
+		}
+	}
+	return filtered
+}
+
+func FindString(vs []string, f func(string) bool) int {
+	for i, v := range vs {
+		if f(v) {
+			return i
+		}
+	}
+	return -1
+}

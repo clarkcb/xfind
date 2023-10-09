@@ -87,7 +87,7 @@ type FindSettings struct {
 	outExtensions          []string
 	outFilePatterns        *Patterns
 	outFileTypes           []FileType
-	inMimeTypes            []string
+	outMimeTypes           []string
 	paths                  []string
 	printDirs              bool
 	printFiles             bool
@@ -534,6 +534,16 @@ func LastModToString(t time.Time) string {
 
 func addPattern(p string, sp *Patterns) {
 	sp.AddPatternString(p)
+}
+
+func (f *FindSettings) NeedMimeType() bool {
+	return len(f.inMimeTypes) > 0 || len(f.outMimeTypes) > 0
+}
+
+func (f *FindSettings) NeedStat() bool {
+	return f.sortBy == SortByFilesize || f.sortBy == SortByLastmod ||
+		!f.maxLastMod.IsZero() || !f.minLastMod.IsZero() ||
+		f.maxSize > 0 || f.minSize > 0
 }
 
 func (f *FindSettings) String() string {
