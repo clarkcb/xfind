@@ -28,6 +28,6 @@ public struct FileResult {
 
     public var description: String {
         "\(containers.isEmpty ? "" : containers.joined(separator: containerSeparator) + containerSeparator)" +
-            filePath
+            filePath + (mimeType.isEmpty ? "" : " (\(mimeType))")
     }
 }

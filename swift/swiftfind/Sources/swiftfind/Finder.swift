@@ -7,7 +7,8 @@
 //
 
 import Foundation
-//import SwiftMagicNew
+// import SwiftMagicNew
+// import libmagic
 
 // FIXME: comparison operators with optionals were removed from the Swift Standard Libary.
 // Consider refactoring the code to use the non-optional operators.
@@ -25,6 +26,8 @@ private func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
 public class Finder {
     let fileTypes = FileTypes()
     let settings: FindSettings
+    // public static let shared = Magic()
+    // private let magic: magic_t
 
     public init(settings: FindSettings) throws {
         self.settings = settings
@@ -76,8 +79,30 @@ public class Finder {
     private func filterByMimeTypes(_ mimeType: String, inMimeTypes: Set<String>,
                                    outMimeTypes: Set<String>) -> Bool
     {
-        ((inMimeTypes.isEmpty || inMimeTypes.contains(mimeType))
-            && (outMimeTypes.isEmpty || !outMimeTypes.contains(mimeType)))
+        if !inMimeTypes.isEmpty {
+            if inMimeTypes.contains(mimeType) || inMimeTypes.contains("*/*") {
+                return true
+            }
+            if inMimeTypes.contains(where: { $0.hasSuffix("/*") }), mimeType.contains("/") {
+                let wildcardMimeType = String(mimeType[..<mimeType.firstIndex(of: "/")!]) + "/*"
+                if inMimeTypes.contains(wildcardMimeType) {
+                    return true
+                }
+            }
+            return false
+        }
+        if !outMimeTypes.isEmpty {
+            if outMimeTypes.contains(mimeType) || outMimeTypes.contains("*/*") {
+                return false
+            }
+            if outMimeTypes.contains(where: { $0.hasSuffix("/*") }), mimeType.contains("/") {
+                let wildcardMimeType = String(mimeType[..<mimeType.firstIndex(of: "/")!]) + "/*"
+                if outMimeTypes.contains(wildcardMimeType) {
+                    return false
+                }
+            }
+        }
+        return true
     }
 
     private func filterBySize(_ fileSize: UInt64, maxSize: UInt64, minSize: UInt64) -> Bool {
@@ -138,11 +163,14 @@ public class Finder {
         return (filterByPatterns(fileName,
                                  inPatterns: settings.inFilePatterns,
                                  outPatterns: settings.outFilePatterns)
-                && filterByFileTypes(fileResult.fileType,
-                                     inFileTypes: settings.inFileTypes,
-                                     outFileTypes: settings.outFileTypes)
-                && filterBySize(fileResult.fileSize, maxSize: settings.maxSize, minSize: settings.minSize)
-                && filterByLastMod(fileResult.lastMod, maxLastMod: settings.maxLastMod, minLastMod: settings.minLastMod))
+            && filterByFileTypes(fileResult.fileType,
+                                    inFileTypes: settings.inFileTypes,
+                                    outFileTypes: settings.outFileTypes)
+            && filterByMimeTypes(fileResult.mimeType,
+                                    inMimeTypes: settings.inMimeTypes,
+                                    outMimeTypes: settings.outMimeTypes)
+            && filterBySize(fileResult.fileSize, maxSize: settings.maxSize, minSize: settings.minSize)
+            && filterByLastMod(fileResult.lastMod, maxLastMod: settings.maxLastMod, minLastMod: settings.minLastMod))
     }
 
     public func isMatchingArchiveFile(_ fileName: String) -> Bool {
@@ -184,8 +212,10 @@ public class Finder {
             return nil
         }
         let fileType = fileTypes.getFileType(fileName)
-//        let mimeType = try Magic.shared.file(filePath, flags: .mimeType)
-        let mimeType = ""
+        var mimeType = ""
+        if settings.needMimeType() {
+//            mimeType = try Magic.shared.file(filePath, flags: .mimeType)
+        }
         var fileSize: UInt64 = 0
         var lastMod: Date? = nil
         if self.settings.needSize() || self.settings.needLastMod() {
@@ -200,12 +230,12 @@ public class Finder {
         }
         let fr = FileResult(filePath: filePath, fileType: fileType, mimeType: mimeType, fileSize: fileSize, lastMod: lastMod)
         if fileType == FileType.archive {
-            if settings.includeArchives && isMatchingArchiveFileResult(fr) {
+            if settings.includeArchives, isMatchingArchiveFileResult(fr) {
                 return fr
             }
             return nil
         }
-        if !settings.archivesOnly && isMatchingFileResult(fr) {
+        if !settings.archivesOnly, isMatchingFileResult(fr) {
             return fr
         }
         return nil
