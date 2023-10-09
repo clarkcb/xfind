@@ -29,6 +29,12 @@ namespace cppfind {
         static long date_str_to_long(std::string_view date_str);
         static std::string long_to_date_str(long time);
 
+        static bool string_contains_char(const std::string& s, const char c);
+        static bool strings_contain_string(const std::vector<std::string>* strings, const std::string& s);
+        static std::vector<std::string>* filter_strings(const std::vector<std::string>* strings,
+                                                        const std::function<bool(const std::string&)>& predicate);
+
+
     private:
         // Disallow creating an instance of this object
         StringUtil() = delete;

@@ -24,6 +24,8 @@ namespace cppfind {
         [[nodiscard]] bool has_matching_file_type(const FileResult& file_result) const;
         [[nodiscard]] bool has_matching_file_size(const FileResult& file_result) const;
         [[nodiscard]] bool has_matching_last_mod(const FileResult& file_result) const;
+        [[nodiscard]] bool is_matching_file_type(const FileType& file_type) const;
+        [[nodiscard]] bool is_matching_mime_type(const std::string& mime_type) const;
         [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
         std::vector<FileResult> find();
 

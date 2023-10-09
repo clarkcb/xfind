@@ -115,4 +115,23 @@ namespace cppfind {
         ds.append("\"");
         return ds;
     }
+
+    bool StringUtil::string_contains_char(const std::string& s, const char c) {
+        return !s.empty() && std::find(s.begin(), s.end(), c) != s.end();
+    }
+
+    bool StringUtil::strings_contain_string(const std::vector<std::string>* strings, const std::string& s) {
+        return !strings->empty() && std::find(strings->begin(), strings->end(), s) != strings->end();
+    }
+
+    std::vector<std::string>* StringUtil::filter_strings(const std::vector<std::string>* strings,
+                                                         const std::function<bool(const std::string&)>& predicate) {
+        auto* filtered = new std::vector<std::string>();
+        for (const std::string& str : *strings) {
+            if (predicate(str)) {
+                filtered->push_back(str);
+            }
+        }
+        return filtered;
+    }
 }

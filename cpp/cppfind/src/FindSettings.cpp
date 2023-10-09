@@ -355,6 +355,10 @@ namespace cppfind {
                || m_min_last_mod != 0;
     }
 
+    bool FindSettings::need_mime_type() {
+        return !m_in_mime_types.empty() || !m_out_mime_types.empty();
+    }
+
     bool FindSettings::need_size() const {
         return m_sort_by == SortBy::FILESIZE
                || m_max_size > 0

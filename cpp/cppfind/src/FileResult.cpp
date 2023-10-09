@@ -25,6 +25,10 @@ namespace cppfind {
         return m_file_type;
     }
 
+    std::string FileResult::mime_type() const {
+        return m_mime_type;
+    }
+
     uint64_t FileResult::file_size() const {
         return m_file_size;
     }
@@ -39,6 +43,11 @@ namespace cppfind {
             fullpath.append(c).append(CONTAINER_SEPARATOR);
         }
         fullpath.append(m_file_path.string());
+        if (m_mime_type != "") {
+            fullpath.append(" (");
+            fullpath.append(m_mime_type);
+            fullpath.append(")");
+        }
         return fullpath;
     }
 }

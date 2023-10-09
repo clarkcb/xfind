@@ -18,6 +18,7 @@ namespace cppfind {
         [[nodiscard]] std::vector<std::filesystem::path> containers() const;
         [[nodiscard]] std::filesystem::path file_path() const;
         [[nodiscard]] FileType file_type() const;
+        [[nodiscard]] std::string mime_type() const;
         [[nodiscard]] uint64_t file_size() const;
         [[nodiscard]] long last_mod() const;
         [[nodiscard]] std::string string() const;
@@ -26,6 +27,7 @@ namespace cppfind {
         std::vector<std::filesystem::path> m_containers;
         std::filesystem::path m_file_path;
         FileType m_file_type;
+        std::string m_mime_type;
         uint64_t m_file_size;
         long m_last_mod;
     };

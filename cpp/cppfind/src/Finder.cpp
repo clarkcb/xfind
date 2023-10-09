@@ -4,12 +4,19 @@
 #include "FindException.h"
 #include "StringUtil.h"
 #include "Finder.h"
+#include "StringUtil.h"
 
 namespace cppfind {
     Finder::Finder(const FindSettings& settings) : m_settings{settings} {
         validate_settings(settings);
         m_file_types = FileTypes();
-        m_magic = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
+        m_magic = nullptr;
+        if (settings.need_mime_type()) {
+            m_magic = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
+            if (magic_load(m_magic, nullptr) != 0) {
+                throw FindException("unable to load libmagic db");
+            }
+        }
     }
 
     Finder::Finder(const std::unique_ptr<FindSettings>& settings_ptr) : m_settings{*settings_ptr} {

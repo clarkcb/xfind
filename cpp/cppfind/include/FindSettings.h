@@ -120,8 +120,9 @@ namespace cppfind {
         void add_path(const std::filesystem::path& path);
 
         // need elements methods
-        [[nodiscard]] bool need_size() const;
         [[nodiscard]] bool need_last_mod() const;
+        [[nodiscard]] bool need_mime_type() const;
+        [[nodiscard]] bool need_size() const;
         [[nodiscard]] bool need_stat() const;
 
         // utility methods
