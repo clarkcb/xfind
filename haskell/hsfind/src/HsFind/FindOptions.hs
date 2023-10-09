@@ -108,6 +108,7 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("in-ext", \ss s -> ss {inExtensions = inExtensions ss ++ newExtensions s})
              , ("in-filepattern", \ss s -> ss {inFilePatterns = inFilePatterns ss ++ [s]})
              , ("in-filetype", \ss s -> ss {inFileTypes = inFileTypes ss ++ [getFileTypeForName s]})
+             , ("in-mimetype", \ss s -> ss {inMimeTypes = inMimeTypes ss ++ [s]})
              , ("maxdepth", \ss s -> ss {maxDepth = read s})
              , ("maxlastmod", \ss s -> ss {maxLastMod = parseDateToUtc s})
              , ("maxsize", \ss s -> ss {maxSize = read s})
@@ -120,6 +121,7 @@ argActions = [ ("in-archiveext", \ss s -> ss {inArchiveExtensions = inArchiveExt
              , ("out-ext", \ss s -> ss {outExtensions = outExtensions ss ++ newExtensions s})
              , ("out-filepattern", \ss s -> ss {outFilePatterns = outFilePatterns ss ++ [s]})
              , ("out-filetype", \ss s -> ss {outFileTypes = outFileTypes ss ++ [getFileTypeForName s]})
+             , ("out-mimetype", \ss s -> ss {outMimeTypes = outMimeTypes ss ++ [s]})
              , ("path", \ss s -> ss {paths = paths ss ++ [s]})
              , ("sort-by", \ss s -> ss {sortResultsBy = getSortByForName s})
              ]

@@ -24,6 +24,7 @@ data FindSettings = FindSettings {
                                  , inExtensions :: [String]
                                  , inFilePatterns :: [String]
                                  , inFileTypes :: [FileType]
+                                 , inMimeTypes :: [String]
                                  , includeArchives :: Bool
                                  , includeHidden :: Bool
                                  , maxDepth :: Integer
@@ -38,6 +39,7 @@ data FindSettings = FindSettings {
                                  , outExtensions :: [String]
                                  , outFilePatterns :: [String]
                                  , outFileTypes :: [FileType]
+                                 , outMimeTypes :: [String]
                                  , paths :: [String]
                                  , printDirs :: Bool
                                  , printFiles :: Bool
@@ -60,6 +62,7 @@ defaultFindSettings = FindSettings {
                                    , inExtensions=[]
                                    , inFilePatterns=[]
                                    , inFileTypes=[]
+                                   , inMimeTypes=[]
                                    , includeArchives=False
                                    , includeHidden=False
                                    , maxDepth = -1
@@ -74,6 +77,7 @@ defaultFindSettings = FindSettings {
                                    , outExtensions=[]
                                    , outFilePatterns=[]
                                    , outFileTypes=[]
+                                   , outMimeTypes=[]
                                    , paths=[]
                                    , printDirs=False
                                    , printFiles=False

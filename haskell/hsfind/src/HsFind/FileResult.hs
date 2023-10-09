@@ -15,6 +15,7 @@ data FileResult = FileResult {
                                fileResultContainers :: [FilePath]
                              , fileResultPath :: FilePath
                              , fileResultType :: FileType
+                             , fileResultMimeType :: String
                              , fileResultSize :: Integer
                              , fileLastMod :: Maybe UTCTime
                              } deriving (Show, Eq)
@@ -24,6 +25,7 @@ blankFileResult = FileResult {
                                fileResultContainers=[]
                              , fileResultPath=""
                              , fileResultType=Unknown
+                             , fileResultMimeType=""
                              , fileResultSize=0
                              , fileLastMod=Nothing
                              }
@@ -33,6 +35,7 @@ newFileResult fp ft = FileResult {
                                    fileResultContainers=[]
                                  , fileResultPath=fp
                                  , fileResultType=ft
+                                 , fileResultMimeType=""
                                  , fileResultSize=0
                                  , fileLastMod=Nothing
                                  }
@@ -42,6 +45,7 @@ newFileResultWithSize fp ft size = FileResult {
                                    fileResultContainers=[]
                                  , fileResultPath=fp
                                  , fileResultType=ft
+                                 , fileResultMimeType=""
                                  , fileResultSize=size
                                  , fileLastMod=Nothing
                                  }
@@ -51,6 +55,7 @@ newFileResultWithSizeAndLastMod fp ft size lastmod = FileResult {
                                                      fileResultContainers=[]
                                                    , fileResultPath=fp
                                                    , fileResultType=ft
+                                                   , fileResultMimeType=""
                                                    , fileResultSize=size
                                                    , fileLastMod=lastmod
                                                    }
