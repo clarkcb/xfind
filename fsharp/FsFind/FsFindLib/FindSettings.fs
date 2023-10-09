@@ -27,6 +27,7 @@ type FindSettings() =
     member val InExtensions : string list = [] with get, set
     member val InFilePatterns : Regex list = [] with get, set
     member val InFileTypes : FileType list = [] with get, set
+    member val InMimeTypes : string list = [] with get, set
     member val IncludeArchives : bool = false with get, set
     member val IncludeHidden : bool = false with get, set
     member val MaxDepth : int = -1 with get, set
@@ -41,6 +42,7 @@ type FindSettings() =
     member val OutExtensions : string list = [] with get, set
     member val OutFilePatterns : Regex list = [] with get, set
     member val OutFileTypes : FileType list = [] with get, set
+    member val OutMimeTypes : string list = [] with get, set
     member val Paths : string list = [] with get, set
     member val PrintDirs : bool = false with get, set
     member val PrintFiles : bool = false with get, set
@@ -84,6 +86,9 @@ type FindSettings() =
     member this.AddFileTypes (fts : string) (ftList : FileType list) : FileType list =
         List.append ftList (this.FileTypesListFromString fts)
 
+    member this.NeedMimeType () : bool =
+        not (List.isEmpty this.InMimeTypes) || not (List.isEmpty this.OutMimeTypes)
+
     member this.ToString =
         String.concat "" [
             "FindSettings(";
@@ -95,6 +100,7 @@ type FindSettings() =
             $", InExtensions=%s{Common.ListToString(this.InExtensions)}";
             $", InFilePatterns=%s{Common.ListToString(this.InFilePatterns)}";
             $", InFileTypes=%s{this.FileTypesListToString this.InFileTypes}";
+            $", InMimeTypes=%s{Common.ListToString(this.InMimeTypes)}";
             $", IncludeArchives=%b{this.IncludeArchives}";
             $", IncludeHidden=%b{this.IncludeHidden}";
             $", MaxDepth=%i{this.MaxDepth}";
@@ -109,6 +115,7 @@ type FindSettings() =
             $", OutExtensions=%s{Common.ListToString(this.OutExtensions)}";
             $", OutFilePatterns=%s{Common.ListToString(this.OutFilePatterns)}";
             $", OutFileTypes=%s{this.FileTypesListToString this.OutFileTypes}";
+            $", OutMimeTypes=%s{Common.ListToString(this.OutMimeTypes)}";
             $", Paths=%s{Common.ListToString(this.Paths)}";
             $", PrintDirs=%b{this.PrintDirs}";
             $", PrintFiles=%b{this.PrintFiles}";

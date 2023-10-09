@@ -3,6 +3,7 @@
 open System
 open System.IO
 open System.Text.RegularExpressions
+open HeyRed.Mime
 
 type Finder (settings : FindSettings) =
     let _fileTypes = FileTypes()
@@ -37,6 +38,33 @@ type Finder (settings : FindSettings) =
         (Seq.isEmpty settings.OutDirPatterns ||
          not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
 
+    member this.IsMatchingMimeType (mimeType : string) : bool =
+        if not (List.isEmpty settings.InMimeTypes) then
+            if List.exists (fun m -> m = mimeType) settings.InMimeTypes ||
+               List.exists (fun m -> m = "*/*") settings.InMimeTypes then
+                true
+            else
+                if List.exists (fun (m : string) -> m.EndsWith "/*") settings.InMimeTypes &&
+                   mimeType.Contains('/') &&
+                   List.exists (fun m -> m = (mimeType.Split('/').[0] + "/*")) settings.InMimeTypes then
+                    true
+                else
+                    false
+        else
+            if not (List.isEmpty settings.OutMimeTypes) then
+                if List.exists (fun m -> m = mimeType) settings.OutMimeTypes ||
+                   List.exists (fun m -> m = "*/*") settings.OutMimeTypes then
+                    false
+                else
+                    if List.exists (fun (m : string) -> m.EndsWith "/*") settings.OutMimeTypes &&
+                       mimeType.Contains('/') &&
+                       List.exists (fun m -> m = (mimeType.Split('/').[0] + "/*")) settings.OutMimeTypes then
+                        false
+                    else
+                        true
+            else
+                true
+
     member this.IsMatchingFileResult (fr : FileResult.t) : bool =
         (List.isEmpty settings.InExtensions ||
          List.exists (fun x -> x = fr.File.Extension) settings.InExtensions) &&
@@ -50,6 +78,7 @@ type Finder (settings : FindSettings) =
          List.exists (fun ft -> ft = fr.FileType) settings.InFileTypes) &&
         (List.isEmpty settings.OutFileTypes ||
          not (List.exists (fun ft -> ft = fr.FileType) settings.OutFileTypes)) &&
+        this.IsMatchingMimeType fr.MimeType &&
         (settings.MaxLastMod.IsNone || fr.File.LastWriteTimeUtc <= settings.MaxLastMod.Value) &&
         (settings.MaxSize = 0 || fr.File.Length <= settings.MaxSize) &&
         (settings.MinLastMod.IsNone || fr.File.LastWriteTimeUtc >= settings.MinLastMod.Value) &&
@@ -69,7 +98,9 @@ type Finder (settings : FindSettings) =
         if not settings.IncludeHidden && FileUtil.IsHiddenFile f then
             None
         else
-            let fr = FileResult.Create f (_fileTypes.GetFileType f)
+            let fileType = _fileTypes.GetFileType f
+            let mimeType = if settings.NeedMimeType() then f.GuessMimeType() else ""
+            let fr = FileResult.Create f fileType mimeType
             if fr.FileType = FileType.Archive then
                 if settings.IncludeArchives && this.IsMatchingArchiveFile fr then
                     Some fr
@@ -111,7 +142,9 @@ type Finder (settings : FindSettings) =
             // if MinDepth > zero, we can skip since the file is at depth zero
             if settings.MinDepth <= 0 then
                 let fileInfo = FileInfo(expandedPath)
-                [FileResult.Create fileInfo (_fileTypes.GetFileType fileInfo)]
+                let fileType = (_fileTypes.GetFileType fileInfo)
+                let mimeType = if settings.NeedMimeType() then fileInfo.GuessMimeType() else ""
+                [FileResult.Create fileInfo fileType mimeType]
             else
                 []
 
@@ -175,8 +208,8 @@ type Finder (settings : FindSettings) =
         let files = this.GetMatchingFiles fileResults
         if files.Length > 0 then
             Logger.Log $"\nMatching files (%d{files.Length}):"
-            for f in files do
-                printfn $"%s{f.FullName}"
+            for fr in fileResults do
+                printfn $"%s{FileResult.ToString(fr)}"
         else
             Logger.Log "\nMatching files: 0"
 

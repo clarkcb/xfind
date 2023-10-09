@@ -25,12 +25,14 @@ module FindOptions =
             ("in-ext", (fun (s : string) (settings : FindSettings) -> settings.InExtensions <- settings.AddExtensions s settings.InExtensions));
             ("in-filepattern", (fun (s : string) (settings : FindSettings) -> settings.InFilePatterns <- settings.AddPattern s settings.InFilePatterns));
             ("in-filetype", (fun (s : string) (settings : FindSettings) -> settings.InFileTypes <- settings.AddFileTypes s settings.InFileTypes));
+            ("in-mimetype", (fun (s : string) (settings : FindSettings) -> settings.InMimeTypes <- List.append settings.InMimeTypes [s]));
             ("out-archiveext", (fun (s : string) (settings : FindSettings) -> settings.OutArchiveExtensions <- settings.AddExtensions s settings.OutArchiveExtensions));
             ("out-archivefilepattern", (fun (s : string) (settings : FindSettings) -> settings.OutArchiveFilePatterns <- settings.AddPattern s settings.OutArchiveFilePatterns));
             ("out-dirpattern", (fun (s : string) (settings : FindSettings) -> settings.OutDirPatterns <- settings.AddPattern s settings.OutDirPatterns));
             ("out-ext", (fun (s : string) (settings : FindSettings) -> settings.OutExtensions <- settings.AddExtensions s settings.OutExtensions));
             ("out-filepattern", (fun (s : string) (settings : FindSettings) -> settings.OutFilePatterns <- settings.AddPattern s settings.OutFilePatterns));
             ("out-filetype", (fun (s : string) (settings : FindSettings) -> settings.OutFileTypes <- settings.AddFileTypes s settings.OutFileTypes));
+            ("out-mimetype", (fun (s : string) (settings : FindSettings) -> settings.OutMimeTypes <- List.append settings.OutMimeTypes [s]));
             ("maxdepth", (fun (s : string) (settings : FindSettings) -> settings.MaxDepth <- int s));
             ("maxlastmod", (fun (s : string) (settings : FindSettings) -> settings.MaxLastMod <- Some(DateTime.Parse(s))));
             ("maxsize", (fun (s : string) (settings : FindSettings) -> settings.MaxSize <- int s));

@@ -18,7 +18,8 @@ type FileResultTests () =
     member this.FileResult_ToString_EqualsExpected () =
         let fi = FileInfo(FileUtil.JoinPath this.CsFindPath "Finder.cs")
         let fileType = FileType.Code
-        let fr = FileResult.Create fi fileType
+        let mimeType = "text/plain"
+        let fr = FileResult.Create fi fileType mimeType
         Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.CsFindPath}/Finder.cs"))
         ()
 
@@ -26,7 +27,8 @@ type FileResultTests () =
     member this.FileResultTrailingSlash_ToString_EqualsExpected () =
         let fi = FileInfo(FileUtil.JoinPath $"%s{this.CsFindPath}/" "Finder.cs")
         let fileType = FileType.Code
-        let fr = FileResult.Create fi fileType
+        let mimeType = "text/plain"
+        let fr = FileResult.Create fi fileType mimeType
         Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.CsFindPath}/Finder.cs"))
         ()
 
@@ -34,7 +36,8 @@ type FileResultTests () =
     member this.FileResultBackSlashes_ToString_EqualsExpected () =
         let fi = FileInfo(FileUtil.JoinPath this.WinCsFindPath "Finder.cs")
         let fileType = FileType.Code
-        let fr = FileResult.Create fi fileType
+        let mimeType = "text/plain"
+        let fr = FileResult.Create fi fileType mimeType
         Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.WinCsFindPath}\\Finder.cs"))
         ()
 
@@ -42,6 +45,7 @@ type FileResultTests () =
     member this.FileResultBackSlashesTrailingSlash_ToString_EqualsExpected () =
         let fi = FileInfo(FileUtil.JoinPath $"%s{this.WinCsFindPath}\\" "Finder.cs")
         let fileType = FileType.Code
-        let fr = FileResult.Create fi fileType
+        let mimeType = "text/plain"
+        let fr = FileResult.Create fi fileType mimeType
         Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.WinCsFindPath}\\Finder.cs"))
         ()

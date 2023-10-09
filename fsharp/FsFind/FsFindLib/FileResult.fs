@@ -8,19 +8,25 @@ module FileResult =
         Containers : string list;
         File : FileInfo;
         FileType : FileType;
+        MimeType : string;
     }
 
-    let Create (file : FileInfo) (fileType : FileType) : t =
+    let Create (file : FileInfo) (fileType : FileType) (mimeType : string) : t =
         {
             Containers=[];
             File=file;
-            FileType=fileType
+            FileType=fileType;
+            MimeType=mimeType
         }
 
-    let ToString (sf : t) : string =
+    let ToString (fr : t) : string =
         let container_str = 
-            match sf.Containers with
+            match fr.Containers with
             | [] -> ""
-            | _  -> sprintf "%s!" (String.concat "!" sf.Containers)
-        $"%s{container_str}%s{sf.File.ToString()}"
+            | _  -> sprintf "%s!" (String.concat "!" fr.Containers)
+        let mimetype_str = 
+            match fr.MimeType with
+            | "" -> ""
+            | _  -> $" (%s{fr.MimeType})"
+        $"%s{container_str}%s{fr.File.ToString()}%s{mimetype_str}"
 ;;

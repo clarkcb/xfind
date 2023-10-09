@@ -3,6 +3,7 @@ namespace FsFindTests
 open System.IO
 open NUnit.Framework
 open FsFind
+open HeyRed.Mime
 
 [<TestFixture>]
 type FinderTests () =
@@ -24,6 +25,18 @@ type FinderTests () =
         let settings = FindSettings()
         settings.Paths <- ["."]
         settings
+
+    member this.GetFileResult (fi : FileInfo) (fileType : FsFind.FileType) (mimeType : string) : FileResult.t =
+        FileResult.Create fi fileType mimeType
+
+    member this.GetFileResultFromFileAndType (fi : FileInfo) (fileType : FsFind.FileType) : FileResult.t =
+        let mimeType = fi.GuessMimeType()
+        FileResult.Create fi fileType mimeType
+    
+    member this.GetFileResultFromFile (fi : FileInfo) : FileResult.t =
+        let fileType = this.FileTypes.GetFileType(fi)
+        let mimeType = fi.GuessMimeType()
+        FileResult.Create fi fileType mimeType
 
 
     //////////////////////////////////////////////////////////////
@@ -107,8 +120,10 @@ type FinderTests () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf))
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr))
         ()
 
     [<Test>]
@@ -117,8 +132,10 @@ type FinderTests () =
         settings.InExtensions <- settings.AddExtensions "cs" settings.InExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf))
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr))
         ()
 
     [<Test>]
@@ -127,8 +144,10 @@ type FinderTests () =
         settings.InExtensions <- settings.AddExtensions "java" settings.InExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf), Is.False)
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr), Is.False)
         ()
 
     [<Test>]
@@ -137,8 +156,10 @@ type FinderTests () =
         settings.OutExtensions <- settings.AddExtensions "cs" settings.OutExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf), Is.False)
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr), Is.False)
         ()
 
     [<Test>]
@@ -147,8 +168,10 @@ type FinderTests () =
         settings.OutExtensions <- settings.AddExtensions "java" settings.OutExtensions 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf))
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr))
         ()
 
     [<Test>]
@@ -157,8 +180,10 @@ type FinderTests () =
         settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("Finder.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf))
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr))
         ()
 
     [<Test>]
@@ -167,8 +192,10 @@ type FinderTests () =
         settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf), Is.False)
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr), Is.False)
         ()
 
     [<Test>]
@@ -177,8 +204,10 @@ type FinderTests () =
         settings.OutFilePatterns <- settings.AddPattern "Find" settings.OutFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("Finder.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf), Is.False)
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr), Is.False)
         ()
 
     [<Test>]
@@ -187,8 +216,10 @@ type FinderTests () =
         settings.OutFilePatterns <- settings.AddPattern "Find" settings.OutFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("FileUtil.cs")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingFileResult(sf))
+        let fileType = FsFind.FileType.Code
+        let mimeType = "text/plain"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingFileResult(fr))
         ()
 
 
@@ -200,8 +231,10 @@ type FinderTests () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr))
         ()
 
     [<Test>]
@@ -210,8 +243,10 @@ type FinderTests () =
         settings.InArchiveExtensions <- settings.AddExtensions "zip" settings.InArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr))
         ()
 
     [<Test>]
@@ -220,8 +255,10 @@ type FinderTests () =
         settings.InArchiveExtensions <- settings.AddExtensions "gz" settings.InArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr), Is.False)
         ()
 
 
@@ -231,8 +268,10 @@ type FinderTests () =
         settings.OutArchiveExtensions <- settings.AddExtensions "zip" settings.OutArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr), Is.False)
         ()
 
     [<Test>]
@@ -241,8 +280,10 @@ type FinderTests () =
         settings.OutArchiveExtensions <- settings.AddExtensions "gz" settings.OutArchiveExtensions 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr))
         ()
 
     [<Test>]
@@ -251,8 +292,10 @@ type FinderTests () =
         settings.InArchiveFilePatterns <- settings.AddPattern "arch" settings.InArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr))
         ()
 
     [<Test>]
@@ -261,8 +304,10 @@ type FinderTests () =
         settings.InArchiveFilePatterns <- settings.AddPattern "archives" settings.InArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr), Is.False)
         ()
 
     [<Test>]
@@ -271,8 +316,10 @@ type FinderTests () =
         settings.OutArchiveFilePatterns <- settings.AddPattern "arch" settings.OutArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr), Is.False)
         ()
 
     [<Test>]
@@ -281,8 +328,10 @@ type FinderTests () =
         settings.OutArchiveFilePatterns <- settings.AddPattern "archives" settings.OutArchiveFilePatterns 
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
-        let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        let fileType = FsFind.FileType.Archive
+        let mimeType = "application/zip"
+        let fr = this.GetFileResult file fileType mimeType
+        Assert.That(finder.IsMatchingArchiveFile(fr))
         ()
 
     //////////////////////////////////////////////////////////////
