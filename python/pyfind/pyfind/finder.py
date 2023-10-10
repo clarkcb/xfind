@@ -8,11 +8,13 @@
 #
 ###############################################################################
 """
+from datetime import datetime
 import os
 import sys
 from pathlib import Path
 from typing import Optional
 
+from .findexception import FindException
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
@@ -30,7 +32,7 @@ class Finder:
         self.__validate_settings()
         self.file_types = FileTypes()
         self.magic = None
-        if settings.in_mime_types or settings.out_mime_types:
+        if settings.need_mime_type():
             import magic
             self.magic = magic.Magic(mime=True)
         self.__matching_dir_cache = set([])
@@ -179,7 +181,7 @@ class Finder:
                 and not self.settings.archives_only:
             return None
         mime_type = ''
-        if self.settings.in_mime_types or self.settings.out_mime_types:
+        if self.settings.need_mime_type():
             mime_type = self.magic.from_file(file_path)
         file_size = 0
         last_mod = 0.0

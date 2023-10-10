@@ -191,7 +191,7 @@ class FindSettings:
             pattern_set = getattr(self, pattern_set_name)
             pattern_set.add(patterns)
         else:
-            raise FindException('patterns is an unknown type')
+            raise FindException('patterns is an unsupported type')
 
     def add_paths(self, paths: list | set | Path | str):
         """Add one or more paths"""
@@ -205,7 +205,7 @@ class FindSettings:
         elif isinstance(paths, str):
             self.paths.add(Path(paths))
         else:
-            raise FindException('paths is an unknown type')
+            raise FindException('paths is an unsupported type')
 
     def add_path(self, path: Path | str):
         """Add a single path"""
@@ -223,7 +223,7 @@ class FindSettings:
         elif isinstance(file_types, FileType):
             new_file_type_set = {file_types}
         else:
-            raise FindException('file_types is an unknown type')
+            raise FindException('file_types is an unsupported type')
         file_type_set = getattr(self, file_type_set_name)
         file_type_set.update(new_file_type_set)
 
