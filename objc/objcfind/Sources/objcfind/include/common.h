@@ -55,9 +55,16 @@ typedef enum {
 void logMsg(NSString *s);
 void logError(NSString *s);
 void setError(NSError **e, NSString *msg);
-NSString * boolToNSString(BOOL b);
-NSString * arrayToNSString(NSArray *arr);
+NSString* boolToNSString(BOOL b);
+NSString* arrayToNSString(NSArray *arr);
 NSString* dateToNSString(NSDate *date);
 NSDate* stringToNSDate(NSString *dateStr);
 
+typedef BOOL (^StringPredicate)(NSString *string);
+
+NSArray<NSString*> *filterStrings(NSArray<NSString*> *inputArray, StringPredicate predicate);
+
+int findString(NSArray<NSString*> *stringArray, StringPredicate predicate);
+
+int indexOfCharInString(NSString *s, char c);
 #endif /* common_h */

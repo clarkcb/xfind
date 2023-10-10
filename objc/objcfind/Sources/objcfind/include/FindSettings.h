@@ -84,6 +84,7 @@
 - (void) addOutMimeType:(NSString*)typeName;
 
 - (BOOL) needLastMod;
+- (BOOL) needMimeType;
 - (BOOL) needSize;
 
 + (NSString *) lastModToNSString:(NSDate *)lastMod;

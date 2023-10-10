@@ -155,6 +155,9 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
                 [ss addInFileType:s];
             }, @"in-filetype",
             ^void (NSString* s, FindSettings *ss) {
+                [ss addInMimeType:s];
+            }, @"in-mimetype",
+            ^void (NSString* s, FindSettings *ss) {
                 [ss setMaxDepthFromString:s];
             }, @"maxdepth",
             ^void (NSString* s, FindSettings *ss) {
@@ -190,6 +193,9 @@ typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
             ^void (NSString* s, FindSettings *ss) {
                 [ss addOutFileType:s];
             }, @"out-filetype",
+            ^void (NSString* s, FindSettings *ss) {
+                [ss addOutMimeType:s];
+            }, @"out-mimetype",
             ^void (NSString* s, FindSettings *ss) {
                 [ss.paths addObject:s];
             }, @"path",

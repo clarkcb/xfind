@@ -279,6 +279,10 @@
     self.maxLastMod != nil || self.minLastMod != nil;
 }
 
+- (BOOL) needMimeType {
+    return [self.inMimeTypes count] > 0 || [self.outMimeTypes count] > 0;
+}
+
 - (BOOL) needSize {
     return self.sortBy == SortByFileSize ||
     self.maxSize > 0 || self.minSize > 0;

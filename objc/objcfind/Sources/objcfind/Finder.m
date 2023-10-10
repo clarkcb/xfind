@@ -12,12 +12,12 @@
         if (![self validateSettings:settings error:error]) {
             return self;
         }
-//        if ([self.settings.inMimeTypes count] > 0 || [self.settings.outMimeTypes count] > 0) {
+        if ([self.settings needMimeType]) {
 //            self.magicCookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
 //            if (self.magicCookie == NULL || magic_load(self.magicCookie, NULL) != 0) {
 //                setError(error, @"An error occurred trying to load libmagic");
 //            }
-//        }
+        }
     }
     return self;
 }
@@ -89,8 +89,39 @@
 }
 
 - (BOOL) filterByMimeTypes:(NSString*)mimeType inMimeTypes:(NSArray<NSString*>*)inMimeTypes outMimeTypes:(NSArray<NSString*>*)outMimeTypes {
-    return (([inMimeTypes count] == 0 || [inMimeTypes containsObject:mimeType]) &&
-            ([outMimeTypes count] == 0 || ![outMimeTypes containsObject:mimeType]));
+    if ([inMimeTypes count] > 0 || [outMimeTypes count] > 0) {
+        // Define a predicate block that matches strings ending with @"/*":
+        StringPredicate matchesWildCard = ^BOOL(NSString *string) {
+            return [string hasSuffix:@"/*"];
+        };
+        NSString *wildcardMimeType = mimeType;
+        int slashIdx = indexOfCharInString(mimeType, '/');
+        if (slashIdx > -1) {
+            wildcardMimeType = [[mimeType substringToIndex:slashIdx] stringByAppendingString:@"/*"];
+        }
+        if ([inMimeTypes count] > 0) {
+            if ([inMimeTypes containsObject:mimeType] || [inMimeTypes containsObject:@"*/*"]) {
+                return true;
+            }
+            if (findString(inMimeTypes, matchesWildCard) > -1) {
+                if ([inMimeTypes containsObject:wildcardMimeType]) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if ([outMimeTypes count] > 0) {
+            if ([outMimeTypes containsObject:mimeType] || [outMimeTypes containsObject:@"*/*"]) {
+                return false;
+            }
+            if (findString(outMimeTypes, matchesWildCard) > -1) {
+                if ([outMimeTypes containsObject:wildcardMimeType]) {
+                    return false;
+                }
+            }
+        }
+    }
+    return true;
 }
 
 - (BOOL) filterByLastMod:(NSDate*)lastMod {
@@ -170,6 +201,10 @@
         return false;
     }
     FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
+    NSString *mimeType = @"";
+    if ([self.settings needMimeType]) {
+//        mimeType = [NSString stringWithCString:magic_file(self.magicCookie, [filePath cStringUsingEncoding:NSUTF8StringEncoding]) encoding:NSUTF8StringEncoding];
+    }
     unsigned long long fileSize = 0;
     NSDate *lastMod = nil;
     if ([self.settings needSize] || [self.settings needLastMod]) {
@@ -177,11 +212,6 @@
         if ([self.settings needSize]) fileSize = stat.fileSize;
         if ([self.settings needLastMod]) lastMod = stat.fileModificationDate;
     }
-    NSString *mimeType = @"";
-//    if ([self.settings.inMimeTypes count] > 0 || [self.settings.outMimeTypes count] > 0) {
-//        mimeType = [NSString stringWithCString:magic_file(self.magicCookie, [filePath cStringUsingEncoding:NSUTF8StringEncoding]) encoding:NSUTF8StringEncoding];
-//    }
-//    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType mimeType:mimeType];
     FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType mimeType:mimeType fileSize:fileSize lastMod:lastMod];
     if (fileType == FileTypeArchive) {
         if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {
