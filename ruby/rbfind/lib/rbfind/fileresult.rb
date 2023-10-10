@@ -35,7 +35,11 @@ module RbFind
       unless @containers.empty?
         s += @containers.join(CONTAINER_SEPARATOR) + CONTAINER_SEPARATOR
       end
-      s + relative_path
+      s += relative_path
+      if @mime_type
+        s += " (#{@mime_type})"
+      end
+      s
     end
   end
 end

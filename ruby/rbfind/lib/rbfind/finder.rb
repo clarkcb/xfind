@@ -22,7 +22,7 @@ module RbFind
       validate_settings
       @file_types = FileTypes.new
       @magic = nil
-      if !@settings.in_mimetypes.empty? || !@settings.out_mimetypes.empty?
+      if @settings.need_mime_type?
         @magic = FileMagic.open(:mime_type)
       end
     end
@@ -86,11 +86,35 @@ module RbFind
           !@settings.out_file_types.include?(file_result.file_type)))
     end
 
+    def is_matching_mime_type?(mime_type)
+      unless @settings.in_mime_types.empty?
+        if @settings.in_mime_types.include?(mime_type) || @settings.in_mime_types.include?('*/*')
+          return true
+        end
+        if @settings.in_mime_types.any? {|m| m.end_with?('/*')}
+          wildcard_mime_type = mime_type.split('/')[0] + '/*'
+          if @settings.in_mime_types.include?(wildcard_mime_type)
+            return true
+          end
+        end
+        return false
+      end
+      unless @settings.out_mime_types.empty?
+        if @settings.out_mime_types.include?(mime_type) || @settings.out_mime_types.include?('*/*')
+          return false
+        end
+        if @settings.out_mime_types.any? {|m| m.end_with?('/*')}
+          wildcard_mime_type = mime_type.split('/')[0] + '/*'
+          if @settings.out_mime_types.include?(wildcard_mime_type)
+            return false
+          end
+        end
+      end
+      true
+    end
+
     def has_matching_mime_type?(file_result)
-      ((@settings.in_mime_types.empty? ||
-        @settings.in_mime_types.include?(file_result.mime_type)) and
-        (@settings.out_mime_types.empty? ||
-          !@settings.out_mime_types.include?(file_result.mime_type)))
+      is_matching_mime_type?(file_result.mime_type)
     end
 
     def has_matching_file_size?(file_result)
@@ -222,9 +246,9 @@ module RbFind
     def file_path_to_file_result(file_path)
       d = File.dirname(file_path) || '.'
       file_name = File.basename(file_path)
-      file_type = @file_types.get_file_type(filename)
-      mime_type = ""
-      if !@settings.in_mimetypes.empty? || !@settings.out_mimetypes.empty?
+      file_type = @file_types.get_file_type(file_name)
+      mime_type = ''
+      if @settings.need_mime_type?
         mime_type = @magic.file(file_path)
       end
       file_size = 0

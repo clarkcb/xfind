@@ -144,6 +144,10 @@ module RbFind
       @sort_by == SortBy::LASTMOD || !@max_last_mod.nil? || !@min_last_mod.nil?
     end
 
+    def need_mime_type?
+      !@in_mime_types.empty? || !@out_mime_types.empty?
+    end
+
     def need_size?
       @sort_by == SortBy::FILESIZE || @max_size > 0 || @min_size > 0
     end
