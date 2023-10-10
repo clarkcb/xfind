@@ -14,6 +14,7 @@ use warnings;
 use Data::Dumper;
 use File::Spec;
 use File::Basename;
+# TODO: cpan install of following is failing
 # use File::LibMagic;
 use Scalar::Util qw(blessed);
 
@@ -138,14 +139,33 @@ sub is_matching_file_result {
         (grep {$_ eq $fr->{file_type}} @{$self->{settings}->{out_file_types}})) {
         return 0;
     }
-    # if (scalar @{$self->{settings}->{in_mime_types}} &&
-    #     !(grep {$_ eq $mime_type} @{$self->{settings}->{in_mime_types}})) {
-    #     return 0;
-    # }
-    # if (scalar @{$self->{settings}->{out_mime_types}} &&
-    #     (grep {$_ eq $mime_type} @{$self->{settings}->{out_mime_types}})) {
-    #     return 0;
-    # }
+    if (scalar @{$self->{settings}->{in_mime_types}}) {
+        if (grep {$_ eq $fr->{mime_type}} @{$self->{settings}->{in_mime_types}} ||
+            grep {$_ eq '*/*'} @{$self->{settings}->{in_mime_types}}) {
+            return 1;
+        }
+        my @wildcard_in_mime_types = grep {/\/\*$/} @{$self->{settings}->{in_mime_types}};
+        if (scalar @wildcard_in_mime_types && $fr->{mime_type} =~ /\//) {
+            my $wildcard_mime_type = (split '/', $fr->{mime_type})[0] . '/*';
+            if (grep {$_ eq $wildcard_mime_type} @wildcard_in_mime_types) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if (scalar @{$self->{settings}->{out_mime_types}}) {
+        if (grep {$_ eq $fr->{mime_type}} @{$self->{settings}->{out_mime_types}} ||
+            grep {$_ eq '*/*'} @{$self->{settings}->{out_mime_types}}) {
+            return 0;
+        }
+        my @wildcard_out_mime_types = grep {/\/\*$/} @{$self->{settings}->{out_mime_types}};
+        if (scalar @wildcard_out_mime_types && $fr->{mime_type} =~ /\//) {
+            my $wildcard_mime_type = (split '/', $fr->{mime_type})[0] . '/*';
+            if (grep {$_ eq $wildcard_mime_type} @wildcard_out_mime_types) {
+                return 0;
+            }
+        }
+    }
     if ($self->{settings}->{max_size} > 0 && $fr->{file_size} > $self->{settings}->{max_size}) {
         return 0;
     }
@@ -193,10 +213,13 @@ sub filter_to_file_result {
         return;
     }
     my $file_type = $self->{file_types}->get_file_type($f);
-    # my $mimetype = $magic->info_from_filename($fp)->{mime_type};
-    # my $mimetype = '';
+    my $mime_type = '';
+    if ($self->{settings}->need_mime_type) {
+        # $mime_type = $magic->info_from_filename($fp)->{mime_type};
+    }
     my $file_size = 0;
     my $last_mod = 0;
+
     if ($self->{settings}->needs_last_mod || $self->{settings}->needs_size) {
         my @fpstat = stat($fp);
         # stat index 7 == size
@@ -204,7 +227,7 @@ sub filter_to_file_result {
         # stat index 9 == mtime
         $last_mod = $fpstat[9];
     }
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $file_size, $last_mod);
     if ($file_type eq plfind::FileType->ARCHIVE) {
         if ($self->{settings}->{include_archives} && $self->is_matching_archive_file($f)) {
             return $file_result;

@@ -104,7 +104,7 @@ sub add_file_types {
     }
 }
 
-sub add_mimetypes {
+sub add_mime_types {
     my ($self, $mimetypes, $mtaref) = @_;
     my $mts = [];
     if (ref($mimetypes) eq 'ARRAY') {
@@ -136,16 +136,17 @@ sub needs_last_mod {
         blessed($self->{min_last_mod});
 }
 
+sub need_mime_type {
+    my $self = shift;
+    return (scalar @{$self->{in_mime_types}} ||
+        scalar @{$self->{out_mime_types}});
+}
+
 sub needs_size {
     my $self = shift;
     return $self->{sort_by} eq plfind::SortBy->FILESIZE ||
            $self->{max_size} > 0 ||
            $self->{min_size} > 0;
-}
-
-sub needs_stat {
-    my $self = shift;
-    return $self->needs_last_mod || $self->needs_size;
 }
 
 sub to_string {

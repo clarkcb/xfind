@@ -31,6 +31,9 @@ sub new {
 sub to_string {
     my $self = shift @_;
     my $s = File::Spec->join($self->{path}, $self->{file_name});
+    if ($self->{mime_type}) {
+        $s .= ' (' . $self->{mime_type} . ')';
+    }
     return $s;
 }
 
