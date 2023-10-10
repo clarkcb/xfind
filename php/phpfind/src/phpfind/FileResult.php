@@ -13,6 +13,7 @@ class FileResult
     public readonly string $path;
     public readonly string $file_name;
     public readonly FileType $file_type;
+    public readonly string $mime_type;
     public readonly int $file_size;
     public readonly int $last_mod;
 
@@ -20,15 +21,17 @@ class FileResult
      * @param string $path
      * @param string $file_name
      * @param FileType $file_type
+     * @param string $mime_type
      * @param int $file_size
      * @param int $last_mod
      */
-    public function __construct(string $path, string $file_name, FileType $file_type, int $file_size, int $last_mod)
+    public function __construct(string $path, string $file_name, FileType $file_type, string $mime_type, int $file_size, int $last_mod)
     {
         $this->containers = array();
         $this->path = $path;
         $this->file_name = $file_name;
         $this->file_type = $file_type;
+        $this->mime_type = $mime_type;
         $this->file_size = $file_size;
         $this->last_mod = $last_mod;
     }
@@ -52,6 +55,9 @@ class FileResult
                 FileResult::CONTAINER_SEPARATOR;
         }
         $s .= FileUtil::join_path($this->path, $this->file_name);
+        if ($this->mime_type) {
+            $s .= ' (' . $this->mime_type . ')';
+        }
         return $s;
     }
 }

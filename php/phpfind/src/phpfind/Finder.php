@@ -121,6 +121,11 @@ class Finder
         $path_and_filename = FileUtil::split_to_path_and_filename($file_path);
         $path = $path_and_filename[0];
         $file_name = $path_and_filename[1];
+        $file_type = $this->file_types->get_file_type($file_name);
+        $mime_type = '';
+        if ($this->settings->need_mime_type()) {
+            $mime_type = $this->finfo->file($file_path);
+        }
         $file_size = 0;
         $last_mod = 0;
         if ($this->settings->need_last_mod() || $this->settings->need_size()) {
@@ -132,7 +137,7 @@ class Finder
                 $file_size = $stat['size'];
             }
         }
-        return new FileResult($path, $file_name, $this->file_types->get_file_type($file_name), $file_size, $last_mod);
+        return new FileResult($path, $file_name, $file_type, $mime_type, $file_size, $last_mod);
     }
 
     /**
@@ -170,23 +175,43 @@ class Finder
         if ($this->settings->in_file_types && !in_array($fr->file_type, $this->settings->in_file_types)) {
             return false;
         }
-
-        if ($this->settings->in_mime_types || $this->settings->out_mime_types) {
-            $mime_type = $this->finfo->file($fr->file_path());
-            if ($this->settings->debug) {
-                Logger::log_msg(sprintf("%s: %s", $fr->file_name, $mime_type));
-            }
-            if ($this->settings->in_mime_types && !in_array($mime_type, $this->settings->in_mime_types)) {
-                return false;
-            }
-            if ($this->settings->out_mime_types && in_array($mime_type, $this->settings->out_mime_types)) {
-                return false;
-            }
-        }
-
         if ($this->settings->out_file_types && in_array($fr->file_type, $this->settings->out_file_types)) {
             return false;
         }
+        if ($this->settings->in_mime_types) {
+            if (in_array($fr->mime_type, $this->settings->in_mime_types) ||
+                in_array('*/*', $this->settings->in_mime_types)) {
+                return true;
+            }
+            // check for wildcards
+            $wildcard_in_mime_types = array_filter($this->settings->in_mime_types, function($m) {
+                return str_ends_with($m, '/*');
+            });
+            if ($wildcard_in_mime_types && str_contains($fr->mime_type, '/')) {
+                $wildcard_mime_type = preg_split('/\//', $fr->mime_type)[0] . '/*';
+                if (in_array($wildcard_mime_type, $wildcard_in_mime_types)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if ($this->settings->out_mime_types) {
+            if (in_array($fr->mime_type, $this->settings->out_mime_types) ||
+                in_array('*/*', $this->settings->out_mime_types)) {
+                return false;
+            }
+            // check for wildcards
+            $wildcard_out_mime_types = array_filter($this->settings->out_mime_types, function($m) {
+                return str_ends_with($m, '/*');
+            });
+            if ($wildcard_out_mime_types && str_contains($fr->mime_type, '/')) {
+                $wildcard_mime_type = preg_split('/\//', $fr->mime_type)[0] . '/*';
+                if (in_array($wildcard_mime_type, $wildcard_out_mime_types)) {
+                    return false;
+                }
+            }
+        }
+
         if (($this->settings->max_size > 0 && $fr->file_size > $this->settings->max_size)
             || ($this->settings->min_size > 0 && $fr->file_size < $this->settings->min_size)) {
             return false;
@@ -236,6 +261,11 @@ class Finder
         if (!$this->settings->include_hidden && FileUtil::is_hidden($file_path)) {
             return null;
         }
+        $file_type = $this->file_types->get_file_type($file_name);
+        $mime_type = '';
+        if ($this->settings->need_mime_type()) {
+            $mime_type = $this->finfo->file($file_path);
+        }
         $file_size = 0;
         $last_mod = 0;
         if ($this->settings->need_last_mod() || $this->settings->need_size()) {
@@ -248,7 +278,7 @@ class Finder
             }
         }
 
-        $file_result = new FileResult($dir, $file_name, $this->file_types->get_file_type($file_name), $file_size, $last_mod);
+        $file_result = new FileResult($dir, $file_name, $file_type, $mime_type, $file_size, $last_mod);
         if ($file_result->file_type == FileType::Archive) {
             if ($this->settings->include_archives && $this->is_matching_archive_file($file_path)) {
                 return $file_result;
@@ -539,9 +569,9 @@ class Finder
     public function get_matching_files(array $file_results): array
     {
         $file_paths = array();
-        foreach ($file_results as $f) {
-            if (!in_array($f->file_name, $file_paths)) {
-                $file_paths[] = FileUtil::join_path($f->path, $f->file_name);
+        foreach ($file_results as $fr) {
+            if (!in_array($fr->file_name, $file_paths)) {
+                $file_paths[] = $fr->__toString();
             }
         }
         return $file_paths;
