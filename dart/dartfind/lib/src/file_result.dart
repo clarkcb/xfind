@@ -8,10 +8,12 @@ class FileResult {
   List<String> containers = [];
   final File file;
   final FileType fileType;
+  final String? mimeType;
   final int fileSize;
   final DateTime? lastMod;
 
-  FileResult(this.file, this.fileType, this.fileSize, this.lastMod);
+  FileResult(
+      this.file, this.fileType, this.mimeType, this.fileSize, this.lastMod);
 
   @override
   String toString() {
@@ -20,6 +22,9 @@ class FileResult {
       s = containers.join(containerSeparator) + containerSeparator;
     }
     s += file.path;
+    if (mimeType != null) {
+      s += ' ($mimeType)';
+    }
     return s;
   }
 }

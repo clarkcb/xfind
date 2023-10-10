@@ -78,6 +78,7 @@ class FindSettings {
   var inFilePatterns = <Pattern>{};
 
   var inFileTypes = <FileType>{};
+  var inMimeTypes = <String>{};
 
   bool includeArchives = false;
   bool includeHidden = false;
@@ -96,6 +97,7 @@ class FindSettings {
   var outFilePatterns = <Pattern>{};
 
   var outFileTypes = <FileType>{};
+  var outMimeTypes = <String>{};
 
   var paths = <String>{};
 
@@ -135,6 +137,10 @@ class FindSettings {
     return _needLastMod!;
   }
 
+  bool needMimeType() {
+    return inMimeTypes.isNotEmpty || outMimeTypes.isNotEmpty;
+  }
+
   bool needSize() {
     _needSize ??= sortBy == SortBy.fileSize || maxSize > 0 || minSize > 0;
     return _needSize!;
@@ -168,6 +174,7 @@ class FindSettings {
       ', inExtensions=${stringSetToString(inExtensions)}'
       ', inFilePatterns=${patternSetToString(inFilePatterns)}'
       ', inFileTypes=${fileTypeSetToString(inFileTypes)}'
+      ', inMimeTypes=${stringSetToString(inMimeTypes)}'
       ', includeArchives=$includeArchives'
       ', includeHidden=$includeHidden'
       ', maxDepth=$maxDepth'
@@ -182,6 +189,7 @@ class FindSettings {
       ', outExtensions=${stringSetToString(outExtensions)}'
       ', outFilePatterns=${patternSetToString(outFilePatterns)}'
       ', outFileTypes=${fileTypeSetToString(outFileTypes)}'
+      ', outMimeTypes=${stringSetToString(outMimeTypes)}'
       ', paths=${stringSetToString(paths)}'
       ', printDirs=$printDirs'
       ', printFiles=$printFiles'

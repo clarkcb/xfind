@@ -6,6 +6,7 @@ import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/file_util.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
+import 'package:mime_type/mime_type.dart';
 import 'package:path/path.dart' as path;
 
 class Finder {
@@ -120,6 +121,37 @@ class Finder {
             !settings.outFileTypes.contains(fr.fileType));
   }
 
+  bool isMatchingMimeType(String mimeType) {
+    if (settings.inMimeTypes.isNotEmpty) {
+      if (settings.inMimeTypes.contains(mimeType) ||
+          settings.inMimeTypes.contains("*/*")) {
+        return true;
+      }
+      if (settings.inMimeTypes.any((m) => m.endsWith("/*")) &&
+          mimeType.contains('/')) {
+        var wildcardPrefix = mimeType.split('/')[0];
+        if (settings.inMimeTypes.contains('$wildcardPrefix/*')) {
+          return true;
+        }
+      }
+      return false;
+    }
+    if (settings.outMimeTypes.isNotEmpty) {
+      if (settings.outMimeTypes.contains(mimeType) ||
+          settings.outMimeTypes.contains("*/*")) {
+        return false;
+      }
+      if (settings.outMimeTypes.any((m) => m.endsWith("/*")) &&
+          mimeType.contains('/')) {
+        var wildcardPrefix = mimeType.split('/')[0];
+        if (settings.outMimeTypes.contains('$wildcardPrefix/*')) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   bool hasMatchingFileSize(FileResult fr) {
     return ((settings.maxSize == 0 || fr.fileSize <= settings.maxSize) &&
         (settings.minSize == 0 || fr.fileSize >= settings.minSize));
@@ -149,6 +181,10 @@ class Finder {
     if (!settings.includeHidden && FileUtil.isHidden(fileName)) {
       return Future.value(null);
     }
+    String? mimeType;
+    if (settings.needMimeType()) {
+      mimeType = mime(f.path);
+    }
     int fileSize = 0;
     DateTime? lastMod;
     if (settings.needSize() || settings.needLastMod()) {
@@ -161,7 +197,7 @@ class Finder {
       }
     }
     return _fileTypes.getFileType(fileName).then((fileType) {
-      var fileResult = FileResult(f, fileType, fileSize, lastMod);
+      var fileResult = FileResult(f, fileType, mimeType, fileSize, lastMod);
       if (fileResult.fileType == FileType.archive) {
         if (settings.includeArchives) {
           return fileResult;
@@ -207,6 +243,7 @@ class Finder {
         }
         var startFile = File(startPath);
         if (isMatchingDir(startFile.parent)) {
+          String? mimeType = mime(startPath);
           int fileSize = 0;
           DateTime? lastMod;
           if (settings.needSize() || settings.needLastMod()) {
@@ -219,7 +256,8 @@ class Finder {
             }
           }
           return _fileTypes.getFileType(startPath).then((fileType) {
-            var fileResult = FileResult(startFile, fileType, fileSize, lastMod);
+            var fileResult =
+                FileResult(startFile, fileType, mimeType, fileSize, lastMod);
             if (isMatchingFileResult(fileResult)) {
               return [fileResult];
             }

@@ -75,6 +75,7 @@ class FindOptions {
           ss.addPattern(s, ss.inFilePatterns),
       'in-filetype': (String s, FindSettings ss) =>
           ss.inFileTypes.add(FileTypes.fromName(s)),
+      'in-mimetype': (String s, FindSettings ss) => ss.inMimeTypes.add(s),
       'maxdepth': (String s, FindSettings ss) => ss.maxDepth = int.parse(s),
       'maxlastmod': (String s, FindSettings ss) =>
           ss.maxLastMod = DateTime.parse(s),
@@ -95,6 +96,7 @@ class FindOptions {
           ss.addPattern(s, ss.outFilePatterns),
       'out-filetype': (String s, FindSettings ss) =>
           ss.outFileTypes.add(FileTypes.fromName(s)),
+      'out-mimetype': (String s, FindSettings ss) => ss.outMimeTypes.add(s),
       'path': (String s, FindSettings ss) => ss.paths.add(s),
       'sort-by': (String s, FindSettings ss) => ss.sortBy = nameToSortBy(s),
     };
