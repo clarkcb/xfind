@@ -12,7 +12,7 @@ public struct Regex {
     let expression: NSRegularExpression
 
     public init(_ pattern: String) {
-        self._pattern = pattern
+        _pattern = pattern
         // var error: NSError?
         expression = try! NSRegularExpression(pattern: pattern,
                                               options: .dotMatchesLineSeparators)
@@ -23,12 +23,7 @@ public struct Regex {
     }
 
     public var pattern: String {
-        get {
-            _pattern
-        }
-        // set {
-        //     _pattern = newValue
-        // }
+        _pattern
     }
 
     public func matches(_ str: String) -> [NSTextCheckingResult] {

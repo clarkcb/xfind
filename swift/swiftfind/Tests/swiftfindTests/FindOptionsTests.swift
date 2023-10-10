@@ -53,17 +53,17 @@ class FindOptionsTests: XCTestCase {
 
     func testSettingsFromJson() {
         let jsonString = """
-{
-  "path": "~/src/xfind/",
-  "in-ext": ["js", "ts"],
-  "out-dirpattern": ["_", "ansible", "bak", "build", "chef", "node_module", "target", "test", "typings"],
-  "out-filepattern": ["gulpfile", ".min."],
-  "debug": true,
-  "includehidden": false,
-  "listdirs": true,
-  "listfiles": true
-}
-"""
+        {
+          "path": "~/src/xfind/",
+          "in-ext": ["js", "ts"],
+          "out-dirpattern": ["_", "ansible", "bak", "build", "chef", "node_module", "target", "test", "typings"],
+          "out-filepattern": ["gulpfile", ".min."],
+          "debug": true,
+          "includehidden": false,
+          "listdirs": true,
+          "listfiles": true
+        }
+        """
         let settings = try! options.settingsFromJson(jsonString)
         print("settings: \(settings)")
         XCTAssertTrue(settings.debug, "debug == true")

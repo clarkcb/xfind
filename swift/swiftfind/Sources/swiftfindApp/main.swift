@@ -47,7 +47,7 @@ func main() {
 
         if settings.listDirs {
             let dirs = getMatchingDirs(fileResults)
-            if (dirs.isEmpty) {
+            if dirs.isEmpty {
                 logMsg("\nMatching directories: 0")
             } else {
                 logMsg("\nMatching directories (\(dirs.count)):")
@@ -59,7 +59,7 @@ func main() {
 
         if settings.listFiles {
             let files = getMatchingFiles(fileResults)
-            if (files.isEmpty) {
+            if files.isEmpty {
                 logMsg("\nMatching files: 0")
             } else {
                 logMsg("\nMatching files (\(files.count)):")

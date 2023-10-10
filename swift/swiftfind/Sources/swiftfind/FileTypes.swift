@@ -25,7 +25,7 @@ public class FileTypes {
     private var fileTypeNameDict = [String: Set<String>]()
 
     public init() {
-        self.config = FindConfig()
+        config = FindConfig()
         setFileTypesFromJson()
     }
 
@@ -74,17 +74,17 @@ public class FileTypes {
     public static func toName(_ fileType: FileType) -> String {
         switch fileType {
         case FileType.text:
-            return "text"
+            "text"
         case FileType.binary:
-            return "binary"
+            "binary"
         case FileType.archive:
-            return "archive"
+            "archive"
         case FileType.code:
-            return "code"
+            "code"
         case FileType.xml:
-            return "xml"
+            "xml"
         default:
-            return "unknown"
+            "unknown"
         }
     }
 
@@ -108,7 +108,7 @@ public class FileTypes {
     }
 
     private func isFileOfType(_ fileName: String, _ typeName: String) -> Bool {
-        return fileTypeNameDict[typeName]!.contains(fileName)
+        fileTypeNameDict[typeName]!.contains(fileName)
             || fileTypeExtDict[typeName]!.contains(FileUtil.getExtension(fileName))
     }
 

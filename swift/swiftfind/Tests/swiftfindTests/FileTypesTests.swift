@@ -1,5 +1,5 @@
 //
-//  swiftfindTests.swift
+//  FileTypesTests.swift
 //  swiftfindTests
 //
 //  Created by Cary Clark on 5/18/15.
@@ -80,6 +80,6 @@ class FileTypesTests: XCTestCase {
         ("testCodeFile", testCodeFile),
         ("testTextFile", testTextFile),
         ("testXmlFile", testXmlFile),
-        ("testUnknownFile", testUnknownFile)
+        ("testUnknownFile", testUnknownFile),
     ]
 }

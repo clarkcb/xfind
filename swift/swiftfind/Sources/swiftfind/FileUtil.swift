@@ -88,7 +88,11 @@ public enum FileUtil {
     public static func directoryContents(forPath filePath: String, settings: FindSettings) -> [String] {
         do {
             let options = getOptions(forSettings: settings)
-            let fileUrls = try getFileManager().contentsOfDirectory(at: URL(fileURLWithPath: expandPath(filePath)), includingPropertiesForKeys: [.isRegularFileKey], options: options)
+            let fileUrls = try getFileManager().contentsOfDirectory(
+                at: URL(fileURLWithPath: expandPath(filePath)),
+                includingPropertiesForKeys: [.isRegularFileKey],
+                options: options
+            )
             return fileUrls.map(\.path)
         } catch {
             return []
@@ -125,7 +129,7 @@ public enum FileUtil {
 
     public static func isHidden(_ filePath: String) -> Bool {
         let pathElems = filePath.split { $0 == "/" }.map { String($0) }
-        return pathElems.filter { self.isHiddenFile($0) }.count > 0
+        return pathElems.filter { isHiddenFile($0) }.count > 0
     }
 
     public static func isHiddenFile(_ fileName: String) -> Bool {
@@ -144,9 +148,9 @@ public enum FileUtil {
 
     public static func joinPath(_ path: String, childPath: String) -> String {
         if path.hasSuffix(separator) {
-            return "\(path)\(childPath)"
+            "\(path)\(childPath)"
         } else {
-            return "\(path)/\(childPath)"
+            "\(path)/\(childPath)"
         }
     }
 }

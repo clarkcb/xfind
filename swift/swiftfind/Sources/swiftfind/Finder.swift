@@ -12,11 +12,11 @@ import Foundation
 private func < <T: Comparable>(lhs: T?, rhs: T?) -> Bool {
     switch (lhs, rhs) {
     case let (l?, r?):
-        return l < r
+        l < r
     case (nil, _?):
-        return true
+        true
     default:
-        return false
+        false
     }
 }
 
@@ -36,11 +36,11 @@ public class Finder {
             throw FindError(msg: "Startpath not found")
         } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) }) {
             throw FindError(msg: "Startpath not readable")
-        } else if settings.maxDepth > -1 && settings.maxDepth < settings.minDepth {
+        } else if settings.maxDepth > -1, settings.maxDepth < settings.minDepth {
             throw FindError(msg: "Invalid range for mindepth and maxdepth")
-        } else if settings.maxLastMod != nil && settings.minLastMod != nil && settings.maxLastMod! < settings.minLastMod! {
+        } else if settings.maxLastMod != nil, settings.minLastMod != nil, settings.maxLastMod! < settings.minLastMod! {
             throw FindError(msg: "Invalid range for minlastmod and maxlastmod")
-        } else if settings.maxSize > 0 && settings.maxSize < settings.minSize {
+        } else if settings.maxSize > 0, settings.maxSize < settings.minSize {
             throw FindError(msg: "Invalid range for minsize and maxsize")
         }
     }
@@ -56,39 +56,40 @@ public class Finder {
     private func filterByExtensions(_ ext: String, inExtensions: Set<String>,
                                     outExtensions: Set<String>) -> Bool
     {
-        ((inExtensions.isEmpty || inExtensions.contains(ext))
-            && (outExtensions.isEmpty || !outExtensions.contains(ext)))
+        (inExtensions.isEmpty || inExtensions.contains(ext))
+            && (outExtensions.isEmpty || !outExtensions.contains(ext))
     }
 
     private func filterByPatterns(_ str: String, inPatterns: [Regex],
                                   outPatterns: [Regex]) -> Bool
     {
-        ((inPatterns.isEmpty || matchesAnyPattern(str, inPatterns))
-            && (outPatterns.isEmpty || !matchesAnyPattern(str, outPatterns)))
+        (inPatterns.isEmpty || matchesAnyPattern(str, inPatterns))
+            && (outPatterns.isEmpty || !matchesAnyPattern(str, outPatterns))
     }
 
     private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
                                    outFileTypes: [FileType]) -> Bool
     {
-        ((inFileTypes.isEmpty || inFileTypes.contains(fileType))
-            && (outFileTypes.isEmpty || !outFileTypes.contains(fileType)))
+        (inFileTypes.isEmpty || inFileTypes.contains(fileType))
+            && (outFileTypes.isEmpty || !outFileTypes.contains(fileType))
     }
 
-    private func filterByStat(_ stat: [FileAttributeKey : Any]?) -> Bool
-    {
-        if (stat != nil) {
-            if self.settings.maxLastMod != nil || self.settings.minLastMod != nil {
+    private func filterByStat(_ stat: [FileAttributeKey: Any]?) -> Bool {
+        if stat != nil {
+            if settings.maxLastMod != nil || settings.minLastMod != nil {
                 let lastMod: Date = stat?[FileAttributeKey.modificationDate] as! Date
-                if (self.settings.maxLastMod != nil && lastMod > self.settings.maxLastMod!)
-                    || (self.settings.minLastMod != nil && lastMod < self.settings.minLastMod!) {
+                if (settings.maxLastMod != nil && lastMod > settings.maxLastMod!)
+                    || (settings.minLastMod != nil && lastMod < settings.minLastMod!)
+                {
                     return false
                 }
             }
 
-            if self.settings.maxSize > 0 || self.settings.minSize > 0 {
+            if settings.maxSize > 0 || settings.minSize > 0 {
                 let fileSize: UInt64 = stat?[FileAttributeKey.size] as! UInt64
-                if (self.settings.maxSize > 0 && fileSize > self.settings.maxSize)
-                    || (self.settings.minSize > 0 && fileSize < self.settings.minSize) {
+                if (settings.maxSize > 0 && fileSize > settings.maxSize)
+                    || (settings.minSize > 0 && fileSize < settings.minSize)
+                {
                     return false
                 }
             }
@@ -112,15 +113,15 @@ public class Finder {
         if settings.excludeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
-        return (filterByExtensions(FileUtil.getExtension(fileName),
-                                   inExtensions: settings.inExtensions,
-                                   outExtensions: settings.outExtensions)
-                && filterByPatterns(fileName,
-                                    inPatterns: settings.inFilePatterns,
-                                    outPatterns: settings.outFilePatterns)
-                && filterByFileTypes(fileType,
-                                     inFileTypes: settings.inFileTypes,
-                                     outFileTypes: settings.outFileTypes))
+        return filterByExtensions(FileUtil.getExtension(fileName),
+                                  inExtensions: settings.inExtensions,
+                                  outExtensions: settings.outExtensions)
+            && filterByPatterns(fileName,
+                                inPatterns: settings.inFilePatterns,
+                                outPatterns: settings.outFilePatterns)
+            && filterByFileTypes(fileType,
+                                 inFileTypes: settings.inFileTypes,
+                                 outFileTypes: settings.outFileTypes)
     }
 
     public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
@@ -128,12 +129,12 @@ public class Finder {
         if settings.excludeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
-        if (!settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty) {
+        if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
             let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
                                                           inExtensions: settings.inExtensions,
                                                           outExtensions: settings.outExtensions)
-            if (!filteredByExtensions) {
-                return false;
+            if !filteredByExtensions {
+                return false
             }
         }
         return (filterByPatterns(fileName,
@@ -149,22 +150,22 @@ public class Finder {
         if settings.excludeHidden, FileUtil.isHidden(fileName) {
             return false
         }
-        return (filterByExtensions(FileUtil.getExtension(fileName),
-                                   inExtensions: settings.inArchiveExtensions,
-                                   outExtensions: settings.outArchiveExtensions)
-                && filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
-                                    outPatterns: settings.outArchiveFilePatterns))
+        return filterByExtensions(FileUtil.getExtension(fileName),
+                                  inExtensions: settings.inArchiveExtensions,
+                                  outExtensions: settings.outArchiveExtensions)
+            && filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
+                                outPatterns: settings.outArchiveFilePatterns)
     }
 
     public func isMatchingArchiveFileResult(_ fileResult: FileResult) -> Bool {
         if settings.excludeHidden, FileUtil.isHidden(fileResult.filePath) {
             return false
         }
-        return (filterByExtensions(FileUtil.getExtension(fileResult.filePath),
-                                   inExtensions: settings.inArchiveExtensions,
-                                   outExtensions: settings.outArchiveExtensions)
-                && filterByPatterns(fileResult.filePath, inPatterns: settings.inArchiveFilePatterns,
-                                    outPatterns: settings.outArchiveFilePatterns))
+        return filterByExtensions(FileUtil.getExtension(fileResult.filePath),
+                                  inExtensions: settings.inArchiveExtensions,
+                                  outExtensions: settings.outArchiveExtensions)
+            && filterByPatterns(fileResult.filePath, inPatterns: settings.inArchiveFilePatterns,
+                                outPatterns: settings.outArchiveFilePatterns)
     }
 
     public func filterToFileResult(_ filePath: String) -> FileResult? {
@@ -206,7 +207,7 @@ public class Finder {
                             enumerator.skipDescendants()
                         }
                     } else if fileAttributes.isRegularFile! {
-                        if enumerator.level >= settings.minDepth && (settings.maxDepth < 1 || enumerator.level <= settings.maxDepth) {
+                        if enumerator.level >= settings.minDepth, settings.maxDepth < 1 || enumerator.level <= settings.maxDepth {
                             if let fileResult = filterToFileResult(fileURL.path) {
                                 fileResults.append(fileResult)
                             }
@@ -219,7 +220,7 @@ public class Finder {
     }
 
     private func getSortByFilePath() -> (FileResult, FileResult) -> Bool {
-        return { (fr1: FileResult, fr2: FileResult) -> Bool in
+        { (fr1: FileResult, fr2: FileResult) -> Bool in
             let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr1.filePath.lowercased() : fr1.filePath)
             let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr2.filePath.lowercased() : fr2.filePath)
             if p1 == p2 {
@@ -230,7 +231,7 @@ public class Finder {
     }
 
     private func getSortByFileName() -> (FileResult, FileResult) -> Bool {
-        return { (fr1: FileResult, fr2: FileResult) -> Bool in
+        { (fr1: FileResult, fr2: FileResult) -> Bool in
             let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr1.filePath.lowercased() : fr1.filePath)
             let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr2.filePath.lowercased() : fr2.filePath)
             if f1 == f2 {
@@ -241,7 +242,7 @@ public class Finder {
     }
 
     private func getSortByFileSize() -> (FileResult, FileResult) -> Bool {
-        return { (fr1: FileResult, fr2: FileResult) -> Bool in
+        { (fr1: FileResult, fr2: FileResult) -> Bool in
             let fr1Size: UInt64 = fr1.stat?[FileAttributeKey.size] as! UInt64
             let fr2Size: UInt64 = fr2.stat?[FileAttributeKey.size] as! UInt64
 
@@ -254,7 +255,7 @@ public class Finder {
     }
 
     private func getSortByFileType() -> (FileResult, FileResult) -> Bool {
-        return { (fr1: FileResult, fr2: FileResult) -> Bool in
+        { (fr1: FileResult, fr2: FileResult) -> Bool in
             if fr1.fileType == fr2.fileType {
                 let sortByFilePath = self.getSortByFilePath()
                 return sortByFilePath(fr1, fr2)
@@ -264,7 +265,7 @@ public class Finder {
     }
 
     private func getSortByLastMod() -> (FileResult, FileResult) -> Bool {
-        return { (fr1: FileResult, fr2: FileResult) -> Bool in
+        { (fr1: FileResult, fr2: FileResult) -> Bool in
             let fr1LastMod: Date = fr1.stat?[FileAttributeKey.modificationDate] as! Date
             let fr2LastMod: Date = fr2.stat?[FileAttributeKey.modificationDate] as! Date
 
@@ -280,21 +281,21 @@ public class Finder {
         var sortedFileResults = [FileResult]()
         switch settings.sortBy {
         case SortBy.fileName:
-            sortedFileResults = fileResults.sorted(by: self.getSortByFileName())
+            sortedFileResults = fileResults.sorted(by: getSortByFileName())
         case SortBy.fileSize:
-            sortedFileResults = fileResults.sorted(by: self.getSortByFileSize())
+            sortedFileResults = fileResults.sorted(by: getSortByFileSize())
         case SortBy.fileType:
-            sortedFileResults = fileResults.sorted(by: self.getSortByFileType())
+            sortedFileResults = fileResults.sorted(by: getSortByFileType())
         case SortBy.lastMod:
-            sortedFileResults = fileResults.sorted(by: self.getSortByLastMod())
+            sortedFileResults = fileResults.sorted(by: getSortByLastMod())
         default:
-            sortedFileResults = fileResults.sorted(by: self.getSortByFilePath())
+            sortedFileResults = fileResults.sorted(by: getSortByFilePath())
         }
-        
+
         if settings.sortDescending {
             sortedFileResults.reverse()
         }
-        
+
         return sortedFileResults
     }
 

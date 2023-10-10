@@ -31,15 +31,15 @@ public func nameToSortBy(_ sortByName: String) -> SortBy {
 public func sortByToName(_ sortBy: SortBy) -> String {
     switch sortBy {
     case SortBy.fileName:
-        return "name"
+        "name"
     case SortBy.fileSize:
-        return "size"
+        "size"
     case SortBy.fileType:
-        return "type"
+        "type"
     case SortBy.lastMod:
-        return "lastmod"
+        "lastmod"
     default:
-        return "path"
+        "path"
     }
 }
 
@@ -199,9 +199,9 @@ open class FindSettings: CustomStringConvertible {
     }
 
     public func needStat() -> Bool {
-        return self.sortBy == SortBy.fileSize || self.sortBy == SortBy.lastMod ||
-        self.maxLastMod != nil || self.minLastMod != nil ||
-        self.maxSize > 0 || self.minSize > 0
+        sortBy == SortBy.fileSize || sortBy == SortBy.lastMod ||
+            maxLastMod != nil || minLastMod != nil ||
+            maxSize > 0 || minSize > 0
     }
 
     public func addPath(_ path: String) {

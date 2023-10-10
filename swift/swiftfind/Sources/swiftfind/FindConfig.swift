@@ -1,5 +1,5 @@
 //
-//  Config.swift
+//  FindConfig.swift
 //  swiftfind
 //
 //  Created by Cary Clark on 5/12/15.
@@ -16,12 +16,12 @@ public struct FindConfig {
 
     public init() {
         if let xfindEnvPath = ProcessInfo.processInfo.environment["XFIND_PATH"] {
-            self.xfindPath = xfindEnvPath
+            xfindPath = xfindEnvPath
         } else {
-            self.xfindPath = "\(NSHomeDirectory())/src/xfind"
+            xfindPath = "\(NSHomeDirectory())/src/xfind"
         }
-        self.sharedPath = "\(xfindPath)/shared"
-        self.fileTypesPath = "\(sharedPath)/filetypes.json"
-        self.findOptionsPath = "\(sharedPath)/findoptions.json"
+        sharedPath = "\(xfindPath)/shared"
+        fileTypesPath = "\(sharedPath)/filetypes.json"
+        findOptionsPath = "\(sharedPath)/findoptions.json"
     }
 }

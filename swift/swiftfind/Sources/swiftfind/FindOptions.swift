@@ -14,7 +14,7 @@ struct FindOption {
     let desc: String
 
     var sortArg: String {
-        if shortArg != nil && !shortArg!.isEmpty {
+        if shortArg != nil, !shortArg!.isEmpty {
             return shortArg!.lowercased() + "@" + longArg.lowercased()
         }
         return longArg.lowercased()
@@ -27,7 +27,7 @@ public class FindOptions {
     private var longArgDict: [String: String] = [:]
 
     public init() {
-        self.config = FindConfig()
+        config = FindConfig()
         setFindOptionsFromJson()
     }
 
@@ -45,7 +45,7 @@ public class FindOptions {
                     }
                     for opt in findOptions {
                         longArgDict[opt.longArg] = opt.longArg
-                        if opt.shortArg != nil && !opt.shortArg!.isEmpty {
+                        if opt.shortArg != nil, !opt.shortArg!.isEmpty {
                             longArgDict[opt.shortArg!] = opt.longArg
                         }
                     }
@@ -59,122 +59,122 @@ public class FindOptions {
     // this is computed property so that it can reference self
     private var argActionDict: [String: (String, FindSettings) -> Void] {
         [
-            "in-archiveext": { (str: String, settings: FindSettings) -> Void in
+            "in-archiveext": { (str: String, settings: FindSettings) in
                 settings.addInArchiveExtension(str)
             },
-            "in-archivefilepattern": { (str: String, settings: FindSettings) -> Void in
+            "in-archivefilepattern": { (str: String, settings: FindSettings) in
                 settings.addInArchiveFilePattern(str)
             },
-            "in-dirpattern": { (str: String, settings: FindSettings) -> Void in
+            "in-dirpattern": { (str: String, settings: FindSettings) in
                 settings.addInDirPattern(str)
             },
-            "in-ext": { (str: String, settings: FindSettings) -> Void in
+            "in-ext": { (str: String, settings: FindSettings) in
                 settings.addInExtension(str)
             },
-            "in-filepattern": { (str: String, settings: FindSettings) -> Void in
+            "in-filepattern": { (str: String, settings: FindSettings) in
                 settings.addInFilePattern(str)
             },
-            "in-filetype": { (str: String, settings: FindSettings) -> Void in
+            "in-filetype": { (str: String, settings: FindSettings) in
                 settings.addInFileType(str)
             },
-            "out-archiveext": { (str: String, settings: FindSettings) -> Void in
+            "out-archiveext": { (str: String, settings: FindSettings) in
                 settings.addOutArchiveExtension(str)
             },
-            "maxdepth": { (str: String, settings: FindSettings) -> Void in
+            "maxdepth": { (str: String, settings: FindSettings) in
                 settings.setMaxDepthFromString(str)
             },
-            "maxlastmod": { (str: String, settings: FindSettings) -> Void in
+            "maxlastmod": { (str: String, settings: FindSettings) in
                 settings.setMaxLastModFromString(str)
             },
-            "maxsize": { (str: String, settings: FindSettings) -> Void in
+            "maxsize": { (str: String, settings: FindSettings) in
                 settings.setMaxSizeFromString(str)
             },
-            "mindepth": { (str: String, settings: FindSettings) -> Void in
+            "mindepth": { (str: String, settings: FindSettings) in
                 settings.setMinDepthFromString(str)
             },
-            "minlastmod": { (str: String, settings: FindSettings) -> Void in
+            "minlastmod": { (str: String, settings: FindSettings) in
                 settings.setMinLastModFromString(str)
             },
-            "minsize": { (str: String, settings: FindSettings) -> Void in
+            "minsize": { (str: String, settings: FindSettings) in
                 settings.setMinSizeFromString(str)
             },
-            "out-archivefilepattern": { (str: String, settings: FindSettings) -> Void in
+            "out-archivefilepattern": { (str: String, settings: FindSettings) in
                 settings.addOutArchiveFilePattern(str)
             },
-            "out-dirpattern": { (str: String, settings: FindSettings) -> Void in
+            "out-dirpattern": { (str: String, settings: FindSettings) in
                 settings.addOutDirPattern(str)
             },
-            "out-ext": { (str: String, settings: FindSettings) -> Void in
+            "out-ext": { (str: String, settings: FindSettings) in
                 settings.addOutExtension(str)
             },
-            "out-filepattern": { (str: String, settings: FindSettings) -> Void in
+            "out-filepattern": { (str: String, settings: FindSettings) in
                 settings.addOutFilePattern(str)
             },
-            "out-filetype": { (str: String, settings: FindSettings) -> Void in
+            "out-filetype": { (str: String, settings: FindSettings) in
                 settings.addOutFileType(str)
             },
-            "path": { (str: String, settings: FindSettings) -> Void in
+            "path": { (str: String, settings: FindSettings) in
                 settings.addPath(str)
             },
-            "settings-file": { (str: String, settings: FindSettings) -> Void in
+            "settings-file": { (str: String, settings: FindSettings) in
                 try? self.addSettingsFromFile(str, settings: settings)
             },
-            "sort-by": { (str: String, settings: FindSettings) -> Void in
+            "sort-by": { (str: String, settings: FindSettings) in
                 settings.setSortBy(str)
             },
         ]
     }
 
     private let boolFlagActionDict: [String: (Bool, FindSettings) -> Void] = [
-        "archivesonly": { (bool: Bool, settings: FindSettings) -> Void in
+        "archivesonly": { (bool: Bool, settings: FindSettings) in
             settings.archivesOnly = bool
         },
-        "debug": { (bool: Bool, settings: FindSettings) -> Void in
+        "debug": { (bool: Bool, settings: FindSettings) in
             settings.debug = bool
         },
-        "excludearchives": { (bool: Bool, settings: FindSettings) -> Void in
+        "excludearchives": { (bool: Bool, settings: FindSettings) in
             settings.includeArchives = !bool
         },
-        "excludehidden": { (bool: Bool, settings: FindSettings) -> Void in
+        "excludehidden": { (bool: Bool, settings: FindSettings) in
             settings.excludeHidden = bool
         },
-        "help": { (bool: Bool, settings: FindSettings) -> Void in
+        "help": { (bool: Bool, settings: FindSettings) in
             settings.printUsage = bool
         },
-        "includearchives": { (bool: Bool, settings: FindSettings) -> Void in
+        "includearchives": { (bool: Bool, settings: FindSettings) in
             settings.includeArchives = bool
         },
-        "includehidden": { (bool: Bool, settings: FindSettings) -> Void in
+        "includehidden": { (bool: Bool, settings: FindSettings) in
             settings.excludeHidden = !bool
         },
-        "listdirs": { (bool: Bool, settings: FindSettings) -> Void in
+        "listdirs": { (bool: Bool, settings: FindSettings) in
             settings.listDirs = bool
         },
-        "listfiles": { (bool: Bool, settings: FindSettings) -> Void in
+        "listfiles": { (bool: Bool, settings: FindSettings) in
             settings.listFiles = bool
         },
-        "norecursive": { (bool: Bool, settings: FindSettings) -> Void in
+        "norecursive": { (bool: Bool, settings: FindSettings) in
             settings.recursive = !bool
         },
-        "recursive": { (bool: Bool, settings: FindSettings) -> Void in
+        "recursive": { (bool: Bool, settings: FindSettings) in
             settings.recursive = bool
         },
-        "sort-ascending": { (bool: Bool, settings: FindSettings) -> Void in
+        "sort-ascending": { (bool: Bool, settings: FindSettings) in
             settings.sortDescending = !bool
         },
-        "sort-caseinsensitive": { (bool: Bool, settings: FindSettings) -> Void in
+        "sort-caseinsensitive": { (bool: Bool, settings: FindSettings) in
             settings.sortCaseInsensitive = bool
         },
-        "sort-casesensitive": { (bool: Bool, settings: FindSettings) -> Void in
+        "sort-casesensitive": { (bool: Bool, settings: FindSettings) in
             settings.sortCaseInsensitive = !bool
         },
-        "sort-descending": { (bool: Bool, settings: FindSettings) -> Void in
+        "sort-descending": { (bool: Bool, settings: FindSettings) in
             settings.sortDescending = bool
         },
-        "verbose": { (bool: Bool, settings: FindSettings) -> Void in
+        "verbose": { (bool: Bool, settings: FindSettings) in
             settings.verbose = bool
         },
-        "version": { (bool: Bool, settings: FindSettings) -> Void in
+        "version": { (bool: Bool, settings: FindSettings) in
             settings.printVersion = bool
         },
     ]
@@ -297,13 +297,13 @@ public class FindOptions {
 
         let optStrings = findOptions.map {
             switch ($0.shortArg, $0.longArg) {
-                // Order errors by code
+            // Order errors by code
             case let (nil, longArg):
-                return "--\(longArg)"
+                "--\(longArg)"
             case let ("", longArg):
-                return "--\(longArg)"
+                "--\(longArg)"
             case let (shortArg, longArg):
-                return "-\(shortArg!),--\(longArg)"
+                "-\(shortArg!),--\(longArg)"
             }
         }
 

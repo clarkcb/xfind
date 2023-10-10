@@ -11,7 +11,6 @@ import XCTest
 import swiftfind
 
 class FileResultTests: XCTestCase {
-
     func testFileResultAbsPath() {
         let filePath = "\(NSHomeDirectory())/src/xfind/swift/swiftfind/Sources/swiftfind/FileResult.swift"
         let fileResult = FileResult(filePath: filePath, fileType: FileType.code)
@@ -40,6 +39,6 @@ class FileResultTests: XCTestCase {
         ("testFileResultAbsPath", testFileResultAbsPath),
         ("testFileResultTildePath", testFileResultTildePath),
         ("testFileResultRelPath1", testFileResultRelPath1),
-        ("testFileResultRelPath2", testFileResultRelPath2)
+        ("testFileResultRelPath2", testFileResultRelPath2),
     ]
 }

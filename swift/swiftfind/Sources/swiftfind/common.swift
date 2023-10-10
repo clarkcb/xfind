@@ -17,7 +17,7 @@ public func logMsg(_ str: String) {
 }
 
 public func logError(_ str: String) {
-    logMsg("ERROR: \(str)")
+    fputs("ERROR: \(str)\n", stderr)
 }
 
 // from http://ijoshsmith.com/2014/06/18/create-a-swift-dictionary-from-an-array/
@@ -35,8 +35,8 @@ func toDictionary<E, K, V>(
 }
 
 public func arrayToString(_ arr: [String]) -> String {
-    var str: String = "["
-    var count: Int = 0
+    var str = "["
+    var count = 0
     for elem in arr {
         if count > 0 {
             str += ", "
@@ -58,14 +58,14 @@ public func setToString(_ set: Set<String>) -> String {
 
 public func dateToString(_ date: Date?) -> String {
     if date == nil {
-        return "0"
+        "0"
     } else {
-        return date!.description
+        date!.description
     }
 }
 
 public func stringToDate(_ s: String) -> Date? {
-    let formatter: DateFormatter = DateFormatter()
+    let formatter = DateFormatter()
     formatter.dateFormat = ISO_DATE_FORMAT
     return formatter.date(from: s)
 }
@@ -91,8 +91,8 @@ public func takeRight<T>(_ seq: [T], num: Int) -> [T] {
 }
 
 // for printing the borders in multiline find results
-extension String {
-    public func `repeat`(_ n: Int) -> String {
+public extension String {
+    func `repeat`(_ n: Int) -> String {
         var result = self
         for _ in 1 ..< n {
             result += self
