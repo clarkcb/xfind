@@ -21,11 +21,6 @@ use plfind::config;
 use plfind::Finder;
 use plfind::FindOptions;
 
-sub log_error {
-    my $err = shift;
-    plfind::common::log_msg('ERROR: '.$err);
-}
-
 sub get_matching_dirs {
     my ($file_results) = @_;
     my @dirs = map {$_->{path}} @{$file_results};
@@ -71,7 +66,7 @@ sub main {
 
     if (scalar @{$errs}) {
         plfind::common::log_msg('');
-        log_error($errs->[0]);
+        plfind::common::log_err($errs->[0]);
         plfind::common::log_msg('');
         $findoptions->usage();
         plfind::common::log_msg('');
@@ -93,23 +88,23 @@ sub main {
 
     if (scalar @{$errs2}) {
         plfind::common::log_msg('');
-        log_error($errs2->[0]);
+        plfind::common::log_err($errs2->[0]);
         plfind::common::log_msg('');
         $findoptions->usage();
         plfind::common::log_msg('');
         exit;
     }
 
-    my $fileresults = $finder->find();
+    my $file_results = $finder->find();
 
     # print matching dirs
     if ($settings->{list_dirs}) {
-        print_matching_dirs($fileresults);
+        print_matching_dirs($file_results);
     }
 
     # print matching files
     if ($settings->{list_files}) {
-        print_matching_files($fileresults);
+        print_matching_files($file_results);
     }
 }
 

@@ -15,7 +15,12 @@ use warnings;
 
 sub log_msg($) {
     my $msg = shift;
-    print $msg . "\n";
+    print STDOUT $msg . "\n";
+}
+
+sub log_err($) {
+    my $msg = shift;
+    print STDERR 'ERROR: ' . $msg . "\n";
 }
 
 sub trim($) {

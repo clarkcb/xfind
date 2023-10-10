@@ -7,7 +7,8 @@ import (
 )
 
 func errorAndExit(err error, findOptions *gofind.FindOptions) {
-	fmt.Printf("\nERROR: %s\n", err)
+	gofind.Log("")
+	gofind.LogError(fmt.Sprintf("%s", err))
 	findOptions.PrintUsage()
 }
 

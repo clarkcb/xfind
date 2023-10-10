@@ -28,6 +28,6 @@ namespace cppfind {
     }
 
     void log_error(const std::string& msg) {
-        std::cout << "ERROR: " << msg << std::endl;
+        std::cerr << "ERROR: " << msg << std::endl;
     }
 }

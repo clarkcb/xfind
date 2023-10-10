@@ -8,7 +8,7 @@ fun log(message: String) {
 }
 
 fun logError(message: String) {
-    println("ERROR: $message")
+    System.err.println("ERROR: $message")
 }
 
 class FindException(err: String) : Exception(err)

@@ -8,11 +8,12 @@
 void log_msg(const char *msg)
 {
     printf("%s\n", msg);
+    fflush(stdout);
 }
 
 void log_err(const char *msg)
 {
-    printf("\nERROR: %s\n", msg);
+    fprintf(stderr, "\nERROR: %s\n", msg);
 }
 
 int char_in_string(const char c, const char *s)

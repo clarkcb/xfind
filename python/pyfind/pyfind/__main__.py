@@ -12,7 +12,7 @@
 import sys
 from typing import List
 
-from .common import log
+from .common import log, log_error
 from .config import VERSION
 from .fileresult import FileResult
 from .finder import Finder
@@ -36,7 +36,8 @@ async def main():
     try:
         settings = findoptions.find_settings_from_args(sys.argv[1:])
     except FindException as e:
-        log(f'\nERROR: {e}\n')
+        log('')
+        log_error(f'{e}\n')
         findoptions.usage(1)
 
     if settings.debug:
@@ -72,7 +73,7 @@ async def main():
                 log('\nMatching files: 0')
 
     except AssertionError as e:
-        log(f'\nERROR: {e}\n')
+        log_error(f'{e}\n')
         findoptions.usage(1)
     except KeyboardInterrupt:
         log('')

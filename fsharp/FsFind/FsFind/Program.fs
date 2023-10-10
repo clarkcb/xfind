@@ -3,7 +3,8 @@ namespace FsFind
 module Main =
 
     let HandleError (err : string) : unit =
-        Common.Log $"\nERROR: %s{err}"
+        Common.Log("");
+        Common.LogError err
         FindOptions.Usage(1)
 
     let Find (settings : FindSettings) : unit =

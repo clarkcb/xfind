@@ -3,11 +3,19 @@ package gofind
 import (
 	"fmt"
 	"github.com/pmylund/sortutil"
+	"os"
 	"sort"
 )
 
 func Log(message string) {
 	fmt.Println(message)
+}
+
+func LogError(message string) {
+	_, err := fmt.Fprintln(os.Stderr, fmt.Sprintf("ERROR: %s", message))
+	if err != nil {
+		return
+	}
 }
 
 type set map[string]bool

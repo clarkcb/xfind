@@ -3,10 +3,10 @@
 
 require_once __DIR__ . '/../src/autoload.php';
 
-use \phpfind\Logger;
-use \phpfind\FindOptions;
-use \phpfind\Finder;
-use \phpfind\FindException;
+use phpfind\Logger;
+use phpfind\FindOptions;
+use phpfind\Finder;
+use phpfind\FindException;
 
 function main($argv): void
 {
@@ -35,7 +35,8 @@ function main($argv): void
             $finder->print_matching_files($file_results);
         }
     } catch (FindException $e) {
-        Logger::log_msg("\nERROR: " . $e->getMessage() . "\n");
+        Logger::log_msg('');
+        Logger::log_err($e->getMessage() . "\n");
         $find_options->usage_and_exit(1);
     }
 }

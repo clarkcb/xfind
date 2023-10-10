@@ -4,6 +4,7 @@ import Control.Monad (filterM)
 import Data.List (nub, sort)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
+import System.IO (hPutStr, stderr)
 
 import HsFind.FileResult
 import HsFind.FileUtil (pathExists)
@@ -48,12 +49,18 @@ formatMatchingFiles fileResults =
 logMsg :: String -> IO ()
 logMsg = putStr
 
+logErr :: String -> IO ()
+logErr s = hPutStr stderr $ "ERROR: " ++ s
+
 main :: IO ()
 main = do
   args <- getArgs
   findOptions <- getFindOptions
   case settingsFromArgs findOptions args of
-    Left errMsg -> logMsg $ "\nERROR: " ++ errMsg ++ "\n" ++ getUsage findOptions ++ "\n"
+    Left errMsg -> do
+      logMsg "\n"
+      logErr $ errMsg ++ "\n"
+      logMsg $ getUsage findOptions ++ "\n"
     Right settings -> do
       logMsg $ if debug settings
                then "\nsettings: " ++ show settings ++ "\n"
@@ -71,4 +78,7 @@ main = do
                      then formatMatchingFiles fileResults
                      else ""
             logMsg ""
-          else logMsg $ "\nERROR: Startpath not found\n\n" ++ getUsage findOptions ++ "\n"
+          else do
+            logMsg "\n"
+            logErr "Startpath not found\n\n"
+            logMsg $ getUsage findOptions ++ "\n"

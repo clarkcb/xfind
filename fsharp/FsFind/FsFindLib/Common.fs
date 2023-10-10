@@ -6,6 +6,9 @@ module Common =
     let Log (msg : string) : unit =
         printfn $"%s{msg}"
 
+    let LogError (msg : string) : unit =
+        Console.Error.WriteLine $"ERROR: %s{msg}"
+
     let PrintElapsed (name : string) (ts : TimeSpan) : unit =
         let elapsedTime =
             String.Format("{0:00}:{1:00}:{2:00}.{3:00}",

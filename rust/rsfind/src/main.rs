@@ -2,7 +2,7 @@ use core::slice::Iter;
 use std::env;
 use std::process;
 
-use crate::common::log;
+use crate::common::{log, log_err};
 use crate::finder::{get_matching_dirs, get_matching_files};
 use crate::finderror::FindError;
 
@@ -18,7 +18,8 @@ pub mod findsettings;
 pub mod sortby;
 
 fn print_error(error: FindError, options: &findoptions::FindOptions) {
-    log(format!("\nERROR: {}", error.description).as_str());
+    log("");
+    log_err(error.description.as_str());
     options.print_usage();
 }
 
@@ -55,7 +56,7 @@ fn find(args: Iter<String>) {
     let options = match findoptions::FindOptions::new() {
         Ok(options) => options,
         Err(error) => {
-            log(format!("\nERROR: {}", error.description).as_str());
+            log_err(error.description.as_str());
             process::exit(1);
         }
     };

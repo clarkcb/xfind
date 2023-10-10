@@ -13,6 +13,8 @@ if (typeof String.prototype.startsWith !== 'function') {
 
 const log = (message) => console.log(message);
 
+const logError = (message) => console.error(message);
+
 const boolHashFromArray = (arr) => {
     const hash = {};
     arr.forEach(a => hash[a] = true);
@@ -30,4 +32,4 @@ const setFromArray = (arr) => {
     return set;
 };
 
-module.exports = {log, boolHashFromArray, setFromArray};
+module.exports = {log, logError, boolHashFromArray, setFromArray};

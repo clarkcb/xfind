@@ -5,7 +5,7 @@ namespace CsFind;
 
 static class Program
 {
-	static void Main(string[] args)
+	public static void Main(string[] args)
 	{
 		var options = new FindOptions();
 		try
@@ -37,7 +37,8 @@ static class Program
 		}
 		catch (FindException e)
 		{
-			Common.Log($"\nERROR: {e.Message}");
+			Common.Log("");
+			Common.LogError(e.Message);
 			options.Usage(1);
 		}
 	}

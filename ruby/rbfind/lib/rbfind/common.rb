@@ -11,6 +11,10 @@
 module RbFind
   module_function
   def log(message)
-    puts message
+    STDOUT.puts(message)
+  end
+
+  def log_err(message)
+    STDERR.puts("ERROR: #{message}")
   end
 end

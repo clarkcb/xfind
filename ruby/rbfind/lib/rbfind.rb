@@ -44,7 +44,8 @@ def main
 end
 
 def handle_error(err, options)
-  RbFind::log("\nERROR: #{err.message}\n\n")
+  RbFind::log('')
+  RbFind::log_err("#{err.message}\n\n")
   options.usage
 end
 

@@ -8,6 +8,7 @@
 #
 ###############################################################################
 """
+import sys
 from dateutil.parser import parse
 
 from .findexception import FindException
@@ -16,6 +17,11 @@ from .findexception import FindException
 def log(message: str):
     """log a message (for now just print to stdout)"""
     print(message)
+
+
+def log_error(message: str):
+    """log an error message (for now just print to stderr)"""
+    print(f"ERROR: {message}", file=sys.stderr)
 
 
 def get_text(nodelist):

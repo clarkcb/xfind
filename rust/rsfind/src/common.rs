@@ -6,6 +6,10 @@ pub fn log(message: &str) {
     println!("{}", message);
 }
 
+pub fn log_err(message: &str) {
+    eprintln!("ERROR: {}", message);
+}
+
 pub fn date_from_string(s: &str) -> ParseResult<NaiveDate> {
     NaiveDate::parse_from_str(s, "%Y-%m-%d")
 }

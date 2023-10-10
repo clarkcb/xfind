@@ -8,4 +8,9 @@ public static class Common
 	{
 		Console.WriteLine(message);
 	}
+
+	public static void LogError(string message)
+	{
+		Console.Error.WriteLine($"ERROR: {message}");
+	}
 }

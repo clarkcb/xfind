@@ -14,7 +14,7 @@ const {FindOptions} = require('./findoptions');
 
 function handleError(err, findOptions) {
     const errMsg = 'ERROR: ' + err.message;
-    common.log('\n' + errMsg + '\n');
+    common.logError('\n' + errMsg + '\n');
     findOptions.usageWithCode(1);
 }
 

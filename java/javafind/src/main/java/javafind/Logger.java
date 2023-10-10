@@ -6,6 +6,6 @@ public class Logger {
     }
 
     public static void logError(final String message) {
-        log("ERROR: " + message);
+        System.err.println("ERROR: " + message);
     }
 }

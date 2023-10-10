@@ -12,6 +12,17 @@ class Logger
      */
     public static function log_msg(string $msg): void
     {
-        echo "$msg\n";
+        fwrite(STDOUT, "$msg\n");
+        flush();
+    }
+
+    /**
+     * @param string $msg
+     * @return void
+     */
+    public static function log_err(string $msg): void
+    {
+        fwrite(STDERR, "ERROR: $msg\n");
+        flush();
     }
 }
