@@ -18,6 +18,7 @@ from tabulate import tabulate
 
 from xfind import *
 
+
 @dataclass
 class Scenario:
     """Class to define a test scenario"""
@@ -317,6 +318,7 @@ class Benchmarker(object):
         self.exit_on_sort_diff = True
         self.diff_outputs = []
         self.__dict__.update(kwargs)
+        self.shell = os.environ.get('SHELL', '/bin/bash')
 
     def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print('\n{}'.format(title))
@@ -421,7 +423,50 @@ class Benchmarker(object):
             data.append([x, xr, xrr, xs, xsr, xu, xur, xt, xtr])
         self.__print_data_table(title, hdr, data, col_types)
 
-    def times_from_lines(self, lines: list[str]) -> dict[str,float]:
+    def times_from_lines(self, lines: list[str]) -> dict[str, float]:
+        # print(f'times_from_lines: {lines}')
+        time_line_re = re.compile(r'^(\d+\.\d+)\s+(real)\s+(\d+\.\d+)\s+(user)\s+(\d+\.\d+)\s+(sys)$')
+        time_line_match = time_line_re.match(lines[0])
+        if time_line_match:
+            time_dict = {}
+            time_dict['real'] = float(time_line_match.group(1))
+            time_dict['user'] = float(time_line_match.group(3))
+            time_dict['sys'] = float(time_line_match.group(5))
+            time_dict['total'] = sum(time_dict.values())
+            return time_dict
+        elif self.shell == '/bin/bash':
+            return self.bash_times_from_lines(lines)
+        elif self.shell == '/bin/zsh':
+            return self.zsh_times_from_lines(lines)
+
+    def zsh_times_from_lines(self, lines: list[str]) -> dict[str, float]:
+        """The following matches lines like:
+           <command> <utime> user <stime> system <pct> cpu <elapsed> total
+           Example:
+           cppfind  0.01s user 0.01s system 80% cpu 0.016 total
+        """
+        print('zsh_times_from_lines')
+        time_line_re = re.compile(r'^(\S+)\s+(\d+\.\d+)s user\s+(\d+\.\d+)s system\s+(\d+)% cpu\s+(\d+\.\d+) total$')
+        time_dict = {}
+        time_line_match = time_line_re.match(lines[0])
+        if time_line_match:
+            time_dict['user'] = float(time_line_match.group(2))
+            time_dict['sys'] = float(time_line_match.group(3))
+            time_dict['total'] = float(time_line_match.group(5))
+            time_dict['real'] = float('0.0')
+        else:
+            print(f"Invalid times line: \"{lines[0]}\"")
+            time_dict = {s: 0 for s in time_keys}
+        # print('time_dict: {}'.format(time_dict))
+        return time_dict
+
+    def bash_times_from_lines(self, lines: list[str]) -> dict[str, float]:
+        """The following matches lines like:
+           real    0m0.005s
+           user    0m0.002s
+           sys     0m0.002s
+        """
+        print('bash_times_from_lines')
         time_dict = {}
         times = lines[0].split()
         time_name_matches = [re.match(r'^(\d+(:\d+)?\.\d+)(user|system|elapsed)', t) for t in times[:3]]
@@ -444,8 +489,8 @@ class Benchmarker(object):
                 time_dict = {times[i]: float(times[i+1]) for i in range(0, len(times), 2)}
                 time_dict['total'] = sum(time_dict.values())
             except Exception as e:
-                print("Exception: {}".format(str(e)))
-                print("Invalid times line: \"{}\"".format(lines[0]))
+                print(f"Exception: {str(e)}")
+                print(f"Invalid times line: \"{lines[0]}\"")
                 time_dict = {s: 0 for s in time_keys}
         # print('time_dict: {}'.format(time_dict))
         return time_dict
@@ -461,9 +506,9 @@ class Benchmarker(object):
             print()
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print('\n{} output != {} output for args: {}'.format(x, y, ' '.join(s.args)))
-                    print('{} output:\n"{}"'.format(x, xfind_output[x]))
-                    print('{} output:\n"{}"'.format(y, xfind_output[y]))
+                    print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
+                    print(f'{x} output:\n"{xfind_output[x]}"')
+                    print(f'{y} output:\n"{xfind_output[y]}"')
                     self.diff_outputs.append((sn, x, y))
             for x in xs:
                 if nonmatching[x]:
@@ -484,9 +529,9 @@ class Benchmarker(object):
             print()
             for x in xs:
                 for y in sorted(nonmatching[x]):
-                    print('{} output != {} output'.format(x, y))
-                    print('{} output:\n"{}"'.format(x, xfind_output[x]))
-                    print('{} output:\n"{}"'.format(y, xfind_output[y]))
+                    print(f'{x} output != {y} output')
+                    print(f'{x} output:\n"{xfind_output[x]}"')
+                    print(f'{y} output:\n"{xfind_output[y]}"')
                     self.diff_outputs.append((sn, x, y))
             for x in xs:
                 if nonmatching[x]:
@@ -518,20 +563,30 @@ class Benchmarker(object):
         for x in self.xfind_names:
             p = xfind_procs[x]
             output_lines = []
-            time_lines = []
+            error_lines = []
             while True:
                 output_line = p.stdout.readline()
-                time_line = p.stderr.readline()
-                if not output_line and not time_line:
+                error_line = p.stderr.readline()
+                if not output_line and not error_line:
                     break
-                if output_line:
+                if output_line and error_line:
+                    error_line = error_line.decode().strip()
+                    if error_line.startswith('ERROR:'):
+                        output_lines.append(error_line)
+                    else:
+                        error_lines.append(error_line)
                     output_lines.append(output_line.decode().strip())
-                if time_line:
-                    time_line = time_line.decode().strip()
-                    if time_line == 'Command exited with non-zero status 1':
+                elif output_line:
+                    output_lines.append(output_line.decode().strip())
+                elif error_line:
+                    error_line = error_line.decode().strip()
+                    if error_line == 'Command exited with non-zero status 1':
                         continue
-                    # print('time_line: "{}"'.format(time_line))
-                    time_lines.append(time_line)
+                    # print(f'error_line: "{error_line}"')
+                    if error_line.startswith('ERROR:'):
+                        output_lines.append(error_line)
+                    else:
+                        error_lines.append(error_line)
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
@@ -542,9 +597,13 @@ class Benchmarker(object):
             xfind_output[x] = output
             if self.debug:
                 print('{} output:\n"{}"'.format(x, output))
-            xfind_times[x] = self.times_from_lines(time_lines)
+            xfind_times[x] = self.times_from_lines([e for e in error_lines if e])
             time_dict = xfind_times[x]
+            if 'real' not in time_dict and 'elapsed' not in time_dict:
+                raise Exception('No real or elapsed time for {}'.format(x))
             treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
+            if 'sys' not in time_dict and 'system' not in time_dict:
+                raise Exception('No sys or system time for {}'.format(x))
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
         if not self.compare_outputs(s, sn, xfind_output) and self.exit_on_diff:
@@ -580,7 +639,7 @@ class Benchmarker(object):
                 output = xfind_name_regex.sub('xfind', output)
             xfind_output[x] = output
             if self.debug:
-                print('output:\n"{}"'.format(output))
+                print(f'output:\n"{output}"')
             xfind_times[x] = self.times_from_lines(time_lines)
             time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
@@ -601,7 +660,7 @@ class Benchmarker(object):
         scenario_results = ScenarioResults()
         runs = 0
         try:
-            for i,s in enumerate(self.scenarios):
+            for i, s in enumerate(self.scenarios):
                 sn = i + 1
                 s_results = []
                 for r in range(self.runs):
@@ -645,7 +704,7 @@ def get_args(args):
                         if lang in xfind_dict:
                             xfind_names.append(xfind_dict[lang])
                         else:
-                            print('Skipping unknown language: {}'.format(lang))
+                            print(f'Skipping unknown language: {lang}')
                 else:
                     print('ERROR: missing language names for -l arg')
                     sys.exit(1)
@@ -675,7 +734,8 @@ def main():
     print('exit_on_diff: {}'.format(exit_on_diff))
     print('debug: {}'.format(debug))
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
-        scenarios=scenarios, exit_on_diff=exit_on_diff, debug=debug)
+                              scenarios=scenarios, exit_on_diff=exit_on_diff,
+                              debug=debug)
     benchmarker.run()
 
 

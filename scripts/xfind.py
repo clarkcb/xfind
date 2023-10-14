@@ -75,7 +75,7 @@ elif 'XFINDPATH' in os.environ:
 
 default_startpath = XFINDPATH
 
-def nonmatching_lens(xfind_output):
+def nonmatching_lens(xfind_output, skip_blanks: bool = True):
     """Examines xfind_output (a dict of {xfind_name : [lines]})
        and returns a dict of xfind instances with non-matching
        output line lengths ({xfind_name: [non_matching_xfind_names]})
@@ -84,15 +84,21 @@ def nonmatching_lens(xfind_output):
     xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
-        x_len = len(xfind_output[x])
+        x_output = xfind_output[x]
+        if skip_blanks:
+            x_output = [l for l in x_output if l.strip() != '']
+        x_len = len(x_output)
         for y in xs:
-            y_len = len(xfind_output[y])
+            y_output = xfind_output[y]
+            if skip_blanks:
+                y_output = [l for l in y_output if l.strip() != '']
+            y_len = len(y_output)
             if x_len != y_len:
                 nonmatching.setdefault(x, []).append(y)
                 nonmatching.setdefault(y, []).append(x)
     return nonmatching
 
-def nonmatching_outputs(xfind_output: dict[str, list[str]]):
+def nonmatching_outputs(xfind_output: dict[str, list[str]], sort_lines: bool = True, skip_blanks: bool = True):
     """Examines xfind_output (a dict of {xfind_name : [lines]})
        and returns a dict of xfind instances with non-matching
        output ({xfind_name: [non_matching_xfind_names]})
@@ -101,9 +107,13 @@ def nonmatching_outputs(xfind_output: dict[str, list[str]]):
     xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
-        x_output = xfind_output[x]
+        x_output = xfind_output[x] if sort_lines else sorted(xfind_output[x])
+        if skip_blanks:
+            x_output = [l for l in x_output if l.strip() != '']
         for y in xs:
-            y_output = xfind_output[y]
+            y_output = xfind_output[y] if sort_lines else sorted(xfind_output[y])
+            if skip_blanks:
+                y_output = [l for l in y_output if l.strip() != '']
             if x_output != y_output:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))
