@@ -14,6 +14,7 @@ pub struct FindSettings {
     _in_extensions: Vec<String>,
     _in_file_patterns: Vec<Regex>,
     _in_file_types: Vec<filetypes::FileType>,
+    _in_mime_types: Vec<String>,
     _include_archives: bool,
     _include_hidden: bool,
     _max_depth: i64,
@@ -28,6 +29,7 @@ pub struct FindSettings {
     _out_extensions: Vec<String>,
     _out_file_patterns: Vec<Regex>,
     _out_file_types: Vec<filetypes::FileType>,
+    _out_mime_types: Vec<String>,
     _paths: Vec<String>,
     _print_dirs: bool,
     _print_files: bool,
@@ -51,6 +53,7 @@ impl FindSettings {
             _in_extensions: Vec::new(),
             _in_file_patterns: Vec::new(),
             _in_file_types: Vec::new(),
+            _in_mime_types: Vec::new(),
             _include_archives: false,
             _include_hidden: false,
             _max_depth: -1i64,
@@ -65,6 +68,7 @@ impl FindSettings {
             _out_extensions: Vec::new(),
             _out_file_patterns: Vec::new(),
             _out_file_types: Vec::new(),
+            _out_mime_types: Vec::new(),
             _paths: Vec::new(),
             _print_dirs: false,
             _print_files: false,
@@ -146,6 +150,14 @@ impl FindSettings {
 
     pub fn add_in_file_type(&mut self, file_type: filetypes::FileType) {
         self._in_file_types.push(file_type)
+    }
+
+    pub fn in_mime_types(&self) -> &Vec<String> {
+        &self._in_mime_types
+    }
+
+    pub fn add_in_mime_type(&mut self, mime_type: String) {
+        self._in_mime_types.push(mime_type)
     }
 
     pub fn include_archives(&self) -> bool {
@@ -260,6 +272,14 @@ impl FindSettings {
         self._out_file_types.push(file_type)
     }
 
+    pub fn out_mime_types(&self) -> &Vec<String> {
+        &self._out_mime_types
+    }
+
+    pub fn add_out_mime_type(&mut self, mime_type: String) {
+        self._out_mime_types.push(mime_type)
+    }
+
     pub fn paths(&self) -> &Vec<String> {
         &self._paths
     }
@@ -340,6 +360,10 @@ impl FindSettings {
         self._verbose = b
     }
 
+    pub fn need_mime_type(&self) -> bool {
+        !self._in_mime_types.is_empty() || !self._out_mime_types.is_empty()
+    }
+
     fn get_settings_string(&self) -> String {
         let mut s = String::from("FindSettings(");
         s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
@@ -350,6 +374,7 @@ impl FindSettings {
         s.push_str(format!(", in_extensions={:?}", &self.in_extensions()).as_str());
         s.push_str(format!(", in_file_patterns={}", get_regex_vec_string(&self.in_file_patterns())).as_str());
         s.push_str(format!(", in_file_types={:?}", &self.in_file_types()).as_str());
+        s.push_str(format!(", in_mime_types={:?}", &self.in_mime_types()).as_str());
         s.push_str(format!(", include_archives={:?}", &self.include_archives()).as_str());
         s.push_str(format!(", include_hidden={:?}", &self.include_hidden()).as_str());
         s.push_str(format!(", max_depth={:?}", &self.max_depth()).as_str());
@@ -364,6 +389,7 @@ impl FindSettings {
         s.push_str(format!(", out_extensions={:?}", &self.out_extensions()).as_str());
         s.push_str(format!(", out_file_patterns={}", get_regex_vec_string(&self.out_file_patterns())).as_str());
         s.push_str(format!(", out_file_types={:?}", &self.out_file_types()).as_str());
+        s.push_str(format!(", out_mime_types={:?}", &self.out_mime_types()).as_str());
         s.push_str(format!(", paths={:?}", &self.paths()).as_str());
         s.push_str(format!(", print_dirs={:?}", &self.print_dirs()).as_str());
         s.push_str(format!(", print_files={:?}", &self.print_files()).as_str());
@@ -382,7 +408,6 @@ impl FindSettings {
 impl fmt::Debug for FindSettings {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.get_settings_string())
-    }
 }
 
 fn add_extensions(new_ext_str: String, extensions: &mut Vec<String>) {
@@ -426,6 +451,7 @@ mod tests {
         assert!(settings.in_extensions().is_empty());
         assert!(settings.in_file_patterns().is_empty());
         assert!(settings.in_file_types().is_empty());
+        assert!(settings.in_mime_types().is_empty());
         assert_eq!(settings.include_archives(), false);
         assert_eq!(settings.include_hidden(), false);
         assert_eq!(settings.max_depth(), -1);
@@ -440,6 +466,7 @@ mod tests {
         assert!(settings.out_extensions().is_empty());
         assert!(settings.out_file_patterns().is_empty());
         assert!(settings.out_file_types().is_empty());
+        assert!(settings.out_mime_types().is_empty());
         assert!(settings.paths().is_empty());
         assert_eq!(settings.print_dirs(), false);
         assert_eq!(settings.print_files(), false);

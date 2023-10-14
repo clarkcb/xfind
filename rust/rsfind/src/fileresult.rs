@@ -8,13 +8,14 @@ pub struct FileResult {
     pub path: String,
     pub file_name: String,
     pub file_type: FileType,
+    pub mime_type: String,
     pub file_size: u64,
     pub last_mod: u64,
 }
 
 impl FileResult {
-    pub fn new(path: String, file_name: String, file_type: FileType, file_size: u64, last_mod: u64) -> FileResult {
-        FileResult::with_containers(Vec::new(), path, file_name, file_type, file_size, last_mod)
+    pub fn new(path: String, file_name: String, file_type: FileType, mime_type: String, file_size: u64, last_mod: u64) -> FileResult {
+        FileResult::with_containers(Vec::new(), path, file_name, file_type, mime_type, file_size, last_mod)
     }
 
     pub fn with_containers(
@@ -22,6 +23,7 @@ impl FileResult {
         path: String,
         file_name: String,
         file_type: FileType,
+        mime_type: String,
         file_size: u64,
         last_mod: u64,
     ) -> FileResult {
@@ -30,6 +32,7 @@ impl FileResult {
             path,
             file_name,
             file_type,
+            mime_type,
             file_size,
             last_mod,
         }
@@ -70,6 +73,7 @@ mod tests {
             "~/src/xfind/rust/rsfind/src".to_string(),
             "finder.rs".to_string(),
             FileType::Code,
+            "".to_string(),
             1000,
             last_mod
         );
@@ -85,6 +89,7 @@ mod tests {
             ".".to_string(),
             "finder.rs".to_string(),
             FileType::Code,
+            "".to_string(),
             1000,
             0
         );

@@ -344,6 +344,12 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
         }),
     );
     arg_map.insert(
+        "in-mimetype".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            Ok(settings.add_in_mime_type(s.to_string()))
+        }),
+    );
+    arg_map.insert(
         "maxdepth".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.set_max_depth(s.parse::<i64>().unwrap()))
@@ -432,6 +438,12 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
         Box::new(|s: &str, settings: &mut FindSettings| {
             let file_type = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_out_file_type(file_type))
+        }),
+    );
+    arg_map.insert(
+        "out-mimetype".to_string(),
+        Box::new(|s: &str, settings: &mut FindSettings| {
+            Ok(settings.add_out_mime_type(s.to_string()))
         }),
     );
     arg_map.insert(

@@ -90,18 +90,16 @@ impl Finder {
                 || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns()))
     }
 
-    fn is_matching_extension(&self, ext: &str, in_extensions: &Vec<String>,
-                             out_extensions: &Vec<String>) -> bool {
-        (in_extensions.is_empty()
-            || self.matches_any_string(ext, &in_extensions))
-            && (out_extensions.is_empty()
-            || !self.matches_any_string(ext, &out_extensions))
-    }
+    fn is_matching_file(&self, file_result: &FileResult) -> bool {
+        if !self.is_matching_dir(&file_result.path) {
+            return false;
+        }
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
+            return false;
+        }
 
-    fn has_matching_archive_extension(&self, file_result: &FileResult) -> bool {
-        if !self.settings.in_archive_extensions().is_empty()
-            || !self.settings.out_archive_extensions().is_empty() {
-            return match FileUtil::get_extension(&file_result.file_name) {
+        if !self.settings.in_extensions().is_empty() || !self.settings.out_extensions().is_empty() {
+            match FileUtil::get_extension(&file_result.file_name) {
                 Some(ext) => {
                     self.is_matching_extension(ext, self.settings.in_archive_extensions(),
                                                self.settings.out_archive_extensions())
@@ -114,6 +112,32 @@ impl Finder {
         return true
     }
 
+    fn is_matching_extension(&self, ext: &str, in_extensions: &Vec<String>,
+        out_extensions: &Vec<String>) -> bool {
+        (in_extensions.is_empty()
+        || self.matches_any_string(ext, &in_extensions))
+        && (out_extensions.is_empty()
+        || !self.matches_any_string(ext, &out_extensions))
+    }
+
+    fn has_matching_archive_extension(&self, file_result: &FileResult) -> bool {
+        if !self.settings.in_archive_extensions().is_empty()
+        || !self.settings.out_archive_extensions().is_empty() {
+            return match FileUtil::get_extension(&file_result.file_name) {
+                return match FileUtil::get_extension(&file_result.file_name) {
+                    Some(ext) => {
+                        self.is_matching_extension(ext, self.settings.in_extensions(),
+                                                   self.settings.out_extensions())
+                    },
+                    None => {
+                        self.settings.in_extensions().is_empty()
+                    },
+                }
+            }
+        }
+        return true
+    }
+    
     fn has_matching_extension(&self, file_result: &FileResult) -> bool {
         if !self.settings.in_extensions().is_empty()
             || !self.settings.out_extensions().is_empty() {
@@ -153,6 +177,23 @@ impl Finder {
             || self.settings.in_file_types().contains(&file_result.file_type))
             && (self.settings.out_file_types().is_empty()
             || !self.settings.out_file_types().contains(&file_result.file_type))
+    }
+
+    fn is_matching_mime_type(&self, mime_type: &String) -> bool {
+        if !self.settings.in_mime_types().is_empty() {
+            if self.matches_any_string(mime_type, self.settings.in_mime_types())
+                || self.matches_any_string("*/*", self.settings.in_mime_types()) {
+                return true
+            }
+            return false
+        }
+        if !self.settings.out_mime_types().is_empty() {
+            if self.matches_any_string(mime_type, self.settings.out_mime_types())
+                || self.matches_any_string("*/*", self.settings.out_mime_types()) {
+                return false
+            }
+        }
+        true
     }
 
     fn has_matching_file_size(&self, file_result: &FileResult) -> bool {
@@ -357,12 +398,16 @@ impl Finder {
                 if !self.is_matching_dir(&path) {
                     continue;
                 }
-                let filename = entry.file_name().to_str().unwrap().to_string();
-                let file_type = self.file_types.get_file_type(&filename);
+                let file_name = entry.file_name().to_str().unwrap().to_string();
+                let file_type = self.file_types.get_file_type(&file_name);
                 // if file_type == FileType::Unknown {
                 //     continue;
                 // }
-                let (file_size, last_mod) = match entry.metadata() {
+                let mime_type = "".to_string();
+                if self.settings.need_mime_type() {
+                    // TODO: get mime type here
+                }
+                let (file_size, mod_time) = match entry.metadata() {
                     Ok(metadata) => {
                         let fs = metadata.len();
                         let mt = match metadata.modified() {
@@ -378,8 +423,8 @@ impl Finder {
                     }
                     Err(_) => (0u64, 0u64)
                 };
-                let file_result = FileResult::new(path, filename, file_type,
-                                                  file_size, last_mod);
+                let file_result = FileResult::new(path, file_name, file_type,
+                                                  mime_type, file_size, last_mod);
                 if self.filter_file_result(&file_result) {
                     file_results.push(file_result)
                 }
@@ -438,42 +483,43 @@ mod tests {
 
         let path = String::from(".");
         let file_name = String::from("codefile.js");
-        let filesize: u64 = 1000;
+        let mime_type = String::from("");
+        let file_size: u64 = 1000;
         let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
             Err(_error) => 0,
         };
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                  last_mod);
         assert!(finder.filter_file_result(&fr));
 
         let path = String::from(".");
         let file_name = String::from("codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                  last_mod);
         assert!(finder.filter_file_result(&fr));
 
         let path = String::from("./temp/");
         let file_name = String::from("codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                  last_mod);
         assert!(!finder.filter_file_result(&fr));
 
         let path = String::from("./.hidden/");
         let file_name = String::from("codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                  last_mod);
         assert!(!finder.filter_file_result(&fr));
 
         let path = String::from(".");
         let file_name = String::from(".codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                  last_mod);
         assert!(!finder.filter_file_result(&fr));
 
         let path = String::from(".");
         let file_name = String::from("archive.zip");
-        let fr = FileResult::new(path, file_name, FileType::Archive, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Archive, mime_type, file_size,
                                  last_mod);
         assert!(!finder.filter_file_result(&fr));
 
@@ -483,7 +529,7 @@ mod tests {
 
         let path = String::from(".");
         let file_name = String::from("archive.zip");
-        let fr = FileResult::new(path, file_name, FileType::Archive, filesize,
+        let fr = FileResult::new(path, file_name, FileType::Archive, mime_type, file_size,
                                  last_mod);
         assert!(finder.filter_file_result(&fr));
     }
@@ -514,42 +560,43 @@ mod tests {
 
         let path = String::from(".");
         let file_name = String::from("codefile.js");
+        let mime_type = String::from("");
         let file_size: u64 = 1000;
         let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
             Err(_error) => 0,
         };
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
+        let file_result = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                           last_mod);
         assert!(finder.is_matching_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from("codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
+        let file_result = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                           last_mod);
         assert!(finder.is_matching_file_result(&file_result));
 
         let path = String::from("./temp/");
         let file_name = String::from("codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
+        let file_result = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                           last_mod);
         assert!(!finder.is_matching_file_result(&file_result));
 
         let path = String::from("./.hidden/");
         let file_name = String::from("codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
+        let file_result = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                           last_mod);
         assert!(!finder.is_matching_file_result(&file_result));
 
         let path = String::from("./");
         let file_name = String::from(".codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
+        let file_result = FileResult::new(path, file_name, FileType::Code, mime_type, file_size,
                                           last_mod);
         assert!(!finder.is_matching_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from("archive.zip");
-        let file_result = FileResult::new(path, file_name, FileType::Archive, file_size,
+        let file_result = FileResult::new(path, file_name, FileType::Archive, mime_type, file_size,
                                           last_mod);
         assert!(!finder.is_matching_file_result(&file_result));
     }
@@ -564,34 +611,38 @@ mod tests {
 
         let path = String::from(".");
         let file_name = String::from("archive.zip");
+        let mime_type = String::from("");
         let file_size: u64 = 1000;
         let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
+                                          mime_type, file_size, last_mod);
         assert!(finder.is_matching_archive_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from(".archive.zip");
+        let mime_type = String::from("");
         let file_size: u64 = 1000;
         let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
+                                          mime_type, file_size, last_mod);
         assert!(!finder.is_matching_archive_file_result(&file_result));
 
         let path = String::from("./temp");
         let file_name = String::from("archive.zip");
+        let mime_type = String::from("");
         let file_size: u64 = 1000;
         let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
+                                          mime_type, file_size, last_mod);
         assert!(!finder.is_matching_archive_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from("temp_archive.zip");
+        let mime_type = String::from("");
         let file_size: u64 = 1000;
         let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
+                                          mime_type, file_size, last_mod);
         assert!(!finder.is_matching_archive_file_result(&file_result));
     }
 
