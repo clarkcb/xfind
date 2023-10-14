@@ -224,6 +224,10 @@ open class FindSettings: CustomStringConvertible {
             maxLastMod != nil || minLastMod != nil
     }
 
+    public func needMimeType() -> Bool {
+        !inMimeTypes.isEmpty || !outMimeTypes.isEmpty
+    }
+
     public func needSize() -> Bool {
         sortBy == SortBy.fileSize ||
             maxSize > 0 || minSize > 0
