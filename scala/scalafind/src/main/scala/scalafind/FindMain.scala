@@ -32,7 +32,7 @@ object FindMain {
     val files = getMatchingFiles(fileResults)
     if (files.nonEmpty) {
       Common.log("\nMatching files (%d):".format(files.length))
-      files.foreach(f => Common.log(f.toString))
+      files.foreach(f => Common.log(f))
     } else {
       Common.log("\nMatching files: 0")
     }

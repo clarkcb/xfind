@@ -13,14 +13,15 @@ class FileResult(
     val containers: List<String>,
     val path: Path,
     val fileType: FileType,
+    val mimeType: String? = null,
     val fileSize: Long,
     val lastMod: FileTime? = null
 ) {
     val CONTAINER_SEPARATOR = "!"
 
-    constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType, 0)
-    constructor(path: Path, fileType: FileType, fileSize: Long, lastMod: FileTime?) :
-            this(listOf(), path, fileType, fileSize, lastMod)
+    constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType, "", 0)
+    constructor(path: Path, fileType: FileType, mimeType: String?, fileSize: Long, lastMod: FileTime?) :
+            this(listOf(), path, fileType, mimeType, fileSize, lastMod)
 
     private fun compareStrings(str1: String, str2: String, sortCaseInsensitive: Boolean): Int {
         val s1 =
@@ -82,6 +83,9 @@ class FileResult(
             sb.append(CONTAINER_SEPARATOR)
         }
         sb.append(path)
+        if (mimeType != null) {
+            sb.append(" (").append(mimeType).append(")")
+        }
         return sb.toString()
     }
 }

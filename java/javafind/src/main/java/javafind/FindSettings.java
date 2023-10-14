@@ -441,7 +441,7 @@ public class FindSettings {
         this.outMimeTypes.add(mimeType);
     }
 
-    public final boolean hasMimeType() {
+    public final boolean needMimeType() {
         return !this.inMimeTypes.isEmpty() || !this.outMimeTypes.isEmpty();
     }
 

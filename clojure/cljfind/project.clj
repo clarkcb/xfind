@@ -7,6 +7,7 @@
                   [org.clojure/clojure "1.11.2"]
                   [org.clojure/data.json "2.5.0"]
                   [clojure.java-time "1.4.2"]
+                  [org.opf_labs/libmagic-jna-wrapper "0.0.2-SNAPSHOT"]
                 ]
 ;  :main ^:skip-aot cljfind.cljfind
   :main cljfind.cljfind

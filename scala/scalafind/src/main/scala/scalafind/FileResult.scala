@@ -7,6 +7,7 @@ import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 class FileResult(val containers: List[String],
                  val path: Path,
                  val fileType: FileType.Value,
+                 val mimeType: Option[String] = None,
                  val fileSize: Long,
                  val lastMod: Option[FileTime] = None) {
 
@@ -16,8 +17,8 @@ class FileResult(val containers: List[String],
     this(List.empty[String], path, fileType, 0L, None)
   }
 
-  def this(path: Path, fileType: FileType.Value, fileSize: Long, lastMod: Option[FileTime]) = {
-    this(List.empty[String], path, fileType, fileSize, lastMod)
+  def this(path: Path, fileType: FileType.Value, mimeType: Option[String], fileSize: Long, lastMod: Option[FileTime]) = {
+    this(List.empty[String], path, fileType, mimeType, fileSize, lastMod)
   }
 
   private def comparePaths(path1: Path, path2: Path, sortCaseInsensitive: Boolean): Int = {
@@ -88,6 +89,9 @@ class FileResult(val containers: List[String],
       sb.append(containers.mkString(CONTAINER_SEPARATOR)).append(CONTAINER_SEPARATOR)
     }
     sb.append(path.toString)
+    if (mimeType.isDefined) {
+      sb.append(" (").append(mimeType.get).append(")")
+    }
     sb.toString()
   }
 }

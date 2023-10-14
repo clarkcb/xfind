@@ -72,6 +72,8 @@ object FindOptions {
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
       ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileType.forName(s))),
+    "in-mimetype" ->
+      ((s, ss) => ss.copy(inMimeTypes = ss.inMimeTypes + s)),
     "maxdepth" ->
       ((s, ss) => ss.copy(maxDepth = s.toInt)),
     "maxlastmod" ->
@@ -96,6 +98,8 @@ object FindOptions {
       ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
     "out-filetype" ->
       ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileType.forName(s))),
+    "out-mimetype" ->
+      ((s, ss) => ss.copy(outMimeTypes = ss.outMimeTypes + s)),
     "path" ->
       ((s, ss) => ss.copy(paths = ss.paths + s)),
     "settings-file" ->

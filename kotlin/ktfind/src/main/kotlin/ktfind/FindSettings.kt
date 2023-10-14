@@ -50,6 +50,7 @@ data class FindSettings(
     val inExtensions: Set<String>,
     val inFilePatterns: Set<Regex>,
     val inFileTypes: Set<FileType>,
+    val inMimeTypes: Set<String>,
     val includeArchives: Boolean,
     val includeHidden: Boolean,
     val maxDepth: Int,
@@ -64,6 +65,7 @@ data class FindSettings(
     val outExtensions: Set<String>,
     val outFilePatterns: Set<Regex>,
     val outFileTypes: Set<FileType>,
+    val outMimeTypes: Set<String>,
     val paths: Set<String>,
     val printDirs: Boolean,
     val printFiles: Boolean,
@@ -158,6 +160,7 @@ fun getDefaultSettings(): FindSettings {
         inExtensions = linkedSetOf(),
         inFilePatterns = linkedSetOf(),
         inFileTypes = linkedSetOf(),
+        inMimeTypes = linkedSetOf(),
         includeArchives = false,
         includeHidden = false,
         maxDepth = -1,
@@ -172,6 +175,7 @@ fun getDefaultSettings(): FindSettings {
         outExtensions = linkedSetOf(),
         outFilePatterns = linkedSetOf(),
         outFileTypes = linkedSetOf(),
+        outMimeTypes = linkedSetOf(),
         paths = linkedSetOf(),
         printDirs = false,
         printFiles = false,
@@ -205,7 +209,11 @@ fun setDebug(ss: FindSettings, debug: Boolean): FindSettings {
 
 fun needLastMod(ss: FindSettings): Boolean {
     return ss.sortBy == SortBy.LASTMOD
-            || ss.maxLastMod != null || ss.minLastMod != null
+        || ss.maxLastMod != null || ss.minLastMod != null
+}
+
+fun needMimeType(ss: FindSettings): Boolean {
+    return ss.inMimeTypes.isNotEmpty() || ss.outMimeTypes.isNotEmpty()
 }
 
 fun needSize(ss: FindSettings): Boolean {

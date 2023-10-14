@@ -57,6 +57,7 @@
     ^clojure.lang.PersistentHashSet in-extensions
     ^clojure.lang.PersistentHashSet in-file-patterns
     ^clojure.lang.PersistentHashSet in-file-types
+    ^clojure.lang.PersistentHashSet in-mime-types
     ^Boolean include-archives
     ^Boolean include-hidden
     ^Integer max-depth
@@ -71,6 +72,7 @@
     ^clojure.lang.PersistentHashSet out-extensions
     ^clojure.lang.PersistentHashSet out-file-patterns
     ^clojure.lang.PersistentHashSet out-file-types
+    ^clojure.lang.PersistentHashSet out-mime-types
     ^clojure.lang.PersistentHashSet paths
     ^Boolean print-dirs
     ^Boolean print-files
@@ -93,6 +95,7 @@
    #{}       ; in-extensions
    #{}       ; in-file-patterns
    #{}       ; in-file-types
+   #{}       ; in-mime-types
    false     ; include-archives
    false     ; include-hidden
    -1        ; max-depth
@@ -107,6 +110,7 @@
    #{}       ; out-extensions
    #{}       ; out-file-patterns
    #{}       ; out-file-types
+   #{}       ; out-mime-types
    #{}       ; paths
    false     ; print-dirs
    false     ; print-files
@@ -150,6 +154,20 @@
       :else
       (add-file-types settings (str/split typ #",") typesname))))
 
+(defn add-mime-types [^FindSettings settings types typesname]
+  (if (empty? types)
+    settings
+    (add-mime-types
+     (update-in settings [typesname] #(add-element (first types) %)) (rest types) typesname)))
+
+(defn add-mime-type [^FindSettings settings typ typesname]
+  (let [t (type typ)]
+    (cond
+      (= t (type []))
+      (add-mime-types settings typ typesname)
+      :else
+      (add-mime-types settings (str/split typ #",") typesname))))
+
 (defn add-paths [^FindSettings settings paths]
   (if (empty? paths)
     settings
@@ -183,6 +201,11 @@
    (= :lastmod (:sort-by settings))
    (not (nil? (:max-last-mod settings)))
    (not (nil? (:min-last-mod settings)))))
+
+(defn need-mime [^FindSettings settings]
+  (or
+   (not (empty? (:in-mime-types settings)))
+   (not (empty? (:out-mime-types settings)))))
 
 (defn need-size [^FindSettings settings]
   (or

@@ -1,6 +1,8 @@
 package ktfind
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.opf_labs.LibmagicJnaWrapper
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Paths
@@ -16,14 +18,24 @@ import kotlin.streams.toList
  */
 class Finder(val settings: FindSettings) {
     private val fileTypes: FileTypes
-    private val extTests: MutableSet<(String) -> Boolean> = mutableSetOf()
-    private val fileNameTests: MutableSet<(String) -> Boolean> = mutableSetOf()
-    private val fileTypeTests: MutableSet<(FileType) -> Boolean> = mutableSetOf()
+    private var libmagicJnaWrapper: LibmagicJnaWrapper? = null
+
+//    private val extTests: MutableSet<(String) -> Boolean> = mutableSetOf()
+//    private val fileNameTests: MutableSet<(String) -> Boolean> = mutableSetOf()
+//    private val fileTypeTests: MutableSet<(FileType) -> Boolean> = mutableSetOf()
 
     init {
         validateSettings(settings)
         fileTypes = FileTypes()
-        setTests()
+        if (settings.needMimeType()) {
+            // set libmagicJnaWrapper
+            val flags: Int = LibmagicJnaWrapper.MAGIC_MIME_TYPE or LibmagicJnaWrapper.MAGIC_NO_CHECK_ENCODING
+            libmagicJnaWrapper = LibmagicJnaWrapper(flags)
+            // TODO: need way to get correct magicFilePath for given os
+            val magicFilePath = "/usr/local/share/misc/magic.mgc"
+            libmagicJnaWrapper!!.load(magicFilePath)
+        }
+        // setTests()
     }
 
     private fun validateSettings(settings: FindSettings) {
@@ -50,24 +62,24 @@ class Finder(val settings: FindSettings) {
         }
     }
 
-    private fun setTests() {
-        if (settings.inExtensions.isNotEmpty()) {
-            extTests.add { ext: String -> settings.inExtensions.contains(ext) }
-        } else if (settings.outExtensions.isNotEmpty()) {
-            extTests.add { ext: String -> !settings.outExtensions.contains(ext) }
-        }
-        if (settings.inFilePatterns.isNotEmpty()) {
-            fileNameTests.add { fileName: String -> matchesAnyPattern(fileName, settings.inFilePatterns) }
-        }
-        if (settings.outFilePatterns.isNotEmpty()) {
-            fileNameTests.add { fileName: String -> !matchesAnyPattern(fileName, settings.outFilePatterns) }
-        }
-        if (settings.inFileTypes.isNotEmpty()) {
-            fileTypeTests.add { fileType: FileType -> settings.inFileTypes.contains(fileType) }
-        } else if (settings.outFileTypes.isNotEmpty()) {
-            fileTypeTests.add { fileType: FileType -> !settings.outFileTypes.contains(fileType) }
-        }
-    }
+//    private fun setTests() {
+//        if (settings.inExtensions.isNotEmpty()) {
+//            extTests.add { ext: String -> settings.inExtensions.contains(ext) }
+//        } else if (settings.outExtensions.isNotEmpty()) {
+//            extTests.add { ext: String -> !settings.outExtensions.contains(ext) }
+//        }
+//        if (settings.inFilePatterns.isNotEmpty()) {
+//            fileNameTests.add { fileName: String -> matchesAnyPattern(fileName, settings.inFilePatterns) }
+//        }
+//        if (settings.outFilePatterns.isNotEmpty()) {
+//            fileNameTests.add { fileName: String -> !matchesAnyPattern(fileName, settings.outFilePatterns) }
+//        }
+//        if (settings.inFileTypes.isNotEmpty()) {
+//            fileTypeTests.add { fileType: FileType -> settings.inFileTypes.contains(fileType) }
+//        } else if (settings.outFileTypes.isNotEmpty()) {
+//            fileTypeTests.add { fileType: FileType -> !settings.outFileTypes.contains(fileType) }
+//        }
+//    }
 
     private fun anyMatchesAnyPattern(
         sList: List<String>,
@@ -154,6 +166,11 @@ class Finder(val settings: FindSettings) {
         if (!settings.includeHidden && f.isHidden) {
             return null
         }
+        var mimeType: String? = null
+        // It will only be non-null if inMimeTypes or outMimeTypes is non-empty
+        if (settings.needMimeType() && libmagicJnaWrapper != null) {
+            mimeType = libmagicJnaWrapper!!.getMimeType(f.toPath().toString())
+        }
         var fileSize = 0L
         var lastMod: FileTime? = null
         if (needLastMod(settings) || needSize(settings)) {
@@ -164,7 +181,7 @@ class Finder(val settings: FindSettings) {
             fileSize = stat.size()
             lastMod = stat.lastModifiedTime()
         }
-        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), fileSize, lastMod)
+        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), mimeType, fileSize, lastMod)
         if (fr.fileType === FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
                 return fr

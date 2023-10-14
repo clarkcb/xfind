@@ -58,6 +58,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
                         inExtensions: Set[String] = Set.empty[String],
                         inFilePatterns: Set[Regex] = Set.empty[Regex],
                         inFileTypes: Set[FileType] = Set.empty[FileType],
+                        inMimeTypes: Set[String] = Set.empty[String],
                         var includeArchives: Boolean = DefaultFindSettings.includeArchives,
                         includeHidden: Boolean = DefaultFindSettings.includeHidden,
                         maxDepth: Int = DefaultFindSettings.maxDepth,
@@ -72,6 +73,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
                         outExtensions: Set[String] = Set.empty[String],
                         outFilePatterns: Set[Regex] = Set.empty[Regex],
                         outFileTypes: Set[FileType] = Set.empty[FileType],
+                        outMimeTypes: Set[String] = Set.empty[String],
                         paths: Set[String] = DefaultFindSettings.paths,
                         printDirs: Boolean = DefaultFindSettings.printDirs,
                         printFiles: Boolean = DefaultFindSettings.printFiles,
@@ -109,6 +111,10 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       || maxLastMod.nonEmpty || minLastMod.nonEmpty
   }
 
+  def needMimeType: Boolean = {
+    inMimeTypes.nonEmpty || outMimeTypes.nonEmpty
+  }
+
   def needSize: Boolean = {
     sortBy == SortBy.FileSize
       || maxSize > 0 || minSize > 0
@@ -132,6 +138,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       ", inExtensions=" + setToString(inExtensions) +
       ", inFilePatterns=" + regexSetToString(inFilePatterns) +
       ", inFileTypes=" + inFileTypes.map(ft => ft.toString).mkString("[", ", ", "]") +
+      ", inMimeTypes=" + inMimeTypes +
       ", includeArchives=" + includeArchives +
       ", includeHidden=" + includeHidden +
       ", maxDepth=" + maxDepth +
@@ -146,6 +153,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       ", outExtensions=" + setToString(outExtensions) +
       ", outFilePatterns=" + regexSetToString(outFilePatterns) +
       ", outFileTypes=" + outFileTypes.map(ft => ft.toString).mkString("[", ", ", "]") +
+      ", outMimeTypes=" + outMimeTypes +
       ", paths=" + setToString(paths) +
       ", printDirs=" + printDirs +
       ", printFiles=" + printFiles +

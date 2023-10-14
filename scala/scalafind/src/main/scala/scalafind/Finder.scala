@@ -9,10 +9,23 @@ import java.time.{LocalDateTime, ZoneOffset}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
+import org.opf_labs.LibmagicJnaWrapper
 
 class Finder (settings: FindSettings) {
   import FileUtil.splitPath
   import Finder.*
+
+  private val libmagic: Option[LibmagicJnaWrapper] =
+    if (settings.needMimeType) {
+      val flags: Int = LibmagicJnaWrapper.MAGIC_MIME_TYPE | LibmagicJnaWrapper.MAGIC_NO_CHECK_ENCODING
+      val libmagicJnaWrapper = new LibmagicJnaWrapper(flags)
+      // TODO: need way to get correct magicFilePath for given os
+      val magicFilePath = "/usr/local/share/misc/magic.mgc"
+      libmagicJnaWrapper.load(magicFilePath)
+      Some(libmagicJnaWrapper)
+    } else {
+      None
+    }
 
   private def validateSettings(): Unit = {
     settingsTests.foreach { t =>
@@ -74,6 +87,33 @@ class Finder (settings: FindSettings) {
     hasMatchingExtension(fr, settings.inExtensions, settings.outExtensions)
       && hasMatchingFileName(fr, settings.inFilePatterns, settings.outFilePatterns)
       && hasMatchingFileType(fr)
+      && matchesMimeType(fr)
+      && hasMatchingSize(fr)
+      && hasMatchingLastMod(fr)
+  }
+
+  private def matchesMimeType(fr: FileResult): Boolean = {
+    if (fr.mimeType.nonEmpty && (settings.inMimeTypes.nonEmpty || settings.outMimeTypes.nonEmpty)) {
+      val mimeType = fr.mimeType.get
+      val matchesInMimeType = settings.inMimeTypes.isEmpty
+        || settings.inMimeTypes.contains(mimeType)
+        || settings.inMimeTypes.contains("*/*")
+        || (settings.inMimeTypes.exists(m => m.endsWith("/*") && mimeType.startsWith(m.split("/")(0) + "/")))
+      val matchesOutMimeType = settings.outMimeTypes.nonEmpty
+        && (settings.outMimeTypes.contains(mimeType)
+        || settings.outMimeTypes.contains("*/*")
+        || (settings.outMimeTypes.exists(m => m.endsWith("/*") && mimeType.startsWith(m.split("/")(0) + "/"))))
+      matchesInMimeType && !matchesOutMimeType
+    } else {
+      true
+    }
+  }
+
+  def isMatchingFileResult(fr: FileResult): Boolean = {
+    hasMatchingExtension(fr, settings.inExtensions, settings.outExtensions)
+      && hasMatchingFileName(fr, settings.inFilePatterns, settings.outFilePatterns)
+      && hasMatchingFileType(fr)
+      && matchesMimeType(fr)
       && hasMatchingSize(fr)
       && hasMatchingLastMod(fr)
   }
@@ -87,6 +127,16 @@ class Finder (settings: FindSettings) {
     if (!settings.includeHidden && Files.isHidden(p)) {
       None
     } else {
+      val mimetype: Option[String] =
+        if (settings.needMimeType) {
+          try {
+            Some(libmagic.get.getMimeType(p.toString))
+          } catch {
+            case _: IOException => None
+          }
+        } else {
+          None
+        }
       val (fileSize, lastMod) =
         if (settings.needLastMod || settings.needSize) {
           try {
@@ -100,7 +150,7 @@ class Finder (settings: FindSettings) {
         } else {
           (0L, None)
         }
-      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), fileSize, lastMod)
+      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), mimetype, fileSize, lastMod)
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None

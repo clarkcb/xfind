@@ -21,8 +21,9 @@
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path)]
         [cljfind.findsettings :only
-         (->FindSettings DEFAULT-SETTINGS add-extension add-file-type add-path
-            add-pattern set-archives-only set-debug sort-by-from-name)]))
+         (->FindSettings DEFAULT-SETTINGS add-extension add-file-type add-mime-type
+                         add-path add-pattern set-archives-only set-debug
+                         sort-by-from-name)]))
 
 (defrecord FindOption [short-arg long-arg desc])
 
@@ -60,6 +61,7 @@
     :in-ext (fn [^FindSettings settings ^String s] (add-extension settings s :in-extensions))
     :in-filepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :in-file-patterns))
     :in-filetype (fn [^FindSettings settings ^String s] (add-file-type settings s :in-file-types))
+    :in-mimetype (fn [^FindSettings settings s] (add-mime-type settings s :in-mime-types))
     :maxdepth (fn [^FindSettings settings ^String s] (assoc settings :max-depth (Integer/parseInt s)))
     :maxlastmod (fn [^FindSettings settings ^String s] (assoc settings :max-last-mod (read-instant-date s)))
     :maxsize (fn [^FindSettings settings ^String s] (assoc settings :max-size (Long/parseLong s)))
@@ -72,6 +74,7 @@
     :out-ext (fn [^FindSettings settings ^String s]  (add-extension settings s :out-extensions))
     :out-filepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :out-file-patterns))
     :out-filetype (fn [^FindSettings settings ^String s] (add-file-type settings s :out-file-types))
+    :out-mimetype (fn [^FindSettings settings s] (add-mime-type settings s :out-mime-types))
     :path (fn [^FindSettings settings ^String s] (add-path settings s))
     :sort-by (fn [^FindSettings settings ^String s] (assoc settings :sort-by (sort-by-from-name s)))
   })

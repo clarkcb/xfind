@@ -127,6 +127,12 @@ public class FileResult {
             sb.append(CONTAINER_SEPARATOR);
         }
         sb.append(path.toString());
+        if (mimeType != null && !mimeType.isEmpty()) {
+            sb.append(" (").append(mimeType).append(")");
+        }
+//        if (stat != null) {
+//            sb.append(" (").append(stat.lastModifiedTime().toInstant().getEpochSecond()).append(")");
+//        }
         return sb.toString();
     }
 }

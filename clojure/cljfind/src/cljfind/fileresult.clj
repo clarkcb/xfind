@@ -17,16 +17,16 @@
         ))
 
 ; record to hold a file result (file is a File object)
-(defrecord FileResult [containers, ^java.io.File file, file-type,
+(defrecord FileResult [containers, ^java.io.File file, file-type, mime-type,
                        file-size last-mod])
 
 (defn new-file-result
   ([^java.io.File file, file-type]
-   (->FileResult [] file file-type 0 nil))
-  ([^java.io.File file, file-type, file-size last-mod]
-   (->FileResult [] file file-type file-size last-mod))
-  ([containers, ^java.io.File file, file-type file-size last-mod]
-   (->FileResult containers file file-type file-size last-mod)))
+   (->FileResult [] file file-type "" 0 nil))
+  ([^java.io.File file, file-type mime-type file-size last-mod]
+   (->FileResult [] file file-type mime-type file-size last-mod))
+  ([containers, ^java.io.File file, file-type mime-type file-size last-mod]
+   (->FileResult containers file file-type mime-type file-size last-mod)))
 
 (defn file-result-path [^FileResult fr]
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))

@@ -10,12 +10,14 @@ group = "xfind"
 version = "0.1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.json:json:20240303")
+    implementation("org.opf_labs:libmagic-jna-wrapper:0.0.2-SNAPSHOT")
     testImplementation(kotlin("test"))
 }
 

@@ -24,12 +24,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.opf_labs.LibmagicJnaWrapper;
 
 public class Finder {
 
     final private FindSettings settings;
     final private FileTypes fileTypes;
-    final private Tika tika;
+    final private LibmagicJnaWrapper libmagicJnaWrapper;
 
     public Finder(final FindSettings settings) {
         this.settings = settings;
@@ -38,13 +41,18 @@ public class Finder {
         // MimeTypesFileTypeMap mimeTypesFileTypeMap = new MimeTypesFileTypeMap();
 
         if (!settings.getInMimeTypes().isEmpty() || !settings.getOutMimeTypes().isEmpty()) {
-            tika = new Tika();
+            // set libmagicJnaWrapper
+            int flags = LibmagicJnaWrapper.MAGIC_MIME_TYPE | LibmagicJnaWrapper.MAGIC_NO_CHECK_ENCODING;
+            libmagicJnaWrapper = new LibmagicJnaWrapper(flags);
+            // TODO: need way to get correct magicFilePath for given os
+            String magicFilePath = "/usr/local/share/misc/magic.mgc";
+            libmagicJnaWrapper.load(magicFilePath);
         } else {
-            tika = null;
+            libmagicJnaWrapper = null;
         }
     }
 
-    final void validateSettings() throws FindException {
+    public final void validateSettings() throws FindException {
         var paths = settings.getPaths();
         if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
             throw new FindException("Startpath not defined");
@@ -200,29 +208,12 @@ public class Finder {
         }
 
         String mimeType = "";
-        if (settings.hasMimeType()) {
-            // Option 1: Files.probeContentType(path) - this requires one or more FileTypeDetector instances to be loaded
-            //           which apparently doesn't happen in OSX
-//            try {
-//                // mimeType == null after tests with a number of different file types
-//                mimeType = Files.probeContentType(path);
-//            } catch (IOException e) {
-//                Logger.logError(e.getMessage());
-//            }
-
-            // Option 2: Tika - this seems to work, but I wonder about how bulky it might be
+        if (settings.needMimeType()) {
             try {
-                mimeType = tika.detect(path.toFile());
-            } catch (IOException e) {
+                mimeType = libmagicJnaWrapper.getMimeType(path.toString());
+            } catch (IllegalArgumentException e) {
                 Logger.logError(e.getMessage());
             }
-
-//            // Option 3: j256/simplemagic - haven't tried it yet; see: https://github.com/j256/simplemagic
-//            try {
-//                mimeType = tika.detect(path.toFile());
-//            } catch (IOException e) {
-//                Logger.logError(e.getMessage());
-//            }
         }
 
         long fileSize = 0L;

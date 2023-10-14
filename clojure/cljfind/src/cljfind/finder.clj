@@ -146,6 +146,29 @@
   ([^FileResult fr ^FindSettings settings]
     (is-matching-file-type? (:file-type fr) (:in-file-types settings) (:out-file-types settings))))
 
+(defn is-matching-mime-type?
+  ([mime-type settings]
+   (is-matching-mime-type? mime-type (:in-mime-types settings) (:out-mime-types settings)))
+  ([mime-type in-mime-types out-mime-types]
+   (and
+    (or
+     (empty? in-mime-types)
+     (contains? in-mime-types mime-type))
+    (or
+     (empty? out-mime-types)
+     (not (contains? out-mime-types mime-type))))))
+
+(defn has-matching-mime-type?
+  ([^File f settings]
+   (has-matching-mime-type? f (:in-mime-types settings) (:out-mime-types settings)))
+  ([^File f in-mime-types out-mime-types]
+  (if
+    (or
+     (not (empty? in-mime-types))
+     (not (empty? out-mime-types)))
+    (is-matching-mime-type? (get-mime-type f) in-mime-types out-mime-types)
+    true)))
+
 (defn format-date [^java.util.Date dt]
   (if (nil? dt)
     ""
