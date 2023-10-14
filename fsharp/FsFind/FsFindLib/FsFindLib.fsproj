@@ -20,7 +20,6 @@
     <None Remove="Resources\findoptions.json" />
     <EmbeddedResource Include="Resources\filetypes.json" />
     <EmbeddedResource Include="Resources\findoptions.json" />
-    <EmbeddedResource Include="Resources\findoptions.xml" />
   </ItemGroup>
 
 </Project>
