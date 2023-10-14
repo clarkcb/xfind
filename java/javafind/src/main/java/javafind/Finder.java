@@ -24,6 +24,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import org.opf_labs.LibmagicJnaWrapper;
 
 public class Finder {
 
