@@ -9,13 +9,12 @@
 #
 ################################################################################
 from collections import namedtuple
-from io import StringIO
 import subprocess
 import sys
 
 from xfind import *
 
-Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'], verbose=False)
+Scenario = namedtuple('Scenario', ['name', 'args', 'replace_xfind_name'])
 
 ########################################
 # Configuration
@@ -73,22 +72,22 @@ class Comparator(object):
         self.results = [] # a list of tuples of (scenario, {nonmatching})
 
     def compare_outputs(self, xfind_output):
-        nonmatching = nonmatching_outputs(xfind_output)
-        if nonmatching:
+        non_matching = non_matching_outputs(xfind_output)
+        if non_matching:
             xs = []
-            if len(nonmatching) == 2:
-                xs = sorted(nonmatching.keys())
-            elif len(nonmatching) > 2:
-                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
-            print
+            if len(non_matching) == 2:
+                xs = sorted(non_matching.keys())
+            elif len(non_matching) > 2:
+                xs = sorted([x for x in non_matching.keys() if len(non_matching[x]) > 1])
+            # print
             for x in xs:
-                for y in sorted(nonmatching[x]):
+                for y in sorted(non_matching[x]):
                     print('%s output != %s output' % (x, y))
                     # print '%s output:\n"%s"' % (x, xfind_output[x])
                     # print '%s output:\n"%s"' % (y, xfind_output[y])
         else:
             print('\nOutputs of all versions match')
-        return nonmatching
+        return non_matching
 
     def run_scenario(self, scenario, sn):
         xfind_output = {}
@@ -96,7 +95,7 @@ class Comparator(object):
             fullargs = [x] + scenario.args
             print(' '.join(fullargs))
             p = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                                 stderr=subprocess.PIPE)
             output_lines = []
             while True:
                 output_line = p.stdout.readline()
@@ -109,8 +108,8 @@ class Comparator(object):
             xfind_output[x] = output
             if self.debug:
                 print('output:\n"%s"' % output)
-        nonmatching = self.compare_outputs(xfind_output)
-        self.results.append((scenario, nonmatching))
+        non_matching = self.compare_outputs(xfind_output)
+        self.results.append((scenario, non_matching))
 
     def run(self):
         results = []
@@ -121,10 +120,10 @@ class Comparator(object):
             print('scenario %d: %s' % (sn, s.name))
             print('%s\n' % ('-' * hdr_len))
             self.run_scenario(s, sn)
-        nonmatching_results = [r for r in self.results if r[1]]
-        if nonmatching_results:
+        non_matching_results = [r for r in self.results if r[1]]
+        if non_matching_results:
             print('\nFound non-matching output in these scenarios:')
-            for r in nonmatching_results:
+            for r in non_matching_results:
                 print(' - %s' % r[0].name)
         else:
             print('\nOutputs matched for all xfind versions in all scenarios')
@@ -139,7 +138,7 @@ def get_args(args):
     while args:
         arg = args.pop(0)
         if arg.startswith('-'):
-            if arg == '-l': # add xfind_names
+            if arg == '-l':  # add xfind_names
                 xfind_names = []
                 if args:
                     langs = sorted(args.pop(0).split(','))
@@ -151,7 +150,7 @@ def get_args(args):
                 else:
                     print('ERROR: missing language names for -l arg')
                     sys.exit(1)
-            elif arg == '-L': # remove xfind_names
+            elif arg == '-L':  # remove xfind_names
                 if args:
                     langs = sorted(args.pop(0).split(','))
                     for lang in langs:
@@ -176,7 +175,7 @@ def main():
     print('xfind_names: %s' % str(xfind_names))
     print('scenarios: %d' % len(scenarios))
     comparator = Comparator(xfind_names=xfind_names,
-        scenarios=scenarios, debug=debug)
+                            scenarios=scenarios, debug=debug)
     comparator.run()
 
 

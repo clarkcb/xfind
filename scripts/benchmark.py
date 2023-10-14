@@ -8,8 +8,6 @@
 #
 ################################################################################
 from dataclasses import dataclass
-import os
-import re
 import subprocess
 import sys
 from typing import Union
@@ -53,7 +51,7 @@ scenarios = [
     # match extensions
     Scenario('find matching "{}" extensions'.format(exts), common_args),
     Scenario('find not matching "{}" extensions'.format(exts), core_args + ['-X', exts] + startpaths,
-        replace_xfind_name=False),
+             replace_xfind_name=False),
 
     # match filename
     Scenario('find with "find" in filename', common_args + ['-f', 'find']),
@@ -67,7 +65,7 @@ scenarios = [
     # list dirs
     Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs']),
     Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
-        replace_xfind_name=False),
+             replace_xfind_name=False),
 
     # sorting scenarios
     Scenario('sort shared files by path', ['--sort-by', 'path', sharedpath]),
@@ -495,47 +493,47 @@ class Benchmarker(object):
         # print('time_dict: {}'.format(time_dict))
         return time_dict
 
-    def compare_outputs(self, s: Scenario, sn: int, xfind_output) -> bool:
-        nonmatching = nonmatching_outputs(xfind_output)
-        if nonmatching:
+    def compare_outputs(self, s: Scenario, sn: int, xfind_output: dict[str, list[str]]) -> bool:
+        non_matching = non_matching_outputs(xfind_output)
+        if non_matching:
             xs = []
-            if len(nonmatching) == 2:
-                xs = sorted(nonmatching.keys())
-            elif len(nonmatching) > 2:
-                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
+            if len(non_matching) == 2:
+                xs = sorted(non_matching.keys())
+            elif len(non_matching) > 2:
+                xs = sorted([x for x in non_matching.keys() if len(non_matching[x]) > 1])
             print()
             for x in xs:
-                for y in sorted(nonmatching[x]):
+                for y in sorted(non_matching[x]):
                     print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
                     print(f'{x} output:\n"{xfind_output[x]}"')
                     print(f'{y} output:\n"{xfind_output[y]}"')
                     self.diff_outputs.append((sn, x, y))
             for x in xs:
-                if nonmatching[x]:
-                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(nonmatching[x]), str(nonmatching[x])))
+                if non_matching[x]:
+                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(non_matching[x]), str(non_matching[x])))
             return False
         else:
             print('\nOutputs of all versions match')
             return True
 
     def compare_output_lens(self, sn: int, xfind_output) -> bool:
-        nonmatching = nonmatching_lens(xfind_output)
-        if nonmatching:
+        non_matching = non_matching_lens(xfind_output)
+        if non_matching:
             xs = []
-            if len(nonmatching) == 2:
-                xs = sorted(nonmatching.keys())
-            elif len(nonmatching) > 2:
-                xs = sorted([x for x in nonmatching.keys() if len(nonmatching[x]) > 1])
+            if len(non_matching) == 2:
+                xs = sorted(non_matching.keys())
+            elif len(non_matching) > 2:
+                xs = sorted([x for x in non_matching.keys() if len(non_matching[x]) > 1])
             print()
             for x in xs:
-                for y in sorted(nonmatching[x]):
+                for y in sorted(non_matching[x]):
                     print(f'{x} output != {y} output')
                     print(f'{x} output:\n"{xfind_output[x]}"')
                     print(f'{y} output:\n"{xfind_output[y]}"')
                     self.diff_outputs.append((sn, x, y))
             for x in xs:
-                if nonmatching[x]:
-                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(nonmatching[x]), str(nonmatching[x])))
+                if non_matching[x]:
+                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(non_matching[x]), str(non_matching[x])))
             return False
         else:
             print('\nOutputs of all versions match')
@@ -557,7 +555,7 @@ class Benchmarker(object):
             fullargs = ['time', x] + s.args
             print(' '.join(fullargs[1:]))
             xfind_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE)
+                                              stderr=subprocess.PIPE)
             # print('process opened for {}'.format(x))
 
         for x in self.xfind_names:
@@ -591,12 +589,13 @@ class Benchmarker(object):
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
             # output = '\n'.join(sorted(output_lines))
-            output = '\n'.join(output_lines)
             if s.replace_xfind_name:
+                output = '\n'.join(output_lines)
                 output = xfind_name_regex.sub('xfind', output)
-            xfind_output[x] = output
+                output_lines = output.split('\n')
+            xfind_output[x] = output_lines
             if self.debug:
-                print('{} output:\n"{}"'.format(x, output))
+                print('{} output:\n"{}"'.format(x, '\n'.join(output_lines)))
             xfind_times[x] = self.times_from_lines([e for e in error_lines if e])
             time_dict = xfind_times[x]
             if 'real' not in time_dict and 'elapsed' not in time_dict:
@@ -696,7 +695,7 @@ def get_args(args):
     while args:
         arg = args.pop(0)
         if arg.startswith('-'):
-            if arg == '-l': # xfind_names
+            if arg == '-l':  # xfind_names
                 xfind_names = []
                 if args:
                     langs = sorted(args.pop(0).split(','))
@@ -708,7 +707,7 @@ def get_args(args):
                 else:
                     print('ERROR: missing language names for -l arg')
                     sys.exit(1)
-            elif arg == '-r': # runs
+            elif arg == '-r':  # runs
                 if args:
                     runs = int(args.pop(0))
                 else:
