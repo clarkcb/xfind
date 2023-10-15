@@ -10,23 +10,21 @@ Class to encapsulate all command line find options
 
 package javafind;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
 public class FindOptions {
+    private static final String FIND_OPTIONS_JSON_PATH = "/findoptions.json";
     private final List<FindOption> options;
 
-    public FindOptions() throws IOException, ParseException {
+    public FindOptions() throws IOException {
         options = new ArrayList<>();
         setOptionsFromJson();
     }
@@ -90,32 +88,22 @@ public class FindOptions {
         }
     };
 
-    private void setOptionsFromJson() throws IOException, ParseException {
-        final var findOptionsJsonPath = "/findoptions.json";
-        var findOptionsInputStream = getClass().getResourceAsStream(findOptionsJsonPath);
+    private void setOptionsFromJson() throws IOException {
+        var findOptionsInputStream = getClass().getResourceAsStream(FIND_OPTIONS_JSON_PATH);
         assert findOptionsInputStream != null;
-        var obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream));
-        var jsonObj = (JSONObject)obj;
-        var findoptionsArray = (JSONArray) jsonObj.get("findoptions");
+        var jsonObj = new JSONObject(new JSONTokener(findOptionsInputStream));
+        var findOptionsArray = jsonObj.getJSONArray("findoptions");
 
-        for (var o : findoptionsArray) {
-            var findoptionMap = (Map) o;
-            var longArg = (String) findoptionMap.get("long");
-            var desc = (String) findoptionMap.get("desc");
+        for (int i=0; i<findOptionsArray.length(); i++) {
+            var findOptionObj = findOptionsArray.getJSONObject(i);
+            var longArg = findOptionObj.getString("long");
+            var desc = findOptionObj.getString("desc");
             var shortArg = "";
-            if (findoptionMap.containsKey("short")) {
-                shortArg = (String) findoptionMap.get("short");
+            if (findOptionObj.has("short")) {
+                shortArg = findOptionObj.getString("short");
             }
             options.add(new FindOption(shortArg, longArg, desc));
         }
-    }
-
-    private List<String> listFromJSONArray(final JSONArray arr) {
-        List<String> list = new ArrayList<>();
-        for (var o : arr) {
-            list.add((String)o);
-        }
-        return list;
     }
 
     private void settingsFromFilePath(final String filePath, final FindSettings settings) {
@@ -136,48 +124,39 @@ public class FindOptions {
         } catch (IOException e) {
             Logger.log("IOException reading settings file: " + filePath);
             System.exit(1);
-        } catch (ParseException e) {
-            Logger.log("ParseException trying to parse the JSON in " + filePath);
-            System.exit(1);
         }
     }
 
-    public void settingsFromJson(final String json, FindSettings settings) throws ParseException {
-        var obj = JSONValue.parseWithException(json);
-        var jsonObject = (JSONObject)obj;
-        for (var ko : jsonObject.keySet()) {
-            var k = (String)ko;
-            var vo = jsonObject.get(ko);
-            applySetting(k, vo, settings);
+    public void settingsFromJson(final String json, FindSettings settings) {
+        var jsonObj = new JSONObject(new JSONTokener(json));
+        for (var ko : jsonObj.keySet()) {
+            var vo = jsonObj.get(ko);
+            applySetting(ko, vo, settings);
         }
     }
 
     private void applySetting(final String arg, final Object obj, FindSettings settings) {
-        if (obj.getClass().equals(String.class)) {
+        if (obj instanceof String) {
             try {
                 applySetting(arg, (String)obj, settings);
             } catch (FindException e) {
                 Logger.logError("FindException: " + e.getMessage());
             }
-        } else if (obj.getClass().equals(Boolean.class)) {
+        } else if (obj instanceof Boolean) {
             try {
                 applySetting(arg, (Boolean)obj, settings);
             } catch (FindException e) {
                 Logger.logError("FindException: " + e.getMessage());
             }
-        } else if (obj.getClass().equals(Long.class)) {
+        } else if (obj instanceof Long) {
             try {
                 applySetting(arg, obj.toString(), settings);
             } catch (FindException e) {
                 Logger.logError("FindException: " + e.getMessage());
             }
-        } else if (obj.getClass().equals(JSONArray.class)) {
-            for (String s : listFromJSONArray((JSONArray)obj)) {
-                try {
-                    applySetting(arg, s, settings);
-                } catch (FindException e) {
-                    Logger.logError("FindException: " + e.getMessage());
-                }
+        } else if (obj instanceof JSONArray) {
+            for (int i=0; i < ((JSONArray)obj).length(); i++) {
+                applySetting(arg, ((JSONArray)obj).get(i), settings);
             }
         } else {
             Logger.log("obj is another class type");
@@ -185,7 +164,7 @@ public class FindOptions {
     }
 
     private void applySetting(final String arg, final String val, FindSettings settings)
-            throws FindException{
+            throws FindException {
         if (this.argActionMap.containsKey(arg)) {
             this.argActionMap.get(arg).set(val, settings);
         } else if (arg.equals("path")) {

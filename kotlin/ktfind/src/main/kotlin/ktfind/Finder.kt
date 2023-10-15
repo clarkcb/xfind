@@ -39,13 +39,13 @@ class Finder(val settings: FindSettings) {
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
-            throw FindException("Invalid range for mindepth and maxdepth");
+            throw FindException("Invalid range for mindepth and maxdepth")
         }
         if (settings.maxLastMod != null && settings.minLastMod != null && settings.maxLastMod < settings.minLastMod) {
-            throw FindException("Invalid range for minlastmod and maxlastmod");
+            throw FindException("Invalid range for minlastmod and maxlastmod")
         }
         if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
-            throw FindException("Invalid range for minsize and maxsize");
+            throw FindException("Invalid range for minsize and maxsize")
         }
     }
 
@@ -156,12 +156,12 @@ class Finder(val settings: FindSettings) {
         val stat: BasicFileAttributes? =
             if (needStat(settings)) Files.readAttributes(f.toPath(), BasicFileAttributes::class.java)
             else null
-        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), stat)
+        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), mimeType, stat)
         if (fr.fileType === FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
-                return fr;
+                return fr
             }
-            return null;
+            return null
         }
         if (!settings.archivesOnly && isMatchingFileResult(fr)) {
             return fr

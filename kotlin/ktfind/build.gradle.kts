@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("com.beust:klaxon:5.5")
+    implementation("org.json:json:20231013")
     testImplementation(kotlin("test"))
 }
 

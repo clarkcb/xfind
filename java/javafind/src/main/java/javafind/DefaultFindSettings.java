@@ -5,21 +5,21 @@ public final class DefaultFindSettings {
         // inaccessible constructor for utility class
     }
 
-    public static final boolean ARCHIVESONLY = false;
+    public static final boolean ARCHIVES_ONLY = false;
     public static final boolean DEBUG = false;
-    public static final boolean EXCLUDEHIDDEN = true;
-    public static final boolean INCLUDEARCHIVES = false;
-    public static final boolean LISTDIRS = false;
-    public static final boolean LISTFILES = false;
-    public static final int MAXDEPTH = -1;
-    public static final int MAXSIZE = 0;
-    public static final int MINDEPTH = -1;
-    public static final int MINSIZE = 0;
-    public static final boolean PRINTUSAGE = false;
-    public static final boolean PRINTVERSION = false;
+    public static final boolean EXCLUDE_HIDDEN = true;
+    public static final boolean INCLUDE_ARCHIVES = false;
+    public static final boolean LIST_DIRS = false;
+    public static final boolean LIST_FILES = false;
+    public static final int MAX_DEPTH = -1;
+    public static final int MAX_SIZE = 0;
+    public static final int MIN_DEPTH = -1;
+    public static final int MIN_SIZE = 0;
+    public static final boolean PRINT_USAGE = false;
+    public static final boolean PRINT_VERSION = false;
     public static final boolean RECURSIVE = true;
     public static final SortBy SORT_BY = SortBy.FILEPATH;
-    public static final boolean SORT_CASEINSENSITIVE = false;
+    public static final boolean SORT_CASE_INSENSITIVE = false;
     public static final boolean SORT_DESCENDING = false;
     public static final boolean VERBOSE = false;
 }

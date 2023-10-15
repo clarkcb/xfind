@@ -1,20 +1,19 @@
 package scalafind
 
-import org.json.simple.parser.{JSONParser, ParseException}
-import org.json.simple.{JSONArray, JSONObject, JSONValue}
+import org.json.{JSONArray, JSONObject, JSONTokener}
 
 import java.io.{File, IOException, InputStreamReader}
 import scala.annotation.tailrec
 import scala.collection.mutable
-import scala.jdk.CollectionConverters._
-import java.time.{LocalDateTime, LocalDate}
+import scala.jdk.CollectionConverters.*
+import java.time.{LocalDate, LocalDateTime}
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-case class FindOption(shortarg: Option[String], longarg: String, desc: String) {
-  val sortarg: String = shortarg match {
-    case Some(sa) => sa.toLowerCase + "@" + longarg.toLowerCase
-    case None => longarg.toLowerCase
+case class FindOption(shortArg: Option[String], longArg: String, desc: String) {
+  val sortArg: String = shortArg match {
+    case Some(sa) => sa.toLowerCase + "@" + longArg.toLowerCase
+    case None => longArg.toLowerCase
   }
 }
 
@@ -24,34 +23,35 @@ object FindOptions {
   private val _findOptions = mutable.ListBuffer.empty[FindOption]
 
   private def findOptions: List[FindOption] = {
-    if (_findOptions.isEmpty) {
-      loadFindOptionsFromJson()
-    }
-    List.empty[FindOption] ++ _findOptions.sortWith(_.sortarg < _.sortarg)
+    val opts =
+      if (_findOptions.isEmpty) {
+        loadFindOptionsFromJson()
+        _findOptions.sortWith(_.sortArg < _.sortArg)
+      } else {
+        _findOptions
+      }
+    List.empty[FindOption] ++ opts
   }
 
   private def loadFindOptionsFromJson(): Unit = {
     try {
       val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
-      val obj = new JSONParser().parse(new InputStreamReader(findOptionsInputStream))
-      val jsonObj = obj.asInstanceOf[JSONObject]
-      val soIt = jsonObj.get("findoptions").asInstanceOf[JSONArray].iterator()
-      while (soIt.hasNext) {
-        val soObj = soIt.next().asInstanceOf[JSONObject]
-        val longArg = soObj.get("long").asInstanceOf[String]
+      val jsonObj = new JSONObject(new JSONTokener(new InputStreamReader(findOptionsInputStream)))
+      val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
+      while (findOptionsArray.hasNext) {
+        val findOptionObj = findOptionsArray.next().asInstanceOf[JSONObject]
+        val longArg = findOptionObj.getString("long")
         val shortArg =
-          if (soObj.containsKey("short")) {
-            Some(soObj.get("short").asInstanceOf[String])
+          if (findOptionObj.has("short")) {
+            Some(findOptionObj.getString("short"))
           } else {
             None
           }
-        val desc = soObj.get("desc").asInstanceOf[String]
+        val desc = findOptionObj.getString("desc")
         val option = FindOption(shortArg, longArg, desc)
         _findOptions += option
       }
     } catch {
-      case e: ParseException =>
-        print(e.getMessage)
       case e: IOException =>
         print(e.getMessage)
     }
@@ -65,16 +65,17 @@ object FindOptions {
     try {
       Some(LocalDateTime.parse(lastModString))
     } catch {
-      _ => try {
-        val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
-        Some(maxLastModDate.atTime(0, 0, 0))
-      } catch {
-        _ => None
-      }
+      case _: DateTimeParseException => try {
+          val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+          Some(maxLastModDate.atTime(0, 0, 0))
+        } catch {
+          case _: Exception => None
+        }
+      case _: Exception => None
     }
   }
 
-  type ArgAction = (String, FindSettings) => FindSettings
+  private type ArgAction = (String, FindSettings) => FindSettings
 
   private val argActionMap = Map[String, ArgAction](
     "in-archiveext" ->
@@ -121,7 +122,7 @@ object FindOptions {
       ((s, ss) => ss.copy(sortBy = SortBy.fromName(s))),
   )
 
-  type FlagAction = (Boolean, FindSettings) => FindSettings
+  private type FlagAction = (Boolean, FindSettings) => FindSettings
 
   private val boolFlagActionMap = Map[String, FlagAction](
     "archivesonly" -> ((b, ss) =>
@@ -154,8 +155,7 @@ object FindOptions {
   }
 
   def settingsFromJson(json: String, ss: FindSettings): FindSettings = {
-    val obj: AnyRef = JSONValue.parseWithException(json)
-    val jsonObject: JSONObject = obj.asInstanceOf[JSONObject]
+    val jsonObject = new JSONObject(new JSONTokener(json))
     @tailrec
     def recSettingsFromJson(keys: List[String], settings: FindSettings): FindSettings = keys match {
       case Nil => settings
@@ -163,7 +163,7 @@ object FindOptions {
         val v = jsonObject.get(k)
         recSettingsFromJson(ks, applySetting(k, v, settings))
     }
-    recSettingsFromJson(jsonObject.keySet().asScala.map(_.toString).toList, ss)
+    recSettingsFromJson(jsonObject.keySet().asScala.toList, ss)
   }
 
   @tailrec
@@ -185,7 +185,7 @@ object FindOptions {
     case l: Long =>
       applySetting(arg, l.toString, ss)
     case a: JSONArray =>
-      applySettings(arg, a.toArray.toList.map(_.toString), ss)
+      applySettings(arg, a.toList.asScala.map(_.toString).toList, ss)
     case _ =>
       throw new FindException("Unsupported data type")
   }
@@ -197,8 +197,8 @@ object FindOptions {
   }
 
   private def getArgMap: Map[String, String] = {
-    val longOpts: Map[String, String] = findOptions.map { o => (o.longarg, o.longarg)}.toMap
-    val shortOpts = findOptions.filter(_.shortarg.nonEmpty).map {o => (o.shortarg.get, o.longarg)}.toMap
+    val longOpts: Map[String, String] = findOptions.map { o => (o.longArg, o.longArg)}.toMap
+    val shortOpts = findOptions.filter(_.shortArg.nonEmpty).map { o => (o.shortArg.get, o.longArg)}.toMap
     longOpts ++ shortOpts
   }
 
@@ -243,15 +243,15 @@ object FindOptions {
     sys.exit(status)
   }
 
-  def getUsageString: String = {
+  private def getUsageString: String = {
     val sb = new StringBuilder
     sb.append("Usage:\n")
     sb.append(" scalafind [options] <path> [<path> ...]\n\n")
     sb.append("Options:\n")
     val optPairs = findOptions.map { so =>
-      val opts = so.shortarg match {
-        case Some(sa) => s"-$sa,--${so.longarg}"
-        case None => s"--${so.longarg}"
+      val opts = so.shortArg match {
+        case Some(sa) => s"-$sa,--${so.longArg}"
+        case None => s"--${so.longArg}"
       }
       (opts, so.desc)
     }

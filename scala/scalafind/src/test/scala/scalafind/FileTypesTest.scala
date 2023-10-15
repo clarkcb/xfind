@@ -5,10 +5,11 @@ import org.scalatest.funsuite.AnyFunSuite
 import java.io.File
 
 class FileTypesTest extends AnyFunSuite {
+  private val whitespaceRegex = "\\s+"
 
   test("test archive extensions") {
     """7z arj bin bz2 cab cpio dmg ear gz hqx iso jar pax rar sit sitx tar tgz war zip zipx Z""".
-      split("\\s+").foreach { ext =>
+      split(whitespaceRegex).foreach { ext =>
         val archiveFile = new File("archive." + ext).getName
         // println("archiveFile: " + archiveFile)
         assert(!FileTypes.isBinaryFile(archiveFile))
@@ -25,7 +26,7 @@ class FileTypesTest extends AnyFunSuite {
     """a ai beam chm class com dat dbmdl dcr dir dll dms doc dot dxr dylib
       |epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm odt ott
       |pages pdb ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt wri
-      |xls xlt""".stripMargin.split("\\s+").foreach { ext =>
+      |xls xlt""".stripMargin.split(whitespaceRegex).foreach { ext =>
         val binFile = new File("binfile." + ext).getName
         // println("binFile: " + binFile)
         assert(FileTypes.isBinaryFile(binFile))
@@ -44,7 +45,7 @@ class FileTypesTest extends AnyFunSuite {
       |fs fth fx go groovy h h++ hh hpp hs java js js2 jsf json jsp jspf kt lhs
       |lisp lua m ml pas php php3 php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi py
       |pyw pyx r rb rkt rs s sass sbt sc scm scss scala sh swift tcl ts vb vbs""".
-      stripMargin.split("\\s+").foreach { ext =>
+      stripMargin.split(whitespaceRegex).foreach { ext =>
         val codeFile = new File("codefile." + ext).getName
         // println("codeFile: " + codeFile)
         assert(!FileTypes.isBinaryFile(codeFile))
@@ -67,7 +68,7 @@ class FileTypesTest extends AnyFunSuite {
       |shtm shtml sln smi smil spec sqc strings sty suml sxw t
       |text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vssscc
       |vxml webinfo wml wmls wsc wsd wsdd xlf xsp yaml
-      |yml""".stripMargin.split("\\s+").foreach { ext =>
+      |yml""".stripMargin.split(whitespaceRegex).foreach { ext =>
         val textFile = new File("textFile." + ext).getName
         // println("textFile: " + textFile)
         assert(!FileTypes.isBinaryFile(textFile))
@@ -84,7 +85,7 @@ class FileTypesTest extends AnyFunSuite {
       |fsproj fxml jhm jnlp kml mm pom potx ppsx pptx qrc rdf resx rng rss
       |settings sldx stc std sti stw svg svgz sxc sxd sxg sxi stw sxm sxw tld
       |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xjb xlsx xltx xml
-      |xps xsd xsl xslt xspf xul""".stripMargin.split("\\s+").foreach { ext =>
+      |xps xsd xsl xslt xspf xul""".stripMargin.split(whitespaceRegex).foreach { ext =>
         val xmlFile = new File("xmlfile." + ext).getName
         // println("xmlFile: " + xmlFile)
         assert(!FileTypes.isBinaryFile(xmlFile))

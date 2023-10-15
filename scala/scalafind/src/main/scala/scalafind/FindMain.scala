@@ -5,22 +5,20 @@ import java.nio.file.Path
 
 object FindMain {
 
-  def getMatchingDirs(fileResults: Seq[FileResult]): Seq[Path] = {
+  private def getMatchingDirs(fileResults: Seq[FileResult]): Seq[Path] = {
     fileResults
       .map(fr => FileUtil.pathOrCurrent(fr.path))
       .distinct
       .sortWith(_.toString < _.toString)
-      .toSeq
   }
 
-  def getMatchingFiles(fileResults: Seq[FileResult]): Seq[Path] = {
+  private def getMatchingFiles(fileResults: Seq[FileResult]): Seq[String] = {
     fileResults
       .map(_.path)
       .distinct
-      .toSeq
   }
 
-  def printMatchingDirs(fileResults: Seq[FileResult]): Unit = {
+  private def printMatchingDirs(fileResults: Seq[FileResult]): Unit = {
     val dirs = getMatchingDirs(fileResults)
     if (dirs.nonEmpty) {
       Common.log("\nMatching directories (%d):".format(dirs.length))
@@ -30,7 +28,7 @@ object FindMain {
     }
   }
 
-  def printMatchingFiles(fileResults: Seq[FileResult]): Unit = {
+  private def printMatchingFiles(fileResults: Seq[FileResult]): Unit = {
     val files = getMatchingFiles(fileResults)
     if (files.nonEmpty) {
       Common.log("\nMatching files (%d):".format(files.length))

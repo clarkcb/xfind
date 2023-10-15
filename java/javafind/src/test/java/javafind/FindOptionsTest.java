@@ -31,7 +31,7 @@ public class FindOptionsTest {
         } catch (FindException e) {
             System.out.println("FindException: " + e.getMessage());
             fail();
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
             fail();
         }
@@ -51,7 +51,7 @@ public class FindOptionsTest {
         } catch (FindException e) {
             System.out.println("FindException: " + e.getMessage());
             fail();
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             System.out.println("Exception: " + e.getMessage());
             fail();
         }
@@ -88,9 +88,6 @@ public class FindOptionsTest {
             assertTrue(settings.getDebug());
             assertTrue(settings.getVerbose());
             assertTrue(settings.getExcludeHidden());
-        } catch (ParseException e) {
-            System.out.println("ParseException: " + e.getMessage());
-            fail();
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
             fail();

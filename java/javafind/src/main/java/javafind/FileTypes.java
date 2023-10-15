@@ -1,50 +1,42 @@
 package javafind;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class FileTypes {
-    private static final String FILETYPESJSONPATH = "/filetypes.json";
+    private static final String FILE_TYPES_JSON_PATH = "/filetypes.json";
     private static final String archive = "archive";
     private static final String binary = "binary";
     private static final String code = "code";
     private static final String text = "text";
-    private static final String unknown = "unknown";
+    // private static final String unknown = "unknown";
     private static final String xml = "xml";
     private static final int fileTypeMapCapacity = 8;
     private final Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeMapCapacity);
     private final Map<String, Set<String>> fileTypeNameMap = new HashMap<>(fileTypeMapCapacity);
 
     private void setFileTypeMapsFromJson() {
-        // Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeKeys);
-        var fileTypesInputStream = getClass().getResourceAsStream(FILETYPESJSONPATH);
+        var fileTypesInputStream = getClass().getResourceAsStream(FILE_TYPES_JSON_PATH);
 
         try {
             assert fileTypesInputStream != null;
-            var obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream));
-            var jsonObj = (JSONObject)obj;
-            var filetypesArray = (JSONArray) jsonObj.get("filetypes");
+            var jsonObj = new JSONObject(new JSONTokener(fileTypesInputStream));
+            var filetypesArray = jsonObj.getJSONArray("filetypes");
 
-            for (Object o : filetypesArray) {
-                Map<String, Object> filetypeMap = (Map<String, Object>) o;
-                var typeName = (String) filetypeMap.get("type");
-                var extArray = (JSONArray) filetypeMap.get("extensions");
-                var extSet = new HashSet<String>(extArray);
-                fileTypeExtMap.put(typeName, extSet);
-                var nameArray = (JSONArray) filetypeMap.get("names");
-                var nameSet = new HashSet<String>(nameArray);
-                fileTypeNameMap.put(typeName, nameSet);
+            for (int i=0; i < filetypesArray.length(); i++) {
+                var filetypeObj = filetypesArray.getJSONObject(i);
+                var typeName = filetypeObj.getString("type");
+                fileTypeExtMap.put(typeName, filetypeObj.getJSONArray("extensions").toList().stream()
+                        .map(Object::toString).collect(Collectors.toCollection(HashSet::new)));
+                fileTypeNameMap.put(typeName, filetypeObj.getJSONArray("names").toList().stream()
+                        .map(Object::toString).collect(Collectors.toCollection(HashSet::new)));
             }
 
             var allTextExts = new HashSet<String>();
@@ -58,7 +50,7 @@ public class FileTypes {
             allTextNames.addAll(fileTypeNameMap.get(text));
             allTextNames.addAll(fileTypeNameMap.get(xml));
             fileTypeNameMap.put(text, allTextNames);
-        } catch (AssertionError | ParseException | IOException e) {
+        } catch (AssertionError e) {
             e.printStackTrace();
         }
     }

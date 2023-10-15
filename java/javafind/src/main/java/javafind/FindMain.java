@@ -10,8 +10,6 @@ Main class for initiating javafind from command line
 
 package javafind;
 
-import org.json.simple.parser.ParseException;
-
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -97,7 +95,7 @@ public class FindMain {
                 handleError(e.getMessage(), options);
             }
 
-        } catch (ParseException | IOException e) {
+        } catch (IOException e) {
             handleError(e.getMessage());
         }
     }

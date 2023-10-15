@@ -38,22 +38,22 @@
                (fn [ss]
                  (if
                    (and
-                    (> (:max-depth ss) -1)
-                    (> (:min-depth ss) (:max-depth ss))
-                    ) "Invalid range for mindepth and maxdepth" nil))
+                     (> (:max-depth ss) -1)
+                     (> (:min-depth ss) (:max-depth ss))
+                     ) "Invalid range for mindepth and maxdepth" nil))
                (fn [ss]
                  (if
                    (and
-                    (not (nil? (:max-last-mod ss)))
-                    (not (nil? (:min-last-mod ss)))
-                    (.before (:max-last-mod ss) (:min-last-mod ss))
-                    ) "Invalid range for minlastmod and maxlastmod" nil))
+                     (not (nil? (:max-last-mod ss)))
+                     (not (nil? (:min-last-mod ss)))
+                     (.before (:max-last-mod ss) (:min-last-mod ss))
+                     ) "Invalid range for minlastmod and maxlastmod" nil))
                (fn [ss]
                  (if
                    (and
-                    (> (:max-size ss) 0)
-                    (> (:min-size ss) (:max-size ss))
-                    ) "Invalid range for minsize and maxsize" nil))
+                     (> (:max-size ss) 0)
+                     (> (:min-size ss) (:max-size ss))
+                     ) "Invalid range for minsize and maxsize" nil))
               ]
        ]
     (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
@@ -75,77 +75,77 @@
 (defn has-matching-dir? [^File f settings]
   (let [d (.getParentFile f)]
     (or
-     (nil? d)
-     (is-matching-dir? d settings))))
+      (nil? d)
+      (is-matching-dir? d settings))))
 
 (defn is-matching-ext?
   ([ext settings]
-   (is-matching-ext? ext (:in-extensions settings) (:out-extensions settings)))
+    (is-matching-ext? ext (:in-extensions settings) (:out-extensions settings)))
   ([ext in-extensions out-extensions]
-   (and
-    (or
-     (empty? in-extensions)
-     (some #(= % ext) in-extensions))
-    (or
-     (empty? out-extensions)
-     (not-any? #(= % ext) out-extensions)))))
+    (and
+      (or
+        (empty? in-extensions)
+        (some #(= % ext) in-extensions))
+      (or
+        (empty? out-extensions)
+        (not-any? #(= % ext) out-extensions)))))
 
 (defn has-matching-ext?
   ([^File f settings]
-   (has-matching-ext? f (:in-extensions settings) (:out-extensions settings)))
+    (has-matching-ext? f (:in-extensions settings) (:out-extensions settings)))
   ([^File f in-extensions out-extensions]
-   (if
-     (or
-      (not (empty? in-extensions))
-      (not (empty? out-extensions)))
-     (is-matching-ext? (get-ext f) in-extensions out-extensions)
-     true)))
+    (if
+      (or
+        (not (empty? in-extensions))
+        (not (empty? out-extensions)))
+      (is-matching-ext? (get-ext f) in-extensions out-extensions)
+      true)))
 
 (defn is-matching-file-pattern?
   ([filename settings]
-   (is-matching-file-pattern? filename (:in-file-patterns settings) (:out-file-patterns settings)))
+    (is-matching-file-pattern? filename (:in-file-patterns settings) (:out-file-patterns settings)))
   ([filename in-file-patterns out-file-patterns]
-   (and
-    (or
-     (empty? in-file-patterns)
-     (some #(re-find % filename) in-file-patterns))
-    (or
-     (empty? out-file-patterns)
-     (not-any? #(re-find % filename) out-file-patterns)))))
+    (and
+      (or
+        (empty? in-file-patterns)
+        (some #(re-find % filename) in-file-patterns))
+      (or
+        (empty? out-file-patterns)
+        (not-any? #(re-find % filename) out-file-patterns)))))
 
 (defn has-matching-file-pattern?
   ([^File f settings]
-   (has-matching-file-pattern? f (:in-file-patterns settings) (:out-file-patterns settings)))
+    (has-matching-file-pattern? f (:in-file-patterns settings) (:out-file-patterns settings)))
   ([^File f in-file-patterns out-file-patterns]
-  (if
-    (or
-     (not (empty? in-file-patterns))
-     (not (empty? out-file-patterns)))
-    (is-matching-file-pattern? (.getName f) in-file-patterns out-file-patterns)
-    true)))
+    (if
+      (or
+        (not (empty? in-file-patterns))
+        (not (empty? out-file-patterns)))
+      (is-matching-file-pattern? (.getName f) in-file-patterns out-file-patterns)
+      true)))
 
 (defn is-matching-file-type?
   ([file-type settings]
-   (is-matching-file-type? file-type (:in-file-types settings) (:out-file-types settings)))
+    (is-matching-file-type? file-type (:in-file-types settings) (:out-file-types settings)))
   ([file-type in-file-types out-file-types]
-   (and
-    (or
-     (empty? in-file-types)
-     (contains? in-file-types file-type))
-    (or
-     (empty? out-file-types)
-     (not (contains? out-file-types file-type))))))
+    (and
+      (or
+        (empty? in-file-types)
+        (contains? in-file-types file-type))
+      (or
+        (empty? out-file-types)
+        (not (contains? out-file-types file-type))))))
 
 (defn has-matching-file-type?
   ([^File f settings]
-   (has-matching-file-type? f (:in-file-types settings) (:out-file-types settings)))
+    (has-matching-file-type? f (:in-file-types settings) (:out-file-types settings)))
   ([^File f in-file-types out-file-types]
-  (if
-    (or
-     (not (empty? in-file-types))
-     (not (empty? out-file-types)))
-    (is-matching-file-type? (get-file-type f) in-file-types out-file-types)
-    true)))
+    (if
+      (or
+        (not (empty? in-file-types))
+        (not (empty? out-file-types)))
+      (is-matching-file-type? (get-file-type f) in-file-types out-file-types)
+      true)))
 
 (defn format-date [dt]
   (if (nil? dt)
@@ -154,20 +154,20 @@
 
 (defn is-matching-stat? [stat settings]
   (or
-   (nil? stat)
-   (and
-    (or
-     (nil? (:max-last-mod settings))
-     (<= (.toMillis (.lastModifiedTime stat)) (.getTime (:max-last-mod settings))))
-    (or
-     (nil? (:min-last-mod settings))
-     (>= (.toMillis (.lastModifiedTime stat)) (.getTime (:min-last-mod settings))))
-    (or
-     (= 0 (:max-size settings))
-     (<= 0 (.size stat) (:max-size settings)))
-    (or
-     (= 0 (:min-size settings))
-     (>= (.size stat) (:min-size settings))))))
+    (nil? stat)
+    (and
+      (or
+        (nil? (:max-last-mod settings))
+        (<= (.toMillis (.lastModifiedTime stat)) (.getTime (:max-last-mod settings))))
+      (or
+        (nil? (:min-last-mod settings))
+        (>= (.toMillis (.lastModifiedTime stat)) (.getTime (:min-last-mod settings))))
+      (or
+        (= 0 (:max-size settings))
+        (<= 0 (.size stat) (:max-size settings)))
+      (or
+        (= 0 (:min-size settings))
+        (>= (.size stat) (:min-size settings))))))
 
 (defn has-matching-stat? [fr settings]
   (is-matching-stat? (:stat fr) settings))
@@ -175,10 +175,10 @@
 (defn is-matching-archive-file-result? [fr settings]
   (if
     (or
-     (not (has-matching-dir? (:file fr) settings))
-     (not (has-matching-ext? (:file fr) (:in-archive-extensions settings) (:out-archive-extensions settings)))
-     (not (has-matching-file-pattern? (:file fr) (:in-archive-file-patterns settings) (:out-archive-patterns settings)))
-     (not (has-matching-stat? fr settings)))
+      (not (has-matching-dir? (:file fr) settings))
+      (not (has-matching-ext? (:file fr) (:in-archive-extensions settings) (:out-archive-extensions settings)))
+      (not (has-matching-file-pattern? (:file fr) (:in-archive-file-patterns settings) (:out-archive-patterns settings)))
+      (not (has-matching-stat? fr settings)))
     false
     true))
 
@@ -226,17 +226,17 @@
     (let [dir-sep-count (sep-count (.toString d))
           depth (- dir-sep-count path-sep-count)]
       (or
-       (< (:max-depth settings) 1)
-       (<= depth (:max-depth settings))))))
+        (< (:max-depth settings) 1)
+        (<= depth (:max-depth settings))))))
 
 (defn filter-file-by-depth [f path-sep-count settings]
   (let [file-sep-count (sep-count (.toString f))
         depth (- file-sep-count path-sep-count)]
     (and
-     (>= depth (:min-depth settings))
-     (or
-      (< (:max-depth settings) 1)
-      (<= depth (:max-depth settings))))))
+      (>= depth (:min-depth settings))
+      (or
+        (< (:max-depth settings) 1)
+        (<= depth (:max-depth settings))))))
 
 (defn get-file-results-for-path [settings, ^String path]
   (let [pathfile (file path)]

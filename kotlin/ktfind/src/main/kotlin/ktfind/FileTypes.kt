@@ -1,11 +1,10 @@
 package ktfind
 
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.KlaxonException
-import com.beust.klaxon.Parser
 import java.io.File
 import java.io.IOException
-import java.io.InputStreamReader
+
+import org.json.JSONObject
+import org.json.JSONTokener
 
 /**
  * @author cary on 7/24/16.
@@ -24,10 +23,10 @@ private const val archive = "archive"
 private const val code = "code"
 private const val binary = "binary"
 // private const val findable = "findable"
-private const val searchable = "searchable"
+//private const val searchable = "searchable"
 private const val text = "text"
 private const val xml = "xml"
-private const val unknown = "unknown"
+//private const val unknown = "unknown"
 
 fun fileTypeFromName(name: String) : FileType {
     when (name.trim().lowercase()) {
@@ -66,16 +65,13 @@ class FileTypes {
     private fun setFileTypeMapsFromJson() {
         try {
             val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
-            val jsonObj: JsonObject = Parser.default().parse(InputStreamReader(fileTypesInputStream!!)) as JsonObject
-            val filetypesArray = jsonObj.array<JsonObject>("filetypes")!!
-            filetypesArray.forEach {
-                val typeName = it.string("type")!!
-                val extArray = it.array<String>("extensions")!!
-                val extSet: Set<String> = extArray.toSet()
-                fileTypeExtMap[typeName] = extSet
-                val nameArray = it.array<String>("names")!!
-                val nameSet: Set<String> = nameArray.toSet()
-                fileTypeNameMap[typeName] = nameSet
+            val jsonObj = JSONObject(JSONTokener(fileTypesInputStream!!))
+            val fileTypesArray = jsonObj.getJSONArray("filetypes")!!.iterator()
+            while (fileTypesArray.hasNext()) {
+                val it = fileTypesArray.next() as JSONObject
+                val typeName = it.getString("type")!!
+                fileTypeExtMap[typeName] = it.getJSONArray("extensions")!!.toList().map { it.toString() }.toSet()
+                fileTypeNameMap[typeName] = it.getJSONArray("names")!!.toList().map { it.toString() }.toSet()
             }
             val allTextExts: MutableSet<String> = mutableSetOf()
             allTextExts.addAll(fileTypeExtMap["code"]!!)
@@ -92,9 +88,6 @@ class FileTypes {
             // allFindable.addAll(fileTypeExtMap["binary"]!!)
             // allFindable.addAll(fileTypeExtMap["text"]!!)
             // fileTypeExtMap["findable"] = allFindable
-//        } catch (e: ParseException) {
-        } catch (e: KlaxonException) {
-            e.printStackTrace()
         } catch (e: IOException) {
             e.printStackTrace()
         }

@@ -1,7 +1,5 @@
 package ktfind
 
-import kotlin.io.path.name
-
 fun printUsage(findOptions: FindOptions) {
     log("")
     findOptions.usage()

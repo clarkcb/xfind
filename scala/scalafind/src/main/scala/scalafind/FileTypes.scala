@@ -1,10 +1,10 @@
 package scalafind
 
-import org.json.simple.parser.{JSONParser, ParseException}
-import org.json.simple.{JSONArray, JSONObject}
+import org.json.{JSONObject, JSONTokener}
 
 import java.io.{IOException, InputStreamReader}
 import scala.collection.mutable
+import scala.jdk.CollectionConverters.*
 
 object FileType extends Enumeration {
   type FileType = Value
@@ -32,28 +32,15 @@ object FileTypes {
     val _fileTypeNameMap = mutable.Map.empty[String, Set[String]]
     val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
     try {
-      val obj = new JSONParser().parse(new InputStreamReader(fileTypesInputStream))
-      val jsonObj = obj.asInstanceOf[JSONObject]
-      val ftIt = jsonObj.get("filetypes").asInstanceOf[JSONArray].iterator()
-      while (ftIt.hasNext) {
-        val ftObj = ftIt.next().asInstanceOf[JSONObject]
-        val typeName = ftObj.get("type").asInstanceOf[String]
-        val exSet = mutable.Set.empty[String]
-        val exIt = ftObj.get("extensions").asInstanceOf[JSONArray].iterator()
-        while (exIt.hasNext) {
-           exSet += exIt.next().asInstanceOf[String]
-        }
-         _fileTypeExtMap(typeName) = Set.empty[String] ++ exSet
-        val nameSet = mutable.Set.empty[String]
-        val nameIt = ftObj.get("names").asInstanceOf[JSONArray].iterator()
-        while (nameIt.hasNext) {
-           nameSet += nameIt.next().asInstanceOf[String]
-        }
-         _fileTypeNameMap(typeName) = Set.empty[String] ++ nameSet
+      val jsonObj = new JSONObject(new JSONTokener(fileTypesInputStream))
+      val fileTypesArray = jsonObj.getJSONArray("filetypes").iterator()
+      while (fileTypesArray.hasNext) {
+        val fileTypeObj = fileTypesArray.next().asInstanceOf[JSONObject]
+        val typeName = fileTypeObj.getString("type")
+        _fileTypeExtMap(typeName) = fileTypeObj.getJSONArray("extensions").toList.asScala.map(_.asInstanceOf[String]).toSet
+        _fileTypeNameMap(typeName) = fileTypeObj.getJSONArray("names").toList.asScala.map(_.asInstanceOf[String]).toSet
       }
     } catch {
-      case e: ParseException =>
-        print(e.getMessage)
       case e: IOException =>
         print(e.getMessage)
     }

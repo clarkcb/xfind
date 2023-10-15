@@ -1,27 +1,26 @@
 package ktfind
 
-import com.beust.klaxon.JsonArray
-import com.beust.klaxon.JsonObject
-import com.beust.klaxon.KlaxonException
-import com.beust.klaxon.Parser
+import org.json.JSONArray
+import org.json.JSONObject
+import org.json.JSONTokener
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStreamReader
 
 /**
  * @author cary on 7/23/16.
  */
-data class FindOption(val shortarg: String?, val longarg: String, val desc: String) {
-    val sortarg =
-            if (shortarg == null) {
-                longarg.lowercase()
+data class FindOption(val shortArg: String?, val longArg: String, val desc: String) {
+    val sortArg =
+            if (shortArg == null) {
+                longArg.lowercase()
             } else {
-                shortarg.lowercase() + "@" + longarg.lowercase()
+                shortArg.lowercase() + "@" + longArg.lowercase()
             }
 }
 
 class FindOptions {
+    private val findOptionsJsonPath = "/findoptions.json"
     private val findOptions : List<FindOption>
 
     init {
@@ -29,24 +28,28 @@ class FindOptions {
     }
 
     private fun loadFindOptionsFromJson() : List<FindOption> {
-        val findOptionsJsonPath = "/findoptions.json"
         val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
-        val jsonObj: JsonObject = Parser.default().parse(InputStreamReader(findOptionsInputStream!!)) as JsonObject
-        val findOptionsArray = jsonObj.array<JsonObject>("findoptions")
-
+        val jsonObj = JSONObject(JSONTokener(findOptionsInputStream))
+        val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
         val options : MutableList<FindOption> = mutableListOf()
-        findOptionsArray!!.forEach {
-            val longArg = it.string("long")!!
-            val desc = it.string("desc")!!
-            val shortArg: String? = it.string("short")
+        while (findOptionsArray.hasNext()) {
+            val findOptionObj = findOptionsArray.next() as JSONObject
+            val longArg = findOptionObj.getString("long")
+            val shortArg =
+                if (findOptionObj.has("short")) {
+                    findOptionObj.getString("short")
+                } else {
+                    null
+                }
+            val desc = findOptionObj.getString("desc")
             options.add(FindOption(shortArg, longArg, desc))
         }
-        return options.toList().sortedBy { it.sortarg }
+        return options.toList().sortedBy { it.sortArg }
     }
 
     private fun getArgMap() : Map<String, String> {
-        val longOpts = findOptions.map { Pair(it.longarg, it.longarg) }.toMap()
-        val shortOpts = findOptions.filter { it.shortarg != null }.map { Pair(it.shortarg!!, it.longarg) }.toMap()
+        val longOpts = findOptions.map { Pair(it.longArg, it.longArg) }.toMap()
+        val shortOpts = findOptions.filter { it.shortArg != null }.map { Pair(it.shortArg!!, it.longArg) }.toMap()
         return longOpts.plus(shortOpts)
     }
 
@@ -124,26 +127,24 @@ class FindOptions {
             throw FindException("Settings file not found: $filePath")
         } catch (e: IOException) {
             throw FindException("IOException reading settings file: $filePath")
-        } catch (e: KlaxonException) {
-            throw FindException("KlaxonException trying to parse the JSON in $filePath")
         }
     }
 
     fun settingsFromJson(json: String, settings: FindSettings): FindSettings {
-        val jsonObject = Parser.default().parse(StringBuilder(json)) as JsonObject
-        fun recSettingsFromJson(keys: List<Any?>, settings: FindSettings) : FindSettings {
+        val jsonObject = JSONObject(JSONTokener(json))
+        fun recSettingsFromJson(keys: List<String>, settings: FindSettings) : FindSettings {
             return if (keys.isEmpty()) settings
             else {
                 val ko = keys.first()
-                val vo = jsonObject[ko]
-                if (ko != null && ko is String && vo != null) {
+                val vo = jsonObject.get(ko)
+                if (vo != null) {
                     recSettingsFromJson(keys.drop(1), applySetting(ko, vo, settings))
                 } else {
                     recSettingsFromJson(keys.drop(1), settings)
                 }
             }
         }
-        return recSettingsFromJson(jsonObject.keys.toList(), settings)
+        return recSettingsFromJson(jsonObject.keySet().toList(), settings)
     }
 
     private fun applySetting(key: String, obj: Any, settings: FindSettings): FindSettings {
@@ -157,7 +158,7 @@ class FindOptions {
             is Long -> {
                 return applySetting(key, obj.toString(), settings)
             }
-            is JsonArray<*> -> {
+            is JSONArray -> {
                 return applySetting(key, obj.toList().map { it as String }, settings)
             }
             else -> {
@@ -239,7 +240,7 @@ class FindOptions {
         sb.append(" ktfind [options] <path> [<path> ...]\n\n")
         sb.append("Options:\n")
         fun getOptString(so: FindOption): String {
-            return (if (so.shortarg == null) "" else "-${so.shortarg},") + "--${so.longarg}"
+            return (if (so.shortArg == null) "" else "-${so.shortArg},") + "--${so.longArg}"
         }
         val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.map { it.first.length }.maxOrNull()

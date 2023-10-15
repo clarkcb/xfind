@@ -11,7 +11,7 @@ public class FileResultTest {
     public FileResultTest() {}
 
     @Test
-    public final void test_file_result_abs_path() {
+    public final void testFileResultAbsPath() {
         var dir = "~/src/xfind/java/javafind/src/main/java/javafind";
         var fileName = "FileResult.java";
         var path = Paths.get(dir + "/" + fileName);
@@ -21,7 +21,7 @@ public class FileResultTest {
     }
 
     @Test
-    public final void test_file_result_rel_path1() {
+    public final void testFileResultRelPath1() {
         var dir = ".";
         var fileName = "FileResult.java";
         var path = Paths.get(dir + "/" + fileName);
@@ -31,7 +31,7 @@ public class FileResultTest {
     }
 
     @Test
-    public final void test_file_result_rel_path2() {
+    public final void testFileResultRelPath2() {
         var dir = "..";
         var fileName = "FileResult.java";
         var path = Paths.get(dir + "/" + fileName);

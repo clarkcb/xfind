@@ -55,24 +55,25 @@ public class FindSettings {
     private boolean verbose;
 
     public FindSettings() {
-        this.archivesOnly = DefaultFindSettings.ARCHIVESONLY;
+        this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY;
         this.debug = DefaultFindSettings.DEBUG;
-        this.excludeHidden = DefaultFindSettings.EXCLUDEHIDDEN;
+        this.excludeHidden = DefaultFindSettings.EXCLUDE_HIDDEN;
         this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES;
         this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.includeArchives = DefaultFindSettings.INCLUDEARCHIVES;
-        this.listDirs = DefaultFindSettings.LISTDIRS;
-        this.listFiles = DefaultFindSettings.LISTFILES;
-        this.maxDepth = DefaultFindSettings.MAXDEPTH;
+        this.inMimeTypes = new HashSet<>(INITIAL_SET_CAPACITY);
+        this.listDirs = DefaultFindSettings.LIST_DIRS;
+        this.listFiles = DefaultFindSettings.LIST_FILES;
+        this.maxDepth = DefaultFindSettings.MAX_DEPTH;
         this.maxLastMod = null;
-        this.maxSize = DefaultFindSettings.MAXSIZE;
-        this.minDepth = DefaultFindSettings.MINDEPTH;
+        this.maxSize = DefaultFindSettings.MAX_SIZE;
+        this.minDepth = DefaultFindSettings.MIN_DEPTH;
         this.minLastMod = null;
-        this.minSize = DefaultFindSettings.MINSIZE;
+        this.minSize = DefaultFindSettings.MIN_SIZE;
         this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
@@ -80,11 +81,11 @@ public class FindSettings {
         this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
         this.paths = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.printUsage = DefaultFindSettings.PRINTUSAGE;
-        this.printVersion = DefaultFindSettings.PRINTVERSION;
+        this.printUsage = DefaultFindSettings.PRINT_USAGE;
+        this.printVersion = DefaultFindSettings.PRINT_VERSION;
         this.recursive = DefaultFindSettings.RECURSIVE;
         this.sortBy = DefaultFindSettings.SORT_BY;
-        this.sortCaseInsensitive = DefaultFindSettings.SORT_CASEINSENSITIVE;
+        this.sortCaseInsensitive = DefaultFindSettings.SORT_CASE_INSENSITIVE;
         this.sortDescending = DefaultFindSettings.SORT_DESCENDING;
         this.verbose = DefaultFindSettings.VERBOSE;
     }
