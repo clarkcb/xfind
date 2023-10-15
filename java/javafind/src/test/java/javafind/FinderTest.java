@@ -104,8 +104,9 @@ public class FinderTest {
     public final void testIsMatchingFileResult_NoExtensionsNoPatterns_True() {
         var settings = getSettings();
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
@@ -114,8 +115,9 @@ public class FinderTest {
         var settings = getSettings();
         settings.addInExtension("cs");
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
@@ -124,19 +126,20 @@ public class FinderTest {
         var settings = getSettings();
         settings.addInExtension("java");
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertFalse(finder.isMatchingFileResult(fileResult));
     }
-
 
     @Test
     public final void testIsMatchingFileResult_MatchesOutExtension_False() {
         var settings = getSettings();
         settings.addOutExtension("cs");
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
@@ -145,8 +148,9 @@ public class FinderTest {
         var settings = getSettings();
         settings.addOutExtension("java");
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
@@ -155,8 +159,9 @@ public class FinderTest {
         var settings = getSettings();
         settings.addInFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("./Finder.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("Finder.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
@@ -165,8 +170,9 @@ public class FinderTest {
         var settings = getSettings();
         settings.addInFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
@@ -175,8 +181,9 @@ public class FinderTest {
         var settings = getSettings();
         settings.addOutFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("./Finder.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("Finder.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
         assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
@@ -185,8 +192,105 @@ public class FinderTest {
         var settings = getSettings();
         settings.addOutFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("./FileUtil.cs");
-        var fileResult = new FileResult(path, FileType.CODE);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var fileResult = new FileResult(path, fileType);
+        assertTrue(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_MatchesInMimeType_True() {
+        var settings = getSettings();
+        settings.addInMimeType("text/plain");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertTrue(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_DoesNotMatchInMimeType_False() {
+        var settings = getSettings();
+        settings.addInMimeType("application/json");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertFalse(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_MatchesInMimeTypeWildCard_True() {
+        var settings = getSettings();
+        settings.addInMimeType("text/*");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertTrue(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_DoesNotMatchInMimeTypeWildCard_False() {
+        var settings = getSettings();
+        settings.addInMimeType("application/*");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertFalse(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_MatchesOutMimeType_False() {
+        var settings = getSettings();
+        settings.addOutMimeType("text/plain");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertFalse(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_DoesNotMatchOutMimeType_True() {
+        var settings = getSettings();
+        settings.addOutMimeType("application/json");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertTrue(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_MatchesOutMimeTypeWildCard_False() {
+        var settings = getSettings();
+        settings.addOutMimeType("text/*");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
+        assertFalse(finder.isMatchingFileResult(fileResult));
+    }
+
+    @Test
+    public final void testIsMatchingFileResult_DoesNotMatchOutMimeTypeWildCard_True() {
+        var settings = getSettings();
+        settings.addOutMimeType("application/*");
+        var finder = new Finder(settings);
+        var path = Paths.get("FileUtil.cs");
+        var fileType = FileType.CODE;
+        var mimeType = "text/plain";
+        var fileResult = new FileResult(path, fileType, mimeType);
         assertTrue(finder.isMatchingFileResult(fileResult));
     }
 

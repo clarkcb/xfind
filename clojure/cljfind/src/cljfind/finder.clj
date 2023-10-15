@@ -19,6 +19,7 @@
            (cljfind.fileresult FileResult)
            (cljfind.findsettings FindSettings))
   (:use [clojure.java.io :only (file reader)]
+        [clojure.string :only (ends-with? index-of)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only
          (new-file-result file-result-path sort-results)]
@@ -26,7 +27,8 @@
         [cljfind.fileutil :only
           (get-ext get-name hidden-dir? hidden-file?
             is-dot-dir? sep-count)]
-        [cljfind.findsettings :only (need-last-mod need-size)])
+        [cljfind.findsettings :only (need-last-mod need-mime need-size)]
+        [cljfind.mimetypes :only (get-mime-type-getter)])
   (:require [java-time.api :as jt]))
 
 (defn matches-any-pattern? [^String s pp]
@@ -146,28 +148,41 @@
   ([^FileResult fr ^FindSettings settings]
     (is-matching-file-type? (:file-type fr) (:in-file-types settings) (:out-file-types settings))))
 
+(defn is-matching-wild-card-mime-type? [mime-type mime-types]
+  (if
+    (and
+     (some #(ends-with? % "/*") mime-types)
+     (some? (index-of mime-type "/")))
+    (let [wild-card-mime-type (str (subs mime-type 0 (index-of mime-type "/")) "/*")]
+      (contains? mime-types wild-card-mime-type))
+    false))
+
 (defn is-matching-mime-type?
   ([mime-type settings]
-   (is-matching-mime-type? mime-type (:in-mime-types settings) (:out-mime-types settings)))
+    (is-matching-mime-type? mime-type (:in-mime-types settings) (:out-mime-types settings)))
   ([mime-type in-mime-types out-mime-types]
-   (and
-    (or
-     (empty? in-mime-types)
-     (contains? in-mime-types mime-type))
-    (or
-     (empty? out-mime-types)
-     (not (contains? out-mime-types mime-type))))))
+    (and
+      (or
+        (empty? in-mime-types)
+        (contains? in-mime-types mime-type)
+        (is-matching-wild-card-mime-type? mime-type in-mime-types))
+      (or
+        (empty? out-mime-types)
+        (and
+          (not-any? #(= mime-type %) out-mime-types)
+          (not (is-matching-wild-card-mime-type? mime-type out-mime-types)))))))
 
-(defn has-matching-mime-type?
-  ([^File f settings]
-   (has-matching-mime-type? f (:in-mime-types settings) (:out-mime-types settings)))
-  ([^File f in-mime-types out-mime-types]
-  (if
-    (or
-     (not (empty? in-mime-types))
-     (not (empty? out-mime-types)))
-    (is-matching-mime-type? (get-mime-type f) in-mime-types out-mime-types)
-    true)))
+;(defn has-matching-mime-type?
+;  ([^File f settings]
+;    (has-matching-mime-type? f (:in-mime-types settings) (:out-mime-types settings)))
+;  ([^File f in-mime-types out-mime-types]
+;  (if
+;    (or
+;      (not (empty? in-mime-types))
+;      (not (empty? out-mime-types)))
+;;    (is-matching-mime-type? (get-mime-type f) in-mime-types out-mime-types)
+;    (is-matching-mime-type? "text/plain" in-mime-types out-mime-types)
+;    true)))
 
 (defn format-date [^java.util.Date dt]
   (if (nil? dt)
@@ -210,13 +225,14 @@
     (has-matching-ext? fr settings)
     (has-matching-file-name? fr settings)
     (has-matching-file-type? fr settings)
+    (is-matching-mime-type? (:mime-type fr) settings)
     (has-matching-file-size? fr settings)
     (has-matching-last-mod? fr settings)))
 
 (defn get-stat [^File f]
   (Files/readAttributes (.toPath f) BasicFileAttributes (into-array java.nio.file.LinkOption [])))
 
-(defn filter-to-file-result [^File f ^FindSettings settings]
+(defn filter-to-file-result [^File f ^FindSettings settings get-mime-type]
   (if
     (and
       (not (:include-hidden settings))
@@ -226,7 +242,7 @@
           stat (if (or (need-last-mod settings) (need-size settings)) (get-stat f) nil)
           file-size (if (nil? stat) 0 (.size stat))
           last-mod (if (nil? stat) nil (.lastModifiedTime stat))
-          fr (new-file-result f file-type file-size last-mod)]
+          fr (new-file-result f file-type mime-type file-size last-mod)]
       (if
         (= :archive file-type)
         (if
@@ -267,8 +283,7 @@
 (defn get-file-results-for-path [^FindSettings settings, ^String path]
   (let [path-file (file path)]
     (if (.isFile path-file)
-      (if
-        (< (:min-depth settings) 1)
+      (if (< (:min-depth settings) 1)
         (let [path-file-result (filter-to-file-result path-file settings)]
           (if (not (nil? path-file-result))
             [path-file-result]
@@ -278,12 +293,13 @@
 
 (defn get-file-results
   ([^FindSettings settings]
-    (let [paths (into [] (:paths settings))]
-      (get-file-results settings paths [])))
-  ([^FindSettings settings paths file-results]
+    (let [paths (into [] (:paths settings))
+          get-mime-type (get-mime-type-getter settings)]
+      (get-file-results settings get-mime-type paths [])))
+  ([^FindSettings settings get-mime-type paths file-results]
    (if (empty? paths)
       (sort-results file-results settings)
-      (get-file-results settings (rest paths) (concat file-results (get-file-results-for-path settings (nth paths 0)))))))
+      (get-file-results settings get-mime-type (rest paths) (concat file-results (get-file-results-for-path settings get-mime-type (nth paths 0)))))))
 
 (defn find-files [^FindSettings settings]
   (let [errs (validate-settings settings)]

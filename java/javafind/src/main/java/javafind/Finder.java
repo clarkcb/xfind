@@ -10,7 +10,7 @@ Class to find matching files
 
 package javafind;
 
-import org.apache.tika.Tika;
+import org.opf_labs.LibmagicJnaWrapper;
 
 import java.io.IOException;
 import java.nio.file.*;
@@ -24,9 +24,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import org.opf_labs.LibmagicJnaWrapper;
 
 public class Finder {
 
@@ -38,9 +35,7 @@ public class Finder {
         this.settings = settings;
         this.fileTypes = new FileTypes();
 
-        // MimeTypesFileTypeMap mimeTypesFileTypeMap = new MimeTypesFileTypeMap();
-
-        if (!settings.getInMimeTypes().isEmpty() || !settings.getOutMimeTypes().isEmpty()) {
+        if (settings.needMimeType()) {
             // set libmagicJnaWrapper
             int flags = LibmagicJnaWrapper.MAGIC_MIME_TYPE | LibmagicJnaWrapper.MAGIC_NO_CHECK_ENCODING;
             libmagicJnaWrapper = new LibmagicJnaWrapper(flags);

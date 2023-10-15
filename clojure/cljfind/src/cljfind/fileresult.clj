@@ -17,7 +17,7 @@
         ))
 
 ; record to hold a file result (file is a File object)
-(defrecord FileResult [containers, ^java.io.File file, file-type, mime-type,
+(defrecord FileResult [containers, ^java.io.File file, file-type, ^String mime-type,
                        file-size last-mod])
 
 (defn new-file-result
@@ -30,7 +30,8 @@
 
 (defn file-result-path [^FileResult fr]
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
-       (.getPath (:file fr))))
+       (.getPath (:file fr))
+       (if (empty? (:mime-type fr)) "" (str " (" (:mime-type fr) ")"))))
 
 (defn cmp-strings [^String str1 ^String str2 ^FindSettings settings]
   (let [s1 (if (nil? str1) "" str1)

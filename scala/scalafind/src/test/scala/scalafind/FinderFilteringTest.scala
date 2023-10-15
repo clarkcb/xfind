@@ -82,64 +82,161 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
   test("testIsMatchingFileResult_NoExtensionsNoPatterns_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_MatchesInExtension_True") {
     val settings = getFindSettings.copy(inExtensions = Set("cs"))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_DoesNotMatchInExtension_False") {
     val settings = getFindSettings.copy(inExtensions = Set("java"))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(!finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_MatchesOutExtension_False") {
     val settings = getFindSettings.copy(outExtensions = Set("cs"))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(!finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_DoesNotMatchOutExtension_True") {
     val settings = getFindSettings.copy(outExtensions = Set("java"))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_MatchesInPattern_True") {
     val settings = getFindSettings.copy(inFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("Finder.cs"), FileType.Code)
+    val path = Paths.get("Finder.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_DoesNotMatchInPattern_False") {
     val settings = getFindSettings.copy(inFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(!finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_MatchesOutPattern_False") {
     val settings = getFindSettings.copy(outFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
-    val fr = new FileResult(Paths.get("Finder.cs"), FileType.Code)
+    val path = Paths.get("Finder.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
     assert(!finder.isMatchingFileResult(fr))
   }
 
   test("testIsMatchingFileResult_DoesNotMatchOutPattern_True") {
     val settings = getFindSettings.copy(outFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
-//    val file = new File("FileUtil.cs")
-    val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val fr = new FileResult(path, fileType)
+    assert(finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_MatchesInMimeType_True") {
+    val settings = getFindSettings.copy(inMimeTypes = Set("text/plain"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_DoesNotMatchInMimeType_False") {
+    val settings = getFindSettings.copy(inMimeTypes = Set("application/json"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(!finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_MatchesInMimeTypeWildCard_True") {
+    val settings = getFindSettings.copy(inMimeTypes = Set("text/*"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_DoesNotMatchInMimeTypeWildCard_False") {
+    val settings = getFindSettings.copy(inMimeTypes = Set("application/*"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(!finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_MatchesOutMimeType_False") {
+    val settings = getFindSettings.copy(outMimeTypes = Set("text/plain"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(!finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_DoesNotMatchOutMimeType_True") {
+    val settings = getFindSettings.copy(outMimeTypes = Set("application/json"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_MatchesOutMimeTypeWildCard_False") {
+    val settings = getFindSettings.copy(outMimeTypes = Set("text/*"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
+    assert(!finder.isMatchingFileResult(fr))
+  }
+
+  test("testIsMatchingFileResult_DoesNotMatchOutMimeTypeWildCard_True") {
+    val settings = getFindSettings.copy(outMimeTypes = Set("application/*"))
+    val finder = new Finder(settings)
+    val path = Paths.get("FileUtil.cs")
+    val fileType = FileType.Code
+    val mimeType = "text/plain"
+    val fr = new FileResult(path, fileType, mimeType = Some(mimeType), None)
     assert(finder.isMatchingFileResult(fr))
   }
 
