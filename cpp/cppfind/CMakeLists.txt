@@ -1,12 +1,12 @@
-cmake_minimum_required(VERSION 3.23)
+cmake_minimum_required(VERSION 3.26)
 project(cppfind VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")
 #message("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 
 set(Boost_USE_MULTITHREADED ON)
 find_package(Boost REQUIRED COMPONENTS system filesystem)
@@ -90,9 +90,9 @@ target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME})
 Include(FetchContent)
 
 FetchContent_Declare(
-  Catch2
-  GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v2.13.9
+        Catch2
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG        v2.13.9
 )
 
 FetchContent_MakeAvailable(Catch2)

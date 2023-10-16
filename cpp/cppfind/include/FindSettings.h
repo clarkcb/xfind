@@ -2,6 +2,9 @@
 #define CPPFIND_FINDSETTINGS_H
 
 #include <cstdlib>
+#include <set>
+#include <string>
+
 #include "FileTypes.h"
 #include "RegexPattern.h"
 
@@ -14,12 +17,13 @@ namespace cppfind {
         bool m_debug = false;
         bool m_exclude_hidden = true;
 
-        std::vector<std::string> m_in_archive_extensions;
-        std::vector<RegexPattern*> m_in_archive_file_patterns;
-        std::vector<RegexPattern*> m_in_dir_patterns;
-        std::vector<std::string> m_in_extensions;
-        std::vector<RegexPattern*> m_in_file_patterns;
-        std::vector<FileType> m_in_file_types;
+        // add sets of strings that hold extensions and patterns to match on
+        std::set<std::string> m_in_archive_extensions;
+        std::set<RegexPattern, RegexPatternCmp> m_in_archive_file_patterns;
+        std::set<RegexPattern, RegexPatternCmp> m_in_dir_patterns;
+        std::set<std::string> m_in_extensions;
+        std::set<RegexPattern, RegexPatternCmp> m_in_file_patterns;
+        std::set<FileType> m_in_file_types;
 
         bool m_include_archives = false;
         bool m_list_dirs = false;
@@ -32,34 +36,95 @@ namespace cppfind {
         long m_min_last_mod = 0L;
         long m_min_size = 0L;
 
-        std::vector<std::string> m_out_archive_extensions;
-        std::vector<RegexPattern*> m_out_archive_file_patterns;
-        std::vector<RegexPattern*> m_out_dir_patterns;
-        std::vector<std::string> m_out_extensions;
-        std::vector<RegexPattern*> m_out_file_patterns;
-        std::vector<FileType> m_out_file_types;
+        // add corresponding sets for out extensions and patterns
+        std::set<std::string> m_out_archive_extensions;
+        std::set<RegexPattern, RegexPatternCmp> m_out_archive_file_patterns;
+        std::set<RegexPattern, RegexPatternCmp> m_out_dir_patterns;
+        std::set<std::string> m_out_extensions;
+        std::set<RegexPattern, RegexPatternCmp> m_out_file_patterns;
+        std::set<FileType> m_out_file_types;
 
         bool m_print_usage = false;
         bool m_print_version = false;
         bool m_recursive = true;
 
-        std::vector<std::string> m_paths;
+        std::set<std::string> m_paths;
 
         SortBy m_sort_by = SortBy::FILEPATH;
         bool m_sort_case_insensitive = false;
         bool m_sort_descending = false;
         bool m_verbose = false;
 
-        static std::string bool_to_string(bool b);
-        static std::string string_vector_to_string(std::vector<std::string>* s);
-        static std::string find_patterns_to_string(std::vector<RegexPattern*>* ps);
-        static std::string file_types_to_string(std::vector<FileType>* ts);
-
-        static void add_pattern(const std::string& p, std::vector<RegexPattern*>* ps);
-        static void add_extensions(const std::string& exts, std::vector<std::string>* extensions);
 
     public:
-        FindSettings();
+//        FindSettings();
+        // property getters
+        [[nodiscard]] bool archives_only() const;
+        [[nodiscard]] bool debug() const;
+        [[nodiscard]] bool exclude_hidden() const;
+        [[nodiscard]] bool include_archives() const;
+        [[nodiscard]] bool list_dirs() const;
+        [[nodiscard]] bool list_files() const;
+        [[nodiscard]] bool print_usage() const;
+        [[nodiscard]] bool print_version() const;
+        [[nodiscard]] bool recursive() const;
+        [[nodiscard]] bool sort_case_insensitive() const;
+        [[nodiscard]] bool sort_descending() const;
+        [[nodiscard]] bool verbose() const;
+        [[nodiscard]] int max_depth() const;
+        [[nodiscard]] int min_depth() const;
+        [[nodiscard]] long max_last_mod() const;
+        [[nodiscard]] long max_size() const;
+        [[nodiscard]] long min_last_mod() const;
+        [[nodiscard]] long min_size() const;
+        [[nodiscard]] SortBy sort_by() const;
+        [[nodiscard]] std::set<FileType> in_file_types() const;
+        [[nodiscard]] std::set<FileType> out_file_types() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_archive_file_patterns() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_dir_patterns() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_file_patterns() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_archive_file_patterns() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_dir_patterns() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
+        [[nodiscard]] std::set<std::string> in_archive_extensions() const;
+        [[nodiscard]] std::set<std::string> in_extensions() const;
+        [[nodiscard]] std::set<std::string> out_archive_extensions() const;
+        [[nodiscard]] std::set<std::string> out_extensions() const;
+        [[nodiscard]] std::set<std::string> paths() const;
+
+        // property setters
+        void archives_only(bool archives_only);
+        void debug(bool debug);
+        void exclude_hidden(bool exclude_hidden);
+        void in_archive_extensions(const std::set<std::string>& in_archive_extensions);
+        void in_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_dir_patterns);
+        void in_extensions(const std::set<std::string>& in_extensions);
+        void in_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_file_patterns);
+        void in_file_types(const std::set<FileType>& in_file_types);
+        void include_archives(bool include_archives);
+        void list_dirs(bool list_dirs);
+        void list_files(bool list_files);
+        void max_depth(int max_depth);
+        void max_last_mod(long max_last_mod);
+        void max_size(long max_size);
+        void min_depth(int min_depth);
+        void min_last_mod(long min_last_mod);
+        void min_size(long min_size);
+        void out_archive_extensions(const std::set<std::string>& out_archive_extensions);
+        void out_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_dir_patterns);
+        void out_extensions(const std::set<std::string>& out_extensions);
+        void out_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_file_patterns);
+        void out_file_types(const std::set<FileType>& out_file_types);
+        void paths(const std::set<std::string>& paths);
+        void print_usage(bool print_usage);
+        void print_version(bool print_version);
+        void recursive(bool recursive);
+        void sort_by(SortBy sort_by);
+        void sort_case_insensitive(bool sort_case_insensitive);
+        void sort_descending(bool sort_descending);
+        void verbose(bool verbose);
+
+        // add elements methods
         void add_in_archive_extension(const std::string& ext);
         void add_in_archive_file_pattern(const std::string& pattern);
         void add_in_dir_pattern(const std::string& pattern);
@@ -74,69 +139,21 @@ namespace cppfind {
         void add_out_file_type(FileType file_type);
         void add_path(const std::string& path);
 
-        [[nodiscard]] bool archives_only() const;
-        [[nodiscard]] bool debug() const;
-        [[nodiscard]] bool exclude_hidden() const;
-        [[nodiscard]] bool include_archives() const;
-        [[nodiscard]] bool list_dirs() const;
-        [[nodiscard]] bool list_files() const;
-        [[nodiscard]] int max_depth() const;
-        [[nodiscard]] long max_last_mod() const;
-        [[nodiscard]] long max_size() const;
-        [[nodiscard]] int min_depth() const;
-        [[nodiscard]] long min_last_mod() const;
-        [[nodiscard]] long min_size() const;
-        [[nodiscard]] bool print_usage() const;
-        [[nodiscard]] bool print_version() const;
-        [[nodiscard]] bool recursive() const;
-        [[nodiscard]] bool sort_case_insensitive() const;
-        [[nodiscard]] bool sort_descending() const;
-        [[nodiscard]] bool verbose() const;
+        // need elements methods
+        bool need_stat() const;
 
-        std::vector<std::string>* in_archive_extensions();
-        std::vector<RegexPattern*>* in_archive_file_patterns();
-        std::vector<RegexPattern*>* in_dir_patterns();
-        std::vector<std::string>* in_extensions();
-        std::vector<RegexPattern*>* in_file_patterns();
-        std::vector<FileType>* in_file_types();
-
-        std::vector<std::string>* out_archive_extensions();
-        std::vector<RegexPattern*>* out_archive_file_patterns();
-        std::vector<RegexPattern*>* out_dir_patterns();
-        std::vector<std::string>* out_extensions();
-        std::vector<RegexPattern*>* out_file_patterns();
-        std::vector<FileType>* out_file_types();
-
-        bool need_stat();
-        std::vector<std::string>* paths();
-
-        SortBy sort_by();
-
-        void archives_only(bool b);
-        void debug(bool b);
-        void exclude_hidden(bool b);
-        void include_archives(bool b);
-        void list_dirs(bool b);
-        void list_files(bool b);
-        void max_depth(int max_depth);
-        void max_last_mod(long max_last_mod);
-        void max_size(long max_size);
-        void min_depth(int min_depth);
-        void min_last_mod(long min_last_mod);
-        void min_size(long min_size);
-        void print_usage(bool b);
-        void print_version(bool b);
-        void recursive(bool b);
-        void sort_by(SortBy sort_by);
-        void set_sort_by(const std::string& name);
-        void sort_case_insensitive(bool b);
-        void sort_descending(bool b);
-        void verbose(bool b);
-        std::string string();
-
+        // utility methods
+        static void add_pattern(const std::string& p, std::set<RegexPattern, RegexPatternCmp>& ps);
+        static void add_extensions(const std::string& exts, std::set<std::string>& extensions);
+        static std::string find_patterns_to_string(std::set<RegexPattern, RegexPatternCmp>& patterns);
+        static std::string file_types_to_string(std::set<FileType>& types);
         static SortBy sort_by_from_name(const std::string& name);
         static std::string sort_by_to_name(SortBy sort_by);
+
+        // convert to string
+        std::string string();
+
     };
 }
 
-#endif //CPPFIND_FINDSETTINGS_H
+#endif // CPPFIND_FINDSETTINGS_H

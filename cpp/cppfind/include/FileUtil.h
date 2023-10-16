@@ -2,7 +2,7 @@
 #define CPPFIND_FILEUTIL_H
 
 #include <string>
-#include <vector>
+#include <utility>
 
 namespace cppfind {
     class FileUtil {
@@ -10,7 +10,6 @@ namespace cppfind {
         static std::string expand_path(const std::string& file_path);
         static bool file_exists(const std::string& file_path);
         static uint64_t file_size(const std::string& file_path);
-        static std::string get_contents(const std::string& file_path);
         static std::string get_contents(const std::ifstream& fin);
         static std::string get_extension(const std::string& name);
         static std::string get_file_name(const std::string& file_path);
@@ -19,12 +18,12 @@ namespace cppfind {
         static bool is_dot_dir(const std::string& name);
         static bool is_hidden(const std::string& name);
         static std::string join_path(const std::string& path1, const std::string& path2);
-        static std::vector<std::string> split_path(const std::string& file_path);
+        static std::pair<std::string, std::string> split_path(const std::string& file_path);
 
     private:
         // Disallow creating an instance of this object
-        FileUtil() = default;
+        FileUtil() = delete;
     };
 }
 
-#endif //CPPFIND_FILEUTIL_H
+#endif // CPPFIND_FILEUTIL_H

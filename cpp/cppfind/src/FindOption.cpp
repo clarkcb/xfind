@@ -1,34 +1,39 @@
-#include <boost/algorithm/string.hpp>
+#include <algorithm>
+
 #include "FindOption.h"
 
 namespace cppfind {
-    FindOption::FindOption(const std::string* sa, const std::string& la, const std::string& desc) {
-        m_shortarg = sa;
-        m_longarg = la;
+    // implement the FindOption constructor
+    FindOption::FindOption(const std::string& short_arg, const std::string& long_arg, const std::string& desc) {
+        m_short_arg = short_arg;
+        m_long_arg = long_arg;
         m_description = desc;
-        if (m_shortarg != nullptr && !m_shortarg->empty()) {
-            std::string so = boost::to_lower_copy(*m_shortarg);
-            so.append("@");
-            so.append(m_longarg);
-            m_sortarg = so;
-        } else {
-            m_sortarg = m_longarg;
+        if (!m_short_arg.empty()) {
+            m_sort_arg = m_short_arg;
+            std::transform(m_sort_arg.begin(), m_sort_arg.end(), m_sort_arg.begin(),
+                           [](unsigned char c) { return std::tolower(c); });
+            m_sort_arg.append("@");
+            m_sort_arg.append(m_long_arg);
+        }
+        else {
+            m_sort_arg = m_long_arg;
         }
     }
 
-    const std::string* FindOption::shortarg() const {
-        return m_shortarg;
+    // implement the getters
+    std::string FindOption::short_arg() const {
+        return m_short_arg;
     }
 
-    std::string FindOption::longarg() const {
-        return m_longarg;
+    std::string FindOption::long_arg() const {
+        return m_long_arg;
     }
 
     std::string FindOption::description() const {
         return m_description;
     }
 
-    std::string FindOption::sortarg() const {
-        return m_sortarg;
+    std::string FindOption::sort_arg() const {
+        return m_sort_arg;
     }
 }

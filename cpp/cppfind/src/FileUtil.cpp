@@ -1,8 +1,7 @@
-#include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <sys/stat.h>
 #include <fstream>
 #include <sstream>
+
 #include "FileUtil.h"
 
 namespace cppfind {
@@ -30,90 +29,89 @@ namespace cppfind {
         return (uint64_t) st.st_size;
     }
 
-    std::string FileUtil::get_contents(const std::string& file_path) {
-        std::ifstream fin(file_path);
-        std::string contents = get_contents(fin);
-        fin.close();
-        return contents;
-    }
-
     std::string FileUtil::get_contents(const std::ifstream& fin) {
         std::stringstream sstr;
         sstr << fin.rdbuf();
         return sstr.str();
     }
 
+    // implement the get_extension method
     std::string FileUtil::get_extension(const std::string& name) {
-        boost::filesystem::path path(name);
-        std::string ext = path.extension().string();
-        if (name == ext) {
+        size_t pos = name.rfind('.');
+        if (pos == 0 || pos == std::string::npos) {
             return "";
         }
-        if (!ext.empty() && ext[0] == '.') {
-            ext = ext.substr(1);
-        }
-        if (ext != "Z") {
-            ext = boost::to_lower_copy(ext);
-        }
-        return ext;
+        return name.substr(pos + 1);
     }
 
+    // implement the get_file_name method
+    // TODO: make this cross-platform
     std::string FileUtil::get_file_name(const std::string& file_path) {
-        boost::filesystem::path path(file_path);
-        std::string file_name = path.filename().string();
-        return file_name;
+        // TODO: make this cross-platform
+        size_t pos = file_path.rfind('/');
+        if (pos == std::string::npos) {
+            return file_path;
+        }
+        return file_path.substr(pos + 1);
     }
 
+    // implement the is_directory method
     bool FileUtil::is_directory(const std::string& name) {
-        boost::filesystem::path path(name);
-        return boost::filesystem::is_directory(path);
+        struct stat st;
+        if (stat(name.c_str(), &st)) /*failure*/
+            return false; // when file does not exist or is not accessible
+        return (st.st_mode & S_IFDIR) != 0;
     }
 
+    // implement the is_regular_file method
     bool FileUtil::is_regular_file(const std::string& name) {
-        boost::filesystem::path path(name);
-        return boost::filesystem::is_regular_file(path);
+        struct stat st;
+        if (stat(name.c_str(), &st)) /*failure*/
+            return false; // when file does not exist or is not accessible
+        return (st.st_mode & S_IFREG) != 0;
     }
 
+    // implement the is_dot_dir method
     bool FileUtil::is_dot_dir(const std::string& name) {
         return name == "." || name == ".." ||
             name == "./" || name == "../" ||
             name == ".\\" || name == "..\\";
     }
 
+    // implement the is_hidden method
     bool FileUtil::is_hidden(const std::string& name) {
-        boost::filesystem::path path(name);
-        return !name.empty() && name.at(0) == '.' && !FileUtil::is_dot_dir(name);
+        return !name.empty() && name[0] == '.' && !FileUtil::is_dot_dir(name);
     }
 
+    // implement the join_path method
+    // TODO: make this cross-platform
     std::string FileUtil::join_path(const std::string& path1, const std::string& path2) {
-        boost::filesystem::path p1(path1);
-        boost::filesystem::path p2(path2);
-        boost::filesystem::path fullpath = p1 / p2;
-        return fullpath.string();
+        if (path1.empty()) {
+            return path2;
+        }
+        if (path2.empty()) {
+            return path1;
+        }
+        if (path1[path1.length() - 1] == '/' || path1[path1.length() - 1] == '\\') {
+            return path1 + path2;
+        }
+        return path1 + "/" + path2;
     }
 
-    std::vector<std::string> FileUtil::split_path(const std::string& file_path) {
-        std::vector<std::string> parts;
-        if (FileUtil::is_dot_dir(file_path)) {
-            if (file_path.substr(0, 2) == "..") {
-                parts.emplace_back("..");
-            } else {
-                parts.emplace_back(".");
-            }
-            return parts;
+    // implement the split_path method
+    // TODO: make this cross-platform
+    // TODO: this should remove trailing path sep first
+    std::pair<std::string, std::string> FileUtil::split_path(const std::string& file_path) {
+        std::string fp{file_path};
+        size_t pos = fp.rfind('/');
+        size_t last_pos = fp.length() - 1;
+        if (pos == last_pos) {
+            fp = fp.substr(0, last_pos);
+            pos = fp.rfind('/');
         }
-        int i = 0;
-        boost::filesystem::path path(file_path);
-        for(auto& part : path) {
-            if (part.string() == "." || part.string() == "..") {
-                if (i == 0) {
-                    parts.push_back(part.string());
-                }
-            } else if (part.string() != "/") {
-                parts.push_back(part.string());
-            }
-            i++;
+        if (pos == std::string::npos) {
+            return std::make_pair("", fp);
         }
-        return parts;
+        return std::make_pair(fp.substr(0, pos), fp.substr(pos + 1));
     }
 }

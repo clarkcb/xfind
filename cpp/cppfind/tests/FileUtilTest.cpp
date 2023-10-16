@@ -60,35 +60,31 @@ TEST_CASE("Detect hidden files", "[FileUtil]") {
 }
 
 TEST_CASE("Split current dir relative paths", "[FileUtil]") {
-    std::vector<std::string> v1 = cppfind::FileUtil::split_path(".");
-    REQUIRE(v1.size() == 1);
-    REQUIRE(v1[0] == ".");
-    std::vector<std::string> v2 = cppfind::FileUtil::split_path("./");
-    REQUIRE(v2.size() == 1);
-    REQUIRE(v2[0] == ".");
-    std::vector<std::string> v3 = cppfind::FileUtil::split_path("./path");
-    REQUIRE(v3.size() == 2);
-    REQUIRE(v3[0] == ".");
-    REQUIRE(v3[1] == "path");
-    std::vector<std::string> v4 = cppfind::FileUtil::split_path("./path/");
-    REQUIRE(v4.size() == 2);
-    REQUIRE(v4[0] == ".");
-    REQUIRE(v4[1] == "path");
+    std::pair<std::string, std::string> v1 = cppfind::FileUtil::split_path(".");
+    REQUIRE(v1.first.empty());
+    REQUIRE(v1.second == ".");
+    std::pair<std::string, std::string> v2 = cppfind::FileUtil::split_path("./");
+    REQUIRE(v2.first.empty());
+    REQUIRE(v2.second == ".");
+    std::pair<std::string, std::string> v3 = cppfind::FileUtil::split_path("./path");
+    REQUIRE(v3.first == ".");
+    REQUIRE(v3.second == "path");
+    std::pair<std::string, std::string> v4 = cppfind::FileUtil::split_path("./path/");
+    REQUIRE(v4.first == ".");
+    REQUIRE(v4.second == "path");
 }
 
 TEST_CASE("Split parent dir relative paths", "[FileUtil]") {
-    std::vector<std::string> v1 = cppfind::FileUtil::split_path("..");
-    REQUIRE(v1.size() == 1);
-    REQUIRE(v1[0] == "..");
-    std::vector<std::string> v2 = cppfind::FileUtil::split_path("../");
-    REQUIRE(v2.size() == 1);
-    REQUIRE(v2[0] == "..");
-    std::vector<std::string> v3 = cppfind::FileUtil::split_path("../path");
-    REQUIRE(v3.size() == 2);
-    REQUIRE(v3[0] == "..");
-    REQUIRE(v3[1] == "path");
-    std::vector<std::string> v4 = cppfind::FileUtil::split_path("../path/");
-    REQUIRE(v4.size() == 2);
-    REQUIRE(v4[0] == "..");
-    REQUIRE(v4[1] == "path");
+    std::pair<std::string, std::string> v1 = cppfind::FileUtil::split_path("..");
+    REQUIRE(v1.first.empty());
+    REQUIRE(v1.second == "..");
+    std::pair<std::string, std::string> v2 = cppfind::FileUtil::split_path("../");
+    REQUIRE(v2.first.empty());
+    REQUIRE(v2.second == "..");
+    std::pair<std::string, std::string> v3 = cppfind::FileUtil::split_path("../path");
+    REQUIRE(v3.first == "..");
+    REQUIRE(v3.second == "path");
+    std::pair<std::string, std::string> v4 = cppfind::FileUtil::split_path("../path/");
+    REQUIRE(v4.first == "..");
+    REQUIRE(v4.second == "path");
 }

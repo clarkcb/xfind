@@ -5,7 +5,7 @@ namespace cppfind {
         m_message = message;
     }
 
-    std::string FindException::msg() const noexcept {
+    std::string FindException::message() const noexcept {
         return m_message;
     }
 

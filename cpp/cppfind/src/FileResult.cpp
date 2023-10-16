@@ -3,7 +3,7 @@
 
 namespace cppfind {
     FileResult::FileResult(std::string& p, std::string& f, FileType ft, uint64_t filesize, long modtime) {
-        std::vector<std::string> containers = {};
+        std::vector<std::string> containers{};
         init(containers, p, f, ft, filesize, modtime);
     }
 
@@ -16,7 +16,6 @@ namespace cppfind {
                            uint64_t filesize, long modtime) {
         init(cs, p, f, ft, filesize, modtime);
     }
-
 
     void FileResult::init(const std::vector<std::string>& cs, const std::string& p, const std::string& f,
                           const FileType ft, const uint64_t filesize, long modtime) {

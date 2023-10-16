@@ -7,4 +7,4 @@ namespace cppfind {
     std::string xfindpath();
 }
 
-#endif //CPPFIND_CONFIG_H
+#endif // CPPFIND_CONFIG_H
