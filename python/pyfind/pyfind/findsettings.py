@@ -46,12 +46,12 @@ class FindSettings:
                  archives_only: bool = False,
                  debug: bool = False,
                  exclude_hidden: bool = True,
-                 in_archive_extensions: set[str] = None,
-                 in_archive_file_patterns: PatternSet = None,
-                 in_dir_patterns: PatternSet = None,
-                 in_extensions: set[str] = None,
-                 in_file_patterns: PatternSet = None,
-                 in_file_types: set[str] = None,
+                 in_archive_extensions: list[str] | set[str] | str = None,
+                 in_archive_file_patterns: list | set | str | Pattern = None,
+                 in_dir_patterns: list | set | str | Pattern = None,
+                 in_extensions: list[str] | set[str] | str = None,
+                 in_file_patterns: list | set | str | Pattern = None,
+                 in_file_types: list | set | str | FileType = None,
                  include_archives: bool = False,
                  list_dirs: bool = False,
                  list_files: bool = False,
@@ -61,13 +61,13 @@ class FindSettings:
                  min_depth: int = -1,
                  min_last_mod: Optional[datetime] = None,
                  min_size: int = 0,
-                 out_archive_extensions: set[str] = None,
-                 out_archive_file_patterns: PatternSet = None,
-                 out_dir_patterns: PatternSet = None,
-                 out_extensions: set[str] = None,
-                 out_file_patterns: PatternSet = None,
-                 out_file_types: set[str] = None,
-                 paths: set[str] = None,
+                 out_archive_extensions: list[str] | set[str] | str = None,
+                 out_archive_file_patterns: list | set | str | Pattern = None,
+                 out_dir_patterns: list | set | str | Pattern = None,
+                 out_extensions: list[str] | set[str] | str = None,
+                 out_file_patterns: list | set | str | Pattern = None,
+                 out_file_types: list | set | str | FileType = None,
+                 paths: list[str] | set[str] | str = None,
                  print_results: bool = False,
                  print_usage: bool = False,
                  print_version: bool = False,
@@ -79,13 +79,24 @@ class FindSettings:
         self.archives_only = archives_only
         self.debug = debug
         self.exclude_hidden = exclude_hidden
-        self.in_archive_extensions = in_archive_extensions if in_archive_extensions else set()
-        self.in_archive_file_patterns: PatternSet = \
-            in_archive_file_patterns if in_archive_file_patterns else set()
-        self.in_dir_patterns: PatternSet = in_dir_patterns if in_dir_patterns else set()
-        self.in_extensions = in_extensions if in_extensions else set()
-        self.in_file_patterns: PatternSet = in_file_patterns if in_file_patterns else set()
-        self.in_file_types = in_file_types if in_file_types else set()
+        self.in_archive_extensions = set()
+        if in_archive_extensions:
+            self.add_exts(in_archive_extensions, 'in_archive_extensions')
+        self.in_archive_file_patterns: PatternSet = set()
+        if in_archive_file_patterns:
+            self.add_patterns(in_archive_file_patterns, 'in_archive_file_patterns')
+        self.in_dir_patterns: PatternSet = set()
+        if in_dir_patterns:
+            self.add_patterns(in_dir_patterns, 'in_dir_patterns')
+        self.in_extensions = set()
+        if in_extensions:
+            self.add_exts(in_extensions, 'in_extensions')
+        self.in_file_patterns: PatternSet = set()
+        if in_file_patterns:
+            self.add_patterns(in_file_patterns, 'in_file_patterns')
+        self.in_file_types = set()
+        if in_file_types:
+            self.add_file_types(in_file_types, 'in_file_types')
         self.include_archives = include_archives
         self.list_dirs = list_dirs
         self.list_files = list_files
@@ -95,14 +106,27 @@ class FindSettings:
         self.min_depth = min_depth
         self.min_last_mod = min_last_mod
         self.min_size = min_size
-        self.out_archive_extensions = out_archive_extensions if out_archive_extensions else set()
-        self.out_archive_file_patterns: PatternSet = \
-            out_archive_file_patterns if out_archive_file_patterns else set()
-        self.out_dir_patterns: PatternSet = out_dir_patterns if out_dir_patterns else set()
-        self.out_extensions = out_extensions if out_extensions else set()
-        self.out_file_patterns: PatternSet = out_file_patterns if out_file_patterns else set()
-        self.out_file_types = out_file_types if out_file_types else set()
-        self.paths = paths if paths else set()
+        self.out_archive_extensions = set()
+        if out_archive_extensions:
+            self.add_exts(out_archive_extensions, 'out_archive_extensions')
+        self.out_archive_file_patterns: PatternSet = set()
+        if out_archive_file_patterns:
+            self.add_patterns(out_archive_file_patterns, 'out_archive_file_patterns')
+        self.out_dir_patterns: PatternSet = set()
+        if out_dir_patterns:
+            self.add_patterns(out_dir_patterns, 'out_dir_patterns')
+        self.out_extensions = set()
+        if out_extensions:
+            self.add_exts(out_extensions, 'out_extensions')
+        self.out_file_patterns: PatternSet = set()
+        if out_file_patterns:
+            self.add_patterns(out_file_patterns, 'out_file_patterns')
+        self.out_file_types = set()
+        if out_file_types:
+            self.add_file_types(out_file_types, 'out_file_types')
+        self.paths = set()
+        if paths:
+            self.add_paths(paths)
         self.print_results = print_results
         self.print_usage = print_usage
         self.print_version = print_version
@@ -124,15 +148,20 @@ class FindSettings:
         else:
             raise FindException('exts is an unknown type')
 
-    def add_patterns(self, patterns: list | set | str, pattern_set_name: str, compile_flag=re.S | re.U):
+    def add_patterns(self, patterns: list | set | str | Pattern, pattern_set_name: str, compile_flag=re.S | re.U):
         """Add patterns to patternset"""
         if isinstance(patterns, (list, set)):
-            new_pattern_set = {re.compile(p, compile_flag) for p in patterns}
             pattern_set = getattr(self, pattern_set_name)
-            pattern_set.update(new_pattern_set)
+            if all(isinstance(p, Pattern) for p in patterns):
+                pattern_set.update({p for p in patterns})
+            else:  # assume all strings
+                pattern_set.update({re.compile(p, compile_flag) for p in patterns})
         elif isinstance(patterns, str):
             pattern_set = getattr(self, pattern_set_name)
             pattern_set.add(re.compile(patterns, compile_flag))
+        elif isinstance(patterns, Pattern):
+            pattern_set = getattr(self, pattern_set_name)
+            pattern_set.add(patterns)
         else:
             raise FindException('patterns is an unknown type')
 
@@ -145,12 +174,17 @@ class FindSettings:
         else:
             raise FindException('paths is an unknown type')
 
-    def add_file_types(self, file_types: list | set | str, file_type_set_name: str):
+    def add_file_types(self, file_types: list | set | str | FileType, file_type_set_name: str):
         """Add one or more filetypes"""
         if isinstance(file_types, (list, set)):
-            new_file_type_set = {FileType.from_name(ft) for ft in file_types}
+            if all(isinstance(ft, FileType) for ft in file_types):
+                new_file_type_set = {ft for ft in file_types}
+            else:  # assume all strings
+                new_file_type_set = {FileType.from_name(ft) for ft in file_types}
         elif isinstance(file_types, str):
             new_file_type_set = {FileType.from_name(ft) for ft in file_types.split(',') if ft}
+        elif isinstance(file_types, FileType):
+            new_file_type_set = {file_types}
         else:
             raise FindException('file_types is an unknown type')
         file_type_set = getattr(self, file_type_set_name)
