@@ -119,7 +119,7 @@ class FindOptions:
                 settings.add_file_types(x, 'in_file_types'),
             'in-mimetype':
                 lambda x, settings:
-                settings.in_mime_types.add(x),
+                settings.add_mime_types(x, 'in_mime_types'),
             'out-archiveext':
                 lambda x, settings:
                 settings.add_strs_to_set(x, 'out_archive_extensions'),
@@ -140,7 +140,7 @@ class FindOptions:
                 settings.add_file_types(x, 'out_file_types'),
             'out-mimetype':
                 lambda x, settings:
-                settings.out_mime_types.add(x),
+                settings.add_mime_types(x, 'out_mime_types'),
             'path':
                 lambda x, settings:
                 settings.add_path(x),

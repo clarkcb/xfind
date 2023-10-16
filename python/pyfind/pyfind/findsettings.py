@@ -242,6 +242,10 @@ class FindSettings:
         return self.sort_by == SortBy.LASTMOD or \
                self.max_last_mod or self.min_last_mod
 
+    def need_mime_type(self) -> bool:
+        return len(self.in_mime_types) > 0 or \
+               len(self.out_mime_types) > 0
+
     def need_size(self) -> bool:
         return self.sort_by == SortBy.FILESIZE or \
                self.max_size > 0 or self.min_size > 0
