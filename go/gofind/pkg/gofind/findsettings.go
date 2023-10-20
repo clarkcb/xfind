@@ -19,6 +19,8 @@ const (
 	SortByFileTypeName = "filetype"
 	SortByTypeName     = "type"
 	SortByLastModName  = "lastmod"
+	SortByMimeTypeName = "mimetype"
+	SortByMimeName     = "mime"
 )
 
 const (
@@ -27,6 +29,7 @@ const (
 	SortByFileSize SortBy = iota
 	SortByFileType SortBy = iota
 	SortByLastMod  SortBy = iota
+	SortByMimeType SortBy = iota
 )
 
 func SortByForName(name string) SortBy {
@@ -43,6 +46,9 @@ func SortByForName(name string) SortBy {
 	if lname == SortByLastModName {
 		return SortByLastMod
 	}
+	if lname == SortByMimeTypeName || lname == SortByMimeName {
+		return SortByMimeType
+	}
 	return SortByFilePath
 }
 
@@ -58,6 +64,9 @@ func NameForSortBy(sortBy SortBy) string {
 	}
 	if sortBy == SortByLastMod {
 		return SortByLastModName
+	}
+	if sortBy == SortByMimeType {
+		return SortByMimeTypeName
 	}
 	return SortByFilePathName
 }
@@ -537,7 +546,7 @@ func addPattern(p string, sp *Patterns) {
 }
 
 func (f *FindSettings) NeedMimeType() bool {
-	return len(f.inMimeTypes) > 0 || len(f.outMimeTypes) > 0
+	return f.sortBy == SortByMimetype || len(f.inMimeTypes) > 0 || len(f.outMimeTypes) > 0
 }
 
 func (f *FindSettings) NeedStat() bool {

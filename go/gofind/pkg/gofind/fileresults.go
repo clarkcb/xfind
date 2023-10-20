@@ -230,6 +230,17 @@ func (frs *FileResults) getSortByLastMod(sortCaseInsensitive bool) func(i, j int
 	}
 }
 
+func (frs *FileResults) getSortByMimeType(sortCaseInsensitive bool) func(i, j int) bool {
+	return func(i, j int) bool {
+		fres := compareStrings(frs.FileResults[i].MimeType, frs.FileResults[j].MimeType, sortCaseInsensitive)
+		if fres == 0 {
+			sortByPath := frs.getSortByPath(sortCaseInsensitive)
+			return sortByPath(i, j)
+		}
+		return fres < 0
+	}
+}
+
 func (frs *FileResults) Sort(settings *FindSettings) {
 	switch settings.SortBy() {
 	case SortByFileName:
@@ -240,6 +251,8 @@ func (frs *FileResults) Sort(settings *FindSettings) {
 		sort.Slice(frs.FileResults, frs.getSortByType(settings.SortCaseInsensitive()))
 	case SortByLastMod:
 		sort.Slice(frs.FileResults, frs.getSortByLastMod(settings.SortCaseInsensitive()))
+	case SortByMimetype:
+		sort.Slice(frs.FileResults, frs.getSortByMimeType(settings.SortCaseInsensitive()))
 	default:
 		sort.Slice(frs.FileResults, frs.getSortByPath(settings.SortCaseInsensitive()))
 	}
