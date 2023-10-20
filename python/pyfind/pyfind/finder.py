@@ -318,6 +318,9 @@ class Finder:
             case SortBy.LASTMOD:
                 return sorted(file_results, key=lambda r: self.key_by_last_mod(r),
                               reverse=self.settings.sort_descending)
+            case SortBy.MIMETYPE:
+                return sorted(file_results, key=lambda r: (r.mime_type, filepath_key(r), c(r.file_name)),
+                              reverse=self.settings.sort_descending)
             case _:
                 return sorted(file_results, key=lambda r: self.key_by_file_path(r),
                               reverse=self.settings.sort_descending)

@@ -30,6 +30,7 @@ class SortBy(StrEnum):
     FILETYPE = 'filetype'
     FILESIZE = 'filesize'
     LASTMOD = 'lastmod'
+    MIMETYPE = 'mimetype'
 
 
 def get_sort_by_for_name(sort_by_name: str):
@@ -243,8 +244,9 @@ class FindSettings:
                self.max_last_mod or self.min_last_mod
 
     def need_mime_type(self) -> bool:
-        return len(self.in_mime_types) > 0 or \
-               len(self.out_mime_types) > 0
+        return self.sort_by == SortBy.MIMETYPE or \
+            len(self.in_mime_types) > 0 or \
+            len(self.out_mime_types) > 0
 
     def need_size(self) -> bool:
         return self.sort_by == SortBy.FILESIZE or \
