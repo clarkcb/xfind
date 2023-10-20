@@ -63,7 +63,8 @@ public class FileResult {
             p1 = p1.toLowerCase();
             p2 = p2.toLowerCase();
         }
-        if (p1.equals(p2)) {
+        int pcmp = p1.compareTo(p2);
+        if (pcmp == 0) {
             var f1 = this.path.getFileName().toString();
             var f2 = other.path.getFileName().toString();
             if (sortCaseInsensitive) {
@@ -72,7 +73,7 @@ public class FileResult {
             }
             return f1.compareTo(f2);
         }
-        return p1.compareTo(p2);
+        return pcmp;
     }
 
     public int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
@@ -82,7 +83,8 @@ public class FileResult {
             f1 = f1.toLowerCase();
             f2 = f2.toLowerCase();
         }
-        if (f1.equals(f2)) {
+        int fcmp = f1.compareTo(f2);
+        if (fcmp == 0) {
             var p1 = this.path.getParent().toString();
             var p2 = other.path.getParent().toString();
             if (sortCaseInsensitive) {
@@ -91,7 +93,7 @@ public class FileResult {
             }
             return p1.compareTo(p2);
         }
-        return f1.compareTo(f2);
+        return fcmp;
     }
 
     public int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
@@ -113,6 +115,20 @@ public class FileResult {
             return compareByPath(other, sortCaseInsensitive);
         }
         return this.lastMod.compareTo(other.lastMod);
+    }
+
+    public int compareByMimeType(final FileResult other, final boolean sortCaseInsensitive) {
+        var m1 = this.getMimeType();
+        var m2 = other.getMimeType();
+        if (sortCaseInsensitive) {
+            m1 = m1.toLowerCase();
+            m2 = m2.toLowerCase();
+        }
+        int cmp = m1.compareTo(m2);
+        if (cmp == 0) {
+            return compareByPath(other, sortCaseInsensitive);
+        }
+        return cmp;
     }
 
     public String toString() {

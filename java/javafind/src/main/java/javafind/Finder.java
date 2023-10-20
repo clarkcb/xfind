@@ -246,6 +246,8 @@ public class Finder {
             fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.getSortCaseInsensitive()));
         } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
             fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive()));
+        } else if (settings.getSortBy().equals(SortBy.MIMETYPE)) {
+            fileResults.sort((fr1, fr2) -> fr1.compareByMimeType(fr2, settings.getSortCaseInsensitive()));
         } else {
             fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.getSortCaseInsensitive()));
         }

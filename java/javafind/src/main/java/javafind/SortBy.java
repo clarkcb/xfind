@@ -6,6 +6,7 @@ public enum SortBy {
     FILESIZE("filesize"),
     FILETYPE("filetype"),
     LASTMOD("lastmod");
+    MIMETYPE("mimetype"),
 
     private final String name;
 
@@ -27,6 +28,9 @@ public enum SortBy {
                 return FILETYPE;
             case "lastmod":
                 return LASTMOD;
+            case "mimetype":
+            case "mime":
+                return MIMETYPE;
             default:
                 return FILEPATH;
         }

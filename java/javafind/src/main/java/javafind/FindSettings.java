@@ -442,7 +442,7 @@ public class FindSettings {
     }
 
     public final boolean needMimeType() {
-        return !this.inMimeTypes.isEmpty() || !this.outMimeTypes.isEmpty();
+        return this.sortBy.equals(SortBy.MIMETYPE) || !this.inMimeTypes.isEmpty() || !this.outMimeTypes.isEmpty();
     }
 
     protected static String stringSetToString(final Set<String> set) {
