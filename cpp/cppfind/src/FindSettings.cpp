@@ -404,6 +404,9 @@ namespace cppfind {
         if (lname == SORT_BY_NAME_LASTMOD) {
             return SortBy::LASTMOD;
         }
+        if (lname == SORT_BY_NAME_MIME || lname == SORT_BY_NAME_MIMETYPE) {
+            return SortBy::MIMETYPE;
+        }
         return SortBy::FILEPATH;
     }
 
@@ -420,6 +423,8 @@ namespace cppfind {
                 return SORT_BY_NAME_FILETYPE;
             case SortBy::LASTMOD:
                 return SORT_BY_NAME_LASTMOD;
+            case SortBy::MIMETYPE:
+                return SORT_BY_NAME_MIMETYPE;
             default:
                 return SORT_BY_NAME_UNKNOWN;
         }

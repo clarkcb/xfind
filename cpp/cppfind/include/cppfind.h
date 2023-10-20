@@ -162,7 +162,7 @@ namespace cppfind {
     void log_error(std::string_view msg);
 
     // FindSettings.h
-    enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
+    enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD, MIMETYPE};
 
     struct PathHash {
         auto operator()(const std::filesystem::path& p) const noexcept {

@@ -396,6 +396,28 @@ namespace cppfind {
         return cmp_file_results_by_lastmod;
     }
 
+    bool cmp_file_results_by_mime_type(const FileResult& fr1, const FileResult& fr2) {
+        if (fr1.mime_type() == fr2.mime_type()) {
+            return cmp_file_results_by_path(fr1, fr2);
+        }
+        return (fr1.mime_type() < fr2.mime_type());
+    }
+
+    bool cmp_file_results_by_mime_type_ci(const FileResult& fr1, const FileResult& fr2) {
+        if (fr1.mime_type() == fr2.mime_type()) {
+            return cmp_file_results_by_path_ci(fr1, fr2);
+        }
+        return (fr1.mime_type() < fr2.mime_type());
+    }
+
+    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_mime_type(FindSettings& settings) {
+        if (settings.sort_case_insensitive()) {
+            return cmp_file_results_by_mime_type_ci;
+        } else {
+            return cmp_file_results_by_mime_type;
+        }
+    }
+
     void Finder::sort_file_results(std::vector<FileResult>& file_results) const {
         if (m_settings.sort_by() == SortBy::FILEPATH) {
             std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_path(m_settings));
@@ -407,6 +429,8 @@ namespace cppfind {
             std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_type(m_settings));
         } else if (m_settings.sort_by() == SortBy::LASTMOD) {
             std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_lastmod(m_settings));
+        } else if (m_settings.sort_by() == SortBy::MIMETYPE) {
+            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_mime_type(m_settings));
         }
         if (m_settings.sort_descending()) {
             std::reverse(file_results.begin(), file_results.end());

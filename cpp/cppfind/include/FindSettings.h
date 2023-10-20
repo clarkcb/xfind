@@ -17,10 +17,12 @@
 #define SORT_BY_NAME_FILETYPE "filetype"
 #define SORT_BY_NAME_TYPE "type"
 #define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_MIMETYPE "mimetype"
+#define SORT_BY_NAME_MIME "mime"
 #define SORT_BY_NAME_UNKNOWN "unknown"
 
 namespace cppfind {
-    enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
+    enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD, MIMETYPE};
 
     struct PathHash {
         auto operator()(const std::filesystem::path& p) const noexcept {
