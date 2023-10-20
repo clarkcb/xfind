@@ -6,6 +6,7 @@ type SortBy =
     | FileSize = 2
     | FileType = 3
     | LastMod  = 4
+    | MimeType = 5
 
 
 module SortUtil = 
@@ -16,6 +17,7 @@ module SortUtil =
         else if lname.Equals("filesize") || lname.Equals("size") then SortBy.FileSize
         else if lname.Equals("filetype") || lname.Equals("type") then SortBy.FileType
         else if lname.Equals("lastmod") then SortBy.LastMod
+        else if lname.Equals("mimetype") || lname.Equals("mime") then SortBy.MimeType
         else SortBy.FilePath
 
     let NameFromSortBy (sortBy : SortBy) : string =
@@ -23,6 +25,7 @@ module SortUtil =
         else if sortBy = SortBy.FileSize then "filesize"
         else if sortBy = SortBy.FileType then "filetype"
         else if sortBy = SortBy.LastMod then "lastmod"
+        else if sortBy = SortBy.MimeType then "mimetype"
         else "filepath"
 
 ;;

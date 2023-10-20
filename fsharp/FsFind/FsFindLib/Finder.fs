@@ -170,12 +170,18 @@ type Finder (settings : FindSettings) =
         let lastModCmp = fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
         if lastModCmp = 0 then (this.SortByPath fr1 fr2) else lastModCmp
 
+    member this.SortByMimeType (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
+        let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
+        let mimeTypeCmp = String.Compare(fr1.MimeType, fr2.MimeType, cmp)
+        if mimeTypeCmp = 0 then (this.SortByPath fr1 fr2) else mimeTypeCmp
+
     member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
         match settings.SortBy with
         | SortBy.FileName -> List.sortWith this.SortByName fileResults
         | SortBy.FileSize -> List.sortWith this.SortBySize fileResults
         | SortBy.FileType -> List.sortWith this.SortByType fileResults
         | SortBy.LastMod  -> List.sortWith this.SortByLastMod fileResults
+        | SortBy.MimeType -> List.sortWith this.SortByMimeType fileResults
         | _               -> List.sortWith this.SortByPath fileResults
 
     member this.Find () : FileResult.t list =

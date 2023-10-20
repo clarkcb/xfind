@@ -87,7 +87,7 @@ type FindSettings() =
         List.append ftList (this.FileTypesListFromString fts)
 
     member this.NeedMimeType () : bool =
-        not (List.isEmpty this.InMimeTypes) || not (List.isEmpty this.OutMimeTypes)
+        this.SortBy = SortBy.MimeType || not (List.isEmpty this.InMimeTypes) || not (List.isEmpty this.OutMimeTypes)
 
     member this.ToString =
         String.concat "" [
