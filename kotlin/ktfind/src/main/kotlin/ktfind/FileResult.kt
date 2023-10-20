@@ -71,6 +71,14 @@ class FileResult(
         } else lastModCmp
     }
 
+    fun compareByMimeType(other: FileResult, sortCaseInsensitive: Boolean): Int {
+        if (mimeType == null || other.mimeType == null) return 0
+        val mimeTypeCmp = compareStrings(mimeType, other.mimeType, sortCaseInsensitive)
+        return if (mimeTypeCmp == 0) {
+            compareByPath(other, sortCaseInsensitive)
+        } else mimeTypeCmp
+    }
+
     override fun toString(): String {
         val sb = StringBuilder()
         if (containers.isNotEmpty()) {

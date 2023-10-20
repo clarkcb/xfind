@@ -235,6 +235,11 @@ class Finder(val settings: FindSettings) {
                         .sorted { fr1, fr2 -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive) }.toList()
                 }
 
+                SortBy.MIMETYPE -> {
+                    fileResults.stream()
+                        .sorted { fr1, fr2 -> fr1.compareByMimeType(fr2, settings.sortCaseInsensitive) }.toList()
+                }
+
                 else -> {
                     fileResults.stream()
                         .sorted { fr1, fr2 -> fr1.compareByPath(fr2, settings.sortCaseInsensitive) }.toList()

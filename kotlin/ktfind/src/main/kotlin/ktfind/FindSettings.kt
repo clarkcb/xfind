@@ -13,7 +13,8 @@ enum class SortBy(val value: String) {
     FILENAME("filename"),
     FILESIZE("filesize"),
     FILETYPE("filetype"),
-    LASTMOD("lastmod");
+    LASTMOD("lastmod"),
+    MIMETYPE("mimetype");
 
     override fun toString(): String {
         return value
@@ -26,6 +27,9 @@ enum class SortBy(val value: String) {
                 if (it.value == lname) {
                     return it
                 }
+            }
+            if (lname == "mime") {
+                return MIMETYPE
             }
             if (lname == "name") {
                 return FILENAME
@@ -111,6 +115,12 @@ data class FindSettings(
                 "sortCaseInsensitive=$sortCaseInsensitive, " +
                 "sortDescending=$sortDescending, " +
                 "verbose=$verbose)"
+    }
+
+    fun needMimeType(): Boolean {
+        return this.sortBy == SortBy.MIMETYPE
+                || this.inMimeTypes.isNotEmpty()
+                || this.outMimeTypes.isNotEmpty()
     }
 }
 
