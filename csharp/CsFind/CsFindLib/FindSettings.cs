@@ -267,7 +267,7 @@ public class FindSettings
 
 	public bool NeedMimeType()
 	{
-		return InMimeTypes.Count > 0 || OutMimeTypes.Count > 0;
+		return SortBy == SortBy.MimeType || InMimeTypes.Count > 0 || OutMimeTypes.Count > 0;
 	}
 
 	private static string DateTimeToString(System.DateTime? dt)

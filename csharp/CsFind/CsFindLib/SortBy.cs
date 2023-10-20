@@ -6,7 +6,8 @@ public enum SortBy
 	FileName,
 	FileSize,
 	FileType,
-	LastMod
+	LastMod,
+	MimeType
 }
 
 public static class SortByUtil
@@ -22,6 +23,8 @@ public static class SortByUtil
 			"filetype" => SortBy.FileType,
 			"type" => SortBy.FileType,
 			"lastmod" => SortBy.LastMod,
+			"mimetype" => SortBy.MimeType,
+			"mime" => SortBy.MimeType,
 			_ => SortBy.FilePath
 		};
 	}
@@ -34,6 +37,7 @@ public static class SortByUtil
 			SortBy.FileSize => "filesize",
 			SortBy.FileType => "filetype",
 			SortBy.LastMod => "lastmod",
+			SortBy.MimeType => "mimetype",
 			_ => "filepath"
 		};
 	}

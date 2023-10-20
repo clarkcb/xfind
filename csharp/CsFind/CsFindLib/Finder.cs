@@ -320,6 +320,15 @@ public class Finder
 		return fr1.File.LastWriteTimeUtc == fr2.File.LastWriteTimeUtc ? CompareByPath(fr1, fr2) : fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc);
 	}
 	
+	private int CompareByMimeType(FileResult fr1, FileResult fr2)
+	{
+		var cmp = Settings.SortCaseInsensitive ?
+			StringComparison.OrdinalIgnoreCase :
+			StringComparison.Ordinal;
+		var mimeTypeCmp = string.Compare(fr1.MimeType, fr2.MimeType, cmp);
+		return mimeTypeCmp == 0 ? CompareByPath(fr1, fr2) : mimeTypeCmp;
+	}
+
 	private void SortFileResults(List<FileResult> fileResults)
 	{
 		switch (Settings.SortBy)
@@ -335,6 +344,9 @@ public class Finder
 				break;
 			case SortBy.LastMod:
 				fileResults.Sort(CompareByLastMod);
+				break;
+			case SortBy.MimeType:
+				fileResults.Sort(CompareByMimeType);
 				break;
 			default:
 				fileResults.Sort(CompareByPath);
