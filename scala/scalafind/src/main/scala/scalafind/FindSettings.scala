@@ -14,6 +14,7 @@ object SortBy extends Enumeration {
   val FileSize: SortBy = Value("filesize")
   val FileType: SortBy = Value("filetype")
   val LastMod: SortBy = Value("lastmod")
+  val MimeType: SortBy = Value("mimetype")
 
   def forName(sortByName: String): SortBy = {
     sortByName.toLowerCase() match {
@@ -24,6 +25,8 @@ object SortBy extends Enumeration {
       case "filetype" => SortBy.FileType
       case "type" => SortBy.FileType
       case "lastmod" => SortBy.LastMod
+      case "mimetype" => SortBy.MimeType
+      case "mime" => SortBy.MimeType
       case _ => SortBy.FilePath
     }
   }
@@ -112,7 +115,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
   }
 
   def needMimeType: Boolean = {
-    inMimeTypes.nonEmpty || outMimeTypes.nonEmpty
+    sortBy == SortBy.MimeType || inMimeTypes.nonEmpty || outMimeTypes.nonEmpty
   }
 
   def needSize: Boolean = {

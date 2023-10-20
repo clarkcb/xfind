@@ -218,6 +218,8 @@ class Finder (settings: FindSettings) {
       fr1.compareByType(fr2, settings.sortCaseInsensitive)
     } else if (settings.sortBy == SortBy.LastMod) {
       fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
+    } else if (settings.sortBy == SortBy.MimeType) {
+      fr1.compareByMimeType(fr2, settings.sortCaseInsensitive)
     } else {
       fr1.compareByPath(fr2, settings.sortCaseInsensitive)
     }
@@ -233,6 +235,8 @@ class Finder (settings: FindSettings) {
         fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2, settings.sortCaseInsensitive))
       } else if (settings.sortBy == SortBy.LastMod) {
         fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
+      } else if (settings.sortBy == SortBy.MimeType) {
+        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByMimeType(fr2, settings.sortCaseInsensitive))
       } else {
         fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2, settings.sortCaseInsensitive))
       }

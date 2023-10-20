@@ -21,6 +21,12 @@ class FileResult(val containers: List[String],
     this(List.empty[String], path, fileType, mimeType, fileSize, lastMod)
   }
 
+  private def compareStrings(str1: String, str2: String, sortCaseInsensitive: Boolean): Int = {
+    val s1 = if (sortCaseInsensitive) str1.toLowerCase else str1
+    val s2 = if (sortCaseInsensitive) str2.toLowerCase else str2
+    s1.compareTo(s2)
+  }
+
   private def comparePaths(path1: Path, path2: Path, sortCaseInsensitive: Boolean): Int = {
     val p1 = (Option(path1), sortCaseInsensitive) match {
       case (None, _) => ""
@@ -78,6 +84,19 @@ class FileResult(val containers: List[String],
           compareByPath(other, sortCaseInsensitive)
         } else {
           lastMod1.compareTo(lastMod2) < 0
+        }
+      case (_, _) => false
+    }
+  }
+
+  def compareByMimeType(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+    (this.mimeType, other.mimeType) match {
+      case (Some(m1), Some(m2)) =>
+        val mimeCmp = compareStrings(m1, m2, sortCaseInsensitive)
+        if (mimeCmp == 0) {
+          compareByPath(other, sortCaseInsensitive)
+        } else {
+          mimeCmp < 0
         }
       case (_, _) => false
     }
