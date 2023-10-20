@@ -361,7 +361,9 @@ impl FindSettings {
     }
 
     pub fn need_mime_type(&self) -> bool {
-        !self._in_mime_types.is_empty() || !self._out_mime_types.is_empty()
+        self.sort_by() == SortBy::MimeType
+            || !self._in_mime_types.is_empty()
+            || !self._out_mime_types.is_empty()
     }
 
     fn get_settings_string(&self) -> String {

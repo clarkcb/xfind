@@ -5,6 +5,7 @@ pub enum SortBy {
     FileSize,
     FileType,
     LastMod,
+    MimeType,
 }
 
 pub fn sort_by_from_name(name: &str) -> SortBy {
@@ -16,6 +17,7 @@ pub fn sort_by_from_name(name: &str) -> SortBy {
         "filetype" => SortBy::FileType,
         "type" => SortBy::FileType,
         "lastmod" => SortBy::LastMod,
+        "mime" => SortBy::MimeType,
         _ => SortBy::FilePath,
     }
 }
@@ -26,6 +28,7 @@ pub fn name_from_sort_by(sort_by: &SortBy) -> String {
         SortBy::FileSize => String::from("filesize"),
         SortBy::FileType => String::from("filetype"),
         SortBy::LastMod => String::from("lastmod"),
+        SortBy::MimeType => String::from("mimetype"),
         _ => String::from("filepath"),
     }
 }

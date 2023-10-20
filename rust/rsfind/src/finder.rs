@@ -403,12 +403,37 @@ impl Finder {
         }
     }
 
+    fn cmp_by_mime_type(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        let mimecmp = fr1.mime_type.cmp(&fr2.mime_type);
+        if mimecmp.is_eq() {
+            return Self::cmp_by_path(fr1, fr2);
+        }
+        mimecmp
+    }
+
+    fn cmp_by_mime_type_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
+        let mimecmp = fr1.mime_type.to_lowercase().cmp(&fr2.mime_type.to_lowercase());
+        if mimecmp.is_eq() {
+            return Self::cmp_by_path_ci(fr1, fr2);
+        }
+        mimecmp
+    }
+
+    fn get_cmp_by_mime_type(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+        return if self.settings.sort_case_insensitive() {
+            Self::cmp_by_mime_type_ci
+        } else {
+            Self::cmp_by_mime_type
+        }
+    }
+
     pub fn sort_file_results(&self, file_results: &mut Vec<FileResult>) {
         match self.settings.sort_by() {
             SortBy::FileName => file_results.sort_by(self.get_cmp_by_name()),
             SortBy::FileSize => file_results.sort_by(self.get_cmp_by_size()),
             SortBy::FileType => file_results.sort_by(self.get_cmp_by_type()),
             SortBy::LastMod => file_results.sort_by(self.get_cmp_by_last_mod()),
+            SortBy::MimeType => file_results.sort_by(self.get_cmp_by_mime_type()),
             _ => file_results.sort_by(self.get_cmp_by_path()),
         }
         if self.settings.sort_descending() {
