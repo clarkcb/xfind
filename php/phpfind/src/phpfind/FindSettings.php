@@ -112,7 +112,7 @@ class FindSettings
      */
     public function need_mime_type(): bool
     {
-        return $this->in_mime_types || $this->out_mime_types;
+        return $this->sort_by == SortBy::Mimetype || $this->in_mime_types || $this->out_mime_types;
     }
 
     /**

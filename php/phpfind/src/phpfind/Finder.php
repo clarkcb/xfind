@@ -501,6 +501,19 @@ class Finder
     }
 
     /**
+     * @param FileResult $fr1
+     * @param FileResult $fr2
+     * @return int
+     */
+    private function cmp_file_result_mime_type(FileResult $fr1, FileResult $fr2): int
+    {
+        if ($fr1->mime_type == $fr2->mime_type) {
+            return $this->cmp_file_result_path($fr1, $fr2);
+        }
+        return ($fr1->mime_type < $fr2->mime_type) ? -1 : 1;
+    }
+
+    /**
      * @param FileResult[] $file_results
      * @return FileResult[]
      */
@@ -518,6 +531,9 @@ class Finder
                 break;
             case SortBy::LastMod:
                 usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_last_mod($fr1, $fr2));
+                break;
+            case SortBy::Mimetype:
+                usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_mime_type($fr1, $fr2));
                 break;
             default:
                 usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr1, $fr2));

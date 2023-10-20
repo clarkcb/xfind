@@ -12,4 +12,5 @@ enum SortBy: string
     case Filesize = 'filesize';
     case Filetype = 'filetype';
     case LastMod = 'lastmod';
+    case Mimetype = 'mimetype';
 }
