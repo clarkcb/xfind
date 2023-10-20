@@ -383,6 +383,9 @@ SortBy sort_by_from_name(const char *name)
     if (strncmp(lname, SORT_BY_NAME_LASTMOD, maxlen) == 0) {
         return LASTMOD;
     }
+    if (strncmp(uname, "MIME", maxlen) == 0) {
+        return MIMETYPE;
+    }
     return FILEPATH;
 }
 
@@ -408,6 +411,10 @@ void sort_by_to_name(const SortBy sort_by, char *name)
         case LASTMOD:
             strncpy(name, SORT_BY_NAME_LASTMOD, 7);
             name[7] = '\0';
+            break;
+        case MIMETYPE:
+            strncpy(name, "MIMETYPE", 8);
+            name[8] = '\0';
             break;
         default:
             strncpy(name, SORT_BY_NAME_UNKNOWN, 7);

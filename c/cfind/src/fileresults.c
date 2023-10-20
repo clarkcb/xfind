@@ -191,6 +191,18 @@ static int cmp_file_results_by_lastmod(const void *a, const void *b)
     return timecmp;
 }
 
+// comparator function for file result mime types
+static int cmp_file_results_by_mime_type(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int mimecmp = strcmp((*r1)->mime_type, (*r2)->mime_type);
+    if (mimecmp == 0) {
+        return cmp_file_results_by_path(a, b);
+    }
+    return mimecmp;
+}
+
 // -----------------------------------------------------------------------------
 // Case-insensitive comparisons
 // -----------------------------------------------------------------------------
@@ -254,6 +266,18 @@ static int cmp_file_results_by_lastmod_ci(const void *a, const void *b)
     return timecmp;
 }
 
+// comparator function for file result mime types
+static int cmp_file_results_by_mime_type_ci(const void *a, const void *b)
+{
+    FileResult **r1 = (FileResult **)a;
+    FileResult **r2 = (FileResult **)b;
+    int mimecmp = strcasecmp((*r1)->mime_type, (*r2)->mime_type);
+    if (mimecmp == 0) {
+        return cmp_file_results_by_path_ci(a, b);
+    }
+    return mimecmp;
+}
+
 // sort a FileResult array
 void sort_file_result_array(FileResult **arr, const size_t n, const SortBy sort_by, const unsigned short case_insensitive)
 {
@@ -270,6 +294,9 @@ void sort_file_result_array(FileResult **arr, const size_t n, const SortBy sort_
                 break;
             case LASTMOD:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_lastmod_ci);
+                break;
+            case MIMETYPE:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_mime_type_ci);
                 break;
             default:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path_ci);
@@ -288,6 +315,9 @@ void sort_file_result_array(FileResult **arr, const size_t n, const SortBy sort_
                 break;
             case LASTMOD:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_lastmod);
+                break;
+            case MIMETYPE:
+                qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_mime_type);
                 break;
             default:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_path);

@@ -24,7 +24,8 @@ typedef enum {
     FILENAME = 1,
     FILESIZE = 2,
     FILETYPE = 3,
-    LASTMOD  = 4
+    LASTMOD  = 4,
+    MIMETYPE = 5
 } SortBy;
 
 typedef struct FindSettings {
