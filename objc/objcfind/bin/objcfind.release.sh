@@ -2,10 +2,10 @@
 
 if [ -z "$XFIND_PATH" ]
 then
-    XFIND_PATH=$HOME/src/xfind
+    XFIND_PATH="$HOME/src/xfind"
 fi
 
-OBJCFIND_PATH=$XFIND_PATH/objc/objcfind
-OBJCFIND_EXE=$OBJCFIND_PATH/.build/release/objcfindApp
+OBJCFIND_PATH="$XFIND_PATH/objc/objcfind"
+OBJCFIND_EXE="$OBJCFIND_PATH/.build/release/objcfindApp"
 
 $OBJCFIND_EXE "$@"
