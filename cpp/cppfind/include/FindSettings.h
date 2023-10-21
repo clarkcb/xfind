@@ -68,6 +68,7 @@ namespace cppfind {
         [[nodiscard]] bool print_usage() const;
         [[nodiscard]] bool print_version() const;
         [[nodiscard]] bool recursive() const;
+        [[nodiscard]] SortBy sort_by() const;
         [[nodiscard]] bool sort_case_insensitive() const;
         [[nodiscard]] bool sort_descending() const;
         [[nodiscard]] bool verbose() const;

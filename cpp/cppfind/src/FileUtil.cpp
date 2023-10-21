@@ -100,7 +100,6 @@ namespace cppfind {
 
     // implement the split_path method
     // TODO: make this cross-platform
-    // TODO: this should remove trailing path sep first
     std::pair<std::string, std::string> FileUtil::split_path(const std::string& file_path) {
         std::string fp{file_path};
         size_t pos = fp.rfind('/');

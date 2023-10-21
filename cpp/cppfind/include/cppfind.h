@@ -179,18 +179,19 @@ namespace cppfind {
         [[nodiscard]] long min_last_mod() const;
         [[nodiscard]] long min_size() const;
         [[nodiscard]] SortBy sort_by() const;
-        [[nodiscard]] std::set<FileType> in_file_types() const;
-        [[nodiscard]] std::set<FileType> out_file_types() const;
+
+        [[nodiscard]] std::set<std::string> in_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_archive_file_patterns() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_dir_patterns() const;
+        [[nodiscard]] std::set<std::string> in_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_file_patterns() const;
+        [[nodiscard]] std::set<FileType> in_file_types() const;
+        [[nodiscard]] std::set<std::string> out_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_archive_file_patterns() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_dir_patterns() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
-        [[nodiscard]] std::set<std::string> in_archive_extensions() const;
-        [[nodiscard]] std::set<std::string> in_extensions() const;
-        [[nodiscard]] std::set<std::string> out_archive_extensions() const;
         [[nodiscard]] std::set<std::string> out_extensions() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
+        [[nodiscard]] std::set<FileType> out_file_types() const;
         [[nodiscard]] std::set<std::string> paths() const;
 
         // property setters
