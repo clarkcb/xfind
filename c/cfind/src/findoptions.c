@@ -199,28 +199,24 @@ end:
 error_t get_find_options(FindOptions *options)
 {
     error_t err = E_OK;
-    char *xfindpath = (char *)malloc(MAX_HOMEPATH_LENGTH + 1);
-    get_xfindpath(xfindpath);
-    // + 2 because of the '/' and the terminating \0
-    char *shared_find_options_json_path = "shared/findoptions.json";
 
-    char *fullpath = malloc((strlen(xfindpath) + strlen(shared_find_options_json_path) + 2) * sizeof(char));
-    assert(fullpath != NULL);
-    join_path(xfindpath, shared_find_options_json_path, fullpath);
+    char *full_path = (char *)malloc(MAX_HOMEPATH_LENGTH + 21);
+    get_find_options_path(full_path);
 
-    if (!dir_or_file_exists(fullpath)) {
+
+    assert(full_path != NULL);
+
+    if (!dir_or_file_exists(full_path)) {
         err = E_FILE_NOT_FOUND;
-        free(fullpath);
-        free(xfindpath);
+        free(full_path);
         return err;
     }
 
     // load the file
-    long fsize = file_size(fullpath);
-    // char contents[4020];
+    long fsize = file_size(full_path);
     char contents[fsize];
     contents[0] = '\0';
-    FILE *fp = fopen(fullpath, "r");
+    FILE *fp = fopen(full_path, "r");
     int c;
     if (fp != NULL) {
         while((c = getc(fp)) != EOF) {
@@ -228,19 +224,17 @@ error_t get_find_options(FindOptions *options)
         }
         fclose(fp);
     } else {
-        char *errmsg = (char *)malloc((16 + strlen(fullpath)) * sizeof(char));
-        sprintf(errmsg, "Unable to load %s", fullpath);
+        char *errmsg = (char *)malloc((16 + strlen(full_path)) * sizeof(char));
+        sprintf(errmsg, "Unable to load %s", full_path);
         err = E_UNKNOWN_ERROR;
         free(errmsg);
-        free(fullpath);
-        free(xfindpath);
+        free(full_path);
         return err;
     }
 
     err = parse_find_options(contents, options);
 
-    free(fullpath);
-    free(xfindpath);
+    free(full_path);
     return err;
 }
 

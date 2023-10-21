@@ -93,7 +93,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", verbose=%d"
             ")";
 
-static size_t all_strings_strlen(FindSettings *settings)
+static size_t all_strings_strlen(const FindSettings *settings)
 {
     size_t sortby_strlen = 10;
     return
@@ -118,7 +118,7 @@ static size_t last_mod_strlen(long last_mod)
     return last_mod == 0 ? 1 : 10;
 }
 
-size_t settings_strlen(FindSettings *settings)
+size_t settings_strlen(const FindSettings *settings)
 {
     size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
     if (max_last_mod_strlen > 1) max_last_mod_strlen += 2; // for surrounding double quotes
@@ -135,7 +135,7 @@ size_t settings_strlen(FindSettings *settings)
         + all_strings_strlen(settings);
 }
 
-void settings_to_string(FindSettings *settings, char *s)
+void settings_to_string(const FindSettings *settings, char *s)
 {
     // assumes s has correct allocation size
     char *in_archive_extensions_s = malloc(string_node_strlen(settings->in_archive_extensions) + 1);

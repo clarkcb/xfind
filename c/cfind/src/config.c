@@ -3,30 +3,48 @@
 
 #include "config.h"
 
-void get_homepath(char *dest)
+void get_home_path(char *dest)
 {
-    char *homepath = getenv("HOME");
-    if (dest == NULL || homepath == NULL) {
+    char *home_path = getenv("HOME");
+    if (dest == NULL || home_path == NULL) {
         return;
     }
     dest[0] = '\0';
-    strcat(dest, homepath);
-    dest[strlen(homepath)] = '\0';
+    strcat(dest, home_path);
+    dest[strlen(home_path)] = '\0';
 }
 
-void get_xfindpath(char *dest)
+void get_xfind_path(char *dest)
 {
     if (dest == NULL) {
         return;
     }
     dest[0] = '\0';
-    char *xfindpath = getenv("XFIND_PATH");
-    if (xfindpath == NULL) {
-        char homepath[MAX_HOMEPATH_LENGTH];
-        get_homepath(homepath);
-        strcat(dest, homepath);
+    char *xfind_path = getenv("XFIND_PATH");
+    if (xfind_path == NULL) {
+        char home_path[MAX_HOMEPATH_LENGTH];
+        get_home_path(home_path);
+        strcat(dest, home_path);
         strcat(dest, "/src/xfind");
     } else {
-        strcat(dest, xfindpath);
+        strcat(dest, xfind_path);
     }
+}
+
+void get_file_types_path(char *dest)
+{
+    char xfind_path[MAX_HOMEPATH_LENGTH + 11]; // + "/src/xfind\0"
+    get_xfind_path(xfind_path);
+    strcat(dest, xfind_path);
+    strcat(dest, "/");
+    strcat(dest, FILE_TYPES_REL_PATH);
+}
+
+void get_find_options_path(char *dest)
+{
+    char xfind_path[MAX_HOMEPATH_LENGTH + 11]; // + "/src/xfind\0"
+    get_xfind_path(xfind_path);
+    strcat(dest, xfind_path);
+    strcat(dest, "/");
+    strcat(dest, FIND_OPTIONS_REL_PATH);
 }

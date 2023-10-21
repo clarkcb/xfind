@@ -51,11 +51,11 @@ typedef struct FindSettings {
 
 FindSettings *default_settings(void);
 
-size_t settings_strlen(FindSettings *settings);
+size_t settings_strlen(const FindSettings *settings);
 
-void settings_to_string(FindSettings *settings, char *s);
+void settings_to_string(const FindSettings *settings, char *s);
 
-void print_settings(FindSettings *settings);
+void print_settings(const FindSettings *settings);
 
 void destroy_settings(FindSettings *settings);
 

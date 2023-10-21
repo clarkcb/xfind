@@ -32,24 +32,16 @@ error_t get_file_types(FileTypes *file_types)
 {
     error_t err = E_OK;
 
-    char *xfindpath = (char *)malloc(MAX_HOMEPATH_LENGTH + 1);
-    get_xfindpath(xfindpath);
-    // size_t xfind_len = strlen(xfindpath);
-    // + 2 because of the '/' and the terminating \0
-    char *shared_file_types_json_path = "shared/filetypes.json";
-    char *full_path = malloc((strlen(xfindpath) + strlen(shared_file_types_json_path) + 2) * sizeof(char));
-    assert(full_path != NULL);
-    join_path(xfindpath, shared_file_types_json_path, full_path);
+    char *full_path = (char *)malloc(MAX_HOMEPATH_LENGTH + 21);
+    get_file_types_path(full_path);
 
     if (!dir_or_file_exists(full_path)) {
         err = E_FILE_NOT_FOUND;
         free(full_path);
-        free(xfindpath);
         return err;
     }
 
     // load the file
-    // char contents[10450];
     long fsize = file_size(full_path);
     char contents[fsize];
     contents[0] = '\0';
@@ -66,14 +58,12 @@ error_t get_file_types(FileTypes *file_types)
         err = E_UNKNOWN_ERROR;
         free(errmsg);
         free(full_path);
-        free(xfindpath);
         return err;
     }
 
     err = parse_file_types(contents, file_types);
 
     free(full_path);
-    free(xfindpath);
 
     return err;
 }

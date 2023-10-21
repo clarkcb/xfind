@@ -9,7 +9,7 @@ void test_dir_or_file_exists(void)
     printf("\ntest_dir_or_file_exists()\n");
 
     char xfindpath[MAX_HOMEPATH_LENGTH + 1];
-    get_xfindpath(xfindpath);
+    get_xfind_path(xfindpath);
 
     printf("dir: \"%s\"\n", xfindpath);
     printf("expected exists: 1\n");
