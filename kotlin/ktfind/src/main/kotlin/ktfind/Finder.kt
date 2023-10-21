@@ -187,16 +187,6 @@ class Finder(val settings: FindSettings) {
             .toList()
     }
 
-    fun compareFileResults(fr1: FileResult, fr2: FileResult?): Int {
-        return when (settings.sortBy) {
-            SortBy.FILENAME -> fr1.compareByName(fr2!!, settings.sortCaseInsensitive)
-            SortBy.FILESIZE -> fr1.compareBySize(fr2!!, settings.sortCaseInsensitive)
-            SortBy.FILETYPE -> fr1.compareByType(fr2!!, settings.sortCaseInsensitive)
-            SortBy.LASTMOD -> fr1.compareByLastMod(fr2!!, settings.sortCaseInsensitive)
-            else -> fr1.compareByPath(fr2!!, settings.sortCaseInsensitive)
-        }
-    }
-
     private fun sortFileResults(fileResults: List<FileResult>): List<FileResult> {
         val sortedFileResults: MutableList<FileResult> =
             when (settings.sortBy) {

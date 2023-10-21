@@ -27,30 +27,32 @@ class FileResult(val containers: List<String>,
     }
 
     fun compareByPath(other: FileResult, sortCaseInsensitive: Boolean): Int {
-        val pres = compareStrings(path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
-        return if (pres == 0) {
+        val pathCmp = compareStrings(path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
+        return if (pathCmp == 0) {
             compareStrings(path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
-        } else pres
+        } else pathCmp
     }
 
     fun compareByName(other: FileResult, sortCaseInsensitive: Boolean): Int {
-        val fres = compareStrings(path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
-        return if (fres == 0) {
+        val nameCmp = compareStrings(path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
+        return if (nameCmp == 0) {
             compareStrings(path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
-        } else fres
+        } else nameCmp
     }
 
     fun compareBySize(other: FileResult, sortCaseInsensitive: Boolean): Int {
         if (stat == null || other.stat == null) return 0
-        return if (stat.size() == other.stat.size()) {
+        val sizeCmp = stat.size().compareTo(other.stat.size())
+        return if (sizeCmp == 0) {
             compareByPath(other, sortCaseInsensitive)
-        } else stat.size().compareTo(other.stat.size())
+        } else sizeCmp
     }
 
     fun compareByType(other: FileResult, sortCaseInsensitive: Boolean): Int {
-        return if (fileType == other.fileType) {
+        val fileTypeCmp = fileType.compareTo(other.fileType)
+        return if (fileTypeCmp == 0) {
             compareByPath(other, sortCaseInsensitive)
-        } else fileType.compareTo(other.fileType)
+        } else fileTypeCmp
     }
 
     fun compareByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Int {
