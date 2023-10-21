@@ -30,61 +30,53 @@
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
        (.getPath (:file fr))))
 
+(defn cmp-strings [str1 str2 settings]
+  (let [s1 (if (nil? str1) "" str1)
+        s2 (if (nil? str2) "" str2)
+        case-insensitive (:sort-case-insensitive settings)]
+    (if case-insensitive
+      (compare (lower-case s1) (lower-case s2))
+      (compare s1 s2))))
+
 (defn get-comp-by-path
   "get a filepath comparator"
   [settings]
   (let [case-insensitive (:sort-case-insensitive settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [_p1 (.getParent (:file fr1))
-            p1 (if (nil? _p1) "" (if case-insensitive (string/lower-case _p1) _p1))
-            _p2 (.getParent (:file fr2))
-            p2 (if (nil? _p2) "" (if case-insensitive (string/lower-case _p2) _p2))
-            res (compare p1 p2)]
-        (if (= 0 res)
-          (let [_n1 (get-name (:file fr1))
-                n1 (if case-insensitive (string/lower-case _n1) _n1)
-                _n2 (get-name (:file fr2))
-                n2 (if case-insensitive (string/lower-case _n2) _n2)]
-            (compare n1 n2))
-          res)))))
+      (let [pathcmp (cmp-strings (.getParent (:file fr1)) (.getParent (:file fr2)) settings)]
+        (if (= 0 pathcmp)
+          (cmp-strings (get-name (:file fr1)) (get-name (:file fr2)) settings)
+          pathcmp)))))
 
 (defn get-comp-by-name
   "get a filename comparator"
   [settings]
   (let [case-insensitive (:sort-case-insensitive settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [_n1 (get-name (:file fr1))
-            n1 (if case-insensitive (string/lower-case _n1) _n1)
-            _n2 (get-name (:file fr2))
-            n2 (if case-insensitive (string/lower-case _n2) _n2)
-            res (compare n1 n2)]
-        (if (= 0 res)
-          (let [_p1 (.getParent (:file fr1))
-                p1 (if (nil? _p1) "" (if case-insensitive (string/lower-case _p1) _p1))
-                _p2 (.getParent (:file fr2))
-                p2 (if (nil? _p2) "" (if case-insensitive (string/lower-case _p2) _p2))]
-            (compare p1 p2))
-          res)))))
+      (let [namecmp (cmp-strings (get-name (:file fr1)) (get-name (:file fr2)) settings)]
+        (if (= 0 namecmp)
+          (cmp-strings (.getParent (:file fr1)) (.getParent (:file fr2)) settings)
+          namecmp)))))
 
 (defn get-comp-by-size
   "get a filesize comparator"
   [settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (compare (.size (:stat fr1)) (.size (:stat fr2)))]
-        (if (= 0 res)
+      (let [sizecmp (compare (.size (:stat fr1)) (.size (:stat fr2)))]
+        (if (= 0 sizecmp)
           (comp-by-path fr1 fr2)
-          res)))))
+          sizecmp)))))
 
 (defn get-comp-by-type
   "get a file-type comparator"
   [settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (compare (to-name (:file-type fr1)) (to-name (:file-type fr2)))]
-        (if (= 0 res)
+      (let [typecmp (compare (to-name (:file-type fr1)) (to-name (:file-type fr2)))]
+        (if (= 0 typecmp)
           (comp-by-path fr1 fr2)
-          res)))))
+          typecmp)))))
 
 (defn get-comp-by-lastmod
   "get a lastmod comparator"
