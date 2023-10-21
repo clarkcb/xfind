@@ -3,19 +3,21 @@ use std::fs;
 use std::io;
 use std::time::SystemTime;
 
+use magic::cookie::{Cookie, Load};
 use regex::Regex;
 use walkdir::WalkDir;
 
+use crate::fileresult::FileResult;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
-use crate::fileresult::FileResult;
 use crate::findsettings::FindSettings;
 use crate::sortby::SortBy;
 
 pub struct Finder {
     pub file_types: FileTypes,
     pub settings: FindSettings,
+    pub cookie: Option<Cookie<Load>>,
 }
 
 impl Finder {
@@ -30,9 +32,32 @@ impl Finder {
             return Err(error);
         }
 
+        let cookie: Option<Cookie<Load>> = if settings.need_mime_type() {
+            let flags = magic::cookie::Flags::MIME_TYPE | magic::cookie::Flags::NO_CHECK_ENCODING;
+            match magic::Cookie::open(flags) {
+                Ok(open_cookie) => {
+                    let database = Default::default();
+                    match open_cookie.load(&database) {
+                        Ok(open_cookie) => {
+                            Some(open_cookie)
+                        }
+                        Err(_) => {
+                            return Err(FindError::new("An error occurred trying to load magic db"))
+                        }
+                    }
+                }
+                Err(_) => {
+                    return Err(FindError::new("An error occurred trying to create magic cookie"))
+                }
+            }
+        } else {
+            None
+        };
+
         Ok(Finder {
             file_types,
             settings,
+            cookie
         })
     }
 
@@ -185,12 +210,28 @@ impl Finder {
                 || self.matches_any_string("*/*", self.settings.in_mime_types()) {
                 return true
             }
+            if self.settings.in_mime_types().iter().any(|m| m.ends_with("/*"))
+                && mime_type.contains("/") {
+                let prefix: String = mime_type.chars().take_while(|c| c != &'/').collect();
+                let wildcard_mime_type = prefix + "/*";
+                if self.matches_any_string(wildcard_mime_type.as_str(), self.settings.in_mime_types()) {
+                    return true
+                }
+            }
             return false
         }
         if !self.settings.out_mime_types().is_empty() {
             if self.matches_any_string(mime_type, self.settings.out_mime_types())
                 || self.matches_any_string("*/*", self.settings.out_mime_types()) {
                 return false
+            }
+            if self.settings.out_mime_types().iter().any(|m| m.ends_with("/*"))
+                && mime_type.contains("/") {
+                let prefix: String = mime_type.chars().take_while(|c| c != &'/').collect();
+                let wildcard_mime_type = prefix + "/*";
+                if self.matches_any_string(wildcard_mime_type.as_str(), self.settings.out_mime_types()) {
+                    return false
+                }
             }
         }
         true
@@ -229,6 +270,7 @@ impl Finder {
         self.has_matching_extension(file_result) &&
             self.has_matching_file_name(file_result) &&
             self.has_matching_file_type(file_result) &&
+            self.is_matching_mime_type(file_result.mime_type) &&
             self.has_matching_file_size(file_result) &&
             self.has_matching_last_mod(file_result)
     }
@@ -403,10 +445,18 @@ impl Finder {
                 // if file_type == FileType::Unknown {
                 //     continue;
                 // }
-                let mime_type = "".to_string();
-                if self.settings.need_mime_type() {
-                    // TODO: get mime type here
-                }
+                let mime_type: String = if self.cookie.is_some() {
+                    match self.cookie.as_ref().unwrap().file(entry.path()) {
+                        Ok(m) => {
+                            m
+                        }
+                        Err(_) => {
+                            "".to_string()
+                        }
+                    }
+                } else {
+                    "".to_string()
+                };
                 let (file_size, mod_time) = match entry.metadata() {
                     Ok(metadata) => {
                         let fs = metadata.len();
@@ -451,8 +501,8 @@ pub fn get_matching_dirs(file_results: &[FileResult]) -> Vec<&String> {
 /// Get the unique list of filepaths for the matching files
 pub fn get_matching_files(file_results: &[FileResult]) -> Vec<String> {
     let mut files: Vec<String> = Vec::new();
-    for f in file_results.iter() {
-        let file_path = f.file_path();
+    for fr in file_results.iter() {
+        let file_path = fr.to_string();
         files.push(file_path);
     }
     files

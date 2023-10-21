@@ -54,6 +54,18 @@ impl FileResult {
             )
         }
     }
+
+    pub fn to_string(&self) -> String {
+        if self.mime_type.is_empty() {
+            self.full_path()
+        } else {
+            format!(
+                "{} ({})",
+                self.full_path(),
+                self.mime_type
+            )
+        }
+    }
 }
 
 #[cfg(test)]
