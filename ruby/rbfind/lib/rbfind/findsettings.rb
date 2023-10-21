@@ -8,8 +8,9 @@ module RbFind
     FILESIZE = 2
     FILETYPE = 3
     LASTMOD  = 4
+    MIMETYPE = 5
 
-    NAMES = Array[:filepath, :filename, :filesize, :filetype, :lastmod].freeze
+    NAMES = Array[:filepath, :filename, :filesize, :filetype, :lastmod :mimetype].freeze
 
     module_function
     def from_name(name)
@@ -145,7 +146,7 @@ module RbFind
     end
 
     def need_mime_type?
-      !@in_mime_types.empty? || !@out_mime_types.empty?
+      @sort_by == SortBy::MIMETYPE || !@in_mime_types.empty? || !@out_mime_types.empty?
     end
 
     def need_size?
@@ -154,14 +155,16 @@ module RbFind
 
     def set_sort_by_for_name(sort_by_name)
       sort_by_name = sort_by_name.strip.downcase
-      if sort_by_name == 'name'
+      if sort_by_name == 'filename' || sort_by_name == 'name'
         @sort_by = SortBy::FILENAME
-      elsif sort_by_name == 'size'
+      elsif sort_by_name == 'filesize' || sort_by_name == 'size'
         @sort_by = SortBy::FILESIZE
-      elsif sort_by_name == 'type'
+      elsif sort_by_name == 'filetype' || sort_by_name == 'type'
         @sort_by = SortBy::FILETYPE
       elsif sort_by_name == 'lastmod'
         @sort_by = SortBy::LASTMOD
+      elsif sort_by_name == 'mimetype' || sort_by_name == 'mime'
+        @sort_by = SortBy::MIMETYPE
       else
         @sort_by = SortBy::FILEPATH
       end

@@ -197,6 +197,8 @@ module RbFind
           file_results.sort_by {|r| [r.file_type, r.path.downcase, r.file_name.downcase]}
         elsif @settings.sort_by == SortBy::LASTMOD
           file_results.sort_by {|r| [r.last_mod, r.path.downcase, r.file_name.downcase]}
+        elsif @settings.sort_by == SortBy::MIMETYPE
+          file_results.sort_by {|r| [r.mime_type.downcase, r.path.downcase, r.file_name.downcase]}
         else
           file_results.sort_by {|r| [r.path.downcase, r.file_name.downcase]}
         end
@@ -209,6 +211,8 @@ module RbFind
           file_results.sort_by {|r| [r.file_type, r.path, r.file_name]}
         elsif @settings.sort_by == SortBy::LASTMOD
           file_results.sort_by {|r| [r.last_mod, r.path, r.file_name]}
+        elsif @settings.sort_by == SortBy::MIMETYPE
+          file_results.sort_by {|r| [r.mime_type, r.path, r.file_name]}
         else
           file_results.sort_by {|r| [r.path, r.file_name]}
         end
