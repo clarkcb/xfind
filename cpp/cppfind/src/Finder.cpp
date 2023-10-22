@@ -2,7 +2,6 @@
 #include <sys/stat.h>
 #include "FileUtil.h"
 #include "FindException.h"
-#include "StringUtil.h"
 #include "Finder.h"
 #include "StringUtil.h"
 
@@ -127,6 +126,43 @@ namespace cppfind {
                 || !m_settings.out_file_types().contains(file_result.file_type()));
     }
 
+    bool is_wildcard_mime_type(const std::string& mime_type) {
+        return mime_type.size() > 2 && mime_type.compare(mime_type.size() - 2, mime_type.size(), "/*") == 0;
+    }
+
+    bool Finder::is_matching_mime_type(const std::string& mime_type) {
+        if (!m_settings.in_mime_types().empty()) {
+            if (StringUtil::string_in_set(mime_type, m_settings.in_mime_types())
+                || StringUtil::string_in_set("*/*", m_settings.in_mime_types())) {
+                return true;
+            }
+            std::set<std::string> wildcard_in_mimetypes =
+                    StringUtil::filter_string_set(m_settings.in_mime_types(), is_wildcard_mime_type);
+            if (!wildcard_in_mimetypes.empty() && StringUtil::char_in_string('/', mime_type)) {
+                std::string wildcard_mime_type = StringUtil::split_string(mime_type, "/")[0] + "/*";
+                if (StringUtil::string_in_set(wildcard_mime_type, wildcard_in_mimetypes)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        if (!m_settings.out_mime_types().empty()) {
+            if (StringUtil::string_in_set(mime_type, m_settings.out_mime_types())
+                || StringUtil::string_in_set("*/*", m_settings.out_mime_types())) {
+                return false;
+            }
+            std::set<std::string> wildcard_out_mimetypes =
+                    StringUtil::filter_string_set(m_settings.out_mime_types(), is_wildcard_mime_type);
+            if (!wildcard_out_mimetypes.empty() && StringUtil::char_in_string('/', mime_type)) {
+                std::string wildcard_mime_type = StringUtil::split_string(mime_type, "/")[0] + "/*";
+                if (StringUtil::string_in_set(wildcard_mime_type, wildcard_out_mimetypes)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     bool Finder::has_matching_file_size(const FileResult& file_result) const {
         return (m_settings.max_size() == 0
             || file_result.file_size() <= m_settings.max_size())
@@ -150,6 +186,7 @@ namespace cppfind {
         return has_matching_extension(file_result)
             && has_matching_file_name(file_result)
             && has_matching_file_type(file_result)
+            && is_matching_mime_type(file_result.mime_type())
             && has_matching_file_size(file_result)
             && has_matching_last_mod(file_result);
     }
@@ -159,6 +196,12 @@ namespace cppfind {
             return std::nullopt;
         }
         const auto file_type = m_file_types.get_path_type(file_path.filename());
+        const char *magic_res = nullptr;
+        std::string mime_type;
+        if (m_settings.need_mime_type()) {
+            magic_res = magic_file(m_magic, file_path.c_str());
+            mime_type = magic_res;
+        }
         uint64_t file_size = 0;
         long last_mod = 0;
         if (m_settings.need_stat()) {
@@ -170,7 +213,7 @@ namespace cppfind {
             file_size = static_cast<uint64_t>(fpstat.st_size);
             last_mod = static_cast<long>(fpstat.st_mtime);
         }
-        auto file_result = FileResult(std::move(file_path), file_type, file_size, last_mod);
+        auto file_result = FileResult(std::move(file_path), file_type, mime_type, file_size, last_mod);
         if (file_type == FileType::ARCHIVE) {
             if (m_settings.include_archives() && is_matching_archive_file_result(file_result)) {
                 return std::optional{file_result};
