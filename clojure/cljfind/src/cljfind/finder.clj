@@ -165,11 +165,13 @@
       (or
         (empty? in-mime-types)
         (contains? in-mime-types mime-type)
+        (contains? in-mime-types "*/*")
         (is-matching-wild-card-mime-type? mime-type in-mime-types))
       (or
         (empty? out-mime-types)
         (and
           (not-any? #(= mime-type %) out-mime-types)
+          (not-any? #(= "*/*" %) out-mime-types)
           (not (is-matching-wild-card-mime-type? mime-type out-mime-types)))))))
 
 ;(defn has-matching-mime-type?
