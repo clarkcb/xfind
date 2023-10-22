@@ -14,8 +14,7 @@ use warnings;
 use Data::Dumper;
 use File::Spec;
 use File::Basename;
-# TODO: cpan install of following is failing
-# use File::LibMagic;
+use File::LibMagic;
 use Scalar::Util qw(blessed);
 
 use plfind::common;
@@ -29,9 +28,12 @@ sub new {
     my $self = {
         settings => shift,
         file_types => plfind::FileTypes->new(),
-        # magic => File::LibMagic->new,
+        magic => 0,
         results => [],
     };
+    if ($self->{settings}->need_mime_type) {
+        $self->{magic} = File::LibMagic->new;
+    }
     bless $self, $class;
     my $errs = validate_settings($self->{settings});
     return ($self, $errs);
@@ -110,6 +112,38 @@ sub is_matching_dir {
     return 1;
 }
 
+sub is_matching_mime_type {
+    my ($self, $mime_type) = @_;
+    if (scalar @{$self->{settings}->{in_mime_types}}) {
+        if (scalar (grep {$_ eq $mime_type} @{$self->{settings}->{in_mime_types}}) ||
+            (scalar grep {$_ eq '*/*'} @{$self->{settings}->{in_mime_types}})) {
+            return 1;
+        }
+        my @wildcard_in_mime_types = grep {m|/\*$|} @{$self->{settings}->{in_mime_types}};
+        if (scalar @wildcard_in_mime_types && $mime_type =~ m|/|) {
+            my $wildcard_mime_type = (split '/', $mime_type)[0] . '/*';
+            if (scalar (grep {$_ eq $wildcard_mime_type} @wildcard_in_mime_types)) {
+                return 1;
+            }
+        }
+        return 0;
+    }
+    if (scalar @{$self->{settings}->{out_mime_types}}) {
+        if (scalar (grep {$_ eq $mime_type} @{$self->{settings}->{out_mime_types}}) ||
+            (scalar grep {$_ eq '*/*'} @{$self->{settings}->{out_mime_types}})) {
+            return 0;
+        }
+        my @wildcard_out_mime_types = grep {m|/\*$|} @{$self->{settings}->{out_mime_types}};
+        if (scalar @wildcard_out_mime_types && $mime_type =~ m|/|) {
+            my $wildcard_mime_type = (split '/', $mime_type)[0] . '/*';
+            if (scalar (grep {$_ eq $wildcard_mime_type} @wildcard_out_mime_types)) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
 sub is_matching_file_result {
     my ($self, $fr) = @_;
     if (scalar @{$self->{settings}->{in_extensions}} || scalar @{$self->{settings}->{out_extensions}}) {
@@ -139,18 +173,7 @@ sub is_matching_file_result {
         (grep {$_ eq $fr->{file_type}} @{$self->{settings}->{out_file_types}})) {
         return 0;
     }
-    if (scalar @{$self->{settings}->{in_mime_types}}) {
-        if (grep {$_ eq $fr->{mime_type}} @{$self->{settings}->{in_mime_types}} ||
-            grep {$_ eq '*/*'} @{$self->{settings}->{in_mime_types}}) {
-            return 1;
-        }
-        my @wildcard_in_mime_types = grep {/\/\*$/} @{$self->{settings}->{in_mime_types}};
-        if (scalar @wildcard_in_mime_types && $fr->{mime_type} =~ /\//) {
-            my $wildcard_mime_type = (split '/', $fr->{mime_type})[0] . '/*';
-            if (grep {$_ eq $wildcard_mime_type} @wildcard_in_mime_types) {
-                return 1;
-            }
-        }
+    if (!$self->is_matching_mime_type($fr->{mime_type})) {
         return 0;
     }
     if (scalar @{$self->{settings}->{out_mime_types}}) {
@@ -215,7 +238,7 @@ sub filter_to_file_result {
     my $file_type = $self->{file_types}->get_file_type($f);
     my $mime_type = '';
     if ($self->{settings}->need_mime_type) {
-        # $mime_type = $magic->info_from_filename($fp)->{mime_type};
+        $mime_type = $self->{magic}->info_from_filename($fp)->{mime_type};
     }
     my $file_size = 0;
     my $last_mod = 0;

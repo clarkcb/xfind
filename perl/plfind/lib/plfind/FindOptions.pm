@@ -48,7 +48,7 @@ my $arg_action_hash = {
     },
     'in-mimetype' => sub {
         my ($s, $settings) = @_;
-        $settings->add_mime_types($s, $settings->{in_mimetypes});
+        $settings->add_mime_types($s, $settings->{in_mime_types});
     },
     'maxdepth' => sub {
         my ($s, $settings) = @_;
@@ -100,7 +100,7 @@ my $arg_action_hash = {
     },
     'out-mimetype' => sub {
         my ($s, $settings) = @_;
-        $settings->add_mime_types($s, $settings->{out_mimetypes});
+        $settings->add_mime_types($s, $settings->{out_mime_types});
     },
     'path' => sub {
         my ($s, $settings) = @_;
