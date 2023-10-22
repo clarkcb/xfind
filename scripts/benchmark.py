@@ -82,7 +82,14 @@ filetype_scenarios = [
     Scenario('find "xml" filetype', core_args + ['-t', 'xml'] + startpaths),
     Scenario('find not "xml" filetype', core_args + ['-T', 'xml'] + startpaths),
 ]
-print_scenarios = [
+mimetype_scenarios = [
+    # match mimetype
+    Scenario('find "*/*" mimetype', core_args + ['--in-mimetype', '*/*'] + startpaths),
+    Scenario('find "text/plain" mimetype', core_args + ['--in-mimetype', 'text/plain'] + startpaths),
+    Scenario('find not "text/plain" mimetype', core_args + ['--out-mimetype', 'text/plain'] + startpaths),
+    Scenario('find "text/*" mimetype', core_args + ['--in-mimetype', 'text/*'] + startpaths),
+    Scenario('find not "text/*" mimetype', core_args + ['--out-mimetype', 'text/*'] + startpaths),
+
     # print dirs
     Scenario('print matching dirs for "{}" extensions'.format(exts), common_args + ['--printdirs']),
     Scenario('print not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--printdirs'] + startpaths,
@@ -130,7 +137,7 @@ scenarios = \
     extension_scenarios + \
     filename_scenarios + \
     filetype_scenarios + \
-    print_scenarios + \
+    mimetype_scenarios + \
     sorting_scenarios + \
     maxmindepth_scenarios + \
     maxminlastmod_scenarios + \
