@@ -66,6 +66,8 @@ typedef struct FindSettings {
 
 FindSettings *default_settings(void);
 
+unsigned short need_mime_type(const FindSettings *settings);
+
 size_t settings_strlen(const FindSettings *settings);
 
 void settings_to_string(const FindSettings *settings, char *s);

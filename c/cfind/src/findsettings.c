@@ -53,6 +53,15 @@ FindSettings *default_settings(void)
     return settings;
 }
 
+unsigned short need_mime_type(const FindSettings *settings) {
+    if (settings->sort_by == MIMETYPE
+        || is_null_or_empty_string_node(settings->in_mime_types) == 0
+        || is_null_or_empty_string_node(settings->out_mime_types) == 0) {
+       return 1;
+    }
+    return 0;
+}
+
 const int SETTINGS_BOOL_FIELD_COUNT = 13;
 const int SETTINGS_LONG_FIELD_COUNT = 4;
 const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;

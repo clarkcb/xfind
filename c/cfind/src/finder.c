@@ -184,9 +184,7 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
     }
 
     // Get mime type if needed
-    if ((strnlen(mime_type, 100) == 0)
-        && ((is_null_or_empty_string_node(finder->settings->in_mime_types) == 0)
-        || is_null_or_empty_string_node(finder->settings->out_mime_types) == 0)) {
+    if ((strnlen(mime_type, 100) == 0) && (need_mime_type(finder->settings) == 1)) {
         // -- from use-libmagic
         // See https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry
         size_t path_len = strnlen(dir, 260) + strnlen(file_name, 260) + 1; // pathsep
@@ -309,8 +307,7 @@ error_t find(const FindSettings *settings, FileResults *results)
 
     magic_t magic_cookie = NULL;
 
-    if (is_null_or_empty_string_node(settings->in_mime_types) == 0
-        || is_null_or_empty_string_node(settings->out_mime_types) == 0) {
+    if (need_mime_type(settings) == 1) {
         magic_cookie = magic_open(MAGIC_MIME_TYPE | MAGIC_NO_CHECK_ENCODING);
         if (magic_cookie == NULL) {
             return E_LIBMAGIC_ERROR;
