@@ -83,10 +83,20 @@
   [^FindSettings settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (compare (.toMillis (:last-mod fr1)) (.toMillis (:last-mod fr2)))]
-        (if (= 0 res)
+      (let [lastmodcmp (compare (.toMillis (:last-mod fr1)) (.toMillis (:last-mod fr2)))]
+        (if (= 0 lastmodcmp)
           (comp-by-path fr1 fr2)
-          res)))))
+          lastmodcmp)))))
+
+(defn get-comp-by-mimetype
+  "get a mimetype comparator"
+  [settings]
+  (let [comp-by-path (get-comp-by-path settings)]
+    (fn [^FileResult fr1 ^FileResult fr2]
+      (let [mimecmp (cmp-strings (:mime-type fr1) (:mime-type fr2) settings)]
+        (if (= 0 mimecmp)
+          (comp-by-path fr1 fr2)
+          mimecmp)))))
 
 (defn sort-results
   "sorts file results according to settings"
@@ -100,6 +110,8 @@
                   (get-comp-by-type settings)
                   (= (:sort-by settings) :lastmod)
                   (get-comp-by-lastmod settings)
+                  (= (:sort-by settings) :mimetype)
+                  (get-comp-by-mimetype settings)
                   :else
                   (get-comp-by-path settings))
         sorted-results (sort sort-fn results)]

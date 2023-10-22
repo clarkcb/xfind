@@ -23,6 +23,7 @@
 (def ^:const ^String FILETYPE "filetype")
 (def ^:const ^String TYPE "type")
 (def ^:const ^String LASTMOD "lastmod")
+(def ^:const ^String MIMETYPE "mime")
 
 (defn get-sort-by-name [s]
   (cond
@@ -30,6 +31,7 @@
     (= :filesize s) FILESIZE
     (= :filetype s) FILETYPE
     (= :lastmod s) LASTMOD
+    (= :mimetype s) MIMETYPE
     :else FILEPATH))
 
 (defn sort-by-from-name [^String name]
@@ -45,6 +47,7 @@
         (= FILETYPE lname)
         (= TYPE lname)) :filetype
       (= LASTMOD lname) :lastmod
+      (= MIMETYPE lname) :mimetype
       :else :filepath)))
 
 (defrecord FindSettings
@@ -204,6 +207,7 @@
 
 (defn need-mime [^FindSettings settings]
   (or
+   (= :mimetype (:sort-by settings))
    (not (empty? (:in-mime-types settings)))
    (not (empty? (:out-mime-types settings)))))
 
