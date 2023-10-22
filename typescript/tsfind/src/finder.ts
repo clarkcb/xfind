@@ -421,7 +421,7 @@ export class Finder {
     }
 
     public getMatchingFiles(fileResults: FileResult[]): string[] {
-        return fileResults.map(f => f.relativePath());
+        return fileResults.map(fr => fr.toString());
     }
 
     public printMatchingFiles(fileResults: FileResult[]): void {

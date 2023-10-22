@@ -39,7 +39,8 @@ export class FileResult {
         if (this.containers.length > 0) {
             s = this.containers.join(this.containerSeparator) + this.containerSeparator;
         }
-        s += path.join(this.path, this.fileName);
+        s += this.relativePath();
+        if (this.mimeType) s += ` (${this.mimeType})`;
         return s;
     }
 }
