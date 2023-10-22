@@ -408,6 +408,14 @@ sub cmp_file_results_by_last_mod {
     return $fr1->{last_mod} <=> $fr2->{last_mod};
 }
 
+sub cmp_file_results_by_mime_type {
+    my ($self, $fr1, $fr2) = @_;
+    if ($fr1->{mime_type} eq $fr2->{mime_type}) {
+        return $self->cmp_file_results_by_path($fr1, $fr2);
+    }
+    return $fr1->{mime_type} cmp $fr2->{mime_type};
+}
+
 sub sort_file_results {
     my ($self, $file_results) = @_;
     my @sorted;
@@ -419,6 +427,8 @@ sub sort_file_results {
         @sorted = sort {$self->cmp_file_results_by_file_type($a, $b)} @{$file_results};
     } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->LASTMOD) {
         @sorted = sort {$self->cmp_file_results_by_last_mod($a, $b)} @{$file_results};
+    } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->MIMETYPE) {
+        @sorted = sort {$self->cmp_file_results_by_mime_type($a, $b)} @{$file_results};
     } else {
         @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @{$file_results};
     }

@@ -17,6 +17,7 @@ use constant {
     FILESIZE => 'filesize',
     FILETYPE => 'filetype',
     LASTMOD => 'lastmod',
+    MIMETYPE => 'mimetype',
 };
 
 sub name_to_sort_by {
@@ -33,6 +34,8 @@ sub name_to_sort_by {
     }
     if ($lname eq 'lastmod') {
         return plfind::SortBy->LASTMOD;
+    } elsif ($lname eq 'mimetype' || $lname eq 'mime') {
+        $self->{sort_by} = plfind::SortBy->MIMETYPE;
     }
     return plfind::SortBy->FILEPATH;
 }

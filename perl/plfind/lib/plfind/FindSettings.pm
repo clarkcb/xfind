@@ -138,8 +138,9 @@ sub needs_last_mod {
 
 sub need_mime_type {
     my $self = shift;
-    return (scalar @{$self->{in_mime_types}} ||
-        scalar @{$self->{out_mime_types}});
+    return $self->{sort_by} eq plfind::SortBy->MIMETYPE ||
+        scalar @{$self->{in_mime_types}} ||
+        scalar @{$self->{out_mime_types}};
 }
 
 sub needs_size {
