@@ -20,7 +20,7 @@ getIsMatchingDirTests = do
   let settings = defaultFindSettings
   let settingsInDirPattern = settings { inDirPatterns = ["hsfind"] }
   let settingsOutDirPattern = settings { outDirPatterns = ["csfind"] }
-  let settingsIncludeHidden = settings { excludeHidden = False }
+  let settingsIncludeHidden = settings { includeHidden = True }
   return [ testCase "isMatchingDir hsfind default settings" (isMatchingDir settings "hsfind" @?= True)
          , testCase "isMatchingDir hsfind matching inDirPattern" (isMatchingDir settingsInDirPattern "hsfind" @?= True)
          , testCase "isMatchingDir hsfind not matching inDirPattern" (isMatchingDir settingsInDirPattern "csfind" @?= False)
@@ -39,7 +39,7 @@ getIsMatchingFileTests = do
   let settingsOutExtension = settings { outExtensions = [".cs"] }
   let settingsInFilePattern = settings { inFilePatterns = ["Find"] }
   let settingsOutFilePattern = settings { outFilePatterns = ["Main"] }
-  let settingsIncludeHidden = settings { excludeHidden = False }
+  let settingsIncludeHidden = settings { includeHidden = True }
   return [ testCase "isMatchingFile Finder.hs default settings" (isMatchingFile settings "Finder.hs" @?= True)
          , testCase "isMatchingFile Finder.hs matching inExtensions" (isMatchingFile settingsInExtension "Finder.hs" @?= True)
          , testCase "isMatchingFile Finder.hs not matching inExtensions" (isMatchingFile settingsInExtension "Finder.cs" @?= False)
@@ -60,7 +60,7 @@ getIsMatchingArchiveFileTests = do
   let settingsOutArchiveExtension = settings { outArchiveExtensions = [".gz"] }
   let settingsInArchiveFilePattern = settings { inArchiveFilePatterns = ["arch"] }
   let settingsOutArchiveFilePattern = settings { outArchiveFilePatterns = ["comp"] }
-  let settingsIncludeHidden = settings { excludeHidden = False }
+  let settingsIncludeHidden = settings { includeHidden = True }
   return [ testCase "isMatchingArchiveFile archive.zip default settings" (isMatchingArchiveFile settings "archive.zip" @?= True)
          , testCase "isMatchingArchiveFile archive.zip matching inArchiveExtensions" (isMatchingArchiveFile settingsInArchiveExtension "archive.zip" @?= True)
          , testCase "isMatchingArchiveFile archive.tar.gz not matching inArchiveExtensions" (isMatchingArchiveFile settingsInArchiveExtension "archive.tar.gz" @?= False)
@@ -80,7 +80,7 @@ getFilterToFileResultTests = do
   jsonFileTypes <- getJsonFileTypes
   let settingsInExtension = settings { inExtensions = [".hs"] }
   let settingsOutExtension = settings { outExtensions = [".hs"] }
-  let settingsIncludeHidden = settings { excludeHidden = False }
+  let settingsIncludeHidden = settings { includeHidden = True }
   let settingsIncludeArchives = settings { includeArchives = True }
   let settingsArchivesOnly = settingsIncludeArchives { archivesOnly = True }
   -- let hsTestFileResult = FileResult { fileResultContainers=[], fileResultPath="Finder.hs", fileResultType=Text }

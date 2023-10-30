@@ -33,12 +33,12 @@ class Finder (settings: FindSettings) {
   }
   validateSettings()
 
-  def isMatchingDir(p: Path): Boolean = {
-    val pathElems = splitPath(p.toString)
-    if (settings.excludeHidden && pathElems.exists(p => isHidden(p))) {
+  def isMatchingDir(path: Path): Boolean = {
+    val pathElems = splitPath(path.toString)
+    if (!settings.includeHidden && pathElems.exists(p => isHidden(p))) {
       false
     } else {
-      filterByPatterns(p.toString, settings.inDirPatterns, settings.outDirPatterns)
+      filterByPatterns(path.toString, settings.inDirPatterns, settings.outDirPatterns)
     }
   }
 
@@ -96,7 +96,7 @@ class Finder (settings: FindSettings) {
   }
 
   def filterToFileResult(p: Path): Option[FileResult] = {
-    if (settings.excludeHidden && Files.isHidden(p)) {
+    if (!settings.includeHidden && Files.isHidden(p)) {
       None
     } else {
       val stat: Option[BasicFileAttributes] =

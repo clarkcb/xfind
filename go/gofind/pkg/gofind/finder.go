@@ -38,7 +38,7 @@ func NewFinder(settings *FindSettings) *Finder {
 }
 
 func (f *Finder) isMatchingDir(d string) bool {
-	if f.Settings.ExcludeHidden() && isHidden(d) {
+	if !f.Settings.IncludeHidden() && isHidden(d) {
 		return false
 	}
 	return (f.Settings.InDirPatterns().IsEmpty() || f.Settings.InDirPatterns().MatchesAny(d)) &&
@@ -46,10 +46,10 @@ func (f *Finder) isMatchingDir(d string) bool {
 }
 
 func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
-	if len(f.Settings.InArchiveExtensions()) > 0 || len(f.Settings.InArchiveExtensions()) > 0 {
+	if len(f.Settings.InArchiveExtensions()) > 0 || len(f.Settings.OutArchiveExtensions()) > 0 {
 		ext := GetExtension(fr.Name)
 		if (len(f.Settings.InArchiveExtensions()) > 0 && !Contains(f.Settings.InArchiveExtensions(), ext)) ||
-			(len(f.Settings.InArchiveExtensions()) > 0 && Contains(f.Settings.InArchiveExtensions(), ext)) {
+			(len(f.Settings.OutArchiveExtensions()) > 0 && Contains(f.Settings.OutArchiveExtensions(), ext)) {
 			return false
 		}
 	}
@@ -83,7 +83,7 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
-	if f.Settings.ExcludeHidden() && isHidden(filePath) {
+	if !f.Settings.IncludeHidden() && isHidden(filePath) {
 		return nil
 	}
 	if !f.Settings.MaxLastMod().IsZero() && fi.ModTime().After(f.Settings.MaxLastMod()) {

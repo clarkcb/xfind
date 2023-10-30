@@ -38,7 +38,7 @@ describe('testing finder', () => {
 
     it('testIsMatchingDir_IsHiddenIncludeHidden_True', () => {
         const settings: FindSettings = getSettings();
-        settings.excludeHidden = false;
+        settings.includeHidden = true;
         const finder: Finder = new Finder(settings);
         expect(finder.isMatchingDir('.git')).toBeTruthy();
     });
@@ -228,7 +228,7 @@ describe('testing finder', () => {
 
     it('testFilterToFileResult_IsHiddenIncludeHidden_True', () => {
         const settings: FindSettings = getSettings();
-        settings.excludeHidden = false;
+        settings.includeHidden = true;
         const finder: Finder = new Finder(settings);
         const file = '.gitignore';
         expect(finder.filterToFileResult(file)).toBeTruthy();
@@ -271,7 +271,7 @@ describe('testing finder', () => {
         settings.archivesOnly = true;
         const finder: Finder = new Finder(settings);
         const file = 'archive.zip';
-        expect(finder.filterToFileResult(file)).toBeFalsy();
+        expect(finder.filterToFileResult(file)).toBeTruthy();
     });
 
     it('testFilterToFileResult_NoExtensionsNoPatterns_True', () => {

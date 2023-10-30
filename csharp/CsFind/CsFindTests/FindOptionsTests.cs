@@ -18,8 +18,8 @@ public class FindOptionsTests
 		var settings = _findOptions.SettingsFromArgs(new List<string>());
 		Assert.IsFalse(settings.ArchivesOnly);
 		Assert.IsFalse(settings.Debug);
-		Assert.IsTrue(settings.ExcludeHidden);
 		Assert.IsFalse(settings.IncludeArchives);
+		Assert.IsFalse(settings.IncludeHidden);
 		Assert.IsFalse(settings.ListDirs);
 		Assert.IsTrue(settings.ListFiles);
 		Assert.IsFalse(settings.PrintUsage);
@@ -58,7 +58,7 @@ public class FindOptionsTests
   ""out-dirpattern"": ""node_module"",
   ""out-filepattern"": [""temp""],
   ""debug"": true,
-  ""includehidden"": false
+  ""includehidden"": true
 }";
 		var settings = new FindSettings();
 		FindOptions.SettingsFromJson(json, settings);
@@ -77,6 +77,6 @@ public class FindOptionsTests
 		Assert.AreEqual("temp", settings.OutFilePatterns.First().ToString());
 
 		Assert.True(settings.Debug);
-		Assert.True(settings.ExcludeHidden);
+		Assert.True(settings.IncludeHidden);
 	}
 }

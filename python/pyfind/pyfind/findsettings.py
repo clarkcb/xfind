@@ -32,11 +32,11 @@ class FindSettings:
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
-        'archives_only', 'debug', 'exclude_hidden', 'in_archive_extensions',
-        'in_archive_file_patterns', 'in_dir_patterns', 'in_extensions', 'in_file_patterns',
-        'in_file_types', 'include_archives', 'list_dirs', 'list_files', 'max_depth',
+        'archives_only', 'debug', 'in_archive_extensions', 'in_archive_file_patterns',
+        'in_dir_patterns', 'in_extensions', 'in_file_patterns', 'in_file_types',
+        'include_archives', 'include_hidden', 'list_dirs', 'list_files', 'max_depth',
         'max_last_mod', 'max_size', 'min_depth', 'min_last_mod', 'min_size',
-        'out_archive_file_patterns', 'out_archive_extensions', 'out_dir_patterns',
+        'out_archive_extensions', 'out_archive_file_patterns', 'out_dir_patterns',
         'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_results',
         'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
         'sort_descending', 'verbose'
@@ -45,7 +45,6 @@ class FindSettings:
     def __init__(self,
                  archives_only: bool = False,
                  debug: bool = False,
-                 exclude_hidden: bool = True,
                  in_archive_extensions: list[str] | set[str] | str = None,
                  in_archive_file_patterns: list | set | str | Pattern = None,
                  in_dir_patterns: list | set | str | Pattern = None,
@@ -53,6 +52,7 @@ class FindSettings:
                  in_file_patterns: list | set | str | Pattern = None,
                  in_file_types: list | set | str | FileType = None,
                  include_archives: bool = False,
+                 include_hidden: bool = False,
                  list_dirs: bool = False,
                  list_files: bool = False,
                  max_depth: int = -1,
@@ -78,7 +78,6 @@ class FindSettings:
                  verbose: bool = False):
         self.archives_only = archives_only
         self.debug = debug
-        self.exclude_hidden = exclude_hidden
         self.in_archive_extensions = set()
         if in_archive_extensions:
             self.add_exts(in_archive_extensions, 'in_archive_extensions')
@@ -98,6 +97,7 @@ class FindSettings:
         if in_file_types:
             self.add_file_types(in_file_types, 'in_file_types')
         self.include_archives = include_archives
+        self.include_hidden = include_hidden
         self.list_dirs = list_dirs
         self.list_files = list_files
         self.max_depth = max_depth

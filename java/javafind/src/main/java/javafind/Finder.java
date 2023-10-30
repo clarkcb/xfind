@@ -69,7 +69,7 @@ public class Finder {
     }
 
     boolean isMatchingDir(final Path path) {
-        if (settings.getExcludeHidden()) {
+        if (!settings.getIncludeHidden()) {
             try {
                 // This erroneously returns true for . and ..
 //                if (Files.isHidden(path)) {
@@ -162,7 +162,7 @@ public class Finder {
     }
 
     Optional<FileResult> filterToFileResult(final Path path) {
-        if (settings.getExcludeHidden()) {
+        if (!settings.getIncludeHidden()) {
             try {
                 if (Files.isHidden(path)) {
                     return Optional.empty();

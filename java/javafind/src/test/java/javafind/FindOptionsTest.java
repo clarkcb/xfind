@@ -20,8 +20,8 @@ public class FindOptionsTest {
             var settings = findOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
-            assertTrue(settings.getExcludeHidden());
             assertFalse(settings.getIncludeArchives());
+            assertFalse(settings.getIncludeHidden());
             assertFalse(settings.getListDirs());
             assertTrue(settings.getListFiles());
             assertFalse(settings.getPrintUsage());
@@ -86,7 +86,7 @@ public class FindOptionsTest {
 
             assertTrue(settings.getDebug());
             assertTrue(settings.getVerbose());
-            assertTrue(settings.getExcludeHidden());
+            assertFalse(settings.getIncludeHidden());
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
             fail();

@@ -215,10 +215,10 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
                 if (b) ss.verbose = true;
             } copy], @"debug",
             [^void (BOOL b, FindSettings *ss) { ss.includeArchives = !b; } copy], @"excludearchives",
-            [^void (BOOL b, FindSettings *ss) { ss.excludeHidden = b; } copy], @"excludehidden",
+            [^void (BOOL b, FindSettings *ss) { ss.includeHidden = !b; } copy], @"excludehidden",
             [^void (BOOL b, FindSettings *ss) { ss.printUsage = b; } copy], @"help",
             [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy], @"includearchives",
-            [^void (BOOL b, FindSettings *ss) { ss.excludeHidden = !b; } copy], @"includehidden",
+            [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy], @"includehidden",
             [^void (BOOL b, FindSettings *ss) { ss.listDirs = b; } copy], @"listdirs",
             [^void (BOOL b, FindSettings *ss) { ss.listFiles = b; } copy], @"listfiles",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",

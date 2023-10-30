@@ -8,14 +8,14 @@
     (testing "test-no-args"
       (is (not (:archives-only ss)))
       (is (not (:debug ss)))
-      (is (:exclude-hidden ss))
+      (is (not (:include-archives ss)))
+      (is (not (:include-hidden ss)))
       (is (not (:list-dirs ss)))
       (is (:list-files ss))
+      (is (empty? (:path ss)))
       (is (not (:print-usage ss)))
       (is (not (:print-version ss)))
       (is (:recursive ss))
-      (is (not (:include-archives ss)))
-      (is (empty? (:path ss)))
       (is (not (:verbose ss))))))
 
 (deftest test-valid-args
@@ -72,4 +72,4 @@
       (is (= (count (:out-file-patterns ss)) 1))
       (is (= (:debug ss) true))
       (is (= (:verbose ss) true))
-      (is (= (:exclude-hidden ss) false)))))
+      (is (= (:include-hidden ss) true)))))

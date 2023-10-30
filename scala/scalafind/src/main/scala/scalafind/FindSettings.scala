@@ -28,8 +28,8 @@ object SortBy extends Enumeration {
 object DefaultSettings {
   val archivesOnly = false
   val debug = false
-  val excludeHidden = true
   var includeArchives = false
+  val includeHidden = false
   val listDirs = false
   val listFiles = false
   val maxDepth: Int = -1
@@ -48,7 +48,6 @@ object DefaultSettings {
 
 case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                         debug: Boolean = DefaultSettings.debug,
-                        excludeHidden: Boolean = DefaultSettings.excludeHidden,
                         inArchiveExtensions: Set[String] = Set.empty[String],
                         inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                         inDirPatterns: Set[Regex] = Set.empty[Regex],
@@ -56,6 +55,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
                         inFilePatterns: Set[Regex] = Set.empty[Regex],
                         inFileTypes: Set[FileType] = Set.empty[FileType],
                         var includeArchives: Boolean = DefaultSettings.includeArchives,
+                        includeHidden: Boolean = DefaultSettings.includeHidden,
                         listDirs: Boolean = DefaultSettings.listDirs,
                         listFiles: Boolean = DefaultSettings.listFiles,
                         maxDepth: Int = DefaultSettings.maxDepth,
@@ -92,7 +92,6 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
     "FindSettings(" +
       "archivesOnly: " + archivesOnly +
       ", debug: " + debug +
-      ", excludeHidden: " + excludeHidden +
       ", inArchiveExtensions: " + inArchiveExtensions +
       ", inArchiveFilePatterns: " + inArchiveFilePatterns +
       ", inDirPatterns: " + inDirPatterns +
@@ -100,6 +99,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
       ", inFilePatterns: " + inFilePatterns +
       ", inFileTypes: " + inFileTypes +
       ", includeArchives: " + includeArchives +
+      ", includeHidden: " + includeHidden +
       ", listDirs: " + listDirs +
       ", listFiles: " + listFiles +
       ", maxDepth: " + maxDepth +

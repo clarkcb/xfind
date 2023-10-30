@@ -14,8 +14,8 @@ func TestFindSettingsFromNoArgs(t *testing.T) {
 
 	if settings.ArchivesOnly() ||
 		settings.Debug() ||
-		!settings.ExcludeHidden() ||
 		settings.IncludeArchives() ||
+		settings.IncludeHidden() ||
 		settings.ListDirs() ||
 		!settings.ListFiles() ||
 		settings.PrintUsage() ||
@@ -114,7 +114,7 @@ func TestFindSettingsFromJson(t *testing.T) {
 		t.Errorf("settings.Debug (%t) != true", settings.Debug())
 	}
 
-	if settings.ExcludeHidden() {
-		t.Errorf("settings.ExcludeHidden (%t) != false", settings.ExcludeHidden())
+	if !settings.IncludeHidden() {
+		t.Errorf("settings.IncludeHidden (%t) != true", settings.IncludeHidden())
 	}
 }

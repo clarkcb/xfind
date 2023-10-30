@@ -53,7 +53,7 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingDir_IsHiddenIncludeHidden_True () =
         let settings = this.GetSettings()
-        settings.ExcludeHidden <- false
+        settings.IncludeHidden <- true
         let finder = Finder(settings)
         Assert.True(finder.IsMatchingDir(DirectoryInfo(".git")))
         ()
@@ -300,7 +300,7 @@ type FinderTests () =
     [<Test>]
     member this.TestFilterToFileResult_IsHiddenIncludeHidden_IsSome () =
         let settings = this.GetSettings()
-        settings.ExcludeHidden <- false
+        settings.IncludeHidden <- true
         let finder = Finder(settings)
         let file = FileInfo(".gitignore")
         let fr = finder.FilterToFileResult file

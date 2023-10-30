@@ -17,8 +17,8 @@ class FindOptionsTest {
         val settings = findOptions.settingsFromArgs(args)
         assertFalse(settings.archivesOnly)
         assertFalse(settings.debug)
-        assertTrue(settings.excludeHidden)
         assertFalse(settings.includeArchives)
+        assertFalse(settings.includeHidden)
         assertFalse(settings.listDirs)
         assertTrue(settings.listFiles)
         assertEquals(1, settings.paths.size)
@@ -67,6 +67,6 @@ class FindOptionsTest {
         assertEquals(1, settings.outFilePatterns.count {it.pattern == "gulpfile"})
 
         assertTrue(settings.debug)
-        assertTrue(settings.excludeHidden)
+        assertFalse(settings.includeHidden)
     }
 }

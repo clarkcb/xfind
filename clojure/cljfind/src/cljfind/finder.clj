@@ -63,7 +63,7 @@
     (is-dot-dir? (get-name d))
     (and
       (or
-        (not (:exclude-hidden settings))
+        (:include-hidden settings)
         (not (hidden-dir? d)))
       (or
         (empty? (:in-dir-patterns settings))
@@ -199,8 +199,8 @@
 (defn filter-to-file-result [^File f settings]
   (if
     (and
-      (hidden-file? f)
-      (:exclude-hidden settings))
+      (not (:include-hidden settings))
+      (hidden-file? f))
     nil
     (let [file-type (get-file-type f)
           stat (if (need-stat settings) (get-stat f) nil)

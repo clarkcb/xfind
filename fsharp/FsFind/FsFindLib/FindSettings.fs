@@ -21,7 +21,6 @@ type FindSettings() =
             this.Verbose <- value
 
 
-    member val ExcludeHidden : bool = true with get, set
     member val InArchiveExtensions : string list = [] with get, set
     member val InArchiveFilePatterns : Regex list = [] with get, set
     member val InDirPatterns : Regex list = [] with get, set
@@ -29,6 +28,7 @@ type FindSettings() =
     member val InFilePatterns : Regex list = [] with get, set
     member val InFileTypes : FileType list = [] with get, set
     member val IncludeArchives : bool = false with get, set
+    member val IncludeHidden : bool = false with get, set
     member val ListDirs : bool = false with get, set
     member val ListFiles : bool = false with get, set
     member val MaxDepth : int = -1 with get, set
@@ -89,7 +89,6 @@ type FindSettings() =
             "FindSettings(";
             $"ArchivesOnly: %b{this.ArchivesOnly}";
             $", Debug: %b{this.Debug}";
-            $", ExcludeHidden: %b{this.ExcludeHidden}";
             $", InArchiveExtensions: %s{Common.ListToString(this.InArchiveExtensions)}";
             $", InArchiveFilePatterns: %s{Common.ListToString(this.InArchiveFilePatterns)}";
             $", InDirPatterns: %s{Common.ListToString(this.InDirPatterns)}";
@@ -97,6 +96,7 @@ type FindSettings() =
             $", InFilePatterns: %s{Common.ListToString(this.InFilePatterns)}";
             $", InFileTypes: %s{this.FileTypesListToString this.InFileTypes}";
             $", IncludeArchives: %b{this.IncludeArchives}";
+            $", IncludeHidden: %b{this.IncludeHidden}";
             $", ListDirs: %b{this.ListDirs}";
             $", ListFiles: %b{this.ListFiles}";
             $", MaxDepth: %i{this.MaxDepth}";

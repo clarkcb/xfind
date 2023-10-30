@@ -162,8 +162,8 @@ namespace cppfind {
         // property getters
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool debug() const;
-        [[nodiscard]] bool exclude_hidden() const;
         [[nodiscard]] bool include_archives() const;
+        [[nodiscard]] bool include_hidden() const;
         [[nodiscard]] bool list_dirs() const;
         [[nodiscard]] bool list_files() const;
         [[nodiscard]] bool print_usage() const;
@@ -197,13 +197,13 @@ namespace cppfind {
         // property setters
         void archives_only(bool archives_only);
         void debug(bool debug);
-        void exclude_hidden(bool exclude_hidden);
         void in_archive_extensions(const std::set<std::string>& in_archive_extensions);
         void in_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_dir_patterns);
         void in_extensions(const std::set<std::string>& in_extensions);
         void in_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_file_patterns);
         void in_file_types(const std::set<FileType>& in_file_types);
         void include_archives(bool include_archives);
+        void include_hidden(bool exclude_hidden);
         void list_dirs(bool list_dirs);
         void list_files(bool list_files);
         void max_depth(int max_depth);

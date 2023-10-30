@@ -102,10 +102,10 @@ class FindOptions {
         "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
             ss.copy(debug = b) },
         "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
-        "excludehidden" to { b, ss -> ss.copy(excludeHidden = b) },
+        "excludehidden" to { b, ss -> ss.copy(includeHidden = !b) },
         "help" to { b, ss -> ss.copy(printUsage = b) },
         "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
-        "includehidden" to { b, ss -> ss.copy(excludeHidden = !b) },
+        "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
         "listdirs" to { b, ss -> ss.copy(listDirs = b) },
         "listfiles" to { b, ss -> ss.copy(listFiles = b) },
         "norecursive" to { b, ss -> ss.copy(recursive = !b) },

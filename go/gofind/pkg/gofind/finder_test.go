@@ -45,7 +45,7 @@ func TestIsFindDir_IsHidden_False(t *testing.T) {
 
 func TestIsFindDir_IsHiddenIncludeHidden_True(t *testing.T) {
 	settings := getSettings()
-	settings.SetExcludeHidden(false)
+	settings.SetIncludeHidden(true)
 	finder := NewFinder(settings)
 	d := ".git"
 	if !finder.isMatchingDir(d) {

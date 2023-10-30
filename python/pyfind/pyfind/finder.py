@@ -47,7 +47,7 @@ class Finder:
     def is_matching_dir(self, d: str) -> bool:
         """Check whether the given directory matches find settings."""
         path_elems = FileUtil.path_elems(d)
-        if self.settings.exclude_hidden:
+        if not self.settings.include_hidden:
             for p in path_elems:
                 if FileUtil.is_hidden(p):
                     return False
@@ -106,7 +106,7 @@ class Finder:
     def filter_to_file_result(self, file_path: str) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
         (path, file_name) = os.path.split(file_path)
-        if self.settings.exclude_hidden and FileUtil.is_hidden(file_name):
+        if not self.settings.include_hidden and FileUtil.is_hidden(file_name):
             return None
         file_type = self.file_types.get_file_type(file_name)
         if file_type == FileType.ARCHIVE \

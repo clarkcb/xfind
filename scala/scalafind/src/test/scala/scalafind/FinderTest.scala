@@ -42,7 +42,7 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
   }
 
   test("testIsMatchingDir_IsHiddenIncludeHidden_True") {
-    val settings = getFindSettings.copy(excludeHidden = false)
+    val settings = getFindSettings.copy(includeHidden = true)
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get(".git")))
   }
@@ -221,7 +221,7 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
   }
 
   test("testFilterToFileResult_IsHiddenIncludeHidden_Some") {
-    val settings = getFindSettings.copy(excludeHidden = false)
+    val settings = getFindSettings.copy(includeHidden = true)
     val finder = new Finder(settings)
     val file = Paths.get(".hidden.txt")
 //    println("FileUtil.isHidden(\"%s\"): %s".format(file.getFileName.toString,

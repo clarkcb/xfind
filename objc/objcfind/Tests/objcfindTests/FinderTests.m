@@ -52,7 +52,7 @@
 
 - (void)testIsMatchingDir_IsHiddenIncludeHidden_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setExcludeHidden:false];
+    [settings setIncludeHidden:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     XCTAssert([finder isMatchingDir:@".git"]);
@@ -249,7 +249,7 @@
 
 - (void)testFilterToFindFile_IsHiddenIncludeHidden_True {
     FindSettings *settings = [[FindSettings alloc] init];
-    [settings setExcludeHidden:false];
+    [settings setIncludeHidden:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     XCTAssert([finder filterToFileResult:@".hidden.txt"] != nil);

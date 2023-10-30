@@ -303,7 +303,7 @@ func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.SetIncludeArchives(!b)
 		},
 		"excludehidden": func(b bool, settings *FindSettings) {
-			settings.SetExcludeHidden(b)
+			settings.SetIncludeHidden(!b)
 		},
 		"help": func(b bool, settings *FindSettings) {
 			settings.SetPrintUsage(b)
@@ -312,7 +312,7 @@ func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 			settings.SetIncludeArchives(b)
 		},
 		"includehidden": func(b bool, settings *FindSettings) {
-			settings.SetExcludeHidden(!b)
+			settings.SetIncludeHidden(b)
 		},
 		"listdirs": func(b bool, settings *FindSettings) {
 			settings.SetListDirs(b)

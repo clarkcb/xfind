@@ -13,63 +13,63 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
   }
 
   /** ***********************************************************
-    * isFindDir tests
+    * isMatchingDir tests
     * ************************************************************/
-  test("testisFindDir_SingleDot_True") {
+  test("testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get(".")))
   }
 
-  test("test testisFindDir_SingleDot_True") {
+  test("test testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get(".")))
   }
 
-  test("testisFindDir_DoubleDot_True") {
+  test("testIsMatchingDir_DoubleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get("..")))
   }
 
-  test("testisFindDir_IsHidden_False") {
+  test("testIsMatchingDir_IsHidden_False") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     assert(!finder.isMatchingDir(Paths.get(".git")))
   }
 
-  test("testisFindDir_IsHiddenIncludeHidden_True") {
-    val settings = getFindSettings.copy(excludeHidden = false)
+  test("testIsMatchingDir_IsHiddenIncludeHidden_True") {
+    val settings = getFindSettings.copy(includeHidden = true)
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get(".git")))
   }
 
-  test("testisFindDir_NoPatterns_True") {
+  test("testIsMatchingDir_NoPatterns_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get("/Users")))
   }
 
-  test("testisFindDir_MatchesInPattern_True") {
+  test("testIsMatchingDir_MatchesInPattern_True") {
     val settings = getFindSettings.copy(inDirPatterns = Set("Find".r))
     val finder = new Finder(settings)
     assert(finder.isMatchingDir(Paths.get("CsFind")))
   }
 
-  test("testisFindDir_MatchesOutPattern_False") {
+  test("testIsMatchingDir_MatchesOutPattern_False") {
     val settings = getFindSettings.copy(outDirPatterns = Set("Find".r))
     val finder = new Finder(settings)
     assert(!finder.isMatchingDir(Paths.get("CsFind")))
   }
 
-  test("testisFindDir_DoesNotMatchInPattern_False") {
+  test("testIsMatchingDir_DoesNotMatchInPattern_False") {
     val settings = getFindSettings.copy(inDirPatterns = Set("FindFiles".r))
     val finder = new Finder(settings)
     assert(!finder.isMatchingDir(Paths.get("CsFind")))
   }
 
-  test("testisFindDir_DoesNotMatchOutPattern_True") {
+  test("testIsMatchingDir_DoesNotMatchOutPattern_True") {
     val settings = getFindSettings.copy(outDirPatterns = Set("FindFiles".r))
     val finder = new Finder(settings)
     val dir = Paths.get("CsFind")
@@ -77,65 +77,65 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
   }
 
   /** ***********************************************************
-    * isFindFile tests
+    * isMatchingFileResult tests
     * ************************************************************/
-  test("testIsFindFile_NoExtensionsNoPatterns_True") {
+  test("testIsMatchingFileResult_NoExtensionsNoPatterns_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
     assert(finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_MatchesInExtension_True") {
+  test("testIsMatchingFileResult_MatchesInExtension_True") {
     val settings = getFindSettings.copy(inExtensions = Set("cs"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
     assert(finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_DoesNotMatchInExtension_False") {
+  test("testIsMatchingFileResult_DoesNotMatchInExtension_False") {
     val settings = getFindSettings.copy(inExtensions = Set("java"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
     assert(!finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_MatchesOutExtension_False") {
+  test("testIsMatchingFileResult_MatchesOutExtension_False") {
     val settings = getFindSettings.copy(outExtensions = Set("cs"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
     assert(!finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_DoesNotMatchOutExtension_True") {
+  test("testIsMatchingFileResult_DoesNotMatchOutExtension_True") {
     val settings = getFindSettings.copy(outExtensions = Set("java"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
     assert(finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_MatchesInPattern_True") {
+  test("testIsMatchingFileResult_MatchesInPattern_True") {
     val settings = getFindSettings.copy(inFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("Finder.cs"), FileType.Code)
     assert(finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_DoesNotMatchInPattern_False") {
+  test("testIsMatchingFileResult_DoesNotMatchInPattern_False") {
     val settings = getFindSettings.copy(inFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("FileUtil.cs"), FileType.Code)
     assert(!finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_MatchesOutPattern_False") {
+  test("testIsMatchingFileResult_MatchesOutPattern_False") {
     val settings = getFindSettings.copy(outFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("Finder.cs"), FileType.Code)
     assert(!finder.isMatchingFileResult(fr))
   }
 
-  test("testIsFindFile_DoesNotMatchOutPattern_True") {
+  test("testIsMatchingFileResult_DoesNotMatchOutPattern_True") {
     val settings = getFindSettings.copy(outFilePatterns = Set("Find".r))
     val finder = new Finder(settings)
 //    val file = new File("FileUtil.cs")
@@ -144,65 +144,65 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
   }
 
   /** ***********************************************************
-    * IsArchiveFindFile tests
+    * isMatchingArchiveFileResult tests
     * ************************************************************/
-  test("testIsArchiveFindFile_NoExtensionsNoPatterns_True") {
+  test("testIsMatchingArchiveFileResult_NoExtensionsNoPatterns_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_MatchesInExtension_True") {
+  test("testIsMatchingArchiveFileResult_MatchesInExtension_True") {
     val settings = getFindSettings.copy(inArchiveExtensions = Set("zip"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_DoesNotMatchInExtension_False") {
+  test("testIsMatchingArchiveFileResult_DoesNotMatchInExtension_False") {
     val settings = getFindSettings.copy(inArchiveExtensions = Set("gz"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(!finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_MatchesOutExtension_False") {
+  test("testIsMatchingArchiveFileResult_MatchesOutExtension_False") {
     val settings = getFindSettings.copy(outArchiveExtensions = Set("zip"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(!finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_DoesNotMatchOutExtension_True") {
+  test("testIsMatchingArchiveFileResult_DoesNotMatchOutExtension_True") {
     val settings = getFindSettings.copy(outArchiveExtensions = Set("gz"))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_MatchesInPattern_True") {
+  test("testIsMatchingArchiveFileResult_MatchesInPattern_True") {
     val settings = getFindSettings.copy(inArchiveFilePatterns = Set("arch".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_DoesNotMatchInPattern_False") {
+  test("testIsMatchingArchiveFileResult_DoesNotMatchInPattern_False") {
     val settings = getFindSettings.copy(inArchiveFilePatterns = Set("archives".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(!finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_MatchesOutPattern_False") {
+  test("testIsMatchingArchiveFileResult_MatchesOutPattern_False") {
     val settings = getFindSettings.copy(outArchiveFilePatterns = Set("arch".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)
     assert(!finder.isMatchingArchiveFileResult(fr))
   }
 
-  test("testIsArchiveFindFile_DoesNotMatchOutPattern_True") {
+  test("testIsMatchingArchiveFileResult_DoesNotMatchOutPattern_True") {
     val settings = getFindSettings.copy(outArchiveFilePatterns = Set("archives".r))
     val finder = new Finder(settings)
     val fr = new FileResult(Paths.get("archive.zip"), FileType.Archive)

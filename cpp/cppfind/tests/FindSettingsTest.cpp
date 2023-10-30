@@ -6,8 +6,8 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
 
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
-    REQUIRE(settings.exclude_hidden());
     REQUIRE(!settings.include_archives());
+    REQUIRE(!settings.include_hidden());
     REQUIRE(!settings.list_dirs());
     REQUIRE(!settings.list_files());
     REQUIRE(settings.max_last_mod() == 0);
@@ -99,9 +99,9 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     REQUIRE(settings.debug());
     REQUIRE(settings.verbose());
 
-    REQUIRE(settings.exclude_hidden());
-    settings.exclude_hidden(false);
-    REQUIRE(!settings.exclude_hidden());
+    REQUIRE(!settings.include_hidden());
+    settings.include_hidden(true);
+    REQUIRE(settings.include_hidden());
 
     REQUIRE(!settings.list_dirs());
     settings.list_dirs(true);

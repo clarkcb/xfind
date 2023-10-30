@@ -89,7 +89,7 @@ sub is_matching_dir {
         return 1;
     }
     my @path_elems = grep {$_ ne ''} File::Spec->splitdir($d);
-    if ($self->{settings}->{exclude_hidden}) {
+    if (!$self->{settings}->{include_hidden}) {
         foreach my $p (@path_elems) {
             if (plfind::FileUtil::is_hidden($p)) {
                 return 0;
@@ -181,7 +181,7 @@ sub filter_to_file_result {
     my ($self, $fp) = @_;
     my $d = dirname($fp);
     my $f = basename($fp);
-    if ($self->{settings}->{exclude_hidden} && plfind::FileUtil::is_hidden($f)) {
+    if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden($f)) {
         return;
     }
     my $file_type = $self->{file_types}->get_file_type($f);
@@ -281,7 +281,7 @@ sub get_file_results {
         if (defined $file_result) {
             push(@{$file_results}, $file_result);
         } else {
-            plfind::common::log_msg("ERROR: Startpath does not match find settings");
+            plfind::common::log_err("Startpath does not match find settings");
         }
     }
     return $file_results;

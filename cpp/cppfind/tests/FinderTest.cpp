@@ -20,7 +20,7 @@ TEST_CASE("Test filter_to_file_result hidden file should be false", "[Finder]") 
 
 TEST_CASE("Test filter_to_file_result hidden file include-hidden should be true", "[Finder]") {
     auto settings = get_settings(".");
-    settings.exclude_hidden(false);
+    settings.include_hidden(true);
     auto *finder = new cppfind::Finder(settings);
 
     REQUIRE(finder->filter_to_file_result("./.hidden.txt").has_value());
@@ -140,7 +140,7 @@ TEST_CASE("Test is_matching_dir hidden dir should be false", "[Finder]") {
 
 TEST_CASE("Test is_matching_dir hidden dir include hidden should be true", "[Finder]") {
     auto settings = get_settings(".");
-    settings.exclude_hidden(false);
+    settings.include_hidden(true);
     auto *finder = new cppfind::Finder(settings);
 
     REQUIRE(finder->is_matching_dir(".git"));

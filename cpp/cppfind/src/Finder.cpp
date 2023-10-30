@@ -53,7 +53,7 @@ namespace cppfind {
 
     bool Finder::is_matching_dir(const std::string& file_path) {
         std::vector<std::string> elems = StringUtil::split_string(file_path, "/\\", true);
-        if (m_settings.exclude_hidden()) {
+        if (!m_settings.include_hidden()) {
             for (auto& elem : elems) {
                 if (FileUtil::is_hidden(elem)) {
                     return false;
@@ -65,13 +65,17 @@ namespace cppfind {
     }
 
     bool Finder::is_matching_archive_file(const std::string& file_name) {
-        std::string ext = FileUtil::get_extension(file_name);
-        if ((!m_settings.in_archive_extensions().empty() && !StringUtil::string_in_set(ext, m_settings.in_archive_extensions()))
-            || (!m_settings.out_archive_extensions().empty() && StringUtil::string_in_set(ext, m_settings.out_archive_extensions()))) {
-            return false;
+        if (!m_settings.in_archive_extensions().empty() || !m_settings.out_archive_extensions().empty()) {
+            std::string ext = FileUtil::get_extension(file_name);
+            if ((!m_settings.in_archive_extensions().empty() &&
+                 !StringUtil::string_in_set(ext, m_settings.in_archive_extensions()))
+                || (!m_settings.out_archive_extensions().empty() &&
+                    StringUtil::string_in_set(ext, m_settings.out_archive_extensions()))) {
+                return false;
+            }
         }
         return ((m_settings.in_archive_file_patterns().empty() || matches_any_pattern(file_name, m_settings.in_archive_file_patterns()))
-                && (m_settings.out_file_patterns().empty() || !matches_any_pattern(file_name, m_settings.out_archive_file_patterns())));
+                && (m_settings.out_archive_file_patterns().empty() || !matches_any_pattern(file_name, m_settings.out_archive_file_patterns())));
     }
 
     bool Finder::is_matching_file(const std::string& file_name, const FileType& file_type, const struct stat* fpstat) {
@@ -141,7 +145,7 @@ namespace cppfind {
     std::optional<FileResult> Finder::filter_to_file_result(const std::string& file_path) {
         boost::filesystem::path p(file_path);
         std::string file_name = p.filename().string();
-        if (m_settings.exclude_hidden() && FileUtil::is_hidden(file_name)) {
+        if (!m_settings.include_hidden() && FileUtil::is_hidden(file_name)) {
             return std::nullopt;
         }
         std::string parent_path = p.parent_path().string();

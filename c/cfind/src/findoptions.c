@@ -397,13 +397,13 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         settings->include_archives = !flag_val;
         break;
     case EXCLUDE_HIDDEN:
-        settings->exclude_hidden = flag_val;
+        settings->include_hidden = !flag_val;
         break;
     case INCLUDE_ARCHIVES:
         settings->include_archives = flag_val;
         break;
     case INCLUDE_HIDDEN:
-        settings->exclude_hidden = !flag_val;
+        settings->include_hidden = flag_val;
         break;
     case HELP:
         settings->print_usage = flag_val;

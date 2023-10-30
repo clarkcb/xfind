@@ -9,6 +9,7 @@ namespace cppfind {
 
     void FindSettings::archives_only(bool archives_only) {
         m_archives_only = archives_only;
+        if (archives_only) m_include_archives = true;
     }
 
     bool FindSettings::debug() const {
@@ -17,14 +18,7 @@ namespace cppfind {
 
     void FindSettings::debug(bool debug) {
         m_debug = debug;
-    }
-
-    bool FindSettings::exclude_hidden() const {
-        return m_exclude_hidden;
-    }
-
-    void FindSettings::exclude_hidden(bool exclude_hidden) {
-        m_exclude_hidden = exclude_hidden;
+        if (debug) m_verbose = true;
     }
 
     std::set<std::string> FindSettings::in_archive_extensions() const {
@@ -77,6 +71,14 @@ namespace cppfind {
 
     void FindSettings::include_archives(bool include_archives) {
         m_include_archives = include_archives;
+    }
+
+    bool FindSettings::include_hidden() const {
+        return m_include_hidden;
+    }
+
+    void FindSettings::include_hidden(bool include_hidden) {
+        m_include_hidden = include_hidden;
     }
 
     bool FindSettings::list_dirs() const {
@@ -398,7 +400,6 @@ namespace cppfind {
                 std::string("FindSettings(")
                 + "archives_only: " + StringUtil::bool_to_string(m_archives_only)
                 + ", debug: " + StringUtil::bool_to_string(m_debug)
-                + ", exclude_hidden: " + StringUtil::bool_to_string(m_exclude_hidden)
                 + ", in_archive_extensions: " + StringUtil::string_set_to_string(m_in_archive_extensions)
                 + ", in_archive_file_patterns: " + find_patterns_to_string(m_in_archive_file_patterns)
                 + ", in_dir_patterns: " + find_patterns_to_string(m_in_dir_patterns)
@@ -406,6 +407,7 @@ namespace cppfind {
                 + ", in_file_patterns: " + find_patterns_to_string(m_in_file_patterns)
                 + ", in_file_types: " + file_types_to_string(m_in_file_types)
                 + ", include_archives: " + StringUtil::bool_to_string(m_include_archives)
+                + ", include_hidden: " + StringUtil::bool_to_string(m_include_hidden)
                 + ", list_dirs: " + StringUtil::bool_to_string(m_list_dirs)
                 + ", list_files: " + StringUtil::bool_to_string(m_list_files)
                 + ", max_depth: " + std::to_string(m_max_depth)

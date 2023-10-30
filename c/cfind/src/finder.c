@@ -48,7 +48,7 @@ error_t validate_settings(const FindSettings *settings)
 
 unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
 {
-    if (settings->exclude_hidden && is_hidden(dir)) {
+    if (!settings->include_hidden && is_hidden(dir)) {
         return 0;
     }
     if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 1)
@@ -124,7 +124,7 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
 
 unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, struct stat *fpstat)
 {
-    if (finder->settings->exclude_hidden && is_hidden(file_name))
+    if (!finder->settings->include_hidden && is_hidden(file_name))
         return 0;
     return is_matching_file(dir, file_name, finder, file_type, fpstat);
 }

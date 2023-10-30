@@ -39,8 +39,7 @@ validateSettings settings = concatMap ($settings) validators
 
 getDirTests :: FindSettings -> [FilePath -> Bool]
 getDirTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests
-  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
-        includeHidden = not $ excludeHidden settings
+  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
         inPatternTests  | null inPatterns = []
                         | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
         outPatternTests | null outPatterns = []
@@ -59,8 +58,7 @@ isMatchingDir settings = matchesDirTests dirTests
 getFileTests :: FindSettings -> [FilePath -> Bool]
 getFileTests settings =
   hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
-  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
-        includeHidden = not $ excludeHidden settings
+  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
         inExtTests      | null inExts = []
                         | otherwise = [\fp -> any (hasExtension fp) inExts]
         outExtTests     | null outExts = []
@@ -78,8 +76,7 @@ getAllFileTests :: FindSettings -> [JsonFileType] -> [FilePath -> Bool]
 getAllFileTests settings jsonFileTypes =
   archiveFileTests ++ hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++
     outPatternTests ++ inFileTypeTests ++ outFileTypeTests
-  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
-        includeHidden = not $ excludeHidden settings
+  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
         inExtTests       | null inExts = []
                          | otherwise = [\fp -> any (hasExtension fp) inExts]
         outExtTests      | null outExts = []
@@ -112,8 +109,7 @@ isMatchingFile settings = matchesFileTests fileTests
 getArchiveFileTests :: FindSettings -> [FilePath -> Bool]
 getArchiveFileTests settings =
   hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
-  where hiddenPathTests = [\fp -> includeHidden || not (isHiddenFilePath fp)]
-        includeHidden = not $ excludeHidden settings
+  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
         inExtTests      | null inExts = []
                         | otherwise = [\fp -> any (hasExtension fp) inExts]
         outExtTests     | null outExts = []

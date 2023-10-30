@@ -17,7 +17,6 @@ FindSettings *default_settings(void)
 
     settings->archives_only = 0;
     settings->debug = 0;
-    settings->exclude_hidden = 1;
     settings->in_archive_extensions = NULL;
     settings->in_archive_file_patterns = NULL;
     settings->in_dir_patterns = NULL;
@@ -25,6 +24,7 @@ FindSettings *default_settings(void)
     settings->in_file_patterns = NULL;
     settings->in_file_types = NULL;
     settings->include_archives = 0;
+    settings->include_hidden = 0;
     settings->list_dirs = 0;
     settings->list_files = 0;
     settings->max_depth = -1;
@@ -60,7 +60,6 @@ const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archives_only=%d"
             ", debug=%d"
-            ", exclude_hidden=%d"
             ", in_archive_extensions=%s"
             ", in_archive_file_patterns=%s"
             ", in_dir_patterns=%s"
@@ -68,6 +67,7 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", in_file_patterns=%s"
             ", in_file_types=%s"
             ", include_archives=%d"
+            ", include_hidden=%d"
             ", list_dirs=%d"
             ", list_files=%d"
             ", max_depth=%d"
@@ -207,7 +207,6 @@ void settings_to_string(const FindSettings *settings, char *s)
     sprintf(s, SETTINGS_TEMPLATE,
         settings->archives_only,
         settings->debug,
-        settings->exclude_hidden,
         in_archive_extensions_s,
         in_archive_file_patterns_s,
         in_dir_patterns_s,
@@ -215,6 +214,7 @@ void settings_to_string(const FindSettings *settings, char *s)
         in_file_patterns_s,
         in_file_types_s,
         settings->include_archives,
+        settings->include_hidden,
         settings->list_dirs,
         settings->list_files,
         settings->max_depth,
@@ -261,7 +261,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     free(sort_by_name);
 }
 
-void print_settings(FindSettings *settings)
+void print_settings(const FindSettings *settings)
 {
     size_t settings_len = settings_strlen(settings);
     char ss[settings_len];

@@ -46,8 +46,8 @@ public func sortByToName(_ sortBy: SortBy) -> String {
 public enum DefaultFindSettings {
     public static let archivesOnly = false
     public static let debug = false
-    public static let excludeHidden = true
     public static let includeArchives = false
+    public static let includeHidden = false
     public static let listDirs = false
     public static let listFiles = false
     public static let maxDepth: Int64 = -1
@@ -68,8 +68,8 @@ open class FindSettings: CustomStringConvertible {
     // these are public because they must be accessible outside the package
     public var _archivesOnly: Bool = DefaultFindSettings.archivesOnly
     public var _debug: Bool = DefaultFindSettings.debug
-    open var excludeHidden: Bool = DefaultFindSettings.excludeHidden
     open var includeArchives: Bool = DefaultFindSettings.includeArchives
+    open var includeHidden: Bool = DefaultFindSettings.includeHidden
     open var listDirs: Bool = DefaultFindSettings.listDirs
     open var listFiles: Bool = DefaultFindSettings.listFiles
     open var maxDepth: Int64 = DefaultFindSettings.maxDepth
@@ -240,7 +240,6 @@ open class FindSettings: CustomStringConvertible {
         "FindSettings(" +
             "archivesOnly=\(archivesOnly)" +
             ", debug=\(debug)" +
-            ", excludeHidden=\(excludeHidden)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
             ", inArchiveFilePatterns=\(arrayToString(inArchiveFilePatterns))" +
             ", inDirPatterns=\(arrayToString(inDirPatterns))" +
@@ -248,6 +247,7 @@ open class FindSettings: CustomStringConvertible {
             ", inFilePatterns=\(arrayToString(inFilePatterns))" +
             ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }))" +
             ", includeArchives=\(includeArchives)" +
+            ", includeHidden=\(includeHidden)" +
             ", listDirs=\(listDirs)" +
             ", listFiles=\(listFiles)" +
             ", maxDepth=\(maxDepth)" +

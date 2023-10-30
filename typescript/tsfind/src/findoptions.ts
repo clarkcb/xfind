@@ -90,11 +90,11 @@ export class FindOptions {
             'excludearchives':
                 (b: boolean, settings: FindSettings) => { settings.includeArchives = !b; },
             'excludehidden':
-                (b: boolean, settings: FindSettings) => { settings.excludeHidden = b; },
+                (b: boolean, settings: FindSettings) => { settings.includeHidden = !b; },
             'includearchives':
                 (b: boolean, settings: FindSettings) => { settings.includeArchives = b; },
             'includehidden':
-                (b: boolean, settings: FindSettings) => { settings.excludeHidden = !b; },
+                (b: boolean, settings: FindSettings) => { settings.includeHidden = b; },
             'help':
                 (b: boolean, settings: FindSettings) => { settings.printUsage = b; },
             'listdirs':

@@ -63,7 +63,7 @@ class FinderTests
 	public void TestIsMatchingDirectory_IsHiddenIncludeHidden_True()
 	{
 		var settings = GetSettings();
-		settings.ExcludeHidden = false;
+		settings.IncludeHidden = true;
 		var finder = new Finder(settings);
 		Assert.True(finder.IsMatchingDirectory(new DirectoryInfo(".git")));
 	}
@@ -338,7 +338,7 @@ class FinderTests
 	public void TestFilterToFileResult_IsHiddenIncludeHidden_NotNull()
 	{
 		var settings = GetSettings();
-		settings.ExcludeHidden = false;
+		settings.IncludeHidden = true;
 		var finder = new Finder(settings);
 		var file = new FileInfo(".gitignore");
 		Assert.NotNull(finder.FilterToFileResult(file));

@@ -15,7 +15,6 @@ module RbFind
 
     attr_reader :archives_only
     attr_reader :debug
-    attr_accessor :exclude_hidden
     attr_accessor :in_archive_extensions
     attr_accessor :in_archive_file_patterns
     attr_accessor :in_dir_patterns
@@ -23,6 +22,7 @@ module RbFind
     attr_accessor :in_file_patterns
     attr_accessor :in_file_types
     attr_accessor :include_archives
+    attr_accessor :include_hidden
     attr_accessor :list_dirs
     attr_accessor :list_files
     attr_accessor :max_depth
@@ -49,8 +49,8 @@ module RbFind
     def initialize
       @archives_only = false
       @debug = false
-      @exclude_hidden = true
       @include_archives = false
+      @include_hidden = false
       @list_dirs = false
       @list_files = false
       @max_depth = -1
@@ -159,7 +159,6 @@ module RbFind
       s = 'FindSettings('
       s << "archives_only: #{@archives_only}"
       s << ", debug: #{@debug}"
-      s << ", exclude_hidden: #{@exclude_hidden}"
       s << ', ' + list_to_s('in_archive_extensions', @in_archive_extensions)
       s << ', ' + list_to_s('in_archive_file_patterns', @in_archive_file_patterns)
       s << ', ' + list_to_s('in_dir_patterns', @in_dir_patterns)
@@ -167,6 +166,7 @@ module RbFind
       s << ', ' + list_to_s('in_file_patterns', @in_file_patterns)
       s << ', ' + file_types_to_s('in_file_types', @in_file_types)
       s << ", include_archives: #{@include_archives}"
+      s << ", include_hidden: #{@include_hidden}"
       s << ", list_dirs: #{@list_dirs}"
       s << ", list_files: #{@list_files}"
       s << ", max_depth: #{@max_depth}"

@@ -15,14 +15,14 @@ import {StringUtil} from "./stringutil";
 export class FindSettings {
     #archivesOnly = false;
     #debug = false;
-    excludeHidden = true;
     inArchiveExtensions: string[] = [];
     inArchiveFilePatterns: RegExp[] = [];
+    includeArchives = false;
+    includeHidden = false;
     inDirPatterns: RegExp[] = [];
     inExtensions: string[] = [];
     inFilePatterns: RegExp[] = [];
     inFileTypes: FileType[] = [];
-    includeArchives = false;
     listDirs = false;
     listFiles = false;
     maxDepth = -1;
@@ -174,14 +174,14 @@ export class FindSettings {
         return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
             + ', debug=' + this.debug
-            + ', excludeHidden=' + this.excludeHidden
             + ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions)
             + ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', includeArchives=' + this.includeArchives
+            + ', includeHidden=' + this.includeHidden
             + ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns)
             + ', ' + StringUtil.listToString('inExtensions', this.inExtensions)
             + ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns)
             + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
-            + ', includeArchives=' + this.includeArchives
             + ', listDirs=' + this.listDirs
             + ', listFiles=' + this.listFiles
             + ', maxDepth=' + this.maxDepth

@@ -29,8 +29,8 @@ sub test_no_args {
     ok(scalar @{$errs} == 0, 'No errors from empty args');
     ok(!$settings->{archives_only}, 'archives_only is false by default');
     ok(!$settings->{debug}, 'debug is false by default');
-    ok($settings->{exclude_hidden}, 'exclude_hidden is true by default');
     ok(!$settings->{include_archives}, 'include_archives is false by default');
+    ok(!$settings->{include_hidden}, 'include_hidden is false by default');
     ok(!$settings->{list_dirs}, 'list_dirs is false by default');
     ok($settings->{list_files}, 'list_files is true by default');
     ok(!$settings->{print_usage}, 'print_usage is false by default');
@@ -103,7 +103,7 @@ END_JSON
     ok($settings->{out_file_patterns}->[0] eq 'temp', "out_file_patterns[0] is temp");
     ok($settings->{debug} == 1, "debug is set to true");
     ok($settings->{verbose} == 1, "verbose is set to true");
-    ok($settings->{exclude_hidden} == 0, 'exclude_hidden is set to false by setting includehidden to true');
+    ok($settings->{include_hidden} == 1, 'include_hidden is set to true');
 }
 
 sub main {

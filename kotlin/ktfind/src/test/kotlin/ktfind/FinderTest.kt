@@ -27,7 +27,7 @@ class FinderTest {
 
     @Test
     fun testFilterToFileResult_IsHiddenIncludeHidden_NotNull() {
-        val settings = getSettings().copy(excludeHidden = false)
+        val settings = getSettings().copy(includeHidden = true)
         val finder = Finder(settings)
         val file = File(".gitignore")
         assertNotNull(finder.filterToFileResult(file))
@@ -132,7 +132,7 @@ class FinderTest {
 
     @Test
     fun testIsMatchingDir_IsHiddenIncludeHidden_True() {
-        val settings = getSettings().copy(excludeHidden = false)
+        val settings = getSettings().copy(includeHidden = true)
         val finder = Finder(settings)
         assertTrue(finder.isMatchingDir(File(".git")))
     }

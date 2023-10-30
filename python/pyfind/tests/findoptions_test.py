@@ -27,8 +27,8 @@ class FindOptionsTest(unittest.TestCase):
         settings = self.findoptions.find_settings_from_args([])
         self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
-        self.assertTrue(settings.exclude_hidden)
         self.assertFalse(settings.include_archives)
+        self.assertFalse(settings.include_hidden)
         self.assertFalse(settings.list_dirs)
         self.assertTrue(settings.list_files)
         self.assertFalse(settings.print_usage)
@@ -96,7 +96,7 @@ class FindOptionsTest(unittest.TestCase):
         self.assertEqual(list(settings.out_file_patterns)[0].pattern, 'temp')
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
-        self.assertFalse(settings.exclude_hidden)
+        self.assertTrue(settings.include_hidden)
 
 
 if __name__ == '__main__':

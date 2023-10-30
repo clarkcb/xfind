@@ -9,8 +9,8 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     cppfind::FindSettings* settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings->archives_only());
     REQUIRE(!settings->debug());
-    REQUIRE(settings->exclude_hidden());
     REQUIRE(!settings->include_archives());
+    REQUIRE(!settings->include_hidden());
     REQUIRE(!settings->list_dirs());
     REQUIRE(settings->list_files());
     REQUIRE(!settings->print_usage());
@@ -41,8 +41,8 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     cppfind::FindSettings* settings = options->settings_from_args(argc, argv);
     REQUIRE(!settings->archives_only());
     REQUIRE(!settings->debug());
-    REQUIRE(settings->exclude_hidden());
     REQUIRE(!settings->include_archives());
+    REQUIRE(!settings->include_hidden());
     REQUIRE(!settings->list_dirs());
     REQUIRE(settings->list_files());
     REQUIRE(!settings->print_usage());
@@ -109,5 +109,5 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     REQUIRE(set_has_pattern(settings->out_file_patterns(), "gulpfile"));
     REQUIRE(set_has_pattern(settings->out_file_patterns(), "\\.min\\."));
     REQUIRE(settings->debug() == true);
-    REQUIRE(settings->exclude_hidden() == true);
+    REQUIRE(settings->include_hidden() == false);
 }

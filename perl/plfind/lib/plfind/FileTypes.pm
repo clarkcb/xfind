@@ -160,15 +160,6 @@ sub is_unknown {
     return 0;
 }
 
-sub is_searchable {
-    my ($self, $file) = @_;
-    my $file_type = $self->get_file_type($file);
-    if ($file_type ne plfind::FileType->UNKNOWN) {
-        return 1;
-    }
-    return 0;
-}
-
 1;
 
 __END__

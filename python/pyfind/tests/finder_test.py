@@ -90,7 +90,7 @@ class FinderTest(unittest.TestCase):
 
     def test_is_matching_dir_hidden_dir_include_hidden(self):
         settings = self.get_settings()
-        settings.exclude_hidden = False
+        settings.include_hidden = True
         finder = Finder(settings)
         dir = '.git'
         self.assertTrue(finder.is_matching_dir(dir))
@@ -132,7 +132,7 @@ class FinderTest(unittest.TestCase):
 
     def test_filter_to_file_result_hidden_include_hidden(self):
         settings = self.get_settings()
-        settings.exclude_hidden = False
+        settings.include_hidden = True
         finder = Finder(settings)
         file_path = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
         file_result = finder.filter_to_file_result(file_path)

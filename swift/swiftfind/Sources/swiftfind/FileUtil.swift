@@ -75,7 +75,7 @@ public enum FileUtil {
 
     fileprivate static func getOptions(forSettings settings: FindSettings) -> FileManager.DirectoryEnumerationOptions {
         var options: FileManager.DirectoryEnumerationOptions = [.skipsPackageDescendants]
-        if settings.excludeHidden {
+        if !settings.includeHidden {
             options.insert(.skipsHiddenFiles)
         }
         if !settings.recursive {

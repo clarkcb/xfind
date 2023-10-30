@@ -245,8 +245,8 @@ unittest_objc () {
 
     cd "$OBJCFIND_PATH"
     log "Unit-testing objcfind"
-    log "xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests"
-    xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests
+    log "swift test"
+    swift test
     cd -
 }
 

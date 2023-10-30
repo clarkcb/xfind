@@ -58,7 +58,7 @@ class Finder {
 
   bool isMatchingDir(Directory dir) {
     var elems = path.split(dir.path).where((e) => e.isNotEmpty).toSet();
-    if (settings.excludeHidden &&
+    if (!settings.includeHidden &&
         elems.any((elem) => FileUtil.isHidden(elem))) {
       return false;
     }
@@ -108,7 +108,7 @@ class Finder {
 
   bool isMatchingArchiveFile(FileResult sf) {
     var fileName = sf.file.path.split(Platform.pathSeparator).last;
-    if (settings.excludeHidden && FileUtil.isHidden(fileName)) {
+    if (!settings.includeHidden && FileUtil.isHidden(fileName)) {
       return false;
     }
     var ext = FileUtil.extension(fileName);
@@ -124,7 +124,7 @@ class Finder {
 
   Future<FileResult?> filterToFileResult(File f) {
     var fileName = path.basename(f.path);
-    if (settings.excludeHidden && FileUtil.isHidden(fileName)) {
+    if (!settings.includeHidden && FileUtil.isHidden(fileName)) {
       return Future.value(null);
     }
     FileStat? stat;

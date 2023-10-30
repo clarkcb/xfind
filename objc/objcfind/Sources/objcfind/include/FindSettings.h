@@ -15,8 +15,8 @@
 
 @property(nonatomic) BOOL archivesOnly;
 @property(nonatomic) BOOL debug;
-@property(nonatomic) BOOL excludeHidden;
 @property(nonatomic) BOOL includeArchives;
+@property(nonatomic) BOOL includeHidden;
 @property(nonatomic) BOOL listDirs;
 @property(nonatomic) BOOL listFiles;
 @property(nonatomic) BOOL printUsage;

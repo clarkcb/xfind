@@ -25,7 +25,7 @@ module RbFind
 
     def matching_dir?(dirname)
       path_elems = dirname.split(File::SEPARATOR) - FileUtil.dot_dirs
-      if @settings.exclude_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
+      if !@settings.include_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
         return false
       end
       if !@settings.in_dir_patterns.empty? &&
@@ -110,7 +110,7 @@ module RbFind
 
     def filter_to_file_result(file_path)
       filename = File.basename(file_path)
-      if @settings.exclude_hidden && FileUtil.hidden?(filename)
+      if !@settings.include_hidden && FileUtil.hidden?(filename)
         return nil
       end
       file_result = file_path_to_file_result(file_path)

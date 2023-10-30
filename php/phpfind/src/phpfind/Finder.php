@@ -92,7 +92,7 @@ class Finder
         if (FileUtil::is_dot_dir($dir)) {
             return true;
         }
-        if ($this->settings->exclude_hidden && FileUtil::is_hidden($dir)) {
+        if (!$this->settings->include_hidden && FileUtil::is_hidden($dir)) {
             return false;
         }
         $path_elems = FileUtil::split_path($dir);
@@ -205,7 +205,7 @@ class Finder
     public function filter_to_file_result(string $dir, string $file_name): ?FileResult
     {
         $file_path = FileUtil::join_path($dir, $file_name);
-        if ($this->settings->exclude_hidden && FileUtil::is_hidden($file_path)) {
+        if (!$this->settings->include_hidden && FileUtil::is_hidden($file_path)) {
             return null;
         }
         $stat = false;

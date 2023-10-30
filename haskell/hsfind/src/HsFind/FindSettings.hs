@@ -16,7 +16,6 @@ import HsFind.SortBy (SortBy(..), getSortByForName)
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool
                                  , debug :: Bool
-                                 , excludeHidden :: Bool
                                  , inArchiveExtensions :: [String]
                                  , inArchiveFilePatterns :: [String]
                                  , inDirPatterns :: [String]
@@ -24,6 +23,7 @@ data FindSettings = FindSettings {
                                  , inFilePatterns :: [String]
                                  , inFileTypes :: [FileType]
                                  , includeArchives :: Bool
+                                 , includeHidden :: Bool
                                  , listDirs :: Bool
                                  , listFiles :: Bool
                                  , maxDepth :: Integer
@@ -52,7 +52,6 @@ defaultFindSettings :: FindSettings
 defaultFindSettings = FindSettings {
                                      archivesOnly=False
                                    , debug=False
-                                   , excludeHidden=True
                                    , inArchiveExtensions=[]
                                    , inArchiveFilePatterns=[]
                                    , inDirPatterns=[]
@@ -60,6 +59,7 @@ defaultFindSettings = FindSettings {
                                    , inFilePatterns=[]
                                    , inFileTypes=[]
                                    , includeArchives=False
+                                   , includeHidden=False
                                    , listDirs=False
                                    , listFiles=False
                                    , maxDepth = -1

@@ -13,7 +13,6 @@ class FindSettings {
 
     #archivesOnly = false;
     #debug = false;
-    excludeHidden = true;
     inArchiveExtensions = [];
     inArchiveFilePatterns = [];
     inDirPatterns = [];
@@ -21,6 +20,7 @@ class FindSettings {
     inFilePatterns = [];
     inFileTypes = [];
     includeArchives = false;
+    includeHidden = false;
     listDirs = false;
     listFiles = false;
     maxDepth = -1;
@@ -175,7 +175,6 @@ class FindSettings {
         return 'FindSettings(' +
             'archivesOnly=' + this.archivesOnly +
             ', debug=' + this.debug +
-            ', excludeHidden=' + this.excludeHidden +
             ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions) +
             ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
             ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns) +
@@ -183,6 +182,7 @@ class FindSettings {
             ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns) +
             ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
             ', includeArchives=' + this.includeArchives +
+            ', includeHidden=' + this.includeHidden +
             ', listDirs=' + this.listDirs +
             ', listFiles=' + this.listFiles +
             ', maxDepth=' + this.maxDepth +

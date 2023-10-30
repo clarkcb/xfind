@@ -44,7 +44,7 @@ public class FinderTest {
     @Test
     public final void testIsMatchingDir_IsHiddenIncludeHidden_True() {
         var settings = getSettings();
-        settings.setExcludeHidden(false);
+        settings.setIncludeHidden(true);
         var finder = new Finder(settings);
         assertTrue(finder.isMatchingDir(Paths.get(".git")));
     }
@@ -280,7 +280,7 @@ public class FinderTest {
     @Test
     public final void testFilterToFileResult_IsHiddenIncludeHidden_NotNull() {
         var settings = getSettings();
-        settings.setExcludeHidden(false);
+        settings.setIncludeHidden(true);
         var finder = new Finder(settings);
         var path = Paths.get(".gitignore");
         assertTrue(finder.filterToFileResult(path).isPresent());

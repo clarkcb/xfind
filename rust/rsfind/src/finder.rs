@@ -86,7 +86,7 @@ impl Finder {
     }
 
     fn is_matching_dir(&self, dir: &String) -> bool {
-        if self.settings.exclude_hidden() && FileUtil::is_hidden(&dir) {
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&dir) {
             return false;
         }
         (self.settings.in_dir_patterns().is_empty()
@@ -99,7 +99,7 @@ impl Finder {
         if !self.is_matching_dir(&file_result.path) {
             return false;
         }
-        if FileUtil::is_hidden(&file_result.file_name) && self.settings.exclude_hidden() {
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
             return false;
         }
         (self.settings.in_archive_file_patterns().is_empty()
@@ -115,7 +115,7 @@ impl Finder {
         if !self.is_matching_dir(&file_result.path) {
             return false;
         }
-        if self.settings.exclude_hidden() && FileUtil::is_hidden(&file_result.file_name) {
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
             return false;
         }
 

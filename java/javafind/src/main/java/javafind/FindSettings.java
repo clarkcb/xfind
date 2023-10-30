@@ -23,7 +23,6 @@ public class FindSettings {
 
     private boolean archivesOnly;
     private boolean debug;
-    private boolean excludeHidden;
     private final Set<String> inArchiveExtensions;
     private final Set<Pattern> inArchiveFilePatterns;
     private final Set<Pattern> inDirPatterns;
@@ -31,6 +30,7 @@ public class FindSettings {
     private final Set<Pattern> inFilePatterns;
     private final Set<FileType> inFileTypes;
     private boolean includeArchives;
+    private boolean includeHidden;
     private boolean listDirs;
     private boolean listFiles;
     private int maxDepth;
@@ -57,15 +57,14 @@ public class FindSettings {
     public FindSettings() {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY;
         this.debug = DefaultFindSettings.DEBUG;
-        this.excludeHidden = DefaultFindSettings.EXCLUDE_HIDDEN;
         this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES;
+        this.includeHidden = DefaultFindSettings.INCLUDE_HIDDEN;
         this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY);
         this.inFileTypes = new HashSet<>(INITIAL_SET_CAPACITY);
-        this.inMimeTypes = new HashSet<>(INITIAL_SET_CAPACITY);
         this.listDirs = DefaultFindSettings.LIST_DIRS;
         this.listFiles = DefaultFindSettings.LIST_FILES;
         this.maxDepth = DefaultFindSettings.MAX_DEPTH;
@@ -124,12 +123,12 @@ public class FindSettings {
         }
     }
 
-    public final boolean getExcludeHidden() {
-        return this.excludeHidden;
+    public final boolean getIncludeHidden() {
+        return this.includeHidden;
     }
 
-    public final void setExcludeHidden(final boolean excludeHidden) {
-        this.excludeHidden = excludeHidden;
+    public final void setIncludeHidden(final boolean includeHidden) {
+        this.includeHidden = includeHidden;
     }
 
     public final boolean getIncludeArchives() {
@@ -468,9 +467,10 @@ public class FindSettings {
         return "FindSettings("
                 + "archivesOnly: " + this.archivesOnly
                 + ", debug: " + this.debug
-                + ", excludeHidden: " + this.excludeHidden
                 + ", inArchiveExtensions: " + stringSetToString(this.inArchiveExtensions)
                 + ", inArchiveFilePatterns: " + patternSetToString(this.inArchiveFilePatterns)
+                + ", includeArchives: " + this.includeArchives
+                + ", includeHidden: " + this.includeHidden
                 + ", inDirPatterns: " + patternSetToString(this.inDirPatterns)
                 + ", inExtensions: " + stringSetToString(this.inExtensions)
                 + ", inFilePatterns: " + patternSetToString(this.inFilePatterns)

@@ -25,8 +25,8 @@ sub test_default_settings {
     my $settings = new plfind::FindSettings();
     ok(!$settings->{archives_only}, "archives_only is false by default");
     ok(!$settings->{debug}, "debug is false by default");
-    ok($settings->{exclude_hidden}, "exclude_hidden is true by default");
     ok(!$settings->{include_archives}, "include_archives is false by default");
+    ok(!$settings->{include_hidden}, "include_hidden is false by default");
     ok(!$settings->{list_dirs}, "list_dirs is false by default");
     ok(!$settings->{list_files}, "list_files is false by default");
     ok(@{$settings->{paths}} eq 0, "paths are empty by default");

@@ -54,7 +54,6 @@ func NameForSortBy(sortBy SortBy) string {
 type FindSettings struct {
 	archivesOnly           bool
 	debug                  bool
-	excludeHidden          bool
 	inArchiveExtensions    []string
 	inArchiveFilePatterns  *Patterns
 	inDirPatterns          *Patterns
@@ -62,6 +61,7 @@ type FindSettings struct {
 	inFilePatterns         *Patterns
 	inFileTypes            []FileType
 	includeArchives        bool
+	includeHidden          bool
 	listDirs               bool
 	listFiles              bool
 	maxDepth               int
@@ -90,7 +90,6 @@ func GetDefaultFindSettings() *FindSettings {
 	return &FindSettings{
 		false,          // ArchivesOnly
 		false,          // Debug
-		true,           // ExcludeHidden
 		[]string{},     // InArchiveExtensions
 		NewPatterns(),  // InArchiveFilePatterns
 		NewPatterns(),  // InDirPatterns
@@ -98,6 +97,7 @@ func GetDefaultFindSettings() *FindSettings {
 		NewPatterns(),  // InFilePatterns
 		[]FileType{},   // InFileTypes
 		false,          // IncludeArchives
+		false,          // IncludeHidden
 		false,          // ListDirs
 		false,          // ListFiles
 		-1,             // MaxDepth
@@ -176,14 +176,6 @@ func (f *FindSettings) SetDebug(debug bool) {
 	}
 }
 
-func (f *FindSettings) ExcludeHidden() bool {
-	return f.excludeHidden
-}
-
-func (f *FindSettings) SetExcludeHidden(b bool) {
-	f.excludeHidden = b
-}
-
 func (f *FindSettings) InArchiveExtensions() []string {
 	return f.inArchiveExtensions
 }
@@ -248,6 +240,14 @@ func (f *FindSettings) IncludeArchives() bool {
 
 func (f *FindSettings) SetIncludeArchives(b bool) {
 	f.includeArchives = b
+}
+
+func (f *FindSettings) IncludeHidden() bool {
+	return f.includeHidden
+}
+
+func (f *FindSettings) SetIncludeHidden(b bool) {
+	f.includeHidden = b
 }
 
 func (f *FindSettings) ListDirs() bool {
@@ -508,7 +508,6 @@ func (f *FindSettings) String() string {
 	const template = "SearchSettings{" +
 		"ArchivesOnly: %t" +
 		", Debug: %t" +
-		", ExcludeHidden: %t" +
 		", InArchiveExtensions: %s" +
 		", InArchiveFilePatterns: %s" +
 		", InDirPatterns: %s" +
@@ -516,6 +515,7 @@ func (f *FindSettings) String() string {
 		", InFilePatterns: %s" +
 		", InFileTypes: %s" +
 		", IncludeArchives: %t" +
+		", IncludeHidden: %t" +
 		", ListDirs: %t" +
 		", ListFiles: %t" +
 		", MaxDepth: %d" +
@@ -541,7 +541,6 @@ func (f *FindSettings) String() string {
 	return fmt.Sprintf(template,
 		f.ArchivesOnly(),
 		f.Debug(),
-		f.ExcludeHidden(),
 		StringListToString(f.InArchiveExtensions()),
 		PatternsToString(f.InArchiveFilePatterns()),
 		PatternsToString(f.InDirPatterns()),
@@ -549,6 +548,7 @@ func (f *FindSettings) String() string {
 		PatternsToString(f.InFilePatterns()),
 		FileTypeListToString(f.InFileTypes()),
 		f.IncludeArchives(),
+		f.IncludeHidden(),
 		f.ListDirs(),
 		f.ListFiles(),
 		f.MaxDepth(),

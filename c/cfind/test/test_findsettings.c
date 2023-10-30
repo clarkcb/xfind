@@ -10,7 +10,6 @@ void test_default_settings(void)
     FindSettings *settings = default_settings();
     assert(settings->archives_only == 0);
     assert(settings->debug == 0);
-    assert(settings->exclude_hidden == 1);
     assert(settings->in_archive_extensions == NULL);
     assert(settings->in_archive_file_patterns == NULL);
     assert(settings->in_dir_patterns == NULL);
@@ -18,6 +17,7 @@ void test_default_settings(void)
     assert(settings->in_file_patterns == NULL);
     assert(settings->in_file_types == NULL);
     assert(settings->include_archives == 0);
+    assert(settings->include_hidden == 0);
     assert(settings->list_dirs == 0);
     assert(settings->list_files == 0);
     assert(settings->max_last_mod == 0L);

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -31,7 +31,6 @@ public class FindSettings
 		}
 	}
 
-	public bool ExcludeHidden { get; set; }
 	public ISet<string> InArchiveExtensions { get; private set; }
 	public ISet<Regex> InArchiveFilePatterns { get; private set; }
 	public ISet<Regex> InDirPatterns { get; private set; }
@@ -39,6 +38,7 @@ public class FindSettings
 	public ISet<Regex> InFilePatterns { get; private set; }
 	public ISet<FileType> InFileTypes { get; private set; }
 	public bool IncludeArchives { get; set; }
+	public bool IncludeHidden { get; set; }
 	public bool ListDirs { get; set; }
 	public bool ListFiles { get; set; }
 	public int MaxDepth { get; set; }
@@ -66,14 +66,14 @@ public class FindSettings
 	{
 		ArchivesOnly = false;
 		Debug = false;
-		ExcludeHidden = true;
 		InArchiveExtensions = new HashSet<string>();
 		InArchiveFilePatterns = new HashSet<Regex>();
+		IncludeArchives = false;
+		IncludeHidden = false;
 		InDirPatterns = new HashSet<Regex>();
 		InExtensions = new HashSet<string>();
 		InFilePatterns = new HashSet<Regex>();
 		InFileTypes = new HashSet<FileType>();
-		IncludeArchives = false;
 		ListDirs = false;
 		ListFiles = false;
 		MaxDepth = -1;
@@ -101,14 +101,14 @@ public class FindSettings
 	public FindSettings(
 		bool archivesOnly,
 		bool debug,
-		bool excludeHidden,
 		ISet<string> inArchiveExtensions,
 		ISet<Regex> inArchiveFilePatterns,
+		bool includeArchives,
+		bool includeHidden,
 		ISet<Regex> inDirPatterns,
 		ISet<string> inExtensions,
 		ISet<Regex> inFilePatterns,
 		ISet<FileType> inFileTypes,
-		bool includeArchives,
 		bool listDirs,
 		bool listFiles,
 		int maxDepth,
@@ -134,14 +134,14 @@ public class FindSettings
 	{
 		ArchivesOnly = archivesOnly;
 		Debug = debug;
-		ExcludeHidden = excludeHidden;
 		InArchiveExtensions = inArchiveExtensions;
 		InArchiveFilePatterns = inArchiveFilePatterns;
+		IncludeArchives = includeArchives;
+		IncludeHidden = includeHidden;
 		InDirPatterns = inDirPatterns;
 		InExtensions = inExtensions;
 		InFilePatterns = inFilePatterns;
 		InFileTypes = inFileTypes;
-		IncludeArchives = includeArchives;
 		ListDirs = listDirs;
 		ListFiles = listFiles;
 		MaxDepth = maxDepth;
@@ -259,11 +259,7 @@ public class FindSettings
 
 	private static string DateTimeToString(System.DateTime? dt)
 	{
-		if (dt == null)
-		{
-			return "0";
-		}
-		return $"\"{dt}\"";
+		return dt == null ? "0" : $"\"{dt}\"";
 	}
 
 	private static string EnumerableToString<T>(IEnumerable<T> enumerable)
@@ -276,13 +272,13 @@ public class FindSettings
 			if (elemCount > 0)
 				sb.Append(", ");
 			if (t == typeof(string))
-				sb.Append("\"");
+				sb.Append('"');
 			sb.Append(x);
 			if (t == typeof(string))
-				sb.Append("\"");
+				sb.Append('"');
 			elemCount++;
 		}
-		sb.Append("]");
+		sb.Append(']');
 		return sb.ToString();
 	}
 
@@ -291,14 +287,14 @@ public class FindSettings
 		return "FindSettings(" +
 		       "ArchivesOnly: " + ArchivesOnly +
 		       ", Debug: " + Debug +
-		       ", ExcludeHidden: " + ExcludeHidden +
 		       ", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions) +
 		       ", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns) +
+		       ", IncludeArchives: " + IncludeArchives +
+		       ", IncludeHidden: " + IncludeHidden +
 		       ", InDirPatterns: " + EnumerableToString(InDirPatterns) +
 		       ", InExtensions: " + EnumerableToString(InExtensions) +
 		       ", InFilePatterns: " + EnumerableToString(InFilePatterns) +
 		       ", InFileTypes: " + EnumerableToString(InFileTypes) +
-		       ", IncludeArchives: " + IncludeArchives +
 		       ", ListDirs: " + ListDirs +
 		       ", ListFiles: " + ListFiles +
 		       ", MaxDepth: " + MaxDepth +

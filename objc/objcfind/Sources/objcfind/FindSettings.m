@@ -12,8 +12,8 @@
     if (self) {
         self.archivesOnly = false;
         self.debug = false;
-        self.excludeHidden = true;
         self.includeArchives = false;
+        self.includeHidden = false;
         self.listDirs = false;
         self.listFiles = false;
         self.printUsage = false;
@@ -52,7 +52,6 @@
     NSMutableString *d = [[NSMutableString alloc] initWithString:@"FindSettings("];
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
-    [d appendFormat:@", excludeHidden=%@", boolToNSString(self.excludeHidden)];
     [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];
     [d appendFormat:@", inArchiveFilePatterns=%@", arrayToNSString(self.inArchiveFilePatterns)];
     [d appendFormat:@", inDirPatterns=%@", arrayToNSString(self.inDirPatterns)];
@@ -60,6 +59,7 @@
     [d appendFormat:@", inFilePatterns=%@", arrayToNSString(self.inFilePatterns)];
     [d appendFormat:@", inFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.inFileTypes]];
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
+    [d appendFormat:@", includeHidden=%@", boolToNSString(self.includeHidden)];
     [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
     [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
     [d appendFormat:@", maxDepth=%ld", (long)self.maxDepth];

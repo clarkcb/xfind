@@ -94,11 +94,6 @@ class FileTypes {
             this.fileTypeExtMap.code.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
-    isSearchableFile(filename) {
-        let ext = FileUtil.getExtension(filename);
-        return this.fileTypeMap.searchable.indexOf(ext) > -1;
-    }
-
     isTextFile(filename) {
         return this.fileTypeNameMap.text.indexOf(filename) > -1 ||
             this.fileTypeExtMap.text.indexOf(FileUtil.getExtension(filename)) > -1;

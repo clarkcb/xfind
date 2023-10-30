@@ -42,7 +42,7 @@
              (is (not (is-matching-dir? (file "clojure") settings))))))
 
 (deftest test-is-matching-dir?-with-include-hidden
-  (let [settings (assoc DEFAULT-SETTINGS :exclude-hidden false)]
+  (let [settings (assoc DEFAULT-SETTINGS :include-hidden true)]
     (testing "test-is-matching-dir?-with-include-hidden"
              (is (is-matching-dir? (file ".") settings))
              (is (is-matching-dir? (file "..") settings))
@@ -226,7 +226,7 @@
       (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
 
 (deftest test-filter-to-file-result-with-includehidden
-  (let [settings (assoc DEFAULT-SETTINGS :exclude-hidden false)
+  (let [settings (assoc DEFAULT-SETTINGS :include-hidden true)
         ]
     (testing "test-filter-to-file-result-with-includehidden"
       (is (not (nil? (filter-to-file-result (file "finder.clj") settings))))

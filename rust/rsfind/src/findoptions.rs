@@ -465,7 +465,7 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     );
     flag_map.insert(
         "excludehidden".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_exclude_hidden(b))),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(!b))),
     );
     flag_map.insert(
         "help".to_string(),
@@ -477,7 +477,7 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     );
     flag_map.insert(
         "includehidden".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_exclude_hidden(!b))),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(b))),
     );
     flag_map.insert(
         "listdirs".to_string(),
@@ -608,7 +608,7 @@ mod tests {
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
-                assert!(!settings.exclude_hidden());
+                assert!(settings.include_hidden());
                 assert_eq!(settings.out_dir_patterns().len(), 1);
                 assert_eq!(
                     settings.out_dir_patterns()[0].to_string(),
@@ -652,7 +652,7 @@ mod tests {
         match options.settings_from_args(args.iter()) {
             Ok(settings) => {
                 assert!(settings.debug());
-                assert!(settings.exclude_hidden());
+                assert!(!settings.include_hidden());
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));

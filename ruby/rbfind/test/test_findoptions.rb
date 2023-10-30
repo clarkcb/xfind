@@ -20,8 +20,8 @@ module RbFind
       settings = @findoptions.find_settings_from_args([])
       assert_equal(false, settings.archives_only)
       assert_equal(false, settings.debug)
-      assert_equal(true, settings.exclude_hidden)
       assert_equal(false, settings.include_archives)
+      assert_equal(false, settings.include_hidden)
       assert_equal(false, settings.list_dirs)
       assert_equal(true, settings.list_files)
       assert_equal(false, settings.print_usage)
@@ -97,6 +97,7 @@ module RbFind
       assert_equal('temp', settings.out_file_patterns.first.source)
       assert(settings.debug)
       assert(settings.verbose)
+      assert(settings.include_hidden)
     end
   end
 end

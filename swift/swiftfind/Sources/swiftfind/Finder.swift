@@ -98,7 +98,7 @@ public class Finder {
     }
 
     public func isMatchingDir(_ dirPath: String) -> Bool {
-        if FileUtil.isHidden(dirPath), settings.excludeHidden {
+        if !settings.includeHidden, FileUtil.isHidden(dirPath) {
             return false
         }
         return filterByPatterns(dirPath, inPatterns: settings.inDirPatterns,
@@ -110,7 +110,7 @@ public class Finder {
     }
 
     public func isMatchingFile(_ fileName: String, fileType: FileType) -> Bool {
-        if settings.excludeHidden, FileUtil.isHiddenFile(fileName) {
+        if !settings.includeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
         return filterByExtensions(FileUtil.getExtension(fileName),
@@ -126,7 +126,7 @@ public class Finder {
 
     public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
         let fileName = URL(fileURLWithPath: fileResult.filePath).lastPathComponent
-        if settings.excludeHidden, FileUtil.isHiddenFile(fileName) {
+        if !settings.includeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
         if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
@@ -147,7 +147,7 @@ public class Finder {
     }
 
     public func isMatchingArchiveFile(_ fileName: String) -> Bool {
-        if settings.excludeHidden, FileUtil.isHidden(fileName) {
+        if !settings.includeHidden, FileUtil.isHidden(fileName) {
             return false
         }
         return filterByExtensions(FileUtil.getExtension(fileName),
@@ -158,7 +158,7 @@ public class Finder {
     }
 
     public func isMatchingArchiveFileResult(_ fileResult: FileResult) -> Bool {
-        if settings.excludeHidden, FileUtil.isHidden(fileResult.filePath) {
+        if !settings.includeHidden, FileUtil.isHidden(fileResult.filePath) {
             return false
         }
         return filterByExtensions(FileUtil.getExtension(fileResult.filePath),
@@ -170,7 +170,7 @@ public class Finder {
 
     public func filterToFileResult(_ filePath: String) -> FileResult? {
         let fileName = URL(fileURLWithPath: filePath).lastPathComponent
-        if settings.excludeHidden, FileUtil.isHidden(fileName) {
+        if !settings.includeHidden, FileUtil.isHidden(fileName) {
             return nil
         }
         let fileType = fileTypes.getFileType(fileName)

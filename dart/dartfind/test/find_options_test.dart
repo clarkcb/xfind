@@ -7,8 +7,8 @@ void main() {
     var settings = await options.settingsFromArgs(['.']);
     expect(settings.archivesOnly, false);
     expect(settings.debug, false);
-    expect(settings.excludeHidden, true);
     expect(settings.includeArchives, false);
+    expect(settings.includeHidden, false);
     expect(settings.listDirs, false);
     expect(settings.listFiles, true);
     expect(settings.printUsage, false);
@@ -62,6 +62,6 @@ void main() {
 
     expect(settings.debug, true);
     expect(settings.verbose, true);
-    expect(settings.excludeHidden, true);
+    expect(settings.includeHidden, false);
   });
 }

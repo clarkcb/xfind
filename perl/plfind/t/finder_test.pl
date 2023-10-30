@@ -114,12 +114,12 @@ sub test_is_matching_dir_hidden_dir {
 
 sub test_is_matching_dir_hidden_dir_include_hidden {
     my $settings = get_settings();
-    $settings->{exclude_hidden} = 0;
+    $settings->{include_hidden} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = '.git';
     ok($finder->is_matching_dir($dir),
-        "Hidden dir $dir is find dir with exclude_hidden set to false");
+        "Hidden dir $dir is matching dir with include_hidden set to true");
 }
 
 ################################################################################
@@ -358,16 +358,16 @@ sub test_filter_file_is_hidden_file {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when exclude_hidden=1");
+    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when include_hidden == 0");
 }
 
 sub test_filter_file_hidden_includehidden {
     my $settings = get_settings();
-    $settings->{exclude_hidden} = 0;
+    $settings->{include_hidden} = 1;
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = '.gitignore';
-    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when hidden and exclude_hidden=0");
+    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when hidden and include_hidden == 1");
 }
 
 sub test_filter_file_archive_no_include_archives {
@@ -376,7 +376,7 @@ sub test_filter_file_archive_no_include_archives {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when include_archives=0");
+    ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when include_archives == 0");
 }
 
 sub test_filter_file_archive_include_archives {
@@ -385,7 +385,7 @@ sub test_filter_file_archive_include_archives {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file = 'archive.zip';
-    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when include_archives=1");
+    ok(defined $finder->filter_to_file_result($file), "filter_to_file_result($file) defined when include_archives == 1");
 }
 
 sub test_filter_file_archive_archives_only {

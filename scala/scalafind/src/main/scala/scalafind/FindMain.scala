@@ -14,7 +14,7 @@ object FindMain {
 
   private def getMatchingFiles(fileResults: Seq[FileResult]): Seq[String] = {
     fileResults
-      .map(_.path)
+      .map(_.toString)
       .distinct
   }
 

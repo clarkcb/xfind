@@ -42,14 +42,14 @@ class FinderTests: XCTestCase {
 
     func testIsMatchingDir_IsHiddenIncludeHidden_True() {
         let settings = getSettings()
-        settings.excludeHidden = false
+        settings.includeHidden = true
         let finder = try! Finder(settings: settings)
         XCTAssertTrue(finder.isMatchingDir(".git"))
     }
 
     func testIsMatchingDir_NoPatterns_True() {
         let settings = getSettings()
-        settings.excludeHidden = false
+        settings.includeHidden = false
         let finder = try! Finder(settings: settings)
         XCTAssertTrue(finder.isMatchingDir("/Users"))
     }
@@ -223,7 +223,7 @@ class FinderTests: XCTestCase {
 
     func testFilterToFileResult_IsHiddenIncludeHidden_True() {
         let settings = getSettings()
-        settings.excludeHidden = false
+        settings.includeHidden = true
         let finder = try! Finder(settings: settings)
         XCTAssert(finder.filterToFileResult(".hidden.txt") != nil)
     }

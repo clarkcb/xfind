@@ -93,7 +93,7 @@
 
 + (NSDirectoryEnumerationOptions) optionsForSettings:(FindSettings*)settings {
     NSDirectoryEnumerationOptions options = NSDirectoryEnumerationSkipsPackageDescendants;
-    if (settings.excludeHidden) {
+    if (settings.includeHidden) {
         options |= NSDirectoryEnumerationSkipsHiddenFiles;
     }
     if (!settings.recursive) {

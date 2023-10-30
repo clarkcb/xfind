@@ -26,8 +26,8 @@ class FindOptionsTest extends TestCase
         $settings = $this->findoptions->settings_from_args([]);
         $this->assertFalse($settings->archives_only);
         $this->assertFalse($settings->debug);
-        $this->assertTrue($settings->exclude_hidden);
         $this->assertFalse($settings->include_archives);
+        $this->assertFalse($settings->include_hidden);
         $this->assertFalse($settings->list_dirs);
         $this->assertTrue($settings->list_files);
         $this->assertFalse($settings->print_usage);
@@ -103,6 +103,6 @@ END_JSON;
         $this->assertEquals('temp', $settings->out_file_patterns[0]);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
-        $this->assertFalse($settings->exclude_hidden);
+        $this->assertTrue($settings->include_hidden);
     }
 }

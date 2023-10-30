@@ -87,7 +87,7 @@ class Finder {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
-        if (this.settings.excludeHidden) {
+        if (!this.settings.includeHidden) {
             let nonDotElems = dir.split(path.sep).filter(p => !this.matchesAnyElement(p, ['.','..']));
             if (nonDotElems.length === 0) {
                 return true;
@@ -105,7 +105,7 @@ class Finder {
     }
 
     isMatchingFile(file) {
-        // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
+        // if (!this.settings.includeHidden && FileUtil.isHidden(file)) {
         //     return false;
         // }
         if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
@@ -131,7 +131,7 @@ class Finder {
     }
 
     isMatchingFileResult(fr) {
-        // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
+        // if (!this.settings.includeHidden && FileUtil.isHidden(file)) {
         //     return false;
         // }
         if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
@@ -190,7 +190,7 @@ class Finder {
     }
 
     filterFile(f) {
-        if (this.settings.excludeHidden && FileUtil.isHidden(f)) {
+        if (!this.settings.includeHidden && FileUtil.isHidden(f)) {
             return false;
         }
         if (this.fileTypes.isArchiveFile(f)) {
@@ -199,8 +199,8 @@ class Finder {
         return (!this.settings.archivesOnly && this.isMatchingFile(f));
     }
 
-    filterToFileResult(fp) {
-        if (this.settings.excludeHidden && FileUtil.isHidden(fp)) {
+    async filterToFileResult(fp) {
+        if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
         const dirname = path.dirname(fp) || '.';

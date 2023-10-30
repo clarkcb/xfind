@@ -30,7 +30,7 @@ type Finder (settings : FindSettings) =
 
     member this.IsMatchingDir (d : DirectoryInfo) : bool =
         let elems = d.FullName.Split('/', '\\') |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
-        (not settings.ExcludeHidden ||
+        (settings.IncludeHidden ||
          not (Seq.exists FileUtil.IsHidden elems)) &&
         (Seq.isEmpty settings.InDirPatterns ||
          this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
@@ -66,7 +66,7 @@ type Finder (settings : FindSettings) =
          not (Seq.exists (fun p -> (p:Regex).Match(fr.File.Name).Success) settings.OutArchiveFilePatterns))
 
     member this.FilterToFileResult (f: FileInfo) : FileResult.t Option = 
-        if settings.ExcludeHidden && FileUtil.IsHiddenFile f then
+        if not settings.IncludeHidden && FileUtil.IsHiddenFile f then
             None
         else
             let fr = FileResult.Create f (_fileTypes.GetFileType f)

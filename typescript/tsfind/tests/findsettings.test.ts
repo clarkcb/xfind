@@ -11,8 +11,8 @@ describe('testing findsettings', () => {
         const settings: FindSettings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.debug).toBeFalsy();
-        expect(settings.excludeHidden).toBeTruthy();
         expect(settings.includeArchives).toBeFalsy();
+        expect(settings.includeHidden).toBeFalsy();
         expect(settings.listDirs).toBeFalsy();
         expect(settings.listFiles).toBeFalsy();
         expect(settings.paths.length).toEqual(0);
@@ -59,7 +59,7 @@ describe('testing findsettings', () => {
         const settings: FindSettings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.includeArchives).toBeFalsy();
-        settings.setArchivesOnly(true);
+        settings.archivesOnly = true;
         expect(settings.archivesOnly).toBeTruthy();
         expect(settings.includeArchives).toBeTruthy();
     });
@@ -68,7 +68,7 @@ describe('testing findsettings', () => {
         const settings: FindSettings = new FindSettings();
         expect(settings.debug).toBeFalsy();
         expect(settings.verbose).toBeFalsy();
-        settings.setDebug(true);
+        settings.debug = true;
         expect(settings.debug).toBeTruthy();
         expect(settings.verbose).toBeTruthy();
     });

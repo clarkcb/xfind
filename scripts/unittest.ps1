@@ -274,8 +274,8 @@ function UnitTestObjc
     Set-Location $objcfindPath
 
     Log('Unit-testing objcfind')
-    Log('xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests')
-    xcodebuild test -project objcfind.xcodeproj -scheme objcfind_tests
+    Log('swift test')
+    swift test
 
     Set-Location $oldPwd
 }

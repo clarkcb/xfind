@@ -90,7 +90,7 @@ export class Finder {
         if (FileUtil.isDotDir(dir)) {
             return true;
         }
-        if (this._settings.excludeHidden) {
+        if (!this._settings.includeHidden) {
             const nonDotElems = dir.split(path.sep).filter((p: string) => !Finder.matchesAnyString(p, ['.','..']));
             if (nonDotElems.length === 0) {
                 return true;
@@ -196,7 +196,7 @@ export class Finder {
     }
 
     public filterFile(f: string): boolean {
-        if (this._settings.excludeHidden && FileUtil.isHidden(f)) {
+        if (!this._settings.includeHidden && FileUtil.isHidden(f)) {
             return false;
         }
         if (FileTypes.isArchiveFile(f)) {
@@ -206,7 +206,7 @@ export class Finder {
     }
 
     public filterToFileResult(fp: string): FileResult | null {
-        if (this._settings.excludeHidden && FileUtil.isHidden(fp)) {
+        if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
         const dirname = path.dirname(fp) || '.';

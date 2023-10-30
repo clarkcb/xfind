@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace CsFindLib;
 public class Finder
 {
 	private readonly FileTypes _fileTypes;
-	private FindSettings Settings { get; set; }
+	private FindSettings Settings { get; }
 	public Finder(FindSettings settings)
 	{
 		Settings = settings;
@@ -42,7 +43,7 @@ public class Finder
 
 	public bool IsMatchingDirectory(DirectoryInfo d)
 	{
-		if (Settings.ExcludeHidden)
+		if (!Settings.IncludeHidden)
 		{
 			if (d.FullName.Split('/', '\\').ToList()
 			    .Where(e => !string.IsNullOrEmpty(e))
@@ -108,7 +109,7 @@ public class Finder
 
 	public FileResult? FilterToFileResult(FileInfo fi)
 	{
-		if (Settings.ExcludeHidden && FileUtil.IsHiddenFile(fi))
+		if (!Settings.IncludeHidden && FileUtil.IsHiddenFile(fi))
 			return null;
 		var fr = new FileResult(fi, _fileTypes.GetFileType(fi));
 		if (fr.Type.Equals(FileType.Archive))
@@ -136,7 +137,7 @@ public class Finder
 		var pathSepCount = FileUtil.SepCount(expandedPath);
 		var pathResults = new List<FileResult>();
 
-		bool MatchFile(FileInfo f, int startPathSepCount)
+		bool MatchDirectory(FileInfo f, int startPathSepCount)
 		{
 			if (f.Directory == null) return true;
 			var fileSepCount = FileUtil.SepCount(f.FullName);
@@ -151,9 +152,25 @@ public class Finder
 			// if MaxDepth is zero, we can skip since a directory cannot be a result
 			if (Settings.MaxDepth != 0)
 			{
+				// 1) Sequential file processing
 				pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
-					.Where(f => MatchFile(f, pathSepCount))
-					.Select(f => FilterToFileResult(f)).Where(fr => fr != null).Select(f => f!));
+					.Where(f => MatchDirectory(f, pathSepCount))
+					.Select(FilterToFileResult)
+					.Where(fr => fr != null)
+					.Select(fr => fr!));
+
+				// // 2) Parallel file processing - this is actually slower than 1
+				// var fileResultBag = new ConcurrentBag<FileResult>();
+				// new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
+				// 	.AsParallel()
+				// 	.Where(f => MatchDirectory(f, pathSepCount))
+				// 	.Select(FilterToFileResult)
+				// 	.Where(fr => fr != null)
+				// 	.ForAll(fr => 
+				// 	{
+				// 		fileResultBag.Add(fr!);
+				// 	});
+				// pathResults.AddRange(fileResultBag);
 			}
 		}
 		else if (File.Exists(expandedPath))
@@ -173,24 +190,40 @@ public class Finder
 		return pathResults;
 	}
 
+	// private IEnumerable<FileResult> GetAllFileResultsTasks()
+	// {
+	// 	var fileResults = new List<FileResult>();
+	// 	var findOption = Settings.Recursive ? SearchOption.AllDirectories :
+	// 		SearchOption.TopDirectoryOnly;
+	// 	var findTasks = new Task<List<FileResult>>[Settings.Paths.Count];
+	// 	var currentTask = 0;
+	// 	foreach (var p in Settings.Paths)
+	// 	{
+	// 		findTasks[currentTask] = Task<List<FileResult>>.Factory.StartNew(() => GetFileResults(p).ToList());
+	// 		currentTask++;
+	// 	}
+	// 	Task.WaitAll(findTasks);
+	// 	foreach (var findTask in findTasks)
+	// 	{
+	// 		fileResults.AddRange(findTask.Result);
+	// 	}
+	// 	return fileResults;
+	// }
+
 	private IEnumerable<FileResult> GetAllFileResults()
 	{
-		var fileResults = new List<FileResult>();
-		var findOption = Settings.Recursive ? SearchOption.AllDirectories :
-			SearchOption.TopDirectoryOnly;
-		var findTasks = new Task<List<FileResult>>[Settings.Paths.Count];
-		var currentTask = 0;
-		foreach (var p in Settings.Paths)
-		{
-			findTasks[currentTask] = Task<List<FileResult>>.Factory.StartNew(() => GetFileResults(p).ToList());
-			currentTask++;
-		}
-		Task.WaitAll(findTasks);
-		foreach (var findTask in findTasks)
-		{
-			fileResults.AddRange(findTask.Result);
-		}
-		return fileResults;
+		var fileResultsBag = new ConcurrentBag<FileResult>();
+		Settings.Paths.AsParallel()
+			.Select(GetFileResults)
+			.ForAll(frs =>
+			{
+				foreach (var fr in frs)
+				{
+					fileResultsBag.Add(fr);
+				}
+			});
+
+		return fileResultsBag.ToList();
 	}
 
 	public IEnumerable<FileResult> Find()

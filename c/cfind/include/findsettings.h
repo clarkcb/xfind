@@ -16,7 +16,6 @@ typedef enum {
 typedef struct FindSettings {
     unsigned short archives_only : 1;
     unsigned short debug : 1;
-    unsigned short exclude_hidden : 1;
     StringNode *in_archive_extensions;
     RegexNode *in_archive_file_patterns;
     RegexNode *in_dir_patterns;
@@ -24,6 +23,7 @@ typedef struct FindSettings {
     RegexNode *in_file_patterns;
     IntNode *in_file_types;
     unsigned short include_archives : 1;
+    unsigned short include_hidden : 1;
     unsigned short list_dirs : 1;
     unsigned short list_files : 1;
     int max_depth;

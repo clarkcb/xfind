@@ -15,6 +15,7 @@ pub struct FindSettings {
     _in_file_patterns: Vec<Regex>,
     _in_file_types: Vec<filetypes::FileType>,
     _include_archives: bool,
+    _include_hidden: bool,
     _list_dirs: bool,
     _list_files: bool,
     _max_depth: i64,
@@ -52,6 +53,7 @@ impl FindSettings {
             _in_file_patterns: Vec::new(),
             _in_file_types: Vec::new(),
             _include_archives: false,
+            _include_hidden: false,
             _list_dirs: false,
             _list_files: false,
             _max_depth: -1i64,
@@ -97,14 +99,6 @@ impl FindSettings {
         if b {
             self._verbose = b;
         }
-    }
-
-    pub fn exclude_hidden(&self) -> bool {
-        self._exclude_hidden
-    }
-
-    pub fn set_exclude_hidden(&mut self, b: bool) {
-        self._exclude_hidden = b
     }
 
     pub fn in_archive_extensions(&self) -> &Vec<String> {
@@ -161,6 +155,14 @@ impl FindSettings {
 
     pub fn set_include_archives(&mut self, b: bool) {
         self._include_archives = b
+    }
+
+    pub fn include_hidden(&self) -> bool {
+        self._include_hidden
+    }
+
+    pub fn set_include_hidden(&mut self, b: bool) {
+        self._include_hidden = b
     }
 
     pub fn list_dirs(&self) -> bool {
@@ -360,7 +362,6 @@ mod tests {
         let settings = FindSettings::default();
         assert_eq!(settings.archives_only(), false);
         assert_eq!(settings.debug(), false);
-        assert_eq!(settings.exclude_hidden(), true);
         assert!(settings.in_archive_extensions().is_empty());
         assert!(settings.in_archive_file_patterns().is_empty());
         assert!(settings.in_dir_patterns().is_empty());
@@ -368,6 +369,7 @@ mod tests {
         assert!(settings.in_file_patterns().is_empty());
         assert!(settings.in_file_types().is_empty());
         assert_eq!(settings.include_archives(), false);
+        assert_eq!(settings.include_hidden(), false);
         assert_eq!(settings.list_dirs(), false);
         assert_eq!(settings.list_files(), false);
         assert_eq!(settings.max_depth(), -1);

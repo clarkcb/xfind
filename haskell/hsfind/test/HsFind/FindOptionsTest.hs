@@ -20,8 +20,8 @@ getSettingsFromNoArgsTests = do
     Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= False)
              , testCase "debug" (debug settings @?= False)
-             , testCase "excludeHidden" (excludeHidden settings @?= True)
              , testCase "includeArchives" (includeArchives settings @?= False)
+             , testCase "includeHidden" (includeHidden settings @?= False)
              , testCase "listDirs" (listDirs settings @?= False)
              , testCase "listFiles" (listFiles settings @?= True)
              , testCase "printUsage" (printUsage settings @?= False)

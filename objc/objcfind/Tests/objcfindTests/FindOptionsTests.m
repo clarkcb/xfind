@@ -31,8 +31,8 @@
     FindSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
-    XCTAssert([settings excludeHidden]);
     XCTAssert(![settings includeArchives]);
+    XCTAssert(![settings includeHidden]);
     XCTAssert(![settings listDirs]);
     XCTAssert([settings listFiles]);
     XCTAssert(![settings printUsage]);
@@ -66,7 +66,7 @@
                       "\"out-dirpattern\": \"node_module\",\n"
                       "\"out-filepattern\": [\"temp\"],\n"
                       "\"debug\": true,\n"
-                      "\"includehidden\": false\n"
+                      "\"includehidden\": true\n"
                       "}", startPath];
 
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
@@ -84,7 +84,7 @@
     XCTAssert([[settings paths] count] == 1);
     XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"~/src/xfind"]);
     XCTAssert([settings debug]);
-    XCTAssert([settings excludeHidden]);
+    XCTAssert([settings includeHidden]);
 }
 
 @end

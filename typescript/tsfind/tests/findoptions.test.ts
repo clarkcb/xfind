@@ -17,8 +17,8 @@ describe('testing findoptions', () => {
             }
             expect(settings.archivesOnly).toBeFalsy();
             expect(settings.debug).toBeFalsy();
-            expect(settings.excludeHidden).toBeTruthy();
             expect(settings.includeArchives).toBeFalsy();
+            expect(settings.includeHidden).toBeFalsy();
             expect(settings.listDirs).toBeFalsy();
             expect(settings.listFiles).toBeTruthy();
             expect(settings.printUsage).toBeFalsy();
@@ -80,6 +80,6 @@ describe('testing findoptions', () => {
         expect(settings.outFilePatterns[0].source).toEqual('temp');
         expect(settings.debug).toBeTruthy();
         expect(settings.verbose).toBeTruthy();
-        expect(!settings.excludeHidden).toBeTruthy();
+        expect(settings.includeHidden).toBeTruthy();
     });
 });

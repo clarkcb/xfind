@@ -22,7 +22,6 @@ sub new {
     my $self = {
         archives_only => 0,
         debug => 0,
-        exclude_hidden => 1,
         in_archive_extensions => [],
         in_archive_file_patterns => [],
         in_dir_patterns => [],
@@ -30,6 +29,7 @@ sub new {
         in_file_patterns => [],
         in_file_types => [],
         include_archives => 0,
+        include_hidden => 0,
         list_dirs => 0,
         list_files => 0,
         max_depth => -1,

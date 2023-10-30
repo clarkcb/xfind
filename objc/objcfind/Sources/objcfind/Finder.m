@@ -103,7 +103,7 @@
 }
 
 - (BOOL) isMatchingDir:(NSString*)dirPath {
-    if (self.settings.excludeHidden && [FileUtil isHidden:dirPath]) {
+    if (!self.settings.includeHidden && [FileUtil isHidden:dirPath]) {
         return false;
     }
     return [self filterByPatterns:dirPath
@@ -150,7 +150,7 @@
 }
 
 - (FileResult*) filterToFileResult:(NSString*)filePath {
-    if (self.settings.excludeHidden && [FileUtil isHidden:filePath]) {
+    if (!self.settings.includeHidden && [FileUtil isHidden:filePath]) {
         return false;
     }
     FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];

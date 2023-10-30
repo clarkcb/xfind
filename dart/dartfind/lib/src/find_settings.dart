@@ -59,8 +59,6 @@ class FindSettings {
     }
   }
 
-  bool excludeHidden = true;
-
   var inArchiveExtensions = <String>{};
   var inArchiveFilePatterns = <Pattern>{};
   var inDirPatterns = <Pattern>{};
@@ -70,6 +68,7 @@ class FindSettings {
   var inFileTypes = <FileType>{};
 
   bool includeArchives = false;
+  bool includeHidden = false;
   bool listDirs = false;
   bool listFiles = false;
 
@@ -145,7 +144,6 @@ class FindSettings {
   @override
   String toString() => 'FindSettings(archivesOnly=$archivesOnly'
       ', debug=$debug'
-      ', excludeHidden=$excludeHidden'
       ', inArchiveExtensions=${stringSetToString(inArchiveExtensions)}'
       ', inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}'
       ', inDirPatterns=${patternSetToString(inDirPatterns)}'
@@ -153,6 +151,7 @@ class FindSettings {
       ', inFilePatterns=${patternSetToString(inFilePatterns)}'
       ', inFileTypes=$inFileTypes'
       ', includeArchives=$includeArchives'
+      ', includeHidden=$includeHidden'
       ', listDirs=$listDirs'
       ', listFiles=$listFiles'
       ', maxDepth=$maxDepth'

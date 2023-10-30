@@ -123,7 +123,7 @@ my $bool_flag_action_hash = {
     },
     'excludehidden' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('exclude_hidden', $b);
+        $settings->set_property('include_hidden', !$b);
     },
     'help' => sub {
         my ($b, $settings) = @_;
@@ -135,7 +135,7 @@ my $bool_flag_action_hash = {
     },
     'includehidden' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('exclude_hidden', !$b);
+        $settings->set_property('include_hidden', $b);
     },
     'listdirs' => sub {
         my ($b, $settings) = @_;

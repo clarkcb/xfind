@@ -22,8 +22,8 @@ class FindSettingsTests: XCTestCase {
     func testDefaultFindSettings() {
         XCTAssert(DefaultFindSettings.archivesOnly == false, "archivesOnly == false")
         XCTAssert(DefaultFindSettings.debug == false, "debug == false")
-        XCTAssert(DefaultFindSettings.excludeHidden == true, "excludeHidden == true")
         XCTAssert(DefaultFindSettings.includeArchives == false, "includeArchives == false")
+        XCTAssert(DefaultFindSettings.includeHidden == false, "includeHidden == false")
         XCTAssert(DefaultFindSettings.listDirs == false, "listDirs == false")
         XCTAssert(DefaultFindSettings.listFiles == false, "listFiles == false")
         XCTAssert(DefaultFindSettings.maxLastMod == nil, "maxLastMod == nil")
@@ -41,9 +41,9 @@ class FindSettingsTests: XCTestCase {
         let settings = FindSettings()
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
-        XCTAssert(settings.excludeHidden == DefaultFindSettings.excludeHidden, "excludeHidden == true")
         XCTAssert(settings.includeArchives == DefaultFindSettings.includeArchives,
                   "includeArchives == false")
+        XCTAssert(settings.includeHidden == DefaultFindSettings.includeHidden, "includeHidden == false")
         XCTAssert(settings.listDirs == DefaultFindSettings.listDirs, "listDirs == false")
         XCTAssert(settings.listFiles == DefaultFindSettings.listFiles, "listFiles == false")
         XCTAssert(settings.maxLastMod == DefaultFindSettings.maxLastMod, "maxLastMod == nil")

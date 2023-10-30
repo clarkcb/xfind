@@ -25,8 +25,8 @@ class FindSettingsTest(unittest.TestCase):
         # test the props
         self.assertFalse(self.settings.archives_only)
         self.assertFalse(self.settings.debug)
-        self.assertTrue(self.settings.exclude_hidden)
         self.assertFalse(self.settings.include_archives)
+        self.assertFalse(self.settings.include_hidden)
         self.assertFalse(self.settings.list_dirs)
         self.assertFalse(self.settings.list_files)
         self.assertFalse(self.settings.print_usage)
@@ -49,8 +49,8 @@ class FindSettingsTest(unittest.TestCase):
         props = {
             'archives_only': True,
             'debug': True,
-            'exclude_hidden': False,
             'include_archives': True,
+            'include_hidden': True,
             'list_dirs': True,
             'list_files': True,
             'print_usage': True,
@@ -61,8 +61,8 @@ class FindSettingsTest(unittest.TestCase):
         self.settings.set_properties(props)
         self.assertEqual(True, self.settings.archives_only)
         self.assertEqual(True, self.settings.debug)
-        self.assertEqual(False, self.settings.exclude_hidden)
         self.assertEqual(True, self.settings.include_archives)
+        self.assertEqual(True, self.settings.include_hidden)
         self.assertEqual(True, self.settings.list_dirs)
         self.assertEqual(True, self.settings.list_files)
         self.assertEqual(True, self.settings.print_usage)

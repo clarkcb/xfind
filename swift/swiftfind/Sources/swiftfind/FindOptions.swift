@@ -136,7 +136,7 @@ public class FindOptions {
             settings.includeArchives = !bool
         },
         "excludehidden": { (bool: Bool, settings: FindSettings) in
-            settings.excludeHidden = bool
+            settings.includeHidden = !bool
         },
         "help": { (bool: Bool, settings: FindSettings) in
             settings.printUsage = bool
@@ -145,7 +145,7 @@ public class FindOptions {
             settings.includeArchives = bool
         },
         "includehidden": { (bool: Bool, settings: FindSettings) in
-            settings.excludeHidden = !bool
+            settings.includeHidden = bool
         },
         "listdirs": { (bool: Bool, settings: FindSettings) in
             settings.listDirs = bool

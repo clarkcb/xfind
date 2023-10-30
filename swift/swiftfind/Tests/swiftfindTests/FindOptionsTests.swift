@@ -28,7 +28,7 @@ class FindOptionsTests: XCTestCase {
         let settings: FindSettings = try! options.settingsFromArgs(requiredArgs)
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
-        XCTAssert(settings.excludeHidden == DefaultFindSettings.excludeHidden, "excludeHidden == true")
+        XCTAssert(settings.includeHidden == DefaultFindSettings.includeHidden, "includeHidden == false")
         XCTAssert(settings.listDirs == DefaultFindSettings.listDirs, "listDirs == false")
         XCTAssert(settings.listFiles == true, "listFiles == true")
         XCTAssert(settings.printUsage == DefaultFindSettings.printUsage, "printUsage == false")
@@ -59,7 +59,7 @@ class FindOptionsTests: XCTestCase {
           "out-dirpattern": ["_", "ansible", "bak", "build", "chef", "node_module", "target", "test", "typings"],
           "out-filepattern": ["gulpfile", ".min."],
           "debug": true,
-          "includehidden": false,
+          "includehidden": true,
           "listdirs": true,
           "listfiles": true
         }
@@ -67,7 +67,7 @@ class FindOptionsTests: XCTestCase {
         let settings = try! options.settingsFromJson(jsonString)
         print("settings: \(settings)")
         XCTAssertTrue(settings.debug, "debug == true")
-        XCTAssertTrue(settings.excludeHidden, "excludeHidden == true")
+        XCTAssertTrue(settings.includeHidden, "includeHidden == true")
         XCTAssertEqual(2, settings.inExtensions.count)
         XCTAssertTrue(settings.inExtensions.contains("js"))
         XCTAssertTrue(settings.inExtensions.contains("ts"))

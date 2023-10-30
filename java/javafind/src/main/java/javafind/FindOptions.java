@@ -71,10 +71,10 @@ public class FindOptions {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("debug", (b, settings) -> settings.setDebug(b));
-            put("excludehidden", (b, settings) -> settings.setExcludeHidden(b));
+            put("excludehidden", (b, settings) -> settings.setIncludeHidden(!b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
             put("includearchives", (b, settings) -> settings.setIncludeArchives(b));
-            put("includehidden", (b, settings) -> settings.setExcludeHidden(!b));
+            put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
             put("listdirs", (b, settings) -> settings.setListDirs(b));
             put("listfiles", (b, settings) -> settings.setListFiles(b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));

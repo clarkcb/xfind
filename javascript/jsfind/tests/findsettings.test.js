@@ -11,8 +11,8 @@ describe('testing findsettings', () => {
         const settings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.debug).toBeFalsy();
-        expect(settings.excludeHidden).toBeTruthy();
         expect(settings.includeArchives).toBeFalsy();
+        expect(settings.includeHidden).toBeFalsy();
         expect(settings.listDirs).toBeFalsy();
         expect(settings.listFiles).toBeFalsy();
         expect(settings.printUsage).toBeFalsy();

@@ -11,8 +11,8 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
   def assertDefaultSettings(settings: FindSettings): Unit = {
     assert(settings.archivesOnly == DefaultSettings.archivesOnly)
     assert(settings.debug == DefaultSettings.debug)
-    assert(settings.excludeHidden == DefaultSettings.excludeHidden)
     assert(settings.includeArchives == DefaultSettings.includeArchives)
+    assert(settings.includeHidden == DefaultSettings.includeHidden)
     assert(settings.listDirs == DefaultSettings.listDirs)
     assert(settings.listFiles)
     assert(settings.printUsage == DefaultSettings.printUsage)
@@ -61,8 +61,8 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val args = Array("--excludehidden") ++ requiredArgs
     println("args: " + args.toList)
     val settings = FindOptions.settingsFromArgs(args)
-    println("settings.excludeHidden: "+settings.excludeHidden)
-    assert(settings.excludeHidden)
+    println("settings.includeHidden: " + settings.includeHidden)
+    assert(!settings.includeHidden)
   }
 
   // test -h / --help
@@ -83,8 +83,8 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val args = Array("--includehidden") ++ requiredArgs
     println("args: " + args.toList)
     val settings = FindOptions.settingsFromArgs(args)
-    println("settings.excludeHidden: " + settings.excludeHidden)
-    assert(!settings.excludeHidden)
+    println("settings.includehidden: " + settings.includeHidden)
+    assert(settings.includeHidden)
   }
 
   // test --in-archivefilepattern
@@ -321,6 +321,6 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.outDirPatterns.size == 4)
     assert(settings.outFilePatterns.size == 2)
     assert(settings.debug)
-    assert(settings.excludeHidden)
+    assert(!settings.includeHidden)
   }
 }

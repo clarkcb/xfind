@@ -27,8 +27,8 @@
     FindSettings *settings = [[FindSettings alloc] init];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
-    XCTAssert([settings excludeHidden]);
     XCTAssert(![settings includeArchives]);
+    XCTAssert(![settings includeHidden]);
     XCTAssert(![settings listDirs]);
     XCTAssert(![settings listFiles]);
     XCTAssert(![settings printUsage]);

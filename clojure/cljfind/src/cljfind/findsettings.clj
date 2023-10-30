@@ -41,8 +41,8 @@
   [
     archives-only
     debug
-    exclude-hidden
     include-archives
+    include-hidden
     in-archive-extensions
     in-archive-file-patterns
     in-dir-patterns
@@ -77,8 +77,8 @@
   (->FindSettings
    false     ; archives-only
    false     ; debug
-   true      ; exclude-hidden
    false     ; include-archives
+   false     ; include-hidden
    #{}       ; in-archive-extensions
    #{}       ; in-archive-file-patterns
    #{}       ; in-dir-patterns

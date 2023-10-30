@@ -34,14 +34,14 @@ void main() {
 
     test('test isFindDir hidden dir includeHidden', () {
       var settings = getSettings();
-      settings.excludeHidden = false;
+      settings.includeHidden = true;
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('.git')), true);
     });
 
     test('test isFindDir no patterns', () {
       var settings = getSettings();
-      settings.excludeHidden = false;
+      settings.includeHidden = false;
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('/Users')), true);
     });

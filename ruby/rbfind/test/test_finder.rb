@@ -89,7 +89,7 @@ module RbFind
 
     def test_is_find_dir_hidden_dir_include_hidden
       settings = get_settings
-      settings.exclude_hidden = false
+      settings.include_hidden = true
       finder = Finder.new(settings)
       dir = '.git'
       assert(finder.matching_dir?(dir))
@@ -278,7 +278,7 @@ module RbFind
 
     def test_filter_to_file_result_hidden_include_hidden
       settings = get_settings
-      settings.exclude_hidden = false
+      settings.include_hidden = true
       finder = Finder.new(settings)
       f = '.gitignore'
       assert(finder.filter_to_file_result(f) != nil)

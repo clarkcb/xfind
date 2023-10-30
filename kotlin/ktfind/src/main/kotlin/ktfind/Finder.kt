@@ -79,7 +79,7 @@ class Finder(val settings: FindSettings) {
 
     fun isMatchingDir(d: File): Boolean {
         val pathElems = d.path.split(File.separatorChar)
-        if (settings.excludeHidden && pathElems.any { FileUtil.isHidden(it) }) {
+        if (!settings.includeHidden && pathElems.any { FileUtil.isHidden(it) }) {
             return false
         }
         return (settings.inDirPatterns.isEmpty()
@@ -150,13 +150,13 @@ class Finder(val settings: FindSettings) {
     }
 
     fun filterToFileResult(f: File): FileResult? {
-        if (settings.excludeHidden && f.isHidden) {
+        if (!settings.includeHidden && f.isHidden) {
             return null
         }
         val stat: BasicFileAttributes? =
             if (needStat(settings)) Files.readAttributes(f.toPath(), BasicFileAttributes::class.java)
             else null
-        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), mimeType, stat)
+        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), stat)
         if (fr.fileType === FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
                 return fr

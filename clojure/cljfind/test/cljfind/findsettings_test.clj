@@ -9,15 +9,14 @@
     (testing "test-default-settings"
       (is (not (:archives-only settings)))
       (is (not (:debug settings)))
-      (is (:exclude-hidden settings))
+      (is (not (:include-archives settings)))
+      (is (not (:include-hidden settings)))
       (is (not (:list-dirs settings)))
       (is (not (:list-files settings)))
+      (is (empty? (:paths settings)))
       (is (not (:print-usage settings)))
       (is (not (:print-version settings)))
       (is (:recursive settings))
-      (is (not (:include-archives settings)))
-      (is (empty? (:paths settings)))
-      (is (not (:uniquelines settings)))
       (is (not (:verbose settings))))))
 
 (deftest test-add-extensions

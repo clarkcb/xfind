@@ -11,7 +11,6 @@ class FindSettings
 {
     public bool $archives_only = false;
     public bool $debug = false;
-    public bool $exclude_hidden = true;
     public array $in_archive_extensions = array();
     public array $in_archive_file_patterns = array();
     public array $in_dir_patterns = array();
@@ -19,6 +18,7 @@ class FindSettings
     public array $in_file_patterns = array();
     public array $in_file_types = array();
     public bool $include_archives = false;
+    public bool $include_hidden = false;
     public bool $list_dirs = false;
     public bool $list_files = false;
     public int $max_depth = -1;
@@ -156,7 +156,6 @@ class FindSettings
         return sprintf('FindSettings(' .
             'archives_only: %s' .
             ', debug: %s' .
-            ', exclude_hidden: %s' .
             ', in_archive_extensions: %s' .
             ', in_archive_file_patterns: %s' .
             ', in_dir_patterns: %s' .
@@ -164,6 +163,7 @@ class FindSettings
             ', in_file_patterns: %s' .
             ', in_file_types: %s' .
             ', include_archives: %s' .
+            ', exclude_hidden: %s' .
             ', list_dirs: %s' .
             ', list_files: %s' .
             ', max_depth: %d' .
@@ -189,7 +189,6 @@ class FindSettings
             ')',
             StringUtil::bool_to_string($this->archives_only),
             StringUtil::bool_to_string($this->debug),
-            StringUtil::bool_to_string($this->exclude_hidden),
             StringUtil::string_array_to_string($this->in_archive_extensions),
             StringUtil::string_array_to_string($this->in_archive_file_patterns),
             StringUtil::string_array_to_string($this->in_dir_patterns),
@@ -197,6 +196,7 @@ class FindSettings
             StringUtil::string_array_to_string($this->in_file_patterns),
             StringUtil::file_type_array_to_string($this->in_file_types),
             StringUtil::bool_to_string($this->include_archives),
+            StringUtil::bool_to_string($this->include_hidden),
             StringUtil::bool_to_string($this->list_dirs),
             StringUtil::bool_to_string($this->list_files),
             $this->max_depth,

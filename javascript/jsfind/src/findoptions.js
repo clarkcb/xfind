@@ -71,13 +71,13 @@ class FindOptions {
             'excludearchives':
                 (b, settings) => { settings.includeArchives = !b; },
             'excludehidden':
-                (b, settings) => { settings.excludeHidden = b; },
+                (b, settings) => { settings.includeHidden = !b; },
             'help':
                 (b, settings) => { settings.printUsage = b; },
             'includearchives':
                 (b, settings) => { settings.includeArchives = b; },
             'includehidden':
-                (b, settings) => { settings.excludeHidden = !b; },
+                (b, settings) => { settings.includeHidden = b; },
             'listdirs':
                 (b, settings) => { settings.listDirs = b; },
             'listfiles':
