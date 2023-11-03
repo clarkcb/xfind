@@ -178,14 +178,14 @@ export class Finder {
         // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
         //     return false;
         // }
-        const ext: string = FileUtil.getExtension(file);
-        if (this._settings.inArchiveExtensions.length &&
-            !Finder.matchesAnyString(ext, this._settings.inArchiveExtensions)) {
-            return false;
-        }
-        if (this._settings.outArchiveExtensions.length &&
-            Finder.matchesAnyString(ext, this._settings.outArchiveExtensions)) {
-            return false;
+        if (this._settings.inArchiveExtensions.length || this._settings.outArchiveExtensions.length) {
+            const ext: string = FileUtil.getExtension(file);
+            if ((this._settings.inArchiveExtensions.length &&
+                    !Finder.matchesAnyString(ext, this._settings.inArchiveExtensions))
+                || (this._settings.outArchiveExtensions.length &&
+                    Finder.matchesAnyString(ext, this._settings.outArchiveExtensions))) {
+                return false;
+            }
         }
         if (this._settings.inArchiveFilePatterns.length &&
             !Finder.matchesAnyPattern(file, this._settings.inArchiveFilePatterns)) {

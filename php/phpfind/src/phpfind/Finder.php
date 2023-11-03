@@ -177,14 +177,14 @@ class Finder
      */
     public function is_matching_archive_file(string $file_name): bool
     {
-        $ext = FileUtil::get_extension($file_name);
-        if ($this->settings->in_archive_extensions &&
-            !in_array($ext, $this->settings->in_archive_extensions)) {
-            return false;
-        }
-        if ($this->settings->out_archive_extensions &&
-            in_array($ext, $this->settings->out_archive_extensions)) {
-            return false;
+        if ($this->settings->in_archive_extensions || $this->settings->out_archive_extensions) {
+            $ext = FileUtil::get_extension($fr->file_name);
+            if ($this->settings->in_archive_extensions && !in_array($ext, $this->settings->in_archive_extensions)) {
+                return false;
+            }
+            if ($this->settings->out_archive_extensions && in_array($ext, $this->settings->out_archive_extensions)) {
+                return false;
+            }
         }
         if ($this->settings->in_archive_file_patterns &&
             !$this->matches_any_pattern($file_name, $this->settings->in_archive_file_patterns)) {

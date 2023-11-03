@@ -113,10 +113,15 @@ public class Finder {
         if !settings.includeHidden, FileUtil.isHiddenFile(fileName) {
             return false
         }
-        return filterByExtensions(FileUtil.getExtension(fileName),
-                                  inExtensions: settings.inExtensions,
-                                  outExtensions: settings.outExtensions)
-            && filterByPatterns(fileName,
+        if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
+            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
+                                                          inExtensions: settings.inExtensions,
+                                                          outExtensions: settings.outExtensions)
+            if !filteredByExtensions {
+                return false
+            }
+        }
+        return filterByPatterns(fileName,
                                 inPatterns: settings.inFilePatterns,
                                 outPatterns: settings.outFilePatterns)
             && filterByFileTypes(fileType,
@@ -150,21 +155,32 @@ public class Finder {
         if !settings.includeHidden, FileUtil.isHidden(fileName) {
             return false
         }
-        return filterByExtensions(FileUtil.getExtension(fileName),
-                                  inExtensions: settings.inArchiveExtensions,
-                                  outExtensions: settings.outArchiveExtensions)
-            && filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
+        if !settings.inArchiveExtensions.isEmpty || !settings.outArchiveExtensions.isEmpty {
+            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
+                                                          inExtensions: settings.inArchiveExtensions,
+                                                          outExtensions: settings.outArchiveExtensions)
+            if !filteredByExtensions {
+                return false
+            }
+        }
+        return filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
                                 outPatterns: settings.outArchiveFilePatterns)
     }
 
     public func isMatchingArchiveFileResult(_ fileResult: FileResult) -> Bool {
-        if !settings.includeHidden, FileUtil.isHidden(fileResult.filePath) {
+        let fileName = URL(fileURLWithPath: fileResult.filePath).lastPathComponent
+        if !settings.includeHidden, FileUtil.isHidden(fileName) {
             return false
         }
-        return filterByExtensions(FileUtil.getExtension(fileResult.filePath),
-                                  inExtensions: settings.inArchiveExtensions,
-                                  outExtensions: settings.outArchiveExtensions)
-            && filterByPatterns(fileResult.filePath, inPatterns: settings.inArchiveFilePatterns,
+        if !settings.inArchiveExtensions.isEmpty || !settings.outArchiveExtensions.isEmpty {
+            let filteredByExtensions = filterByExtensions(FileUtil.getExtension(fileName),
+                                                          inExtensions: settings.inArchiveExtensions,
+                                                          outExtensions: settings.outArchiveExtensions)
+            if !filteredByExtensions {
+                return false
+            }
+        }
+        return filterByPatterns(fileName, inPatterns: settings.inArchiveFilePatterns,
                                 outPatterns: settings.outArchiveFilePatterns)
     }
 

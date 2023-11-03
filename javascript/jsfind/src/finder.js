@@ -172,14 +172,14 @@ class Finder {
         // if (FileUtil.isHidden(file) && this.settings.excludeHidden) {
         //     return false;
         // }
-        let ext = FileUtil.getExtension(file);
-        if (this.settings.inArchiveExtensions.length &&
-            !this.matchesAnyElement(ext, this.settings.inArchiveExtensions)) {
-            return false;
-        }
-        if (this.settings.outArchiveExtensions.length &&
-            this.matchesAnyElement(ext, this.settings.outArchiveExtensions)) {
-            return false;
+        if (this.settings.inArchiveExtensions.length || this.settings.outArchiveExtensions.length) {
+            let ext = FileUtil.getExtension(fr.fileName);
+            if ((this.settings.inArchiveExtensions.length &&
+                    !this.matchesAnyElement(ext, this.settings.inArchiveExtensions)) ||
+                (this.settings.outArchiveExtensions.length &&
+                    this.matchesAnyElement(ext, this.settings.outArchiveExtensions))) {
+                return false;
+            }
         }
         if (this.settings.inArchiveFilePatterns.length &&
             !this.matchesAnyPattern(file, this.settings.inArchiveFilePatterns)) {

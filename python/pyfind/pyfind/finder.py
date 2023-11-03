@@ -73,12 +73,14 @@ class Finder:
 
     def is_matching_archive_file(self, file_name: str, stat: os.stat_result) -> bool:
         """Check whether the given archive file matches find settings."""
-        ext = FileUtil.get_extension(file_name)
-        if (self.settings.in_archive_extensions
-            and ext not in self.settings.in_archive_extensions) \
+        if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
+            ext = FileUtil.get_extension(file_name)
+            if (self.settings.in_archive_extensions
+                and ext not in self.settings.in_archive_extensions) \
             or (self.settings.out_archive_extensions
-                and ext in self.settings.out_archive_extensions) \
-            or (self.settings.in_archive_file_patterns
+                and ext in self.settings.out_archive_extensions):
+                return False
+        if (self.settings.in_archive_file_patterns
                 and not matches_any_pattern(file_name, self.settings.in_archive_file_patterns)) \
             or (self.settings.out_archive_file_patterns
                 and matches_any_pattern(file_name, self.settings.out_archive_file_patterns)):

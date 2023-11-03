@@ -123,9 +123,12 @@
 
 - (BOOL) isMatchingArchiveFile:(NSString*)filePath {
     NSString *fileName = [filePath lastPathComponent];
-    return [self filterByExtensions:[FileUtil getExtension:fileName]
-                       inExtensions:self.settings.inArchiveExtensions
-                      outExtensions:self.settings.outArchiveExtensions] &&
+    if ([self.settings.inArchiveExtensions count] > 0 || [self.settings.outArchiveExtensions count] > 0) {
+        filterByExtensions = [self filterByExtensions:[FileUtil getExtension:fileName]
+                                         inExtensions:self.settings.inArchiveExtensions
+                                        outExtensions:self.settings.outArchiveExtensions]
+    }
+    return filterByExtensions &&
     [self filterByPatterns:fileName
                 inPatterns:self.settings.inArchiveFilePatterns
                outPatterns:self.settings.outArchiveFilePatterns];

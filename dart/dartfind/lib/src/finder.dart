@@ -106,17 +106,22 @@ class Finder {
     return true;
   }
 
-  bool isMatchingArchiveFile(FileResult sf) {
-    var fileName = sf.file.path.split(Platform.pathSeparator).last;
+  bool isMatchingArchiveFile(FileResult fr) {
+    var fileName = fr.file.path.split(Platform.pathSeparator).last;
     if (!settings.includeHidden && FileUtil.isHidden(fileName)) {
       return false;
     }
-    var ext = FileUtil.extension(fileName);
-    return (settings.inArchiveExtensions.isEmpty ||
-            settings.inArchiveExtensions.contains(ext)) &&
-        (settings.outArchiveExtensions.isEmpty ||
-            !settings.outArchiveExtensions.contains(ext)) &&
-        (settings.inArchiveFilePatterns.isEmpty ||
+    if (settings.inArchiveExtensions.isNotEmpty ||
+        settings.outArchiveExtensions.isNotEmpty) {
+      var ext = FileUtil.extension(fileName);
+      if ((settings.inArchiveExtensions.isNotEmpty &&
+              !settings.inArchiveExtensions.contains(ext)) ||
+          (settings.outArchiveExtensions.isNotEmpty &&
+              settings.outArchiveExtensions.contains(ext))) {
+        return false;
+      }
+    }
+    return (settings.inArchiveFilePatterns.isEmpty ||
             _matchesAnyPattern(fileName, settings.inArchiveFilePatterns)) &&
         (settings.outArchiveFilePatterns.isEmpty ||
             !_matchesAnyPattern(fileName, settings.outArchiveFilePatterns));

@@ -102,6 +102,26 @@ impl Finder {
         if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
             return false;
         }
+
+        if !self.settings.in_archive_extensions().is_empty() || !self.settings.out_archive_extensions().is_empty() {
+            match FileUtil::get_extension(&file_result.file_name) {
+                Some(ext) => {
+                    if (!self.settings.in_archive_extensions().is_empty()
+                        && !self.matches_any_string(ext, &self.settings.in_archive_extensions()))
+                        || (!self.settings.out_archive_extensions().is_empty()
+                        && self.matches_any_string(ext, &self.settings.out_archive_extensions()))
+                    {
+                        return false;
+                    }
+                },
+                None => {
+                    if !self.settings.in_archive_extensions().is_empty() {
+                        return false;
+                    }
+                },
+            }
+        }
+
         (self.settings.in_archive_file_patterns().is_empty()
             || self.matches_any_pattern(&file_result.file_name, &self.settings.in_archive_file_patterns()))
             && (self.settings.out_archive_file_patterns().is_empty()

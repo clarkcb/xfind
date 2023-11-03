@@ -88,14 +88,16 @@ module RbFind
 
     def matching_archive_file?(file_path)
       filename = File.basename(file_path)
-      ext = FileUtil.get_extension(filename)
-      if !@settings.in_archive_extensions.empty? &&
-        !@settings.in_archive_extensions.include?(ext)
-        return false
-      end
-      if !@settings.out_archive_extensions.empty? &&
-        @settings.out_archive_extensions.include?(ext)
-        return false
+      if !@settings.in_archive_extensions.empty? || !@settings.out_archive_extensions.empty?
+        ext = FileUtil.get_extension(filename)
+        if !@settings.in_archive_extensions.empty? &&
+          !@settings.in_archive_extensions.include?(ext)
+          return false
+        end
+        if !@settings.out_archive_extensions.empty? &&
+          @settings.out_archive_extensions.include?(ext)
+          return false
+        end
       end
       if !@settings.in_archive_file_patterns.empty? &&
         !matches_any_pattern(filename, @settings.in_archive_file_patterns)
