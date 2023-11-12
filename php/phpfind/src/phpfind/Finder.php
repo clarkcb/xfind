@@ -178,7 +178,7 @@ class Finder
     public function is_matching_archive_file(string $file_name): bool
     {
         if ($this->settings->in_archive_extensions || $this->settings->out_archive_extensions) {
-            $ext = FileUtil::get_extension($fr->file_name);
+            $ext = FileUtil::get_extension($file_name);
             if ($this->settings->in_archive_extensions && !in_array($ext, $this->settings->in_archive_extensions)) {
                 return false;
             }

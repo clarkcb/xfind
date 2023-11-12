@@ -17,7 +17,7 @@
 }
 
 - (void)testArchiveFiles {
-    NSArray<NSString*> *exts = @[@"7z", @"arj", @"bin", @"bz2", @"cpio", @"ear", @"gz", @"hqx",
+    NSArray<NSString*> *exts = @[@"7z", @"arj", @"bz2", @"cpio", @"ear", @"gz", @"hqx",
                                  @"jar", @"pax", @"rar", @"sit", @"sitx", @"tar", @"tgz", @"war",
                                  @"zip", @"zipx", @"Z"];
     for (NSString *x in exts) {
@@ -26,19 +26,41 @@
         XCTAssert([self.fileTypes isArchiveFile:fileName]);
         XCTAssert(![self.fileTypes isBinaryFile:fileName]);
         XCTAssert(![self.fileTypes isCodeFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isImageFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
+    }
+}
+
+- (void)testAudioFiles {
+    NSArray<NSString*> *exts = @[@"aac", @"cda", @"mid", @"midi", @"mp3", @"oga", @"opus", @"wav", @"weba"];
+    for (NSString *x in exts) {
+        NSString *fileName = [NSString stringWithFormat:@"audio.%@", x];
+        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeAudio);
+        XCTAssert(![self.fileTypes isArchiveFile:fileName]);
+        XCTAssert([self.fileTypes isAudioFile:fileName]);
+        XCTAssert(![self.fileTypes isBinaryFile:fileName]);
+        XCTAssert(![self.fileTypes isCodeFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isImageFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
     }
 }
 
 - (void)testBinaryFiles {
-    NSArray<NSString*> *exts = @[@"a", @"ai", @"beam", @"chm", @"class", @"com", @"dat",
+    NSArray<NSString*> *exts = @[@"a", @"beam", @"chm", @"class", @"com", @"dat",
                                  @"dll", @"doc", @"dot", @"dylib", @"exe", @"hlp", @"lib", @"mdb",
                                  @"pdb", @"pot", @"so"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"binary.%@", x];
         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeBinary);
         XCTAssert(![self.fileTypes isArchiveFile:fileName]);
+        XCTAssert(![self.fileTypes isAudioFile:fileName]);
         XCTAssert([self.fileTypes isBinaryFile:fileName]);
         XCTAssert(![self.fileTypes isCodeFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isImageFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
     }
 }
 
@@ -51,8 +73,42 @@
         NSString *fileName = [NSString stringWithFormat:@"code.%@", x];
         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeCode);
         XCTAssert(![self.fileTypes isArchiveFile:fileName]);
+        XCTAssert(![self.fileTypes isAudioFile:fileName]);
         XCTAssert(![self.fileTypes isBinaryFile:fileName]);
         XCTAssert([self.fileTypes isCodeFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isImageFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
+    }
+}
+
+- (void)testFontFiles {
+    NSArray<NSString*> *exts = @[@"eot", @"otf", @"tte", @"ttf", @"woff", @"woff2"];
+    for (NSString *x in exts) {
+        NSString *fileName = [NSString stringWithFormat:@"font.%@", x];
+        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeFont);
+        XCTAssert(![self.fileTypes isArchiveFile:fileName]);
+        XCTAssert(![self.fileTypes isAudioFile:fileName]);
+        XCTAssert(![self.fileTypes isBinaryFile:fileName]);
+        XCTAssert(![self.fileTypes isCodeFile:fileName]);
+        XCTAssert([self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isImageFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
+    }
+}
+
+- (void)testImageFiles {
+    NSArray<NSString*> *exts = @[@"ai", @"avif", @"bmp", @"bpg", @"cur", @"dib", @"drw"];
+    for (NSString *x in exts) {
+        NSString *fileName = [NSString stringWithFormat:@"image.%@", x];
+        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeImage);
+        XCTAssert(![self.fileTypes isArchiveFile:fileName]);
+        XCTAssert(![self.fileTypes isAudioFile:fileName]);
+//        XCTAssert(![self.fileTypes isBinaryFile:fileName]);
+        XCTAssert(![self.fileTypes isCodeFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert([self.fileTypes isImageFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
     }
 }
 
@@ -67,6 +123,23 @@
         XCTAssert(![self.fileTypes isBinaryFile:fileName]);
         XCTAssert(![self.fileTypes isCodeFile:fileName]);
         XCTAssert([self.fileTypes isTextFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isVideoFile:fileName]);
+    }
+}
+
+- (void)testVideoFiles {
+    NSArray<NSString*> *exts = @[@"avi", @"mov", @"mp4", @"mpeg", @"ogv", @"webm"];
+    for (NSString *x in exts) {
+        NSString *fileName = [NSString stringWithFormat:@"video.%@", x];
+        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeVideo);
+        XCTAssert(![self.fileTypes isArchiveFile:fileName]);
+        XCTAssert(![self.fileTypes isAudioFile:fileName]);
+        XCTAssert(![self.fileTypes isBinaryFile:fileName]);
+        XCTAssert(![self.fileTypes isCodeFile:fileName]);
+        XCTAssert(![self.fileTypes isFontFile:fileName]);
+        XCTAssert(![self.fileTypes isImageFile:fileName]);
+        XCTAssert([self.fileTypes isVideoFile:fileName]);
     }
 }
 

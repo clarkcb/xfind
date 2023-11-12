@@ -1,4 +1,4 @@
 pytest>=7.4.2
 python-dateutil>=2.8.2
 python-magic>=0.4.27
-wheel>=0.41.2
+wheel>=0.41.3

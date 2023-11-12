@@ -16,14 +16,21 @@
       "names": []
     },
     {
+      "type": "audio",
+      "extensions": [
+        "aac", "cda", "mid", "midi", "mp3", "oga", "opus", "wav", "weba"
+      ],
+      "names": []
+    },
+    {
       "type": "binary",
       "extensions": [
         "123", "a", "aab", "aam", "aas", "abw", "ac", "acc", "acu", "acutc",
         "aep", "afp", "ahead", "ai", "ait", "ami", "application", "apr", "aso",
         "atc", "atx", "aw", "azf", "azs", "azw", "bdm", "beam", "bed", "bh2",
-        "blb", "blorb", "bmi", "book", "box", "bpk", "c11amc", "c11amz", "c4d",
-        "c4f", "c4g", "c4p", "c4u", "cap", "car", "cat", "cb7", "cba", "cbr",
-        "cbt", "cbz", "cct", "cdbcmsg", "cdf", "cdkey", "cdmia", "cdmic",
+        "bin", "blb", "blorb", "bmi", "book", "box", "bpk", "c11amc", "c11amz",
+        "c4d", "c4f", "c4g", "c4p", "c4u", "cap", "car", "cat", "cb7", "cba",
+        "cbr", "cbt", "cbz", "cct", "cdbcmsg", "cdf", "cdkey", "cdmia", "cdmic",
         "cdmid", "cdmio", "cdmiq", "cdy", "cer", "chat", "chm", "chrt", "cii",
         "cil", "cla", "class", "clkk", "clkp", "clkt", "clkw", "clkx", "clp",
         "cmc", "cmp", "cod", "com", "cpt", "crd", "crl", "crt", "cryptonote",
@@ -112,8 +119,24 @@
       ]
     },
     {
+      "type": "font",
+      "extensions": ["eot", "otf", "tte", "ttf", "woff", "woff2"],
+      "names": []
+    },
+    {
+      "type": "image",
+      "extensions": [
+        "ai", "avif", "bmp", "bpg", "cur", "dib", "drw", "ecw", "eps", "fit",
+        "fits", "flif", "fts", "gif", "heif", "icns", "ico", "indd", "jpg",
+        "jpeg", "pam", "pbm", "pct", "pcx", "pdf", "pgf", "pgm", "pic", "pict",
+        "png", "pnm", "ppm", "psd", "psp", "raw", "rgb", "rgba", "sgi", "sid",
+        "svg", "tif", "tiff", "webp"
+      ],
+      "names": []
+    },
+    {
       "type": "nosearch",
-      "extensions": ["cur", "db", "dib", "icns", "idlk", "suo", "tte"],
+      "extensions": ["db", "idlk", "suo"],
       "names": [".DS_Store"]
     },
     {
@@ -132,12 +155,12 @@
         "md", "me", "mf", "mime", "mml", "moc", "mod", "ms", "n3", "nfo", "nws",
         "org", "patch", "pem", "po", "pod", "policy", "properties", "ps", "pt",
         "rex", "roff", "rst", "rtf", "rtx", "sample", "scc", "sct", "scurl",
-        "sfv", "sgm", "sgml", "sht", "shtm", "snap", "spec", "spot", "sqc",
-        "sql", "st", "str", "strings", "sty", "sub", "suml", "t", "tex", "text",
-        "tm", "tmx", "toml", "tr", "tsv", "ttl", "txt", "ui", "uls", "uml",
-        "uri", "uris", "url", "urls", "user", "uu", "vcard", "vcf", "vcs", "vm",
-        "vrm", "vssscc", "wbxml", "webinfo", "wml", "wmls", "wsc", "wsd", "xsp",
-        "yaml", "yml"
+        "sfv", "sgm", "sgml", "sht", "shtm", "snap", "soy", "spec", "spot",
+        "sqc", "sql", "st", "str", "strings", "sty", "sub", "suml", "t", "tex",
+        "text", "tm", "tmx", "toml", "tr", "tsv", "ttl", "txt", "ui", "uls",
+        "uml", "uri", "uris", "url", "urls", "user", "uu", "vcard", "vcf",
+        "vcs", "vm", "vrm", "vssscc", "wbxml", "webinfo", "wml", "wmls", "wsc",
+        "wsd", "xsp", "yaml", "yml"
       ],
       "names": ["AUTHORS", "LICENSE", "README"]
     },
@@ -150,6 +173,11 @@
       "names": []
     },
     {
+      "type": "video",
+      "extensions": ["avi", "mov", "mp4", "mpeg", "ogv", "webm", "3gp", "3g2"],
+      "names": []
+    },
+    {
       "type": "xml",
       "extensions": [
         "ant", "atom", "atomcat", "atomsrv", "atomsvc", "bdsproj", "ccxml",
@@ -157,19 +185,19 @@
         "docx", "dotx", "dtb", "dtd", "edmx", "emma", "es3", "et3", "fsproj",
         "fxml", "gml", "gpx", "grxml", "hal", "iml", "ink", "inkml", "irp",
         "jhm", "jnlp", "kml", "lasxml", "lbe", "link66", "lostxml", "mads",
-        "mathml", "meta4", "metalink", "mets", "mm", "mods", "mpkg", "mrcx",
-        "mscml", "musicxml", "mxml", "ncx", "omdoc", "opf", "opml", "osfpvg",
-        "plist", "pls", "pom", "potx", "ppsx", "pptx", "ps1xml", "pskcxml",
-        "qrc", "rdf", "res", "resx", "rif", "rl", "rld", "rng", "rs", "rsd",
-        "rss", "sbml", "sdkd", "sdkm", "settings", "shf", "sldx", "smi", "smil",
-        "sru", "srx", "ssdl", "ssml", "stc", "std", "sti", "stw", "svg", "svgz",
-        "sxc", "sxd", "sxg", "sxi", "sxm", "sxw", "tei", "teicorpus", "tfi",
-        "tld", "uoml", "uvt", "uvvt", "vbproj", "vcproj", "vdproj", "vxml",
-        "wadl", "wbs", "wsdd", "wsdl", "wsf", "wspolicy", "x3d", "x3dz", "xaml",
-        "xcbkptlist", "xcscheme", "xcworkspacedata", "xdf", "xdm", "xdp",
-        "xdssc", "xenc", "xer", "xht", "xhtml", "xhvml", "xjb", "xlf", "xlsx",
-        "xltx", "xml", "xop", "xpdl", "xpl", "xps", "xsd", "xsl", "xslt", "xsm",
-        "xspf", "xul", "xvm", "xvml", "yin", "zaz", "zmm"
+        "mathml", "meta4", "metalink", "mets", "mm", "mml", "mods", "mpkg",
+        "mrcx", "mscml", "musicxml", "mxml", "ncx", "omdoc", "opf", "opml",
+        "osfpvg", "plist", "pls", "pom", "potx", "ppsx", "pptx", "ps1xml",
+        "pskcxml", "qrc", "rdf", "res", "resx", "rif", "rl", "rld", "rng", "rs",
+        "rsd", "rss", "sbml", "sdkd", "sdkm", "settings", "shf", "sldx", "smi",
+        "smil", "sru", "srx", "ssdl", "ssml", "stc", "std", "sti", "stw", "svg",
+        "svgz", "sxc", "sxd", "sxg", "sxi", "sxm", "sxw", "tei", "teicorpus",
+        "tfi", "tld", "uoml", "uvt", "uvvt", "vbproj", "vcproj", "vdproj",
+        "vxml", "wadl", "wbs", "wsdd", "wsdl", "wsf", "wspolicy", "x3d", "x3dz",
+        "xaml", "xcbkptlist", "xcscheme", "xcworkspacedata", "xdf", "xdm",
+        "xdp", "xdssc", "xenc", "xer", "xht", "xhtml", "xhvml", "xjb", "xlf",
+        "xlsx", "xltx", "xml", "xop", "xpdl", "xpl", "xps", "xsd", "xsl",
+        "xslt", "xsm", "xspf", "xul", "xvm", "xvml", "yin", "zaz", "zmm"
       ],
       "names": []
     }

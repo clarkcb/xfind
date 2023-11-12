@@ -13,10 +13,14 @@ import java.util.stream.Collectors;
 public class FileTypes {
     private static final String FILE_TYPES_JSON_PATH = "/filetypes.json";
     private static final String archive = "archive";
+    private static final String audio = "audio";
     private static final String binary = "binary";
     private static final String code = "code";
+    private static final String font = "font";
+    private static final String image = "image";
     private static final String text = "text";
     // private static final String unknown = "unknown";
+    private static final String video = "video";
     private static final String xml = "xml";
     private static final int fileTypeMapCapacity = 8;
     private final Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeMapCapacity);
@@ -61,26 +65,41 @@ public class FileTypes {
 
     static FileType fromName(final String name) {
         var lname = name.toLowerCase();
-        if (lname.equals(code)) return FileType.CODE;
-        if (lname.equals(xml)) return FileType.XML;
-        if (lname.equals(text)) return FileType.TEXT;
-        if (lname.equals(binary)) return FileType.BINARY;
         if (lname.equals(archive)) return FileType.ARCHIVE;
+        if (lname.equals(audio)) return FileType.AUDIO;
+        if (lname.equals(binary)) return FileType.BINARY;
+        if (lname.equals(code)) return FileType.CODE;
+        if (lname.equals(font)) return FileType.FONT;
+        if (lname.equals(image)) return FileType.IMAGE;
+        if (lname.equals(text)) return FileType.TEXT;
+        if (lname.equals(video)) return FileType.VIDEO;
+        if (lname.equals(xml)) return FileType.XML;
         return FileType.UNKNOWN;
     }
 
     final FileType getFileType(final Path f) {
+        // most specific first
         if (isCodeFile(f)) return FileType.CODE;
+        if (isArchiveFile(f)) return FileType.ARCHIVE;
+        if (isAudioFile(f)) return FileType.AUDIO;
+        if (isFontFile(f)) return FileType.FONT;
+        if (isImageFile(f)) return FileType.IMAGE;
+        if (isVideoFile(f)) return FileType.VIDEO;
+        // most general last
         if (isXmlFile(f)) return FileType.XML;
         if (isTextFile(f)) return FileType.TEXT;
         if (isBinaryFile(f)) return FileType.BINARY;
-        if (isArchiveFile(f)) return FileType.ARCHIVE;
         return FileType.UNKNOWN;
     }
 
     final boolean isArchiveFile(final Path path) {
         return fileTypeNameMap.get(archive).contains(path.getFileName().toString())
             || fileTypeExtMap.get(archive).contains(FileUtil.getExtension(path));
+    }
+
+    final boolean isAudioFile(final Path path) {
+        return fileTypeNameMap.get(audio).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(audio).contains(FileUtil.getExtension(path));
     }
 
     final boolean isBinaryFile(final Path path) {
@@ -93,9 +112,24 @@ public class FileTypes {
             || fileTypeExtMap.get(code).contains(FileUtil.getExtension(path));
     }
 
+    public final boolean isFontFile(final Path path) {
+        return fileTypeNameMap.get(font).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(font).contains(FileUtil.getExtension(path));
+    }
+
+    public final boolean isImageFile(final Path path) {
+        return fileTypeNameMap.get(image).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(image).contains(FileUtil.getExtension(path));
+    }
+
     final boolean isTextFile(final Path path) {
         return fileTypeNameMap.get(text).contains(path.getFileName().toString())
             || fileTypeExtMap.get(text).contains(FileUtil.getExtension(path));
+    }
+
+    final boolean isVideoFile(final Path path) {
+        return fileTypeNameMap.get(video).contains(path.getFileName().toString())
+            || fileTypeExtMap.get(video).contains(FileUtil.getExtension(path));
     }
 
     final boolean isUnknownFile(final Path path) {

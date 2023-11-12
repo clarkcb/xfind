@@ -24,14 +24,18 @@ import HsFind.Paths_hsfind (getDataFileName)
 
 data FileType = Unknown
               | Archive
+              | Audio
               | Binary
               | Code
+              | Font
+              | Image
               | Text
+              | Video
               | Xml
   deriving (Show, Eq, Ord)
 
 -- searchableFileTypes :: [FileType]
--- searchableFileTypes = [Archive, Binary, Code, Text, Xml]
+-- searchableFileTypes = [Archive, Binary, Code, Image, Text, Xml]
 
 -- isSearchableFileType :: FileType -> Bool
 -- isSearchableFileType t = t `elem` searchableFileTypes
@@ -40,10 +44,14 @@ getFileTypeForName :: String -> FileType
 getFileTypeForName typeName =
   case lower typeName of
     "archive" -> Archive
+    "audio" -> Audio
     "binary" -> Binary
     "code" -> Code
-    "xml" -> Xml
+    "font" -> Font
+    "image" -> Image
     "text" -> Text
+    "video" -> Video
+    "xml" -> Xml
     _ -> Unknown
   where lower = map toLower
 
@@ -51,10 +59,14 @@ getFileTypeName :: FileType -> String
 getFileTypeName ft =
   case ft of
     Archive -> "archive"
+    Audio -> "audio"
     Binary -> "binary"
     Code -> "code"
-    Xml -> "xml"
+    Font -> "font"
+    Image -> "image"
     Text -> "text"
+    Video -> "video"
+    Xml -> "xml"
     _ -> "unknown"
 
 data JsonFileType = JsonFileType
@@ -119,9 +131,13 @@ matchingTypeForNameJson jsonFileTypes n =
     [] -> Unknown
     fts -> case fileTypeName fts of
            "archive" -> Archive
-           "binary" -> Binary
+           "audio" -> Audio
            "code" -> Code
+           "font" -> Font
+           "image" -> Image
+           "video" -> Video
            "xml" -> Xml
+           "binary" -> Binary
            tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
   where fileTypeName = fileType . head
@@ -132,9 +148,13 @@ matchingTypeForExtensionJson jsonFileTypes x =
     [] -> Unknown
     fts -> case fileTypeName fts of
            "archive" -> Archive
-           "binary" -> Binary
+           "audio" -> Audio
            "code" -> Code
+           "font" -> Font
+           "image" -> Image
+           "video" -> Video
            "xml" -> Xml
+           "binary" -> Binary
            tname | tname `elem` ["code", "text", "xml"] -> Text
            _ -> Unknown
   where fileTypeName = fileType . head

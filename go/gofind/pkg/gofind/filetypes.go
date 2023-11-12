@@ -13,9 +13,13 @@ type FileType int
 const (
 	FiletypeUnknown FileType = iota
 	FiletypeArchive FileType = iota
+	FiletypeAudio   FileType = iota
 	FiletypeBinary  FileType = iota
 	FiletypeCode    FileType = iota
+	FiletypeFont    FileType = iota
+	FiletypeImage   FileType = iota
 	FiletypeText    FileType = iota
+	FiletypeVideo   FileType = iota
 	FiletypeXml     FileType = iota
 )
 
@@ -61,9 +65,27 @@ func FileTypesFromJson() *FileTypes {
 }
 
 func (ft *FileTypes) GetFileType(file string) FileType {
+	// more specific first
 	if ft.IsCodeFile(file) {
 		return FiletypeCode
 	}
+	if ft.IsArchiveFile(file) {
+		return FiletypeArchive
+	}
+	if ft.IsAudioFile(file) {
+		return FiletypeAudio
+	}
+	if ft.IsFontFile(file) {
+		return FiletypeFont
+	}
+	if ft.IsImageFile(file) {
+		return FiletypeImage
+	}
+	if ft.IsVideoFile(file) {
+		return FiletypeVideo
+	}
+
+	// more general last
 	if ft.IsXmlFile(file) {
 		return FiletypeXml
 	}
@@ -73,15 +95,15 @@ func (ft *FileTypes) GetFileType(file string) FileType {
 	if ft.IsBinaryFile(file) {
 		return FiletypeBinary
 	}
-	if ft.IsArchiveFile(file) {
-		return FiletypeArchive
-	}
 	return FiletypeUnknown
 }
 
 func GetFileTypeForName(name string) FileType {
-	if strings.ToUpper(name) == "TEXT" {
-		return FiletypeText
+	if strings.ToUpper(name) == "ARCHIVE" {
+		return FiletypeArchive
+	}
+	if strings.ToUpper(name) == "AUDIO" {
+		return FiletypeAudio
 	}
 	if strings.ToUpper(name) == "BINARY" {
 		return FiletypeBinary
@@ -89,8 +111,17 @@ func GetFileTypeForName(name string) FileType {
 	if strings.ToUpper(name) == "CODE" {
 		return FiletypeCode
 	}
-	if strings.ToUpper(name) == "ARCHIVE" {
-		return FiletypeArchive
+	if strings.ToUpper(name) == "FONT" {
+		return FiletypeFont
+	}
+	if strings.ToUpper(name) == "IMAGE" {
+		return FiletypeImage
+	}
+	if strings.ToUpper(name) == "TEXT" {
+		return FiletypeText
+	}
+	if strings.ToUpper(name) == "VIDEO" {
+		return FiletypeVideo
 	}
 	if strings.ToUpper(name) == "XML" {
 		return FiletypeXml
@@ -99,8 +130,11 @@ func GetFileTypeForName(name string) FileType {
 }
 
 func GetNameForFileType(fileType FileType) string {
-	if fileType == FiletypeText {
-		return "TEXT"
+	if fileType == FiletypeArchive {
+		return "ARCHIVE"
+	}
+	if fileType == FiletypeAudio {
+		return "AUDIO"
 	}
 	if fileType == FiletypeBinary {
 		return "BINARY"
@@ -108,8 +142,17 @@ func GetNameForFileType(fileType FileType) string {
 	if fileType == FiletypeCode {
 		return "CODE"
 	}
-	if fileType == FiletypeArchive {
-		return "ARCHIVE"
+	if fileType == FiletypeFont {
+		return "FONT"
+	}
+	if fileType == FiletypeImage {
+		return "IMAGE"
+	}
+	if fileType == FiletypeText {
+		return "TEXT"
+	}
+	if fileType == FiletypeVideo {
+		return "VIDEO"
 	}
 	if fileType == FiletypeXml {
 		return "XML"
@@ -125,6 +168,10 @@ func (ft *FileTypes) IsArchiveFile(file string) bool {
 	return ft.isFileType("archive", file)
 }
 
+func (ft *FileTypes) IsAudioFile(file string) bool {
+	return ft.isFileType("audio", file)
+}
+
 // IsBinaryFile going to assume file is binary if it has no extension (for now)
 func (ft *FileTypes) IsBinaryFile(file string) bool {
 	return ft.isFileType("binary", file)
@@ -132,6 +179,14 @@ func (ft *FileTypes) IsBinaryFile(file string) bool {
 
 func (ft *FileTypes) IsCodeFile(file string) bool {
 	return ft.isFileType("code", file)
+}
+
+func (ft *FileTypes) IsFontFile(file string) bool {
+	return ft.isFileType("font", file)
+}
+
+func (ft *FileTypes) IsImageFile(file string) bool {
+	return ft.isFileType("image", file)
 }
 
 func (ft *FileTypes) IsTextFile(file string) bool {
@@ -142,6 +197,10 @@ func (ft *FileTypes) IsTextFile(file string) bool {
 		}
 	}
 	return false
+}
+
+func (ft *FileTypes) IsVideoFile(file string) bool {
+	return ft.isFileType("video", file)
 }
 
 func (ft *FileTypes) IsXmlFile(file string) bool {

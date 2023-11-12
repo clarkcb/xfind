@@ -10,9 +10,13 @@ object FileType extends Enumeration {
   type FileType = Value
   val Unknown: FileType = Value
   val Archive: FileType = Value
+  val Audio: FileType   = Value
   val Binary: FileType  = Value
   val Code: FileType    = Value
+  val Font: FileType    = Value
+  val Image: FileType   = Value
   val Text: FileType    = Value
+  val Video: FileType   = Value
   val Xml: FileType     = Value
 }
 
@@ -20,11 +24,15 @@ object FileTypes {
   private val _fileTypesJsonPath = "/filetypes.json"
 
   private val archive = "archive"
+  private val audio = "audio"
   private val binary = "binary"
   private val code = "code"
+  private val font = "font"
+  private val image = "image"
   private val searchable = "searchable"
   private val text = "text"
   private val unknown = "unknown"
+  private val video = "video"
   private val xml = "xml"
 
   private val fileTypeMaps: (Map[String, Set[String]], Map[String, Set[String]]) = {
@@ -56,32 +64,51 @@ object FileTypes {
 
   def fromName(name: String): FileType.Value = {
     val lname = name.toLowerCase
-    if (lname == code) {
-      FileType.Code
+    if (lname == archive) {
+      FileType.Archive
+    } else if (lname == audio) {
+      FileType.Audio
     } else if (lname == binary) {
       FileType.Binary
-    } else if (lname == archive) {
-      FileType.Archive
-    } else if (lname == xml) {
-      FileType.Xml
+    } else if (lname == code) {
+      FileType.Code
+    } else if (lname == font) {
+      FileType.Font
+    } else if (lname == image) {
+      FileType.Image
     } else if (lname == text) {
       FileType.Text
+    } else if (lname == video) {
+      FileType.Video
+    } else if (lname == xml) {
+      FileType.Xml
     } else {
       FileType.Unknown
     }
   }
 
   def getFileType(fileName: String): FileType.Value = {
+    // most specific types first
     if (isCodeFile(fileName)) {
       FileType.Code
+    } else if (isArchiveFile(fileName)) {
+      FileType.Archive
+    } else if (isAudioFile(fileName)) {
+      FileType.Audio
+    } else if (isFontFile(fileName)) {
+      FileType.Font
+    } else if (isImageFile(fileName)) {
+      FileType.Image
+    } else if (isVideoFile(fileName)) {
+      FileType.Video
+
+      // most general types last
     } else if (isXmlFile(fileName)) {
       FileType.Xml
     } else if (isTextFile(fileName)) {
       FileType.Text
     } else if (isBinaryFile(fileName)) {
       FileType.Binary
-    } else if (isArchiveFile(fileName)) {
-      FileType.Archive
     } else {
       FileType.Unknown
     }
@@ -90,6 +117,11 @@ object FileTypes {
   def isArchiveFile(fileName: String): Boolean = {
     fileTypeNameMap(archive).contains(fileName)
       || fileTypeExtMap(archive).contains(FileUtil.getExtension(fileName))
+  }
+
+  def isAudioFile(fileName: String): Boolean = {
+    fileTypeNameMap(audio).contains(fileName)
+      || fileTypeExtMap(audio).contains(FileUtil.getExtension(fileName))
   }
 
   def isBinaryFile(fileName: String): Boolean = {
@@ -102,6 +134,16 @@ object FileTypes {
       || fileTypeExtMap(code).contains(FileUtil.getExtension(fileName))
   }
 
+  def isFontFile(fileName: String): Boolean = {
+    fileTypeNameMap(font).contains(fileName)
+      || fileTypeExtMap(font).contains(FileUtil.getExtension(fileName))
+  }
+
+  def isImageFile(fileName: String): Boolean = {
+    fileTypeNameMap(image).contains(fileName)
+      || fileTypeExtMap(image).contains(FileUtil.getExtension(fileName))
+  }
+
   def isTextFile(fileName: String): Boolean = {
     fileTypeNameMap(text).contains(fileName)
       || fileTypeExtMap(text).contains(FileUtil.getExtension(fileName))
@@ -109,6 +151,11 @@ object FileTypes {
 
   def isUnknownFile(fileName: String): Boolean = {
     getFileType(fileName) == FileType.Unknown
+  }
+
+  def isVideoFile(fileName: String): Boolean = {
+    fileTypeNameMap(video).contains(fileName)
+      || fileTypeExtMap(video).contains(FileUtil.getExtension(fileName))
   }
 
   def isXmlFile(fileName: String): Boolean = {

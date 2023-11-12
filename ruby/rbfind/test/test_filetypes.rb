@@ -21,6 +21,11 @@ module RbFind
       assert_equal(@file_types.get_file_type(file_name), FileType::ARCHIVE)
     end
 
+    def test_get_file_type_audio_file
+      file_name = 'music.mp3'
+      assert_equal(@file_types.get_file_type(file_name), FileType::AUDIO)
+    end
+
     def test_get_file_type_binary_file
       file_name = 'binary.exe'
       assert_equal(@file_types.get_file_type(file_name), FileType::BINARY)
@@ -31,9 +36,24 @@ module RbFind
       assert_equal(@file_types.get_file_type(file_name), FileType::CODE)
     end
 
+    def test_get_file_type_font_file
+      file_name = 'font.ttf'
+      assert_equal(@file_types.get_file_type(file_name), FileType::FONT)
+    end
+
+    def test_get_file_type_image_file
+      file_name = 'image.png'
+      assert_equal(@file_types.get_file_type(file_name), FileType::IMAGE)
+    end
+
     def test_get_file_type_text_file
       file_name = 'text.txt'
       assert_equal(@file_types.get_file_type(file_name), FileType::TEXT)
+    end
+
+    def test_get_file_type_video_file
+      file_name = 'movie.mp4'
+      assert_equal(@file_types.get_file_type(file_name), FileType::VIDEO)
     end
 
     def test_get_file_type_xml_file

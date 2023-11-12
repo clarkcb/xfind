@@ -53,29 +53,58 @@ sub new {
 sub from_name {
     my ($name) = @_;
     my $uname = uc($name);
-    if ($uname eq 'CODE') {
-        return plfind::FileType->CODE;
+    if ($uname eq 'ARCHIVE') {
+        return plfind::FileType->ARCHIVE;
     }
-    if ($uname eq 'XML') {
-        return plfind::FileType->XML;
-    }
-    if ($uname eq 'TEXT') {
-        return plfind::FileType->TEXT;
+    if ($uname eq 'AUDIO') {
+        return plfind::FileType->AUDIO;
     }
     if ($uname eq 'BINARY') {
         return plfind::FileType->BINARY;
     }
-    if ($uname eq 'ARCHIVE') {
-        return plfind::FileType->ARCHIVE;
+    if ($uname eq 'CODE') {
+        return plfind::FileType->CODE;
+    }
+    if ($uname eq 'FONT') {
+        return plfind::FileType->FONT;
+    }
+    if ($uname eq 'IMAGE') {
+        return plfind::FileType->IMAGE;
+    }
+    if ($uname eq 'TEXT') {
+        return plfind::FileType->TEXT;
+    }
+    if ($uname eq 'VIDEO') {
+        return plfind::FileType->VIDEO;
+    }
+    if ($uname eq 'XML') {
+        return plfind::FileType->XML;
     }
     return plfind::FileType->UNKNOWN;
 }
 
 sub get_file_type {
     my ($self, $file) = @_;
+    # more specific first
     if ($self->is_code($file)) {
         return plfind::FileType->CODE;
     }
+    if ($self->is_archive($file)) {
+        return plfind::FileType->ARCHIVE;
+    }
+    if ($self->is_audio($file)) {
+        return plfind::FileType->AUDIO;
+    }
+    if ($self->is_font($file)) {
+        return plfind::FileType->FONT;
+    }
+    if ($self->is_image($file)) {
+        return plfind::FileType->IMAGE;
+    }
+    if ($self->is_video($file)) {
+        return plfind::FileType->VIDEO;
+    }
+    # more general last
     if ($self->is_xml($file)) {
         return plfind::FileType->XML;
     }
@@ -84,9 +113,6 @@ sub get_file_type {
     }
     if ($self->is_binary($file)) {
         return plfind::FileType->BINARY;
-    }
-    if ($self->is_archive($file)) {
-        return plfind::FileType->ARCHIVE;
     }
     return plfind::FileType->UNKNOWN;
 }
@@ -98,6 +124,18 @@ sub is_archive {
     }
     my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_type_exts}->{archive}}) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_audio {
+    my ($self, $file) = @_;
+    if (grep {$_ eq $file} @{$self->{file_type_names}->{audio}}) {
+        return 1;
+    }
+    my $ext = plfind::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{audio}}) {
         return 1;
     }
     return 0;
@@ -127,6 +165,30 @@ sub is_code {
     return 0;
 }
 
+sub is_font {
+    my ($self, $file) = @_;
+    if (grep {$_ eq $file} @{$self->{file_type_names}->{font}}) {
+        return 1;
+    }
+    my $ext = plfind::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{font}}) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_image {
+    my ($self, $file) = @_;
+    if (grep {$_ eq $file} @{$self->{file_type_names}->{image}}) {
+        return 1;
+    }
+    my $ext = plfind::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{image}}) {
+        return 1;
+    }
+    return 0;
+}
+
 sub is_text {
     my ($self, $file) = @_;
     if (grep {$_ eq $file} @{$self->{file_type_names}->{text}}) {
@@ -134,6 +196,18 @@ sub is_text {
     }
     my $ext = plfind::FileUtil::get_extension($file);
     if (grep {$_ eq $ext} @{$self->{file_type_exts}->{text}}) {
+        return 1;
+    }
+    return 0;
+}
+
+sub is_video {
+    my ($self, $file) = @_;
+    if (grep {$_ eq $file} @{$self->{file_type_names}->{video}}) {
+        return 1;
+    }
+    my $ext = plfind::FileUtil::get_extension($file);
+    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{video}}) {
         return 1;
     }
     return 0;

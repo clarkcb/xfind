@@ -12,9 +12,13 @@ use crate::finderror::FindError;
 pub enum FileType {
     Unknown,
     Archive,
+    Audio,
     Binary,
     Code,
+    Font,
+    Image,
     Text,
+    Video,
     Xml,
 }
 
@@ -76,9 +80,27 @@ impl FileTypes {
     /// assert_eq!(file_type, FileType::Code);
     /// ```
     pub fn get_file_type(&self, file_name: &str) -> FileType {
+        // most specific first
         if self.is_code_file(file_name) {
             return FileType::Code;
         }
+        if self.is_archive_file(file_name) {
+            return FileType::Archive;
+        }
+        if self.is_audio_file(file_name) {
+            return FileType::Audio;
+        }
+        if self.is_font_file(file_name) {
+            return FileType::Font;
+        }
+        if self.is_image_file(file_name) {
+            return FileType::Image;
+        }
+        if self.is_video_file(file_name) {
+            return FileType::Video;
+        }
+
+        // most general last
         if self.is_xml_file(file_name) {
             return FileType::Xml;
         }
@@ -87,9 +109,6 @@ impl FileTypes {
         }
         if self.is_binary_file(file_name) {
             return FileType::Binary;
-        }
-        if self.is_archive_file(file_name) {
-            return FileType::Archive;
         }
         FileType::Unknown
     }
@@ -106,9 +125,13 @@ impl FileTypes {
     pub fn file_type_for_name(name: &str) -> FileType {
         match name.to_ascii_lowercase().as_str() {
             "archive" => FileType::Archive,
+            "audio" => FileType::Audio,
             "binary" => FileType::Binary,
             "code" => FileType::Code,
+            "font" => FileType::Font,
+            "image" => FileType::Image,
             "text" => FileType::Text,
+            "video" => FileType::Video,
             "xml" => FileType::Xml,
             _ => FileType::Unknown,
         }
@@ -129,6 +152,10 @@ impl FileTypes {
         self.is_file_type("archive", file_name)
     }
 
+    pub fn is_audio_file(&self, file_name: &str) -> bool {
+        self.is_file_type("audio", file_name)
+    }
+
     pub fn is_binary_file(&self, file_name: &str) -> bool {
         self.is_file_type("binary", file_name)
     }
@@ -137,14 +164,26 @@ impl FileTypes {
         self.is_file_type("code", file_name)
     }
 
-    pub fn is_xml_file(&self, file_name: &str) -> bool {
-        self.is_file_type("xml", file_name)
+    pub fn is_font_file(&self, file_name: &str) -> bool {
+        self.is_file_type("font", file_name)
+    }
+
+    pub fn is_image_file(&self, file_name: &str) -> bool {
+        self.is_file_type("image", file_name)
     }
 
     pub fn is_text_file(&self, file_name: &str) -> bool {
         self.is_file_type("text", file_name)
             || self.is_file_type("code", file_name)
             || self.is_file_type("xml", file_name)
+    }
+
+    pub fn is_video_file(&self, file_name: &str) -> bool {
+        self.is_file_type("video", file_name)
+    }
+
+    pub fn is_xml_file(&self, file_name: &str) -> bool {
+        self.is_file_type("xml", file_name)
     }
 
     pub fn is_unknown_file(&self, file_name: &str) -> bool {
@@ -177,6 +216,14 @@ mod tests {
     }
 
     #[test]
+    fn get_file_type_audio_file() {
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "music.mp3";
+        assert!(file_types.is_audio_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Audio);
+    }
+
+    #[test]
     fn get_file_type_binary_file() {
         let file_types = FileTypes::new().ok().unwrap();
         let file_name = "binary.exe";
@@ -194,20 +241,6 @@ mod tests {
     }
 
     #[test]
-    fn get_file_type_text_file() {
-        let file_types = FileTypes::new().ok().unwrap();
-        let file_name = "text.txt";
-        assert!(file_types.is_text_file(file_name));
-        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
-        let file_name = "text.md";
-        assert!(file_types.is_text_file(file_name));
-        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
-        let file_name = "text.rtf";
-        assert!(file_types.is_text_file(file_name));
-        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
-    }
-
-    #[test]
     fn get_file_type_code_file() {
         let file_types = FileTypes::new().ok().unwrap();
         let file_name = "code.c";
@@ -222,6 +255,44 @@ mod tests {
         let file_name = "code.swift";
         assert!(file_types.is_code_file(file_name));
         assert_eq!(file_types.get_file_type(file_name), FileType::Code);
+    }
+
+    #[test]
+    fn get_file_type_font_file() {
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "font.ttf";
+        assert!(file_types.is_font_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Font);
+    }
+
+    #[test]
+    fn get_file_type_image_file() {
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "image.png";
+        assert!(file_types.is_image_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Image);
+    }
+
+    #[test]
+    fn get_file_type_text_file() {
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "text.txt";
+        assert!(file_types.is_text_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
+        let file_name = "text.md";
+        assert!(file_types.is_text_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
+        let file_name = "text.rtf";
+        assert!(file_types.is_text_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Text);
+    }
+
+    #[test]
+    fn get_file_type_video_file() {
+        let file_types = FileTypes::new().ok().unwrap();
+        let file_name = "movie.mp4";
+        assert!(file_types.is_video_file(file_name));
+        assert_eq!(file_types.get_file_type(file_name), FileType::Video);
     }
 
     #[test]

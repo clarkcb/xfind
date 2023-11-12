@@ -12,28 +12,53 @@ class FileTypesTest extends AnyFunSuite {
       split(whitespaceRegex).foreach { ext =>
         val archiveFile = new File("archive." + ext).getName
         // println("archiveFile: " + archiveFile)
-        assert(!FileTypes.isBinaryFile(archiveFile))
-        assert(!FileTypes.isCodeFile(archiveFile))
         assert(FileTypes.isArchiveFile(archiveFile))
+        assert(!FileTypes.isAudioFile(archiveFile))
+        // assert(!FileTypes.isBinaryFile(archiveFile))
+        assert(!FileTypes.isCodeFile(archiveFile))
+        assert(!FileTypes.isImageFile(archiveFile))
         assert(!FileTypes.isTextFile(archiveFile))
         assert(!FileTypes.isUnknownFile(archiveFile))
+        assert(!FileTypes.isVideoFile(archiveFile))
         val fileType = FileTypes.getFileType(archiveFile)
         assert(fileType == FileType.Archive)
     }
   }
 
+  test("test audio extensions") {
+    """aac cda mid midi mp3 oga opus wav weba""".
+      split(whitespaceRegex).foreach { ext =>
+        val audioFile = new File("audio." + ext).getName
+        assert(!FileTypes.isArchiveFile(audioFile))
+        assert(FileTypes.isAudioFile(audioFile))
+        // assert(!FileTypes.isBinaryFile(audioFile))
+        assert(!FileTypes.isCodeFile(audioFile))
+        assert(!FileTypes.isFontFile(audioFile))
+        assert(!FileTypes.isImageFile(audioFile))
+        assert(!FileTypes.isTextFile(audioFile))
+        assert(!FileTypes.isUnknownFile(audioFile))
+        assert(!FileTypes.isVideoFile(audioFile))
+        val fileType = FileTypes.getFileType(audioFile)
+        assert(fileType == FileType.Audio)
+    }
+  }
+
   test("test binary extensions") {
-    """a ai beam chm class com dat dbmdl dcr dir dll dms doc dot dxr dylib
-      |epub exe fm hi hlp indd lib lnk mdb mo mobi mpp nib o obj odm odt ott
-      |pages pdb ppt psd pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt wri
+    """a beam chm class com dat dbmdl dcr dir dll dms doc dot dxr dylib
+      |epub exe fm hi hlp lib lnk mdb mo mobi mpp nib o obj odm odt ott
+      |pages pdb ppt pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt wri
       |xls xlt""".stripMargin.split(whitespaceRegex).foreach { ext =>
         val binFile = new File("binfile." + ext).getName
         // println("binFile: " + binFile)
+        assert(!FileTypes.isArchiveFile(binFile))
+        assert(!FileTypes.isAudioFile(binFile))
         assert(FileTypes.isBinaryFile(binFile))
         assert(!FileTypes.isCodeFile(binFile))
-        assert(!FileTypes.isArchiveFile(binFile))
+        assert(!FileTypes.isFontFile(binFile))
+        assert(!FileTypes.isImageFile(binFile))
         assert(!FileTypes.isTextFile(binFile))
         assert(!FileTypes.isUnknownFile(binFile))
+        assert(!FileTypes.isVideoFile(binFile))
         val fileType = FileTypes.getFileType(binFile)
         assert(fileType == FileType.Binary)
     }
@@ -48,13 +73,54 @@ class FileTypesTest extends AnyFunSuite {
       stripMargin.split(whitespaceRegex).foreach { ext =>
         val codeFile = new File("codefile." + ext).getName
         // println("codeFile: " + codeFile)
+        assert(!FileTypes.isArchiveFile(codeFile))
+        assert(!FileTypes.isAudioFile(codeFile))
         assert(!FileTypes.isBinaryFile(codeFile))
         assert(FileTypes.isCodeFile(codeFile))
-        assert(!FileTypes.isArchiveFile(codeFile))
+        assert(!FileTypes.isFontFile(codeFile))
+        assert(!FileTypes.isImageFile(codeFile))
         assert(FileTypes.isTextFile(codeFile))
         assert(!FileTypes.isUnknownFile(codeFile))
+        assert(!FileTypes.isVideoFile(codeFile))
         val fileType = FileTypes.getFileType(codeFile)
         assert(fileType == FileType.Code)
+    }
+  }
+
+  test("test font extensions") {
+    """eot otf ttf woff woff2""".
+      stripMargin.split(whitespaceRegex).foreach { ext =>
+        val fontFile = new File("font." + ext).getName
+        assert(!FileTypes.isArchiveFile(fontFile))
+        assert(!FileTypes.isAudioFile(fontFile))
+        // assert(!FileTypes.isBinaryFile(imageFile))
+        assert(!FileTypes.isCodeFile(fontFile))
+        assert(FileTypes.isFontFile(fontFile))
+        assert(!FileTypes.isImageFile(fontFile))
+        assert(!FileTypes.isTextFile(fontFile))
+        assert(!FileTypes.isUnknownFile(fontFile))
+        assert(!FileTypes.isVideoFile(fontFile))
+        val fileType = FileTypes.getFileType(fontFile)
+        assert(fileType == FileType.Font)
+    }
+  }
+
+  test("test image extensions") {
+    """ai bmp heif indd jpeg jpg png tif tiff""".
+      stripMargin.split(whitespaceRegex).foreach { ext =>
+        val imageFile = new File("image." + ext).getName
+        // println("imageFile: " + imageFile)
+        assert(!FileTypes.isArchiveFile(imageFile))
+        assert(!FileTypes.isAudioFile(imageFile))
+        // assert(!FileTypes.isBinaryFile(imageFile))
+        assert(!FileTypes.isCodeFile(imageFile))
+        assert(!FileTypes.isFontFile(imageFile))
+        assert(FileTypes.isImageFile(imageFile))
+        assert(!FileTypes.isTextFile(imageFile))
+        assert(!FileTypes.isUnknownFile(imageFile))
+        assert(!FileTypes.isVideoFile(imageFile))
+        val fileType = FileTypes.getFileType(imageFile)
+        assert(fileType == FileType.Image)
     }
   }
 
@@ -71,28 +137,54 @@ class FileTypesTest extends AnyFunSuite {
       |yml""".stripMargin.split(whitespaceRegex).foreach { ext =>
         val textFile = new File("textFile." + ext).getName
         // println("textFile: " + textFile)
-        assert(!FileTypes.isBinaryFile(textFile))
         assert(!FileTypes.isArchiveFile(textFile))
+        assert(!FileTypes.isAudioFile(textFile))
+        assert(!FileTypes.isBinaryFile(textFile))
+        assert(!FileTypes.isFontFile(textFile))
+        assert(!FileTypes.isImageFile(textFile))
         assert(FileTypes.isTextFile(textFile))
         assert(!FileTypes.isUnknownFile(textFile))
+        assert(!FileTypes.isVideoFile(textFile))
         val fileType = FileTypes.getFileType(textFile)
         assert(Set(FileType.Code, FileType.Text, FileType.Xml).contains(fileType))
     }
   }
 
+  test("test video extensions") {
+    """avi mov mp4 mpeg webm""".
+      stripMargin.split(whitespaceRegex).foreach { ext =>
+        val videoFile = new File("video." + ext).getName
+        assert(!FileTypes.isArchiveFile(videoFile))
+        assert(!FileTypes.isAudioFile(videoFile))
+        // assert(!FileTypes.isBinaryFile(imageFile))
+        assert(!FileTypes.isCodeFile(videoFile))
+        assert(!FileTypes.isFontFile(videoFile))
+        assert(!FileTypes.isImageFile(videoFile))
+        assert(!FileTypes.isTextFile(videoFile))
+        assert(!FileTypes.isUnknownFile(videoFile))
+        assert(FileTypes.isVideoFile(videoFile))
+        val fileType = FileTypes.getFileType(videoFile)
+        assert(fileType == FileType.Video)
+      }
+  }
+
   test("test xml extensions") {
     """atom atomcat atomsrv bdsproj config csproj davmount dbproj docx dotx
       |fsproj fxml jhm jnlp kml mm pom potx ppsx pptx qrc rdf resx rng rss
-      |settings sldx stc std sti stw svg svgz sxc sxd sxg sxi stw sxm sxw tld
+      |settings sldx stc std sti stw svgz sxc sxd sxg sxi stw sxm sxw tld
       |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xjb xlsx xltx xml
       |xps xsd xsl xslt xspf xul""".stripMargin.split(whitespaceRegex).foreach { ext =>
         val xmlFile = new File("xmlfile." + ext).getName
         // println("xmlFile: " + xmlFile)
+        assert(!FileTypes.isArchiveFile(xmlFile))
+        assert(!FileTypes.isAudioFile(xmlFile))
         assert(!FileTypes.isBinaryFile(xmlFile))
         assert(!FileTypes.isCodeFile(xmlFile))
-        assert(!FileTypes.isArchiveFile(xmlFile))
+        assert(!FileTypes.isFontFile(xmlFile))
+        assert(!FileTypes.isImageFile(xmlFile))
         assert(FileTypes.isTextFile(xmlFile))
         assert(!FileTypes.isUnknownFile(xmlFile))
+        assert(!FileTypes.isVideoFile(xmlFile))
         val fileType = FileTypes.getFileType(xmlFile)
         assert(fileType == FileType.Xml)
     }

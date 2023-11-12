@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,12 +14,20 @@ FileTypes *new_file_types(void)
     FileTypes *file_types = malloc(sizeof(FileTypes));
     file_types->archive_extensions = NULL;
     file_types->archive_names = NULL;
+    file_types->audio_extensions = NULL;
+    file_types->audio_names = NULL;
     file_types->binary_extensions = NULL;
     file_types->binary_names = NULL;
     file_types->code_extensions = NULL;
     file_types->code_names = NULL;
+    file_types->font_extensions = NULL;
+    file_types->font_names = NULL;
+    file_types->image_extensions = NULL;
+    file_types->image_names = NULL;
     file_types->text_extensions = NULL;
     file_types->text_names = NULL;
+    file_types->video_extensions = NULL;
+    file_types->video_names = NULL;
     file_types->xml_extensions = NULL;
     file_types->xml_names = NULL;
     return file_types;
@@ -77,12 +84,20 @@ error_t parse_file_types(const char * const file_types_json_str, FileTypes *file
 
     StringNode *archive_ext_node = empty_string_node();
     StringNode *archive_name_node = empty_string_node();
+    StringNode *audio_ext_node = empty_string_node();
+    StringNode *audio_name_node = empty_string_node();
     StringNode *binary_ext_node = empty_string_node();
     StringNode *binary_name_node = empty_string_node();
     StringNode *code_ext_node = empty_string_node();
     StringNode *code_name_node = empty_string_node();
+    StringNode *font_ext_node = empty_string_node();
+    StringNode *font_name_node = empty_string_node();
+    StringNode *image_ext_node = empty_string_node();
+    StringNode *image_name_node = empty_string_node();
     StringNode *text_ext_node = empty_string_node();
     StringNode *text_name_node = empty_string_node();
+    StringNode *video_ext_node = empty_string_node();
+    StringNode *video_name_node = empty_string_node();
     StringNode *xml_ext_node = empty_string_node();
     StringNode *xml_name_node = empty_string_node();
 
@@ -116,15 +131,27 @@ error_t parse_file_types(const char * const file_types_json_str, FileTypes *file
             if (strncmp(name, "archive", 7) == 0) {
                 next_ext_node = archive_ext_node;
                 next_name_node = archive_name_node;
+            } else if (strncmp(name, "audio", 5) == 0) {
+                next_ext_node = audio_ext_node;
+                next_name_node = audio_name_node;
             } else if (strncmp(name, "binary", 6) == 0) {
                 next_ext_node = binary_ext_node;
                 next_name_node = binary_name_node;
             } else if (strncmp(name, "code", 4) == 0) {
                 next_ext_node = code_ext_node;
                 next_name_node = code_name_node;
+            } else if (strncmp(name, "font", 4) == 0) {
+                next_ext_node = font_ext_node;
+                next_name_node = font_name_node;
+            } else if (strncmp(name, "image", 5) == 0) {
+                next_ext_node = image_ext_node;
+                next_name_node = image_name_node;
             } else if (strncmp(name, "text", 4) == 0) {
                 next_ext_node = text_ext_node;
                 next_name_node = text_name_node;
+            } else if (strncmp(name, "video", 5) == 0) {
+                next_ext_node = video_ext_node;
+                next_name_node = video_name_node;
             } else if (strncmp(name, "xml", 3) == 0) {
                 next_ext_node = xml_ext_node;
                 next_name_node = xml_name_node;
@@ -182,6 +209,26 @@ error_t parse_file_types(const char * const file_types_json_str, FileTypes *file
         }
     }
 
+    size_t audio_ext_node_len = string_node_count(audio_ext_node);
+    file_types->audio_extensions = new_string_array_with_size(audio_ext_node_len);
+    temp = audio_ext_node;
+    if (audio_ext_node_len > 0) {
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->audio_extensions);
+            temp = temp->next;
+        }
+    }
+
+    size_t audio_name_node_len = string_node_count(audio_name_node);
+    file_types->audio_names = new_string_array_with_size(audio_name_node_len);
+    if (audio_name_node_len > 0) {
+        temp = audio_name_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->audio_names);
+            temp = temp->next;
+        }
+    }
+
     size_t binary_ext_node_len = string_node_count(binary_ext_node);
     file_types->binary_extensions = new_string_array_with_size(binary_ext_node_len);
     if (binary_ext_node_len > 0) {
@@ -198,6 +245,66 @@ error_t parse_file_types(const char * const file_types_json_str, FileTypes *file
         temp = binary_name_node;
         while (temp != NULL) {
             add_string_to_string_array(temp->string, file_types->binary_names);
+            temp = temp->next;
+        }
+    }
+
+    size_t font_ext_node_len = string_node_count(font_ext_node);
+    file_types->font_extensions = new_string_array_with_size(font_ext_node_len);
+    if (font_ext_node_len > 0) {
+        temp = font_ext_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->font_extensions);
+            temp = temp->next;
+        }
+    }
+
+    size_t font_name_node_len = string_node_count(font_name_node);
+    file_types->font_names = new_string_array_with_size(font_name_node_len);
+    if (font_name_node_len > 0) {
+        temp = font_name_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->font_names);
+            temp = temp->next;
+        }
+    }
+
+    size_t image_ext_node_len = string_node_count(image_ext_node);
+    file_types->image_extensions = new_string_array_with_size(image_ext_node_len);
+    if (image_ext_node_len > 0) {
+        temp = image_ext_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->image_extensions);
+            temp = temp->next;
+        }
+    }
+
+    size_t image_name_node_len = string_node_count(image_name_node);
+    file_types->image_names = new_string_array_with_size(image_name_node_len);
+    if (image_name_node_len > 0) {
+        temp = image_name_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->image_names);
+            temp = temp->next;
+        }
+    }
+
+    size_t video_ext_node_len = string_node_count(video_ext_node);
+    file_types->video_extensions = new_string_array_with_size(video_ext_node_len);
+    if (video_ext_node_len > 0) {
+        temp = video_ext_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->video_extensions);
+            temp = temp->next;
+        }
+    }
+
+    size_t video_name_node_len = string_node_count(video_name_node);
+    file_types->video_names = new_string_array_with_size(video_name_node_len);
+    if (video_name_node_len > 0) {
+        temp = video_name_node;
+        while (temp != NULL) {
+            add_string_to_string_array(temp->string, file_types->video_names);
             temp = temp->next;
         }
     }
@@ -271,12 +378,20 @@ error_t parse_file_types(const char * const file_types_json_str, FileTypes *file
 end:
     destroy_string_node(archive_ext_node);
     destroy_string_node(archive_name_node);
+    destroy_string_node(audio_ext_node);
+    destroy_string_node(audio_name_node);
     destroy_string_node(binary_ext_node);
     destroy_string_node(binary_name_node);
     destroy_string_node(code_ext_node);
     destroy_string_node(code_name_node);
+    destroy_string_node(font_ext_node);
+    destroy_string_node(font_name_node);
+    destroy_string_node(image_ext_node);
+    destroy_string_node(image_name_node);
     destroy_string_node(text_ext_node);
     destroy_string_node(text_name_node);
+    destroy_string_node(video_ext_node);
+    destroy_string_node(video_name_node);
     destroy_string_node(xml_ext_node);
     destroy_string_node(xml_name_node);
     destroy_string_node(nosearch_ext_node);
@@ -297,6 +412,14 @@ unsigned short is_archive_name(const char *name, FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->archive_names) > -1;
 }
 
+unsigned short is_audio_ext(const char *ext, FileTypes *file_types) {
+    return index_of_string_in_string_array(ext, file_types->audio_extensions) > -1;
+}
+
+unsigned short is_audio_name(const char *name, FileTypes *file_types) {
+    return index_of_string_in_string_array(name, file_types->audio_names) > -1;
+}
+
 unsigned short is_binary_ext(const char *ext, FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->binary_extensions) > -1;
 }
@@ -313,12 +436,36 @@ unsigned short is_code_name(const char *name, FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->code_names) > -1;
 }
 
+unsigned short is_font_ext(const char *ext, FileTypes *file_types) {
+    return index_of_string_in_string_array(ext, file_types->font_extensions) > -1;
+}
+
+unsigned short is_font_name(const char *name, FileTypes *file_types) {
+    return index_of_string_in_string_array(name, file_types->font_names) > -1;
+}
+
+unsigned short is_image_ext(const char *ext, FileTypes *file_types) {
+    return index_of_string_in_string_array(ext, file_types->image_extensions) > -1;
+}
+
+unsigned short is_image_name(const char *name, FileTypes *file_types) {
+    return index_of_string_in_string_array(name, file_types->image_names) > -1;
+}
+
 unsigned short is_text_ext(const char *ext, FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->text_extensions) > -1;
 }
 
 unsigned short is_text_name(const char *name, FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->text_names) > -1;
+}
+
+unsigned short is_video_ext(const char *ext, FileTypes *file_types) {
+    return index_of_string_in_string_array(ext, file_types->video_extensions) > -1;
+}
+
+unsigned short is_video_name(const char *name, FileTypes *file_types) {
+    return index_of_string_in_string_array(name, file_types->video_names) > -1;
 }
 
 unsigned short is_xml_ext(const char *ext, FileTypes *file_types) {
@@ -333,16 +480,27 @@ FileType get_file_type_for_filename(const char *filename, FileTypes *file_types)
 {
     FileType file_type = UNKNOWN;
     if (strnlen(filename, 10) > 0) {
+        // most specific first
         if (is_code_name(filename, file_types)) {
             file_type = CODE;
+        } else if (is_archive_name(filename, file_types)) {
+            file_type = ARCHIVE;
+        } else if (is_audio_name(filename, file_types)) {
+            file_type = AUDIO;
+        } else if (is_font_name(filename, file_types)) {
+            file_type = FONT;
+        } else if (is_image_name(filename, file_types)) {
+            file_type = IMAGE;
+        } else if (is_video_name(filename, file_types)) {
+            file_type = VIDEO;
+
+        // most general last
         } else if (is_xml_name(filename, file_types)) {
             file_type = XML;
         } else if (is_text_name(filename, file_types)) {
             file_type = TEXT;
         } else if (is_binary_name(filename, file_types)) {
             file_type = BINARY;
-        } else if (is_archive_name(filename, file_types)) {
-            file_type = ARCHIVE;
         }
     }
     return file_type;
@@ -352,16 +510,27 @@ FileType get_file_type_for_ext(const char *ext, FileTypes *file_types)
 {
     FileType file_type = UNKNOWN;
     if (strnlen(ext, 10) > 0) {
+        // most specific first
         if (is_code_ext(ext, file_types)) {
             file_type = CODE;
+        } else if (is_archive_ext(ext, file_types)) {
+            file_type = ARCHIVE;
+        } else if (is_audio_ext(ext, file_types)) {
+            file_type = AUDIO;
+        } else if (is_font_ext(ext, file_types)) {
+            file_type = FONT;
+        } else if (is_image_ext(ext, file_types)) {
+            file_type = IMAGE;
+        } else if (is_video_ext(ext, file_types)) {
+            file_type = VIDEO;
+
+        // most general last
         } else if (is_xml_ext(ext, file_types)) {
             file_type = XML;
         } else if (is_text_ext(ext, file_types)) {
             file_type = TEXT;
         } else if (is_binary_ext(ext, file_types)) {
             file_type = BINARY;
-        } else if (is_archive_ext(ext, file_types)) {
-            file_type = ARCHIVE;
         }
     }
     return file_type;
@@ -382,20 +551,32 @@ FileType file_type_from_name(const char *name)
         uname[i] = c;
     }
     //printf("uname: %s\n", uname);
-    if (strncmp(uname, "TEXT", maxlen) == 0) {
-        return TEXT;
+    if (strncmp(uname, "ARCHIVE", maxlen) == 0) {
+        return ARCHIVE;
     }
-    if (strncmp(uname, "CODE", maxlen) == 0) {
-        return CODE;
-    }
-    if (strncmp(uname, "XML", maxlen) == 0) {
-        return XML;
+    if (strncmp(uname, "AUDIO", maxlen) == 0) {
+        return AUDIO;
     }
     if (strncmp(uname, "BINARY", maxlen) == 0) {
         return BINARY;
     }
-    if (strncmp(uname, "ARCHIVE", maxlen) == 0) {
-        return ARCHIVE;
+    if (strncmp(uname, "CODE", maxlen) == 0) {
+        return CODE;
+    }
+    if (strncmp(uname, "FONT", maxlen) == 0) {
+        return FONT;
+    }
+    if (strncmp(uname, "IMAGE", maxlen) == 0) {
+        return IMAGE;
+    }
+    if (strncmp(uname, "TEXT", maxlen) == 0) {
+        return TEXT;
+    }
+    if (strncmp(uname, "VIDEO", maxlen) == 0) {
+        return VIDEO;
+    }
+    if (strncmp(uname, "XML", maxlen) == 0) {
+        return XML;
     }
     return UNKNOWN;
 }
@@ -407,6 +588,10 @@ void file_type_to_name(const FileType file_type, char *name)
             strncpy(name, "ARCHIVE", 7);
             name[7] = '\0';
             break;
+        case AUDIO:
+            strncpy(name, "AUDIO", 5);
+            name[5] = '\0';
+            break;
         case BINARY:
             strncpy(name, "BINARY", 6);
             name[6] = '\0';
@@ -415,9 +600,21 @@ void file_type_to_name(const FileType file_type, char *name)
             strncpy(name, "CODE", 4);
             name[4] = '\0';
             break;
+        case FONT:
+            strncpy(name, "FONT", 4);
+            name[4] = '\0';
+            break;
+        case IMAGE:
+            strncpy(name, "IMAGE", 5);
+            name[5] = '\0';
+            break;
         case TEXT:
             strncpy(name, "TEXT", 4);
             name[4] = '\0';
+            break;
+        case VIDEO:
+            strncpy(name, "VIDEO", 5);
+            name[5] = '\0';
             break;
         case XML:
             strncpy(name, "XML", 3);
@@ -480,10 +677,23 @@ void destroy_file_types(FileTypes *file_types)
 {
     if (file_types != NULL) {
         destroy_string_array(file_types->archive_extensions);
+        destroy_string_array(file_types->archive_names);
+        destroy_string_array(file_types->audio_extensions);
+        destroy_string_array(file_types->audio_names);
         destroy_string_array(file_types->binary_extensions);
+        destroy_string_array(file_types->binary_names);
         destroy_string_array(file_types->code_extensions);
+        destroy_string_array(file_types->code_names);
+        destroy_string_array(file_types->font_extensions);
+        destroy_string_array(file_types->font_names);
+        destroy_string_array(file_types->image_extensions);
+        destroy_string_array(file_types->image_names);
         destroy_string_array(file_types->text_extensions);
+        destroy_string_array(file_types->text_names);
+        destroy_string_array(file_types->video_extensions);
+        destroy_string_array(file_types->video_names);
         destroy_string_array(file_types->xml_extensions);
+        destroy_string_array(file_types->xml_names);
         free(file_types);
     }
 }

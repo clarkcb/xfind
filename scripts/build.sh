@@ -873,6 +873,10 @@ build_python () {
     RESOURCES_PATH="$PYFIND_PATH/data"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
+    # TODO: this next path is the *real* resource path, need to remove the other one
+    RESOURCES_PATH="$PYFIND_PATH/pyfind/data"
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
 
     cd "$PYFIND_PATH"
 

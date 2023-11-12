@@ -43,13 +43,13 @@
                         <configuration>
                             <artifactSet>
                                 <includes>
-                                    <include>com.googlecode.json-simple:json-simple</include>
+                                    <include>org.json:json</include>
                                     <include>commons-io:commons-io</include>
                                 </includes>
                             </artifactSet>
                             <filters>
                                 <filter>
-                                    <artifact>com.googlecode.json-simple:json-simple</artifact>
+                                    <artifact>org.json:json</artifact>
                                     <excludes>
                                         <exclude>META-INF/MANIFEST.MF</exclude>
                                     </excludes>

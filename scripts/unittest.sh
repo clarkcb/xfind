@@ -79,8 +79,11 @@ unittest_cpp () {
         if [ -d "$CMAKE_BUILD_DIR" ]
         then
             CPPFIND_TEST_EXE=$CMAKE_BUILD_DIR/cppfind-tests
-            log "$CPPFIND_TEST_EXE"
-            $CPPFIND_TEST_EXE
+            if [ -e "$CPPFIND_TEST_EXE" ]
+            then
+                log "$CPPFIND_TEST_EXE"
+                $CPPFIND_TEST_EXE
+            fi
         fi
     done
 }

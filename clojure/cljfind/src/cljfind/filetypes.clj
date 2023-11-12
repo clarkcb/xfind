@@ -17,9 +17,13 @@
         [cljfind.fileutil :only (get-ext get-name)]))
 
 (def ARCHIVE "archive")
+(def AUDIO "audio")
 (def BINARY "binary")
 (def CODE "code")
+(def FONT "font")
+(def IMAGE "image")
 (def TEXT "text")
+(def VIDEO "video")
 (def XML "xml")
 
 (defn get-file-type-maps-from-json []
@@ -55,6 +59,14 @@
    (contains? (get FILETYPENAMEMAP ARCHIVE) (get-name f))
    (contains? (get FILETYPEEXTMAP ARCHIVE) (get-ext f))))
 
+(defn audio-ext? [^String ext]
+  (contains? (get FILETYPEEXTMAP AUDIO) ext))
+
+(defn audio-file? [f]
+  (or
+   (contains? (get FILETYPENAMEMAP AUDIO) (get-name f))
+   (contains? (get FILETYPEEXTMAP AUDIO) (get-ext f))))
+
 (defn binary-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP BINARY) ext))
 
@@ -71,6 +83,22 @@
    (contains? (get FILETYPENAMEMAP CODE) (get-name f))
    (contains? (get FILETYPEEXTMAP CODE) (get-ext f))))
 
+(defn font-ext? [^String ext]
+  (contains? (get FILETYPEEXTMAP FONT) ext))
+
+(defn font-file? [f]
+  (or
+   (contains? (get FILETYPENAMEMAP FONT) (get-name f))
+   (contains? (get FILETYPEEXTMAP FONT) (get-ext f))))
+
+(defn image-ext? [^String ext]
+  (contains? (get FILETYPEEXTMAP IMAGE) ext))
+
+(defn image-file? [f]
+  (or
+   (contains? (get FILETYPENAMEMAP IMAGE) (get-name f))
+   (contains? (get FILETYPEEXTMAP IMAGE) (get-ext f))))
+
 (defn text-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP TEXT) ext))
 
@@ -78,6 +106,14 @@
   (or
    (contains? (get FILETYPENAMEMAP TEXT) (get-name f))
    (contains? (get FILETYPEEXTMAP TEXT) (get-ext f))))
+
+(defn video-ext? [^String ext]
+  (contains? (get FILETYPEEXTMAP VIDEO) ext))
+
+(defn video-file? [f]
+  (or
+   (contains? (get FILETYPENAMEMAP VIDEO) (get-name f))
+   (contains? (get FILETYPEEXTMAP VIDEO) (get-ext f))))
 
 (defn xml-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP XML) ext))
@@ -89,11 +125,17 @@
 
 (defn get-file-type [f]
   (cond
-    (binary-file? f) :binary
+    ;; most specific first
     (code-file? f) :code
+    (archive-file? f) :archive
+    (audio-file? f) :audio
+    (font-file? f) :font
+    (image-file? f) :image
+    (video-file? f) :video
+    ;; most general last
     (xml-file? f) :xml
     (text-file? f) :text
-    (archive-file? f) :archive
+    (binary-file? f) :binary
     :else :unknown))
 
 (defn unknown-file? [f]
@@ -102,18 +144,26 @@
 (defn from-name [^String name]
   (let [lname (lower-case name)]
     (cond
-      (= TEXT lname) :text
+      (= ARCHIVE lname) :archive
+      (= AUDIO lname) :audio
       (= BINARY lname) :binary
       (= CODE lname) :code
+      (= FONT lname) :font
+      (= IMAGE lname) :image
+      (= TEXT lname) :text
+      (= VIDEO lname) :video
       (= XML lname) :xml
-      (= ARCHIVE lname) :archive
       :else :unknown)))
 
 (defn to-name [ft]
   (cond
-    (= :text ft) TEXT
+    (= :archive ft) ARCHIVE
+    (= :audio ft) AUDIO
     (= :binary ft) BINARY
     (= :code ft) CODE
+    (= :font ft) FONT
+    (= :image ft) IMAGE
+    (= :text ft) TEXT
+    (= :video ft) VIDEO
     (= :xml ft) XML
-    (= :archive ft) ARCHIVE
     :else "unknown"))

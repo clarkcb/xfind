@@ -59,8 +59,22 @@ scenarios = [
     Scenario('find blank filename (should find nothing)', common_args + ['-f', '^$']),
 
     # match filetype
+    Scenario('find "audio" filetype', core_args + ['-t', 'audio'] + startpaths),
+    Scenario('find not "audio" filetype', core_args + ['-T', 'audio'] + startpaths),
+    Scenario('find "binary" filetype', core_args + ['-t', 'binary'] + startpaths),
+    Scenario('find not "binary" filetype', core_args + ['-T', 'binary'] + startpaths),
     Scenario('find "code" filetype', core_args + ['-t', 'code'] + startpaths),
     Scenario('find not "code" filetype', core_args + ['-T', 'code'] + startpaths),
+    Scenario('find "font" filetype', core_args + ['-t', 'font'] + startpaths),
+    Scenario('find not "font" filetype', core_args + ['-T', 'font'] + startpaths),
+    Scenario('find "image" filetype', core_args + ['-t', 'image'] + startpaths),
+    Scenario('find not "image" filetype', core_args + ['-T', 'image'] + startpaths),
+    Scenario('find "text" filetype', core_args + ['-t', 'text'] + startpaths),
+    Scenario('find not "text" filetype', core_args + ['-T', 'text'] + startpaths),
+    Scenario('find "video" filetype', core_args + ['-t', 'video'] + startpaths),
+    Scenario('find not "video" filetype', core_args + ['-T', 'video'] + startpaths),
+    Scenario('find "xml" filetype', core_args + ['-t', 'xml'] + startpaths),
+    Scenario('find not "xml" filetype', core_args + ['-T', 'xml'] + startpaths),
 
     # list dirs
     Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs']),

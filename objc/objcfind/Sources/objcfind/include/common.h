@@ -5,10 +5,14 @@
 
 // file type names
 #define T_ARCHIVE "archive"
+#define T_AUDIO "audio"
 #define T_BINARY "binary"
 #define T_CODE "code"
+#define T_FONT "font"
+#define T_IMAGE "image"
 #define T_TEXT "text"
 #define T_UNKNOWN "unknown"
+#define T_VIDEO "video"
 #define T_XML "xml"
 
 // sort-by names
@@ -25,9 +29,13 @@
 typedef enum {
     FileTypeUnknown = -1,
     FileTypeArchive = 0,
+    FileTypeAudio,
     FileTypeBinary,
     FileTypeCode,
+    FileTypeFont,
+    FileTypeImage,
     FileTypeText,
+    FileTypeVideo,
     FileTypeXml
 } FileType;
 

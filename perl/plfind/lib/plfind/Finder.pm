@@ -158,7 +158,7 @@ sub is_matching_file_result {
 sub is_matching_archive_file {
     my ($self, $f) = @_;
     if (scalar @{$self->{settings}->{in_archive_extensions}} || scalar @{$self->{settings}->{out_archive_extensions}}) {
-        my $ext = plfind::FileUtil::get_extension($fr->{file_name});
+        my $ext = plfind::FileUtil::get_extension($f);
         if (scalar @{$self->{settings}->{in_archive_extensions}} &&
             !(grep {$_ eq $ext} @{$self->{settings}->{in_archive_extensions}})) {
             return 0;

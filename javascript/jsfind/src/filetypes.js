@@ -27,13 +27,13 @@ class FileTypes {
             let fileTypeNameMap = {};
 
             let obj = JSON.parse(json);
-            if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
+            if (obj.hasOwnProperty('filetypes') && Array.isArray(obj.filetypes)) {
                 obj.filetypes.forEach(ft => {
                     let typename = ft.type;
                     let extensions = ft.extensions;
                     fileTypeExtMap[typename] = common.setFromArray(extensions);
                     if (ft.hasOwnProperty('names')) {
-                        fileTypeNameMap[typename] = common.setFromArray(ft['names']);
+                        fileTypeNameMap[typename] = common.setFromArray(ft.names);
                     } else {
                         fileTypeNameMap[typename] = [];
                     }
@@ -48,31 +48,51 @@ class FileTypes {
     }
 
     getFileType(filename) {
+        // most specific first
         if (this.isCodeFile(filename))
             return FileType.CODE;
+        if (this.isArchiveFile(filename))
+            return FileType.ARCHIVE;
+        if (this.isAudioFile(filename))
+            return FileType.AUDIO;
+        if (this.isFontFile(filename))
+            return FileType.FONT;
+        if (this.isImageFile(filename))
+            return FileType.IMAGE;
+        if (this.isVideoFile(filename))
+            return FileType.VIDEO;
+        // most general last
         if (this.isXmlFile(filename))
             return FileType.XML;
         if (this.isTextFile(filename))
             return FileType.TEXT;
         if (this.isBinaryFile(filename))
             return FileType.BINARY;
-        if (this.isArchiveFile(filename))
-            return FileType.ARCHIVE;
         return FileType.UNKNOWN;
     }
 
     getFileTypeAsync(filename, cb) {
         try {
+            // most specific first
             if (this.isCodeFile(filename))
                 return cb(null, FileType.CODE);
+            if (this.isArchiveFile(filename))
+                return cb(null, FileType.ARCHIVE);
+            if (this.isAudioFile(filename))
+                return cb(null, FileType.AUDIO);
+            if (this.isFontFile(filename))
+                return cb(null, FileType.FONT);
+            if (this.isImageFile(filename))
+                return cb(null, FileType.IMAGE);
+            if (this.isVideoFile(filename))
+                return cb(null, FileType.VIDEO);
+            // most general last
             if (this.isXmlFile(filename))
                 return cb(null, FileType.XML);
             if (this.isTextFile(filename))
                 return cb(null, FileType.TEXT);
             if (this.isBinaryFile(filename))
                 return cb(null, FileType.BINARY);
-            if (this.isArchiveFile(filename))
-                return cb(null, FileType.ARCHIVE);
         } catch (err) {
             return cb(err);
         }
@@ -82,6 +102,11 @@ class FileTypes {
     isArchiveFile(filename) {
         return this.fileTypeNameMap.archive.indexOf(filename) > -1 ||
             this.fileTypeExtMap.archive.indexOf(FileUtil.getExtension(filename)) > -1;
+    }
+
+    isAudioFile(filename) {
+        return this.fileTypeNameMap.audio.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.audio.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     isBinaryFile(filename) {
@@ -94,9 +119,24 @@ class FileTypes {
             this.fileTypeExtMap.code.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
+    isFontFile(filename) {
+        return this.fileTypeNameMap.font.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.font.indexOf(FileUtil.getExtension(filename)) > -1;
+    }
+
+    isImageFile(filename) {
+        return this.fileTypeNameMap.image.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.image.indexOf(FileUtil.getExtension(filename)) > -1;
+    }
+
     isTextFile(filename) {
         return this.fileTypeNameMap.text.indexOf(filename) > -1 ||
             this.fileTypeExtMap.text.indexOf(FileUtil.getExtension(filename)) > -1;
+    }
+
+    isVideoFile(filename) {
+        return this.fileTypeNameMap.video.indexOf(filename) > -1 ||
+            this.fileTypeExtMap.video.indexOf(FileUtil.getExtension(filename)) > -1;
     }
 
     isXmlFile(filename) {
@@ -109,15 +149,24 @@ class FileTypes {
     }
 
     static fromName(name) {
-        if (name.toUpperCase() === 'TEXT')
-            return FileType.TEXT;
-        if (name.toUpperCase() === 'BINARY')
-            return FileType.BINARY;
-        if (name.toUpperCase() === 'ARCHIVE')
+        let uname = name.toUpperCase();
+        if (uname === 'ARCHIVE')
             return FileType.ARCHIVE;
-        if (name.toUpperCase() === 'CODE')
+        if (uname === 'AUDIO')
+            return FileType.AUDIO;
+        if (uname === 'BINARY')
+            return FileType.BINARY;
+        if (uname === 'CODE')
             return FileType.CODE;
-        if (name.toUpperCase() === 'XML')
+        if (uname === 'FONT')
+            return FileType.FONT;
+        if (uname === 'IMAGE')
+            return FileType.IMAGE;
+        if (uname === 'TEXT')
+            return FileType.TEXT;
+        if (uname === 'VIDEO')
+            return FileType.VIDEO;
+        if (uname === 'XML')
             return FileType.XML;
         return FileType.UNKNOWN;
     }
@@ -125,12 +174,20 @@ class FileTypes {
     static toName(fileType) {
         if (fileType === FileType.ARCHIVE)
             return 'ARCHIVE';
+        if (fileType === FileType.AUDIO)
+            return 'AUDIO';
         if (fileType === FileType.BINARY)
             return 'BINARY';
         if (fileType === FileType.CODE)
             return 'CODE';
+        if (fileType === FileType.FONT)
+            return 'FONT';
+        if (fileType === FileType.IMAGE)
+            return 'IMAGE';
         if (fileType === FileType.TEXT)
             return 'TEXT';
+        if (fileType === FileType.VIDEO)
+            return 'VIDEO';
         if (fileType === FileType.XML)
             return 'XML';
         return 'UNKNOWN';

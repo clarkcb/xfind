@@ -6,10 +6,14 @@
 
 
 @property NSString *archive;
+@property NSString *audio;
 @property NSString *binary;
 @property NSString *code;
+@property NSString *font;
+@property NSString *image;
 @property NSString *text;
 @property NSString *unknown;
+@property NSString *video;
 @property NSString *xml;
 
 
@@ -24,10 +28,14 @@
     self = [super init];
     if (self) {
         self.archive = [NSString stringWithUTF8String:T_ARCHIVE];
+        self.audio = [NSString stringWithUTF8String:T_AUDIO];
         self.binary = [NSString stringWithUTF8String:T_BINARY];
         self.code = [NSString stringWithUTF8String:T_CODE];
+        self.font = [NSString stringWithUTF8String:T_FONT];
+        self.image = [NSString stringWithUTF8String:T_IMAGE];
         self.text = [NSString stringWithUTF8String:T_TEXT];
         self.unknown = [NSString stringWithUTF8String:T_UNKNOWN];
+        self.video = [NSString stringWithUTF8String:T_VIDEO];
         self.xml = [NSString stringWithUTF8String:T_XML];
         NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *ftArr = [self fileTypesFromJson];
         self.fileTypeExtDict = ftArr[0];
@@ -82,17 +90,29 @@
 
 + (FileType) fromName:(NSString*)typeName {
     NSString *lname = [typeName lowercaseString];
-    if (lname == [NSString stringWithUTF8String:T_TEXT]) {
-        return FileTypeText;
+    if (lname == [NSString stringWithUTF8String:T_ARCHIVE]) {
+        return FileTypeArchive;
+    }
+    if (lname == [NSString stringWithUTF8String:T_AUDIO]) {
+        return FileTypeAudio;
     }
     if (lname == [NSString stringWithUTF8String:T_BINARY]) {
         return FileTypeBinary;
     }
-    if (lname == [NSString stringWithUTF8String:T_ARCHIVE]) {
-        return FileTypeArchive;
-    }
     if (lname == [NSString stringWithUTF8String:T_CODE]) {
         return FileTypeCode;
+    }
+    if (lname == [NSString stringWithUTF8String:T_FONT]) {
+        return FileTypeFont;
+    }
+    if (lname == [NSString stringWithUTF8String:T_IMAGE]) {
+        return FileTypeImage;
+    }
+    if (lname == [NSString stringWithUTF8String:T_TEXT]) {
+        return FileTypeText;
+    }
+    if (lname == [NSString stringWithUTF8String:T_VIDEO]) {
+        return FileTypeVideo;
     }
     if (lname == [NSString stringWithUTF8String:T_XML]) {
         return FileTypeXml;
@@ -101,17 +121,29 @@
 }
 
 + (NSString*) toName:(FileType)fileType {
-    if (fileType == FileTypeText) {
-        return [NSString stringWithUTF8String:T_TEXT];
+    if (fileType == FileTypeArchive) {
+        return [NSString stringWithUTF8String:T_ARCHIVE];
+    }
+    if (fileType == FileTypeAudio) {
+        return [NSString stringWithUTF8String:T_AUDIO];
     }
     if (fileType == FileTypeBinary) {
         return [NSString stringWithUTF8String:T_BINARY];
     }
-    if (fileType == FileTypeArchive) {
-        return [NSString stringWithUTF8String:T_ARCHIVE];
-    }
     if (fileType == FileTypeCode) {
         return [NSString stringWithUTF8String:T_CODE];
+    }
+    if (fileType == FileTypeFont) {
+        return [NSString stringWithUTF8String:T_FONT];
+    }
+    if (fileType == FileTypeImage) {
+        return [NSString stringWithUTF8String:T_IMAGE];
+    }
+    if (fileType == FileTypeText) {
+        return [NSString stringWithUTF8String:T_TEXT];
+    }
+    if (fileType == FileTypeVideo) {
+        return [NSString stringWithUTF8String:T_VIDEO];
     }
     if (fileType == FileTypeXml) {
         return [NSString stringWithUTF8String:T_XML];
@@ -120,9 +152,26 @@
 }
 
 - (FileType) getFileType:(NSString*)fileName {
+    // most specific first
     if ([self isCodeFile:fileName]) {
         return FileTypeCode;
     }
+    if ([self isArchiveFile:fileName]) {
+        return FileTypeArchive;
+    }
+    if ([self isAudioFile:fileName]) {
+        return FileTypeAudio;
+    }
+    if ([self isFontFile:fileName]) {
+        return FileTypeFont;
+    }
+    if ([self isImageFile:fileName]) {
+        return FileTypeImage;
+    }
+    if ([self isVideoFile:fileName]) {
+        return FileTypeVideo;
+    }
+    // most general last
     if ([self isXmlFile:fileName]) {
         return FileTypeXml;
     }
@@ -131,9 +180,6 @@
     }
     if ([self isBinaryFile:fileName]) {
         return FileTypeBinary;
-    }
-    if ([self isArchiveFile:fileName]) {
-        return FileTypeArchive;
     }
     return FileTypeUnknown;
 }
@@ -151,6 +197,10 @@
     return [self isFileOfType:fileName type:self.archive];
 }
 
+- (BOOL) isAudioFile:(NSString*)fileName {
+    return [self isFileOfType:fileName type:self.audio];
+}
+
 - (BOOL) isBinaryFile:(NSString*)fileName {
     return [self isFileOfType:fileName type:self.binary];
 }
@@ -159,8 +209,20 @@
     return [self isFileOfType:fileName type:self.code];
 }
 
+- (BOOL) isFontFile:(NSString*)fileName {
+    return [self isFileOfType:fileName type:self.font];
+}
+
+- (BOOL) isImageFile:(NSString*)fileName {
+    return [self isFileOfType:fileName type:self.image];
+}
+
 - (BOOL) isTextFile:(NSString*)fileName {
     return [self isFileOfType:fileName type:self.text];
+}
+
+- (BOOL) isVideoFile:(NSString*)fileName {
+    return [self isFileOfType:fileName type:self.video];
 }
 
 - (BOOL) isXmlFile:(NSString*)fileName {

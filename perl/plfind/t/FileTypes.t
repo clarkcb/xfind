@@ -8,7 +8,7 @@
 use strict;
 use warnings;
 
-use Test::Simple tests => 6;
+use Test::Simple tests => 10;
 
 use plfind::FileType;
 use plfind::FileTypes;

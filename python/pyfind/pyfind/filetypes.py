@@ -20,10 +20,14 @@ class FileType(Enum):
     """FileType enum"""
     UNKNOWN = 0
     ARCHIVE = 1
-    BINARY = 2
-    CODE = 3
-    TEXT = 4
-    XML = 5
+    AUDIO = 2
+    BINARY = 3
+    CODE = 4
+    FONT = 5
+    IMAGE = 6
+    TEXT = 7
+    VIDEO = 8
+    XML = 9
 
     def __lt__(self, other):
         if self.__class__ is other.__class__:
@@ -54,22 +58,37 @@ class FileTypes:
 
     def get_file_type(self, file_name: str) -> FileType:
         """Return file type for file_name"""
+        # more specific first
         if self.is_code_file(file_name):
             return FileType.CODE
+        if self.is_archive_file(file_name):
+            return FileType.ARCHIVE
+        if self.is_audio_file(file_name):
+            return FileType.AUDIO
+        if self.is_font_file(file_name):
+            return FileType.FONT
+        if self.is_image_file(file_name):
+            return FileType.IMAGE
+        if self.is_video_file(file_name):
+            return FileType.VIDEO
+        # more general last
         if self.is_xml_file(file_name):
             return FileType.XML
         if self.is_text_file(file_name):
             return FileType.TEXT
         if self.is_binary_file(file_name):
             return FileType.BINARY
-        if self.is_archive_file(file_name):
-            return FileType.ARCHIVE
         return FileType.UNKNOWN
 
     def is_archive_file(self, f: str) -> bool:
         """Return true if file is of a (known) archive file type"""
         return f in self.__file_type_names['archive'] or \
                FileUtil.get_extension(f) in self.__file_type_exts['archive']
+
+    def is_audio_file(self, f: str) -> bool:
+        """Return true if file is of a (known) audio file type"""
+        return f in self.__file_type_names['audio'] or \
+               FileUtil.get_extension(f) in self.__file_type_exts['audio']
 
     def is_binary_file(self, f: str) -> bool:
         """Return true if file is of a (known) findable binary file type"""
@@ -81,10 +100,25 @@ class FileTypes:
         return f in self.__file_type_names['code'] or \
                FileUtil.get_extension(f) in self.__file_type_exts['code']
 
+    def is_font_file(self, f: str) -> bool:
+        """Return true if file is of a (known) font file type"""
+        return f in self.__file_type_names['font'] or \
+               FileUtil.get_extension(f) in self.__file_type_exts['font']
+
+    def is_image_file(self, f: str) -> bool:
+        """Return true if file is of a (known) image file type"""
+        return f in self.__file_type_names['image'] or \
+               FileUtil.get_extension(f) in self.__file_type_exts['image']
+
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
         return f in self.__file_type_names['text'] or \
                FileUtil.get_extension(f) in self.__file_type_exts['text']
+
+    def is_video_file(self, f: str) -> bool:
+        """Return true if file is of a (known) video file type"""
+        return f in self.__file_type_names['video'] or \
+               FileUtil.get_extension(f) in self.__file_type_exts['video']
 
     def is_xml_file(self, f: str) -> bool:
         """Return true if file is of a (known) xml file type"""
@@ -112,7 +146,15 @@ class FileTypes:
                                               self.__file_type_names['xml'])
         self.__file_type_exts['findable'] = \
             self.__file_type_exts['binary'].union(self.__file_type_exts['archive'],
-                                                  self.__file_type_exts['text'])
+                                                  self.__file_type_exts['audio'],
+                                                  self.__file_type_exts['font'],
+                                                  self.__file_type_exts['image'],
+                                                  self.__file_type_exts['text'],
+                                                  self.__file_type_exts['video'])
         self.__file_type_names['findable'] = \
             self.__file_type_names['binary'].union(self.__file_type_names['archive'],
-                                                   self.__file_type_names['text'])
+                                                   self.__file_type_names['audio'],
+                                                   self.__file_type_names['font'],
+                                                   self.__file_type_names['image'],
+                                                   self.__file_type_names['text'],
+                                                   self.__file_type_names['video'])

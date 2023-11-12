@@ -9,15 +9,19 @@
 import Foundation
 
 public enum FileType {
-    case unknown, archive, binary, code, text, xml
+    case unknown, archive, audio, binary, code, font, image, text, video, xml
 }
 
 public class FileTypes {
     fileprivate static let archive = "archive"
+    fileprivate static let audio = "audio"
     fileprivate static let binary = "binary"
     fileprivate static let code = "code"
+    fileprivate static let font = "font"
+    fileprivate static let image = "image"
     fileprivate static let text = "text"
     fileprivate static let unknown = "unknown"
+    fileprivate static let video = "video"
     fileprivate static let xml = "xml"
 
     private var config: FindConfig
@@ -56,14 +60,22 @@ public class FileTypes {
     public static func fromName(_ typeName: String) -> FileType {
         let lname = typeName.lowercased()
         switch lname {
-        case text:
-            return FileType.text
-        case binary:
-            return FileType.binary
         case archive:
             return FileType.archive
+        case audio:
+            return FileType.audio
+        case binary:
+            return FileType.binary
         case code:
             return FileType.code
+        case font:
+            return FileType.font
+        case image:
+            return FileType.image
+        case text:
+            return FileType.text
+        case video:
+            return FileType.video
         case xml:
             return FileType.xml
         default:
@@ -73,14 +85,22 @@ public class FileTypes {
 
     public static func toName(_ fileType: FileType) -> String {
         switch fileType {
-        case FileType.text:
-            "text"
-        case FileType.binary:
-            "binary"
         case FileType.archive:
             "archive"
+        case FileType.audio:
+            "audio"
+        case FileType.binary:
+            "binary"
         case FileType.code:
             "code"
+        case FileType.font:
+            "font"
+        case FileType.image:
+            "image"
+        case FileType.text:
+            "text"
+        case FileType.video:
+            "video"
         case FileType.xml:
             "xml"
         default:
@@ -89,9 +109,27 @@ public class FileTypes {
     }
 
     public func getFileType(_ fileName: String) -> FileType {
+        // most specific first
         if isCodeFile(fileName) {
             return FileType.code
         }
+        if isArchiveFile(fileName) {
+            return FileType.archive
+        }
+        if isAudioFile(fileName) {
+            return FileType.audio
+        }
+        if isFontFile(fileName) {
+            return FileType.font
+        }
+        if isImageFile(fileName) {
+            return FileType.image
+        }
+        if isVideoFile(fileName) {
+            return FileType.video
+        }
+
+        // most general last
         if isXmlFile(fileName) {
             return FileType.xml
         }
@@ -100,9 +138,6 @@ public class FileTypes {
         }
         if isBinaryFile(fileName) {
             return FileType.binary
-        }
-        if isArchiveFile(fileName) {
-            return FileType.archive
         }
         return FileType.unknown
     }
@@ -116,6 +151,10 @@ public class FileTypes {
         isFileOfType(fileName, FileTypes.archive)
     }
 
+    public func isAudioFile(_ fileName: String) -> Bool {
+        isFileOfType(fileName, FileTypes.audio)
+    }
+
     public func isBinaryFile(_ fileName: String) -> Bool {
         isFileOfType(fileName, FileTypes.binary)
     }
@@ -124,8 +163,20 @@ public class FileTypes {
         isFileOfType(fileName, FileTypes.code)
     }
 
+    public func isFontFile(_ fileName: String) -> Bool {
+        isFileOfType(fileName, FileTypes.font)
+    }
+
+    public func isImageFile(_ fileName: String) -> Bool {
+        isFileOfType(fileName, FileTypes.image)
+    }
+
     public func isTextFile(_ fileName: String) -> Bool {
         isFileOfType(fileName, FileTypes.text)
+    }
+
+    public func isVideoFile(_ fileName: String) -> Bool {
+        isFileOfType(fileName, FileTypes.video)
     }
 
     public func isUnknownFile(_ fileName: String) -> Bool {

@@ -43,18 +43,26 @@ void test_get_file_type_for_ext(void)
 
     char **exts = (char *[]) {
         "zip",
+        "mp3",
         "exe",
         "cpp",
+        "ttf",
+        "png",
         "txt",
+        "mp4",
         "xml",
         "dunno"
     };
-    size_t arrlen = 6;
-    FileType expected[6] = {
+    size_t arrlen = 10;
+    FileType expected[10] = {
         ARCHIVE,
+        AUDIO,
         BINARY,
         CODE,
+        FONT,
+        IMAGE,
         TEXT,
+        VIDEO,
         XML,
         UNKNOWN
     };
@@ -78,18 +86,26 @@ void test_is_file_type_for_ext(void)
 
     char **exts = (char *[]) {
         "zip",
+        "mp3",
         "exe",
         "cpp",
+        "ttf",
+        "png",
         "txt",
+        "mp4",
         "xml",
         "dunno"
     };
-    size_t arrlen = 6;
-    FileType expected[6] = {
+    size_t arrlen = 10;
+    FileType expected[10] = {
         ARCHIVE,
+        AUDIO,
         BINARY,
         CODE,
+        FONT,
+        IMAGE,
         TEXT,
+        VIDEO,
         XML,
         UNKNOWN
     };
@@ -103,6 +119,12 @@ void test_is_file_type_for_ext(void)
         printf("is_archive: %d\n", is_archive);
         assert(is_archive == expected_is_archive);
 
+        unsigned short expected_is_audio = expected[i] == AUDIO ? 1 : 0;
+        unsigned short is_audio = is_audio_ext(exts[i], file_types);
+        printf("expected_is_audio: %d\n", expected_is_audio);
+        printf("is_audio: %d\n", is_audio);
+        assert(is_audio == expected_is_audio);
+
         unsigned short expected_is_binary = expected[i] == BINARY ? 1 : 0;
         unsigned short is_binary = is_binary_ext(exts[i], file_types);
         printf("expected_is_binary: %d\n", expected_is_binary);
@@ -114,6 +136,24 @@ void test_is_file_type_for_ext(void)
         printf("expected_is_code: %d\n", expected_is_code);
         printf("is_code: %d\n", is_code);
         assert(is_code == expected_is_code);
+
+        unsigned short expected_is_font = expected[i] == FONT ? 1 : 0;
+        unsigned short is_font = is_font_ext(exts[i], file_types);
+        printf("expected_is_font: %d\n", expected_is_font);
+        printf("is_font: %d\n", is_font);
+        assert(is_font == expected_is_font);
+
+        unsigned short expected_is_image = expected[i] == IMAGE ? 1 : 0;
+        unsigned short is_image = is_image_ext(exts[i], file_types);
+        printf("expected_is_image: %d\n", expected_is_image);
+        printf("is_image: %d\n", is_image);
+        assert(is_image == expected_is_image);
+
+        unsigned short expected_is_video = expected[i] == VIDEO ? 1 : 0;
+        unsigned short is_video = is_video_ext(exts[i], file_types);
+        printf("expected_is_video: %d\n", expected_is_video);
+        printf("is_video: %d\n", is_video);
+        assert(is_video == expected_is_video);
 
         unsigned short expected_is_xml = expected[i] == XML ? 1 : 0;
         unsigned short is_xml = is_xml_ext(exts[i], file_types);
@@ -128,7 +168,7 @@ void test_is_file_type_for_ext(void)
         assert(is_text == expected_is_text);
 
         unsigned short expected_is_unknown = expected[i] == UNKNOWN ? 1 : 0;
-        unsigned short is_unknown = !is_archive && !is_binary && !is_code && !is_text && !is_xml;
+        unsigned short is_unknown = !is_archive && !is_audio && !is_binary && !is_code && !is_font && !is_image && !is_text && !is_video && !is_xml;
         printf("expected_is_unknown: %d\n", expected_is_unknown);
         printf("is_unknown: %d\n", is_unknown);
         assert(is_unknown == expected_is_unknown);

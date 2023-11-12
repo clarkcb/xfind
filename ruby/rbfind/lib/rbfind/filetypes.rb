@@ -9,15 +9,19 @@ module RbFind
   module FileType
     UNKNOWN = 0
     ARCHIVE = 1
-    BINARY  = 2
-    CODE    = 3
-    TEXT    = 4
-    XML     = 5
+    AUDIO   = 2
+    BINARY  = 3
+    CODE    = 4
+    FONT    = 5
+    IMAGE   = 6
+    TEXT    = 7
+    VIDEO   = 8
+    XML     = 9
   end
 
   # FileTypes - provides basic file type information
   class FileTypes
-    FILE_TYPE_NAMES = %w[UNKNOWN ARCHIVE BINARY CODE TEXT XML].freeze
+    FILE_TYPE_NAMES = %w[UNKNOWN ARCHIVE AUDIO BINARY CODE FONT IMAGE TEXT VIDEO XML].freeze
 
     def initialize
       set_file_type_maps_from_json
@@ -57,16 +61,27 @@ module RbFind
     end
 
     def get_file_type(file_name)
+      # more specific first
       if code_file?(file_name)
         FileType::CODE
+      elsif archive_file?(file_name)
+        FileType::ARCHIVE
+      elsif audio_file?(file_name)
+        FileType::AUDIO
+      elsif font_file?(file_name)
+        FileType::FONT
+      elsif image_file?(file_name)
+        FileType::IMAGE
+      elsif video_file?(file_name)
+        FileType::VIDEO
+
+      # more general last
       elsif xml_file?(file_name)
         FileType::XML
       elsif text_file?(file_name)
         FileType::TEXT
       elsif binary_file?(file_name)
         FileType::BINARY
-      elsif archive_file?(file_name)
-        FileType::ARCHIVE
       else
         FileType::UNKNOWN
       end
@@ -75,6 +90,11 @@ module RbFind
     def archive_file?(file_name)
       @file_type_name_map['archive'].include?(file_name) ||
       @file_type_ext_map['archive'].include?(FileUtil.get_extension(file_name))
+    end
+
+    def audio_file?(file_name)
+      @file_type_name_map['audio'].include?(file_name) ||
+      @file_type_ext_map['audio'].include?(FileUtil.get_extension(file_name))
     end
 
     def binary_file?(file_name)
@@ -87,9 +107,24 @@ module RbFind
       @file_type_ext_map['code'].include?(FileUtil.get_extension(file_name))
     end
 
+    def font_file?(file_name)
+      @file_type_name_map['font'].include?(file_name) ||
+      @file_type_ext_map['font'].include?(FileUtil.get_extension(file_name))
+    end
+
+    def image_file?(file_name)
+      @file_type_name_map['image'].include?(file_name) ||
+      @file_type_ext_map['image'].include?(FileUtil.get_extension(file_name))
+    end
+
     def text_file?(file_name)
       @file_type_name_map['text'].include?(file_name) ||
       @file_type_ext_map['text'].include?(FileUtil.get_extension(file_name))
+    end
+
+    def video_file?(file_name)
+      @file_type_name_map['video'].include?(file_name) ||
+      @file_type_ext_map['video'].include?(FileUtil.get_extension(file_name))
     end
 
     def xml_file?(file_name)

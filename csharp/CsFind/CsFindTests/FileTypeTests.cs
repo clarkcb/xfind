@@ -17,6 +17,13 @@ public class FileTypesTests
 	}
 
 	[Test]
+	public void GetFileType_AudioFile_FileTypeAudio()
+	{
+		var audioFile = new FileInfo("music.mp3");
+		Assert.AreEqual(FileType.Audio, _fileTypes.GetFileType(audioFile));
+	}
+
+	[Test]
 	public void GetFileType_BinaryFile_FileTypeBinary()
 	{
 		var binaryFile = new FileInfo("binary.exe");
@@ -31,10 +38,31 @@ public class FileTypesTests
 	}
 
 	[Test]
+	public void GetFileType_FontFile_FileTypeCode()
+	{
+		var fontFile = new FileInfo("font.ttf");
+		Assert.AreEqual(FileType.Font, _fileTypes.GetFileType(fontFile));
+	}
+
+	[Test]
+	public void GetFileType_ImageFile_FileTypeImage()
+	{
+		var imageFile = new FileInfo("image.png");
+		Assert.AreEqual(FileType.Image, _fileTypes.GetFileType(imageFile));
+	}
+
+	[Test]
 	public void GetFileType_TextFile_FileTypeText()
 	{
 		var textFile = new FileInfo("text.txt");
 		Assert.AreEqual(FileType.Text, _fileTypes.GetFileType(textFile));
+	}
+
+	[Test]
+	public void GetFileType_VideoFile_FileTypeVideo()
+	{
+		var videoFile = new FileInfo("movie.mp4");
+		Assert.AreEqual(FileType.Video, _fileTypes.GetFileType(videoFile));
 	}
 
 	[Test]
@@ -59,6 +87,13 @@ public class FileTypesTests
 	}
 
 	[Test]
+	public void IsAudioFile_AudioFile_True()
+	{
+		var audioFile = new FileInfo("music.mp3");
+		Assert.IsTrue(_fileTypes.IsAudioFile(audioFile));
+	}
+
+	[Test]
 	public void IsBinaryFile_BinaryFile_True()
 	{
 		var binaryFile = new FileInfo("binary.exe");
@@ -73,10 +108,31 @@ public class FileTypesTests
 	}
 
 	[Test]
+	public void IsFontFile_FontFile_True()
+	{
+		var fontFile = new FileInfo("font.ttf");
+		Assert.IsTrue(_fileTypes.IsFontFile(fontFile));
+	}
+
+	[Test]
+	public void IsTextFile_ImageFile_True()
+	{
+		var imageFile = new FileInfo("image.png");
+		Assert.IsTrue(_fileTypes.IsImageFile(imageFile));
+	}
+
+	[Test]
 	public void IsTextFile_TextFile_True()
 	{
 		var textFile = new FileInfo("text.txt");
 		Assert.IsTrue(_fileTypes.IsTextFile(textFile));
+	}
+
+	[Test]
+	public void IsVideoFile_VideoFile_True()
+	{
+		var videoFile = new FileInfo("movie.mp4");
+		Assert.IsTrue(_fileTypes.IsVideoFile(videoFile));
 	}
 
 	[Test]

@@ -17,6 +17,15 @@ describe('testing filetypes', () => {
         expect(type).toBe(FileType.Archive);
     });
 
+    it('testFileTypesAudioFile', () => {
+        const filename = 'music.mp3';
+        const res: boolean = FileTypes.isAudioFile(filename);
+        expect(res).toBeTruthy();
+
+        const type: FileType = FileTypes.getFileType(filename);
+        expect(type).toBe(FileType.Audio);
+    });
+
     it('testFileTypesBinaryFile', () => {
         const filename = 'binary.exe';
         const res: boolean = FileTypes.isBinaryFile(filename);
@@ -35,6 +44,24 @@ describe('testing filetypes', () => {
         expect(type).toBe(FileType.Code);
     });
 
+    it('testFileTypesFontFile', () => {
+        const filename = 'font.ttf';
+        const res: boolean = FileTypes.isFontFile(filename);
+        expect(res).toBeTruthy();
+
+        const type: FileType = FileTypes.getFileType(filename);
+        expect(type).toBe(FileType.Font);
+    });
+
+    it('testFileTypesImageFile', () => {
+        const filename = 'image.png';
+        const res: boolean = FileTypes.isImageFile(filename);
+        expect(res).toBeTruthy();
+
+        const type: FileType = FileTypes.getFileType(filename);
+        expect(type).toBe(FileType.Image);
+    });
+
     it('testFileTypesTextFile', () => {
         const filename = 'text.txt';
         const res: boolean = FileTypes.isTextFile(filename);
@@ -42,6 +69,15 @@ describe('testing filetypes', () => {
 
         const type: FileType = FileTypes.getFileType(filename);
         expect(type).toBe(FileType.Text);
+    });
+
+    it('testFileTypesVideoFile', () => {
+        const filename = 'movie.mp4';
+        const res: boolean = FileTypes.isVideoFile(filename);
+        expect(res).toBeTruthy();
+
+        const type: FileType = FileTypes.getFileType(filename);
+        expect(type).toBe(FileType.Video);
     });
 
     it('testFileTypesXmlFile', () => {

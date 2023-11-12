@@ -8,18 +8,26 @@ open System.Text.Json
 type FileType = 
     | Unknown = 0
     | Archive = 1
-    | Binary  = 2
-    | Code    = 3
-    | Text    = 4
-    | Xml     = 5
+    | Audio   = 2
+    | Binary  = 3
+    | Code    = 4
+    | Font    = 5
+    | Image   = 6
+    | Text    = 7
+    | Video   = 8
+    | Xml     = 9
 
 type FileTypesDictionary = Dictionary<string, List<Dictionary<string,Object>>>
 
 type FileTypes() =
     static let archive = "archive"
+    static let audio = "audio"
     static let binary = "binary"
     static let code = "code"
+    static let font = "font"
+    static let image = "image"
     static let text = "text"
+    static let video = "video"
     static let xml = "xml"
 
     let PopulateFileTypesFromJson (jsonString : string) =
@@ -58,33 +66,51 @@ type FileTypes() =
 
     static member FromName (name : string) : FileType =
         let lname = name.ToLowerInvariant()
-        if lname.Equals(text) then FileType.Text
+        if lname.Equals(archive) then FileType.Archive
+        else if lname.Equals(audio) then FileType.Audio
         else if lname.Equals(binary) then FileType.Binary
-        else if lname.Equals(archive) then FileType.Archive
         else if lname.Equals(code) then FileType.Code
+        else if lname.Equals(font) then FileType.Font
+        else if lname.Equals(image) then FileType.Image
+        else if lname.Equals(text) then FileType.Text
+        else if lname.Equals(video) then FileType.Video
         else if lname.Equals(xml) then FileType.Xml
         else FileType.Unknown
 
     static member ToName (fileType : FileType) : string =
         match fileType with
         | FileType.Archive -> "Archive"
+        | FileType.Audio -> "Audio"
         | FileType.Binary -> "Binary"
         | FileType.Code -> "Code"
+        | FileType.Font -> "Font"
+        | FileType.Image -> "Image"
         | FileType.Text -> "Text"
+        | FileType.Video -> "Video"
         | FileType.Xml -> "Xml"
         | _ -> "Unknown"
 
     member this.GetFileType (f : FileInfo) : FileType =
-        if this.IsArchiveFile f then FileType.Archive
-        else if this.IsBinaryFile f then FileType.Binary
-        else if this.IsCodeFile f then FileType.Code
+        // most specific first
+        if this.IsCodeFile f then FileType.Code
+        else if this.IsArchiveFile f then FileType.Archive
+        else if this.IsAudioFile f then FileType.Audio
+        else if this.IsFontFile f then FileType.Font
+        else if this.IsImageFile f then FileType.Image
+        else if this.IsVideoFile f then FileType.Video
+        // most general last
         else if this.IsXmlFile f then FileType.Xml
         else if this.IsTextFile f then FileType.Text
+        else if this.IsBinaryFile f then FileType.Binary
         else FileType.Unknown
 
     member this.IsArchiveFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[archive] ||
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[archive]
+
+    member this.IsAudioFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[audio] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[audio]
 
     member this.IsBinaryFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[binary] ||
@@ -94,9 +120,21 @@ type FileTypes() =
         Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[code] ||
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[code]
 
+    member this.IsFontFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[font] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[font]
+
+    member this.IsImageFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[image] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[image]
+
     member this.IsTextFile (f : FileInfo) : bool =
         Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[text] ||
         Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[text]
+
+    member this.IsVideoFile (f : FileInfo) : bool =
+        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[video] ||
+        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[video]
 
     member this.IsUnknownFile (f : FileInfo) : bool =
         (this.GetFileType f) = FileType.Unknown

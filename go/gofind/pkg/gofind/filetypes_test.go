@@ -4,12 +4,16 @@ import "testing"
 
 func TestGetFileType(t *testing.T) {
 	expected := map[string]FileType{
-		"hello.txt":             FiletypeText,
-		"filetypes.go":          FiletypeCode,
-		"markup.xml":            FiletypeXml,
-		"lib.a":                 FiletypeBinary,
-		"noext":                 FiletypeUnknown,
 		"archive.tar.gz":        FiletypeArchive,
+		"music.mp3":             FiletypeAudio,
+		"lib.a":                 FiletypeBinary,
+		"filetypes.go":          FiletypeCode,
+		"font.ttf":              FiletypeFont,
+		"image.png":             FiletypeImage,
+		"hello.txt":             FiletypeText,
+		"movie.mp4":             FiletypeVideo,
+		"markup.xml":            FiletypeXml,
+		"noext":                 FiletypeUnknown,
 		"nonsense.zippitydooda": FiletypeUnknown,
 	}
 
