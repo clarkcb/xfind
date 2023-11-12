@@ -173,7 +173,7 @@ class Finder {
         //     return false;
         // }
         if (this.settings.inArchiveExtensions.length || this.settings.outArchiveExtensions.length) {
-            let ext = FileUtil.getExtension(fr.fileName);
+            let ext = FileUtil.getExtension(file);
             if ((this.settings.inArchiveExtensions.length &&
                     !this.matchesAnyElement(ext, this.settings.inArchiveExtensions)) ||
                 (this.settings.outArchiveExtensions.length &&
@@ -229,23 +229,24 @@ class Finder {
         let findDirs = [];
         let fileResults = [];
         let files = await fsReaddirAsync(currentDir);
-        files.map(f => {
+        let filePaths = files.map(f => {
             return path.join(currentDir, f);
-        }).forEach(fp => {
-            const stats = fs.statSync(fp);
+        });
+        for (let filePath of filePaths) {
+            const stats = fs.statSync(filePath);
             if (stats.isDirectory()) {
-                if (this.settings.recursive && this.isMatchingDir(fp)) {
-                    findDirs.push(fp);
+                if (this.settings.recursive && this.isMatchingDir(filePath)) {
+                    findDirs.push(filePath);
                 }
             } else if (stats.isFile()) {
                 if (depth >= this.settings.minDepth) {
-                    const fr = this.filterToFileResult(fp);
+                    const fr = await this.filterToFileResult(filePath);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
                 }
             }
-        });
+        }
 
         const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, depth + 1)));
         subDirFindFileArrays.forEach(subDirFindFiles => {
