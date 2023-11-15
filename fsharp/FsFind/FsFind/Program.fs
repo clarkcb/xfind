@@ -3,8 +3,8 @@ namespace FsFind
 module Main =
 
     let HandleError (err : string) : unit =
-        Common.Log("");
-        Common.LogError err
+        Logger.Log("");
+        Logger.LogError err
         FindOptions.Usage(1)
 
     let Find (settings : FindSettings) : unit =
@@ -34,7 +34,7 @@ module Main =
                 HandleError err
 
             if settings.Debug then
-                Common.Log $"settings: %s{settings.ToString}"
+                Logger.Log $"settings: %s{settings.ToString}"
 
             if settings.PrintUsage then
                 FindOptions.Usage(0)

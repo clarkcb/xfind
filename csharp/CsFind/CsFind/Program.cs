@@ -14,7 +14,7 @@ static class Program
 
 			if (settings.Debug)
 			{
-				Common.Log("settings: " + settings + "\n");
+				Logger.Log("settings: " + settings + "\n");
 			}
 
 			if (settings.PrintUsage)
@@ -37,8 +37,8 @@ static class Program
 		}
 		catch (FindException e)
 		{
-			Common.Log("");
-			Common.LogError(e.Message);
+			Logger.Log("");
+			Logger.LogError(e.Message);
 			options.Usage(1);
 		}
 	}

@@ -326,13 +326,13 @@ public class Finder
 			.Select(d => GetRelativePath(d.FullName))
 			.ToList();
 		if (matchingDirs.Any()) {
-			Common.Log($"\nMatching directories ({matchingDirs.Count}):");
+			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
 			foreach (var d in matchingDirs)
 			{
-				Common.Log(d);
+				Logger.Log(d);
 			}
 		} else {
-			Common.Log("\nMatching directories: 0");
+			Logger.Log("\nMatching directories: 0");
 		}
 	}
 
@@ -349,13 +349,13 @@ public class Finder
 			.Select(f => GetRelativePath(f.FullName))
 			.ToList();
 		if (matchingFiles.Any()) {
-			Common.Log($"\nMatching files ({matchingFiles.Count}):");
+			Logger.Log($"\nMatching files ({matchingFiles.Count}):");
 			foreach (var f in matchingFiles)
 			{
-				Common.Log(f);
+				Logger.Log(f);
 			}
 		} else {
-			Common.Log("\nMatching files: 0");
+			Logger.Log("\nMatching files: 0");
 		}
 	}
 }

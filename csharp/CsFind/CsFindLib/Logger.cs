@@ -2,7 +2,7 @@
 
 namespace CsFindLib;
 
-public static class Common
+public static class Logger
 {
 	public static void Log(string message)
 	{
