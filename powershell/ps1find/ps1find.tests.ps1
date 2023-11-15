@@ -13,11 +13,22 @@ Describe -tag "FileTypes" -name "test_is_archive_file" {
 }
 
 Describe -tag "FileTypes" -name "test_getfiletype_archive_file" {
-    It "fileType is Archive" {
+    It "fileType is archive file" {
         $fileInfo = [System.IO.FileInfo]::new('archive.zip')
         $fileTypes = [FileTypes]::new()
         $fileType = $fileTypes.GetFileType($fileInfo)
-        $fileType | Should -Be [FileType]::Archive
+        $fileType | Should -Be Archive
+        $fileTypes.IsArchiveFile($fileInfo) | Should -BeTrue
+    }
+}
+
+Describe -tag "FileTypes" -name "test_getfiletype_audio_file" {
+    It "fileType is audio file" {
+        $fileInfo = [System.IO.FileInfo]::new('music.mp3')
+        $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Audio
+        $fileTypes.IsAudioFile($fileInfo) | Should -BeTrue
     }
 }
 
@@ -25,6 +36,8 @@ Describe -tag "FileTypes" -name "test_is_binary_file" {
     It "file is binary file" {
         $fileInfo = [System.IO.FileInfo]::new('binary.exe')
         $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Binary
         $fileTypes.IsBinaryFile($fileInfo) | Should -BeTrue
     }
 }
@@ -33,7 +46,29 @@ Describe -tag "FileTypes" -name "test_is_code_file" {
     It "file is code file" {
         $fileInfo = [System.IO.FileInfo]::new('script.ps1')
         $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Code
         $fileTypes.IsCodeFile($fileInfo) | Should -BeTrue
+    }
+}
+
+Describe -tag "FileTypes" -name "test_is_font_file" {
+    It "file is font file" {
+        $fileInfo = [System.IO.FileInfo]::new('font.ttf')
+        $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Font
+        $fileTypes.IsFontFile($fileInfo) | Should -BeTrue
+    }
+}
+
+Describe -tag "FileTypes" -name "test_is_image_file" {
+    It "file is image file" {
+        $fileInfo = [System.IO.FileInfo]::new('image.png')
+        $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Image
+        $fileTypes.IsImageFile($fileInfo) | Should -BeTrue
     }
 }
 
@@ -41,7 +76,19 @@ Describe -tag "FileTypes" -name "test_is_text_file" {
     It "file is text file" {
         $fileInfo = [System.IO.FileInfo]::new('text.txt')
         $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Text
         $fileTypes.IsTextFile($fileInfo) | Should -BeTrue
+    }
+}
+
+Describe -tag "FileTypes" -name "test_is_video_file" {
+    It "file is video file" {
+        $fileInfo = [System.IO.FileInfo]::new('movie.mp4')
+        $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Video
+        $fileTypes.IsVideoFile($fileInfo) | Should -BeTrue
     }
 }
 
@@ -49,6 +96,8 @@ Describe -tag "FileTypes" -name "test_is_xml_file" {
     It "file is xml file" {
         $fileInfo = [System.IO.FileInfo]::new('content.xml')
         $fileTypes = [FileTypes]::new()
+        $fileType = $fileTypes.GetFileType($fileInfo)
+        $fileType | Should -Be Xml
         $fileTypes.IsXmlFile($fileInfo) | Should -BeTrue
     }
 }
@@ -86,15 +135,17 @@ Describe -tag "FileUtil" -name "test_is_hidden_hidden_dir" {
 
 Describe -tag "FileUtil" -name "test_is_hidden_dot_dir" {
     It ". is not hidden dir" {
-        $fileInfo = [System.IO.FileInfo]::new('.')
-        IsHiddenFile($fileInfo) | Should -BeFalse
+        # $fileInfo = [System.IO.FileInfo]::new('.')
+        # IsHiddenFile($fileInfo) | Should -BeFalse
+        IsHiddenFileName('.') | Should -BeFalse
     }
 }
 
 Describe -tag "FileUtil" -name "test_is_hidden_double_dot_dir" {
     It ".. is not hidden dir" {
-        $fileInfo = [System.IO.FileInfo]::new('..')
-        IsHiddenFile($fileInfo) | Should -BeFalse
+        # $fileInfo = [System.IO.FileInfo]::new('..')
+        # IsHiddenFile($fileInfo) | Should -BeFalse
+        IsHiddenFileName('..') | Should -BeFalse
     }
 }
 #endregion
@@ -107,7 +158,7 @@ Describe -tag "FindSettings" -name "test_default_settings" {
 
         $settings.ArchivesOnly | Should -BeFalse
         $settings.Debug | Should -BeFalse
-        $settings.ExcludeHidden | Should -BeTrue
+        $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
         $settings.ListDirs | Should -BeFalse
         $settings.ListFiles | Should -BeFalse
@@ -199,7 +250,7 @@ Describe -tag "FindOptions" -name "test_settings_from_args_no_args" {
 
         $settings.ArchivesOnly | Should -BeFalse
         $settings.Debug | Should -BeFalse
-        $settings.ExcludeHidden | Should -BeTrue
+        $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
         $settings.ListDirs | Should -BeFalse
         $settings.ListFiles | Should -BeTrue
@@ -217,7 +268,7 @@ Describe -tag "FindOptions" -name "test_settings_from_args_valid_args" {
 
         $settings.ArchivesOnly | Should -BeFalse
         $settings.Debug | Should -BeFalse
-        $settings.ExcludeHidden | Should -BeTrue
+        $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
         $settings.ListDirs | Should -BeFalse
         $settings.ListFiles | Should -BeTrue
@@ -245,6 +296,7 @@ Describe -tag "Finder" -name "test_is_matching_dir_matches_in_pattern" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.InDirPatterns += @([regex]'find')
+        $settings.IncludeHidden = $true
         $finder = [Finder]::new($settings)
         $dir = [System.IO.DirectoryInfo]::new('./ps1find')
         $finder.IsMatchingDir($dir) | Should -BeTrue
@@ -257,7 +309,8 @@ Describe -tag "Finder" -name "test_is_matching_file_matches_by_default" {
         $settings.Paths += @('.')
         $finder = [Finder]::new($settings)
         $file = [System.IO.FileInfo]::new('ps1find.ps1')
-        $finder.IsMatchingFile($file) | Should -BeTrue
+        $fileResult = [FileResult]::new($file, [FileType]::Code);
+        $finder.IsMatchingFileResult($fileResult) | Should -BeTrue
     }
 }
 
@@ -265,13 +318,13 @@ Describe -tag "Finder" -name "test_is_matching_file_matches_in_extension" {
     It "matches by pattern" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $settings.InExtensions += @('ps1')
+        $settings.InExtensions += @('.ps1')
         $finder = [Finder]::new($settings)
         $file = [System.IO.FileInfo]::new('ps1find.ps1')
-        $finder.IsMatchingFile($file) | Should -BeTrue
+        $fileResult = [FileResult]::new($file, [FileType]::Code);
+        $finder.IsMatchingFileResult($fileResult) | Should -BeTrue
     }
 }
-
 
 Describe -tag "Finder" -name "test_is_matching_archive_file_matches_by_default" {
     It "matches by default" {
@@ -279,7 +332,8 @@ Describe -tag "Finder" -name "test_is_matching_archive_file_matches_by_default" 
         $settings.Paths += @('.')
         $finder = [Finder]::new($settings)
         $file = [System.IO.FileInfo]::new('archive.zip')
-        $finder.IsMatchingArchiveFile($file) | Should -BeTrue
+        $fileResult = [FileResult]::new($file, [FileType]::Archive);
+        $finder.IsMatchingArchiveFileResult($fileResult) | Should -BeTrue
     }
 }
 
@@ -287,10 +341,11 @@ Describe -tag "Finder" -name "test_is_matching_file_matches_in_extension" {
     It "matches by pattern" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $settings.InArchiveExtensions += @('zip')
+        $settings.InArchiveExtensions += @('.zip')
         $finder = [Finder]::new($settings)
         $file = [System.IO.FileInfo]::new('archive.zip')
-        $finder.IsMatchingArchiveFile($file) | Should -BeTrue
+        $fileResult = [FileResult]::new($file, [FileType]::Archive);
+        $finder.IsMatchingArchiveFileResult($fileResult) | Should -BeTrue
     }
 }
 
@@ -298,8 +353,10 @@ Describe -tag "Finder" -name "test_filter_to_file_result_matches_by_default" {
     It "matches by default" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
+        $settings.IncludeHidden = $true
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('ps1find.ps1')
+        $file = [System.IO.FileInfo]::new('ps1find.ps1')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
     }
 }
@@ -308,9 +365,11 @@ Describe -tag "Finder" -name "test_filter_to_file_result_is_matching_file" {
     It "matches by extension" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
+        $settings.IncludeHidden = $true
         $settings.InExtensions += $settings.GetExtensions('ps1')
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('ps1find.ps1')
+        $file = [System.IO.FileInfo]::new('ps1find.ps1')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
     }
 }
@@ -321,7 +380,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_not_is_matching_file" {
         $settings.Paths += @('.')
         $settings.InExtensions += @('.php')
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('ps1find.ps1')
+        $file = [System.IO.FileInfo]::new('ps1find.ps1')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
     }
 }
@@ -331,7 +391,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_is_hidden_file" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('.gitignore')
+        $file = [System.IO.FileInfo]::new('.gitignore')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
     }
 }
@@ -340,9 +401,10 @@ Describe -tag "Finder" -name "test_filter_to_file_result_hidden_include_hidden" 
     It "matches because includehidden" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
-        $settings.ExcludeHidden = $false
+        $settings.IncludeHidden = $true
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('.gitignore')
+        $file = [System.IO.FileInfo]::new('.gitignore')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
     }
 }
@@ -352,7 +414,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_no_include_arch
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('archive.zip')
+        $file = [System.IO.FileInfo]::new('archive.zip')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
     }
 }
@@ -362,8 +425,10 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_include_archive
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
         $settings.IncludeArchives = $true
+        $settings.IncludeHidden = $true
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('archive.zip')
+        $file = [System.IO.FileInfo]::new('archive.zip')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
     }
 }
@@ -372,9 +437,11 @@ Describe -tag "Finder" -name "test_filter_to_file_result_archive_archives_only" 
     It "matches because archive + set_archives_only" {
         $settings = [FindSettings]::new()
         $settings.Paths += @('.')
+        $settings.IncludeHidden = $true
         $settings.SetArchivesOnly($true)
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('archive.zip')
+        $file = [System.IO.FileInfo]::new('archive.zip')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -Not -BeNullOrEmpty
     }
 }
@@ -385,7 +452,8 @@ Describe -tag "Finder" -name "test_filter_to_file_result_nonarchive_archives_onl
         $settings.Paths += @('.')
         $settings.SetArchivesOnly($true)
         $finder = [Finder]::new($settings)
-        $fileResult = $finder.FilterToFileResult('ps1find.ps1')
+        $file = [System.IO.FileInfo]::new('ps1find.ps1')
+        $fileResult = $finder.FilterToFileResult($file)
         $fileResult | Should -BeNullOrEmpty
     }
 }

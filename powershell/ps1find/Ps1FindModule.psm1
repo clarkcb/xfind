@@ -28,16 +28,20 @@ $dotPaths = @('.', '..')
 
 function IsDotDir {
     param([System.IO.FileSystemInfo]$f)
-
     return $dotPaths.Contains($f.Name)
+}
+
+function IsHiddenFileName {
+    [OutputType([bool])]
+    param([string]$fileName)
+    return ($fileName.StartsWith('.') -and (-not ($dotPaths.Contains($fileName))))
 }
 
 function IsHiddenFile {
     [OutputType([bool])]
     param([System.IO.FileSystemInfo]$f)
-
     return ($f.Attributes.HasFlag([System.IO.FileAttributes]::Hidden)) -or
-        ($f.Name.StartsWith('.') -and (-not (IsDotDir $f.Name)))
+        (IsHiddenFileName $f.Name)
 }
 
 function IsReadableFile {
@@ -53,6 +57,12 @@ function IsReadableFile {
     }
     return $readable
 }
+
+function PathElems {
+    [OutputType([int])]
+    param([string]$path)
+    ($path -split [System.IO.Path]::DirectorySeparatorChar).Count
+}
 #endregion
 
 
@@ -63,9 +73,13 @@ function IsReadableFile {
 enum FileType {
     Unknown
     Archive
+    Audio
     Binary
     Code
+    Font
+    Image
     Text
+    Video
     Xml
 }
 
@@ -76,9 +90,13 @@ function GetFileTypeFromName {
     switch ($name.ToUpper())
     {
         'ARCHIVE' {return [FileType]::Archive}
+        'AUDIO'   {return [FileType]::Audio}
         'BINARY'  {return [FileType]::Binary}
         'CODE'    {return [FileType]::Code}
+        'FONT'    {return [FileType]::Font}
+        'IMAGE'   {return [FileType]::Image}
         'TEXT'    {return [FileType]::Text}
+        'VIDEO'   {return [FileType]::Video}
         'XML'     {return [FileType]::Xml}
     }
     return [FileType]::Unknown
@@ -111,9 +129,27 @@ class FileTypes {
     }
 
     [FileType]GetFileType([System.IO.FileInfo]$fileInfo) {
+        # most specific types first
         if ($this.IsCodeFile($fileInfo)) {
             return [FileType]::Code
         }
+        if ($this.IsArchiveFile($fileInfo)) {
+            return [FileType]::Archive
+        }
+        if ($this.IsAudioFile($fileInfo)) {
+            return [FileType]::Audio
+        }
+        if ($this.IsFontFile($fileInfo)) {
+            return [FileType]::Font
+        }
+        if ($this.IsImageFile($fileInfo)) {
+            return [FileType]::Image
+        }
+        if ($this.IsVideoFile($fileInfo)) {
+            return [FileType]::Video
+        }
+
+        # most general types last
         if ($this.IsXmlFile($fileInfo)) {
             return [FileType]::Xml
         }
@@ -123,15 +159,17 @@ class FileTypes {
         if ($this.IsBinaryFile($fileInfo)) {
             return [FileType]::Binary
         }
-        if ($this.IsArchiveFile($fileInfo)) {
-            return [FileType]::Archive
-        }
         return [FileType]::Unknown
     }
 
     [bool]IsArchiveFile([System.IO.FileInfo]$fileInfo) {
         return $fileInfo.Extension -in $this.FileTypeExtMap['archive'] -or
         $fileInfo.Name -in $this.FileTypeNameMap['archive']
+    }
+
+    [bool]IsAudioFile([System.IO.FileInfo]$fileInfo) {
+        return $fileInfo.Extension -in $this.FileTypeExtMap['audio'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['audio']
     }
 
     [bool]IsBinaryFile([System.IO.FileInfo]$fileInfo) {
@@ -142,6 +180,16 @@ class FileTypes {
     [bool]IsCodeFile([System.IO.FileInfo]$fileInfo) {
         return $fileInfo.Extension -in $this.FileTypeExtMap['code'] -or
         $fileInfo.Name -in $this.FileTypeNameMap['code']
+    }
+
+    [bool]IsFontFile([System.IO.FileInfo]$fileInfo) {
+        return $fileInfo.Extension -in $this.FileTypeExtMap['font'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['font']
+    }
+
+    [bool]IsImageFile([System.IO.FileInfo]$fileInfo) {
+        return $fileInfo.Extension -in $this.FileTypeExtMap['image'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['image']
     }
 
     [bool]IsSearchableFile([System.IO.FileInfo]$fileInfo) {
@@ -156,6 +204,11 @@ class FileTypes {
     [bool]IsUnknownFile([System.IO.FileInfo]$fileInfo) {
         return $fileInfo.Extension -in $this.FileTypeExtMap['unknown'] -or
             $this.GetFileType($fileInfo) -eq [FileType]::Unknown
+    }
+
+    [bool]IsVideoFile([System.IO.FileInfo]$fileInfo) {
+        return $fileInfo.Extension -in $this.FileTypeExtMap['video'] -or
+        $fileInfo.Name -in $this.FileTypeNameMap['video']
     }
 
     [bool]IsXmlFile([System.IO.FileInfo]$fileInfo) {
@@ -196,9 +249,9 @@ function GetSortByFromName {
 class FindSettings {
     [bool]$ArchivesOnly
     [bool]$Debug
-    [bool]$ExcludeHidden
     [string[]]$InArchiveExtensions
     [Regex[]]$InArchiveFilePatterns
+    [bool]$IncludeHidden
     [Regex[]]$InDirPatterns
     [string[]]$InExtensions
     [Regex[]]$InFilePatterns
@@ -230,9 +283,9 @@ class FindSettings {
     FindSettings() {
 		$this.ArchivesOnly = $false
 		$this.Debug = $false
-		$this.ExcludeHidden = $true
 		$this.InArchiveExtensions = @()
 		$this.InArchiveFilePatterns = @()
+		$this.IncludeHidden = $false
 		$this.InDirPatterns = @()
 		$this.InExtensions = @()
 		$this.InFilePatterns = @()
@@ -305,9 +358,9 @@ class FindSettings {
         return "FindSettings(" +
             "ArchivesOnly: $($this.ArchivesOnly)" +
             ", Debug: $($this.Debug)" +
-            ", ExcludeHidden: $($this.ExcludeHidden)" +
             ", InArchiveExtensions: $($this.StringArrayToString($this.InArchiveExtensions))" +
             ", InArchiveFilePatterns: $($this.StringArrayToString($this.InArchiveFilePatterns))" +
+            ", IncludeHidden: $($this.IncludeHidden)" +
             ", InDirPatterns: $($this.StringArrayToString($this.InDirPatterns))" +
             ", InExtensions: $($this.StringArrayToString($this.InExtensions))" +
             ", InFilePatterns: $($this.StringArrayToString($this.InFilePatterns))" +
@@ -468,7 +521,7 @@ class FindOptions {
         }
         "excludehidden" = {
             param([bool]$b, [FindSettings]$settings)
-            $settings.ExcludeHidden = $b
+            $settings.IncludeHidden = !$b
         }
         "help" = {
             param([bool]$b, [FindSettings]$settings)
@@ -480,7 +533,7 @@ class FindOptions {
         }
         "includehidden" = {
             param([bool]$b, [FindSettings]$settings)
-            $settings.ExcludeHidden = !$b
+            $settings.IncludeHidden = $b
         }
         "listdirs" = {
             param([bool]$b, [FindSettings]$settings)
@@ -676,7 +729,7 @@ class Finder {
 
     [Scriptblock[]]GetMatchingDirTests() {
         $tests = @()
-        if ($this.settings.ExcludeHidden) {
+        if (-not $this.settings.IncludeHidden) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
                 return !(IsHiddenFile $d)
@@ -727,7 +780,7 @@ class Finder {
         return $tests
     }
 
-    [bool]IsMatchingArchiveFile([FileResult]$f) {
+    [bool]IsMatchingArchiveFileResult([FileResult]$f) {
         return @($this.archiveFileTests | Where-Object { $_.Invoke($f) }).Count -eq $this.archiveFileTests.Count
     }
 
@@ -805,9 +858,12 @@ class Finder {
 
     [FileResult]FilterToFileResult([System.IO.FileInfo]$file) {
         # Write-Host "FilterToFileResult($file)"
+        if ((-not $this.settings.IncludeHidden) -and (IsHiddenFile($file))) {
+            return $null
+        }
         $fileResult = [FileResult]::new($file, $this.fileTypes.GetFileType($file))
         if ($fileResult.Type -eq [FileType]::Archive) {
-            if ($this.settings.IncludeArchives -and $this.IsMatchingArchiveFile($fileResult)) {
+            if ($this.settings.IncludeArchives -and $this.IsMatchingArchiveFileResult($fileResult)) {
                 return $fileResult
             }
             return $null
@@ -843,14 +899,14 @@ class Finder {
             if ($this.settings.MaxDepth -gt 0) {
                 $getPathFileResultsString += " -Depth $($this.settings.MaxDepth)"
             }
-            if (-not $this.settings.ExcludeHidden) {
+            if ($this.settings.IncludeHidden) {
                 $getPathFileResultsString += " -Force"
             }
             $getPathFileResultsString += " |`n"
             $getPathFileResultsString += "Where-Object -FilterScript `$checkDir |`n"
         } else {
             $getPathFileResultsString += " -Recurse:`$false"
-            if (-not $this.settings.ExcludeHidden) {
+            if ($this.settings.IncludeHidden) {
                 $getPathFileResultsString += " -Force"
             }
             $getPathFileResultsString += " |`n"
@@ -865,6 +921,19 @@ class Finder {
                 # if max_depth is zero, we can skip since a directory cannot be a result
                 if ($this.settings.MaxDepth -ne 0) {
                     $fileResults += $getPathFileResults.Invoke($path)
+                }
+                # if min_depth > zero, we need to filter results
+                if ($this.settings.MinDepth -gt 0) {
+                    $pathFile = [System.IO.FileInfo]::new($path)
+                    $pathDepth = PathElems($pathFile.FullName)
+                    $minDepthFileResults = @()
+                    foreach ($fileResult in $fileResults) {
+                        $fileResultDepth = PathElems($fileResult.File.FullName)
+                        if ($fileResultDepth - $pathDepth -ge $this.settings.MinDepth) {
+                            $minDepthFileResults += $fileResult
+                        }
+                    }
+                    $fileResults = $minDepthFileResults
                 }
             } elseif (Test-Path -Path $path -PathType Leaf) {
                 # if min_depth > zero, we can skip since the file is at depth zero
