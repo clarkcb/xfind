@@ -298,6 +298,23 @@ unittest_php () {
     "$PHPUNIT" "$TESTS_PATH"
 }
 
+unittest_powershell () {
+    echo
+    hdr "unittest_powershell"
+
+    TESTS_SCRIPT="$PS1FIND_PATH/ps1find.tests.ps1"
+    if [ ! -f "$TESTS_SCRIPT" ]
+    then
+        log_error "Test script not found: $TESTS_SCRIPT"
+        return
+    fi
+
+    # run tests with powershell
+    log "Unit-testing ps1find"
+    log "pwsh $TESTS_SCRIPT"
+    pwsh "$TESTS_SCRIPT"
+}
+
 unittest_python () {
     echo
     hdr "unittest_python"
@@ -459,6 +476,8 @@ unittest_all () {
 
     unittest_php
 
+    unittest_powershell
+
     unittest_python
 
     unittest_ruby
@@ -553,6 +572,9 @@ case $ARG in
         ;;
     php)
         unittest_php
+        ;;
+    ps1 | powershell | pwsh)
+        unittest_powershell
         ;;
     py | python)
         unittest_python

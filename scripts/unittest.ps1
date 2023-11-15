@@ -332,17 +332,16 @@ function UnitTestPowershell
     Write-Host
     Hdr('UnitTestPowershell')
 
-    if (-not (Get-Command 'invoke-pester' -ErrorAction 'SilentlyContinue'))
-    {
-        PrintError('You need to install Pester')
+    $testsScriptPath = Join-Path $ps1findPath 'ps1find.tests.ps1'
+    if (-not (Test-Path $testsScriptPath))
+    {  
+        Log("Test script not found: $testsScriptPath")
         return
     }
 
-    # $phpTestsPath = Join-Path $ps1findPath 'tests'
-
     Log('Unit-testing ps1find')
-    Log("invoke-pester $ps1findPath")
-    invoke-pester $ps1findPath
+    Log("& $testsScriptPath")
+    & $testsScriptPath
 }
 
 function UnitTestPython
