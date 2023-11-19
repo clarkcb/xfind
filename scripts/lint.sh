@@ -41,11 +41,19 @@ lint_clojure () {
     echo
     hdr "lint_clojure"
 
+    LEIN="lein"
+
+    if [ -z "$(which $LEIN)" ]
+    then
+        log_error "You need to install $LEIN"
+        return
+    fi
+
     cd "$CLJFIND_PATH"
 
     log "Linting cljfind"
-    log "lein eastwood"
-    lein eastwood
+    log "$LEIN eastwood"
+    "$LEIN" eastwood
 
     cd -
 }
@@ -93,6 +101,26 @@ lint_go () {
     cd -
 }
 
+lint_groovy () {
+    echo
+    hdr "lint_groovy"
+
+    GROOVYLINT="npm-groovy-lint"
+
+    if [ -z "$(which $GROOVYLINT)" ]
+    then
+        log_error "You need to install $GROOVYLINT"
+        return
+    fi
+
+    GROOVYFIND_APP_PATH="$GROOVYFIND_PATH/app/src/main/groovy/groovyfind/app"
+    GROOVYFIND_LIB_PATH="$GROOVYFIND_PATH/lib/src/main/groovy/groovyfind"
+
+    log "Linting groovyfind"
+    log "$GROOVYLINT $GROOVYFIND_APP_PATH $GROOVYFIND_LIB_PATH"
+    "$GROOVYLINT" "$GROOVYFIND_APP_PATH" "$GROOVYFIND_LIB_PATH"
+}
+
 lint_haskell () {
     echo
     hdr "lint_haskell"
@@ -119,7 +147,8 @@ lint_java () {
     if [ -z "$CHECKSTYLE_JAR" ]
     then
         log "Checkstyle jar not found, downloading"
-        URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-8.41/checkstyle-8.41-all.jar"
+        CHECKSTYLE_VERSION="10.12.5"
+        URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-$CHECKSTYLE_VERSION/checkstyle-$CHECKSTYLE_VERSION-all.jar"
         cd "$TOOLS_PATH"
         curl -J -L -O "$URL"
         cd -
@@ -428,76 +457,80 @@ then
     usage
 fi
 
-if [ "$ARG" == "all" ]
-then
-    lint_all
-elif [ "$ARG" == "c" ]
-then
-    lint_c
-elif [ "$ARG" == "clojure" ] || [ "$ARG" == "clj" ]
-then
-    lint_clojure
-elif [ "$ARG" == "cpp" ]
-then
-    lint_cpp
-elif [ "$ARG" == "csharp" ] || [ "$ARG" == "cs" ]
-then
-    lint_csharp
-elif [ "$ARG" == "dart" ]
-then
-    lint_dart
-elif [ "$ARG" == "fsharp" ] || [ "$ARG" == "fs" ]
-then
-    lint_fsharp
-elif [ "$ARG" == "go" ]
-then
-    lint_go
-elif [ "$ARG" == "haskell" ] || [ "$ARG" == "hs" ]
-then
-    lint_haskell
-elif [ "$ARG" == "java" ]
-then
-    lint_java
-elif [ "$ARG" == "javascript" ] || [ "$ARG" == "js" ]
-then
-    lint_javascript
-elif [ "$ARG" == "kotlin" ] || [ "$ARG" == "kt" ]
-then
-    lint_kotlin
-elif [ "$ARG" == "objc" ]
-then
-    lint_objc
-elif [ "$ARG" == "ocaml" ] || [ "$ARG" == "ml" ]
-then
-    lint_ocaml
-elif [ "$ARG" == "perl" ] || [ "$ARG" == "pl" ]
-then
-    lint_perl
-elif [ "$ARG" == "php" ]
-then
-    lint_php
-elif [ "$ARG" == "powershell" ] || [ "$ARG" == "ps1" ]
-then
-    lint_powershell
-elif [ "$ARG" == "python" ] || [ "$ARG" == "py" ]
-then
-    lint_python
-elif [ "$ARG" == "ruby" ] || [ "$ARG" == "rb" ]
-then
-    lint_ruby
-elif [ "$ARG" == "rust" ] || [ "$ARG" == "rs" ]
-then
-    lint_rust
-elif [ "$ARG" == "scala" ]
-then
-    lint_scala
-elif [ "$ARG" == "swift" ]
-then
-    lint_swift
-elif [ "$ARG" == "typescript" ] || [ "$ARG" == "ts" ]
-then
-    lint_typescript
-else
-    echo "ERROR: unknown lint argument: $ARG"
-fi
-
+case $ARG in
+    all)
+        lint_all
+        ;;
+    c)
+        lint_c
+        ;;
+    clj | clojure)
+        lint_clojure
+        ;;
+    cpp)
+        lint_cpp
+        ;;
+    cs | csharp)
+        lint_csharp
+        ;;
+    dart)
+        lint_dart
+        ;;
+    fs | fsharp)
+        lint_fsharp
+        ;;
+    go)
+        lint_go
+        ;;
+    groovy)
+        lint_groovy
+        ;;
+    haskell | hs)
+        lint_haskell
+        ;;
+    java)
+        lint_java
+        ;;
+    javascript | js)
+        lint_javascript
+        ;;
+    kotlin | kt)
+        lint_kotlin
+        ;;
+    objc)
+        lint_objc
+        ;;
+    ocaml | ml)
+        lint_ocaml
+        ;;
+    perl | pl)
+        lint_perl
+        ;;
+    php)
+        lint_php
+        ;;
+    ps1 | powershell)
+        lint_powershell
+        ;;
+    py | python)
+        lint_python
+        ;;
+    rb | ruby)
+        lint_ruby
+        ;;
+    rs | rust)
+        lint_rust
+        ;;
+    scala)
+        lint_scala
+        ;;
+    swift)
+        lint_swift
+        ;;
+    ts | typescript)
+        lint_typescript
+        ;;
+    *)
+        log_error "ERROR: unknown xfind lint argument: $ARG"
+        ;;
+esac

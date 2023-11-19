@@ -175,6 +175,26 @@ function CleanGo
     Set-Location $oldPwd
 }
 
+function CleanGroovy
+{
+    Write-Host
+    Hdr('CleanGroovy')
+
+    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $groovyfindPath
+
+    Log('gradle -b build.gradle clean')
+    gradle -b 'build.gradle' clean
+
+    Set-Location $oldPwd
+}
+
 function CleanHaskell
 {
     Write-Host
@@ -389,6 +409,8 @@ function CleanLinux
 
     CleanGo
 
+    # CleanGroovy
+
     # CleanHaskell
 
     CleanJava
@@ -436,6 +458,8 @@ function CleanAll
     CleanFsharp
 
     CleanGo
+
+    CleanGroovy
 
     CleanHaskell
 
@@ -490,6 +514,7 @@ function CleanMain
         'fs'         { CleanFsharp }
         'fsharp'     { CleanFsharp }
         'go'         { CleanGo }
+        'groovy'     { CleanGroovy }
         'haskell'    { CleanHaskell }
         'hs'         { CleanHaskell }
         'java'       { CleanJava }

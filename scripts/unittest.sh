@@ -163,6 +163,25 @@ unittest_go () {
     cd -
 }
 
+unittest_groovy () {
+    echo
+    hdr "unittest_groovy"
+
+    # ensure gradle is installed
+    if [ -z "$(which gradle)" ]
+    then
+        echo "You need to install gradle"
+        return
+    fi
+
+    cd "$GROOVYFIND_PATH"
+    # run tests via gradle
+    log "Unit-testing ktfind"
+    log "gradle --warning-mode all test"
+    gradle --warning-mode all test
+    cd -
+}
+
 unittest_haskell () {
     echo
     hdr "unittest_haskell"
@@ -460,6 +479,8 @@ unittest_all () {
 
     unittest_go
 
+    unittest_groovy
+
     unittest_haskell
 
     unittest_java
@@ -548,6 +569,9 @@ case $ARG in
         ;;
     go)
         unittest_go
+        ;;
+    groovy)
+        unittest_groovy
         ;;
     haskell | hs)
         unittest_haskell

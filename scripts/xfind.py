@@ -24,6 +24,7 @@ xfind_dict = {
     'fs':         'fsfind',
     'fsharp':     'fsfind',
     'go':         'gofind',
+    'groovy':     'groovyfind',
     'haskell':    'hsfind',
     'hs':         'hsfind',
     'java':       'javafind',

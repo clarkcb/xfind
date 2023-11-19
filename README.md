@@ -1,7 +1,7 @@
 # xfind
 
 [xfind](https://github.com/clarkcb/xfind) is a command-line recursive file find utility
-implemented in multiple programming languages, currently these [twenty-one](#why):
+implemented in multiple programming languages, currently these [twenty-three](#why):
 
 | Language       | URL |
 | :------------ | :---------- |
@@ -12,6 +12,7 @@ implemented in multiple programming languages, currently these [twenty-one](#why
 | Dart | [https://dart.dev/](https://dart.dev/) |
 | F# | [https://learn.microsoft.com/en-us/dotnet/fsharp/](https://learn.microsoft.com/en-us/dotnet/fsharp/) |
 | Go | [https://golang.org/](https://golang.org/) |
+| Groovy | [https://groovy-lang.org/](https://groovy-lang.org/) |
 | Haskell | [https://www.haskell.org/](https://www.haskell.org/) |
 | Java | [https://www.java.com/](https://www.java.com/) |
 | JavaScript | [https://nodejs.org/](https://nodejs.org/) |
@@ -34,6 +35,7 @@ implemented in multiple programming languages, currently these [twenty-one](#why
 * filter in/out directory paths by regex
 * filter in/out file names by regex
 * filter in/out by file types
+* find before/after max/min values for lastmod and size
 * find under multiple separate directories
 * include/exclude hidden directories/files
 
@@ -286,8 +288,10 @@ Options:
  --includehidden           Include hidden files and directories
  --listdirs                Generate a list of the matching directories after finding
  --listfiles               Generate a list of the matching files after finding
+ --maxdepth                Find files at most maxdepth levels below startpath
  --maxlastmod              Find files with lastmod less than or equal to maxlastmod
  --maxsize                 Find files with size <= maxsize
+ --mindepth                Find files at least mindepth levels below startpath
  --minlastmod              Find files with lastmod greater than or equal to minlastmod
  --minsize                 Find files with size >= minsize
  --out-archiveext          Specify extension for archive files to exclude from find
@@ -297,6 +301,8 @@ Options:
  --settings-file           A path to a JSON file with specified find settings
  --sort-ascending          Sort results in ascending order*
  --sort-by                 Sort by: PATH, NAME, TYPE, SIZE, LASTMOD
+ --sort-caseinsensitive    Sort results case-insensitive
+ --sort-casesensitive      Sort results case-sensitive*
  --sort-descending         Sort results in descending order
  -t,--in-filetype          File type to find (text, binary)
  -T,--out-filetype         File type not to find (text, binary)
@@ -313,7 +319,7 @@ Now try running it to find specific files under `$XFIND_PATH`, using the followi
 criteria:
 
 * Find files with `js` or `ts` extension
-* Skip directories that match the name `node_module` or `dist`
+* Skip directories that match `node_module` or `dist`
 * Find files that have `find` in the name
 * Look for files under `$XFIND_PATH/javascript` and `$XFIND_PATH/typescript`
 
@@ -464,20 +470,15 @@ rank them by criteria and requirements.
 
 ## TODOs
 
-* Add `minlastmod`, `maxlastmod`, `minsize` and `maxsize` functionality (currently only implemented in `python` version)
-* Separate executable code from library code to make integrating into `xsearch` easier or possible
-* Define an approach for identifying the type of "extensionless" filenames, perhaps a combination of:
-  * Add established filenames to list in _filetypes.json_ (e.g. _.gitignore_, _Dockerfile_, _README_, etc.) and add a check for a filename match if filename is extensionless
-  * Assume a file type for any filenames that are not identified (probably BINARY would be the safest), -or- do some very minimal type detection (detect binary/text from first few bytes?)
+* Add mime type support - detection, filtering, wildcards. This is nearly complete.
 * Determine how archive file support should work, two options:
   1. Provide option to find files inside archives - in this case should change `archivesonly` and `includearchives` options to `inarchivesonly` and `findinarchives`, respectively
   2. Find archives the same as other files (without option to look inside them) - in this case should consider removing `archivesonly` and `includearchives` options
 * Add documentation about the what/why/how of `xfind`
 * Add `stats` option to get a json object with various stats, such as unique extensions / extension counts, etc.
-* Resolve issues with building and running some language versions in Docker: Haskell, Objc and OCaml
+* Resolve OCaml issues
 * Research Docker best practices to determine if there are ways to reduce the image size
 * Add other language versions (in alphabetical order and subject to change)
-  * [C](https://en.wikipedia.org/wiki/C_(programming_language)) - I've started a C version in the past and should finish it, if for no other than reason than to verify my assumption that it *should* be the fastest and most efficient version once complete<br/>UPDATE: I added the C version, and it is definitely the fastest, by more than I expected (see benchmark results above), although there are still some missing features
   * [Common Lisp](https://lisp-lang.org/) - I want to see how it compares to Clojure and learn more about macros
   * [Elixir](https://elixir-lang.org/)/[Erlang](https://www.erlang.org/) - Elixir is probably higher priority than Erlang, but it could be interesting to compare both
   * [Julia](https://julialang.org/) - Julia is described as a high-performance scripting language, so I'm interested to see how it compares to existing implementations

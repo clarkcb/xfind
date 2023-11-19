@@ -174,6 +174,28 @@ function UnitTestGo
     Set-Location $oldPwd
 }
 
+function UnitTestGroovy
+{
+    Write-Host
+    Hdr('UnitTestGroovy')
+
+    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $groovyfindPath
+
+    # run tests via gradle
+    Log('Unit-testing ktfind')
+    Log('gradle --warning-mode all test')
+    gradle --warning-mode all test
+
+    Set-Location $oldPwd
+}
+
 function UnitTestHaskell
 {
     Write-Host
@@ -500,6 +522,8 @@ function UnitTestAll
 
     UnitTestGo
 
+    UnitTestGroovy
+
     UnitTestHaskell
 
     UnitTestJava
@@ -550,6 +574,7 @@ function UnitTestMain
         'fs'         { UnitTestFsharp }
         'fsharp'     { UnitTestFsharp }
         'go'         { UnitTestGo }
+        'groovy'     { UnitTestGroovy }
         'haskell'    { UnitTestHaskell }
         'hs'         { UnitTestHaskell }
         'java'       { UnitTestJava }

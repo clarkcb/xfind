@@ -452,6 +452,53 @@ build_go () {
     cd -
 }
 
+build_groovy () {
+    echo
+    hdr "build_groovy"
+
+    # ensure gradle is installed
+    if [ -z "$(which gradle)" ]
+    then
+        log_error "You need to install gradle"
+        return
+    fi
+
+    RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/main/resources"
+    TEST_RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/test/resources"
+
+    # copy the shared json files to the local resource location
+    mkdir -p "$RESOURCES_PATH"
+    copy_json_resources "$RESOURCES_PATH"
+
+    # copy the test files to the local test resource location
+    mkdir -p "$TEST_RESOURCES_PATH"
+    copy_test_resources "$TEST_RESOURCES_PATH"
+
+    # run a maven clean build
+    log "Building groovyfind"
+
+    cd "$GROOVYFIND_PATH"
+
+    # log "gradle --warning-mode all clean jar publishToMavenLocal"
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    log "gradle --warning-mode all clean jar"
+    gradle --warning-mode all clean jar
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
+    # add to bin
+    add_to_bin "$GROOVYFIND_PATH/bin/groovyfind.sh"
+
+    cd -
+}
+
 build_haskell () {
     echo
     hdr "build_haskell"
@@ -1204,6 +1251,8 @@ build_linux () {
 
     time build_go
 
+    # time build_groovy
+
     time build_java
 
     time build_javascript
@@ -1245,6 +1294,8 @@ build_all () {
     time build_fsharp
 
     time build_go
+
+    time build_groovy
 
     time build_haskell
 
@@ -1351,6 +1402,9 @@ case $ARG in
         ;;
     go)
         build_go
+        ;;
+    groovy)
+        build_groovy
         ;;
     haskell | hs)
         build_haskell

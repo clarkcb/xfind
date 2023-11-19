@@ -151,6 +151,23 @@ clean_go () {
     cd -
 }
 
+clean_groovy () {
+    echo
+    hdr "clean_groovy"
+
+    # ensure gradle is installed
+    if [ -z "$(which gradle)" ]
+    then
+        echo "You need to install gradle"
+        return
+    fi
+
+    cd "$GROOVYFIND_PATH"
+    log "gradle --warning-mode all clean"
+    gradle --warning-mode all clean
+    cd -
+}
+
 clean_haskell () {
     echo
     hdr "clean_haskell"
@@ -478,6 +495,9 @@ case $ARG in
         ;;
     go)
         clean_go
+        ;;
+    groovy)
+        clean_groovy
         ;;
     haskell | hs)
         clean_haskell
