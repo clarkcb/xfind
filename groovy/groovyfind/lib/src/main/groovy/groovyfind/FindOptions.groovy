@@ -51,6 +51,7 @@ class FindOptions {
             'in-ext': { String s, FindSettings settings -> settings.addInExtension(s) },
             'in-filepattern': { String s, FindSettings settings -> settings.addInFilePattern(s) },
             'in-filetype': { String s, FindSettings settings -> settings.addInFileType(s) },
+            'in-mimetype': { String s, FindSettings settings -> settings.addInMimeType(s) },
             maxdepth: { String s, FindSettings settings -> settings.setMaxDepth(Integer.parseInt(s)) },
             maxlastmod: { String s, FindSettings settings -> settings.setMaxLastModFromString(s) },
             maxsize: { String s, FindSettings settings -> settings.setMaxSize(Integer.parseInt(s)) },
@@ -63,6 +64,7 @@ class FindOptions {
             'out-ext': { String s, FindSettings settings -> settings.addOutExtension(s) },
             'out-filepattern': { String s, FindSettings settings -> settings.addOutFilePattern(s) },
             'out-filetype': { String s, FindSettings settings -> settings.addOutFileType(s) },
+            'out-mimetype': { String s, FindSettings settings -> settings.addOutMimeType(s) },
             path: { String s, FindSettings settings -> settings.addPath(s) },
             'settings-file': { String s, FindSettings settings -> settingsFromFilePath(s, settings) },
             'sort-by': { String s, FindSettings settings -> settings.setSortBy(SortBy.forName(s)) }

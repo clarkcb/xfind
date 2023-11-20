@@ -44,6 +44,7 @@ class FindSettings {
     final Set<String> inExtensions
     final Set<Pattern> inFilePatterns
     final Set<FileType> inFileTypes
+    final Set<String> inMimeTypes
     boolean includeArchives
     boolean includeHidden
     int maxDepth
@@ -58,6 +59,7 @@ class FindSettings {
     final Set<String> outExtensions
     final Set<Pattern> outFilePatterns
     final Set<FileType> outFileTypes
+    final Set<String> outMimeTypes
     Set<String> paths
     boolean printDirs
     boolean printFiles
@@ -78,6 +80,7 @@ class FindSettings {
         this.inExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.inFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.inFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.inMimeTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES
         this.includeHidden = DefaultFindSettings.INCLUDE_HIDDEN
         this.maxDepth = DefaultFindSettings.MAX_DEPTH
@@ -92,6 +95,7 @@ class FindSettings {
         this.outExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.outFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.outFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.outMimeTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.paths = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.printDirs = DefaultFindSettings.PRINT_DIRS
         this.printFiles = DefaultFindSettings.PRINT_FILES
@@ -215,6 +219,19 @@ class FindSettings {
         }
     }
 
+    // could be a comma-separated list
+    private static void addMimeTypes(Set<String> set, final String mimeTypes) {
+        addMimeTypes(set, Arrays.asList(mimeTypes.split(',')))
+    }
+
+    private static void addMimeTypes(Set<String> set, final List<String> mimeTypes) {
+        mimeTypes.each { m ->
+            if (!m.empty) {
+                set.add(m)
+            }
+        }
+    }
+
     final void addInFileType(final String ft) {
         addFileTypes(this.inFileTypes, ft)
     }
@@ -231,6 +248,20 @@ class FindSettings {
     boolean needSize() {
         return this.sortBy == SortBy.FILESIZE ||
                 this.maxSize > 0 || this.minSize > 0
+    }
+
+    final void addInMimeType(final String mimeType) {
+        addMimeTypes(this.inMimeTypes, mimeType)
+    }
+
+    final void addOutMimeType(final String mimeType) {
+        addMimeTypes(this.outMimeTypes, mimeType)
+    }
+
+    boolean needMimeType() {
+        return this.sortBy == SortBy.MIMETYPE ||
+                !this.inMimeTypes.empty ||
+                !this.outMimeTypes.empty
     }
 
     private static String stringSetToString(final Set<String> set) {
@@ -292,6 +323,7 @@ class FindSettings {
                 ', inExtensions=' + stringSetToString(this.inExtensions) +
                 ', inFilePatterns=' + patternSetToString(this.inFilePatterns) +
                 ', inFileTypes=' + fileTypeSetToString(this.inFileTypes) +
+                ', inMimeTypes=' + stringSetToString(this.inMimeTypes) +
                 ', includeArchives=' + this.includeArchives +
                 ', includeHidden=' + this.includeHidden +
                 ', maxDepth=' + this.maxDepth +
@@ -306,6 +338,7 @@ class FindSettings {
                 ', outExtensions=' + stringSetToString(this.outExtensions) +
                 ', outFilePatterns=' + patternSetToString(this.outFilePatterns) +
                 ', outFileTypes=' + fileTypeSetToString(this.outFileTypes) +
+                ', outMimeTypes=' + stringSetToString(this.outMimeTypes) +
                 ', paths=' + stringSetToString(this.paths) +
                 ', printDirs=' + this.printDirs +
                 ', printFiles=' + this.printFiles +

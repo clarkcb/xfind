@@ -5,7 +5,8 @@ enum SortBy {
     FILENAME('filename'),
     FILESIZE('filesize'),
     FILETYPE('filetype'),
-    LASTMOD('lastmod');
+    LASTMOD('lastmod'),
+    MIMETYPE('mimetype');
 
     private final String name;
 
@@ -27,6 +28,9 @@ enum SortBy {
                 return FILETYPE
             case 'lastmod':
                 return LASTMOD
+            case 'mimetype':
+            case 'mime':
+                return MIMETYPE
             default:
                 return FILEPATH
         }

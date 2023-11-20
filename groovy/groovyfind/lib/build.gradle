@@ -15,6 +15,7 @@ plugins {
 
 repositories {
     // Use Maven Central for resolving dependencies.
+    mavenLocal()
     mavenCentral()
 }
 
@@ -27,6 +28,9 @@ dependencies {
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     //implementation 'com.google.guava:guava:33.1.0-jre'
+
+    // The mime type dependency
+    implementation 'org.opf-labs:libmagic-jna-wrapper:0.0.2-SNAPSHOT'
 
     // https://mvnrepository.com/artifact/org.spockframework/spock-core
     testImplementation 'org.spockframework:spock-core:2.4-M4-groovy-4.0'

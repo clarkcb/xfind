@@ -8,16 +8,26 @@ import java.nio.file.attribute.FileTime
 import java.time.ZoneOffset
 import java.util.function.Function
 import java.util.regex.Pattern
+import org.opf_labs.LibmagicJnaWrapper
 
 @CompileStatic
 class Finder {
 
     final private FindSettings settings
     final private FileTypes fileTypes
+    private LibmagicJnaWrapper libmagicJnaWrapper
 
     Finder(final FindSettings settings) {
         this.settings = settings
         this.fileTypes = new FileTypes()
+        if (settings.needMimeType()) {
+            int flags = LibmagicJnaWrapper.MAGIC_MIME_TYPE | LibmagicJnaWrapper.MAGIC_NO_CHECK_ENCODING
+            this.libmagicJnaWrapper = new LibmagicJnaWrapper(flags)
+            String magicFilePath = "/usr/local/share/misc/magic.mgc"
+            libmagicJnaWrapper.load(magicFilePath)
+        } else {
+            this.libmagicJnaWrapper = null
+        }
     }
 
     final void validateSettings() throws FindException {
@@ -111,6 +121,29 @@ class Finder {
                         || !settings.getOutFileTypes().contains(fr.getFileType())))
     }
 
+    boolean isMatchingMimeType(String mimeType) {
+        if (!settings.inMimeTypes.empty) {
+            if (settings.inMimeTypes.contains(mimeType) || settings.inMimeTypes.contains('*/*')) {
+                return true
+            }
+            if (settings.inMimeTypes.any { m -> m.endsWith('/*') } && mimeType.indexOf('/') > 0) {
+                String mimeTypePrefix = mimeType.split('/')[0]
+                return settings.inMimeTypes.contains(mimeTypePrefix + '/*')
+            }
+            return false
+        }
+        if (!settings.outMimeTypes.empty) {
+            if (settings.outMimeTypes.contains(mimeType) || settings.outMimeTypes.contains('*/*')) {
+                return false
+            }
+            if (settings.outMimeTypes.any { m -> m.endsWith('/*') } && mimeType.indexOf('/') > 0) {
+                String mimeTypePrefix = mimeType.split('/')[0]
+                return !settings.outMimeTypes.contains(mimeTypePrefix + '/*')
+            }
+        }
+        return true
+    }
+
     boolean hasMatchingFileSize(final FileResult fr) {
         return ((settings.getMaxSize() <= 0 || fr.getFileSize() <= settings.getMaxSize())
                 &&
@@ -129,6 +162,7 @@ class Finder {
         return hasMatchingExtension(fr)
                 && hasMatchingFileName(fr)
                 && hasMatchingFileType(fr)
+                && isMatchingMimeType(fr.mimeType)
                 && hasMatchingFileSize(fr)
                 && hasMatchingLastMod(fr)
     }
@@ -166,6 +200,15 @@ class Finder {
             }
         }
 
+        String mimeType = ''
+        if (settings.needMimeType()) {
+            try {
+                mimeType = libmagicJnaWrapper.getMimeType(path.toString())
+            } catch (IllegalArgumentException e) {
+                Logger.logError(e.getMessage())
+            }
+        }
+
         long fileSize = 0L
         FileTime lastMod = null
 
@@ -180,7 +223,7 @@ class Finder {
             }
         }
 
-        def fileResult = new FileResult(path, fileTypes.getFileType(path), fileSize, lastMod)
+        def fileResult = new FileResult(path, fileTypes.getFileType(path), mimeType, fileSize, lastMod)
         if (fileResult.fileType == FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult)
@@ -202,6 +245,8 @@ class Finder {
             fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.sortCaseInsensitive))
         } else if (settings.sortBy == SortBy.LASTMOD) {
             fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
+        } else if (settings.sortBy == SortBy.MIMETYPE) {
+            fileResults.sort((fr1, fr2) -> fr1.compareByMimeType(fr2, settings.sortCaseInsensitive))
         } else {
             fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.sortCaseInsensitive))
         }

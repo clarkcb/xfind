@@ -10,22 +10,24 @@ class FileResult {
     final List<String> containers
     final Path path
     final FileType fileType
+    final String mimeType
     final long fileSize
     final FileTime lastMod
 
     FileResult(final Path path, final FileType fileType) {
-        this([], path, fileType, 0L, null)
+        this([], path, fileType, '', 0L, null)
     }
 
-    FileResult(final Path path, final FileType fileType, final long fileSize, final FileTime lastMod) {
-        this([], path, fileType, fileSize, lastMod)
+    FileResult(final Path path, final FileType fileType, final String mimeType, final long fileSize, final FileTime lastMod) {
+        this([], path, fileType, mimeType, fileSize, lastMod)
     }
 
-    FileResult(final List<String> containers, final Path path, final FileType fileType,
+    FileResult(final List<String> containers, final Path path, final FileType fileType, final String mimeType,
                final long fileSize, final FileTime lastMod) {
         this.containers = containers
         this.path = path
         this.fileType = fileType
+        this.mimeType = mimeType
         this.fileSize = fileSize
         this.lastMod = lastMod
     }
@@ -90,6 +92,19 @@ class FileResult {
         return this.lastMod <=> other.lastMod
     }
 
+    int compareByMimeType(final FileResult other, final boolean sortCaseInsensitive) {
+        String m1 = this.mimeType
+        String m2 = other.mimeType
+        if (sortCaseInsensitive) {
+            m1 = m1.toLowerCase()
+            m2 = m2.toLowerCase()
+        }
+        if (m1 == m2) {
+            return compareByPath(other, sortCaseInsensitive)
+        }
+        return m1 <=> m2
+    }
+
     String toString() {
         StringBuilder sb = new StringBuilder()
         if (!containers.empty) {
@@ -102,6 +117,9 @@ class FileResult {
             sb.append(CONTAINER_SEPARATOR)
         }
         sb.append(path.toString())
+        if (mimeType != null && !mimeType.empty) {
+            sb.append(" (").append(mimeType).append(")");
+        }
 //        if (stat != null) {
 //            sb.append(" (").append(stat.lastModifiedTime().toInstant().getEpochSecond()).append(")");
 //        }
