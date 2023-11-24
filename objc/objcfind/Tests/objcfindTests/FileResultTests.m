@@ -10,9 +10,11 @@
 
 - (void)testFileResultAbsPath {
     NSString *path = @"/Users/cary/src/xfind/objc/objcfind/objcfind/FileResult.m";
+    NSString *mimeType = @"";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
+                              mimeType:mimeType
                               fileSize:0
                               lastMod:nil];
     NSString *fileResultString = [fileResult description];
@@ -21,9 +23,11 @@
 
 - (void)testFileResultTildePath {
     NSString *path = @"~/src/xfind/objc/objcfind/objcfind/FileResult.m";
+    NSString *mimeType = @"";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
+                              mimeType:mimeType
                               fileSize:0
                               lastMod:nil];
     NSString *fileResultString = [fileResult description];
@@ -32,9 +36,11 @@
 
 - (void)testFileResultRelPath1 {
     NSString *path = @"./FileResult.m";
+    NSString *mimeType = @"";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
+                              mimeType:mimeType
                               fileSize:0
                               lastMod:nil];
     NSString *fileResultString = [fileResult description];
@@ -43,9 +49,11 @@
 
 - (void)testFileResultRelPath2 {
     NSString *path = @"../FileResult.m";
+    NSString *mimeType = @"";
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
+                              mimeType:mimeType
                               fileSize:0
                               lastMod:nil];
     NSString *fileResultString = [fileResult description];

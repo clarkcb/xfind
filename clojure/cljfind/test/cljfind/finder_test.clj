@@ -5,6 +5,7 @@
         [cljfind.config :only (SHAREDPATH)]
         [cljfind.fileresult :only (new-file-result)]
         [cljfind.filetypes :only (get-file-type)]
+        [cljfind.mimetypes :only (get-mime-type-getter)]
         [cljfind.fileutil :only (expand-path hidden-file?)]
         [cljfind.finder :only
          (filter-to-file-result is-matching-archive-file-result? is-matching-dir? is-matching-file-result?)]
@@ -179,56 +180,64 @@
 ;; filter-file? tests
 ;; *****************************************************************************
 (deftest test-filter-to-file-result-default-settings
-  (testing "test-filter-to-file-result-default-settings"
-    (is (not (nil? (filter-to-file-result (file "finder.clj") DEFAULT-SETTINGS))))))
+  (let [settings DEFAULT-SETTINGS
+        get-mime-type (get-mime-type-getter settings)
+       ]
+    (testing "test-filter-to-file-result-default-settings"
+      (is (not (nil? (filter-to-file-result (file "finder.clj") DEFAULT-SETTINGS get-mime-type)))))))
 
 (deftest test-filter-to-file-result-with-file-result-settings
   (let [settings (add-extension DEFAULT-SETTINGS "clj,js" :in-extensions)
+        get-mime-type (get-mime-type-getter settings)
         ]
     (testing "test-filter-to-file-result-with-file-result-settings"
-      (is (not (nil? (filter-to-file-result (file "finder.clj") settings))))
-      (is (not (nil? (filter-to-file-result (file "finder.js") settings))))
-      (is (nil? (filter-to-file-result (file "finder.py") settings)))
-      (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
+      (is (not (nil? (filter-to-file-result (file "finder.clj") settings get-mime-type))))
+      (is (not (nil? (filter-to-file-result (file "finder.js") settings get-mime-type))))
+      (is (nil? (filter-to-file-result (file "finder.py") settings get-mime-type)))
+      (is (nil? (filter-to-file-result (file ".gitignore") settings get-mime-type))))))
 
 (deftest test-filter-to-file-result-with-archive-file-result-settings
   (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archive-extensions)
+        get-mime-type (get-mime-type-getter settings)
         ]
     (testing "test-filter-to-file-result-with-archive-file-result-settings"
-      (is (nil? (filter-to-file-result (file "archive.zip") settings)))
-      (is (nil? (filter-to-file-result (file "archive.bz2") settings)))
-      (is (nil? (filter-to-file-result (file "archive.gz") settings)))
-      (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
+      (is (nil? (filter-to-file-result (file "archive.zip") settings get-mime-type)))
+      (is (nil? (filter-to-file-result (file "archive.bz2") settings get-mime-type)))
+      (is (nil? (filter-to-file-result (file "archive.gz") settings get-mime-type)))
+      (is (nil? (filter-to-file-result (file ".gitignore") settings get-mime-type))))))
 
 (deftest test-filter-to-file-result-with-include-archives
   (let [settings (assoc DEFAULT-SETTINGS :include-archives true)
+        get-mime-type (get-mime-type-getter settings)
         ]
     (testing "test-filter-to-file-result-with-include-archives"
-      (is (not (nil? (filter-to-file-result (file "archive.zip") settings))))
-      (is (not (nil? (filter-to-file-result (file "archive.bz2") settings))))
-      (is (not (nil? (filter-to-file-result (file "archive.gz") settings))))
-      (is (not (nil? (filter-to-file-result (file "finder.clj") settings))))
-      (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
+      (is (not (nil? (filter-to-file-result (file "archive.zip") settings get-mime-type))))
+      (is (not (nil? (filter-to-file-result (file "archive.bz2") settings get-mime-type))))
+      (is (not (nil? (filter-to-file-result (file "archive.gz") settings get-mime-type))))
+      (is (not (nil? (filter-to-file-result (file "finder.clj") settings get-mime-type))))
+      (is (nil? (filter-to-file-result (file ".gitignore") settings get-mime-type))))))
 
 (deftest test-filter-to-file-result-with-archives-only
   (let [settings (set-archives-only DEFAULT-SETTINGS true)
+        get-mime-type (get-mime-type-getter settings)
         zipfile (file "archive.zip")
         ziptype (get-file-type zipfile)
-        zipresult (filter-to-file-result zipfile settings)
-        bz2result (filter-to-file-result (file "archive.bz2") settings)
-        gzresult (filter-to-file-result (file "archive.gz") settings)
+        zipresult (filter-to-file-result zipfile settings get-mime-type)
+        bz2result (filter-to-file-result (file "archive.bz2") settings get-mime-type)
+        gzresult (filter-to-file-result (file "archive.gz") settings get-mime-type)
         ]
     (testing "test-filter-to-file-result-with-archives-only"
       (is (not (nil? zipresult)))
       (is (not (nil? bz2result)))
       (is (not (nil? gzresult)))
-      (is (nil? (filter-to-file-result (file "finder.clj") settings)))
-      (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
+      (is (nil? (filter-to-file-result (file "finder.clj") settings get-mime-type)))
+      (is (nil? (filter-to-file-result (file ".gitignore") settings get-mime-type))))))
 
 (deftest test-filter-to-file-result-with-includehidden
   (let [settings (assoc DEFAULT-SETTINGS :include-hidden true)
+        get-mime-type (get-mime-type-getter settings)
         ]
     (testing "test-filter-to-file-result-with-includehidden"
-      (is (not (nil? (filter-to-file-result (file "finder.clj") settings))))
-      (is (not (nil? (filter-to-file-result (file ".gitignore") settings))))
-      (is (nil? (filter-to-file-result (file "archive.zip") settings))))))
+      (is (not (nil? (filter-to-file-result (file "finder.clj") settings get-mime-type))))
+      (is (not (nil? (filter-to-file-result (file ".gitignore") settings get-mime-type))))
+      (is (nil? (filter-to-file-result (file "archive.zip") settings get-mime-type))))))

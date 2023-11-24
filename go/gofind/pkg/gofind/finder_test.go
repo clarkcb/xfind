@@ -13,7 +13,11 @@ func getSettings() *FindSettings {
 
 func getFinder() *Finder {
 	settings := getSettings()
-	return NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		return nil
+	}
+	return finder
 }
 
 /*************************************************************
@@ -46,7 +50,10 @@ func TestIsFindDir_IsHidden_False(t *testing.T) {
 func TestIsFindDir_IsHiddenIncludeHidden_True(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeHidden(true)
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	d := ".git"
 	if !finder.isMatchingDir(d) {
 		t.Errorf("expected true")
@@ -64,7 +71,10 @@ func TestIsFindDir_NoPatterns_True(t *testing.T) {
 func TestIsFindDir_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInDirPattern("Find")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	d := "CsFind"
 	if !finder.isMatchingDir(d) {
 		t.Errorf("expected true")
@@ -74,7 +84,10 @@ func TestIsFindDir_MatchesInPattern_True(t *testing.T) {
 func TestIsFindDir_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutDirPattern("Find")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	d := "CsFind"
 	if finder.isMatchingDir(d) {
 		t.Errorf("expected false")
@@ -84,7 +97,10 @@ func TestIsFindDir_MatchesOutPattern_False(t *testing.T) {
 func TestIsFindDir_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInDirPattern("FindFiles")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	d := "CsFind"
 	if finder.isMatchingDir(d) {
 		t.Errorf("expected false")
@@ -94,7 +110,10 @@ func TestIsFindDir_DoesNotMatchInPattern_False(t *testing.T) {
 func TestIsFindDir_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutDirPattern("FindFiles")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	var d = "CsFind"
 	if !finder.isMatchingDir(d) {
 		t.Errorf("expected true")
@@ -116,7 +135,10 @@ func TestIsFindFile_NoExtensionsNoPatterns_True(t *testing.T) {
 func TestIsFindFile_MatchesInExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("cs")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "FileUtil.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -127,7 +149,10 @@ func TestIsFindFile_MatchesInExtension_True(t *testing.T) {
 func TestIsFindFile_DoesNotMatchInExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInExtension("java")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "FileUtil.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -138,7 +163,10 @@ func TestIsFindFile_DoesNotMatchInExtension_False(t *testing.T) {
 func TestIsFindFile_MatchesOutExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("cs")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "FileUtil.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -149,7 +177,10 @@ func TestIsFindFile_MatchesOutExtension_False(t *testing.T) {
 func TestIsFindFile_DoesNotMatchOutExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutExtension("java")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "FileUtil.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -160,7 +191,10 @@ func TestIsFindFile_DoesNotMatchOutExtension_True(t *testing.T) {
 func TestIsFindFile_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddInFilePattern("Find")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "Finder.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -171,7 +205,10 @@ func TestIsFindFile_MatchesInPattern_True(t *testing.T) {
 func TestIsFindFile_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddInFilePattern("Find")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "FileUtil.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -182,7 +219,10 @@ func TestIsFindFile_DoesNotMatchInPattern_False(t *testing.T) {
 func TestIsFindFile_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutFilePattern("Find")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "Finder.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -193,7 +233,10 @@ func TestIsFindFile_MatchesOutPattern_False(t *testing.T) {
 func TestIsFindFile_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.AddOutFilePattern("Find")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "FileUtil.cs"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -207,7 +250,10 @@ func TestIsFindFile_DoesNotMatchOutPattern_True(t *testing.T) {
 func TestIsArchiveFindFile_NoExtensionsNoPatterns_True(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -219,7 +265,10 @@ func TestIsArchiveFindFile_MatchesInExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddInArchiveExtension("zip")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -231,7 +280,10 @@ func TestIsArchiveFindFile_DoesNotMatchInExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddInArchiveExtension("gz")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -243,7 +295,10 @@ func TestIsArchiveFindFile_MatchesOutExtension_False(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddOutArchiveExtension("zip")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -255,7 +310,10 @@ func TestIsArchiveFindFile_DoesNotMatchOutExtension_True(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddOutArchiveExtension("gz")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -267,7 +325,10 @@ func TestIsArchiveFindFile_MatchesInPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddInArchiveFilePattern("arch")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
@@ -279,7 +340,10 @@ func TestIsArchiveFindFile_DoesNotMatchInPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddInArchiveFilePattern("archives")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -291,7 +355,10 @@ func TestIsArchiveFindFile_MatchesOutPattern_False(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddOutArchiveFilePattern("arch")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) != nil {
@@ -303,7 +370,10 @@ func TestIsArchiveFindFile_DoesNotMatchOutPattern_True(t *testing.T) {
 	settings := getSettings()
 	settings.SetIncludeArchives(true)
 	settings.AddOutArchiveFilePattern("archives")
-	finder := NewFinder(settings)
+	finder, err := NewFinder(settings)
+	if err != nil {
+		t.Errorf("failed to create new Finder")
+	}
 	f := "archive.zip"
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {

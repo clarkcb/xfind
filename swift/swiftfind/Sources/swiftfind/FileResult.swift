@@ -24,7 +24,6 @@ public struct FileResult {
         self.fileSize = fileSize
         self.lastMod = lastMod
         containers = []
-        mimeType = ""
     }
 
     public var description: String {

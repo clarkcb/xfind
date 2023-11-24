@@ -132,8 +132,9 @@ sub test_is_matching_file_matches_by_default {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok($finder->is_matching_file_result($file_result), "$f is matching file by default");
 }
 
@@ -145,8 +146,9 @@ sub test_is_matching_file_matches_in_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok($finder->is_matching_file_result($file_result), "$f matches in_extensions");
 }
 
@@ -158,8 +160,9 @@ sub test_is_matching_file_no_match_in_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok(!$finder->is_matching_file_result($file_result), "$f does not match in_extensions");
 }
 
@@ -171,8 +174,9 @@ sub test_is_matching_file_matches_out_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok(!$finder->is_matching_file_result($file_result), "$f matches out_extensions");
 }
 
@@ -184,8 +188,9 @@ sub test_is_matching_file_no_match_out_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok($finder->is_matching_file_result($file_result), "$f does not match out_extensions");
 }
 
@@ -197,8 +202,9 @@ sub test_is_matching_file_matches_in_pattern {
     my $d = '.';
     my $f = 'Finder.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok($finder->is_matching_file_result($file_result), "$f matches in_file_patterns");
 }
 
@@ -210,8 +216,9 @@ sub test_is_matching_file_no_match_in_pattern {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok(!$finder->is_matching_file_result($file_result), "$f does not match in_file_patterns");
 }
 
@@ -223,8 +230,9 @@ sub test_is_matching_file_matches_out_pattern {
     my $d = '.';
     my $f = 'Finder.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok(!$finder->is_matching_file_result($file_result), "$f matches out_file_patterns");
 }
 
@@ -236,8 +244,9 @@ sub test_is_matching_file_no_match_out_pattern {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
+    my $mime_type = '';
     my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $mime_type, $stat);
     ok($finder->is_matching_file_result($file_result), "$f does not match out_file_patterns");
 }
 

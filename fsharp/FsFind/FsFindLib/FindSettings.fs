@@ -23,6 +23,8 @@ type FindSettings() =
 
     member val InArchiveExtensions : string list = [] with get, set
     member val InArchiveFilePatterns : Regex list = [] with get, set
+    member val IncludeArchives : bool = false with get, set
+    member val IncludeHidden : bool = false with get, set
     member val InDirPatterns : Regex list = [] with get, set
     member val InExtensions : string list = [] with get, set
     member val InFilePatterns : Regex list = [] with get, set

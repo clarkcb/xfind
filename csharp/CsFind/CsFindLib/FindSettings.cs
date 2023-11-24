@@ -33,6 +33,8 @@ public class FindSettings
 
 	public ISet<string> InArchiveExtensions { get; private set; }
 	public ISet<Regex> InArchiveFilePatterns { get; private set; }
+	public bool IncludeArchives { get; set; }
+	public bool IncludeHidden { get; set; }
 	public ISet<Regex> InDirPatterns { get; private set; }
 	public ISet<string> InExtensions { get; private set; }
 	public ISet<Regex> InFilePatterns { get; private set; }
@@ -149,8 +151,6 @@ public class FindSettings
 		InMimeTypes = inMimeTypes;
 		IncludeArchives = includeArchives;
 		IncludeHidden = includeHidden;
-		PrintDirs = printDirs;
-		PrintFiles = printFiles;
 		MaxDepth = maxDepth;
 		MaxLastMod = maxLastMod;
 		MaxSize = maxSize;
@@ -165,6 +165,8 @@ public class FindSettings
 		OutFileTypes = outFileTypes;
 		OutMimeTypes = outMimeTypes;
 		Paths = paths;
+		PrintDirs = printDirs;
+		PrintFiles = printFiles;
 		PrintUsage = printUsage;
 		PrintVersion = printVersion;
 		Recursive = recursive;
