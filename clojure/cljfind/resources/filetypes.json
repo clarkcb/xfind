@@ -115,7 +115,8 @@
         ".editorconfig", ".env", ".gitattributes", ".gitconfig", ".gitignore",
         ".gitkeep", ".profile", ".viminfo", ".zprofile", ".zsh_history",
         ".zshenv", ".zshrc", "Dockerfile", "Gemfile", "Jenkinsfile", "Makefile",
-        "MANIFEST", "mime.types", "Pipfile", "PKG-INFO", "Rakefile"
+        "MANIFEST", "mime.types", "Pipfile", "PKG-INFO", "Rakefile",
+        "Vagrantfile"
       ]
     },
     {
