@@ -216,7 +216,7 @@ impl FindOptions {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
             };
-            map.insert(sortkey, so.clone());
+            map.insert(sortkey, so);
         }
         map
     }

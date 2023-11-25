@@ -93,12 +93,6 @@ public class Finder {
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
-    // this is temporary to appease the tests
-    boolean isMatchingFile(final Path path) {
-        var fr = new FileResult(path, fileTypes.getFileType(path));
-        return isMatchingFileResult(fr);
-    }
-
     boolean isMatchingFileResult(final FileResult fr) {
         var fileName = fr.getPath().getFileName().toString();
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
@@ -194,20 +188,6 @@ public class Finder {
             return Optional.of(fileResult);
         }
         return Optional.empty();
-    }
-
-    public final int compareFileResults(FileResult fr1, FileResult fr2) {
-        if (settings.getSortBy().equals(SortBy.FILENAME)) {
-            return fr1.compareByName(fr2, settings.getSortCaseInsensitive());
-        } else if (settings.getSortBy().equals(SortBy.FILESIZE)) {
-            return fr1.compareBySize(fr2, settings.getSortCaseInsensitive());
-        } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
-            return fr1.compareByType(fr2, settings.getSortCaseInsensitive());
-        } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
-            return fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive());
-        } else {
-            return fr1.compareByPath(fr2, settings.getSortCaseInsensitive());
-        }
     }
 
     public final void sortFileResults(List<FileResult> fileResults) {

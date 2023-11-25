@@ -2,7 +2,6 @@ package javafind;
 
 import org.junit.jupiter.api.Test;
 
-import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -99,87 +98,96 @@ public class FinderTest {
     }
 
     /*************************************************************
-     * isMatchingFile tests
+     * isMatchingFileResult tests
      *************************************************************/
     @Test
-    public final void testIsMatchingFile_NoExtensionsNoPatterns_True() {
+    public final void testIsMatchingFileResult_NoExtensionsNoPatterns_True() {
         var settings = getSettings();
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_MatchesInExtension_True() {
+    public final void testIsMatchingFileResult_MatchesInExtension_True() {
         var settings = getSettings();
         settings.addInExtension("cs");
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_DoesNotMatchInExtension_False() {
+    public final void testIsMatchingFileResult_DoesNotMatchInExtension_False() {
         var settings = getSettings();
         settings.addInExtension("java");
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertFalse(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
 
     @Test
-    public final void testIsMatchingFile_MatchesOutExtension_False() {
+    public final void testIsMatchingFileResult_MatchesOutExtension_False() {
         var settings = getSettings();
         settings.addOutExtension("cs");
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertFalse(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_DoesNotMatchOutExtension_True() {
+    public final void testIsMatchingFileResult_DoesNotMatchOutExtension_True() {
         var settings = getSettings();
         settings.addOutExtension("java");
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_MatchesInPattern_True() {
+    public final void testIsMatchingFileResult_MatchesInPattern_True() {
         var settings = getSettings();
         settings.addInFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("Finder.cs");
-        assertTrue(finder.isMatchingFile(path));
+        var path = Paths.get("./Finder.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_DoesNotMatchInPattern_False() {
+    public final void testIsMatchingFileResult_DoesNotMatchInPattern_False() {
         var settings = getSettings();
         settings.addInFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertFalse(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_MatchesOutPattern_False() {
+    public final void testIsMatchingFileResult_MatchesOutPattern_False() {
         var settings = getSettings();
         settings.addOutFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("Finder.cs");
-        assertFalse(finder.isMatchingFile(path));
+        var path = Paths.get("./Finder.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertFalse(finder.isMatchingFileResult(fileResult));
     }
 
     @Test
-    public final void testIsMatchingFile_DoesNotMatchOutPattern_True() {
+    public final void testIsMatchingFileResult_DoesNotMatchOutPattern_True() {
         var settings = getSettings();
         settings.addOutFilePattern("Find");
         var finder = new Finder(settings);
-        var path = Paths.get("FileUtil.cs");
-        assertTrue(finder.isMatchingFile(path));
+        var path = Paths.get("./FileUtil.cs");
+        var fileResult = new FileResult(path, FileType.CODE);
+        assertTrue(finder.isMatchingFileResult(fileResult));
     }
 
     /*************************************************************
