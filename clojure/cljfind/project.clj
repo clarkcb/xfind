@@ -6,9 +6,9 @@
   :dependencies [
                   [org.clojure/clojure "1.11.1"]
                   [org.clojure/data.json "2.4.0"]
-                  [clojure.java-time "1.2.0"]
+                  [clojure.java-time "1.4.2"]
                 ]
   :main ^:skip-aot cljfind.cljfind
   :target-path "target/%s"
-  :plugins [[jonase/eastwood "1.4.0"]]
+  :plugins [[jonase/eastwood "1.4.2"]]
   :profiles {:uberjar {:aot :all}})

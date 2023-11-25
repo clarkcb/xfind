@@ -23,7 +23,7 @@ dependencies {
     implementation 'org.codehaus.groovy:groovy-all:3.0.18'
 
     // Apache commons io library
-    implementation 'commons-io:commons-io:2.13.0'
+    implementation 'commons-io:commons-io:2.15.0'
 
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.google.guava:guava:32.1.1-jre'
