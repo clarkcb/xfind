@@ -382,16 +382,10 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
 {
     switch (flag_idx) {
     case ARCHIVES_ONLY:
-        settings->archives_only = flag_val;
-        if (flag_val) {
-            settings->include_archives = flag_val;
-        }
+        set_archives_only(settings, flag_val);
         break;
     case DEBUG:
-        settings->debug = flag_val;
-        if (flag_val) {
-            settings->verbose = flag_val;
-        }
+        set_debug(settings, flag_val);
         break;
     case EXCLUDE_ARCHIVES:
         settings->include_archives = !flag_val;

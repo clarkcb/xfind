@@ -10,11 +10,11 @@ StringNode *empty_string_node(void);
 
 StringNode *new_string_node(const char *s);
 
-StringNode *new_string_node_from_char_split(const char c, const char *s);
+StringNode *new_string_node_from_char_split(char c, const char *s);
 
 void add_string_to_string_node(const char *s, StringNode *string_node);
 
-void *add_char_split_to_string_node(const char c, const char *s, StringNode *string_node);
+void add_char_split_to_string_node(char c, const char *s, StringNode *string_node);
 
 int is_null_or_empty_string_node(StringNode *string_node);
 

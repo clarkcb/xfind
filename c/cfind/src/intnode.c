@@ -59,7 +59,7 @@ size_t int_node_count(IntNode *int_node)
 {
     size_t nodecount = 0;
     IntNode *temp = int_node;
-    while (temp != NULL) {
+    while (temp != NULL && temp->integer != NULL) {
         nodecount++;
         temp = temp->next;
     }

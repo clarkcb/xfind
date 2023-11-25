@@ -59,6 +59,10 @@ void print_settings(const FindSettings *settings);
 
 void destroy_settings(FindSettings *settings);
 
+void set_archives_only(FindSettings *settings, unsigned short archives_only);
+
+void set_debug(FindSettings *settings, unsigned short debug);
+
 SortBy sort_by_from_name(const char *name);
 
 void sort_by_to_name(const SortBy sort_by, char *name);

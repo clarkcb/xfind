@@ -29,8 +29,12 @@ int main(int argc, char *argv[])
 
 	// test_findsettings
 	test_default_settings();
+    test_add_extensions_to_settings();
+    test_add_patterns_to_settings();
+    test_set_archives_only_in_settings();
+    test_set_debug_in_settings();
 
-	// test_finder
+    // test_finder
 	test_validate_settings();
 	test_is_matching_dir();
     test_is_matching_dir_in_dir_patterns();

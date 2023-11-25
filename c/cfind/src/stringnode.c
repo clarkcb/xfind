@@ -26,10 +26,6 @@ StringNode *new_string_node(const char *s)
 
 StringNode *new_string_node_from_char_split(const char c, const char *s)
 {
-    if (char_in_string(c, s) == 0) {
-        return new_string_node(s);
-    }
-
     StringNode *string_node = empty_string_node();
     assert(string_node != NULL);
     add_char_split_to_string_node(c, s, string_node);
@@ -49,10 +45,15 @@ void add_string_to_string_node(const char *s, StringNode *string_node)
     }
 }
 
-void *add_char_split_to_string_node(const char c, const char *s, StringNode *string_node)
+void add_char_split_to_string_node(const char c, const char *s, StringNode *string_node)
 {
+    if (s == NULL) return;
     size_t slen = strlen(s);
-    if (slen == 0) return string_node;
+    if (slen == 0) return;
+    if (char_in_string(c, s) == 0) {
+        add_string_to_string_node(s, string_node);
+        return;
+    }
 
     unsigned int startidx = 0;
     // skip leading split char
@@ -76,7 +77,7 @@ void *add_char_split_to_string_node(const char c, const char *s, StringNode *str
     }
 
     IntNode *temp = int_node;
-    while (temp != NULL) {
+    while (temp != NULL && temp->integer != NULL) {
         unsigned int i = (unsigned int)*(temp->integer);
         if (i > startidx) {
             char *ns = malloc((unsigned long)(i - startidx + 1) * sizeof(char));
@@ -94,8 +95,6 @@ void *add_char_split_to_string_node(const char c, const char *s, StringNode *str
         ns[nslen] = '\0';
         add_string_to_string_node(ns, string_node);
     }
-
-    return string_node;
 }
 
 int is_null_or_empty_string_node(StringNode *string_node)

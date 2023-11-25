@@ -291,6 +291,22 @@ void destroy_settings(FindSettings *settings)
     }
 }
 
+void set_archives_only(FindSettings *settings, const unsigned short archives_only)
+{
+    settings->archives_only = archives_only;
+    if (archives_only) {
+        settings->include_archives = 1;
+    }
+}
+
+void set_debug(FindSettings *settings, const unsigned short debug)
+{
+    settings->debug = debug;
+    if (debug) {
+        settings->verbose = 1;
+    }
+}
+
 SortBy sort_by_from_name(const char *name)
 {
     //printf("name: %s\n", name);

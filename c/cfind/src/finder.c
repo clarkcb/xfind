@@ -48,16 +48,32 @@ error_t validate_settings(const FindSettings *settings)
 
 unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
 {
-    if (!settings->include_hidden && is_hidden(dir)) {
-        return 0;
+    // null or empty dir is a match
+    if (dir == NULL) return 1;
+    size_t dirlen = strlen(dir);
+    if (dirlen == 0) return 1;
+
+    // Split into dir elements to match against
+    StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir);
+    if (dir_elems == NULL) return 1;
+
+    StringNode *d = dir_elems;
+    unsigned short matches = 1;
+    while (matches == 1 && d != NULL && d->string != NULL) {
+        if (!settings->include_hidden && is_hidden(d->string)) {
+            matches = 0;
+        }
+        // TODO: right now this matches strings, need to switch to regex
+        if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0)
+            && (string_matches_regex_node(dir, settings->in_dir_patterns) == 0))
+            || ((is_null_or_empty_regex_node(settings->out_dir_patterns) == 0)
+                && (string_matches_regex_node(dir, settings->out_dir_patterns) == 1))) {
+            matches = 0;
+        }
+        d = d->next;
     }
-    if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 1)
-          || (string_matches_regex_node(dir, settings->in_dir_patterns) != 0))
-        && ((is_null_or_empty_regex_node(settings->out_dir_patterns) == 1)
-             || (string_matches_regex_node(dir, settings->out_dir_patterns) == 0))) {
-        return 1;
-    }
-    return 0;
+    destroy_string_node(dir_elems);
+    return matches;
 }
 
 unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, struct stat *fpstat)
