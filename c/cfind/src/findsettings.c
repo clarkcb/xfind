@@ -58,18 +58,18 @@ const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;
 const int SETTINGS_SORTBY_FIELD_COUNT = 1;
 const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG_FIELD_COUNT + SETTINGS_STRING_NODE_FIELD_COUNT + SETTINGS_SORTBY_FIELD_COUNT;
 const char *SETTINGS_TEMPLATE = "FindSettings("
-            "archives_only=%d"
-            ", debug=%d"
+            "archives_only=%s"
+            ", debug=%s"
             ", in_archive_extensions=%s"
             ", in_archive_file_patterns=%s"
             ", in_dir_patterns=%s"
             ", in_extensions=%s"
             ", in_file_patterns=%s"
             ", in_file_types=%s"
-            ", include_archives=%d"
-            ", include_hidden=%d"
-            ", list_dirs=%d"
-            ", list_files=%d"
+            ", include_archives=%s"
+            ", include_hidden=%s"
+            ", list_dirs=%s"
+            ", list_files=%s"
             ", max_depth=%d"
             ", max_last_mod=%s"
             ", max_size=%lu"
@@ -83,15 +83,33 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", out_file_patterns=%s"
             ", out_file_types=%s"
             ", paths=%s"
-            ", print_results=%d"
-            ", print_usage=%d"
-            ", print_version=%d"
-            ", recursive=%d"
+            ", print_results=%s"
+            ", print_usage=%s"
+            ", print_version=%s"
+            ", recursive=%s"
             ", sort_by=%s"
-            ", sort_case_insensitive=%d"
-            ", sort_descending=%d"
-            ", verbose=%d"
+            ", sort_case_insensitive=%s"
+            ", sort_descending=%s"
+            ", verbose=%s"
             ")";
+
+static size_t all_bools_strlen(const FindSettings *settings)
+{
+    return
+            (settings->archives_only == 0 ? 5 : 4) +
+            (settings->debug == 0 ? 5 : 4) +
+            (settings->include_archives == 0 ? 5 : 4) +
+            (settings->include_hidden == 0 ? 5 : 4) +
+            (settings->list_dirs == 0 ? 5 : 4) +
+            (settings->list_files == 0 ? 5 : 4) +
+            (settings->print_results == 0 ? 5 : 4) +
+            (settings->print_usage == 0 ? 5 : 4) +
+            (settings->print_version == 0 ? 5 : 4) +
+            (settings->recursive == 0 ? 5 : 4) +
+            (settings->sort_case_insensitive == 0 ? 5 : 4) +
+            (settings->sort_descending == 0 ? 5 : 4) +
+            (settings->verbose == 0 ? 5 : 4);
+}
 
 static size_t all_strings_strlen(const FindSettings *settings)
 {
@@ -109,8 +127,8 @@ static size_t all_strings_strlen(const FindSettings *settings)
             string_node_strlen(settings->out_extensions) +
             regex_node_strlen(settings->out_file_patterns) +
             file_type_node_strlen(settings->out_file_types) +
-        sortby_strlen +
-        string_node_strlen(settings->paths);
+            sortby_strlen +
+            string_node_strlen(settings->paths);
 }
 
 static size_t last_mod_strlen(long last_mod)
@@ -127,7 +145,7 @@ size_t settings_strlen(const FindSettings *settings)
 
     return strlen(SETTINGS_TEMPLATE)
         - (SETTINGS_TOTAL_FIELD_COUNT * 2 + 4) // the + 4 is for the extra formatting letter for each long (%lu)
-        + SETTINGS_BOOL_FIELD_COUNT
+        + all_bools_strlen(settings)
         + max_last_mod_strlen
         + num_digits_ulong(settings->max_size)
         + min_last_mod_strlen
@@ -138,12 +156,14 @@ size_t settings_strlen(const FindSettings *settings)
 void settings_to_string(const FindSettings *settings, char *s)
 {
     // assumes s has correct allocation size
+    char *archives_only_s = settings->archives_only == 0 ? "false" : "true";
     char *in_archive_extensions_s = malloc(string_node_strlen(settings->in_archive_extensions) + 1);
     in_archive_extensions_s[0] = '\0';
     string_node_to_string(settings->in_archive_extensions, in_archive_extensions_s);
     char *in_archive_file_patterns_s = malloc(regex_node_strlen(settings->in_archive_file_patterns) + 1);
     in_archive_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
+    char *debug_s = settings->debug == 0 ? "false" : "true";
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
     in_dir_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_dir_patterns, in_dir_patterns_s);
@@ -156,6 +176,10 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *in_file_types_s = malloc(file_type_node_strlen(settings->in_file_types) + 1);
     in_file_types_s[0] = '\0';
     file_type_node_to_string(settings->in_file_types, in_file_types_s);
+    char *include_archives_s = settings->include_archives == 0 ? "false" : "true";
+    char *include_hidden_s = settings->include_hidden == 0 ? "false" : "true";
+    char *list_dirs_s = settings->list_dirs == 0 ? "false" : "true";
+    char *list_files_s = settings->list_files == 0 ? "false" : "true";
 
     size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
     char *max_last_mod_s = malloc(max_last_mod_strlen + 1);
@@ -200,23 +224,30 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     string_node_to_string(settings->paths, paths_s);
+    char *print_results_s = settings->print_results == 0 ? "false" : "true";
+    char *print_usage_s = settings->print_usage == 0 ? "false" : "true";
+    char *print_version_s = settings->print_version == 0 ? "false" : "true";
+    char *recursive_s = settings->recursive == 0 ? "false" : "true";
     char *sort_by_name = malloc(10 * sizeof(char));
     sort_by_to_name(settings->sort_by, sort_by_name);
+    char *sort_case_insensitive_s = settings->sort_case_insensitive == 0 ? "false" : "true";
+    char *sort_descending_s = settings->sort_descending == 0 ? "false" : "true";
+    char *verbose_s = settings->verbose == 0 ? "false" : "true";
 
 
     sprintf(s, SETTINGS_TEMPLATE,
-        settings->archives_only,
-        settings->debug,
+        archives_only_s,
+        debug_s,
         in_archive_extensions_s,
         in_archive_file_patterns_s,
         in_dir_patterns_s,
         in_extensions_s,
         in_file_patterns_s,
         in_file_types_s,
-        settings->include_archives,
-        settings->include_hidden,
-        settings->list_dirs,
-        settings->list_files,
+        include_archives_s,
+        include_hidden_s,
+        list_dirs_s,
+        list_files_s,
         settings->max_depth,
         max_last_mod_s,
         settings->max_size,
@@ -230,14 +261,14 @@ void settings_to_string(const FindSettings *settings, char *s)
         out_file_patterns_s,
         out_file_types_s,
         paths_s,
-        settings->print_results,
-        settings->print_usage,
-        settings->print_version,
-        settings->recursive,
+        print_results_s,
+        print_usage_s,
+        print_version_s,
+        recursive_s,
         sort_by_name,
-        settings->sort_case_insensitive,
-        settings->sort_descending,
-        settings->verbose);
+        sort_case_insensitive_s,
+        sort_descending_s,
+        verbose_s);
 
     size_t total_len = settings_strlen(settings) + 1;
 
