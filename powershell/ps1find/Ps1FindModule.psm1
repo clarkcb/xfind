@@ -543,6 +543,10 @@ class FindOptions {
             param([bool]$b, [FindSettings]$settings)
             $settings.ListFiles = $b
         }
+        "nolistfiles" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.ListFiles = !$b
+        }
         "norecursive" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.Recursive = !$b

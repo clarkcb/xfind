@@ -17,8 +17,8 @@
         "ext-json": "*"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.6.13",
-        "phpstan/phpstan": "^1.10.44"
+        "phpunit/phpunit": "^9.6.15",
+        "phpstan/phpstan": "^1.10.47"
     },
     "bin": ["bin/phpfind.php"]
 }

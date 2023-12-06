@@ -53,6 +53,7 @@ public partial class FindOptions
 			{ "includehidden", (b, settings) => settings.IncludeHidden = b },
 			{ "listdirs", (b, settings) => settings.ListDirs = b },
 			{ "listfiles", (b, settings) => settings.ListFiles = b },
+			{ "nolistfiles", (b, settings) => settings.ListFiles = !b },
 			{ "norecursive", (b, settings) => settings.Recursive = !b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
 			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },

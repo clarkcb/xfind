@@ -82,6 +82,7 @@ class FindOptions {
             includehidden: { Boolean b, FindSettings settings -> settings.includeHidden = b },
             listdirs: { Boolean b, FindSettings settings -> settings.listDirs = b },
             listfiles: { Boolean b, FindSettings settings -> settings.listFiles = b },
+            nolistfiles: { Boolean b, FindSettings settings -> settings.listFiles = !b },
             norecursive: { Boolean b, FindSettings settings -> settings.recursive = !b },
             recursive: { Boolean b, FindSettings settings -> settings.recursive = b },
             'sort-ascending': { Boolean b, FindSettings settings -> settings.sortDescending = !b },

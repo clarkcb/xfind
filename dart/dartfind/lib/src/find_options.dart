@@ -109,6 +109,8 @@ class FindOptions {
       'includehidden': (bool b, FindSettings ss) => ss.includeHidden = b,
       'listdirs': (bool b, FindSettings ss) => ss.listDirs = b,
       'listfiles': (bool b, FindSettings ss) => ss.listFiles = b,
+      'nolistfiles': (bool b, FindSettings ss) => ss.listFiles = !b,
+      'norecursive': (bool b, FindSettings ss) => ss.recursive = !b,
       'printusage': (bool b, FindSettings ss) => ss.printUsage = b,
       'recursive': (bool b, FindSettings ss) => ss.recursive = b,
       'sort-ascending': (bool b, FindSettings ss) => ss.sortDescending = !b,

@@ -145,6 +145,10 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('list_files', $b);
     },
+    'nolistfiles' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('list_files', !$b);
+    },
     'norecursive' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', !$b);

@@ -320,6 +320,9 @@ func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"listfiles": func(b bool, settings *FindSettings) {
 			settings.SetListFiles(b)
 		},
+		"nolistfiles": func(b bool, settings *FindSettings) {
+			settings.SetListFiles(!b)
+		},
 		"norecursive": func(b bool, settings *FindSettings) {
 			settings.SetRecursive(!b)
 		},

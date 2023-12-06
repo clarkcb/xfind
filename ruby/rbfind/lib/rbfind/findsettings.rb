@@ -156,41 +156,40 @@ module RbFind
     end
 
     def to_s
-      s = 'FindSettings('
-      s << "archives_only: #{@archives_only}"
-      s << ", debug: #{@debug}"
-      s << ', ' + list_to_s('in_archive_extensions', @in_archive_extensions)
-      s << ', ' + list_to_s('in_archive_file_patterns', @in_archive_file_patterns)
-      s << ', ' + list_to_s('in_dir_patterns', @in_dir_patterns)
-      s << ', ' + list_to_s('in_extensions', @in_extensions)
-      s << ', ' + list_to_s('in_file_patterns', @in_file_patterns)
-      s << ', ' + file_types_to_s('in_file_types', @in_file_types)
-      s << ", include_archives: #{@include_archives}"
-      s << ", include_hidden: #{@include_hidden}"
-      s << ", list_dirs: #{@list_dirs}"
-      s << ", list_files: #{@list_files}"
-      s << ", max_depth: #{@max_depth}"
-      s << ", max_last_mod: #{@max_last_mod}"
-      s << ", max_size: #{@max_size}"
-      s << ", min_depth: #{@min_depth}"
-      s << ", min_last_mod: #{@min_last_mod}"
-      s << ", min_size: #{@min_size}"
-      s << ', ' + list_to_s('out_archive_extensions', @out_archive_extensions)
-      s << ', ' + list_to_s('out_archive_file_patterns', @out_archive_file_patterns)
-      s << ', ' + list_to_s('out_dir_patterns', @out_dir_patterns)
-      s << ', ' + list_to_s('out_extensions', @out_extensions)
-      s << ', ' + list_to_s('out_file_patterns', @out_file_patterns)
-      s << ', ' + file_types_to_s('out_file_types', @out_file_types)
-      s << ', ' + list_to_s('paths', @paths)
-      s << ", print_usage: #{@print_usage}"
-      s << ", print_version: #{@print_version}"
-      s << ", recursive: #{@recursive}"
-      s << ", sort_by: #{@sort_by}"
-      s << ", sort_case_insensitive: #{@sort_case_insensitive}"
-      s << ", sort_descending: #{@sort_descending}"
-      s << ", verbose: #{@verbose}"
-      s << ')'
-      s
+      'FindSettings(' +
+        "archives_only: #{@archives_only}" +
+        ", debug: #{@debug}" +
+        ', ' + list_to_s('in_archive_extensions', @in_archive_extensions) +
+        ', ' + list_to_s('in_archive_file_patterns', @in_archive_file_patterns) +
+        ', ' + list_to_s('in_dir_patterns', @in_dir_patterns) +
+        ', ' + list_to_s('in_extensions', @in_extensions) +
+        ', ' + list_to_s('in_file_patterns', @in_file_patterns) +
+        ', ' + file_types_to_s('in_file_types', @in_file_types) +
+        ", include_archives: #{@include_archives}" +
+        ", include_hidden: #{@include_hidden}" +
+        ", list_dirs: #{@list_dirs}" +
+        ", list_files: #{@list_files}" +
+        ", max_depth: #{@max_depth}" +
+        ", max_last_mod: #{@max_last_mod}" +
+        ", max_size: #{@max_size}" +
+        ", min_depth: #{@min_depth}" +
+        ", min_last_mod: #{@min_last_mod}" +
+        ", min_size: #{@min_size}" +
+        ', ' + list_to_s('out_archive_extensions', @out_archive_extensions) +
+        ', ' + list_to_s('out_archive_file_patterns', @out_archive_file_patterns) +
+        ', ' + list_to_s('out_dir_patterns', @out_dir_patterns) +
+        ', ' + list_to_s('out_extensions', @out_extensions) +
+        ', ' + list_to_s('out_file_patterns', @out_file_patterns) +
+        ', ' + file_types_to_s('out_file_types', @out_file_types) +
+        ', ' + list_to_s('paths', @paths) +
+        ", print_usage: #{@print_usage}" +
+        ", print_version: #{@print_version}" +
+        ", recursive: #{@recursive}" +
+        ", sort_by: #{@sort_by}" +
+        ", sort_case_insensitive: #{@sort_case_insensitive}" +
+        ", sort_descending: #{@sort_descending}" +
+        ", verbose: #{@verbose}" +
+        ')'
     end
 
     private
@@ -200,7 +199,7 @@ module RbFind
         "#{name}=[]"
       else
         "#{name}=[\"#{lst.join('", "')}\"]"
-        end
+      end
     end
 
     def file_types_to_s(name, file_types)

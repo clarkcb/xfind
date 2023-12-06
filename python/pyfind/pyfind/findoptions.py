@@ -63,6 +63,9 @@ class FindOptions:
             'noincludearchives':
                 lambda b, settings:
                 settings.set_property('include_archives', not b),
+            'nolistfiles':
+                lambda b, settings:
+                settings.set_property('list_files', not b),
             'noprintmatches':
                 lambda b, settings:
                 settings.set_property('print_results', not b),

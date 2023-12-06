@@ -61,6 +61,7 @@ class FindOptions
             'includehidden' => fn (bool $b, FindSettings $fs) => $fs->include_hidden = $b,
             'listdirs' => fn (bool $b, FindSettings $fs) => $fs->list_dirs = $b,
             'listfiles' => fn (bool $b, FindSettings $fs) => $fs->list_files = $b,
+            'nolistfiles' => fn (bool $b, FindSettings $fs) => $fs->list_files = !$b,
             'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
             'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
             'sort-ascending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = !$b,

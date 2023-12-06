@@ -77,6 +77,7 @@ public class FindOptions {
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
             put("listdirs", (b, settings) -> settings.setListDirs(b));
             put("listfiles", (b, settings) -> settings.setListFiles(b));
+            put("nolistfiles", (b, settings) -> settings.setListFiles(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("sort-ascending", (b, settings) -> settings.setSortDescending(!b));

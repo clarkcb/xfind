@@ -4,8 +4,8 @@
 #include "findsettings.h"
 
 typedef struct FindOption {
-    const char *longarg;
-    const char *shortarg;
+    const char *long_arg;
+    const char *short_arg;
     const char *description;
 } FindOption;
 
@@ -57,7 +57,7 @@ typedef enum {
     VERSION               = 16
 } SettingsFlagType;
 
-FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc);
+FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc);
 
 FindOptions *empty_find_options(void);
 

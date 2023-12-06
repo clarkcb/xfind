@@ -44,6 +44,7 @@ namespace cppfind {
                 {"includehidden", [](bool b, FindSettings& ss) { ss.include_hidden(b); }},
                 {"listdirs", [](bool b, FindSettings& ss) { ss.list_dirs(b); }},
                 {"listfiles", [](bool b, FindSettings& ss) { ss.list_files(b); }},
+                {"nolistfiles", [](bool b, FindSettings& ss) { ss.list_files(!b); }},
                 {"norecursive", [](bool b, FindSettings& ss) { ss.recursive(!b); }},
                 {"recursive", [](bool b, FindSettings& ss) { ss.recursive(b); }},
                 {"sort-ascending", [](bool b, FindSettings& ss) { ss.sort_descending(!b); }},

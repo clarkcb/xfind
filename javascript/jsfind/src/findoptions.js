@@ -82,6 +82,8 @@ class FindOptions {
                 (b, settings) => { settings.listDirs = b; },
             'listfiles':
                 (b, settings) => { settings.listFiles = b; },
+            'nolistfiles':
+                (b, settings) => { settings.listFiles = !b; },
             'norecursive':
                 (b, settings) => { settings.recursive = !b; },
             'recursive':

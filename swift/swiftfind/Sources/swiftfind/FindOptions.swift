@@ -153,6 +153,9 @@ public class FindOptions {
         "listfiles": { (bool: Bool, settings: FindSettings) in
             settings.listFiles = bool
         },
+        "nolistfiles": { (bool: Bool, settings: FindSettings) in
+            settings.listFiles = !bool
+        },
         "norecursive": { (bool: Bool, settings: FindSettings) in
             settings.recursive = !bool
         },

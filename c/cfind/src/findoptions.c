@@ -101,12 +101,12 @@ char **flag_abbrs = (char *[]) {
     "V"  // version
 };
 
-FindOption *new_find_option(const char *longarg, const char *shortarg, const char *desc)
+FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc)
 {
     FindOption *o = malloc(sizeof(FindOption));
     assert(o != NULL);
-    o->longarg = longarg;
-    o->shortarg = shortarg;
+    o->long_arg = long_arg;
+    o->short_arg = short_arg;
     o->description = desc;
     return o;
 }
@@ -388,10 +388,10 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         set_debug(settings, flag_val);
         break;
     case EXCLUDE_ARCHIVES:
-        settings->include_archives = !flag_val;
+        settings->include_archives = flag_val == 0 ? 1 : 0;
         break;
     case EXCLUDE_HIDDEN:
-        settings->include_hidden = !flag_val;
+        settings->include_hidden = flag_val == 0 ? 1 : 0;
         break;
     case INCLUDE_ARCHIVES:
         settings->include_archives = flag_val;
@@ -409,19 +409,19 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         settings->list_files = flag_val;
         break;
     case NO_RECURSIVE:
-        settings->recursive = !flag_val;
+        settings->recursive = flag_val == 0 ? 1 : 0;
         break;
     case RECURSIVE:
         settings->recursive = flag_val;
         break;
     case SORT_ASCENDING:
-        settings->sort_descending = !flag_val;
+        settings->sort_descending = flag_val == 0 ? 1 : 0;
         break;
     case SORT_CASE_INSENSITIVE:
         settings->sort_case_insensitive = flag_val;
         break;
     case SORT_CASE_SENSITIVE:
-        settings->sort_case_insensitive = !flag_val;
+        settings->sort_case_insensitive = flag_val == 0 ? 1 : 0;
         break;
     case SORT_DESCENDING:
         settings->sort_descending = flag_val;
@@ -520,8 +520,8 @@ size_t find_options_count(FindOptions *options)
 static size_t get_option_opt_strlen(FindOption *o)
 {
     // + 2 for leading --
-    size_t opt_len = strlen(o->longarg) + 2;
-    if (o->shortarg != NULL) {
+    size_t opt_len = strlen(o->long_arg) + 2;
+    if (o->short_arg != NULL) {
         opt_len += 3;
     }
     return opt_len;
@@ -533,10 +533,10 @@ static size_t get_longest_opt_strlen(FindOptions *options)
     size_t longest_len = 0;
     while (temp != NULL && temp->option != NULL) {
         // + 2 for leading --
-        size_t long_len = strlen(temp->option->longarg) + 2;
-        if (temp->option->shortarg != NULL) {
+        size_t long_len = strlen(temp->option->long_arg) + 2;
+        if (temp->option->short_arg != NULL) {
             // + 2 for leading - and ,
-            long_len += strlen(temp->option->shortarg) + 1;
+            long_len += strlen(temp->option->short_arg) + 1;
         }
         if (long_len > longest_len) {
             longest_len = long_len;
@@ -548,9 +548,9 @@ static size_t get_longest_opt_strlen(FindOptions *options)
 
 static size_t find_option_strlen(FindOption *o)
 {
-    size_t optlen = strlen(o->longarg) + strlen(o->description);
-    if (o->shortarg != NULL) {
-        optlen += strlen(o->shortarg);
+    size_t optlen = strlen(o->long_arg) + strlen(o->description);
+    if (o->short_arg != NULL) {
+        optlen += strlen(o->short_arg);
     }
     return optlen;
 }
@@ -583,20 +583,20 @@ static int cmp_find_option(const void *a, const void *b)
 
     size_t o1_len = find_option_strlen(*o1);
     char opt1[o1_len];
-    if ((*o1)->shortarg != NULL) {
-        char c1 = (char)tolower((*o1)->shortarg[0]);
-        snprintf(opt1, o1_len, "%c@%s", c1, (*o1)->longarg);
+    if ((*o1)->short_arg != NULL) {
+        char c1 = (char)tolower((*o1)->short_arg[0]);
+        snprintf(opt1, o1_len, "%c@%s", c1, (*o1)->long_arg);
     } else {
-        snprintf(opt1, o1_len, "%s", (*o1)->longarg);
+        snprintf(opt1, o1_len, "%s", (*o1)->long_arg);
     }
 
     size_t o2_len = find_option_strlen(*o2);
     char opt2[o2_len];
-    if ((*o2)->shortarg != NULL) {
-        char c2 = (char)tolower((*o2)->shortarg[0]);
-        snprintf(opt2, o2_len, "%c@%s", c2, (*o2)->longarg);
+    if ((*o2)->short_arg != NULL) {
+        char c2 = (char)tolower((*o2)->short_arg[0]);
+        snprintf(opt2, o2_len, "%c@%s", c2, (*o2)->long_arg);
     } else {
-        snprintf(opt2, o2_len, "%s", (*o2)->longarg);
+        snprintf(opt2, o2_len, "%s", (*o2)->long_arg);
     }
 
     return strcmp(opt1, opt2);
@@ -627,10 +627,10 @@ void find_options_to_usage_string(FindOptions *options, char *s)
     for (i = 0; i < options_count; i++) {
         size_t opt_len = get_option_opt_strlen(option_array[i]) + 1;
         char opt_buff[opt_len];
-        if (option_array[i]->shortarg != NULL) {
-            snprintf(opt_buff, opt_len, "-%s,--%s", option_array[i]->shortarg, option_array[i]->longarg);
+        if (option_array[i]->short_arg != NULL) {
+            snprintf(opt_buff, opt_len, "-%s,--%s", option_array[i]->short_arg, option_array[i]->long_arg);
         } else {
-            snprintf(opt_buff, opt_len, "--%s", option_array[i]->longarg);
+            snprintf(opt_buff, opt_len, "--%s", option_array[i]->long_arg);
         }
         opt_buff[opt_len] = '\0';
         // + 5 for three spaces, newline and \0
@@ -663,10 +663,10 @@ void print_usage(void)
 
 void destroy_find_option(FindOption *o)
 {
-    if (o->shortarg != NULL) {
-        free(o->shortarg);
+    if (o->short_arg != NULL) {
+        free(o->short_arg);
     }
-    free(o->longarg);
+    free(o->long_arg);
     free(o->description);
     free(o);
 }

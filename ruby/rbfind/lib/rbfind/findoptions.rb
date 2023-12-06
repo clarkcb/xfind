@@ -189,6 +189,7 @@ module RbFind
         includehidden: ->(b, settings) { settings.include_hidden = b },
         listdirs: ->(b, settings) { settings.list_dirs = b },
         listfiles: ->(b, settings) { settings.list_files = b },
+        nolistfiles: ->(b, settings) { settings.list_files = !b },
         norecursive: ->(b, settings) { settings.recursive = !b },
         recursive: ->(b, settings) { settings.recursive = b },
         'sort-ascending': ->(b, settings) { settings.sort_descending = !b },

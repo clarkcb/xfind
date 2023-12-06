@@ -135,6 +135,7 @@ boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
                   , ("includehidden", \ss b -> ss {includeHidden=b})
                   , ("listdirs", \ss b -> ss {listDirs=b})
                   , ("listfiles", \ss b -> ss {listFiles=b})
+                  , ("nolistfiles", \ss b -> ss {listFiles=not b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
                   , ("recursive", \ss b -> ss {recursive=b})
                   , ("sort-ascending", \ss b -> ss {sortDescending=not b})

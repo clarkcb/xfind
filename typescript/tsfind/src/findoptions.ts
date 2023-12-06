@@ -101,6 +101,8 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.listDirs = b; },
             'listfiles':
                 (b: boolean, settings: FindSettings) => { settings.listFiles = b; },
+            'nolistfiles':
+                (b: boolean, settings: FindSettings) => { settings.listFiles = !b; },
             'norecursive':
                 (b: boolean, settings: FindSettings) => { settings.recursive = !b; },
             'recursive':

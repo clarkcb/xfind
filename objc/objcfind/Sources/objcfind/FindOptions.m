@@ -221,6 +221,7 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
             [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy], @"includehidden",
             [^void (BOOL b, FindSettings *ss) { ss.listDirs = b; } copy], @"listdirs",
             [^void (BOOL b, FindSettings *ss) { ss.listFiles = b; } copy], @"listfiles",
+            [^void (BOOL b, FindSettings *ss) { ss.listFiles = !b; } copy], @"nolistfiles",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
             [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",

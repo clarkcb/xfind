@@ -52,6 +52,7 @@ module FindOptions =
             ("includehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- b));
             ("listdirs", (fun (b : bool) (settings : FindSettings) -> settings.ListDirs <- b));
             ("listfiles", (fun (b : bool) (settings : FindSettings) -> settings.ListFiles <- b));
+            ("nolistfiles", (fun (b : bool) (settings : FindSettings) -> settings.ListFiles <- not b));
             ("norecursive", (fun (b : bool) (settings : FindSettings) -> settings.Recursive <- not b));
             ("recursive", (fun (b : bool) (settings : FindSettings) -> settings.Recursive <- b));
             ("sort-ascending", (fun (b : bool) (settings : FindSettings) -> settings.SortDescending <- not b));

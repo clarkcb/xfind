@@ -9,6 +9,7 @@
 ###############################################################################
 """
 from datetime import datetime
+from io import StringIO
 import re
 from enum import Enum
 from typing import Any, Optional, Pattern
@@ -226,32 +227,29 @@ class FindSettings:
                 self.sort_by = SortBy.FILEPATH
 
     def __str__(self):
-        print_dict = {}
-        s = f'{self.__class__.__name__}('
-        for p in sorted(self.__slots__):
+        sio = StringIO()
+        sio.write(f'{self.__class__.__name__}(')
+        for i, p in enumerate(sorted(self.__slots__)):
+            if i > 0:
+                sio.write(', ')
+            sio.write(f'{p}: ')
             val = getattr(self, p)
             if isinstance(val, set):
                 if len(val) > 0 and hasattr(list(val)[0], 'pattern'):
-                    print_dict[p] = str([x.pattern for x in val])
+                    sio.write(str([x.pattern for x in val]))
                 else:
-                    print_dict[p] = str(list(val))
+                    sio.write(str(list(val)))
             elif isinstance(val, str):
                 if val:
-                    print_dict[p] = f'"{val}"'
+                    sio.write(f'"{val}"')
                 else:
-                    print_dict[p] = '""'
+                    sio.write('""')
             elif isinstance(val, Optional[datetime]):
                 if val:
-                    print_dict[p] = f'"{val}"'
+                    sio.write(f'"{val}"')
                 else:
-                    print_dict[p] = '0'
+                    sio.write('0')
             else:
-                print_dict[p] = f'{val}'
-        next_elem = 0
-        for p in sorted(print_dict.keys()):
-            if next_elem:
-                s += ', '
-            s += f'{p}: {print_dict[p]}'
-            next_elem += 1
-        s += ')'
-        return s
+                sio.write(f'{val}')
+        sio.write(')')
+        return sio.getvalue()

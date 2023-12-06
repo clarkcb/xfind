@@ -83,6 +83,7 @@
     :includehidden (fn [settings b] (assoc settings :include-hidden b))
     :listdirs (fn [settings b] (assoc settings :list-dirs b))
     :listfiles (fn [settings b] (assoc settings :list-files b))
+    :nolistfiles (fn [settings b] (assoc settings :list-files (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))

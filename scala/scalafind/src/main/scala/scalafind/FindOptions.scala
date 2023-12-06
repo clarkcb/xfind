@@ -135,6 +135,7 @@ object FindOptions {
     "includehidden" -> ((b, ss) => ss.copy(includeHidden = b)),
     "listdirs" -> ((b, ss) => ss.copy(listDirs = b)),
     "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
+    "nolistfiles" -> ((b, ss) => ss.copy(listFiles = !b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
     "sort-ascending" -> ((b, ss) => ss.copy(sortDescending = !b)),

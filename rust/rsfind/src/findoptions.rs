@@ -488,6 +488,10 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_files(b))),
     );
     flag_map.insert(
+        "nolistfiles".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_files(!b))),
+    );
+    flag_map.insert(
         "norecursive".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(!b))),
     );

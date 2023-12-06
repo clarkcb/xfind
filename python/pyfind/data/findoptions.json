@@ -67,11 +67,11 @@
     },
     {
       "long": "listdirs",
-      "desc": "Generate a list of the matching directories after finding"
+      "desc": "List the matching directories after finding"
     },
     {
       "long": "listfiles",
-      "desc": "Generate a list of the matching files after finding"
+      "desc": "List the matching files after finding*"
     },
     {
       "long": "maxdepth",
@@ -102,6 +102,10 @@
       "long": "minsize",
       "arg": "size",
       "desc": "Find files with size >= minsize"
+    },
+    {
+      "long": "nolistfiles",
+      "desc": "Do not list the matching files after finding"
     },
     {
       "long": "norecursive",
