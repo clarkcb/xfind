@@ -21,9 +21,21 @@ const getDateForString = (s) => {
     return d;
 };
 
-const listToString = (name, lst) => {
-    if (lst.length) return `${name}=["${lst.join('","')}"]`;
-    return `${name}=[]`;
+const stringListToString = (name, lst) => {
+    let s = `${name}=[`;
+    if (lst.length) s += `"${lst.join('", "')}"`;
+    s += ']';
+    return s;
 };
 
-module.exports = {dateToString, getDateForString, listToString};
+const patternListToString = (name, lst) => {
+    let s = `${name}=[`;
+    if (lst.length) {
+        const ps = lst.map(p => p.source);
+        s += `"${ps.join('", "')}"`;
+    }
+    s += ']';
+    return s;
+};
+
+module.exports = {dateToString, getDateForString, patternListToString, stringListToString};

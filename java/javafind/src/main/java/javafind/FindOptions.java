@@ -57,7 +57,7 @@ public class FindOptions {
             put("out-filetype", (s, settings) -> settings.addOutFileType(s));
             put("path", (s, settings) -> settings.addPath(s));
             put("settings-file", (s, settings) -> settingsFromFilePath(s, settings));
-            put("sort-by", (s, settings) -> settings.setSortBy(SortByUtil.fromName(s)));
+            put("sort-by", (s, settings) -> settings.setSortBy(SortBy.forName(s)));
         }
     };
 

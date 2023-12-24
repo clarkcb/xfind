@@ -23,6 +23,7 @@ class Scenario:
     name: str
     args: list
     replace_xfind_name: bool = False
+    case_insensitive_cmp: bool = False
 
 
 ########################################
@@ -508,7 +509,7 @@ class Benchmarker(object):
         return time_dict
 
     def compare_outputs(self, s: Scenario, sn: int, xfind_output: dict[str, list[str]]) -> bool:
-        non_matching = non_matching_outputs(xfind_output)
+        non_matching = non_matching_outputs(xfind_output, case_insensitive_cmp=s.case_insensitive_cmp)
         if non_matching:
             xs = []
             if len(non_matching) == 2:

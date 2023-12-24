@@ -13,16 +13,16 @@ public enum FileType {
 }
 
 public class FileTypes {
-    fileprivate static let archive = "archive"
-    fileprivate static let audio = "audio"
-    fileprivate static let binary = "binary"
-    fileprivate static let code = "code"
-    fileprivate static let font = "font"
-    fileprivate static let image = "image"
-    fileprivate static let text = "text"
-    fileprivate static let unknown = "unknown"
-    fileprivate static let video = "video"
-    fileprivate static let xml = "xml"
+    fileprivate static let fileTypeArchiveName = "archive"
+    fileprivate static let fileTypeAudioName = "audio"
+    fileprivate static let fileTypeBinaryName = "binary"
+    fileprivate static let fileTypeCodeName = "code"
+    fileprivate static let fileTypeFontName = "font"
+    fileprivate static let fileTypeImageName = "image"
+    fileprivate static let fileTypeTextName = "text"
+    fileprivate static let fileTypeUnknownName = "unknown"
+    fileprivate static let fileTypeVideoName = "video"
+    fileprivate static let fileTypeXmlName = "xml"
 
     private var config: FindConfig
     private var fileTypeExtDict = [String: Set<String>]()
@@ -46,10 +46,10 @@ public class FileTypes {
                         let names = ft["names"] as! [String]
                         fileTypeNameDict[typeName] = Set(names)
                     }
-                    fileTypeExtDict[FileTypes.text] = fileTypeExtDict[FileTypes.text]!.union(fileTypeExtDict[FileTypes.code]!)
-                        .union(fileTypeExtDict[FileTypes.xml]!)
-                    fileTypeNameDict[FileTypes.text] = fileTypeNameDict[FileTypes.text]!.union(fileTypeNameDict[FileTypes.code]!)
-                        .union(fileTypeNameDict[FileTypes.xml]!)
+                    fileTypeExtDict[FileTypes.fileTypeTextName] = fileTypeExtDict[FileTypes.fileTypeTextName]!.union(fileTypeExtDict[FileTypes.fileTypeCodeName]!)
+                        .union(fileTypeExtDict[FileTypes.fileTypeXmlName]!)
+                    fileTypeNameDict[FileTypes.fileTypeTextName] = fileTypeNameDict[FileTypes.fileTypeTextName]!.union(fileTypeNameDict[FileTypes.fileTypeCodeName]!)
+                        .union(fileTypeNameDict[FileTypes.fileTypeXmlName]!)
                 }
             }
         } catch let error as NSError {
@@ -60,23 +60,23 @@ public class FileTypes {
     public static func fromName(_ typeName: String) -> FileType {
         let lname = typeName.lowercased()
         switch lname {
-        case archive:
+        case fileTypeArchiveName:
             return FileType.archive
-        case audio:
+        case fileTypeAudioName:
             return FileType.audio
-        case binary:
+        case fileTypeBinaryName:
             return FileType.binary
-        case code:
+        case fileTypeCodeName:
             return FileType.code
-        case font:
+        case fileTypeFontName:
             return FileType.font
-        case image:
+        case fileTypeImageName:
             return FileType.image
-        case text:
+        case fileTypeTextName:
             return FileType.text
-        case video:
+        case fileTypeVideoName:
             return FileType.video
-        case xml:
+        case fileTypeXmlName:
             return FileType.xml
         default:
             return FileType.unknown
@@ -86,25 +86,25 @@ public class FileTypes {
     public static func toName(_ fileType: FileType) -> String {
         switch fileType {
         case FileType.archive:
-            "archive"
+            fileTypeArchiveName
         case FileType.audio:
-            "audio"
+            fileTypeAudioName
         case FileType.binary:
-            "binary"
+            fileTypeBinaryName
         case FileType.code:
-            "code"
+            fileTypeCodeName
         case FileType.font:
-            "font"
+            fileTypeFontName
         case FileType.image:
-            "image"
+            fileTypeImageName
         case FileType.text:
-            "text"
+            fileTypeTextName
         case FileType.video:
-            "video"
+            fileTypeVideoName
         case FileType.xml:
-            "xml"
+            fileTypeXmlName
         default:
-            "unknown"
+            fileTypeUnknownName
         }
     }
 
@@ -148,35 +148,35 @@ public class FileTypes {
     }
 
     public func isArchiveFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.archive)
+        isFileOfType(fileName, FileTypes.fileTypeArchiveName)
     }
 
     public func isAudioFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.audio)
+        isFileOfType(fileName, FileTypes.fileTypeAudioName)
     }
 
     public func isBinaryFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.binary)
+        isFileOfType(fileName, FileTypes.fileTypeBinaryName)
     }
 
     public func isCodeFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.code)
+        isFileOfType(fileName, FileTypes.fileTypeCodeName)
     }
 
     public func isFontFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.font)
+        isFileOfType(fileName, FileTypes.fileTypeFontName)
     }
 
     public func isImageFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.image)
+        isFileOfType(fileName, FileTypes.fileTypeImageName)
     }
 
     public func isTextFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.text)
+        isFileOfType(fileName, FileTypes.fileTypeTextName)
     }
 
     public func isVideoFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.video)
+        isFileOfType(fileName, FileTypes.fileTypeVideoName)
     }
 
     public func isUnknownFile(_ fileName: String) -> Bool {
@@ -184,6 +184,6 @@ public class FileTypes {
     }
 
     public func isXmlFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.xml)
+        isFileOfType(fileName, FileTypes.fileTypeXmlName)
     }
 }

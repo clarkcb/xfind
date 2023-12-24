@@ -5,6 +5,20 @@
 #include "regexnode.h"
 #include "stringnode.h"
 
+#define BOOLEAN_NAME_FALSE "false"
+#define BOOLEAN_NAME_TRUE "true"
+
+#define SORT_BY_NAME_FILEPATH "filepath"
+#define SORT_BY_NAME_PATH "path"
+#define SORT_BY_NAME_FILENAME "filename"
+#define SORT_BY_NAME_NAME "name"
+#define SORT_BY_NAME_FILESIZE "filesize"
+#define SORT_BY_NAME_SIZE "size"
+#define SORT_BY_NAME_FILETYPE "filetype"
+#define SORT_BY_NAME_TYPE "type"
+#define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_UNKNOWN "unknown"
+
 typedef enum {
     FILEPATH = 0,
     FILENAME = 1,
@@ -39,7 +53,6 @@ typedef struct FindSettings {
     RegexNode *out_file_patterns;
     IntNode *out_file_types;
     StringNode *paths;
-    unsigned short print_results : 1;
     unsigned short print_usage : 1;
     unsigned short print_version : 1;
     unsigned short recursive : 1;

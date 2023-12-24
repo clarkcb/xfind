@@ -10,24 +10,24 @@
 """
 import importlib.resources
 import json
-from enum import Enum
+from enum import StrEnum
 
 from .fileutil import FileUtil
 from .findexception import FindException
 
 
-class FileType(Enum):
+class FileType(StrEnum):
     """FileType enum"""
-    UNKNOWN = 0
-    ARCHIVE = 1
-    AUDIO = 2
-    BINARY = 3
-    CODE = 4
-    FONT = 5
-    IMAGE = 6
-    TEXT = 7
-    VIDEO = 8
-    XML = 9
+    UNKNOWN = 'unknown'
+    ARCHIVE = 'archive'
+    AUDIO = 'audio'
+    BINARY = 'binary'
+    CODE = 'code'
+    FONT = 'font'
+    IMAGE = 'image'
+    TEXT = 'text'
+    VIDEO = 'video'
+    XML = 'xml'
 
     def __lt__(self, other):
         if self.__class__ is other.__class__:
@@ -36,12 +36,11 @@ class FileType(Enum):
 
     @classmethod
     def from_name(cls, name):
-        """Return FileType for given name if found else raise FindException"""
-        uname = name.upper()
+        """Return FileType for given name if found else return UNKNOWN"""
         try:
-            return FileType[uname]
+            return FileType[name.strip().upper()]
         except KeyError:
-            raise FindException(f'Invalid file type: {name}\n')
+            return FileType.UNKNOWN
 
 
 class FileTypes:

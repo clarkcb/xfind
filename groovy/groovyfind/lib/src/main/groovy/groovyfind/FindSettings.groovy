@@ -72,14 +72,14 @@ class FindSettings {
     FindSettings() {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY
         this.debug = DefaultFindSettings.DEBUG
-        this.inArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.inArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY)
+        this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.inArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.inDirPatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.inExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.inFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.inFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES
         this.includeHidden = DefaultFindSettings.INCLUDE_HIDDEN
-        this.inDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.inExtensions = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.inFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.inFileTypes = new HashSet<>(INITIAL_SET_CAPACITY)
         this.listDirs = DefaultFindSettings.LIST_DIRS
         this.listFiles = DefaultFindSettings.LIST_FILES
         this.maxDepth = DefaultFindSettings.MAX_DEPTH
@@ -88,13 +88,13 @@ class FindSettings {
         this.minDepth = DefaultFindSettings.MIN_DEPTH
         this.minLastMod = null
         this.minSize = DefaultFindSettings.MIN_SIZE
-        this.outArchiveExtensions = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.outArchiveFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.outDirPatterns = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.outExtensions = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.outFilePatterns = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.outFileTypes = new HashSet<>(INITIAL_SET_CAPACITY)
-        this.paths = new HashSet<>(INITIAL_SET_CAPACITY)
+        this.outArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.outArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.outDirPatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.outExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.outFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.outFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.paths = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.printUsage = DefaultFindSettings.PRINT_USAGE
         this.printVersion = DefaultFindSettings.PRINT_VERSION
         this.recursive = DefaultFindSettings.RECURSIVE
@@ -210,7 +210,7 @@ class FindSettings {
     private static void addFileTypes(Set<FileType> set, final List<String> fts) {
         fts.each { ft ->
             if (!ft.isEmpty()) {
-                set.add(FileTypes.fromName(ft))
+                set.add(FileType.forName(ft))
             }
         }
     }
@@ -264,7 +264,7 @@ class FindSettings {
             if (elemCount > 0) {
                 sb.append(', ')
             }
-            sb.append(ft.name())
+            sb.append(ft.toName())
             elemCount++
         }
         sb.append(']')
@@ -280,40 +280,38 @@ class FindSettings {
 
     String toString() {
         return 'FindSettings(' +
-                'archivesOnly: ' + this.archivesOnly +
-                ', debug: ' + this.debug +
-                ', inArchiveExtensions: ' + stringSetToString(this.inArchiveExtensions) +
-                ', inArchiveFilePatterns: ' + patternSetToString(this.inArchiveFilePatterns) +
-                ', includeArchives: ' + this.includeArchives +
-                ', includeHidden: ' + this.includeHidden +
-                ', inDirPatterns: ' + patternSetToString(this.inDirPatterns) +
-                ', inExtensions: ' + stringSetToString(this.inExtensions) +
-                ', inFilePatterns: ' + patternSetToString(this.inFilePatterns) +
-                ', inFileTypes: ' + fileTypeSetToString(this.inFileTypes) +
-                ', includeArchives: ' + this.includeArchives +
-                ', listDirs: ' + this.listDirs +
-                ', listFiles: ' + this.listFiles +
-                ', maxDepth: ' + this.maxDepth +
-                ', maxLastMod: ' + localDateTimeToString(this.maxLastMod) +
-                ', maxSize: ' + this.maxSize +
-                ', minDepth: ' + this.minDepth +
-                ', minLastMod: ' + localDateTimeToString(this.minLastMod) +
-                ', minSize: ' + this.minSize +
-                ', outArchiveExtensions: ' + stringSetToString(this.outArchiveExtensions) +
-                ', outArchiveFilePatterns: ' + patternSetToString(this.outArchiveFilePatterns) +
-                ', outDirPatterns: ' + patternSetToString(this.outDirPatterns) +
-                ', outExtensions: ' + stringSetToString(this.outExtensions) +
-                ', outFilePatterns: ' + patternSetToString(this.outFilePatterns) +
-                ', outFileTypes: ' + fileTypeSetToString(this.outFileTypes) +
-                ', paths: ' + stringSetToString(this.paths) +
-                ', printUsage: ' + this.printUsage +
-                ', printVersion: ' + this.printVersion +
-                ', recursive: ' + this.recursive +
-                ', sortBy: ' + SortByUtil.toName(this.sortBy) +
-                ', sortCaseInsensitive: ' + this.sortCaseInsensitive +
-                ', sortDescending: ' + this.sortDescending +
-                ', verbose: ' + this.verbose +
+                'archivesOnly=' + this.archivesOnly +
+                ', debug=' + this.debug +
+                ', inArchiveExtensions=' + stringSetToString(this.inArchiveExtensions) +
+                ', inArchiveFilePatterns=' + patternSetToString(this.inArchiveFilePatterns) +
+                ', inDirPatterns=' + patternSetToString(this.inDirPatterns) +
+                ', inExtensions=' + stringSetToString(this.inExtensions) +
+                ', inFilePatterns=' + patternSetToString(this.inFilePatterns) +
+                ', inFileTypes=' + fileTypeSetToString(this.inFileTypes) +
+                ', includeArchives=' + this.includeArchives +
+                ', includeHidden=' + this.includeHidden +
+                ', listDirs=' + this.listDirs +
+                ', listFiles=' + this.listFiles +
+                ', maxDepth=' + this.maxDepth +
+                ', maxLastMod=' + localDateTimeToString(this.maxLastMod) +
+                ', maxSize=' + this.maxSize +
+                ', minDepth=' + this.minDepth +
+                ', minLastMod=' + localDateTimeToString(this.minLastMod) +
+                ', minSize=' + this.minSize +
+                ', outArchiveExtensions=' + stringSetToString(this.outArchiveExtensions) +
+                ', outArchiveFilePatterns=' + patternSetToString(this.outArchiveFilePatterns) +
+                ', outDirPatterns=' + patternSetToString(this.outDirPatterns) +
+                ', outExtensions=' + stringSetToString(this.outExtensions) +
+                ', outFilePatterns=' + patternSetToString(this.outFilePatterns) +
+                ', outFileTypes=' + fileTypeSetToString(this.outFileTypes) +
+                ', paths=' + stringSetToString(this.paths) +
+                ', printUsage=' + this.printUsage +
+                ', printVersion=' + this.printVersion +
+                ', recursive=' + this.recursive +
+                ', sortBy=' + this.sortBy.toName() +
+                ', sortCaseInsensitive=' + this.sortCaseInsensitive +
+                ', sortDescending=' + this.sortDescending +
+                ', verbose=' + this.verbose +
                 ')'
     }
-
 }

@@ -5,16 +5,16 @@ namespace phpfind;
 /**
  * Enum FileType
  */
-enum FileType
+enum FileType: string
 {
-    case Unknown;
-    case Archive;
-    case Audio;
-    case Binary;
-    case Code;
-    case Font;
-    case Image;
-    case Text;
-    case Video;
-    case Xml;
+    case Unknown = 'unknown';
+    case Archive = 'archive';
+    case Audio = 'audio';
+    case Binary = 'binary';
+    case Code = 'code';
+    case Font = 'font';
+    case Image = 'image';
+    case Text = 'text';
+    case Video = 'video';
+    case Xml = 'xml';
 }

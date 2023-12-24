@@ -10,63 +10,31 @@ import org.json.JSONTokener
  * @author cary on 7/24/16.
  */
 
-enum class FileType {
-    UNKNOWN,
-    ARCHIVE,
-    AUDIO,
-    BINARY,
-    CODE,
-    FONT,
-    IMAGE,
-    TEXT,
-    VIDEO,
-    XML
-}
+enum class FileType(val value: String) {
+    UNKNOWN("unknown"),
+    ARCHIVE("archive"),
+    AUDIO("audio"),
+    BINARY("binary"),
+    CODE("code"),
+    FONT("font"),
+    IMAGE("image"),
+    TEXT("text"),
+    VIDEO("video"),
+    XML("xml");
 
-private const val archive = "archive"
-private const val audio = "audio"
-private const val binary = "binary"
-private const val code = "code"
-// private const val findable = "findable"
-private const val font = "font"
-private const val image = "image"
-//private const val searchable = "searchable"
-private const val text = "text"
-private const val video = "video"
-private const val xml = "xml"
-//private const val unknown = "unknown"
+    override fun toString(): String {
+        return value
+    }
 
-fun fileTypeFromName(name: String) : FileType {
-    when (name.trim().lowercase()) {
-        archive -> {
-            return FileType.ARCHIVE
-        }
-        audio -> {
-            return FileType.AUDIO
-        }
-        binary -> {
-            return FileType.BINARY
-        }
-        code -> {
-            return FileType.CODE
-        }
-        font -> {
-            return FileType.FONT
-        }
-        image -> {
-            return FileType.IMAGE
-        }
-        text -> {
-            return FileType.TEXT
-        }
-        video -> {
-            return FileType.VIDEO
-        }
-        xml -> {
-            return FileType.XML
-        }
-        else -> {
-            return FileType.UNKNOWN
+    companion object {
+        fun forName(name: String): FileType {
+            val lname = name.trim().lowercase()
+            FileType.entries.forEach {
+                if (it.value == lname) {
+                    return it
+                }
+            }
+            return UNKNOWN
         }
     }
 }
@@ -103,11 +71,6 @@ class FileTypes {
             allTextNames.addAll(fileTypeNameMap["text"]!!)
             allTextNames.addAll(fileTypeNameMap["xml"]!!)
             fileTypeNameMap["text"] = allTextNames
-            // val allFindable: MutableSet<String> = mutableSetOf()
-            // allFindable.addAll(fileTypeExtMap["archive"]!!)
-            // allFindable.addAll(fileTypeExtMap["binary"]!!)
-            // allFindable.addAll(fileTypeExtMap["text"]!!)
-            // fileTypeExtMap["findable"] = allFindable
         } catch (e: IOException) {
             e.printStackTrace()
         }
@@ -152,42 +115,38 @@ class FileTypes {
     }
 
     fun isArchiveFile(file: File): Boolean {
-        return (fileTypeNameMap[archive] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[archive] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.ARCHIVE.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.ARCHIVE.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isAudioFile(file: File): Boolean {
-        return (fileTypeNameMap[audio] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[audio] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.AUDIO.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.AUDIO.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isBinaryFile(file: File): Boolean {
-        return (fileTypeNameMap[binary] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[binary] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.BINARY.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.BINARY.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isCodeFile(file: File): Boolean {
-        return (fileTypeNameMap[code] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[code] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.CODE.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.CODE.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isFontFile(file: File): Boolean {
-        return (fileTypeNameMap[font] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[font] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.FONT.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.FONT.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isImageFile(file: File): Boolean {
-        return (fileTypeNameMap[image] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[image] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.IMAGE.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.IMAGE.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
-    // fun isFindableFile(file: File): Boolean {
-    //     return (fileTypeExtMap[findable] ?: setOf()).contains(file.extension.lowercase())
-    // }
-
     fun isTextFile(file: File): Boolean {
-        return (fileTypeNameMap[text] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[text] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.TEXT.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.TEXT.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isUnknownFile(file: File): Boolean {
@@ -195,12 +154,12 @@ class FileTypes {
     }
 
     fun isVideoFile(file: File): Boolean {
-        return (fileTypeNameMap[video] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[video] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.VIDEO.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.VIDEO.value] ?: setOf()).contains(file.extension.lowercase())
     }
 
     fun isXmlFile(file: File): Boolean {
-        return (fileTypeNameMap[xml] ?: setOf()).contains(file.name)
-                || (fileTypeExtMap[xml] ?: setOf()).contains(file.extension.lowercase())
+        return (fileTypeNameMap[FileType.XML.value] ?: setOf()).contains(file.name)
+                || (fileTypeExtMap[FileType.XML.value] ?: setOf()).contains(file.extension.lowercase())
     }
 }

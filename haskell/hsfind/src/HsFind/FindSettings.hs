@@ -1,17 +1,19 @@
 module HsFind.FindSettings
   ( FindSettings(..)
   , defaultFindSettings
+  , findSettingsToString
   , getSortByForName
   , newExtensions
   , SortBy(..)
   ) where
 
+import Data.List (intercalate)
 import Data.List.Split (splitOn)
 import Data.Time (UTCTime)
 
-import HsFind.FileTypes (FileType)
+import HsFind.FileTypes (FileType, getFileTypeName)
 import HsFind.FileUtil (normalizeExtension)
-import HsFind.SortBy (SortBy(..), getSortByForName)
+import HsFind.SortBy (SortBy(..), getSortByForName, sortByToString)
 
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool
@@ -89,3 +91,47 @@ newExtensions x | ',' `elem` x = map normalizeExtension $ removeBlank (splitOn "
                 | otherwise    = [normalizeExtension x]
   where removeBlank :: [String] -> [String]
         removeBlank = filter (/="")
+
+findSettingsToString :: FindSettings -> String
+findSettingsToString settings = 
+  "FindSettings(" ++
+  "archivesOnly=" ++ show (archivesOnly settings) ++
+  ", debug=" ++ show (debug settings) ++
+  ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
+  ", inArchiveFilePatterns=" ++ listToString (inArchiveFilePatterns settings) ++
+  ", inDirPatterns=" ++ listToString (inDirPatterns settings) ++
+  ", inExtensions=" ++ listToString (inExtensions settings) ++
+  ", inFilePatterns=" ++ listToString (inFilePatterns settings) ++
+  ", inFileTypes=" ++ fileTypesToString (inFileTypes settings) ++
+  ", includeArchives=" ++ show (includeArchives settings) ++
+  ", includeHidden=" ++ show (includeHidden settings) ++
+  ", listDirs=" ++ show (listDirs settings) ++
+  ", listFiles=" ++ show (listFiles settings) ++
+  ", maxDepth=" ++ show (maxDepth settings) ++
+  ", maxLastMod=" ++ lastModToString (maxLastMod settings) ++
+  ", maxSize=" ++ show (maxSize settings) ++
+  ", minDepth=" ++ show (minDepth settings) ++
+  ", minLastMod=" ++ lastModToString (minLastMod settings) ++
+  ", minSize=" ++ show (minSize settings) ++
+  ", outArchiveExtensions=" ++ listToString (outArchiveExtensions settings) ++
+  ", outArchiveFilePatterns=" ++ listToString (outArchiveFilePatterns settings) ++
+  ", outDirPatterns=" ++ listToString (outDirPatterns settings) ++
+  ", outExtensions=" ++ listToString (outExtensions settings) ++
+  ", outFilePatterns=" ++ listToString (outFilePatterns settings) ++
+  ", outFileTypes=" ++ fileTypesToString (outFileTypes settings) ++
+  ", paths=" ++ listToString (paths settings) ++
+  ", printUsage=" ++ show (printUsage settings) ++
+  ", printVersion=" ++ show (printVersion settings) ++
+  ", recursive=" ++ show (recursive settings) ++
+  ", sortBy=" ++ sortByToString (sortResultsBy settings) ++
+  ", sortCaseInsensitive=" ++ show (sortCaseInsensitive settings) ++
+  ", sortDescending=" ++ show (sortDescending settings) ++
+  ", verbose=" ++ show (verbose settings) ++
+  ")"
+  where listToString lst | null lst = "[]"
+                         | otherwise = "[\"" ++ intercalate "\", \"" lst ++ "\"]"
+        fileTypesToString fts = "[" ++ intercalate ", " (fileTypeNames fts) ++ "]"
+        fileTypeNames = Prelude.map getFileTypeName
+        lastModToString :: Maybe UTCTime -> String
+        lastModToString Nothing = "0"
+        lastModToString (Just t) = show t

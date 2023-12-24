@@ -3,6 +3,18 @@
 
 #include <set>
 
+#define FILE_TYPE_NAME_ARCHIVE "archive"
+#define FILE_TYPE_NAME_AUDIO "audio"
+#define FILE_TYPE_NAME_BINARY "binary"
+#define FILE_TYPE_NAME_CODE "code"
+#define FILE_TYPE_NAME_FONT "font"
+#define FILE_TYPE_NAME_IMAGE "image"
+#define FILE_TYPE_NAME_TEXT "text"
+#define FILE_TYPE_NAME_VIDEO "video"
+#define FILE_TYPE_NAME_XML "xml"
+#define FILE_TYPE_NAME_NOSEARCH "nosearch"
+#define FILE_TYPE_NAME_UNKNOWN "unknown"
+
 namespace cppfind {
     enum class FileType {UNKNOWN, ARCHIVE, AUDIO, BINARY, CODE, FONT, IMAGE, TEXT, VIDEO, XML};
 

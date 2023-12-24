@@ -9,15 +9,19 @@
 (ns cljfind.findsettings
   #^{:author "Cary Clark",
      :doc "Defines the settings for a given find instance"}
+  (:require [clojure.string :as str])
   (:use [clojure.set :only (union)]
         [clojure.string :as str :only (split lower-case)]
-        [cljfind.filetypes :only (from-name)]))
+        [cljfind.filetypes :only (from-name to-name)]))
 
 ;; sort-by names
-(def FILEPATH "path")
-(def FILENAME "name")
-(def FILESIZE "size")
-(def FILETYPE "type")
+(def FILEPATH "filepath")
+(def FILENAME "filename")
+(def NAME "name")
+(def FILESIZE "filesize")
+(def SIZE "size")
+(def FILETYPE "filetype")
+(def TYPE "type")
 (def LASTMOD "lastmod")
 
 (defn get-sort-by-name [s]
@@ -31,60 +35,66 @@
 (defn sort-by-from-name [^String name]
   (let [lname (lower-case name)]
     (cond
-      (= FILENAME lname) :filename
-      (= FILESIZE lname) :filesize
-      (= FILETYPE lname) :filetype
+      (or
+        (= FILENAME lname)
+        (= NAME lname)) :filename
+      (or
+        (= FILESIZE lname)
+        (= SIZE lname)) :filesize
+      (or
+        (= FILETYPE lname)
+        (= TYPE lname)) :filetype
       (= LASTMOD lname) :lastmod
       :else :filepath)))
 
 (defrecord FindSettings
   [
-    archives-only
-    debug
-    include-archives
-    include-hidden
-    in-archive-extensions
-    in-archive-file-patterns
-    in-dir-patterns
-    in-extensions
-    in-file-patterns
-    in-file-types
-    list-dirs
-    list-files
-    max-depth
-    max-last-mod
-    max-size
-    min-depth
-    min-last-mod
-    min-size
-    out-archive-extensions
-    out-archive-patterns
-    out-dir-patterns
-    out-extensions
-    out-file-patterns
-    out-file-types
-    paths
-    print-usage
-    print-version
-    sort-by
-    sort-case-insensitive
-    sort-descending
-    recursive
-    verbose
+    ^Boolean archives-only
+    ^Boolean debug
+    ^clojure.lang.PersistentHashSet in-archive-extensions
+    ^clojure.lang.PersistentHashSet in-archive-file-patterns
+    ^clojure.lang.PersistentHashSet in-dir-patterns
+    ^clojure.lang.PersistentHashSet in-extensions
+    ^clojure.lang.PersistentHashSet in-file-patterns
+    ^clojure.lang.PersistentHashSet in-file-types
+    ^Boolean include-archives
+    ^Boolean include-hidden
+    ^Boolean list-dirs
+    ^Boolean list-files
+    ^Long max-depth
+    ^java.util.Date max-last-mod
+    ^Long max-size
+    ^Long min-depth
+    ^java.util.Date min-last-mod
+    ^Long min-size
+    ^clojure.lang.PersistentHashSet out-archive-extensions
+    ^clojure.lang.PersistentHashSet out-archive-file-patterns
+    ^clojure.lang.PersistentHashSet out-dir-patterns
+    ^clojure.lang.PersistentHashSet out-extensions
+    ^clojure.lang.PersistentHashSet out-file-patterns
+    ^clojure.lang.PersistentHashSet out-file-types
+    ^clojure.lang.PersistentHashSet paths
+    ^Boolean print-usage
+    ^Boolean print-version
+    ^Boolean recursive
+    ^clojure.lang.Keyword sort-by
+    ^Boolean sort-case-insensitive
+    ^Boolean sort-descending
+    ^Boolean verbose
   ])
 
 (def DEFAULT-SETTINGS
   (->FindSettings
    false     ; archives-only
    false     ; debug
-   false     ; include-archives
-   false     ; include-hidden
    #{}       ; in-archive-extensions
    #{}       ; in-archive-file-patterns
    #{}       ; in-dir-patterns
    #{}       ; in-extensions
    #{}       ; in-file-patterns
    #{}       ; in-file-types
+   false     ; include-archives
+   false     ; include-hidden
    false     ; list-dirs
    false     ; list-files
    -1        ; max-depth
@@ -94,7 +104,7 @@
    nil       ; min-last-mod
    0         ; min-size
    #{}       ; out-archive-extensions
-   #{}       ; out-archive-patterns
+   #{}       ; out-archive-file-patterns
    #{}       ; out-dir-patterns
    #{}       ; out-extensions
    #{}       ; out-file-patterns
@@ -102,10 +112,10 @@
    #{}       ; paths
    false     ; print-usage
    false     ; print-version
+   true      ; recursive
    :filepath ; sort-by
    false     ; sort-case-insensitive
    false     ; sort-descending
-   true      ; recursive
    false     ; verbose
    ))
 
@@ -196,3 +206,55 @@
     (if b
       (assoc with-debug :verbose true)
       with-debug)))
+
+(defn string-set-to-string [ss]
+  (if (empty? ss)
+    "[]"
+    (str "[\"" (str/join "\", \"" ss) "\"]")))
+
+(defn pattern-set-to-string [ps]
+  (if (empty? ps)
+    "[]"
+    (str "[\"" (str/join "\", \"" (map #(.pattern %) ps)) "\"]")))
+
+(defn filetype-set-to-string [fts]
+  (if (empty? fts)
+    "[]"
+    (str "[" (str/join ", " (map #(to-name %) fts)) "]")))
+
+(defmethod print-method FindSettings
+  [^FindSettings settings ^java.io.Writer w]
+  (.write w (str
+             "FindSettings(archives-only=" (:archives-only settings)
+             ", debug=" (:debug settings)
+             ", in-archive-extensions=" (string-set-to-string (:in-archive-extensions settings))
+             ", in-archive-file-patterns=" (pattern-set-to-string (:in-archive-file-patterns settings))
+             ", in-dir-patterns=" (pattern-set-to-string (:in-dir-patterns settings))
+             ", in-extensions=" (string-set-to-string (:in-extensions settings))
+             ", in-file-patterns=" (pattern-set-to-string (:in-file-patterns settings))
+             ", in-file-types=" (filetype-set-to-string (:in-file-types settings))
+             ", include-archives=" (:include-archives settings)
+             ", include-hidden=" (:include-hidden settings)
+             ", list-dirs=" (:list-dirs settings)
+             ", list-files=" (:list-files settings)
+             ", max-depth=" (:max-depth settings)
+             ", max-last-mod=" (if (nil? (:max-last-mod settings)) "0" (:max-last-mod settings))
+             ", max-size=" (:max-size settings)
+             ", min-depth=" (:min-depth settings)
+             ", min-last-mod=" (if (nil? (:min-last-mod settings)) "0" (:min-last-mod settings))
+             ", min-size=" (:min-size settings)
+             ", out-archive-extensions=" (string-set-to-string (:out-archive-extensions settings))
+             ", out-archive-file-patterns=" (pattern-set-to-string (:out-archive-file-patterns settings))
+             ", out-dir-patterns=" (pattern-set-to-string (:out-dir-patterns settings))
+             ", out-extensions=" (string-set-to-string (:out-extensions settings))
+             ", out-file-patterns=" (pattern-set-to-string (:out-file-patterns settings))
+             ", out-file-types=" (filetype-set-to-string (:out-file-types settings))
+             ", paths=" (string-set-to-string (:paths settings))
+             ", print-usage=" (:print-usage settings)
+             ", print-version=" (:print-version settings)
+             ", recursive=" (:recursive settings)
+             ", sort-by=" (get-sort-by-name (:sort-by settings))
+             ", sort-case-insensitive=" (:sort-case-insensitive settings)
+             ", sort-descending=" (:sort-descending settings)
+             ", verbose=" (:verbose settings)
+             ")")))

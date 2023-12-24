@@ -65,18 +65,7 @@ class FileTypes
      */
     public static function from_name(string $typename): FileType
     {
-        return match (strtoupper($typename)) {
-            'ARCHIVE' => FileType::Archive,
-            'AUDIO' => FileType::Audio,
-            'BINARY' => FileType::Binary,
-            'CODE' => FileType::Code,
-            'FONT' => FileType::Font,
-            'IMAGE' => FileType::Image,
-            'TEXT' => FileType::Text,
-            'VIDEO' => FileType::Video,
-            'XML' => FileType::Xml,
-            default => FileType::Unknown
-        };
+        return FileType::tryFrom(strtolower($typename)) ?? FileType::Unknown;
     }
 
     /**
@@ -85,18 +74,7 @@ class FileTypes
      */
     public static function to_name(FileType $type): string
     {
-        return match ($type) {
-            FileType::Archive => 'Archive',
-            FileType::Audio => 'Audio',
-            FileType::Binary => 'Binary',
-            FileType::Code => 'Code',
-            FileType::Font => 'Font',
-            FileType::Image => 'Image',
-            FileType::Text => 'Text',
-            FileType::Video => 'Video',
-            FileType::Xml => 'Xml',
-            default => 'Unknown'
-        };
+        return $type->value;
     }
 
     /**

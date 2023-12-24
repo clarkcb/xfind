@@ -11,43 +11,55 @@ import (
 type SortBy int
 
 const (
-	SortByFilepath SortBy = iota
-	SortByFilename SortBy = iota
-	SortByFilesize SortBy = iota
-	SortByFiletype SortBy = iota
-	SortByLastmod  SortBy = iota
+	SortByFilePathName = "filepath"
+	SortByFileNameName = "filename"
+	SortByNameName     = "name"
+	SortByFileSizeName = "filesize"
+	SortBySizeName     = "size"
+	SortByFileTypeName = "filetype"
+	SortByTypeName     = "type"
+	SortByLastModName  = "lastmod"
+)
+
+const (
+	SortByFilePath SortBy = iota
+	SortByFileName SortBy = iota
+	SortByFileSize SortBy = iota
+	SortByFileType SortBy = iota
+	SortByLastMod  SortBy = iota
 )
 
 func SortByForName(name string) SortBy {
-	if strings.ToUpper(name) == "NAME" {
-		return SortByFilename
+	lname := strings.ToLower(name)
+	if lname == SortByFileNameName || lname == SortByNameName {
+		return SortByFileName
 	}
-	if strings.ToUpper(name) == "SIZE" {
-		return SortByFilesize
+	if lname == SortByFileSizeName || lname == SortBySizeName {
+		return SortByFileSize
 	}
-	if strings.ToUpper(name) == "TYPE" {
-		return SortByFiletype
+	if lname == SortByFileTypeName || lname == SortByTypeName {
+		return SortByFileType
 	}
-	if strings.ToUpper(name) == "LASTMOD" {
-		return SortByLastmod
+	if lname == SortByLastModName {
+		return SortByLastMod
 	}
-	return SortByFilepath
+	return SortByFilePath
 }
 
 func NameForSortBy(sortBy SortBy) string {
-	if sortBy == SortByFilename {
-		return "NAME"
+	if sortBy == SortByFileName {
+		return SortByFileNameName
 	}
-	if sortBy == SortByFilesize {
-		return "SIZE"
+	if sortBy == SortByFileSize {
+		return SortByFileSizeName
 	}
-	if sortBy == SortByFiletype {
-		return "TYPE"
+	if sortBy == SortByFileType {
+		return SortByFileTypeName
 	}
-	if sortBy == SortByLastmod {
-		return "LASTMOD"
+	if sortBy == SortByLastMod {
+		return SortByLastModName
 	}
-	return "PATH"
+	return SortByFilePathName
 }
 
 // FindSettings - the settings for the find session
@@ -116,7 +128,7 @@ func GetDefaultFindSettings() *FindSettings {
 		false,          // PrintUsage
 		false,          // PrintVersion
 		true,           // Recursive
-		SortByFilepath, // SortBy
+		SortByFilePath, // SortBy
 		false,          // SortCaseInsensitive
 		false,          // SortDescending
 		false,          // Verbose
@@ -505,39 +517,39 @@ func addPattern(p string, sp *Patterns) {
 }
 
 func (f *FindSettings) String() string {
-	const template = "SearchSettings{" +
-		"ArchivesOnly: %t" +
-		", Debug: %t" +
-		", InArchiveExtensions: %s" +
-		", InArchiveFilePatterns: %s" +
-		", InDirPatterns: %s" +
-		", InExtensions: %s" +
-		", InFilePatterns: %s" +
-		", InFileTypes: %s" +
-		", IncludeArchives: %t" +
-		", IncludeHidden: %t" +
-		", ListDirs: %t" +
-		", ListFiles: %t" +
-		", MaxDepth: %d" +
-		", MaxLastMod: %s" +
-		", MaxSize: %d" +
-		", MinDepth: %d" +
-		", MinLastMod: %s" +
-		", MinSize: %d" +
-		", OutArchiveExtensions: %s" +
-		", OutArchiveFilePatterns: %s" +
-		", OutDirPatterns: %s" +
-		", OutExtensions: %s" +
-		", OutFilePatterns: %s" +
-		", OutFileTypes: %s" +
-		", Paths: %s" +
-		", PrintUsage: %t" +
-		", PrintVersion: %t" +
-		", Recursive: %t" +
-		", SortBy: %s" +
-		", SortCaseInsensitive: %t" +
-		", SortDescending: %t" +
-		", Verbose: %t}"
+	const template = "FindSettings(" +
+		"ArchivesOnly=%t" +
+		", Debug=%t" +
+		", InArchiveExtensions=%s" +
+		", InArchiveFilePatterns=%s" +
+		", InDirPatterns=%s" +
+		", InExtensions=%s" +
+		", InFilePatterns=%s" +
+		", InFileTypes=%s" +
+		", IncludeArchives=%t" +
+		", IncludeHidden=%t" +
+		", ListDirs=%t" +
+		", ListFiles=%t" +
+		", MaxDepth=%d" +
+		", MaxLastMod=%s" +
+		", MaxSize=%d" +
+		", MinDepth=%d" +
+		", MinLastMod=%s" +
+		", MinSize=%d" +
+		", OutArchiveExtensions=%s" +
+		", OutArchiveFilePatterns=%s" +
+		", OutDirPatterns=%s" +
+		", OutExtensions=%s" +
+		", OutFilePatterns=%s" +
+		", OutFileTypes=%s" +
+		", Paths=%s" +
+		", PrintUsage=%t" +
+		", PrintVersion=%t" +
+		", Recursive=%t" +
+		", SortBy=%s" +
+		", SortCaseInsensitive=%t" +
+		", SortDescending=%t" +
+		", Verbose=%t)"
 	return fmt.Sprintf(template,
 		f.ArchivesOnly(),
 		f.Debug(),

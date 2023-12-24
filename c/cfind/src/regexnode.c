@@ -104,7 +104,7 @@ void regex_node_to_string(RegexNode *regex_node, char *s)
 
     while (temp != NULL) {
         if (strcount > 0) {
-            strcat(s, ",");
+            strcat(s, ", ");
         }
         strcat(s, "\"");
         strcat(s, temp->regex->pattern);

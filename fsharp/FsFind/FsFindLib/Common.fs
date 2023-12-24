@@ -19,7 +19,7 @@ module Common =
             match lst with
             | []     -> acc.Trim()
             | [a]    -> (RecListToString (acc + " \"" + a.ToString() + "\"") [])
-            | h :: t -> (RecListToString (acc + " \"" + h.ToString() + "\";") t) in
+            | h :: t -> (RecListToString (acc + " \"" + h.ToString() + "\",") t) in
         sprintf "[%s]" (RecListToString "" lst)
 
 ;;

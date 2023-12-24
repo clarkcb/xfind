@@ -8,36 +8,35 @@ import java.time.format.DateTimeParseException
 /**
  * @author cary on 7/23/16.
  */
-enum class SortBy {
-    FILEPATH,
-    FILENAME,
-    FILESIZE,
-    FILETYPE,
-    LASTMOD
-}
+enum class SortBy(val value: String) {
+    FILEPATH("filepath"),
+    FILENAME("filename"),
+    FILESIZE("filesize"),
+    FILETYPE("filetype"),
+    LASTMOD("lastmod");
 
-private const val NAME = "name"
-private const val PATH = "path"
-private const val SIZE = "size"
-private const val TYPE = "type"
-private const val LASTMOD = "lastmod"
+    override fun toString(): String {
+        return value
+    }
 
-fun sortByFromName(sortByName: String) : SortBy {
-    return when (sortByName.trim().lowercase()) {
-        NAME -> {
-            SortBy.FILENAME
-        }
-        SIZE -> {
-            SortBy.FILESIZE
-        }
-        TYPE -> {
-            SortBy.FILETYPE
-        }
-        LASTMOD -> {
-            SortBy.LASTMOD
-        }
-        else -> {
-            SortBy.FILEPATH
+    companion object {
+        fun forName(name: String): SortBy {
+            val lname = name.trim().lowercase()
+            entries.forEach {
+                if (it.value == lname) {
+                    return it
+                }
+            }
+            if (lname == "name") {
+                return FILENAME
+            }
+            if (lname == "size") {
+                return FILESIZE
+            }
+            if (lname == "type") {
+                return FILETYPE
+            }
+            return FILEPATH
         }
     }
 }
@@ -46,12 +45,12 @@ data class FindSettings(val archivesOnly: Boolean,
                         val debug: Boolean,
                         val inArchiveExtensions: Set<String>,
                         val inArchiveFilePatterns: Set<Regex>,
-                        val includeArchives: Boolean,
-                        val includeHidden: Boolean,
                         val inDirPatterns: Set<Regex>,
                         val inExtensions: Set<String>,
                         val inFilePatterns: Set<Regex>,
                         val inFileTypes: Set<FileType>,
+                        val includeArchives: Boolean,
+                        val includeHidden: Boolean,
                         val listDirs: Boolean,
                         val listFiles: Boolean,
                         val maxDepth: Int,
@@ -73,20 +72,91 @@ data class FindSettings(val archivesOnly: Boolean,
                         val sortBy: SortBy,
                         val sortCaseInsensitive: Boolean,
                         val sortDescending: Boolean,
-                        val verbose: Boolean)
+                        val verbose: Boolean) {
+    override fun toString(): String {
+        return "FindSettings(" +
+                "archivesOnly=$archivesOnly, " +
+                "debug=$debug, " +
+                "inArchiveExtensions=${stringSetToString(inArchiveExtensions)}, " +
+                "inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}, " +
+                "inDirPatterns=${patternSetToString(inDirPatterns)}, " +
+                "inExtensions=${stringSetToString(inExtensions)}, " +
+                "inFilePatterns=${patternSetToString(inFilePatterns)}, " +
+                "inFileTypes=${fileTypeSetToString(inFileTypes)}, " +
+                "includeArchives=$includeArchives, " +
+                "includeHidden=$includeHidden, " +
+                "listDirs=$listDirs, " +
+                "listFiles=$listFiles, " +
+                "maxDepth=$maxDepth, " +
+                "maxLastMod=${maxLastMod ?: 0}, " +
+                "maxSize=$maxSize, " +
+                "minDepth=$minDepth, " +
+                "minLastMod=${minLastMod ?: 0}, " +
+                "minSize=$minSize, " +
+                "outArchiveExtensions=${stringSetToString(outArchiveExtensions)}, " +
+                "outArchiveFilePatterns=${patternSetToString(outArchiveFilePatterns)}, " +
+                "outDirPatterns=${patternSetToString(outDirPatterns)}, " +
+                "outExtensions=${stringSetToString(outExtensions)}, " +
+                "outFilePatterns=${patternSetToString(outFilePatterns)}, " +
+                "outFileTypes=${fileTypeSetToString(outFileTypes)}, " +
+                "paths=${stringSetToString(paths)}, " +
+                "printUsage=$printUsage, " +
+                "printVersion=$printVersion, " +
+                "recursive=$recursive, " +
+                "sortBy=$sortBy, " +
+                "sortCaseInsensitive=$sortCaseInsensitive, " +
+                "sortDescending=$sortDescending, " +
+                "verbose=$verbose)"
+    }
+}
+
+fun stringSetToString(set: Set<String>): String {
+    val sb = StringBuilder("[")
+    for ((i, s) in set.withIndex()) {
+        if (i > 0) {
+            sb.append(", ")
+        }
+        sb.append("\"").append(s).append("\"")
+    }
+    sb.append("]")
+    return sb.toString()
+}
+
+fun patternSetToString(set: Set<Regex>): String {
+    val sb = java.lang.StringBuilder("[")
+    for ((i, r) in set.withIndex()) {
+        if (i > 0) {
+            sb.append(", ")
+        }
+        sb.append("\"").append(r.toString()).append("\"")
+    }
+    sb.append("]")
+    return sb.toString()
+}
+fun fileTypeSetToString(set: Set<FileType>): String {
+    val sb = java.lang.StringBuilder("[")
+    for ((i, ft) in set.withIndex()) {
+        if (i > 0) {
+            sb.append(", ")
+        }
+        sb.append(ft.value)
+    }
+    sb.append("]")
+    return sb.toString()
+}
 
 fun getDefaultSettings() : FindSettings {
     return FindSettings(
         archivesOnly = false,
         debug = false,
-        inArchiveExtensions = setOf(),
-        inArchiveFilePatterns = setOf(),
+        inArchiveExtensions = linkedSetOf(),
+        inArchiveFilePatterns = linkedSetOf(),
+        inDirPatterns = linkedSetOf(),
+        inExtensions = linkedSetOf(),
+        inFilePatterns = linkedSetOf(),
+        inFileTypes = linkedSetOf(),
         includeArchives = false,
         includeHidden = false,
-        inDirPatterns = setOf(),
-        inExtensions = setOf(),
-        inFilePatterns = setOf(),
-        inFileTypes = setOf(),
         listDirs = false,
         listFiles = false,
         maxDepth = -1,
@@ -95,13 +165,13 @@ fun getDefaultSettings() : FindSettings {
         minDepth = -1,
         minLastMod = null,
         minSize = 0,
-        outArchiveExtensions = setOf(),
-        outArchiveFilePatterns = setOf(),
-        outDirPatterns = setOf(),
-        outExtensions = setOf(),
-        outFilePatterns = setOf(),
-        outFileTypes = setOf(),
-        paths = setOf(),
+        outArchiveExtensions = linkedSetOf(),
+        outArchiveFilePatterns = linkedSetOf(),
+        outDirPatterns = linkedSetOf(),
+        outExtensions = linkedSetOf(),
+        outFilePatterns = linkedSetOf(),
+        outFileTypes = linkedSetOf(),
+        paths = linkedSetOf(),
         printUsage = false,
         printVersion = false,
         recursive = true,
@@ -117,7 +187,7 @@ fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
 }
 
 fun addFileTypes(ft: String, fileTypes: Set<FileType>): Set<FileType> {
-    val fts = ft.split(',').filter { it.isNotEmpty() }.map { fileTypeFromName(it) }
+    val fts = ft.split(',').filter { it.isNotEmpty() }.map { FileType.forName(it) }
     return fileTypes.plus(fts)
 }
 

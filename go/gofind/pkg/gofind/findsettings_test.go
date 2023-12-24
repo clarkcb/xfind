@@ -13,7 +13,7 @@ func TestDefaultFindSettings(t *testing.T) {
 		settings.PrintUsage() ||
 		settings.PrintVersion() ||
 		!settings.Recursive() ||
-		settings.SortBy() != SortByFilepath ||
+		settings.SortBy() != SortByFilePath ||
 		settings.SortDescending() ||
 		settings.Verbose() {
 		t.Errorf("settings did not match defaults")

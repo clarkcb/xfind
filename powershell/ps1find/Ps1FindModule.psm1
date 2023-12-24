@@ -87,19 +87,26 @@ function GetFileTypeFromName {
     [OutputType([FileType])]
     param([string]$name)
 
-    switch ($name.ToUpper())
+    switch ($name.ToLower())
     {
-        'ARCHIVE' {return [FileType]::Archive}
-        'AUDIO'   {return [FileType]::Audio}
-        'BINARY'  {return [FileType]::Binary}
-        'CODE'    {return [FileType]::Code}
-        'FONT'    {return [FileType]::Font}
-        'IMAGE'   {return [FileType]::Image}
-        'TEXT'    {return [FileType]::Text}
-        'VIDEO'   {return [FileType]::Video}
-        'XML'     {return [FileType]::Xml}
+        'archive' {return [FileType]::Archive}
+        'audio'   {return [FileType]::Audio}
+        'binary'  {return [FileType]::Binary}
+        'code'    {return [FileType]::Code}
+        'font'    {return [FileType]::Font}
+        'image'   {return [FileType]::Image}
+        'text'    {return [FileType]::Text}
+        'video'   {return [FileType]::Video}
+        'xml'     {return [FileType]::Xml}
     }
     return [FileType]::Unknown
+}
+
+function FileTypeToName {
+    [OutputType([string])]
+    param([FileType]$fileType)
+
+    return [FileType].GetEnumName($fileType).ToLower()
 }
 
 class FileTypes {
@@ -235,15 +242,24 @@ function GetSortByFromName {
     [OutputType([SortBy])]
     param([string]$name)
 
-    switch ($name.ToUpper())
+    switch ($name.ToLower())
     {
-        'PATH' {return [SortBy]::FilePath}
-        'NAME' {return [SortBy]::FileName}
-        'SIZE' {return [SortBy]::FileSize}
-        'TYPE' {return [SortBy]::FileType}
-        'LASTMOD' {return [SortBy]::LastMod}
+        'filename' {return [SortBy]::FileName}
+        'name' {return [SortBy]::FileName}
+        'filesize' {return [SortBy]::FileSize}
+        'size' {return [SortBy]::FileSize}
+        'filetype' {return [SortBy]::FileType}
+        'type' {return [SortBy]::FileType}
+        'lastmod' {return [SortBy]::LastMod}
     }
     return [SortBy]::FilePath
+}
+
+function SortByToName {
+    [OutputType([string])]
+    param([SortBy]$sortBy)
+
+    return [SortBy].GetEnumName($sortBy).ToLower()
 }
 
 class FindSettings {
@@ -251,12 +267,12 @@ class FindSettings {
     [bool]$Debug
     [string[]]$InArchiveExtensions
     [Regex[]]$InArchiveFilePatterns
-    [bool]$IncludeHidden
     [Regex[]]$InDirPatterns
     [string[]]$InExtensions
     [Regex[]]$InFilePatterns
     [FileType[]]$InFileTypes
     [bool]$IncludeArchives
+    [bool]$IncludeHidden
     [bool]$ListDirs
     [bool]$ListFiles
     [int]$MaxDepth
@@ -285,12 +301,12 @@ class FindSettings {
 		$this.Debug = $false
 		$this.InArchiveExtensions = @()
 		$this.InArchiveFilePatterns = @()
-		$this.IncludeHidden = $false
 		$this.InDirPatterns = @()
 		$this.InExtensions = @()
 		$this.InFilePatterns = @()
 		$this.InFileTypes = @()
 		$this.IncludeArchives = $false
+		$this.IncludeHidden = $false
 		$this.ListDirs = $false
 		$this.ListFiles = $false
 		$this.MaxDepth = -1
@@ -344,7 +360,8 @@ class FindSettings {
         if ($arr.Length -eq 0) {
             return '[]'
         }
-        return '[' + ($arr -join ', ' ) + ']'
+        $fileTypeNames = $arr | ForEach-Object { FileTypeToName($_) }
+        return '[' + ($fileTypeNames -join ', ' ) + ']'
     }
 
     [string]DateTimeToString([DateTime]$dt) {
@@ -356,39 +373,39 @@ class FindSettings {
 
     [string]ToString() {
         return "FindSettings(" +
-            "ArchivesOnly: $($this.ArchivesOnly)" +
-            ", Debug: $($this.Debug)" +
-            ", InArchiveExtensions: $($this.StringArrayToString($this.InArchiveExtensions))" +
-            ", InArchiveFilePatterns: $($this.StringArrayToString($this.InArchiveFilePatterns))" +
-            ", IncludeHidden: $($this.IncludeHidden)" +
-            ", InDirPatterns: $($this.StringArrayToString($this.InDirPatterns))" +
-            ", InExtensions: $($this.StringArrayToString($this.InExtensions))" +
-            ", InFilePatterns: $($this.StringArrayToString($this.InFilePatterns))" +
-            ", InFileTypes: $($this.FileTypeArrayToString($this.InFileTypes))" +
-            ", IncludeArchives: $($this.IncludeArchives)" +
-            ", ListDirs: $($this.ListDirs)" +
-            ", ListFiles: $($this.ListFiles)" +
-            ", MaxDepth: $($this.MaxDepth)" +
-            ", MaxLastMod: $($this.DateTimeToString($this.MaxLastMod))" +
-            ", MaxSize: $($this.MaxSize)" +
-            ", MinDepth: $($this.MinDepth)" +
-            ", MinLastMod: $($this.DateTimeToString($this.MinLastMod))" +
-            ", MinSize: $($this.MinSize)" +
-            ", OutArchiveExtensions: $($this.StringArrayToString($this.OutArchiveExtensions))" +
-            ", OutArchiveFilePatterns: $($this.StringArrayToString($this.OutArchiveFilePatterns))" +
-            ", OutDirPatterns: $($this.StringArrayToString($this.OutDirPatterns))" +
-            ", OutExtensions: $($this.StringArrayToString($this.OutExtensions))" +
-            ", OutFilePatterns: $($this.StringArrayToString($this.OutFilePatterns))" +
-            ", OutFileTypes: $($this.FileTypeArrayToString($this.OutFileTypes))" +
-            ", Paths: $($this.StringArrayToString($this.Paths))" +
-            ", PrintUsage: $($this.PrintUsage)" +
-            ", PrintVersion: $($this.PrintVersion)" +
-            ", Recursive: $($this.Recursive)" +
-            ", SortBy: $($this.SortBy)" +
-            ", SortCaseInsensitive: $($this.SortCaseInsensitive)" +
-            ", SortDescending: $($this.SortDescending)" +
-            ", Verbose: $($this.Verbose)" +
-            ")"
+        "ArchivesOnly=$($this.ArchivesOnly)" +
+        ", Debug=$($this.Debug)" +
+        ", InArchiveExtensions=$($this.StringArrayToString($this.InArchiveExtensions))" +
+        ", InArchiveFilePatterns=$($this.StringArrayToString($this.InArchiveFilePatterns))" +
+        ", InDirPatterns=$($this.StringArrayToString($this.InDirPatterns))" +
+        ", InExtensions=$($this.StringArrayToString($this.InExtensions))" +
+        ", InFilePatterns=$($this.StringArrayToString($this.InFilePatterns))" +
+        ", InFileTypes=$($this.FileTypeArrayToString($this.InFileTypes))" +
+        ", IncludeArchives=$($this.IncludeArchives)" +
+        ", IncludeHidden=$($this.IncludeHidden)" +
+        ", ListDirs=$($this.ListDirs)" +
+        ", ListFiles=$($this.ListFiles)" +
+        ", MaxDepth=$($this.MaxDepth)" +
+        ", MaxLastMod=$($this.DateTimeToString($this.MaxLastMod))" +
+        ", MaxSize=$($this.MaxSize)" +
+        ", MinDepth=$($this.MinDepth)" +
+        ", MinLastMod=$($this.DateTimeToString($this.MinLastMod))" +
+        ", MinSize=$($this.MinSize)" +
+        ", OutArchiveExtensions=$($this.StringArrayToString($this.OutArchiveExtensions))" +
+        ", OutArchiveFilePatterns=$($this.StringArrayToString($this.OutArchiveFilePatterns))" +
+        ", OutDirPatterns=$($this.StringArrayToString($this.OutDirPatterns))" +
+        ", OutExtensions=$($this.StringArrayToString($this.OutExtensions))" +
+        ", OutFilePatterns=$($this.StringArrayToString($this.OutFilePatterns))" +
+        ", OutFileTypes=$($this.FileTypeArrayToString($this.OutFileTypes))" +
+        ", Paths=$($this.StringArrayToString($this.Paths))" +
+        ", PrintUsage=$($this.PrintUsage)" +
+        ", PrintVersion=$($this.PrintVersion)" +
+        ", Recursive=$($this.Recursive)" +
+        ", SortBy=$(SortByToName($this.SortBy))" +
+        ", SortCaseInsensitive=$($this.SortCaseInsensitive)" +
+        ", SortDescending=$($this.SortDescending)" +
+        ", Verbose=$($this.Verbose)" +
+        ")"
     }
 }
 #endregion

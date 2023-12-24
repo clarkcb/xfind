@@ -1,4 +1,5 @@
 #import "common.h"
+#import "Regex.h"
 
 void logMsg(NSString *s) {
     //NSLog(@"%@", s);
@@ -33,6 +34,8 @@ NSString* arrayToNSString(NSArray *arr) {
         }
         if ([arr[i] isKindOfClass:[NSString class]]) {
             [arrString appendFormat:@"\"%@\"", arr[i]];
+        } else if ([arr[i] isKindOfClass:[Regex class]]) {
+            [arrString appendFormat:@"\"%@\"", ((Regex*)arr[i]).pattern];
         } else {
             [arrString appendFormat:@"%@", arr[i]];
         }

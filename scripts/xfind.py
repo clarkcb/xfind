@@ -101,7 +101,7 @@ def non_matching_lens(xfind_output, skip_blanks: bool = True):
     return non_matching
 
 
-def non_matching_outputs(xfind_output: dict[str, list[str]], sort_lines: bool = True, skip_blanks: bool = True):
+def non_matching_outputs(xfind_output: dict[str, list[str]], sort_lines: bool = True, skip_blanks: bool = True, case_insensitive_cmp: bool = False, normalize_field_names: bool = False):
     """Examines xfind_output (a dict of {xfind_name : [lines]})
        and returns a dict of xfind instances with non-matching
        output ({xfind_name: [non_matching_xfind_names]})
@@ -110,13 +110,26 @@ def non_matching_outputs(xfind_output: dict[str, list[str]], sort_lines: bool = 
     xs = sorted(xfind_output.keys())
     while xs:
         x = xs.pop(0)
-        x_output = sorted(xfind_output[x]) if sort_lines else xfind_output[x]
+        x_output = xfind_output[x]
+        if sort_lines:
+            x_output = sorted(x_output)
         if skip_blanks:
             x_output = [l for l in x_output if l.strip() != '']
+        if case_insensitive_cmp:
+            x_output = [l.lower() for l in x_output]
+            normalize_field_names = True
+        if normalize_field_names:
+            x_output = [l.replace('_', '').replace('-', '') for l in x_output]
         for y in xs:
-            y_output = sorted(xfind_output[y]) if sort_lines else xfind_output[y]
+            y_output = xfind_output[y]
+            if sort_lines:
+                y_output = sorted(y_output)
             if skip_blanks:
                 y_output = [l for l in y_output if l.strip() != '']
+            if case_insensitive_cmp:
+                y_output = [l.lower() for l in y_output]
+            if normalize_field_names:
+                y_output = [l.replace('_', '').replace('-', '') for l in y_output]
             if x_output != y_output:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))

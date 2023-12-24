@@ -29,6 +29,7 @@ type FileTypes() =
     static let text = "text"
     static let video = "video"
     static let xml = "xml"
+    static let unknown = "unknown"
 
     let PopulateFileTypesFromJson (jsonString : string) =
         let fileTypeExtDictionary = Dictionary<string, ISet<string>>()
@@ -79,16 +80,16 @@ type FileTypes() =
 
     static member ToName (fileType : FileType) : string =
         match fileType with
-        | FileType.Archive -> "Archive"
-        | FileType.Audio -> "Audio"
-        | FileType.Binary -> "Binary"
-        | FileType.Code -> "Code"
-        | FileType.Font -> "Font"
-        | FileType.Image -> "Image"
-        | FileType.Text -> "Text"
-        | FileType.Video -> "Video"
-        | FileType.Xml -> "Xml"
-        | _ -> "Unknown"
+        | FileType.Archive -> archive
+        | FileType.Audio -> audio
+        | FileType.Binary -> binary
+        | FileType.Code -> code
+        | FileType.Font -> font
+        | FileType.Image -> image
+        | FileType.Text -> text
+        | FileType.Video -> video
+        | FileType.Xml -> xml
+        | _ -> unknown
 
     member this.GetFileType (f : FileInfo) : FileType =
         // most specific first

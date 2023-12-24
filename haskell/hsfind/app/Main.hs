@@ -63,7 +63,7 @@ main = do
       logMsg $ getUsage findOptions ++ "\n"
     Right settings -> do
       logMsg $ if debug settings
-               then "\nsettings: " ++ show settings ++ "\n"
+               then findSettingsToString settings ++ "\n"
                else ""
       case errsOrUsage findOptions settings of
         Just usage -> logMsg $ usage ++ "\n"

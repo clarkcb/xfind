@@ -72,7 +72,9 @@ namespace cppfind {
     std::string StringUtil::string_set_to_string(std::set<std::string>& set) {
         std::string ss_string = "[";
         for (auto it = set.begin(); it != set.end(); ++it) {
+            ss_string.append("\"");
             ss_string.append(*it);
+            ss_string.append("\"");
             if (std::next(it) != set.end()) {
                 ss_string.append(", ");
             }
@@ -90,14 +92,17 @@ namespace cppfind {
     }
 
     std::string StringUtil::long_to_date_str(const long t) {
-        if (t == 0L) return "";
+        if (t == 0L) return "0";
         char buf[11];
         struct tm *tm = localtime(&t);
 
         if (strftime(buf, sizeof(buf), "%Y-%m-%d", tm) == 0) {
             return "0";
         } else {
-            return {buf};
+            std::string ds = "\"";
+            ds.append(buf);
+            ds.append("\"");
+            return ds;
         }
     }
 }

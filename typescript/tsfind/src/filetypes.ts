@@ -52,48 +52,53 @@ export class FileTypes {
     }
 
     public static fromName(name: string): FileType {
-        const uname: string = name.toUpperCase();
-        if (uname === 'ARCHIVE')
-            return FileType.Archive;
-        if (uname === 'AUDIO')
-            return FileType.Audio;
-        if (uname === 'BINARY')
-            return FileType.Binary;
-        if (uname === 'CODE')
-            return FileType.Code;
-        if (uname === 'FONT')
-            return FileType.Font;
-        if (uname === 'IMAGE')
-            return FileType.Image;
-        if (uname === 'TEXT')
-            return FileType.Text;
-        if (uname === 'VIDEO')
-            return FileType.Video;
-        if (uname === 'XML')
-            return FileType.Xml;
-        return FileType.Unknown;
+        switch (name.toLowerCase()) {
+            case 'archive':
+                return FileType.Archive;
+            case 'audio':
+                return FileType.Audio;
+            case 'binary':
+                return FileType.Binary;
+            case 'code':
+                return FileType.Code;
+            case 'font':
+                return FileType.Font;
+            case 'image':
+                return FileType.Image;
+            case 'text':
+                return FileType.Text;
+            case 'video':
+                return FileType.Video;
+            case 'xml':
+                return FileType.Xml;
+            default:
+                return FileType.Unknown;
+        }
     }
 
     public static toName(fileType: FileType): string {
-        if (fileType === FileType.Archive)
-            return 'ARCHIVE';
-        if (fileType === FileType.Audio)
-            return 'AUDIO';
-        if (fileType === FileType.Binary)
-            return 'BINARY';
-        if (fileType === FileType.Code)
-            return 'CODE';
-        if (fileType === FileType.Font)
-            return 'FONT';
-        if (fileType === FileType.Image)
-            return 'IMAGE';
-        if (fileType === FileType.Text)
-            return 'TEXT';
-        if (fileType === FileType.Video)
-            return 'VIDEO';
-        if (fileType === FileType.Xml)
-            return 'XML';
-        return 'UNKNOWN';
+        switch (fileType) {
+            case FileType.Archive:
+                return 'archive';
+            case FileType.Audio:
+                return 'audio';
+            case FileType.Binary:
+                return 'binary';
+            case FileType.Code:
+                return 'code';
+            case FileType.Font:
+                return 'font';
+            case FileType.Image:
+                return 'image';
+            case FileType.Text:
+                return 'text';
+            case FileType.Video:
+                return 'video';
+            case FileType.Xml:
+                return 'xml';
+            default:
+                return 'unknown';
+        }
     }
 
     public static getFileType(fileName: string): FileType {

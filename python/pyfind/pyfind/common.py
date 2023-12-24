@@ -39,3 +39,10 @@ def parse_datetime_str(datetime_str: str):
         return parse(datetime_str)
     except:
         raise FindException(f'Invalid datetime string: {datetime_str}')
+
+
+def list_to_str(lst: list, sort=True) -> str:
+    """Return comma-separated string from list"""
+    if sort:
+        return f'["' + '", "'.join(sorted(lst)) + '"]'
+    return f'["' + '", "'.join(lst) + ']'

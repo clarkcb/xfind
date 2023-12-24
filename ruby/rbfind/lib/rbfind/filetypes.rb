@@ -17,23 +17,25 @@ module RbFind
     TEXT    = 7
     VIDEO   = 8
     XML     = 9
+
+    NAMES = %w[unknown archive audio binary code font image text video xml].freeze
+
+    module_function
+    def from_name(name)
+      idx = NAMES.index(name.downcase)
+      idx.nil? ? 0 : idx
+    end
+
+    def to_name(file_type)
+      file_type < NAMES.size ? NAMES[file_type] : NAMES[0]
+    end
   end
 
   # FileTypes - provides basic file type information
   class FileTypes
-    FILE_TYPE_NAMES = %w[UNKNOWN ARCHIVE AUDIO BINARY CODE FONT IMAGE TEXT VIDEO XML].freeze
 
     def initialize
       set_file_type_maps_from_json
-    end
-
-    def self.from_name(name)
-      idx = FILE_TYPE_NAMES.index(name.upcase)
-      idx.nil? ? 0 : idx
-    end
-
-    def self.to_name(file_type)
-      file_type < FILE_TYPE_NAMES.size ? FILE_TYPE_NAMES[file_type] : 0
     end
 
     def set_file_type_maps_from_json

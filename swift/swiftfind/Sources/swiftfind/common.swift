@@ -34,14 +34,18 @@ func toDictionary<E, K, V>(
     }
 }
 
-public func arrayToString(_ arr: [String]) -> String {
+public func arrayToString(_ arr: [String], _ quotes: Bool = true) -> String {
     var str = "["
     var count = 0
     for elem in arr {
         if count > 0 {
             str += ", "
         }
-        str += "\"\(elem)\""
+        if quotes {
+            str += "\"\(elem)\""
+        } else {
+            str += "\(elem)"
+        }
         count += 1
     }
     str += "]"

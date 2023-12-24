@@ -8,32 +8,28 @@ import scala.jdk.CollectionConverters.*
 
 object FileType extends Enumeration {
   type FileType = Value
-  val Unknown: FileType = Value
-  val Archive: FileType = Value
-  val Audio: FileType   = Value
-  val Binary: FileType  = Value
-  val Code: FileType    = Value
-  val Font: FileType    = Value
-  val Image: FileType   = Value
-  val Text: FileType    = Value
-  val Video: FileType   = Value
-  val Xml: FileType     = Value
+  val Unknown: FileType = Value("unknown")
+  val Archive: FileType = Value("archive")
+  val Audio: FileType   = Value("audio")
+  val Binary: FileType  = Value("binary")
+  val Code: FileType    = Value("code")
+  val Font: FileType    = Value("font")
+  val Image: FileType   = Value("image")
+  val Text: FileType    = Value("text")
+  val Video: FileType   = Value("video")
+  val Xml: FileType     = Value("xml")
+
+  def forName(fileTypeName: String): FileType = {
+    try {
+      FileType.withName(fileTypeName.trim.toLowerCase)
+    } catch {
+      case _: NoSuchElementException => Unknown
+    }
+  }
 }
 
 object FileTypes {
   private val _fileTypesJsonPath = "/filetypes.json"
-
-  private val archive = "archive"
-  private val audio = "audio"
-  private val binary = "binary"
-  private val code = "code"
-  private val font = "font"
-  private val image = "image"
-  private val searchable = "searchable"
-  private val text = "text"
-  private val unknown = "unknown"
-  private val video = "video"
-  private val xml = "xml"
 
   private val fileTypeMaps: (Map[String, Set[String]], Map[String, Set[String]]) = {
     val _fileTypeExtMap = mutable.Map.empty[String, Set[String]]
@@ -53,39 +49,14 @@ object FileTypes {
         print(e.getMessage)
     }
 
-    _fileTypeExtMap(text) = _fileTypeExtMap(text) ++ _fileTypeExtMap(code) ++
-      _fileTypeExtMap(xml)
-    _fileTypeNameMap(text) = _fileTypeNameMap(text) ++ _fileTypeNameMap(code) ++
-      _fileTypeNameMap(xml)
+    _fileTypeExtMap(FileType.Text.toString) = _fileTypeExtMap(FileType.Text.toString) ++ _fileTypeExtMap(FileType.Code.toString) ++
+      _fileTypeExtMap(FileType.Xml.toString)
+    _fileTypeNameMap(FileType.Text.toString) = _fileTypeNameMap(FileType.Text.toString) ++ _fileTypeNameMap(FileType.Code.toString) ++
+      _fileTypeNameMap(FileType.Xml.toString)
     (Map.empty[String, Set[String]] ++ _fileTypeExtMap, Map.empty[String, Set[String]] ++ _fileTypeNameMap)
   }
   private val fileTypeExtMap: Map[String, Set[String]] = fileTypeMaps._1
   private val fileTypeNameMap: Map[String, Set[String]] = fileTypeMaps._2
-
-  def fromName(name: String): FileType.Value = {
-    val lname = name.toLowerCase
-    if (lname == archive) {
-      FileType.Archive
-    } else if (lname == audio) {
-      FileType.Audio
-    } else if (lname == binary) {
-      FileType.Binary
-    } else if (lname == code) {
-      FileType.Code
-    } else if (lname == font) {
-      FileType.Font
-    } else if (lname == image) {
-      FileType.Image
-    } else if (lname == text) {
-      FileType.Text
-    } else if (lname == video) {
-      FileType.Video
-    } else if (lname == xml) {
-      FileType.Xml
-    } else {
-      FileType.Unknown
-    }
-  }
 
   def getFileType(fileName: String): FileType.Value = {
     // most specific types first
@@ -115,38 +86,38 @@ object FileTypes {
   }
 
   def isArchiveFile(fileName: String): Boolean = {
-    fileTypeNameMap(archive).contains(fileName)
-      || fileTypeExtMap(archive).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Archive.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Archive.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isAudioFile(fileName: String): Boolean = {
-    fileTypeNameMap(audio).contains(fileName)
-      || fileTypeExtMap(audio).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Audio.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Audio.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isBinaryFile(fileName: String): Boolean = {
-    fileTypeNameMap(binary).contains(fileName)
-      || fileTypeExtMap(binary).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Binary.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Binary.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isCodeFile(fileName: String): Boolean = {
-    fileTypeNameMap(code).contains(fileName)
-      || fileTypeExtMap(code).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Code.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Code.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isFontFile(fileName: String): Boolean = {
-    fileTypeNameMap(font).contains(fileName)
-      || fileTypeExtMap(font).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Font.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Font.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isImageFile(fileName: String): Boolean = {
-    fileTypeNameMap(image).contains(fileName)
-      || fileTypeExtMap(image).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Image.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Image.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isTextFile(fileName: String): Boolean = {
-    fileTypeNameMap(text).contains(fileName)
-      || fileTypeExtMap(text).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Text.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Text.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isUnknownFile(fileName: String): Boolean = {
@@ -154,13 +125,13 @@ object FileTypes {
   }
 
   def isVideoFile(fileName: String): Boolean = {
-    fileTypeNameMap(video).contains(fileName)
-      || fileTypeExtMap(video).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Video.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Video.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isXmlFile(fileName: String): Boolean = {
-    fileTypeNameMap(xml).contains(fileName)
-      || fileTypeExtMap(xml).contains(FileUtil.getExtension(fileName))
+    fileTypeNameMap(FileType.Xml.toString).contains(fileName)
+      || fileTypeExtMap(FileType.Xml.toString).contains(FileUtil.getExtension(fileName))
   }
 
   def isZipArchiveFile(fr: FileResult): Boolean = {

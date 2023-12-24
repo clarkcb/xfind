@@ -17,10 +17,21 @@ export class StringUtil {
         return d;
     }
 
-    public static listToString(name: string, lst: string[]|RegExp[]): string {
+    public static stringListToString(name: string, lst: string[]): string {
         let s = `${name}=[`;
-        if (lst.length)
-            s += `"${lst.join('","')}"`;
+        if (lst.length) {
+            s += `"${lst.join('", "')}"`;
+        }
+        s += ']';
+        return s;
+    }
+
+    public static patternListToString(name: string, lst: RegExp[]): string {
+        let s = `${name}=[`;
+        if (lst.length) {
+            const ps = lst.map(p => p.source);
+            s += `"${ps.join('", "')}"`;
+        }
         s += ']';
         return s;
     }
@@ -29,7 +40,7 @@ export class StringUtil {
         let s = `${name}=[`;
         for (let i=0; i < fileTypes.length; i++) {
             if (i > 0) s += ', ';
-            s += `"${FileTypes.toName(fileTypes[i])}"`;
+            s += FileTypes.toName(fileTypes[i]);
         }
         s += ']';
         return s;

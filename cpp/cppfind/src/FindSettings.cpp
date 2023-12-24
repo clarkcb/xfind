@@ -339,7 +339,7 @@ namespace cppfind {
             if (count > 0) {
                 ts_string.append(", ");
             }
-            ts_string.append("\"").append(FileTypes::to_name(t)).append("\"");
+            ts_string.append(FileTypes::to_name(t));
             count++;
         }
         ts_string.append("]");
@@ -356,22 +356,22 @@ namespace cppfind {
     }
 
     SortBy FindSettings::sort_by_from_name(const std::string& name) {
-        std::string uname{name};
-        std::transform(uname.begin(), uname.end(), uname.begin(),
-                       [](unsigned char c) { return std::toupper(c); });
-        if (uname == "PATH" || uname == "FILEPATH") {
+        std::string lname{name};
+        std::transform(lname.begin(), lname.end(), lname.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        if (lname == SORT_BY_NAME_PATH || lname == SORT_BY_NAME_FILEPATH) {
             return SortBy::FILEPATH;
         }
-        if (uname == "NAME" || uname == "FILENAME") {
+        if (lname == SORT_BY_NAME_NAME || lname == SORT_BY_NAME_FILENAME) {
             return SortBy::FILENAME;
         }
-        if (uname == "SIZE" || uname == "FILESIZE") {
+        if (lname == SORT_BY_NAME_SIZE || lname == SORT_BY_NAME_FILESIZE) {
             return SortBy::FILESIZE;
         }
-        if (uname == "TYPE" || uname == "FILETYPE") {
+        if (lname == SORT_BY_NAME_TYPE || lname == SORT_BY_NAME_FILETYPE) {
             return SortBy::FILETYPE;
         }
-        if (uname == "LASTMOD") {
+        if (lname == SORT_BY_NAME_LASTMOD) {
             return SortBy::LASTMOD;
         }
         return SortBy::FILEPATH;
@@ -381,55 +381,55 @@ namespace cppfind {
         switch (sort_by)
         {
             case SortBy::FILEPATH:
-                return "FILEPATH";
+                return SORT_BY_NAME_FILEPATH;
             case SortBy::FILENAME:
-                return "FILENAME";
+                return SORT_BY_NAME_FILENAME;
             case SortBy::FILESIZE:
-                return "FILESIZE";
+                return SORT_BY_NAME_FILESIZE;
             case SortBy::FILETYPE:
-                return "FILETYPE";
+                return SORT_BY_NAME_FILETYPE;
             case SortBy::LASTMOD:
-                return "LASTMOD";
+                return SORT_BY_NAME_LASTMOD;
             default:
-                return "UNKNOWN";
+                return SORT_BY_NAME_UNKNOWN;
         }
     }
 
     std::string FindSettings::string() {
         auto settings_str =
                 std::string("FindSettings(")
-                + "archives_only: " + StringUtil::bool_to_string(m_archives_only)
-                + ", debug: " + StringUtil::bool_to_string(m_debug)
-                + ", in_archive_extensions: " + StringUtil::string_set_to_string(m_in_archive_extensions)
-                + ", in_archive_file_patterns: " + find_patterns_to_string(m_in_archive_file_patterns)
-                + ", in_dir_patterns: " + find_patterns_to_string(m_in_dir_patterns)
-                + ", in_extensions: " + StringUtil::string_set_to_string(m_in_extensions)
-                + ", in_file_patterns: " + find_patterns_to_string(m_in_file_patterns)
-                + ", in_file_types: " + file_types_to_string(m_in_file_types)
-                + ", include_archives: " + StringUtil::bool_to_string(m_include_archives)
-                + ", include_hidden: " + StringUtil::bool_to_string(m_include_hidden)
-                + ", list_dirs: " + StringUtil::bool_to_string(m_list_dirs)
-                + ", list_files: " + StringUtil::bool_to_string(m_list_files)
-                + ", max_depth: " + std::to_string(m_max_depth)
-                + ", max_last_mod: \"" + StringUtil::long_to_date_str(m_max_last_mod) + "\""
-                + ", max_size: " + std::to_string(m_max_size)
-                + ", min_depth: " + std::to_string(m_min_depth)
-                + ", min_last_mod: \"" + StringUtil::long_to_date_str(m_min_last_mod) + "\""
-                + ", min_size: " + std::to_string(m_min_size)
-                + ", out_archive_extensions: " + StringUtil::string_set_to_string(m_out_archive_extensions)
-                + ", out_archive_file_patterns: " + find_patterns_to_string(m_out_archive_file_patterns)
-                + ", out_dir_patterns: " + find_patterns_to_string(m_out_dir_patterns)
-                + ", out_extensions: " + StringUtil::string_set_to_string(m_out_extensions)
-                + ", out_file_patterns: " + find_patterns_to_string(m_out_file_patterns)
-                + ", out_file_types: " + file_types_to_string(m_out_file_types)
-                + ", paths: " + StringUtil::string_set_to_string(m_paths)
-                + ", print_usage: " + StringUtil::bool_to_string(m_print_usage)
-                + ", print_version: " + StringUtil::bool_to_string(m_print_version)
-                + ", recursive: " + StringUtil::bool_to_string(m_recursive)
-                + ", sort_by: " + sort_by_to_name(m_sort_by)
-                + ", sort_case_insensitive: " + StringUtil::bool_to_string(m_sort_case_insensitive)
-                + ", sort_descending: " + StringUtil::bool_to_string(m_sort_descending)
-                + ", verbose: " + StringUtil::bool_to_string(m_verbose)
+                + "archives_only=" + StringUtil::bool_to_string(m_archives_only)
+                + ", debug=" + StringUtil::bool_to_string(m_debug)
+                + ", in_archive_extensions=" + StringUtil::string_set_to_string(m_in_archive_extensions)
+                + ", in_archive_file_patterns=" + find_patterns_to_string(m_in_archive_file_patterns)
+                + ", in_dir_patterns=" + find_patterns_to_string(m_in_dir_patterns)
+                + ", in_extensions=" + StringUtil::string_set_to_string(m_in_extensions)
+                + ", in_file_patterns=" + find_patterns_to_string(m_in_file_patterns)
+                + ", in_file_types=" + file_types_to_string(m_in_file_types)
+                + ", include_archives=" + StringUtil::bool_to_string(m_include_archives)
+                + ", include_hidden=" + StringUtil::bool_to_string(m_include_hidden)
+                + ", list_dirs=" + StringUtil::bool_to_string(m_list_dirs)
+                + ", list_files=" + StringUtil::bool_to_string(m_list_files)
+                + ", max_depth=" + std::to_string(m_max_depth)
+                + ", max_last_mod=" + StringUtil::long_to_date_str(m_max_last_mod)
+                + ", max_size=" + std::to_string(m_max_size)
+                + ", min_depth=" + std::to_string(m_min_depth)
+                + ", min_last_mod=" + StringUtil::long_to_date_str(m_min_last_mod)
+                + ", min_size=" + std::to_string(m_min_size)
+                + ", out_archive_extensions=" + StringUtil::string_set_to_string(m_out_archive_extensions)
+                + ", out_archive_file_patterns=" + find_patterns_to_string(m_out_archive_file_patterns)
+                + ", out_dir_patterns=" + find_patterns_to_string(m_out_dir_patterns)
+                + ", out_extensions=" + StringUtil::string_set_to_string(m_out_extensions)
+                + ", out_file_patterns=" + find_patterns_to_string(m_out_file_patterns)
+                + ", out_file_types=" + file_types_to_string(m_out_file_types)
+                + ", paths=" + StringUtil::string_set_to_string(m_paths)
+                + ", print_usage=" + StringUtil::bool_to_string(m_print_usage)
+                + ", print_version=" + StringUtil::bool_to_string(m_print_version)
+                + ", recursive=" + StringUtil::bool_to_string(m_recursive)
+                + ", sort_by=" + sort_by_to_name(m_sort_by)
+                + ", sort_case_insensitive=" + StringUtil::bool_to_string(m_sort_case_insensitive)
+                + ", sort_descending=" + StringUtil::bool_to_string(m_sort_descending)
+                + ", verbose=" + StringUtil::bool_to_string(m_verbose)
                 + ")";
         return settings_str;
     }

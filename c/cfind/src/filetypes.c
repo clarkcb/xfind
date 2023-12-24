@@ -128,37 +128,37 @@ error_t parse_file_types(const char * const file_types_json_str, FileTypes *file
 
             StringNode *next_ext_node = NULL;
             StringNode *next_name_node = NULL;
-            if (strncmp(name, "archive", 7) == 0) {
+            if (strncmp(name, FILE_TYPE_NAME_ARCHIVE, 7) == 0) {
                 next_ext_node = archive_ext_node;
                 next_name_node = archive_name_node;
-            } else if (strncmp(name, "audio", 5) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_AUDIO, 5) == 0) {
                 next_ext_node = audio_ext_node;
                 next_name_node = audio_name_node;
-            } else if (strncmp(name, "binary", 6) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_BINARY, 6) == 0) {
                 next_ext_node = binary_ext_node;
                 next_name_node = binary_name_node;
-            } else if (strncmp(name, "code", 4) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_CODE, 4) == 0) {
                 next_ext_node = code_ext_node;
                 next_name_node = code_name_node;
-            } else if (strncmp(name, "font", 4) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_FONT, 4) == 0) {
                 next_ext_node = font_ext_node;
                 next_name_node = font_name_node;
-            } else if (strncmp(name, "image", 5) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_IMAGE, 5) == 0) {
                 next_ext_node = image_ext_node;
                 next_name_node = image_name_node;
-            } else if (strncmp(name, "text", 4) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_TEXT, 4) == 0) {
                 next_ext_node = text_ext_node;
                 next_name_node = text_name_node;
-            } else if (strncmp(name, "video", 5) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_VIDEO, 5) == 0) {
                 next_ext_node = video_ext_node;
                 next_name_node = video_name_node;
-            } else if (strncmp(name, "xml", 3) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_XML, 3) == 0) {
                 next_ext_node = xml_ext_node;
                 next_name_node = xml_name_node;
-            } else if (strncmp(name, "nosearch", 8) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_NOSEARCH, 8) == 0) {
                 next_ext_node = nosearch_ext_node;
                 next_name_node = nosearch_name_node;
-            } else if (strncmp(name, "unknown", 7) == 0) {
+            } else if (strncmp(name, FILE_TYPE_NAME_UNKNOWN, 7) == 0) {
                 next_ext_node = unknown_ext_node;
                 next_name_node = unknown_name_node;
             } else {
@@ -547,35 +547,35 @@ FileType file_type_from_name(const char *name)
     //printf("namelen: %zu\n", namelen);
     //printf("minlen: %zu\n", minlen);
     for (int i = 0; i < minlen; i++) {
-        char c = (char)toupper(name[i]);
+        char c = (char)tolower(name[i]);
         uname[i] = c;
     }
     //printf("uname: %s\n", uname);
-    if (strncmp(uname, "ARCHIVE", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_ARCHIVE, maxlen) == 0) {
         return ARCHIVE;
     }
-    if (strncmp(uname, "AUDIO", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_AUDIO, maxlen) == 0) {
         return AUDIO;
     }
-    if (strncmp(uname, "BINARY", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_BINARY, maxlen) == 0) {
         return BINARY;
     }
-    if (strncmp(uname, "CODE", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_CODE, maxlen) == 0) {
         return CODE;
     }
-    if (strncmp(uname, "FONT", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_FONT, maxlen) == 0) {
         return FONT;
     }
-    if (strncmp(uname, "IMAGE", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_IMAGE, maxlen) == 0) {
         return IMAGE;
     }
-    if (strncmp(uname, "TEXT", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_TEXT, maxlen) == 0) {
         return TEXT;
     }
-    if (strncmp(uname, "VIDEO", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_VIDEO, maxlen) == 0) {
         return VIDEO;
     }
-    if (strncmp(uname, "XML", maxlen) == 0) {
+    if (strncmp(uname, FILE_TYPE_NAME_XML, maxlen) == 0) {
         return XML;
     }
     return UNKNOWN;
@@ -585,43 +585,43 @@ void file_type_to_name(const FileType file_type, char *name)
 {
     switch(file_type) {
         case ARCHIVE:
-            strncpy(name, "ARCHIVE", 7);
+            strncpy(name, FILE_TYPE_NAME_ARCHIVE, 7);
             name[7] = '\0';
             break;
         case AUDIO:
-            strncpy(name, "AUDIO", 5);
+            strncpy(name, FILE_TYPE_NAME_AUDIO, 5);
             name[5] = '\0';
             break;
         case BINARY:
-            strncpy(name, "BINARY", 6);
+            strncpy(name, FILE_TYPE_NAME_BINARY, 6);
             name[6] = '\0';
             break;
         case CODE:
-            strncpy(name, "CODE", 4);
+            strncpy(name, FILE_TYPE_NAME_CODE, 4);
             name[4] = '\0';
             break;
         case FONT:
-            strncpy(name, "FONT", 4);
+            strncpy(name, FILE_TYPE_NAME_FONT, 4);
             name[4] = '\0';
             break;
         case IMAGE:
-            strncpy(name, "IMAGE", 5);
+            strncpy(name, FILE_TYPE_NAME_IMAGE, 5);
             name[5] = '\0';
             break;
         case TEXT:
-            strncpy(name, "TEXT", 4);
+            strncpy(name, FILE_TYPE_NAME_TEXT, 4);
             name[4] = '\0';
             break;
         case VIDEO:
-            strncpy(name, "VIDEO", 5);
+            strncpy(name, FILE_TYPE_NAME_VIDEO, 5);
             name[5] = '\0';
             break;
         case XML:
-            strncpy(name, "XML", 3);
+            strncpy(name, FILE_TYPE_NAME_XML, 3);
             name[3] = '\0';
             break;
         default:
-            strncpy(name, "UNKNOWN", 7);
+            strncpy(name, FILE_TYPE_NAME_UNKNOWN, 7);
             name[7] = '\0';
     }
 }
@@ -656,16 +656,16 @@ void file_type_node_to_string(IntNode *file_type_node, char *s)
 
     while (temp != NULL) {
         if (nodecount > 0) {
-            strcat(s, ",");
+            strcat(s, ", ");
         }
-        strcat(s, "\"");
+        //strcat(s, "\"");
 
         char *name = malloc(10 * sizeof(char));
         name[0] = '\0';
         // file_type_to_name(*(temp->integer), name);
         file_type_to_name((const FileType)(*temp->integer), name);
         strcat(s, name);
-        strcat(s, "\"");
+        //strcat(s, "\"");
         temp = temp->next;
         nodecount++;
     }

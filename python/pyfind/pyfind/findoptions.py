@@ -68,13 +68,13 @@ class FindOptions:
                 settings.set_property('list_files', not b),
             'noprintmatches':
                 lambda b, settings:
-                settings.set_property('print_results', not b),
+                settings.set_property('list_files', not b),
             'norecursive':
                 lambda b, settings:
                 settings.set_property('recursive', not b),
             'printmatches':
                 lambda b, settings:
-                settings.set_property('print_results', b),
+                settings.set_property('list_files', b),
             'recursive':
                 lambda b, settings:
                 settings.set_property('recursive', b),

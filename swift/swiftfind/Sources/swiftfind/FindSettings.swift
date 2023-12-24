@@ -8,6 +8,15 @@
 
 import Foundation
 
+fileprivate let sortByFilePathName = "filepath"
+fileprivate let sortByFileNameName = "filename"
+fileprivate let sortByNameName = "name"
+fileprivate let sortByFileSizeName = "filesize"
+fileprivate let sortBySizeName = "size"
+fileprivate let sortByFileTypeName = "filetype"
+fileprivate let sortByTypeName = "type"
+fileprivate let sortByLastModName = "lastmod"
+
 public enum SortBy {
     case filePath, fileName, fileSize, fileType, lastMod
 }
@@ -15,13 +24,13 @@ public enum SortBy {
 public func nameToSortBy(_ sortByName: String) -> SortBy {
     let lname = sortByName.lowercased()
     switch lname {
-    case "name":
+    case sortByFileNameName, sortByNameName:
         return SortBy.fileName
-    case "size":
+    case sortByFileSizeName, sortBySizeName:
         return SortBy.fileSize
-    case "type":
+    case sortByFileTypeName, sortByTypeName:
         return SortBy.fileType
-    case "lastmod":
+    case sortByLastModName:
         return SortBy.lastMod
     default:
         return SortBy.filePath
@@ -31,15 +40,15 @@ public func nameToSortBy(_ sortByName: String) -> SortBy {
 public func sortByToName(_ sortBy: SortBy) -> String {
     switch sortBy {
     case SortBy.fileName:
-        "name"
+        sortByFileNameName
     case SortBy.fileSize:
-        "size"
+        sortByFileSizeName
     case SortBy.fileType:
-        "type"
+        sortByFileTypeName
     case SortBy.lastMod:
-        "lastmod"
+        sortByLastModName
     default:
-        "path"
+        sortByFilePathName
     }
 }
 
@@ -245,7 +254,7 @@ open class FindSettings: CustomStringConvertible {
             ", inDirPatterns=\(arrayToString(inDirPatterns))" +
             ", inExtensions=\(setToString(inExtensions))" +
             ", inFilePatterns=\(arrayToString(inFilePatterns))" +
-            ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }))" +
+            ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }, false))" +
             ", includeArchives=\(includeArchives)" +
             ", includeHidden=\(includeHidden)" +
             ", listDirs=\(listDirs)" +
@@ -261,7 +270,7 @@ open class FindSettings: CustomStringConvertible {
             ", outDirPatterns=\(arrayToString(outDirPatterns))" +
             ", outExtensions=\(setToString(outExtensions))" +
             ", outFilePatterns=\(arrayToString(outFilePatterns))" +
-            ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }))" +
+            ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }, false))" +
             ", paths=\(setToString(paths))" +
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +

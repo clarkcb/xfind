@@ -34,7 +34,7 @@ module Main =
                 HandleError err
 
             if settings.Debug then
-                Logger.Log $"settings: %s{settings.ToString}"
+                Logger.Log settings.ToString
 
             if settings.PrintUsage then
                 FindOptions.Usage(0)

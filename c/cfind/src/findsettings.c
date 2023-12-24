@@ -40,7 +40,6 @@ FindSettings *default_settings(void)
     settings->out_file_patterns = NULL;
     settings->out_file_types = NULL;
     settings->paths = NULL;
-    settings->print_results = 1;
     settings->print_usage = 0;
     settings->print_version = 0;
     settings->recursive = 1;
@@ -56,7 +55,8 @@ const int SETTINGS_BOOL_FIELD_COUNT = 13;
 const int SETTINGS_LONG_FIELD_COUNT = 4;
 const int SETTINGS_STRING_NODE_FIELD_COUNT = 13;
 const int SETTINGS_SORTBY_FIELD_COUNT = 1;
-const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG_FIELD_COUNT + SETTINGS_STRING_NODE_FIELD_COUNT + SETTINGS_SORTBY_FIELD_COUNT;
+const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG_FIELD_COUNT +
+	SETTINGS_STRING_NODE_FIELD_COUNT + SETTINGS_SORTBY_FIELD_COUNT;
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archives_only=%s"
             ", debug=%s"
@@ -83,7 +83,6 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", out_file_patterns=%s"
             ", out_file_types=%s"
             ", paths=%s"
-            ", print_results=%s"
             ", print_usage=%s"
             ", print_version=%s"
             ", recursive=%s"
@@ -102,7 +101,6 @@ static size_t all_bools_strlen(const FindSettings *settings)
             (settings->include_hidden == 0 ? 5 : 4) +
             (settings->list_dirs == 0 ? 5 : 4) +
             (settings->list_files == 0 ? 5 : 4) +
-            (settings->print_results == 0 ? 5 : 4) +
             (settings->print_usage == 0 ? 5 : 4) +
             (settings->print_version == 0 ? 5 : 4) +
             (settings->recursive == 0 ? 5 : 4) +
@@ -133,22 +131,17 @@ static size_t all_strings_strlen(const FindSettings *settings)
 
 static size_t last_mod_strlen(long last_mod)
 {
-    return last_mod == 0 ? 1 : 10;
+    return last_mod == 0 ? 1 : 12; // 10 for "yyyy-MM-dd" plus 2 for surrounding double quotes
 }
 
 size_t settings_strlen(const FindSettings *settings)
 {
-    size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
-    if (max_last_mod_strlen > 1) max_last_mod_strlen += 2; // for surrounding double quotes
-    size_t min_last_mod_strlen = last_mod_strlen(settings->min_last_mod);
-    if (min_last_mod_strlen > 1) min_last_mod_strlen += 2; // for surrounding double quotes
-
     return strlen(SETTINGS_TEMPLATE)
-        - (SETTINGS_TOTAL_FIELD_COUNT * 2 + 4) // the + 4 is for the extra formatting letter for each long (%lu)
+        - (SETTINGS_TOTAL_FIELD_COUNT * 2 + 2) // the + 2 is for the extra formatting letter for each long (%lu)
         + all_bools_strlen(settings)
-        + max_last_mod_strlen
+        + last_mod_strlen(settings->max_last_mod)
         + num_digits_ulong(settings->max_size)
-        + min_last_mod_strlen
+        + last_mod_strlen(settings->min_last_mod)
         + num_digits_ulong(settings->min_size)
         + all_strings_strlen(settings);
 }
@@ -156,14 +149,14 @@ size_t settings_strlen(const FindSettings *settings)
 void settings_to_string(const FindSettings *settings, char *s)
 {
     // assumes s has correct allocation size
-    char *archives_only_s = settings->archives_only == 0 ? "false" : "true";
+    char *archives_only_s = settings->archives_only == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_archive_extensions_s = malloc(string_node_strlen(settings->in_archive_extensions) + 1);
     in_archive_extensions_s[0] = '\0';
     string_node_to_string(settings->in_archive_extensions, in_archive_extensions_s);
     char *in_archive_file_patterns_s = malloc(regex_node_strlen(settings->in_archive_file_patterns) + 1);
     in_archive_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
-    char *debug_s = settings->debug == 0 ? "false" : "true";
+    char *debug_s = settings->debug == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
     in_dir_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_dir_patterns, in_dir_patterns_s);
@@ -176,10 +169,10 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *in_file_types_s = malloc(file_type_node_strlen(settings->in_file_types) + 1);
     in_file_types_s[0] = '\0';
     file_type_node_to_string(settings->in_file_types, in_file_types_s);
-    char *include_archives_s = settings->include_archives == 0 ? "false" : "true";
-    char *include_hidden_s = settings->include_hidden == 0 ? "false" : "true";
-    char *list_dirs_s = settings->list_dirs == 0 ? "false" : "true";
-    char *list_files_s = settings->list_files == 0 ? "false" : "true";
+    char *include_archives_s = settings->include_archives == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *include_hidden_s = settings->include_hidden == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *list_dirs_s = settings->list_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *list_files_s = settings->list_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
     size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
     char *max_last_mod_s = malloc(max_last_mod_strlen + 1);
@@ -224,15 +217,14 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     string_node_to_string(settings->paths, paths_s);
-    char *print_results_s = settings->print_results == 0 ? "false" : "true";
-    char *print_usage_s = settings->print_usage == 0 ? "false" : "true";
-    char *print_version_s = settings->print_version == 0 ? "false" : "true";
-    char *recursive_s = settings->recursive == 0 ? "false" : "true";
+    char *print_usage_s = settings->print_usage == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *print_version_s = settings->print_version == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *recursive_s = settings->recursive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *sort_by_name = malloc(10 * sizeof(char));
     sort_by_to_name(settings->sort_by, sort_by_name);
-    char *sort_case_insensitive_s = settings->sort_case_insensitive == 0 ? "false" : "true";
-    char *sort_descending_s = settings->sort_descending == 0 ? "false" : "true";
-    char *verbose_s = settings->verbose == 0 ? "false" : "true";
+    char *sort_case_insensitive_s = settings->sort_case_insensitive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *sort_descending_s = settings->sort_descending == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *verbose_s = settings->verbose == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
 
     sprintf(s, SETTINGS_TEMPLATE,
@@ -261,7 +253,6 @@ void settings_to_string(const FindSettings *settings, char *s)
         out_file_patterns_s,
         out_file_types_s,
         paths_s,
-        print_results_s,
         print_usage_s,
         print_version_s,
         recursive_s,
@@ -344,28 +335,25 @@ SortBy sort_by_from_name(const char *name)
     size_t maxlen = 10;
     size_t namelen = strlen(name);
     size_t minlen = maxlen < namelen ? maxlen : namelen;
-    char uname[10] = {0};
-    strncpy(uname, name, minlen);
+    char lname[10] = {0};
+    strncpy(lname, name, minlen);
     //printf("namelen: %zu\n", namelen);
     //printf("minlen: %zu\n", minlen);
     for (int i = 0; i < minlen; i++) {
-        char c = (char)toupper(name[i]);
-        uname[i] = c;
+        char c = (char)tolower(name[i]);
+        lname[i] = c;
     }
     //printf("uname: %s\n", uname);
-    if (strncmp(uname, "NAME", maxlen) == 0) {
+    if (strncmp(lname, SORT_BY_NAME_FILENAME, maxlen) == 0 || strncmp(lname, SORT_BY_NAME_NAME, maxlen) == 0) {
         return FILENAME;
     }
-    if (strncmp(uname, "PATH", maxlen) == 0) {
-        return FILEPATH;
-    }
-    if (strncmp(uname, "SIZE", maxlen) == 0) {
+    if (strncmp(lname, SORT_BY_NAME_FILESIZE, maxlen) == 0 || strncmp(lname, SORT_BY_NAME_SIZE, maxlen) == 0) {
         return FILESIZE;
     }
-    if (strncmp(uname, "TYPE", maxlen) == 0) {
+    if (strncmp(lname, SORT_BY_NAME_FILETYPE, maxlen) == 0 || strncmp(lname, SORT_BY_NAME_TYPE, maxlen) == 0) {
         return FILETYPE;
     }
-    if (strncmp(uname, "LASTMOD", maxlen) == 0) {
+    if (strncmp(lname, SORT_BY_NAME_LASTMOD, maxlen) == 0) {
         return LASTMOD;
     }
     return FILEPATH;
@@ -375,27 +363,27 @@ void sort_by_to_name(const SortBy sort_by, char *name)
 {
     switch(sort_by) {
         case FILEPATH:
-            strncpy(name, "FILEPATH", 8);
+            strncpy(name, SORT_BY_NAME_FILEPATH, 8);
             name[8] = '\0';
             break;
         case FILENAME:
-            strncpy(name, "FILENAME", 8);
+            strncpy(name, SORT_BY_NAME_FILENAME, 8);
             name[8] = '\0';
             break;
         case FILESIZE:
-            strncpy(name, "FILESIZE", 8);
+            strncpy(name, SORT_BY_NAME_FILESIZE, 8);
             name[8] = '\0';
             break;
         case FILETYPE:
-            strncpy(name, "FILETYPE", 8);
+            strncpy(name, SORT_BY_NAME_FILETYPE, 8);
             name[8] = '\0';
             break;
         case LASTMOD:
-            strncpy(name, "LASTMOD", 7);
+            strncpy(name, SORT_BY_NAME_LASTMOD, 7);
             name[7] = '\0';
             break;
         default:
-            strncpy(name, "UNKNOWN", 7);
+            strncpy(name, SORT_BY_NAME_UNKNOWN, 7);
             name[7] = '\0';
     }
 }

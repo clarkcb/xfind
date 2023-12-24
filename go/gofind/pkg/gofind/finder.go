@@ -99,7 +99,7 @@ func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult
 		return nil
 	}
 	fr := f.FilePathToFileResult(filePath, fi)
-	if fr.FileType == FiletypeArchive {
+	if fr.FileType == FileTypeArchive {
 		if f.Settings.IncludeArchives() && f.isMatchingArchiveFileResult(fr) {
 			return fr
 		}

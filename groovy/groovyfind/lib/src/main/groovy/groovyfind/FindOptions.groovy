@@ -65,7 +65,7 @@ class FindOptions {
             'out-filetype': { String s, FindSettings settings -> settings.addOutFileType(s) },
             path: { String s, FindSettings settings -> settings.addPath(s) },
             'settings-file': { String s, FindSettings settings -> settingsFromFilePath(s, settings) },
-            'sort-by': { String s, FindSettings settings -> settings.setSortBy(SortByUtil.fromName(s)) }
+            'sort-by': { String s, FindSettings settings -> settings.setSortBy(SortBy.forName(s)) }
     ]
 
     @FunctionalInterface

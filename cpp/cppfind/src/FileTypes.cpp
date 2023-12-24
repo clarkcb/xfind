@@ -47,23 +47,23 @@ namespace cppfind {
             const rapidjson::Value& extensions = filetype["extensions"];
 
             for (rapidjson::SizeType j = 0; j < extensions.Size(); j++) {
-                if (type == "archive") {
+                if (type == FILE_TYPE_NAME_ARCHIVE) {
                     m_archive_extensions.insert(extensions[j].GetString());
-                } else if (type == "audio") {
+                } else if (type == FILE_TYPE_NAME_AUDIO) {
                     m_audio_extensions.insert(extensions[j].GetString());
-                } else if (type == "binary") {
+                } else if (type == FILE_TYPE_NAME_BINARY) {
                     m_binary_extensions.insert(extensions[j].GetString());
-                } else if (type == "code") {
+                } else if (type == FILE_TYPE_NAME_CODE) {
                     m_code_extensions.insert(extensions[j].GetString());
-                } else if (type == "font") {
+                } else if (type == FILE_TYPE_NAME_FONT) {
                     m_font_extensions.insert(extensions[j].GetString());
-                } else if (type == "image") {
+                } else if (type == FILE_TYPE_NAME_IMAGE) {
                     m_image_extensions.insert(extensions[j].GetString());
-                } else if (type == "text") {
+                } else if (type == FILE_TYPE_NAME_TEXT) {
                     m_text_extensions.insert(extensions[j].GetString());
-                } else if (type == "video") {
+                } else if (type == FILE_TYPE_NAME_VIDEO) {
                     m_video_extensions.insert(extensions[j].GetString());
-                } else if (type == "xml") {
+                } else if (type == FILE_TYPE_NAME_XML) {
                     m_xml_extensions.insert(extensions[j].GetString());
                 }
             }
@@ -72,23 +72,23 @@ namespace cppfind {
             const rapidjson::Value& names = filetype["names"];
 
             for (rapidjson::SizeType j = 0; j < names.Size(); j++) {
-                if (type == "archive") {
+                if (type == FILE_TYPE_NAME_ARCHIVE) {
                     m_archive_names.insert(names[j].GetString());
-                } else if (type == "audio") {
+                } else if (type == FILE_TYPE_NAME_AUDIO) {
                     m_audio_names.insert(names[j].GetString());
-                } else if (type == "binary") {
+                } else if (type == FILE_TYPE_NAME_BINARY) {
                     m_binary_names.insert(names[j].GetString());
-                } else if (type == "code") {
+                } else if (type == FILE_TYPE_NAME_CODE) {
                     m_code_names.insert(names[j].GetString());
-                } else if (type == "font") {
+                } else if (type == FILE_TYPE_NAME_FONT) {
                     m_font_names.insert(names[j].GetString());
-                } else if (type == "image") {
+                } else if (type == FILE_TYPE_NAME_IMAGE) {
                     m_image_names.insert(names[j].GetString());
-                } else if (type == "text") {
+                } else if (type == FILE_TYPE_NAME_TEXT) {
                     m_text_names.insert(names[j].GetString());
-                } else if (type == "video") {
+                } else if (type == FILE_TYPE_NAME_VIDEO) {
                     m_video_names.insert(names[j].GetString());
-                } else if (type == "xml") {
+                } else if (type == FILE_TYPE_NAME_XML) {
                     m_xml_names.insert(names[j].GetString());
                 }
             }
@@ -96,34 +96,34 @@ namespace cppfind {
     }
 
     FileType FileTypes::from_name(const std::string& name) {
-         std::string uname{name};
-        std::transform(uname.begin(), uname.end(), uname.begin(),
-                       [](unsigned char c) { return std::toupper(c); });
-        if (uname == "ARCHIVE") {
+         std::string lname{name};
+        std::transform(lname.begin(), lname.end(), lname.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+        if (lname == FILE_TYPE_NAME_ARCHIVE) {
             return FileType::ARCHIVE;
         }
-        else if (uname == "AUDIO") {
+        else if (lname == FILE_TYPE_NAME_AUDIO) {
             return FileType::AUDIO;
         }
-        else if (uname == "BINARY") {
+        else if (lname == FILE_TYPE_NAME_BINARY) {
             return FileType::BINARY;
         }
-        else if (uname == "CODE") {
+        else if (lname == FILE_TYPE_NAME_CODE) {
             return FileType::CODE;
         }
-        else if (uname == "FONT") {
+        else if (lname == FILE_TYPE_NAME_FONT) {
             return FileType::FONT;
         }
-        else if (uname == "IMAGE") {
+        else if (lname == FILE_TYPE_NAME_IMAGE) {
             return FileType::IMAGE;
         }
-        else if (uname == "TEXT") {
+        else if (lname == FILE_TYPE_NAME_TEXT) {
             return FileType::TEXT;
         }
-        else if (uname == "VIDEO") {
+        else if (lname == FILE_TYPE_NAME_VIDEO) {
             return FileType::VIDEO;
         }
-        else if (uname == "XML") {
+        else if (lname == FILE_TYPE_NAME_XML) {
             return FileType::XML;
         }
         else {
@@ -134,23 +134,23 @@ namespace cppfind {
     std::string FileTypes::to_name(const FileType& file_type) {
         switch (file_type) {
             case FileType::ARCHIVE:
-                return "archive";
+                return FILE_TYPE_NAME_ARCHIVE;
             case FileType::AUDIO:
-                return "audio";
+                return FILE_TYPE_NAME_AUDIO;
             case FileType::BINARY:
-                return "binary";
+                return FILE_TYPE_NAME_BINARY;
             case FileType::CODE:
-                return "code";
+                return FILE_TYPE_NAME_CODE;
             case FileType::FONT:
-                return "font";
+                return FILE_TYPE_NAME_FONT;
             case FileType::IMAGE:
-                return "image";
+                return FILE_TYPE_NAME_IMAGE;
             case FileType::TEXT:
-                return "text";
+                return FILE_TYPE_NAME_TEXT;
             case FileType::VIDEO:
-                return "video";
+                return FILE_TYPE_NAME_VIDEO;
             case FileType::XML:
-                return "xml";
+                return FILE_TYPE_NAME_XML;
             default:
                 return "unknown";
         }

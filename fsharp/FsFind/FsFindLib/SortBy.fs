@@ -11,18 +11,18 @@ type SortBy =
 module SortUtil = 
     
     let SortByFromName (name : string) : SortBy =
-        let uname = name.ToUpperInvariant()
-        if uname.Equals("NAME") then SortBy.FileName
-        else if uname.Equals("SIZE") then SortBy.FileSize
-        else if uname.Equals("TYPE") then SortBy.FileType
-        else if uname.Equals("LASTMOD") then SortBy.LastMod
+        let lname = name.ToLowerInvariant()
+        if lname.Equals("filename") || lname.Equals("name") then SortBy.FileName
+        else if lname.Equals("filesize") || lname.Equals("size") then SortBy.FileSize
+        else if lname.Equals("filetype") || lname.Equals("type") then SortBy.FileType
+        else if lname.Equals("lastmod") then SortBy.LastMod
         else SortBy.FilePath
 
     let NameFromSortBy (sortBy : SortBy) : string =
-        if sortBy = SortBy.FileName then "NAME"
-        else if sortBy = SortBy.FileSize then "SIZE"
-        else if sortBy = SortBy.FileType then "TYPE"
-        else if sortBy = SortBy.LastMod then "LASTMOD"
-        else "PATH"
+        if sortBy = SortBy.FileName then "filename"
+        else if sortBy = SortBy.FileSize then "filesize"
+        else if sortBy = SortBy.FileType then "filetype"
+        else if sortBy = SortBy.LastMod then "lastmod"
+        else "filepath"
 
 ;;

@@ -16,10 +16,13 @@
 #define T_XML "xml"
 
 // sort-by names
-#define S_FILEPATH "path"
-#define S_FILENAME "name"
-#define S_FILESIZE "size"
-#define S_FILETYPE "type"
+#define S_FILEPATH "filepath"
+#define S_FILENAME "filename"
+#define S_NAME "name"
+#define S_FILESIZE "filesize"
+#define S_SIZE "size"
+#define S_FILETYPE "filetype"
+#define S_TYPE "type"
 #define S_LASTMOD "lastmod"
 
 // the accepted date format

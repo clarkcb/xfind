@@ -71,18 +71,7 @@ sub set_property {
 
 sub set_sort_by {
     my ($self, $name) = @_;
-    my $uname = uc($name);
-    if ($uname eq 'NAME') {
-        $self->{sort_by} = plfind::SortBy->FILENAME;
-    } elsif ($uname eq 'SIZE') {
-        $self->{sort_by} = plfind::SortBy->FILESIZE;
-    } elsif ($uname eq 'TYPE') {
-        $self->{sort_by} = plfind::SortBy->FILETYPE;
-    } elsif ($uname eq 'LASTMOD') {
-        $self->{sort_by} = plfind::SortBy->LASTMOD;
-    } else {
-        $self->{sort_by} = plfind::SortBy->FILEPATH;
-    }
+    $self->{sort_by} = plfind::SortBy->name_to_sort_by($name);
 }
 
 sub add_exts {

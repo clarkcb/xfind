@@ -5,11 +5,11 @@ namespace phpfind;
 /**
  * Enum SortBy
  */
-enum SortBy
+enum SortBy: string
 {
-    case Filepath;
-    case Filename;
-    case Filesize;
-    case Filetype;
-    case LastMod;
+    case Filepath = 'filepath';
+    case Filename = 'filename';
+    case Filesize = 'filesize';
+    case Filetype = 'filetype';
+    case LastMod = 'lastmod';
 }

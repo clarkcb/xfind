@@ -13,7 +13,7 @@ func StringListToString(list []string) string {
 	for _, l := range list {
 		elems = append(elems, fmt.Sprintf("\"%s\"", l))
 	}
-	buffer.WriteString(strings.Join(elems, ","))
+	buffer.WriteString(strings.Join(elems, ", "))
 	buffer.WriteString("]")
 	return buffer.String()
 }
@@ -23,9 +23,9 @@ func FileTypeListToString(list []FileType) string {
 	buffer.WriteString("[")
 	var elems []string
 	for _, ft := range list {
-		elems = append(elems, fmt.Sprintf("\"%s\"", GetNameForFileType(ft)))
+		elems = append(elems, fmt.Sprintf("%s", GetNameForFileType(ft)))
 	}
-	buffer.WriteString(strings.Join(elems, ","))
+	buffer.WriteString(strings.Join(elems, ", "))
 	buffer.WriteString("]")
 	return buffer.String()
 }
@@ -35,7 +35,7 @@ func PatternsToString(fp *Patterns) string {
 	buffer.WriteString("[")
 	for i, r := range fp.patterns {
 		if i > 0 {
-			buffer.WriteString(",")
+			buffer.WriteString(", ")
 		}
 		buffer.WriteString(fmt.Sprintf("\"%s\"", r.String()))
 	}

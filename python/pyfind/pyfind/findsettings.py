@@ -11,22 +11,23 @@
 from datetime import datetime
 from io import StringIO
 import re
-from enum import Enum
+from enum import StrEnum
 from typing import Any, Optional, Pattern
 
+from .common import list_to_str
 from .filetypes import FileType
 from .findexception import FindException
 
 PatternSet = set[Pattern]
 
 
-class SortBy(Enum):
+class SortBy(StrEnum):
     """SortBy enum"""
-    FILEPATH = 0
-    FILENAME = 1
-    FILETYPE = 2
-    FILESIZE = 3
-    LASTMOD = 4
+    FILEPATH = 'filepath'
+    FILENAME = 'filename'
+    FILETYPE = 'filetype'
+    FILESIZE = 'filesize'
+    LASTMOD = 'lastmod'
 
 
 class FindSettings:
@@ -38,8 +39,8 @@ class FindSettings:
         'include_archives', 'include_hidden', 'list_dirs', 'list_files', 'max_depth',
         'max_last_mod', 'max_size', 'min_depth', 'min_last_mod', 'min_size',
         'out_archive_extensions', 'out_archive_file_patterns', 'out_dir_patterns',
-        'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_results',
-        'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
+        'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_usage',
+        'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
         'sort_descending', 'verbose'
     ]
 
@@ -69,7 +70,6 @@ class FindSettings:
                  out_file_patterns: list | set | str | Pattern = None,
                  out_file_types: list | set | str | FileType = None,
                  paths: list[str] | set[str] | str = None,
-                 print_results: bool = False,
                  print_usage: bool = False,
                  print_version: bool = False,
                  recursive: bool = True,
@@ -128,7 +128,6 @@ class FindSettings:
         self.paths = set()
         if paths:
             self.add_paths(paths)
-        self.print_results = print_results
         self.print_usage = print_usage
         self.print_version = print_version
         self.recursive = recursive
@@ -214,17 +213,10 @@ class FindSettings:
 
     def set_sort_by(self, sort_by_name: str):
         """Set sort-by"""
-        match sort_by_name.strip().upper():
-            case 'LASTMOD':
-                self.sort_by = SortBy.LASTMOD
-            case 'NAME':
-                self.sort_by = SortBy.FILENAME
-            case 'SIZE':
-                self.sort_by = SortBy.FILESIZE
-            case 'TYPE':
-                self.sort_by = SortBy.FILETYPE
-            case _:
-                self.sort_by = SortBy.FILEPATH
+        try:
+            self.sort_by = SortBy[sort_by_name.strip().upper()]
+        except KeyError:
+            self.sort_by = FileType.UNKNOWN
 
     def __str__(self):
         sio = StringIO()
@@ -232,13 +224,20 @@ class FindSettings:
         for i, p in enumerate(sorted(self.__slots__)):
             if i > 0:
                 sio.write(', ')
-            sio.write(f'{p}: ')
+            sio.write(f'{p}=')
             val = getattr(self, p)
             if isinstance(val, set):
-                if len(val) > 0 and hasattr(list(val)[0], 'pattern'):
-                    sio.write(str([x.pattern for x in val]))
+                if len(val) > 0:
+                    if hasattr(list(val)[0], 'pattern'):
+                        sio.write(list_to_str([x.pattern for x in val]))
+                    elif isinstance(list(val)[0], FileType):
+                        sio.write('[' + ', '.join([str(x) for x in val]) + ']')
+                    else:
+                        sio.write(list_to_str(list(val)))
                 else:
-                    sio.write(str(list(val)))
+                    sio.write('[]')
+            elif isinstance(val, SortBy):
+                sio.write(str(val))
             elif isinstance(val, str):
                 if val:
                     sio.write(f'"{val}"')

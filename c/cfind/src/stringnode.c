@@ -157,7 +157,7 @@ void string_node_to_string(StringNode *string_node, char *s)
 
     while (temp != NULL) {
         if (strcount > 0) {
-            strcat(s, ",");
+            strcat(s, ", ");
         }
         strcat(s, "\"");
         strcat(s, temp->string);

@@ -213,13 +213,13 @@ func (frs *FileResults) getSortByLastMod(sortCaseInsensitive bool) func(i, j int
 
 func (frs *FileResults) Sort(settings *FindSettings) {
 	switch settings.SortBy() {
-	case SortByFilename:
+	case SortByFileName:
 		sort.Slice(frs.FileResults, frs.getSortByName(settings.SortCaseInsensitive()))
-	case SortByFilesize:
+	case SortByFileSize:
 		sort.Slice(frs.FileResults, frs.getSortBySize(settings.SortCaseInsensitive()))
-	case SortByFiletype:
+	case SortByFileType:
 		sort.Slice(frs.FileResults, frs.getSortByType(settings.SortCaseInsensitive()))
-	case SortByLastmod:
+	case SortByLastMod:
 		sort.Slice(frs.FileResults, frs.getSortByLastMod(settings.SortCaseInsensitive()))
 	default:
 		sort.Slice(frs.FileResults, frs.getSortByPath(settings.SortCaseInsensitive()))

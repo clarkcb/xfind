@@ -52,32 +52,32 @@ sub new {
 
 sub from_name {
     my ($name) = @_;
-    my $uname = uc($name);
-    if ($uname eq 'ARCHIVE') {
+    my $lname = lc($name);
+    if ($lname eq 'archive') {
         return plfind::FileType->ARCHIVE;
     }
-    if ($uname eq 'AUDIO') {
+    if ($lname eq 'audio') {
         return plfind::FileType->AUDIO;
     }
-    if ($uname eq 'BINARY') {
+    if ($lname eq 'binary') {
         return plfind::FileType->BINARY;
     }
-    if ($uname eq 'CODE') {
+    if ($lname eq 'code') {
         return plfind::FileType->CODE;
     }
-    if ($uname eq 'FONT') {
+    if ($lname eq 'font') {
         return plfind::FileType->FONT;
     }
-    if ($uname eq 'IMAGE') {
+    if ($lname eq 'image') {
         return plfind::FileType->IMAGE;
     }
-    if ($uname eq 'TEXT') {
+    if ($lname eq 'text') {
         return plfind::FileType->TEXT;
     }
-    if ($uname eq 'VIDEO') {
+    if ($lname eq 'video') {
         return plfind::FileType->VIDEO;
     }
-    if ($uname eq 'XML') {
+    if ($lname eq 'xml') {
         return plfind::FileType->XML;
     }
     return plfind::FileType->UNKNOWN;

@@ -89,7 +89,7 @@ object FindOptions {
     "in-filepattern" ->
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
-      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileTypes.fromName(s))),
+      ((s, ss) => ss.copy(inFileTypes = ss.inFileTypes + FileType.forName(s))),
     "maxdepth" ->
       ((s, ss) => ss.copy(maxDepth = s.toInt)),
     "maxlastmod" ->
@@ -113,13 +113,13 @@ object FindOptions {
     "out-filepattern" ->
       ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
     "out-filetype" ->
-      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileTypes.fromName(s))),
+      ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileType.forName(s))),
     "path" ->
       ((s, ss) => ss.copy(paths = ss.paths + s)),
     "settings-file" ->
       ((s, ss) => settingsFromFile(s, ss)),
     "sort-by" ->
-      ((s, ss) => ss.copy(sortBy = SortBy.fromName(s))),
+      ((s, ss) => ss.copy(sortBy = SortBy.forName(s))),
   )
 
   private type FlagAction = (Boolean, FindSettings) => FindSettings

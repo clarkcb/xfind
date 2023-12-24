@@ -1,5 +1,14 @@
 import 'package:dartfind/src/file_types.dart';
 
+const String filePathName = 'filepath';
+const String fileNameName = 'filename';
+const String nameName = 'name';
+const String fileSizeName = 'filesize';
+const String sizeName = 'size';
+const String fileTypeName = 'filetype';
+const String typeName = 'type';
+const String lastModName = 'lastmod';
+
 enum SortBy {
   filePath,
   fileName,
@@ -12,28 +21,31 @@ extension SortByExtension on SortBy {
   String get name {
     switch (this) {
       case SortBy.fileName:
-        return 'NAME';
+        return fileNameName;
       case SortBy.fileSize:
-        return 'SIZE';
+        return fileSizeName;
       case SortBy.fileType:
-        return 'TYPE';
+        return fileTypeName;
       case SortBy.lastMod:
-        return 'LASTMOD';
+        return lastModName;
       default:
-        return 'PATH';
+        return filePathName;
     }
   }
 }
 
 SortBy nameToSortBy(String name) {
   switch (name.trim().toLowerCase()) {
-    case "name":
+    case fileNameName:
+    case nameName:
       return SortBy.fileName;
-    case "size":
+    case fileSizeName:
+    case sizeName:
       return SortBy.fileSize;
-    case "type":
+    case fileTypeName:
+    case typeName:
       return SortBy.fileType;
-    case "lastmod":
+    case lastModName:
       return SortBy.lastMod;
     default:
       return SortBy.filePath;
@@ -133,12 +145,16 @@ class FindSettings {
     return '"$dt"';
   }
 
+  String fileTypeSetToString(Set<FileType> fileTypes) {
+    return '[${fileTypes.map((ft) => ft.name).join(', ')}]';
+  }
+
   String patternSetToString(Set<Pattern> patterns) {
-    return '{${patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ')}}';
+    return '[${patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ')}]';
   }
 
   String stringSetToString(Set<String> set) {
-    return '{${set.map((s) => '"$s"').join(', ')}}';
+    return '[${set.map((s) => '"$s"').join(', ')}]';
   }
 
   @override
@@ -149,7 +165,7 @@ class FindSettings {
       ', inDirPatterns=${patternSetToString(inDirPatterns)}'
       ', inExtensions=${stringSetToString(inExtensions)}'
       ', inFilePatterns=${patternSetToString(inFilePatterns)}'
-      ', inFileTypes=$inFileTypes'
+      ', inFileTypes=${fileTypeSetToString(inFileTypes)}'
       ', includeArchives=$includeArchives'
       ', includeHidden=$includeHidden'
       ', listDirs=$listDirs'
@@ -165,7 +181,7 @@ class FindSettings {
       ', outDirPatterns=${patternSetToString(outDirPatterns)}'
       ', outExtensions=${stringSetToString(outExtensions)}'
       ', outFilePatterns=${patternSetToString(outFilePatterns)}'
-      ', outFileTypes=$outFileTypes'
+      ', outFileTypes=${fileTypeSetToString(outFileTypes)}'
       ', paths=${stringSetToString(paths)}'
       ', printUsage=$printUsage'
       ', printVersion=$printVersion'

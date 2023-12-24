@@ -14,7 +14,7 @@ static class Program
 
 			if (settings.Debug)
 			{
-				Logger.Log("settings: " + settings + "\n");
+				Logger.Log(settings.ToString());
 			}
 
 			if (settings.PrintUsage)

@@ -68,12 +68,12 @@ public class FindSettings
 		Debug = false;
 		InArchiveExtensions = new HashSet<string>();
 		InArchiveFilePatterns = new HashSet<Regex>();
-		IncludeArchives = false;
-		IncludeHidden = false;
 		InDirPatterns = new HashSet<Regex>();
 		InExtensions = new HashSet<string>();
 		InFilePatterns = new HashSet<Regex>();
 		InFileTypes = new HashSet<FileType>();
+		IncludeArchives = false;
+		IncludeHidden = false;
 		ListDirs = false;
 		ListFiles = false;
 		MaxDepth = -1;
@@ -103,12 +103,12 @@ public class FindSettings
 		bool debug,
 		ISet<string> inArchiveExtensions,
 		ISet<Regex> inArchiveFilePatterns,
-		bool includeArchives,
-		bool includeHidden,
 		ISet<Regex> inDirPatterns,
 		ISet<string> inExtensions,
 		ISet<Regex> inFilePatterns,
 		ISet<FileType> inFileTypes,
+		bool includeArchives,
+		bool includeHidden,
 		bool listDirs,
 		bool listFiles,
 		int maxDepth,
@@ -136,12 +136,12 @@ public class FindSettings
 		Debug = debug;
 		InArchiveExtensions = inArchiveExtensions;
 		InArchiveFilePatterns = inArchiveFilePatterns;
-		IncludeArchives = includeArchives;
-		IncludeHidden = includeHidden;
 		InDirPatterns = inDirPatterns;
 		InExtensions = inExtensions;
 		InFilePatterns = inFilePatterns;
 		InFileTypes = inFileTypes;
+		IncludeArchives = includeArchives;
+		IncludeHidden = includeHidden;
 		ListDirs = listDirs;
 		ListFiles = listFiles;
 		MaxDepth = maxDepth;
@@ -262,7 +262,7 @@ public class FindSettings
 		return dt == null ? "0" : $"\"{dt}\"";
 	}
 
-	private static string EnumerableToString<T>(IEnumerable<T> enumerable)
+	private static string EnumerableToString<T>(IEnumerable<T> enumerable, bool quote = true)
 	{
 		var sb = new StringBuilder("[");
 		var elemCount = 0;
@@ -271,10 +271,10 @@ public class FindSettings
 			var t = x!.GetType();
 			if (elemCount > 0)
 				sb.Append(", ");
-			if (t == typeof(string))
+			if (quote)
 				sb.Append('"');
 			sb.Append(x);
-			if (t == typeof(string))
+			if (quote)
 				sb.Append('"');
 			elemCount++;
 		}
@@ -285,38 +285,38 @@ public class FindSettings
 	public override string ToString()
 	{
 		return "FindSettings(" +
-		       "ArchivesOnly: " + ArchivesOnly +
-		       ", Debug: " + Debug +
-		       ", InArchiveExtensions: " + EnumerableToString(InArchiveExtensions) +
-		       ", InArchiveFilePatterns: " + EnumerableToString(InArchiveFilePatterns) +
-		       ", IncludeArchives: " + IncludeArchives +
-		       ", IncludeHidden: " + IncludeHidden +
-		       ", InDirPatterns: " + EnumerableToString(InDirPatterns) +
-		       ", InExtensions: " + EnumerableToString(InExtensions) +
-		       ", InFilePatterns: " + EnumerableToString(InFilePatterns) +
-		       ", InFileTypes: " + EnumerableToString(InFileTypes) +
-		       ", ListDirs: " + ListDirs +
-		       ", ListFiles: " + ListFiles +
-		       ", MaxDepth: " + MaxDepth +
-		       ", MaxLastMod: " + DateTimeToString(MaxLastMod) +
-		       ", MaxSize: " + MaxSize +
-		       ", MinDepth: " + MinDepth +
-		       ", MinLastMod: " + DateTimeToString(MinLastMod) +
-		       ", MinSize: " + MinSize +
-		       ", OutArchiveExtensions: " + EnumerableToString(OutArchiveExtensions) +
-		       ", OutArchiveFilePatterns: " + EnumerableToString(OutArchiveFilePatterns) +
-		       ", OutDirPatterns: " + EnumerableToString(OutDirPatterns) +
-		       ", OutExtensions: " + EnumerableToString(OutExtensions) +
-		       ", OutFilePatterns: " + EnumerableToString(OutFilePatterns) +
-		       ", OutFileTypes: " + EnumerableToString(OutFileTypes) +
-		       ", Paths: " + EnumerableToString(Paths) +
-		       ", PrintUsage: " + PrintUsage +
-		       ", PrintVersion: " + PrintVersion +
-		       ", Recursive: " + Recursive +
-		       ", SortBy: " + SortByUtil.GetNameFromSortBy(SortBy) +
-		       ", SortCaseInsensitive: " + SortCaseInsensitive +
-		       ", SortDescending: " + SortDescending +
-		       ", Verbose: " + Verbose +
+		       "ArchivesOnly=" + ArchivesOnly +
+		       ", Debug=" + Debug +
+		       ", InArchiveExtensions=" + EnumerableToString(InArchiveExtensions) +
+		       ", InArchiveFilePatterns=" + EnumerableToString(InArchiveFilePatterns) +
+		       ", InDirPatterns=" + EnumerableToString(InDirPatterns) +
+		       ", InExtensions=" + EnumerableToString(InExtensions) +
+		       ", InFilePatterns=" + EnumerableToString(InFilePatterns) +
+		       ", InFileTypes=" + EnumerableToString(InFileTypes, false) +
+		       ", IncludeArchives=" + IncludeArchives +
+		       ", IncludeHidden=" + IncludeHidden +
+		       ", ListDirs=" + ListDirs +
+		       ", ListFiles=" + ListFiles +
+		       ", MaxDepth=" + MaxDepth +
+		       ", MaxLastMod=" + DateTimeToString(MaxLastMod) +
+		       ", MaxSize=" + MaxSize +
+		       ", MinDepth=" + MinDepth +
+		       ", MinLastMod=" + DateTimeToString(MinLastMod) +
+		       ", MinSize=" + MinSize +
+		       ", OutArchiveExtensions=" + EnumerableToString(OutArchiveExtensions) +
+		       ", OutArchiveFilePatterns=" + EnumerableToString(OutArchiveFilePatterns) +
+		       ", OutDirPatterns=" + EnumerableToString(OutDirPatterns) +
+		       ", OutExtensions=" + EnumerableToString(OutExtensions) +
+		       ", OutFilePatterns=" + EnumerableToString(OutFilePatterns) +
+		       ", OutFileTypes=" + EnumerableToString(OutFileTypes, false) +
+		       ", Paths=" + EnumerableToString(Paths) +
+		       ", PrintUsage=" + PrintUsage +
+		       ", PrintVersion=" + PrintVersion +
+		       ", Recursive=" + Recursive +
+		       ", SortBy=" + SortByUtil.GetNameFromSortBy(SortBy) +
+		       ", SortCaseInsensitive=" + SortCaseInsensitive +
+		       ", SortDescending=" + SortDescending +
+		       ", Verbose=" + Verbose +
 		       ")";
 	}
 }

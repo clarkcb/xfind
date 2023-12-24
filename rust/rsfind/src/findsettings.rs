@@ -1,13 +1,13 @@
+use std::fmt;
 use regex::Regex;
 
 use crate::filetypes;
 use crate::sortby::SortBy;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct FindSettings {
     _archives_only: bool,
     _debug: bool,
-    _exclude_hidden: bool,
     _in_archive_extensions: Vec<String>,
     _in_archive_file_patterns: Vec<Regex>,
     _in_dir_patterns: Vec<Regex>,
@@ -45,7 +45,6 @@ impl FindSettings {
         FindSettings {
             _archives_only: false,
             _debug: false,
-            _exclude_hidden: true,
             _in_archive_extensions: Vec::new(),
             _in_archive_file_patterns: Vec::new(),
             _in_dir_patterns: Vec::new(),
@@ -340,6 +339,50 @@ impl FindSettings {
     pub fn set_verbose(&mut self, b: bool) {
         self._verbose = b
     }
+
+    fn get_settings_string(&self) -> String {
+        let mut s = String::from("FindSettings(");
+        s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
+        s.push_str(format!(", debug={}", &self.debug()).as_str());
+        s.push_str(format!(", in_archive_extensions={:?}", &self.in_archive_extensions()).as_str());
+        s.push_str(format!(", in_archive_file_patterns={}", get_regex_vec_string(&self.in_archive_file_patterns())).as_str());
+        s.push_str(format!(", in_dir_patterns={}", get_regex_vec_string(&self.in_dir_patterns())).as_str());
+        s.push_str(format!(", in_extensions={:?}", &self.in_extensions()).as_str());
+        s.push_str(format!(", in_file_patterns={}", get_regex_vec_string(&self.in_file_patterns())).as_str());
+        s.push_str(format!(", in_file_types={:?}", &self.in_file_types()).as_str());
+        s.push_str(format!(", include_archives={:?}", &self.include_archives()).as_str());
+        s.push_str(format!(", include_hidden={:?}", &self.include_hidden()).as_str());
+        s.push_str(format!(", list_dirs={:?}", &self.list_dirs()).as_str());
+        s.push_str(format!(", list_files={:?}", &self.list_files()).as_str());
+        s.push_str(format!(", max_depth={:?}", &self.max_depth()).as_str());
+        s.push_str(format!(", max_last_mod={:?}", &self.max_last_mod()).as_str());
+        s.push_str(format!(", max_size={:?}", &self.max_size()).as_str());
+        s.push_str(format!(", min_depth={:?}", &self.min_depth()).as_str());
+        s.push_str(format!(", min_last_mod={:?}", &self.min_last_mod()).as_str());
+        s.push_str(format!(", min_size={:?}", &self.min_size()).as_str());
+        s.push_str(format!(", out_archive_extensions={:?}", &self.out_archive_extensions()).as_str());
+        s.push_str(format!(", out_archive_file_patterns={}", get_regex_vec_string(&self.out_archive_file_patterns())).as_str());
+        s.push_str(format!(", out_dir_patterns={}", get_regex_vec_string(&self.out_dir_patterns())).as_str());
+        s.push_str(format!(", out_extensions={:?}", &self.out_extensions()).as_str());
+        s.push_str(format!(", out_file_patterns={}", get_regex_vec_string(&self.out_file_patterns())).as_str());
+        s.push_str(format!(", out_file_types={:?}", &self.out_file_types()).as_str());
+        s.push_str(format!(", paths={:?}", &self.paths()).as_str());
+        s.push_str(format!(", print_usage={:?}", &self.print_usage()).as_str());
+        s.push_str(format!(", print_version={:?}", &self.print_version()).as_str());
+        s.push_str(format!(", recursive={}", &self.recursive()).as_str());
+        s.push_str(format!(", sort_by={:?}", &self.sort_by()).as_str());
+        s.push_str(format!(", sort_case_insensitive={}", &self.sort_case_insensitive()).as_str());
+        s.push_str(format!(", sort_descending={}", &self.sort_descending()).as_str());
+        s.push_str(format!(", verbose={}", &self.verbose()).as_str());
+        s.push_str(")");
+        s
+    }
+}
+
+impl fmt::Debug for FindSettings {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.get_settings_string())
+    }
 }
 
 fn add_extensions(new_ext_str: String, extensions: &mut Vec<String>) {
@@ -351,6 +394,21 @@ fn add_extensions(new_ext_str: String, extensions: &mut Vec<String>) {
 
 pub fn add_pattern(pattern: String, patterns: &mut Vec<Regex>) {
     patterns.push(Regex::new(pattern.as_str()).unwrap());
+}
+
+fn get_regex_vec_string(vec: &Vec<Regex>) -> String {
+    let patterns: Vec<String> = vec.iter().map(|r| r.to_string()).collect();
+    let mut s = String::from("[");
+    let mut i = 0;
+    for pattern in patterns.iter() {
+        if i > 0 {
+            s.push_str(", ");
+        }
+        s.push_str(format!("{:?}", pattern).as_str());
+        i += 1;
+    }
+    s.push_str("]");
+    s
 }
 
 #[cfg(test)]

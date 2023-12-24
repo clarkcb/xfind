@@ -11,27 +11,35 @@ import {SortBy} from './sortby';
 
 export class SortUtil {
     public static nameToSortBy(name: string): SortBy {
-        const uname: string = name.toUpperCase();
-        if (uname === 'NAME')
-            return SortBy.FileName;
-        if (uname === 'SIZE')
-            return SortBy.FileSize;
-        if (uname === 'TYPE')
-            return SortBy.FileType;
-        if (uname === 'LASTMOD')
-            return SortBy.LastMod;
-        return SortBy.FilePath;
+        switch (name.toLowerCase()) {
+            case 'filename':
+            case 'name':
+                return SortBy.FileName;
+            case 'filesize':
+            case 'size':
+                return SortBy.FileSize;
+            case 'filetype':
+            case 'type':
+                return SortBy.FileType;
+            case 'lastmod':
+                return SortBy.LastMod;
+            default:
+                return SortBy.FilePath;
+        }
     }
 
     public static sortByToName(sortBy: SortBy): string {
-        if (sortBy === SortBy.FileName)
-            return 'NAME';
-        if (sortBy === SortBy.FileSize)
-            return 'SIZE';
-        if (sortBy === SortBy.FileType)
-            return 'TYPE';
-        if (sortBy === SortBy.LastMod)
-            return 'LASTMOD';
-        return 'PATH';
+        switch (sortBy) {
+            case SortBy.FileName:
+                return 'filename';
+            case SortBy.FileSize:
+                return 'filesize';
+            case SortBy.FileType:
+                return 'filetype';
+            case SortBy.LastMod:
+                return 'lastmod';
+            default:
+                return 'filepath';
+        }
     }
 }

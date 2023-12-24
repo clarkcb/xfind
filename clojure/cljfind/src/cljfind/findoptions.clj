@@ -13,7 +13,8 @@
   (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
   (:require [clojure.data.json :as json])
-  (:use [clojure.set :only (union)]
+  (:use [clojure.instant :only (read-instant-date)]
+        [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileutil :only (expand-path)]
@@ -58,10 +59,10 @@
     :in-filepattern (fn [settings s] (add-pattern settings s :in-file-patterns))
     :in-filetype (fn [settings s] (add-file-type settings s :in-file-types))
     :maxdepth (fn [settings s] (assoc settings :max-depth (Integer/parseInt s)))
-    :maxlastmod (fn [settings s] (assoc settings :max-last-mod (clojure.instant/read-instant-date s)))
+    :maxlastmod (fn [settings s] (assoc settings :max-last-mod (read-instant-date s)))
     :maxsize (fn [settings s] (assoc settings :max-size (Integer/parseInt s)))
     :mindepth (fn [settings s] (assoc settings :min-depth (Integer/parseInt s)))
-    :minlastmod (fn [settings s] (assoc settings :min-last-mod (clojure.instant/read-instant-date s)))
+    :minlastmod (fn [settings s] (assoc settings :min-last-mod (read-instant-date s)))
     :minsize (fn [settings s] (assoc settings :min-size (Integer/parseInt s)))
     :out-archiveext (fn [settings s] (add-extension settings s :out-archive-extensions))
     :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archive-file-pattern))

@@ -67,7 +67,7 @@ function Main {
         $settings = $options.SettingsFromArgs($_args)
 
         if ($settings.Debug) {
-            LogMsg("settings: $($settings.ToString())`n")
+            LogMsg($settings.ToString())
         }
 
         if ($settings.PrintUsage) {

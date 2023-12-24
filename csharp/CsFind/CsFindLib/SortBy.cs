@@ -15,10 +15,13 @@ public static class SortByUtil
 	{
 		return sortByName.ToUpper() switch
 		{
-			"NAME" => SortBy.FileName,
-			"SIZE" => SortBy.FileSize,
-			"TYPE" => SortBy.FileType,
-			"LASTMOD" => SortBy.LastMod,
+			"filename" => SortBy.FileName,
+			"name" => SortBy.FileName,
+			"filesize" => SortBy.FileSize,
+			"size" => SortBy.FileSize,
+			"filetype" => SortBy.FileType,
+			"type" => SortBy.FileType,
+			"lastmod" => SortBy.LastMod,
 			_ => SortBy.FilePath
 		};
 	}
@@ -27,11 +30,11 @@ public static class SortByUtil
 	{
 		return sortBy switch
 		{
-			SortBy.FileName => "NAME",
-			SortBy.FileSize => "SIZE",
-			SortBy.FileType => "TYPE",
-			SortBy.LastMod => "LASTMOD",
-			_ => "PATH"
+			SortBy.FileName => "filename",
+			SortBy.FileSize => "filesize",
+			SortBy.FileType => "filetype",
+			SortBy.LastMod => "lastmod",
+			_ => "filepath"
 		};
 	}
 }

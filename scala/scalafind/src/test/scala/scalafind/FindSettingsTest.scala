@@ -14,6 +14,7 @@ class FindSettingsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.listFiles == DefaultSettings.listFiles)
     assert(settings.printUsage == DefaultSettings.printUsage)
     assert(settings.printVersion == DefaultSettings.printVersion)
+    assert(settings.sortBy == SortBy.FilePath)
     assert(settings.verbose == DefaultSettings.verbose)
   }
 

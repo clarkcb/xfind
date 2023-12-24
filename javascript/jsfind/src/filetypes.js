@@ -149,48 +149,53 @@ class FileTypes {
     }
 
     static fromName(name) {
-        let uname = name.toUpperCase();
-        if (uname === 'ARCHIVE')
-            return FileType.ARCHIVE;
-        if (uname === 'AUDIO')
-            return FileType.AUDIO;
-        if (uname === 'BINARY')
-            return FileType.BINARY;
-        if (uname === 'CODE')
-            return FileType.CODE;
-        if (uname === 'FONT')
-            return FileType.FONT;
-        if (uname === 'IMAGE')
-            return FileType.IMAGE;
-        if (uname === 'TEXT')
-            return FileType.TEXT;
-        if (uname === 'VIDEO')
-            return FileType.VIDEO;
-        if (uname === 'XML')
-            return FileType.XML;
-        return FileType.UNKNOWN;
+        switch (name.toLowerCase()) {
+            case 'archive':
+                return FileType.ARCHIVE;
+            case 'audio':
+                return FileType.AUDIO;
+            case 'binary':
+                return FileType.BINARY;
+            case 'code':
+                return FileType.CODE;
+            case 'font':
+                return FileType.FONT;
+            case 'image':
+                return FileType.IMAGE;
+            case 'text':
+                return FileType.TEXT;
+            case 'video':
+                return FileType.VIDEO;
+            case 'xml':
+                return FileType.XML;
+            default:
+                return FileType.UNKNOWN;
+        }
     }
 
     static toName(fileType) {
-        if (fileType === FileType.ARCHIVE)
-            return 'ARCHIVE';
-        if (fileType === FileType.AUDIO)
-            return 'AUDIO';
-        if (fileType === FileType.BINARY)
-            return 'BINARY';
-        if (fileType === FileType.CODE)
-            return 'CODE';
-        if (fileType === FileType.FONT)
-            return 'FONT';
-        if (fileType === FileType.IMAGE)
-            return 'IMAGE';
-        if (fileType === FileType.TEXT)
-            return 'TEXT';
-        if (fileType === FileType.VIDEO)
-            return 'VIDEO';
-        if (fileType === FileType.XML)
-            return 'XML';
-        return 'UNKNOWN';
+        switch (fileType) {
+            case FileType.ARCHIVE:
+                return 'archive';
+            case FileType.AUDIO:
+                return 'audio';
+            case FileType.BINARY:
+                return 'binary';
+            case FileType.CODE:
+                return 'code';
+            case FileType.FONT:
+                return 'font';
+            case FileType.IMAGE:
+                return 'image';
+            case FileType.TEXT:
+                return 'text';
+            case FileType.VIDEO:
+                return 'video';
+            case FileType.XML:
+                return 'xml';
+            default:
+                return 'unknown';
+        }
     }
 
     static fileTypesToString(name, fileTypes) {
@@ -198,7 +203,7 @@ class FileTypes {
             let s = `${name}=[`;
             for (let i=0; i < fileTypes.length; i++) {
                 if (i > 0) s += ', ';
-                s += '"' + FileTypes.toName(fileTypes[i]) + '"';
+                s += FileTypes.toName(fileTypes[i]);
             }
             s += ']';
             return s;

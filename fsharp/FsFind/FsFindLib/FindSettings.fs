@@ -70,8 +70,8 @@ type FindSettings() =
         let rec recListToString (acc : string) (lst : FileType list) =
             match lst with
             | []     -> acc.Trim()
-            | [a]    -> (recListToString (acc + " \"" + (FileTypes.ToName a) + "\"") [])
-            | h :: t -> (recListToString (acc + " \"" + (FileTypes.ToName h) + "\";") t) in
+            | [a]    -> (recListToString (acc + " " + (FileTypes.ToName a)) [])
+            | h :: t -> (recListToString (acc + " " + (FileTypes.ToName h) + ",") t) in
         sprintf "[%s]" (recListToString "" lst)
 
     member this.FileTypesListFromString (fts : string) : FileType list =
@@ -87,38 +87,38 @@ type FindSettings() =
     member this.ToString =
         String.concat "" [
             "FindSettings(";
-            $"ArchivesOnly: %b{this.ArchivesOnly}";
-            $", Debug: %b{this.Debug}";
-            $", InArchiveExtensions: %s{Common.ListToString(this.InArchiveExtensions)}";
-            $", InArchiveFilePatterns: %s{Common.ListToString(this.InArchiveFilePatterns)}";
-            $", InDirPatterns: %s{Common.ListToString(this.InDirPatterns)}";
-            $", InExtensions: %s{Common.ListToString(this.InExtensions)}";
-            $", InFilePatterns: %s{Common.ListToString(this.InFilePatterns)}";
-            $", InFileTypes: %s{this.FileTypesListToString this.InFileTypes}";
-            $", IncludeArchives: %b{this.IncludeArchives}";
-            $", IncludeHidden: %b{this.IncludeHidden}";
-            $", ListDirs: %b{this.ListDirs}";
-            $", ListFiles: %b{this.ListFiles}";
-            $", MaxDepth: %i{this.MaxDepth}";
-            $", MaxLastMod: %s{this.DateTimeOptionListToString this.MaxLastMod}";
-            $", MaxSize: %i{this.MaxSize}";
-            $", MinDepth: %i{this.MinDepth}";
-            $", MinLastMod: %s{this.DateTimeOptionListToString this.MinLastMod}";
-            $", MinSize: %i{this.MinSize}";
-            $", OutArchiveExtensions: %s{Common.ListToString(this.OutArchiveExtensions)}";
-            $", OutArchiveFilePatterns: %s{Common.ListToString(this.OutArchiveFilePatterns)}";
-            $", OutDirPatterns: %s{Common.ListToString(this.OutDirPatterns)}";
-            $", OutExtensions: %s{Common.ListToString(this.OutExtensions)}";
-            $", OutFilePatterns: %s{Common.ListToString(this.OutFilePatterns)}";
-            $", OutFileTypes: %s{this.FileTypesListToString this.OutFileTypes}";
-            $", Paths: %s{Common.ListToString(this.Paths)}";
-            $", PrintUsage: %b{this.PrintUsage}";
-            $", PrintVersion: %b{this.PrintVersion}";
-            $", Recursive: %b{this.Recursive}";
-            $", SortBy: %s{SortUtil.NameFromSortBy(this.SortBy)}";
-            $", SortCaseInsensitive: %b{this.SortCaseInsensitive}";
-            $", SortDescending: %b{this.SortDescending}";
-            $", Verbose: %b{this.Verbose}";
+            $"ArchivesOnly=%b{this.ArchivesOnly}";
+            $", Debug=%b{this.Debug}";
+            $", InArchiveExtensions=%s{Common.ListToString(this.InArchiveExtensions)}";
+            $", InArchiveFilePatterns=%s{Common.ListToString(this.InArchiveFilePatterns)}";
+            $", InDirPatterns=%s{Common.ListToString(this.InDirPatterns)}";
+            $", InExtensions=%s{Common.ListToString(this.InExtensions)}";
+            $", InFilePatterns=%s{Common.ListToString(this.InFilePatterns)}";
+            $", InFileTypes=%s{this.FileTypesListToString this.InFileTypes}";
+            $", IncludeArchives=%b{this.IncludeArchives}";
+            $", IncludeHidden=%b{this.IncludeHidden}";
+            $", ListDirs=%b{this.ListDirs}";
+            $", ListFiles=%b{this.ListFiles}";
+            $", MaxDepth=%i{this.MaxDepth}";
+            $", MaxLastMod=%s{this.DateTimeOptionListToString this.MaxLastMod}";
+            $", MaxSize=%i{this.MaxSize}";
+            $", MinDepth=%i{this.MinDepth}";
+            $", MinLastMod=%s{this.DateTimeOptionListToString this.MinLastMod}";
+            $", MinSize=%i{this.MinSize}";
+            $", OutArchiveExtensions=%s{Common.ListToString(this.OutArchiveExtensions)}";
+            $", OutArchiveFilePatterns=%s{Common.ListToString(this.OutArchiveFilePatterns)}";
+            $", OutDirPatterns=%s{Common.ListToString(this.OutDirPatterns)}";
+            $", OutExtensions=%s{Common.ListToString(this.OutExtensions)}";
+            $", OutFilePatterns=%s{Common.ListToString(this.OutFilePatterns)}";
+            $", OutFileTypes=%s{this.FileTypesListToString this.OutFileTypes}";
+            $", Paths=%s{Common.ListToString(this.Paths)}";
+            $", PrintUsage=%b{this.PrintUsage}";
+            $", PrintVersion=%b{this.PrintVersion}";
+            $", Recursive=%b{this.Recursive}";
+            $", SortBy=%s{SortUtil.NameFromSortBy(this.SortBy)}";
+            $", SortCaseInsensitive=%b{this.SortCaseInsensitive}";
+            $", SortDescending=%b{this.SortDescending}";
+            $", Verbose=%b{this.Verbose}";
             ")"
         ]
 ;;

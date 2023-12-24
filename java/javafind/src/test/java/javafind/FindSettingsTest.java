@@ -24,6 +24,7 @@ public class FindSettingsTest {
         assertEquals(DefaultFindSettings.MIN_SIZE, settings.getMinSize());
         assertEquals(DefaultFindSettings.PRINT_USAGE, settings.getPrintUsage());
         assertEquals(DefaultFindSettings.PRINT_VERSION, settings.getPrintVersion());
+        assertEquals(SortBy.FILEPATH, settings.getSortBy());
         assertEquals(DefaultFindSettings.SORT_CASE_INSENSITIVE, settings.getSortCaseInsensitive());
         assertEquals(DefaultFindSettings.SORT_DESCENDING, settings.getSortDescending());
         assertEquals(DefaultFindSettings.VERBOSE, settings.getVerbose());

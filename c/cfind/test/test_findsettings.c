@@ -31,7 +31,6 @@ void test_default_settings(void)
     assert(settings->out_file_patterns == NULL);
     assert(settings->out_file_types == NULL);
     assert(settings->paths == NULL);
-    assert(settings->print_results == 1);
     assert(settings->print_usage == 0);
     assert(settings->print_version == 0);
     assert(settings->recursive == 1);

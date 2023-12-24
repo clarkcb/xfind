@@ -8,6 +8,17 @@
 #include "FileTypes.h"
 #include "RegexPattern.h"
 
+#define SORT_BY_NAME_FILEPATH "filepath"
+#define SORT_BY_NAME_PATH "path"
+#define SORT_BY_NAME_FILENAME "filename"
+#define SORT_BY_NAME_NAME "name"
+#define SORT_BY_NAME_FILESIZE "filesize"
+#define SORT_BY_NAME_SIZE "size"
+#define SORT_BY_NAME_FILETYPE "filetype"
+#define SORT_BY_NAME_TYPE "type"
+#define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_UNKNOWN "unknown"
+
 namespace cppfind {
     enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
 

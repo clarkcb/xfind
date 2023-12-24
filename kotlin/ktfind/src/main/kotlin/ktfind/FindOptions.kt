@@ -93,7 +93,7 @@ class FindOptions {
         "settings-file" to
                 { s, ss -> settingsFromFile(s, ss) },
         "sort-by" to
-                { s, ss -> ss.copy(sortBy = sortByFromName(s)) },
+                { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
     )
 
     private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(

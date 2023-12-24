@@ -12,16 +12,16 @@ use strict;
 use warnings;
 
 use constant {
-    UNKNOWN => 'Unknown',
-    ARCHIVE => 'Archive',
-    AUDIO   => 'Audio',
-    BINARY  => 'Binary',
-    CODE    => 'Code',
-    FONT    => 'Font',
-    IMAGE   => 'Image',
-    TEXT    => 'Text',
-    VIDEO   => 'Video',
-    XML     => 'Xml',
+    UNKNOWN => 'unknown',
+    ARCHIVE => 'archive',
+    AUDIO   => 'audio',
+    BINARY  => 'binary',
+    CODE    => 'code',
+    FONT    => 'font',
+    IMAGE   => 'image',
+    TEXT    => 'text',
+    VIDEO   => 'video',
+    XML     => 'xml',
 };
 
 1;

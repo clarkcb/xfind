@@ -17,12 +17,12 @@ export class FindSettings {
     #debug = false;
     inArchiveExtensions: string[] = [];
     inArchiveFilePatterns: RegExp[] = [];
-    includeArchives = false;
-    includeHidden = false;
     inDirPatterns: RegExp[] = [];
     inExtensions: string[] = [];
     inFilePatterns: RegExp[] = [];
     inFileTypes: FileType[] = [];
+    includeArchives = false;
+    includeHidden = false;
     listDirs = false;
     listFiles = false;
     maxDepth = -1;
@@ -174,14 +174,14 @@ export class FindSettings {
         return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
             + ', debug=' + this.debug
-            + ', ' + StringUtil.listToString('inArchiveExtensions', this.inArchiveExtensions)
-            + ', ' + StringUtil.listToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions)
+            + ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
+            + ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns)
+            + ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions)
+            + ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns)
+            + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', includeArchives=' + this.includeArchives
             + ', includeHidden=' + this.includeHidden
-            + ', ' + StringUtil.listToString('inDirPatterns', this.inDirPatterns)
-            + ', ' + StringUtil.listToString('inExtensions', this.inExtensions)
-            + ', ' + StringUtil.listToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', listDirs=' + this.listDirs
             + ', listFiles=' + this.listFiles
             + ', maxDepth=' + this.maxDepth
@@ -190,13 +190,14 @@ export class FindSettings {
             + ', minDepth=' + this.minDepth
             + ', ' + StringUtil.dateToString('minLastMod', this.minLastMod)
             + ', minSize=' + this.minSize
-            + ', ' + StringUtil.listToString('outArchiveExtensions', this.outArchiveExtensions)
-            + ', ' + StringUtil.listToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
-            + ', ' + StringUtil.listToString('outDirPatterns', this.outDirPatterns)
-            + ', ' + StringUtil.listToString('outExtensions', this.outExtensions)
-            + ', ' + StringUtil.listToString('outFilePatterns', this.outFilePatterns)
+            + ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions)
+            + ', ' + StringUtil.patternListToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
+            + ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns)
+            + ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions)
+            + ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns)
             + ', ' + StringUtil.fileTypesToString('outFileTypes', this.outFileTypes)
-            + ', ' + StringUtil.listToString('paths', this.paths)
+            + ', ' + StringUtil.stringListToString('paths', this.paths)
+            + ', printUsage=' + this.printUsage
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive
             + ', sortBy=' + SortUtil.sortByToName(this.sortBy)

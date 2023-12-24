@@ -18,27 +18,36 @@ Object.freeze(SortBy);
 // exports.SortBy = SortBy;
 
 const nameToSortBy = name => {
-    if (name.toUpperCase() === 'NAME')
-        return SortBy.FILENAME;
-    if (name.toUpperCase() === 'SIZE')
-        return SortBy.FILESIZE;
-    if (name.toUpperCase() === 'TYPE')
-        return SortBy.FILETYPE;
-    if (name.toUpperCase() === 'LASTMOD')
-        return SortBy.LASTMOD;
-    return SortBy.FILEPATH;
+    switch (name.toLowerCase()) {
+        case 'filename':
+        case 'name':
+            return SortBy.FILENAME;
+        case 'filesize':
+        case 'size':
+            return SortBy.FILESIZE;
+        case 'filetype':
+        case 'type':
+            return SortBy.FILETYPE;
+        case 'lastmod':
+            return SortBy.LASTMOD;
+        default:
+            return SortBy.FILEPATH;
+    }
 };
 
 const sortByToName = (sortBy) => {
-    if (sortBy === SortBy.FILENAME)
-        return 'NAME';
-    if (sortBy === SortBy.FILESIZE)
-        return 'SIZE';
-    if (sortBy === SortBy.FILETYPE)
-        return 'TYPE';
-    if (sortBy === SortBy.LASTMOD)
-        return 'LASTMOD';
-    return 'PATH';
+    switch (sortBy) {
+        case SortBy.FILENAME:
+            return 'filename';
+        case SortBy.FILESIZE:
+            return 'filesize';
+        case SortBy.FILETYPE:
+            return 'filetype';
+        case SortBy.LASTMOD:
+            return 'lastmod';
+        default:
+            return 'filepath';
+    }
 };
 
 module.exports = {SortBy, nameToSortBy, sortByToName};

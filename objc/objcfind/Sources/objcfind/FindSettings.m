@@ -205,13 +205,13 @@
 
 + (SortBy)getSortByFromName:(NSString *)sortByName {
     NSString *lname = [sortByName lowercaseString];
-    if (lname == [NSString stringWithUTF8String:S_FILENAME]) {
+    if (lname == [NSString stringWithUTF8String:S_FILENAME] || lname == [NSString stringWithUTF8String:S_NAME]) {
         return SortByFileName;
     }
-    if (lname == [NSString stringWithUTF8String:S_FILESIZE]) {
+    if (lname == [NSString stringWithUTF8String:S_FILESIZE] || lname == [NSString stringWithUTF8String:S_SIZE]) {
         return SortByFileSize;
     }
-    if (lname == [NSString stringWithUTF8String:S_FILETYPE]) {
+    if (lname == [NSString stringWithUTF8String:S_FILETYPE] || lname == [NSString stringWithUTF8String:S_TYPE]) {
         return SortByFileType;
     }
     if (lname == [NSString stringWithUTF8String:S_LASTMOD]) {
