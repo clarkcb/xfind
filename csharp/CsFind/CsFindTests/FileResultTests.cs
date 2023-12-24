@@ -13,27 +13,27 @@ class FileResultTests
 	public void FileResult_ToString_EqualsExpected()
 	{
 		var fileResult = new FileResult(CsFindPath, "Finder.cs", FileType.Text);
-		Assert.AreEqual(CsFindPath + "/Finder.cs", fileResult.ToString());
+		Assert.That(fileResult.ToString(), Is.EqualTo(CsFindPath + "/Finder.cs"));
 	}
 
 	[Test]
 	public void FileResultTrailingSlash_ToString_EqualsExpected()
 	{
 		var fileResult = new FileResult(CsFindPath + "/", "Finder.cs", FileType.Text);
-		Assert.AreEqual(CsFindPath + "/Finder.cs", fileResult.ToString());
+		Assert.That(fileResult.ToString(), Is.EqualTo(CsFindPath + "/Finder.cs"));
 	}
 
 	[Test]
 	public void FileResultBackSlashes_ToString_EqualsExpected()
 	{
 		var fileResult = new FileResult(WinCsFindPath, "Finder.cs", FileType.Text);
-		Assert.AreEqual(WinCsFindPath + @"\Finder.cs", fileResult.ToString());
+		Assert.That(fileResult.ToString(), Is.EqualTo(WinCsFindPath + @"\Finder.cs"));
 	}
 
 	[Test]
 	public void FileResultBackSlashesTrailingSlash_ToString_EqualsExpected()
 	{
 		var fileResult = new FileResult(WinCsFindPath + @"\", "Finder.cs", FileType.Text);
-		Assert.AreEqual(WinCsFindPath + @"\Finder.cs", fileResult.ToString());
+		Assert.That(fileResult.ToString(), Is.EqualTo(WinCsFindPath + @"\Finder.cs"));
 	}
 }

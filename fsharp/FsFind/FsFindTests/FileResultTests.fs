@@ -15,33 +15,33 @@ type FileResultTests () =
         ()
 
     [<Test>]
-    member this.FindFile_ToString_EqualsExpected () =
+    member this.FileResult_ToString_EqualsExpected () =
         let fi = FileInfo(FileUtil.JoinPath this.CsFindPath "Finder.cs")
         let fileType = FileType.Code
         let fr = FileResult.Create fi fileType
-        Assert.AreEqual(this.CsFindPath + "/Finder.cs", FileResult.ToString(fr))
+        Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.CsFindPath}/Finder.cs"))
         ()
 
     [<Test>]
-    member this.FindFileTrailingSlash_ToString_EqualsExpected () =
-        let fi = FileInfo(FileUtil.JoinPath this.CsFindPath "Finder.cs")
+    member this.FileResultTrailingSlash_ToString_EqualsExpected () =
+        let fi = FileInfo(FileUtil.JoinPath $"%s{this.CsFindPath}/" "Finder.cs")
         let fileType = FileType.Code
         let fr = FileResult.Create fi fileType
-        Assert.AreEqual(this.CsFindPath + "/Finder.cs", FileResult.ToString(fr))
+        Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.CsFindPath}/Finder.cs"))
         ()
 
     [<Test>]
-    member this.FindFileBackSlashes_ToString_EqualsExpected () =
+    member this.FileResultBackSlashes_ToString_EqualsExpected () =
         let fi = FileInfo(FileUtil.JoinPath this.WinCsFindPath "Finder.cs")
         let fileType = FileType.Code
         let fr = FileResult.Create fi fileType
-        Assert.AreEqual(this.WinCsFindPath + @"\Finder.cs", FileResult.ToString(fr))
+        Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.WinCsFindPath}\\Finder.cs"))
         ()
 
     [<Test>]
-    member this.FindFileBackSlashesTrailingSlash_ToString_EqualsExpected () =
-        let fi = FileInfo(FileUtil.JoinPath this.WinCsFindPath "Finder.cs")
+    member this.FileResultBackSlashesTrailingSlash_ToString_EqualsExpected () =
+        let fi = FileInfo(FileUtil.JoinPath $"%s{this.WinCsFindPath}\\" "Finder.cs")
         let fileType = FileType.Code
         let fr = FileResult.Create fi fileType
-        Assert.AreEqual(this.WinCsFindPath + @"\Finder.cs", FileResult.ToString(fr))
+        Assert.That(FileResult.ToString(fr), Is.EqualTo($"%s{this.WinCsFindPath}\\Finder.cs"))
         ()

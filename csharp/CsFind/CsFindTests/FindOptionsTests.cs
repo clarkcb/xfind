@@ -16,17 +16,17 @@ public class FindOptionsTests
 	public void SettingsFromArgs_NoArgs_HasDefaultValues()
 	{
 		var settings = _findOptions.SettingsFromArgs(new List<string>());
-		Assert.IsFalse(settings.ArchivesOnly);
-		Assert.IsFalse(settings.Debug);
-		Assert.IsFalse(settings.IncludeArchives);
-		Assert.IsFalse(settings.IncludeHidden);
-		Assert.IsFalse(settings.ListDirs);
-		Assert.IsTrue(settings.ListFiles);
-		Assert.IsFalse(settings.PrintUsage);
-		Assert.IsFalse(settings.PrintVersion);
-		Assert.IsTrue(settings.Recursive);
-		Assert.AreEqual(0, settings.Paths.Count);
-		Assert.IsFalse(settings.Verbose);
+		Assert.That(settings.ArchivesOnly, Is.False);
+		Assert.That(settings.Debug, Is.False);
+		Assert.That(settings.IncludeArchives, Is.False);
+		Assert.That(settings.IncludeHidden, Is.False);
+		Assert.That(settings.ListDirs, Is.False);
+		Assert.That(settings.ListFiles);
+		Assert.That(settings.PrintUsage, Is.False);
+		Assert.That(settings.PrintVersion, Is.False);
+		Assert.That(settings.Recursive);
+		Assert.That(settings.Paths.Count, Is.EqualTo(0));
+		Assert.That(settings.Verbose, Is.False);
 	}
 
 	[Test]
@@ -34,11 +34,10 @@ public class FindOptionsTests
 	{
 		var args = new List<string>() { "-x", "cs", "." };
 		var settings = _findOptions.SettingsFromArgs(args);
-		var startInfo = new DirectoryInfo(".");
-		Assert.AreEqual(1, settings.Paths.Count);
-		Assert.True(settings.Paths.Contains("."));
-		Assert.AreEqual(1, settings.InExtensions.Count);
-		Assert.IsTrue(settings.InExtensions.Contains(".cs"));
+		Assert.That(settings.Paths.Count, Is.EqualTo(1));
+		Assert.That(settings.Paths.Contains("."));
+		Assert.That(settings.InExtensions.Count, Is.EqualTo(1));
+		Assert.That(settings.InExtensions.Contains(".cs"));
 	}
 
 	[Test]
@@ -46,7 +45,7 @@ public class FindOptionsTests
 	{
 		var args = new List<string>() { "-x", "cs", ".", "-Q" };
 		var ex = Assert.Throws<FindException>(() => _findOptions.SettingsFromArgs(args));
-		Assert.AreEqual("Invalid option: Q", ex!.Message);
+		Assert.That(ex!.Message, Is.EqualTo("Invalid option: Q"));
 	}
 
 	[Test]
@@ -63,20 +62,20 @@ public class FindOptionsTests
 		var settings = new FindSettings();
 		FindOptions.SettingsFromJson(json, settings);
 
-		Assert.AreEqual(1, settings.Paths.Count);
-		Assert.True(settings.Paths.Contains("~/src/xfind/"));
+		Assert.That(settings.Paths.Count, Is.EqualTo(1));
+		Assert.That(settings.Paths.Contains("~/src/xfind/"));
 
-		Assert.AreEqual(2, settings.InExtensions.Count);
-		Assert.True(settings.InExtensions.Contains(".js"));
-		Assert.True(settings.InExtensions.Contains(".ts"));
+		Assert.That(settings.InExtensions.Count, Is.EqualTo(2));
+		Assert.That(settings.InExtensions.Contains(".js"));
+		Assert.That(settings.InExtensions.Contains(".ts"));
 
-		Assert.AreEqual(1, settings.OutDirPatterns.Count);
-		Assert.AreEqual("node_module", settings.OutDirPatterns.First().ToString());
+		Assert.That(settings.OutDirPatterns.Count, Is.EqualTo(1));
+		Assert.That(settings.OutDirPatterns.First().ToString(), Is.EqualTo("node_module"));
 
-		Assert.AreEqual(1, settings.OutFilePatterns.Count);
-		Assert.AreEqual("temp", settings.OutFilePatterns.First().ToString());
+		Assert.That(settings.OutFilePatterns.Count, Is.EqualTo(1));
+		Assert.That(settings.OutFilePatterns.First().ToString(), Is.EqualTo("temp"));
 
-		Assert.True(settings.Debug);
-		Assert.True(settings.IncludeHidden);
+		Assert.That(settings.Debug);
+		Assert.That(settings.IncludeHidden);
 	}
 }

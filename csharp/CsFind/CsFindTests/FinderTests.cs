@@ -40,7 +40,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.True(finder.IsMatchingDirectory(new DirectoryInfo(".")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo(".")));
 	}
 
 	[Test]
@@ -48,7 +48,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.True(finder.IsMatchingDirectory(new DirectoryInfo("..")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo("..")));
 	}
 
 	[Test]
@@ -56,7 +56,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.False(finder.IsMatchingDirectory(new DirectoryInfo(".git")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo(".git")), Is.False);
 	}
 
 	[Test]
@@ -65,7 +65,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.IncludeHidden = true;
 		var finder = new Finder(settings);
-		Assert.True(finder.IsMatchingDirectory(new DirectoryInfo(".git")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo(".git")));
 	}
 
 	[Test]
@@ -73,7 +73,7 @@ class FinderTests
 	{
 		var settings = GetSettings();
 		var finder = new Finder(settings);
-		Assert.True(finder.IsMatchingDirectory(new DirectoryInfo("/Users")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo("/Users")));
 	}
 
 	[Test]
@@ -82,7 +82,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.AddInDirPattern("Find");
 		var finder = new Finder(settings);
-		Assert.True(finder.IsMatchingDirectory(new DirectoryInfo("CsFind")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo("CsFind")));
 	}
 
 	[Test]
@@ -91,7 +91,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.AddOutDirPattern("Find");
 		var finder = new Finder(settings);
-		Assert.False(finder.IsMatchingDirectory(new DirectoryInfo("CsFind")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo("CsFind")), Is.False);
 	}
 
 	[Test]
@@ -100,7 +100,7 @@ class FinderTests
 		var settings = GetSettings();
 		settings.AddInDirPattern("FindFiles");
 		var finder = new Finder(settings);
-		Assert.False(finder.IsMatchingDirectory(new DirectoryInfo("CsFind")));
+		Assert.That(finder.IsMatchingDirectory(new DirectoryInfo("CsFind")), Is.False);
 	}
 
 	[Test]
@@ -110,7 +110,7 @@ class FinderTests
 		settings.AddOutDirPattern("FindFiles");
 		var finder = new Finder(settings);
 		var dir = new DirectoryInfo("CsFind");
-		Assert.True(finder.IsMatchingDirectory(dir));
+		Assert.That(finder.IsMatchingDirectory(dir));
 	}
 
 
@@ -125,7 +125,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -136,7 +136,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -147,7 +147,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf), Is.False);
 	}
 
 
@@ -159,7 +159,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf), Is.False);
 	}
 
 	[Test]
@@ -170,7 +170,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -181,7 +181,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("Finder.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf));
 	}
 
 	[Test]
@@ -192,7 +192,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf), Is.False);
 	}
 
 	[Test]
@@ -203,7 +203,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("Finder.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf), Is.False);
 	}
 
 	[Test]
@@ -214,7 +214,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingFileResult(sf));
+		Assert.That(finder.IsMatchingFileResult(sf));
 	}
 
 
@@ -229,7 +229,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf));
 	}
 
 	[Test]
@@ -240,7 +240,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf));
 	}
 
 	[Test]
@@ -251,7 +251,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf), Is.False);
 	}
 
 
@@ -263,7 +263,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf), Is.False);
 	}
 
 	[Test]
@@ -274,7 +274,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf));
 	}
 
 	[Test]
@@ -285,7 +285,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf));
 	}
 
 	[Test]
@@ -296,7 +296,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf), Is.False);
 	}
 
 	[Test]
@@ -307,7 +307,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.False(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf), Is.False);
 	}
 
 	[Test]
@@ -318,7 +318,7 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
 		var sf = new FileResult(file, _fileTypes.GetFileType(file));
-		Assert.True(finder.IsMatchingArchiveFile(sf));
+		Assert.That(finder.IsMatchingArchiveFile(sf));
 	}
 
 	/*************************************************************
@@ -331,7 +331,7 @@ class FinderTests
 		var settings = GetSettings();
 		var finder = new Finder(settings);
 		var file = new FileInfo(".gitignore");
-		Assert.IsNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), Is.Null);
 	}
 
 	[Test]
@@ -341,7 +341,7 @@ class FinderTests
 		settings.IncludeHidden = true;
 		var finder = new Finder(settings);
 		var file = new FileInfo(".gitignore");
-		Assert.NotNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), !Is.Null);
 	}
 
 	[Test]
@@ -350,7 +350,7 @@ class FinderTests
 		var settings = GetSettings();
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
-		Assert.IsNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), Is.Null);
 	}
 
 	[Test]
@@ -360,7 +360,7 @@ class FinderTests
 		settings.IncludeArchives = true;
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
-		Assert.NotNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), !Is.Null);
 	}
 
 	[Test]
@@ -371,7 +371,7 @@ class FinderTests
 		settings.AddInArchiveExtension("zip");
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
-		Assert.NotNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), !Is.Null);
 	}
 
 	[Test]
@@ -381,7 +381,7 @@ class FinderTests
 		settings.AddOutExtension("zip");
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
-		Assert.IsNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), Is.Null);
 	}
 
 	[Test]
@@ -391,7 +391,7 @@ class FinderTests
 		settings.ArchivesOnly = true;
 		var finder = new Finder(settings);
 		var file = new FileInfo("archive.zip");
-		Assert.NotNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), !Is.Null);
 	}
 
 
@@ -401,7 +401,7 @@ class FinderTests
 		var settings = GetSettings();
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
-		Assert.NotNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), !Is.Null);
 	}
 
 	[Test]
@@ -411,7 +411,7 @@ class FinderTests
 		settings.AddInExtension("cs");
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
-		Assert.NotNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), !Is.Null);
 	}
 
 	[Test]
@@ -421,7 +421,7 @@ class FinderTests
 		settings.AddOutExtension("cs");
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
-		Assert.IsNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), Is.Null);
 	}
 
 	[Test]
@@ -431,6 +431,6 @@ class FinderTests
 		settings.ArchivesOnly = true;
 		var finder = new Finder(settings);
 		var file = new FileInfo("FileUtil.cs");
-		Assert.IsNull(finder.FilterToFileResult(file));
+		Assert.That(finder.FilterToFileResult(file), Is.Null);
 	}
 }

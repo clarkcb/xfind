@@ -13,139 +13,139 @@ public class FileTypesTests
 	public void GetFileType_ArchiveFile_FileTypeArchive()
 	{
 		var archiveFile = new FileInfo("archive.zip");
-		Assert.AreEqual(FileType.Archive, _fileTypes.GetFileType(archiveFile));
+		Assert.That(_fileTypes.GetFileType(archiveFile), Is.EqualTo(FileType.Archive));
 	}
 
 	[Test]
 	public void GetFileType_AudioFile_FileTypeAudio()
 	{
 		var audioFile = new FileInfo("music.mp3");
-		Assert.AreEqual(FileType.Audio, _fileTypes.GetFileType(audioFile));
+		Assert.That(_fileTypes.GetFileType(audioFile), Is.EqualTo(FileType.Audio));
 	}
 
 	[Test]
 	public void GetFileType_BinaryFile_FileTypeBinary()
 	{
 		var binaryFile = new FileInfo("binary.exe");
-		Assert.AreEqual(FileType.Binary, _fileTypes.GetFileType(binaryFile));
+		Assert.That(_fileTypes.GetFileType(binaryFile), Is.EqualTo(FileType.Binary));
 	}
 
 	[Test]
 	public void GetFileType_CodeFile_FileTypeCode()
 	{
 		var codeFile = new FileInfo("code.cs");
-		Assert.AreEqual(FileType.Code, _fileTypes.GetFileType(codeFile));
+		Assert.That(_fileTypes.GetFileType(codeFile), Is.EqualTo(FileType.Code));
 	}
 
 	[Test]
 	public void GetFileType_FontFile_FileTypeCode()
 	{
 		var fontFile = new FileInfo("font.ttf");
-		Assert.AreEqual(FileType.Font, _fileTypes.GetFileType(fontFile));
+		Assert.That(_fileTypes.GetFileType(fontFile), Is.EqualTo(FileType.Font));
 	}
 
 	[Test]
 	public void GetFileType_ImageFile_FileTypeImage()
 	{
 		var imageFile = new FileInfo("image.png");
-		Assert.AreEqual(FileType.Image, _fileTypes.GetFileType(imageFile));
+		Assert.That(_fileTypes.GetFileType(imageFile), Is.EqualTo(FileType.Image));
 	}
 
 	[Test]
 	public void GetFileType_TextFile_FileTypeText()
 	{
 		var textFile = new FileInfo("text.txt");
-		Assert.AreEqual(FileType.Text, _fileTypes.GetFileType(textFile));
+		Assert.That(_fileTypes.GetFileType(textFile), Is.EqualTo(FileType.Text));
 	}
 
 	[Test]
 	public void GetFileType_VideoFile_FileTypeVideo()
 	{
 		var videoFile = new FileInfo("movie.mp4");
-		Assert.AreEqual(FileType.Video, _fileTypes.GetFileType(videoFile));
+		Assert.That(_fileTypes.GetFileType(videoFile), Is.EqualTo(FileType.Video));
 	}
 
 	[Test]
 	public void GetFileType_XmlFile_FileTypeXml()
 	{
 		var xmlFile = new FileInfo("markup.xml");
-		Assert.AreEqual(FileType.Xml, _fileTypes.GetFileType(xmlFile));
+		Assert.That(_fileTypes.GetFileType(xmlFile), Is.EqualTo(FileType.Xml));
 	}
 
 	[Test]
 	public void GetFileType_UnknownFile_FileTypeUnknown()
 	{
 		var unknownFile = new FileInfo("unknown.xyz");
-		Assert.AreEqual(FileType.Unknown, _fileTypes.GetFileType(unknownFile));
+		Assert.That(_fileTypes.GetFileType(unknownFile), Is.EqualTo(FileType.Unknown));
 	}
 
 	[Test]
 	public void IsArchiveFile_ArchiveFile_True()
 	{
 		var archiveFile = new FileInfo("archive.zip");
-		Assert.IsTrue(_fileTypes.IsArchiveFile(archiveFile));
+		Assert.That(_fileTypes.IsArchiveFile(archiveFile));
 	}
 
 	[Test]
 	public void IsAudioFile_AudioFile_True()
 	{
 		var audioFile = new FileInfo("music.mp3");
-		Assert.IsTrue(_fileTypes.IsAudioFile(audioFile));
+		Assert.That(_fileTypes.IsAudioFile(audioFile));
 	}
 
 	[Test]
 	public void IsBinaryFile_BinaryFile_True()
 	{
 		var binaryFile = new FileInfo("binary.exe");
-		Assert.IsTrue(_fileTypes.IsBinaryFile(binaryFile));
+		Assert.That(_fileTypes.IsBinaryFile(binaryFile));
 	}
 
 	[Test]
 	public void IsCodeFile_CodeFile_True()
 	{
 		var codeFile = new FileInfo("code.cs");
-		Assert.IsTrue(_fileTypes.IsCodeFile(codeFile));
+		Assert.That(_fileTypes.IsCodeFile(codeFile));
 	}
 
 	[Test]
 	public void IsFontFile_FontFile_True()
 	{
 		var fontFile = new FileInfo("font.ttf");
-		Assert.IsTrue(_fileTypes.IsFontFile(fontFile));
+		Assert.That(_fileTypes.IsFontFile(fontFile));
 	}
 
 	[Test]
 	public void IsTextFile_ImageFile_True()
 	{
 		var imageFile = new FileInfo("image.png");
-		Assert.IsTrue(_fileTypes.IsImageFile(imageFile));
+		Assert.That(_fileTypes.IsImageFile(imageFile));
 	}
 
 	[Test]
 	public void IsTextFile_TextFile_True()
 	{
 		var textFile = new FileInfo("text.txt");
-		Assert.IsTrue(_fileTypes.IsTextFile(textFile));
+		Assert.That(_fileTypes.IsTextFile(textFile));
 	}
 
 	[Test]
 	public void IsVideoFile_VideoFile_True()
 	{
 		var videoFile = new FileInfo("movie.mp4");
-		Assert.IsTrue(_fileTypes.IsVideoFile(videoFile));
+		Assert.That(_fileTypes.IsVideoFile(videoFile));
 	}
 
 	[Test]
 	public void IsXmlFile_XmlFile_True()
 	{
 		var xmlFile = new FileInfo("markup.xml");
-		Assert.IsTrue(_fileTypes.IsXmlFile(xmlFile));
+		Assert.That(_fileTypes.IsXmlFile(xmlFile));
 	}
 
 	// [Test]
 	// public void IsFindableFile_XmlFile_True()
 	// {
 	// 	var xmlFile = new FileInfo("markup.xml");
-	// 	Assert.IsTrue(_fileTypes.IsFindableFile(xmlFile));
+	// 	Assert.That(_fileTypes.IsFindableFile(xmlFile));
 	// }
 }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>;
 
 namespace CsFindLib;
 
@@ -20,7 +19,7 @@ public enum FileType
 
 public partial class FileTypes
 {
-	public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
+	// public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
 
 	private const string Archive = "archive";
 	private const string Audio = "audio";

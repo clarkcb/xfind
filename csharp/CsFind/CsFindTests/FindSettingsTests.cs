@@ -11,16 +11,16 @@ public class FindSettingsTests
 	public void GetNewFindSettings_NoModifications_HasDefaultValues()
 	{
 		var settings = new FindSettings();
-		Assert.IsFalse(settings.ArchivesOnly);
-		Assert.IsFalse(settings.Debug);
-		Assert.IsFalse(settings.IncludeArchives);
-		Assert.IsFalse(settings.IncludeHidden);
-		Assert.IsFalse(settings.ListDirs);
-		Assert.IsFalse(settings.ListFiles);
-		Assert.IsFalse(settings.PrintUsage);
-		Assert.IsFalse(settings.PrintVersion);
-		Assert.IsTrue(settings.Recursive);
-		Assert.IsFalse(settings.Verbose);
+		Assert.That(settings.ArchivesOnly, Is.False);
+		Assert.That(settings.Debug, Is.False);
+		Assert.That(settings.IncludeArchives, Is.False);
+		Assert.That(settings.IncludeHidden, Is.False);
+		Assert.That(settings.ListDirs, Is.False);
+		Assert.That(settings.ListFiles, Is.False);
+		Assert.That(settings.PrintUsage, Is.False);
+		Assert.That(settings.PrintVersion, Is.False);
+		Assert.That(settings.Recursive);
+		Assert.That(settings.Verbose, Is.False);
 	}
 
 	[Test]
@@ -28,12 +28,12 @@ public class FindSettingsTests
 	{
 		var settings = new FindSettings();
 		settings.AddInExtension("cs");
-		Assert.AreEqual(1, settings.InExtensions.Count);
-		Assert.IsTrue(settings.InExtensions.Contains(".cs"));
+		Assert.That(settings.InExtensions.Count, Is.EqualTo(1));
+		Assert.That(settings.InExtensions.Contains(".cs"));
 		settings.AddInExtension("java,scala");
-		Assert.AreEqual(3, settings.InExtensions.Count);
-		Assert.IsTrue(settings.InExtensions.Contains(".java"));
-		Assert.IsTrue(settings.InExtensions.Contains(".scala"));
+		Assert.That(settings.InExtensions.Count, Is.EqualTo(3));
+		Assert.That(settings.InExtensions.Contains(".java"));
+		Assert.That(settings.InExtensions.Contains(".scala"));
 	}
 
 	[Test]
@@ -41,23 +41,23 @@ public class FindSettingsTests
 	{
 		var settings = new FindSettings();
 		settings.AddInFilePattern("Find");
-		Assert.AreEqual(settings.InFilePatterns.Count, 1);
-		Assert.IsTrue(settings.InFilePatterns.First().ToString() == "Find");
+		Assert.That(1, Is.EqualTo(settings.InFilePatterns.Count));
+		Assert.That(settings.InFilePatterns.First().ToString() == "Find");
 	}
 
 	[Test]
 	public void FindSettings_SetArchivesOnly_HasIncludeArchives()
 	{
 		var settings = new FindSettings {ArchivesOnly = true};
-		Assert.IsTrue(settings.ArchivesOnly);
-		Assert.IsTrue(settings.IncludeArchives);
+		Assert.That(settings.ArchivesOnly);
+		Assert.That(settings.IncludeArchives);
 	}
 
 	[Test]
 	public void FindSettings_SetDebug_HasVerbose()
 	{
 		var settings = new FindSettings {Debug = true};
-		Assert.IsTrue(settings.Debug);
-		Assert.IsTrue(settings.Verbose);
+		Assert.That(settings.Debug);
+		Assert.That(settings.Verbose);
 	}
 }

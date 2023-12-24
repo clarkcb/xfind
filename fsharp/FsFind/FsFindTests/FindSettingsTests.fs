@@ -13,58 +13,58 @@ type FindSettingTests () =
     [<Test>]
     member this.GetNewFindSettings_NoModifications_HasDefaultValues () =
         let settings = FindSettings()
-        Assert.IsFalse(settings.ArchivesOnly)
-        Assert.IsFalse(settings.Debug)
-        Assert.IsFalse(settings.IncludeArchives)
-        Assert.IsFalse(settings.IncludeHidden)
-        Assert.IsFalse(settings.ListDirs)
-        Assert.IsFalse(settings.ListFiles)
-        Assert.AreEqual(None, settings.MaxLastMod)
-        Assert.AreEqual(0, settings.MaxSize)
-        Assert.AreEqual(None, settings.MinLastMod)
-        Assert.AreEqual(0, settings.MinSize)
-        Assert.IsEmpty(settings.Paths)
-        Assert.IsFalse(settings.PrintUsage)
-        Assert.IsFalse(settings.PrintVersion)
-        Assert.IsTrue(settings.Recursive)
-        Assert.AreEqual(SortBy.FilePath, settings.SortBy)
-        Assert.IsFalse(settings.SortCaseInsensitive)
-        Assert.IsFalse(settings.SortDescending)
-        Assert.IsFalse(settings.Verbose)
+        Assert.That(settings.ArchivesOnly, Is.False)
+        Assert.That(settings.Debug, Is.False)
+        Assert.That(settings.IncludeArchives, Is.False)
+        Assert.That(settings.IncludeHidden, Is.False)
+        Assert.That(settings.ListDirs, Is.False)
+        Assert.That(settings.ListFiles, Is.False)
+        Assert.That(settings.MaxLastMod, Is.EqualTo(None))
+        Assert.That(settings.MaxSize, Is.EqualTo(0))
+        Assert.That(settings.MinLastMod, Is.EqualTo(None))
+        Assert.That(settings.MinSize, Is.EqualTo(0))
+        Assert.That(settings.Paths, Is.Empty)
+        Assert.That(settings.PrintUsage, Is.False)
+        Assert.That(settings.PrintVersion, Is.False)
+        Assert.That(settings.Recursive)
+        Assert.That(settings.SortBy, Is.EqualTo(SortBy.FilePath))
+        Assert.That(settings.SortCaseInsensitive, Is.False)
+        Assert.That(settings.SortDescending, Is.False)
+        Assert.That(settings.Verbose, Is.False)
         ()
 
     [<Test>]
     member this.FindSettings_AddExtensions_HasExtensions () =
         let settings = FindSettings()
         settings.InExtensions <- settings.AddExtensions "cs" settings.InExtensions
-        Assert.AreEqual(1, settings.InExtensions.Length)
-        Assert.AreEqual(".cs", settings.InExtensions.Head)
+        Assert.That(settings.InExtensions.Length, Is.EqualTo(1))
+        Assert.That(settings.InExtensions.Head, Is.EqualTo(".cs"))
         settings.InExtensions <- settings.AddExtensions "java,scala" settings.InExtensions
-        Assert.AreEqual(3, settings.InExtensions.Length)
-        Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".java"))
-        Assert.IsTrue(settings.InExtensions |> List.exists (fun e -> e = ".scala"))
+        Assert.That(settings.InExtensions.Length, Is.EqualTo(3))
+        Assert.That(settings.InExtensions |> List.exists (fun e -> e = ".java"))
+        Assert.That(settings.InExtensions |> List.exists (fun e -> e = ".scala"))
         ()
 
     [<Test>]
     member this.FindSettings_AddPatterns_HasPatterns () =
         let settings = FindSettings()
         settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns
-        Assert.AreEqual(1, settings.InFilePatterns.Length)
-        Assert.AreEqual("Find", settings.InFilePatterns.Head.ToString())
+        Assert.That(settings.InFilePatterns.Length, Is.EqualTo(1))
+        Assert.That(settings.InFilePatterns.Head.ToString(), Is.EqualTo("Find"))
         ()
 
     [<Test>]
     member this.FindSettings_SetArchivesOnly_HasIncludeArchives () =
         let settings = FindSettings()
         settings.ArchivesOnly <- true
-        Assert.IsTrue(settings.ArchivesOnly)
-        Assert.IsTrue(settings.IncludeArchives)
+        Assert.That(settings.ArchivesOnly)
+        Assert.That(settings.IncludeArchives)
         ()
 
     [<Test>]
     member this.FindSettings_SetDebug_HasVerbose () =
         let settings = FindSettings()
         settings.Debug <- true
-        Assert.IsTrue(settings.Debug)
-        Assert.IsTrue(settings.Verbose)
+        Assert.That(settings.Debug)
+        Assert.That(settings.Verbose)
         ()

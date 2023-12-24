@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace CsFindLib;
 
@@ -210,7 +209,7 @@ public class Finder
 	// 	return fileResults;
 	// }
 
-	private IEnumerable<FileResult> GetAllFileResults()
+	private List<FileResult> GetAllFileResults()
 	{
 		var fileResultsBag = new ConcurrentBag<FileResult>();
 		Settings.Paths.AsParallel()
@@ -299,12 +298,14 @@ public class Finder
 		}
 	}
 
-	private static IEnumerable<DirectoryInfo> GetMatchingDirs(IEnumerable<FileResult> fileResults)
+	private static List<DirectoryInfo> GetMatchingDirs(IEnumerable<FileResult> fileResults)
 	{
-		return new List<DirectoryInfo>(
-			fileResults.Where(fr => fr.File.Directory != null)
+		return
+		[
+			..fileResults.Where(fr => fr.File.Directory != null)
 				.Select(fr => fr.File.Directory!)
-				.DistinctBy(d => d.FullName));
+				.DistinctBy(d => d.FullName)
+		];
 	}
 
 	private string GetRelativePath(string path)
@@ -336,7 +337,7 @@ public class Finder
 		}
 	}
 
-	private static IEnumerable<FileInfo> GetMatchingFiles(IEnumerable<FileResult> fileResults)
+	private static List<FileInfo> GetMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
 		return new List<FileInfo>(
 			fileResults
