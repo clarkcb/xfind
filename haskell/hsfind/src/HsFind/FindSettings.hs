@@ -26,8 +26,6 @@ data FindSettings = FindSettings {
                                  , inFileTypes :: [FileType]
                                  , includeArchives :: Bool
                                  , includeHidden :: Bool
-                                 , listDirs :: Bool
-                                 , listFiles :: Bool
                                  , maxDepth :: Integer
                                  , maxLastMod :: Maybe UTCTime
                                  , maxSize :: Integer
@@ -41,6 +39,8 @@ data FindSettings = FindSettings {
                                  , outFilePatterns :: [String]
                                  , outFileTypes :: [FileType]
                                  , paths :: [String]
+                                 , printDirs :: Bool
+                                 , printFiles :: Bool
                                  , printUsage :: Bool
                                  , printVersion :: Bool
                                  , recursive :: Bool
@@ -62,8 +62,6 @@ defaultFindSettings = FindSettings {
                                    , inFileTypes=[]
                                    , includeArchives=False
                                    , includeHidden=False
-                                   , listDirs=False
-                                   , listFiles=False
                                    , maxDepth = -1
                                    , maxLastMod=Nothing
                                    , maxSize=0
@@ -77,6 +75,8 @@ defaultFindSettings = FindSettings {
                                    , outFilePatterns=[]
                                    , outFileTypes=[]
                                    , paths=[]
+                                   , printDirs=False
+                                   , printFiles=False
                                    , printUsage=False
                                    , printVersion=False
                                    , recursive=True
@@ -105,8 +105,6 @@ findSettingsToString settings =
   ", inFileTypes=" ++ fileTypesToString (inFileTypes settings) ++
   ", includeArchives=" ++ show (includeArchives settings) ++
   ", includeHidden=" ++ show (includeHidden settings) ++
-  ", listDirs=" ++ show (listDirs settings) ++
-  ", listFiles=" ++ show (listFiles settings) ++
   ", maxDepth=" ++ show (maxDepth settings) ++
   ", maxLastMod=" ++ lastModToString (maxLastMod settings) ++
   ", maxSize=" ++ show (maxSize settings) ++
@@ -120,6 +118,8 @@ findSettingsToString settings =
   ", outFilePatterns=" ++ listToString (outFilePatterns settings) ++
   ", outFileTypes=" ++ fileTypesToString (outFileTypes settings) ++
   ", paths=" ++ listToString (paths settings) ++
+  ", printDirs=" ++ show (printDirs settings) ++
+  ", printFiles=" ++ show (printFiles settings) ++
   ", printUsage=" ++ show (printUsage settings) ++
   ", printVersion=" ++ show (printVersion settings) ++
   ", recursive=" ++ show (recursive settings) ++

@@ -17,8 +17,8 @@
 @property(nonatomic) BOOL debug;
 @property(nonatomic) BOOL includeArchives;
 @property(nonatomic) BOOL includeHidden;
-@property(nonatomic) BOOL listDirs;
-@property(nonatomic) BOOL listFiles;
+@property(nonatomic) BOOL printDirs;
+@property(nonatomic) BOOL printFiles;
 @property(nonatomic) BOOL printUsage;
 @property(nonatomic) BOOL printVersion;
 @property(nonatomic) BOOL recursive;

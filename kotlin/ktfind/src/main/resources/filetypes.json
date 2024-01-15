@@ -111,7 +111,7 @@
         "tcl", "tk", "ts", "tsx", "u3", "vb", "vbs", "vue", "xht", "xhtml", "y"
       ],
       "names": [
-        ".bash_history", ".bash_profile", ".bashrc", ".bzrignore",
+        ".bash_history", ".bash_profile", ".bashrc", ".bzrignore", ".dockerignore",
         ".editorconfig", ".env", ".gitattributes", ".gitconfig", ".gitignore",
         ".gitkeep", ".profile", ".viminfo", ".zprofile", ".zsh_history",
         ".zshenv", ".zshrc", "Dockerfile", "Gemfile", "Jenkinsfile", "Makefile",

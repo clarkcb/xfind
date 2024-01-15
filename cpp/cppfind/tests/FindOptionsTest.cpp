@@ -11,8 +11,8 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     REQUIRE(!settings->debug());
     REQUIRE(!settings->include_archives());
     REQUIRE(!settings->include_hidden());
-    REQUIRE(!settings->list_dirs());
-    REQUIRE(settings->list_files());
+    REQUIRE(!settings->print_dirs());
+    REQUIRE(settings->print_files());
     REQUIRE(!settings->print_usage());
     REQUIRE(!settings->print_version());
     REQUIRE(!settings->verbose());
@@ -43,8 +43,8 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(!settings->debug());
     REQUIRE(!settings->include_archives());
     REQUIRE(!settings->include_hidden());
-    REQUIRE(!settings->list_dirs());
-    REQUIRE(settings->list_files());
+    REQUIRE(!settings->print_dirs());
+    REQUIRE(settings->print_files());
     REQUIRE(!settings->print_usage());
     REQUIRE(!settings->print_version());
     REQUIRE(!settings->verbose());

@@ -80,10 +80,11 @@ class FindOptions {
             help: { Boolean b, FindSettings settings -> settings.printUsage = b },
             includearchives: { Boolean b, FindSettings settings -> settings.includeArchives = b },
             includehidden: { Boolean b, FindSettings settings -> settings.includeHidden = b },
-            listdirs: { Boolean b, FindSettings settings -> settings.listDirs = b },
-            listfiles: { Boolean b, FindSettings settings -> settings.listFiles = b },
-            nolistfiles: { Boolean b, FindSettings settings -> settings.listFiles = !b },
+            noprintdirs: { Boolean b, FindSettings settings -> settings.printDirs = !b },
+            noprintfiles: { Boolean b, FindSettings settings -> settings.printFiles = !b },
             norecursive: { Boolean b, FindSettings settings -> settings.recursive = !b },
+            printdirs: { Boolean b, FindSettings settings -> settings.printDirs = b },
+            printfiles: { Boolean b, FindSettings settings -> settings.printFiles = b },
             recursive: { Boolean b, FindSettings settings -> settings.recursive = b },
             'sort-ascending': { Boolean b, FindSettings settings -> settings.sortDescending = !b },
             'sort-caseinsensitive': { Boolean b, FindSettings settings -> settings.sortCaseInsensitive = b },
@@ -196,8 +197,8 @@ class FindOptions {
 
     final FindSettings settingsFromArgs(final String[] args) throws FindException {
         def settings = new FindSettings()
-        // default listFiles to true since running from command line
-        settings.setListFiles(true)
+        // default printFiles to true since running from command line
+        settings.setPrintFiles(true)
 
         // add short arg mappings
         options.stream().filter(o -> !o.shortArg.isEmpty()).forEach(o -> {

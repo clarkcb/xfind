@@ -16,10 +16,10 @@ module Main =
 
         let files = finder.Find()
 
-        if settings.ListDirs then
+        if settings.PrintDirs then
             finder.PrintMatchingDirs files
 
-        if settings.ListFiles then
+        if settings.PrintFiles then
             finder.PrintMatchingFiles files
 
 

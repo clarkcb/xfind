@@ -59,7 +59,7 @@ char **arg_abbrs = (char *[]) {
     ""   // sort-by
 };
 
-#define FLAG_COUNT 17
+#define FLAG_COUNT 19
 const size_t flag_count = FLAG_COUNT;
 char **flag_names = (char *[]) {
     "archivesonly",
@@ -69,9 +69,11 @@ char **flag_names = (char *[]) {
     "includearchives",
     "includehidden",
     "help",
-    "listdirs",
-    "listfiles",
+    "noprintdirs",
+    "noprintfiles",
     "norecursive",
+    "printdirs",
+    "printfiles",
     "recursive",
     "sort-ascending",
     "sort-caseinsensitive",
@@ -89,9 +91,11 @@ char **flag_abbrs = (char *[]) {
     "z", // includearchives
     "",  // includehidden
     "h", // help
-    "",  // listdirs
-    "",  // listfiles
+    "",  // noprintdirs
+    "",  // noprintfiles
     "R", // norecursive
+    "",  // printdirs
+    "",  // printfiles
     "r", // recursive
     "",  // sort-ascending
     "",  // sort-caseinsensitive
@@ -402,14 +406,20 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
     case HELP:
         settings->print_usage = flag_val;
         break;
-    case LIST_DIRS:
-        settings->list_dirs = flag_val;
+    case NO_PRINT_DIRS:
+        settings->print_dirs = flag_val == 0 ? 1 : 0;
         break;
-    case LIST_FILES:
-        settings->list_files = flag_val;
+    case NO_PRINT_FILES:
+        settings->print_files = flag_val == 0 ? 1 : 0;
         break;
     case NO_RECURSIVE:
         settings->recursive = flag_val == 0 ? 1 : 0;
+        break;
+    case PRINT_DIRS:
+        settings->print_dirs = flag_val;
+        break;
+    case PRINT_FILES:
+        settings->print_files = flag_val;
         break;
     case RECURSIVE:
         settings->recursive = flag_val;
@@ -441,7 +451,7 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
 error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
 {
     int i = 0;
-    settings->list_files = 1;
+    settings->print_files = 1;
     while (i < argc) {
         size_t arglen = strlen(argv[i]);
         if (arglen < 1) {

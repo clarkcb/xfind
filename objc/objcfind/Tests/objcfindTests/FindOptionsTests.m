@@ -33,8 +33,8 @@
     XCTAssert(![settings debug]);
     XCTAssert(![settings includeArchives]);
     XCTAssert(![settings includeHidden]);
-    XCTAssert(![settings listDirs]);
-    XCTAssert([settings listFiles]);
+    XCTAssert(![settings printDirs]);
+    XCTAssert([settings printFiles]);
     XCTAssert(![settings printUsage]);
     XCTAssert(![settings printVersion]);
     XCTAssert(![settings verbose]);

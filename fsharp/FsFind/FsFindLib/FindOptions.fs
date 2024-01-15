@@ -50,10 +50,11 @@ module FindOptions =
             ("help", (fun (b : bool) (settings : FindSettings) -> settings.PrintUsage <- b));
             ("includearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- b));
             ("includehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- b));
-            ("listdirs", (fun (b : bool) (settings : FindSettings) -> settings.ListDirs <- b));
-            ("listfiles", (fun (b : bool) (settings : FindSettings) -> settings.ListFiles <- b));
-            ("nolistfiles", (fun (b : bool) (settings : FindSettings) -> settings.ListFiles <- not b));
+            ("noprintdirs", (fun (b : bool) (settings : FindSettings) -> settings.PrintDirs <- not b));
+            ("noprintfiles", (fun (b : bool) (settings : FindSettings) -> settings.PrintFiles <- not b));
             ("norecursive", (fun (b : bool) (settings : FindSettings) -> settings.Recursive <- not b));
+            ("printdirs", (fun (b : bool) (settings : FindSettings) -> settings.PrintDirs <- b));
+            ("printfiles", (fun (b : bool) (settings : FindSettings) -> settings.PrintFiles <- b));
             ("recursive", (fun (b : bool) (settings : FindSettings) -> settings.Recursive <- b));
             ("sort-ascending", (fun (b : bool) (settings : FindSettings) -> settings.SortDescending <- not b));
             ("sort-caseinsensitive", (fun (b : bool) (settings : FindSettings) -> settings.SortCaseInsensitive <- b));
@@ -119,8 +120,8 @@ module FindOptions =
                     settings.Paths <- settings.AddPath head settings.Paths
                     recSettingsFromArgs tail settings
         let settings = FindSettings()
-        // default ListFiles to true since running as cli
-        settings.ListFiles <- true
+        // default PrintFiles to true since running as cli
+        settings.PrintFiles <- true
         recSettingsFromArgs (Array.toList args) settings
 
     let GetUsageString () : string =

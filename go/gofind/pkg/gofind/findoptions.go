@@ -106,8 +106,8 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 
 func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
 	settings := GetDefaultFindSettings()
-	// default listFiles to true since running as cli
-	settings.SetListFiles(true)
+	// default printFiles to true since running as cli
+	settings.SetPrintFiles(true)
 	argActionMap := fo.getArgActionMap()
 	flagActionMap := fo.getBoolFlagActionMap()
 
@@ -314,17 +314,20 @@ func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"includehidden": func(b bool, settings *FindSettings) {
 			settings.SetIncludeHidden(b)
 		},
-		"listdirs": func(b bool, settings *FindSettings) {
-			settings.SetListDirs(b)
+		"noprintdirs": func(b bool, settings *FindSettings) {
+			settings.SetPrintDirs(!b)
 		},
-		"listfiles": func(b bool, settings *FindSettings) {
-			settings.SetListFiles(b)
-		},
-		"nolistfiles": func(b bool, settings *FindSettings) {
-			settings.SetListFiles(!b)
+		"noprintfiles": func(b bool, settings *FindSettings) {
+			settings.SetPrintFiles(!b)
 		},
 		"norecursive": func(b bool, settings *FindSettings) {
 			settings.SetRecursive(!b)
+		},
+		"printdirs": func(b bool, settings *FindSettings) {
+			settings.SetPrintDirs(b)
+		},
+		"printfiles": func(b bool, settings *FindSettings) {
+			settings.SetPrintFiles(b)
 		},
 		"recursive": func(b bool, settings *FindSettings) {
 			settings.SetRecursive(b)

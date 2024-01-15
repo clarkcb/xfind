@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
 
         std::vector<FileResult> file_results = finder->find();
 
-        if (settings->list_dirs()) {
+        if (settings->print_dirs()) {
             std::vector<std::string> dirs = get_matching_dirs(file_results);
             std::string msg = "\nMatching directories";
             if (dirs.empty()) {
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->list_files()) {
+        if (settings->print_files()) {
             std::vector<std::string> files = get_matching_files(file_results);
             std::string msg = "\nMatching files";
             if (files.empty()) {

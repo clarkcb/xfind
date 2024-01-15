@@ -77,9 +77,9 @@ scenarios = [
     Scenario('find "xml" filetype', core_args + ['-t', 'xml'] + startpaths),
     Scenario('find not "xml" filetype', core_args + ['-T', 'xml'] + startpaths),
 
-    # list dirs
-    Scenario('list matching dirs for "{}" extensions'.format(exts), common_args + ['--listdirs']),
-    Scenario('list not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--listdirs'] + startpaths,
+    # print dirs
+    Scenario('print matching dirs for "{}" extensions'.format(exts), common_args + ['--printdirs']),
+    Scenario('print not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--printdirs'] + startpaths,
              replace_xfind_name=False),
 
     # sorting scenarios

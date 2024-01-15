@@ -37,8 +37,6 @@ namespace cppfind {
 
         bool m_include_archives = false;
         bool m_include_hidden = false;
-        bool m_list_dirs = false;
-        bool m_list_files = false;
 
         int m_max_depth = -1;
         long m_max_last_mod = 0L;
@@ -55,6 +53,8 @@ namespace cppfind {
         std::set<RegexPattern, RegexPatternCmp> m_out_file_patterns;
         std::set<FileType> m_out_file_types;
 
+        bool m_print_dirs = false;
+        bool m_print_files = false;
         bool m_print_usage = false;
         bool m_print_version = false;
         bool m_recursive = true;
@@ -74,14 +74,14 @@ namespace cppfind {
         [[nodiscard]] bool debug() const;
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool include_hidden() const;
-        [[nodiscard]] bool list_dirs() const;
-        [[nodiscard]] bool list_files() const;
         [[nodiscard]] int max_depth() const;
         [[nodiscard]] int min_depth() const;
         [[nodiscard]] long max_last_mod() const;
         [[nodiscard]] long max_size() const;
         [[nodiscard]] long min_last_mod() const;
         [[nodiscard]] long min_size() const;
+        [[nodiscard]] bool print_dirs() const;
+        [[nodiscard]] bool print_files() const;
         [[nodiscard]] bool print_usage() const;
         [[nodiscard]] bool print_version() const;
         [[nodiscard]] bool recursive() const;
@@ -113,8 +113,6 @@ namespace cppfind {
         void in_file_types(const std::set<FileType>& in_file_types);
         void include_archives(bool include_archives);
         void include_hidden(bool include_hidden);
-        void list_dirs(bool list_dirs);
-        void list_files(bool list_files);
         void max_depth(int max_depth);
         void max_last_mod(long max_last_mod);
         void max_size(long max_size);
@@ -127,6 +125,8 @@ namespace cppfind {
         void out_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_file_patterns);
         void out_file_types(const std::set<FileType>& out_file_types);
         void paths(const std::set<std::string>& paths);
+        void print_dirs(bool print_dirs);
+        void print_files(bool print_files);
         void print_usage(bool print_usage);
         void print_version(bool print_version);
         void recursive(bool recursive);

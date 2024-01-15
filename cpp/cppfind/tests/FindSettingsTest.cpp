@@ -8,12 +8,12 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
     REQUIRE(!settings.debug());
     REQUIRE(!settings.include_archives());
     REQUIRE(!settings.include_hidden());
-    REQUIRE(!settings.list_dirs());
-    REQUIRE(!settings.list_files());
     REQUIRE(settings.max_last_mod() == 0);
     REQUIRE(settings.max_size() == 0);
     REQUIRE(settings.min_last_mod() == 0);
     REQUIRE(settings.min_size() == 0);
+    REQUIRE(!settings.print_dirs());
+    REQUIRE(!settings.print_files());
     REQUIRE(!settings.print_usage());
     REQUIRE(!settings.print_version());
     REQUIRE(settings.sort_by() == cppfind::SortBy::FILEPATH);
@@ -103,13 +103,13 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     settings.include_hidden(true);
     REQUIRE(settings.include_hidden());
 
-    REQUIRE(!settings.list_dirs());
-    settings.list_dirs(true);
-    REQUIRE(settings.list_dirs());
+    REQUIRE(!settings.print_dirs());
+    settings.print_dirs(true);
+    REQUIRE(settings.print_dirs());
 
-    REQUIRE(!settings.list_files());
-    settings.list_files(true);
-    REQUIRE(settings.list_files());
+    REQUIRE(!settings.print_files());
+    settings.print_files(true);
+    REQUIRE(settings.print_files());
 
     REQUIRE(!settings.print_usage());
     settings.print_usage(true);

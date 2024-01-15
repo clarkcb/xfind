@@ -75,10 +75,11 @@ public class FindOptions {
             put("help", (b, settings) -> settings.setPrintUsage(b));
             put("includearchives", (b, settings) -> settings.setIncludeArchives(b));
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
-            put("listdirs", (b, settings) -> settings.setListDirs(b));
-            put("listfiles", (b, settings) -> settings.setListFiles(b));
-            put("nolistfiles", (b, settings) -> settings.setListFiles(!b));
+            put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
+            put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));
+            put("printdirs", (b, settings) -> settings.setPrintDirs(b));
+            put("printfiles", (b, settings) -> settings.setPrintFiles(b));
             put("recursive", (b, settings) -> settings.setRecursive(b));
             put("sort-ascending", (b, settings) -> settings.setSortDescending(!b));
             put("sort-caseinsensitive", (b, settings) -> settings.setSortCaseInsensitive(b));
@@ -186,8 +187,8 @@ public class FindOptions {
 
     public final FindSettings settingsFromArgs(final String[] args) throws FindException {
         var settings = new FindSettings();
-        // default listFiles to true since running from command line
-        settings.setListFiles(true);
+        // default printFiles to true since running from command line
+        settings.setPrintFiles(true);
 
         // add short arg mappings
         options.stream().filter(o -> !o.getShortArg().isEmpty()).forEach(o -> {

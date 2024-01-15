@@ -87,19 +87,34 @@ class Finder:
             return False
         return self.is_matching_stat(stat)
 
+    def is_matching_ext(self, ext: str) -> bool:
+        """Check whether the given extension matches find settings."""
+        return (not self.settings.in_extensions or ext in self.settings.in_extensions) \
+                and (not self.settings.out_extensions or ext not in self.settings.out_extensions)
+
+    def is_matching_file_name(self, file_name: str) -> bool:
+        """Check whether the given file name matches find settings."""
+        return (not self.settings.in_file_patterns or
+                matches_any_pattern(file_name, self.settings.in_file_patterns)) \
+                and (not self.settings.out_file_patterns or
+                     not matches_any_pattern(file_name, self.settings.out_file_patterns))
+
+    def is_matching_file_type(self, file_type: FileType) -> bool:
+        """Check whether the given file type matches find settings."""
+        return (not self.settings.in_file_types or
+                file_type in self.settings.in_file_types) \
+                and (not self.settings.out_file_types or
+                     file_type not in self.settings.out_file_types)
+
     def is_matching_file(self, file_name: str, file_type: FileType, stat: os.stat_result) -> bool:
         """Check whether the given file matches find settings."""
         if self.settings.in_extensions or self.settings.out_extensions:
             ext = FileUtil.get_extension(file_name)
-            if (self.settings.in_extensions and ext not in self.settings.in_extensions) \
-                    or (self.settings.out_extensions and ext in self.settings.out_extensions):
+            if not self.is_matching_ext(ext):
                 return False
-        if (self.settings.in_file_patterns and
-                not matches_any_pattern(file_name, self.settings.in_file_patterns)) \
-                or (self.settings.out_file_patterns and
-                    matches_any_pattern(file_name, self.settings.out_file_patterns)) \
-                or (self.settings.in_file_types and file_type not in self.settings.in_file_types) \
-                or (self.settings.out_file_types and file_type in self.settings.out_file_types):
+        if not self.is_matching_file_name(file_name):
+            return False
+        if not self.is_matching_file_type(file_type):
             return False
         if stat:
             return self.is_matching_stat(stat)
@@ -192,6 +207,7 @@ class Finder:
         return self.sort_file_results(self.find_files())
 
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
+        """Sort the given list of FileResult instances."""
         def c(s: str) -> str:
             if self.settings.sort_case_insensitive:
                 return s.lower()

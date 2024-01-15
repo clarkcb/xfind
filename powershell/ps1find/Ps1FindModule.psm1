@@ -273,8 +273,6 @@ class FindSettings {
     [FileType[]]$InFileTypes
     [bool]$IncludeArchives
     [bool]$IncludeHidden
-    [bool]$ListDirs
-    [bool]$ListFiles
     [int]$MaxDepth
     [DateTime]$MaxLastMod
     [long]$MaxSize
@@ -288,6 +286,8 @@ class FindSettings {
     [Regex[]]$OutFilePatterns
     [FileType[]]$OutFileTypes
     [string[]]$Paths
+    [bool]$PrintDirs
+    [bool]$PrintFiles
     [bool]$PrintUsage
     [bool]$PrintVersion
     [bool]$Recursive
@@ -307,8 +307,6 @@ class FindSettings {
 		$this.InFileTypes = @()
 		$this.IncludeArchives = $false
 		$this.IncludeHidden = $false
-		$this.ListDirs = $false
-		$this.ListFiles = $false
 		$this.MaxDepth = -1
 		$this.MaxSize = 0
 		$this.MinDepth = -1
@@ -320,6 +318,8 @@ class FindSettings {
 		$this.OutFilePatterns = @()
 		$this.OutFileTypes = @()
 		$this.Paths = @()
+		$this.PrintDirs = $false
+		$this.PrintFiles = $false
 		$this.PrintUsage = $false
 		$this.PrintVersion = $false
 		$this.Recursive = $true
@@ -383,8 +383,6 @@ class FindSettings {
         ", InFileTypes=$($this.FileTypeArrayToString($this.InFileTypes))" +
         ", IncludeArchives=$($this.IncludeArchives)" +
         ", IncludeHidden=$($this.IncludeHidden)" +
-        ", ListDirs=$($this.ListDirs)" +
-        ", ListFiles=$($this.ListFiles)" +
         ", MaxDepth=$($this.MaxDepth)" +
         ", MaxLastMod=$($this.DateTimeToString($this.MaxLastMod))" +
         ", MaxSize=$($this.MaxSize)" +
@@ -398,6 +396,8 @@ class FindSettings {
         ", OutFilePatterns=$($this.StringArrayToString($this.OutFilePatterns))" +
         ", OutFileTypes=$($this.FileTypeArrayToString($this.OutFileTypes))" +
         ", Paths=$($this.StringArrayToString($this.Paths))" +
+        ", PrintDirs=$($this.PrintDirs)" +
+        ", PrintFiles=$($this.PrintFiles)" +
         ", PrintUsage=$($this.PrintUsage)" +
         ", PrintVersion=$($this.PrintVersion)" +
         ", Recursive=$($this.Recursive)" +
@@ -552,21 +552,25 @@ class FindOptions {
             param([bool]$b, [FindSettings]$settings)
             $settings.IncludeHidden = $b
         }
-        "listdirs" = {
+        "noprintdirs" = {
             param([bool]$b, [FindSettings]$settings)
-            $settings.ListDirs = $b
+            $settings.PrintDirs = !$b
         }
-        "listfiles" = {
+        "noprintfiles" = {
             param([bool]$b, [FindSettings]$settings)
-            $settings.ListFiles = $b
-        }
-        "nolistfiles" = {
-            param([bool]$b, [FindSettings]$settings)
-            $settings.ListFiles = !$b
+            $settings.PrintFiles = !$b
         }
         "norecursive" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.Recursive = !$b
+        }
+        "printdirs" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.PrintDirs = $b
+        }
+        "printfiles" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.PrintFiles = $b
         }
         "recursive" = {
             param([bool]$b, [FindSettings]$settings)
@@ -623,8 +627,8 @@ class FindOptions {
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {
         $settings = [FindSettings]::new()
-        # default ListFiles to true since we're using via CLI
-        $settings.ListFiles = $true
+        # default PrintFiles to true since we're using via CLI
+        $settings.PrintFiles = $true
         $idx = 0
         while ($idx -lt $argList.Count) {
             if ($settings.PrintUsage -or $settings.PrintVersion) {

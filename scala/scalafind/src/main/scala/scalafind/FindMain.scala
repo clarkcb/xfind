@@ -54,8 +54,8 @@ object FindMain {
       val finder = new Finder(settings)
       val fileResults = finder.find()
 
-      if (settings.listDirs) { printMatchingDirs(fileResults) }
-      if (settings.listFiles) { printMatchingFiles(fileResults) }
+      if (settings.printDirs) { printMatchingDirs(fileResults) }
+      if (settings.printFiles) { printMatchingFiles(fileResults) }
 
     } catch {
       case e: FindException =>

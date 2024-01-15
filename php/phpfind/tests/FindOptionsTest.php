@@ -28,8 +28,8 @@ class FindOptionsTest extends TestCase
         $this->assertFalse($settings->debug);
         $this->assertFalse($settings->include_archives);
         $this->assertFalse($settings->include_hidden);
-        $this->assertFalse($settings->list_dirs);
-        $this->assertTrue($settings->list_files);
+        $this->assertFalse($settings->print_dirs);
+        $this->assertTrue($settings->print_files);
         $this->assertFalse($settings->print_usage);
         $this->assertFalse($settings->print_version);
         $this->assertCount(0, $settings->paths);

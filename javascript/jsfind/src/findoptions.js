@@ -12,8 +12,6 @@ const {FindSettings} = require('./findsettings');
 const {nameToSortBy} = require("./sortby");
 
 class FindOptions {
-    'use strict'
-
     constructor() {
         this.argNameMap = {};
         this.argMap = {};
@@ -78,14 +76,16 @@ class FindOptions {
                 (b, settings) => { settings.includeArchives = b; },
             'includehidden':
                 (b, settings) => { settings.includeHidden = b; },
-            'listdirs':
-                (b, settings) => { settings.listDirs = b; },
-            'listfiles':
-                (b, settings) => { settings.listFiles = b; },
-            'nolistfiles':
-                (b, settings) => { settings.listFiles = !b; },
+            'noprintdirs':
+              (b, settings) => { settings.printDirs = !b; },
+            'noprintfiles':
+                (b, settings) => { settings.printFiles = !b; },
             'norecursive':
                 (b, settings) => { settings.recursive = !b; },
+            'printdirs':
+              (b, settings) => { settings.printDirs = b; },
+            'printfiles':
+              (b, settings) => { settings.printFiles = b; },
             'recursive':
                 (b, settings) => { settings.recursive = b; },
             'sort-ascending':
@@ -187,8 +187,8 @@ class FindOptions {
     settingsFromArgs(args, cb) {
         let err = null;
         let settings = new FindSettings();
-        // default listFiles to true since running as cli
-        settings.listFiles = true;
+        // default printFiles to true since running as cli
+        settings.printFiles = true;
 
         while(args && !err) {
             let arg = args.shift();

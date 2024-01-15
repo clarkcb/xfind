@@ -36,11 +36,11 @@ class FindSettings:
     __slots__ = [
         'archives_only', 'debug', 'in_archive_extensions', 'in_archive_file_patterns',
         'in_dir_patterns', 'in_extensions', 'in_file_patterns', 'in_file_types',
-        'include_archives', 'include_hidden', 'list_dirs', 'list_files', 'max_depth',
-        'max_last_mod', 'max_size', 'min_depth', 'min_last_mod', 'min_size',
-        'out_archive_extensions', 'out_archive_file_patterns', 'out_dir_patterns',
-        'out_extensions', 'out_file_patterns', 'out_file_types', 'paths', 'print_usage',
-        'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
+        'include_archives', 'include_hidden', 'max_depth', 'max_last_mod', 'max_size',
+        'min_depth', 'min_last_mod', 'min_size', 'out_archive_extensions',
+        'out_archive_file_patterns', 'out_dir_patterns', 'out_extensions',
+        'out_file_patterns', 'out_file_types', 'paths', 'print_dirs', 'print_files',
+        'print_usage', 'print_version', 'recursive', 'sort_by', 'sort_case_insensitive',
         'sort_descending', 'verbose'
     ]
 
@@ -55,8 +55,6 @@ class FindSettings:
                  in_file_types: list | set | str | FileType = None,
                  include_archives: bool = False,
                  include_hidden: bool = False,
-                 list_dirs: bool = False,
-                 list_files: bool = False,
                  max_depth: int = -1,
                  max_last_mod: Optional[datetime] = None,
                  max_size: int = 0,
@@ -70,6 +68,8 @@ class FindSettings:
                  out_file_patterns: list | set | str | Pattern = None,
                  out_file_types: list | set | str | FileType = None,
                  paths: list[str] | set[str] | str = None,
+                 print_dirs: bool = False,
+                 print_files: bool = False,
                  print_usage: bool = False,
                  print_version: bool = False,
                  recursive: bool = True,
@@ -99,8 +99,6 @@ class FindSettings:
             self.add_file_types(in_file_types, 'in_file_types')
         self.include_archives = include_archives
         self.include_hidden = include_hidden
-        self.list_dirs = list_dirs
-        self.list_files = list_files
         self.max_depth = max_depth
         self.max_last_mod = max_last_mod
         self.max_size = max_size
@@ -128,6 +126,8 @@ class FindSettings:
         self.paths = set()
         if paths:
             self.add_paths(paths)
+        self.print_dirs = print_dirs
+        self.print_files = print_files
         self.print_usage = print_usage
         self.print_version = print_version
         self.recursive = recursive
@@ -153,7 +153,7 @@ class FindSettings:
         if isinstance(patterns, (list, set)):
             pattern_set = getattr(self, pattern_set_name)
             if all(isinstance(p, Pattern) for p in patterns):
-                pattern_set.update({p for p in patterns})
+                pattern_set.update(patterns)
             else:  # assume all strings
                 pattern_set.update({re.compile(p, compile_flag) for p in patterns})
         elif isinstance(patterns, str):
@@ -178,7 +178,7 @@ class FindSettings:
         """Add one or more filetypes"""
         if isinstance(file_types, (list, set)):
             if all(isinstance(ft, FileType) for ft in file_types):
-                new_file_type_set = {ft for ft in file_types}
+                new_file_type_set = set(file_types)
             else:  # assume all strings
                 new_file_type_set = {FileType.from_name(ft) for ft in file_types}
         elif isinstance(file_types, str):

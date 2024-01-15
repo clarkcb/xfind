@@ -25,12 +25,12 @@ static class Program
 			var finder = new Finder(settings);
 			var fileResults = finder.Find().ToList();
 
-			if (settings.ListDirs)
+			if (settings.PrintDirs)
 			{
 				finder.PrintMatchingDirs(fileResults);
 			}
 
-			if (settings.ListFiles)
+			if (settings.PrintFiles)
 			{
 				finder.PrintMatchingFiles(fileResults);
 			}

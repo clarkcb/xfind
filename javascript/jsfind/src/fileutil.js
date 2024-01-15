@@ -11,8 +11,6 @@ const { promisify } = require('util');
 const readFileAsync = promisify(fs.readFile);
 
 class FileUtil {
-    'use strict'
-
     static expandPath(filePath) {
         let idx = filePath.indexOf('~');
         return idx === 0 ? process.env.HOME + filePath.substring(1) : filePath;

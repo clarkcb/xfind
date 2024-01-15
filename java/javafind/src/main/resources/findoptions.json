@@ -66,14 +66,6 @@
       "desc": "File type to find (text, binary)"
     },
     {
-      "long": "listdirs",
-      "desc": "List the matching directories after finding"
-    },
-    {
-      "long": "listfiles",
-      "desc": "List the matching files after finding*"
-    },
-    {
       "long": "maxdepth",
       "arg": "size",
       "desc": "Find files at most maxdepth levels below startpath"
@@ -104,8 +96,12 @@
       "desc": "Find files with size >= minsize"
     },
     {
-      "long": "nolistfiles",
-      "desc": "Do not list the matching files after finding"
+      "long": "noprintdirs",
+      "desc": "Do not print matching directories after finding*"
+    },
+    {
+      "long": "noprintfiles",
+      "desc": "Do not print matching files after finding"
     },
     {
       "long": "norecursive",
@@ -147,6 +143,14 @@
       "desc": "File type not to find (text, binary)"
     },
     {
+      "long": "printdirs",
+      "desc": "Print matching directories after finding"
+    },
+    {
+      "long": "printfiles",
+      "desc": "Print matching files after finding*"
+    },
+    {
       "long": "recursive",
       "short": "r",
       "desc": "Find recursively through subdirectories*"
@@ -154,7 +158,7 @@
     {
       "long": "settings-file",
       "arg": "file",
-      "desc": "A path to a JSON file with specified find settings"
+      "desc": "Path to JSON file with specified find settings"
     },
     {
       "long": "sort-by",

@@ -25,7 +25,7 @@ def log_error(message: str):
 
 
 def get_text(nodelist):
-    """Get the text from an xml node"""
+    """Get text from xml node"""
     rc = []
     for node in nodelist:
         if node.nodeType == node.TEXT_NODE:
@@ -44,5 +44,5 @@ def parse_datetime_str(datetime_str: str):
 def list_to_str(lst: list, sort=True) -> str:
     """Return comma-separated string from list"""
     if sort:
-        return f'["' + '", "'.join(sorted(lst)) + '"]'
-    return f'["' + '", "'.join(lst) + ']'
+        return '["' + '", "'.join(sorted(lst)) + '"]'
+    return '["' + '", "'.join(lst) + ']'

@@ -11,25 +11,25 @@ import XCTest
 import swiftfind
 
 class FindSettingsTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-    }
+//    override func setUp() {
+//        super.setUp()
+//    }
+//
+//    override func tearDown() {
+//        super.tearDown()
+//    }
 
     func testDefaultFindSettings() {
         XCTAssert(DefaultFindSettings.archivesOnly == false, "archivesOnly == false")
         XCTAssert(DefaultFindSettings.debug == false, "debug == false")
         XCTAssert(DefaultFindSettings.includeArchives == false, "includeArchives == false")
         XCTAssert(DefaultFindSettings.includeHidden == false, "includeHidden == false")
-        XCTAssert(DefaultFindSettings.listDirs == false, "listDirs == false")
-        XCTAssert(DefaultFindSettings.listFiles == false, "listFiles == false")
         XCTAssert(DefaultFindSettings.maxLastMod == nil, "maxLastMod == nil")
         XCTAssert(DefaultFindSettings.maxSize == 0, "maxSize == 0")
         XCTAssert(DefaultFindSettings.minLastMod == nil, "minLastMod == nil")
         XCTAssert(DefaultFindSettings.minSize == 0, "minSize == 0")
+        XCTAssert(DefaultFindSettings.printDirs == false, "printDirs == false")
+        XCTAssert(DefaultFindSettings.printFiles == false, "printFiles == false")
         XCTAssert(DefaultFindSettings.printUsage == false, "printUsage == false")
         XCTAssert(DefaultFindSettings.printVersion == false, "printVersion == false")
         XCTAssert(DefaultFindSettings.sortCaseInsensitive == false, "sortCaseInsensitive == false")
@@ -44,15 +44,16 @@ class FindSettingsTests: XCTestCase {
         XCTAssert(settings.includeArchives == DefaultFindSettings.includeArchives,
                   "includeArchives == false")
         XCTAssert(settings.includeHidden == DefaultFindSettings.includeHidden, "includeHidden == false")
-        XCTAssert(settings.listDirs == DefaultFindSettings.listDirs, "listDirs == false")
-        XCTAssert(settings.listFiles == DefaultFindSettings.listFiles, "listFiles == false")
         XCTAssert(settings.maxLastMod == DefaultFindSettings.maxLastMod, "maxLastMod == nil")
         XCTAssert(settings.maxSize == DefaultFindSettings.maxSize, "maxSize == 0")
         XCTAssert(settings.minLastMod == DefaultFindSettings.minLastMod, "minLastMod == nil")
         XCTAssert(settings.minSize == DefaultFindSettings.minSize, "minSize == 0")
+        XCTAssert(settings.printDirs == DefaultFindSettings.printDirs, "printDirs == false")
+        XCTAssert(settings.printFiles == DefaultFindSettings.printFiles, "printFiles == false")
         XCTAssert(settings.printUsage == DefaultFindSettings.printUsage, "printUsage == false")
         XCTAssert(settings.printVersion == DefaultFindSettings.printVersion, "printVersion == false")
-        XCTAssert(settings.sortCaseInsensitive == DefaultFindSettings.sortCaseInsensitive, "sortCaseInsensitive == false")
+        XCTAssert(settings.sortCaseInsensitive == DefaultFindSettings.sortCaseInsensitive,
+                  "sortCaseInsensitive == false")
         XCTAssert(settings.sortDescending == DefaultFindSettings.sortDescending, "sortDescending == false")
         XCTAssert(settings.verbose == DefaultFindSettings.verbose, "verbose == false")
     }
@@ -100,6 +101,6 @@ class FindSettingsTests: XCTestCase {
         ("testAddExtensions", testAddExtensions),
         ("testAddPattern", testAddPattern),
         ("testSetArchivesOnly", testSetArchivesOnly),
-        ("testSetDebug", testSetDebug),
+        ("testSetDebug", testSetDebug)
     ]
 }

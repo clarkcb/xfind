@@ -137,21 +137,25 @@ my $bool_flag_action_hash = {
         my ($b, $settings) = @_;
         $settings->set_property('include_hidden', $b);
     },
-    'listdirs' => sub {
+    'noprintdirs' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('list_dirs', $b);
+        $settings->set_property('print_dirs', !$b);
     },
-    'listfiles' => sub {
+    'noprintfiles' => sub {
         my ($b, $settings) = @_;
-        $settings->set_property('list_files', $b);
-    },
-    'nolistfiles' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('list_files', !$b);
+        $settings->set_property('print_files', !$b);
     },
     'norecursive' => sub {
         my ($b, $settings) = @_;
         $settings->set_property('recursive', !$b);
+    },
+    'printdirs' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('print_dirs', $b);
+    },
+    'printfiles' => sub {
+        my ($b, $settings) = @_;
+        $settings->set_property('print_files', $b);
     },
     'recursive' => sub {
         my ($b, $settings) = @_;
@@ -254,8 +258,8 @@ sub settings_from_json {
 sub settings_from_args {
     my ($self, $args) = @_;
     my $settings = plfind::FindSettings->new();
-    # default list_files to true since running as cli
-    $settings->set_property('list_files', 1);
+    # default print_files to true since running as cli
+    $settings->set_property('print_files', 1);
     my @errs;
     while (scalar @{$args}) {
         my $arg = shift @{$args};
@@ -263,7 +267,7 @@ sub settings_from_args {
             $arg =~ s/^\-+//;
             if (exists $self->{options}->{$arg}) {
                 my $opt = $self->{options}->{$arg};
-                my $long = $opt->{longarg};
+                my $long = $opt->{long_arg};
                 if (exists $arg_action_hash->{$long}) {
                     if (scalar @{$args}) {
                         my $val = shift @{$args};
@@ -293,38 +297,38 @@ sub get_usage_string {
     my $self = shift;
     my $usage = "Usage:\n plfind [options] <path> [<path> ...]\n\nOptions:\n";
     my $longest = 0;
-    my $options_with_sortkey = {};
+    my $sort_arg_option_hash = {};
     foreach my $opt_key (keys %{$self->{options}}) {
         my $option = $self->{options}->{$opt_key};
-        my $long = $option->{longarg};
-        my $short = $option->{shortarg};
-        my $sortkey = $long;
-        if ($short) {
-            $sortkey = lc($short) . 'a' . $long;
+        my $long_arg = $option->{long_arg};
+        my $short_arg = $option->{short_arg};
+        my $sort_arg = $long_arg;
+        if ($short_arg) {
+            $sort_arg = lc($short_arg) . 'a' . $long_arg;
         }
-        $options_with_sortkey->{$sortkey} = $option;
+        $sort_arg_option_hash->{$sort_arg} = $option;
     }
-    my @sortkeys = keys %{$options_with_sortkey};
-    @sortkeys = sort {$plfind::FindOptions::a cmp $plfind::FindOptions::b} @sortkeys;
+    my @sort_args = keys %{$sort_arg_option_hash};
+    @sort_args = sort {$plfind::FindOptions::a cmp $plfind::FindOptions::b} @sort_args;
     my $opt_strs_with_key = {};
     my $opt_descs_with_key = {};
-    foreach my $sortkey (@sortkeys) {
-        my $option = $options_with_sortkey->{$sortkey};
+    foreach my $sort_arg (@sort_args) {
+        my $option = $sort_arg_option_hash->{$sort_arg};
         my $opt_str = '';
-        if ($option->{shortarg}) {
-            $opt_str = '-' . $option->{shortarg} . ',';
+        if ($option->{short_arg}) {
+            $opt_str = '-' . $option->{short_arg} . ',';
         }
-        $opt_str .= '--' . $option->{longarg};
+        $opt_str .= '--' . $option->{long_arg};
         if (length($opt_str) > $longest) {
             $longest = length($opt_str);
         }
-        $opt_strs_with_key->{$sortkey} = $opt_str;
-        $opt_descs_with_key->{$sortkey} = $option->{desc};
+        $opt_strs_with_key->{$sort_arg} = $opt_str;
+        $opt_descs_with_key->{$sort_arg} = $option->{desc};
     }
     my $format_str = " %-" . $longest . "s  %s\n";
-    foreach my $sortkey (@sortkeys) {
-       $usage .= sprintf($format_str, $opt_strs_with_key->{$sortkey},
-        $opt_descs_with_key->{$sortkey});
+    foreach my $sort_arg (@sort_args) {
+       $usage .= sprintf($format_str, $opt_strs_with_key->{$sort_arg},
+        $opt_descs_with_key->{$sort_arg});
     }
     return $usage;
 }

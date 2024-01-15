@@ -81,8 +81,6 @@ class FindSettings {
 
   bool includeArchives = false;
   bool includeHidden = false;
-  bool listDirs = false;
-  bool listFiles = false;
 
   int maxDepth = -1;
   DateTime? maxLastMod;
@@ -101,6 +99,8 @@ class FindSettings {
 
   var paths = <String>{};
 
+  bool printDirs = false;
+  bool printFiles = false;
   bool printUsage = false;
   bool printVersion = false;
   bool recursive = true;
@@ -168,8 +168,6 @@ class FindSettings {
       ', inFileTypes=${fileTypeSetToString(inFileTypes)}'
       ', includeArchives=$includeArchives'
       ', includeHidden=$includeHidden'
-      ', listDirs=$listDirs'
-      ', listFiles=$listFiles'
       ', maxDepth=$maxDepth'
       ', maxLastMod=${dateTimeToString(maxLastMod)}'
       ', maxSize=$maxSize'
@@ -183,6 +181,8 @@ class FindSettings {
       ', outFilePatterns=${patternSetToString(outFilePatterns)}'
       ', outFileTypes=${fileTypeSetToString(outFileTypes)}'
       ', paths=${stringSetToString(paths)}'
+      ', printDirs=$printDirs'
+      ', printFiles=$printFiles'
       ', printUsage=$printUsage'
       ', printVersion=$printVersion'
       ', recursive=$recursive'

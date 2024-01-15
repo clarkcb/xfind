@@ -19,8 +19,6 @@ class FindSettings
     public array $in_file_types = array();
     public bool $include_archives = false;
     public bool $include_hidden = false;
-    public bool $list_dirs = false;
-    public bool $list_files = false;
     public int $max_depth = -1;
     public ?DateTime $max_last_mod = null;
     public int $max_size = 0;
@@ -34,6 +32,8 @@ class FindSettings
     public array $out_file_patterns = array();
     public array $out_file_types = array();
     public array $paths = array();
+    public bool $print_dirs = false;
+    public bool $print_files = false;
     public bool $print_usage = false;
     public bool $print_version = false;
     public bool $recursive = true;
@@ -129,23 +129,13 @@ class FindSettings
 
     public function set_sort_by(string $sort_by_name): void
     {
-        switch (strtoupper($sort_by_name)) {
-            case 'NAME':
-                $this->sort_by = SortBy::Filename;
-                break;
-            case 'SIZE':
-                $this->sort_by = SortBy::Filesize;
-                break;
-            case 'TYPE':
-                $this->sort_by = SortBy::Filetype;
-                break;
-            case 'LASTMOD':
-                $this->sort_by = SortBy::LastMod;
-                break;
-            default:
-                $this->sort_by = SortBy::Filepath;
-                break;
-        }
+        $this->sort_by = match (strtoupper($sort_by_name)) {
+            'NAME' => SortBy::Filename,
+            'SIZE' => SortBy::Filesize,
+            'TYPE' => SortBy::Filetype,
+            'LASTMOD' => SortBy::LastMod,
+            default => SortBy::Filepath,
+        };
     }
 
     /**
@@ -164,8 +154,6 @@ class FindSettings
             ', in_file_types=' . StringUtil::file_type_array_to_string($this->in_file_types) .
             ', include_archives=' . StringUtil::bool_to_string($this->include_archives) .
             ', include_hidden=' . StringUtil::bool_to_string($this->include_hidden) .
-            ', list_dirs=' . StringUtil::bool_to_string($this->list_dirs) .
-            ', list_files=' . StringUtil::bool_to_string($this->list_files) .
             ', max_depth=' . $this->max_depth .
             ', max_last_mod=' . StringUtil::datetime_to_string($this->max_last_mod) .
             ', max_size=' . $this->max_size .
@@ -179,6 +167,8 @@ class FindSettings
             ', out_file_patterns=' . StringUtil::string_array_to_string($this->out_file_patterns) .
             ', out_file_types=' . StringUtil::file_type_array_to_string($this->out_file_types) .
             ', paths=' . StringUtil::string_array_to_string($this->paths) .
+            ', print_dirs=' . StringUtil::bool_to_string($this->print_dirs) .
+            ', print_files=' . StringUtil::bool_to_string($this->print_files) .
             ', print_usage=' . StringUtil::bool_to_string($this->print_usage) .
             ', print_version=' . StringUtil::bool_to_string($this->print_version) .
             ', recursive=' . StringUtil::bool_to_string($this->recursive) .

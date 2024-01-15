@@ -15,8 +15,8 @@ public class FindSettingsTests
 		Assert.That(settings.Debug, Is.False);
 		Assert.That(settings.IncludeArchives, Is.False);
 		Assert.That(settings.IncludeHidden, Is.False);
-		Assert.That(settings.ListDirs, Is.False);
-		Assert.That(settings.ListFiles, Is.False);
+		Assert.That(settings.PrintDirs, Is.False);
+		Assert.That(settings.PrintFiles, Is.False);
 		Assert.That(settings.PrintUsage, Is.False);
 		Assert.That(settings.PrintVersion, Is.False);
 		Assert.That(settings.Recursive);

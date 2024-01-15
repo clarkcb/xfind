@@ -46,9 +46,11 @@ public class FileTypes {
                         let names = ft["names"] as! [String]
                         fileTypeNameDict[typeName] = Set(names)
                     }
-                    fileTypeExtDict[FileTypes.fileTypeTextName] = fileTypeExtDict[FileTypes.fileTypeTextName]!.union(fileTypeExtDict[FileTypes.fileTypeCodeName]!)
+                    fileTypeExtDict[FileTypes.fileTypeTextName] = fileTypeExtDict[FileTypes.fileTypeTextName]!
+                        .union(fileTypeExtDict[FileTypes.fileTypeCodeName]!)
                         .union(fileTypeExtDict[FileTypes.fileTypeXmlName]!)
-                    fileTypeNameDict[FileTypes.fileTypeTextName] = fileTypeNameDict[FileTypes.fileTypeTextName]!.union(fileTypeNameDict[FileTypes.fileTypeCodeName]!)
+                    fileTypeNameDict[FileTypes.fileTypeTextName] = fileTypeNameDict[FileTypes.fileTypeTextName]!
+                        .union(fileTypeNameDict[FileTypes.fileTypeCodeName]!)
                         .union(fileTypeNameDict[FileTypes.fileTypeXmlName]!)
                 }
             }

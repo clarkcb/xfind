@@ -9,8 +9,6 @@ const {SortBy, sortByToName} = require("./sortby");
 const StringUtil = require('./stringutil');
 
 class FindSettings {
-    'use strict'
-
     #archivesOnly = false;
     #debug = false;
     inArchiveExtensions = [];
@@ -21,8 +19,6 @@ class FindSettings {
     inFileTypes = [];
     includeArchives = false;
     includeHidden = false;
-    listDirs = false;
-    listFiles = false;
     maxDepth = -1;
     #maxLastMod = null;
     maxSize = 0;
@@ -36,6 +32,8 @@ class FindSettings {
     outFilePatterns = [];
     outFileTypes = [];
     paths = [];
+    printDirs = false;
+    printFiles = false;
     printUsage = false;
     printVersion = false;
     recursive = true;
@@ -183,8 +181,6 @@ class FindSettings {
             ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
             ', includeArchives=' + this.includeArchives +
             ', includeHidden=' + this.includeHidden +
-            ', listDirs=' + this.listDirs +
-            ', listFiles=' + this.listFiles +
             ', maxDepth=' + this.maxDepth +
             ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
             ', maxSize=' + this.maxSize +
@@ -198,6 +194,8 @@ class FindSettings {
             ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns) +
             ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
             ', ' + StringUtil.stringListToString('paths', this.paths) +
+            ', printDirs=' + this.printDirs +
+            ', printFiles=' + this.printFiles +
             ', printUsage=' + this.printUsage +
             ', printVersion=' + this.printVersion +
             ', recursive=' + this.recursive +

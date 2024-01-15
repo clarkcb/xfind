@@ -22,8 +22,8 @@ public class FindOptionsTest {
             assertFalse(settings.getDebug());
             assertFalse(settings.getIncludeArchives());
             assertFalse(settings.getIncludeHidden());
-            assertFalse(settings.getListDirs());
-            assertTrue(settings.getListFiles());
+            assertFalse(settings.getPrintDirs());
+            assertTrue(settings.getPrintFiles());
             assertFalse(settings.getPrintUsage());
             assertFalse(settings.getPrintVersion());
             assertFalse(settings.getVerbose());

@@ -23,8 +23,6 @@ export class FindSettings {
     inFileTypes: FileType[] = [];
     includeArchives = false;
     includeHidden = false;
-    listDirs = false;
-    listFiles = false;
     maxDepth = -1;
     #maxLastMod: Date | null = null;
     maxSize = 0;
@@ -38,6 +36,8 @@ export class FindSettings {
     outFilePatterns: RegExp[] = [];
     outFileTypes: FileType[] = [];
     paths: string[] = [];
+    printDirs = false;
+    printFiles = false;
     printUsage = false;
     printVersion = false;
     recursive = true;
@@ -182,8 +182,6 @@ export class FindSettings {
             + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', includeArchives=' + this.includeArchives
             + ', includeHidden=' + this.includeHidden
-            + ', listDirs=' + this.listDirs
-            + ', listFiles=' + this.listFiles
             + ', maxDepth=' + this.maxDepth
             + ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod)
             + ', maxSize=' + this.maxSize
@@ -197,6 +195,8 @@ export class FindSettings {
             + ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns)
             + ', ' + StringUtil.fileTypesToString('outFileTypes', this.outFileTypes)
             + ', ' + StringUtil.stringListToString('paths', this.paths)
+            + ', printDirs=' + this.printDirs
+            + ', printFiles=' + this.printFiles
             + ', printUsage=' + this.printUsage
             + ', printVersion=' + this.printVersion
             + ', recursive=' + this.recursive

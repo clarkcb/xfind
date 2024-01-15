@@ -39,10 +39,10 @@ fun find(settings: FindSettings) {
     val finder = Finder(settings)
     val fileResults: List<FileResult> = finder.find()
 
-    if (settings.listDirs) {
+    if (settings.printDirs) {
         printMatchingDirs(fileResults)
     }
-    if (settings.listFiles) {
+    if (settings.printFiles) {
         printMatchingFiles(fileResults)
     }
 }

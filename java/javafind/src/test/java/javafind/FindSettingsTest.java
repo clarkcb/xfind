@@ -18,10 +18,10 @@ public class FindSettingsTest {
         assertEquals(DefaultFindSettings.DEBUG, settings.getDebug());
         assertEquals(DefaultFindSettings.INCLUDE_HIDDEN, settings.getIncludeHidden());
         assertEquals(DefaultFindSettings.INCLUDE_ARCHIVES, settings.getIncludeArchives());
-        assertEquals(DefaultFindSettings.LIST_DIRS, settings.getListDirs());
-        assertEquals(DefaultFindSettings.LIST_FILES, settings.getListFiles());
         assertEquals(DefaultFindSettings.MAX_SIZE, settings.getMaxSize());
         assertEquals(DefaultFindSettings.MIN_SIZE, settings.getMinSize());
+        assertEquals(DefaultFindSettings.PRINT_DIRS, settings.getPrintDirs());
+        assertEquals(DefaultFindSettings.PRINT_FILES, settings.getPrintFiles());
         assertEquals(DefaultFindSettings.PRINT_USAGE, settings.getPrintUsage());
         assertEquals(DefaultFindSettings.PRINT_VERSION, settings.getPrintVersion());
         assertEquals(SortBy.FILEPATH, settings.getSortBy());

@@ -25,8 +25,6 @@ FindSettings *default_settings(void)
     settings->in_file_types = NULL;
     settings->include_archives = 0;
     settings->include_hidden = 0;
-    settings->list_dirs = 0;
-    settings->list_files = 0;
     settings->max_depth = -1;
     settings->max_last_mod = 0L;
     settings->max_size = 0L;
@@ -40,6 +38,8 @@ FindSettings *default_settings(void)
     settings->out_file_patterns = NULL;
     settings->out_file_types = NULL;
     settings->paths = NULL;
+    settings->print_dirs = 0;
+    settings->print_files = 0;
     settings->print_usage = 0;
     settings->print_version = 0;
     settings->recursive = 1;
@@ -68,8 +68,6 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", in_file_types=%s"
             ", include_archives=%s"
             ", include_hidden=%s"
-            ", list_dirs=%s"
-            ", list_files=%s"
             ", max_depth=%d"
             ", max_last_mod=%s"
             ", max_size=%lu"
@@ -83,6 +81,8 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
             ", out_file_patterns=%s"
             ", out_file_types=%s"
             ", paths=%s"
+            ", print_dirs=%s"
+            ", print_files=%s"
             ", print_usage=%s"
             ", print_version=%s"
             ", recursive=%s"
@@ -99,8 +99,8 @@ static size_t all_bools_strlen(const FindSettings *settings)
             (settings->debug == 0 ? 5 : 4) +
             (settings->include_archives == 0 ? 5 : 4) +
             (settings->include_hidden == 0 ? 5 : 4) +
-            (settings->list_dirs == 0 ? 5 : 4) +
-            (settings->list_files == 0 ? 5 : 4) +
+            (settings->print_dirs == 0 ? 5 : 4) +
+            (settings->print_files == 0 ? 5 : 4) +
             (settings->print_usage == 0 ? 5 : 4) +
             (settings->print_version == 0 ? 5 : 4) +
             (settings->recursive == 0 ? 5 : 4) +
@@ -171,8 +171,6 @@ void settings_to_string(const FindSettings *settings, char *s)
     file_type_node_to_string(settings->in_file_types, in_file_types_s);
     char *include_archives_s = settings->include_archives == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *include_hidden_s = settings->include_hidden == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *list_dirs_s = settings->list_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *list_files_s = settings->list_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
     size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
     char *max_last_mod_s = malloc(max_last_mod_strlen + 1);
@@ -217,6 +215,8 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     string_node_to_string(settings->paths, paths_s);
+    char *print_dirs_s = settings->print_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *print_files_s = settings->print_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *print_usage_s = settings->print_usage == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *print_version_s = settings->print_version == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *recursive_s = settings->recursive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
@@ -238,8 +238,6 @@ void settings_to_string(const FindSettings *settings, char *s)
         in_file_types_s,
         include_archives_s,
         include_hidden_s,
-        list_dirs_s,
-        list_files_s,
         settings->max_depth,
         max_last_mod_s,
         settings->max_size,
@@ -253,6 +251,8 @@ void settings_to_string(const FindSettings *settings, char *s)
         out_file_patterns_s,
         out_file_types_s,
         paths_s,
+        print_dirs_s,
+        print_files_s,
         print_usage_s,
         print_version_s,
         recursive_s,

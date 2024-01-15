@@ -7,8 +7,6 @@
 const path = require('path');
 
 class FileResult {
-    'use strict'
-
     containerSeparator = '!';
     containers = [];
     path = '';

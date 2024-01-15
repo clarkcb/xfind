@@ -121,7 +121,7 @@ public class FindOptions {
             },
             "sort-by": { (str: String, settings: FindSettings) in
                 settings.setSortBy(str)
-            },
+            }
         ]
     }
 
@@ -147,17 +147,20 @@ public class FindOptions {
         "includehidden": { (bool: Bool, settings: FindSettings) in
             settings.includeHidden = bool
         },
-        "listdirs": { (bool: Bool, settings: FindSettings) in
-            settings.listDirs = bool
+        "noprintdirs": { (bool: Bool, settings: FindSettings) in
+            settings.printDirs = !bool
         },
-        "listfiles": { (bool: Bool, settings: FindSettings) in
-            settings.listFiles = bool
-        },
-        "nolistfiles": { (bool: Bool, settings: FindSettings) in
-            settings.listFiles = !bool
+        "noprintfiles": { (bool: Bool, settings: FindSettings) in
+            settings.printFiles = !bool
         },
         "norecursive": { (bool: Bool, settings: FindSettings) in
             settings.recursive = !bool
+        },
+        "printdirs": { (bool: Bool, settings: FindSettings) in
+            settings.printDirs = bool
+        },
+        "printfiles": { (bool: Bool, settings: FindSettings) in
+            settings.printFiles = bool
         },
         "recursive": { (bool: Bool, settings: FindSettings) in
             settings.recursive = bool
@@ -179,14 +182,14 @@ public class FindOptions {
         },
         "version": { (bool: Bool, settings: FindSettings) in
             settings.printVersion = bool
-        },
+        }
     ]
 
     public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
         var i = 0
         let settings = FindSettings()
-        // default listFiles to true since running as cli
-        settings.listFiles = true
+        // default printFiles to true since running as cli
+        settings.printFiles = true
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {

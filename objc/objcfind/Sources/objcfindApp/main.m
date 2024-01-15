@@ -72,7 +72,7 @@ int main(int argc, const char * argv[]) {
             handleError(error, options);
         }
 
-        if (settings.listDirs) {
+        if (settings.printDirs) {
             NSArray<NSString*> *dirPaths = getMatchingDirs(fileResults);
             if ([dirPaths count] > 0) {
                 logMsg([NSString stringWithFormat:@"\nMatching directories (%lu):", [dirPaths count]]);
@@ -84,7 +84,7 @@ int main(int argc, const char * argv[]) {
             }
         }
 
-        if (settings.listFiles) {
+        if (settings.printFiles) {
             NSArray<NSString*> *filePaths = getMatchingFiles(fileResults);
             if ([filePaths count] > 0) {
                 logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [filePaths count]]);

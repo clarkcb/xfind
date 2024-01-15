@@ -27,8 +27,8 @@ class FindSettingsTest(unittest.TestCase):
         self.assertFalse(self.settings.debug)
         self.assertFalse(self.settings.include_archives)
         self.assertFalse(self.settings.include_hidden)
-        self.assertFalse(self.settings.list_dirs)
-        self.assertFalse(self.settings.list_files)
+        self.assertFalse(self.settings.print_dirs)
+        self.assertFalse(self.settings.print_files)
         self.assertFalse(self.settings.print_usage)
         self.assertFalse(self.settings.print_version)
         self.assertTrue(self.settings.recursive)
@@ -51,8 +51,8 @@ class FindSettingsTest(unittest.TestCase):
             'debug': True,
             'include_archives': True,
             'include_hidden': True,
-            'list_dirs': True,
-            'list_files': True,
+            'print_dirs': True,
+            'print_files': True,
             'print_usage': True,
             'print_version': True,
             'recursive': False,
@@ -63,8 +63,8 @@ class FindSettingsTest(unittest.TestCase):
         self.assertEqual(True, self.settings.debug)
         self.assertEqual(True, self.settings.include_archives)
         self.assertEqual(True, self.settings.include_hidden)
-        self.assertEqual(True, self.settings.list_dirs)
-        self.assertEqual(True, self.settings.list_files)
+        self.assertEqual(True, self.settings.print_dirs)
+        self.assertEqual(True, self.settings.print_files)
         self.assertEqual(True, self.settings.print_usage)
         self.assertEqual(True, self.settings.print_version)
         self.assertEqual(False, self.settings.recursive)

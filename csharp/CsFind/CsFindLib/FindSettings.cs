@@ -39,8 +39,6 @@ public class FindSettings
 	public ISet<FileType> InFileTypes { get; private set; }
 	public bool IncludeArchives { get; set; }
 	public bool IncludeHidden { get; set; }
-	public bool ListDirs { get; set; }
-	public bool ListFiles { get; set; }
 	public int MaxDepth { get; set; }
 	public System.DateTime? MaxLastMod { get; set; }
 	public int MaxSize { get; set; }
@@ -54,6 +52,8 @@ public class FindSettings
 	public ISet<Regex> OutFilePatterns { get; private set; }
 	public ISet<FileType> OutFileTypes { get; private set; }
 	public ISet<string> Paths { get; private set; }
+	public bool PrintDirs { get; set; }
+	public bool PrintFiles { get; set; }
 	public bool PrintUsage { get; set; }
 	public bool PrintVersion { get; set; }
 	public bool Recursive { get; set; }
@@ -74,8 +74,6 @@ public class FindSettings
 		InFileTypes = new HashSet<FileType>();
 		IncludeArchives = false;
 		IncludeHidden = false;
-		ListDirs = false;
-		ListFiles = false;
 		MaxDepth = -1;
 		MaxLastMod = null;
 		MaxSize = 0;
@@ -89,6 +87,8 @@ public class FindSettings
 		OutFilePatterns = new HashSet<Regex>();
 		OutFileTypes = new HashSet<FileType>();
 		Paths = new HashSet<string>();
+		PrintDirs = false;
+		PrintFiles = false;
 		PrintUsage = false;
 		PrintVersion = false;
 		Recursive = true;
@@ -109,8 +109,6 @@ public class FindSettings
 		ISet<FileType> inFileTypes,
 		bool includeArchives,
 		bool includeHidden,
-		bool listDirs,
-		bool listFiles,
 		int maxDepth,
 		System.DateTime? maxLastMod,
 		int maxSize,
@@ -124,6 +122,8 @@ public class FindSettings
 		ISet<Regex> outFilePatterns,
 		ISet<FileType> outFileTypes,
 		ISet<string> paths,
+		bool printDirs,
+		bool printFiles,
 		bool printUsage,
 		bool printVersion,
 		bool recursive,
@@ -142,8 +142,8 @@ public class FindSettings
 		InFileTypes = inFileTypes;
 		IncludeArchives = includeArchives;
 		IncludeHidden = includeHidden;
-		ListDirs = listDirs;
-		ListFiles = listFiles;
+		PrintDirs = printDirs;
+		PrintFiles = printFiles;
 		MaxDepth = maxDepth;
 		MaxLastMod = maxLastMod;
 		MaxSize = maxSize;
@@ -295,8 +295,6 @@ public class FindSettings
 		       ", InFileTypes=" + EnumerableToString(InFileTypes, false) +
 		       ", IncludeArchives=" + IncludeArchives +
 		       ", IncludeHidden=" + IncludeHidden +
-		       ", ListDirs=" + ListDirs +
-		       ", ListFiles=" + ListFiles +
 		       ", MaxDepth=" + MaxDepth +
 		       ", MaxLastMod=" + DateTimeToString(MaxLastMod) +
 		       ", MaxSize=" + MaxSize +
@@ -310,6 +308,8 @@ public class FindSettings
 		       ", OutFilePatterns=" + EnumerableToString(OutFilePatterns) +
 		       ", OutFileTypes=" + EnumerableToString(OutFileTypes, false) +
 		       ", Paths=" + EnumerableToString(Paths) +
+		       ", PrintDirs=" + PrintDirs +
+		       ", PrintFiles=" + PrintFiles +
 		       ", PrintUsage=" + PrintUsage +
 		       ", PrintVersion=" + PrintVersion +
 		       ", Recursive=" + Recursive +

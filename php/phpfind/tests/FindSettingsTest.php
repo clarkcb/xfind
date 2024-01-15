@@ -26,8 +26,8 @@ class FindSettingsTest extends TestCase
         $this->assertFalse($this->settings->debug);
         $this->assertFalse($this->settings->include_archives);
         $this->assertFalse($this->settings->include_hidden);
-        $this->assertFalse($this->settings->list_dirs);
-        $this->assertFalse($this->settings->list_files);
+        $this->assertFalse($this->settings->print_dirs);
+        $this->assertFalse($this->settings->print_files);
         $this->assertFalse($this->settings->print_usage);
         $this->assertFalse($this->settings->print_version);
         $this->assertTrue($this->settings->recursive);

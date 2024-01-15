@@ -82,10 +82,11 @@
     :help (fn [settings b] (assoc settings :print-usage b))
     :includearchives (fn [settings b] (assoc settings :include-archives b))
     :includehidden (fn [settings b] (assoc settings :include-hidden b))
-    :listdirs (fn [settings b] (assoc settings :list-dirs b))
-    :listfiles (fn [settings b] (assoc settings :list-files b))
-    :nolistfiles (fn [settings b] (assoc settings :list-files (not b)))
+    :noprintdirs (fn [settings b] (assoc settings :print-dirs (not b)))
+    :noprintfiles (fn [settings b] (assoc settings :print-files (not b)))
     :norecursive (fn [settings b] (assoc settings :recursive (not b)))
+    :printdirs (fn [settings b] (assoc settings :print-dirs b))
+    :printfiles (fn [settings b] (assoc settings :print-files b))
     :recursive (fn [settings b] (assoc settings :recursive b))
     :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
     :sort-caseinsensitive (fn [settings b] (assoc settings :sort-case-insensitive b))
@@ -135,8 +136,8 @@
 
 (defn settings-from-args
   ([args]
-    ;; default list-files to true since running as cli
-    (settings-from-args (assoc DEFAULT-SETTINGS :list-files true) args []))
+    ;; default print-files to true since running as cli
+    (settings-from-args (assoc DEFAULT-SETTINGS :print-files true) args []))
   ([settings args errs]
     (if (or (empty? args) (not (empty? errs)))
       [settings errs]

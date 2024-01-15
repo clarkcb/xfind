@@ -106,10 +106,11 @@ class FindOptions {
         "help" to { b, ss -> ss.copy(printUsage = b) },
         "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
         "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
-        "listdirs" to { b, ss -> ss.copy(listDirs = b) },
-        "listfiles" to { b, ss -> ss.copy(listFiles = b) },
-        "nolistfiles" to { b, ss -> ss.copy(listFiles = !b) },
+        "noprintdirs" to { b, ss -> ss.copy(printDirs = !b) },
+        "noprintfiles" to { b, ss -> ss.copy(printFiles = !b) },
         "norecursive" to { b, ss -> ss.copy(recursive = !b) },
+        "printdirs" to { b, ss -> ss.copy(printDirs = b) },
+        "printfiles" to { b, ss -> ss.copy(printFiles = b) },
         "recursive" to { b, ss -> ss.copy(recursive = b) },
         "sort-ascending" to { b, ss -> ss.copy(sortDescending = !b) },
         "sort-caseinsensitive" to { b, ss -> ss.copy(sortCaseInsensitive = b) },
@@ -227,8 +228,8 @@ class FindOptions {
                 return recSettingsFromArgs(args.drop(1), settings.copy(paths = settings.paths.plus(nextArg)))
             }
         }
-      // default listFiles to true since running as cli
-      return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(listFiles = true))
+      // default printFiles to true since running as cli
+      return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printFiles = true))
     }
 
     fun usage() {

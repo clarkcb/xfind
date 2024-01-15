@@ -19,8 +19,6 @@ const {FileType} = require("./filetype");
 const {SortBy} = require("./sortby");
 
 class Finder {
-    'use strict'
-
     //settings = null;
     //fileTypes = null;
 

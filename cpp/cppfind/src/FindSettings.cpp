@@ -81,22 +81,6 @@ namespace cppfind {
         m_include_hidden = include_hidden;
     }
 
-    bool FindSettings::list_dirs() const {
-        return m_list_dirs;
-    }
-
-    void FindSettings::list_dirs(bool list_dirs) {
-        m_list_dirs = list_dirs;
-    }
-
-    bool FindSettings::list_files() const {
-        return m_list_files;
-    }
-
-    void FindSettings::list_files(bool list_files) {
-        m_list_files = list_files;
-    }
-
     int FindSettings::max_depth() const {
         return m_max_depth;
     }
@@ -187,6 +171,22 @@ namespace cppfind {
 
     void FindSettings::out_file_types(const std::set<FileType>& out_file_types) {
         m_out_file_types = out_file_types;
+    }
+
+    bool FindSettings::print_dirs() const {
+        return m_print_dirs;
+    }
+
+    void FindSettings::print_dirs(bool print_dirs) {
+        m_print_dirs = print_dirs;
+    }
+
+    bool FindSettings::print_files() const {
+        return m_print_files;
+    }
+
+    void FindSettings::print_files(bool print_files) {
+        m_print_files = print_files;
     }
 
     bool FindSettings::print_usage() const {
@@ -408,8 +408,6 @@ namespace cppfind {
                 + ", in_file_types=" + file_types_to_string(m_in_file_types)
                 + ", include_archives=" + StringUtil::bool_to_string(m_include_archives)
                 + ", include_hidden=" + StringUtil::bool_to_string(m_include_hidden)
-                + ", list_dirs=" + StringUtil::bool_to_string(m_list_dirs)
-                + ", list_files=" + StringUtil::bool_to_string(m_list_files)
                 + ", max_depth=" + std::to_string(m_max_depth)
                 + ", max_last_mod=" + StringUtil::long_to_date_str(m_max_last_mod)
                 + ", max_size=" + std::to_string(m_max_size)
@@ -423,6 +421,8 @@ namespace cppfind {
                 + ", out_file_patterns=" + find_patterns_to_string(m_out_file_patterns)
                 + ", out_file_types=" + file_types_to_string(m_out_file_types)
                 + ", paths=" + StringUtil::string_set_to_string(m_paths)
+                + ", print_dirs=" + StringUtil::bool_to_string(m_print_dirs)
+                + ", print_files=" + StringUtil::bool_to_string(m_print_files)
                 + ", print_usage=" + StringUtil::bool_to_string(m_print_usage)
                 + ", print_version=" + StringUtil::bool_to_string(m_print_version)
                 + ", recursive=" + StringUtil::bool_to_string(m_recursive)

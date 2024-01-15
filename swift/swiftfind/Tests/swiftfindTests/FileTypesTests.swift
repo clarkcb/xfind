@@ -13,13 +13,13 @@ import swiftfind
 class FileTypesTests: XCTestCase {
     let fileTypes = FileTypes()
 
-    override func setUp() {
-        super.setUp()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-    }
+//    override func setUp() {
+//        super.setUp()
+//    }
+//
+//    override func tearDown() {
+//        super.tearDown()
+//    }
 
     func testArchiveFiles() {
         let exts = ["7z", "arj", "bz2", "cpio", "ear", "gz", "hqx", "jar",

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
 
         err = find(settings, results);
         if (err == E_OK) {
-            if (settings->list_dirs) {
+            if (settings->print_dirs) {
                 if (is_null_or_empty_file_results(results)) {
                     printf("\nMatching directories: 0\n");
                 } else {
@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
                 }
             }
 
-            if (settings->list_files) {
+            if (settings->print_files) {
                 if (is_null_or_empty_file_results(results)) {
                     printf("\nMatching files: 0\n");
                     if (results != NULL) {

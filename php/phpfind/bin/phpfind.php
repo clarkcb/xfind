@@ -26,12 +26,12 @@ function main($argv): void
         $file_results = $finder->find();
 
         // print matching dirs
-        if ($settings->list_dirs) {
+        if ($settings->print_dirs) {
             $finder->print_matching_dirs($file_results);
         }
 
         // print matching files
-        if ($settings->list_files) {
+        if ($settings->print_files) {
             $finder->print_matching_files($file_results);
         }
     } catch (FindException $e) {

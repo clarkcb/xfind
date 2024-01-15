@@ -18,8 +18,8 @@ describe('testing findoptions', () => {
             expect(settings.archivesOnly).toBeFalsy();
             expect(settings.debug).toBeFalsy();
             expect(settings.includeHidden).toBeFalsy();
-            expect(settings.listDirs).toBeFalsy();
-            expect(settings.listFiles).toBeTruthy();
+            expect(settings.printDirs).toBeFalsy();
+            expect(settings.printFiles).toBeTruthy();
             expect(settings.printUsage).toBeFalsy();
             expect(settings.printVersion).toBeFalsy();
             expect(settings.recursive).toBeTruthy();

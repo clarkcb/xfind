@@ -73,10 +73,10 @@ const findMain = async () => {
             const finder = new Finder(settings);
             let fileResults = await finder.find();
 
-            if (settings.listDirs) {
+            if (settings.printDirs) {
                 printMatchingDirs(fileResults);
             }
-            if (settings.listFiles) {
+            if (settings.printFiles) {
                 printMatchingFiles(fileResults);
             }
 

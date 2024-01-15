@@ -160,8 +160,8 @@ Describe -tag "FindSettings" -name "test_default_settings" {
         $settings.Debug | Should -BeFalse
         $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
-        $settings.ListDirs | Should -BeFalse
-        $settings.ListFiles | Should -BeFalse
+        $settings.PrintDirs | Should -BeFalse
+        $settings.PrintFiles | Should -BeFalse
         $settings.PrintUsage | Should -BeFalse
         $settings.Recursive | Should -BeTrue
         $settings.Verbose | Should -BeFalse
@@ -252,8 +252,8 @@ Describe -tag "FindOptions" -name "test_settings_from_args_no_args" {
         $settings.Debug | Should -BeFalse
         $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
-        $settings.ListDirs | Should -BeFalse
-        $settings.ListFiles | Should -BeTrue
+        $settings.PrintDirs | Should -BeFalse
+        $settings.PrintFiles | Should -BeTrue
         $settings.PrintUsage | Should -BeFalse
         $settings.Recursive | Should -BeTrue
         $settings.Verbose | Should -BeFalse
@@ -270,8 +270,8 @@ Describe -tag "FindOptions" -name "test_settings_from_args_valid_args" {
         $settings.Debug | Should -BeFalse
         $settings.IncludeHidden | Should -BeFalse
         $settings.IncludeArchives | Should -BeFalse
-        $settings.ListDirs | Should -BeFalse
-        $settings.ListFiles | Should -BeTrue
+        $settings.PrintDirs | Should -BeFalse
+        $settings.PrintFiles | Should -BeTrue
         $settings.PrintUsage | Should -BeFalse
         $settings.Recursive | Should -BeTrue
         $settings.Verbose | Should -BeFalse

@@ -133,10 +133,11 @@ object FindOptions {
     "help" -> ((b, ss) => ss.copy(printUsage = b)),
     "includearchives" -> ((b, ss) => ss.copy(includeArchives = b)),
     "includehidden" -> ((b, ss) => ss.copy(includeHidden = b)),
-    "listdirs" -> ((b, ss) => ss.copy(listDirs = b)),
-    "listfiles" -> ((b, ss) => ss.copy(listFiles = b)),
-    "nolistfiles" -> ((b, ss) => ss.copy(listFiles = !b)),
+    "noprintdirs" -> ((b, ss) => ss.copy(printDirs = !b)),
+    "noprintfiles" -> ((b, ss) => ss.copy(printFiles = !b)),
     "norecursive" -> ((b, ss) => ss.copy(recursive = !b)),
+    "printdirs" -> ((b, ss) => ss.copy(printDirs = b)),
+    "printfiles" -> ((b, ss) => ss.copy(printFiles = b)),
     "recursive" -> ((b, ss) => ss.copy(recursive = b)),
     "sort-ascending" -> ((b, ss) => ss.copy(sortDescending = !b)),
     "sort-caseinsensitive" -> ((b, ss) => ss.copy(sortCaseInsensitive = b)),
@@ -235,8 +236,8 @@ object FindOptions {
           nextArg(tail, ss.copy(paths = ss.paths + arg))
       }
     }
-    // default listFiles to true since running as cli
-    nextArg(args.toList, FindSettings(listFiles = true))
+    // default printFiles to true since running as cli
+    nextArg(args.toList, FindSettings(printFiles = true))
   }
 
   def usage(status: Int): Unit = {

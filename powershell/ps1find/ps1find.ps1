@@ -78,11 +78,11 @@ function Main {
         $finder = [Finder]::new($settings)
         $files = $finder.Find()
 
-        if ($settings.ListDirs) {
+        if ($settings.PrintDirs) {
             PrintMatchingDirs($files)
         }
 
-        if ($settings.ListFiles) {
+        if ($settings.PrintFiles) {
             PrintMatchingFiles($files)
         }
     }

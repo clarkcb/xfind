@@ -71,10 +71,10 @@ main = do
           foundPaths <- filterM pathExists (paths settings)
           if length foundPaths == length (paths settings) then do
             fileResults <- doFind settings
-            logMsg $ if listDirs settings
+            logMsg $ if printDirs settings
                      then formatMatchingDirs fileResults
                      else ""
-            logMsg $ if listFiles settings
+            logMsg $ if printFiles settings
                      then formatMatchingFiles fileResults
                      else ""
             logMsg ""

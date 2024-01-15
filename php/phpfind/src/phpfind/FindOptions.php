@@ -59,10 +59,11 @@ class FindOptions
             'help' => fn (bool $b, FindSettings $fs) => $fs->print_usage = $b,
             'includearchives' => fn (bool $b, FindSettings $fs) => $fs->include_archives = $b,
             'includehidden' => fn (bool $b, FindSettings $fs) => $fs->include_hidden = $b,
-            'listdirs' => fn (bool $b, FindSettings $fs) => $fs->list_dirs = $b,
-            'listfiles' => fn (bool $b, FindSettings $fs) => $fs->list_files = $b,
-            'nolistfiles' => fn (bool $b, FindSettings $fs) => $fs->list_files = !$b,
+            'noprintdirs' => fn (bool $b, FindSettings $fs) => $fs->print_dirs = !$b,
+            'noprintfiles' => fn (bool $b, FindSettings $fs) => $fs->print_files = !$b,
             'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
+            'printdirs' => fn (bool $b, FindSettings $fs) => $fs->print_dirs = $b,
+            'printfiles' => fn (bool $b, FindSettings $fs) => $fs->print_files = $b,
             'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
             'sort-ascending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = !$b,
             'sort-caseinsensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_case_insensitive = $b,
@@ -154,8 +155,8 @@ class FindOptions
     public function settings_from_args(array $args): FindSettings
     {
         $settings = new FindSettings();
-        // default list_files to true since running as cli
-        $settings->list_files = true;
+        // default print_files to true since running as cli
+        $settings->print_files = true;
         while (count($args) > 0) {
             $arg = array_shift($args);
             if ($arg[0] == '-') {

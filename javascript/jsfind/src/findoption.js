@@ -5,8 +5,6 @@
  */
 
 class FindOption {
-    'use strict'
-
     constructor(shortArg, longArg, desc, func) {
         this.shortArg = shortArg;
         this.longArg = longArg;

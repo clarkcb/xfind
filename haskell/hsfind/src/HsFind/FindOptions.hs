@@ -133,10 +133,11 @@ boolFlagActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b,
                   , ("help", \ss b -> ss {printUsage=b})
                   , ("includearchives", \ss b -> ss {includeArchives=b})
                   , ("includehidden", \ss b -> ss {includeHidden=b})
-                  , ("listdirs", \ss b -> ss {listDirs=b})
-                  , ("listfiles", \ss b -> ss {listFiles=b})
-                  , ("nolistfiles", \ss b -> ss {listFiles=not b})
+                  , ("noprintdirs", \ss b -> ss {printDirs=b})
+                  , ("noprintfiles", \ss b -> ss {printFiles=not b})
                   , ("norecursive", \ss b -> ss {recursive=not b})
+                  , ("printdirs", \ss b -> ss {printDirs=b})
+                  , ("printfiles", \ss b -> ss {printFiles=b})
                   , ("recursive", \ss b -> ss {recursive=b})
                   , ("sort-ascending", \ss b -> ss {sortDescending=not b})
                   , ("sort-caseinsensitive", \ss b -> ss {sortCaseInsensitive=b})
@@ -161,8 +162,8 @@ settingsFromArgs opts arguments =
   if any isLeft longArgs
   then (Left . head . lefts) longArgs
   else
-    -- default listFiles to true since running as cli
-    recSettingsFromArgs defaultFindSettings{listFiles=True} $ rights longArgs
+    -- default printFiles to true since running as cli
+    recSettingsFromArgs defaultFindSettings{printFiles=True} $ rights longArgs
   where recSettingsFromArgs :: FindSettings -> [String] -> Either String FindSettings
         recSettingsFromArgs settings args =
           case args of

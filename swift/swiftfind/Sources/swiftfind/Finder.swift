@@ -54,22 +54,19 @@ public class Finder {
     }
 
     private func filterByExtensions(_ ext: String, inExtensions: Set<String>,
-                                    outExtensions: Set<String>) -> Bool
-    {
+                                    outExtensions: Set<String>) -> Bool {
         (inExtensions.isEmpty || inExtensions.contains(ext))
             && (outExtensions.isEmpty || !outExtensions.contains(ext))
     }
 
     private func filterByPatterns(_ str: String, inPatterns: [Regex],
-                                  outPatterns: [Regex]) -> Bool
-    {
+                                  outPatterns: [Regex]) -> Bool {
         (inPatterns.isEmpty || matchesAnyPattern(str, inPatterns))
             && (outPatterns.isEmpty || !matchesAnyPattern(str, outPatterns))
     }
 
     private func filterByFileTypes(_ fileType: FileType, inFileTypes: [FileType],
-                                   outFileTypes: [FileType]) -> Bool
-    {
+                                   outFileTypes: [FileType]) -> Bool {
         (inFileTypes.isEmpty || inFileTypes.contains(fileType))
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType))
     }
@@ -79,8 +76,7 @@ public class Finder {
             if settings.maxLastMod != nil || settings.minLastMod != nil {
                 let lastMod: Date = stat?[FileAttributeKey.modificationDate] as! Date
                 if (settings.maxLastMod != nil && lastMod > settings.maxLastMod!)
-                    || (settings.minLastMod != nil && lastMod < settings.minLastMod!)
-                {
+                    || (settings.minLastMod != nil && lastMod < settings.minLastMod!) {
                     return false
                 }
             }
@@ -88,8 +84,7 @@ public class Finder {
             if settings.maxSize > 0 || settings.minSize > 0 {
                 let fileSize: UInt64 = stat?[FileAttributeKey.size] as! UInt64
                 if (settings.maxSize > 0 && fileSize > settings.maxSize)
-                    || (settings.minSize > 0 && fileSize < settings.minSize)
-                {
+                    || (settings.minSize > 0 && fileSize < settings.minSize) {
                     return false
                 }
             }
@@ -190,7 +185,7 @@ public class Finder {
             return nil
         }
         let fileType = fileTypes.getFileType(fileName)
-        var stat: [FileAttributeKey : Any]? = nil
+        var stat: [FileAttributeKey: Any]?
         if self.settings.needStat() {
             do {
                 stat = try FileManager.default.attributesOfItem(atPath: filePath)
@@ -199,13 +194,13 @@ public class Finder {
             }
         }
         let fr = FileResult(filePath: filePath, fileType: fileType, stat: stat)
-        if (fileType == FileType.archive) {
-            if (settings.includeArchives && isMatchingArchiveFileResult(fr)) {
+        if fileType == FileType.archive {
+            if settings.includeArchives && isMatchingArchiveFileResult(fr) {
                 return fr
             }
             return nil
         }
-        if (!settings.archivesOnly && isMatchingFileResult(fr)) {
+        if !settings.archivesOnly && isMatchingFileResult(fr) {
             return fr
         }
         return nil
@@ -219,11 +214,13 @@ public class Finder {
                 do {
                     let fileAttributes = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey])
                     if fileAttributes.isDirectory! {
-                        if (settings.maxDepth > 0 && enumerator.level > settings.maxDepth) || !isMatchingDir(fileURL.path) {
+                        if (settings.maxDepth > 0 && enumerator.level > settings.maxDepth)
+                            || !isMatchingDir(fileURL.path) {
                             enumerator.skipDescendants()
                         }
                     } else if fileAttributes.isRegularFile! {
-                        if enumerator.level >= settings.minDepth, settings.maxDepth < 1 || enumerator.level <= settings.maxDepth {
+                        if enumerator.level >= settings.minDepth, settings.maxDepth < 1
+                            || enumerator.level <= settings.maxDepth {
                             if let fileResult = filterToFileResult(fileURL.path) {
                                 fileResults.append(fileResult)
                             }
@@ -237,8 +234,12 @@ public class Finder {
 
     private func getSortByFilePath() -> (FileResult, FileResult) -> Bool {
         { (fr1: FileResult, fr2: FileResult) -> Bool in
-            let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr1.filePath.lowercased() : fr1.filePath)
-            let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr2.filePath.lowercased() : fr2.filePath)
+            let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive
+                                              ? fr1.filePath.lowercased()
+                                              : fr1.filePath)
+            let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive
+                                              ? fr2.filePath.lowercased()
+                                              : fr2.filePath)
             if p1 == p2 {
                 return f1 < f2
             }
@@ -248,8 +249,12 @@ public class Finder {
 
     private func getSortByFileName() -> (FileResult, FileResult) -> Bool {
         { (fr1: FileResult, fr2: FileResult) -> Bool in
-            let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr1.filePath.lowercased() : fr1.filePath)
-            let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive ? fr2.filePath.lowercased() : fr2.filePath)
+            let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive
+                                              ? fr1.filePath.lowercased()
+                                              : fr1.filePath)
+            let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive
+                                              ? fr2.filePath.lowercased()
+                                              : fr2.filePath)
             if f1 == f2 {
                 return p1 < p2
             }

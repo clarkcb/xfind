@@ -55,7 +55,7 @@ async def main():
         finder = Finder(settings)
         file_results = await finder.find()
 
-        if settings.list_dirs:
+        if settings.print_dirs:
             dirs = get_dir_results(file_results)
             if dirs:
                 log(f'\nMatching directories ({len(dirs)}):')
@@ -64,7 +64,7 @@ async def main():
             else:
                 log('\nMatching directories: 0')
 
-        if settings.list_files:
+        if settings.print_files:
             if file_results:
                 log(f'\nMatching files ({len(file_results)}):')
                 for f in file_results:

@@ -35,8 +35,6 @@ module RbFind
     attr_accessor :in_file_types
     attr_accessor :include_archives
     attr_accessor :include_hidden
-    attr_accessor :list_dirs
-    attr_accessor :list_files
     attr_accessor :max_depth
     attr_accessor :max_last_mod
     attr_accessor :max_size
@@ -49,10 +47,12 @@ module RbFind
     attr_accessor :out_extensions
     attr_accessor :out_file_patterns
     attr_accessor :out_file_types
+    attr_accessor :paths
+    attr_accessor :print_dirs
+    attr_accessor :print_files
     attr_accessor :print_usage
     attr_accessor :print_version
     attr_accessor :recursive
-    attr_accessor :paths
     attr_accessor :sort_by
     attr_accessor :sort_case_insensitive
     attr_accessor :sort_descending
@@ -63,14 +63,14 @@ module RbFind
       @debug = false
       @include_archives = false
       @include_hidden = false
-      @list_dirs = false
-      @list_files = false
       @max_depth = -1
       @max_last_mod = nil
       @max_size = 0
       @min_depth = -1
       @min_last_mod = nil
       @min_size = 0
+      @print_dirs = false
+      @print_files = false
       @print_usage = false
       @print_version = false
       @recursive = true
@@ -187,8 +187,6 @@ module RbFind
         ', ' + file_types_to_s('in_file_types', @in_file_types) +
         ", include_archives=#{@include_archives}" +
         ", include_hidden=#{@include_hidden}" +
-        ", list_dirs=#{@list_dirs}" +
-        ", list_files=#{@list_files}" +
         ", max_depth=#{@max_depth}" +
         ", max_last_mod=#{last_mod_to_s(@max_last_mod)}" +
         ", max_size=#{@max_size}" +
@@ -202,6 +200,8 @@ module RbFind
         ', ' + list_to_s('out_file_patterns', @out_file_patterns.map { |p| p.source }) +
         ', ' + file_types_to_s('out_file_types', @out_file_types) +
         ', ' + list_to_s('paths', @paths) +
+        ", print_dirs=#{@print_dirs}" +
+        ", print_files=#{@print_files}" +
         ", print_usage=#{@print_usage}" +
         ", print_version=#{@print_version}" +
         ", recursive=#{@recursive}" +

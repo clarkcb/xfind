@@ -30,8 +30,6 @@ sub new {
         in_file_types => [],
         include_archives => 0,
         include_hidden => 0,
-        list_dirs => 0,
-        list_files => 0,
         max_depth => -1,
         max_last_mod => 0,
         max_size => 0,
@@ -44,6 +42,8 @@ sub new {
         out_extensions => [],
         out_file_patterns => [],
         out_file_types => [],
+        print_dirs => 0,
+        print_files => 0,
         print_usage => 0,
         print_version => 0,
         recursive => 1,
@@ -71,7 +71,7 @@ sub set_property {
 
 sub set_sort_by {
     my ($self, $name) = @_;
-    $self->{sort_by} = plfind::SortBy->name_to_sort_by($name);
+    $self->{sort_by} = plfind::SortBy::name_to_sort_by($name);
 }
 
 sub add_exts {
@@ -137,8 +137,6 @@ sub to_string {
         ', in_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_file_patterns}) .
         ', in_file_types=' . plfind::common::file_types_aref_to_string($self->{in_file_types}) .
         ', include_archives=' . plfind::common::bool_to_string($self->{include_archives}) .
-        ', list_dirs=' . plfind::common::bool_to_string($self->{list_dirs}) .
-        ', list_files=' . plfind::common::bool_to_string($self->{list_files}) .
         ', max_depth=' . $self->{max_depth} .
         ', max_last_mod=' . plfind::common::datetime_to_string($self->{max_last_mod}) .
         ', max_size=' . $self->{max_size} .
@@ -152,6 +150,8 @@ sub to_string {
         ', out_file_patterns=' . plfind::common::strings_aref_to_string($self->{out_file_patterns}) .
         ', out_file_types=' . plfind::common::file_types_aref_to_string($self->{out_file_types}) .
         ', paths=' . plfind::common::strings_aref_to_string($self->{paths}) .
+        ', print_dirs=' . plfind::common::bool_to_string($self->{print_dirs}) .
+        ', print_files=' . plfind::common::bool_to_string($self->{print_files}) .
         ', print_usage=' . plfind::common::bool_to_string($self->{print_usage}) .
         ', print_version=' . plfind::common::bool_to_string($self->{print_version}) .
         ', recursive=' . plfind::common::bool_to_string($self->{recursive}) .

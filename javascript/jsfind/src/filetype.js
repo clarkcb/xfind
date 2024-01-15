@@ -1,4 +1,3 @@
-/*jshint esnext: true */
 /*
  * filetype.js
  *

@@ -85,10 +85,10 @@ fn find(args: Iter<String>) {
 
             match finder.find() {
                 Ok(file_results) => {
-                    if finder.settings.list_dirs() {
+                    if finder.settings.print_dirs() {
                         print_matching_dirs(&file_results);
                     }
-                    if finder.settings.list_files() {
+                    if finder.settings.print_files() {
                         print_matching_files(&file_results);
                     }
                 }

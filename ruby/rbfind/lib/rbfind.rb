@@ -60,7 +60,7 @@ def find(options, settings)
     end
   file_results = finder.find
 
-  if settings.list_dirs
+  if settings.print_dirs
     find_dirs = file_results.map(&:path).uniq.sort
     if find_dirs.empty?
       RbFind::log("\nMatching directories: 0")
@@ -72,7 +72,7 @@ def find(options, settings)
     end
   end
 
-  if settings.list_files
+  if settings.print_files
     if file_results.empty?
       RbFind::log("\nMatching files: 0")
     else

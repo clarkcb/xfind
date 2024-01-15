@@ -9,8 +9,8 @@ void main() {
     expect(settings.debug, false);
     expect(settings.includeArchives, false);
     expect(settings.includeHidden, false);
-    expect(settings.listDirs, false);
-    expect(settings.listFiles, true);
+    expect(settings.printDirs, false);
+    expect(settings.printFiles, true);
     expect(settings.printUsage, false);
     expect(settings.printVersion, false);
     expect(settings.recursive, true);

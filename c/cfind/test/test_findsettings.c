@@ -18,8 +18,6 @@ void test_default_settings(void)
     assert(settings->in_file_types == NULL);
     assert(settings->include_archives == 0);
     assert(settings->include_hidden == 0);
-    assert(settings->list_dirs == 0);
-    assert(settings->list_files == 0);
     assert(settings->max_last_mod == 0L);
     assert(settings->max_size == 0L);
     assert(settings->min_last_mod == 0L);
@@ -31,6 +29,8 @@ void test_default_settings(void)
     assert(settings->out_file_patterns == NULL);
     assert(settings->out_file_types == NULL);
     assert(settings->paths == NULL);
+    assert(settings->print_dirs == 0);
+    assert(settings->print_files == 0);
     assert(settings->print_usage == 0);
     assert(settings->print_version == 0);
     assert(settings->recursive == 1);

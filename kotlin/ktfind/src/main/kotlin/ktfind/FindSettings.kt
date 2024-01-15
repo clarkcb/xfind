@@ -51,8 +51,6 @@ data class FindSettings(val archivesOnly: Boolean,
                         val inFileTypes: Set<FileType>,
                         val includeArchives: Boolean,
                         val includeHidden: Boolean,
-                        val listDirs: Boolean,
-                        val listFiles: Boolean,
                         val maxDepth: Int,
                         val maxLastMod: LocalDateTime?,
                         val maxSize: Int,
@@ -66,6 +64,8 @@ data class FindSettings(val archivesOnly: Boolean,
                         val outFilePatterns: Set<Regex>,
                         val outFileTypes: Set<FileType>,
                         val paths: Set<String>,
+                        val printDirs: Boolean,
+                        val printFiles: Boolean,
                         val printUsage: Boolean,
                         val printVersion: Boolean,
                         val recursive: Boolean,
@@ -85,8 +85,6 @@ data class FindSettings(val archivesOnly: Boolean,
                 "inFileTypes=${fileTypeSetToString(inFileTypes)}, " +
                 "includeArchives=$includeArchives, " +
                 "includeHidden=$includeHidden, " +
-                "listDirs=$listDirs, " +
-                "listFiles=$listFiles, " +
                 "maxDepth=$maxDepth, " +
                 "maxLastMod=${maxLastMod ?: 0}, " +
                 "maxSize=$maxSize, " +
@@ -100,6 +98,8 @@ data class FindSettings(val archivesOnly: Boolean,
                 "outFilePatterns=${patternSetToString(outFilePatterns)}, " +
                 "outFileTypes=${fileTypeSetToString(outFileTypes)}, " +
                 "paths=${stringSetToString(paths)}, " +
+                "printDirs=$printDirs, " +
+                "printFiles=$printFiles, " +
                 "printUsage=$printUsage, " +
                 "printVersion=$printVersion, " +
                 "recursive=$recursive, " +
@@ -157,8 +157,6 @@ fun getDefaultSettings() : FindSettings {
         inFileTypes = linkedSetOf(),
         includeArchives = false,
         includeHidden = false,
-        listDirs = false,
-        listFiles = false,
         maxDepth = -1,
         maxLastMod = null,
         maxSize = 0,
@@ -172,6 +170,8 @@ fun getDefaultSettings() : FindSettings {
         outFilePatterns = linkedSetOf(),
         outFileTypes = linkedSetOf(),
         paths = linkedSetOf(),
+        printDirs = false,
+        printFiles = false,
         printUsage = false,
         printVersion = false,
         recursive = true,

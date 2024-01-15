@@ -34,8 +34,6 @@ public class FindSettings {
     private final Set<FileType> inFileTypes;
     private boolean includeArchives;
     private boolean includeHidden;
-    private boolean listDirs;
-    private boolean listFiles;
     private int maxDepth;
     private LocalDateTime maxLastMod;
     private int maxSize;
@@ -49,6 +47,8 @@ public class FindSettings {
     private final Set<Pattern> outFilePatterns;
     private final Set<FileType> outFileTypes;
     private Set<String> paths;
+    private boolean printDirs;
+    private boolean printFiles;
     private boolean printUsage;
     private boolean printVersion;
     private boolean recursive;
@@ -68,8 +68,6 @@ public class FindSettings {
         this.inFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES;
         this.includeHidden = DefaultFindSettings.INCLUDE_HIDDEN;
-        this.listDirs = DefaultFindSettings.LIST_DIRS;
-        this.listFiles = DefaultFindSettings.LIST_FILES;
         this.maxDepth = DefaultFindSettings.MAX_DEPTH;
         this.maxLastMod = null;
         this.maxSize = DefaultFindSettings.MAX_SIZE;
@@ -83,6 +81,8 @@ public class FindSettings {
         this.outFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.outFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.paths = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
+        this.printDirs = DefaultFindSettings.PRINT_DIRS;
+        this.printFiles = DefaultFindSettings.PRINT_FILES;
         this.printUsage = DefaultFindSettings.PRINT_USAGE;
         this.printVersion = DefaultFindSettings.PRINT_VERSION;
         this.recursive = DefaultFindSettings.RECURSIVE;
@@ -140,22 +140,6 @@ public class FindSettings {
 
     public final void setIncludeArchives(final boolean includeArchives) {
         this.includeArchives = includeArchives;
-    }
-
-    public final boolean getListDirs() {
-        return this.listDirs;
-    }
-
-    public final void setListDirs(final boolean listDirs) {
-        this.listDirs = listDirs;
-    }
-
-    public final boolean getListFiles() {
-        return this.listFiles;
-    }
-
-    public final void setListFiles(final boolean listFiles) {
-        this.listFiles = listFiles;
     }
 
     public int getMaxDepth() {
@@ -227,6 +211,22 @@ public class FindSettings {
 
     public void setMinSize(final int minSize) {
         this.minSize = minSize;
+    }
+
+    public final boolean getPrintDirs() {
+        return this.printDirs;
+    }
+
+    public final void setPrintDirs(final boolean printDirs) {
+        this.printDirs = printDirs;
+    }
+
+    public final boolean getPrintFiles() {
+        return this.printFiles;
+    }
+
+    public final void setPrintFiles(final boolean printFiles) {
+        this.printFiles = printFiles;
     }
 
     public final boolean getPrintUsage() {
@@ -478,8 +478,6 @@ public class FindSettings {
                 + ", inFileTypes=" + fileTypeSetToString(this.inFileTypes)
                 + ", includeArchives=" + this.includeArchives
                 + ", includeHidden=" + this.includeHidden
-                + ", listDirs=" + this.listDirs
-                + ", listFiles=" + this.listFiles
                 + ", maxDepth=" + this.maxDepth
                 + ", maxLastMod=" + localDateTimeToString(this.maxLastMod)
                 + ", maxSize=" + this.maxSize
@@ -493,6 +491,8 @@ public class FindSettings {
                 + ", outFilePatterns=" + patternSetToString(this.outFilePatterns)
                 + ", outFileTypes=" + fileTypeSetToString(this.outFileTypes)
                 + ", paths=" + stringSetToString(this.paths)
+                + ", printDirs=" + this.printDirs
+                + ", printFiles=" + this.printFiles
                 + ", printUsage=" + this.printUsage
                 + ", printVersion=" + this.printVersion
                 + ", recursive=" + this.recursive

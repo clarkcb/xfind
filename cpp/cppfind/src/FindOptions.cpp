@@ -42,10 +42,11 @@ namespace cppfind {
                 {"help", [](bool b, FindSettings& ss) { ss.print_usage(b); }},
                 {"includearchives", [](bool b, FindSettings& ss) { ss.include_archives(b); }},
                 {"includehidden", [](bool b, FindSettings& ss) { ss.include_hidden(b); }},
-                {"listdirs", [](bool b, FindSettings& ss) { ss.list_dirs(b); }},
-                {"listfiles", [](bool b, FindSettings& ss) { ss.list_files(b); }},
-                {"nolistfiles", [](bool b, FindSettings& ss) { ss.list_files(!b); }},
+                {"noprintdirs", [](bool b, FindSettings& ss) { ss.print_dirs(!b); }},
+                {"noprintfiles", [](bool b, FindSettings& ss) { ss.print_files(!b); }},
                 {"norecursive", [](bool b, FindSettings& ss) { ss.recursive(!b); }},
+                {"printdirs", [](bool b, FindSettings& ss) { ss.print_dirs(b); }},
+                {"printfiles", [](bool b, FindSettings& ss) { ss.print_files(b); }},
                 {"recursive", [](bool b, FindSettings& ss) { ss.recursive(b); }},
                 {"sort-ascending", [](bool b, FindSettings& ss) { ss.sort_descending(!b); }},
                 {"sort-caseinsensitive", [](bool b, FindSettings& ss) { ss.sort_case_insensitive(b); }},
@@ -111,8 +112,8 @@ namespace cppfind {
     FindSettings* FindOptions::settings_from_args(int &argc, char **argv) {
         auto settings = new FindSettings();
 
-        // set list_files to true since we are running the executable
-        settings->list_files(true);
+        // set print_files to true since we are running the executable
+        settings->print_files(true);
 
         std::deque<std::string> arg_deque;
         unsigned int i;

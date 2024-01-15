@@ -38,8 +38,6 @@ typedef struct FindSettings {
     IntNode *in_file_types;
     unsigned short include_archives : 1;
     unsigned short include_hidden : 1;
-    unsigned short list_dirs : 1;
-    unsigned short list_files : 1;
     int max_depth;
     long max_last_mod;
     unsigned long max_size;
@@ -53,6 +51,8 @@ typedef struct FindSettings {
     RegexNode *out_file_patterns;
     IntNode *out_file_types;
     StringNode *paths;
+    unsigned short print_dirs : 1;
+    unsigned short print_files : 1;
     unsigned short print_usage : 1;
     unsigned short print_version : 1;
     unsigned short recursive : 1;

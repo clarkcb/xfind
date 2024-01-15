@@ -84,10 +84,10 @@ public class FindMain {
                 finder.validateSettings();
                 var fileResults = finder.find();
 
-                if (settings.getListDirs()) {
+                if (settings.getPrintDirs()) {
                     printMatchingDirs(fileResults);
                 }
-                if (settings.getListFiles()) {
+                if (settings.getPrintFiles()) {
                     printMatchingFiles(fileResults);
                 }
 

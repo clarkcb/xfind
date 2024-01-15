@@ -13,8 +13,8 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.debug == DefaultSettings.debug)
     assert(settings.includeArchives == DefaultSettings.includeArchives)
     assert(settings.includeHidden == DefaultSettings.includeHidden)
-    assert(settings.listDirs == DefaultSettings.listDirs)
-    assert(settings.listFiles)
+    assert(settings.printDirs == DefaultSettings.printDirs)
+    assert(settings.printFiles)
     assert(settings.printUsage == DefaultSettings.printUsage)
     assert(settings.printVersion == DefaultSettings.printVersion)
     assert(settings.verbose == DefaultSettings.verbose)
@@ -162,20 +162,20 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(longSettings.inFilePatterns.map(_.toString()).contains("Find"))
   }
 
-  // test --listdirs
-  test("""test settingsFromArgs with args="--listdirs" """) {
-    val args = Array("--listdirs") ++ requiredArgs
+  // test --printdirs
+  test("""test settingsFromArgs with args="--printdirs" """) {
+    val args = Array("--printdirs") ++ requiredArgs
     println("args: " + args.toList)
     val settings = FindOptions.settingsFromArgs(args)
-    assert(settings.listDirs)
+    assert(settings.printDirs)
   }
 
-  // test --listfiles
-  test("""test settingsFromArgs with args="--listfiles" """) {
-    val args = Array("--listfiles") ++ requiredArgs
+  // test --printfiles
+  test("""test settingsFromArgs with args="--printfiles" """) {
+    val args = Array("--printfiles") ++ requiredArgs
     println("args: " + args.toList)
     val settings = FindOptions.settingsFromArgs(args)
-    assert(settings.listFiles)
+    assert(settings.printFiles)
   }
 
   // test -Z / --excludearchives

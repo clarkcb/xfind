@@ -20,15 +20,18 @@ use constant {
 };
 
 sub name_to_sort_by {
-    my ($self, $name) = @_;
+    my ($name) = @_;
     my $lname = lc($name);
     if ($lname eq 'filename' || $lname eq 'name') {
-        $self->{sort_by} = plfind::SortBy->FILENAME;
-    } elsif ($lname eq 'filesize' || $lname eq 'size') {
-        $self->{sort_by} = plfind::SortBy->FILESIZE;
-    } elsif ($lname eq 'filetype' || $lname eq 'type') {
-        $self->{sort_by} = plfind::SortBy->FILETYPE;
-    } elsif ($lname eq 'lastmod') {
+        return plfind::SortBy->FILENAME;
+    }
+    if ($lname eq 'filesize' || $lname eq 'size') {
+        return plfind::SortBy->FILESIZE;
+    }
+    if ($lname eq 'filetype' || $lname eq 'type') {
+        return plfind::SortBy->FILETYPE;
+    }
+    if ($lname eq 'lastmod') {
         return plfind::SortBy->LASTMOD;
     }
     return plfind::SortBy->FILEPATH;

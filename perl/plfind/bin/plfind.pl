@@ -98,12 +98,12 @@ sub main {
     my $file_results = $finder->find();
 
     # print matching dirs
-    if ($settings->{list_dirs}) {
+    if ($settings->{print_dirs}) {
         print_matching_dirs($file_results);
     }
 
     # print matching files
-    if ($settings->{list_files}) {
+    if ($settings->{print_files}) {
         print_matching_files($file_results);
     }
 }

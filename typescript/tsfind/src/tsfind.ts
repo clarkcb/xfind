@@ -43,10 +43,10 @@ function findMain() {
             const finder: Finder = new Finder(settings);
             const fileResults = await finder.find();
 
-            if (settings.listDirs) {
+            if (settings.printDirs) {
                 finder.printMatchingDirs(fileResults);
             }
-            if (settings.listFiles) {
+            if (settings.printFiles) {
                 finder.printMatchingFiles(fileResults);
             }
 

@@ -54,27 +54,27 @@ class FindOptions:
             'includehidden':
                 lambda b, settings:
                 settings.set_property('include_hidden', b),
-            'listdirs':
-                lambda b, settings:
-                settings.set_property('list_dirs', b),
-            'listfiles':
-                lambda b, settings:
-                settings.set_property('list_files', b),
             'noincludearchives':
                 lambda b, settings:
                 settings.set_property('include_archives', not b),
-            'nolistfiles':
+            'noprintdirs':
                 lambda b, settings:
-                settings.set_property('list_files', not b),
-            'noprintmatches':
+                settings.set_property('print_dirs', not b),
+            'noprintfiles':
                 lambda b, settings:
-                settings.set_property('list_files', not b),
+                settings.set_property('print_files', not b),
             'norecursive':
                 lambda b, settings:
                 settings.set_property('recursive', not b),
+            'printdirs':
+                lambda b, settings:
+                settings.set_property('print_dirs', b),
+            'printfiles':
+                lambda b, settings:
+                settings.set_property('print_files', b),
             'printmatches':
                 lambda b, settings:
-                settings.set_property('list_files', b),
+                settings.set_property('print_files', b),
             'recursive':
                 lambda b, settings:
                 settings.set_property('recursive', b),
@@ -184,7 +184,7 @@ class FindOptions:
     def settings_from_file(self, file_path: str, settings: FindSettings):
         """Read settings from a JSON file"""
         assert os.path.exists(file_path), f'Settings file not found: {file_path}'
-        with open(file_path) as f:
+        with open(file_path, encoding='UTF-8') as f:
             json_str = f.read()
         self.settings_from_json(json_str, settings)
 
@@ -238,8 +238,8 @@ class FindOptions:
 
     def find_settings_from_args(self, args: List[str]) -> FindSettings:
         """Returns a FindSettings instance for a given list of args"""
-        # default list_files to True since running from command line
-        settings = FindSettings(list_files=True)
+        # default print_files to True since running from command line
+        settings = FindSettings(print_files=True)
         return self.update_settings_from_args(settings, args)
 
     def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:

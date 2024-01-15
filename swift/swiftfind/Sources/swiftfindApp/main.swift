@@ -45,7 +45,7 @@ func main() {
 
         let fileResults = finder.find()
 
-        if settings.listDirs {
+        if settings.printDirs {
             let dirs = getMatchingDirs(fileResults)
             if dirs.isEmpty {
                 logMsg("\nMatching directories: 0")
@@ -57,7 +57,7 @@ func main() {
             }
         }
 
-        if settings.listFiles {
+        if settings.printFiles {
             let files = getMatchingFiles(fileResults)
             if files.isEmpty {
                 logMsg("\nMatching files: 0")

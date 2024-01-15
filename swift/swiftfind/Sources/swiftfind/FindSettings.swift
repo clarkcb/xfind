@@ -8,14 +8,14 @@
 
 import Foundation
 
-fileprivate let sortByFilePathName = "filepath"
-fileprivate let sortByFileNameName = "filename"
-fileprivate let sortByNameName = "name"
-fileprivate let sortByFileSizeName = "filesize"
-fileprivate let sortBySizeName = "size"
-fileprivate let sortByFileTypeName = "filetype"
-fileprivate let sortByTypeName = "type"
-fileprivate let sortByLastModName = "lastmod"
+private let sortByFilePathName = "filepath"
+private let sortByFileNameName = "filename"
+private let sortByNameName = "name"
+private let sortByFileSizeName = "filesize"
+private let sortBySizeName = "size"
+private let sortByFileTypeName = "filetype"
+private let sortByTypeName = "type"
+private let sortByLastModName = "lastmod"
 
 public enum SortBy {
     case filePath, fileName, fileSize, fileType, lastMod
@@ -57,14 +57,14 @@ public enum DefaultFindSettings {
     public static let debug = false
     public static let includeArchives = false
     public static let includeHidden = false
-    public static let listDirs = false
-    public static let listFiles = false
     public static let maxDepth: Int64 = -1
     public static let maxLastMod: Date? = nil
     public static let maxSize: UInt64 = 0
     public static let minDepth: Int64 = -1
     public static let minLastMod: Date? = nil
     public static let minSize: UInt64 = 0
+    public static let printDirs = false
+    public static let printFiles = false
     public static let printUsage = false
     public static let printVersion = false
     public static let recursive = true
@@ -79,14 +79,14 @@ open class FindSettings: CustomStringConvertible {
     public var _debug: Bool = DefaultFindSettings.debug
     open var includeArchives: Bool = DefaultFindSettings.includeArchives
     open var includeHidden: Bool = DefaultFindSettings.includeHidden
-    open var listDirs: Bool = DefaultFindSettings.listDirs
-    open var listFiles: Bool = DefaultFindSettings.listFiles
     open var maxDepth: Int64 = DefaultFindSettings.maxDepth
     open var maxLastMod: Date? = DefaultFindSettings.maxLastMod
     open var maxSize: UInt64 = DefaultFindSettings.maxSize
     open var minDepth: Int64 = DefaultFindSettings.minDepth
     open var minLastMod: Date? = DefaultFindSettings.minLastMod
     open var minSize: UInt64 = DefaultFindSettings.minSize
+    open var printDirs: Bool = DefaultFindSettings.printDirs
+    open var printFiles: Bool = DefaultFindSettings.printFiles
     open var printUsage: Bool = DefaultFindSettings.printUsage
     open var printVersion: Bool = DefaultFindSettings.printVersion
     open var recursive: Bool = DefaultFindSettings.recursive
@@ -142,11 +142,12 @@ open class FindSettings: CustomStringConvertible {
     public func addInFileType(_ typeName: String) {
         let fileType = FileTypes.fromName(typeName)
         inFileTypes.append(fileType)
+        // TODO: if we do this for objc/swift we need to do it for all of other languages
         // if text, add text sub-types
-        if fileType == FileType.text {
-            inFileTypes.append(FileType.code)
-            inFileTypes.append(FileType.xml)
-        }
+//        if fileType == FileType.text {
+//            inFileTypes.append(FileType.code)
+//            inFileTypes.append(FileType.xml)
+//        }
     }
 
     public func addOutArchiveExtension(_ exts: String) {
@@ -176,11 +177,12 @@ open class FindSettings: CustomStringConvertible {
     public func addOutFileType(_ typeName: String) {
         let fileType = FileTypes.fromName(typeName)
         outFileTypes.append(fileType)
+        // TODO: if we do this for objc/swift we need to do it for all of other languages
         // if text, add text sub-types
-        if fileType == FileType.text {
-            outFileTypes.append(FileType.code)
-            outFileTypes.append(FileType.xml)
-        }
+//        if fileType == FileType.text {
+//            outFileTypes.append(FileType.code)
+//            outFileTypes.append(FileType.xml)
+//        }
     }
 
     public func setMaxDepthFromString(_ maxDepthStr: String) {
@@ -257,8 +259,6 @@ open class FindSettings: CustomStringConvertible {
             ", inFileTypes=\(arrayToString(inFileTypes.map { FileTypes.toName($0) }, false))" +
             ", includeArchives=\(includeArchives)" +
             ", includeHidden=\(includeHidden)" +
-            ", listDirs=\(listDirs)" +
-            ", listFiles=\(listFiles)" +
             ", maxDepth=\(maxDepth)" +
             ", maxLastMod=\(dateToString(maxLastMod))" +
             ", maxSize=\(maxSize)" +
@@ -272,6 +272,8 @@ open class FindSettings: CustomStringConvertible {
             ", outFilePatterns=\(arrayToString(outFilePatterns))" +
             ", outFileTypes=\(arrayToString(outFileTypes.map { FileTypes.toName($0) }, false))" +
             ", paths=\(setToString(paths))" +
+            ", printDirs=\(printDirs)" +
+            ", printFiles=\(printFiles)" +
             ", printUsage=\(printUsage)" +
             ", printVersion=\(printVersion)" +
             ", recursive=\(recursive)" +

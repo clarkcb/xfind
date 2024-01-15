@@ -255,7 +255,7 @@ error_t find(const FindSettings *settings, FileResults *results)
 
         if (stat(expanded, &st) == -1) {
             // this shouldn't happen if we made it this far
-            err = errno;
+            err = (error_t)errno;
             destroy_finder(finder);
             if (err == ENOENT) err = E_STARTPATH_NOT_FOUND;
             return err;

@@ -16,7 +16,7 @@ module RbFind
       @options = []
       @arg_action_dict = {}
       @bool_flag_action_dict = {}
-      @longarg_dict = {}
+      @long_arg_dict = {}
       set_actions
       set_options_from_json
       # set_options_from_xml
@@ -25,20 +25,20 @@ module RbFind
 
     def find_settings_from_args(args)
       settings = FindSettings.new
-      # default list_files to true since running as cli
-      settings.list_files = true
+      # default print_files to true since running as cli
+      settings.print_files = true
       until args.empty?
         arg = args.shift
         if arg.start_with?('-')
           arg = arg[1..arg.length] while arg && arg.start_with?('-')
-          longarg = @longarg_dict[arg]
-          if @arg_action_dict.key?(longarg)
+          long_arg = @long_arg_dict[arg]
+          if @arg_action_dict.key?(long_arg)
             raise FindError, "Missing value for option #{arg}" if args.empty?
-            argval = args.shift
-            @arg_action_dict[longarg].call(argval, settings)
-          elsif @bool_flag_action_dict.key?(longarg)
-            @bool_flag_action_dict[longarg].call(true, settings)
-            return settings if %w[help version].include?(longarg)
+            arg_val = args.shift
+            @arg_action_dict[long_arg].call(arg_val, settings)
+          elsif @bool_flag_action_dict.key?(long_arg)
+            @bool_flag_action_dict[long_arg].call(true, settings)
+            return settings if %w[help version].include?(long_arg)
           else
             raise FindError, "Invalid option: #{arg}"
           end
@@ -94,8 +94,8 @@ module RbFind
       longest = 0
       @options.each do |opt|
         opt_string = ''
-        opt_string << "-#{opt.shortarg}," unless opt.shortarg.empty?
-        opt_string << "--#{opt.longarg}"
+        opt_string << "-#{opt.short_arg}," unless opt.short_arg.empty?
+        opt_string << "--#{opt.long_arg}"
         longest = opt_string.length > longest ? opt_string.length : longest
         opt_strings.push(opt_string)
         opt_descs.push(opt.desc)
@@ -187,10 +187,11 @@ module RbFind
         help: ->(b, settings) { settings.print_usage = b },
         includearchives: ->(b, settings) { settings.include_archives = b },
         includehidden: ->(b, settings) { settings.include_hidden = b },
-        listdirs: ->(b, settings) { settings.list_dirs = b },
-        listfiles: ->(b, settings) { settings.list_files = b },
-        nolistfiles: ->(b, settings) { settings.list_files = !b },
+        noprintdirs: ->(b, settings) { settings.print_dirs = !b },
+        noprintfiles: ->(b, settings) { settings.print_files = !b },
         norecursive: ->(b, settings) { settings.recursive = !b },
+        printdirs: ->(b, settings) { settings.print_dirs = b },
+        printfiles: ->(b, settings) { settings.print_files = b },
         recursive: ->(b, settings) { settings.recursive = b },
         'sort-ascending': ->(b, settings) { settings.sort_descending = !b },
         'sort-caseinsensitive': ->(b, settings) { settings.sort_case_insensitive = b },
@@ -199,7 +200,7 @@ module RbFind
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.print_version = b }
       }
-      @longarg_dict = {}
+      @long_arg_dict = {}
     end
 
     def set_options_from_json
@@ -226,8 +227,8 @@ module RbFind
             raise FindError, "Unknown find option: #{long}"
           end
         @options.push(FindOption.new(short, long, desc, func))
-        @longarg_dict[long] = long_sym
-        @longarg_dict[short] = long_sym if short
+        @long_arg_dict[long] = long_sym
+        @long_arg_dict[short] = long_sym if short
       end
     rescue StandardError => e
       raise FindError, "#{e} (file: #{findoptions_json_path})"

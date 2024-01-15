@@ -10,8 +10,6 @@ const {FileType} = require('./filetype');
 const {FileUtil} = require('./fileutil');
 
 class FileTypes {
-    'use strict'
-
     constructor() {
         [this.fileTypeExtMap, this.fileTypeNameMap] = (() => {
             let fs = require('fs');

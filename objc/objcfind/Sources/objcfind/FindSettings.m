@@ -14,8 +14,8 @@
         self.debug = false;
         self.includeArchives = false;
         self.includeHidden = false;
-        self.listDirs = false;
-        self.listFiles = false;
+        self.printDirs = false;
+        self.printFiles = false;
         self.printUsage = false;
         self.printVersion = false;
         self.recursive = true;
@@ -60,8 +60,6 @@
     [d appendFormat:@", inFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.inFileTypes]];
     [d appendFormat:@", includeArchives=%@", boolToNSString(self.includeArchives)];
     [d appendFormat:@", includeHidden=%@", boolToNSString(self.includeHidden)];
-    [d appendFormat:@", listDirs=%@", boolToNSString(self.listDirs)];
-    [d appendFormat:@", listFiles=%@", boolToNSString(self.listFiles)];
     [d appendFormat:@", maxDepth=%ld", (long)self.maxDepth];
     [d appendFormat:@", maxLastMod=%@", [FindSettings lastModToNSString:self.maxLastMod]];
     [d appendFormat:@", maxSize=%lu", (long)self.maxSize];
@@ -75,6 +73,8 @@
     [d appendFormat:@", outFilePatterns=%@", arrayToNSString(self.outFilePatterns)];
     [d appendFormat:@", outFileTypes=%@", [FindSettings fileTypesArrayToNSString:self.outFileTypes]];
     [d appendFormat:@", paths=%@", arrayToNSString(self.paths)];
+    [d appendFormat:@", printDirs=%@", boolToNSString(self.printDirs)];
+    [d appendFormat:@", printFiles=%@", boolToNSString(self.printFiles)];
     [d appendFormat:@", printUsage=%@", boolToNSString(self.printUsage)];
     [d appendFormat:@", printVersion=%@", boolToNSString(self.printVersion)];
     [d appendFormat:@", recursive=%@", boolToNSString(self.recursive)];
@@ -138,11 +138,12 @@
 - (void) addFileType:(NSString *)typeName toArr:(NSMutableArray *)arr {
     FileType fileType = [FileTypes fromName:typeName];
     [arr addObject:[NSNumber numberWithInt:fileType]];
+    // TODO: if we do this for objc/swift we need to do it for all of other languages
     // if fileType is FileTypeText, add text sub-types
-    if (fileType == FileTypeText) {
-        [arr addObject:[NSNumber numberWithInt:FileTypeCode]];
-        [arr addObject:[NSNumber numberWithInt:FileTypeXml]];
-    }
+//    if (fileType == FileTypeText) {
+//        [arr addObject:[NSNumber numberWithInt:FileTypeCode]];
+//        [arr addObject:[NSNumber numberWithInt:FileTypeXml]];
+//    }
 }
 
 - (void) addInFileType:(NSString *)typeName {

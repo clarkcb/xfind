@@ -73,7 +73,7 @@ impl FindOptions {
 
     pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
         let mut settings = FindSettings::default();
-        settings.set_list_files(true); // default to true when running from main
+        settings.set_print_files(true); // default to true when running from main
         match serde_json::from_str(json_string) {
             Ok(value) => {
                 if let Err(error) = self.settings_from_value(&value, &mut settings) {
@@ -149,7 +149,7 @@ impl FindOptions {
     ) -> Result<FindSettings, FindError> {
         args.next(); // the first arg is assumed to be the executable name/path
         let mut settings = FindSettings::default();
-        settings.set_list_files(true); // default to true when running from main
+        settings.set_print_files(true); // default to true when running from main
 
         let long_map = self.get_long_map();
 
@@ -480,20 +480,24 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(b))),
     );
     flag_map.insert(
-        "listdirs".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_dirs(b))),
+        "noprintdirs".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_dirs(!b))),
     );
     flag_map.insert(
-        "listfiles".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_files(b))),
-    );
-    flag_map.insert(
-        "nolistfiles".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_list_files(!b))),
+        "noprintfiles".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_files(!b))),
     );
     flag_map.insert(
         "norecursive".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(!b))),
+    );
+    flag_map.insert(
+        "printdirs".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_dirs(b))),
+    );
+    flag_map.insert(
+        "printfiles".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_files(b))),
     );
     flag_map.insert(
         "recursive".to_string(),
@@ -560,8 +564,8 @@ mod tests {
 
         // verify these defaults
         assert_eq!(settings.include_archives(), false);
-        assert_eq!(settings.list_dirs(), false);
-        assert_eq!(settings.list_files(), true);
+        assert_eq!(settings.print_dirs(), false);
+        assert_eq!(settings.print_files(), true);
 
         assert_eq!(settings.in_extensions().len(), 2);
         assert_eq!(settings.in_extensions()[0], String::from("php"));
@@ -660,8 +664,6 @@ mod tests {
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
-                assert!(settings.list_dirs());
-                assert!(settings.list_files());
                 assert!(settings.out_dir_patterns().len() > 7);
                 assert_eq!(settings.out_dir_patterns()[0].to_string(), String::from("_"));
                 assert_eq!(settings.paths().len(), 1);
@@ -669,6 +671,8 @@ mod tests {
                     settings.paths()[0],
                     String::from("~/src/xfind/")
                 );
+                assert!(settings.print_dirs());
+                assert!(settings.print_files());
                 assert!(settings.verbose());
             },
             Err(error) => {

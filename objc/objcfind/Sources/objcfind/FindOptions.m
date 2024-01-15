@@ -219,10 +219,11 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
             [^void (BOOL b, FindSettings *ss) { ss.printUsage = b; } copy], @"help",
             [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy], @"includearchives",
             [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy], @"includehidden",
-            [^void (BOOL b, FindSettings *ss) { ss.listDirs = b; } copy], @"listdirs",
-            [^void (BOOL b, FindSettings *ss) { ss.listFiles = b; } copy], @"listfiles",
-            [^void (BOOL b, FindSettings *ss) { ss.listFiles = !b; } copy], @"nolistfiles",
+            [^void (BOOL b, FindSettings *ss) { ss.printDirs = !b; } copy], @"noprintdirs",
+            [^void (BOOL b, FindSettings *ss) { ss.printFiles = !b; } copy], @"noprintfiles",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
+            [^void (BOOL b, FindSettings *ss) { ss.printDirs = b; } copy], @"printdirs",
+            [^void (BOOL b, FindSettings *ss) { ss.printFiles = b; } copy], @"printfiles",
             [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
             [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
             [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = b; } copy], @"sort-caseinsensitive",
@@ -235,8 +236,8 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
 
 - (FindSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
     FindSettings *settings = [[FindSettings alloc] init];
-    // default listFiles to true since running as cli
-    settings.listFiles = true;
+    // default printFiles to true since running as cli
+    settings.printFiles = true;
 
     int i = 1;
     while (i < [args count]) {

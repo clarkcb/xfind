@@ -31,8 +31,8 @@ sub test_no_args {
     ok(!$settings->{debug}, 'debug is false by default');
     ok(!$settings->{include_archives}, 'include_archives is false by default');
     ok(!$settings->{include_hidden}, 'include_hidden is false by default');
-    ok(!$settings->{list_dirs}, 'list_dirs is false by default');
-    ok($settings->{list_files}, 'list_files is true by default');
+    ok(!$settings->{print_dirs}, 'print_dirs is false by default');
+    ok($settings->{print_files}, 'print_files is true by default');
     ok(!$settings->{print_usage}, 'print_usage is false by default');
     ok(!$settings->{print_version}, 'print_version is false by default');
     ok($settings->{recursive}, 'recursive is true by default');

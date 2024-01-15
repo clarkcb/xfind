@@ -38,12 +38,12 @@ func main() {
 	}
 
 	// print matching dirs
-	if settings.ListDirs() {
+	if settings.PrintDirs() {
 		fileResults.PrintMatchingDirs()
 	}
 
 	// print matching files (should default to true)
-	if settings.ListFiles() {
+	if settings.PrintFiles() {
 		fileResults.PrintMatchingFiles()
 	}
 }

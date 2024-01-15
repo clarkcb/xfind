@@ -13,13 +13,13 @@ import XCTest
 import swiftfind
 
 class FileUtilTests: XCTestCase {
-    override func setUp() {
-        super.setUp()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-    }
+//    override func setUp() {
+//        super.setUp()
+//    }
+//
+//    override func tearDown() {
+//        super.tearDown()
+//    }
 
     /* ==========================================================================
      * contractPath tests
@@ -224,6 +224,6 @@ class FileUtilTests: XCTestCase {
         ("testJoinPathDir", testJoinPathDir),
         ("testJoinPathFile", testJoinPathFile),
         ("testSplitPathDir", testSplitPathDir),
-        ("testSplitPathFile", testSplitPathFile),
+        ("testSplitPathFile", testSplitPathFile)
     ]
 }

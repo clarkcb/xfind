@@ -97,14 +97,16 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.includeHidden = b; },
             'help':
                 (b: boolean, settings: FindSettings) => { settings.printUsage = b; },
-            'listdirs':
-                (b: boolean, settings: FindSettings) => { settings.listDirs = b; },
-            'listfiles':
-                (b: boolean, settings: FindSettings) => { settings.listFiles = b; },
-            'nolistfiles':
-                (b: boolean, settings: FindSettings) => { settings.listFiles = !b; },
+            'noprintdirs':
+                (b: boolean, settings: FindSettings) => { settings.printDirs = !b; },
+            'noprintfiles':
+                (b: boolean, settings: FindSettings) => { settings.printFiles = !b; },
             'norecursive':
                 (b: boolean, settings: FindSettings) => { settings.recursive = !b; },
+            'printdirs':
+                (b: boolean, settings: FindSettings) => { settings.printDirs = b; },
+            'printfiles':
+                (b: boolean, settings: FindSettings) => { settings.printFiles = b; },
             'recursive':
                 (b: boolean, settings: FindSettings) => { settings.recursive = b; },
             'sort-ascending':
@@ -199,8 +201,8 @@ export class FindOptions {
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: FindSettings) => void): void {
         let err: Error | undefined = undefined;
         const settings: FindSettings = new FindSettings();
-        // default listFiles to true since it's being run from cmd line
-        settings.listFiles = true;
+        // default printFiles to true since it's being run from cmd line
+        settings.printFiles = true;
         while(args && !err) {
             let arg: string = args.shift() || '';
             if (!arg) {

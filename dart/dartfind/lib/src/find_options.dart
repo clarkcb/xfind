@@ -107,10 +107,11 @@ class FindOptions {
       'help': (bool b, FindSettings ss) => ss.printUsage = b,
       'includearchives': (bool b, FindSettings ss) => ss.includeArchives = b,
       'includehidden': (bool b, FindSettings ss) => ss.includeHidden = b,
-      'listdirs': (bool b, FindSettings ss) => ss.listDirs = b,
-      'listfiles': (bool b, FindSettings ss) => ss.listFiles = b,
-      'nolistfiles': (bool b, FindSettings ss) => ss.listFiles = !b,
+      'noprintdirs': (bool b, FindSettings ss) => ss.printDirs = !b,
+      'noprintfiles': (bool b, FindSettings ss) => ss.printFiles = !b,
       'norecursive': (bool b, FindSettings ss) => ss.recursive = !b,
+      'printdirs': (bool b, FindSettings ss) => ss.printDirs = b,
+      'printfiles': (bool b, FindSettings ss) => ss.printFiles = b,
       'printusage': (bool b, FindSettings ss) => ss.printUsage = b,
       'recursive': (bool b, FindSettings ss) => ss.recursive = b,
       'sort-ascending': (bool b, FindSettings ss) => ss.sortDescending = !b,
@@ -158,8 +159,8 @@ class FindOptions {
   Future<FindSettings> settingsFromArgs(List<String> args) async {
     return await ready.then((_) async {
       var settings = FindSettings();
-      // default listFiles to true since running as cli
-      settings.listFiles = true;
+      // default printFiles to true since running as cli
+      settings.printFiles = true;
       var it = args.iterator;
       while (it.moveNext()) {
         var arg = it.current;

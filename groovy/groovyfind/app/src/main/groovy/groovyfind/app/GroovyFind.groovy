@@ -74,10 +74,10 @@ class GroovyFind {
                 finder.validateSettings()
                 def fileResults = finder.find()
 
-                if (settings.listDirs) {
+                if (settings.printDirs) {
                     printMatchingDirs(fileResults)
                 }
-                if (settings.listFiles) {
+                if (settings.printFiles) {
                     printMatchingFiles(fileResults)
                 }
             } catch (FindException e) {

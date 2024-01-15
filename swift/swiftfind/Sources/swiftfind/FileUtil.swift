@@ -100,7 +100,8 @@ public enum FileUtil {
     }
 
     // gets files recursively under given path
-    public static func enumerator(forPath filePath: String, settings: FindSettings) -> FileManager.DirectoryEnumerator? {
+    public static func enumerator(forPath filePath: String,
+                                  settings: FindSettings) -> FileManager.DirectoryEnumerator? {
         let options = getOptions(forSettings: settings)
         return getFileManager().enumerator(at: URL(fileURLWithPath: expandPath(filePath)),
                                            includingPropertiesForKeys: [.isDirectoryKey, .isRegularFileKey],

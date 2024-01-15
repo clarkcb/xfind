@@ -9,12 +9,12 @@ public final class DefaultFindSettings {
     public static final boolean DEBUG = false;
     public static final boolean INCLUDE_ARCHIVES = false;
     public static final boolean INCLUDE_HIDDEN = false;
-    public static final boolean LIST_DIRS = false;
-    public static final boolean LIST_FILES = false;
     public static final int MAX_DEPTH = -1;
     public static final int MAX_SIZE = 0;
     public static final int MIN_DEPTH = -1;
     public static final int MIN_SIZE = 0;
+    public static final boolean PRINT_DIRS = false;
+    public static final boolean PRINT_FILES = false;
     public static final boolean PRINT_USAGE = false;
     public static final boolean PRINT_VERSION = false;
     public static final boolean RECURSIVE = true;

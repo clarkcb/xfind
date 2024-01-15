@@ -11,13 +11,13 @@ class FinderTests: XCTestCase {
         return settings
     }
 
-    override func setUp() {
-        super.setUp()
-    }
-
-    override func tearDown() {
-        super.tearDown()
-    }
+//    override func setUp() {
+//        super.setUp()
+//    }
+//
+//    override func tearDown() {
+//        super.tearDown()
+//    }
 
     /* ==========================================================================
      * isMatchingDir tests
@@ -310,18 +310,26 @@ class FinderTests: XCTestCase {
         ("testIsMatchingFile_DoesNotMatchInFilePattern_False", testIsMatchingFile_DoesNotMatchInFilePattern_False),
         ("testIsMatchingFile_MatchesOutFilePattern_False", testIsMatchingFile_MatchesOutFilePattern_False),
         ("testIsMatchingFile_DoesNotMatchOutFilePattern_True", testIsMatchingFile_DoesNotMatchOutFilePattern_True),
-        ("testIsMatchingArchiveFile_NoExtensionsNoPatterns_True", testIsMatchingArchiveFile_NoExtensionsNoPatterns_True),
+        ("testIsMatchingArchiveFile_NoExtensionsNoPatterns_True",
+         testIsMatchingArchiveFile_NoExtensionsNoPatterns_True),
         ("testIsMatchingArchiveFile_MatchesInExtension_True", testIsMatchingArchiveFile_MatchesInExtension_True),
-        ("testIsMatchingArchiveFile_DoesNotMatchInExtension_False", testIsMatchingArchiveFile_DoesNotMatchInExtension_False),
+        ("testIsMatchingArchiveFile_DoesNotMatchInExtension_False",
+         testIsMatchingArchiveFile_DoesNotMatchInExtension_False),
         ("testIsMatchingArchiveFile_MatchesOutExtension_False", testIsMatchingArchiveFile_MatchesOutExtension_False),
-        ("testIsMatchingArchiveFile_DoesNotMatchOutExtension_True", testIsMatchingArchiveFile_DoesNotMatchOutExtension_True),
-        ("testIsMatchingArchiveFile_MatchesInArchiveFilePattern_True", testIsMatchingArchiveFile_MatchesInArchiveFilePattern_True),
-        ("testIsMatchingArchiveFile_DoesNotMatchInArchiveFilePattern_False", testIsMatchingArchiveFile_DoesNotMatchInArchiveFilePattern_False),
-        ("testIsMatchingArchiveFile_MatchesOutArchiveFilePattern_False", testIsMatchingArchiveFile_MatchesOutArchiveFilePattern_False),
-        ("testIsMatchingArchiveFile_DoesNotMatchOutArchiveFilePattern_True", testIsMatchingArchiveFile_DoesNotMatchOutArchiveFilePattern_True),
+        ("testIsMatchingArchiveFile_DoesNotMatchOutExtension_True",
+         testIsMatchingArchiveFile_DoesNotMatchOutExtension_True),
+        ("testIsMatchingArchiveFile_MatchesInArchiveFilePattern_True",
+         testIsMatchingArchiveFile_MatchesInArchiveFilePattern_True),
+        ("testIsMatchingArchiveFile_DoesNotMatchInArchiveFilePattern_False",
+         testIsMatchingArchiveFile_DoesNotMatchInArchiveFilePattern_False),
+        ("testIsMatchingArchiveFile_MatchesOutArchiveFilePattern_False",
+         testIsMatchingArchiveFile_MatchesOutArchiveFilePattern_False),
+        ("testIsMatchingArchiveFile_DoesNotMatchOutArchiveFilePattern_True",
+         testIsMatchingArchiveFile_DoesNotMatchOutArchiveFilePattern_True),
         ("testFilterToFileResult_IsHidden_False", testFilterToFileResult_IsHidden_False),
         ("testFilterToFileResult_IsHiddenIncludeHidden_True", testFilterToFileResult_IsHiddenIncludeHidden_True),
-        ("testFilterToFileResult_ArchiveNoIncludeArchives_False", testFilterToFileResult_ArchiveNoIncludeArchives_False),
+        ("testFilterToFileResult_ArchiveNoIncludeArchives_False",
+         testFilterToFileResult_ArchiveNoIncludeArchives_False),
         ("testFilterToFileResult_ArchiveIncludeArchives_True", testFilterToFileResult_ArchiveIncludeArchives_True),
         ("testFilterToFileResult_IsArchiveFindFile_True", testFilterToFileResult_IsArchiveFindFile_True),
         ("testFilterToFileResult_NotIsArchiveFindFile_False", testFilterToFileResult_NotIsArchiveFindFile_False),
@@ -329,6 +337,7 @@ class FinderTests: XCTestCase {
         ("testFilterToFileResult_NoExtensionsNoPatterns_True", testFilterToFileResult_NoExtensionsNoPatterns_True),
         ("testFilterToFileResult_IsFindFile_True", testFilterToFileResult_IsFindFile_True),
         ("testFilterToFileResult_NotIsFindFile_False", testFilterToFileResult_NotIsFindFile_False),
-        ("testFilterToFileResult_NonArchiveFileArchivesOnly_False", testFilterToFileResult_NonArchiveFileArchivesOnly_False),
+        ("testFilterToFileResult_NonArchiveFileArchivesOnly_False",
+         testFilterToFileResult_NonArchiveFileArchivesOnly_False)
     ]
 }

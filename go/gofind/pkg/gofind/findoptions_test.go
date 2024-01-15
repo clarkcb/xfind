@@ -16,8 +16,8 @@ func TestFindSettingsFromNoArgs(t *testing.T) {
 		settings.Debug() ||
 		settings.IncludeArchives() ||
 		settings.IncludeHidden() ||
-		settings.ListDirs() ||
-		!settings.ListFiles() ||
+		settings.PrintDirs() ||
+		!settings.PrintFiles() ||
 		settings.PrintUsage() ||
 		settings.PrintVersion() ||
 		!settings.Recursive() ||

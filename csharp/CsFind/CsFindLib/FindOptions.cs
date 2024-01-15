@@ -51,9 +51,10 @@ public partial class FindOptions
 			{ "help", (b, settings) => settings.PrintUsage = b },
 			{ "includearchives", (b, settings) => settings.IncludeArchives = b },
 			{ "includehidden", (b, settings) => settings.IncludeHidden = b },
-			{ "listdirs", (b, settings) => settings.ListDirs = b },
-			{ "listfiles", (b, settings) => settings.ListFiles = b },
-			{ "nolistfiles", (b, settings) => settings.ListFiles = !b },
+			{ "noprintdirs", (b, settings) => settings.PrintDirs = !b },
+			{ "noprintfiles", (b, settings) => settings.PrintFiles = !b },
+			{ "printdirs", (b, settings) => settings.PrintDirs = b },
+			{ "printfiles", (b, settings) => settings.PrintFiles = b },
 			{ "norecursive", (b, settings) => settings.Recursive = !b },
 			{ "recursive", (b, settings) => settings.Recursive = b },
 			{ "sort-ascending", (b, settings) => settings.SortDescending = !b },
@@ -189,8 +190,8 @@ public partial class FindOptions
 
 	public FindSettings SettingsFromArgs(IEnumerable<string> args)
 	{
-		// default to ListFiles = true since this is called from CLI
-		var settings = new FindSettings {ListFiles = true};
+		// default to PrintFiles = true since this is called from CLI
+		var settings = new FindSettings {PrintFiles = true};
 		var queue = new Queue<string>(args);
 
 		while (queue.Count > 0)

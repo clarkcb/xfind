@@ -45,16 +45,18 @@ typedef enum {
     INCLUDE_ARCHIVES      = 4,
     INCLUDE_HIDDEN        = 5,
     HELP                  = 6,
-    LIST_DIRS             = 7,
-    LIST_FILES            = 8,
+    NO_PRINT_DIRS         = 7,
+    NO_PRINT_FILES        = 8,
     NO_RECURSIVE          = 9,
-    RECURSIVE             = 10,
-    SORT_ASCENDING        = 11,
-    SORT_CASE_INSENSITIVE = 12,
-    SORT_CASE_SENSITIVE   = 13,
-    SORT_DESCENDING       = 14,
-    VERBOSE               = 15,
-    VERSION               = 16
+    PRINT_DIRS            = 10,
+    PRINT_FILES           = 11,
+    RECURSIVE             = 12,
+    SORT_ASCENDING        = 13,
+    SORT_CASE_INSENSITIVE = 14,
+    SORT_CASE_SENSITIVE   = 15,
+    SORT_DESCENDING       = 16,
+    VERBOSE               = 17,
+    VERSION               = 18
 } SettingsFlagType;
 
 FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc);

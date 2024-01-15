@@ -16,8 +16,6 @@ pub struct FindSettings {
     _in_file_types: Vec<filetypes::FileType>,
     _include_archives: bool,
     _include_hidden: bool,
-    _list_dirs: bool,
-    _list_files: bool,
     _max_depth: i64,
     _max_last_mod: u64,
     _max_size: u64,
@@ -31,6 +29,8 @@ pub struct FindSettings {
     _out_file_patterns: Vec<Regex>,
     _out_file_types: Vec<filetypes::FileType>,
     _paths: Vec<String>,
+    _print_dirs: bool,
+    _print_files: bool,
     _print_usage: bool,
     _print_version: bool,
     _recursive: bool,
@@ -53,8 +53,6 @@ impl FindSettings {
             _in_file_types: Vec::new(),
             _include_archives: false,
             _include_hidden: false,
-            _list_dirs: false,
-            _list_files: false,
             _max_depth: -1i64,
             _max_last_mod: 0u64,
             _max_size: 0u64,
@@ -68,6 +66,8 @@ impl FindSettings {
             _out_file_patterns: Vec::new(),
             _out_file_types: Vec::new(),
             _paths: Vec::new(),
+            _print_dirs: false,
+            _print_files: false,
             _print_usage: false,
             _print_version: false,
             _recursive: true,
@@ -162,22 +162,6 @@ impl FindSettings {
 
     pub fn set_include_hidden(&mut self, b: bool) {
         self._include_hidden = b
-    }
-
-    pub fn list_dirs(&self) -> bool {
-        self._list_dirs
-    }
-
-    pub fn set_list_dirs(&mut self, b: bool) {
-        self._list_dirs = b
-    }
-
-    pub fn list_files(&self) -> bool {
-        self._list_files
-    }
-
-    pub fn set_list_files(&mut self, b: bool) {
-        self._list_files = b
     }
 
     pub fn max_depth(&self) -> i64 {
@@ -284,6 +268,22 @@ impl FindSettings {
         self._paths.push(path)
     }
 
+    pub fn print_dirs(&self) -> bool {
+        self._print_dirs
+    }
+
+    pub fn set_print_dirs(&mut self, b: bool) {
+        self._print_dirs = b
+    }
+
+    pub fn print_files(&self) -> bool {
+        self._print_files
+    }
+
+    pub fn set_print_files(&mut self, b: bool) {
+        self._print_files = b
+    }
+
     pub fn print_usage(&self) -> bool {
         self._print_usage
     }
@@ -352,8 +352,6 @@ impl FindSettings {
         s.push_str(format!(", in_file_types={:?}", &self.in_file_types()).as_str());
         s.push_str(format!(", include_archives={:?}", &self.include_archives()).as_str());
         s.push_str(format!(", include_hidden={:?}", &self.include_hidden()).as_str());
-        s.push_str(format!(", list_dirs={:?}", &self.list_dirs()).as_str());
-        s.push_str(format!(", list_files={:?}", &self.list_files()).as_str());
         s.push_str(format!(", max_depth={:?}", &self.max_depth()).as_str());
         s.push_str(format!(", max_last_mod={:?}", &self.max_last_mod()).as_str());
         s.push_str(format!(", max_size={:?}", &self.max_size()).as_str());
@@ -367,6 +365,8 @@ impl FindSettings {
         s.push_str(format!(", out_file_patterns={}", get_regex_vec_string(&self.out_file_patterns())).as_str());
         s.push_str(format!(", out_file_types={:?}", &self.out_file_types()).as_str());
         s.push_str(format!(", paths={:?}", &self.paths()).as_str());
+        s.push_str(format!(", print_dirs={:?}", &self.print_dirs()).as_str());
+        s.push_str(format!(", print_files={:?}", &self.print_files()).as_str());
         s.push_str(format!(", print_usage={:?}", &self.print_usage()).as_str());
         s.push_str(format!(", print_version={:?}", &self.print_version()).as_str());
         s.push_str(format!(", recursive={}", &self.recursive()).as_str());
@@ -428,8 +428,6 @@ mod tests {
         assert!(settings.in_file_types().is_empty());
         assert_eq!(settings.include_archives(), false);
         assert_eq!(settings.include_hidden(), false);
-        assert_eq!(settings.list_dirs(), false);
-        assert_eq!(settings.list_files(), false);
         assert_eq!(settings.max_depth(), -1);
         assert_eq!(settings.max_last_mod(), 0);
         assert_eq!(settings.max_size(), 0);
@@ -443,6 +441,8 @@ mod tests {
         assert!(settings.out_file_patterns().is_empty());
         assert!(settings.out_file_types().is_empty());
         assert!(settings.paths().is_empty());
+        assert_eq!(settings.print_dirs(), false);
+        assert_eq!(settings.print_files(), false);
         assert_eq!(settings.print_usage(), false);
         assert_eq!(settings.print_version(), false);
         assert_eq!(settings.recursive(), true);

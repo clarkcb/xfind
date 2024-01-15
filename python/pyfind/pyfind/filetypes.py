@@ -13,7 +13,6 @@ import json
 from enum import StrEnum
 
 from .fileutil import FileUtil
-from .findexception import FindException
 
 
 class FileType(StrEnum):

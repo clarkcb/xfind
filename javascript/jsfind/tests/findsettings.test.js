@@ -13,8 +13,8 @@ describe('testing findsettings', () => {
         expect(settings.debug).toBeFalsy();
         expect(settings.includeArchives).toBeFalsy();
         expect(settings.includeHidden).toBeFalsy();
-        expect(settings.listDirs).toBeFalsy();
-        expect(settings.listFiles).toBeFalsy();
+        expect(settings.printDirs).toBeFalsy();
+        expect(settings.printFiles).toBeFalsy();
         expect(settings.printUsage).toBeFalsy();
         expect(settings.printVersion).toBeFalsy();
         expect(settings.recursive).toBeTruthy();

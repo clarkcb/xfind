@@ -15,12 +15,12 @@ class DefaultFindSettings {
     static final boolean DEBUG = false
     static final boolean INCLUDE_ARCHIVES = false
     static final boolean INCLUDE_HIDDEN = false
-    static final boolean LIST_DIRS = false
-    static final boolean LIST_FILES = true
     static final int MAX_DEPTH = -1
     static final int MAX_SIZE = 0
     static final int MIN_DEPTH = -1
     static final int MIN_SIZE = 0
+    static final boolean PRINT_DIRS = false
+    static final boolean PRINT_FILES = true
     static final boolean PRINT_USAGE = false
     static final boolean PRINT_VERSION = false
     static final boolean RECURSIVE = true
@@ -46,8 +46,6 @@ class FindSettings {
     final Set<FileType> inFileTypes
     boolean includeArchives
     boolean includeHidden
-    boolean listDirs
-    boolean listFiles
     int maxDepth
     LocalDateTime maxLastMod
     int maxSize
@@ -61,6 +59,8 @@ class FindSettings {
     final Set<Pattern> outFilePatterns
     final Set<FileType> outFileTypes
     Set<String> paths
+    boolean printDirs
+    boolean printFiles
     boolean printUsage
     boolean printVersion
     boolean recursive
@@ -80,8 +80,6 @@ class FindSettings {
         this.inFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES
         this.includeHidden = DefaultFindSettings.INCLUDE_HIDDEN
-        this.listDirs = DefaultFindSettings.LIST_DIRS
-        this.listFiles = DefaultFindSettings.LIST_FILES
         this.maxDepth = DefaultFindSettings.MAX_DEPTH
         this.maxLastMod = null
         this.maxSize = DefaultFindSettings.MAX_SIZE
@@ -95,6 +93,8 @@ class FindSettings {
         this.outFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.outFileTypes = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.paths = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
+        this.printDirs = DefaultFindSettings.PRINT_DIRS
+        this.printFiles = DefaultFindSettings.PRINT_FILES
         this.printUsage = DefaultFindSettings.PRINT_USAGE
         this.printVersion = DefaultFindSettings.PRINT_VERSION
         this.recursive = DefaultFindSettings.RECURSIVE
@@ -290,8 +290,6 @@ class FindSettings {
                 ', inFileTypes=' + fileTypeSetToString(this.inFileTypes) +
                 ', includeArchives=' + this.includeArchives +
                 ', includeHidden=' + this.includeHidden +
-                ', listDirs=' + this.listDirs +
-                ', listFiles=' + this.listFiles +
                 ', maxDepth=' + this.maxDepth +
                 ', maxLastMod=' + localDateTimeToString(this.maxLastMod) +
                 ', maxSize=' + this.maxSize +
@@ -305,6 +303,8 @@ class FindSettings {
                 ', outFilePatterns=' + patternSetToString(this.outFilePatterns) +
                 ', outFileTypes=' + fileTypeSetToString(this.outFileTypes) +
                 ', paths=' + stringSetToString(this.paths) +
+                ', printDirs=' + this.printDirs +
+                ', printFiles=' + this.printFiles +
                 ', printUsage=' + this.printUsage +
                 ', printVersion=' + this.printVersion +
                 ', recursive=' + this.recursive +

@@ -59,8 +59,6 @@
     ^clojure.lang.PersistentHashSet in-file-types
     ^Boolean include-archives
     ^Boolean include-hidden
-    ^Boolean list-dirs
-    ^Boolean list-files
     ^Long max-depth
     ^java.util.Date max-last-mod
     ^Long max-size
@@ -74,6 +72,8 @@
     ^clojure.lang.PersistentHashSet out-file-patterns
     ^clojure.lang.PersistentHashSet out-file-types
     ^clojure.lang.PersistentHashSet paths
+    ^Boolean print-dirs
+    ^Boolean print-files
     ^Boolean print-usage
     ^Boolean print-version
     ^Boolean recursive
@@ -95,8 +95,6 @@
    #{}       ; in-file-types
    false     ; include-archives
    false     ; include-hidden
-   false     ; list-dirs
-   false     ; list-files
    -1        ; max-depth
    nil       ; max-last-mod
    0         ; max-size
@@ -110,6 +108,8 @@
    #{}       ; out-file-patterns
    #{}       ; out-file-types
    #{}       ; paths
+   false     ; print-dirs
+   false     ; print-files
    false     ; print-usage
    false     ; print-version
    true      ; recursive
@@ -235,8 +235,6 @@
              ", in-file-types=" (filetype-set-to-string (:in-file-types settings))
              ", include-archives=" (:include-archives settings)
              ", include-hidden=" (:include-hidden settings)
-             ", list-dirs=" (:list-dirs settings)
-             ", list-files=" (:list-files settings)
              ", max-depth=" (:max-depth settings)
              ", max-last-mod=" (if (nil? (:max-last-mod settings)) "0" (:max-last-mod settings))
              ", max-size=" (:max-size settings)
@@ -250,6 +248,8 @@
              ", out-file-patterns=" (pattern-set-to-string (:out-file-patterns settings))
              ", out-file-types=" (filetype-set-to-string (:out-file-types settings))
              ", paths=" (string-set-to-string (:paths settings))
+             ", print-dirs=" (:print-dirs settings)
+             ", print-files=" (:print-files settings)
              ", print-usage=" (:print-usage settings)
              ", print-version=" (:print-version settings)
              ", recursive=" (:recursive settings)

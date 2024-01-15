@@ -74,8 +74,6 @@ type FindSettings struct {
 	inFileTypes            []FileType
 	includeArchives        bool
 	includeHidden          bool
-	listDirs               bool
-	listFiles              bool
 	maxDepth               int
 	maxLastMod             time.Time
 	maxSize                int64
@@ -89,6 +87,8 @@ type FindSettings struct {
 	outFilePatterns        *Patterns
 	outFileTypes           []FileType
 	paths                  []string
+	printDirs              bool
+	printFiles             bool
 	printUsage             bool
 	printVersion           bool
 	recursive              bool
@@ -110,8 +110,6 @@ func GetDefaultFindSettings() *FindSettings {
 		[]FileType{},   // InFileTypes
 		false,          // IncludeArchives
 		false,          // IncludeHidden
-		false,          // ListDirs
-		false,          // ListFiles
 		-1,             // MaxDepth
 		time.Time{},    // MaxLastMod
 		0,              // MaxSize
@@ -125,6 +123,8 @@ func GetDefaultFindSettings() *FindSettings {
 		NewPatterns(),  // OutFilePatterns
 		[]FileType{},   // OutFileTypes
 		[]string{},     // Paths
+		false,          // PrintDirs
+		false,          // PrintFiles
 		false,          // PrintUsage
 		false,          // PrintVersion
 		true,           // Recursive
@@ -260,22 +260,6 @@ func (f *FindSettings) IncludeHidden() bool {
 
 func (f *FindSettings) SetIncludeHidden(b bool) {
 	f.includeHidden = b
-}
-
-func (f *FindSettings) ListDirs() bool {
-	return f.listDirs
-}
-
-func (f *FindSettings) SetListDirs(b bool) {
-	f.listDirs = b
-}
-
-func (f *FindSettings) ListFiles() bool {
-	return f.listFiles
-}
-
-func (f *FindSettings) SetListFiles(b bool) {
-	f.listFiles = b
 }
 
 func (f *FindSettings) MaxDepth() int {
@@ -424,6 +408,22 @@ func (f *FindSettings) AddPath(p string) {
 	f.paths = append(f.paths, p)
 }
 
+func (f *FindSettings) PrintDirs() bool {
+	return f.printDirs
+}
+
+func (f *FindSettings) SetPrintDirs(b bool) {
+	f.printDirs = b
+}
+
+func (f *FindSettings) PrintFiles() bool {
+	return f.printFiles
+}
+
+func (f *FindSettings) SetPrintFiles(b bool) {
+	f.printFiles = b
+}
+
 func (f *FindSettings) PrintUsage() bool {
 	return f.printUsage
 }
@@ -528,8 +528,6 @@ func (f *FindSettings) String() string {
 		", InFileTypes=%s" +
 		", IncludeArchives=%t" +
 		", IncludeHidden=%t" +
-		", ListDirs=%t" +
-		", ListFiles=%t" +
 		", MaxDepth=%d" +
 		", MaxLastMod=%s" +
 		", MaxSize=%d" +
@@ -543,6 +541,8 @@ func (f *FindSettings) String() string {
 		", OutFilePatterns=%s" +
 		", OutFileTypes=%s" +
 		", Paths=%s" +
+		", PrintDirs=%t" +
+		", PrintFiles=%t" +
 		", PrintUsage=%t" +
 		", PrintVersion=%t" +
 		", Recursive=%t" +
@@ -561,8 +561,6 @@ func (f *FindSettings) String() string {
 		FileTypeListToString(f.InFileTypes()),
 		f.IncludeArchives(),
 		f.IncludeHidden(),
-		f.ListDirs(),
-		f.ListFiles(),
 		f.MaxDepth(),
 		LastModToString(f.MaxLastMod()),
 		f.MaxSize(),
@@ -576,6 +574,8 @@ func (f *FindSettings) String() string {
 		PatternsToString(f.OutFilePatterns()),
 		FileTypeListToString(f.OutFileTypes()),
 		StringListToString(f.Paths()),
+		f.PrintDirs(),
+		f.PrintFiles(),
 		f.PrintUsage(),
 		f.PrintVersion(),
 		f.Recursive(),
