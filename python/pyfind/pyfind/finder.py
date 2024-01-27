@@ -9,13 +9,13 @@
 ###############################################################################
 """
 import os
+import sys
 from pathlib import Path
 from typing import List, Optional
 
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
-from .findpath import FindPath
 from .findsettings import FindSettings, PatternSet, SortBy
 
 
@@ -47,9 +47,11 @@ class Finder:
             assert self.settings.max_size >= self.settings.min_size, \
                 'Invalid range for minsize and maxsize'
 
-    def is_matching_dir(self, d: str) -> bool:
+    def is_matching_dir(self, d: str | Path) -> bool:
         """Check whether the given directory matches find settings."""
-        path_elems = FileUtil.path_elems(d)
+        if isinstance(d, str):
+            d = Path(d)
+        path_elems = d.parts
         if not self.settings.include_hidden:
             for p in path_elems:
                 if FileUtil.is_hidden(p):
@@ -123,31 +125,10 @@ class Finder:
             return self.is_matching_stat(stat)
         return True
 
-    def filter_to_file_result(self, file_path: str) -> Optional[FileResult]:
+    def filter_to_file_result(self, file_path: Path) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
-        (path, file_name) = os.path.split(file_path)
-        if not self.settings.include_hidden and FileUtil.is_hidden(file_name):
-            return None
-        file_type = self.file_types.get_file_type(file_name)
-        if file_type == FileType.ARCHIVE \
-           and not self.settings.include_archives \
-           and not self.settings.archives_only:
-            return None
-        stat = None
-        if self.settings.need_stat():
-            stat = os.stat(file_path)
-        if file_type == FileType.ARCHIVE:
-            if not self.is_matching_archive_file(file_name, stat):
-                return None
-        elif self.settings.archives_only or not self.is_matching_file(file_name, file_type, stat):
-            return None
-        return FileResult(path=path, file_name=file_name, file_type=file_type, stat=stat)
-
-    def filter_path_to_file_result(self, file_path: FindPath) -> Optional[FileResult]:
-        """Return a FileResult instance if the given file_path matches find settings, else None."""
-        # (path, file_name) = os.path.split(file_path)
         file_name = file_path.name
-        if self.settings.exclude_hidden and FileUtil.is_hidden(file_name):
+        if not self.settings.include_hidden and FileUtil.is_hidden(file_name):
             return None
         file_type = self.file_types.get_file_type(file_name)
         if file_type == FileType.ARCHIVE \
@@ -164,23 +145,35 @@ class Finder:
             return None
         return FileResult(path=file_path, file_type=file_type, stat=stat)
 
-    def get_file_results(self, file_path: str) -> List[FileResult]:
+    def get_file_results(self, file_path: Path) -> List[FileResult]:
         """Get file results for given file path."""
+        # TODO: add the following options to FindSettings:
+        top_down = True
+        follow_symlinks = False
+
         file_results = []
-        if os.path.isdir(file_path):
+        if file_path.is_dir():
             # if max_depth is zero, we can skip since a directory cannot be a result
             if self.settings.max_depth == 0:
                 return []
-            if self.is_matching_dir(os.path.abspath(file_path)):
+            if self.is_matching_dir(file_path):
+                # Get a walk method appropriate to the python version
+                if sys.version_info >= (3, 12):
+                    walk = lambda fp: fp.walk(top_down=top_down, follow_symlinks=follow_symlinks)
+                else:
+                    walk = lambda fp: os.walk(fp, topdown=top_down, followlinks=follow_symlinks)
                 if self.settings.recursive:
                     # TODO: add follow_symlinks to FindSettings and set here
-                    for root, dirs, files in os.walk(file_path, topdown=True, followlinks=False):
+                    # for root, dirs, files in file_path.walk(top_down=top_down, follow_symlinks=follow_symlinks):
+                    for root, dirs, files in walk(file_path):
+                        if isinstance(root, str):
+                            root = Path(root)
                         if not self.is_matching_dir(root):
                             dirs[:] = []
                             continue
                         if self.settings.max_depth > 0 or self.settings.min_depth > 0:
-                            root_elem_count = FileUtil.sep_count(root)
-                            path_elem_count = FileUtil.sep_count(file_path)
+                            root_elem_count = len(root.parts)
+                            path_elem_count = len(file_path.parts)
                             # calculate current depth, adding 1 for the files inside the directory
                             current_depth = root_elem_count - path_elem_count + 1
                             # If current_depth == max_depth, set dirs to empty
@@ -189,28 +182,27 @@ class Finder:
                             # If current_depth < min_depth, continue
                             if current_depth < self.settings.min_depth:
                                 continue
-                        # We have to get index for each dir since it changes with each del
-                        del_dirs = [d for d in dirs if not self.is_matching_dir(d)]
-                        for d in del_dirs:
-                            i = dirs.index(d)
-                            del dirs[i]
-
-                        # TODO: add option to follow symlinks? (skipping for now)
-                        files = [
-                            os.path.join(root, f) for f in files
-                            if not os.path.islink(os.path.join(root, f))
-                        ]
+                        if top_down:
+                            # We have to get index for each dir since it changes with each del
+                            del_dirs = [d for d in dirs if not self.is_matching_dir(d)]
+                            for d in del_dirs:
+                                i = dirs.index(d)
+                                del dirs[i]
+                        files = [f for f in [root / f_ for f_ in files] if f.is_file()]
+                        if not follow_symlinks:
+                            files = [f for f in files if not f.is_symlink()]
                         new_file_results = [self.filter_to_file_result(f) for f in files]
                         file_results.extend([fr for fr in new_file_results if fr])
                 else:
-                    files = [
-                        os.path.join(file_path, f) for f in os.listdir(file_path)
-                        if os.path.isfile(os.path.join(file_path, f))
-                        and not os.path.islink(os.path.join(file_path, f))
-                    ]
+                    root, dirs, files = file_path.walk(top_down=top_down, follow_symlinks=follow_symlinks)
+                    # set dirs to empty list to avoid recursion
+                    dirs[:] = []
+                    files = [f for f in [root / f_ for f_ in files] if f.is_file()]
+                    if not follow_symlinks:
+                        files = [f for f in files if not f.is_symlink()]
                     new_file_results = [self.filter_to_file_result(f) for f in files]
                     file_results.extend([fr for fr in new_file_results if fr])
-        elif os.path.isfile(file_path):
+        elif file_path.is_file():
             # if min_depth > zero, we can skip since the file is at depth zero
             if self.settings.min_depth > 0:
                 return []
@@ -238,22 +230,22 @@ class Finder:
             return s
         match self.settings.sort_by:
             case SortBy.FILEPATH:
-                return sorted(file_results, key=lambda r: c(r.path),
+                return sorted(file_results, key=lambda r: (c(str(r.path.parent)), c(r.path.name)),
                               reverse=self.settings.sort_descending)
             case SortBy.FILENAME:
-                return sorted(file_results, key=lambda r: c(r.path.name),
+                return sorted(file_results, key=lambda r: (c(r.path.name), c(str(r.path.parent))),
                               reverse=self.settings.sort_descending)
             case SortBy.FILESIZE:
-                return sorted(file_results, key=lambda r: (r.stat.st_size, c(r.path)),
+                return sorted(file_results, key=lambda r: (r.stat.st_size, c(str(r.path.parent)), c(r.path.name)),
                               reverse=self.settings.sort_descending)
             case SortBy.FILETYPE:
-                return sorted(file_results, key=lambda r: (r.file_type, c(r.path)),
+                return sorted(file_results, key=lambda r: (r.file_type, c(str(r.path.parent)), c(r.path.name)),
                               reverse=self.settings.sort_descending)
             case SortBy.LASTMOD:
-                return sorted(file_results, key=lambda r: (r.stat.st_mtime, c(r.path)),
+                return sorted(file_results, key=lambda r: (r.stat.st_mtime, c(str(r.path.parent)), c(r.path.name)),
                               reverse=self.settings.sort_descending)
             case _:
-                return sorted(file_results, key=lambda r: c(r.path),
+                return sorted(file_results, key=lambda r: (c(str(r.path.parent)), c(r.path.name)),
                               reverse=self.settings.sort_descending)
 
 

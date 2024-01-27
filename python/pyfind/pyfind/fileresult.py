@@ -11,10 +11,10 @@
 """
 import os
 from io import StringIO
+from pathlib import Path
 from typing import List
 
 from .filetypes import FileType
-from .findpath import FindPath
 
 
 class FileResult:
@@ -25,7 +25,7 @@ class FileResult:
 
     def __init__(self,
                  containers: List[str] = None,
-                 path: FindPath = None,
+                 path: Path = None,
                  file_type: FileType = FileType.UNKNOWN,
                  stat: os.stat_result = None):
         self.containers = containers if containers else []
@@ -34,9 +34,9 @@ class FileResult:
         self.stat = stat
 
     @property
-    def relative_path(self):
+    def relative_path(self) -> str:
         """Get relative path of FileResult (does not include any containers)"""
-        return self.path.orig_path
+        return str(self.path)
 
     def __str__(self):
         sio = StringIO()
@@ -47,9 +47,9 @@ class FileResult:
         return sio.getvalue()
 
     def __lt__(self, other):
-        # if self.path == other.path:
-        #     return self.file_name < other.file_name
-        return self.path < other.path
+        if self.path.parent == other.path.parent:
+            return self.path.name < other.path.name
+        return self.path.parent < other.path.parent
 
     def __eq__(self, other):
-        return self.path == other.path #  and self.file_name == other.file_name
+        return self.path == other.path

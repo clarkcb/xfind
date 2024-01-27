@@ -22,7 +22,7 @@ from .findoptions import FindOptions
 
 def get_dir_results(file_results: List[FileResult]) -> list[str]:
     """Return unique list of directories from file results"""
-    return sorted(list({f.path for f in file_results}))
+    return sorted(list({str(f.path.parent) for f in file_results if f.path and f.path.parent}))
 
 
 async def main():
@@ -30,22 +30,22 @@ async def main():
     if sys.version_info < (3, 9):
         sys.exit('Sorry, Python < 3.9 is not supported')
 
-    findoptions = FindOptions()
+    find_options = FindOptions()
 
     settings = None
     try:
-        settings = findoptions.find_settings_from_args(sys.argv[1:])
+        settings = find_options.find_settings_from_args(sys.argv[1:])
     except FindException as e:
         log('')
         log_error(f'{e}\n')
-        findoptions.usage(1)
+        find_options.usage(1)
 
     if settings.debug:
         log(f'settings: {settings}')
 
     if settings.print_usage:
         log('')
-        findoptions.usage()
+        find_options.usage()
 
     if settings.print_version:
         log(f'xfind version {VERSION}')
@@ -74,7 +74,7 @@ async def main():
 
     except AssertionError as e:
         log_error(f'{e}\n')
-        findoptions.usage(1)
+        find_options.usage(1)
     except KeyboardInterrupt:
         log('')
         sys.exit(0)

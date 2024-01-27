@@ -10,6 +10,7 @@
 """
 from datetime import datetime
 from io import StringIO
+from pathlib import Path
 import re
 from enum import StrEnum
 from typing import Any, Optional, Pattern
@@ -17,7 +18,7 @@ from typing import Any, Optional, Pattern
 from .common import list_to_str
 from .filetypes import FileType
 from .findexception import FindException
-from .findpath import FindPath
+
 
 PatternSet = set[Pattern]
 
@@ -29,6 +30,24 @@ class SortBy(StrEnum):
     FILETYPE = 'filetype'
     FILESIZE = 'filesize'
     LASTMOD = 'lastmod'
+
+
+def get_sort_by_for_name(sort_by_name: str):
+    """Set sort-by from str"""
+    sort_by_name = sort_by_name.strip().upper()
+    match sort_by_name:
+        case 'FILEPATH' | 'PATH':
+            return SortBy.FILEPATH
+        case 'FILENAME' | 'NAME':
+            return SortBy.FILENAME
+        case 'FILESIZE' | 'SIZE':
+            return SortBy.FILESIZE
+        case 'FILETYPE' | 'TYPE':
+            return SortBy.FILETYPE
+        case 'LASTMOD':
+            return SortBy.LASTMOD
+        case _:
+            return SortBy.FILEPATH
 
 
 class FindSettings:
@@ -124,7 +143,7 @@ class FindSettings:
         self.out_file_types = set()
         if out_file_types:
             self.add_file_types(out_file_types, 'out_file_types')
-        self.paths = set()
+        self.paths: set[Path] = set()
         if paths:
             self.add_paths(paths)
         self.print_dirs = print_dirs
@@ -169,11 +188,15 @@ class FindSettings:
     def add_paths(self, paths: list | set | str):
         """Add one or more paths"""
         if isinstance(paths, (list, set)):
-            self.paths.update({FindPath(p) for p in paths})
+            self.paths.update({Path(p) for p in paths})
         elif isinstance(paths, str):
-            self.paths.add(FindPath(paths))
+            self.paths.add(Path(paths))
         else:
             raise FindException('paths is an unknown type')
+
+    def add_path(self, path: str):
+        """Add a single path"""
+        self.paths.add(Path(path))
 
     def add_file_types(self, file_types: list | set | str | FileType, file_type_set_name: str):
         """Add one or more filetypes"""
@@ -213,11 +236,8 @@ class FindSettings:
             self.set_property(p, propdict[p])
 
     def set_sort_by(self, sort_by_name: str):
-        """Set sort-by"""
-        try:
-            self.sort_by = SortBy[sort_by_name.strip().upper()]
-        except KeyError:
-            self.sort_by = FileType.UNKNOWN
+        """Set sort-by from str"""
+        self.sort_by = get_sort_by_for_name(sort_by_name)
 
     def __str__(self):
         sio = StringIO()
