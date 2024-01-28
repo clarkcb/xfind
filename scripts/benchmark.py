@@ -38,7 +38,7 @@ sharedpath = os.path.join(XFINDPATH, 'shared')
 
 default_runs = 10
 
-ignore_dirs = ['node_modules', 'vendor', 'venv']
+ignore_dirs = ['build', 'cmake', 'node_modules', 'vendor', 'venv']
 ignore_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
 core_args = ignore_args
 ext_args = ['-x', exts]
@@ -415,7 +415,7 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def print_run_result(self, sn: int, result: RunResult):
-        title = '\nResults for scenario {} ("{}") run {}\n'.format(sn, result.scenario.name, result.run)
+        title = f'\nResults for scenario {sn} ("{result.scenario.name}") run {result.run}\n'
         hdr = ['real', 'rank', 'sys', 'rank', 'user', 'rank', 'total', 'rank']
         data = []
         real_ranks = result.real_ranks
@@ -511,44 +511,34 @@ class Benchmarker(object):
     def compare_outputs(self, s: Scenario, sn: int, xfind_output: dict[str, list[str]]) -> bool:
         non_matching = non_matching_outputs(xfind_output, case_insensitive_cmp=s.case_insensitive_cmp)
         if non_matching:
-            xs = []
-            if len(non_matching) == 2:
-                xs = sorted(non_matching.keys())
-            elif len(non_matching) > 2:
-                xs = sorted([x for x in non_matching.keys() if len(non_matching[x]) > 1])
-            print()
-            for x in xs:
-                for y in sorted(non_matching[x]):
-                    print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
-                    print(f'{x} output:\n"{xfind_output[x]}"')
-                    print(f'{y} output:\n"{xfind_output[y]}"')
-                    self.diff_outputs.append((sn, x, y))
-            for x in xs:
-                if non_matching[x]:
-                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(non_matching[x]), str(non_matching[x])))
+            print('\nOutputs of these language versions differ:')
+            print(non_matching)
+            for x, y in non_matching:
+                print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
+                print(f'{x} output:\n"{xfind_output[x]}"')
+                print(f'{y} output:\n"{xfind_output[y]}"')
+                self.diff_outputs.append((sn, x, y))
+            # for x in xs:
+            #     if non_matching[x]:
+            #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
             return False
         else:
             print('\nOutputs of all versions match')
             return True
 
-    def compare_output_lens(self, sn: int, xfind_output) -> bool:
+    def compare_output_lens(self, s: Scenario, sn: int, xfind_output: dict[str, list[str]]) -> bool:
         non_matching = non_matching_lens(xfind_output)
         if non_matching:
-            xs = []
-            if len(non_matching) == 2:
-                xs = sorted(non_matching.keys())
-            elif len(non_matching) > 2:
-                xs = sorted([x for x in non_matching.keys() if len(non_matching[x]) > 1])
-            print()
-            for x in xs:
-                for y in sorted(non_matching[x]):
-                    print(f'{x} output != {y} output')
-                    print(f'{x} output:\n"{xfind_output[x]}"')
-                    print(f'{y} output:\n"{xfind_output[y]}"')
-                    self.diff_outputs.append((sn, x, y))
-            for x in xs:
-                if non_matching[x]:
-                    print('\n{} output differs with output of {} other language versions: {}'.format(x, len(non_matching[x]), str(non_matching[x])))
+            print('\nOutput lengths differ for these language versions:')
+            print(non_matching)
+            for x, y in non_matching:
+                print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
+                print(f'{x} output:\n"{xfind_output[x]}"')
+                print(f'{y} output:\n"{xfind_output[y]}"')
+                self.diff_outputs.append((sn, x, y))
+            # for x in xs:
+            #     if non_matching[x]:
+            #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
             return False
         else:
             print('\nOutputs of all versions match')
@@ -621,7 +611,7 @@ class Benchmarker(object):
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
         if not self.compare_outputs(s, sn, xfind_output) and self.exit_on_diff:
-            if not self.compare_output_lens(sn, xfind_output) and self.exit_on_sort_diff:
+            if not self.compare_output_lens(s, sn, xfind_output) and self.exit_on_sort_diff:
                 raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
@@ -658,7 +648,7 @@ class Benchmarker(object):
             time_dict = xfind_times[x]
             lang_results.append(LangResult(x, real=time_dict['real'], sys=time_dict['sys'], user=time_dict['user']))
         if not self.compare_outputs(s, sn, xfind_output) and self.exit_on_diff:
-            if not self.compare_output_lens(sn, xfind_output) and self.exit_on_sort_diff:
+            if not self.compare_output_lens(s, sn, xfind_output) and self.exit_on_sort_diff:
                 raise KeyboardInterrupt
         return RunResult(scenario=s, run=rn, lang_results=lang_results)
 
@@ -678,8 +668,8 @@ class Benchmarker(object):
                 sn = i + 1
                 s_results = []
                 for r in range(self.runs):
-                    rn = r+1
-                    print('\nscenario {} ("{}") run {}\n'.format(sn, s.name, rn))
+                    rn = r + 1
+                    print(f'\nscenario {sn} ("{s.name}") run {rn}\n')
                     result = self.do_run(s, sn, rn)
                     runs += 1
                     s_results.append(result)
@@ -733,20 +723,20 @@ def get_args(args):
             elif arg == '--debug':
                 debug = True
             else:
-                print('ERROR: unknown arg: {}'.format(arg))
+                print(f'ERROR: unknown arg: {arg}')
                 sys.exit(1)
         else:
-            print('ERROR: unknown arg: {}'.format(arg))
+            print(f'ERROR: unknown arg: {arg}')
             sys.exit(1)
     return xfind_names, runs, exit_on_diff, debug
 
 
 def main():
     xfind_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
-    print('xfind_names: {}'.format(str(xfind_names)))
-    print('runs: {}'.format(runs))
-    print('exit_on_diff: {}'.format(exit_on_diff))
-    print('debug: {}'.format(debug))
+    print(f'xfind_names: {str(xfind_names)}')
+    print(f'runs: {runs}')
+    print(f'exit_on_diff: {exit_on_diff}')
+    print(f'debug: {debug}')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
                               scenarios=scenarios, exit_on_diff=exit_on_diff,
                               debug=debug)
