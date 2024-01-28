@@ -892,8 +892,8 @@ build_python () {
     echo
     hdr "build_python"
 
-    # ensure python3.7+ is installed
-    PYTHON_VERSIONS=(python3.11 python3.10 python3.9 python3.8 python3.7)
+    # ensure python3.9+ is installed
+    PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
     PYTHON=
     for p in ${PYTHON_VERSIONS[*]}
     do
@@ -906,7 +906,7 @@ build_python () {
 
     if [ -z "$PYTHON" ]
     then
-        log_error "A version of python >= 3.7 is required"
+        log_error "A version of python >= 3.9 is required"
         return
     else
         PYTHON=$(basename "$PYTHON")
@@ -987,9 +987,9 @@ build_ruby () {
     fi
 
     # TODO: do a real version check (first determine minimum needed version)
-    if [ -z "$(ruby -v | grep 'ruby 2')" ]
+    if [ -z "$(ruby -v | grep 'ruby 3')" ]
     then
-        log_error "A version of ruby >= 2.x is required"
+        log_error "A version of ruby >= 3.x is required"
         return
     fi
 

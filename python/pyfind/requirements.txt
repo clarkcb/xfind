@@ -1,5 +1,5 @@
 pylint>=3.0.3
-pytest>=7.4.3
+pytest>=7.4.4
 python-dateutil>=2.8.2
 python-magic>=0.4.27
-wheel>=0.41.3
+wheel>=0.42.0

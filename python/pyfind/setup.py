@@ -16,9 +16,6 @@ setup(name='pyfind',
       packages=['pyfind'],
       package_data={'': ['data/*.json']},
       python_requires='>=3.9',
-    #   scripts=[
-    #       'bin/pyfind.sh',
-    #   ],
       tests_require=[
           'nose',
       ])
