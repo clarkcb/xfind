@@ -1,5 +1,6 @@
 package ktfind
 
+// TODO: switch to using kotlin.io.path?
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.*

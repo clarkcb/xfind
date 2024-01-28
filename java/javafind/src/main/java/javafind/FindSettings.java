@@ -417,7 +417,7 @@ public class FindSettings {
                 this.maxSize > 0 || this.minSize > 0;
     }
 
-    private static String stringSetToString(final Set<String> set) {
+    protected static String stringSetToString(final Set<String> set) {
         var sb = new StringBuilder("[");
         int elemCount = 0;
         for (var s : set) {
@@ -431,7 +431,7 @@ public class FindSettings {
         return sb.toString();
     }
 
-    private static String patternSetToString(final Set<Pattern> set) {
+    protected static String patternSetToString(final Set<Pattern> set) {
         var sb = new StringBuilder("[");
         int elemCount = 0;
         for (var p : set) {
@@ -445,7 +445,7 @@ public class FindSettings {
         return sb.toString();
     }
 
-    private static String fileTypeSetToString(final Set<FileType> set) {
+    protected static String fileTypeSetToString(final Set<FileType> set) {
         var sb = new StringBuilder("[");
         int elemCount = 0;
         for (var ft : set) {
@@ -459,7 +459,7 @@ public class FindSettings {
         return sb.toString();
     }
 
-    private static String localDateTimeToString(final LocalDateTime dt) {
+    protected static String localDateTimeToString(final LocalDateTime dt) {
         if (dt == null) {
             return "0";
         }

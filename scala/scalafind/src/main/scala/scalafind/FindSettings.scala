@@ -28,7 +28,7 @@ object SortBy extends Enumeration {
   }
 }
 
-object DefaultSettings {
+object DefaultFindSettings {
   val archivesOnly = false
   val debug = false
   var includeArchives = false
@@ -49,38 +49,38 @@ object DefaultSettings {
   var verbose = false
 }
 
-case class FindSettings(archivesOnly: Boolean = DefaultSettings.archivesOnly,
-                        debug: Boolean = DefaultSettings.debug,
+case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
+                        debug: Boolean = DefaultFindSettings.debug,
                         inArchiveExtensions: Set[String] = Set.empty[String],
                         inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                         inDirPatterns: Set[Regex] = Set.empty[Regex],
                         inExtensions: Set[String] = Set.empty[String],
                         inFilePatterns: Set[Regex] = Set.empty[Regex],
                         inFileTypes: Set[FileType] = Set.empty[FileType],
-                        var includeArchives: Boolean = DefaultSettings.includeArchives,
-                        includeHidden: Boolean = DefaultSettings.includeHidden,
-                        maxDepth: Int = DefaultSettings.maxDepth,
+                        var includeArchives: Boolean = DefaultFindSettings.includeArchives,
+                        includeHidden: Boolean = DefaultFindSettings.includeHidden,
+                        maxDepth: Int = DefaultFindSettings.maxDepth,
                         maxLastMod: Option[LocalDateTime] = None,
-                        maxSize: Int = DefaultSettings.maxSize,
-                        minDepth: Int = DefaultSettings.minDepth,
+                        maxSize: Int = DefaultFindSettings.maxSize,
+                        minDepth: Int = DefaultFindSettings.minDepth,
                         minLastMod: Option[LocalDateTime] = None,
-                        minSize: Int = DefaultSettings.minSize,
+                        minSize: Int = DefaultFindSettings.minSize,
                         outArchiveExtensions: Set[String] = Set.empty[String],
                         outArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                         outDirPatterns: Set[Regex] = Set.empty[Regex],
                         outExtensions: Set[String] = Set.empty[String],
                         outFilePatterns: Set[Regex] = Set.empty[Regex],
                         outFileTypes: Set[FileType] = Set.empty[FileType],
-                        paths: Set[String] = DefaultSettings.paths,
-                        printDirs: Boolean = DefaultSettings.printDirs,
-                        printFiles: Boolean = DefaultSettings.printFiles,
-                        printUsage: Boolean = DefaultSettings.printUsage,
-                        printVersion: Boolean = DefaultSettings.printVersion,
-                        recursive: Boolean = DefaultSettings.recursive,
-                        sortBy: SortBy = DefaultSettings.sortBy,
-                        sortCaseInsensitive: Boolean = DefaultSettings.sortCaseInsensitive,
-                        sortDescending: Boolean = DefaultSettings.sortDescending,
-                        var verbose: Boolean = DefaultSettings.verbose) {
+                        paths: Set[String] = DefaultFindSettings.paths,
+                        printDirs: Boolean = DefaultFindSettings.printDirs,
+                        printFiles: Boolean = DefaultFindSettings.printFiles,
+                        printUsage: Boolean = DefaultFindSettings.printUsage,
+                        printVersion: Boolean = DefaultFindSettings.printVersion,
+                        recursive: Boolean = DefaultFindSettings.recursive,
+                        sortBy: SortBy = DefaultFindSettings.sortBy,
+                        sortCaseInsensitive: Boolean = DefaultFindSettings.sortCaseInsensitive,
+                        sortDescending: Boolean = DefaultFindSettings.sortDescending,
+                        var verbose: Boolean = DefaultFindSettings.verbose) {
 
   includeArchives = archivesOnly || includeArchives
   verbose = debug || verbose

@@ -6,16 +6,16 @@ import org.scalatest.funsuite.AnyFunSuite
 class FindSettingsTest extends AnyFunSuite with BeforeAndAfterAll {
 
   def assertDefaultSettings(settings:FindSettings): Unit = {
-    assert(settings.archivesOnly == DefaultSettings.archivesOnly)
-    assert(settings.debug == DefaultSettings.debug)
-    assert(settings.includeHidden == DefaultSettings.includeHidden)
-    assert(settings.includeArchives == DefaultSettings.includeArchives)
-    assert(settings.printDirs == DefaultSettings.printDirs)
-    assert(settings.printFiles == DefaultSettings.printFiles)
-    assert(settings.printUsage == DefaultSettings.printUsage)
-    assert(settings.printVersion == DefaultSettings.printVersion)
+    assert(settings.archivesOnly == DefaultFindSettings.archivesOnly)
+    assert(settings.debug == DefaultFindSettings.debug)
+    assert(settings.includeHidden == DefaultFindSettings.includeHidden)
+    assert(settings.includeArchives == DefaultFindSettings.includeArchives)
+    assert(settings.printDirs == DefaultFindSettings.printDirs)
+    assert(settings.printFiles == DefaultFindSettings.printFiles)
+    assert(settings.printUsage == DefaultFindSettings.printUsage)
+    assert(settings.printVersion == DefaultFindSettings.printVersion)
     assert(settings.sortBy == SortBy.FilePath)
-    assert(settings.verbose == DefaultSettings.verbose)
+    assert(settings.verbose == DefaultFindSettings.verbose)
   }
 
   // test defaults

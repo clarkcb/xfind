@@ -9,15 +9,15 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
   val requiredArgs = Array(startpath)
 
   def assertDefaultSettings(settings: FindSettings): Unit = {
-    assert(settings.archivesOnly == DefaultSettings.archivesOnly)
-    assert(settings.debug == DefaultSettings.debug)
-    assert(settings.includeArchives == DefaultSettings.includeArchives)
-    assert(settings.includeHidden == DefaultSettings.includeHidden)
-    assert(settings.printDirs == DefaultSettings.printDirs)
+    assert(settings.archivesOnly == DefaultFindSettings.archivesOnly)
+    assert(settings.debug == DefaultFindSettings.debug)
+    assert(settings.includeArchives == DefaultFindSettings.includeArchives)
+    assert(settings.includeHidden == DefaultFindSettings.includeHidden)
+    assert(settings.printDirs == DefaultFindSettings.printDirs)
     assert(settings.printFiles)
-    assert(settings.printUsage == DefaultSettings.printUsage)
-    assert(settings.printVersion == DefaultSettings.printVersion)
-    assert(settings.verbose == DefaultSettings.verbose)
+    assert(settings.printUsage == DefaultFindSettings.printUsage)
+    assert(settings.printVersion == DefaultFindSettings.printVersion)
+    assert(settings.verbose == DefaultFindSettings.verbose)
   }
 
   // test defaults
