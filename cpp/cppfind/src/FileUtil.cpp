@@ -37,7 +37,7 @@ namespace cppfind {
 
     // implement the get_extension method
     std::string FileUtil::get_extension(const std::string& name) {
-        size_t pos = name.rfind('.');
+        const size_t pos = name.rfind('.');
         if (pos == 0 || pos == std::string::npos) {
             return "";
         }
@@ -48,7 +48,7 @@ namespace cppfind {
     // TODO: make this cross-platform
     std::string FileUtil::get_file_name(const std::string& file_path) {
         // TODO: make this cross-platform
-        size_t pos = file_path.rfind('/');
+        const size_t pos = file_path.rfind('/');
         if (pos == std::string::npos) {
             return file_path;
         }

@@ -1,7 +1,6 @@
 #ifndef CPPFIND_H
 #define CPPFIND_H
 
-
 /*
  * cppfind.h - the public header file for using cppfind as a library dependency
  *
@@ -69,7 +68,7 @@ namespace cppfind {
     std::string xfindpath();
 
     // FileTypes.h
-    enum class FileType {UNKNOWN, ARCHIVE, BINARY, CODE, TEXT, XML};
+    enum class FileType {UNKNOWN, ARCHIVE, AUDIO, BINARY, CODE, FONT, IMAGE, TEXT, VIDEO, XML};
 
     class FileTypes {
     public:
@@ -79,10 +78,14 @@ namespace cppfind {
         static std::string to_name(const FileType& file_type);
         FileType get_file_type(const std::string& file_path);
         bool is_archive_file(const std::string& file_path);
+        bool is_audio_file(const std::string& file_path);
         bool is_binary_file(const std::string& file_path);
         bool is_code_file(const std::string& file_path);
+        bool is_font_file(const std::string& file_path);
+        bool is_image_file(const std::string& file_path);
         bool is_text_file(const std::string& file_path);
         bool is_unknown_file(const std::string& file_path);
+        bool is_video_file(const std::string& file_path);
         bool is_xml_file(const std::string& file_path);
     };
 
@@ -108,21 +111,26 @@ namespace cppfind {
     class StringUtil {
     public:
         static std::vector<std::string> split_string(const std::string& s, const std::string& delims);
+        static std::vector<std::string> split_string(const std::string& s, const std::string& delims, bool exclude_empty);
         static void ltrim(std::string& s);
         static std::string ltrim_copy(std::string s);
         static void rtrim(std::string& s);
         static std::string rtrim_copy(std::string s);
         static void trim(std::string& s);
         static std::string trim_copy(std::string s);
+
         static bool char_in_string(const char c, const std::string& s);
         static bool string_in_set(const std::string& s, const std::set<std::string>& set);
         static bool string_in_vector(const std::string& s, const std::vector<std::string>& set);
+
+        static std::set<std::string> filter_string_set(const std::set<std::string>& set,
+                                                       const std::function<bool(const std::string&)>& predicate);
         static std::vector<std::string> filter_string_vector(const std::vector<std::string>& strings,
                                                              const std::function<bool(const std::string&)>& predicate);
         static std::string bool_to_string(bool b);
         static std::string string_set_to_string(std::set<std::string>& set);
-        static long datestr_to_long(const std::string& datestr);
-        static std::string long_to_datestr(const long time);
+        static long date_str_to_long(const std::string& datestr);
+        static std::string long_to_date_str(long time);
     };
 
     // FindException.h
@@ -164,21 +172,21 @@ namespace cppfind {
         [[nodiscard]] bool debug() const;
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool include_hidden() const;
+        [[nodiscard]] int max_depth() const;
+        [[nodiscard]] long max_last_mod() const;
+        [[nodiscard]] long max_size() const;
+        [[nodiscard]] int min_depth() const;
+        [[nodiscard]] long min_last_mod() const;
+        [[nodiscard]] long min_size() const;
         [[nodiscard]] bool print_dirs() const;
         [[nodiscard]] bool print_files() const;
         [[nodiscard]] bool print_usage() const;
         [[nodiscard]] bool print_version() const;
         [[nodiscard]] bool recursive() const;
+        [[nodiscard]] SortBy sort_by() const;
         [[nodiscard]] bool sort_case_insensitive() const;
         [[nodiscard]] bool sort_descending() const;
         [[nodiscard]] bool verbose() const;
-        [[nodiscard]] int max_depth() const;
-        [[nodiscard]] int min_depth() const;
-        [[nodiscard]] long max_last_mod() const;
-        [[nodiscard]] long max_size() const;
-        [[nodiscard]] long min_last_mod() const;
-        [[nodiscard]] long min_size() const;
-        [[nodiscard]] SortBy sort_by() const;
 
         [[nodiscard]] std::set<std::string> in_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_archive_file_patterns() const;
@@ -241,11 +249,14 @@ namespace cppfind {
         void add_out_file_type(FileType file_type);
         void add_path(const std::string& path);
 
+        // need elements methods
+        bool need_stat() const;
+
         // utility methods
         static void add_pattern(const std::string& p, std::set<RegexPattern, RegexPatternCmp>& ps);
         static void add_extensions(const std::string& exts, std::set<std::string>& extensions);
-        static std::string find_patterns_to_string(std::set<RegexPattern, RegexPatternCmp>& patterns);
-        static std::string file_types_to_string(std::set<FileType>& types);
+        static std::string file_types_to_string(const std::set<FileType>& types);
+        static std::string patterns_to_string(const std::set<RegexPattern, RegexPatternCmp>& patterns);
         static SortBy sort_by_from_name(const std::string& name);
         static std::string sort_by_to_name(SortBy sort_by);
 
@@ -256,9 +267,8 @@ namespace cppfind {
     // FileResult.h
     class FileResult {
     public:
-        FileResult(std::string& path, std::string& file_name, FileType file_type, uint64_t file_size, long mod_time);
-        FileResult(const std::vector<std::string>& containers, std::string& path, std::string& file_name,
-                   FileType file_type, uint64_t file_size, long mod_time);
+        FileResult(const std::string& path, const std::string& file_name, FileType file_type, uint64_t file_size,
+                   long mod_time);
         FileResult(const std::vector<std::string>& containers, const std::string& path, const std::string& file_name,
                    FileType file_type, uint64_t file_size, long mod_time);
         [[nodiscard]] std::string path() const;
@@ -283,9 +293,9 @@ namespace cppfind {
     class FindOptions {
     public:
         FindOptions();
-        FindSettings settings_from_args(int &argc, char **argv);
-        void settings_from_file(std::string& file_path, FindSettings& settings);
-        void settings_from_json(std::string& json, FindSettings& settings);
+        FindSettings* settings_from_args(int &argc, char **argv);
+        void settings_from_file(const std::string& file_path, FindSettings& settings);
+        void settings_from_json(const std::string& json, FindSettings& settings);
         void usage();
         std::string get_usage_string();
     };
@@ -298,9 +308,9 @@ namespace cppfind {
         std::optional<FileResult> filter_to_file_result(const std::string& file_path);
         bool is_matching_archive_file(const std::string& file_name);
         bool is_matching_dir(const std::string& file_path);
-        bool is_matching_file(const std::string& file_name, const FileType file_type, const struct stat*);
-        bool is_matching_file_type(const FileType file_type);
-        bool is_matching_file_result(const FileResult* file_result);
+        bool is_matching_file(const std::string& file_name, const FileType& file_type, const struct stat*);
+        bool is_matching_file_type(const FileType& file_type);
+        bool is_matching_file_result(const FileResult& file_result);
         std::vector<FileResult> find();
     };
 

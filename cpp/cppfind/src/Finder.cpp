@@ -260,19 +260,18 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_path_ci(const FileResult& fr1, const FileResult& fr2) {
-        int pathcmp = strcasecmp(fr1.path().c_str(), fr2.path().c_str());
+        const int pathcmp = strcasecmp(fr1.path().c_str(), fr2.path().c_str());
         if (pathcmp == 0) {
             return strcasecmp(fr1.file_name().c_str(), fr2.file_name().c_str()) < 0;
         }
         return pathcmp < 0;
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_path(FindSettings& settings) {
+    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_path(const FindSettings& settings) {
         if (settings.sort_case_insensitive()) {
             return cmp_file_results_by_path_ci;
-        } else {
-            return cmp_file_results_by_path;
         }
+        return cmp_file_results_by_path;
     }
 
     bool cmp_file_results_by_name(const FileResult& fr1, const FileResult& fr2) {
@@ -283,19 +282,18 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_name_ci(const FileResult& fr1, const FileResult& fr2) {
-        int filecmp = strcasecmp(fr1.file_name().c_str(), fr2.file_name().c_str());
+        const int filecmp = strcasecmp(fr1.file_name().c_str(), fr2.file_name().c_str());
         if (filecmp == 0) {
             return strcasecmp(fr1.path().c_str(), fr2.path().c_str()) < 0;
         }
         return filecmp < 0;
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_name(FindSettings& settings) {
+    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_name(const FindSettings& settings) {
         if (settings.sort_case_insensitive()) {
             return cmp_file_results_by_name_ci;
-        } else {
-            return cmp_file_results_by_name;
         }
+        return cmp_file_results_by_name;
     }
 
     bool cmp_file_results_by_size(const FileResult& fr1, const FileResult& fr2) {
@@ -312,7 +310,7 @@ namespace cppfind {
         return (fr1.file_type() < fr2.file_type());
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_size(FindSettings& settings) {
+    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_size(const FindSettings& settings) {
         if (settings.sort_case_insensitive()) {
             return cmp_file_results_by_size_ci;
         } else {
@@ -334,12 +332,11 @@ namespace cppfind {
         return (fr1.file_type() < fr2.file_type());
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_type(FindSettings& settings) {
+    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_type(const FindSettings& settings) {
         if (settings.sort_case_insensitive()) {
             return cmp_file_results_by_type_ci;
-        } else {
-            return cmp_file_results_by_type;
         }
+        return cmp_file_results_by_type;
     }
 
     bool cmp_file_results_by_lastmod(const FileResult& fr1, const FileResult& fr2) {
@@ -356,12 +353,11 @@ namespace cppfind {
         return (fr1.mod_time() < fr2.mod_time());
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_lastmod(FindSettings& settings) {
+    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_lastmod(const FindSettings& settings) {
         if (settings.sort_case_insensitive()) {
             return cmp_file_results_by_lastmod_ci;
-        } else {
-            return cmp_file_results_by_lastmod;
         }
+        return cmp_file_results_by_lastmod;
     }
 
     void Finder::sort_file_results(std::vector<FileResult>& file_results) {

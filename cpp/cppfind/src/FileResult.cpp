@@ -2,29 +2,27 @@
 #include "FileResult.h"
 
 namespace cppfind {
-    FileResult::FileResult(std::string& p, std::string& f, FileType ft, uint64_t filesize, long modtime) {
+    FileResult::FileResult(const std::string& path, const std::string& file_name, const FileType file_type,
+                           const uint64_t file_size, const long mod_time) {
         std::vector<std::string> containers{};
-        init(containers, p, f, ft, filesize, modtime);
+        init(containers, path, file_name, file_type, file_size, mod_time);
     }
 
-    FileResult::FileResult(const std::vector<std::string>& cs, const std::string& p, const std::string& f,
-                           const FileType ft, const uint64_t filesize, long modtime) {
-        init(cs, p, f, ft, filesize, modtime);
+    FileResult::FileResult(const std::vector<std::string>& containers, const std::string& path,
+                           const std::string& file_name, const FileType file_type, const uint64_t file_size,
+                           const long mod_time) {
+        init(containers, path, file_name, file_type, file_size, mod_time);
     }
 
-    FileResult::FileResult(const std::vector<std::string>& cs, std::string& p, std::string& f, FileType ft,
-                           uint64_t filesize, long modtime) {
-        init(cs, p, f, ft, filesize, modtime);
-    }
-
-    void FileResult::init(const std::vector<std::string>& cs, const std::string& p, const std::string& f,
-                          const FileType ft, const uint64_t filesize, long modtime) {
-        m_containers = cs;
-        m_path = p;
-        m_file_name = f;
-        m_file_type = ft;
-        m_file_size = filesize;
-        m_mod_time = modtime;
+    void FileResult::init(const std::vector<std::string>& containers, const std::string& path,
+                          const std::string& file_name, const FileType file_type, const uint64_t file_size,
+                          const long mod_time) {
+        m_containers = containers;
+        m_path = path;
+        m_file_name = file_name;
+        m_file_type = file_type;
+        m_file_size = file_size;
+        m_mod_time = mod_time;
     }
 
     std::string FileResult::path() const {

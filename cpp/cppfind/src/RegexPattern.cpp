@@ -7,7 +7,8 @@ namespace cppfind {
         : m_pattern(pattern), m_ignore_case(false), m_multi_line(false), m_dot_all(false), m_regex(std::regex(pattern)) {
     }
 
-    RegexPattern::RegexPattern(const std::string& pattern, bool ignore_case, bool multi_line, bool dot_all)
+    RegexPattern::RegexPattern(const std::string& pattern, const bool ignore_case, const bool multi_line,
+                               const bool dot_all)
         : m_pattern(pattern), m_ignore_case(ignore_case), m_multi_line(multi_line), m_dot_all(dot_all) {
         std::regex::flag_type flags = std::regex::ECMAScript;
         if (ignore_case) {

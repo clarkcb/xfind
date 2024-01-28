@@ -23,7 +23,7 @@ namespace cppfind {
         FileTypes();
         ~FileTypes();
         static FileType from_name(const std::string& name);
-        static std::string to_name(const FileType& filetype);
+        static std::string to_name(const FileType& file_type);
         FileType get_file_type(const std::string& file_path);
         bool is_archive_file(const std::string& file_path);
         bool is_audio_file(const std::string& file_path);

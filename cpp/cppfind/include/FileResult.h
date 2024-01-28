@@ -10,9 +10,8 @@
 namespace cppfind {
     class FileResult {
     public:
-        FileResult(std::string& path, std::string& file_name, FileType file_type, uint64_t file_size, long mod_time);
-        FileResult(const std::vector<std::string>& containers, std::string& path, std::string& file_name,
-                   FileType file_type, uint64_t file_size, long mod_time);
+        FileResult(const std::string& path, const std::string& file_name, FileType file_type, uint64_t file_size,
+                   long mod_time);
         FileResult(const std::vector<std::string>& containers, const std::string& path, const std::string& file_name,
                    FileType file_type, uint64_t file_size, long mod_time);
         [[nodiscard]] std::string path() const;

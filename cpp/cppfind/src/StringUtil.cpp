@@ -3,7 +3,8 @@
 #include "StringUtil.h"
 
 namespace cppfind {
-    std::vector<std::string> StringUtil::split_string(const std::string& s, const std::string& delims, const bool exclude_empty) {
+    std::vector<std::string> StringUtil::split_string(const std::string& s, const std::string& delims,
+                                                      const bool exclude_empty) {
         std::vector<std::string> parts;
         size_t start = 0;
         size_t end = 0;
@@ -23,9 +24,14 @@ namespace cppfind {
     }
 
     void StringUtil::ltrim(std::string& s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](const int ch) {
             return !std::isspace(ch);
         }));
+    }
+
+    std::string StringUtil::ltrim_copy(std::string s) {
+        StringUtil::ltrim(s);
+        return s;
     }
 
     void StringUtil::rtrim(std::string& s) {
@@ -34,9 +40,19 @@ namespace cppfind {
         }).base(), s.end());
     }
 
+    std::string StringUtil::rtrim_copy(std::string s) {
+        StringUtil::rtrim(s);
+        return s;
+    }
+
     void StringUtil::trim(std::string &s) {
         ltrim(s);
         rtrim(s);
+    }
+
+    std::string StringUtil::trim_copy(std::string s) {
+        StringUtil::trim(s);
+        return s;
     }
 
     bool StringUtil::char_in_string(const char c, const std::string& s) {
@@ -91,10 +107,10 @@ namespace cppfind {
         return std::mktime(&tm);
     }
 
-    std::string StringUtil::long_to_date_str(const long t) {
-        if (t == 0L) return "0";
+    std::string StringUtil::long_to_date_str(const long time) {
+        if (time == 0L) return "0";
         char buf[11];
-        struct tm *tm = localtime(&t);
+        struct tm *tm = localtime(&time);
 
         if (strftime(buf, sizeof(buf), "%Y-%m-%d", tm) == 0) {
             return "0";

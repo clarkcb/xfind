@@ -11,7 +11,7 @@ namespace cppfind {
         if (!m_short_arg.empty()) {
             m_sort_arg = m_short_arg;
             std::transform(m_sort_arg.begin(), m_sort_arg.end(), m_sort_arg.begin(),
-                           [](unsigned char c) { return std::tolower(c); });
+                           [](const unsigned char c) { return std::tolower(c); });
             m_sort_arg.append("@");
             m_sort_arg.append(m_long_arg);
         }

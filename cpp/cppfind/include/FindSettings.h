@@ -68,16 +68,15 @@ namespace cppfind {
 
 
     public:
-//        FindSettings();
         // property getters
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool debug() const;
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool include_hidden() const;
         [[nodiscard]] int max_depth() const;
-        [[nodiscard]] int min_depth() const;
         [[nodiscard]] long max_last_mod() const;
         [[nodiscard]] long max_size() const;
+        [[nodiscard]] int min_depth() const;
         [[nodiscard]] long min_last_mod() const;
         [[nodiscard]] long min_size() const;
         [[nodiscard]] bool print_dirs() const;
@@ -89,18 +88,19 @@ namespace cppfind {
         [[nodiscard]] bool sort_case_insensitive() const;
         [[nodiscard]] bool sort_descending() const;
         [[nodiscard]] bool verbose() const;
-        [[nodiscard]] std::set<FileType> in_file_types() const;
-        [[nodiscard]] std::set<FileType> out_file_types() const;
+
+        [[nodiscard]] std::set<std::string> in_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_archive_file_patterns() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_dir_patterns() const;
+        [[nodiscard]] std::set<std::string> in_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_file_patterns() const;
+        [[nodiscard]] std::set<FileType> in_file_types() const;
+        [[nodiscard]] std::set<std::string> out_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_archive_file_patterns() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_dir_patterns() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
-        [[nodiscard]] std::set<std::string> in_archive_extensions() const;
-        [[nodiscard]] std::set<std::string> in_extensions() const;
-        [[nodiscard]] std::set<std::string> out_archive_extensions() const;
         [[nodiscard]] std::set<std::string> out_extensions() const;
+        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
+        [[nodiscard]] std::set<FileType> out_file_types() const;
         [[nodiscard]] std::set<std::string> paths() const;
 
         // property setters
@@ -156,14 +156,13 @@ namespace cppfind {
         // utility methods
         static void add_pattern(const std::string& p, std::set<RegexPattern, RegexPatternCmp>& ps);
         static void add_extensions(const std::string& exts, std::set<std::string>& extensions);
-        static std::string find_patterns_to_string(std::set<RegexPattern, RegexPatternCmp>& patterns);
-        static std::string file_types_to_string(std::set<FileType>& types);
+        static std::string file_types_to_string(const std::set<FileType>& types);
+        static std::string patterns_to_string(const std::set<RegexPattern, RegexPatternCmp>& patterns);
         static SortBy sort_by_from_name(const std::string& name);
         static std::string sort_by_to_name(SortBy sort_by);
 
         // convert to string
         std::string string();
-
     };
 }
 
