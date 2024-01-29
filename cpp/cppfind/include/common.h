@@ -4,8 +4,8 @@
 #include <string>
 
 namespace cppfind {
-    void log(const std::string& name);
-    void log_error(const std::string& name);
+    void log(const std::string& msg);
+    void log_error(const std::string& msg);
 }
 
 #endif // CPPFIND_COMMON_H

@@ -3,7 +3,7 @@
 #include "FileTypes.h"
 #include "Finder.h"
 
-cppfind::FindSettings get_settings(std::string path) {
+cppfind::FindSettings get_settings(const std::string& path) {
     auto settings = cppfind::FindSettings();
     settings.add_path(path);
     return settings;

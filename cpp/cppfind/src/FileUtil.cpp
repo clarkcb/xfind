@@ -103,7 +103,7 @@ namespace cppfind {
     std::pair<std::string, std::string> FileUtil::split_path(const std::string& file_path) {
         std::string fp{file_path};
         size_t pos = fp.rfind('/');
-        size_t last_pos = fp.length() - 1;
+        const size_t last_pos = fp.length() - 1;
         if (pos == last_pos) {
             fp = fp.substr(0, last_pos);
             pos = fp.rfind('/');

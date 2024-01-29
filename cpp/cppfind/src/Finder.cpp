@@ -52,7 +52,7 @@ namespace cppfind {
     }
 
     bool Finder::is_matching_dir(const std::string& file_path) {
-        std::vector<std::string> elems = StringUtil::split_string(file_path, "/\\", true);
+        const std::vector<std::string> elems = StringUtil::split_string(file_path, "/\\", true);
         if (!m_settings.include_hidden()) {
             for (auto& elem : elems) {
                 if (FileUtil::is_hidden(elem)) {
@@ -80,7 +80,7 @@ namespace cppfind {
 
     bool Finder::is_matching_file(const std::string& file_name, const FileType& file_type, const struct stat* fpstat) {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
-            std::string ext = FileUtil::get_extension(file_name);
+            const std::string ext = FileUtil::get_extension(file_name);
             if ((!m_settings.in_extensions().empty()
                  && !StringUtil::string_in_set(ext, m_settings.in_extensions()))
                 || (!m_settings.out_extensions().empty()
@@ -144,12 +144,12 @@ namespace cppfind {
 
     std::optional<FileResult> Finder::filter_to_file_result(const std::string& file_path) {
         boost::filesystem::path p(file_path);
-        std::string file_name = p.filename().string();
+        const auto file_name = p.filename().string();
         if (!m_settings.include_hidden() && FileUtil::is_hidden(file_name)) {
             return std::nullopt;
         }
         std::string parent_path = p.parent_path().string();
-        auto file_type = m_file_types.get_file_type(file_name);
+        const auto file_type = m_file_types.get_file_type(file_name);
         struct stat fpstat;
         uint64_t file_size = 0;
         long mod_time = 0;
@@ -175,15 +175,15 @@ namespace cppfind {
     }
 
     FileResult* Finder::get_file_result(const std::string& file_path) {
-        boost::filesystem::path path(file_path);
-        std::string parent_path = path.parent_path().string();
-        std::string file_name = path.filename().string();
-        FileType file_type = m_file_types.get_file_type(file_path);
+        const boost::filesystem::path path(file_path);
+        const std::string parent_path = path.parent_path().string();
+        const std::string file_name = path.filename().string();
+        const FileType file_type = m_file_types.get_file_type(file_path);
         struct stat st;
         if (stat(file_path.c_str(), &st))
             return nullptr;
-        auto file_size = (uint64_t) st.st_size;
-        auto mod_time = (long) st.st_mtime;
+        const auto file_size = (uint64_t) st.st_size;
+        const auto mod_time = st.st_mtime;
         return new FileResult(parent_path, file_name, file_type, file_size, mod_time);
     }
 
@@ -313,9 +313,8 @@ namespace cppfind {
     std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_size(const FindSettings& settings) {
         if (settings.sort_case_insensitive()) {
             return cmp_file_results_by_size_ci;
-        } else {
-            return cmp_file_results_by_size;
         }
+        return cmp_file_results_by_size;
     }
 
     bool cmp_file_results_by_type(const FileResult& fr1, const FileResult& fr2) {

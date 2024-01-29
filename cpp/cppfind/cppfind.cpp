@@ -5,11 +5,11 @@
 
 using namespace cppfind;
 
-std::vector<std::string> get_matching_dirs(std::vector<FileResult>& file_results) {
-    std::set<std::string> dir_set{};
-    std::vector<std::string> matching_dirs = {};
-    for (const auto fr : file_results) {
-        if (dir_set.find(fr.path()) == dir_set.end()) {
+std::vector<std::string> get_matching_dirs(const std::vector<FileResult>& file_results) {
+    std::set<std::string> dir_set;
+    std::vector<std::string> matching_dirs;
+    for (const auto& fr : file_results) {
+        if (!dir_set.contains(fr.path())) {
             matching_dirs.push_back(fr.path());
         }
         dir_set.emplace(fr.path());
@@ -17,9 +17,10 @@ std::vector<std::string> get_matching_dirs(std::vector<FileResult>& file_results
     return matching_dirs;
 }
 
-std::vector<std::string> get_matching_files(std::vector<FileResult>& file_results) {
-    std::vector<std::string> matching_files{};
-    for (const auto fr : file_results) {
+std::vector<std::string> get_matching_files(const std::vector<FileResult>& file_results) {
+    std::vector<std::string> matching_files;
+    matching_files.reserve(file_results.size());
+    for (const auto& fr : file_results) {
         matching_files.push_back(fr.string());
     }
     return matching_files;
@@ -37,7 +38,7 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        auto settings = options->settings_from_args(argc, argv);
+        const auto settings = options->settings_from_args(argc, argv);
 
         if (settings->debug()) {
             log(settings->string());
@@ -49,10 +50,10 @@ int main(int argc, char *argv[]) {
 
         auto* finder = new Finder(*settings);
 
-        std::vector<FileResult> file_results = finder->find();
+        const std::vector<FileResult> file_results = finder->find();
 
         if (settings->print_dirs()) {
-            std::vector<std::string> dirs = get_matching_dirs(file_results);
+            const std::vector<std::string> dirs = get_matching_dirs(file_results);
             std::string msg = "\nMatching directories";
             if (dirs.empty()) {
                 msg.append(": 0");
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
         }
 
         if (settings->print_files()) {
-            std::vector<std::string> files = get_matching_files(file_results);
+            const std::vector<std::string> files = get_matching_files(file_results);
             std::string msg = "\nMatching files";
             if (files.empty()) {
                 msg.append(": 0");

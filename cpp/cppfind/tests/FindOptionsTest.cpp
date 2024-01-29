@@ -69,8 +69,8 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(paths.contains("."));
 }
 
-bool set_has_pattern(std::set<cppfind::RegexPattern, cppfind::RegexPatternCmp> set, std::string pattern) {
-    std::smatch pmatch;
+bool set_has_pattern(const std::set<cppfind::RegexPattern, cppfind::RegexPatternCmp>& set, const std::string& pattern) {
+    //std::smatch pmatch;
     for (auto& r : set) {
         if (r.pattern() == pattern) {
             return true;

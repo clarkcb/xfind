@@ -85,7 +85,7 @@ namespace cppfind {
     }
 
     // TODO: want string to be sorted
-    std::string StringUtil::string_set_to_string(std::set<std::string>& set) {
+    std::string StringUtil::string_set_to_string(const std::set<std::string>& set) {
         std::string ss_string = "[";
         for (auto it = set.begin(); it != set.end(); ++it) {
             ss_string.append("\"");

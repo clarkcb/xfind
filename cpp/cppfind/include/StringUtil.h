@@ -30,7 +30,7 @@ namespace cppfind {
                                                              const std::function<bool(const std::string&)>& predicate);
 
         static std::string bool_to_string(bool b);
-        static std::string string_set_to_string(std::set<std::string>& set);
+        static std::string string_set_to_string(const std::set<std::string>& set);
         // static std::string string_vector_to_string(std::vector<std::string>& v);
 
         static long date_str_to_long(const std::string& date_str);
