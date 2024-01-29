@@ -17,8 +17,8 @@ namespace cppfind {
     public:
         FindOptions();
         FindSettings* settings_from_args(int &argc, char **argv);
-        void settings_from_file(const std::string& file_path, FindSettings& settings);
-        void settings_from_json(const std::string& json, FindSettings& settings);
+        void settings_from_file(std::string_view file_path, FindSettings& settings);
+        void settings_from_json(std::string_view json, FindSettings& settings);
         void usage();
         std::string get_usage_string();
     private:

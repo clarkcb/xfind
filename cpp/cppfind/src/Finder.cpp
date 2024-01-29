@@ -35,10 +35,11 @@ namespace cppfind {
         }
     }
 
-    bool matches_any_pattern(const std::string& s, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
+    bool matches_any_pattern(const std::string_view s, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
         std::smatch pmatch;
+        const std::string ss{s};
         for (auto& p : patterns) {
-            if (regex_search(s, pmatch, p.regex())) {
+            if (regex_search(ss, pmatch, p.regex())) {
                 return true;
             }
         }
@@ -51,7 +52,7 @@ namespace cppfind {
         });
     }
 
-    bool Finder::is_matching_dir(const std::string& file_path) {
+    bool Finder::is_matching_dir(const std::string_view file_path) {
         const std::vector<std::string> elems = StringUtil::split_string(file_path, "/\\", true);
         if (!m_settings.include_hidden()) {
             for (auto& elem : elems) {
@@ -64,7 +65,7 @@ namespace cppfind {
                 && (m_settings.out_dir_patterns().empty() || !any_matches_any_pattern(elems, m_settings.out_dir_patterns())));
     }
 
-    bool Finder::is_matching_archive_file(const std::string& file_name) {
+    bool Finder::is_matching_archive_file(const std::string_view file_name) {
         if (!m_settings.in_archive_extensions().empty() || !m_settings.out_archive_extensions().empty()) {
             std::string ext = FileUtil::get_extension(file_name);
             if ((!m_settings.in_archive_extensions().empty() &&
@@ -78,7 +79,7 @@ namespace cppfind {
                 && (m_settings.out_archive_file_patterns().empty() || !matches_any_pattern(file_name, m_settings.out_archive_file_patterns())));
     }
 
-    bool Finder::is_matching_file(const std::string& file_name, const FileType& file_type, const struct stat* fpstat) {
+    bool Finder::is_matching_file(const std::string_view file_name, const FileType& file_type, const struct stat* fpstat) {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
             const std::string ext = FileUtil::get_extension(file_name);
             if ((!m_settings.in_extensions().empty()
@@ -142,8 +143,9 @@ namespace cppfind {
         return true;
     }
 
-    std::optional<FileResult> Finder::filter_to_file_result(const std::string& file_path) {
-        boost::filesystem::path p(file_path);
+    std::optional<FileResult> Finder::filter_to_file_result(const std::string_view file_path) {
+        std::string fp{file_path};
+        boost::filesystem::path p(fp);
         const auto file_name = p.filename().string();
         if (!m_settings.include_hidden() && FileUtil::is_hidden(file_name)) {
             return std::nullopt;
@@ -154,7 +156,7 @@ namespace cppfind {
         uint64_t file_size = 0;
         long mod_time = 0;
         if (m_settings.need_stat()) {
-            if (stat(file_path.c_str(), &fpstat) == -1) {
+            if (stat(fp.c_str(), &fpstat) == -1) {
                 // TODO: report error
                 return std::nullopt;
             }

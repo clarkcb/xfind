@@ -95,7 +95,7 @@ namespace cppfind {
         }
     }
 
-    FileType FileTypes::from_name(const std::string& name) {
+    FileType FileTypes::from_name(const std::string_view name) {
          std::string lname{name};
         std::transform(lname.begin(), lname.end(), lname.begin(),
                        [](unsigned char c) { return std::tolower(c); });
@@ -156,7 +156,7 @@ namespace cppfind {
         }
     }
 
-    FileType FileTypes::get_file_type(const std::string& file_path) {
+    FileType FileTypes::get_file_type(const std::string_view file_path) const {
         // most specific first
         if (is_code_file(file_path)) {
             return FileType::CODE;
@@ -189,51 +189,51 @@ namespace cppfind {
         return FileType::UNKNOWN;
     }
 
-    bool FileTypes::is_archive_file(const std::string& file_path) {
+    bool FileTypes::is_archive_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_archive_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_archive_names);
     }
 
-    bool FileTypes::is_audio_file(const std::string& file_path) {
+    bool FileTypes::is_audio_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_audio_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_audio_names);
     }
 
-    bool FileTypes::is_binary_file(const std::string& file_path) {
+    bool FileTypes::is_binary_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_binary_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_binary_names);
     }
 
-    bool FileTypes::is_code_file(const std::string& file_path) {
+    bool FileTypes::is_code_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_code_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_code_names);
     }
 
-    bool FileTypes::is_font_file(const std::string& file_path) {
+    bool FileTypes::is_font_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_font_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_font_names);
     }
 
-    bool FileTypes::is_image_file(const std::string& file_path) {
+    bool FileTypes::is_image_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_image_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_image_names);
     }
 
-    bool FileTypes::is_text_file(const std::string& file_path) {
+    bool FileTypes::is_text_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_text_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_text_names);
     }
 
-    bool FileTypes::is_video_file(const std::string& file_path) {
+    bool FileTypes::is_video_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_video_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_video_names);
     }
 
-    bool FileTypes::is_unknown_file(const std::string& file_path) {
+    bool FileTypes::is_unknown_file(const std::string_view file_path) const {
         return get_file_type(file_path) == FileType::UNKNOWN;
     }
 
-    bool FileTypes::is_xml_file(const std::string& file_path) {
+    bool FileTypes::is_xml_file(const std::string_view file_path) const {
         return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_xml_extensions)
                || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_xml_names);
     }

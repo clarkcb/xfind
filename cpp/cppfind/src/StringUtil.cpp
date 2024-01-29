@@ -3,14 +3,15 @@
 #include "StringUtil.h"
 
 namespace cppfind {
-    std::vector<std::string> StringUtil::split_string(const std::string& s, const std::string& delims,
+    std::vector<std::string> StringUtil::split_string(const std::string_view s, const std::string_view delims,
                                                       const bool exclude_empty) {
         std::vector<std::string> parts;
         size_t start = 0;
         size_t end = 0;
+        std::string ss{s};
         while (end != std::string::npos) {
             end = s.find_first_of(delims, start);
-            std::string part = s.substr(start, end - start);
+            std::string part = ss.substr(start, end - start);
             if (!part.empty() || !exclude_empty) {
                 parts.push_back(part);
             }
@@ -19,7 +20,7 @@ namespace cppfind {
         return parts;
     }
 
-    std::vector<std::string> StringUtil::split_string(const std::string& s, const std::string& delims) {
+    std::vector<std::string> StringUtil::split_string(const std::string_view s, const std::string_view delims) {
         return split_string(s, delims, true);
     }
 
@@ -35,7 +36,7 @@ namespace cppfind {
     }
 
     void StringUtil::rtrim(std::string& s) {
-        s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](const int ch) {
             return !std::isspace(ch);
         }).base(), s.end());
     }
@@ -55,15 +56,16 @@ namespace cppfind {
         return s;
     }
 
-    bool StringUtil::char_in_string(const char c, const std::string& s) {
+    bool StringUtil::char_in_string(const char c, const std::string_view s) {
         return s.find(c) != std::string::npos;
     }
-    bool StringUtil::string_in_set(const std::string& s, const std::set<std::string>& set) {
-        return set.find(s) != set.end();
+
+    bool StringUtil::string_in_set(const std::string_view s, const std::set<std::string>& set) {
+        return set.contains(std::string{s});
     }
 
-    bool StringUtil::string_in_vector(const std::string& s, const std::vector<std::string>& vec) {
-        return std::find(vec.begin(), vec.end(), s) != vec.end();
+    bool StringUtil::string_in_vector(const std::string_view s, const std::vector<std::string>& vec) {
+        return std::find(vec.begin(), vec.end(), std::string{s}) != vec.end();
     }
 
     std::set<std::string> StringUtil::filter_string_set(const std::set<std::string>& set,
@@ -80,7 +82,7 @@ namespace cppfind {
         return filtered;
     }
 
-    std::string StringUtil::bool_to_string(bool b) {
+    std::string StringUtil::bool_to_string(const bool b) {
         return b ? "true" : "false";
     }
 
@@ -99,9 +101,9 @@ namespace cppfind {
         return ss_string;
     }
 
-    long StringUtil::date_str_to_long(const std::string& date_str) {
+    long StringUtil::date_str_to_long(const std::string_view date_str) {
         std::tm tm{};
-        if (strptime(date_str.c_str(), "%Y-%m-%d", &tm) == nullptr) {
+        if (strptime(std::string{date_str}.c_str(), "%Y-%m-%d", &tm) == nullptr) {
             return -1;
         }
         return std::mktime(&tm);

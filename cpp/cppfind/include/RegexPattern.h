@@ -7,8 +7,8 @@
 namespace cppfind {
     class RegexPattern {
     public:
-        explicit RegexPattern(const std::string& pattern);
-        RegexPattern(const std::string& pattern, bool ignore_case, bool multi_line, bool dot_all);
+        explicit RegexPattern(std::string_view pattern);
+        RegexPattern(std::string_view pattern, bool ignore_case, bool multi_line, bool dot_all);
         [[nodiscard]] std::string pattern() const;
         [[nodiscard]] bool ignore_case() const;
         [[nodiscard]] bool multi_line() const;
@@ -16,7 +16,7 @@ namespace cppfind {
         [[nodiscard]] std::regex regex() const;
 
         // convert to string
-        std::string string();
+        std::string string() const;
 
     private:
         std::string m_pattern;

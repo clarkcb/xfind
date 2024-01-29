@@ -136,29 +136,29 @@ namespace cppfind {
         void verbose(bool verbose);
 
         // add elements methods
-        void add_in_archive_extension(const std::string& ext);
-        void add_in_archive_file_pattern(const std::string& pattern);
-        void add_in_dir_pattern(const std::string& pattern);
-        void add_in_extension(const std::string& ext);
-        void add_in_file_pattern(const std::string& pattern);
+        void add_in_archive_extension(std::string_view ext);
+        void add_in_archive_file_pattern(std::string_view pattern);
+        void add_in_dir_pattern(std::string_view pattern);
+        void add_in_extension(std::string_view ext);
+        void add_in_file_pattern(std::string_view pattern);
         void add_in_file_type(FileType file_type);
-        void add_out_archive_extension(const std::string& ext);
-        void add_out_archive_file_pattern(const std::string& pattern);
-        void add_out_dir_pattern(const std::string& pattern);
-        void add_out_extension(const std::string& ext);
-        void add_out_file_pattern(const std::string& pattern);
+        void add_out_archive_extension(std::string_view ext);
+        void add_out_archive_file_pattern(std::string_view pattern);
+        void add_out_dir_pattern(std::string_view pattern);
+        void add_out_extension(std::string_view ext);
+        void add_out_file_pattern(std::string_view pattern);
         void add_out_file_type(FileType file_type);
-        void add_path(const std::string& path);
+        void add_path(std::string_view path);
 
         // need elements methods
         bool need_stat() const;
 
         // utility methods
-        static void add_pattern(const std::string& p, std::set<RegexPattern, RegexPatternCmp>& ps);
-        static void add_extensions(const std::string& exts, std::set<std::string>& extensions);
+        static void add_pattern(std::string_view p, std::set<RegexPattern, RegexPatternCmp>& ps);
+        static void add_extensions(std::string_view exts, std::set<std::string>& extensions);
         static std::string file_types_to_string(const std::set<FileType>& types);
         static std::string patterns_to_string(const std::set<RegexPattern, RegexPatternCmp>& patterns);
-        static SortBy sort_by_from_name(const std::string& name);
+        static SortBy sort_by_from_name(std::string_view name);
         static std::string sort_by_to_name(SortBy sort_by);
 
         // convert to string

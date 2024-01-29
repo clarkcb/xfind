@@ -6,7 +6,7 @@
 namespace cppfind {
     class FindException : public std::exception {
     public:
-        explicit FindException(const std::string& message);
+        explicit FindException(std::string_view message);
         [[nodiscard]] std::string message() const noexcept;
         [[nodiscard]] const char *what() const noexcept override;
 

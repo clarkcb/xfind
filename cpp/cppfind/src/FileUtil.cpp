@@ -6,7 +6,7 @@
 
 namespace cppfind {
     // TODO: find lib function for this, current implementation is incomplete
-    std::string FileUtil::expand_path(const std::string& file_path) {
+    std::string FileUtil::expand_path(const std::string_view file_path) {
         if (file_path.at(0) == '~') {
             std::string expanded = getenv("HOME");
             if (file_path.length() > 1) {
@@ -14,17 +14,17 @@ namespace cppfind {
             }
             return expanded;
         }
-        return file_path;
+        return std::string{file_path};
     }
 
-    bool FileUtil::file_exists(const std::string& file_path) {
+    bool FileUtil::file_exists(const std::string_view file_path) {
         struct stat st;
-        return (stat(file_path.c_str(), &st) == 0);
+        return stat(std::string{file_path}.c_str(), &st) == 0;
     }
 
-    uint64_t FileUtil::file_size(const std::string& file_path) {
+    uint64_t FileUtil::file_size(const std::string_view file_path) {
         struct stat st;
-        if (stat(file_path.c_str(), &st)) /*failure*/
+        if (stat(std::string{file_path}.c_str(), &st)) /*failure*/
             return -1; // when file does not exist or is not accessible
         return (uint64_t) st.st_size;
     }
@@ -36,71 +36,76 @@ namespace cppfind {
     }
 
     // implement the get_extension method
-    std::string FileUtil::get_extension(const std::string& name) {
-        const size_t pos = name.rfind('.');
+    std::string FileUtil::get_extension(const std::string_view name) {
+        const auto n = std::string{name};
+        const size_t pos = n.rfind('.');
         if (pos == 0 || pos == std::string::npos) {
             return "";
         }
-        return name.substr(pos + 1);
+        return n.substr(pos + 1);
     }
 
     // implement the get_file_name method
     // TODO: make this cross-platform
-    std::string FileUtil::get_file_name(const std::string& file_path) {
+    std::string FileUtil::get_file_name(const std::string_view file_path) {
         // TODO: make this cross-platform
+        auto fp = std::string{file_path};
         const size_t pos = file_path.rfind('/');
         if (pos == std::string::npos) {
-            return file_path;
+            return fp;
         }
-        return file_path.substr(pos + 1);
+        return fp.substr(pos + 1);
     }
 
     // implement the is_directory method
-    bool FileUtil::is_directory(const std::string& name) {
+    bool FileUtil::is_directory(const std::string_view name) {
         struct stat st;
-        if (stat(name.c_str(), &st)) /*failure*/
+        if (stat(std::string{name}.c_str(), &st)) /*failure*/
             return false; // when file does not exist or is not accessible
         return (st.st_mode & S_IFDIR) != 0;
     }
 
     // implement the is_regular_file method
-    bool FileUtil::is_regular_file(const std::string& name) {
+    bool FileUtil::is_regular_file(const std::string_view name) {
         struct stat st;
-        if (stat(name.c_str(), &st)) /*failure*/
+        if (stat(std::string{name}.c_str(), &st)) /*failure*/
             return false; // when file does not exist or is not accessible
         return (st.st_mode & S_IFREG) != 0;
     }
 
     // implement the is_dot_dir method
-    bool FileUtil::is_dot_dir(const std::string& name) {
+    bool FileUtil::is_dot_dir(const std::string_view name) {
         return name == "." || name == ".." ||
             name == "./" || name == "../" ||
             name == ".\\" || name == "..\\";
     }
 
     // implement the is_hidden method
-    bool FileUtil::is_hidden(const std::string& name) {
-        return !name.empty() && name[0] == '.' && !FileUtil::is_dot_dir(name);
+    bool FileUtil::is_hidden(const std::string_view name) {
+        return !name.empty() && name[0] == '.' && !is_dot_dir(name);
     }
 
     // implement the join_path method
     // TODO: make this cross-platform
-    std::string FileUtil::join_path(const std::string& path1, const std::string& path2) {
+    std::string FileUtil::join_path(const std::string_view path1, const std::string_view path2) {
+        if (path1.empty() && path2.empty()) return "";
+        std::string p1{path1};
+        std::string p2{path2};
         if (path1.empty()) {
-            return path2;
+            return p2;
         }
         if (path2.empty()) {
-            return path1;
+            return p1;
         }
         if (path1[path1.length() - 1] == '/' || path1[path1.length() - 1] == '\\') {
-            return path1 + path2;
+            return p1 + p2;
         }
-        return path1 + "/" + path2;
+        return p1 + "/" + p2;
     }
 
     // implement the split_path method
     // TODO: make this cross-platform
-    std::pair<std::string, std::string> FileUtil::split_path(const std::string& file_path) {
+    std::pair<std::string, std::string> FileUtil::split_path(const std::string_view file_path) {
         std::string fp{file_path};
         size_t pos = fp.rfind('/');
         const size_t last_pos = fp.length() - 1;

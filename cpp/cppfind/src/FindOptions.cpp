@@ -171,7 +171,7 @@ namespace cppfind {
         return settings;
     }
 
-    void FindOptions::settings_from_file(const std::string& file_path, FindSettings& settings) {
+    void FindOptions::settings_from_file(const std::string_view file_path, FindSettings& settings) {
         if (!FileUtil::file_exists(file_path)) {
             std::string msg = "Settings file not found: ";
             msg.append(file_path);
@@ -179,7 +179,7 @@ namespace cppfind {
         }
 
         uint64_t file_size = FileUtil::file_size(file_path);
-        FILE *fp = fopen(file_path.c_str(), "r");
+        FILE *fp = fopen(std::string{file_path}.c_str(), "r");
 
         char readBuffer[file_size];
         rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -191,9 +191,9 @@ namespace cppfind {
         settings_from_document(document, settings);
     }
 
-    void FindOptions::settings_from_json(const std::string& json, FindSettings& settings) {
+    void FindOptions::settings_from_json(const std::string_view json, FindSettings& settings) {
         rapidjson::Document document;
-        document.Parse(json.c_str());
+        document.Parse(std::string{json}.c_str());
         settings_from_document(document, settings);
     }
 

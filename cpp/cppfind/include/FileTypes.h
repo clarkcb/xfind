@@ -22,19 +22,19 @@ namespace cppfind {
     public:
         FileTypes();
         ~FileTypes();
-        static FileType from_name(const std::string& name);
+        static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        FileType get_file_type(const std::string& file_path);
-        bool is_archive_file(const std::string& file_path);
-        bool is_audio_file(const std::string& file_path);
-        bool is_binary_file(const std::string& file_path);
-        bool is_code_file(const std::string& file_path);
-        bool is_font_file(const std::string& file_path);
-        bool is_image_file(const std::string& file_path);
-        bool is_text_file(const std::string& file_path);
-        bool is_unknown_file(const std::string& file_path);
-        bool is_video_file(const std::string& file_path);
-        bool is_xml_file(const std::string& file_path);
+        FileType get_file_type(std::string_view file_path) const;
+        bool is_archive_file(std::string_view file_path) const;
+        bool is_audio_file(std::string_view file_path) const;
+        bool is_binary_file(std::string_view file_path) const;
+        bool is_code_file(std::string_view file_path) const;
+        bool is_font_file(std::string_view file_path) const;
+        bool is_image_file(std::string_view file_path) const;
+        bool is_text_file(std::string_view file_path) const;
+        bool is_unknown_file(std::string_view file_path) const;
+        bool is_video_file(std::string_view file_path) const;
+        bool is_xml_file(std::string_view file_path) const;
     private:
         std::set<std::string> m_archive_extensions;
         std::set<std::string> m_archive_names;

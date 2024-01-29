@@ -253,23 +253,23 @@ namespace cppfind {
         m_verbose = verbose;
     }
 
-    void FindSettings::add_in_archive_extension(const std::string& ext) {
+    void FindSettings::add_in_archive_extension(const std::string_view ext) {
         add_extensions(ext, m_in_archive_extensions);
     }
 
-    void FindSettings::add_in_archive_file_pattern(const std::string& pattern) {
+    void FindSettings::add_in_archive_file_pattern(const std::string_view pattern) {
         add_pattern(pattern, m_in_archive_file_patterns);
     }
 
-    void FindSettings::add_in_dir_pattern(const std::string& pattern) {
+    void FindSettings::add_in_dir_pattern(const std::string_view pattern) {
         add_pattern(pattern, m_in_dir_patterns);
     }
 
-    void FindSettings::add_in_extension(const std::string& ext) {
+    void FindSettings::add_in_extension(const std::string_view ext) {
         add_extensions(ext, m_in_extensions);
     }
 
-    void FindSettings::add_in_file_pattern(const std::string& pattern) {
+    void FindSettings::add_in_file_pattern(const std::string_view pattern) {
         add_pattern(pattern, m_in_file_patterns);
     }
 
@@ -277,23 +277,23 @@ namespace cppfind {
         m_in_file_types.emplace(file_type);
     }
 
-    void FindSettings::add_out_archive_extension(const std::string& ext) {
+    void FindSettings::add_out_archive_extension(const std::string_view ext) {
         add_extensions(ext, m_out_archive_extensions);
     }
 
-    void FindSettings::add_out_archive_file_pattern(const std::string& pattern) {
+    void FindSettings::add_out_archive_file_pattern(const std::string_view pattern) {
         add_pattern(pattern, m_out_archive_file_patterns);
     }
 
-    void FindSettings::add_out_dir_pattern(const std::string& pattern) {
+    void FindSettings::add_out_dir_pattern(const std::string_view pattern) {
         add_pattern(pattern, m_out_dir_patterns);
     }
 
-    void FindSettings::add_out_extension(const std::string& ext) {
+    void FindSettings::add_out_extension(const std::string_view ext) {
         add_extensions(ext, m_out_extensions);
     }
 
-    void FindSettings::add_out_file_pattern(const std::string& pattern) {
+    void FindSettings::add_out_file_pattern(const std::string_view pattern) {
         add_pattern(pattern, m_out_file_patterns);
     }
 
@@ -301,16 +301,16 @@ namespace cppfind {
         m_out_file_types.emplace(file_type);
     }
 
-    void FindSettings::add_path(const std::string& path) {
+    void FindSettings::add_path(const std::string_view path) {
         m_paths.emplace(path);
     }
 
-    void FindSettings::add_pattern(const std::string& p, std::set<RegexPattern, RegexPatternCmp>& ps) {
-        ps.emplace(p);
+    void FindSettings::add_pattern(const std::string_view p, std::set<RegexPattern, RegexPatternCmp>& ps) {
+        ps.emplace(std::string{p});
     }
 
-    void FindSettings::add_extensions(const std::string& exts, std::set<std::string>& extensions) {
-        const std::vector<std::string> xs = StringUtil::split_string(exts, ",", true);
+    void FindSettings::add_extensions(const std::string_view exts, std::set<std::string>& extensions) {
+        const std::vector<std::string> xs = StringUtil::split_string(std::string{exts}, ",", true);
         for (const auto& x : xs) {
             if (!x.empty()) {
                 extensions.emplace(x);
@@ -355,7 +355,7 @@ namespace cppfind {
                || m_min_size > 0;
     }
 
-    SortBy FindSettings::sort_by_from_name(const std::string& name) {
+    SortBy FindSettings::sort_by_from_name(const std::string_view name) {
         std::string lname{name};
         // std::transform(lname.begin(), lname.end(), lname.begin(),
         //                [](const unsigned char c) { return std::tolower(c); });

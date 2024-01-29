@@ -3,11 +3,11 @@
 #include "RegexPattern.h"
 
 namespace cppfind {
-    RegexPattern::RegexPattern(const std::string& pattern)
-        : m_pattern(pattern), m_ignore_case(false), m_multi_line(false), m_dot_all(false), m_regex(std::regex(pattern)) {
+    RegexPattern::RegexPattern(const std::string_view pattern)
+        : m_pattern(pattern), m_ignore_case(false), m_multi_line(false), m_dot_all(false), m_regex(std::regex(std::string{pattern})) {
     }
 
-    RegexPattern::RegexPattern(const std::string& pattern, const bool ignore_case, const bool multi_line,
+    RegexPattern::RegexPattern(const std::string_view pattern, const bool ignore_case, const bool multi_line,
                                const bool dot_all)
         : m_pattern(pattern), m_ignore_case(ignore_case), m_multi_line(multi_line), m_dot_all(dot_all) {
         std::regex::flag_type flags = std::regex::ECMAScript;
@@ -20,7 +20,7 @@ namespace cppfind {
 //        if (dot_all) {
 //            flags |= std::regex::dotall;
 //        }
-        m_regex = std::regex(pattern, flags);
+        m_regex = std::regex(std::string{pattern}, flags);
     }
 
     std::string RegexPattern::pattern() const {
@@ -43,7 +43,7 @@ namespace cppfind {
         return m_regex;
     }
 
-    std::string RegexPattern::string() {
+    std::string RegexPattern::string() const {
         return pattern();
     }
 }

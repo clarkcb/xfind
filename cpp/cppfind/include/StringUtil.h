@@ -11,8 +11,8 @@
 namespace cppfind {
     class StringUtil {
     public:
-        static std::vector<std::string> split_string(const std::string& s, const std::string& delims);
-        static std::vector<std::string> split_string(const std::string& s, const std::string& delims, bool exclude_empty);
+        static std::vector<std::string> split_string(std::string_view s, std::string_view delims);
+        static std::vector<std::string> split_string(std::string_view s, std::string_view delims, bool exclude_empty);
         static void ltrim(std::string& s);
         static std::string ltrim_copy(std::string s);
         static void rtrim(std::string& s);
@@ -20,9 +20,9 @@ namespace cppfind {
         static void trim(std::string& s);
         static std::string trim_copy(std::string s);
 
-        static bool char_in_string(char c, const std::string& s);
-        static bool string_in_set(const std::string& s, const std::set<std::string>& set);
-        static bool string_in_vector(const std::string& s, const std::vector<std::string>& set);
+        static bool char_in_string(char c, std::string_view s);
+        static bool string_in_set(std::string_view s, const std::set<std::string>& set);
+        static bool string_in_vector(std::string_view s, const std::vector<std::string>& vec);
 
         static std::set<std::string> filter_string_set(const std::set<std::string>& set,
                                                        const std::function<bool(const std::string&)>& predicate);
@@ -33,7 +33,7 @@ namespace cppfind {
         static std::string string_set_to_string(const std::set<std::string>& set);
         // static std::string string_vector_to_string(std::vector<std::string>& v);
 
-        static long date_str_to_long(const std::string& date_str);
+        static long date_str_to_long(std::string_view date_str);
         static std::string long_to_date_str(long time);
 
     private:
