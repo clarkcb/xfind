@@ -1,0 +1,24 @@
+module RbFind
+  # FindFile - encapsulates a file to be found
+  class FileResult
+    @containers: Array[String]
+    @path: String
+    @file_name: String
+    @file_type: FileType
+    @stat: nil | File::Stat
+
+    attr_accessor containers: Array[String]
+    attr_reader path: String
+    attr_reader file_name: String
+    attr_reader file_type: FileType
+    attr_reader stat: nil | File::Stat
+
+    CONTAINER_SEPARATOR: "!"
+
+    def initialize: (String path, String file_name, FileType file_type, nil | File::Stat stat) -> void
+
+    def relative_path: () -> String
+
+    def to_s: () -> String
+  end
+end

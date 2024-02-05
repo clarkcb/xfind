@@ -1,0 +1,6 @@
+module RbFind
+  # FindError - custom exception class
+  class FindError < StandardError
+    def initialize: (String msg) -> void
+  end
+end

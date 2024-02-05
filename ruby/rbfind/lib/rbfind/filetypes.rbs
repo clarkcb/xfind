@@ -1,0 +1,52 @@
+module RbFind
+  module FileType
+    UNKNOWN: 0
+    ARCHIVE: 1
+    AUDIO: 2
+    BINARY: 3
+    CODE: 4
+    FONT: 5
+    IMAGE: 6
+    TEXT: 7
+    VIDEO: 8
+    XML: 9
+
+    NAMES: ::Array[:unknown | :archive | :audio | :binary | :code | :font | :image | :text | :video | :xml]
+
+    def self?.from_name: (String name) -> FileType
+
+    def self?.from_sym: (Symbol sym) -> FileType
+
+    def self?.to_name: (FileType file_type) -> String
+  end
+
+  # FileTypes - provides basic file type information
+  class FileTypes
+    @file_type_ext_map: Hash[Symbol, Set[String]]
+    @file_type_name_map: Hash[Symbol, Set[String]]
+
+    def initialize: () -> void
+
+    def set_file_type_maps_from_json: () -> void
+
+    def get_file_type: (String file_name) -> FileType
+
+    def archive_file?: (String file_name) -> bool
+
+    def audio_file?: (String file_name) -> bool
+
+    def binary_file?: (String file_name) -> bool
+
+    def code_file?: (String file_name) -> bool
+
+    def font_file?: (String file_name) -> bool
+
+    def image_file?: (String file_name) -> bool
+
+    def text_file?: (String file_name) -> bool
+
+    def video_file?: (String file_name) -> bool
+
+    def xml_file?: (String file_name) -> bool
+  end
+end

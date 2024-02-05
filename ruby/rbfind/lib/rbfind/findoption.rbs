@@ -1,0 +1,19 @@
+module RbFind
+  # FindOption - encapsulates a CLI find option
+  class FindOption
+    @short_arg: String
+    @long_arg: String
+    @desc: String
+    # @func: Proc
+
+    attr_reader short_arg: String
+    attr_reader long_arg: String
+    attr_reader desc: String
+    # attr_reader func: Proc
+
+    # def initialize: (String short_arg, String long_arg, String desc, Proc func) -> void
+    def initialize: (String short_arg, String long_arg, String desc) -> void
+
+    def sort_arg: () -> String
+  end
+end

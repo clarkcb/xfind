@@ -9,16 +9,21 @@ module RbFind
     FILETYPE = 3
     LASTMOD  = 4
 
-    NAMES = %w[filepath filename filesize filetype lastmod].freeze
+    NAMES = Array[:filepath, :filename, :filesize, :filetype, :lastmod].freeze
 
     module_function
     def from_name(name)
-      idx = NAMES.index(name.downcase)
+      idx = NAMES.index(name.downcase.to_sym)
+      idx.nil? ? 0 : idx
+    end
+
+    def from_sym(sym)
+      idx = NAMES.index(sym)
       idx.nil? ? 0 : idx
     end
 
     def to_name(sort_by)
-      sort_by < NAMES.size ? NAMES[sort_by] : NAMES[0]
+      sort_by < NAMES.size ? NAMES[sort_by].to_s : NAMES[0].to_s
     end
   end
 
@@ -61,6 +66,12 @@ module RbFind
     def initialize
       @archives_only = false
       @debug = false
+      @in_archive_extensions = Set::new
+      @in_archive_file_patterns = Set::new
+      @in_dir_patterns = Set::new
+      @in_extensions = Set::new
+      @in_file_patterns = Set::new
+      @in_file_types = Set::new
       @include_archives = false
       @include_hidden = false
       @max_depth = -1
@@ -69,6 +80,13 @@ module RbFind
       @min_depth = -1
       @min_last_mod = nil
       @min_size = 0
+      @out_archive_extensions = Set::new
+      @out_archive_file_patterns = Set::new
+      @out_dir_patterns = Set::new
+      @out_extensions = Set::new
+      @out_file_patterns = Set::new
+      @out_file_types = Set::new
+      @paths = Set::new
       @print_dirs = false
       @print_files = false
       @print_usage = false
@@ -78,56 +96,42 @@ module RbFind
       @sort_case_insensitive = false
       @sort_descending = false
       @verbose = false
-
-      @in_archive_extensions = []
-      @in_archive_file_patterns = []
-      @in_dir_patterns = []
-      @in_extensions = []
-      @in_file_patterns = []
-      @in_file_types = []
-      @out_archive_extensions = []
-      @out_archive_file_patterns = []
-      @out_dir_patterns = []
-      @out_extensions = []
-      @out_file_patterns = []
-      @out_file_types = []
-      @paths = []
     end
 
     def add_exts(exts, ext_set)
       if exts.instance_of? String
         exts.split(',').each do |x|
-          ext_set.push(x)
+          ext_set.add(x)
         end
       elsif exts.instance_of? Array
         exts.each do |x|
-          ext_set.push(x)
+          ext_set.add(x)
         end
       end
     end
 
     def add_patterns(patterns, pattern_set)
       if patterns.instance_of? String
-        pattern_set.push(Regexp.new(patterns))
+        pattern_set.add(Regexp.new(patterns))
       elsif patterns.instance_of? Array
         patterns.each do |p|
-          pattern_set.push(Regexp.new(p))
+          pattern_set.add(Regexp.new(p))
         end
       end
     end
 
     def add_pattern(pattern, pattern_set)
-      pattern_set.push(Regexp.new(pattern))
+      pattern_set.add(Regexp.new(pattern))
     end
 
     def add_file_types(file_types, file_types_set)
       if file_types.instance_of? String
         file_types.split(',').each do |t|
-          file_types_set.push(FileType.from_name(t))
+          file_types_set.add(FileType.from_name(t))
         end
       elsif file_types.instance_of? Array
         file_types.each do |t|
-          file_types_set.push(FileType.from_name(t))
+          file_types_set.add(FileType.from_name(t))
         end
       end
     end
@@ -142,7 +146,7 @@ module RbFind
       false
     end
 
-    def set_sort_by(sort_by_name)
+    def set_sort_by_for_name(sort_by_name)
       sort_by_name = sort_by_name.strip.downcase
       if sort_by_name == 'name'
         @sort_by = SortBy::FILENAME
@@ -157,14 +161,14 @@ module RbFind
       end
     end
 
-    def archives_only=(bool)
-      @archives_only = bool
-      @include_archives = bool if bool
+    def archives_only=(archives_only)
+      @archives_only = archives_only
+      @include_archives = archives_only if archives_only
     end
 
-    def debug=(bool)
-      @debug = bool
-      @verbose = bool if bool
+    def debug=(debug)
+      @debug = debug
+      @verbose = debug if debug
     end
 
     def last_mod_to_s(last_mod)
@@ -179,11 +183,11 @@ module RbFind
       'FindSettings(' +
         "archives_only=#{@archives_only}" +
         ", debug=#{@debug}" +
-        ', ' + list_to_s('in_archive_extensions', @in_archive_extensions) +
-        ', ' + list_to_s('in_archive_file_patterns', @in_archive_file_patterns.map { |p| p.source }) +
-        ', ' + list_to_s('in_dir_patterns', @in_dir_patterns.map { |p| p.source }) +
-        ', ' + list_to_s('in_extensions', @in_extensions) +
-        ', ' + list_to_s('in_file_patterns', @in_file_patterns.map { |p| p.source }) +
+        ', ' + set_to_s('in_archive_extensions', @in_archive_extensions) +
+        ', ' + array_to_s('in_archive_file_patterns', @in_archive_file_patterns.map { |p| p.source }) +
+        ', ' + array_to_s('in_dir_patterns', @in_dir_patterns.map { |p| p.source }) +
+        ', ' + set_to_s('in_extensions', @in_extensions) +
+        ', ' + array_to_s('in_file_patterns', @in_file_patterns.map { |p| p.source }) +
         ', ' + file_types_to_s('in_file_types', @in_file_types) +
         ", include_archives=#{@include_archives}" +
         ", include_hidden=#{@include_hidden}" +
@@ -193,19 +197,19 @@ module RbFind
         ", min_depth=#{@min_depth}" +
         ", min_last_mod=#{last_mod_to_s(@min_last_mod)}" +
         ", min_size=#{@min_size}" +
-        ', ' + list_to_s('out_archive_extensions', @out_archive_extensions) +
-        ', ' + list_to_s('out_archive_file_patterns', @out_archive_file_patterns.map { |p| p.source }) +
-        ', ' + list_to_s('out_dir_patterns', @out_dir_patterns.map { |p| p.source }) +
-        ', ' + list_to_s('out_extensions', @out_extensions) +
-        ', ' + list_to_s('out_file_patterns', @out_file_patterns.map { |p| p.source }) +
+        ', ' + set_to_s('out_archive_extensions', @out_archive_extensions) +
+        ', ' + array_to_s('out_archive_file_patterns', @out_archive_file_patterns.map { |p| p.source }) +
+        ', ' + array_to_s('out_dir_patterns', @out_dir_patterns.map { |p| p.source }) +
+        ', ' + set_to_s('out_extensions', @out_extensions) +
+        ', ' + array_to_s('out_file_patterns', @out_file_patterns.map { |p| p.source }) +
         ', ' + file_types_to_s('out_file_types', @out_file_types) +
-        ', ' + list_to_s('paths', @paths) +
+        ', ' + set_to_s('paths', @paths) +
         ", print_dirs=#{@print_dirs}" +
         ", print_files=#{@print_files}" +
         ", print_usage=#{@print_usage}" +
         ", print_version=#{@print_version}" +
         ", recursive=#{@recursive}" +
-        ", settings_only=#{@settings_only}" +
+        # ", settings_only=#{@settings_only}" +
         ", sort_by=" + SortBy::to_name(@sort_by) +
         ", sort_case_insensitive=#{@sort_case_insensitive}" +
         ", sort_descending=#{@sort_descending}" +
@@ -215,17 +219,29 @@ module RbFind
 
     private
 
-    def list_to_s(name, lst)
-      if lst.empty?
+    def array_to_s(name, arr)
+      if arr.empty?
         "#{name}=[]"
       else
-        "#{name}=[\"#{lst.join('", "')}\"]"
+        "#{name}=[\"#{arr.join('", "')}\"]"
       end
     end
 
-    def file_types_to_s(name, file_types)
+    def set_to_s(name, set)
+      if set.empty?
+        "#{name}=[]"
+      else
+        arr = set.to_a
+        arr.sort!
+        "#{name}=[\"#{arr.join('", "')}\"]"
+      end
+    end
+
+    def file_types_to_s(name, file_type_set)
       s = "#{name}=["
       count = 0
+      file_types = file_type_set.to_a
+      file_types.sort!
       file_types.each do |ft|
         s << ', ' if count.positive?
         s << FileType.to_name(ft)

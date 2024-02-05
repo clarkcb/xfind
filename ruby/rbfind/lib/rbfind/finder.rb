@@ -14,26 +14,24 @@ module RbFind
   # Finder - finds files according to settings
   class Finder
     attr_reader :settings
-    attr_reader :results
 
     def initialize(settings)
       @settings = settings
       validate_settings
       @file_types = FileTypes.new
-      @results = []
     end
 
-    def matching_dir?(dirname)
-      path_elems = dirname.split(File::SEPARATOR) - FileUtil.dot_dirs
+    def matching_dir?(dir_path)
+      path_elems = dir_path.split(File::SEPARATOR) - FileUtil.dot_dirs
       if !@settings.include_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
         return false
       end
       if !@settings.in_dir_patterns.empty? &&
-        !any_matches_any_pattern(path_elems, @settings.in_dir_patterns)
+        !any_matches_any_pattern?(path_elems, @settings.in_dir_patterns)
         return false
       end
       if !@settings.out_dir_patterns.empty? &&
-        any_matches_any_pattern(path_elems, @settings.out_dir_patterns)
+        any_matches_any_pattern?(path_elems, @settings.out_dir_patterns)
         return false
       end
       true
@@ -56,11 +54,11 @@ module RbFind
         end
       end
       if !@settings.in_file_patterns.empty? &&
-        !matches_any_pattern(file_result.file_name, @settings.in_file_patterns)
+        !matches_any_pattern?(file_result.file_name, @settings.in_file_patterns)
         return false
       end
       if !@settings.out_file_patterns.empty? &&
-        matches_any_pattern(file_result.file_name, @settings.out_file_patterns)
+        matches_any_pattern?(file_result.file_name, @settings.out_file_patterns)
         return false
       end
       if !@settings.in_file_types.empty? &&
@@ -100,11 +98,11 @@ module RbFind
         end
       end
       if !@settings.in_archive_file_patterns.empty? &&
-        !matches_any_pattern(filename, @settings.in_archive_file_patterns)
+        !matches_any_pattern?(filename, @settings.in_archive_file_patterns)
         return false
       end
       if !@settings.out_archive_file_patterns.empty? &&
-        matches_any_pattern(filename, @settings.out_archive_file_patterns)
+        matches_any_pattern?(filename, @settings.out_archive_file_patterns)
         return false
       end
       true
@@ -173,7 +171,7 @@ module RbFind
     def validate_settings
       raise FindError, 'Startpath not defined' if @settings.paths.empty?
       @settings.paths.each do |p|
-        raise FindError, 'Startpath not found' unless Pathname.new(p).exist?
+        raise FindError, 'Startpath not found' unless File.exist?(p)
         raise FindError, 'Startpath not readable' unless File.readable?(p)
       end
       if @settings.max_depth > -1 && @settings.min_depth > -1 && @settings.max_depth < @settings.min_depth
@@ -187,13 +185,13 @@ module RbFind
       end
     end
 
-    def matches_any_pattern(str, pattern_set)
+    def matches_any_pattern?(str, pattern_set)
       pattern_set.any? { |p| p.match(str) }
     end
 
-    def any_matches_any_pattern(str_list, pattern_set)
+    def any_matches_any_pattern?(str_list, pattern_set)
       str_list.each do |s|
-        return true if matches_any_pattern(s, pattern_set)
+        return true if matches_any_pattern?(s, pattern_set)
       end
       false
     end

@@ -1,0 +1,116 @@
+module RbFind
+  module SortBy
+    FILEPATH: 0
+    FILENAME: 1
+    FILESIZE: 2
+    FILETYPE: 3
+    LASTMOD: 4
+
+    NAMES: Array[:filepath | :filename | :filesize | :filetype | :lastmod]
+
+    def self?.from_name: (String name) -> SortBy
+
+    def self?.from_sym: (Symbol sym) -> SortBy
+
+    def self?.to_name: (SortBy sort_by) -> String
+  end
+
+  # FindSettings - encapsulates find settings
+  class FindSettings
+    @archives_only: bool
+    @debug: bool
+    @in_archive_extensions: Set[String]
+    @in_archive_file_patterns: Set[Regexp]
+    @in_dir_patterns: Set[Regexp]
+    @in_extensions: Set[String]
+    @in_file_patterns: Set[Regexp]
+    @in_file_types: Set[FileType]
+    @include_archives: bool
+    @include_hidden: bool
+    @max_depth: Integer
+    @max_last_mod: DateTime?
+    @max_size: Integer
+    @min_depth: Integer
+    @min_last_mod: DateTime?
+    @min_size: Integer
+    @out_archive_extensions: Set[String]
+    @out_archive_file_patterns: Set[Regexp]
+    @out_dir_patterns: Set[Regexp]
+    @out_extensions: Set[String]
+    @out_file_patterns: Set[Regexp]
+    @out_file_types: Set[FileType]
+    @paths: Set[String]
+    @print_dirs: bool
+    @print_files: bool
+    @print_usage: bool
+    @print_version: bool
+    @recursive: bool
+    @sort_by: SortBy
+    @sort_case_insensitive: bool
+    @sort_descending: bool
+    @verbose: bool
+
+    attr_reader archives_only: bool
+    attr_reader debug: bool
+    attr_accessor in_archive_extensions: Set[String]
+    attr_accessor in_archive_file_patterns: Set[Regexp]
+    attr_accessor in_dir_patterns: Set[Regexp]
+    attr_accessor in_extensions: Set[String]
+    attr_accessor in_file_patterns: Set[Regexp]
+    attr_accessor in_file_types: Set[FileType]
+    attr_accessor include_archives: bool
+    attr_accessor include_hidden: bool
+    attr_accessor max_depth: Integer
+    attr_accessor max_last_mod: DateTime?
+    attr_accessor max_size: Integer
+    attr_accessor min_depth: Integer
+    attr_accessor min_last_mod: DateTime?
+    attr_accessor min_size: Integer
+    attr_accessor out_archive_extensions: Set[String]
+    attr_accessor out_archive_file_patterns: Set[Regexp]
+    attr_accessor out_dir_patterns: Set[Regexp]
+    attr_accessor out_extensions: Set[String]
+    attr_accessor out_file_patterns: Set[Regexp]
+    attr_accessor out_file_types: Set[FileType]
+    attr_accessor paths: Set[String]
+    attr_accessor print_dirs: bool
+    attr_accessor print_files: bool
+    attr_accessor print_usage: bool
+    attr_accessor print_version: bool
+    attr_accessor recursive: bool
+    attr_accessor sort_by: SortBy
+    attr_accessor sort_case_insensitive: bool
+    attr_accessor sort_descending: bool
+    attr_accessor verbose: bool
+
+    def initialize: () -> void
+
+    def add_exts: (String | Array[String] exts, Set[String] ext_set) -> void
+
+    def add_patterns: (String | Array[String] patterns, Set[Regexp] pattern_set) -> void
+
+    def add_pattern: (String pattern, Set[Regexp] pattern_set) -> void
+
+    def add_file_types: (String | Array[String] file_types, Set[FileType] file_types_set) -> void
+
+    def need_stat?: () -> bool
+
+    def set_sort_by_for_name: (String sort_by_name) -> void
+
+    def archives_only=: (bool archives_only) -> void
+
+    def debug=: (bool debug) -> void
+
+    def last_mod_to_s: (DateTime? last_mod) -> String
+
+    def to_s: () -> String
+
+    private
+
+    def array_to_s: (String name, Array[String | Regexp] arr) -> String
+
+    def set_to_s: (String name, Set[String | Regexp] set) -> String
+
+    def file_types_to_s: (String name, Set[FileType] file_type_set) -> String
+  end
+end

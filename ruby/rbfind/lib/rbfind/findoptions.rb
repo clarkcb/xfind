@@ -11,6 +11,7 @@ module RbFind
 
   # FindOptions - parses CLI args into settings, generates usage string
   class FindOptions
+    attr_reader :options
 
     def initialize
       @options = []
@@ -20,7 +21,7 @@ module RbFind
       set_actions
       set_options_from_json
       # set_options_from_xml
-      @options.sort! { |a, b| a.sortarg <=> b.sortarg }
+      @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
     end
 
     def find_settings_from_args(args)
@@ -43,7 +44,7 @@ module RbFind
             raise FindError, "Invalid option: #{arg}"
           end
         else
-          settings.paths.push(arg)
+          settings.paths.add(arg)
         end
       end
       settings
@@ -168,13 +169,13 @@ module RbFind
           settings.add_file_types(x, settings.out_file_types)
         },
         'path': lambda { |x, settings|
-          settings.paths.push(x)
+          settings.paths.add(x)
         },
         'settings-file': lambda { |x, settings|
           settings_from_file(x, settings)
         },
         'sort-by': lambda { |x, settings|
-          settings.set_sort_by(x)
+          settings.set_sort_by_for_name(x)
         }
       }
       @bool_flag_action_dict = {
@@ -204,8 +205,8 @@ module RbFind
     end
 
     def set_options_from_json
-      findoptions_json_path = File.join(File.dirname(__FILE__), "../../data/findoptions.json")
-      f = File.open(findoptions_json_path, mode: 'r')
+      find_options_json_path = File.join(File.dirname(__FILE__), "../../data/findoptions.json")
+      f = File.open(find_options_json_path, mode: 'r')
       json = f.read
       json_hash = JSON.parse(json)
       json_hash['findoptions'].each do |so|
@@ -218,20 +219,12 @@ module RbFind
           end
         desc = so['desc']
         long_sym = long.to_sym
-        func =
-          if @arg_action_dict.key?(long_sym)
-            @arg_action_dict[long_sym]
-          elsif @bool_flag_action_dict.key?(long_sym)
-            @bool_flag_action_dict[long_sym]
-          else
-            raise FindError, "Unknown find option: #{long}"
-          end
-        @options.push(FindOption.new(short, long, desc, func))
+        @options.push(FindOption.new(short, long, desc))
         @long_arg_dict[long] = long_sym
         @long_arg_dict[short] = long_sym if short
       end
     rescue StandardError => e
-      raise FindError, "#{e} (file: #{findoptions_json_path})"
+      raise FindError, "#{e} (file: #{find_options_json_path})"
     ensure
       f&.close
     end

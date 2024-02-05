@@ -1,0 +1,3 @@
+module RbFind
+  VERSION: String
+end

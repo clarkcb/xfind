@@ -7,16 +7,14 @@ module RbFind
     attr_reader :short_arg
     attr_reader :long_arg
     attr_reader :desc
-    attr_reader :func
 
-    def initialize(short_arg, long_arg, desc, func)
+    def initialize(short_arg, long_arg, desc)
       @short_arg = short_arg
       @long_arg = long_arg
       @desc = desc
-      @func = func
     end
 
-    def sortarg
+    def sort_arg
       if !@short_arg.nil? && !@short_arg.empty?
         @short_arg.downcase + 'a' + @long_arg.downcase
       else

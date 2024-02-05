@@ -1,0 +1,5 @@
+module RbFind
+  def self?.log: (String message) -> void
+
+  def self?.log_err: (String message) -> void
+end

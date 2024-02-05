@@ -1,0 +1,37 @@
+module RbFind
+  # Finder - finds files according to settings
+  class Finder
+    @settings: FindSettings
+    @file_types: FileTypes
+
+    attr_reader settings: FindSettings
+
+    def initialize: (FindSettings settings) -> void
+
+    def matching_dir?: (String dir_path) -> bool
+
+    def matching_file?: (String file_path) -> bool
+
+    def matching_file_result?: (FileResult file_result) -> bool
+
+    def matching_archive_file?: (String file_path) -> bool
+
+    def filter_to_file_result: (String file_path) -> (nil | FileResult)
+
+    def find: () -> Array[FileResult]
+
+    private
+
+    def sort_file_results: (Array[FileResult] file_results) -> void
+
+    def validate_settings: () -> void
+
+    def matches_any_pattern?: (String str, Array[Regexp] pattern_set) -> bool
+
+    def any_matches_any_pattern?: (Array[String] str_list, Array[Regexp] pattern_set) -> bool
+
+    def file_path_to_file_result: (String file_path) -> FileResult
+
+    def get_file_results: (String file_path) -> Array[FileResult]
+  end
+end

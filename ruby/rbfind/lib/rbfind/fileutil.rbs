@@ -1,0 +1,16 @@
+module RbFind
+  # FileUtil - file utility functions
+  module FileUtil
+    def self?.dot_dirs: () -> ::Array["." | ".." | "./" | "../"]
+
+    def self?.dot_dir?: (String file_name) -> bool
+
+    def self?.get_extension: (String file_name) -> String
+
+    def self?.hidden?: (String file_name) -> bool
+
+    def self?.sep_indices: (String file_path) -> Array[Integer]
+
+    def self?.sep_count: (String file_path) -> Integer
+  end
+end
