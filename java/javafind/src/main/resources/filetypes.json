@@ -106,10 +106,11 @@
         "map", "mht", "mhtml", "ml", "mli", "nut", "p", "pas", "pbxproj", "pde",
         "php", "php3", "php4", "php5", "php7", "phps", "phtml", "pl", "pm",
         "pony", "ps1", "psc1", "psd1", "psm1", "psrc", "pssc", "pxd", "pxi",
-        "py", "pyw", "pyx", "r", "rb", "rc", "rc2", "reb", "red", "rexx", "rkt",
-        "rs", "s", "sass", "sb", "sb2", "sb3", "sbt", "sc", "scala", "scm",
-        "scpt", "scss", "sh", "shtml", "sln", "sql", "stm", "swift", "tbc",
-        "tcl", "tk", "ts", "tsx", "u3", "vb", "vbs", "vue", "xht", "xhtml", "y"
+        "py", "pyw", "pyx", "r", "rb", "rbs", "rc", "rc2", "reb", "red", "rexx",
+        "rkt", "rs", "s", "sass", "sb", "sb2", "sb3", "sbt", "sc", "scala",
+        "scm", "scpt", "scss", "sh", "shtml", "sln", "sql", "stm", "swift",
+        "tbc", "tcl", "tk", "ts", "tsx", "u3", "vb", "vbs", "vue", "xht",
+        "xhtml", "y"
       ],
       "names": [
         ".bash_history", ".bash_profile", ".bashrc", ".bzrignore",
