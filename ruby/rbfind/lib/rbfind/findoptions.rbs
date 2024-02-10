@@ -4,7 +4,7 @@ module RbFind
     @options: Array[FindOption]
     @arg_action_dict: Hash[Symbol, Proc]
     @bool_flag_action_dict: Hash[Symbol, Proc]
-    @long_arg_dict: untyped
+    @long_arg_dict: Hash[String, Symbol]
 
     attr_reader options: Array[FindOption]
 

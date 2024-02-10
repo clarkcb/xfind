@@ -2,4 +2,4 @@
 
 require_relative '../lib/rbfind'
 
-main
+find_main

@@ -103,7 +103,7 @@ module RbFind
         exts.split(',').each do |x|
           ext_set.add(x)
         end
-      elsif exts.instance_of? Array
+      elsif exts.instance_of? Enumerable
         exts.each do |x|
           ext_set.add(x)
         end
@@ -113,7 +113,7 @@ module RbFind
     def add_patterns(patterns, pattern_set)
       if patterns.instance_of? String
         pattern_set.add(Regexp.new(patterns))
-      elsif patterns.instance_of? Array
+      elsif patterns.instance_of? Enumerable
         patterns.each do |p|
           pattern_set.add(Regexp.new(p))
         end
@@ -129,7 +129,7 @@ module RbFind
         file_types.split(',').each do |t|
           file_types_set.add(FileType.from_name(t))
         end
-      elsif file_types.instance_of? Array
+      elsif file_types.instance_of? Enumerable
         file_types.each do |t|
           file_types_set.add(FileType.from_name(t))
         end

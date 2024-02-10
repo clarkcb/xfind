@@ -18,14 +18,14 @@ require_relative 'rbfind/findoption'
 require_relative 'rbfind/findoptions'
 require_relative 'rbfind/findsettings'
 
-def main
+def find_main
   options = RbFind::FindOptions.new
 
   settings =
     begin
       options.find_settings_from_args(ARGV)
     rescue RbFind::FindError => e
-      handle_error(e, options)
+      handle_find_error(e, options)
     end
 
   RbFind::log("settings: #{settings}") if settings.debug
@@ -43,7 +43,7 @@ def main
   find(options, settings)
 end
 
-def handle_error(err, options)
+def handle_find_error(err, options)
   RbFind::log('')
   RbFind::log_err("#{err.message}\n\n")
   options.usage
@@ -54,9 +54,9 @@ def find(options, settings)
     begin
       RbFind::Finder.new(settings)
     rescue RbFind::FindError => e
-      handle_error(e, options)
+      handle_find_error(e, options)
     rescue => e
-      handle_error(e, options)
+      handle_find_error(e, options)
     end
   file_results = finder.find
 
@@ -84,8 +84,8 @@ def find(options, settings)
   end
 
 # rescue RbFind::FindError => e
-#   handle_error(e, options)
+#   handle_find_error(e, options)
 
 rescue RuntimeError => e
-  handle_error(e, options)
+  handle_find_error(e, options)
 end

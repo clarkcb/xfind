@@ -85,13 +85,13 @@ module RbFind
 
     def initialize: () -> void
 
-    def add_exts: (String | Array[String] exts, Set[String] ext_set) -> void
+    def add_exts: (String | Enumerable[String] exts, Set[String] ext_set) -> void
 
-    def add_patterns: (String | Array[String] patterns, Set[Regexp] pattern_set) -> void
+    def add_patterns: (String | Enumerable[String] patterns, Set[Regexp] pattern_set) -> void
 
     def add_pattern: (String pattern, Set[Regexp] pattern_set) -> void
 
-    def add_file_types: (String | Array[String] file_types, Set[FileType] file_types_set) -> void
+    def add_file_types: (String | Enumerable[String] file_types, Set[FileType] file_types_set) -> void
 
     def need_stat?: () -> bool
 

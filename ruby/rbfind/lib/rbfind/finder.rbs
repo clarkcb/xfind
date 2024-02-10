@@ -26,9 +26,9 @@ module RbFind
 
     def validate_settings: () -> void
 
-    def matches_any_pattern?: (String str, Array[Regexp] pattern_set) -> bool
+    def matches_any_pattern?: (String str, Set[Regexp] pattern_set) -> bool
 
-    def any_matches_any_pattern?: (Array[String] str_list, Array[Regexp] pattern_set) -> bool
+    def any_matches_any_pattern?: (Array[String] str_list, Set[Regexp] pattern_set) -> bool
 
     def file_path_to_file_result: (String file_path) -> FileResult
 
