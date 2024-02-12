@@ -20,7 +20,7 @@
         [cljfind.fileutil :only (expand-path)]
         [cljfind.findsettings :only
          (->FindSettings DEFAULT-SETTINGS add-extension add-file-type add-path
-            add-pattern set-archives-only set-debug set-num sort-by-from-name)]))
+            add-pattern set-archives-only set-debug sort-by-from-name)]))
 
 (defrecord FindOption [short-arg long-arg desc])
 

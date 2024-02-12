@@ -2,8 +2,9 @@ package scalafind
 
 import scalafind.FileType.FileType
 import scalafind.SortBy.SortBy
-import java.time.LocalDateTime
 
+import java.time.format.{DateTimeFormatter, DateTimeParseException}
+import java.time.{LocalDate, LocalDateTime}
 import scala.util.matching.Regex
 
 object SortBy extends Enumeration {
@@ -84,6 +85,24 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
 
   includeArchives = archivesOnly || includeArchives
   verbose = debug || verbose
+
+  def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
+    extensions ++ exts.split(",").filterNot(_.isEmpty)
+  }
+
+  def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
+    try {
+      Some(LocalDateTime.parse(lastModString))
+    } catch {
+      case _: DateTimeParseException => try {
+        val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+        Some(maxLastModDate.atTime(0, 0, 0))
+      } catch {
+        case _: Exception => None
+      }
+      case _: Exception => None
+    }
+  }
 
   def needStat: Boolean = {
     sortBy == SortBy.FileSize || sortBy == SortBy.LastMod

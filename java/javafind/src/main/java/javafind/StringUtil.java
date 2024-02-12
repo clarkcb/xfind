@@ -14,14 +14,14 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-final class StringUtil {
+public final class StringUtil {
     private StringUtil() {
         // inaccessible constructor for utility class
     }
 
-    private static final Set<Character> NEWLINECHARS = new HashSet<>(Arrays.asList('\n', '\r'));
+    public static final Set<Character> NEWLINECHARS = new HashSet<>(Arrays.asList('\n', '\r'));
 
-    static String trimNewLine(final String s) {
+    public static String trimNewLine(final String s) {
         var trimmed = s;
         while (!trimmed.isEmpty() && NEWLINECHARS.contains(trimmed.charAt(trimmed.length() - 1))) {
             trimmed = trimmed.substring(0, trimmed.length() - 1);
@@ -29,7 +29,7 @@ final class StringUtil {
         return trimmed;
     }
 
-    static String repeatString(final String s, final int times) {
+    public static String repeatString(final String s, final int times) {
         var sb = new StringBuilder();
         for (int i = 0; i < times; i++) {
             sb.append(s);

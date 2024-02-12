@@ -28,42 +28,42 @@ usage () {
 # copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
-    log "cp $SHARED_PATH/config.json $resources_path/"
-    cp "$SHARED_PATH/config.json" "$resources_path/"
-    log "cp $SHARED_PATH/filetypes.json $resources_path/"
-    cp "$SHARED_PATH/filetypes.json" "$resources_path/"
-    log "cp $SHARED_PATH/findoptions.json $resources_path/"
-    cp "$SHARED_PATH/findoptions.json" "$resources_path/"
+    log "cp $XFIND_SHARED_PATH/config.json $resources_path/"
+    cp "$XFIND_SHARED_PATH/config.json" "$resources_path/"
+    log "cp $XFIND_SHARED_PATH/filetypes.json $resources_path/"
+    cp "$XFIND_SHARED_PATH/filetypes.json" "$resources_path/"
+    log "cp $XFIND_SHARED_PATH/findoptions.json $resources_path/"
+    cp "$XFIND_SHARED_PATH/findoptions.json" "$resources_path/"
 }
 
 # copy_xml_resources
 copy_xml_resources () {
     local resources_path="$1"
-    log "cp $SHARED_PATH/filetypes.xml $resources_path/"
-    cp "$SHARED_PATH"/filetypes.xml "$resources_path/"
-    log "cp $SHARED_PATH/findoptions.xml $resources_path/"
-    cp "$SHARED_PATH/findoptions.xml" "$resources_path/"
+    log "cp $XFIND_SHARED_PATH/filetypes.xml $resources_path/"
+    cp "$XFIND_SHARED_PATH"/filetypes.xml "$resources_path/"
+    log "cp $XFIND_SHARED_PATH/findoptions.xml $resources_path/"
+    cp "$XFIND_SHARED_PATH/findoptions.xml" "$resources_path/"
 }
 
 # copy_test_resources
 copy_test_resources () {
     local test_resources_path="$1"
-    log "cp $TEST_FILE_PATH/testFile*.txt $test_resources_path/"
-    cp "$TEST_FILE_PATH"/testFile*.txt "$test_resources_path/"
+    log "cp $XFIND_TEST_FILE_PATH/testFile*.txt $test_resources_path/"
+    cp "$XFIND_TEST_FILE_PATH"/testFile*.txt "$test_resources_path/"
 }
 
 # add_to_bin
 add_to_bin () {
     local script_path="$1"
     local script_name=$(basename "$1")
-    if [ ! -d "$BIN_PATH" ]
+    if [ ! -d "$XFIND_BIN_PATH" ]
     then
         log "Creating bin path"
-        log "mkdir -p $BIN_PATH"
-        mkdir -p "$BIN_PATH"
+        log "mkdir -p $XFIND_BIN_PATH"
+        mkdir -p "$XFIND_BIN_PATH"
     fi
 
-    cd "$BIN_PATH"
+    cd "$XFIND_BIN_PATH"
 
     if [[ $script_name == *.sh ]]
     then
@@ -424,21 +424,21 @@ build_go () {
     go fmt ./...
 
     # create the bin dir if it doesn't already exist
-    if [ ! -d "$BIN_PATH" ]
+    if [ ! -d "$XFIND_BIN_PATH" ]
     then
-        mkdir -p "$BIN_PATH"
+        mkdir -p "$XFIND_BIN_PATH"
     fi
 
-    # if GOBIN not defined, set to BIN_PATH
+    # if GOBIN not defined, set to XFIND_BIN_PATH
     # if [ ! -d "$GOBIN" ]
     # then
-    #     export GOBIN="$BIN_PATH"
+    #     export GOBIN="$XFIND_BIN_PATH"
     # fi
 
     # now build/install gofind
     log "Building gofind"
     log "go install ./..."
-    GOBIN="$BIN_PATH" go install ./...
+    GOBIN="$XFIND_BIN_PATH" go install ./...
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -546,8 +546,8 @@ build_haskell () {
     log "stack build"
     make build
 
-    log "stack install --local-bin-path $BIN_PATH"
-    stack install --local-bin-path "$BIN_PATH"
+    log "stack install --local-bin-path $XFIND_BIN_PATH"
+    stack install --local-bin-path "$XFIND_BIN_PATH"
 
     cd -
 }
@@ -775,12 +775,12 @@ build_perl () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLFIND_PATH/share"
     mkdir -p "$RESOURCES_PATH"
-    log "cp $SHARED_PATH/config.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/config.json" "$RESOURCES_PATH/"
-    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
-    log "cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
+    log "cp $XFIND_SHARED_PATH/config.json $RESOURCES_PATH/"
+    cp "$XFIND_SHARED_PATH/config.json" "$RESOURCES_PATH/"
+    log "cp $XFIND_SHARED_PATH/filetypes.json $RESOURCES_PATH/"
+    cp "$XFIND_SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
+    log "cp $XFIND_SHARED_PATH/findoptions.json $RESOURCES_PATH/"
+    cp "$XFIND_SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
 
     # add to bin
     add_to_bin "$PLFIND_PATH/bin/plfind.sh"
@@ -816,15 +816,15 @@ build_php () {
 
     # copy the shared config json file to the local config location
     mkdir -p "$CONFIG_PATH"
-    log "cp $SHARED_PATH/config.json $CONFIG_PATH/"
-    cp "$SHARED_PATH/config.json" "$CONFIG_PATH/"
+    log "cp $XFIND_SHARED_PATH/config.json $CONFIG_PATH/"
+    cp "$XFIND_SHARED_PATH/config.json" "$CONFIG_PATH/"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
-    log "cp $SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
-    log "cp $SHARED_PATH/findoptions.json $RESOURCES_PATH/"
-    cp "$SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
+    log "cp $XFIND_SHARED_PATH/filetypes.json $RESOURCES_PATH/"
+    cp "$XFIND_SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
+    log "cp $XFIND_SHARED_PATH/findoptions.json $RESOURCES_PATH/"
+    cp "$XFIND_SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
 
     cd "$PHPFIND_PATH"
 
@@ -1101,8 +1101,8 @@ build_scala () {
     # log "sbt clean assembly"
     # sbt clean assembly
     # to build without testing, changed to this:
-    log "sbt 'set test in assembly := {}' clean assembly"
-    sbt 'set test in assembly := {}' clean assembly
+    log "sbt 'set test in assembly := {}' clean package assembly"
+    sbt 'set test in assembly := {}' clean package assembly
 
     # check for success/failure
     if [ "$?" -eq 0 ]

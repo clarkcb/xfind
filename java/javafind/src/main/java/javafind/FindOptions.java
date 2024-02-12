@@ -34,7 +34,7 @@ public class FindOptions {
         void set(String s, FindSettings settings);
     }
 
-    private final int actionMapSize = 20;
+    private final int actionMapSize = 21;
     private final Map<String, ArgSetter> argActionMap = new HashMap<>(actionMapSize) {
         {
             put("in-archiveext", (s, settings) -> settings.addInArchiveExtension(s));
@@ -66,7 +66,7 @@ public class FindOptions {
         void set(Boolean b, FindSettings settings);
     }
 
-    private final int flagMapSize = 16;
+    private final int flagMapSize = 18;
     private final Map<String, BooleanFlagSetter> boolflagActionMap = new HashMap<>(flagMapSize) {
         {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
@@ -90,7 +90,7 @@ public class FindOptions {
         }
     };
 
-    private void setOptionsFromJson() throws IOException {
+    private void setOptionsFromJson() {
         var findOptionsInputStream = getClass().getResourceAsStream(FIND_OPTIONS_JSON_PATH);
         assert findOptionsInputStream != null;
         var jsonObj = new JSONObject(new JSONTokener(findOptionsInputStream));
@@ -150,7 +150,7 @@ public class FindOptions {
             } catch (FindException e) {
                 Logger.logError("FindException: " + e.getMessage());
             }
-        } else if (obj instanceof Long) {
+        } else if ((obj instanceof Integer) || (obj instanceof Long)) {
             try {
                 applySetting(arg, obj.toString(), settings);
             } catch (FindException e) {

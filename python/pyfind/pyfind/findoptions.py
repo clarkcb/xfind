@@ -110,7 +110,7 @@ class FindOptions:
                 settings.add_patterns(x, 'in_dir_patterns'),
             'in-ext':
                 lambda x, settings:
-                settings.add_exts(x, 'in_extensions'),
+                settings.add_strs_to_set(x, 'in_extensions'),
             'in-filepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'in_file_patterns'),
@@ -128,7 +128,7 @@ class FindOptions:
                 settings.add_patterns(x, 'out_dir_patterns'),
             'out-ext':
                 lambda x, settings:
-                settings.add_exts(x, 'out_extensions'),
+                settings.add_strs_to_set(x, 'out_extensions'),
             'out-filepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'out_file_patterns'),

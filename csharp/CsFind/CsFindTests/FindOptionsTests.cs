@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using NUnit.Framework;
 using CsFindLib;
+using NUnit.Framework;
 using FindOptions = CsFindLib.FindOptions;
 
 namespace CsFindTests;
@@ -32,7 +31,7 @@ public class FindOptionsTests
 	[Test]
 	public void SettingsFromArgs_ValidArgs_HasArgValues()
 	{
-		var args = new List<string>() { "-x", "cs", "." };
+		var args = new List<string> { "-x", "cs", "." };
 		var settings = _findOptions.SettingsFromArgs(args);
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
 		Assert.That(settings.Paths.Contains("."));
@@ -43,7 +42,7 @@ public class FindOptionsTests
 	[Test]
 	public void SettingsFromArgs_InValidArgs_ThrowsFindException()
 	{
-		var args = new List<string>() { "-x", "cs", ".", "-Q" };
+		var args = new List<string> { "-x", "cs", ".", "-Q" };
 		var ex = Assert.Throws<FindException>(() => _findOptions.SettingsFromArgs(args));
 		Assert.That(ex!.Message, Is.EqualTo("Invalid option: Q"));
 	}

@@ -18,9 +18,9 @@ if [ -z "$XFIND_PATH" ]; then
         XFIND_PATH=$HOME/src/xfind
     fi
 fi
-BIN_PATH=$XFIND_PATH/bin
-SHARED_PATH=$XFIND_PATH/shared
-TEST_FILE_PATH=$SHARED_PATH/testFiles
+XFIND_BIN_PATH=$XFIND_PATH/bin
+XFIND_SHARED_PATH=$XFIND_PATH/shared
+XFIND_TEST_FILE_PATH=$SHARED_PATH/testFiles
 
 # Language roots
 C_PATH=$XFIND_PATH/c

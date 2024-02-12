@@ -57,35 +57,17 @@ object FindOptions {
     }
   }
 
-  private def addExtensions(exts: String, extensions: Set[String]): Set[String] = {
-    extensions ++ exts.split(",").filterNot(_.isEmpty)
-  }
-
-  private def getLastModFromString(lastModString: String): Option[LocalDateTime] = {
-    try {
-      Some(LocalDateTime.parse(lastModString))
-    } catch {
-      case _: DateTimeParseException => try {
-          val maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
-          Some(maxLastModDate.atTime(0, 0, 0))
-        } catch {
-          case _: Exception => None
-        }
-      case _: Exception => None
-    }
-  }
-
   private type ArgAction = (String, FindSettings) => FindSettings
 
   private val argActionMap = Map[String, ArgAction](
     "in-archiveext" ->
-      ((s, ss) => ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions))),
+      ((s, ss) => ss.copy(inArchiveExtensions = ss.addExtensions(s, ss.inArchiveExtensions))),
     "in-archivefilepattern" ->
       ((s, ss) => ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns + s.r)),
     "in-dirpattern" ->
       ((s, ss) => ss.copy(inDirPatterns = ss.inDirPatterns + s.r)),
     "in-ext" ->
-      ((s, ss) => ss.copy(inExtensions = addExtensions(s, ss.inExtensions))),
+      ((s, ss) => ss.copy(inExtensions = ss.addExtensions(s, ss.inExtensions))),
     "in-filepattern" ->
       ((s, ss) => ss.copy(inFilePatterns = ss.inFilePatterns + s.r)),
     "in-filetype" ->
@@ -93,23 +75,23 @@ object FindOptions {
     "maxdepth" ->
       ((s, ss) => ss.copy(maxDepth = s.toInt)),
     "maxlastmod" ->
-      ((s, ss) => ss.copy(maxLastMod = getLastModFromString(s))),
+      ((s, ss) => ss.copy(maxLastMod = ss.getLastModFromString(s))),
     "maxsize" ->
       ((s, ss) => ss.copy(maxSize = s.toInt)),
     "mindepth" ->
       ((s, ss) => ss.copy(minDepth = s.toInt)),
     "minlastmod" ->
-      ((s, ss) => ss.copy(minLastMod = getLastModFromString(s))),
+      ((s, ss) => ss.copy(minLastMod = ss.getLastModFromString(s))),
     "minsize" ->
       ((s, ss) => ss.copy(minSize = s.toInt)),
     "out-archiveext" ->
-      ((s, ss) => ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions))),
+      ((s, ss) => ss.copy(outArchiveExtensions = ss.addExtensions(s, ss.outArchiveExtensions))),
     "out-archivefilepattern" ->
       ((s, ss) => ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns + s.r)),
     "out-dirpattern" ->
       ((s, ss) => ss.copy(outDirPatterns = ss.outDirPatterns + s.r)),
     "out-ext" ->
-      ((s, ss) => ss.copy(outExtensions = addExtensions(s, ss.outExtensions))),
+      ((s, ss) => ss.copy(outExtensions = ss.addExtensions(s, ss.outExtensions))),
     "out-filepattern" ->
       ((s, ss) => ss.copy(outFilePatterns = ss.outFilePatterns + s.r)),
     "out-filetype" ->

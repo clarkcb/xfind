@@ -157,6 +157,9 @@ class FindOptions {
             is Boolean -> {
                 return applySetting(key, obj, settings)
             }
+            is Int -> {
+                return applySetting(key, obj.toString(), settings)
+            }
             is Long -> {
                 return applySetting(key, obj.toString(), settings)
             }

@@ -99,22 +99,22 @@ class FindSettings:
                  verbose: bool = False):
         self.archives_only = archives_only
         self.debug = debug
-        self.in_archive_extensions = set()
+        self.in_archive_extensions: set[str] = set()
         if in_archive_extensions:
-            self.add_exts(in_archive_extensions, 'in_archive_extensions')
+            self.add_strs_to_set(in_archive_extensions, 'in_archive_extensions')
         self.in_archive_file_patterns: PatternSet = set()
         if in_archive_file_patterns:
             self.add_patterns(in_archive_file_patterns, 'in_archive_file_patterns')
         self.in_dir_patterns: PatternSet = set()
         if in_dir_patterns:
             self.add_patterns(in_dir_patterns, 'in_dir_patterns')
-        self.in_extensions = set()
+        self.in_extensions: set[str] = set()
         if in_extensions:
-            self.add_exts(in_extensions, 'in_extensions')
+            self.add_strs_to_set(in_extensions, 'in_extensions')
         self.in_file_patterns: PatternSet = set()
         if in_file_patterns:
             self.add_patterns(in_file_patterns, 'in_file_patterns')
-        self.in_file_types = set()
+        self.in_file_types: set[FileType] = set()
         if in_file_types:
             self.add_file_types(in_file_types, 'in_file_types')
         self.include_archives = include_archives
@@ -125,22 +125,22 @@ class FindSettings:
         self.min_depth = min_depth
         self.min_last_mod = min_last_mod
         self.min_size = min_size
-        self.out_archive_extensions = set()
+        self.out_archive_extensions: set[str] = set()
         if out_archive_extensions:
-            self.add_exts(out_archive_extensions, 'out_archive_extensions')
+            self.add_strs_to_set(out_archive_extensions, 'out_archive_extensions')
         self.out_archive_file_patterns: PatternSet = set()
         if out_archive_file_patterns:
             self.add_patterns(out_archive_file_patterns, 'out_archive_file_patterns')
         self.out_dir_patterns: PatternSet = set()
         if out_dir_patterns:
             self.add_patterns(out_dir_patterns, 'out_dir_patterns')
-        self.out_extensions = set()
+        self.out_extensions: set[str] = set()
         if out_extensions:
-            self.add_exts(out_extensions, 'out_extensions')
+            self.add_strs_to_set(out_extensions, 'out_extensions')
         self.out_file_patterns: PatternSet = set()
         if out_file_patterns:
             self.add_patterns(out_file_patterns, 'out_file_patterns')
-        self.out_file_types = set()
+        self.out_file_types: set[FileType] = set()
         if out_file_types:
             self.add_file_types(out_file_types, 'out_file_types')
         self.paths: set[Path] = set()
@@ -156,17 +156,17 @@ class FindSettings:
         self.sort_descending = sort_descending
         self.verbose = verbose
 
-    def add_exts(self, exts: list | set | str, ext_set_name: str):
-        """Add one or more comma-separated extensions"""
-        if isinstance(exts, (list, set)):
-            ext_set = getattr(self, ext_set_name)
-            ext_set.update(exts)
-        elif isinstance(exts, str):
-            new_ext_set = {ext for ext in exts.split(',') if ext}
-            ext_set = getattr(self, ext_set_name)
-            ext_set.update(new_ext_set)
+    def add_strs_to_set(self, strs: list[str] | set[str] | str, set_name: str):
+        """Add one or more comma-separated strs to set"""
+        if isinstance(strs, str):
+            strs = {strs}
+        if isinstance(strs, (list, set)):
+            for s in strs:
+                new_set = {x for x in s.split(',') if x}
+                str_set = getattr(self, set_name)
+                str_set.update(new_set)
         else:
-            raise FindException('exts is an unknown type')
+            raise FindException('strs is an unknown type')
 
     def add_patterns(self, patterns: list | set | str | Pattern, pattern_set_name: str, compile_flag=re.S | re.U):
         """Add patterns to patternset"""

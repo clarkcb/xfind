@@ -59,12 +59,12 @@
     ^clojure.lang.PersistentHashSet in-file-types
     ^Boolean include-archives
     ^Boolean include-hidden
-    ^Long max-depth
+    ^Integer max-depth
     ^java.util.Date max-last-mod
-    ^Long max-size
-    ^Long min-depth
+    ^Integer max-size
+    ^Integer min-depth
     ^java.util.Date min-last-mod
-    ^Long min-size
+    ^Integer min-size
     ^clojure.lang.PersistentHashSet out-archive-extensions
     ^clojure.lang.PersistentHashSet out-archive-file-patterns
     ^clojure.lang.PersistentHashSet out-dir-patterns
@@ -186,14 +186,6 @@
    (not (nil? (:min-last-mod settings)))
    (> (:max-size settings) 0)
    (> (:min-size settings) 0)))
-
-(defn set-num [^FindSettings settings n numname]
-  (let [t (type n)]
-    (cond
-      (= t java.lang.Long)
-        (assoc settings numname n)
-      :else
-        (assoc settings numname (read-string n)))))
 
 (defn set-archives-only [^FindSettings settings b]
   (let [with-archives-only (assoc settings :archives-only b)]

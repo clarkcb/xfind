@@ -76,19 +76,19 @@ class Finder:
             return False
         return True
 
-    def is_matching_archive_file(self, file_name: str, stat: os.stat_result) -> bool:
+    def is_matching_archive_file_path(self, file_path: Path, stat: os.stat_result) -> bool:
         """Check whether the given archive file matches find settings."""
         if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
-            ext = FileUtil.get_extension(file_name)
+            ext = FileUtil.get_extension(file_path.name)
             if (self.settings.in_archive_extensions
                 and ext not in self.settings.in_archive_extensions) \
             or (self.settings.out_archive_extensions
                 and ext in self.settings.out_archive_extensions):
                 return False
         if (self.settings.in_archive_file_patterns
-                and not matches_any_pattern(file_name, self.settings.in_archive_file_patterns)) \
+                and not matches_any_pattern(file_path.name, self.settings.in_archive_file_patterns)) \
             or (self.settings.out_archive_file_patterns
-                and matches_any_pattern(file_name, self.settings.out_archive_file_patterns)):
+                and matches_any_pattern(file_path.name, self.settings.out_archive_file_patterns)):
             return False
         return self.is_matching_stat(stat)
 
@@ -111,13 +111,13 @@ class Finder:
                 and (not self.settings.out_file_types or
                      file_type not in self.settings.out_file_types)
 
-    def is_matching_file(self, file_name: str, file_type: FileType, stat: os.stat_result) -> bool:
+    def is_matching_file_path(self, file_path: Path, file_type: FileType, stat: os.stat_result) -> bool:
         """Check whether the given file matches find settings."""
         if self.settings.in_extensions or self.settings.out_extensions:
-            ext = FileUtil.get_extension(file_name)
+            ext = FileUtil.get_extension(file_path.name)
             if not self.is_matching_ext(ext):
                 return False
-        if not self.is_matching_file_name(file_name):
+        if not self.is_matching_file_name(file_path.name):
             return False
         if not self.is_matching_file_type(file_type):
             return False
@@ -127,10 +127,9 @@ class Finder:
 
     def filter_to_file_result(self, file_path: Path) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
-        file_name = file_path.name
-        if not self.settings.include_hidden and FileUtil.is_hidden(file_name):
+        if not self.settings.include_hidden and FileUtil.is_hidden(file_path.name):
             return None
-        file_type = self.file_types.get_file_type(file_name)
+        file_type = self.file_types.get_file_type(file_path.name)
         if file_type == FileType.ARCHIVE \
            and not self.settings.include_archives \
            and not self.settings.archives_only:
@@ -139,9 +138,9 @@ class Finder:
         if self.settings.need_stat():
             stat = file_path.stat()
         if file_type == FileType.ARCHIVE:
-            if not self.is_matching_archive_file(file_name, stat):
+            if not self.is_matching_archive_file_path(file_path, stat):
                 return None
-        elif self.settings.archives_only or not self.is_matching_file(file_name, file_type, stat):
+        elif self.settings.archives_only or not self.is_matching_file_path(file_path, file_type, stat):
             return None
         return FileResult(path=file_path, file_type=file_type, stat=stat)
 
