@@ -438,15 +438,17 @@ class Benchmarker(object):
 
     def times_from_lines(self, lines: list[str]) -> dict[str, float]:
         # print(f'times_from_lines: {lines}')
-        time_line_re = re.compile(r'^(\d+\.\d+)\s+(real)\s+(\d+\.\d+)\s+(user)\s+(\d+\.\d+)\s+(sys)$')
-        time_line_match = time_line_re.match(lines[0])
-        if time_line_match:
-            time_dict = {}
-            time_dict['real'] = float(time_line_match.group(1))
-            time_dict['user'] = float(time_line_match.group(3))
-            time_dict['sys'] = float(time_line_match.group(5))
-            time_dict['total'] = sum(time_dict.values())
-            return time_dict
+        times_lines = [l for l in lines if l.endswith(' sys')]
+        if times_lines:
+            time_line_re = re.compile(r'^(\d+\.\d+)\s+(real)\s+(\d+\.\d+)\s+(user)\s+(\d+\.\d+)\s+(sys)$')
+            time_line_match = time_line_re.match(times_lines[0])
+            if time_line_match:
+                time_dict = {}
+                time_dict['real'] = float(time_line_match.group(1))
+                time_dict['user'] = float(time_line_match.group(3))
+                time_dict['sys'] = float(time_line_match.group(5))
+                time_dict['total'] = sum(time_dict.values())
+                return time_dict
         elif self.shell == '/bin/bash':
             return self.bash_times_from_lines(lines)
         elif self.shell == '/bin/zsh':
@@ -459,16 +461,18 @@ class Benchmarker(object):
            cppfind  0.01s user 0.01s system 80% cpu 0.016 total
         """
         print('zsh_times_from_lines')
-        time_line_re = re.compile(r'^(\S+)\s+(\d+\.\d+)s user\s+(\d+\.\d+)s system\s+(\d+)% cpu\s+(\d+\.\d+) total$')
-        time_dict = {}
-        time_line_match = time_line_re.match(lines[0])
-        if time_line_match:
-            time_dict['user'] = float(time_line_match.group(2))
-            time_dict['sys'] = float(time_line_match.group(3))
-            time_dict['total'] = float(time_line_match.group(5))
-            time_dict['real'] = float('0.0')
+        times_lines = [l for l in lines if l.endswith(' total')]
+        if times_lines:
+            time_line_re = re.compile(r'^(\S+)\s+(\d+\.\d+)s user\s+(\d+\.\d+)s system\s+(\d+)% cpu\s+(\d+\.\d+) total$')
+            time_dict = {}
+            time_line_match = time_line_re.match(times_lines[0])
+            if time_line_match:
+                time_dict['user'] = float(time_line_match.group(2))
+                time_dict['sys'] = float(time_line_match.group(3))
+                time_dict['total'] = float(time_line_match.group(5))
+                time_dict['real'] = float('0.0')
         else:
-            print(f"Invalid times line: \"{lines[0]}\"")
+            print(f"Times line not found")
             time_dict = {s: 0 for s in time_keys}
         # print('time_dict: {}'.format(time_dict))
         return time_dict
