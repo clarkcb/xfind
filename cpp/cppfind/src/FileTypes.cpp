@@ -190,43 +190,43 @@ namespace cppfind {
     }
 
     bool FileTypes::is_archive_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_archive_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_archive_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_archive_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_archive_names);
     }
 
     bool FileTypes::is_audio_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_audio_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_audio_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_audio_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_audio_names);
     }
 
     bool FileTypes::is_binary_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_binary_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_binary_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_binary_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_binary_names);
     }
 
     bool FileTypes::is_code_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_code_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_code_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_code_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_code_names);
     }
 
     bool FileTypes::is_font_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_font_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_font_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_font_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_font_names);
     }
 
     bool FileTypes::is_image_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_image_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_image_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_image_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_image_names);
     }
 
     bool FileTypes::is_text_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_text_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_text_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_text_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_text_names);
     }
 
     bool FileTypes::is_video_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_video_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_video_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_video_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_video_names);
     }
 
     bool FileTypes::is_unknown_file(const std::string_view file_path) const {
@@ -234,8 +234,8 @@ namespace cppfind {
     }
 
     bool FileTypes::is_xml_file(const std::string_view file_path) const {
-        return StringUtil::string_in_set(FileUtil::get_extension(file_path), m_xml_extensions)
-               || StringUtil::string_in_set(FileUtil::get_file_name(file_path), m_xml_names);
+        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_xml_extensions)
+               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_xml_names);
     }
 
     FileTypes::~FileTypes() {

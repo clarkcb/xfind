@@ -105,7 +105,7 @@ namespace cppfind {
             auto desc = std::string(descValue.GetString());
 
             auto option = FindOption(short_arg, long_arg, desc);
-            m_options.push_back(option);
+            m_options.push_back(std::move(option));
         }
     }
 
@@ -214,7 +214,7 @@ namespace cppfind {
 
             } else if (it->value.IsBool()) {
                 assert(m_bool_arg_map.find(name) != m_bool_arg_map.end());
-                bool b = it->value.GetBool();
+                const bool b = it->value.GetBool();
                 m_bool_arg_map[name](b, settings);
 
             } else if (it->value.IsString()) {
@@ -222,7 +222,7 @@ namespace cppfind {
                 if (m_str_arg_map.find(name) != m_str_arg_map.end()) {
                     m_str_arg_map[name](s, settings);
                 } else {
-                    std::string msg = "Invalid option: " + name;
+                    const std::string msg = "Invalid option: " + name;
                     throw FindException(msg);
                 }
             }

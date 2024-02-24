@@ -60,19 +60,12 @@ namespace cppfind {
         return s.find(c) != std::string::npos;
     }
 
-    bool StringUtil::string_in_set(const std::string_view s, const std::set<std::string>& set) {
+    bool StringUtil::string_in_unordered_set(const std::string_view s, const std::unordered_set<std::string>& set) {
         return set.contains(std::string{s});
     }
 
     bool StringUtil::string_in_vector(const std::string_view s, const std::vector<std::string>& vec) {
         return std::find(vec.begin(), vec.end(), std::string{s}) != vec.end();
-    }
-
-    std::set<std::string> StringUtil::filter_string_set(const std::set<std::string>& set,
-                                                        const std::function<bool(const std::string&)>& predicate) {
-        std::set<std::string> filtered = set;
-        std::erase_if(filtered, std::not_fn(predicate));
-        return filtered;
     }
 
     std::vector<std::string> StringUtil::filter_string_vector(const std::vector<std::string>& vec,
@@ -86,8 +79,8 @@ namespace cppfind {
         return b ? "true" : "false";
     }
 
-    // TODO: want string to be sorted
-    std::string StringUtil::string_set_to_string(const std::set<std::string>& set) {
+    // // TODO: want string to be sorted
+    std::string StringUtil::unordered_string_set_to_string(const std::unordered_set<std::string>& set) {
         std::string ss_string = "[";
         for (auto it = set.begin(); it != set.end(); ++it) {
             ss_string.append("\"");

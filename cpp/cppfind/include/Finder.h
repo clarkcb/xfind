@@ -9,7 +9,6 @@ namespace cppfind {
     class Finder {
     public:
         explicit Finder(const FindSettings& settings);
-        // bool filter_file(const std::string& file_path);
         std::optional<FileResult> filter_to_file_result(std::string_view file_path);
         bool is_matching_archive_file(std::string_view file_name);
         bool is_matching_dir(std::string_view file_path);

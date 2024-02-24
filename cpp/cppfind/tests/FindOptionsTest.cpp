@@ -28,7 +28,7 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     REQUIRE(settings->out_extensions().empty());
     REQUIRE(settings->out_file_patterns().empty());
 
-    std::set<std::string> paths = settings->paths();
+    std::unordered_set<std::string> paths = settings->paths();
     REQUIRE(paths.size() == 1);
     REQUIRE(paths.contains("."));
 }
@@ -59,12 +59,12 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(settings->out_extensions().empty());
     REQUIRE(settings->out_file_patterns().empty());
 
-    std::set<std::string> in_exts = settings->in_extensions();
+    std::unordered_set<std::string> in_exts = settings->in_extensions();
     REQUIRE(in_exts.size() == 2);
     REQUIRE(in_exts.contains("java"));
     REQUIRE(in_exts.contains("scala"));
 
-    std::set<std::string> paths = settings->paths();
+    std::unordered_set<std::string> paths = settings->paths();
     REQUIRE(paths.size() == 1);
     REQUIRE(paths.contains("."));
 }

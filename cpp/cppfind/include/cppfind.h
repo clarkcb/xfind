@@ -46,12 +46,11 @@
  *
  */
 
-#include <cstdlib>
 #include <regex>
 #include <set>
 #include <string>
 #include <sys/stat.h>
-#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "rapidjson/document.h"
@@ -61,8 +60,8 @@ using namespace rapidjson;
 
 namespace cppfind {
     // common.h
-    void log(const std::string& name);
-    void log_error(const std::string& name);
+    void log(std::string_view msg);
+    void log_error(std::string_view msg);
 
     // config.h
     std::string xfindpath();
@@ -76,26 +75,25 @@ namespace cppfind {
         ~FileTypes();
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        FileType get_file_type(std::string_view file_path) const;
-        bool is_archive_file(std::string_view file_path) const;
-        bool is_audio_file(std::string_view file_path) const;
-        bool is_binary_file(std::string_view file_path) const;
-        bool is_code_file(std::string_view file_path) const;
-        bool is_font_file(std::string_view file_path) const;
-        bool is_image_file(std::string_view file_path) const;
-        bool is_text_file(std::string_view file_path) const;
-        bool is_unknown_file(std::string_view file_path) const;
-        bool is_video_file(std::string_view file_path) const;
-        bool is_xml_file(std::string_view file_path) const;
+        [[nodiscard]] FileType get_file_type(std::string_view file_path) const;
+        [[nodiscard]] bool is_archive_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_audio_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_binary_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_code_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_font_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_image_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_text_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_unknown_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_video_file(std::string_view file_path) const;
+        [[nodiscard]] bool is_xml_file(std::string_view file_path) const;
     };
 
     // FileUtil.h
     class FileUtil {
     public:
-//        static std::string expand_path(std::string_view file_path);
+        static std::string expand_path(std::string_view file_path);
         static bool file_exists(std::string_view file_path);
         static uint64_t file_size(std::string_view file_path);
-//        static std::string get_contents(const std::string& file_path);
         static std::string get_contents(const std::ifstream& fin);
         static std::string get_extension(std::string_view name);
         static std::string get_file_name(std::string_view file_path);
@@ -120,15 +118,13 @@ namespace cppfind {
         static std::string trim_copy(std::string s);
 
         static bool char_in_string(char c, std::string_view s);
-        static bool string_in_set(std::string_view s, const std::set<std::string>& set);
+        static bool string_in_unordered_set(std::string_view s, const std::unordered_set<std::string>& set);
         static bool string_in_vector(std::string_view s, const std::vector<std::string>& vec);
 
-        static std::set<std::string> filter_string_set(const std::set<std::string>& set,
-                                                       const std::function<bool(const std::string&)>& predicate);
         static std::vector<std::string> filter_string_vector(const std::vector<std::string>& strings,
                                                              const std::function<bool(const std::string&)>& predicate);
         static std::string bool_to_string(bool b);
-        static std::string string_set_to_string(const std::set<std::string>& set);
+        static std::string unordered_string_set_to_string(const std::unordered_set<std::string>& set);
         static long date_str_to_long(std::string_view date_str);
         static std::string long_to_date_str(long time);
     };
@@ -146,12 +142,13 @@ namespace cppfind {
     public:
         explicit RegexPattern(std::string_view pattern);
         RegexPattern(std::string_view pattern, bool ignore_case, bool multi_line, bool dot_all);
+        RegexPattern();
         [[nodiscard]] std::string pattern() const;
         [[nodiscard]] bool ignore_case() const;
         [[nodiscard]] bool multi_line() const;
         [[nodiscard]] bool dot_all() const;
         [[nodiscard]] std::regex regex() const;
-        std::string string();
+        [[nodiscard]] std::string string() const;
     };
 
     struct RegexPatternCmp
@@ -188,28 +185,28 @@ namespace cppfind {
         [[nodiscard]] bool sort_descending() const;
         [[nodiscard]] bool verbose() const;
 
-        [[nodiscard]] std::set<std::string> in_archive_extensions() const;
+        [[nodiscard]] std::unordered_set<std::string> in_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_archive_file_patterns() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_dir_patterns() const;
-        [[nodiscard]] std::set<std::string> in_extensions() const;
+        [[nodiscard]] std::unordered_set<std::string> in_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_file_patterns() const;
-        [[nodiscard]] std::set<FileType> in_file_types() const;
-        [[nodiscard]] std::set<std::string> out_archive_extensions() const;
+        [[nodiscard]] std::unordered_set<FileType> in_file_types() const;
+        [[nodiscard]] std::unordered_set<std::string> out_archive_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_archive_file_patterns() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_dir_patterns() const;
-        [[nodiscard]] std::set<std::string> out_extensions() const;
+        [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
-        [[nodiscard]] std::set<FileType> out_file_types() const;
-        [[nodiscard]] std::set<std::string> paths() const;
+        [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
+        [[nodiscard]] std::unordered_set<std::string> paths() const;
 
         // property setters
         void archives_only(bool archives_only);
         void debug(bool debug);
-        void in_archive_extensions(const std::set<std::string>& in_archive_extensions);
+        void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
         void in_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_dir_patterns);
-        void in_extensions(const std::set<std::string>& in_extensions);
+        void in_extensions(const std::unordered_set<std::string>& in_extensions);
         void in_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_file_patterns);
-        void in_file_types(const std::set<FileType>& in_file_types);
+        void in_file_types(const std::unordered_set<FileType>& in_file_types);
         void include_archives(bool include_archives);
         void include_hidden(bool exclude_hidden);
         void max_depth(int max_depth);
@@ -218,12 +215,12 @@ namespace cppfind {
         void min_depth(int min_depth);
         void min_last_mod(long min_last_mod);
         void min_size(long min_size);
-        void out_archive_extensions(const std::set<std::string>& out_archive_extensions);
+        void out_archive_extensions(const std::unordered_set<std::string>& out_archive_extensions);
         void out_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_dir_patterns);
-        void out_extensions(const std::set<std::string>& out_extensions);
+        void out_extensions(const std::unordered_set<std::string>& out_extensions);
         void out_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_file_patterns);
-        void out_file_types(const std::set<FileType>& out_file_types);
-        void paths(const std::set<std::string>& paths);
+        void out_file_types(const std::unordered_set<FileType>& out_file_types);
+        void paths(const std::unordered_set<std::string>& paths);
         void print_dirs(bool print_dirs);
         void print_files(bool print_files);
         void print_usage(bool print_usage);
@@ -250,12 +247,12 @@ namespace cppfind {
         void add_path(std::string_view path);
 
         // need elements methods
-        bool need_stat() const;
+        [[nodiscard]] bool need_stat() const;
 
         // utility methods
         static void add_pattern(std::string_view p, std::set<RegexPattern, RegexPatternCmp>& ps);
-        static void add_extensions(std::string_view exts, std::set<std::string>& extensions);
-        static std::string file_types_to_string(const std::set<FileType>& types);
+        static void add_extensions(std::string_view exts, std::unordered_set<std::string>& extensions);
+        static std::string file_types_to_string(const std::unordered_set<FileType>& types);
         static std::string patterns_to_string(const std::set<RegexPattern, RegexPatternCmp>& patterns);
         static SortBy sort_by_from_name(std::string_view name);
         static std::string sort_by_to_name(SortBy sort_by);
@@ -276,7 +273,7 @@ namespace cppfind {
         [[nodiscard]] FileType file_type() const;
         [[nodiscard]] uint64_t file_size() const;
         [[nodiscard]] long mod_time() const;
-        [[nodiscard]] const std::string string() const;
+        [[nodiscard]] std::string string() const;
     };
 
     // FindOption.h
@@ -304,7 +301,6 @@ namespace cppfind {
     class Finder {
     public:
         explicit Finder(const FindSettings& settings);
-        // bool filter_file(const std::string& file_path);
         std::optional<FileResult> filter_to_file_result(std::string_view file_path);
         bool is_matching_archive_file(std::string_view file_name);
         bool is_matching_dir(std::string_view file_path);

@@ -21,11 +21,11 @@ namespace cppfind {
         if (debug) m_verbose = true;
     }
 
-    std::set<std::string> FindSettings::in_archive_extensions() const {
+    std::unordered_set<std::string> FindSettings::in_archive_extensions() const {
         return m_in_archive_extensions;
     }
 
-    void FindSettings::in_archive_extensions(const std::set<std::string>& in_archive_extensions) {
+    void FindSettings::in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions) {
         m_in_archive_extensions = in_archive_extensions;
     }
 
@@ -41,11 +41,11 @@ namespace cppfind {
         m_in_dir_patterns = in_dir_patterns;
     }
 
-    std::set<std::string> FindSettings::in_extensions() const {
+    std::unordered_set<std::string> FindSettings::in_extensions() const {
         return m_in_extensions;
     }
 
-    void FindSettings::in_extensions(const std::set<std::string>& in_extensions) {
+    void FindSettings::in_extensions(const std::unordered_set<std::string>& in_extensions) {
         m_in_extensions = in_extensions;
     }
 
@@ -57,11 +57,11 @@ namespace cppfind {
         m_in_file_patterns = in_file_patterns;
     }
 
-    std::set<FileType> FindSettings::in_file_types() const {
+    std::unordered_set<FileType> FindSettings::in_file_types() const {
         return m_in_file_types;
     }
 
-    void FindSettings::in_file_types(const std::set<FileType>& in_file_types) {
+    void FindSettings::in_file_types(const std::unordered_set<FileType>& in_file_types) {
         m_in_file_types = in_file_types;
     }
 
@@ -129,11 +129,11 @@ namespace cppfind {
         m_min_size = min_size;
     }
 
-    std::set<std::string> FindSettings::out_archive_extensions() const {
+    std::unordered_set<std::string> FindSettings::out_archive_extensions() const {
         return m_out_archive_extensions;
     }
 
-    void FindSettings::out_archive_extensions(const std::set<std::string>& out_archive_extensions) {
+    void FindSettings::out_archive_extensions(const std::unordered_set<std::string>& out_archive_extensions) {
         m_out_archive_extensions = out_archive_extensions;
     }
 
@@ -149,11 +149,11 @@ namespace cppfind {
         m_out_dir_patterns = out_dir_patterns;
     }
 
-    std::set<std::string> FindSettings::out_extensions() const {
+    std::unordered_set<std::string> FindSettings::out_extensions() const {
         return m_out_extensions;
     }
 
-    void FindSettings::out_extensions(const std::set<std::string>& out_extensions) {
+    void FindSettings::out_extensions(const std::unordered_set<std::string>& out_extensions) {
         m_out_extensions = out_extensions;
     }
 
@@ -165,11 +165,11 @@ namespace cppfind {
         m_out_file_patterns = out_file_patterns;
     }
 
-    std::set<FileType> FindSettings::out_file_types() const {
+    std::unordered_set<FileType> FindSettings::out_file_types() const {
         return m_out_file_types;
     }
 
-    void FindSettings::out_file_types(const std::set<FileType>& out_file_types) {
+    void FindSettings::out_file_types(const std::unordered_set<FileType>& out_file_types) {
         m_out_file_types = out_file_types;
     }
 
@@ -213,11 +213,11 @@ namespace cppfind {
         m_recursive = recursive;
     }
 
-    std::set<std::string> FindSettings::paths() const {
+    std::unordered_set<std::string> FindSettings::paths() const {
         return m_paths;
     }
 
-    void FindSettings::paths(const std::set<std::string>& paths) {
+    void FindSettings::paths(const std::unordered_set<std::string>& paths) {
         m_paths = paths;
     }
 
@@ -309,7 +309,7 @@ namespace cppfind {
         ps.emplace(std::string{p});
     }
 
-    void FindSettings::add_extensions(const std::string_view exts, std::set<std::string>& extensions) {
+    void FindSettings::add_extensions(const std::string_view exts, std::unordered_set<std::string>& extensions) {
         const std::vector<std::string> xs = StringUtil::split_string(std::string{exts}, ",", true);
         for (const auto& x : xs) {
             if (!x.empty()) {
@@ -318,7 +318,7 @@ namespace cppfind {
         }
     }
 
-    std::string FindSettings::file_types_to_string(const std::set<FileType>& types) {
+    std::string FindSettings::file_types_to_string(const std::unordered_set<FileType>& types) {
         std::string ts_string = "[";
         int count = 0;
         for (auto const& t : types) {
@@ -402,10 +402,10 @@ namespace cppfind {
                 std::string("FindSettings(")
                 + "archives_only=" + StringUtil::bool_to_string(m_archives_only)
                 + ", debug=" + StringUtil::bool_to_string(m_debug)
-                + ", in_archive_extensions=" + StringUtil::string_set_to_string(m_in_archive_extensions)
+                + ", in_archive_extensions=" + StringUtil::unordered_string_set_to_string(m_in_archive_extensions)
                 + ", in_archive_file_patterns=" + patterns_to_string(m_in_archive_file_patterns)
                 + ", in_dir_patterns=" + patterns_to_string(m_in_dir_patterns)
-                + ", in_extensions=" + StringUtil::string_set_to_string(m_in_extensions)
+                + ", in_extensions=" + StringUtil::unordered_string_set_to_string(m_in_extensions)
                 + ", in_file_patterns=" + patterns_to_string(m_in_file_patterns)
                 + ", in_file_types=" + file_types_to_string(m_in_file_types)
                 + ", include_archives=" + StringUtil::bool_to_string(m_include_archives)
@@ -416,13 +416,13 @@ namespace cppfind {
                 + ", min_depth=" + std::to_string(m_min_depth)
                 + ", min_last_mod=" + StringUtil::long_to_date_str(m_min_last_mod)
                 + ", min_size=" + std::to_string(m_min_size)
-                + ", out_archive_extensions=" + StringUtil::string_set_to_string(m_out_archive_extensions)
+                + ", out_archive_extensions=" + StringUtil::unordered_string_set_to_string(m_out_archive_extensions)
                 + ", out_archive_file_patterns=" + patterns_to_string(m_out_archive_file_patterns)
                 + ", out_dir_patterns=" + patterns_to_string(m_out_dir_patterns)
-                + ", out_extensions=" + StringUtil::string_set_to_string(m_out_extensions)
+                + ", out_extensions=" + StringUtil::unordered_string_set_to_string(m_out_extensions)
                 + ", out_file_patterns=" + patterns_to_string(m_out_file_patterns)
                 + ", out_file_types=" + file_types_to_string(m_out_file_types)
-                + ", paths=" + StringUtil::string_set_to_string(m_paths)
+                + ", paths=" + StringUtil::unordered_string_set_to_string(m_paths)
                 + ", print_dirs=" + StringUtil::bool_to_string(m_print_dirs)
                 + ", print_files=" + StringUtil::bool_to_string(m_print_files)
                 + ", print_usage=" + StringUtil::bool_to_string(m_print_usage)

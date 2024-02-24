@@ -23,6 +23,10 @@ namespace cppfind {
         m_regex = std::regex(std::string{pattern}, flags);
     }
 
+    RegexPattern::RegexPattern() : m_ignore_case(false), m_multi_line(false), m_dot_all(false) {
+
+    }
+
     std::string RegexPattern::pattern() const {
         return m_pattern;
     }

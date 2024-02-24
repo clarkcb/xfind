@@ -16,7 +16,7 @@ namespace cppfind {
         if (settings.paths().empty()) {
             throw FindException("Startpath not defined");
         }
-        for (auto& p : settings.paths()) {
+        for (const auto& p : settings.paths()) {
             if (!FileUtil::file_exists(p)) {
                 std::string expanded = FileUtil::expand_path(p);
                 if (!FileUtil::file_exists(expanded)) {
@@ -38,7 +38,8 @@ namespace cppfind {
     bool matches_any_pattern(const std::string_view s, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
         std::smatch pmatch;
         const std::string ss{s};
-        for (auto& p : patterns) {
+
+        for (const auto& p : patterns) {
             if (regex_search(ss, pmatch, p.regex())) {
                 return true;
             }
@@ -47,7 +48,7 @@ namespace cppfind {
     }
 
     bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
-        return std::any_of(ss.begin(), ss.end(), [patterns](const std::string& s) {
+        return std::ranges::any_of(ss.cbegin(), ss.cend(), [patterns](const std::string& s) {
             return matches_any_pattern(s, patterns);
         });
     }
@@ -55,23 +56,23 @@ namespace cppfind {
     bool Finder::is_matching_dir(const std::string_view file_path) {
         const std::vector<std::string> elems = StringUtil::split_string(file_path, "/\\", true);
         if (!m_settings.include_hidden()) {
-            for (auto& elem : elems) {
+            for (const auto& elem : elems) {
                 if (FileUtil::is_hidden(elem)) {
                     return false;
                 }
             }
         }
-        return ((m_settings.in_dir_patterns().empty() || any_matches_any_pattern(elems, m_settings.in_dir_patterns()))
-                && (m_settings.out_dir_patterns().empty() || !any_matches_any_pattern(elems, m_settings.out_dir_patterns())));
+        return (m_settings.in_dir_patterns().empty() || any_matches_any_pattern(elems, m_settings.in_dir_patterns()))
+                && (m_settings.out_dir_patterns().empty() || !any_matches_any_pattern(elems, m_settings.out_dir_patterns()));
     }
 
     bool Finder::is_matching_archive_file(const std::string_view file_name) {
         if (!m_settings.in_archive_extensions().empty() || !m_settings.out_archive_extensions().empty()) {
             std::string ext = FileUtil::get_extension(file_name);
             if ((!m_settings.in_archive_extensions().empty() &&
-                 !StringUtil::string_in_set(ext, m_settings.in_archive_extensions()))
+                 !StringUtil::string_in_unordered_set(ext, m_settings.in_archive_extensions()))
                 || (!m_settings.out_archive_extensions().empty() &&
-                    StringUtil::string_in_set(ext, m_settings.out_archive_extensions()))) {
+                    StringUtil::string_in_unordered_set(ext, m_settings.out_archive_extensions()))) {
                 return false;
             }
         }
@@ -83,9 +84,9 @@ namespace cppfind {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
             const std::string ext = FileUtil::get_extension(file_name);
             if ((!m_settings.in_extensions().empty()
-                 && !StringUtil::string_in_set(ext, m_settings.in_extensions()))
+                 && !StringUtil::string_in_unordered_set(ext, m_settings.in_extensions()))
                 || (!m_settings.out_extensions().empty()
-                    && StringUtil::string_in_set(ext, m_settings.out_extensions()))) {
+                    && StringUtil::string_in_unordered_set(ext, m_settings.out_extensions()))) {
                 return false;
             }
         }
@@ -119,9 +120,9 @@ namespace cppfind {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
             std::string ext = FileUtil::get_extension(file_result.file_name());
             if ((!m_settings.in_extensions().empty()
-                 && !StringUtil::string_in_set(ext, m_settings.in_extensions()))
+                 && !StringUtil::string_in_unordered_set(ext, m_settings.in_extensions()))
                 || (!m_settings.out_extensions().empty()
-                    && StringUtil::string_in_set(ext, m_settings.out_extensions()))) {
+                    && StringUtil::string_in_unordered_set(ext, m_settings.out_extensions()))) {
                 return false;
             }
         }
@@ -166,12 +167,12 @@ namespace cppfind {
         auto file_result = FileResult(parent_path, file_name, file_type, file_size, mod_time);
         if (file_type == FileType::ARCHIVE) {
             if (m_settings.include_archives() && is_matching_archive_file(file_name)) {
-                return std::optional<FileResult>{file_result};
+                return std::optional{file_result};
             }
             return std::nullopt;
         }
         if (!m_settings.archives_only() && is_matching_file_result(file_result)) {
-            return std::optional<FileResult>{file_result};
+            return std::optional{file_result};
         }
         return std::nullopt;
     }
@@ -210,7 +211,7 @@ namespace cppfind {
                        && (m_settings.max_depth() < 1 || depth <= m_settings.max_depth())) {
                 std::optional<FileResult> optFileResult = filter_to_file_result(sub_path.string());
                 if (optFileResult.has_value()) {
-                    file_results.push_back(optFileResult.value());
+                    file_results.push_back(std::move(optFileResult.value()));
                 }
             }
         }
@@ -226,7 +227,7 @@ namespace cppfind {
     std::vector<FileResult> Finder::find() {
         std::vector<FileResult> file_results{};
 
-        for (auto& p : m_settings.paths()) {
+        for (const auto& p : m_settings.paths()) {
             // we check using expanded in case p has tilde
             std::string expanded = FileUtil::expand_path(p);
 
@@ -241,7 +242,7 @@ namespace cppfind {
                 // if min_depth > zero, we can skip since the file is at depth zero
                 if (m_settings.min_depth() <= 0) {
                     auto* fr = get_file_result(expanded);
-                    file_results.push_back(*fr);
+                    file_results.push_back(std::move(*fr));
                 }
 
             } else {
