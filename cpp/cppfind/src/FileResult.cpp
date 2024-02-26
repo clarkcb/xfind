@@ -2,35 +2,18 @@
 #include "FileResult.h"
 
 namespace cppfind {
-    FileResult::FileResult(const std::string_view path, const std::string_view file_name, const FileType file_type,
-                           const uint64_t file_size, const long mod_time) {
-        constexpr std::vector<std::string> containers;
-        init(containers, path, file_name, file_type, file_size, mod_time);
+    FileResult::FileResult(std::filesystem::path&& file_path, const FileType file_type, const uint64_t file_size,
+        const long mod_time) : m_file_path(file_path), m_file_type(file_type), m_file_size(file_size), m_mod_time(mod_time) {
+        m_containers = {};
     }
 
-    FileResult::FileResult(const std::vector<std::string>& containers, const std::string_view path,
-                           const std::string_view file_name, const FileType file_type, const uint64_t file_size,
-                           const long mod_time) {
-        init(containers, path, file_name, file_type, file_size, mod_time);
+    FileResult::FileResult(std::vector<std::filesystem::path>&& containers, std::filesystem::path&& file_path,
+                           const FileType file_type, const uint64_t file_size, const long mod_time) :
+    m_containers(containers), m_file_path(file_path), m_file_type(file_type), m_file_size(file_size), m_mod_time(mod_time) {
     }
 
-    void FileResult::init(const std::vector<std::string>& containers, const std::string_view path,
-                          const std::string_view file_name, const FileType file_type, const uint64_t file_size,
-                          const long mod_time) {
-        m_containers = containers;
-        m_path = std::string{path};
-        m_file_name = std::string{file_name};
-        m_file_type = file_type;
-        m_file_size = file_size;
-        m_mod_time = mod_time;
-    }
-
-    std::string FileResult::path() const {
-        return m_path;
-    }
-
-    std::string FileResult::file_name() const {
-        return m_file_name;
+    std::filesystem::path FileResult::file_path() const {
+        return m_file_path;
     }
 
     FileType FileResult::file_type() const {
@@ -50,9 +33,7 @@ namespace cppfind {
         for (const auto& c : m_containers) {
             fullpath.append(c).append(CONTAINER_SEPARATOR);
         }
-        boost::filesystem::path p(m_path);
-        p.append(m_file_name);
-        fullpath.append(p.string());
+        fullpath.append(m_file_path.string());
         return fullpath;
     }
 }

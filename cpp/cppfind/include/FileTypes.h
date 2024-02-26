@@ -1,6 +1,7 @@
 #ifndef CPPFIND_FILETYPES_H
 #define CPPFIND_FILETYPES_H
 
+#include <filesystem>
 #include <unordered_set>
 
 #define FILE_TYPE_NAME_ARCHIVE "archive"
@@ -21,20 +22,20 @@ namespace cppfind {
     class FileTypes {
     public:
         FileTypes();
-        ~FileTypes();
+        ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        [[nodiscard]] FileType get_file_type(std::string_view file_path) const;
-        [[nodiscard]] bool is_archive_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_audio_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_binary_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_code_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_font_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_image_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_text_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_unknown_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_video_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_xml_file(std::string_view file_path) const;
+        [[nodiscard]] FileType get_path_type(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_archive_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_audio_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_binary_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_code_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_font_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_image_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_text_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_unknown_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_video_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_xml_path(const std::filesystem::path& file_path) const;
 
     private:
         std::unordered_set<std::string> m_archive_extensions;

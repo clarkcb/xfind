@@ -1,4 +1,5 @@
 
+#include <algorithm>
 #include "FindSettings.h"
 #include "StringUtil.h"
 
@@ -172,6 +173,14 @@ namespace cppfind {
         m_out_file_types = out_file_types;
     }
 
+    std::unordered_set<std::filesystem::path, PathHash> FindSettings::paths() const {
+        return m_paths;
+    }
+
+    void FindSettings::paths(const std::unordered_set<std::filesystem::path, PathHash>& paths) {
+        m_paths = paths;
+    }
+
     bool FindSettings::print_dirs() const {
         return m_print_dirs;
     }
@@ -210,14 +219,6 @@ namespace cppfind {
 
     void FindSettings::recursive(const bool recursive) {
         m_recursive = recursive;
-    }
-
-    std::unordered_set<std::string> FindSettings::paths() const {
-        return m_paths;
-    }
-
-    void FindSettings::paths(const std::unordered_set<std::string>& paths) {
-        m_paths = paths;
     }
 
     SortBy FindSettings::sort_by() const {
@@ -300,7 +301,7 @@ namespace cppfind {
         m_out_file_types.emplace(file_type);
     }
 
-    void FindSettings::add_path(const std::string_view path) {
+    void FindSettings::add_path(const std::filesystem::path& path) {
         m_paths.emplace(path);
     }
 
@@ -345,19 +346,38 @@ namespace cppfind {
         return ps_string;
     }
 
-    bool FindSettings::need_stat() const {
+    std::string paths_to_string(const std::unordered_set<std::filesystem::path, PathHash>& paths) {
+        std::string ss_string = "[";
+        for (auto it = paths.cbegin(); it != paths.cend(); ++it) {
+            ss_string.append("\"");
+            ss_string.append(*it);
+            ss_string.append("\"");
+            if (std::next(it) != paths.end()) {
+                ss_string.append(", ");
+            }
+        }
+        ss_string.append("]");
+        return ss_string;
+    }
+
+    bool FindSettings::need_size() const {
         return m_sort_by == SortBy::FILESIZE
-               || m_sort_by == SortBy::LASTMOD
-               || m_max_last_mod != 0
-               || m_min_last_mod != 0
                || m_max_size > 0
                || m_min_size > 0;
     }
 
+    bool FindSettings::need_last_mod() const {
+        return m_sort_by == SortBy::LASTMOD
+               || m_max_last_mod != 0
+               || m_min_last_mod != 0;
+    }
+
+    bool FindSettings::need_stat() const {
+        return need_size() || need_last_mod();
+    }
+
     SortBy FindSettings::sort_by_from_name(const std::string_view name) {
         std::string lname{name};
-        // std::transform(lname.begin(), lname.end(), lname.begin(),
-        //                [](const unsigned char c) { return std::tolower(c); });
         std::ranges::transform(lname.begin(), lname.end(), lname.begin(),
             [](const unsigned char c) { return std::tolower(c); });
         if (lname == SORT_BY_NAME_PATH || lname == SORT_BY_NAME_FILEPATH) {
@@ -421,7 +441,7 @@ namespace cppfind {
                 + ", out_extensions=" + StringUtil::unordered_string_set_to_string(m_out_extensions)
                 + ", out_file_patterns=" + patterns_to_string(m_out_file_patterns)
                 + ", out_file_types=" + file_types_to_string(m_out_file_types)
-                + ", paths=" + StringUtil::unordered_string_set_to_string(m_paths)
+                + ", paths=" + paths_to_string(m_paths)
                 + ", print_dirs=" + StringUtil::bool_to_string(m_print_dirs)
                 + ", print_files=" + StringUtil::bool_to_string(m_print_files)
                 + ", print_usage=" + StringUtil::bool_to_string(m_print_usage)

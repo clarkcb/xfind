@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28.1)
+cmake_minimum_required(VERSION 3.27.8)
 project(cppfind VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")
@@ -7,9 +7,6 @@ project(cppfind VERSION 0.1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
-
-set(Boost_USE_MULTITHREADED ON)
-find_package(Boost REQUIRED COMPONENTS system filesystem)
 
 if (DEFINED ENV{XFIND_PATH})
         set(XFIND_PATH $ENV{XFIND_PATH})
@@ -20,7 +17,7 @@ else()
 endif()
 
 include_directories(${XFIND_PATH}/cpp/cppfind/include)
-include_directories(${Boost_INCLUDE_DIRS})
+include_directories(/usr/local/include)
 
 
 ################################################################################
@@ -50,7 +47,7 @@ target_sources(${PROJECT_NAME}
         include/RegexPattern.h src/RegexPattern.cpp
         include/Finder.h src/Finder.cpp)
 
-target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}Targets

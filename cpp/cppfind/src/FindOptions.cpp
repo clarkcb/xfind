@@ -60,9 +60,7 @@ namespace cppfind {
     }
 
     void FindOptions::load_options() {
-        auto xfind_path = xfindpath();
-        auto sub_path = "shared/findoptions.json";
-        auto find_options_path = FileUtil::join_path(xfind_path, sub_path);
+        auto find_options_path = std::filesystem::path(xfindpath()) / "shared/findoptions.json";
 
         if (!std::filesystem::exists(find_options_path)) {
             std::string msg{"Findoptions file not found: "};
@@ -70,7 +68,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        uint64_t file_size = FileUtil::file_size(find_options_path);
+        uint64_t file_size = std::filesystem::file_size(find_options_path);
         FILE* fp = fopen(find_options_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -174,7 +172,7 @@ namespace cppfind {
         }
 
         uint64_t file_size = std::filesystem::file_size(file_path);
-        FILE *fp = fopen(std::string{file_path}.c_str(), "r");
+        FILE *fp = fopen(file_path.c_str(), "r");
 
         char readBuffer[file_size];
         rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -195,7 +193,7 @@ namespace cppfind {
     void FindOptions::settings_from_document(rapidjson::Document& document, FindSettings& settings) {
         assert(document.IsObject());
 
-        for(rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
+        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
             std::string name = it->name.GetString();
 
             if (it->value.IsArray()) {
@@ -214,7 +212,7 @@ namespace cppfind {
 
             } else if (it->value.IsString()) {
                 auto s = std::string(it->value.GetString());
-                if (m_str_arg_map.find(name) != m_str_arg_map.end()) {
+                if (m_str_arg_map.contains(name)) {
                     m_str_arg_map[name](s, settings);
                 } else {
                     const std::string msg = "Invalid option: " + name;
@@ -241,12 +239,11 @@ namespace cppfind {
         };
         std::sort(m_options.begin(), m_options.end(), sort_option_lambda);
 
-        long longest_len = 0;
+        unsigned long longest_len = 0;
         for (auto const& option : m_options) {
             std::string opt_string{};
-            const std::string short_arg = option.short_arg();
-            if (!short_arg.empty()) {
-                opt_string.append("-").append(short_arg).append(",");
+            if (!option.short_arg().empty()) {
+                opt_string.append("-").append(option.short_arg()).append(",");
             }
             opt_string.append("--").append(option.long_arg());
             if (opt_string.length() > longest_len) {

@@ -1,6 +1,7 @@
 #ifndef CPPFIND_FILERESULT_H
 #define CPPFIND_FILERESULT_H
 
+#include <filesystem>
 #include <string>
 #include <vector>
 #include "FileTypes.h"
@@ -10,25 +11,22 @@
 namespace cppfind {
     class FileResult {
     public:
-        FileResult(std::string_view path, std::string_view file_name, FileType file_type, uint64_t file_size,
-                   long mod_time);
-        FileResult(const std::vector<std::string>& containers, std::string_view path, std::string_view file_name,
+        FileResult(std::filesystem::path&& file_path, FileType file_type, uint64_t file_size, long mod_time);
+        FileResult(std::vector<std::filesystem::path>&& containers, std::filesystem::path&& file_path,
                    FileType file_type, uint64_t file_size, long mod_time);
-        [[nodiscard]] std::string path() const;
-        [[nodiscard]] std::string file_name() const;
+        [[nodiscard]] std::filesystem::path file_path() const;
         [[nodiscard]] FileType file_type() const;
         [[nodiscard]] uint64_t file_size() const;
         [[nodiscard]] long mod_time() const;
         [[nodiscard]] std::string string() const;
 
     private:
-        std::vector<std::string> m_containers;
-        std::string m_path;
-        std::string m_file_name;
+        std::vector<std::filesystem::path> m_containers;
+        std::filesystem::path m_file_path;
         FileType m_file_type;
         uint64_t m_file_size;
         long m_mod_time;
-        void init(const std::vector<std::string>& containers, std::string_view path, std::string_view file_name,
+        void init(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
                   FileType file_type, uint64_t file_size, long mod_time);
     };
 }

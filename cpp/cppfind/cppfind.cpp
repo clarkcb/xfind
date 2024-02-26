@@ -9,10 +9,11 @@ std::vector<std::string> get_matching_dirs(const std::vector<FileResult>& file_r
     std::set<std::string> dir_set;
     std::vector<std::string> matching_dirs;
     for (const auto& fr : file_results) {
-        if (!dir_set.contains(fr.path())) {
-            matching_dirs.push_back(fr.path());
+        const std::string dir = fr.file_path().parent_path().string();
+        if (!dir_set.contains(dir)) {
+            matching_dirs.push_back(dir);
         }
-        dir_set.emplace(fr.path());
+        dir_set.emplace(dir);
     }
     return matching_dirs;
 }

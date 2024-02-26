@@ -17,13 +17,13 @@ namespace cppfind {
     }
 
     void FileTypes::load_file_types() {
-        auto file_types_path = FileUtil::join_path(xfindpath(), "shared/filetypes.json");
+        auto file_types_path = std::filesystem::path(xfindpath()) / "shared/filetypes.json";
 
-        if (!FileUtil::file_exists(file_types_path)) {
-            throw FindException("Filetypes file not found: " + file_types_path);
+        if (!std::filesystem::exists(file_types_path)) {
+            throw FindException("Filetypes file not found: " + file_types_path.string());
         }
 
-        uint64_t file_size = FileUtil::file_size(file_types_path);
+        uint64_t file_size = std::filesystem::file_size(file_types_path);
         FILE* fp = fopen(file_types_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -102,33 +102,31 @@ namespace cppfind {
         if (lname == FILE_TYPE_NAME_ARCHIVE) {
             return FileType::ARCHIVE;
         }
-        else if (lname == FILE_TYPE_NAME_AUDIO) {
+        if (lname == FILE_TYPE_NAME_AUDIO) {
             return FileType::AUDIO;
         }
-        else if (lname == FILE_TYPE_NAME_BINARY) {
+        if (lname == FILE_TYPE_NAME_BINARY) {
             return FileType::BINARY;
         }
-        else if (lname == FILE_TYPE_NAME_CODE) {
+        if (lname == FILE_TYPE_NAME_CODE) {
             return FileType::CODE;
         }
-        else if (lname == FILE_TYPE_NAME_FONT) {
+        if (lname == FILE_TYPE_NAME_FONT) {
             return FileType::FONT;
         }
-        else if (lname == FILE_TYPE_NAME_IMAGE) {
+        if (lname == FILE_TYPE_NAME_IMAGE) {
             return FileType::IMAGE;
         }
-        else if (lname == FILE_TYPE_NAME_TEXT) {
+        if (lname == FILE_TYPE_NAME_TEXT) {
             return FileType::TEXT;
         }
-        else if (lname == FILE_TYPE_NAME_VIDEO) {
+        if (lname == FILE_TYPE_NAME_VIDEO) {
             return FileType::VIDEO;
         }
-        else if (lname == FILE_TYPE_NAME_XML) {
+        if (lname == FILE_TYPE_NAME_XML) {
             return FileType::XML;
         }
-        else {
-            return FileType::UNKNOWN;
-        }
+        return FileType::UNKNOWN;
     }
 
     std::string FileTypes::to_name(const FileType& file_type) {
@@ -156,89 +154,86 @@ namespace cppfind {
         }
     }
 
-    FileType FileTypes::get_file_type(const std::string_view file_path) const {
+    FileType FileTypes::get_path_type(const std::filesystem::path& file_path) const {
         // most specific first
-        if (is_code_file(file_path)) {
+        if (is_code_path(file_path)) {
             return FileType::CODE;
         }
-        if (is_archive_file(file_path)) {
+        if (is_archive_path(file_path)) {
             return FileType::ARCHIVE;
         }
-        if (is_audio_file(file_path)) {
+        if (is_audio_path(file_path)) {
             return FileType::AUDIO;
         }
-        if (is_font_file(file_path)) {
+        if (is_font_path(file_path)) {
             return FileType::FONT;
         }
-        if (is_image_file(file_path)) {
+        if (is_image_path(file_path)) {
             return FileType::IMAGE;
         }
-        if (is_video_file(file_path)) {
+        if (is_video_path(file_path)) {
             return FileType::VIDEO;
         }
         // most general last
-        if (is_xml_file(file_path)) {
+        if (is_xml_path(file_path)) {
             return FileType::XML;
         }
-        if (is_text_file(file_path)) {
+        if (is_text_path(file_path)) {
             return FileType::TEXT;
         }
-        if (is_binary_file(file_path)) {
+        if (is_binary_path(file_path)) {
             return FileType::BINARY;
         }
         return FileType::UNKNOWN;
     }
 
-    bool FileTypes::is_archive_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_archive_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_archive_names);
+    bool is_path_with_extension_or_name(const std::filesystem::path& path,
+        const std::unordered_set<std::string>& extensions, const std::unordered_set<std::string>& filenames) {
+        const auto file_ext = FileUtil::get_path_extension(path);
+        if (!StringUtil::string_in_unordered_set(file_ext, extensions)) {
+            const auto filename = path.filename();
+            return !filename.empty() && StringUtil::string_in_unordered_set(filename.string(), filenames);
+        }
+        return true;
     }
 
-    bool FileTypes::is_audio_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_audio_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_audio_names);
+    bool FileTypes::is_archive_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_archive_extensions, m_archive_names);
     }
 
-    bool FileTypes::is_binary_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_binary_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_binary_names);
+    bool FileTypes::is_audio_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_audio_extensions, m_audio_names);
     }
 
-    bool FileTypes::is_code_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_code_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_code_names);
+    bool FileTypes::is_binary_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_binary_extensions, m_binary_names);
     }
 
-    bool FileTypes::is_font_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_font_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_font_names);
+    bool FileTypes::is_code_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_code_extensions, m_code_names);
     }
 
-    bool FileTypes::is_image_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_image_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_image_names);
+    bool FileTypes::is_font_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_font_extensions, m_font_names);
     }
 
-    bool FileTypes::is_text_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_text_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_text_names);
+    bool FileTypes::is_image_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_image_extensions, m_image_names);
     }
 
-    bool FileTypes::is_video_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_video_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_video_names);
+    bool FileTypes::is_text_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_text_extensions, m_text_names);
     }
 
-    bool FileTypes::is_unknown_file(const std::string_view file_path) const {
-        return get_file_type(file_path) == FileType::UNKNOWN;
+    bool FileTypes::is_video_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_video_extensions, m_video_names);
     }
 
-    bool FileTypes::is_xml_file(const std::string_view file_path) const {
-        return StringUtil::string_in_unordered_set(FileUtil::get_extension(file_path), m_xml_extensions)
-               || StringUtil::string_in_unordered_set(FileUtil::get_file_name(file_path), m_xml_names);
+    bool FileTypes::is_unknown_path(const std::filesystem::path& file_path) const {
+        return get_path_type(file_path) == FileType::UNKNOWN;
     }
 
-    FileTypes::~FileTypes() {
-
+    bool FileTypes::is_xml_path(const std::filesystem::path& file_path) const {
+        return is_path_with_extension_or_name(file_path, m_xml_extensions, m_xml_names);
     }
 }

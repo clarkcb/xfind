@@ -1,6 +1,7 @@
 #ifndef CPPFIND_FINDSETTINGS_H
 #define CPPFIND_FINDSETTINGS_H
 
+#include <filesystem>
 #include <set>
 #include <string>
 #include <unordered_set>
@@ -21,6 +22,12 @@
 
 namespace cppfind {
     enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
+
+    struct PathHash {
+        auto operator()(const std::filesystem::path& p) const noexcept {
+            return std::filesystem::hash_value(p);
+        }
+    };
 
     class FindSettings {
     public:
@@ -57,7 +64,7 @@ namespace cppfind {
         [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
         [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
-        [[nodiscard]] std::unordered_set<std::string> paths() const;
+        [[nodiscard]] std::unordered_set<std::filesystem::path, PathHash> paths() const;
 
         // property setters
         void archives_only(bool archives_only);
@@ -80,7 +87,7 @@ namespace cppfind {
         void out_extensions(const std::unordered_set<std::string>& out_extensions);
         void out_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_file_patterns);
         void out_file_types(const std::unordered_set<FileType>& out_file_types);
-        void paths(const std::unordered_set<std::string>& paths);
+        void paths(const std::unordered_set<std::filesystem::path, PathHash>& paths);
         void print_dirs(bool print_dirs);
         void print_files(bool print_files);
         void print_usage(bool print_usage);
@@ -104,9 +111,11 @@ namespace cppfind {
         void add_out_extension(std::string_view ext);
         void add_out_file_pattern(std::string_view pattern);
         void add_out_file_type(FileType file_type);
-        void add_path(std::string_view path);
+        void add_path(const std::filesystem::path& path);
 
         // need elements methods
+        [[nodiscard]] bool need_size() const;
+        [[nodiscard]] bool need_last_mod() const;
         [[nodiscard]] bool need_stat() const;
 
         // utility methods
@@ -156,7 +165,7 @@ namespace cppfind {
         bool m_print_version = false;
         bool m_recursive = true;
 
-        std::unordered_set<std::string> m_paths;
+        std::unordered_set<std::filesystem::path, PathHash> m_paths;
 
         SortBy m_sort_by = SortBy::FILEPATH;
         bool m_sort_case_insensitive = false;

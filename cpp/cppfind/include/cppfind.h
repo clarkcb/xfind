@@ -50,7 +50,6 @@
 #include <regex>
 #include <set>
 #include <string>
-#include <sys/stat.h>
 #include <unordered_set>
 #include <vector>
 
@@ -64,37 +63,31 @@ namespace cppfind {
     class FileTypes {
     public:
         FileTypes();
-        ~FileTypes();
+        ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        [[nodiscard]] FileType get_file_type(std::string_view file_path) const;
-        [[nodiscard]] bool is_archive_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_audio_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_binary_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_code_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_font_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_image_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_text_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_unknown_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_video_file(std::string_view file_path) const;
-        [[nodiscard]] bool is_xml_file(std::string_view file_path) const;
+        [[nodiscard]] FileType get_path_type(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_archive_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_audio_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_binary_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_code_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_font_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_image_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_text_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_unknown_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_video_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] bool is_xml_path(const std::filesystem::path& file_path) const;
     };
 
     // FileUtil.h
     class FileUtil {
     public:
-        static std::string expand_path(std::string_view file_path);
-        static bool file_exists(std::string_view file_path);
-        static uint64_t file_size(std::string_view file_path);
-        static std::string get_contents(const std::ifstream& fin);
-        static std::string get_extension(std::string_view name);
-        static std::string get_file_name(std::string_view file_path);
-        static bool is_directory(std::string_view name);
-        static bool is_regular_file(std::string_view name);
-        static bool is_dot_dir(std::string_view name);
-        static bool is_hidden(std::string_view name);
-        static std::string join_path(std::string_view path1, std::string_view path2);
-        static std::pair<std::string, std::string> split_path(std::string_view file_path);
+        static std::filesystem::path expand_tilde(const std::filesystem::path& path);
+        static bool path_exists(const std::filesystem::path& path);
+        static std::string get_path_extension(const std::filesystem::path& file_path);
+        static bool is_dot_dir(std::string_view file_name);
+        static bool is_hidden(std::string_view file_name);
+        static bool is_hidden_path(const std::filesystem::path& file_path);
     };
 
     // FindConfig.h
@@ -171,6 +164,12 @@ namespace cppfind {
     // FindSettings.h
     enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
 
+    struct PathHash {
+        auto operator()(const std::filesystem::path& p) const noexcept {
+            return std::filesystem::hash_value(p);
+        }
+    };
+
     class FindSettings {
     public:
         // property getters
@@ -206,7 +205,7 @@ namespace cppfind {
         [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
         [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
         [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
-        [[nodiscard]] std::unordered_set<std::string> paths() const;
+        [[nodiscard]] std::unordered_set<std::filesystem::path, PathHash> paths() const;
 
         // property setters
         void archives_only(bool archives_only);
@@ -229,7 +228,7 @@ namespace cppfind {
         void out_extensions(const std::unordered_set<std::string>& out_extensions);
         void out_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_file_patterns);
         void out_file_types(const std::unordered_set<FileType>& out_file_types);
-        void paths(const std::unordered_set<std::string>& paths);
+        void paths(const std::unordered_set<std::filesystem::path, PathHash>& paths);
         void print_dirs(bool print_dirs);
         void print_files(bool print_files);
         void print_usage(bool print_usage);
@@ -253,9 +252,11 @@ namespace cppfind {
         void add_out_extension(std::string_view ext);
         void add_out_file_pattern(std::string_view pattern);
         void add_out_file_type(FileType file_type);
-        void add_path(std::string_view path);
+        void add_path(const std::filesystem::path& path);
 
         // need elements methods
+        [[nodiscard]] bool need_size() const;
+        [[nodiscard]] bool need_last_mod() const;
         [[nodiscard]] bool need_stat() const;
 
         // utility methods
@@ -273,12 +274,11 @@ namespace cppfind {
     // FileResult.h
     class FileResult {
     public:
-        FileResult(std::string_view path, std::string_view file_name, FileType file_type, uint64_t file_size,
+        FileResult(std::filesystem::path&& file_path, FileType file_type, uint64_t file_size,
                    long mod_time);
-        FileResult(const std::vector<std::string>& containers, std::string_view path, std::string_view file_name,
+        FileResult(std::vector<std::filesystem::path>&& containers, std::filesystem::path&& file_path,
                    FileType file_type, uint64_t file_size, long mod_time);
-        [[nodiscard]] std::string path() const;
-        [[nodiscard]] std::string file_name() const;
+        [[nodiscard]] std::filesystem::path file_path() const;
         [[nodiscard]] FileType file_type() const;
         [[nodiscard]] uint64_t file_size() const;
         [[nodiscard]] long mod_time() const;
@@ -300,12 +300,11 @@ namespace cppfind {
     class Finder {
     public:
         explicit Finder(const FindSettings& settings);
-        std::optional<FileResult> filter_to_file_result(std::string_view file_path);
-        bool is_matching_archive_file(std::string_view file_name);
-        bool is_matching_dir(std::string_view file_path);
-        bool is_matching_file(std::string_view file_name, const FileType& file_type, const struct stat*);
-        bool is_matching_file_type(const FileType& file_type);
-        bool is_matching_file_result(const FileResult& file_result);
+        std::optional<FileResult> filter_to_file_result(std::filesystem::path&& file_path) const;
+        [[nodiscard]] bool is_matching_archive_file_result(const FileResult& file_result) const;
+        [[nodiscard]] bool is_matching_dir_path(const std::filesystem::path& dir_path) const;
+        [[nodiscard]] bool is_matching_file_type(const FileType& file_type) const;
+        [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
         std::vector<FileResult> find();
     };
 }

@@ -8,7 +8,7 @@ namespace cppfind {
         std::vector<std::string> parts;
         size_t start = 0;
         size_t end = 0;
-        std::string ss{s};
+        const std::string ss{s};
         while (end != std::string::npos) {
             end = s.find_first_of(delims, start);
             std::string part = ss.substr(start, end - start);
@@ -25,7 +25,7 @@ namespace cppfind {
     }
 
     void StringUtil::ltrim(std::string& s) {
-        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](const int ch) {
+        s.erase(s.begin(), std::ranges::find_if(s.begin(), s.end(), [](const int ch) {
             return !std::isspace(ch);
         }));
     }
@@ -65,7 +65,7 @@ namespace cppfind {
     }
 
     bool StringUtil::string_in_vector(const std::string_view s, const std::vector<std::string>& vec) {
-        return std::find(vec.begin(), vec.end(), std::string{s}) != vec.end();
+        return std::ranges::find(vec.begin(), vec.end(), std::string{s}) != vec.end();
     }
 
     std::vector<std::string> StringUtil::filter_string_vector(const std::vector<std::string>& vec,
@@ -109,11 +109,10 @@ namespace cppfind {
 
         if (strftime(buf, sizeof(buf), "%Y-%m-%d", tm) == 0) {
             return "0";
-        } else {
-            std::string ds = "\"";
-            ds.append(buf);
-            ds.append("\"");
-            return ds;
         }
+        std::string ds = "\"";
+        ds.append(buf);
+        ds.append("\"");
+        return ds;
     }
 }
