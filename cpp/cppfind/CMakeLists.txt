@@ -38,7 +38,7 @@ target_sources(${PROJECT_NAME}
         $<INSTALL_INTERFACE:include/cppfind.h>
         PRIVATE
         include/common.h src/common.cpp
-        include/config.h src/config.cpp
+        include/FindConfig.h src/FindConfig.cpp
         include/FileTypes.h src/FileTypes.cpp
         include/FileUtil.h src/FileUtil.cpp
         include/StringUtil.h src/StringUtil.cpp
@@ -92,7 +92,8 @@ Include(FetchContent)
 FetchContent_Declare(
         Catch2
         GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-        GIT_TAG        v2.13.9
+        #GIT_TAG        v2.13.9
+        GIT_TAG        v3.5.3
 )
 
 FetchContent_MakeAvailable(Catch2)
@@ -107,6 +108,7 @@ set(TEST_FILES tests/FileResultTest.cpp
 
 add_executable(cppfind-tests ${TEST_FILES})
 
-target_link_libraries(cppfind-tests ${PROJECT_NAME} Catch2::Catch2)
+#target_link_libraries(cppfind-tests ${PROJECT_NAME} Catch2::Catch2)
+target_link_libraries(cppfind-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
 
 unset(XFIND_PATH CACHE)

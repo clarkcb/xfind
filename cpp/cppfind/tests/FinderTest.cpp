@@ -1,5 +1,5 @@
-#include <catch2/catch.hpp>
-#include "config.h"
+#include <catch2/catch_all.hpp>
+// #include <catch2/catch.hpp>
 #include "FileTypes.h"
 #include "Finder.h"
 

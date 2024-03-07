@@ -1,4 +1,5 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+// #include <catch2/catch.hpp>
 #include "FileTypes.h"
 
 TEST_CASE("Verify that files are the expected type", "[FileType]") {

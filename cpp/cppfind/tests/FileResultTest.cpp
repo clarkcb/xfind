@@ -1,4 +1,5 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+// #include <catch2/catch.hpp>
 #include "FileResult.h"
 
 TEST_CASE("Verify full path file result string equals expected", "[FileResult]") {

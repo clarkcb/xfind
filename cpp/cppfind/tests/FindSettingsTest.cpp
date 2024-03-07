@@ -1,4 +1,5 @@
-#include <catch2/catch.hpp>
+#include <catch2/catch_all.hpp>
+// #include <catch2/catch.hpp>
 #include "FindSettings.h"
 
 TEST_CASE("Get default FindSettings", "[FindSettings]") {

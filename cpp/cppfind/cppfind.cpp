@@ -38,23 +38,23 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        const auto settings = options->settings_from_args(argc, argv);
+        auto settings = options->settings_from_args(argc, argv);
 
-        if (settings->debug()) {
-            log(settings->string());
+        if (settings.debug()) {
+            log(settings.string());
         }
 
-        if (settings->print_usage()) {
+        if (settings.print_usage()) {
             options->usage();
         }
 
-        auto* finder = new Finder(*settings);
+        auto finder = Finder(settings);
 
-        const std::vector<FileResult> file_results = finder->find();
+        const std::vector<FileResult> file_results = finder.find();
 
-        if (settings->print_dirs()) {
+        if (settings.print_dirs()) {
             const std::vector<std::string> dirs = get_matching_dirs(file_results);
-            std::string msg = "\nMatching directories";
+            std::string msg{"\nMatching directories"};
             if (dirs.empty()) {
                 msg.append(": 0");
                 log(msg);
@@ -67,9 +67,9 @@ int main(int argc, char *argv[]) {
             }
         }
 
-        if (settings->print_files()) {
+        if (settings.print_files()) {
             const std::vector<std::string> files = get_matching_files(file_results);
-            std::string msg = "\nMatching files";
+            std::string msg{"\nMatching files"};
             if (files.empty()) {
                 msg.append(": 0");
                 log(msg);

@@ -2,8 +2,7 @@
 #include <boost/format.hpp>
 #include "rapidjson/filereadstream.h"
 
-#include "config.h"
-#include "FileUtil.h"
+#include "FindConfig.h"
 #include "FindException.h"
 #include "FindOptions.h"
 #include "StringUtil.h"
@@ -64,9 +63,9 @@ namespace cppfind {
         auto sub_path = "shared/findoptions.json";
         auto findoptions_path = FileUtil::join_path(xfind_path, sub_path);
 
-        if (!FileUtil::file_exists(findoptions_path)) {
-            std::string msg = "Findoptions file not found: ";
-            msg.append(findoptions_path);
+        if (!std::filesystem::exists(find_options_path)) {
+            std::string msg{"Findoptions file not found: "};
+            msg.append(find_options_path);
             throw FindException(msg);
         }
 
@@ -82,26 +81,26 @@ namespace cppfind {
         fclose(fp);
 
         assert(document.HasMember("findoptions"));
-        const rapidjson::Value& findoptions = document["findoptions"];
-        assert(findoptions.IsArray());
-        for (rapidjson::SizeType i = 0; i < findoptions.Size(); i++) {
-            const rapidjson::Value::ConstObject &findoption = findoptions[i].GetObject();
-            assert(findoption.HasMember("long"));
-            const rapidjson::Value &longValue = findoption["long"];
+        const rapidjson::Value& find_options = document["findoptions"];
+        assert(find_options.IsArray());
+        for (rapidjson::SizeType i = 0; i < find_options.Size(); ++i) {
+            const rapidjson::Value::ConstObject &find_option = find_options[i].GetObject();
+            assert(find_option.HasMember("long"));
+            const rapidjson::Value &longValue = find_option["long"];
             auto long_arg = std::string(longValue.GetString());
             m_long_arg_map[long_arg] = long_arg;
 
             std::string short_arg;
-            if (findoption.HasMember("short")) {
-                const rapidjson::Value &shortValue = findoption["short"];
+            if (find_option.HasMember("short")) {
+                const rapidjson::Value &shortValue = find_option["short"];
                 short_arg = std::string(shortValue.GetString());
                 m_long_arg_map[short_arg] = long_arg;
             } else {
                 short_arg = std::string("");
             }
 
-            assert(findoption.HasMember("desc"));
-            const rapidjson::Value &descValue = findoption["desc"];
+            assert(find_option.HasMember("desc"));
+            const rapidjson::Value &descValue = find_option["desc"];
             auto desc = std::string(descValue.GetString());
 
             auto option = FindOption(short_arg, long_arg, desc);
@@ -109,23 +108,22 @@ namespace cppfind {
         }
     }
 
-    FindSettings* FindOptions::settings_from_args(int &argc, char **argv) {
-        auto settings = new FindSettings();
+    FindSettings FindOptions::settings_from_args(int &argc, char **argv) {
+        auto settings = FindSettings();
 
         // set print_files to true since we are running the executable
-        settings->print_files(true);
+        settings.print_files(true);
 
         std::deque<std::string> arg_deque;
         unsigned int i;
 
-        for (i=1; i < argc; i++) {
-            auto arg = new std::string(argv[i]);
-            arg_deque.push_back(*arg);
+        for (i=1; i < argc; ++i) {
+            arg_deque.emplace_back(argv[i]);
         }
 
         std::string next_arg;
         while (!arg_deque.empty()) {
-            next_arg = std::string(arg_deque.front());
+            next_arg = arg_deque.front();
             arg_deque.pop_front();
 
             if (next_arg[0] == '-') {
@@ -133,47 +131,43 @@ namespace cppfind {
                     next_arg = next_arg.substr(1);
                 }
 
-                auto long_arg_found = m_long_arg_map.find(next_arg);
-                if (long_arg_found != m_long_arg_map.end()) {
+                if (m_long_arg_map.contains(next_arg)) {
                     auto long_arg = m_long_arg_map[next_arg];
 
-                    auto bool_arg_found = m_bool_arg_map.find(long_arg);
-                    auto coll_arg_found = m_str_arg_map.find(long_arg);
-
-                    if (bool_arg_found != m_bool_arg_map.end()) {
-                        m_bool_arg_map[long_arg](true, *settings);
-                    } else if (coll_arg_found != m_str_arg_map.end()) {
+                    if (m_bool_arg_map.contains(long_arg)) {
+                        m_bool_arg_map[long_arg](true, settings);
+                    } else if (auto str_arg_found = m_str_arg_map.find(long_arg);
+                               str_arg_found != m_str_arg_map.end()) {
                         if (arg_deque.empty()) {
-                            std::string msg = "Missing value for option ";
+                            std::string msg{"Missing value for option "};
                             msg.append(next_arg);
                             throw FindException(msg);
-                        } else {
-                            auto* arg_val = new std::string(arg_deque.front());
-                            arg_deque.pop_front();
-                            if (coll_arg_found != m_str_arg_map.end()) {
-                                m_str_arg_map[long_arg](*arg_val, *settings);
-                            }
+                        }
+                        auto arg_val = std::string(arg_deque.front());
+                        arg_deque.pop_front();
+                        if (str_arg_found != m_str_arg_map.end()) {
+                            m_str_arg_map[long_arg](arg_val, settings);
                         }
                     } else { // shouldn't be possible to get here
-                        std::string msg = "Invalid option: ";
+                        std::string msg{"Invalid option: "};
                         msg.append(next_arg);
                         throw FindException(msg);
                     }
                 } else {
-                    std::string msg = "Invalid option: ";
+                    std::string msg{"Invalid option: "};
                     msg.append(next_arg);
                     throw FindException(msg);
                 }
             } else {
-                settings->add_path(next_arg);
+                settings.add_path(next_arg);
             }
         }
         return settings;
     }
 
-    void FindOptions::settings_from_file(const std::string_view file_path, FindSettings& settings) {
-        if (!FileUtil::file_exists(file_path)) {
-            std::string msg = "Settings file not found: ";
+    void FindOptions::settings_from_file(const std::filesystem::path& file_path, FindSettings& settings) {
+        if (!std::filesystem::exists(file_path)) {
+            std::string msg{"Settings file not found: "};
             msg.append(file_path);
             throw FindException(msg);
         }
@@ -204,16 +198,16 @@ namespace cppfind {
             std::string name = it->name.GetString();
 
             if (it->value.IsArray()) {
-                assert(m_str_arg_map.find(name) != m_str_arg_map.end());
+                assert(m_str_arg_map.contains(name));
                 const auto& arr = it->value.GetArray();
-                for (rapidjson::SizeType i = 0; i < arr.Size(); i++) {
+                for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
                     assert(arr[i].IsString());
                     auto s = std::string(arr[i].GetString());
                     m_str_arg_map[name](s, settings);
                 }
 
             } else if (it->value.IsBool()) {
-                assert(m_bool_arg_map.find(name) != m_bool_arg_map.end());
+                assert(m_bool_arg_map.contains(name));
                 const bool b = it->value.GetBool();
                 m_bool_arg_map[name](b, settings);
 
@@ -262,8 +256,7 @@ namespace cppfind {
         }
 
         const std::string format = std::string(" %1$-") + std::to_string(longest_len) + "s  %2$s\n";
-
-        for (int i = 0; i < opt_strings.size(); i++) {
+        for (int i = 0; i < opt_strings.size(); ++i) {
             usage_string.append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
         }
         return usage_string;

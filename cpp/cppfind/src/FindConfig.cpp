@@ -1,4 +1,4 @@
-#include "config.h"
+#include "FindConfig.h"
 
 namespace cppfind {
     std::string xfindpath() {

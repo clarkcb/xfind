@@ -63,7 +63,7 @@ namespace cppfind {
     void log(std::string_view msg);
     void log_error(std::string_view msg);
 
-    // config.h
+    // FindConfig.h
     std::string xfindpath();
 
     // FileTypes.h
@@ -290,11 +290,11 @@ namespace cppfind {
     class FindOptions {
     public:
         FindOptions();
-        FindSettings* settings_from_args(int &argc, char **argv);
-        void settings_from_file(std::string_view file_path, FindSettings& settings);
+        FindSettings settings_from_args(int &argc, char **argv);
+        void settings_from_file(const std::filesystem::path& file_path, FindSettings& settings);
         void settings_from_json(std::string_view json, FindSettings& settings);
-        void usage();
-        std::string get_usage_string();
+        void usage() const;
+        [[nodiscard]] std::string get_usage_string() const;
     };
 
     // Finder.h

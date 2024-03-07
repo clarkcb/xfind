@@ -4,7 +4,7 @@
 #include "rapidjson/document.h"
 #include "rapidjson/filereadstream.h"
 
-#include "config.h"
+#include "FindConfig.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
 #include "FindException.h"
@@ -97,8 +97,8 @@ namespace cppfind {
 
     FileType FileTypes::from_name(const std::string_view name) {
          std::string lname{name};
-        std::transform(lname.begin(), lname.end(), lname.begin(),
-                       [](unsigned char c) { return std::tolower(c); });
+        std::ranges::transform(lname.begin(), lname.end(), lname.begin(),
+                       [](const unsigned char c) { return std::tolower(c); });
         if (lname == FILE_TYPE_NAME_ARCHIVE) {
             return FileType::ARCHIVE;
         }

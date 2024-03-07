@@ -1,4 +1,4 @@
-#include <algorithm>
+#include <ranges>
 
 #include "FindOption.h"
 
@@ -11,7 +11,7 @@ namespace cppfind {
         m_description = std::string{description};
         if (!m_short_arg.empty()) {
             m_sort_arg = m_short_arg;
-            std::transform(m_sort_arg.begin(), m_sort_arg.end(), m_sort_arg.begin(),
+            std::ranges::transform(m_sort_arg.begin(), m_sort_arg.end(), m_sort_arg.begin(),
                            [](const unsigned char c) { return std::tolower(c); });
             m_sort_arg.append("@");
             m_sort_arg.append(m_long_arg);
@@ -21,7 +21,6 @@ namespace cppfind {
         }
     }
 
-    // implement the getters
     std::string FindOption::short_arg() const {
         return m_short_arg;
     }
