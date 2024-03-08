@@ -11,8 +11,6 @@
 #include "FindOption.h"
 #include "FindSettings.h"
 
-//using namespace rapidjson;
-
 namespace cppfind {
     class FindOptions {
     public:

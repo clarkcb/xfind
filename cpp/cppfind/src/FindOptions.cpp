@@ -2,6 +2,7 @@
 #include <boost/format.hpp>
 #include "rapidjson/filereadstream.h"
 
+#include "FileUtil.h"
 #include "FindConfig.h"
 #include "FindException.h"
 #include "FindOptions.h"
@@ -61,7 +62,7 @@ namespace cppfind {
     void FindOptions::load_options() {
         auto xfind_path = xfindpath();
         auto sub_path = "shared/findoptions.json";
-        auto findoptions_path = FileUtil::join_path(xfind_path, sub_path);
+        auto find_options_path = FileUtil::join_path(xfind_path, sub_path);
 
         if (!std::filesystem::exists(find_options_path)) {
             std::string msg{"Findoptions file not found: "};
@@ -69,8 +70,8 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        uint64_t file_size = FileUtil::file_size(findoptions_path);
-        FILE* fp = fopen(findoptions_path.c_str(), "r");
+        uint64_t file_size = FileUtil::file_size(find_options_path);
+        FILE* fp = fopen(find_options_path.c_str(), "r");
 
         char readBuffer[file_size];
         rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -172,7 +173,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        uint64_t file_size = FileUtil::file_size(file_path);
+        uint64_t file_size = std::filesystem::file_size(file_path);
         FILE *fp = fopen(std::string{file_path}.c_str(), "r");
 
         char readBuffer[file_size];

@@ -2,7 +2,7 @@
 #include <catch2/catch_all.hpp>
 // #include <catch2/catch.hpp>
 
-// #include "FindConfig.h"
+#include "FindConfig.h"
 #include "FileUtil.h"
 
 TEST_CASE("Expand paths", "[FileUtil]") {

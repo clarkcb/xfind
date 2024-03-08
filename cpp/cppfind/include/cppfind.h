@@ -55,16 +55,7 @@
 
 #include "rapidjson/document.h"
 
-using namespace rapidjson;
-
-
 namespace cppfind {
-    // common.h
-    void log(std::string_view msg);
-    void log_error(std::string_view msg);
-
-    // FindConfig.h
-    std::string xfindpath();
 
     // FileTypes.h
     enum class FileType {UNKNOWN, ARCHIVE, AUDIO, BINARY, CODE, FONT, IMAGE, TEXT, VIDEO, XML};
@@ -105,29 +96,8 @@ namespace cppfind {
         static std::pair<std::string, std::string> split_path(std::string_view file_path);
     };
 
-    // StringUtil.h
-    class StringUtil {
-    public:
-        static std::vector<std::string> split_string(std::string_view s, std::string_view delims);
-        static std::vector<std::string> split_string(std::string_view s, std::string_view delims, bool exclude_empty);
-        static void ltrim(std::string& s);
-        static std::string ltrim_copy(std::string s);
-        static void rtrim(std::string& s);
-        static std::string rtrim_copy(std::string s);
-        static void trim(std::string& s);
-        static std::string trim_copy(std::string s);
-
-        static bool char_in_string(char c, std::string_view s);
-        static bool string_in_unordered_set(std::string_view s, const std::unordered_set<std::string>& set);
-        static bool string_in_vector(std::string_view s, const std::vector<std::string>& vec);
-
-        static std::vector<std::string> filter_string_vector(const std::vector<std::string>& strings,
-                                                             const std::function<bool(const std::string&)>& predicate);
-        static std::string bool_to_string(bool b);
-        static std::string unordered_string_set_to_string(const std::unordered_set<std::string>& set);
-        static long date_str_to_long(std::string_view date_str);
-        static std::string long_to_date_str(long time);
-    };
+    // FindConfig.h
+    std::string xfindpath();
 
     // FindException.h
     class FindException : public std::exception {
@@ -135,6 +105,16 @@ namespace cppfind {
         explicit FindException(std::string_view message);
         [[nodiscard]] std::string message() const noexcept;
         [[nodiscard]] const char *what() const noexcept override;
+    };
+
+    // FindOption.h
+    class FindOption {
+    public:
+        FindOption(std::string_view short_arg, std::string_view long_arg, std::string_view description);
+        [[nodiscard]] std::string short_arg() const;
+        [[nodiscard]] std::string long_arg() const;
+        [[nodiscard]] std::string description() const;
+        [[nodiscard]] std::string sort_arg() const;
     };
 
     // RegexPattern.h
@@ -158,6 +138,34 @@ namespace cppfind {
             return lhs.pattern() < rhs.pattern();
         }
     };
+
+    // StringUtil.h
+    class StringUtil {
+    public:
+        static std::vector<std::string> split_string(std::string_view s, std::string_view delims);
+        static std::vector<std::string> split_string(std::string_view s, std::string_view delims, bool exclude_empty);
+        static void ltrim(std::string& s);
+        static std::string ltrim_copy(std::string s);
+        static void rtrim(std::string& s);
+        static std::string rtrim_copy(std::string s);
+        static void trim(std::string& s);
+        static std::string trim_copy(std::string s);
+
+        static bool char_in_string(char c, std::string_view s);
+        static bool string_in_unordered_set(std::string_view s, const std::unordered_set<std::string>& set);
+        static bool string_in_vector(std::string_view s, const std::vector<std::string>& vec);
+
+        static std::vector<std::string> filter_string_vector(const std::vector<std::string>& vec,
+                                                             const std::function<bool(const std::string&)>& predicate);
+        static std::string bool_to_string(bool b);
+        static std::string unordered_string_set_to_string(const std::unordered_set<std::string>& set);
+        static long date_str_to_long(std::string_view date_str);
+        static std::string long_to_date_str(long time);
+    };
+
+    // common.h
+    void log(std::string_view msg);
+    void log_error(std::string_view msg);
 
     // FindSettings.h
     enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
@@ -208,7 +216,7 @@ namespace cppfind {
         void in_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_file_patterns);
         void in_file_types(const std::unordered_set<FileType>& in_file_types);
         void include_archives(bool include_archives);
-        void include_hidden(bool exclude_hidden);
+        void include_hidden(bool include_hidden);
         void max_depth(int max_depth);
         void max_last_mod(long max_last_mod);
         void max_size(long max_size);
@@ -276,16 +284,6 @@ namespace cppfind {
         [[nodiscard]] std::string string() const;
     };
 
-    // FindOption.h
-    class FindOption {
-    public:
-        FindOption(std::string_view short_arg, std::string_view long_arg, std::string_view description);
-        [[nodiscard]] std::string short_arg() const;
-        [[nodiscard]] std::string long_arg() const;
-        [[nodiscard]] std::string description() const;
-        [[nodiscard]] std::string sort_arg() const;
-    };
-
     // FindOptions.h
     class FindOptions {
     public:
@@ -293,8 +291,8 @@ namespace cppfind {
         FindSettings settings_from_args(int &argc, char **argv);
         void settings_from_file(const std::filesystem::path& file_path, FindSettings& settings);
         void settings_from_json(std::string_view json, FindSettings& settings);
-        void usage() const;
-        [[nodiscard]] std::string get_usage_string() const;
+        void usage();
+        std::string get_usage_string();
     };
 
     // Finder.h
@@ -309,7 +307,6 @@ namespace cppfind {
         bool is_matching_file_result(const FileResult& file_result);
         std::vector<FileResult> find();
     };
-
 }
 
 #endif // CPPFIND_H
