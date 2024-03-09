@@ -63,19 +63,13 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(in_exts.contains("java"));
     REQUIRE(in_exts.contains("scala"));
 
-    // std::unordered_set<std::string> paths = settings.paths();
     REQUIRE(settings.paths().size() == 1);
     REQUIRE(settings.paths().contains("."));
 }
 
 bool set_has_pattern(const std::set<cppfind::RegexPattern, cppfind::RegexPatternCmp>& set, const std::string& pattern) {
-    //std::smatch pmatch;
-    for (auto& r : set) {
-        if (r.pattern() == pattern) {
-            return true;
-        }
-    }
-    return false;
+    return std::ranges::any_of(set.cbegin(), set.cend(),
+        [pattern](const cppfind::RegexPattern& r) { return r.pattern() == pattern; });
 }
 
 TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {

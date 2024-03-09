@@ -62,14 +62,14 @@ namespace cppfind {
 
     bool Finder::is_matching_archive_file_result(const FileResult& file_result) const {
         if (!m_settings.in_archive_extensions().empty() || !m_settings.out_archive_extensions().empty()) {
-            const std::string ext = FileUtil::get_path_extension(file_result.file_path());
+            const auto ext = FileUtil::get_path_extension(file_result.file_path());
             if ((!m_settings.in_archive_extensions().empty() && !m_settings.in_archive_extensions().contains(ext)) ||
                  (!m_settings.out_archive_extensions().empty() && m_settings.out_archive_extensions().contains(ext))) {
                 return false;
             }
         }
         if (!m_settings.in_archive_file_patterns().empty() || !m_settings.out_archive_file_patterns().empty()) {
-            const std::string file_name = file_result.file_path().filename().string();
+            const auto file_name = file_result.file_path().filename().string();
             if ((!m_settings.in_archive_file_patterns().empty() &&
                 !matches_any_pattern(file_name, m_settings.in_archive_file_patterns())) ||
                 (!m_settings.out_archive_file_patterns().empty() &&
@@ -90,14 +90,14 @@ namespace cppfind {
 
     bool Finder::is_matching_file_result(const FileResult& file_result) const {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
-            const std::string ext = FileUtil::get_path_extension(file_result.file_path());
+            const auto ext = FileUtil::get_path_extension(file_result.file_path());
             if ((!m_settings.in_extensions().empty() && !m_settings.in_extensions().contains(ext)) ||
                 (!m_settings.out_extensions().empty() && m_settings.out_extensions().contains(ext))) {
                 return false;
             }
         }
         if (!m_settings.in_file_patterns().empty() || !m_settings.out_file_patterns().empty()) {
-            const std::string file_name = file_result.file_path().filename().string();
+            const auto file_name = file_result.file_path().filename().string();
             if ((!m_settings.in_file_patterns().empty() &&
                 !matches_any_pattern(file_name, m_settings.in_file_patterns())) ||
                 (!m_settings.out_file_patterns().empty() &&
