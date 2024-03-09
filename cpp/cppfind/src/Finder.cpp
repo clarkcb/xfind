@@ -33,15 +33,10 @@ namespace cppfind {
     }
 
     bool matches_any_pattern(const std::string_view s, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
-        std::smatch pmatch;
         const std::string ss{s};
-
-        for (const auto& p : patterns) {
-            if (regex_search(ss, pmatch, p.regex())) {
-                return true;
-            }
-        }
-        return false;
+        return std::ranges::any_of(patterns.cbegin(), patterns.cend(), [ss](const RegexPattern& p) {
+            return regex_search(ss, p.regex());
+        });
     }
 
     bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
@@ -68,10 +63,8 @@ namespace cppfind {
     bool Finder::is_matching_archive_file_result(const FileResult& file_result) const {
         if (!m_settings.in_archive_extensions().empty() || !m_settings.out_archive_extensions().empty()) {
             const std::string ext = FileUtil::get_path_extension(file_result.file_path());
-            if ((!m_settings.in_archive_extensions().empty() &&
-                 !StringUtil::string_in_unordered_set(ext, m_settings.in_archive_extensions())) ||
-                 (!m_settings.out_archive_extensions().empty() &&
-                    StringUtil::string_in_unordered_set(ext, m_settings.out_archive_extensions()))) {
+            if ((!m_settings.in_archive_extensions().empty() && !m_settings.in_archive_extensions().contains(ext)) ||
+                 (!m_settings.out_archive_extensions().empty() && m_settings.out_archive_extensions().contains(ext))) {
                 return false;
             }
         }
@@ -98,10 +91,8 @@ namespace cppfind {
     bool Finder::is_matching_file_result(const FileResult& file_result) const {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
             const std::string ext = FileUtil::get_path_extension(file_result.file_path());
-            if ((!m_settings.in_extensions().empty() &&
-                !StringUtil::string_in_unordered_set(ext, m_settings.in_extensions())) ||
-                (!m_settings.out_extensions().empty() &&
-                    StringUtil::string_in_unordered_set(ext, m_settings.out_extensions()))) {
+            if ((!m_settings.in_extensions().empty() && !m_settings.in_extensions().contains(ext)) ||
+                (!m_settings.out_extensions().empty() && m_settings.out_extensions().contains(ext))) {
                 return false;
             }
         }
@@ -127,8 +118,7 @@ namespace cppfind {
     }
 
     std::optional<FileResult> Finder::filter_to_file_result(std::filesystem::path&& file_path) const {
-        const auto file_name = file_path.filename().string();
-        if (!m_settings.include_hidden() && FileUtil::is_hidden(file_name)) {
+        if (!m_settings.include_hidden() && FileUtil::is_hidden_path(file_path.filename())) {
             return std::nullopt;
         }
         const auto file_type = m_file_types.get_path_type(file_path.filename());
@@ -141,7 +131,7 @@ namespace cppfind {
                 return std::nullopt;
             }
             file_size = static_cast<uint64_t>(fpstat.st_size);
-            mod_time = (long) fpstat.st_mtime;
+            mod_time = static_cast<long>(fpstat.st_mtime);
         }
         auto file_result = FileResult(std::move(file_path), file_type, file_size, mod_time);
         if (file_type == FileType::ARCHIVE) {
@@ -156,27 +146,14 @@ namespace cppfind {
         return std::nullopt;
     }
 
-    std::optional<FileResult> Finder::get_file_result(const std::string& file_path) const {
-        const boost::filesystem::path path(file_path);
-        const std::string parent_path = path.parent_path().string();
-        const std::string file_name = path.filename().string();
-        const FileType file_type = m_file_types.get_file_type(file_path);
-        struct stat st;
-        if (stat(file_path.c_str(), &st))
-                return std::nullopt;
-        const auto file_size = (uint64_t) st.st_size;
-        const auto mod_time = st.st_mtime;
-        return std::optional{FileResult(parent_path, file_name, file_type, file_size, mod_time)};
-    }
-
     std::vector<FileResult> Finder::get_file_results(const std::filesystem::path& file_path, const int depth) {
-        const std::filesystem::path p{file_path};
-        std::vector<std::filesystem::path> matching_dirs{};
         std::vector<FileResult> file_results{};
 
         std::vector<std::filesystem::directory_entry> dir_entries;
-        copy(std::filesystem::directory_iterator(p), std::filesystem::directory_iterator(),
+        copy(std::filesystem::directory_iterator(file_path), std::filesystem::directory_iterator(),
              back_inserter(dir_entries));
+
+        std::vector<std::filesystem::path> matching_dirs{};
 
         for (const auto& de : dir_entries) {
             if (std::filesystem::path dir_path = de.path(); std::filesystem::is_directory(dir_path)
@@ -207,9 +184,7 @@ namespace cppfind {
 
         for (const auto& p : m_settings.paths()) {
             // we check using expanded in case p has tilde
-            std::filesystem::path expanded = FileUtil::expand_tilde(p);
-
-            if (std::filesystem::is_directory(p)) {
+            if (auto expanded = FileUtil::expand_tilde(p); std::filesystem::is_directory(expanded)) {
                 // if max_depth is zero, we can skip since a directory cannot be a result
                 if (m_settings.max_depth() != 0) {
                     std::vector<FileResult> p_files = get_file_results(expanded, 1);
@@ -233,7 +208,6 @@ namespace cppfind {
         sort_file_results(file_results);
         return file_results;
     }
-
 
     bool cmp_file_results_by_path(const FileResult& fr1, const FileResult& fr2) {
         if (fr1.file_path().parent_path() == fr2.file_path().parent_path()) {
