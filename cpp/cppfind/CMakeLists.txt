@@ -103,8 +103,7 @@ set(TEST_FILES tests/FileResultTest.cpp
         tests/FileUtilTest.cpp
         tests/FinderTest.cpp
         tests/FindOptionsTest.cpp
-        tests/FindSettingsTest.cpp
-        tests/tests-main.cpp)
+        tests/FindSettingsTest.cpp)
 
 add_executable(cppfind-tests ${TEST_FILES})
 

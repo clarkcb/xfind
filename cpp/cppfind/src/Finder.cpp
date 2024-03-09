@@ -177,17 +177,17 @@ namespace cppfind {
         return std::nullopt;
     }
 
-    FileResult* Finder::get_file_result(const std::string& file_path) {
+    std::optional<FileResult> Finder::get_file_result(const std::string& file_path) const {
         const boost::filesystem::path path(file_path);
         const std::string parent_path = path.parent_path().string();
         const std::string file_name = path.filename().string();
         const FileType file_type = m_file_types.get_file_type(file_path);
         struct stat st;
         if (stat(file_path.c_str(), &st))
-            return nullptr;
+                return std::nullopt;
         const auto file_size = (uint64_t) st.st_size;
         const auto mod_time = st.st_mtime;
-        return new FileResult(parent_path, file_name, file_type, file_size, mod_time);
+        return std::optional{FileResult(parent_path, file_name, file_type, file_size, mod_time)};
     }
 
     std::vector<FileResult> Finder::get_file_results(const std::string& file_path, const int depth) {
@@ -241,8 +241,10 @@ namespace cppfind {
             } else if (FileUtil::is_regular_file(expanded)) {
                 // if min_depth > zero, we can skip since the file is at depth zero
                 if (m_settings.min_depth() <= 0) {
-                    auto* fr = get_file_result(expanded);
-                    file_results.push_back(std::move(*fr));
+                    auto opt_file_result = get_file_result(expanded);
+                    if (opt_file_result.has_value()) {
+                    file_results.push_back(std::move(opt_file_result.value()));
+                    }
                 }
 
             } else {

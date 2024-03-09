@@ -46,6 +46,7 @@
  *
  */
 
+#include <filesystem>
 #include <regex>
 #include <set>
 #include <string>
@@ -266,7 +267,7 @@ namespace cppfind {
         static std::string sort_by_to_name(SortBy sort_by);
 
         // convert to string
-        std::string string();
+        [[nodiscard]] std::string string() const;
     };
 
     // FileResult.h

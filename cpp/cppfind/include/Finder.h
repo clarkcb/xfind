@@ -21,7 +21,7 @@ namespace cppfind {
         FileTypes m_file_types;
         FindSettings m_settings;
         static void validate_settings(const FindSettings& settings);
-        FileResult* get_file_result(const std::string& file_path);
+        [[nodiscard]] std::optional<FileResult> get_file_result(const std::string& file_path) const;
         std::vector<FileResult> get_file_results(const std::string& file_path, int depth);
         void sort_file_results(std::vector<FileResult>& file_results);
     };

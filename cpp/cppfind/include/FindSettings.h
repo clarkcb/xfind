@@ -118,7 +118,7 @@ namespace cppfind {
         static std::string sort_by_to_name(SortBy sort_by);
 
         // convert to string
-        std::string string();
+        [[nodiscard]] std::string string() const;
 
     protected:
         bool m_archives_only = false;

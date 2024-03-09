@@ -1,7 +1,6 @@
 
 #include "FindSettings.h"
 #include "StringUtil.h"
-#include <algorithm>
 
 namespace cppfind {
 
@@ -397,7 +396,7 @@ namespace cppfind {
         }
     }
 
-    std::string FindSettings::string() {
+    std::string FindSettings::string() const {
         auto settings_str =
                 std::string("FindSettings(")
                 + "archives_only=" + StringUtil::bool_to_string(m_archives_only)

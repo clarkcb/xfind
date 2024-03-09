@@ -1,6 +1,5 @@
-#include <filesystem>
 #include <catch2/catch_all.hpp>
-// #include <catch2/catch.hpp>
+#include <filesystem>
 
 #include "FindConfig.h"
 #include "FileUtil.h"

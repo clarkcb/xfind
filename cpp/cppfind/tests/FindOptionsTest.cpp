@@ -1,13 +1,12 @@
 #include <catch2/catch_all.hpp>
-// #include <catch2/catch.hpp>
 #include "FindOptions.h"
 #include "RegexPattern.h"
 
 TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
-    auto* options = new cppfind::FindOptions();
+    auto options = cppfind::FindOptions();
     char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>(".") };
     int argc = 2;
-    auto settings = options->settings_from_args(argc, argv);
+    auto settings = options.settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
     REQUIRE(!settings.include_archives());
@@ -34,11 +33,11 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
 }
 
 TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
-    auto* options = new cppfind::FindOptions();
+    auto options = cppfind::FindOptions();
     char* argv[] = { const_cast<char *>("cppfind"), const_cast<char *>("-x"),
                      const_cast<char *>("java,scala"), const_cast<char *>(".") };
     int argc = 4;
-    auto settings = options->settings_from_args(argc, argv);
+    auto settings = options.settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
     REQUIRE(!settings.include_archives());
