@@ -50,4 +50,8 @@ namespace cppfind {
     std::string RegexPattern::string() const {
         return pattern();
     }
+
+    bool RegexPattern::operator==(const RegexPattern& other) const  {
+        return m_pattern == other.m_pattern;
+    }
 }

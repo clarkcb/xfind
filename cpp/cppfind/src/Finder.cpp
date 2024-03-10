@@ -32,14 +32,15 @@ namespace cppfind {
         }
     }
 
-    bool matches_any_pattern(const std::string_view s, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
+    bool matches_any_pattern(const std::string_view s, const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         const std::string ss{s};
         return std::ranges::any_of(patterns.cbegin(), patterns.cend(), [ss](const RegexPattern& p) {
             return regex_search(ss, p.regex());
         });
     }
 
-    bool any_matches_any_pattern(const std::vector<std::string>& ss, const std::set<RegexPattern, RegexPatternCmp>& patterns) {
+    bool any_matches_any_pattern(const std::vector<std::string>& ss,
+                                 const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
         return std::ranges::any_of(ss.cbegin(), ss.cend(), [patterns](const std::string& s) {
             return matches_any_pattern(s, patterns);
         });

@@ -6,7 +6,7 @@
 using namespace cppfind;
 
 std::vector<std::string> get_matching_dirs(const std::vector<FileResult>& file_results) {
-    std::set<std::string> dir_set;
+    std::unordered_set<std::string> dir_set;
     std::vector<std::string> matching_dirs;
     for (const auto& fr : file_results) {
         const std::string dir = fr.file_path().parent_path().string();

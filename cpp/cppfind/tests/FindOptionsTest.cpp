@@ -67,7 +67,7 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     REQUIRE(settings.paths().contains("."));
 }
 
-bool set_has_pattern(const std::set<cppfind::RegexPattern, cppfind::RegexPatternCmp>& set, const std::string& pattern) {
+bool unordered_set_has_pattern(const std::unordered_set<cppfind::RegexPattern, cppfind::RegexPatternHash>& set, const std::string& pattern) {
     return std::ranges::any_of(set.cbegin(), set.cend(),
         [pattern](const cppfind::RegexPattern& r) { return r.pattern() == pattern; });
 }
@@ -94,13 +94,13 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     REQUIRE(settings.in_extensions().contains("js"));
     REQUIRE(settings.in_extensions().contains("ts"));
     REQUIRE(settings.out_dir_patterns().size() == 4);
-    REQUIRE(set_has_pattern(settings.out_dir_patterns(), "build"));
-    REQUIRE(set_has_pattern(settings.out_dir_patterns(), "node_module"));
-    REQUIRE(set_has_pattern(settings.out_dir_patterns(), "tests"));
-    REQUIRE(set_has_pattern(settings.out_dir_patterns(), "typings"));
+    REQUIRE(unordered_set_has_pattern(settings.out_dir_patterns(), "build"));
+    REQUIRE(unordered_set_has_pattern(settings.out_dir_patterns(), "node_module"));
+    REQUIRE(unordered_set_has_pattern(settings.out_dir_patterns(), "tests"));
+    REQUIRE(unordered_set_has_pattern(settings.out_dir_patterns(), "typings"));
     REQUIRE(settings.out_file_patterns().size() == 2);
-    REQUIRE(set_has_pattern(settings.out_file_patterns(), "gulpfile"));
-    REQUIRE(set_has_pattern(settings.out_file_patterns(), "\\.min\\."));
+    REQUIRE(unordered_set_has_pattern(settings.out_file_patterns(), "gulpfile"));
+    REQUIRE(unordered_set_has_pattern(settings.out_file_patterns(), "\\.min\\."));
     REQUIRE(settings.debug() == true);
     REQUIRE(settings.include_hidden() == false);
 }

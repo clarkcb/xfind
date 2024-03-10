@@ -2,7 +2,6 @@
 #define CPPFIND_FINDSETTINGS_H
 
 #include <filesystem>
-#include <set>
 #include <string>
 #include <unordered_set>
 
@@ -53,16 +52,16 @@ namespace cppfind {
         [[nodiscard]] bool verbose() const;
 
         [[nodiscard]] std::unordered_set<std::string> in_archive_extensions() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_archive_file_patterns() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_dir_patterns() const;
+        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_archive_file_patterns() const;
+        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_dir_patterns() const;
         [[nodiscard]] std::unordered_set<std::string> in_extensions() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> in_file_patterns() const;
+        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> in_file_patterns() const;
         [[nodiscard]] std::unordered_set<FileType> in_file_types() const;
         [[nodiscard]] std::unordered_set<std::string> out_archive_extensions() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_archive_file_patterns() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_dir_patterns() const;
+        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_archive_file_patterns() const;
+        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_dir_patterns() const;
         [[nodiscard]] std::unordered_set<std::string> out_extensions() const;
-        [[nodiscard]] std::set<RegexPattern, RegexPatternCmp> out_file_patterns() const;
+        [[nodiscard]] std::unordered_set<RegexPattern, RegexPatternHash> out_file_patterns() const;
         [[nodiscard]] std::unordered_set<FileType> out_file_types() const;
         [[nodiscard]] std::unordered_set<std::filesystem::path, PathHash> paths() const;
 
@@ -70,9 +69,9 @@ namespace cppfind {
         void archives_only(bool archives_only);
         void debug(bool debug);
         void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
-        void in_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_dir_patterns);
+        void in_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& in_dir_patterns);
         void in_extensions(const std::unordered_set<std::string>& in_extensions);
-        void in_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& in_file_patterns);
+        void in_file_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& in_file_patterns);
         void in_file_types(const std::unordered_set<FileType>& in_file_types);
         void include_archives(bool include_archives);
         void include_hidden(bool include_hidden);
@@ -83,9 +82,9 @@ namespace cppfind {
         void min_last_mod(long min_last_mod);
         void min_size(long min_size);
         void out_archive_extensions(const std::unordered_set<std::string>& out_archive_extensions);
-        void out_dir_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_dir_patterns);
+        void out_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& out_dir_patterns);
         void out_extensions(const std::unordered_set<std::string>& out_extensions);
-        void out_file_patterns(const std::set<RegexPattern, RegexPatternCmp>& out_file_patterns);
+        void out_file_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& out_file_patterns);
         void out_file_types(const std::unordered_set<FileType>& out_file_types);
         void paths(const std::unordered_set<std::filesystem::path, PathHash>& paths);
         void print_dirs(bool print_dirs);
@@ -119,10 +118,10 @@ namespace cppfind {
         [[nodiscard]] bool need_stat() const;
 
         // utility methods
-        static void add_pattern(std::string_view p, std::set<RegexPattern, RegexPatternCmp>& ps);
+        static void add_pattern(std::string_view p, std::unordered_set<RegexPattern, RegexPatternHash>& ps);
         static void add_extensions(std::string_view exts, std::unordered_set<std::string>& extensions);
         static std::string file_types_to_string(const std::unordered_set<FileType>& types);
-        static std::string patterns_to_string(const std::set<RegexPattern, RegexPatternCmp>& patterns);
+        static std::string patterns_to_string(const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
         static SortBy sort_by_from_name(std::string_view name);
         static std::string sort_by_to_name(SortBy sort_by);
 
@@ -135,10 +134,10 @@ namespace cppfind {
 
         // add sets of strings that hold extensions and patterns to match on
         std::unordered_set<std::string> m_in_archive_extensions;
-        std::set<RegexPattern, RegexPatternCmp> m_in_archive_file_patterns;
-        std::set<RegexPattern, RegexPatternCmp> m_in_dir_patterns;
+        std::unordered_set<RegexPattern, RegexPatternHash> m_in_archive_file_patterns;
+        std::unordered_set<RegexPattern, RegexPatternHash> m_in_dir_patterns;
         std::unordered_set<std::string> m_in_extensions;
-        std::set<RegexPattern, RegexPatternCmp> m_in_file_patterns;
+        std::unordered_set<RegexPattern, RegexPatternHash> m_in_file_patterns;
         std::unordered_set<FileType> m_in_file_types;
 
         bool m_include_archives = false;
@@ -153,10 +152,10 @@ namespace cppfind {
 
         // add corresponding sets for out extensions and patterns
         std::unordered_set<std::string> m_out_archive_extensions;
-        std::set<RegexPattern, RegexPatternCmp> m_out_archive_file_patterns;
-        std::set<RegexPattern, RegexPatternCmp> m_out_dir_patterns;
+        std::unordered_set<RegexPattern, RegexPatternHash> m_out_archive_file_patterns;
+        std::unordered_set<RegexPattern, RegexPatternHash> m_out_dir_patterns;
         std::unordered_set<std::string> m_out_extensions;
-        std::set<RegexPattern, RegexPatternCmp> m_out_file_patterns;
+        std::unordered_set<RegexPattern, RegexPatternHash> m_out_file_patterns;
         std::unordered_set<FileType> m_out_file_types;
 
         bool m_print_dirs = false;

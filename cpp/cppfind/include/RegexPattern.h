@@ -16,6 +16,7 @@ namespace cppfind {
         [[nodiscard]] bool dot_all() const;
         [[nodiscard]] std::regex regex() const;
         [[nodiscard]] std::string string() const;
+        bool operator==(const RegexPattern& other) const;
 
     private:
         std::string m_pattern;
@@ -25,11 +26,10 @@ namespace cppfind {
         std::regex m_regex;
     };
 
-    struct RegexPatternCmp
-    {
-        bool operator()(const RegexPattern& lhs, const RegexPattern& rhs) const
-        {
-            return lhs.pattern() < rhs.pattern();
+    struct RegexPatternHash {
+        std::size_t operator()(const RegexPattern& r) const noexcept {
+            constexpr std::hash<std::string> string_hash;
+            return string_hash(r.pattern());
         }
     };
 }
