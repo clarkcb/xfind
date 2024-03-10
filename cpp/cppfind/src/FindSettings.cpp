@@ -318,58 +318,16 @@ namespace cppfind {
         }
     }
 
-    std::string FindSettings::file_types_to_string(const std::unordered_set<FileType>& types) {
-        std::string ts_string = "[";
-        int count = 0;
-        for (auto const& t : types) {
-            if (count > 0) {
-                ts_string.append(", ");
-            }
-            ts_string.append(FileTypes::to_name(t));
-            count++;
-        }
-        ts_string.append("]");
-        return ts_string;
-    }
-
-    std::string FindSettings::patterns_to_string(const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
-        std::string ps_string = "[";
-        int count = 0;
-        for (auto const& p : patterns) {
-            if (count > 0) {
-                ps_string.append(", ");
-            }
-            ps_string.append("\"").append(p.pattern()).append("\"");
-            count++;
-        }
-        ps_string.append("]");
-        return ps_string;
-    }
-
-    std::string paths_to_string(const std::unordered_set<std::filesystem::path, PathHash>& paths) {
-        std::string ss_string = "[";
-        for (auto it = paths.cbegin(); it != paths.cend(); ++it) {
-            ss_string.append("\"");
-            ss_string.append(*it);
-            ss_string.append("\"");
-            if (std::next(it) != paths.end()) {
-                ss_string.append(", ");
-            }
-        }
-        ss_string.append("]");
-        return ss_string;
+    bool FindSettings::need_last_mod() const {
+        return m_sort_by == SortBy::LASTMOD
+               || m_max_last_mod != 0
+               || m_min_last_mod != 0;
     }
 
     bool FindSettings::need_size() const {
         return m_sort_by == SortBy::FILESIZE
                || m_max_size > 0
                || m_min_size > 0;
-    }
-
-    bool FindSettings::need_last_mod() const {
-        return m_sort_by == SortBy::LASTMOD
-               || m_max_last_mod != 0
-               || m_min_last_mod != 0;
     }
 
     bool FindSettings::need_stat() const {
@@ -414,6 +372,48 @@ namespace cppfind {
             default:
                 return SORT_BY_NAME_UNKNOWN;
         }
+    }
+
+    std::string FindSettings::file_types_to_string(const std::unordered_set<FileType>& types) {
+        std::string ts_string = "[";
+        int count = 0;
+        for (auto const& t : types) {
+            if (count > 0) {
+                ts_string.append(", ");
+            }
+            ts_string.append(FileTypes::to_name(t));
+            count++;
+        }
+        ts_string.append("]");
+        return ts_string;
+    }
+
+    std::string FindSettings::patterns_to_string(const std::unordered_set<RegexPattern, RegexPatternHash>& patterns) {
+        std::string ps_string = "[";
+        int count = 0;
+        for (auto const& p : patterns) {
+            if (count > 0) {
+                ps_string.append(", ");
+            }
+            ps_string.append("\"").append(p.pattern()).append("\"");
+            count++;
+        }
+        ps_string.append("]");
+        return ps_string;
+    }
+
+    std::string paths_to_string(const std::unordered_set<std::filesystem::path, PathHash>& paths) {
+        std::string ss_string = "[";
+        for (auto it = paths.cbegin(); it != paths.cend(); ++it) {
+            ss_string.append("\"");
+            ss_string.append(*it);
+            ss_string.append("\"");
+            if (std::next(it) != paths.end()) {
+                ss_string.append(", ");
+            }
+        }
+        ss_string.append("]");
+        return ss_string;
     }
 
     std::string FindSettings::string() const {
