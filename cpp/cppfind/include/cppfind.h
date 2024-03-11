@@ -263,6 +263,7 @@ namespace cppfind {
         static void add_extensions(std::string_view exts, std::unordered_set<std::string>& extensions);
         static std::string file_types_to_string(const std::unordered_set<FileType>& types);
         static std::string patterns_to_string(const std::unordered_set<RegexPattern, RegexPatternHash>& patterns);
+        static std::string paths_to_string(const std::unordered_set<std::filesystem::path, PathHash>& paths);
         static SortBy sort_by_from_name(std::string_view name);
         static std::string sort_by_to_name(SortBy sort_by);
 

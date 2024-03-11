@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
     }
 
     try {
-        auto settings = options->settings_from_args(argc, argv);
+        const auto settings = options->settings_from_args(argc, argv);
 
         if (settings.debug()) {
             log(settings.string());

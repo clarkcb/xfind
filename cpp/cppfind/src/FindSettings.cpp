@@ -402,7 +402,7 @@ namespace cppfind {
         return ps_string;
     }
 
-    std::string paths_to_string(const std::unordered_set<std::filesystem::path, PathHash>& paths) {
+    std::string FindSettings::paths_to_string(const std::unordered_set<std::filesystem::path, PathHash>& paths) {
         std::string ss_string = "[";
         for (auto it = paths.cbegin(); it != paths.cend(); ++it) {
             ss_string.append("\"");
