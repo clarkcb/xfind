@@ -87,11 +87,11 @@ namespace cppfind {
         m_in_file_types = in_file_types;
     }
 
-    std::set<std::string> FindSettings::in_mime_types() const {
+    std::unordered_set<std::string> FindSettings::in_mime_types() const {
         return m_in_mime_types;
     }
 
-    void FindSettings::in_mime_types(const std::set<std::string>& in_mime_types) {
+    void FindSettings::in_mime_types(const std::unordered_set<std::string>& in_mime_types) {
         m_in_mime_types = in_mime_types;
     }
 
@@ -203,11 +203,11 @@ namespace cppfind {
         m_out_file_types = out_file_types;
     }
 
-    std::set<std::string> FindSettings::out_mime_types() const {
+    std::unordered_set<std::string> FindSettings::out_mime_types() const {
         return m_out_mime_types;
     }
 
-    void FindSettings::out_mime_types(const std::set<std::string>& out_mime_types) {
+    void FindSettings::out_mime_types(const std::unordered_set<std::string>& out_mime_types) {
         m_out_mime_types = out_mime_types;
     }
 
