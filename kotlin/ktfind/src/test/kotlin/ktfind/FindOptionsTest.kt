@@ -61,10 +61,10 @@ class FindOptionsTest {
         assertTrue(settings.inExtensions.contains("ts"))
 
         assertEquals(4, settings.outDirPatterns.size)
-        assertEquals(1, settings.outDirPatterns.count {it.pattern == "node_module"})
+        assertEquals(1, settings.outDirPatterns.count { it.pattern == "node_module" })
 
         assertEquals(2, settings.outFilePatterns.size)
-        assertEquals(1, settings.outFilePatterns.count {it.pattern == "gulpfile"})
+        assertEquals(1, settings.outFilePatterns.count { it.pattern == "gulpfile" })
 
         assertTrue(settings.debug)
         assertFalse(settings.includeHidden)

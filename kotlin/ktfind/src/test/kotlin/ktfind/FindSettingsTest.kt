@@ -34,8 +34,7 @@ class FindSettingsTest {
     @Test
     fun testAddExtensionsAsCommaString() {
         val defaultSettings = getDefaultSettings()
-        val settings = defaultSettings.
-                copy(inExtensions = addExtensions("java,scala", defaultSettings.inExtensions))
+        val settings = defaultSettings.copy(inExtensions = addExtensions("java,scala", defaultSettings.inExtensions))
         assertEquals(2, settings.inExtensions.size.toLong())
         assertTrue(settings.inExtensions.contains("java"))
         assertTrue(settings.inExtensions.contains("scala"))

@@ -8,10 +8,12 @@ import java.util.*
 /**
  * @author cary on 7/24/16.
  */
-class FileResult(val containers: List<String>,
-                 val path: Path,
-                 val fileType: FileType,
-                 val stat: BasicFileAttributes? = null) {
+class FileResult(
+    val containers: List<String>,
+    val path: Path,
+    val fileType: FileType,
+    val stat: BasicFileAttributes? = null
+) {
     val CONTAINER_SEPARATOR = "!"
 
     constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType)

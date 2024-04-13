@@ -9,7 +9,7 @@ import kotlin.test.*
  */
 class FinderTest {
     private fun getSettings(): FindSettings {
-        return getDefaultSettings().copy(paths=setOf("."))
+        return getDefaultSettings().copy(paths = setOf("."))
     }
 
 //    private val testFilePath = "/testFile2.txt"

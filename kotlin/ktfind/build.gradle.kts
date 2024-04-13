@@ -35,10 +35,13 @@ tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
-        attributes(mapOf(
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version,
-            "Main-Class" to application.mainClass))
+        attributes(
+            mapOf(
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+                "Main-Class" to application.mainClass
+            )
+        )
     }
 
     val sourcesMain = sourceSets.main.get()

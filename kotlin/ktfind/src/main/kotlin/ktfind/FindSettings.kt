@@ -41,38 +41,40 @@ enum class SortBy(val value: String) {
     }
 }
 
-data class FindSettings(val archivesOnly: Boolean,
-                        val debug: Boolean,
-                        val inArchiveExtensions: Set<String>,
-                        val inArchiveFilePatterns: Set<Regex>,
-                        val inDirPatterns: Set<Regex>,
-                        val inExtensions: Set<String>,
-                        val inFilePatterns: Set<Regex>,
-                        val inFileTypes: Set<FileType>,
-                        val includeArchives: Boolean,
-                        val includeHidden: Boolean,
-                        val maxDepth: Int,
-                        val maxLastMod: LocalDateTime?,
-                        val maxSize: Int,
-                        val minDepth: Int,
-                        val minLastMod: LocalDateTime?,
-                        val minSize: Int,
-                        val outArchiveExtensions: Set<String>,
-                        val outArchiveFilePatterns: Set<Regex>,
-                        val outDirPatterns: Set<Regex>,
-                        val outExtensions: Set<String>,
-                        val outFilePatterns: Set<Regex>,
-                        val outFileTypes: Set<FileType>,
-                        val paths: Set<String>,
-                        val printDirs: Boolean,
-                        val printFiles: Boolean,
-                        val printUsage: Boolean,
-                        val printVersion: Boolean,
-                        val recursive: Boolean,
-                        val sortBy: SortBy,
-                        val sortCaseInsensitive: Boolean,
-                        val sortDescending: Boolean,
-                        val verbose: Boolean) {
+data class FindSettings(
+    val archivesOnly: Boolean,
+    val debug: Boolean,
+    val inArchiveExtensions: Set<String>,
+    val inArchiveFilePatterns: Set<Regex>,
+    val inDirPatterns: Set<Regex>,
+    val inExtensions: Set<String>,
+    val inFilePatterns: Set<Regex>,
+    val inFileTypes: Set<FileType>,
+    val includeArchives: Boolean,
+    val includeHidden: Boolean,
+    val maxDepth: Int,
+    val maxLastMod: LocalDateTime?,
+    val maxSize: Int,
+    val minDepth: Int,
+    val minLastMod: LocalDateTime?,
+    val minSize: Int,
+    val outArchiveExtensions: Set<String>,
+    val outArchiveFilePatterns: Set<Regex>,
+    val outDirPatterns: Set<Regex>,
+    val outExtensions: Set<String>,
+    val outFilePatterns: Set<Regex>,
+    val outFileTypes: Set<FileType>,
+    val paths: Set<String>,
+    val printDirs: Boolean,
+    val printFiles: Boolean,
+    val printUsage: Boolean,
+    val printVersion: Boolean,
+    val recursive: Boolean,
+    val sortBy: SortBy,
+    val sortCaseInsensitive: Boolean,
+    val sortDescending: Boolean,
+    val verbose: Boolean
+) {
     override fun toString(): String {
         return "FindSettings(" +
                 "archivesOnly=$archivesOnly, " +
@@ -133,6 +135,7 @@ fun patternSetToString(set: Set<Regex>): String {
     sb.append("]")
     return sb.toString()
 }
+
 fun fileTypeSetToString(set: Set<FileType>): String {
     val sb = java.lang.StringBuilder("[")
     for ((i, ft) in set.withIndex()) {
@@ -145,7 +148,7 @@ fun fileTypeSetToString(set: Set<FileType>): String {
     return sb.toString()
 }
 
-fun getDefaultSettings() : FindSettings {
+fun getDefaultSettings(): FindSettings {
     return FindSettings(
         archivesOnly = false,
         debug = false,
@@ -178,7 +181,8 @@ fun getDefaultSettings() : FindSettings {
         sortBy = SortBy.FILEPATH,
         sortCaseInsensitive = false,
         sortDescending = false,
-        verbose = false)
+        verbose = false
+    )
 }
 
 fun addExtensions(ext: String, extensions: Set<String>): Set<String> {

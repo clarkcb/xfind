@@ -76,24 +76,29 @@ class FileTypes {
         }
     }
 
-    fun getFileType(file: File) : FileType {
+    fun getFileType(file: File): FileType {
         when {
             // more specific file types first
             isCodeFile(file) -> {
                 return FileType.CODE
             }
+
             isArchiveFile(file) -> {
                 return FileType.ARCHIVE
             }
+
             isAudioFile(file) -> {
                 return FileType.AUDIO
             }
+
             isFontFile(file) -> {
                 return FileType.FONT
             }
+
             isImageFile(file) -> {
                 return FileType.IMAGE
             }
+
             isVideoFile(file) -> {
                 return FileType.VIDEO
             }
@@ -102,12 +107,15 @@ class FileTypes {
             isXmlFile(file) -> {
                 return FileType.XML
             }
+
             isTextFile(file) -> {
                 return FileType.TEXT
             }
+
             isBinaryFile(file) -> {
                 return FileType.BINARY
             }
+
             else -> {
                 return FileType.UNKNOWN
             }

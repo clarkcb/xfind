@@ -68,8 +68,10 @@ class Finder(val settings: FindSettings) {
         }
     }
 
-    private fun anyMatchesAnyPattern(sList: List<String>,
-                                     patternSet: Set<Regex>): Boolean {
+    private fun anyMatchesAnyPattern(
+        sList: List<String>,
+        patternSet: Set<Regex>
+    ): Boolean {
         return sList.any { s -> matchesAnyPattern(s, patternSet) }
     }
 
@@ -83,7 +85,7 @@ class Finder(val settings: FindSettings) {
             return false
         }
         return (settings.inDirPatterns.isEmpty()
-                        || anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
+                || anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
                 &&
                 (settings.outDirPatterns.isEmpty()
                         || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
@@ -94,21 +96,24 @@ class Finder(val settings: FindSettings) {
                     && !settings.inExtensions.contains(fr.path.extension))
             ||
             (settings.outExtensions.isNotEmpty()
-                    && settings.outExtensions.contains(fr.path.extension))) {
+                    && settings.outExtensions.contains(fr.path.extension))
+        ) {
             return false
         }
         if ((settings.inFilePatterns.isNotEmpty()
                     && !matchesAnyPattern(fr.path.fileName.toString(), settings.inFilePatterns))
             ||
             (settings.outFilePatterns.isNotEmpty()
-                    && matchesAnyPattern(fr.path.fileName.toString(), settings.outFilePatterns))) {
+                    && matchesAnyPattern(fr.path.fileName.toString(), settings.outFilePatterns))
+        ) {
             return false
         }
         if ((settings.inFileTypes.isNotEmpty()
                     && !settings.inFileTypes.contains(fr.fileType))
             ||
             (settings.outFileTypes.isNotEmpty()
-                    && settings.outFileTypes.contains(fr.fileType))) {
+                    && settings.outFileTypes.contains(fr.fileType))
+        ) {
             return false
         }
         if (fr.stat != null) {
@@ -117,7 +122,8 @@ class Finder(val settings: FindSettings) {
                 || (settings.minLastMod != null
                         && fr.stat.lastModifiedTime().toInstant() < settings.minLastMod.toInstant(ZoneOffset.UTC))
                 || (settings.maxSize > 0 && fr.stat.size() > settings.maxSize)
-                || (settings.minSize > 0 && fr.stat.size() < settings.minSize)) {
+                || (settings.minSize > 0 && fr.stat.size() < settings.minSize)
+            ) {
                 return false
             }
         }
@@ -137,7 +143,7 @@ class Finder(val settings: FindSettings) {
 
     fun isMatchingArchiveFileResult(fr: FileResult): Boolean {
         return (settings.inArchiveExtensions.isEmpty()
-                        || settings.inArchiveExtensions.contains(fr.path.extension))
+                || settings.inArchiveExtensions.contains(fr.path.extension))
                 &&
                 (settings.outArchiveExtensions.isEmpty()
                         || !settings.outArchiveExtensions.contains(fr.path.extension))
@@ -194,18 +200,22 @@ class Finder(val settings: FindSettings) {
                     fileResults.stream()
                         .sorted { fr1, fr2 -> fr1.compareByName(fr2, settings.sortCaseInsensitive) }.toList()
                 }
+
                 SortBy.FILESIZE -> {
                     fileResults.stream()
                         .sorted { fr1, fr2 -> fr1.compareBySize(fr2, settings.sortCaseInsensitive) }.toList()
                 }
+
                 SortBy.FILETYPE -> {
                     fileResults.stream()
                         .sorted { fr1, fr2 -> fr1.compareByType(fr2, settings.sortCaseInsensitive) }.toList()
                 }
+
                 SortBy.LASTMOD -> {
                     fileResults.stream()
                         .sorted { fr1, fr2 -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive) }.toList()
                 }
+
                 else -> {
                     fileResults.stream()
                         .sorted { fr1, fr2 -> fr1.compareByPath(fr2, settings.sortCaseInsensitive) }.toList()

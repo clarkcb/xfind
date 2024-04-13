@@ -12,26 +12,26 @@ import java.io.IOException
  */
 data class FindOption(val shortArg: String?, val longArg: String, val desc: String) {
     val sortArg =
-            if (shortArg == null) {
-                longArg.lowercase()
-            } else {
-                shortArg.lowercase() + "@" + longArg.lowercase()
-            }
+        if (shortArg == null) {
+            longArg.lowercase()
+        } else {
+            shortArg.lowercase() + "@" + longArg.lowercase()
+        }
 }
 
 class FindOptions {
     private val findOptionsJsonPath = "/findoptions.json"
-    private val findOptions : List<FindOption>
+    private val findOptions: List<FindOption>
 
     init {
         findOptions = loadFindOptionsFromJson()
     }
 
-    private fun loadFindOptionsFromJson() : List<FindOption> {
+    private fun loadFindOptionsFromJson(): List<FindOption> {
         val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
         val jsonObj = JSONObject(JSONTokener(findOptionsInputStream))
         val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
-        val options : MutableList<FindOption> = mutableListOf()
+        val options: MutableList<FindOption> = mutableListOf()
         while (findOptionsArray.hasNext()) {
             val findOptionObj = findOptionsArray.next() as JSONObject
             val longArg = findOptionObj.getString("long")
@@ -47,7 +47,7 @@ class FindOptions {
         return options.toList().sortedBy { it.sortArg }
     }
 
-    private fun getArgMap() : Map<String, String> {
+    private fun getArgMap(): Map<String, String> {
         val longOpts = findOptions.map { Pair(it.longArg, it.longArg) }.toMap()
         val shortOpts = findOptions.filter { it.shortArg != null }.map { Pair(it.shortArg!!, it.longArg) }.toMap()
         return longOpts.plus(shortOpts)
@@ -97,10 +97,16 @@ class FindOptions {
     )
 
     private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
-        "archivesonly" to { b, ss -> if (b) ss.copy(archivesOnly = b,
-            includeArchives = b) else ss.copy(archivesOnly = b) },
-        "debug" to { b, ss -> if (b) ss.copy(debug = b, verbose = b) else
-            ss.copy(debug = b) },
+        "archivesonly" to { b, ss ->
+            if (b) ss.copy(
+                archivesOnly = b,
+                includeArchives = b
+            ) else ss.copy(archivesOnly = b)
+        },
+        "debug" to { b, ss ->
+            if (b) ss.copy(debug = b, verbose = b) else
+                ss.copy(debug = b)
+        },
         "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
         "excludehidden" to { b, ss -> ss.copy(includeHidden = !b) },
         "help" to { b, ss -> ss.copy(printUsage = b) },
@@ -120,7 +126,7 @@ class FindOptions {
         "version" to { b, ss -> ss.copy(printVersion = b) }
     )
 
-    private fun settingsFromFile(filePath: String, settings: FindSettings) : FindSettings {
+    private fun settingsFromFile(filePath: String, settings: FindSettings): FindSettings {
         val file = File(filePath)
         try {
             val json = file.readText()
@@ -134,7 +140,7 @@ class FindOptions {
 
     fun settingsFromJson(json: String, settings: FindSettings): FindSettings {
         val jsonObject = JSONObject(JSONTokener(json))
-        fun recSettingsFromJson(keys: List<String>, settings: FindSettings) : FindSettings {
+        fun recSettingsFromJson(keys: List<String>, settings: FindSettings): FindSettings {
             return if (keys.isEmpty()) settings
             else {
                 val ko = keys.first()
@@ -154,18 +160,23 @@ class FindOptions {
             is String -> {
                 return applySetting(key, obj, settings)
             }
+
             is Boolean -> {
                 return applySetting(key, obj, settings)
             }
+
             is Int -> {
                 return applySetting(key, obj.toString(), settings)
             }
+
             is Long -> {
                 return applySetting(key, obj.toString(), settings)
             }
+
             is JSONArray -> {
                 return applySetting(key, obj.toList().map { it as String }, settings)
             }
+
             else -> {
                 return settings
             }
@@ -177,9 +188,11 @@ class FindOptions {
             this.argActionMap.containsKey(key) -> {
                 this.argActionMap[key]!!.invoke(s, settings)
             }
+
             key == "path" -> {
                 settings.copy(paths = settings.paths.plus(s))
             }
+
             else -> {
                 throw FindException("Invalid option: $key")
             }
@@ -201,9 +214,9 @@ class FindOptions {
         }
     }
 
-    fun settingsFromArgs(args : Array<String>) : FindSettings {
+    fun settingsFromArgs(args: Array<String>): FindSettings {
         val argMap = getArgMap()
-        fun recSettingsFromArgs(args: List<String>, settings: FindSettings) : FindSettings {
+        fun recSettingsFromArgs(args: List<String>, settings: FindSettings): FindSettings {
             if (args.isEmpty()) return settings
             val nextArg = args.first()
             if (nextArg.startsWith("-")) {
@@ -231,15 +244,15 @@ class FindOptions {
                 return recSettingsFromArgs(args.drop(1), settings.copy(paths = settings.paths.plus(nextArg)))
             }
         }
-      // default printFiles to true since running as cli
-      return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printFiles = true))
+        // default printFiles to true since running as cli
+        return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printFiles = true))
     }
 
     fun usage() {
         log(getUsageString())
     }
 
-    private fun getUsageString() : String {
+    private fun getUsageString(): String {
         val sb = StringBuilder()
         sb.append("Usage:\n")
         sb.append(" ktfind [options] <path> [<path> ...]\n\n")
@@ -247,6 +260,7 @@ class FindOptions {
         fun getOptString(so: FindOption): String {
             return (if (so.shortArg == null) "" else "-${so.shortArg},") + "--${so.longArg}"
         }
+
         val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.map { it.first.length }.maxOrNull()
         val format = " %1${'$'}-${longest}s  %2${'$'}s\n"

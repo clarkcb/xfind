@@ -47,7 +47,7 @@ fun find(settings: FindSettings) {
     }
 }
 
-fun main(args : Array<String>) {
+fun main(args: Array<String>) {
     val findOptions = FindOptions()
     try {
         val settings = findOptions.settingsFromArgs(args)
