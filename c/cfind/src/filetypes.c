@@ -7,6 +7,9 @@
 #include "config.h"
 #include "fileutil.h"
 #include "filetypes.h"
+
+#include <assert.h>
+
 #include "stringnode.h"
 
 FileTypes *new_file_types(void)
@@ -49,7 +52,9 @@ error_t get_file_types(FileTypes *file_types)
     }
 
     // load the file
-    long fsize = file_size(full_path);
+    const long fsize = file_size(full_path);
+    // current size is 11634, make sure it's not dramatically bigger than that
+    assert(fsize <= 12000);
     char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(full_path, "r");
