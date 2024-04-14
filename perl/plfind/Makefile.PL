@@ -1,13 +1,13 @@
 use strict;
 use warnings FATAL => 'all';
-use ExtUtils::MakeMaker 6.64;
+use ExtUtils::MakeMaker 7.70;
 # See lib/ExtUtils/MakeMaker.pm for details of how to influence
 # the contents of the Makefile that is written.
 WriteMakefile(
     NAME              => 'plfind',
     VERSION_FROM      => 'lib/plfind.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
     CONFIGURE_REQUIRES => {
-        'ExtUtils::MakeMaker' => 6.64,
+        'ExtUtils::MakeMaker' => 7.70,
     },
     TEST_REQUIRES => {
         'Test'           => 0,
