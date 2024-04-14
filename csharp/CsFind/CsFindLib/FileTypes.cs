@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text.Json;
+using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>;
 
 namespace CsFindLib;
 
@@ -17,10 +20,8 @@ public enum FileType
 	Xml
 };
 
-public partial class FileTypes
+public class FileTypes
 {
-	// public readonly ISet<string> CurrentAndParentDirs = new HashSet<string> {".", ".."};
-
 	private const string Archive = "archive";
 	private const string Audio = "audio";
 	private const string Binary = "binary";
@@ -31,17 +32,47 @@ public partial class FileTypes
 	private const string Video = "video";
 	private const string Xml = "xml";
 
+	private readonly string _fileTypesResource;
 	private readonly IDictionary<string, ISet<string>> _fileTypeExtDictionary;
 	private readonly IDictionary<string, ISet<string>> _fileTypeNameDictionary;
 
 	public FileTypes()
 	{
+		_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.filetypes.json");
 		_fileTypeExtDictionary = new Dictionary<string, ISet<string>>();
 		_fileTypeNameDictionary = new Dictionary<string, ISet<string>>();
-		PopulateFileTypes();
+		PopulateFileTypesFromJson();
 	}
 
-	partial void PopulateFileTypes();
+	private void PopulateFileTypesFromJson()
+	{
+		var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
+		if (filetypesDict!.ContainsKey("filetypes"))
+		{
+			var filetypeDicts = filetypesDict["filetypes"];
+			foreach (var filetypeDict in filetypeDicts)
+			{
+				if (filetypeDict.TryGetValue("type", out var typeValue))
+				{
+					var name = ((JsonElement)typeValue).GetString();
+					if (filetypeDict.TryGetValue("extensions", out var extensionsValue))
+					{
+						var extensions = ((JsonElement)extensionsValue).EnumerateArray()
+							.Select(x => "." + x.GetString());
+						var extensionSet = new HashSet<string>(extensions);
+						_fileTypeExtDictionary[name!] = extensionSet;
+					}
+					if (filetypeDict.TryGetValue("names", out var namesValue))
+					{
+						var names = ((JsonElement)namesValue).EnumerateArray()
+							.Select(x => "" + x.GetString());
+						var nameSet = new HashSet<string>(names);
+						_fileTypeNameDictionary[name!] = nameSet;
+					}
+				}
+			}
+		}
+	}
 
 	public static FileType FromName(string name)
 	{

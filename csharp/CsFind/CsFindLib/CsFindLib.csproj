@@ -3,23 +3,14 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>preview</LangVersion>
-  </PropertyGroup>
-
-  <!-- Use following to write generated files to disk. -->
-  <PropertyGroup>
-    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-    <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\GeneratedFiles</CompilerGeneratedFilesOutputPath>
+    <LangVersion>12</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Resources\filetypes.json" />
-    <AdditionalFiles Include="Resources\findoptions.json" />
-    <ProjectReference Include="..\CsFindGen\CsFindGen.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="EmbeddedResource.cs" />
+    <None Remove="Resources\findoptions.json" />
+    <None Remove="Resources\filetypes.json" />
+    <EmbeddedResource Include="Resources\findoptions.json" />
+    <EmbeddedResource Include="Resources\filetypes.json" />
   </ItemGroup>
 
 </Project>

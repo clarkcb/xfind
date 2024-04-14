@@ -4,11 +4,14 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, string>>>;
 
 namespace CsFindLib;
 
-public partial class FindOptions
+public class FindOptions
 {
+	private readonly string _findOptionsResource;
+
 	private static readonly Dictionary<string, Action<string, FindSettings>> ArgActionDictionary =
 		new()
 		{
@@ -71,36 +74,40 @@ public partial class FindOptions
 
 	public FindOptions()
 	{
+		_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 		Options = new List<FindOption>();
 		ArgDictionary = new Dictionary<string, FindOption>();
 		FlagDictionary = new Dictionary<string, FindOption>();
-		// call SetOptions() in generated partial class
-		SetOptions();
-		AddOptionActions();
+		SetOptionsFromJson();
 	}
 
-	partial void SetOptions();
-
-	private void AddOptionActions()
+	private void SetOptionsFromJson()
 	{
-		foreach (var option in Options)
+		var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(_findOptionsResource);
+		var optionDicts = findOptionsDict!["findoptions"];
+		foreach (var optionDict in optionDicts)
 		{
-			if (ArgActionDictionary.ContainsKey(option.LongArg))
+			var longArg = optionDict["long"];
+			var shortArg = optionDict.GetValueOrDefault("short");
+			var desc = optionDict["desc"];
+			if (ArgActionDictionary.TryGetValue(longArg, out var argActionValue))
 			{
-				var argOption = new FindArgOption(option, ArgActionDictionary[option.LongArg]);
-				ArgDictionary.Add(option.LongArg, argOption);
-				if (!string.IsNullOrWhiteSpace(option.ShortArg))
+				var option = new FindArgOption(shortArg, longArg, argActionValue, desc);
+				Options.Add(option);
+				ArgDictionary.Add(longArg, option);
+				if (!string.IsNullOrWhiteSpace(shortArg))
 				{
-					ArgDictionary.Add(option.ShortArg, argOption);
+					ArgDictionary.Add(shortArg, option);
 				}
 			}
-			else if (BoolFlagActionDictionary.ContainsKey(option.LongArg))
+			else if (BoolFlagActionDictionary.TryGetValue(longArg, out var boolFlagActionValue))
 			{
-				var flagOption = new FindFlagOption(option, BoolFlagActionDictionary[option.LongArg]);
-				FlagDictionary.Add(option.LongArg, flagOption);
-				if (!string.IsNullOrWhiteSpace(option.ShortArg))
+				var option = new FindFlagOption(shortArg, longArg, boolFlagActionValue, desc);
+				Options.Add(option);
+				FlagDictionary.Add(longArg, option);
+				if (!string.IsNullOrWhiteSpace(shortArg))
 				{
-					FlagDictionary.Add(option.ShortArg, flagOption);
+					FlagDictionary.Add(shortArg, option);
 				}
 			}
 		}
@@ -110,7 +117,7 @@ public partial class FindOptions
 	{
 		var fileInfo = new FileInfo(filePath);
 		if (!fileInfo.Exists)
-			throw new FindException($"Settings fie not found: {filePath}");
+			throw new FindException($"Settings file not found: {filePath}");
 		var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
 		SettingsFromJson(contents, settings);
 	}
@@ -165,10 +172,6 @@ public partial class FindOptions
 		if (ArgActionDictionary.ContainsKey(arg))
 		{
 			ArgActionDictionary[arg](val, settings);
-		}
-		else if (arg.Equals("path"))
-		{
-			settings.Paths.Add(val);
 		}
 		else
 		{
