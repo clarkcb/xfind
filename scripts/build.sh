@@ -179,6 +179,12 @@ build_cpp () {
 
     cd "$CPPFIND_PATH"
 
+    # CMAKE_CXX_FLAGS="-W -Wall -Werror"
+    CMAKE_CXX_FLAGS="-W -Wall -Werror -Wextra -Wshadow -Wnon-virtual-dtor -pedantic"
+
+    # Add AddressSanitizer
+    # CMAKE_CXX_FLAGS="$CMAKE_CXX_FLAGS -fsanitize=address -fno-omit-frame-pointer"
+
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
         CONFIGURATIONS=(debug release)
@@ -221,8 +227,8 @@ build_cpp () {
             TARGETS=(clean cppfind cppfindapp cppfind-tests)
             for t in ${TARGETS[*]}
             do
-                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- -W -Wall -Werror"
-                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- -W -Wall -Werror
+                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t -- $CMAKE_CXX_FLAGS"
+                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t" -- "$CMAKE_CXX_FLAGS"
 
                 # check for success/failure
                 # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
@@ -910,7 +916,7 @@ build_python () {
         return
     else
         PYTHON=$(basename "$PYTHON")
-        log "Using $PYTHON"
+        log "Using $PYTHON ($(which $PYTHON))"
     fi
 
     # Set to Yes to use venv
@@ -929,9 +935,12 @@ build_python () {
 
     if [ "$USE_VENV" == 'yes' ]
     then
+        log "Using venv"
+
         # if venv is active, deactivate it (in case it happens to be another venv that is active)
         if [ -n "$VIRTUAL_ENV" ]
         then
+            log "Deactivating current venv"
             deactivate
         fi
 
@@ -949,12 +958,17 @@ build_python () {
             log "source $PYFIND_PATH/venv/bin/activate"
             source $PYFIND_PATH/venv/bin/activate
         fi
+
+        # get the path to the venv version
+        PYTHON=$(which python3)
+        PYTHON=$(basename "$PYTHON")
+        log "Using $PYTHON ($(which $PYTHON))"
     fi
 
     # install wheel - this seems to fix problems with installing local dependencies,
     # which pyfind will be for pysearch
-    log "pip3 install wheel"
-    pip3 install wheel
+    # log "pip3 install wheel"
+    # pip3 install wheel
 
     # install dependencies in requirements.txt
     log "pip3 install -r requirements.txt"
@@ -1336,7 +1350,7 @@ HELP=
 DEBUG=
 RELEASE=
 VENV=
-ARG=all
+LANG=all
 
 if [ $# == 0 ]
 then
@@ -1359,23 +1373,30 @@ do
             VENV=yes
             ;;
         *)
-            ARG=$1
+            LANG=$1
             ;;
     esac
     shift || true
 done
-
-if [ -n "$HELP" ]
-then
-    usage
-fi
 
 if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
 then
     DEBUG=yes
 fi
 
-case $ARG in
+# log the settings
+log "HELP: $HELP"
+log "DEBUG: $DEBUG"
+log "RELEASE: $RELEASE"
+log "VENV: $VENV"
+log "LANG: $LANG"
+
+if [ -n "$HELP" ]
+then
+    usage
+fi
+
+case $LANG in
     all)
         build_all
         ;;
@@ -1452,6 +1473,6 @@ case $ARG in
         build_typescript
         ;;
     *)
-        log_error "ERROR: unknown xfind build argument: $ARG"
+        log_error "ERROR: unknown xfind build argument: $LANG"
         ;;
 esac
