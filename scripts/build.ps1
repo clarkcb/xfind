@@ -148,11 +148,11 @@ function BuildC
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -199,11 +199,11 @@ function BuildClojure
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -364,11 +364,11 @@ function BuildCsharp
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -421,11 +421,11 @@ function BuildDart
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -491,11 +491,11 @@ function BuildFsharp
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -557,11 +557,11 @@ function BuildGo
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -622,11 +622,11 @@ function BuildHaskell
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -673,11 +673,11 @@ function BuildJava
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         return
     }
 
@@ -720,11 +720,11 @@ function BuildJavaScript
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -775,11 +775,11 @@ function BuildKotlin
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -814,11 +814,11 @@ function BuildObjc
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -831,11 +831,11 @@ function BuildObjc
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -890,11 +890,11 @@ function BuildPerl
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         return
     }
 
@@ -967,11 +967,11 @@ function BuildPhp
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -1088,11 +1088,11 @@ function BuildPython
     $buildError = $false
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         $buildError = $true
     }
 
@@ -1183,11 +1183,11 @@ function BuildRust
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -1201,11 +1201,11 @@ function BuildRust
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -1263,11 +1263,11 @@ function BuildScala
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
@@ -1304,11 +1304,11 @@ function BuildSwift
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -1322,11 +1322,11 @@ function BuildSwift
         # check for success/failure
         if ($LASTEXITCODE -eq 0)
         {
-            Log("Build succeeded")
+            Log('Build succeeded')
         }
         else
         {
-            PrintError("Build failed")
+            PrintError('Build failed')
             Set-Location $oldPwd
             return
         }
@@ -1379,11 +1379,11 @@ function BuildTypeScript
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {
-        Log("Build succeeded")
+        Log('Build succeeded')
     }
     else
     {
-        PrintError("Build failed")
+        PrintError('Build failed')
         Set-Location $oldPwd
         return
     }
