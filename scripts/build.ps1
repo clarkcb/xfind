@@ -16,11 +16,11 @@ param([switch]$help = $false,
 # Configuration
 ########################################
 
-$scriptPath = $MyInvocation.MyCommand.Path
-$scriptDir = Split-Path $scriptPath -Parent
+$xfindScriptPath = $MyInvocation.MyCommand.Path
+$xfindScriptDir = Split-Path $xfindScriptPath -Parent
 
-. (Join-Path -Path $scriptDir -ChildPath 'config.ps1')
-. (Join-Path -Path $scriptDir -ChildPath 'common.ps1')
+. (Join-Path -Path $xfindScriptDir -ChildPath 'config.ps1')
+. (Join-Path -Path $xfindScriptDir -ChildPath 'common.ps1')
 
 # check for help switch
 $help = $help.IsPresent
@@ -50,10 +50,10 @@ function Usage
 function CopyJsonResources
 {
     param([string]$resourcesPath)
-    $fileTypesPath = Join-Path $sharedPath 'filetypes.json'
+    $fileTypesPath = Join-Path $xfindSharedPath 'filetypes.json'
     Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
     Copy-Item $fileTypesPath -Destination $resourcesPath
-    $findOptionsPath = Join-Path $sharedPath 'findoptions.json'
+    $findOptionsPath = Join-Path $xfindSharedPath 'findoptions.json'
     Log("Copy-Item $findOptionsPath -Destination $resourcesPath")
     Copy-Item $findOptionsPath -Destination $resourcesPath
 }
@@ -61,10 +61,10 @@ function CopyJsonResources
 function CopyXmlResources
 {
     param([string]$resourcesPath)
-    $fileTypesPath = Join-Path $sharedPath 'filetypes.xml'
+    $fileTypesPath = Join-Path $xfindSharedPath 'filetypes.xml'
     Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
     Copy-Item $fileTypesPath -Destination $resourcesPath
-    $findOptionsPath = Join-Path $sharedPath 'findoptions.xml'
+    $findOptionsPath = Join-Path $xfindSharedPath 'findoptions.xml'
     Log("Copy-Item $findOptionsPath -Destination $resourcesPath")
     Copy-Item $findOptionsPath -Destination $resourcesPath
 }
@@ -79,8 +79,8 @@ function CopyTestResources
 function AddSoftLink
 {
     param([string]$linkPath, [string]$targetPath, [bool]$replaceLink=$true)
-    Write-Host "linkPath: $linkPath"
-    Write-Host "targetPath: $targetPath"
+    # Write-Host "linkPath: $linkPath"
+    # Write-Host "targetPath: $targetPath"
 
     if ((Test-Path $linkPath) -and $replaceLink)
     {
@@ -102,23 +102,23 @@ function AddSoftLink
 
 function AddToBin
 {
-    param([string]$scriptPath)
+    param([string]$xfindScriptPath)
 
-    if (-not (Test-Path $binPath))
+    if (-not (Test-Path $xfindBinPath))
     {
-        New-Item -ItemType directory -Path $binPath
+        New-Item -ItemType directory -Path $xfindBinPath
     }
 
     # get the base filename, minus path and any extension
-    $baseName = [io.path]::GetFileNameWithoutExtension($scriptPath)
-    if ($baseName.EndsWith(".debug") -or $baseName.EndsWith(".release"))
+    $baseName = [io.path]::GetFileNameWithoutExtension($xfindScriptPath)
+    if ($baseName.EndsWith('.debug') -or $baseName.EndsWith('.release'))
     {
-        $baseName = $baseName.Split(".")[0]
+        $baseName = $baseName.Split('.')[0]
     }
 
-    $linkPath = Join-Path $binPath $baseName
+    $linkPath = Join-Path $xfindBinPath $baseName
 
-    AddSoftLink $linkPath $scriptPath
+    AddSoftLink $linkPath $xfindScriptPath
 }
 
 
@@ -144,6 +144,18 @@ function BuildC
     Log('Building cfind')
     Log('make')
     make
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
 
     # add to bin
     $cfindExe = Join-Path $cfindPath 'cfind'
@@ -184,6 +196,18 @@ function BuildClojure
     Log('lein uberjar')
     lein uberjar
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
+
     # add to bin
     $cljfindExe = Join-Path $cljfindPath 'bin' 'cljfind.ps1'
     AddToBin($cljfindExe)
@@ -203,7 +227,7 @@ function BuildCpp
     }
     if (!$IsMacOS -and !$IsLinux)
     {
-        Log('Skipping for unknown OS')
+        Log('Skipping for unknown/unsupported OS')
         return
     }
 
@@ -216,6 +240,12 @@ function BuildCpp
 
     $oldPwd = Get-Location
     Set-Location $cppfindPath
+
+    # Set CMAKE_CXX_FLAGS
+    $cmakeCxxFlags = "-W -Wall -Werror -Wextra -Wshadow -Wnon-virtual-dtor -pedantic"
+
+    # Add AddressSanitizer
+    # $cmakeCxxFlags = "$cmakeCxxFlags -fsanitize=address -fno-omit-frame-pointer"
 
     $configurations = @()
     if ($debug)
@@ -237,24 +267,29 @@ function BuildCpp
 
             Set-Location $cmakeBuildPath
 
-            Log('cmake -G "Unix Makefiles" ..')
-            cmake -G "Unix Makefiles" ..
+            Log("cmake -G ""Unix Makefiles"" -DCMAKE_BUILD_TYPE=$c ..")
+            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
 
-            Log("make -f Makefile")
-            make -f Makefile
+            # Log("make -f Makefile")
+            # make -f Makefile
 
             Set-Location $cppfindPath
         }
 
-        $targets = @('clean', 'cppfind', 'cppfind-tests')
+        $targets = @('clean', 'cppfind', 'cppfindapp', 'cppfind-tests')
         ForEach ($t in $targets)
         {
-            Log("cmake --build $cmakeBuildDir --target $t -- -W -Wall -Werror")
-            cmake --build $cmakeBuildDir --target $t -- -W -Wall -Werror
-            if ($LASTEXITCODE -ne 0)
+            Log("cmake --build $cmakeBuildDir --target $t -- $cmakeCxxFlags")
+            cmake --build $cmakeBuildDir --target $t -- $cmakeCxxFlags
+            if ($LASTEXITCODE -eq 0)
             {
-                Log("An error occurred while trying to run build target $t")
-                exit
+                Log("Build target $t succeeded")
+            }
+            else
+            {
+                PrintError("Build target $t failed")
+                Set-Location $oldPwd
+                return
             }
         }
     }
@@ -325,6 +360,18 @@ function BuildCsharp
         Log("Building CsFind solution for $c configuration")
         Log("dotnet build $csFindSolutionPath --configuration $c")
         dotnet build $csFindSolutionPath --configuration $c
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
     }
 
     if ($release)
@@ -369,6 +416,18 @@ function BuildDart
     {
         Log('dart pub upgrade')
         dart pub upgrade
+    }
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
     }
 
     # add to bin
@@ -428,6 +487,18 @@ function BuildFsharp
         Log("Building FsFind solution for $c configuration")
         Log("dotnet build $fsFindSolutonPath --configuration $c")
         dotnet build $fsFindSolutonPath --configuration $c
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
     }
 
     if ($release)
@@ -467,15 +538,15 @@ function BuildGo
     go fmt ./...
 
     # create the bin dir if it doesn't already exist
-    if (-not (Test-Path $binPath))
+    if (-not (Test-Path $xfindBinPath))
     {
-        New-Item -ItemType directory -Path $binPath
+        New-Item -ItemType directory -Path $xfindBinPath
     }
 
     # if GOBIN not defined, set to BIN_PATH
     if (-not (Test-Path Env:GOBIN))
     {
-        $env:GOBIN = $binPath
+        $env:GOBIN = $xfindBinPath
     }
 
     # now build gofind
@@ -483,7 +554,19 @@ function BuildGo
     Log('go install ./...')
     go install ./...
 
-    if ($env:GOBIN -ne $binPath)
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
+
+    if ($env:GOBIN -ne $xfindBinPath)
     {
         # add to bin
         $gofindExe = Join-Path $env:GOBIN 'gofind'
@@ -536,8 +619,20 @@ function BuildHaskell
     Log('stack build')
     make build
 
-    Log("stack install --local-bin-path $binPath")
-    stack install --local-bin-path $binPath
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
+
+    Log("stack install --local-bin-path $xfindBinPath")
+    stack install --local-bin-path $xfindBinPath
 
     Set-Location $oldPwd
 }
@@ -572,8 +667,19 @@ function BuildJava
 
     # run maven clean package (skip testing as this is run via unittest.sh)
     Log('Building javafind')
-    Log("mvn -f $javafindPath/pom.xml clean package -Dmaven.test.skip=true")
-    mvn -f $javafindPath/pom.xml clean package '-Dmaven.test.skip=true'
+    Log("mvn -f $javafindPath/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
+    mvn -f $javafindPath/pom.xml clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        return
+    }
 
     # add to bin
     $javafindExe = Join-Path $javafindPath 'bin' 'javafind.ps1'
@@ -610,6 +716,18 @@ function BuildJavaScript
 
     Log('npm run build')
     npm run build
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
 
     # add to bin
     $jsfindExe = Join-Path $jsfindPath 'bin' 'jsfind.ps1'
@@ -654,6 +772,18 @@ function BuildKotlin
     Log('gradle --warning-mode all clean jar publishToMavenLocal')
     gradle --warning-mode all clean jar publishToMavenLocal
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
+
     # add to bin
     $ktfindExe = Join-Path $ktfindPath 'bin' 'ktfind.ps1'
     AddToBin($ktfindExe)
@@ -666,45 +796,50 @@ function BuildObjc
     Write-Host
     Hdr('BuildObjc')
 
-    $target = 'alltargets'
-
-    # ensure xcode is installed
-    if (-not (Get-Command 'xcodebuild' -ErrorAction 'SilentlyContinue'))
+    # ensure swift is installed
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install Xcode')
+        PrintError('You need to install swift')
         return
     }
 
     $oldPwd = Get-Location
     Set-Location $objcfindPath
 
-    $configurations = @()
     if ($debug)
     {
-        $configurations += 'Debug'
-    }
-    if ($release)
-    {
-        $configurations += 'Release'
-    }
+        Log("swift build")
+        swift build
 
-    # run build for selected configurations
-    ForEach ($c in $configurations)
-    {
-        if ($target -eq 'alltargets')
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
         {
-            Log("xcodebuild -alltargets -configuration $c")
-            xcodebuild -alltargets -configuration $c
+            Log("Build succeeded")
         }
         else
         {
-            Log("xcodebuild -project $target -configuration $c")
-            xcodebuild -project $target -configuration $c
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
         }
     }
-
     if ($release)
     {
+        Log("swift build --configuration release")
+        swift build --configuration release
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
+
         # add release to bin
         $objcfindExe = Join-Path $objcfindPath 'bin' 'objcfind.release.ps1'
         AddToBin($objcfindExe)
@@ -752,6 +887,17 @@ function BuildPerl
     }
     CopyJsonResources($resourcesPath)
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        return
+    }
+
     # add to bin
     $plfindExe = Join-Path $plfindPath 'bin' 'plfind.ps1'
     AddToBin($plfindExe)
@@ -784,7 +930,7 @@ function BuildPhp
     }
 
     # copy the shared config json file to the local config location
-    $configFilePath = Join-Path $sharedPath 'config.json'
+    $configFilePath = Join-Path $xfindSharedPath 'config.json'
     $configPath = Join-Path $phpfindPath 'config'
     if (-not (Test-Path $configPath))
     {
@@ -816,6 +962,18 @@ function BuildPhp
     {
         Log('composer install')
         composer install
+    }
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
     }
 
     # add to bin
@@ -860,22 +1018,23 @@ function BuildPython
     Write-Host
     Hdr('BuildPython')
 
-    # ensure python3.7+ is installed
-    $pythonVersions = @('python3.11', 'python3.10', 'python3.9', 'python3.8', 'python3.7')
+    # ensure python3.9+ is installed
+    $pythonVersions = @('python3.12', 'python3.11', 'python3.10', 'python3.9')
     $python = ''
     ForEach ($p in $pythonVersions)
     {
-        if (Get-Command $p -ErrorAction 'SilentlyContinue')
+        $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+        if ($null -ne $pythonCmd)
         {
             $python = $p
-            Log("Using $python")
+            Log("Using $p (${pythonCmd.Source})")
             break
         }
     }
 
     if (-not $python)
     {
-        PrintError('You need to install python(>= 3.7)')
+        PrintError('You need to install python(>= 3.9)')
         return
     }
 
@@ -907,17 +1066,47 @@ function BuildPython
         $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
         Log("$activatePath")
         & $activatePath
+
+        # Get the path to the venv version
+        ForEach ($p in $pythonVersions)
+        {
+            $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+            if ($null -ne $pythonCmd)
+            {
+                $python = $p
+                Log("Using $p (${pythonCmd.Source})")
+                break
+            }
+        }
     }
 
     # install dependencies in requirements.txt
     Log('pip3 install -r requirements.txt')
     pip3 install -r requirements.txt
 
+    # check for success/failure
+    $buildError = $false
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        $buildError = $true
+    }
+
     if ($useVenv)
     {
         # deactivate at end of setup process
         Log('deactivate')
         deactivate
+    }
+
+    if ($buildError)
+    {
+        Set-Location $oldPwd
+        return
     }
 
     # add to bin
@@ -939,15 +1128,15 @@ function BuildRuby
         return
     }
 
-    $versionOutput = & ruby -v | Select-String -Pattern 'ruby 2' 2>&1
+    $versionOutput = & ruby -v | Select-String -Pattern 'ruby 3' 2>&1
     if (-not $versionOutput)
     {
-        PrintError('A version of ruby >= 2.x is required')
+        PrintError('A version of ruby >= 3.x is required')
         return
     }
 
     # copy the shared config json file to the local config location
-    $configFilePath = Join-Path $sharedPath 'config.json'
+    $configFilePath = Join-Path $xfindSharedPath 'config.json'
     $configPath = Join-Path $rbfindPath 'data'
     if (-not (Test-Path $configPath))
     {
@@ -978,7 +1167,8 @@ function BuildRust
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
-    }
+        return
+}
 
     $oldPwd = Get-Location
     Set-Location $rsfindPath
@@ -989,12 +1179,36 @@ function BuildRust
     {
         Log('cargo build')
         cargo build
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
     }
 
     if ($release)
     {
         Log('cargo build --release')
         cargo build --release
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
 
         # add release to bin
         $rsfindExe = Join-Path $rsfindPath 'bin' 'rsfind.release.ps1'
@@ -1019,6 +1233,7 @@ function BuildScala
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala + sbt')
+        return
     }
 
     # copy the shared json files to the local resource location
@@ -1044,6 +1259,18 @@ function BuildScala
     Log('Building scalafind')
     Log("sbt 'set test in assembly := {}' clean assembly")
     sbt 'set test in assembly := {}' clean assembly
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
 
     # add to bin
     $scalafindExe = Join-Path $scalafindPath 'bin' 'scalafind.ps1'
@@ -1073,12 +1300,36 @@ function BuildSwift
     {
         Log('swift build')
         swift build
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
     }
 
     if ($release)
     {
         Log('swift build --configuration release')
         swift build --configuration release
+
+        # check for success/failure
+        if ($LASTEXITCODE -eq 0)
+        {
+            Log("Build succeeded")
+        }
+        else
+        {
+            PrintError("Build failed")
+            Set-Location $oldPwd
+            return
+        }
 
         # add release to bin
         $swiftfindExe = Join-Path $swiftfindPath 'bin' 'swiftfind.release.ps1'
@@ -1124,6 +1375,18 @@ function BuildTypeScript
 
     Log('npm run build')
     npm run build
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log("Build succeeded")
+    }
+    else
+    {
+        PrintError("Build failed")
+        Set-Location $oldPwd
+        return
+    }
 
     # add to bin
     $tsfindExe = Join-Path $tsfindPath 'bin' 'tsfind.ps1'

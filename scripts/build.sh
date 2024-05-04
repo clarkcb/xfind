@@ -234,9 +234,9 @@ build_cpp () {
                 # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
                 if [ "$?" -eq 0 ]
                 then
-                    log "Build succeeded"
+                    log "Build target $t succeeded"
                 else
-                    log_error "Build failed"
+                    log_error "Build target $t failed"
                     return
                 fi
             done
@@ -246,7 +246,7 @@ build_cpp () {
             if [ -n "$INSTALL_FILES" ]
             then
                 log "Installing cppfind files"
-                log "cmake --build $CMAKE_BUILD_DIR --config $c --prefix /usr/local"
+                log "cmake --install $CMAKE_BUILD_DIR --config $c --prefix /usr/local"
                 cmake --install "$CMAKE_BUILD_DIR" --config "$c" --prefix /usr/local
             fi
         fi
@@ -303,6 +303,15 @@ build_csharp () {
         log "Building csfind for $c configuration"
         log "dotnet build $CSFIND_PATH/CsFind.sln --configuration $c"
         dotnet build "$CSFIND_PATH/CsFind.sln" --configuration "$c"
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     done
 
     if [ -n "$RELEASE" ]
@@ -344,6 +353,15 @@ build_dart () {
         dart pub upgrade
     fi
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$DARTFIND_PATH/bin/dartfind.sh"
 
@@ -383,12 +401,21 @@ build_fsharp () {
         CONFIGURATIONS=(Release)
     fi
 
-    # run dotnet for selected configurations
+    # run dotnet build for selected configurations
     for c in ${CONFIGURATIONS[*]}
     do
         log "Building fsfind for $c configuration"
         log "dotnet build $FSFIND_PATH/FsFind.sln --configuration $c"
         dotnet build "$FSFIND_PATH/FsFind.sln" --configuration "$c"
+
+        # check for success/failure
+        if [ "$?" -eq 0 ]
+        then
+            log "Build succeeded"
+        else
+            log_error "Build failed"
+            return
+        fi
     done
 
     if [ -n "$RELEASE" ]
@@ -551,6 +578,15 @@ build_haskell () {
 
     log "stack build"
     make build
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
 
     log "stack install --local-bin-path $XFIND_BIN_PATH"
     stack install --local-bin-path "$XFIND_BIN_PATH"
@@ -788,6 +824,15 @@ build_perl () {
     log "cp $XFIND_SHARED_PATH/findoptions.json $RESOURCES_PATH/"
     cp "$XFIND_SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
     # add to bin
     add_to_bin "$PLFIND_PATH/bin/plfind.sh"
 }
@@ -974,11 +1019,26 @@ build_python () {
     log "pip3 install -r requirements.txt"
     pip3 install -r requirements.txt
 
+    # check for success/failure
+    ERROR=
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        ERROR=yes
+    fi
+
     if [ "$USE_VENV" == 'yes' ]
     then
         # deactivate at end of setup process
         log "deactivate"
         deactivate
+    fi
+
+    if [ -n "$ERROR" ]
+    then
+        return
     fi
 
     # TODO: change the !# line in pyfind to use the determined python version
