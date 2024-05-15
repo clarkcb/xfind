@@ -1410,7 +1410,7 @@ HELP=
 DEBUG=
 RELEASE=
 VENV=
-LANG=all
+TARGET_LANG=all
 
 if [ $# == 0 ]
 then
@@ -1433,7 +1433,7 @@ do
             VENV=yes
             ;;
         *)
-            LANG=$1
+            TARGET_LANG=$1
             ;;
     esac
     shift || true
@@ -1449,14 +1449,14 @@ log "HELP: $HELP"
 log "DEBUG: $DEBUG"
 log "RELEASE: $RELEASE"
 log "VENV: $VENV"
-log "LANG: $LANG"
+log "TARGET_LANG: $TARGET_LANG"
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $LANG in
+case $TARGET_LANG in
     all)
         build_all
         ;;
@@ -1533,6 +1533,6 @@ case $LANG in
         build_typescript
         ;;
     *)
-        log_error "ERROR: unknown xfind build argument: $LANG"
+        log_error "ERROR: unknown xfind build argument: $TARGET_LANG"
         ;;
 esac

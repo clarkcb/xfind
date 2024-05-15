@@ -95,6 +95,19 @@ clean_csharp () {
     log "dotnet clean"
     dotnet clean
 
+    PROJECTS=(CsFind CsFindGen CsFindLib CsFindTests)
+    for p in ${PROJECTS[*]}
+    do
+        if [ -d "$CSFIND_PATH/$p" ]
+        then
+            log "rm -rf $CSFIND_PATH/$p/bin"
+            rm -rf "$CSFIND_PATH/$p/bin"
+
+            log "rm -rf $CSFIND_PATH/$p/obj"
+            rm -rf "$CSFIND_PATH/$p/obj"
+        fi
+    done
+
     cd -
 }
 
@@ -130,6 +143,19 @@ clean_fsharp () {
     cd "$FSFIND_PATH"
     log "dotnet clean"
     dotnet clean
+
+    PROJECTS=(FsFind FsFindGen FsFindLib FsFindTests)
+    for p in ${PROJECTS[*]}
+    do
+        if [ -d "$FSFIND_PATH/$p" ]
+        then
+            log "rm -rf $FSFIND_PATH/$p/bin"
+            rm -rf "$FSFIND_PATH/$p/bin"
+
+            log "rm -rf $FSFIND_PATH/$p/obj"
+            rm -rf "$FSFIND_PATH/$p/obj"
+        fi
+    done
 
     cd -
 }

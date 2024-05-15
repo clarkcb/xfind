@@ -72,8 +72,8 @@ function CopyXmlResources
 function CopyTestResources
 {
     param([string]$testResourcesPath)
-    Log("Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath")
-    Copy-Item $testFilePath -Include testFile*.txt -Destination $testResourcesPath
+    Log("Copy-Item $xfindTestFilePath -Include testFile*.txt -Destination $testResourcesPath")
+    Copy-Item $xfindTestFilePath -Include testFile*.txt -Destination $testResourcesPath
 }
 
 function AddSoftLink

@@ -15,7 +15,7 @@ if (-not (Test-Path env:XFIND_PATH)) { $env:XFIND_PATH = Join-Path $HOME 'src' '
 $xfindPath = $env:XFIND_PATH
 $xfindBinPath = Join-Path $xfindPath 'bin'
 $xfindSharedPath = Join-Path $xfindPath 'shared'
-$testFilePath = Join-Path $xfindSharedPath 'testFiles'
+$xfindTestFilePath = Join-Path $xfindSharedPath 'testFiles'
 
 # Language roots
 $xfindCPath = Join-Path $xfindPath 'c'
