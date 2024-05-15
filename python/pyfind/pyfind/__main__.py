@@ -12,8 +12,8 @@
 import sys
 from typing import List
 
+from . import VERSION
 from .common import log, log_error
-from .config import VERSION
 from .fileresult import FileResult
 from .finder import Finder
 from .findexception import FindException

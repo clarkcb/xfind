@@ -101,7 +101,7 @@ class FindOptions:
         self.__coll_arg_dict = {
             'in-archiveext':
                 lambda x, settings:
-                settings.add_exts(x, 'in_archive_extensions'),
+                settings.add_strs_to_set(x, 'in_archive_extensions'),
             'in-archivefilepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'in_archive_file_patterns'),
@@ -119,7 +119,7 @@ class FindOptions:
                 settings.add_file_types(x, 'in_file_types'),
             'out-archiveext':
                 lambda x, settings:
-                settings.add_exts(x, 'out_archive_extensions'),
+                settings.add_strs_to_set(x, 'out_archive_extensions'),
             'out-archivefilepattern':
                 lambda x, settings:
                 settings.add_patterns(x, 'out_archive_file_patterns'),
@@ -137,7 +137,7 @@ class FindOptions:
                 settings.add_file_types(x, 'out_file_types'),
             'path':
                 lambda x, settings:
-                settings.paths.add(x),
+                settings.add_path(x),
             'sort-by':
                 lambda x, settings:
                 settings.set_sort_by(x),

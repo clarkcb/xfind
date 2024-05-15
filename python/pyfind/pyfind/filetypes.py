@@ -80,48 +80,48 @@ class FileTypes:
 
     def is_archive_file(self, f: str) -> bool:
         """Return true if file is of a (known) archive file type"""
-        return f in self.__file_type_names['archive'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['archive']
+        return f in self.__file_type_names[FileType.ARCHIVE] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.ARCHIVE]
 
     def is_audio_file(self, f: str) -> bool:
         """Return true if file is of a (known) audio file type"""
-        return f in self.__file_type_names['audio'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['audio']
+        return f in self.__file_type_names[FileType.AUDIO] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.AUDIO]
 
     def is_binary_file(self, f: str) -> bool:
         """Return true if file is of a (known) findable binary file type"""
-        return f in self.__file_type_names['binary'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['binary']
+        return f in self.__file_type_names[FileType.BINARY] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.BINARY]
 
     def is_code_file(self, f: str) -> bool:
         """Return true if file is of a (known) code file type"""
-        return f in self.__file_type_names['code'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['code']
+        return f in self.__file_type_names[FileType.CODE] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.CODE]
 
     def is_font_file(self, f: str) -> bool:
         """Return true if file is of a (known) font file type"""
-        return f in self.__file_type_names['font'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['font']
+        return f in self.__file_type_names[FileType.FONT] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.FONT]
 
     def is_image_file(self, f: str) -> bool:
         """Return true if file is of a (known) image file type"""
-        return f in self.__file_type_names['image'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['image']
+        return f in self.__file_type_names[FileType.IMAGE] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.IMAGE]
 
     def is_text_file(self, f: str) -> bool:
         """Return true if file is of a (known) text file type"""
-        return f in self.__file_type_names['text'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['text']
+        return f in self.__file_type_names[FileType.TEXT] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.TEXT]
 
     def is_video_file(self, f: str) -> bool:
         """Return true if file is of a (known) video file type"""
-        return f in self.__file_type_names['video'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['video']
+        return f in self.__file_type_names[FileType.VIDEO] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.VIDEO]
 
     def is_xml_file(self, f: str) -> bool:
         """Return true if file is of a (known) xml file type"""
-        return f in self.__file_type_names['xml'] or \
-               FileUtil.get_extension(f) in self.__file_type_exts['xml']
+        return f in self.__file_type_names[FileType.XML] or \
+               FileUtil.get_extension(f) in self.__file_type_exts[FileType.XML]
 
     def is_unknown_file(self, f: str) -> bool:
         """Return true if file is of an unknown file type"""

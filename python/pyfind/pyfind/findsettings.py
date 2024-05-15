@@ -87,7 +87,7 @@ class FindSettings:
                  out_extensions: list[str] | set[str] | str = None,
                  out_file_patterns: list | set | str | Pattern = None,
                  out_file_types: list | set | str | FileType = None,
-                 paths: list[str] | set[str] | str = None,
+                 paths: list[Path] | set[Path] | list[str] | set[str] | str = None,
                  print_dirs: bool = False,
                  print_files: bool = False,
                  print_usage: bool = False,
@@ -185,18 +185,23 @@ class FindSettings:
         else:
             raise FindException('patterns is an unknown type')
 
-    def add_paths(self, paths: list | set | str):
+    def add_paths(self, paths: list | set | Path | str):
         """Add one or more paths"""
         if isinstance(paths, (list, set)):
-            self.paths.update({Path(p) for p in paths})
+            if all(isinstance(p, Path) for p in paths):
+                self.paths.update(paths)
+            else:  # assume all strings
+                self.paths.update({Path(p) for p in paths})
+        elif isinstance(paths, Path):
+            self.paths.add(paths)
         elif isinstance(paths, str):
             self.paths.add(Path(paths))
         else:
             raise FindException('paths is an unknown type')
 
-    def add_path(self, path: str):
+    def add_path(self, path: Path | str):
         """Add a single path"""
-        self.paths.add(Path(path))
+        self.add_path(path)
 
     def add_file_types(self, file_types: list | set | str | FileType, file_type_set_name: str):
         """Add one or more filetypes"""

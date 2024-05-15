@@ -45,4 +45,4 @@ def list_to_str(lst: list, sort=True) -> str:
     """Return comma-separated string from list"""
     if sort:
         return '["' + '", "'.join(sorted(lst)) + '"]'
-    return '["' + '", "'.join(lst) + ']'
+    return '["' + '", "'.join([str(s) for s in lst]) + ']'

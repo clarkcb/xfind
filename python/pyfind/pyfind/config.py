@@ -8,17 +8,15 @@
 #
 ###############################################################################
 """
-import json
 import os
 
 cwd = os.path.dirname(os.path.realpath(__file__))
 data_path = os.path.join(cwd, 'data')
-config_json_path = os.path.join(data_path, 'config.json')
-with open(config_json_path, encoding='UTF-8') as f:
-    config = json.load(f)
 
-XFINDPATH = config['xfindpath']
+XFINDPATH = os.getenv('XFIND_PATH')
+if not XFINDPATH:
+    HOME = os.getenv('HOME')
+    XFINDPATH = os.path.join(HOME, 'src', 'xfind')
 SHAREDPATH = os.path.join(XFINDPATH, 'shared')
 FILETYPESPATH = os.path.join(data_path, 'filetypes.json')
 FINDOPTIONSPATH = os.path.join(data_path, 'findoptions.json')
-VERSION = config['version']

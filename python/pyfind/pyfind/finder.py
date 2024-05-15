@@ -193,7 +193,7 @@ class Finder:
                         new_file_results = [self.filter_to_file_result(f) for f in files]
                         file_results.extend([fr for fr in new_file_results if fr])
                 else:
-                    root, dirs, files = file_path.walk(top_down=top_down, follow_symlinks=follow_symlinks)
+                    root, dirs, files = walk(file_path)
                     # set dirs to empty list to avoid recursion
                     dirs[:] = []
                     files = [f for f in [root / f_ for f_ in files] if f.is_file()]
