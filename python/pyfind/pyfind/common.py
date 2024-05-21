@@ -44,5 +44,5 @@ def parse_datetime_str(datetime_str: str):
 def list_to_str(lst: list, sort=True) -> str:
     """Return comma-separated string from list"""
     if sort:
-        return '["' + '", "'.join(sorted(lst)) + '"]'
+        return '["' + '", "'.join(sorted([str(s) for s in lst])) + '"]'
     return '["' + '", "'.join([str(s) for s in lst]) + ']'

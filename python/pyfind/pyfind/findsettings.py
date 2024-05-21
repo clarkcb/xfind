@@ -201,7 +201,7 @@ class FindSettings:
 
     def add_path(self, path: Path | str):
         """Add a single path"""
-        self.add_path(path)
+        self.add_paths(path)
 
     def add_file_types(self, file_types: list | set | str | FileType, file_type_set_name: str):
         """Add one or more filetypes"""
