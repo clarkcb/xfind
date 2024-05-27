@@ -209,7 +209,7 @@ class Finder:
                 file_results.append(fr)
         return file_results
 
-    def find_files(self) -> List[FileResult]:
+    def find_files(self) -> list[FileResult]:
         """Get the list of all files matching find settings."""
         file_results = []
         for p in self.settings.paths:
