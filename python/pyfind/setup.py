@@ -15,7 +15,7 @@ setup(name='pyfind',
       license='MIT',
       packages=['pyfind'],
       package_data={'': ['data/*.json']},
-      python_requires='>=3.9',
+      python_requires='>=3.11',
       tests_require=[
           'nose',
       ])

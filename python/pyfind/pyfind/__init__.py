@@ -9,7 +9,7 @@ from .finder import Finder
 from .findexception import FindException
 from .findoption import FindOption
 from .findoptions import FindOptions
-from .findsettings import FindSettings, SortBy
+from .findsettings import FindSettings, SortBy, get_sort_by_for_name
 
 VERSION = '0.1.0'
 

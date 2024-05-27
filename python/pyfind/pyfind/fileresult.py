@@ -12,7 +12,6 @@
 import os
 from io import StringIO
 from pathlib import Path
-from typing import List
 
 from .filetypes import FileType
 
@@ -24,7 +23,7 @@ class FileResult:
     __slots__ = ['containers', 'path', 'file_type', 'stat']
 
     def __init__(self,
-                 containers: List[str] = None,
+                 containers: list[Path] = None,
                  path: Path = None,
                  file_type: FileType = FileType.UNKNOWN,
                  stat: os.stat_result = None):
@@ -34,16 +33,16 @@ class FileResult:
         self.stat = stat
 
     @property
-    def relative_path(self) -> str:
+    def relative_path(self) -> Path:
         """Get relative path of FileResult (does not include any containers)"""
-        return str(self.path)
+        return self.path
 
     def __str__(self):
         sio = StringIO()
         if self.containers:
-            sio.write(self.CONTAINER_SEPARATOR.join(self.containers))
+            sio.write(self.CONTAINER_SEPARATOR.join([str(c) for c in self.containers]))
             sio.write(self.CONTAINER_SEPARATOR)
-        sio.write(self.relative_path)
+        sio.write(str(self.relative_path))
         return sio.getvalue()
 
     def __lt__(self, other):

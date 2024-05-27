@@ -71,19 +71,19 @@ class FindSettingsTest(unittest.TestCase):
         self.assertEqual(True, self.settings.verbose)
 
     def test_add_single_extension(self):
-        self.settings.add_exts('py', 'in_extensions')
+        self.settings.add_strs_to_set('py', 'in_extensions')
         self.assertEqual(1, len(self.settings.in_extensions))
         self.assertIn('py', self.settings.in_extensions)
 
     def test_add_comma_delimited_extensions(self):
-        self.settings.add_exts('py,rb,scala', 'in_extensions')
+        self.settings.add_strs_to_set('py,rb,scala', 'in_extensions')
         self.assertEqual(3, len(self.settings.in_extensions))
         for x in {'py', 'rb', 'scala'}:
             self.assertIn(x, self.settings.in_extensions)
 
     def test_add_extensions_set(self):
         extensions_set = {'py', 'rb', 'scala'}
-        self.settings.add_exts(extensions_set, 'in_extensions')
+        self.settings.add_strs_to_set(extensions_set, 'in_extensions')
         self.assertEqual(3, len(self.settings.in_extensions))
         for x in extensions_set:
             self.assertIn(x, self.settings.in_extensions)

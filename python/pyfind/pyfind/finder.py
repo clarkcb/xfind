@@ -11,7 +11,7 @@
 import os
 import sys
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
@@ -22,13 +22,14 @@ from .findsettings import FindSettings, PatternSet, SortBy
 class Finder:
     """Finder is a class to find files based on find settings."""
 
-    __slots__ = ['settings', 'file_types']
+    __slots__ = ['settings', 'file_types', '__matching_dir_cache']
 
     def __init__(self, settings: FindSettings):
         """Create a new Finder instance."""
         self.settings = settings
         self.__validate_settings()
         self.file_types = FileTypes()
+        self.__matching_dir_cache = set([])
 
     def __validate_settings(self):
         """Validate the required settings in the FindSettings instance."""
@@ -51,17 +52,18 @@ class Finder:
         """Check whether the given directory matches find settings."""
         if isinstance(d, str):
             d = Path(d)
-        path_elems = d.parts
+        if d in self.__matching_dir_cache:
+            return True
         if not self.settings.include_hidden:
-            for p in path_elems:
-                if FileUtil.is_hidden(p):
-                    return False
+            if any(FileUtil.is_hidden(p) for p in d.parts):
+                return False
         if self.settings.in_dir_patterns and \
-                not any_matches_any_pattern(path_elems, self.settings.in_dir_patterns):
+                not any_matches_any_pattern(d.parts, self.settings.in_dir_patterns):
             return False
         if self.settings.out_dir_patterns and \
-                any_matches_any_pattern(path_elems, self.settings.out_dir_patterns):
+                any_matches_any_pattern(d.parts, self.settings.out_dir_patterns):
             return False
+        self.__matching_dir_cache.add(d)
         return True
 
     def is_matching_stat(self, stat: os.stat_result) -> bool:
@@ -79,11 +81,8 @@ class Finder:
     def is_matching_archive_file_path(self, file_path: Path, stat: os.stat_result) -> bool:
         """Check whether the given archive file matches find settings."""
         if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
-            ext = FileUtil.get_extension(file_path.name)
-            if (self.settings.in_archive_extensions
-                and ext not in self.settings.in_archive_extensions) \
-            or (self.settings.out_archive_extensions
-                and ext in self.settings.out_archive_extensions):
+            ext = FileUtil.get_path_extension(file_path)
+            if not self.is_matching_archive_ext(ext):
                 return False
         if (self.settings.in_archive_file_patterns
                 and not matches_any_pattern(file_path.name, self.settings.in_archive_file_patterns)) \
@@ -144,7 +143,7 @@ class Finder:
             return None
         return FileResult(path=file_path, file_type=file_type, stat=stat)
 
-    def get_file_results(self, file_path: Path) -> List[FileResult]:
+    def get_file_results(self, file_path: Path) -> list[FileResult]:
         """Get file results for given file path."""
         # TODO: add the following options to FindSettings:
         top_down = True
@@ -217,34 +216,56 @@ class Finder:
             file_results.extend(self.get_file_results(p))
         return file_results
 
-    async def find(self) -> List[FileResult]:
+    async def find(self) -> list[FileResult]:
         """Find matching files under paths."""
         return self.sort_file_results(self.find_files())
 
+    def case(self, s: str) -> str:
+        if self.settings.sort_case_insensitive:
+            return s.casefold()
+        return s
+
+    def key_by_file_path(self, r: FileResult):
+        return [[self.case(str(c)) for c in r.containers],
+                self.case(str(r.path.parent)),
+                self.case(r.path.name)]
+
+    def key_by_file_name(self, r: FileResult):
+        return [self.case(r.path.name),
+                [self.case(str(c)) for c in r.containers],
+                self.case(str(r.path.parent))]
+
+    def key_by_file_size(self, r: FileResult):
+        # size = r.stat.st_size if r.stat else 0
+        return [r.size] + self.key_by_file_path(r)
+
+    def key_by_file_type(self, r: FileResult):
+        return [r.file_type] + self.key_by_file_path(r)
+
+    def key_by_last_mod(self, r: FileResult):
+        # mtime = r.stat.st_mtime if r.stat else 0
+        return [r.last_mod] + self.key_by_file_path(r)
+
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
         """Sort the given list of FileResult instances."""
-        def c(s: str) -> str:
-            if self.settings.sort_case_insensitive:
-                return s.lower()
-            return s
         match self.settings.sort_by:
             case SortBy.FILEPATH:
-                return sorted(file_results, key=lambda r: (c(str(r.path.parent)), c(r.path.name)),
+                return sorted(file_results, key=lambda r: self.key_by_file_path(r),
                               reverse=self.settings.sort_descending)
             case SortBy.FILENAME:
-                return sorted(file_results, key=lambda r: (c(r.path.name), c(str(r.path.parent))),
+                return sorted(file_results, key=lambda r: self.key_by_file_name(r),
                               reverse=self.settings.sort_descending)
             case SortBy.FILESIZE:
-                return sorted(file_results, key=lambda r: (r.stat.st_size, c(str(r.path.parent)), c(r.path.name)),
+                return sorted(file_results, key=lambda r: self.key_by_file_size(r),
                               reverse=self.settings.sort_descending)
             case SortBy.FILETYPE:
-                return sorted(file_results, key=lambda r: (r.file_type, c(str(r.path.parent)), c(r.path.name)),
+                return sorted(file_results, key=lambda r: self.key_by_file_type(r),
                               reverse=self.settings.sort_descending)
             case SortBy.LASTMOD:
-                return sorted(file_results, key=lambda r: (r.stat.st_mtime, c(str(r.path.parent)), c(r.path.name)),
+                return sorted(file_results, key=lambda r: self.key_by_last_mod(r),
                               reverse=self.settings.sort_descending)
             case _:
-                return sorted(file_results, key=lambda r: (c(str(r.path.parent)), c(r.path.name)),
+                return sorted(file_results, key=lambda r: self.key_by_file_path(r),
                               reverse=self.settings.sort_descending)
 
 

@@ -9,6 +9,7 @@
 ################################################################################
 """
 import os
+from pathlib import Path
 import sys
 import unittest
 
@@ -20,11 +21,11 @@ from pyfind import FindException, FindOptions, FindSettings
 class FindOptionsTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        self.findoptions = FindOptions()
+        self.find_options = FindOptions()
 
     def test_no_args(self):
         # test the props
-        settings = self.findoptions.find_settings_from_args([])
+        settings = self.find_options.find_settings_from_args([])
         self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
         self.assertFalse(settings.include_archives)
@@ -47,34 +48,34 @@ class FindOptionsTest(unittest.TestCase):
 
     def test_valid_args(self):
         args = ['-x', 'py,rb', '.']
-        settings = self.findoptions.find_settings_from_args(args)
+        settings = self.find_options.find_settings_from_args(args)
         for x in {'py', 'rb'}:
             self.assertIn(x, settings.in_extensions)
         self.assertEqual(1, len(settings.paths))
-        self.assertIn('.', settings.paths)
+        self.assertIn(Path('.'), settings.paths)
 
     def test_archives_only_arg(self):
         args = ['--archivesonly']
-        settings = self.findoptions.find_settings_from_args(args)
+        settings = self.find_options.find_settings_from_args(args)
         self.assertTrue(settings.archives_only)
         self.assertTrue(settings.include_archives)
 
     def test_debug_arg(self):
         args = ['--debug']
-        settings = self.findoptions.find_settings_from_args(args)
+        settings = self.find_options.find_settings_from_args(args)
         self.assertTrue(settings.debug)
         self.assertTrue(settings.verbose)
 
     def test_missing_arg(self):
         args = ['-x', 'py,rb', '.', '-D']
         with self.assertRaises(FindException) as cm:
-            settings = self.findoptions.find_settings_from_args(args)
+            self.find_options.find_settings_from_args(args)
         self.assertEqual(str(cm.exception), 'Missing value for option D')
 
     def test_invalid_arg(self):
         args = ['-x', 'py,rb', '.', '-Q']
         with self.assertRaises(FindException) as cm:
-            settings = self.findoptions.find_settings_from_args(args)
+            self.find_options.find_settings_from_args(args)
         self.assertEqual(str(cm.exception), 'Invalid option: Q')
 
     def test_settings_from_json(self):
@@ -87,9 +88,9 @@ class FindOptionsTest(unittest.TestCase):
   "debug": true,
   "includehidden": true
 }'''
-        self.findoptions.settings_from_json(json, settings)
+        self.find_options.settings_from_json(json, settings)
         self.assertEqual(1, len(settings.paths))
-        self.assertIn('~/src/xfind/', settings.paths)
+        self.assertIn(Path('~/src/xfind/'), settings.paths)
         for x in {'js', 'ts'}:
             self.assertIn(x, settings.in_extensions)
         self.assertEqual(list(settings.out_dir_patterns)[0].pattern, 'node_module')

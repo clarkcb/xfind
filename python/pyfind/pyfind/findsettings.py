@@ -156,14 +156,14 @@ class FindSettings:
         self.sort_descending = sort_descending
         self.verbose = verbose
 
-    def add_strs_to_set(self, strs: list[str] | set[str] | str, set_name: str):
+    def add_strs_to_set(self, strs: list[str] | set[str] | frozenset[str] | str, set_name: str):
         """Add one or more comma-separated strs to set"""
         if isinstance(strs, str):
             strs = {strs}
-        if isinstance(strs, (list, set)):
+        if isinstance(strs, (list, set, frozenset)):
+            str_set = getattr(self, set_name)
             for s in strs:
                 new_set = {x for x in s.split(',') if x}
-                str_set = getattr(self, set_name)
                 str_set.update(new_set)
         else:
             raise FindException('strs is an unknown type')

@@ -9,6 +9,7 @@
 ################################################################################
 """
 import os
+from pathlib import Path
 import sys
 import unittest
 
@@ -23,76 +24,76 @@ class FileTypesTest(unittest.TestCase):
         cls.file_types = FileTypes()
 
     def test_get_file_type_archive_file(self):
-        file_name = 'archive.zip'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.ARCHIVE)
+        file_path = Path('archive.zip')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.ARCHIVE)
 
     def test_get_file_type_audio_file(self):
-        file_name = 'music.mp3'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.AUDIO)
+        file_path = Path('music.mp3')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.AUDIO)
 
     def test_get_file_type_binary_file(self):
-        file_name = 'binary.exe'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.BINARY)
+        file_path = Path('binary.exe')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.BINARY)
 
     def test_get_file_type_code_file(self):
-        file_name = 'code.py'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.CODE)
+        file_path = Path('code.py')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.CODE)
 
     def test_get_file_type_font_file(self):
-        file_name = 'font.ttf'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.FONT)
+        file_path = Path('font.ttf')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.FONT)
 
     def test_get_file_type_image_file(self):
-        file_name = 'image.png'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.IMAGE)
+        file_path = Path('image.png')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.IMAGE)
 
     def test_get_file_type_text_file(self):
-        file_name = 'text.txt'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.TEXT)
+        file_path = Path('text.txt')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.TEXT)
 
     def test_get_file_type_video_file(self):
-        file_name = 'movie.mp4'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.VIDEO)
+        file_path = Path('movie.mp4')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.VIDEO)
 
     def test_get_file_type_unknown_file(self):
-        file_name = 'unknown.xyz'
-        self.assertEqual(self.file_types.get_file_type(file_name), FileType.UNKNOWN)
+        file_path = Path('unknown.xyz')
+        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.UNKNOWN)
 
     def test_is_archive_file(self):
-        file_name = 'archive.tar.bz2'
-        self.assertTrue(self.file_types.is_archive_file(file_name))
+        file_path = Path('archive.tar.bz2')
+        self.assertTrue(self.file_types.is_archive_file_path(file_path))
 
     def test_is_audio_file(self):
-        file_name = 'audio.mid'
-        self.assertTrue(self.file_types.is_audio_file(file_name))
+        file_path = Path('audio.mid')
+        self.assertTrue(self.file_types.is_audio_file_path(file_path))
 
     def test_is_binary_file(self):
-        file_name = 'binary.dylib'
-        self.assertTrue(self.file_types.is_binary_file(file_name))
+        file_path = Path('binary.dylib')
+        self.assertTrue(self.file_types.is_binary_file_path(file_path))
 
     def test_is_code_file(self):
-        file_name = 'code.py'
-        self.assertTrue(self.file_types.is_code_file(file_name))
+        file_path = Path('code.py')
+        self.assertTrue(self.file_types.is_code_file_path(file_path))
 
     def test_is_font_file(self):
-        file_name = 'typeset.otf'
-        self.assertTrue(self.file_types.is_font_file(file_name))
+        file_path = Path('typeset.otf')
+        self.assertTrue(self.file_types.is_font_file_path(file_path))
 
     def test_is_image_file(self):
-        file_name = 'xml-image.svg'
-        self.assertTrue(self.file_types.is_image_file(file_name))
+        file_path = Path('xml-image.svg')
+        self.assertTrue(self.file_types.is_image_file_path(file_path))
 
     def test_is_video_file(self):
-        file_name = 'vid.mov'
-        self.assertTrue(self.file_types.is_video_file(file_name))
+        file_path = Path('vid.mov')
+        self.assertTrue(self.file_types.is_video_file_path(file_path))
 
     def test_is_xml_file(self):
-        file_name = 'file.xml'
-        self.assertTrue(self.file_types.is_xml_file(file_name))
+        file_path = Path('file.xml')
+        self.assertTrue(self.file_types.is_xml_file_path(file_path))
 
     def test_is_unknown_file(self):
-        file_name = 'unknown.xyz'
-        self.assertTrue(self.file_types.is_unknown_file(file_name))
+        file_path = Path('unknown.xyz')
+        self.assertTrue(self.file_types.is_unknown_file_path(file_path))
 
 
 if __name__ == '__main__':
