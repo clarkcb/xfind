@@ -78,30 +78,39 @@ class Finder:
             return False
         return True
 
+    def is_matching_archive_ext(self, ext: str) -> bool:
+        """Check whether the given extension matches find settings."""
+        return (not self.settings.in_archive_extensions or ext in self.settings.in_archive_extensions) \
+            and (not self.settings.out_archive_extensions or ext not in self.settings.out_archive_extensions)
+
+    def is_matching_archive_file_name(self, file_name: str) -> bool:
+        """Check whether the given file name matches find settings."""
+        return (not self.settings.in_archive_file_patterns or
+                matches_any_pattern(file_name, self.settings.in_archive_file_patterns)) \
+            and (not self.settings.out_archive_file_patterns or
+                 not matches_any_pattern(file_name, self.settings.out_archive_file_patterns))
+
     def is_matching_archive_file_path(self, file_path: Path, stat: os.stat_result) -> bool:
         """Check whether the given archive file matches find settings."""
         if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
             ext = FileUtil.get_path_extension(file_path)
             if not self.is_matching_archive_ext(ext):
                 return False
-        if (self.settings.in_archive_file_patterns
-                and not matches_any_pattern(file_path.name, self.settings.in_archive_file_patterns)) \
-            or (self.settings.out_archive_file_patterns
-                and matches_any_pattern(file_path.name, self.settings.out_archive_file_patterns)):
+        if not self.is_matching_archive_file_name(file_path.name):
             return False
         return self.is_matching_stat(stat)
 
     def is_matching_ext(self, ext: str) -> bool:
         """Check whether the given extension matches find settings."""
         return (not self.settings.in_extensions or ext in self.settings.in_extensions) \
-                and (not self.settings.out_extensions or ext not in self.settings.out_extensions)
+            and (not self.settings.out_extensions or ext not in self.settings.out_extensions)
 
     def is_matching_file_name(self, file_name: str) -> bool:
         """Check whether the given file name matches find settings."""
         return (not self.settings.in_file_patterns or
                 matches_any_pattern(file_name, self.settings.in_file_patterns)) \
-                and (not self.settings.out_file_patterns or
-                     not matches_any_pattern(file_name, self.settings.out_file_patterns))
+            and (not self.settings.out_file_patterns or
+                 not matches_any_pattern(file_name, self.settings.out_file_patterns))
 
     def is_matching_file_type(self, file_type: FileType) -> bool:
         """Check whether the given file type matches find settings."""
@@ -128,7 +137,7 @@ class Finder:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
         if not self.settings.include_hidden and FileUtil.is_hidden(file_path.name):
             return None
-        file_type = self.file_types.get_file_type(file_path.name)
+        file_type = self.file_types.get_file_path_type(file_path)
         if file_type == FileType.ARCHIVE \
            and not self.settings.include_archives \
            and not self.settings.archives_only:
@@ -237,14 +246,14 @@ class Finder:
 
     def key_by_file_size(self, r: FileResult):
         # size = r.stat.st_size if r.stat else 0
-        return [r.size] + self.key_by_file_path(r)
+        return [r.stat.st_size] + self.key_by_file_path(r)
 
     def key_by_file_type(self, r: FileResult):
         return [r.file_type] + self.key_by_file_path(r)
 
     def key_by_last_mod(self, r: FileResult):
         # mtime = r.stat.st_mtime if r.stat else 0
-        return [r.last_mod] + self.key_by_file_path(r)
+        return [r.stat.st_mtime] + self.key_by_file_path(r)
 
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
         """Sort the given list of FileResult instances."""

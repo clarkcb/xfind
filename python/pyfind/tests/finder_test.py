@@ -100,30 +100,30 @@ class FinderTest(unittest.TestCase):
     def test_filter_to_file_result_matches_by_default(self):
         settings = self.get_settings()
         finder = Finder(settings)
-        file_path = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        file_path = Path(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_is_find_file(self):
         settings = self.get_settings()
-        settings.add_exts('py', 'in_extensions')
+        settings.add_strs_to_set('py', 'in_extensions')
         finder = Finder(settings)
-        file_path = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        file_path = Path(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNotNone(file_result)
 
     def test_filter_to_file_result_not_is_find_file(self):
         settings = self.get_settings()
-        settings.add_exts('pl', 'in_extensions')
+        settings.add_strs_to_set('pl', 'in_extensions')
         finder = Finder(settings)
-        file_path = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        file_path = Path(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_is_hidden_file(self):
         settings = self.get_settings()
         finder = Finder(settings)
-        file_path = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
+        file_path = Path(XFINDPATH, 'python/pyfind/.gitignore')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
@@ -131,7 +131,7 @@ class FinderTest(unittest.TestCase):
         settings = self.get_settings()
         settings.include_hidden = True
         finder = Finder(settings)
-        file_path = '{}/python/pyfind/.gitignore'.format(XFINDPATH)
+        file_path = Path(XFINDPATH, 'python/pyfind/.gitignore')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNotNone(file_result)
 
@@ -139,7 +139,7 @@ class FinderTest(unittest.TestCase):
         self.ensure_archive()
         settings = self.get_settings()
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
@@ -147,7 +147,8 @@ class FinderTest(unittest.TestCase):
         self.ensure_archive()
         settings = self.get_settings()
         finder = Finder(settings)
-        file_result = finder.filter_to_file_result('./archive.zip')
+        archive_path = Path('./archive.zip')
+        file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
     def test_filter_to_file_result_archive_include_archives(self):
@@ -155,7 +156,7 @@ class FinderTest(unittest.TestCase):
         settings = self.get_settings()
         settings.include_archives = True
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
@@ -163,9 +164,9 @@ class FinderTest(unittest.TestCase):
         self.ensure_archive()
         settings = self.get_settings()
         settings.include_archives = True
-        settings.add_exts('zip', 'in_archive_extensions')
+        settings.add_strs_to_set('zip', 'in_archive_extensions')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
@@ -173,9 +174,9 @@ class FinderTest(unittest.TestCase):
         self.ensure_archive()
         settings = self.get_settings()
         settings.include_archives = True
-        settings.add_exts('gz', 'in_archive_extensions')
+        settings.add_strs_to_set('gz', 'in_archive_extensions')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
@@ -183,9 +184,9 @@ class FinderTest(unittest.TestCase):
         self.ensure_archive()
         settings = self.get_settings()
         settings.include_archives = True
-        settings.add_exts('zip', 'out_archive_extensions')
+        settings.add_strs_to_set('zip', 'out_archive_extensions')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
@@ -193,9 +194,9 @@ class FinderTest(unittest.TestCase):
         self.ensure_archive()
         settings = self.get_settings()
         settings.include_archives = True
-        settings.add_exts('gz', 'out_archive_extensions')
+        settings.add_strs_to_set('gz', 'out_archive_extensions')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
@@ -205,7 +206,7 @@ class FinderTest(unittest.TestCase):
         settings.include_archives = True
         settings.add_patterns('arch', 'in_archive_file_patterns')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
@@ -215,7 +216,7 @@ class FinderTest(unittest.TestCase):
         settings.include_archives = True
         settings.add_patterns('archives', 'in_archive_file_patterns')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
@@ -225,7 +226,7 @@ class FinderTest(unittest.TestCase):
         settings.include_archives = True
         settings.add_patterns('arch', 'out_archive_file_patterns')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNone(file_result)
 
@@ -235,7 +236,7 @@ class FinderTest(unittest.TestCase):
         settings.include_archives = True
         settings.add_patterns('archives', 'out_archive_file_patterns')
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
@@ -244,7 +245,7 @@ class FinderTest(unittest.TestCase):
         settings = self.get_settings()
         settings.set_property('archives_only', True)
         finder = Finder(settings)
-        archive_path = os.path.join(SHAREDPATH, 'testFiles/archive.zip')
+        archive_path = Path(SHAREDPATH, 'testFiles/archive.zip')
         file_result = finder.filter_to_file_result(archive_path)
         self.assertIsNotNone(file_result)
 
@@ -252,7 +253,7 @@ class FinderTest(unittest.TestCase):
         settings = self.get_settings()
         settings.set_property('archives_only', True)
         finder = Finder(settings)
-        file_path = os.path.join(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
+        file_path = Path(XFINDPATH, 'python/pyfind/pyfind/fileutil.py')
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
