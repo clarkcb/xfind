@@ -418,6 +418,11 @@ function BuildDart
         dart pub upgrade
     }
 
+    Log('Compiling dartfind')
+    $dartScript = Join-Path $dartfindPath 'bin' 'dartfind.dart'
+    Log("dart compile exe $dartScript")
+    dart compile exe $dartScript
+
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
     {

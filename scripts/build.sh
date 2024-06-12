@@ -353,6 +353,10 @@ build_dart () {
         dart pub upgrade
     fi
 
+    log "Compiling dartfind"
+    log "dart compile exe $DARTFIND_PATH/bin/dartfind.dart"
+    dart compile exe "$DARTFIND_PATH/bin/dartfind.dart"
+
     # check for success/failure
     if [ "$?" -eq 0 ]
     then
