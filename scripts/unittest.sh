@@ -121,6 +121,17 @@ unittest_dart () {
     cd -
 }
 
+unittest_elixir () {
+    echo
+    hdr "unittest_elixir"
+
+    cd "$EXFIND_PATH"
+    log "Unit-testing exfind"
+    log "mix test"
+    mix test
+    cd -
+}
+
 unittest_fsharp () {
     echo
     hdr "unittest_fsharp"
@@ -475,6 +486,8 @@ unittest_all () {
 
     unittest_dart
 
+    unittest_elixir
+
     unittest_fsharp
 
     unittest_go
@@ -563,6 +576,9 @@ case $ARG in
         ;;
     dart)
         unittest_dart
+        ;;
+    elixir | ex)
+        unittest_elixir
         ;;
     fs | fsharp)
         unittest_fsharp

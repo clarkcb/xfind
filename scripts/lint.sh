@@ -81,6 +81,15 @@ lint_dart () {
     dart analyze "$DARTFIND_PATH"
 }
 
+lint_elixir () {
+    echo
+    hdr "lint_elixir"
+
+    log "Linting exfind"
+    log "mix credo $EXFIND_PATH"
+    mix credo "$EXFIND_PATH"
+}
+
 lint_fsharp () {
     echo
     hdr "lint_fsharp"
@@ -475,6 +484,9 @@ case $ARG in
         ;;
     dart)
         lint_dart
+        ;;
+    elixir | ex)
+        lint_elixir
         ;;
     fs | fsharp)
         lint_fsharp

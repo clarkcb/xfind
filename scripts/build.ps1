@@ -437,6 +437,58 @@ function BuildDart
     Set-Location $oldPwd
 }
 
+function BuildElixir
+{
+    Write-Host
+    Hdr('BuildElixir')
+
+    # ensure elixir is installed
+    if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install elixir')
+        return
+    }
+
+    # ensure mix is installed
+    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install mix')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $exfindPath
+
+    Log('Building exfind')
+    if (-not (Test-Path 'mix.lock'))
+    {
+        Log('mix deps.get')
+        mix deps.get
+    }
+
+    Log('Creating exfind executable')
+    Log('mix escript.build')
+    mix escript.build
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Build succeeded')
+    }
+    else
+    {
+        PrintError('Build failed')
+        Set-Location $oldPwd
+        return
+    }
+
+    # add to bin
+    $exfindExe = Join-Path $exfindPath 'bin' 'exfind'
+    AddToBin($exfindExe)
+
+    Set-Location $oldPwd
+}
+
 function BuildFsharp
 {
     Write-Host
@@ -1454,6 +1506,8 @@ function BuildAll
 
     Measure-Command { BuildDart }
 
+    Measure-Command { BuildElixir }
+
     Measure-Command { BuildFsharp }
 
     Measure-Command { BuildGo }
@@ -1508,6 +1562,8 @@ function BuildMain
         'cs'         { Measure-Command { BuildCsharp } }
         'csharp'     { Measure-Command { BuildCsharp } }
         'dart'       { Measure-Command { BuildDart } }
+        'elixir'     { Measure-Command { BuildElixir } }
+        'ex'         { Measure-Command { BuildElixir } }
         'fs'         { Measure-Command { BuildFsharp } }
         'fsharp'     { Measure-Command { BuildFsharp } }
         'go'         { Measure-Command { BuildGo } }

@@ -368,6 +368,52 @@ build_dart () {
     cd -
 }
 
+build_elixir () {
+    echo
+    hdr "build_elixir"
+
+    # ensure elixir is installed
+    if [ -z "$(which elixir)" ]
+    then
+        log_error "You need to install elixir"
+        return
+    fi
+
+    # ensure mix is installed
+    if [ -z "$(which mix)" ]
+    then
+        log_error "You need to install mix"
+        return
+    fi
+
+    cd "$EXFIND_PATH"
+
+    log "Building exfind"
+    if [ ! -f "mix.lock" ]
+    then
+        log "mix deps.get"
+        mix deps.get
+    fi
+
+    log "Creating exfind executable"
+    log "mix escript.build"
+    mix escript.build
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        return
+    fi
+
+    # add to bin
+    add_to_bin "$EXFIND_PATH/bin/exfind"
+
+    cd -
+}
+
 build_fsharp () {
     echo
     hdr "build_fsharp"
@@ -1365,6 +1411,8 @@ build_all () {
 
     time build_dart
 
+    time build_elixir
+
     time build_fsharp
 
     time build_go
@@ -1477,6 +1525,9 @@ case $TARGET_LANG in
         ;;
     dart)
         build_dart
+        ;;
+    ex | elixir)
+        build_elixir
         ;;
     fs | fsharp)
         build_fsharp

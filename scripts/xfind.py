@@ -21,6 +21,8 @@ xfind_dict = {
     'cs':         'csfind',
     'csharp':     'csfind',
     'dart':       'dartfind',
+    'elixir':     'exfind',
+    'ex':         'exfind',
     'fs':         'fsfind',
     'fsharp':     'fsfind',
     'go':         'gofind',
