@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dartfind/src/common.dart';
 import 'package:dartfind/src/file_result.dart';
 import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/file_util.dart';
@@ -92,11 +93,16 @@ class Finder {
       return false;
     }
     if (fr.stat != null) {
-      if ((settings.maxLastMod != null &&
-              fr.stat!.changed.isAfter(settings.maxLastMod!)) ||
-          (settings.minLastMod != null &&
-              fr.stat!.changed.isBefore(settings.minLastMod!))) {
-        return false;
+      if (settings.maxLastMod != null || settings.minLastMod != null) {
+        var fileLastMod = fr.file.lastModifiedSync();
+        if (settings.maxLastMod != null &&
+            fileLastMod.isAfter(settings.maxLastMod!)) {
+          return false;
+        }
+        if (settings.minLastMod != null &&
+            fileLastMod.isBefore(settings.minLastMod!)) {
+          return false;
+        }
       }
       if ((settings.maxSize > 0 && fr.stat!.size > settings.maxSize) ||
           (settings.minSize > 0 && fr.stat!.size < settings.minSize)) {

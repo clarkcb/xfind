@@ -3,7 +3,7 @@ import 'dart:io' show File, FileStat;
 import 'package:dartfind/src/file_types.dart';
 
 class FileResult {
-  static const String CONTAINER_SEPARATOR = '!';
+  static const String containerSeparator = '!';
 
   List<String> containers = [];
   final File file;
@@ -16,7 +16,7 @@ class FileResult {
   String toString() {
     var s = '';
     if (containers.isNotEmpty) {
-      s = containers.join(CONTAINER_SEPARATOR) + CONTAINER_SEPARATOR;
+      s = containers.join(containerSeparator) + containerSeparator;
     }
     s += file.path;
     return s;

@@ -7,7 +7,6 @@ fi
 
 DARTFIND_PATH="$XFIND_PATH/dart/dartfind"
 PACKAGES_PATH="$DARTFIND_PATH/.packages"
-DARTFIND_EXE="$DARTFIND_PATH/bin/dartfind.dart"
+DARTFIND_EXE="$DARTFIND_PATH/bin/dartfind.exe"
 
-# dart --packages="$PACKAGES_PATH" "$DARTFIND_EXE" "$@"
-dart "$DARTFIND_EXE" "$@"
+"$DARTFIND_EXE" "$@"
