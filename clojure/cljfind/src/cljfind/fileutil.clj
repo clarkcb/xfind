@@ -15,7 +15,7 @@
 (def ^:const DOT_DIRS #{"." ".."})
 
 ; needs string argument and returns string
-(defn expand-path [f]
+(defn expand-path [^String f]
   (let [home (File. (System/getProperty "user.home"))]
     (if (.startsWith f "~")
       (str home (.substring f 1))

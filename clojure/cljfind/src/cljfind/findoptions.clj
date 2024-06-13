@@ -43,7 +43,7 @@
         get-desc (fn [l] (get long-desc-map l))]
     (sort-by get-sort-arg (map #(FindOption. (get-short %) % (get-desc %)) long-names))))
 
-(def OPTIONS (get-find-options-from-json))
+(def ^:const OPTIONS (get-find-options-from-json))
 
 (defn print-option [^FindOption opt]
   (let [format-string "(FindOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
@@ -186,6 +186,6 @@
 (defn usage
   ([exit-code]
     (log-msg "" (usage-string) "")
-    (System/exit 0))
+    (System/exit exit-code))
   ([]
    (usage 0)))

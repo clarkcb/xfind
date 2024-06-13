@@ -9,6 +9,8 @@
 (ns cljfind.fileresult
   #^{:author "Cary Clark",
      :doc "Encapsulates a file to be found"}
+  (:require [cljfind.findsettings])
+  (:import (cljfind.findsettings FindSettings))
   (:use [clojure.string :as string :only (join lower-case)]
         [cljfind.filetypes :only (to-name)]
         [cljfind.fileutil :only (get-name)]
@@ -30,7 +32,7 @@
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
        (.getPath (:file fr))))
 
-(defn cmp-strings [^String str1 ^String str2 settings]
+(defn cmp-strings [^String str1 ^String str2 ^FindSettings settings]
   (let [s1 (if (nil? str1) "" str1)
         s2 (if (nil? str2) "" str2)]
     (if (:sort-case-insensitive settings)
@@ -39,7 +41,7 @@
 
 (defn get-comp-by-path
   "get a filepath comparator"
-  [settings]
+  [^FindSettings settings]
   (fn [^FileResult fr1 ^FileResult fr2]
     (let [pathcmp (cmp-strings (.getParent (:file fr1)) (.getParent (:file fr2)) settings)]
       (if (= 0 pathcmp)
@@ -48,7 +50,7 @@
 
 (defn get-comp-by-name
   "get a filename comparator"
-  [settings]
+  [^FindSettings settings]
   (fn [^FileResult fr1 ^FileResult fr2]
     (let [namecmp (cmp-strings (get-name (:file fr1)) (get-name (:file fr2)) settings)]
       (if (= 0 namecmp)
@@ -57,7 +59,7 @@
 
 (defn get-comp-by-size
   "get a filesize comparator"
-  [settings]
+  [^FindSettings settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
       (let [sizecmp (compare (.size (:stat fr1)) (.size (:stat fr2)))]
@@ -67,7 +69,7 @@
 
 (defn get-comp-by-type
   "get a file-type comparator"
-  [settings]
+  [^FindSettings settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
       (let [typecmp (compare (to-name (:file-type fr1)) (to-name (:file-type fr2)))]
@@ -77,7 +79,7 @@
 
 (defn get-comp-by-lastmod
   "get a lastmod comparator"
-  [settings]
+  [^FindSettings settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
       (let [res (compare (.toMillis (.lastModifiedTime (:stat fr1))) (.toMillis (.lastModifiedTime (:stat fr2))))]
@@ -87,7 +89,7 @@
 
 (defn sort-results
   "sorts file results according to settings"
-  [results settings]
+  [results ^FindSettings settings]
   (let [sort-fn (cond
                   (= (:sort-by settings) :filename)
                   (get-comp-by-name settings)

@@ -83,7 +83,7 @@
     ^Boolean verbose
   ])
 
-(def DEFAULT-SETTINGS
+(def ^:const DEFAULT-SETTINGS
   (->FindSettings
    false     ; archives-only
    false     ; debug
@@ -128,7 +128,7 @@
     (add-extensions
       (update-in settings [extname] #(add-element (nth exts 0) %)) (rest exts) extname)))
 
-(defn add-extension [settings ext extname]
+(defn add-extension [^FindSettings settings ext extname]
   (let [t (type ext)]
     (cond
       (= t (type []))

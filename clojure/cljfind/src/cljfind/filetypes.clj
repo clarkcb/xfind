@@ -47,9 +47,9 @@
        ]
     [full-ext-map full-name-map]))
 
-(def FILETYPEMAPS (get-file-type-maps-from-json))
-(def FILETYPEEXTMAP (nth FILETYPEMAPS 0))
-(def FILETYPENAMEMAP (nth FILETYPEMAPS 1))
+(def ^:const FILETYPEMAPS (get-file-type-maps-from-json))
+(def ^:const FILETYPEEXTMAP (nth FILETYPEMAPS 0))
+(def ^:const FILETYPENAMEMAP (nth FILETYPEMAPS 1))
 
 (defn archive-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP ARCHIVE) ext))
