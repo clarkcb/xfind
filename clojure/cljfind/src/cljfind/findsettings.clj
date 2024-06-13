@@ -15,14 +15,14 @@
         [cljfind.filetypes :only (from-name to-name)]))
 
 ;; sort-by names
-(def FILEPATH "filepath")
-(def FILENAME "filename")
-(def NAME "name")
-(def FILESIZE "filesize")
-(def SIZE "size")
-(def FILETYPE "filetype")
-(def TYPE "type")
-(def LASTMOD "lastmod")
+(def ^:const ^String FILEPATH "filepath")
+(def ^:const ^String FILENAME "filename")
+(def ^:const ^String NAME "name")
+(def ^:const ^String FILESIZE "filesize")
+(def ^:const ^String SIZE "size")
+(def ^:const ^String FILETYPE "filetype")
+(def ^:const ^String TYPE "type")
+(def ^:const ^String LASTMOD "lastmod")
 
 (defn get-sort-by-name [s]
   (cond
@@ -126,7 +126,7 @@
   (if (empty? exts)
     settings
     (add-extensions
-      (update-in settings [extname] #(add-element (first exts) %)) (rest exts) extname)))
+      (update-in settings [extname] #(add-element (nth exts 0) %)) (rest exts) extname)))
 
 (defn add-extension [settings ext extname]
   (let [t (type ext)]
@@ -140,7 +140,7 @@
   (if (empty? types)
     settings
     (add-file-types
-     (update-in settings [typesname] #(add-element (from-name (first types)) %)) (rest types) typesname)))
+     (update-in settings [typesname] #(add-element (from-name (nth types 0)) %)) (rest types) typesname)))
 
 (defn add-file-type [^FindSettings settings typ typesname]
   (let [t (type typ)]
@@ -154,7 +154,7 @@
   (if (empty? paths)
     settings
     (add-paths
-      (update-in settings [:paths] #(add-element (first paths) %)) (rest paths))))
+      (update-in settings [:paths] #(add-element (nth paths 0) %)) (rest paths))))
 
 (defn add-path [^FindSettings settings path]
   (let [t (type path)]
@@ -168,7 +168,7 @@
   (if (empty? pats)
     settings
     (add-patterns
-      (update-in settings [patname] #(add-element (re-pattern (first pats)) %)) (rest pats) patname)))
+      (update-in settings [patname] #(add-element (re-pattern (nth pats 0)) %)) (rest pats) patname)))
 
 (defn add-pattern [^FindSettings settings p patname]
   (let [t (type p)]

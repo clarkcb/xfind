@@ -1,14 +1,16 @@
 (ns cljfind.cljfind
-  (:gen-class)
+  (:require [cljfind.findsettings])
+  (:import [cljfind.findsettings FindSettings])
   (:use [cljfind.common :only (log-msg log-errors)]
         [cljfind.finder :only
           (find-files print-matching-dirs print-matching-files)]
-        [cljfind.findoptions :only (settings-from-args usage)]))
+        [cljfind.findoptions :only (settings-from-args usage)])
+  (:gen-class))
 
 (defn -main
   "This will be the main function for cljfind"
   [& args]
-  (let [[settings errs] (settings-from-args args)]
+  (let [[^FindSettings settings errs] (settings-from-args args)]
     (if (:debug settings) (log-msg settings))
     (if (empty? errs)
       (do

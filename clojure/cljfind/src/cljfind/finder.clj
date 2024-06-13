@@ -9,11 +9,15 @@
 (ns cljfind.finder
   #^{:author "Cary Clark",
      :doc "Recursive file find utility"}
+  (:require [cljfind.fileresult]
+            [cljfind.findsettings])
   (:import (java.io File)
            (java.nio.file Files)
            (java.nio.file.attribute BasicFileAttributes)
            (java.util.jar JarFile)
-           (java.util.zip ZipFile))
+           (java.util.zip ZipFile)
+           (cljfind.fileresult FileResult)
+           (cljfind.findsettings FindSettings))
   (:use [clojure.java.io :only (file reader)]
         [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only
@@ -31,7 +35,7 @@
 (defn any-matches-any-pattern? [ss pp]
   (some #(not (= % nil)) (map #(matches-any-pattern? % pp) ss)))
 
-(defn validate-settings [settings]
+(defn validate-settings [^FindSettings settings]
   (let [paths (:paths settings)
         tests [(fn [ss] (if (empty? paths) "Startpath not defined" nil))
                (fn [ss] (if (some #(not (.exists (file %))) paths) "Startpath not found" nil))
@@ -56,9 +60,9 @@
                      ) "Invalid range for minsize and maxsize" nil))
               ]
        ]
-    (take 1 (filter #(not (= % nil)) (map #(% settings) tests)))))
+    (take 1 (filter #(not (nil? %)) (map #(% settings) tests)))))
 
-(defn is-matching-dir? [^File d settings]
+(defn is-matching-dir? [^File d ^FindSettings settings]
   (or
     (is-dot-dir? (get-name d))
     (and
@@ -72,16 +76,16 @@
         (empty? (:out-dir-patterns settings))
         (not-any? #(re-find % (.getPath d)) (:out-dir-patterns settings))))))
 
-(defn has-matching-dir? [^File f settings]
+(defn has-matching-dir? [^File f ^FindSettings settings]
   (let [d (.getParentFile f)]
     (or
       (nil? d)
       (is-matching-dir? d settings))))
 
 (defn is-matching-ext?
-  ([ext settings]
+  ([^String ext ^FindSettings settings]
     (is-matching-ext? ext (:in-extensions settings) (:out-extensions settings)))
-  ([ext in-extensions out-extensions]
+  ([^String ext in-extensions out-extensions]
     (and
       (or
         (empty? in-extensions)
@@ -91,7 +95,7 @@
         (not-any? #(= % ext) out-extensions)))))
 
 (defn has-matching-ext?
-  ([^File f settings]
+  ([^File f ^FindSettings settings]
     (has-matching-ext? f (:in-extensions settings) (:out-extensions settings)))
   ([^File f in-extensions out-extensions]
     (if
@@ -102,7 +106,7 @@
       true)))
 
 (defn is-matching-file-pattern?
-  ([filename settings]
+  ([^String filename ^FindSettings settings]
     (is-matching-file-pattern? filename (:in-file-patterns settings) (:out-file-patterns settings)))
   ([filename in-file-patterns out-file-patterns]
     (and
@@ -114,7 +118,7 @@
         (not-any? #(re-find % filename) out-file-patterns)))))
 
 (defn has-matching-file-pattern?
-  ([^File f settings]
+  ([^File f ^FindSettings settings]
     (has-matching-file-pattern? f (:in-file-patterns settings) (:out-file-patterns settings)))
   ([^File f in-file-patterns out-file-patterns]
     (if
@@ -125,7 +129,7 @@
       true)))
 
 (defn is-matching-file-type?
-  ([file-type settings]
+  ([file-type ^FindSettings settings]
     (is-matching-file-type? file-type (:in-file-types settings) (:out-file-types settings)))
   ([file-type in-file-types out-file-types]
     (and
@@ -137,7 +141,7 @@
         (not (contains? out-file-types file-type))))))
 
 (defn has-matching-file-type?
-  ([^File f settings]
+  ([^File f ^FindSettings settings]
     (has-matching-file-type? f (:in-file-types settings) (:out-file-types settings)))
   ([^File f in-file-types out-file-types]
     (if
@@ -152,7 +156,7 @@
     ""
     (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") dt)))
 
-(defn is-matching-stat? [stat settings]
+(defn is-matching-stat? [stat ^FindSettings settings]
   (or
     (nil? stat)
     (and
@@ -169,10 +173,10 @@
         (= 0 (:min-size settings))
         (>= (.size stat) (:min-size settings))))))
 
-(defn has-matching-stat? [fr settings]
+(defn has-matching-stat? [^FileResult fr ^FindSettings settings]
   (is-matching-stat? (:stat fr) settings))
 
-(defn is-matching-archive-file-result? [fr settings]
+(defn is-matching-archive-file-result? [^FileResult fr ^FindSettings settings]
   (if
     (or
       (not (has-matching-dir? (:file fr) settings))
@@ -182,7 +186,7 @@
     false
     true))
 
-(defn is-matching-file-result? [fr settings]
+(defn is-matching-file-result? [^FileResult fr ^FindSettings settings]
   (if
     (or
      (not (has-matching-dir? (:file fr) settings))
@@ -196,7 +200,7 @@
 (defn get-stat [^File f]
   (Files/readAttributes (.toPath f) BasicFileAttributes (into-array java.nio.file.LinkOption [])))
 
-(defn filter-to-file-result [^File f settings]
+(defn filter-to-file-result [^File f ^FindSettings settings]
   (if
     (and
       (not (:include-hidden settings))
@@ -220,16 +224,7 @@
           nil
           fr)))))
 
-(defn filter-dir-by-depth [d path-sep-count settings]
-  (if (nil? d)
-    true
-    (let [dir-sep-count (sep-count (.toString d))
-          depth (- dir-sep-count path-sep-count)]
-      (or
-        (< (:max-depth settings) 1)
-        (<= depth (:max-depth settings))))))
-
-(defn filter-file-by-depth [f path-sep-count settings]
+(defn filter-file-by-depth [^File f path-sep-count ^FindSettings settings]
   (let [file-sep-count (sep-count (.toString f))
         depth (- file-sep-count path-sep-count)]
     (and
@@ -238,43 +233,44 @@
         (< (:max-depth settings) 1)
         (<= depth (:max-depth settings))))))
 
-(defn get-file-results-for-path [settings, ^String path]
-  (let [pathfile (file path)]
-    (if (.isFile pathfile)
-      (if (< (:min-depth settings) 1)
-        (vec
-         (filter
-          #(not (nil? %))
-          (map #(filter-to-file-result % settings) [pathfile])))
+(defn get-file-results-under-path [^FindSettings settings, ^File path-file]
+  (if (= (:max-depth settings) 0)
+    []
+    (let [check-depth (or (> (:max-depth settings) 0) (> (:min-depth settings) 0))
+          path-files (if (:recursive settings) (file-seq path-file) (.listFiles path-file))
+          path-sep-count (if check-depth (sep-count (.toString path-file)) 0)
+          filter-by-depth (if check-depth filter-file-by-depth (fn [^File f c settings] true))]
+      (->> path-files
+           (filter #(.isFile %))
+           (filter #(filter-by-depth % path-sep-count settings))
+           (map #(filter-to-file-result % settings))
+           (filter #(not (nil? %)))))))
+
+(defn get-file-results-for-path [^FindSettings settings, ^String path]
+  (let [path-file (file path)]
+    (if (.isFile path-file)
+      (if
+        (< (:min-depth settings) 1)
+        (let [path-file-result (filter-to-file-result path-file settings)]
+          (if (not (nil? path-file-result))
+            [path-file-result]
+            []))
         [])
-      (if (not (= (:max-depth settings) 0))
-        (if (:recursive settings)
-          (let [path-sep-count (sep-count path)]
-            (vec
-             (filter
-              #(not (nil? %))
-              (map #(filter-to-file-result % settings)
-                   (filter #(filter-file-by-depth % path-sep-count settings)
-                           (filter #(filter-dir-by-depth (.getParent %) path-sep-count settings)
-                                   (filter #(.isFile %) (file-seq pathfile))))))))
-          (vec
-           (filter
-            #(not (nil? %))
-            (map #(filter-to-file-result % settings) (filter #(.isFile %) (.listFiles pathfile))))))
-        []))))
+      (get-file-results-under-path settings path-file))))
 
 (defn get-file-results
-  ([settings]
-    (get-file-results settings (:paths settings) []))
-  ([settings paths file-results]
+  ([^FindSettings settings]
+    (let [paths (into [] (:paths settings))]
+      (get-file-results settings paths [])))
+  ([^FindSettings settings paths file-results]
    (if (empty? paths)
       (sort-results file-results settings)
-      (get-file-results settings (rest paths) (concat file-results (get-file-results-for-path settings (first paths)))))))
+      (get-file-results settings (rest paths) (concat file-results (get-file-results-for-path settings (nth paths 0)))))))
 
-(defn find-files [settings]
+(defn find-files [^FindSettings settings]
   (let [errs (validate-settings settings)]
     (if (empty? errs)
-      [(get-file-results settings) []]
+      [(into [] (get-file-results settings)) []]
       [[] errs])))
 
 (defn get-matching-dirs [file-results]

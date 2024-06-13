@@ -12,6 +12,8 @@
   (:import (java.io File))
   (:use [clojure.string :only (split)]))
 
+(def ^:const DOT_DIRS #{"." ".."})
+
 ; needs string argument and returns string
 (defn expand-path [f]
   (let [home (File. (System/getProperty "user.home"))]
@@ -26,26 +28,26 @@
     (.getName f)
     f))
 
-(defn get-ext [f]
+(defn get-ext [^File f]
   (let [name (get-name f)
         dotindex (.lastIndexOf name ".")]
     (if 
       (and
         (> dotindex 0)
         (< dotindex (- (.length name) 1)))
-      (.toLowerCase (last (split name #"\.")))
+      (.toLowerCase (peek (split name #"\.")))
       "")))
 
-(defn get-files-in-directory [d]
+(defn get-files-in-directory [^File d]
   (filter #(.isFile %) (.listFiles d)))
 
-(defn has-ext? [f ^String ext]
+(defn has-ext? [^File f ^String ext]
   (= (.toLowerCase ext) (get-ext f)))
 
 (defn is-dot-dir? [^String name]
-  (contains? #{"." ".."} name))
+  (contains? DOT_DIRS name))
 
-(defn split-path [f]
+(defn split-path [^File f]
   (split (.getPath f) (re-pattern File/separator)))
 
 (defn hidden? [^String name]
@@ -53,12 +55,12 @@
     (.startsWith name ".")
     (not (is-dot-dir? name))))
 
-(defn hidden-dir? [d]
+(defn hidden-dir? [^File d]
   (let [elems (split-path d)]
     (some #(hidden? %) elems)))
 
-(defn hidden-file? [f]
+(defn hidden-file? [^File f]
   (hidden? (get-name f)))
 
-(defn sep-count [f]
-  (count (filter #(= % (java.io.File/separatorChar)) f)))
+(defn sep-count [^String f]
+  (count (filter #(= % java.io.File/separatorChar) f)))

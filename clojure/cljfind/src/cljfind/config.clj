@@ -5,16 +5,16 @@
   (:require [clojure.data.json :as json])
   (:use [clojure.string :only (join)]))
 
-(def XFINDPATH
+(def ^:const ^String XFINDPATH
   (or
     (System/getenv "XFIND_PATH")
     (clojure.string/join java.io.File/separator [(System/getenv "HOME") "src" "xfind"])))
 
-(def SHAREDPATH
+(def ^:const ^String SHAREDPATH
   (clojure.string/join java.io.File/separator [XFINDPATH "shared"]))
 
-(def FILETYPESPATH
+(def ^:const ^String FILETYPESPATH
   (clojure.string/join java.io.File/separator [SHAREDPATH "filetypes.json"]))
 
-(def FINDOPTIONSPATH
+(def ^:const ^String FINDOPTIONSPATH
   (clojure.string/join java.io.File/separator [SHAREDPATH "findoptions.json"]))

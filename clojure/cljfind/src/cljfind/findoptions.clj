@@ -9,7 +9,9 @@
 (ns cljfind.findoptions
   #^{:author "Cary Clark",
      :doc "Defines the available command-line options and utility functions"}
-  (:import (java.io File))
+  (:require [cljfind.findsettings])
+  (:import (java.io File)
+           (cljfind.findsettings FindSettings))
   (:require [clojure.java.io :as io])
   (:require [clojure.string :as str])
   (:require [clojure.data.json :as json])
@@ -43,7 +45,7 @@
 
 (def OPTIONS (get-find-options-from-json))
 
-(defn print-option [opt]
+(defn print-option [^FindOption opt]
   (let [format-string "(FindOption short=\"%s\" long=\"%s\" desc=\"%s\")"]
     (println
       (format format-string (:short-arg opt) (:long-arg opt) (:desc opt)))))
@@ -52,48 +54,48 @@
   (doseq [o OPTIONS] (print-option o)))
 
 (def arg-action-map
-  { :in-archiveext (fn [settings s] (add-extension settings s :in-archive-extensions))
-    :in-archivefilepattern (fn [settings s] (add-pattern settings s :in-archive-file-patterns))
-    :in-dirpattern (fn [settings s] (add-pattern settings s :in-dir-patterns))
-    :in-ext (fn [settings s] (add-extension settings s :in-extensions))
-    :in-filepattern (fn [settings s] (add-pattern settings s :in-file-patterns))
-    :in-filetype (fn [settings s] (add-file-type settings s :in-file-types))
-    :maxdepth (fn [settings s] (assoc settings :max-depth (Integer/parseInt s)))
-    :maxlastmod (fn [settings s] (assoc settings :max-last-mod (read-instant-date s)))
-    :maxsize (fn [settings s] (assoc settings :max-size (Integer/parseInt s)))
-    :mindepth (fn [settings s] (assoc settings :min-depth (Integer/parseInt s)))
-    :minlastmod (fn [settings s] (assoc settings :min-last-mod (read-instant-date s)))
-    :minsize (fn [settings s] (assoc settings :min-size (Integer/parseInt s)))
-    :out-archiveext (fn [settings s] (add-extension settings s :out-archive-extensions))
-    :out-archivefilepattern (fn [settings s] (add-pattern settings s :out-archive-file-pattern))
-    :out-dirpattern (fn [settings s] (add-pattern settings s :out-dir-patterns))
-    :out-ext (fn [settings s]  (add-extension settings s :out-extensions))
-    :out-filepattern (fn [settings s] (add-pattern settings s :out-file-patterns))
-    :out-filetype (fn [settings s] (add-file-type settings s :out-file-types))
-    :path (fn [settings s] (add-path settings s))
-    :sort-by (fn [settings s] (assoc settings :sort-by (sort-by-from-name s)))
+  { :in-archiveext (fn [^FindSettings settings ^String s] (add-extension settings s :in-archive-extensions))
+    :in-archivefilepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :in-archive-file-patterns))
+    :in-dirpattern (fn [^FindSettings settings ^String s] (add-pattern settings s :in-dir-patterns))
+    :in-ext (fn [^FindSettings settings ^String s] (add-extension settings s :in-extensions))
+    :in-filepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :in-file-patterns))
+    :in-filetype (fn [^FindSettings settings ^String s] (add-file-type settings s :in-file-types))
+    :maxdepth (fn [^FindSettings settings ^String s] (assoc settings :max-depth (Integer/parseInt s)))
+    :maxlastmod (fn [^FindSettings settings ^String s] (assoc settings :max-last-mod (read-instant-date s)))
+    :maxsize (fn [^FindSettings settings ^String s] (assoc settings :max-size (Integer/parseInt s)))
+    :mindepth (fn [^FindSettings settings ^String s] (assoc settings :min-depth (Integer/parseInt s)))
+    :minlastmod (fn [^FindSettings settings ^String s] (assoc settings :min-last-mod (read-instant-date s)))
+    :minsize (fn [^FindSettings settings ^String s] (assoc settings :min-size (Integer/parseInt s)))
+    :out-archiveext (fn [^FindSettings settings ^String s] (add-extension settings s :out-archive-extensions))
+    :out-archivefilepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :out-archive-file-pattern))
+    :out-dirpattern (fn [^FindSettings settings ^String s] (add-pattern settings s :out-dir-patterns))
+    :out-ext (fn [^FindSettings settings ^String s]  (add-extension settings s :out-extensions))
+    :out-filepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :out-file-patterns))
+    :out-filetype (fn [^FindSettings settings ^String s] (add-file-type settings s :out-file-types))
+    :path (fn [^FindSettings settings ^String s] (add-path settings s))
+    :sort-by (fn [^FindSettings settings ^String s] (assoc settings :sort-by (sort-by-from-name s)))
   })
 
 (def bool-flag-action-map
-  { :archivesonly (fn [settings b] (set-archives-only settings b))
-    :debug (fn [settings b] (set-debug settings b))
-    :excludearchives (fn [settings b] (assoc settings :include-archives (not b)))
-    :excludehidden (fn [settings b] (assoc settings :include-hidden (not b)))
-    :help (fn [settings b] (assoc settings :print-usage b))
-    :includearchives (fn [settings b] (assoc settings :include-archives b))
-    :includehidden (fn [settings b] (assoc settings :include-hidden b))
-    :noprintdirs (fn [settings b] (assoc settings :print-dirs (not b)))
-    :noprintfiles (fn [settings b] (assoc settings :print-files (not b)))
-    :norecursive (fn [settings b] (assoc settings :recursive (not b)))
-    :printdirs (fn [settings b] (assoc settings :print-dirs b))
-    :printfiles (fn [settings b] (assoc settings :print-files b))
-    :recursive (fn [settings b] (assoc settings :recursive b))
-    :sort-ascending (fn [settings b] (assoc settings :sort-descending (not b)))
-    :sort-caseinsensitive (fn [settings b] (assoc settings :sort-case-insensitive b))
-    :sort-casesensitive (fn [settings b] (assoc settings :sort-case-insensitive (not b)))
-    :sort-descending (fn [settings b] (assoc settings :sort-descending b))
-    :verbose (fn [settings b] (assoc settings :verbose b))
-    :version (fn [settings b] (assoc settings :version b))
+  { :archivesonly (fn [^FindSettings settings b] (set-archives-only settings b))
+    :debug (fn [^FindSettings settings b] (set-debug settings b))
+    :excludearchives (fn [^FindSettings settings b] (assoc settings :include-archives (not b)))
+    :excludehidden (fn [^FindSettings settings b] (assoc settings :include-hidden (not b)))
+    :help (fn [^FindSettings settings b] (assoc settings :print-usage b))
+    :includearchives (fn [^FindSettings settings b] (assoc settings :include-archives b))
+    :includehidden (fn [^FindSettings settings b] (assoc settings :include-hidden b))
+    :noprintdirs (fn [^FindSettings settings b] (assoc settings :print-dirs (not b)))
+    :noprintfiles (fn [^FindSettings settings b] (assoc settings :print-files (not b)))
+    :norecursive (fn [^FindSettings settings b] (assoc settings :recursive (not b)))
+    :printdirs (fn [^FindSettings settings b] (assoc settings :print-dirs b))
+    :printfiles (fn [^FindSettings settings b] (assoc settings :print-files b))
+    :recursive (fn [^FindSettings settings b] (assoc settings :recursive b))
+    :sort-ascending (fn [^FindSettings settings b] (assoc settings :sort-descending (not b)))
+    :sort-caseinsensitive (fn [^FindSettings settings b] (assoc settings :sort-case-insensitive b))
+    :sort-casesensitive (fn [^FindSettings settings b] (assoc settings :sort-case-insensitive (not b)))
+    :sort-descending (fn [^FindSettings settings b] (assoc settings :sort-descending b))
+    :verbose (fn [^FindSettings settings b] (assoc settings :verbose b))
+    :version (fn [^FindSettings settings b] (assoc settings :version b))
   })
 
 (defn get-long-arg [^String arg]
@@ -106,10 +108,10 @@
       (contains? short-long-map arg) (keyword (get short-long-map arg))
       :else nil)))
 
-(defn settings-from-map [settings ks m errs]
+(defn settings-from-map [^FindSettings settings ks m errs]
   (if (empty? ks)
     [settings errs]
-    (let [k (keyword (first ks))
+    (let [k (keyword (nth ks 0))
           v (k m)]
       (cond
         (contains? arg-action-map k)
@@ -123,14 +125,14 @@
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
 (defn settings-from-json
-  ([json]
+  ([^String json]
     (settings-from-json DEFAULT-SETTINGS json))
-  ([settings json]
+  ([^FindSettings settings ^String json]
     (let [obj (json/read-str json :key-fn keyword)
           ks (keys obj)]
       (settings-from-map settings ks obj []))))
 
-(defn settings-from-file [settings f]
+(defn settings-from-file [^FindSettings settings ^File f]
   (let [contents (slurp f)]
     (settings-from-json settings contents)))
 
@@ -138,10 +140,10 @@
   ([args]
     ;; default print-files to true since running as cli
     (settings-from-args (assoc DEFAULT-SETTINGS :print-files true) args []))
-  ([settings args errs]
+  ([^FindSettings settings args errs]
     (if (or (empty? args) (not (empty? errs)))
       [settings errs]
-      (let [arg (first args)
+      (let [arg (nth args 0)
             a (if (.startsWith arg "-") (str/replace arg #"^\-+" ""))
             k (if a (get-long-arg a))
             a2 (second args)]
