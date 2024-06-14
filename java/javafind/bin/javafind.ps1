@@ -6,13 +6,13 @@ if (-not (Test-Path Env:XFIND_PATH))
 }
 
 $javaFindJarPath = Join-Path $env:XFIND_PATH 'java' 'javafind' 'target'
+$javaFindVersion = '0.1.0-SNAPSHOT'
+$javaFindJarName = "javafind-$javaFindVersion.jar"
+$javaFindJar = Join-Path $javaFindJarPath $javaFindJarName
 
-$javaFindJars = @(Get-ChildItem $javaFindJarPath) |
-    Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.jar' -and $_ -match 'javafind' }
-
-if ($javaFindJars.count -gt 0)
+if (Test-Path $javaFindJar)
 {
-    & java -cp $javaFindJars[0] 'javafind.FindMain' $Args
+    & java -cp $javaFindJar 'javafind.FindMain' $Args
 }
 else
 {

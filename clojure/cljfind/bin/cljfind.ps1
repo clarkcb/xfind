@@ -6,13 +6,13 @@ if (-not (Test-Path Env:XFIND_PATH))
 }
 
 $cljFindJarPath = Join-Path $env:XFIND_PATH 'clojure' 'cljfind' 'target' 'uberjar'
+$cljFindVersion = '0.1.0-SNAPSHOT'
+$cljFindJarName = "cljfind-$cljFindVersion-standalone.jar"
+$cljFindJar = Join-Path $cljFindJarPath $cljFindJarName
 
-$cljFindJars = @(Get-ChildItem $cljFindJarPath) |
-    Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.jar' -and $_ -match 'cljfind.+standalone' }
-
-if ($cljFindJars.count -gt 0)
+if (Test-Path $cljFindJar)
 {
-    & java -jar $cljFindJars[0] $Args
+    & java -jar $cljFindJar $Args
 }
 else
 {
