@@ -66,91 +66,107 @@ class Finder:
         self.__matching_dir_cache.add(d)
         return True
 
-    def is_matching_stat(self, stat: os.stat_result) -> bool:
-        """Check whether the given file stat matches find settings."""
-        if (self.settings.min_last_mod
-            and stat.st_mtime < self.settings.min_last_mod.timestamp()) \
-                or (self.settings.max_last_mod
-                    and stat.st_mtime > self.settings.max_last_mod.timestamp()):
-            return False
-        if (self.settings.min_size and stat.st_size < self.settings.min_size) \
-                or (self.settings.max_size and stat.st_size > self.settings.max_size):
-            return False
-        return True
+    def is_matching_last_mod(self, last_mod: float) -> bool:
+        """Check whether the given file last mod matches find settings."""
+        return (self.settings.min_last_mod is None
+                or last_mod >= self.settings.min_last_mod.timestamp()) \
+            and (self.settings.max_last_mod is None
+                 or last_mod <= self.settings.max_last_mod.timestamp())
+
+    def is_matching_file_size(self, file_size: int) -> bool:
+        """Check whether the given file size matches find settings."""
+        return (self.settings.min_size == 0
+                or file_size >= self.settings.min_size) \
+            and (self.settings.max_size == 0
+                 or file_size <= self.settings.max_size)
 
     def is_matching_archive_ext(self, ext: str) -> bool:
         """Check whether the given extension matches find settings."""
-        return (not self.settings.in_archive_extensions or ext in self.settings.in_archive_extensions) \
-            and (not self.settings.out_archive_extensions or ext not in self.settings.out_archive_extensions)
-
-    def is_matching_archive_file_name(self, file_name: str) -> bool:
-        """Check whether the given file name matches find settings."""
-        return (not self.settings.in_archive_file_patterns or
-                matches_any_pattern(file_name, self.settings.in_archive_file_patterns)) \
-            and (not self.settings.out_archive_file_patterns or
-                 not matches_any_pattern(file_name, self.settings.out_archive_file_patterns))
-
-    def is_matching_archive_file_path(self, file_path: Path, stat: os.stat_result) -> bool:
-        """Check whether the given archive file matches find settings."""
-        if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
-            ext = FileUtil.get_path_extension(file_path)
-            if not self.is_matching_archive_ext(ext):
-                return False
-        if not self.is_matching_archive_file_name(file_path.name):
-            return False
-        return self.is_matching_stat(stat)
+        return (not self.settings.in_archive_extensions
+                or ext in self.settings.in_archive_extensions) \
+            and (not self.settings.out_archive_extensions
+                 or ext not in self.settings.out_archive_extensions)
 
     def is_matching_ext(self, ext: str) -> bool:
         """Check whether the given extension matches find settings."""
-        return (not self.settings.in_extensions or ext in self.settings.in_extensions) \
-            and (not self.settings.out_extensions or ext not in self.settings.out_extensions)
+        return (not self.settings.in_extensions
+                or ext in self.settings.in_extensions) \
+            and (not self.settings.out_extensions
+                 or ext not in self.settings.out_extensions)
+
+    def has_matching_archive_ext(self, file_path: Path) -> bool:
+        """Check whether the given extension matches find settings."""
+        if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
+            ext = FileUtil.get_extension(file_path.name)
+            return self.is_matching_archive_ext(ext)
+        return True
+
+    def has_matching_ext(self, file_path: Path) -> bool:
+        """Check whether the given extension matches find settings."""
+        if self.settings.in_extensions or self.settings.out_extensions:
+            ext = FileUtil.get_extension(file_path.name)
+            return self.is_matching_ext(ext)
+        return True
+
+    def is_matching_archive_file_name(self, file_name: str) -> bool:
+        """Check whether the given file name matches find settings."""
+        return (not self.settings.in_archive_file_patterns
+                or matches_any_pattern(file_name, self.settings.in_archive_file_patterns)) \
+            and (not self.settings.out_archive_file_patterns
+                 or not matches_any_pattern(file_name, self.settings.out_archive_file_patterns))
 
     def is_matching_file_name(self, file_name: str) -> bool:
         """Check whether the given file name matches find settings."""
-        return (not self.settings.in_file_patterns or
-                matches_any_pattern(file_name, self.settings.in_file_patterns)) \
-            and (not self.settings.out_file_patterns or
-                 not matches_any_pattern(file_name, self.settings.out_file_patterns))
+        return (not self.settings.in_file_patterns
+                or matches_any_pattern(file_name, self.settings.in_file_patterns)) \
+            and (not self.settings.out_file_patterns
+                 or not matches_any_pattern(file_name, self.settings.out_file_patterns))
 
     def is_matching_file_type(self, file_type: FileType) -> bool:
         """Check whether the given file type matches find settings."""
-        return (not self.settings.in_file_types or
-                file_type in self.settings.in_file_types) \
-                and (not self.settings.out_file_types or
-                     file_type not in self.settings.out_file_types)
+        return (not self.settings.in_file_types
+                or file_type in self.settings.in_file_types) \
+            and (not self.settings.out_file_types
+                 or file_type not in self.settings.out_file_types)
 
-    def is_matching_file_path(self, file_path: Path, file_type: FileType, stat: os.stat_result) -> bool:
+    def is_matching_archive_file_path(self, file_path: Path, file_size: int, last_mod: float) -> bool:
+        """Check whether the given archive file matches find settings."""
+        return self.has_matching_archive_ext(file_path) \
+            and self.is_matching_archive_file_name(file_path.name) \
+            and self.is_matching_file_size(file_size) \
+            and self.is_matching_last_mod(last_mod)
+
+    def is_matching_file_path(self, file_path: Path, file_type: FileType, file_size: int, last_mod: float) -> bool:
         """Check whether the given file matches find settings."""
-        if self.settings.in_extensions or self.settings.out_extensions:
-            ext = FileUtil.get_extension(file_path.name)
-            if not self.is_matching_ext(ext):
-                return False
-        if not self.is_matching_file_name(file_path.name):
-            return False
-        if not self.is_matching_file_type(file_type):
-            return False
-        if stat:
-            return self.is_matching_stat(stat)
-        return True
+        return self.has_matching_ext(file_path) \
+            and self.is_matching_file_name(file_path.name) \
+            and self.is_matching_file_type(file_type) \
+            and self.is_matching_file_size(file_size) \
+            and self.is_matching_last_mod(last_mod)
 
     def filter_to_file_result(self, file_path: Path) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
         if not self.settings.include_hidden and FileUtil.is_hidden(file_path.name):
             return None
-        file_type = self.file_types.get_file_path_type(file_path)
+        file_type = self.file_types.get_file_type_for_path(file_path)
         if file_type == FileType.ARCHIVE \
-           and not self.settings.include_archives \
-           and not self.settings.archives_only:
+                and not self.settings.include_archives \
+                and not self.settings.archives_only:
             return None
-        stat = None
-        if self.settings.need_stat():
+        file_size = 0
+        last_mod = 0.0
+        if self.settings.need_size() or self.settings.need_last_mod():
             stat = file_path.stat()
+            if self.settings.need_size():
+                file_size = stat.st_size
+            if self.settings.need_last_mod():
+                last_mod = stat.st_mtime
         if file_type == FileType.ARCHIVE:
-            if not self.is_matching_archive_file_path(file_path, stat):
+            if not self.is_matching_archive_file_path(file_path, file_size, last_mod):
                 return None
-        elif self.settings.archives_only or not self.is_matching_file_path(file_path, file_type, stat):
+        elif self.settings.archives_only or not self.is_matching_file_path(file_path, file_type, file_size, last_mod):
             return None
-        return FileResult(path=file_path, file_type=file_type, stat=stat)
+        return FileResult(path=file_path, file_type=file_type, file_size=file_size, last_mod=last_mod)
 
     def get_file_results(self, file_path: Path) -> list[FileResult]:
         """Get file results for given file path."""
@@ -245,15 +261,13 @@ class Finder:
                 self.case(str(r.path.parent))]
 
     def key_by_file_size(self, r: FileResult):
-        # size = r.stat.st_size if r.stat else 0
-        return [r.stat.st_size] + self.key_by_file_path(r)
+        return [r.file_size] + self.key_by_file_path(r)
 
     def key_by_file_type(self, r: FileResult):
         return [r.file_type] + self.key_by_file_path(r)
 
     def key_by_last_mod(self, r: FileResult):
-        # mtime = r.stat.st_mtime if r.stat else 0
-        return [r.stat.st_mtime] + self.key_by_file_path(r)
+        return [r.last_mod] + self.key_by_file_path(r)
 
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
         """Sort the given list of FileResult instances."""

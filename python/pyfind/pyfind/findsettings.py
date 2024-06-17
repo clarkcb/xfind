@@ -219,10 +219,12 @@ class FindSettings:
         file_type_set = getattr(self, file_type_set_name)
         file_type_set.update(new_file_type_set)
 
-    def need_stat(self) -> bool:
+    def need_last_mod(self) -> bool:
+        return self.sort_by == SortBy.LASTMOD or \
+               self.max_last_mod or self.min_last_mod
+
+    def need_size(self) -> bool:
         return self.sort_by == SortBy.FILESIZE or \
-               self.sort_by == SortBy.LASTMOD or \
-               self.max_last_mod or self.min_last_mod or \
                self.max_size > 0 or self.min_size > 0
 
     def set_property(self, name: str, val: Any):

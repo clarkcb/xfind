@@ -9,7 +9,6 @@
 #
 ###############################################################################
 """
-import os
 from io import StringIO
 from pathlib import Path
 
@@ -20,17 +19,19 @@ class FileResult:
     """encapsulates a file to evaluate as a find match and return if matching"""
     CONTAINER_SEPARATOR = '!'
 
-    __slots__ = ['containers', 'path', 'file_type', 'stat']
+    __slots__ = ['containers', 'path', 'file_type', 'file_size', 'last_mod']
 
     def __init__(self,
                  containers: list[Path] = None,
                  path: Path = None,
                  file_type: FileType = FileType.UNKNOWN,
-                 stat: os.stat_result = None):
+                 file_size: int = 0,
+                 last_mod: float = 0.0):
         self.containers = containers if containers else []
         self.path = path
         self.file_type = file_type
-        self.stat = stat
+        self.file_size = file_size
+        self.last_mod = last_mod
 
     @property
     def relative_path(self) -> Path:

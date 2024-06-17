@@ -58,7 +58,7 @@ class FileTypes:
         self.__file_type_names = {}
         self.__populate_file_types_from_json()
 
-    def get_file_path_type(self, file_path: Path) -> FileType:
+    def get_file_type_for_path(self, file_path: Path) -> FileType:
         """Return file type for file_path"""
         # more specific first
         if self.is_code_file_path(file_path):
@@ -129,7 +129,7 @@ class FileTypes:
 
     def is_unknown_file_path(self, p: Path) -> bool:
         """Return true if file is of an unknown file type"""
-        return self.get_file_path_type(p) == FileType.UNKNOWN
+        return self.get_file_type_for_path(p) == FileType.UNKNOWN
 
     def __populate_file_types_from_json(self):
         data = importlib.resources.files('pyfind').joinpath('data')
