@@ -7,6 +7,7 @@ namespace cppfind {
     class FindOption {
     public:
         FindOption(std::string_view short_arg, std::string_view long_arg, std::string_view description);
+        FindOption() = delete;
         [[nodiscard]] std::string short_arg() const;
         [[nodiscard]] std::string long_arg() const;
         [[nodiscard]] std::string description() const;

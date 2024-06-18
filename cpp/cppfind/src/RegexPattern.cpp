@@ -4,12 +4,13 @@
 
 namespace cppfind {
     RegexPattern::RegexPattern(const std::string_view pattern)
-        : m_pattern(pattern), m_ignore_case(false), m_multi_line(false), m_dot_all(false), m_regex(std::regex(std::string{pattern})) {
+    : m_pattern{std::string{pattern}}, m_ignore_case{false}, m_multi_line{false}, m_dot_all{false},
+    m_regex{std::regex(std::string{pattern})} {
     }
 
     RegexPattern::RegexPattern(const std::string_view pattern, const bool ignore_case, const bool multi_line,
                                const bool dot_all)
-        : m_pattern(pattern), m_ignore_case(ignore_case), m_multi_line(multi_line), m_dot_all(dot_all) {
+    : m_pattern{std::string{pattern}}, m_ignore_case{ignore_case}, m_multi_line{multi_line}, m_dot_all{dot_all} {
         std::regex::flag_type flags = std::regex::ECMAScript;
         if (ignore_case) {
             flags |= std::regex::icase;
@@ -21,10 +22,6 @@ namespace cppfind {
 //            flags |= std::regex::dotall;
 //        }
         m_regex = std::regex(std::string{pattern}, flags);
-    }
-
-    RegexPattern::RegexPattern() : m_ignore_case(false), m_multi_line(false), m_dot_all(false) {
-
     }
 
     std::string RegexPattern::pattern() const {

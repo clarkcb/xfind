@@ -24,6 +24,11 @@ namespace cppfind {
         }
 
         uint64_t file_size = std::filesystem::file_size(file_types_path);
+        // current size is 11634, make sure it's not dramatically bigger than that
+        if (file_size > 12000) {
+            throw FindException("Invalid filetypes file");
+        }
+
         FILE* fp = fopen(file_types_path.c_str(), "r");
 
         char readBuffer[file_size];

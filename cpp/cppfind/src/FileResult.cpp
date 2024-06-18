@@ -1,15 +1,20 @@
-#include <boost/filesystem.hpp>
 #include "FileResult.h"
 
 namespace cppfind {
     FileResult::FileResult(std::filesystem::path&& file_path, const FileType file_type, const uint64_t file_size,
-        const long mod_time) : m_file_path(file_path), m_file_type(file_type), m_file_size(file_size), m_mod_time(mod_time) {
-        m_containers = {};
+        const long last_mod) :
+    m_file_path{file_path}, m_file_type{file_type}, m_file_size{file_size}, m_last_mod{last_mod} {
+        this->m_containers = {};
     }
 
-    FileResult::FileResult(std::vector<std::filesystem::path>&& containers, std::filesystem::path&& file_path,
-                           const FileType file_type, const uint64_t file_size, const long mod_time) :
-    m_containers(containers), m_file_path(file_path), m_file_type(file_type), m_file_size(file_size), m_mod_time(mod_time) {
+    FileResult::FileResult(std::vector<std::filesystem::path>&& containers, const std::filesystem::path& file_path,
+                           const FileType file_type, const uint64_t file_size, const long last_mod) :
+    m_containers{containers}, m_file_path{file_path}, m_file_type{file_type}, m_file_size{file_size},
+    m_last_mod{last_mod} {
+    }
+
+    std::vector<std::filesystem::path> FileResult::containers() const {
+        return m_containers;
     }
 
     std::filesystem::path FileResult::file_path() const {
@@ -24,12 +29,12 @@ namespace cppfind {
         return m_file_size;
     }
 
-    long FileResult::mod_time() const {
-        return m_mod_time;
+    long FileResult::last_mod() const {
+        return m_last_mod;
     }
 
     std::string FileResult::string() const {
-        std::string fullpath;
+        std::string fullpath{};
         for (const auto& c : m_containers) {
             fullpath.append(c).append(CONTAINER_SEPARATOR);
         }

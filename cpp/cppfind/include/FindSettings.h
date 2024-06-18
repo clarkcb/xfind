@@ -37,10 +37,10 @@ namespace cppfind {
         [[nodiscard]] bool include_hidden() const;
         [[nodiscard]] int max_depth() const;
         [[nodiscard]] long max_last_mod() const;
-        [[nodiscard]] long max_size() const;
+        [[nodiscard]] uint64_t max_size() const;
         [[nodiscard]] int min_depth() const;
         [[nodiscard]] long min_last_mod() const;
-        [[nodiscard]] long min_size() const;
+        [[nodiscard]] uint64_t min_size() const;
         [[nodiscard]] bool print_dirs() const;
         [[nodiscard]] bool print_files() const;
         [[nodiscard]] bool print_usage() const;
@@ -77,10 +77,10 @@ namespace cppfind {
         void include_hidden(bool include_hidden);
         void max_depth(int max_depth);
         void max_last_mod(long max_last_mod);
-        void max_size(long max_size);
+        void max_size(uint64_t max_size);
         void min_depth(int min_depth);
         void min_last_mod(long min_last_mod);
-        void min_size(long min_size);
+        void min_size(uint64_t min_size);
         void out_archive_extensions(const std::unordered_set<std::string>& out_archive_extensions);
         void out_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& out_dir_patterns);
         void out_extensions(const std::unordered_set<std::string>& out_extensions);
@@ -130,8 +130,8 @@ namespace cppfind {
         [[nodiscard]] std::string string() const;
 
     protected:
-        bool m_archives_only = false;
-        bool m_debug = false;
+        bool m_archives_only;
+        bool m_debug;
 
         // add sets of strings that hold extensions and patterns to match on
         std::unordered_set<std::string> m_in_archive_extensions;
@@ -141,15 +141,15 @@ namespace cppfind {
         std::unordered_set<RegexPattern, RegexPatternHash> m_in_file_patterns;
         std::unordered_set<FileType> m_in_file_types;
 
-        bool m_include_archives = false;
-        bool m_include_hidden = false;
+        bool m_include_archives;
+        bool m_include_hidden;
 
-        int m_max_depth = -1;
-        long m_max_last_mod = 0L;
-        long m_max_size = 0L;
-        int m_min_depth = -1;
-        long m_min_last_mod = 0L;
-        long m_min_size = 0L;
+        int m_max_depth;
+        long m_max_last_mod;
+        uint64_t m_max_size;
+        int m_min_depth;
+        long m_min_last_mod;
+        uint64_t m_min_size;
 
         // add corresponding sets for out extensions and patterns
         std::unordered_set<std::string> m_out_archive_extensions;
@@ -159,18 +159,18 @@ namespace cppfind {
         std::unordered_set<RegexPattern, RegexPatternHash> m_out_file_patterns;
         std::unordered_set<FileType> m_out_file_types;
 
-        bool m_print_dirs = false;
-        bool m_print_files = false;
-        bool m_print_usage = false;
-        bool m_print_version = false;
-        bool m_recursive = true;
+        bool m_print_dirs;
+        bool m_print_files;
+        bool m_print_usage;
+        bool m_print_version;
+        bool m_recursive;
 
         std::unordered_set<std::filesystem::path, PathHash> m_paths;
 
         SortBy m_sort_by = SortBy::FILEPATH;
-        bool m_sort_case_insensitive = false;
-        bool m_sort_descending = false;
-        bool m_verbose = false;
+        bool m_sort_case_insensitive;
+        bool m_sort_descending;
+        bool m_verbose;
     };
 }
 

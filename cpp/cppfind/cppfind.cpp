@@ -28,10 +28,10 @@ std::vector<std::string> get_matching_files(const std::vector<FileResult>& file_
 }
 
 int main(int argc, char *argv[]) {
-    FindOptions* options;
+    std::unique_ptr<FindOptions> options;
 
     try {
-        options = new FindOptions();
+        options = std::make_unique<FindOptions>();
     } catch (const FindException& e) {
         log("");
         log_error(e.what());
@@ -49,7 +49,9 @@ int main(int argc, char *argv[]) {
             options->usage();
         }
 
-        auto finder = Finder(settings);
+        std::unique_ptr<FindSettings> settings_ptr = std::make_unique<FindSettings>(settings);
+
+        auto finder = Finder(settings_ptr);
 
         const std::vector<FileResult> file_results = finder.find();
 

@@ -104,6 +104,7 @@ namespace cppfind {
     class FindOption {
     public:
         FindOption(std::string_view short_arg, std::string_view long_arg, std::string_view description);
+        FindOption() = delete;
         [[nodiscard]] std::string short_arg() const;
         [[nodiscard]] std::string long_arg() const;
         [[nodiscard]] std::string description() const;
@@ -115,7 +116,7 @@ namespace cppfind {
     public:
         explicit RegexPattern(std::string_view pattern);
         RegexPattern(std::string_view pattern, bool ignore_case, bool multi_line, bool dot_all);
-        RegexPattern();
+        RegexPattern() = delete;
         [[nodiscard]] std::string pattern() const;
         [[nodiscard]] bool ignore_case() const;
         [[nodiscard]] bool multi_line() const;
@@ -178,10 +179,10 @@ namespace cppfind {
         [[nodiscard]] bool include_hidden() const;
         [[nodiscard]] int max_depth() const;
         [[nodiscard]] long max_last_mod() const;
-        [[nodiscard]] long max_size() const;
+        [[nodiscard]] uint64_t max_size() const;
         [[nodiscard]] int min_depth() const;
         [[nodiscard]] long min_last_mod() const;
-        [[nodiscard]] long min_size() const;
+        [[nodiscard]] uint64_t min_size() const;
         [[nodiscard]] bool print_dirs() const;
         [[nodiscard]] bool print_files() const;
         [[nodiscard]] bool print_usage() const;
@@ -218,10 +219,10 @@ namespace cppfind {
         void include_hidden(bool include_hidden);
         void max_depth(int max_depth);
         void max_last_mod(long max_last_mod);
-        void max_size(long max_size);
+        void max_size(uint64_t max_size);
         void min_depth(int min_depth);
         void min_last_mod(long min_last_mod);
-        void min_size(long min_size);
+        void min_size(uint64_t min_size);
         void out_archive_extensions(const std::unordered_set<std::string>& out_archive_extensions);
         void out_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& out_dir_patterns);
         void out_extensions(const std::unordered_set<std::string>& out_extensions);
@@ -274,14 +275,15 @@ namespace cppfind {
     // FileResult.h
     class FileResult {
     public:
-        FileResult(std::filesystem::path&& file_path, FileType file_type, uint64_t file_size,
-                   long mod_time);
-        FileResult(std::vector<std::filesystem::path>&& containers, std::filesystem::path&& file_path,
-                   FileType file_type, uint64_t file_size, long mod_time);
+        explicit FileResult(const std::filesystem::path& file_path, FileType file_type, uint64_t file_size,
+                   long last_mod);
+        explicit FileResult(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
+                   FileType file_type, uint64_t file_size, long last_mod);
+        [[nodiscard]] std::vector<std::filesystem::path> containers() const;
         [[nodiscard]] std::filesystem::path file_path() const;
         [[nodiscard]] FileType file_type() const;
         [[nodiscard]] uint64_t file_size() const;
-        [[nodiscard]] long mod_time() const;
+        [[nodiscard]] long last_mod() const;
         [[nodiscard]] std::string string() const;
     };
 
@@ -291,7 +293,7 @@ namespace cppfind {
         FindOptions();
         FindSettings settings_from_args(int &argc, char **argv);
         void settings_from_file(const std::filesystem::path& file_path, FindSettings& settings);
-        void settings_from_json(std::string_view json, FindSettings& settings);
+        void settings_from_json(std::string_view json_str, FindSettings& settings);
         void usage();
         std::string get_usage_string();
     };
@@ -300,10 +302,19 @@ namespace cppfind {
     class Finder {
     public:
         explicit Finder(const FindSettings& settings);
+        explicit Finder(const std::unique_ptr<FindSettings>& settings_ptr);
+        Finder(Finder& other) = delete;
+        Finder(Finder&& other) = delete;
         std::optional<FileResult> filter_to_file_result(std::filesystem::path&& file_path) const;
         [[nodiscard]] bool is_matching_archive_file_result(const FileResult& file_result) const;
         [[nodiscard]] bool is_matching_dir_path(const std::filesystem::path& dir_path) const;
-        [[nodiscard]] bool is_matching_file_type(const FileType& file_type) const;
+        [[nodiscard]] bool has_matching_archive_extension(const FileResult& file_result) const;
+        [[nodiscard]] bool has_matching_extension(const FileResult& file_result) const;
+        [[nodiscard]] bool has_matching_archive_file_name(const FileResult& file_result) const;
+        [[nodiscard]] bool has_matching_file_name(const FileResult& file_result) const;
+        [[nodiscard]] bool has_matching_file_type(const FileResult& file_result) const;
+        [[nodiscard]] bool has_matching_file_size(const FileResult& file_result) const;
+        [[nodiscard]] bool has_matching_last_mod(const FileResult& file_result) const;
         [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
         std::vector<FileResult> find();
     };

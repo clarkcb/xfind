@@ -2,7 +2,6 @@
 #include <boost/format.hpp>
 #include "rapidjson/filereadstream.h"
 
-#include "FileUtil.h"
 #include "FindConfig.h"
 #include "FindException.h"
 #include "FindOptions.h"
@@ -10,50 +9,56 @@
 
 namespace cppfind {
     FindOptions::FindOptions() {
-        m_str_arg_map = {
-                {"in-archiveext", [](const std::string& s, FindSettings& ss) { ss.add_in_archive_extension(s); }},
-                {"in-archivefilepattern", [](const std::string& s, FindSettings& ss) { ss.add_in_archive_file_pattern(s); }},
-                {"in-dirpattern", [](const std::string& s, FindSettings& ss) { ss.add_in_dir_pattern(s); }},
-                {"in-ext", [](const std::string& s, FindSettings& ss) { ss.add_in_extension(s); }},
-                {"in-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_in_file_pattern(s); }},
-                {"in-filetype", [](const std::string& s, FindSettings& ss) { ss.add_in_file_type(FileTypes::from_name(s)); }},
-                {"maxdepth", [](const std::string& s, FindSettings& ss) { ss.max_depth(std::stoi(s)); }},
-                {"maxlastmod", [](const std::string& s, FindSettings& ss) { ss.max_last_mod(StringUtil::date_str_to_long(s)); }},
-                {"maxsize", [](const std::string& s, FindSettings& ss) { ss.max_size(std::stol(s)); }},
-                {"mindepth", [](const std::string& s, FindSettings& ss) { ss.min_depth(std::stoi(s)); }},
-                {"minlastmod", [](const std::string& s, FindSettings& ss) { ss.min_last_mod(StringUtil::date_str_to_long(s)); }},
-                {"minsize", [](const std::string& s, FindSettings& ss) { ss.min_size(std::stol(s)); }},
-                {"out-archiveext", [](const std::string& s, FindSettings& ss) { ss.add_out_archive_extension(s); }},
-                {"out-archivefilepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_archive_file_pattern(s); }},
-                {"out-dirpattern", [](const std::string& s, FindSettings& ss) { ss.add_out_dir_pattern(s); }},
-                {"out-ext", [](const std::string& s, FindSettings& ss) { ss.add_out_extension(s); }},
-                {"out-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_file_pattern(s); }},
-                {"out-filetype", [](const std::string& s, FindSettings& ss) { ss.add_out_file_type(FileTypes::from_name(s)); }},
-                {"path", [](const std::string& s, FindSettings& ss) { ss.add_path(s); }},
-//                {"settings-file", [this](const std::string& s, FindSettings& ss) { this->settings_from_file(s, ss); }},
-                {"sort-by", [this](const std::string& s, FindSettings& ss) { ss.sort_by(FindSettings::sort_by_from_name(s)); }}
+        m_bool_arg_map = {
+            {"archivesonly", [](const bool b, FindSettings& ss) -> void { ss.archives_only(b); }},
+            {"debug", [](const bool b, FindSettings& ss) { ss.debug(b); }},
+            {"excludearchives", [](const bool b, FindSettings& ss) { ss.include_archives(!b); }},
+            {"excludehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(!b); }},
+            {"help", [](const bool b, FindSettings& ss) { ss.print_usage(b); }},
+            {"includearchives", [](const bool b, FindSettings& ss) { ss.include_archives(b); }},
+            {"includehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(b); }},
+            {"noprintdirs", [](const bool b, FindSettings& ss) { ss.print_dirs(!b); }},
+            {"noprintfiles", [](const bool b, FindSettings& ss) { ss.print_files(!b); }},
+            {"norecursive", [](const bool b, FindSettings& ss) { ss.recursive(!b); }},
+            {"printdirs", [](const bool b, FindSettings& ss) { ss.print_dirs(b); }},
+            {"printfiles", [](const bool b, FindSettings& ss) { ss.print_files(b); }},
+            {"recursive", [](const bool b, FindSettings& ss) { ss.recursive(b); }},
+            {"sort-ascending", [](const bool b, FindSettings& ss) { ss.sort_descending(!b); }},
+            {"sort-caseinsensitive", [](const bool b, FindSettings& ss) { ss.sort_case_insensitive(b); }},
+            {"sort-casesensitive", [](const bool b, FindSettings& ss) { ss.sort_case_insensitive(!b); }},
+            {"sort-descending", [](const bool b, FindSettings& ss) { ss.sort_descending(b); }},
+            {"verbose", [](const bool b, FindSettings& ss) { ss.verbose(b); }},
+            {"version", [](const bool b, FindSettings& ss) { ss.print_version(b); }},
         };
 
-        m_bool_arg_map = {
-                {"archivesonly", [](const bool b, FindSettings& ss) { ss.archives_only(b); }},
-                {"debug", [](const bool b, FindSettings& ss) { ss.debug(b); }},
-                {"excludearchives", [](const bool b, FindSettings& ss) { ss.include_archives(!b); }},
-                {"excludehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(!b); }},
-                {"help", [](const bool b, FindSettings& ss) { ss.print_usage(b); }},
-                {"includearchives", [](const bool b, FindSettings& ss) { ss.include_archives(b); }},
-                {"includehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(b); }},
-                {"noprintdirs", [](const bool b, FindSettings& ss) { ss.print_dirs(!b); }},
-                {"noprintfiles", [](const bool b, FindSettings& ss) { ss.print_files(!b); }},
-                {"norecursive", [](const bool b, FindSettings& ss) { ss.recursive(!b); }},
-                {"printdirs", [](const bool b, FindSettings& ss) { ss.print_dirs(b); }},
-                {"printfiles", [](const bool b, FindSettings& ss) { ss.print_files(b); }},
-                {"recursive", [](const bool b, FindSettings& ss) { ss.recursive(b); }},
-                {"sort-ascending", [](const bool b, FindSettings& ss) { ss.sort_descending(!b); }},
-                {"sort-caseinsensitive", [](const bool b, FindSettings& ss) { ss.sort_case_insensitive(b); }},
-                {"sort-casesensitive", [](const bool b, FindSettings& ss) { ss.sort_case_insensitive(!b); }},
-                {"sort-descending", [](const bool b, FindSettings& ss) { ss.sort_descending(b); }},
-                {"verbose", [](const bool b, FindSettings& ss) { ss.verbose(b); }},
-                {"version", [](const bool b, FindSettings& ss) { ss.print_version(b); }},
+        m_int_arg_map = {
+            {"maxdepth", [](const int i, FindSettings& ss) { ss.max_depth(i); }},
+            {"mindepth", [](const int i, FindSettings& ss) { ss.min_depth(i); }},
+        };
+
+        m_long_arg_map = {
+            {"maxsize", [](const long lng, FindSettings& ss) { ss.max_size(lng); }},
+            {"minsize", [](const long lng, FindSettings& ss) { ss.min_size(lng); }},
+        };
+
+        m_str_arg_map = {
+            {"in-archiveext", [](const std::string& s, FindSettings& ss) { ss.add_in_archive_extension(s); }},
+            {"in-archivefilepattern", [](const std::string& s, FindSettings& ss) { ss.add_in_archive_file_pattern(s); }},
+            {"in-dirpattern", [](const std::string& s, FindSettings& ss) { ss.add_in_dir_pattern(s); }},
+            {"in-ext", [](const std::string& s, FindSettings& ss) { ss.add_in_extension(s); }},
+            {"in-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_in_file_pattern(s); }},
+            {"in-filetype", [](const std::string& s, FindSettings& ss) { ss.add_in_file_type(FileTypes::from_name(s)); }},
+            {"maxlastmod", [](const std::string& s, FindSettings& ss) { ss.max_last_mod(StringUtil::date_str_to_long(s)); }},
+            {"minlastmod", [](const std::string& s, FindSettings& ss) { ss.min_last_mod(StringUtil::date_str_to_long(s)); }},
+            {"out-archiveext", [](const std::string& s, FindSettings& ss) { ss.add_out_archive_extension(s); }},
+            {"out-archivefilepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_archive_file_pattern(s); }},
+            {"out-dirpattern", [](const std::string& s, FindSettings& ss) { ss.add_out_dir_pattern(s); }},
+            {"out-ext", [](const std::string& s, FindSettings& ss) { ss.add_out_extension(s); }},
+            {"out-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_file_pattern(s); }},
+            {"out-filetype", [](const std::string& s, FindSettings& ss) { ss.add_out_file_type(FileTypes::from_name(s)); }},
+            {"path", [](const std::string& s, FindSettings& ss) { ss.add_path(s); }},
+            {"settings-file", [this](const std::string& s, FindSettings& ss) { this->settings_from_file(s, ss); }},
+            {"sort-by", [](const std::string& s, FindSettings& ss) { ss.sort_by(FindSettings::sort_by_from_name(s)); }}
         };
 
         load_options();
@@ -69,6 +74,11 @@ namespace cppfind {
         }
 
         uint64_t file_size = std::filesystem::file_size(find_options_path);
+        // current size is 4732, make sure it's not dramatically bigger than that
+        if (file_size > 5120) {
+            throw FindException("Invalid findoptions file");
+        }
+
         FILE* fp = fopen(find_options_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -87,13 +97,13 @@ namespace cppfind {
             assert(find_option.HasMember("long"));
             const rapidjson::Value &longValue = find_option["long"];
             auto long_arg = std::string(longValue.GetString());
-            m_long_arg_map[long_arg] = long_arg;
+            m_arg_name_map[long_arg] = long_arg;
 
             std::string short_arg;
             if (find_option.HasMember("short")) {
                 const rapidjson::Value &shortValue = find_option["short"];
                 short_arg = std::string(shortValue.GetString());
-                m_long_arg_map[short_arg] = long_arg;
+                m_arg_name_map[short_arg] = long_arg;
             } else {
                 short_arg = std::string("");
             }
@@ -107,6 +117,7 @@ namespace cppfind {
         }
     }
 
+    // TODO: try using https://github.com/CLIUtils/CLI11 for CLI arg parsing
     FindSettings FindOptions::settings_from_args(int &argc, char **argv) {
         auto settings = FindSettings();
 
@@ -130,13 +141,13 @@ namespace cppfind {
                     next_arg = next_arg.substr(1);
                 }
 
-                if (m_long_arg_map.contains(next_arg)) {
-                    auto long_arg = m_long_arg_map[next_arg];
-
-                    if (m_bool_arg_map.contains(long_arg)) {
+                if (m_arg_name_map.contains(next_arg)) {
+                    if (auto long_arg = m_arg_name_map[next_arg];
+                        m_bool_arg_map.contains(long_arg)) {
                         m_bool_arg_map[long_arg](true, settings);
-                    } else if (auto str_arg_found = m_str_arg_map.find(long_arg);
-                               str_arg_found != m_str_arg_map.end()) {
+                    } else if (m_str_arg_map.contains(long_arg)
+                        || m_int_arg_map.contains(long_arg)
+                        || m_long_arg_map.contains(long_arg)) {
                         if (arg_deque.empty()) {
                             std::string msg{"Missing value for option "};
                             msg.append(next_arg);
@@ -144,10 +155,16 @@ namespace cppfind {
                         }
                         auto arg_val = std::string(arg_deque.front());
                         arg_deque.pop_front();
-                        if (str_arg_found != m_str_arg_map.end()) {
+                        if (m_str_arg_map.contains(long_arg)) {
                             m_str_arg_map[long_arg](arg_val, settings);
+                        } else if (m_int_arg_map.contains(long_arg)) {
+                            const int int_val = std::stoi(arg_val);
+                            m_int_arg_map[long_arg](int_val, settings);
+                        } else if (m_long_arg_map.contains(long_arg)) {
+                            const long long_val = std::stol(arg_val);
+                            m_long_arg_map[long_arg](long_val, settings);
                         }
-                    } else { // shouldn't be possible to get here
+                    } else [[unlikely]] { // shouldn't be possible to get here
                         std::string msg{"Invalid option: "};
                         msg.append(next_arg);
                         throw FindException(msg);
@@ -237,7 +254,7 @@ namespace cppfind {
         auto sort_option_lambda = [](const FindOption& s1, const FindOption& s2) -> bool {
             return s1.sort_arg().compare(s2.sort_arg()) < 0;
         };
-        std::sort(m_options.begin(), m_options.end(), sort_option_lambda);
+        std::ranges::sort(m_options, sort_option_lambda);
 
         unsigned long longest_len = 0;
         for (auto const& option : m_options) {

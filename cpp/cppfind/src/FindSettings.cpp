@@ -1,9 +1,31 @@
 
 #include <algorithm>
 #include "FindSettings.h"
+
 #include "StringUtil.h"
 
 namespace cppfind {
+
+    FindSettings::FindSettings() :
+    m_archives_only{false},
+    m_debug{false},
+    m_include_archives{false},
+    m_include_hidden{false},
+    m_max_depth{-1},
+    m_max_last_mod{0L},
+    m_max_size{0L},
+    m_min_depth{-1},
+    m_min_last_mod{0L},
+    m_min_size{0L},
+    m_print_dirs{false},
+    m_print_files{false},
+    m_print_usage{false},
+    m_print_version{false},
+    m_recursive{true},
+    m_sort_case_insensitive{false},
+    m_sort_descending{false},
+    m_verbose{false} {
+    }
 
     bool FindSettings::archives_only() const { return m_archives_only; }
 
@@ -97,11 +119,11 @@ namespace cppfind {
         m_max_last_mod = max_last_mod;
     }
 
-    long FindSettings::max_size() const {
+    uint64_t FindSettings::max_size() const {
         return m_max_size;
     }
 
-    void FindSettings::max_size(const long max_size) {
+    void FindSettings::max_size(const uint64_t max_size) {
         m_max_size = max_size;
     }
 
@@ -121,11 +143,11 @@ namespace cppfind {
         m_min_last_mod = min_last_mod;
     }
 
-    long FindSettings::min_size() const {
+    uint64_t FindSettings::min_size() const {
         return m_min_size;
     }
 
-    void FindSettings::min_size(const long min_size) {
+    void FindSettings::min_size(const uint64_t min_size) {
         m_min_size = min_size;
     }
 
@@ -306,7 +328,8 @@ namespace cppfind {
     }
 
     void FindSettings::add_pattern(const std::string_view p, std::unordered_set<RegexPattern, RegexPatternHash>& ps) {
-        ps.emplace(std::string{p});
+        const auto r = RegexPattern{std::string{p}};
+        ps.insert(r);
     }
 
     void FindSettings::add_extensions(const std::string_view exts, std::unordered_set<std::string>& extensions) {
@@ -417,8 +440,7 @@ namespace cppfind {
     }
 
     std::string FindSettings::string() const {
-        auto settings_str =
-                std::string("FindSettings(")
+        return std::string("FindSettings(")
                 + "archives_only=" + StringUtil::bool_to_string(m_archives_only)
                 + ", debug=" + StringUtil::bool_to_string(m_debug)
                 + ", in_archive_extensions=" + StringUtil::unordered_string_set_to_string(m_in_archive_extensions)
@@ -452,6 +474,5 @@ namespace cppfind {
                 + ", sort_descending=" + StringUtil::bool_to_string(m_sort_descending)
                 + ", verbose=" + StringUtil::bool_to_string(m_verbose)
                 + ")";
-        return settings_str;
     }
 }

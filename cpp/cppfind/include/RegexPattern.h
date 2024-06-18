@@ -9,7 +9,7 @@ namespace cppfind {
     public:
         explicit RegexPattern(std::string_view pattern);
         RegexPattern(std::string_view pattern, bool ignore_case, bool multi_line, bool dot_all);
-        RegexPattern();
+        RegexPattern() = delete;
         [[nodiscard]] std::string pattern() const;
         [[nodiscard]] bool ignore_case() const;
         [[nodiscard]] bool multi_line() const;
