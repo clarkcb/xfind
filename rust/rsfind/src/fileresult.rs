@@ -9,12 +9,12 @@ pub struct FileResult {
     pub file_name: String,
     pub file_type: FileType,
     pub file_size: u64,
-    pub mod_time: u64,
+    pub last_mod: u64,
 }
 
 impl FileResult {
-    pub fn new(path: String, file_name: String, file_type: FileType, file_size: u64, mod_time: u64) -> FileResult {
-        FileResult::with_containers(Vec::new(), path, file_name, file_type, file_size, mod_time)
+    pub fn new(path: String, file_name: String, file_type: FileType, file_size: u64, last_mod: u64) -> FileResult {
+        FileResult::with_containers(Vec::new(), path, file_name, file_type, file_size, last_mod)
     }
 
     pub fn with_containers(
@@ -23,7 +23,7 @@ impl FileResult {
         file_name: String,
         file_type: FileType,
         file_size: u64,
-        mod_time: u64,
+        last_mod: u64,
     ) -> FileResult {
         FileResult {
             containers,
@@ -31,7 +31,7 @@ impl FileResult {
             file_name,
             file_type,
             file_size,
-            mod_time,
+            last_mod,
         }
     }
 
@@ -62,7 +62,7 @@ mod tests {
 
     #[test]
     fn test_find_file_abs_path() {
-        let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
             Err(_error) => 0,
         };
@@ -71,7 +71,7 @@ mod tests {
             "finder.rs".to_string(),
             FileType::Code,
             1000,
-            mod_time
+            last_mod
         );
         assert_eq!(
             fr.file_path(),

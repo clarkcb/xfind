@@ -77,12 +77,7 @@ impl Finder {
     }
 
     fn matches_any_pattern(&self, s: &String, patterns: &[Regex]) -> bool {
-        for p in patterns.iter() {
-            if p.is_match(s) {
-                return true;
-            }
-        }
-        false
+        patterns.iter().any(|p| p.is_match(s))
     }
 
     fn is_matching_dir(&self, dir: &String) -> bool {
@@ -95,91 +90,114 @@ impl Finder {
                 || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns()))
     }
 
-    fn is_matching_archive_file(&self, file_result: &FileResult) -> bool {
-        if !self.is_matching_dir(&file_result.path) {
-            return false;
-        }
-        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
-            return false;
-        }
-
-        if !self.settings.in_archive_extensions().is_empty() || !self.settings.out_archive_extensions().is_empty() {
-            match FileUtil::get_extension(&file_result.file_name) {
-                Some(ext) => {
-                    if (!self.settings.in_archive_extensions().is_empty()
-                        && !self.matches_any_string(ext, &self.settings.in_archive_extensions()))
-                        || (!self.settings.out_archive_extensions().is_empty()
-                        && self.matches_any_string(ext, &self.settings.out_archive_extensions()))
-                    {
-                        return false;
-                    }
-                },
-                None => {
-                    if !self.settings.in_archive_extensions().is_empty() {
-                        return false;
-                    }
-                },
-            }
-        }
-
-        (self.settings.in_archive_file_patterns().is_empty()
-            || self.matches_any_pattern(&file_result.file_name, &self.settings.in_archive_file_patterns()))
-            && (self.settings.out_archive_file_patterns().is_empty()
-                || !self.matches_any_pattern(
-            &file_result.file_name,
-            &self.settings.out_archive_file_patterns(),
-                ))
+    fn is_matching_extension(&self, ext: &str, in_extensions: &Vec<String>,
+                             out_extensions: &Vec<String>) -> bool {
+        (in_extensions.is_empty()
+            || self.matches_any_string(ext, &in_extensions))
+            && (out_extensions.is_empty()
+            || !self.matches_any_string(ext, &out_extensions))
     }
 
-    fn is_matching_file(&self, file_result: &FileResult) -> bool {
-        if !self.is_matching_dir(&file_result.path) {
-            return false;
-        }
-        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
-            return false;
-        }
-
-        if !self.settings.in_extensions().is_empty() || !self.settings.out_extensions().is_empty() {
-            match FileUtil::get_extension(&file_result.file_name) {
+    fn has_matching_archive_extension(&self, file_result: &FileResult) -> bool {
+        if !self.settings.in_archive_extensions().is_empty()
+            || !self.settings.out_archive_extensions().is_empty() {
+            return match FileUtil::get_extension(&file_result.file_name) {
                 Some(ext) => {
-                    if (!self.settings.in_extensions().is_empty()
-                        && !self.matches_any_string(ext, &self.settings.in_extensions()))
-                        || (!self.settings.out_extensions().is_empty()
-                        && self.matches_any_string(ext, &self.settings.out_extensions()))
-                    {
-                        return false;
-                    }
+                    self.is_matching_extension(ext, self.settings.in_archive_extensions(),
+                                               self.settings.out_archive_extensions())
                 },
                 None => {
-                    if !self.settings.in_extensions().is_empty() {
-                        return false;
-                    }
+                    self.settings.in_extensions().is_empty()
                 },
             }
         }
+        return true
+    }
 
-        if (self.settings.max_last_mod() > 0 && file_result.mod_time > self.settings.max_last_mod())
-            || (self.settings.min_last_mod() > 0 && file_result.mod_time < self.settings.min_last_mod())
-            || (self.settings.max_size() > 0 && file_result.file_size > self.settings.max_size())
-            || (self.settings.min_size() > 0 && file_result.file_size < self.settings.min_size()) {
-            return false;
+    fn has_matching_extension(&self, file_result: &FileResult) -> bool {
+        if !self.settings.in_extensions().is_empty()
+            || !self.settings.out_extensions().is_empty() {
+            return match FileUtil::get_extension(&file_result.file_name) {
+                Some(ext) => {
+                    self.is_matching_extension(ext, self.settings.in_extensions(),
+                                               self.settings.out_extensions())
+                },
+                None => {
+                    self.settings.in_extensions().is_empty()
+                },
+            }
         }
+        return true
+    }
 
-        (self.settings.in_file_patterns().is_empty()
-            || self.matches_any_pattern(&file_result.file_name, &self.settings.in_file_patterns()))
-            && (self.settings.in_file_types().is_empty()
-                || self.settings.in_file_types().contains(&file_result.file_type))
-            && (self.settings.out_file_patterns().is_empty()
-                || !self.matches_any_pattern(&file_result.file_name, &self.settings.out_file_patterns()))
+    fn is_matching_file_name(&self, file_name: &String, in_patterns: &Vec<Regex>,
+                             out_patterns: &Vec<Regex>) -> bool {
+        (in_patterns.is_empty()
+            || self.matches_any_pattern(&file_name, &in_patterns))
+            && (out_patterns.is_empty()
+            || !self.matches_any_pattern(&file_name, &out_patterns))
+    }
+
+    fn has_matching_archive_file_name(&self, file_result: &FileResult) -> bool {
+        self.is_matching_file_name(&file_result.file_name, self.settings.in_archive_file_patterns(),
+                                   self.settings.out_archive_file_patterns())
+    }
+
+    fn has_matching_file_name(&self, file_result: &FileResult) -> bool {
+        self.is_matching_file_name(&file_result.file_name, self.settings.in_file_patterns(),
+                                   self.settings.out_file_patterns())
+    }
+
+    fn has_matching_file_type(&self, file_result: &FileResult) -> bool {
+        (self.settings.in_file_types().is_empty()
+            || self.settings.in_file_types().contains(&file_result.file_type))
             && (self.settings.out_file_types().is_empty()
-                || !self.settings.out_file_types().contains(&file_result.file_type))
+            || !self.settings.out_file_types().contains(&file_result.file_type))
     }
 
-    fn filter_file(&self, file_result: &FileResult) -> bool {
-        if file_result.file_type == FileType::Archive {
-            return self.settings.include_archives() && self.is_matching_archive_file(file_result);
+    fn has_matching_file_size(&self, file_result: &FileResult) -> bool {
+        (self.settings.max_size() == 0 || file_result.file_size <= self.settings.max_size())
+            && (self.settings.min_size() == 0 || file_result.file_size >= self.settings.min_size())
+    }
+
+    fn has_matching_last_mod(&self, file_result: &FileResult) -> bool {
+        (self.settings.max_last_mod() == 0 || file_result.last_mod <= self.settings.max_last_mod())
+            && (self.settings.min_last_mod() == 0 || file_result.last_mod >= self.settings.min_last_mod())
+    }
+
+    fn is_matching_archive_file_result(&self, file_result: &FileResult) -> bool {
+        if !self.is_matching_dir(&file_result.path) {
+            return false;
         }
-        !self.settings.archives_only() && self.is_matching_file(file_result)
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
+            return false;
+        }
+
+        self.has_matching_archive_extension(file_result) &&
+            self.has_matching_archive_file_name(file_result)
+    }
+
+    fn is_matching_file_result(&self, file_result: &FileResult) -> bool {
+        if !self.is_matching_dir(&file_result.path) {
+            return false;
+        }
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
+            return false;
+        }
+
+        self.has_matching_extension(file_result) &&
+            self.has_matching_file_name(file_result) &&
+            self.has_matching_file_type(file_result) &&
+            self.has_matching_file_size(file_result) &&
+            self.has_matching_last_mod(file_result)
+    }
+
+    fn filter_file_result(&self, file_result: &FileResult) -> bool {
+        if file_result.file_type == FileType::Archive {
+            return self.settings.include_archives()
+                && self.is_matching_archive_file_result(file_result);
+        }
+        !self.settings.archives_only() && self.is_matching_file_result(file_result)
     }
 
     fn cmp_by_path(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
@@ -279,7 +297,7 @@ impl Finder {
     }
 
     fn cmp_by_last_mod(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let lastmodcmp = fr1.mod_time.cmp(&fr2.mod_time);
+        let lastmodcmp = fr1.last_mod.cmp(&fr2.last_mod);
         if lastmodcmp.is_eq() {
             return Self::cmp_by_path(fr1, fr2);
         }
@@ -287,7 +305,7 @@ impl Finder {
     }
 
     fn cmp_by_last_mod_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let lastmodcmp = fr1.mod_time.cmp(&fr2.mod_time);
+        let lastmodcmp = fr1.last_mod.cmp(&fr2.last_mod);
         if lastmodcmp.is_eq() {
             return Self::cmp_by_path_ci(fr1, fr2);
         }
@@ -344,7 +362,7 @@ impl Finder {
                 // if file_type == FileType::Unknown {
                 //     continue;
                 // }
-                let (filesize, mod_time) = match entry.metadata() {
+                let (file_size, last_mod) = match entry.metadata() {
                     Ok(metadata) => {
                         let fs = metadata.len();
                         let mt = match metadata.modified() {
@@ -361,8 +379,8 @@ impl Finder {
                     Err(_) => (0u64, 0u64)
                 };
                 let file_result = FileResult::new(path, filename, file_type,
-                                                  filesize, mod_time);
-                if self.filter_file(&file_result) {
+                                                  file_size, last_mod);
+                if self.filter_file_result(&file_result) {
                     file_results.push(file_result)
                 }
             }
@@ -421,43 +439,43 @@ mod tests {
         let path = String::from(".");
         let file_name = String::from("codefile.js");
         let filesize: u64 = 1000;
-        let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
             Err(_error) => 0,
         };
         let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                   mod_time);
-        assert!(finder.filter_file(&fr));
+                                 last_mod);
+        assert!(finder.filter_file_result(&fr));
 
         let path = String::from(".");
         let file_name = String::from("codefile.ts");
         let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                   mod_time);
-        assert!(finder.filter_file(&fr));
+                                 last_mod);
+        assert!(finder.filter_file_result(&fr));
 
         let path = String::from("./temp/");
         let file_name = String::from("codefile.ts");
         let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                   mod_time);
-        assert!(!finder.filter_file(&fr));
+                                 last_mod);
+        assert!(!finder.filter_file_result(&fr));
 
         let path = String::from("./.hidden/");
         let file_name = String::from("codefile.ts");
         let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                   mod_time);
-        assert!(!finder.filter_file(&fr));
+                                 last_mod);
+        assert!(!finder.filter_file_result(&fr));
 
         let path = String::from(".");
         let file_name = String::from(".codefile.ts");
         let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                   mod_time);
-        assert!(!finder.filter_file(&fr));
+                                 last_mod);
+        assert!(!finder.filter_file_result(&fr));
 
         let path = String::from(".");
         let file_name = String::from("archive.zip");
         let fr = FileResult::new(path, file_name, FileType::Archive, filesize,
-                                   mod_time);
-        assert!(!finder.filter_file(&fr));
+                                 last_mod);
+        assert!(!finder.filter_file_result(&fr));
 
         let mut settings = get_default_test_settings();
         settings.set_include_archives(true);
@@ -466,8 +484,8 @@ mod tests {
         let path = String::from(".");
         let file_name = String::from("archive.zip");
         let fr = FileResult::new(path, file_name, FileType::Archive, filesize,
-                                   mod_time);
-        assert!(finder.filter_file(&fr));
+                                 last_mod);
+        assert!(finder.filter_file_result(&fr));
     }
 
     #[test]
@@ -497,43 +515,43 @@ mod tests {
         let path = String::from(".");
         let file_name = String::from("codefile.js");
         let file_size: u64 = 1000;
-        let mod_time = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
+        let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
             Err(_error) => 0,
         };
         let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          mod_time);
-        assert!(finder.is_matching_file(&file_result));
+                                          last_mod);
+        assert!(finder.is_matching_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from("codefile.ts");
         let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          mod_time);
-        assert!(finder.is_matching_file(&file_result));
+                                          last_mod);
+        assert!(finder.is_matching_file_result(&file_result));
 
         let path = String::from("./temp/");
         let file_name = String::from("codefile.ts");
         let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                   mod_time);
-        assert!(!finder.is_matching_file(&file_result));
+                                          last_mod);
+        assert!(!finder.is_matching_file_result(&file_result));
 
         let path = String::from("./.hidden/");
         let file_name = String::from("codefile.ts");
         let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                   mod_time);
-        assert!(!finder.is_matching_file(&file_result));
+                                          last_mod);
+        assert!(!finder.is_matching_file_result(&file_result));
 
         let path = String::from("./");
         let file_name = String::from(".codefile.ts");
         let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                   mod_time);
-        assert!(!finder.is_matching_file(&file_result));
+                                          last_mod);
+        assert!(!finder.is_matching_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from("archive.zip");
         let file_result = FileResult::new(path, file_name, FileType::Archive, file_size,
-                                   mod_time);
-        assert!(!finder.is_matching_file(&file_result));
+                                          last_mod);
+        assert!(!finder.is_matching_file_result(&file_result));
     }
 
     #[test]
@@ -547,34 +565,34 @@ mod tests {
         let path = String::from(".");
         let file_name = String::from("archive.zip");
         let file_size: u64 = 1000;
-        let mod_time: u64 = 0;
+        let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, mod_time);
-        assert!(finder.is_matching_archive_file(&file_result));
+                                          file_size, last_mod);
+        assert!(finder.is_matching_archive_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from(".archive.zip");
         let file_size: u64 = 1000;
-        let mod_time: u64 = 0;
+        let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, mod_time);
-        assert!(!finder.is_matching_archive_file(&file_result));
+                                          file_size, last_mod);
+        assert!(!finder.is_matching_archive_file_result(&file_result));
 
         let path = String::from("./temp");
         let file_name = String::from("archive.zip");
         let file_size: u64 = 1000;
-        let mod_time: u64 = 0;
+        let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, mod_time);
-        assert!(!finder.is_matching_archive_file(&file_result));
+                                          file_size, last_mod);
+        assert!(!finder.is_matching_archive_file_result(&file_result));
 
         let path = String::from(".");
         let file_name = String::from("temp_archive.zip");
         let file_size: u64 = 1000;
-        let mod_time: u64 = 0;
+        let last_mod: u64 = 0;
         let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, mod_time);
-        assert!(!finder.is_matching_archive_file(&file_result));
+                                          file_size, last_mod);
+        assert!(!finder.is_matching_archive_file_result(&file_result));
     }
 
     #[test]
