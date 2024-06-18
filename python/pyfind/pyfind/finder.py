@@ -66,20 +66,6 @@ class Finder:
         self.__matching_dir_cache.add(d)
         return True
 
-    def is_matching_last_mod(self, last_mod: float) -> bool:
-        """Check whether the given file last mod matches find settings."""
-        return (self.settings.min_last_mod is None
-                or last_mod >= self.settings.min_last_mod.timestamp()) \
-            and (self.settings.max_last_mod is None
-                 or last_mod <= self.settings.max_last_mod.timestamp())
-
-    def is_matching_file_size(self, file_size: int) -> bool:
-        """Check whether the given file size matches find settings."""
-        return (self.settings.min_size == 0
-                or file_size >= self.settings.min_size) \
-            and (self.settings.max_size == 0
-                 or file_size <= self.settings.max_size)
-
     def is_matching_archive_ext(self, ext: str) -> bool:
         """Check whether the given extension matches find settings."""
         return (not self.settings.in_archive_extensions
@@ -128,6 +114,20 @@ class Finder:
                 or file_type in self.settings.in_file_types) \
             and (not self.settings.out_file_types
                  or file_type not in self.settings.out_file_types)
+
+    def is_matching_file_size(self, file_size: int) -> bool:
+        """Check whether the given file size matches find settings."""
+        return (self.settings.min_size == 0
+                or file_size >= self.settings.min_size) \
+            and (self.settings.max_size == 0
+                 or file_size <= self.settings.max_size)
+
+    def is_matching_last_mod(self, last_mod: float) -> bool:
+        """Check whether the given file last mod matches find settings."""
+        return (self.settings.min_last_mod is None
+                or last_mod >= self.settings.min_last_mod.timestamp()) \
+            and (self.settings.max_last_mod is None
+                 or last_mod <= self.settings.max_last_mod.timestamp())
 
     def is_matching_archive_file_path(self, file_path: Path, file_size: int, last_mod: float) -> bool:
         """Check whether the given archive file matches find settings."""
