@@ -3,6 +3,7 @@ package ktfind
 // TODO: switch to using kotlin.io.path?
 import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
 import java.util.*
 
 /**
@@ -12,12 +13,14 @@ class FileResult(
     val containers: List<String>,
     val path: Path,
     val fileType: FileType,
-    val stat: BasicFileAttributes? = null
+    val fileSize: Long,
+    val lastMod: FileTime? = null
 ) {
     val CONTAINER_SEPARATOR = "!"
 
-    constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType)
-    constructor(path: Path, fileType: FileType, stat: BasicFileAttributes?) : this(listOf(), path, fileType, stat)
+    constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType, 0)
+    constructor(path: Path, fileType: FileType, fileSize: Long, lastMod: FileTime?) :
+            this(listOf(), path, fileType, fileSize, lastMod)
 
     private fun compareStrings(str1: String, str2: String, sortCaseInsensitive: Boolean): Int {
         val s1 =
@@ -44,8 +47,7 @@ class FileResult(
     }
 
     fun compareBySize(other: FileResult, sortCaseInsensitive: Boolean): Int {
-        if (stat == null || other.stat == null) return 0
-        val sizeCmp = stat.size().compareTo(other.stat.size())
+        val sizeCmp = fileSize.compareTo(other.fileSize)
         return if (sizeCmp == 0) {
             compareByPath(other, sortCaseInsensitive)
         } else sizeCmp
@@ -59,10 +61,13 @@ class FileResult(
     }
 
     fun compareByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Int {
-        if (stat == null || other.stat == null) return 0
-        return if (stat.lastModifiedTime() == other.stat.lastModifiedTime()) {
+        if (lastMod == null && other.lastMod == null) return 0
+        if (lastMod == null) return 1
+        if (other.lastMod == null) return -1
+        val lastModCmp = lastMod.compareTo(other.lastMod)
+        return if (lastModCmp == 0) {
             compareByPath(other, sortCaseInsensitive)
-        } else stat.lastModifiedTime().compareTo(other.stat.lastModifiedTime())
+        } else lastModCmp
     }
 
     override fun toString(): String {

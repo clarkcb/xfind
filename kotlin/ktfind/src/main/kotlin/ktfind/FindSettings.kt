@@ -203,9 +203,13 @@ fun setDebug(ss: FindSettings, debug: Boolean): FindSettings {
     return ss.copy(debug = debug, verbose = debug || ss.verbose)
 }
 
-fun needStat(ss: FindSettings): Boolean {
-    return ss.sortBy == SortBy.FILESIZE || ss.sortBy == SortBy.LASTMOD
+fun needLastMod(ss: FindSettings): Boolean {
+    return ss.sortBy == SortBy.LASTMOD
             || ss.maxLastMod != null || ss.minLastMod != null
+}
+
+fun needSize(ss: FindSettings): Boolean {
+    return ss.sortBy == SortBy.FILESIZE
             || ss.maxSize > 0 || ss.minSize > 0
 }
 
