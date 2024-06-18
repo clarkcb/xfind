@@ -5,6 +5,7 @@ defmodule ExFind.Main do
 
   alias ExFind.FileResult
   alias ExFind.Finder
+  alias ExFind.FindError
   alias ExFind.FindOptions
   alias ExFind.Logging
 

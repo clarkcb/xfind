@@ -106,9 +106,15 @@ defmodule ExFind.FindSettings do
     %{settings | debug: debug, verbose: verbose}
   end
 
-  def need_stat?(settings) do
-    settings.sort_by == :file_size or settings.sort_by == :last_mod
-    or settings.min_size > 0 or settings.max_size > 0
-    or settings.min_last_mod != nil or settings.max_last_mod != nil
+  def need_last_mod?(settings) do
+    settings.sort_by == :last_mod
+    or settings.min_last_mod != nil
+    or settings.max_last_mod != nil
+  end
+
+  def need_size?(settings) do
+    settings.sort_by == :file_size
+    or settings.min_size > 0
+    or settings.max_size > 0
   end
 end

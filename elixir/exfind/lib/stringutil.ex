@@ -23,6 +23,15 @@ defmodule ExFind.StringUtil do
     end
   end
 
+  def to_timestamp(date_string) do
+    dt = to_datetime(date_string)
+    if dt != nil do
+      DateTime.to_unix(dt)
+    else
+      0
+    end
+  end
+
   def any_matches_any_pattern(strings, patterns) do
     Enum.any?(strings, fn s -> Enum.any?(patterns, fn p -> Regex.match?(p, s) end) end)
   end

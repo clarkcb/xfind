@@ -6,11 +6,15 @@ defmodule ExFind.FileResult do
 
   def container_separator, do: @container_separator
 
-  defstruct containers: [], path: "", name: "", file_type: :unknown, stat: nil
+  defstruct containers: [], path: "", name: "", file_type: :unknown, file_size: 0, last_mod: 0
 
-  def new(path, file_name, file_type, stat), do: __struct__([path: path, name: file_name, file_type: file_type, stat: stat])
+  def new(path, file_name, file_type, file_size, last_mod) do
+    __struct__([path: path, name: file_name, file_type: file_type, file_size: file_size, last_mod: last_mod])
+  end
 
-  def new(containers, path, file_name, file_type, stat), do: __struct__([containers: containers, path: path, name: file_name, file_type: file_type, stat: stat])
+  def new(containers, path, file_name, file_type, file_size, last_mod) do
+    __struct__([containers: containers, path: path, name: file_name, file_type: file_type, file_size: file_size, last_mod: last_mod])
+  end
 
   def new(args), do: __struct__(args)
 
