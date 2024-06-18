@@ -26,7 +26,7 @@
         [cljfind.fileutil :only
           (get-ext get-name hidden-dir? hidden-file?
             is-dot-dir? sep-count)]
-        [cljfind.findsettings :only (need-stat)])
+        [cljfind.findsettings :only (need-last-mod need-size)])
   (:require [java-time.api :as jt]))
 
 (defn matches-any-pattern? [^String s pp]
@@ -76,15 +76,13 @@
         (empty? (:out-dir-patterns settings))
         (not-any? #(re-find % (.getPath d)) (:out-dir-patterns settings))))))
 
-(defn has-matching-dir? [^File f ^FindSettings settings]
-  (let [d (.getParentFile f)]
+(defn has-matching-dir? [^FileResult fr ^FindSettings settings]
+  (let [d (.getParentFile (:file fr))]
     (or
       (nil? d)
       (is-matching-dir? d settings))))
 
 (defn is-matching-ext?
-  ([^String ext ^FindSettings settings]
-    (is-matching-ext? ext (:in-extensions settings) (:out-extensions settings)))
   ([^String ext in-extensions out-extensions]
     (and
       (or
@@ -94,21 +92,30 @@
         (empty? out-extensions)
         (not-any? #(= % ext) out-extensions)))))
 
-(defn has-matching-ext?
-  ([^File f ^FindSettings settings]
-    (has-matching-ext? f (:in-extensions settings) (:out-extensions settings)))
-  ([^File f in-extensions out-extensions]
+(defn has-matching-archive-ext?
+  ([^FileResult fr ^FindSettings settings]
+    (has-matching-archive-ext? fr (:in-archive-extensions settings) (:out-archive-extensions settings)))
+  ([^FileResult fr in-extensions out-extensions]
     (if
       (or
         (not (empty? in-extensions))
         (not (empty? out-extensions)))
-      (is-matching-ext? (get-ext f) in-extensions out-extensions)
+      (is-matching-ext? (get-ext (:file fr)) in-extensions out-extensions)
       true)))
 
-(defn is-matching-file-pattern?
-  ([^String filename ^FindSettings settings]
-    (is-matching-file-pattern? filename (:in-file-patterns settings) (:out-file-patterns settings)))
-  ([filename in-file-patterns out-file-patterns]
+(defn has-matching-ext?
+  ([^FileResult fr ^FindSettings settings]
+    (has-matching-ext? fr (:in-extensions settings) (:out-extensions settings)))
+  ([^FileResult fr in-extensions out-extensions]
+    (if
+      (or
+        (not (empty? in-extensions))
+        (not (empty? out-extensions)))
+      (is-matching-ext? (get-ext (:file fr)) in-extensions out-extensions)
+      true)))
+
+(defn is-matching-file-name?
+  ([^String filename in-file-patterns out-file-patterns]
     (and
       (or
         (empty? in-file-patterns)
@@ -117,20 +124,15 @@
         (empty? out-file-patterns)
         (not-any? #(re-find % filename) out-file-patterns)))))
 
-(defn has-matching-file-pattern?
-  ([^File f ^FindSettings settings]
-    (has-matching-file-pattern? f (:in-file-patterns settings) (:out-file-patterns settings)))
-  ([^File f in-file-patterns out-file-patterns]
-    (if
-      (or
-        (not (empty? in-file-patterns))
-        (not (empty? out-file-patterns)))
-      (is-matching-file-pattern? (.getName f) in-file-patterns out-file-patterns)
-      true)))
+(defn has-matching-archive-file-name?
+  ([^FileResult fr ^FindSettings settings]
+    (is-matching-file-name? (.getName (:file fr)) (:in-archive-file-patterns settings) (:out-archive-file-patterns settings))))
+
+(defn has-matching-file-name?
+  ([^FileResult fr ^FindSettings settings]
+    (is-matching-file-name? (.getName (:file fr)) (:in-file-patterns settings) (:out-file-patterns settings))))
 
 (defn is-matching-file-type?
-  ([file-type ^FindSettings settings]
-    (is-matching-file-type? file-type (:in-file-types settings) (:out-file-types settings)))
   ([file-type in-file-types out-file-types]
     (and
       (or
@@ -141,61 +143,52 @@
         (not (contains? out-file-types file-type))))))
 
 (defn has-matching-file-type?
-  ([^File f ^FindSettings settings]
-    (has-matching-file-type? f (:in-file-types settings) (:out-file-types settings)))
-  ([^File f in-file-types out-file-types]
-    (if
-      (or
-        (not (empty? in-file-types))
-        (not (empty? out-file-types)))
-      (is-matching-file-type? (get-file-type f) in-file-types out-file-types)
-      true)))
+  ([^FileResult fr ^FindSettings settings]
+    (is-matching-file-type? (:file-type fr) (:in-file-types settings) (:out-file-types settings))))
 
-(defn format-date [dt]
+(defn format-date [^java.util.Date dt]
   (if (nil? dt)
     ""
     (.format (java.text.SimpleDateFormat. "yyyy-MM-dd") dt)))
 
-(defn is-matching-stat? [stat ^FindSettings settings]
-  (or
-    (nil? stat)
-    (and
-      (or
-        (nil? (:max-last-mod settings))
-        (<= (.toMillis (.lastModifiedTime stat)) (.getTime (:max-last-mod settings))))
-      (or
-        (nil? (:min-last-mod settings))
-        (>= (.toMillis (.lastModifiedTime stat)) (.getTime (:min-last-mod settings))))
-      (or
-        (= 0 (:max-size settings))
-        (<= 0 (.size stat) (:max-size settings)))
-      (or
-        (= 0 (:min-size settings))
-        (>= (.size stat) (:min-size settings))))))
+(defn is-matching-file-size? [^long file-size ^long min-size ^long max-size]
+  (and
+    (or
+      (= 0 max-size)
+      (<= 0 file-size max-size))
+    (or
+      (= 0 min-size)
+      (>= file-size min-size))))
 
-(defn has-matching-stat? [^FileResult fr ^FindSettings settings]
-  (is-matching-stat? (:stat fr) settings))
+(defn has-matching-file-size? [^FileResult fr ^FindSettings settings]
+  (is-matching-file-size? (:file-size fr) (:min-size settings) (:max-size settings)))
+
+(defn is-matching-last-mod? [^java.nio.file.attribute.FileTime last-mod ^java.util.Date min-last-mod ^java.util.Date max-last-mod]
+  (and
+    (or
+     (nil? max-last-mod)
+     (<= (.toMillis last-mod) (.getTime max-last-mod)))
+    (or
+      (nil? min-last-mod)
+      (>= (.toMillis last-mod) (.getTime min-last-mod)))))
+
+(defn has-matching-last-mod? [^FileResult fr ^FindSettings settings]
+  (is-matching-last-mod? (:last-mod fr) (:min-last-mod settings) (:max-last-mod settings)))
 
 (defn is-matching-archive-file-result? [^FileResult fr ^FindSettings settings]
-  (if
-    (or
-      (not (has-matching-dir? (:file fr) settings))
-      (not (has-matching-ext? (:file fr) (:in-archive-extensions settings) (:out-archive-extensions settings)))
-      (not (has-matching-file-pattern? (:file fr) (:in-archive-file-patterns settings) (:out-archive-patterns settings)))
-      (not (has-matching-stat? fr settings)))
-    false
-    true))
+  (and
+      (has-matching-dir? fr settings)
+      (has-matching-archive-ext? fr settings)
+      (has-matching-archive-file-name? fr settings)))
 
 (defn is-matching-file-result? [^FileResult fr ^FindSettings settings]
-  (if
-    (or
-     (not (has-matching-dir? (:file fr) settings))
-     (not (has-matching-ext? (:file fr) (:in-extensions settings) (:out-extensions settings)))
-     (not (has-matching-file-pattern? (:file fr) (:in-file-patterns settings) (:out-file-patterns settings)))
-     (not (is-matching-file-type? (:file-type fr) (:in-file-types settings) (:out-file-types settings)))
-     (not (has-matching-stat? fr settings)))
-    false
-    true))
+  (and
+    (has-matching-dir? fr settings)
+    (has-matching-ext? fr settings)
+    (has-matching-file-name? fr settings)
+    (has-matching-file-type? fr settings)
+    (has-matching-file-size? fr settings)
+    (has-matching-last-mod? fr settings)))
 
 (defn get-stat [^File f]
   (Files/readAttributes (.toPath f) BasicFileAttributes (into-array java.nio.file.LinkOption [])))
@@ -207,8 +200,10 @@
       (hidden-file? f))
     nil
     (let [file-type (get-file-type f)
-          stat (if (need-stat settings) (get-stat f) nil)
-          fr (new-file-result f file-type stat)]
+          stat (if (or (need-last-mod settings) (need-size settings)) (get-stat f) nil)
+          file-size (if (nil? stat) 0 (.size stat))
+          last-mod (if (nil? stat) nil (.lastModifiedTime stat))
+          fr (new-file-result f file-type file-size last-mod)]
       (if
         (= :archive file-type)
         (if

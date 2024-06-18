@@ -18,15 +18,15 @@
 
 ; record to hold a file result (file is a File object)
 (defrecord FileResult [containers, ^java.io.File file, file-type,
-                       ^java.nio.file.attribute.BasicFileAttributes stat])
+                       file-size last-mod])
 
 (defn new-file-result
   ([^java.io.File file, file-type]
-   (->FileResult [] file file-type nil))
-  ([^java.io.File file, file-type, stat]
-   (->FileResult [] file file-type stat))
-  ([containers, ^java.io.File file, file-type stat]
-   (->FileResult containers file file-type stat)))
+   (->FileResult [] file file-type 0 nil))
+  ([^java.io.File file, file-type, file-size last-mod]
+   (->FileResult [] file file-type file-size last-mod))
+  ([containers, ^java.io.File file, file-type file-size last-mod]
+   (->FileResult containers file file-type file-size last-mod)))
 
 (defn file-result-path [^FileResult fr]
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
@@ -62,7 +62,7 @@
   [^FindSettings settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [sizecmp (compare (.size (:stat fr1)) (.size (:stat fr2)))]
+      (let [sizecmp (compare (:file-size fr1) (:file-size fr2))]
         (if (= 0 sizecmp)
           (comp-by-path fr1 fr2)
           sizecmp)))))
@@ -82,7 +82,7 @@
   [^FindSettings settings]
   (let [comp-by-path (get-comp-by-path settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (compare (.toMillis (.lastModifiedTime (:stat fr1))) (.toMillis (.lastModifiedTime (:stat fr2))))]
+      (let [res (compare (.toMillis (:last-mod fr1)) (.toMillis (:last-mod fr2)))]
         (if (= 0 res)
           (comp-by-path fr1 fr2)
           res)))))

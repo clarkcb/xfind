@@ -61,10 +61,10 @@
     ^Boolean include-hidden
     ^Integer max-depth
     ^java.util.Date max-last-mod
-    ^Integer max-size
+    ^long max-size
     ^Integer min-depth
     ^java.util.Date min-last-mod
-    ^Integer min-size
+    ^long min-size
     ^clojure.lang.PersistentHashSet out-archive-extensions
     ^clojure.lang.PersistentHashSet out-archive-file-patterns
     ^clojure.lang.PersistentHashSet out-dir-patterns
@@ -178,12 +178,15 @@
       :else
         (add-patterns settings [p] patname))))
 
-(defn need-stat [^FindSettings settings]
+(defn need-last-mod [^FindSettings settings]
   (or
-   (= :filesize (:sort-by settings))
    (= :lastmod (:sort-by settings))
    (not (nil? (:max-last-mod settings)))
-   (not (nil? (:min-last-mod settings)))
+   (not (nil? (:min-last-mod settings)))))
+
+(defn need-size [^FindSettings settings]
+  (or
+   (= :filesize (:sort-by settings))
    (> (:max-size settings) 0)
    (> (:min-size settings) 0)))
 
