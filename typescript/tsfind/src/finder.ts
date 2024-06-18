@@ -40,7 +40,7 @@ export class Finder {
                     assert.ok(this.isMatchingDir(p),
                         'Startpath does not match find settings');
                 } else if (stat.isFile()) {
-                    assert.ok(this.filterFile(p),
+                    assert.ok(this.filterFile(p, stat),
                         'Startpath does not match find settings');
                 } else {
                     assert.ok(false, 'Startpath not findable file type');
@@ -50,8 +50,8 @@ export class Finder {
                 assert.ok(this._settings.maxDepth >= this._settings.minDepth,
                     'Invalid range for mindepth and maxdepth');
             }
-            if (this._settings.maxLastMod !== null && this._settings.minLastMod !== null) {
-                assert.ok(this._settings.maxLastMod.getTime() >= this._settings.minLastMod.getTime(),
+            if (this._settings.maxLastMod > 0 && this._settings.minLastMod > 0) {
+                assert.ok(this._settings.maxLastMod >= this._settings.minLastMod,
                     'Invalid range for minlastmod and maxlastmod');
             }
             if (this._settings.maxSize > 0 && this._settings.minSize > 0) {
@@ -107,33 +107,12 @@ export class Finder {
             this._settings.outDirPatterns));
     }
 
-    public isMatchingFile(file: string): boolean {
+    public isMatchingFile(file: string, stat: fs.Stats | null = null): boolean {
         // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
         //     return false;
         // }
-        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
-            const ext: string = FileUtil.getExtension(file);
-            if ((this._settings.inExtensions.length &&
-                    !Finder.matchesAnyString(ext, this._settings.inExtensions))
-                || (this._settings.outExtensions.length &&
-                    Finder.matchesAnyString(ext, this._settings.outExtensions))) {
-                return false;
-            }
-        }
-        if ((this._settings.inFilePatterns.length &&
-            !Finder.matchesAnyPattern(file, this._settings.inFilePatterns))
-            || (this._settings.outFilePatterns.length &&
-                Finder.matchesAnyPattern(file, this._settings.outFilePatterns))) {
-            return false;
-        }
-        const fileType: FileType = FileTypes.getFileType(file);
-        if ((this._settings.inFileTypes.length &&
-            !Finder.matchesAnyFileType(fileType, this._settings.inFileTypes))
-            || (this._settings.outFileTypes.length &&
-                Finder.matchesAnyFileType(fileType, this._settings.outFileTypes))) {
-                    return false;
-        }
-        return true;
+        const fr = this.filePathToFileResult(file, stat);
+        return this.isMatchingFileResult(fr);
     }
 
     public isMatchingFileResult(fr: FileResult): boolean {
@@ -161,15 +140,13 @@ export class Finder {
                 Finder.matchesAnyFileType(fr.fileType, this._settings.outFileTypes))) {
                     return false;
         }
-        if (fr.stat !== null) {
-            if ((this._settings.maxLastMod !== null && fr.stat.mtime.getTime() > this._settings.maxLastMod.getTime()) ||
-                (this._settings.minLastMod !== null && fr.stat.mtime.getTime() < this._settings.minLastMod.getTime())) {
-                return false;
-            }
-            if ((this._settings.maxSize > 0 && fr.stat.size > this._settings.maxSize) ||
-                (this._settings.minSize > 0 && fr.stat.size < this._settings.minSize)) {
-                return false;
-            }
+        if ((this._settings.maxLastMod > 0 && fr.lastMod > this._settings.maxLastMod) ||
+            (this._settings.minLastMod > 0 && fr.lastMod < this._settings.minLastMod)) {
+            return false;
+        }
+        if ((this._settings.maxSize > 0 && fr.fileSize > this._settings.maxSize) ||
+            (this._settings.minSize > 0 && fr.fileSize < this._settings.minSize)) {
+            return false;
         }
         return true;
     }
@@ -195,27 +172,34 @@ export class Finder {
         Finder.matchesAnyPattern(file, this._settings.outArchiveFilePatterns));
     }
 
-    public filterFile(f: string): boolean {
+    public filterFile(f: string, stat: fs.Stats | null = null): boolean {
         if (!this._settings.includeHidden && FileUtil.isHidden(f)) {
             return false;
         }
         if (FileTypes.isArchiveFile(f)) {
             return (this._settings.includeArchives && this.isMatchingArchiveFile(f));
         }
-        return (!this._settings.archivesOnly && this.isMatchingFile(f));
+        return (!this._settings.archivesOnly && this.isMatchingFile(f, stat));
     }
 
-    public filterToFileResult(fp: string): FileResult | null {
+    public filePathToFileResult(fp: string, stat: fs.Stats | null = null): FileResult {
+        const dirname = path.dirname(fp) || '.';
+        const filename = path.basename(fp);
+        let fileSize = 0;
+        let lastMod = 0;
+        if (this._settings.needLastMod() || this._settings.needSize()) {
+            stat = stat || fs.statSync(fp);
+            fileSize = stat.size;
+            lastMod = stat.mtime.getTime();
+        }
+        return new FileResult(dirname, filename, FileTypes.getFileType(filename), fileSize, lastMod);
+    }
+
+    public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
         if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
-        const dirname = path.dirname(fp) || '.';
-        const filename = path.basename(fp);
-        let stat: fs.Stats | null = null;
-        if (this._settings.needStat()) {
-            stat = fs.statSync(fp);
-        }
-        const fr = new FileResult(dirname, filename, FileTypes.getFileType(filename), stat);
+        const fr = this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.Archive) {
             if (this._settings.includeArchives && this.isMatchingArchiveFile(fr.fileName)) {
                 return fr;
@@ -304,26 +288,23 @@ export class Finder {
     }
 
     private cmpFileResultsByName(fr1: FileResult, fr2: FileResult): number {
-        const [filename1, filename2]: string[] = this._settings.sortCaseInsensitive ?
+        const [fileName1, fileName2]: string[] = this._settings.sortCaseInsensitive ?
             [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
             [fr1.fileName, fr2.fileName];
-        if (filename1 === filename2) {
+        if (fileName1 === fileName2) {
             const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
                 [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
                 [fr1.path, fr2.path];
             return path1 < path2 ? -1 : 1;
         }
-        return filename1 < filename2 ? -1 : 1;
+        return fileName1 < fileName2 ? -1 : 1;
     }
 
     private cmpFileResultsBySize(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.stat !== null && fr2.stat !== null) {
-            if (fr1.stat.size === fr2.stat.size) {
-                return this.cmpFileResultsByPath(fr1, fr2);
-            }
-            return fr1.stat.size - fr2.stat.size;
+        if (fr1.fileSize === fr2.fileSize) {
+            return this.cmpFileResultsByPath(fr1, fr2);
         }
-        return 0;
+        return fr1.fileSize - fr2.fileSize;
     }
 
     private cmpFileResultsByType(fr1: FileResult, fr2: FileResult): number {
@@ -334,13 +315,10 @@ export class Finder {
     }
 
     private cmpFileResultsByLastMod(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.stat !== null && fr2.stat !== null) {
-            if (fr1.stat.mtime.getTime() === fr2.stat.mtime.getTime()) {
-                return this.cmpFileResultsByPath(fr1, fr2);
-            }
-            return fr1.stat.mtime.getTime() - fr2.stat.mtime.getTime();
+        if (fr1.lastMod === fr2.lastMod) {
+            return this.cmpFileResultsByPath(fr1, fr2);
         }
-        return 0;
+        return fr1.lastMod - fr2.lastMod;
     }
 
     private sortFileResults(fileResults: FileResult[]): void {

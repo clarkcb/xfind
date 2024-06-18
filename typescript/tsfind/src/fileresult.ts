@@ -9,7 +9,6 @@
 import {FileType} from './filetype';
 
 import * as path from 'path';
-import * as fs from "fs";
 
 export class FileResult {
     containerSeparator = '!';
@@ -17,13 +16,15 @@ export class FileResult {
     path: string;
     fileName: string;
     fileType: FileType;
-    stat: fs.Stats | null;
+    fileSize: number = 0;
+    lastMod: number = 0;
 
-    constructor(path: string, fileName: string, fileType: FileType, stat: fs.Stats | null) {
+    constructor(path: string, fileName: string, fileType: FileType, fileSize: number, lastMod: number) {
         this.path = path;
         this.fileName = fileName;
         this.fileType = fileType;
-        this.stat = stat;
+        this.fileSize = fileSize;
+        this.lastMod = lastMod;
     }
 
     public relativePath(): string {

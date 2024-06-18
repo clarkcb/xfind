@@ -17,6 +17,22 @@ export class StringUtil {
         return d;
     }
 
+    public static timestampToString(name: string, ts: number): string {
+        let s = `${name}=`;
+        if (!ts)
+            s += '0';
+        else {
+            const dt = new Date();
+            dt.setTime(ts);
+            s += `"${dt.toISOString()}"`;
+        }
+        return s;
+    }
+
+    public static getTimestampForString(s: string): number {
+        return Date.parse(s);
+    }
+
     public static stringListToString(name: string, lst: string[]): string {
         let s = `${name}=[`;
         if (lst.length) {

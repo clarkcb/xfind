@@ -24,10 +24,10 @@ export class FindSettings {
     includeArchives = false;
     includeHidden = false;
     maxDepth = -1;
-    #maxLastMod: Date | null = null;
+    maxLastMod = 0;
     maxSize = 0;
     minDepth = -1;
-    #minLastMod: Date | null = null;
+    minLastMod = 0;
     minSize = 0;
     outArchiveExtensions: string[] = [];
     outArchiveFilePatterns: RegExp[] = [];
@@ -137,37 +137,28 @@ export class FindSettings {
         if (value) this.verbose = value;
     }
 
-    public get maxLastMod(): Date | null {
-        return this.#maxLastMod;
-    }
-
-    public set maxLastMod(value: Date | null) {
-        this.#maxLastMod = value;
-    }
-
     public maxLastModFromString(value: string) {
-        this.#maxLastMod = StringUtil.getDateForString(value);
-    }
-
-    public get minLastMod(): Date | null {
-        return this.#minLastMod;
-    }
-
-    public set minLastMod(value: Date | null) {
-        this.#minLastMod = value;
+        this.maxLastMod = StringUtil.getTimestampForString(value);
     }
 
     public minLastModFromString(value: string) {
-        this.#minLastMod = StringUtil.getDateForString(value);
+        this.minLastMod = StringUtil.getTimestampForString(value);
+    }
+
+    public needLastMod(): boolean {
+        return this.sortBy === SortBy.LastMod ||
+            this.maxLastMod > 0 ||
+            this.minLastMod > 0;
+    }
+
+    public needSize(): boolean {
+        return this.sortBy === SortBy.FileSize ||
+            this.maxSize > 0 ||
+            this.minSize > 0;
     }
 
     public needStat(): boolean {
-        return this.sortBy === SortBy.FileSize ||
-            this.sortBy === SortBy.LastMod ||
-            this.maxLastMod !== null ||
-            this.maxSize > 0 ||
-            this.minLastMod !== null ||
-            this.minSize > 0;
+        return this.needLastMod() || this.needSize();
     }
 
     public toString(): string {
@@ -183,10 +174,10 @@ export class FindSettings {
             + ', includeArchives=' + this.includeArchives
             + ', includeHidden=' + this.includeHidden
             + ', maxDepth=' + this.maxDepth
-            + ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod)
+            + ', ' + StringUtil.timestampToString('maxLastMod', this.maxLastMod)
             + ', maxSize=' + this.maxSize
             + ', minDepth=' + this.minDepth
-            + ', ' + StringUtil.dateToString('minLastMod', this.minLastMod)
+            + ', ' + StringUtil.timestampToString('minLastMod', this.minLastMod)
             + ', minSize=' + this.minSize
             + ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions)
             + ', ' + StringUtil.patternListToString('outArchiveFilePatterns', this.outArchiveFilePatterns)
