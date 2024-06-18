@@ -2,21 +2,22 @@ package scalafind
 
 import java.io.File
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 
 class FileResult(val containers: List[String],
                  val path: Path,
                  val fileType: FileType.Value,
-                 val stat: Option[BasicFileAttributes] = None) {
+                 val fileSize: Long,
+                 val lastMod: Option[FileTime] = None) {
 
   val CONTAINER_SEPARATOR = "!"
 
   def this(path: Path, fileType: FileType.Value) = {
-    this(List.empty[String], path, fileType, None)
+    this(List.empty[String], path, fileType, 0L, None)
   }
 
-  def this(path: Path, fileType: FileType.Value, stat: Option[BasicFileAttributes]) = {
-    this(List.empty[String], path, fileType, stat)
+  def this(path: Path, fileType: FileType.Value, fileSize: Long, lastMod: Option[FileTime]) = {
+    this(List.empty[String], path, fileType, fileSize, lastMod)
   }
 
   private def comparePaths(path1: Path, path2: Path, sortCaseInsensitive: Boolean): Int = {
@@ -54,14 +55,10 @@ class FileResult(val containers: List[String],
   }
 
   def compareBySize(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
-    (this.stat, other.stat) match {
-      case (Some(st1), Some(st2)) =>
-        if (st1.size() == st2.size()) {
-          compareByPath(other, sortCaseInsensitive)
-        } else {
-          st1.size() < st2.size()
-        }
-      case (_, _) => false
+    if (this.fileSize == other.fileSize) {
+      compareByPath(other, sortCaseInsensitive)
+    } else {
+      this.fileSize < other.fileSize
     }
   }
 
@@ -74,12 +71,12 @@ class FileResult(val containers: List[String],
   }
 
   def compareByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
-    (this.stat, other.stat) match {
-      case (Some(st1), Some(st2)) =>
-        if (st1.lastModifiedTime() == st2.lastModifiedTime()) {
+    (this.lastMod, other.lastMod) match {
+      case (Some(lastMod1), Some(lastMod2)) =>
+        if (lastMod1 == lastMod2) {
           compareByPath(other, sortCaseInsensitive)
         } else {
-          st1.lastModifiedTime().compareTo(st2.lastModifiedTime()) < 0
+          lastMod1.compareTo(lastMod2) < 0
         }
       case (_, _) => false
     }

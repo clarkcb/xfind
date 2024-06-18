@@ -1,27 +1,18 @@
 package scalafind
 
-import org.apache.commons.compress.archivers.tar.{TarArchiveEntry, TarArchiveInputStream}
-import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream
-import scalafind.Common.log
-import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
-import java.io.IOException
+
+import java.io.{File, IOException}
+import java.nio.file.attribute.{BasicFileAttributes}
 import java.nio.file.{Files, Path, Paths}
-import java.nio.file.attribute.BasicFileAttributes
 import java.time.{LocalDateTime, ZoneOffset}
-import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
-import java.nio.charset.Charset
-import java.util.zip.{GZIPInputStream, ZipFile}
 import scala.collection.mutable
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import scala.io.Source
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
 
 class Finder (settings: FindSettings) {
   import FileUtil.splitPath
-  import Finder._
+  import Finder.*
 
   private def validateSettings(): Unit = {
     settingsTests.foreach { t =>
@@ -42,7 +33,7 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  private def matchesExtension(fr: FileResult, inExtensions: Set[String], outExtensions: Set[String]): Boolean = {
+  private def hasMatchingExtension(fr: FileResult, inExtensions: Set[String], outExtensions: Set[String]): Boolean = {
     if (inExtensions.nonEmpty || outExtensions.nonEmpty) {
       val ext = getExtension(fr.path.getFileName.toString)
       (inExtensions.isEmpty || inExtensions.contains(ext))
@@ -52,7 +43,7 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  private def matchesPattern(fr: FileResult, inFilePatterns: Set[Regex], outFilePatterns: Set[Regex]): Boolean = {
+  private def hasMatchingFileName(fr: FileResult, inFilePatterns: Set[Regex], outFilePatterns: Set[Regex]): Boolean = {
     if (inFilePatterns.nonEmpty || outFilePatterns.nonEmpty) {
       val fileName = fr.path.getFileName.toString
       (inFilePatterns.isEmpty || matchesAnyPattern(fileName, inFilePatterns))
@@ -62,54 +53,54 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  private def matchesFileType(fr: FileResult): Boolean = {
+  private def hasMatchingFileType(fr: FileResult): Boolean = {
     (settings.inFileTypes.isEmpty || settings.inFileTypes.contains(fr.fileType))
       && (settings.outFileTypes.isEmpty || !settings.outFileTypes.contains(fr.fileType))
   }
 
-  private def matchesStat(fr: FileResult): Boolean = {
-    (fr.stat: Option[BasicFileAttributes]) match {
-      case Some(st) =>
-        (settings.maxLastMod.isEmpty
-          || st.lastModifiedTime().toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) <= 0)
-        && (settings.minLastMod.isEmpty
-          || st.lastModifiedTime().toInstant.compareTo(settings.minLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
-        && (settings.maxSize == 0
-          || st.size.compareTo(settings.maxSize.toLong) <= 0)
-        && (settings.minSize == 0
-          || st.size.compareTo(settings.minSize.toLong) >= 0)
-      case _ => true
-    }
+  private def hasMatchingSize(fr: FileResult): Boolean = {
+    (settings.maxSize <= 0 || fr.fileSize <= settings.maxSize)
+      && (settings.minSize <= 0 || fr.fileSize >= settings.minSize)
+  }
+
+  private def hasMatchingLastMod(fr: FileResult): Boolean = {
+    (settings.maxLastMod.isEmpty || fr.lastMod.isEmpty
+      || fr.lastMod.get.toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) <= 0)
+      && (settings.minLastMod.isEmpty || fr.lastMod.isEmpty
+      || fr.lastMod.get.toInstant.compareTo(settings.minLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
   }
 
   def isMatchingFileResult(fr: FileResult): Boolean = {
-    matchesExtension(fr, settings.inExtensions, settings.outExtensions)
-      && matchesPattern(fr, settings.inFilePatterns, settings.outFilePatterns)
-      && matchesFileType(fr)
-      && matchesStat(fr)
+    hasMatchingExtension(fr, settings.inExtensions, settings.outExtensions)
+      && hasMatchingFileName(fr, settings.inFilePatterns, settings.outFilePatterns)
+      && hasMatchingFileType(fr)
+      && hasMatchingSize(fr)
+      && hasMatchingLastMod(fr)
   }
 
   def isMatchingArchiveFileResult(fr: FileResult): Boolean = {
-    matchesExtension(fr, settings.inArchiveExtensions, settings.outArchiveExtensions)
-      && matchesPattern(fr, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
-//      && matchesStat(fr)
+    hasMatchingExtension(fr, settings.inArchiveExtensions, settings.outArchiveExtensions)
+      && hasMatchingFileName(fr, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
   }
 
   def filterToFileResult(p: Path): Option[FileResult] = {
     if (!settings.includeHidden && Files.isHidden(p)) {
       None
     } else {
-      val stat: Option[BasicFileAttributes] =
-        if (settings.needStat) {
+      val (fileSize, lastMod) =
+        if (settings.needLastMod || settings.needSize) {
           try {
-            Some(Files.readAttributes(p, classOf[BasicFileAttributes]))
+            val stat = Files.readAttributes(p, classOf[BasicFileAttributes])
+            val size = if (settings.needSize) stat.size() else 0
+            val lm = if (settings.needLastMod) Some(stat.lastModifiedTime()) else None
+            (size, lm)
           } catch {
-            case _: IOException => None
+            case _: IOException => (0L, None)
           }
         } else {
-          None
+          (0L, None)
         }
-      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), stat)
+      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), fileSize, lastMod)
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None

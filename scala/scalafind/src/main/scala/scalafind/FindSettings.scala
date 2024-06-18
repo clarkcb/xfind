@@ -104,9 +104,13 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
     }
   }
 
-  def needStat: Boolean = {
-    sortBy == SortBy.FileSize || sortBy == SortBy.LastMod
+  def needLastMod: Boolean = {
+    sortBy == SortBy.LastMod
       || maxLastMod.nonEmpty || minLastMod.nonEmpty
+  }
+
+  def needSize: Boolean = {
+    sortBy == SortBy.FileSize
       || maxSize > 0 || minSize > 0
   }
 
