@@ -82,7 +82,8 @@ void main() {
     test('test isFindFile no extensions no patterns', () {
       var settings = getSettings();
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
@@ -90,7 +91,8 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('cs', settings.inExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
@@ -98,7 +100,8 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('java', settings.inExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
@@ -106,7 +109,8 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('cs', settings.outExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
@@ -114,7 +118,8 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('java', settings.outExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
@@ -122,7 +127,7 @@ void main() {
       var settings = getSettings();
       settings.addPattern('Find', settings.inFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./Finder.cs'), FileType.code, null);
+      var fileResult = FileResult(File('./Finder.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
@@ -130,7 +135,8 @@ void main() {
       var settings = getSettings();
       settings.addPattern('Find', settings.inFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
@@ -138,7 +144,7 @@ void main() {
       var settings = getSettings();
       settings.addPattern('Find', settings.outFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./Finder.cs'), FileType.code, null);
+      var fileResult = FileResult(File('./Finder.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
@@ -146,7 +152,8 @@ void main() {
       var settings = getSettings();
       settings.addPattern('Find', settings.outFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('./FileUtil.cs'), FileType.code, null);
+      var fileResult =
+          FileResult(File('./FileUtil.cs'), FileType.code, 0, null);
       expect(finder.isMatchingFileResult(fileResult), true);
     });
   });
@@ -158,8 +165,9 @@ void main() {
     test('test isArchiveFindFile no extensions no patterns', () {
       var settings = getSettings();
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), true);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
 
     test('test isArchiveFindFile file extension matches inArchiveExtensions',
@@ -167,8 +175,9 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('zip', settings.inArchiveExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), true);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
 
     test(
@@ -177,8 +186,9 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('gz', settings.inArchiveExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), false);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), false);
     });
 
     test('test isArchiveFindFile file extension matches outArchiveExtensions',
@@ -186,8 +196,9 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('zip', settings.outArchiveExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), false);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), false);
     });
 
     test(
@@ -196,16 +207,18 @@ void main() {
       var settings = getSettings();
       settings.addExtensions('gz', settings.outArchiveExtensions);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), true);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
 
     test('test isArchiveFindFile file name matches inArchiveFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('arch', settings.inArchiveFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), true);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
 
     test(
@@ -214,16 +227,18 @@ void main() {
       var settings = getSettings();
       settings.addPattern('archives', settings.inArchiveFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), false);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), false);
     });
 
     test('test isArchiveFindFile file name matches outArchiveFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('arch', settings.outArchiveFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), false);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), false);
     });
 
     test(
@@ -232,8 +247,9 @@ void main() {
       var settings = getSettings();
       settings.addPattern('archives', settings.outArchiveFilePatterns);
       var finder = Finder(settings);
-      var fileResult = FileResult(File('archive.zip'), FileType.archive, null);
-      expect(finder.isMatchingArchiveFile(fileResult), true);
+      var fileResult =
+          FileResult(File('archive.zip'), FileType.archive, 0, null);
+      expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
   });
 }

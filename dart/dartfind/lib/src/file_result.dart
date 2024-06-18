@@ -1,4 +1,4 @@
-import 'dart:io' show File, FileStat;
+import 'dart:io' show File;
 
 import 'package:dartfind/src/file_types.dart';
 
@@ -8,9 +8,10 @@ class FileResult {
   List<String> containers = [];
   final File file;
   final FileType fileType;
-  final FileStat? stat;
+  final int fileSize;
+  final DateTime? lastMod;
 
-  FileResult(this.file, this.fileType, this.stat);
+  FileResult(this.file, this.fileType, this.fileSize, this.lastMod);
 
   @override
   String toString() {

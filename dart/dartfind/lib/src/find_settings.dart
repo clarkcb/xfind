@@ -111,7 +111,8 @@ class FindSettings {
   bool sortDescending = false;
   bool verbose = false;
 
-  bool? _needStat;
+  bool? _needLastMod;
+  bool? _needSize;
 
   void addExtensions(String exts, Set<String> extensions) {
     var extList = exts.split(',').where((ext) => ext.isNotEmpty).toList();
@@ -128,14 +129,15 @@ class FindSettings {
     patterns.add(RegExp(pattern.toString(), multiLine: true));
   }
 
-  bool needStat() {
-    _needStat ??= sortBy == SortBy.fileSize ||
-        sortBy == SortBy.lastMod ||
-        maxLastMod != null ||
-        maxSize > 0 ||
-        minLastMod != null ||
-        minSize > 0;
-    return _needStat!;
+  bool needLastMod() {
+    _needLastMod ??=
+        sortBy == SortBy.lastMod || maxLastMod != null || minLastMod != null;
+    return _needLastMod!;
+  }
+
+  bool needSize() {
+    _needSize ??= sortBy == SortBy.fileSize || maxSize > 0 || minSize > 0;
+    return _needSize!;
   }
 
   String dateTimeToString(DateTime? dt) {
