@@ -9,9 +9,10 @@
 @property NSArray<NSString*> *containers;
 @property NSString *filePath;
 @property FileType fileType;
-@property NSDictionary<NSFileAttributeKey, id> *stat;
+@property unsigned long long fileSize;
+@property NSDate *lastMod;
 
-- (instancetype) initWithFilePath:(NSString*)filePath fileType:(FileType)fileType stat:(NSDictionary<NSFileAttributeKey, id>*)stat;
+- (instancetype) initWithFilePath:(NSString*)filePath fileType:(FileType)fileType fileSize:(unsigned long long)fileSize lastMod:(NSDate*)lastMod;
 - (NSString *) description;
 - (NSComparisonResult)compareByPath:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;
 - (NSComparisonResult)compareByName:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive;

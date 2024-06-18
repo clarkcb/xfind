@@ -3,13 +3,14 @@
 
 @implementation FileResult
 
-- (instancetype) initWithFilePath:(NSString *)filePath fileType:(FileType)fileType stat:(NSDictionary<NSFileAttributeKey, id>*)stat {
+- (instancetype) initWithFilePath:(NSString *)filePath fileType:(FileType)fileType fileSize:(unsigned long long)fileSize lastMod:(NSDate*)lastMod {
     self = [super init];
     if (self) {
         self.containers = [NSArray array];
         self.filePath = filePath;
         self.fileType = fileType;
-        self.stat = stat;
+        self.fileSize = fileSize;
+        self.lastMod = lastMod;
     }
     return self;
 }
@@ -62,8 +63,8 @@
 }
 
 - (NSComparisonResult)compareBySize:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive {
-    NSNumber *thisFileSize = [[NSNumber alloc] initWithUnsignedLongLong:[self.stat fileSize]];
-    NSNumber *otherFileSize = [[NSNumber alloc] initWithUnsignedLongLong:[otherFileResult.stat fileSize]];
+    NSNumber *thisFileSize = [[NSNumber alloc] initWithUnsignedLongLong:self.fileSize];
+    NSNumber *otherFileSize = [[NSNumber alloc] initWithUnsignedLongLong:otherFileResult.fileSize];
     if ([thisFileSize isEqualToNumber:otherFileSize]) {
         return [self compareByPath:otherFileResult caseInsensitive:caseInsensitive];
     }
@@ -80,12 +81,10 @@
 }
 
 - (NSComparisonResult)compareByLastMod:(FileResult *)otherFileResult caseInsensitive:(BOOL)caseInsensitive {
-    NSDate *thisLastMod = [self.stat fileModificationDate];
-    NSDate *otherLastMod = [otherFileResult.stat fileModificationDate];
-    if ([thisLastMod isEqualToDate:otherLastMod]) {
+    if ([self.lastMod isEqualToDate:[otherFileResult lastMod]]) {
         return [self compareByPath:otherFileResult caseInsensitive:caseInsensitive];
     }
-    return [thisLastMod compare:otherLastMod];
+    return [self.lastMod compare:[otherFileResult lastMod]];
 }
 
 @end

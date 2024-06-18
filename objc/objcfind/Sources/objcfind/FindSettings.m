@@ -262,9 +262,13 @@
     return [NSString stringWithString:arrString];
 }
 
-- (BOOL) needStat {
-    return self.sortBy == SortByFileSize || self.sortBy == SortByLastMod ||
-    self.maxLastMod != nil || self.minLastMod != nil ||
+- (BOOL) needLastMod {
+    return self.sortBy == SortByLastMod ||
+    self.maxLastMod != nil || self.minLastMod != nil;
+}
+
+- (BOOL) needSize {
+    return self.sortBy == SortByFileSize ||
     self.maxSize > 0 || self.minSize > 0;
 }
 

@@ -79,7 +79,8 @@
 - (void) addInFileType:(NSString*)typeName;
 - (void) addOutFileType:(NSString*)typeName;
 
-- (BOOL) needStat;
+- (BOOL) needLastMod;
+- (BOOL) needSize;
 
 + (NSString *) lastModToNSString:(NSDate *)lastMod;
 + (NSString *) fileTypesArrayToNSString:(NSArray<NSNumber*>*)arr;

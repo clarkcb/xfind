@@ -82,22 +82,19 @@
             ([outFileTypes count] == 0 || ![outFileTypes containsObject:num]));
 }
 
-- (BOOL) filterByStat:(NSDictionary<NSFileAttributeKey, id>*)stat {
-    if (stat != nil) {
-        if ([self.settings maxLastMod] != nil || [self.settings minLastMod] != nil) {
-            NSDate *lastMod = [stat fileModificationDate];
-            if (([self.settings maxLastMod] != nil && [lastMod isGreaterThan:[self.settings maxLastMod]]) ||
-                ([self.settings minLastMod] != nil && [lastMod isLessThan:[self.settings minLastMod]])) {
-                return false;
-            }
-        }
-        if ([self.settings maxSize] > 0 || [self.settings minSize] > 0) {
-            NSNumber *fileSize = [[NSNumber alloc] initWithUnsignedLongLong:[stat fileSize]];
-            if (([self.settings maxSize] > 0 && [fileSize longValue] > (long)[self.settings maxSize]) ||
-                ([self.settings minSize] > 0 && [fileSize longValue] < (long)[self.settings minSize])) {
-                return false;
-            }
-        }
+- (BOOL) filterByLastMod:(NSDate*)lastMod {
+    if ([self.settings maxLastMod] != nil || [self.settings minLastMod] != nil) {
+        return (([self.settings maxLastMod] == nil || [lastMod isLessThanOrEqualTo:[self.settings maxLastMod]]) &&
+            ([self.settings minLastMod] == nil || [lastMod isGreaterThanOrEqualTo:[self.settings minLastMod]]));
+    }
+    return true;
+}
+
+- (BOOL) filterByFileSize:(unsigned long long)fileSize {
+    if ([self.settings maxSize] > 0 || [self.settings minSize] > 0) {
+        NSNumber *numFileSize = [[NSNumber alloc] initWithUnsignedLongLong:fileSize];
+        return (([self.settings maxSize] == 0 || [numFileSize longValue] <= (long)[self.settings maxSize]) &&
+         ([self.settings minSize] == 0 || [numFileSize longValue] >= (long)[self.settings minSize]));
     }
     return true;
 }
@@ -150,7 +147,8 @@
     [self filterByFileTypes:[fileResult fileType]
                 inFileTypes:self.settings.inFileTypes
                outFileTypes:self.settings.outFileTypes] &&
-    [self filterByStat:[fileResult stat]];
+    [self filterByFileSize:[fileResult fileSize]] &&
+    [self filterByLastMod:[fileResult lastMod]];
 }
 
 - (FileResult*) filterToFileResult:(NSString*)filePath {
@@ -158,11 +156,14 @@
         return false;
     }
     FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
-    NSDictionary<NSFileAttributeKey, id> *stat = nil;
-    if ([self.settings needStat]) {
-        stat = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:nil];
+    unsigned long long fileSize = 0;
+    NSDate *lastMod = nil;
+    if ([self.settings needSize] || [self.settings needLastMod]) {
+        NSDictionary<NSFileAttributeKey, id> *stat = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:nil];
+        if ([self.settings needSize]) fileSize = stat.fileSize;
+        if ([self.settings needLastMod]) lastMod = stat.fileModificationDate;
     }
-    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType stat:stat];
+    FileResult *fr = [[FileResult alloc] initWithFilePath:filePath fileType:fileType fileSize:fileSize lastMod:lastMod];
     if (fileType == FileTypeArchive) {
         if (self.settings.includeArchives && [self isMatchingArchiveFile:filePath]) {
             return fr;
