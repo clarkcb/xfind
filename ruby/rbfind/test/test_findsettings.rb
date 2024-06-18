@@ -76,8 +76,8 @@ module RbFind
     def test_add_patterns_as_array
       @settings.add_patterns(%w[Find FileTypes], @settings.in_file_patterns)
       assert_equal(2, @settings.in_file_patterns.length)
-      assert_equal(@settings.in_file_patterns.first.source, 'Find')
-      assert_equal(@settings.in_file_patterns[1].source, 'FileTypes')
+      assert(@settings.in_file_patterns.any? {|p| p.source == 'Find'})
+      assert(@settings.in_file_patterns.any? {|p| p.source == 'FileTypes'})
     end
   end
 end

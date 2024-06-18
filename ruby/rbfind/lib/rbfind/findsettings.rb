@@ -99,11 +99,11 @@ module RbFind
     end
 
     def add_exts(exts, ext_set)
-      if exts.instance_of? String
+      if exts.instance_of?(String)
         exts.split(',').each do |x|
           ext_set.add(x)
         end
-      elsif exts.instance_of? Enumerable
+      elsif exts.instance_of?(Array) || exts.instance_of?(Enumerable)
         exts.each do |x|
           ext_set.add(x)
         end
@@ -111,9 +111,9 @@ module RbFind
     end
 
     def add_patterns(patterns, pattern_set)
-      if patterns.instance_of? String
+      if patterns.instance_of?(String)
         pattern_set.add(Regexp.new(patterns))
-      elsif patterns.instance_of? Enumerable
+      elsif patterns.instance_of?(Array) ||  patterns.instance_of?(Enumerable)
         patterns.each do |p|
           pattern_set.add(Regexp.new(p))
         end
@@ -125,25 +125,23 @@ module RbFind
     end
 
     def add_file_types(file_types, file_types_set)
-      if file_types.instance_of? String
+      if file_types.instance_of?(String)
         file_types.split(',').each do |t|
           file_types_set.add(FileType.from_name(t))
         end
-      elsif file_types.instance_of? Enumerable
+      elsif file_types.instance_of?(Array) || file_types.instance_of?(Enumerable)
         file_types.each do |t|
           file_types_set.add(FileType.from_name(t))
         end
       end
     end
 
-    def need_stat?
-      if @sort_by == SortBy::FILESIZE || @sort_by == SortBy::LASTMOD
-        return true
-      end
-      if @max_last_mod || @max_size > 0 || @min_last_mod || @min_size > 0
-        return true
-      end
-      false
+    def need_last_mod?
+      @sort_by == SortBy::LASTMOD || !@max_last_mod.nil? || !@min_last_mod.nil?
+    end
+
+    def need_size?
+      @sort_by == SortBy::FILESIZE || @max_size > 0 || @min_size > 0
     end
 
     def set_sort_by_for_name(sort_by_name)

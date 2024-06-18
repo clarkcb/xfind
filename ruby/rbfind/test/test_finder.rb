@@ -15,7 +15,7 @@ module RbFind
 
     def get_settings
       settings = FindSettings.new
-      settings.paths.push('.')
+      settings.paths.add('.')
       settings
     end
 

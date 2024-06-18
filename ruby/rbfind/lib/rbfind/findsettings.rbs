@@ -93,6 +93,10 @@ module RbFind
 
     def add_file_types: (String | Enumerable[String] file_types, Set[FileType] file_types_set) -> void
 
+    def need_last_mod?: () -> bool
+
+    def need_size?: () -> bool
+
     def need_stat?: () -> bool
 
     def set_sort_by_for_name: (String sort_by_name) -> void

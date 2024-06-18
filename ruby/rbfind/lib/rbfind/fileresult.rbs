@@ -5,17 +5,19 @@ module RbFind
     @path: String
     @file_name: String
     @file_type: FileType
-    @stat: nil | File::Stat
+    @file_size: Integer
+    @last_mod: nil | Time
 
     attr_accessor containers: Array[String]
     attr_reader path: String
     attr_reader file_name: String
     attr_reader file_type: FileType
-    attr_reader stat: nil | File::Stat
+    attr_reader file_size: Integer
+    attr_reader last_mod: nil | Time
 
     CONTAINER_SEPARATOR: "!"
 
-    def initialize: (String path, String file_name, FileType file_type, nil | File::Stat stat) -> void
+    def initialize: (String path, String file_name, FileType file_type, Integer file_size, nil | Time last_mod) -> void
 
     def relative_path: () -> String
 

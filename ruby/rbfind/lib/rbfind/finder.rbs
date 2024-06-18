@@ -10,11 +10,27 @@ module RbFind
 
     def matching_dir?: (String dir_path) -> bool
 
-    def matching_file?: (String file_path) -> bool
+    def has_matching_archive_ext?: (FileResult file_result) -> bool
+
+    def has_matching_ext?: (FileResult file_result) -> bool
+
+    def has_matching_archive_file_name?: (FileResult file_result) -> bool
+
+    def has_matching_file_name?: (FileResult file_result) -> bool
+
+    def has_matching_file_type?: (FileResult file_result) -> bool
+
+    def has_matching_file_size?: (FileResult file_result) -> bool
+
+    def has_matching_last_mod?: (FileResult file_result) -> bool
+
+    def matching_archive_file_result?: (FileResult file_result) -> bool
 
     def matching_file_result?: (FileResult file_result) -> bool
 
     def matching_archive_file?: (String file_path) -> bool
+
+    def matching_file?: (String file_path) -> bool
 
     def filter_to_file_result: (String file_path) -> (nil | FileResult)
 

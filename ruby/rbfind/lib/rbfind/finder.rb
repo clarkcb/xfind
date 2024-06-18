@@ -37,75 +37,84 @@ module RbFind
       true
     end
 
-    def matching_file?(file_path)
-      matching_file_result?(file_path_to_file_result(file_path))
+    def has_matching_archive_ext?(file_result)
+      if !@settings.in_archive_extensions.empty? || !@settings.out_archive_extensions.empty?
+        ext = FileUtil.get_extension(file_result.file_name)
+        return ((@settings.in_archive_extensions.empty? ||
+          @settings.in_archive_extensions.include?(ext)) and
+          (@settings.out_archive_extensions.empty? ||
+            !@settings.out_archive_extensions.include?(ext)))
+      end
+      true
+    end
+
+    def has_matching_ext?(file_result)
+      if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
+        ext = FileUtil.get_extension(file_result.file_name)
+        return ((@settings.in_extensions.empty? ||
+          @settings.in_extensions.include?(ext)) and
+          (@settings.out_extensions.empty? ||
+            !@settings.out_extensions.include?(ext)))
+      end
+      true
+    end
+
+    def has_matching_archive_file_name?(file_result)
+      ((@settings.in_archive_file_patterns.empty? ||
+        matches_any_pattern?(file_result.file_name, @settings.in_archive_file_patterns)) and
+        (@settings.out_archive_file_patterns.empty? ||
+          !matches_any_pattern?(file_result.file_name, @settings.out_archive_file_patterns)))
+    end
+
+    def has_matching_file_name?(file_result)
+      ((@settings.in_file_patterns.empty? ||
+        matches_any_pattern?(file_result.file_name, @settings.in_file_patterns)) and
+        (@settings.out_file_patterns.empty? ||
+          !matches_any_pattern?(file_result.file_name, @settings.out_file_patterns)))
+    end
+
+    def has_matching_file_type?(file_result)
+      ((@settings.in_file_types.empty? ||
+        @settings.in_file_types.include?(file_result.file_type)) and
+        (@settings.out_file_types.empty? ||
+          !@settings.out_file_types.include?(file_result.file_type)))
+    end
+
+    def has_matching_file_size?(file_result)
+      ((@settings.min_size == 0 ||
+        file_result.file_size >= @settings.min_size) and
+        (@settings.max_size == 0 ||
+          file_result.file_size <= @settings.max_size))
+    end
+
+    def has_matching_last_mod?(file_result)
+      ((@settings.min_last_mod.nil? ||
+        file_result.last_mod >= @settings.min_last_mod.to_time) and
+        (@settings.max_last_mod.nil? ||
+          file_result.last_mod <= @settings.max_last_mod.to_time))
+    end
+
+    def matching_archive_file_result?(file_result)
+      has_matching_archive_ext?(file_result) and
+        has_matching_archive_file_name?(file_result) and
+        has_matching_file_size?(file_result) and
+        has_matching_last_mod?(file_result)
     end
 
     def matching_file_result?(file_result)
-      if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
-        ext = FileUtil.get_extension(file_result.file_name)
-        if !@settings.in_extensions.empty? &&
-          !@settings.in_extensions.include?(ext)
-          return false
-        end
-        if !@settings.out_extensions.empty? &&
-          @settings.out_extensions.include?(ext)
-          return false
-        end
-      end
-      if !@settings.in_file_patterns.empty? &&
-        !matches_any_pattern?(file_result.file_name, @settings.in_file_patterns)
-        return false
-      end
-      if !@settings.out_file_patterns.empty? &&
-        matches_any_pattern?(file_result.file_name, @settings.out_file_patterns)
-        return false
-      end
-      if !@settings.in_file_types.empty? &&
-        !@settings.in_file_types.include?(file_result.file_type)
-        return false
-      end
-      if !@settings.out_file_types.empty? &&
-        @settings.out_file_types.include?(file_result.file_type)
-        return false
-      end
-      if @settings.max_last_mod && file_result.stat.mtime > @settings.max_last_mod.to_time
-        return false
-      end
-      if @settings.max_size > 0 && file_result.stat.size > @settings.max_size
-        return false
-      end
-      if @settings.min_last_mod && file_result.stat.mtime < @settings.min_last_mod.to_time
-        return false
-      end
-      if @settings.min_size > 0 && file_result.stat.size < @settings.min_size
-        return false
-      end
-      true
+      has_matching_ext?(file_result) and
+        has_matching_file_name?(file_result) and
+        has_matching_file_type?(file_result) and
+        has_matching_file_size?(file_result) and
+        has_matching_last_mod?(file_result)
     end
 
     def matching_archive_file?(file_path)
-      filename = File.basename(file_path)
-      if !@settings.in_archive_extensions.empty? || !@settings.out_archive_extensions.empty?
-        ext = FileUtil.get_extension(filename)
-        if !@settings.in_archive_extensions.empty? &&
-          !@settings.in_archive_extensions.include?(ext)
-          return false
-        end
-        if !@settings.out_archive_extensions.empty? &&
-          @settings.out_archive_extensions.include?(ext)
-          return false
-        end
-      end
-      if !@settings.in_archive_file_patterns.empty? &&
-        !matches_any_pattern?(filename, @settings.in_archive_file_patterns)
-        return false
-      end
-      if !@settings.out_archive_file_patterns.empty? &&
-        matches_any_pattern?(filename, @settings.out_archive_file_patterns)
-        return false
-      end
-      true
+      matching_archive_file_result?(file_path_to_file_result(file_path))
+    end
+
+    def matching_file?(file_path)
+      matching_file_result?(file_path_to_file_result(file_path))
     end
 
     def filter_to_file_result(file_path)
@@ -115,7 +124,7 @@ module RbFind
       end
       file_result = file_path_to_file_result(file_path)
       if file_result.file_type == FileType::ARCHIVE
-        if @settings.include_archives && matching_archive_file?(filename)
+        if @settings.include_archives && matching_archive_file_result?(file_result)
           return file_result
         end
         return nil
@@ -145,11 +154,11 @@ module RbFind
         if @settings.sort_by == SortBy::FILENAME
           file_results.sort_by {|r| [r.file_name.downcase, r.path.downcase]}
         elsif @settings.sort_by == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.stat.size, r.path.downcase, r.file_name.downcase]}
+          file_results.sort_by {|r| [r.file_size, r.path.downcase, r.file_name.downcase]}
         elsif @settings.sort_by == SortBy::FILETYPE
           file_results.sort_by {|r| [r.file_type, r.path.downcase, r.file_name.downcase]}
         elsif @settings.sort_by == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.stat.mtime, r.path.downcase, r.file_name.downcase]}
+          file_results.sort_by {|r| [r.last_mod, r.path.downcase, r.file_name.downcase]}
         else
           file_results.sort_by {|r| [r.path.downcase, r.file_name.downcase]}
         end
@@ -157,11 +166,11 @@ module RbFind
         if @settings.sort_by == SortBy::FILENAME
           file_results.sort_by {|r| [r.file_name, r.path]}
         elsif @settings.sort_by == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.stat.size, r.path, r.file_name]}
+          file_results.sort_by {|r| [r.file_size, r.path, r.file_name]}
         elsif @settings.sort_by == SortBy::FILETYPE
           file_results.sort_by {|r| [r.file_type, r.path, r.file_name]}
         elsif @settings.sort_by == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.stat.mtime, r.path, r.file_name]}
+          file_results.sort_by {|r| [r.last_mod, r.path, r.file_name]}
         else
           file_results.sort_by {|r| [r.path, r.file_name]}
         end
@@ -200,11 +209,18 @@ module RbFind
       d = File.dirname(file_path) || '.'
       filename = File.basename(file_path)
       file_type = @file_types.get_file_type(filename)
-      stat = nil
-      if @settings.need_stat?
+      file_size = 0
+      last_mod = nil
+      if @settings.need_last_mod? || @settings.need_size?
         stat = File.stat(file_path)
+        if @settings.need_last_mod?
+          last_mod = stat.mtime
+        end
+        if @settings.need_size?
+          file_size = stat.size
+        end
       end
-      FileResult.new(d, filename, file_type, stat)
+      FileResult.new(d, filename, file_type, file_size, last_mod)
     end
 
     def get_file_results(file_path)
