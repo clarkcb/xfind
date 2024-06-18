@@ -13,25 +13,25 @@ import swiftfind
 class FileResultTests: XCTestCase {
     func testFileResultAbsPath() {
         let filePath = "\(NSHomeDirectory())/src/xfind/swift/swiftfind/Sources/swiftfind/FileResult.swift"
-        let fileResult = FileResult(filePath: filePath, fileType: FileType.code)
+        let fileResult = FileResult(filePath: filePath, fileType: FileType.code, fileSize: 0)
         XCTAssertEqual(filePath, fileResult.description)
     }
 
     func testFileResultTildePath() {
         let filePath = "~/src/xfind/swift/swiftfind/Sources/swiftfind/FileResult.swift"
-        let fileResult = FileResult(filePath: filePath, fileType: FileType.code)
+        let fileResult = FileResult(filePath: filePath, fileType: FileType.code, fileSize: 0)
         XCTAssertEqual(filePath, fileResult.description)
     }
 
     func testFileResultRelPath1() {
         let filePath = "./FileResult.swift"
-        let fileResult = FileResult(filePath: filePath, fileType: FileType.code)
+        let fileResult = FileResult(filePath: filePath, fileType: FileType.code, fileSize: 0)
         XCTAssertEqual(filePath, fileResult.description)
     }
 
     func testFileResultRelPath2() {
         let filePath = "../FileResult.swift"
-        let fileResult = FileResult(filePath: filePath, fileType: FileType.code)
+        let fileResult = FileResult(filePath: filePath, fileType: FileType.code, fileSize: 0)
         XCTAssertEqual(filePath, fileResult.description)
     }
 

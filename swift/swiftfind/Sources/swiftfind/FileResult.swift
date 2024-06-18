@@ -13,12 +13,14 @@ public struct FileResult {
     public let containers: [String]
     public let filePath: String
     public let fileType: FileType
-    public let stat: [FileAttributeKey: Any]?
+    public let fileSize: UInt64
+    public let lastMod: Date?
 
-    public init(filePath: String, fileType: FileType, stat: [FileAttributeKey: Any]?=nil) {
+    public init(filePath: String, fileType: FileType, fileSize: UInt64, lastMod: Date?=nil) {
         self.filePath = filePath
         self.fileType = fileType
-        self.stat = stat
+        self.fileSize = fileSize
+        self.lastMod = lastMod
         containers = []
     }
 

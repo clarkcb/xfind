@@ -209,9 +209,13 @@ open class FindSettings: CustomStringConvertible {
         minSize = UInt64(minSizeStr) ?? 0
     }
 
-    public func needStat() -> Bool {
-        sortBy == SortBy.fileSize || sortBy == SortBy.lastMod ||
-            maxLastMod != nil || minLastMod != nil ||
+    public func needLastMod() -> Bool {
+        sortBy == SortBy.lastMod ||
+            maxLastMod != nil || minLastMod != nil
+    }
+
+    public func needSize() -> Bool {
+        sortBy == SortBy.fileSize ||
             maxSize > 0 || minSize > 0
     }
 

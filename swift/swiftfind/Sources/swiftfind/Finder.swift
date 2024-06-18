@@ -71,25 +71,14 @@ public class Finder {
             && (outFileTypes.isEmpty || !outFileTypes.contains(fileType))
     }
 
-    private func filterByStat(_ stat: [FileAttributeKey: Any]?) -> Bool {
-        if stat != nil {
-            if settings.maxLastMod != nil || settings.minLastMod != nil {
-                let lastMod: Date = stat?[FileAttributeKey.modificationDate] as! Date
-                if (settings.maxLastMod != nil && lastMod > settings.maxLastMod!)
-                    || (settings.minLastMod != nil && lastMod < settings.minLastMod!) {
-                    return false
-                }
-            }
+    private func filterBySize(_ fileSize: UInt64, maxSize: UInt64, minSize: UInt64) -> Bool {
+        (maxSize == 0 || fileSize <= maxSize) &&
+        (minSize == 0 || fileSize >= minSize)
+    }
 
-            if settings.maxSize > 0 || settings.minSize > 0 {
-                let fileSize: UInt64 = stat?[FileAttributeKey.size] as! UInt64
-                if (settings.maxSize > 0 && fileSize > settings.maxSize)
-                    || (settings.minSize > 0 && fileSize < settings.minSize) {
-                    return false
-                }
-            }
-        }
-        return true
+    private func filterByLastMod(_ lastMod: Date?, maxLastMod: Date?, minLastMod: Date?) -> Bool {
+        (maxLastMod == nil || lastMod! <= maxLastMod!) &&
+        (minLastMod == nil || lastMod! >= minLastMod!)
     }
 
     public func isMatchingDir(_ dirPath: String) -> Bool {
@@ -143,7 +132,8 @@ public class Finder {
                 && filterByFileTypes(fileResult.fileType,
                                      inFileTypes: settings.inFileTypes,
                                      outFileTypes: settings.outFileTypes)
-                && filterByStat(fileResult.stat))
+                && filterBySize(fileResult.fileSize, maxSize: settings.maxSize, minSize: settings.minSize)
+                && filterByLastMod(fileResult.lastMod, maxLastMod: settings.maxLastMod, minLastMod: settings.minLastMod))
     }
 
     public func isMatchingArchiveFile(_ fileName: String) -> Bool {
@@ -185,15 +175,19 @@ public class Finder {
             return nil
         }
         let fileType = fileTypes.getFileType(fileName)
-        var stat: [FileAttributeKey: Any]?
-        if self.settings.needStat() {
+        var fileSize: UInt64 = 0
+        var lastMod: Date? = nil
+        if self.settings.needSize() || self.settings.needLastMod() {
             do {
-                stat = try FileManager.default.attributesOfItem(atPath: filePath)
+                let stat: [FileAttributeKey: Any] = try FileManager.default.attributesOfItem(atPath: filePath)
+                if self.settings.needSize() { fileSize = stat[FileAttributeKey.size] as! UInt64 }
+                if self.settings.needLastMod() { lastMod = stat[FileAttributeKey.modificationDate] as? Date }
+
             } catch {
                 print("Error: \(error)")
             }
         }
-        let fr = FileResult(filePath: filePath, fileType: fileType, stat: stat)
+        let fr = FileResult(filePath: filePath, fileType: fileType, fileSize: fileSize, lastMod: lastMod)
         if fileType == FileType.archive {
             if settings.includeArchives && isMatchingArchiveFileResult(fr) {
                 return fr
@@ -264,14 +258,11 @@ public class Finder {
 
     private func getSortByFileSize() -> (FileResult, FileResult) -> Bool {
         { (fr1: FileResult, fr2: FileResult) -> Bool in
-            let fr1Size: UInt64 = fr1.stat?[FileAttributeKey.size] as! UInt64
-            let fr2Size: UInt64 = fr2.stat?[FileAttributeKey.size] as! UInt64
-
-            if fr1Size == fr2Size {
+            if fr1.fileSize == fr2.fileSize {
                 let sortByFilePath = self.getSortByFilePath()
                 return sortByFilePath(fr1, fr2)
             }
-            return fr1Size < fr2Size
+            return fr1.fileSize < fr2.fileSize
         }
     }
 
@@ -287,14 +278,11 @@ public class Finder {
 
     private func getSortByLastMod() -> (FileResult, FileResult) -> Bool {
         { (fr1: FileResult, fr2: FileResult) -> Bool in
-            let fr1LastMod: Date = fr1.stat?[FileAttributeKey.modificationDate] as! Date
-            let fr2LastMod: Date = fr2.stat?[FileAttributeKey.modificationDate] as! Date
-
-            if fr1LastMod == fr2LastMod {
+            if fr1.lastMod == fr2.lastMod {
                 let sortByFilePath = self.getSortByFilePath()
                 return sortByFilePath(fr1, fr2)
             }
-            return fr1LastMod < fr2LastMod
+            return fr1.lastMod < fr2.lastMod
         }
     }
 
