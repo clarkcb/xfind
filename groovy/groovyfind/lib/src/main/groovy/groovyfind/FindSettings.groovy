@@ -223,9 +223,13 @@ class FindSettings {
         addFileTypes(this.outFileTypes, ft)
     }
 
-    boolean needStat() {
-        return this.sortBy == SortBy.FILESIZE || this.sortBy == SortBy.LASTMOD ||
-                this.maxLastMod != null || this.minLastMod != null ||
+    boolean needLastMod() {
+        return this.sortBy == SortBy.LASTMOD ||
+                this.maxLastMod != null || this.minLastMod != null
+    }
+
+    boolean needSize() {
+        return this.sortBy == SortBy.FILESIZE ||
                 this.maxSize > 0 || this.minSize > 0
     }
 

@@ -2,7 +2,7 @@ package groovyfind
 
 
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
 
 class FileResult {
 
@@ -10,22 +10,24 @@ class FileResult {
     final List<String> containers
     final Path path
     final FileType fileType
-    final BasicFileAttributes stat
+    final long fileSize
+    final FileTime lastMod
 
     FileResult(final Path path, final FileType fileType) {
-        this([], path, fileType, null)
+        this([], path, fileType, 0L, null)
     }
 
-    FileResult(final Path path, final FileType fileType, final BasicFileAttributes stat) {
-        this([], path, fileType, stat)
+    FileResult(final Path path, final FileType fileType, final long fileSize, final FileTime lastMod) {
+        this([], path, fileType, fileSize, lastMod)
     }
 
     FileResult(final List<String> containers, final Path path, final FileType fileType,
-               final BasicFileAttributes stat) {
+               final long fileSize, final FileTime lastMod) {
         this.containers = containers
         this.path = path
         this.fileType = fileType
-        this.stat = stat
+        this.fileSize = fileSize
+        this.lastMod = lastMod
     }
 
     static int compareElements(final List firstElems, final List secondElems) {
@@ -68,13 +70,10 @@ class FileResult {
     }
 
     int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.stat != null && other.stat != null) {
-            if (this.stat.size() == other.stat.size()) {
-                return compareByPath(other, sortCaseInsensitive)
-            }
-            return this.stat.size() <= other.stat.size() ? -1 : 1
+        if (this.fileSize == other.fileSize) {
+            return compareByPath(other, sortCaseInsensitive)
         }
-        return 0
+        return this.fileSize <= other.fileSize ? -1 : 1
     }
 
     int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
@@ -85,13 +84,10 @@ class FileResult {
     }
 
     int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.stat != null && other.stat != null) {
-            if (this.stat.lastModifiedTime() == other.stat.lastModifiedTime()) {
-                return compareByPath(other, sortCaseInsensitive)
-            }
-            return this.stat.lastModifiedTime() <=> other.stat.lastModifiedTime()
+        if (this.lastMod == other.lastMod) {
+            return compareByPath(other, sortCaseInsensitive)
         }
-        return 0
+        return this.lastMod <=> other.lastMod
     }
 
     String toString() {

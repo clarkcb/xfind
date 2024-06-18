@@ -4,6 +4,7 @@ import groovy.transform.CompileStatic
 
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.FileTime
 import java.time.ZoneOffset
 import java.util.function.Function
 import java.util.regex.Pattern
@@ -40,7 +41,7 @@ class Finder {
                 && settings.maxLastMod.toInstant(ZoneOffset.UTC) < settings.minLastMod.toInstant(ZoneOffset.UTC)) {
             throw new FindException('Invalid range for minlastmod and maxlastmod')
         }
-        if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
+        if (settings.maxSize > 0 && settings.minSize > 0 && settings.maxSize < settings.minSize) {
             throw new FindException('Invalid range for minsize and maxsize')
         }
     }
@@ -80,45 +81,56 @@ class Finder {
                         !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
-    boolean isMatchingFileResult(final FileResult fr) {
-        def fileName = fr.path.fileName.toString()
-        if (!settings.inExtensions.empty || !settings.outExtensions.empty) {
-            String ext = FileUtil.getExtension(fileName)
-            if ((!settings.inExtensions.empty && !settings.inExtensions.contains(ext))
-                    ||
-                    (!settings.outExtensions.empty && settings.outExtensions.contains(ext))) {
-                return false
-            }
-        }
-        if ((!settings.inFilePatterns.empty
-                && !matchesAnyPattern(fileName, settings.inFilePatterns))
-                ||
-                (!settings.outFilePatterns.empty
-                        &&
-                        matchesAnyPattern(fileName, settings.outFilePatterns))) {
-            return false
-        }
-        if ((!settings.inFileTypes.empty
-                &&
-                !settings.inFileTypes.contains(fr.fileType))
-                ||
-                (!settings.outFileTypes.empty
-                        &&
-                        settings.outFileTypes.contains(fr.fileType))) {
-            return false
-        }
-        if (fr.stat != null) {
-            def stat = fr.stat
-            if ((settings.maxLastMod != null
-                    && stat.lastModifiedTime().toInstant() > settings.maxLastMod.toInstant(ZoneOffset.UTC))
-                    || (settings.minLastMod != null
-                    && stat.lastModifiedTime().toInstant() < settings.minLastMod.toInstant(ZoneOffset.UTC))
-                    || (settings.maxSize > 0 && stat.size() > settings.maxSize)
-                    || (settings.minSize > 0 && stat.size() < settings.minSize)) {
-                return false
-            }
+    boolean hasMatchingExtension(final FileResult fr) {
+        if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
+            def fileName = fr.getPath().getFileName().toString()
+            def ext = FileUtil.getExtension(fileName)
+            return ((settings.getInExtensions().isEmpty()
+                    || settings.getInExtensions().contains(ext))
+                    &&
+                    (settings.getOutExtensions().isEmpty()
+                            || !settings.getOutExtensions().contains(ext)))
         }
         return true
+    }
+
+    boolean hasMatchingFileName(final FileResult fr) {
+        def fileName = fr.getPath().getFileName().toString()
+        return ((settings.getInFilePatterns().isEmpty()
+                || matchesAnyPattern(fileName, settings.getInFilePatterns()))
+                &&
+                (settings.getOutFilePatterns().isEmpty()
+                        || !matchesAnyPattern(fileName, settings.getOutFilePatterns())))
+    }
+
+    boolean hasMatchingFileType(final FileResult fr) {
+        return ((settings.getInFileTypes().isEmpty()
+                || settings.getInFileTypes().contains(fr.getFileType()))
+                &&
+                (settings.getOutFileTypes().isEmpty()
+                        || !settings.getOutFileTypes().contains(fr.getFileType())))
+    }
+
+    boolean hasMatchingFileSize(final FileResult fr) {
+        return ((settings.getMaxSize() <= 0 || fr.getFileSize() <= settings.getMaxSize())
+                &&
+                (settings.getMinSize() <= 0 || fr.getFileSize() >= settings.getMinSize()))
+    }
+
+    boolean hasMatchingLastMod(final FileResult fr) {
+        return ((settings.getMaxLastMod() == null
+                || fr.getLastMod().toInstant() <= settings.getMaxLastMod().toInstant(ZoneOffset.UTC)
+                &&
+                (settings.getMinLastMod() == null
+                        || fr.getLastMod().toInstant() >= settings.getMinLastMod().toInstant(ZoneOffset.UTC))))
+    }
+
+    boolean isMatchingFileResult(final FileResult fr) {
+        return hasMatchingExtension(fr)
+                && hasMatchingFileName(fr)
+                && hasMatchingFileType(fr)
+                && hasMatchingFileSize(fr)
+                && hasMatchingLastMod(fr)
     }
 
     boolean isMatchingArchiveFile(final Path path) {
@@ -154,17 +166,21 @@ class Finder {
             }
         }
 
-        BasicFileAttributes stat = null
-        if (settings.needStat()) {
+        long fileSize = 0L
+        FileTime lastMod = null
+
+        if (settings.needSize() || settings.needLastMod()) {
             try {
-                stat = Files.readAttributes(path, BasicFileAttributes.class)
+                BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class)
+                fileSize = stat.size()
+                lastMod = stat.lastModifiedTime()
             } catch (IOException e) {
                 Logger.logError(e.message)
                 return Optional.empty()
             }
         }
 
-        def fileResult = new FileResult(path, fileTypes.getFileType(path), stat)
+        def fileResult = new FileResult(path, fileTypes.getFileType(path), fileSize, lastMod)
         if (fileResult.fileType == FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult)

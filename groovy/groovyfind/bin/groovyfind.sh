@@ -8,4 +8,5 @@ fi
 GROOVYFIND_PATH="$XFIND_PATH/groovy/groovyfind"
 GROOVYFIND_APP_JAR="$GROOVYFIND_PATH/app/build/libs/app.jar"
 
-java -jar "$GROOVYFIND_APP_JAR" "$@"
+#java -jar "$GROOVYFIND_APP_JAR" "$@"
+java -cp "$GROOVYFIND_APP_JAR" "groovyfind.app.GroovyFind" "$@"
