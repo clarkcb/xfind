@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -29,8 +29,8 @@ public class Finder
 		{
 			throw new FindException("Invalid range for mindepth and maxdepth");
 		}
-		if (Settings.MaxLastMod != null && Settings.MinLastMod != null
-		                                && Settings.MaxLastMod < Settings.MinLastMod)
+		if (Settings is { MaxLastMod: not null, MinLastMod: not null }
+		    && Settings.MaxLastMod < Settings.MinLastMod)
 		{
 			throw new FindException("Invalid range for minlastmod and maxlastmod");
 		}
