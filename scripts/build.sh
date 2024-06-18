@@ -993,29 +993,98 @@ build_python () {
     echo
     hdr "build_python"
 
-    # ensure python3.9+ is installed
-    PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
-    PYTHON=
-    for p in ${PYTHON_VERSIONS[*]}
-    do
-        PYTHON=$(which "$p")
-        if [ -f "$PYTHON" ]
-        then
-            break
-        fi
-    done
-
-    if [ -z "$PYTHON" ]
-    then
-        log_error "A version of python >= 3.9 is required"
-        return
-    else
-        PYTHON=$(basename "$PYTHON")
-        log "Using $PYTHON ($(which $PYTHON))"
-    fi
-
     # Set to Yes to use venv
     USE_VENV=$VENV
+    # PYTHON_VERSIONS=(python3.12 python3.11 python3.10 python3.9)
+    # We don't want to use python3.12 yet
+    PYTHON_VERSIONS=(python3.11 python3.10 python3.9)
+    PYTHON=
+
+    if [ "$USE_VENV" == 'yes' ]
+    then
+        log 'Using venv'
+
+        if [ -d "$PYFIND_PATH/venv" ]
+        then
+            log 'Using existing venv'
+
+            # if venv is active, deactivate it (in case it happens to be another venv that is active)
+            if [ -n "$VIRTUAL_ENV" ]
+            then
+                log 'Deactivating current venv'
+                deactivate
+            fi
+
+            # if venv isn't active, activate it
+            # (TODO: this is probably always true because of earlier deactivation)
+            if [ -z "$VIRTUAL_ENV" ]
+            then
+                log "source $PYFIND_PATH/venv/bin/activate"
+                source $PYFIND_PATH/venv/bin/activate
+            fi
+
+            # PYTHON=$(find "$PYFIND_PATH/venv/bin" -name python3 | head -n 1)
+            PYTHON=$(which python3)
+            PYTHON=$(basename "$PYTHON")
+        else
+            # ensure python3.9+ is installed
+            for p in ${PYTHON_VERSIONS[*]}
+            do
+                PYTHON=$(which "$p")
+                if [ -f "$PYTHON" ]
+                then
+                    break
+                fi
+            done
+
+            if [ -z "$PYTHON" ]
+            then
+                log_error "A version of python >= 3.9 is required"
+                return
+            else
+                PYTHON=$(basename "$PYTHON")
+            fi
+
+            log "Creating new venv"
+
+            # create a virtual env to run from and install to if it doesn't already exist
+            log "$PYTHON -m venv venv"
+            "$PYTHON" -m venv venv
+
+            # activate the venv
+            log "source $PYFIND_PATH/venv/bin/activate"
+            source $PYFIND_PATH/venv/bin/activate
+
+            # get the path to the venv version
+            PYTHON=$(which python3)
+            PYTHON=$(basename "$PYTHON")
+        fi
+
+    else
+
+        log "Not using venv"
+
+        # ensure python3.9+ is installed
+        for p in ${PYTHON_VERSIONS[*]}
+        do
+            PYTHON=$(which "$p")
+            if [ -f "$PYTHON" ]
+            then
+                break
+            fi
+        done
+
+        if [ -z "$PYTHON" ]
+        then
+            log_error "A version of python >= 3.9 is required"
+            return
+        else
+            PYTHON=$(basename "$PYTHON")
+        fi
+    fi
+
+    log "Using $PYTHON ($(which $PYTHON))"
+    log "$PYTHON -V: $($PYTHON -V)"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PYFIND_PATH/data"
@@ -1027,38 +1096,6 @@ build_python () {
     copy_json_resources "$RESOURCES_PATH"
 
     cd "$PYFIND_PATH"
-
-    if [ "$USE_VENV" == 'yes' ]
-    then
-        log "Using venv"
-
-        # if venv is active, deactivate it (in case it happens to be another venv that is active)
-        if [ -n "$VIRTUAL_ENV" ]
-        then
-            log "Deactivating current venv"
-            deactivate
-        fi
-
-        # create a virtual env to run from and install to if it doesn't already exist
-        if [ ! -d "$PYFIND_PATH/venv" ]
-        then
-            log "$PYTHON -m venv venv"
-            "$PYTHON" -m venv venv
-        fi
-
-        # if venv isn't active, activate it
-        # (TODO: this is probably always true because of earlier deactivation)
-        if [ -z "$VIRTUAL_ENV" ]
-        then
-            log "source $PYFIND_PATH/venv/bin/activate"
-            source $PYFIND_PATH/venv/bin/activate
-        fi
-
-        # get the path to the venv version
-        PYTHON=$(which python3)
-        PYTHON=$(basename "$PYTHON")
-        log "Using $PYTHON ($(which $PYTHON))"
-    fi
 
     # install wheel - this seems to fix problems with installing local dependencies,
     # which pyfind will be for pysearch

@@ -8,6 +8,8 @@
 #
 ################################################################################
 from dataclasses import dataclass
+import os
+import re
 import subprocess
 import sys
 from typing import Union
@@ -45,20 +47,23 @@ ext_args = ['-x', exts]
 common_args = core_args + ext_args + startpaths
 
 # Scenarios
-scenarios = [
+basic_scenarios = [
     Scenario('no args', [], replace_xfind_name=True),
     Scenario('help', ['-h'], replace_xfind_name=True),
-
+]
+extension_scenarios = [
     # match extensions
     Scenario('find matching "{}" extensions'.format(exts), common_args),
     Scenario('find not matching "{}" extensions'.format(exts), core_args + ['-X', exts] + startpaths,
              replace_xfind_name=False),
-
+]
+filename_scenarios = [
     # match filename
     Scenario('find with "find" in filename', common_args + ['-f', 'find']),
     Scenario('find with "find" not in filename', common_args + ['-F', 'find']),
     Scenario('find blank filename (should find nothing)', common_args + ['-f', '^$']),
-
+]
+filetype_scenarios = [
     # match filetype
     Scenario('find "audio" filetype', core_args + ['-t', 'audio'] + startpaths),
     Scenario('find not "audio" filetype', core_args + ['-T', 'audio'] + startpaths),
@@ -76,12 +81,14 @@ scenarios = [
     Scenario('find not "video" filetype', core_args + ['-T', 'video'] + startpaths),
     Scenario('find "xml" filetype', core_args + ['-t', 'xml'] + startpaths),
     Scenario('find not "xml" filetype', core_args + ['-T', 'xml'] + startpaths),
-
+]
+print_scenarios = [
     # print dirs
     Scenario('print matching dirs for "{}" extensions'.format(exts), common_args + ['--printdirs']),
     Scenario('print not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--printdirs'] + startpaths,
              replace_xfind_name=False),
-
+]
+sorting_scenarios = [
     # sorting scenarios
     Scenario('sort shared files by path', ['--sort-by', 'path', sharedpath]),
     Scenario('sort shared files by filename', ['--sort-by', 'name', sharedpath]),
@@ -93,25 +100,44 @@ scenarios = [
     Scenario('sort shared files by filetype descending', ['--sort-by', 'type', '--sort-descending', sharedpath]),
     Scenario('sort shared files by lastmod', ['--sort-by', 'lastmod', sharedpath]),
     Scenario('sort shared files by lastmod descending', ['--sort-by', 'lastmod', '--sort-descending', sharedpath]),
-
+]
+maxmindepth_scenarios = [
     # filter by maxdepth/mindepth
     Scenario('filter files with depth <= maxdepth', core_args + ['--maxdepth', '3', scriptpath]),
     Scenario('filter files with depth >= mindepth', core_args + ['--mindepth', '2', scriptpath]),
     Scenario('filter files by maxdepth and mindepth', core_args + ['--maxdepth', '3', '--mindepth', '2', scriptpath]),
     Scenario('filter files by invalid range maxdepth and mindepth', ignore_args + ['--maxdepth', '2', '--mindepth', '3', scriptpath], replace_xfind_name=True),
-
+]
+maxminlastmod_scenarios = [
     # filter by maxlastmod/minlastmod
     Scenario('filter files with lastmod <= maxlastmod', core_args + ['--maxlastmod', '2022-12-30', scriptpath]),
     Scenario('filter files with lastmod >= minlastmod', core_args + ['--minlastmod', '2020-01-01', scriptpath]),
     Scenario('filter files by maxlastmod and minlastmod', core_args + ['--maxlastmod', '2022-12-30', '--minlastmod', '2020-01-01', scriptpath]),
     Scenario('filter files by invalid range maxlastmod and minlastmod', core_args + ['--maxlastmod', '2020-01-01', '--minlastmod', '2022-12-30', scriptpath], replace_xfind_name=True),
-
+]
+maxminsize_scenarios = [
     # filter by maxsize/minsize
     Scenario('filter files with size < maxsize', core_args + ['--maxsize', '10000', scriptpath]),
     Scenario('filter files with size > minsize', core_args + ['--minsize', '1000', scriptpath]),
     Scenario('filter files by maxsize and minsize', core_args + ['--maxsize', '10000', '--minsize', '5000', scriptpath]),
     Scenario('filter files by invalid range maxsize and minsize', core_args + ['--maxsize', '5000', '--minsize', '10000', scriptpath], replace_xfind_name=True),
 ]
+# settingsonly_scenarios = [
+#     Scenario('settings-only', core_args + ['-t', 'code'] + ['--settingsonly'], replace_xfind_name=True, case_insensitive_cmp=True),
+# ]
+scenarios = \
+    basic_scenarios + \
+    extension_scenarios + \
+    filename_scenarios + \
+    filetype_scenarios + \
+    print_scenarios + \
+    sorting_scenarios + \
+    maxmindepth_scenarios + \
+    maxminlastmod_scenarios + \
+    maxminsize_scenarios
+# scenarios = \
+#     maxminlastmod_scenarios + \
+#     maxminsize_scenarios
 
 time_keys = {'real', 'sys', 'user', 'total'}
 

@@ -1075,28 +1075,96 @@ function BuildPython
     Write-Host
     Hdr('BuildPython')
 
-    # ensure python3.9+ is installed
-    $pythonVersions = @('python3.12', 'python3.11', 'python3.10', 'python3.9')
-    $python = ''
-    ForEach ($p in $pythonVersions)
-    {
-        $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
-        if ($null -ne $pythonCmd)
-        {
-            $python = $p
-            Log("Using $p (${pythonCmd.Source})")
-            break
-        }
-    }
-
-    if (-not $python)
-    {
-        PrintError('You need to install python(>= 3.9)')
-        return
-    }
+    $oldPwd = Get-Location
+    Set-Location $pyfindPath
 
     # Set to $true to use venv
     $useVenv=$venv
+    # $pythonVersions = @('python3.12', 'python3.11', 'python3.10', 'python3.9')
+    # We don't want to use python3.12 yet
+    $pythonVersions = @('python3.11', 'python3.10', 'python3.9')
+    $python = ''
+    $venvPath = Join-Path $pyfindPath 'venv'
+
+    if ($useVenv)
+    {
+        Log('Using venv')
+
+        if (Test-Path $venvPath)
+        {
+            Log('Using existing venv')
+
+            # activate the virtual env
+            $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+            Log("$activatePath")
+            & $activatePath
+
+            ForEach ($p in $pythonVersions)
+            {
+                $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+                if ($null -ne $pythonCmd)
+                {
+                    $python = $p
+                    break
+                }
+            }
+        }
+        else
+        {
+            # ensure python3.9+ is installed
+            ForEach ($p in $pythonVersions)
+            {
+                $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+                if ($null -ne $pythonCmd)
+                {
+                    $python = $p
+                    break
+                }
+            }
+        
+            if (-not $python)
+            {
+                PrintError('You need to install python(>= 3.9)')
+                return
+            }
+
+            Log('Creating new venv')
+
+            # create a virtual env to run from and install to
+            Log("$python -m venv venv")
+            & $python -m venv venv
+
+            # activate the virtual env
+            $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
+            Log("$activatePath")
+            & $activatePath
+        }
+    }
+    else
+    {
+        Log('Not using venv')
+
+        # ensure python3.9+ is installed
+        ForEach ($p in $pythonVersions)
+        {
+            $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+            if ($null -ne $pythonCmd)
+            {
+                $python = $p
+                break
+            }
+        }
+    
+        if (-not $python)
+        {
+            PrintError('You need to install python(>= 3.9)')
+            return
+        }
+    }
+
+    Log("Using $python")
+    $pythonVersion = & $python -V
+    Log("$python -V: ($($pythonVersion -replace "`n", ''))")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $pyfindPath 'data'
@@ -1105,37 +1173,6 @@ function BuildPython
         New-Item -ItemType directory -Path $resourcesPath
     }
     CopyJsonResources($resourcesPath)
-
-    $oldPwd = Get-Location
-    Set-Location $pyfindPath
-
-    if ($useVenv)
-    {
-        # create a virtual env to run from and install to
-        $venvPath = Join-Path $pyfindPath 'venv'
-        if (-not (Test-Path $venvPath))
-        {
-            Log("$python -m venv venv")
-            & $python -m venv venv
-        }
-    
-        # activate the virtual env
-        $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
-        Log("$activatePath")
-        & $activatePath
-
-        # Get the path to the venv version
-        ForEach ($p in $pythonVersions)
-        {
-            $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
-            if ($null -ne $pythonCmd)
-            {
-                $python = $p
-                Log("Using $p (${pythonCmd.Source})")
-                break
-            }
-        }
-    }
 
     # install dependencies in requirements.txt
     Log('pip3 install -r requirements.txt')

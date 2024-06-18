@@ -15,8 +15,8 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
 VENV_PATH=$PYFIND_PATH/venv
-PYTHON_EXE=python3.12
-PIP_EXE=pip3.12
+PYTHON_EXE=python3.11
+PIP_EXE=pip3.11
 REQUIREMENTS_PATH=$PYFIND_PATH/requirements.txt
 
 

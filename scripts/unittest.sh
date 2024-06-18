@@ -187,7 +187,7 @@ unittest_groovy () {
 
     cd "$GROOVYFIND_PATH"
     # run tests via gradle
-    log "Unit-testing ktfind"
+    log "Unit-testing groovyfind"
     log "gradle --warning-mode all test"
     gradle --warning-mode all test
     cd -

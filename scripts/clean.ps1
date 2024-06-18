@@ -134,6 +134,34 @@ function CleanDart
     Set-Location $oldPwd
 }
 
+function CleanElixir
+{
+    Write-Host
+    Hdr('CleanElixir')
+
+    # ensure elixir is installed
+    if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install elixir')
+        return
+    }
+
+    # ensure mix is installed
+    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install mix')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $exfindPath
+
+    Log('mix clean')
+    mix clean
+
+    Set-Location $oldPwd
+}
+
 function CleanFsharp
 {
 
@@ -511,6 +539,8 @@ function CleanMain
         'cs'         { CleanCsharp }
         'csharp'     { CleanCsharp }
         'dart'       { CleanDart }
+        'elixir'     { CleanElixir }
+        'ex'         { CleanElixir }
         'fs'         { CleanFsharp }
         'fsharp'     { CleanFsharp }
         'go'         { CleanGo }

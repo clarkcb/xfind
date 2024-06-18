@@ -129,6 +129,32 @@ clean_dart () {
     cd -
 }
 
+clean_elixir () {
+    echo
+    hdr "clean_elixir"
+
+    # ensure elixir is installed
+    if [ -z "$(which elixir)" ]
+    then
+        log_error "You need to install elixir"
+        return
+    fi
+
+    # ensure mix is installed
+    if [ -z "$(which mix)" ]
+    then
+        log_error "You need to install mix"
+        return
+    fi
+
+    cd "$EXFIND_PATH"
+
+    log "mix clean"
+    mix clean
+
+    cd -
+}
+
 clean_fsharp () {
     echo
     hdr "clean_fsharp"
@@ -515,6 +541,9 @@ case $ARG in
         ;;
     dart)
         clean_dart
+        ;;
+    elixir | ex)
+        clean_elixir
         ;;
     fs | fsharp)
         clean_fsharp
