@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 type FileResultsIterator struct {
@@ -67,13 +68,7 @@ func (frs *FileResults) getStrPtr(s *string) *string {
 }
 
 func (frs *FileResults) AddResult(r *FileResult) {
-	frs.FileResults = append(frs.FileResults, &FileResult{
-		r.Containers,
-		r.Path,
-		r.Name,
-		r.FileType,
-		r.FileInfo,
-	})
+	frs.FileResults = append(frs.FileResults, r)
 }
 
 func (frs *FileResults) Len() int {
@@ -188,10 +183,10 @@ func (frs *FileResults) getSortByName(sortCaseInsensitive bool) func(i, j int) b
 }
 
 func (frs *FileResults) CompareBySize(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	if fr1.FileInfo.Size() == fr2.FileInfo.Size() {
+	if fr1.FileSize == fr2.FileSize {
 		return frs.CompareByPath(fr1, fr2, sortCaseInsensitive)
 	}
-	if fr1.FileInfo.Size() < fr2.FileInfo.Size() {
+	if fr1.FileSize < fr2.FileSize {
 		return -1
 	}
 	return 1
@@ -220,10 +215,10 @@ func (frs *FileResults) getSortByType(sortCaseInsensitive bool) func(i, j int) b
 }
 
 func (frs *FileResults) CompareByLastMod(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	if fr1.FileInfo.ModTime().Equal(fr2.FileInfo.ModTime()) {
+	if fr1.LastMod.Equal(fr2.LastMod) {
 		return frs.CompareByPath(fr1, fr2, sortCaseInsensitive)
 	}
-	if fr1.FileInfo.ModTime().Before(fr2.FileInfo.ModTime()) {
+	if fr1.LastMod.Before(fr2.LastMod) {
 		return -1
 	}
 	return 1
@@ -264,16 +259,18 @@ type FileResult struct {
 	Path       string
 	Name       string
 	FileType   FileType
-	FileInfo   os.FileInfo
+	FileSize   int64
+	LastMod    time.Time
 }
 
-func NewFileResult(path string, name string, fileType FileType, fi os.FileInfo) *FileResult {
+func NewFileResult(path string, name string, fileType FileType, fileSize int64, lastMod time.Time) *FileResult {
 	return &FileResult{
 		[]string{},
 		path,
 		name,
 		fileType,
-		fi,
+		fileSize,
+		lastMod,
 	}
 }
 

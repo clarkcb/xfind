@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func Test_FileResult_AbsPath(t *testing.T) {
@@ -13,7 +14,7 @@ func Test_FileResult_AbsPath(t *testing.T) {
 	path := home + "/src/xfind/go/gofind/pkg/gofind/fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
-	fileResult := NewFileResult(dir, file, fileType, nil)
+	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	if fileResult.String() != path {
 		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
 	}
@@ -24,7 +25,7 @@ func Test_FileResult_TildePath(t *testing.T) {
 	path := "~/src/xfind/go/gofind/pkg/gofind/fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
-	fileResult := NewFileResult(dir, file, fileType, nil)
+	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	if fileResult.String() != path {
 		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
 	}
@@ -35,7 +36,7 @@ func Test_FileResult_RelPath1(t *testing.T) {
 	path := "./fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
-	fileResult := NewFileResult(dir, file, fileType, nil)
+	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	fileResultString := fileResult.String()
 	if fileResultString != path {
 		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
@@ -47,7 +48,7 @@ func Test_FileResult_RelPath2(t *testing.T) {
 	path := "./fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
-	fileResult := NewFileResult(dir, file, fileType, nil)
+	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	if fileResult.String() != path {
 		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
 	}
