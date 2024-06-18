@@ -47,7 +47,7 @@ void add_string_to_regex_node(const char *pat, RegexNode *regex_node)
     add_regex_to_regex_node(regex, regex_node);
 }
 
-int is_null_or_empty_regex_node(RegexNode *regex_node)
+int is_null_or_empty_regex_node(const RegexNode *regex_node)
 {
     if (regex_node == NULL || (regex_node->regex == NULL && regex_node->next == NULL))
         return 1;

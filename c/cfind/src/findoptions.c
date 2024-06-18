@@ -207,7 +207,6 @@ error_t get_find_options(FindOptions *options)
     char *full_path = (char *)malloc(MAX_HOMEPATH_LENGTH + 21);
     get_find_options_path(full_path);
 
-
     assert(full_path != NULL);
 
     if (!dir_or_file_exists(full_path)) {

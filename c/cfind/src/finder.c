@@ -76,7 +76,7 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
     return matches;
 }
 
-unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, struct stat *fpstat)
+unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat)
 {
     if (file_name == NULL) return 0;
     size_t file_len = strnlen(file_name, 1024);
@@ -96,10 +96,10 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
         }
     }
 
-    if (((is_null_or_empty_int_node(finder->settings->in_file_types) == 0)
-          && (int_matches_int_node((int *)file_type, finder->settings->in_file_types) == 0))
-        || ((is_null_or_empty_int_node(finder->settings->out_file_types) == 0)
-             && (int_matches_int_node((int *)file_type, finder->settings->out_file_types) == 1))
+    if ((is_null_or_empty_int_node(finder->settings->in_file_types) == 0
+          && int_matches_int_node((int *)file_type, finder->settings->in_file_types) == 0)
+        || (is_null_or_empty_int_node(finder->settings->out_file_types) == 0
+             && int_matches_int_node((int *)file_type, finder->settings->out_file_types) == 1)
         || (finder->settings->max_last_mod > 0L && fpstat->st_mtime > finder->settings->max_last_mod)
         || (finder->settings->min_last_mod > 0L && fpstat->st_mtime < finder->settings->min_last_mod)
         || (finder->settings->max_size > 0L && fpstat->st_size > finder->settings->max_size)
@@ -110,27 +110,27 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
     if (*file_type == ARCHIVE) {
         if (finder->settings->include_archives == 0) return 0;
 
-        if (((is_null_or_empty_string_node(finder->settings->in_archive_extensions) == 0)
-              && (string_matches_string_node(ext, finder->settings->in_archive_extensions) == 0))
-            || ((is_null_or_empty_string_node(finder->settings->out_archive_extensions) == 0)
-              && (string_matches_string_node(ext, finder->settings->out_archive_extensions) == 1))
-            || ((is_null_or_empty_regex_node(finder->settings->in_archive_file_patterns) == 0)
-              && (string_matches_regex_node(file_name, finder->settings->in_archive_file_patterns) == 0))
-            || ((is_null_or_empty_regex_node(finder->settings->out_archive_file_patterns) == 0)
-              && (string_matches_regex_node(file_name, finder->settings->out_archive_file_patterns) == 1))) {
+        if (is_null_or_empty_string_node(finder->settings->in_archive_extensions) == 0
+            && string_matches_string_node(ext, finder->settings->in_archive_extensions) == 0
+            || is_null_or_empty_string_node(finder->settings->out_archive_extensions) == 0
+            && string_matches_string_node(ext, finder->settings->out_archive_extensions) == 1
+            || is_null_or_empty_regex_node(finder->settings->in_archive_file_patterns) == 0
+            && string_matches_regex_node(file_name, finder->settings->in_archive_file_patterns) == 0
+            || is_null_or_empty_regex_node(finder->settings->out_archive_file_patterns) == 0
+            && string_matches_regex_node(file_name, finder->settings->out_archive_file_patterns) == 1) {
             return 0;
         }
     } else {
         if (finder->settings->archives_only == 1) return 0;
 
-        if (((is_null_or_empty_string_node(finder->settings->in_extensions) == 0)
-              && (string_matches_string_node(ext, finder->settings->in_extensions) == 0))
-            || ((is_null_or_empty_string_node(finder->settings->out_extensions) == 0)
-              && (string_matches_string_node(ext, finder->settings->out_extensions) == 1))
-            || ((is_null_or_empty_regex_node(finder->settings->in_file_patterns) == 0)
-              && (string_matches_regex_node(file_name, finder->settings->in_file_patterns) == 0))
-            || ((is_null_or_empty_regex_node(finder->settings->out_file_patterns) == 0)
-              && (string_matches_regex_node(file_name, finder->settings->out_file_patterns) == 1))) {
+        if (is_null_or_empty_string_node(finder->settings->in_extensions) == 0
+            && string_matches_string_node(ext, finder->settings->in_extensions) == 0
+            || is_null_or_empty_string_node(finder->settings->out_extensions) == 0
+            && string_matches_string_node(ext, finder->settings->out_extensions) == 1
+            || is_null_or_empty_regex_node(finder->settings->in_file_patterns) == 0
+            && string_matches_regex_node(file_name, finder->settings->in_file_patterns) == 0
+            || is_null_or_empty_regex_node(finder->settings->out_file_patterns) == 0
+            && string_matches_regex_node(file_name, finder->settings->out_file_patterns) == 1) {
             return 0;
         }
     }
@@ -138,14 +138,14 @@ unsigned short is_matching_file(const char *dir, const char *file_name, const Fi
     return 1;
 }
 
-unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, struct stat *fpstat)
+unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat)
 {
     if (!finder->settings->include_hidden && is_hidden(file_name))
         return 0;
     return is_matching_file(dir, file_name, finder, file_type, fpstat);
 }
 
-static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results, int depth)
+static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results, const int depth)
 {
     DIR *dir = opendir(dirpath);
     if (!dir) {
@@ -204,8 +204,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
                 char *file_name = (char *)malloc((slen + 1) * sizeof(char));
                 strncpy(file_name, dent->d_name, slen);
                 file_name[slen] = '\0';
-                // FileResult *r = new_file_result(normpath, file_name, file_type, &fpstat);
-                FileResult *r = new_file_result(normpath, file_name, file_type, (uint64_t) fpstat.st_size,
+                FileResult *r = new_file_result(normpath, file_name, file_type, fpstat.st_size,
                                                 fpstat.st_mtime);
                 add_to_file_results(r, results);
             }

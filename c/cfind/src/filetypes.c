@@ -409,79 +409,79 @@ end:
     return err;
 }
 
-unsigned short is_archive_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_archive_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->archive_extensions) > -1;
 }
 
-unsigned short is_archive_name(const char *name, FileTypes *file_types) {
+unsigned short is_archive_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->archive_names) > -1;
 }
 
-unsigned short is_audio_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_audio_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->audio_extensions) > -1;
 }
 
-unsigned short is_audio_name(const char *name, FileTypes *file_types) {
+unsigned short is_audio_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->audio_names) > -1;
 }
 
-unsigned short is_binary_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_binary_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->binary_extensions) > -1;
 }
 
-unsigned short is_binary_name(const char *name, FileTypes *file_types) {
+unsigned short is_binary_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->binary_names) > -1;
 }
 
-unsigned short is_code_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_code_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->code_extensions) > -1;
 }
 
-unsigned short is_code_name(const char *name, FileTypes *file_types) {
+unsigned short is_code_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->code_names) > -1;
 }
 
-unsigned short is_font_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_font_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->font_extensions) > -1;
 }
 
-unsigned short is_font_name(const char *name, FileTypes *file_types) {
+unsigned short is_font_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->font_names) > -1;
 }
 
-unsigned short is_image_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_image_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->image_extensions) > -1;
 }
 
-unsigned short is_image_name(const char *name, FileTypes *file_types) {
+unsigned short is_image_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->image_names) > -1;
 }
 
-unsigned short is_text_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_text_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->text_extensions) > -1;
 }
 
-unsigned short is_text_name(const char *name, FileTypes *file_types) {
+unsigned short is_text_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->text_names) > -1;
 }
 
-unsigned short is_video_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_video_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->video_extensions) > -1;
 }
 
-unsigned short is_video_name(const char *name, FileTypes *file_types) {
+unsigned short is_video_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->video_names) > -1;
 }
 
-unsigned short is_xml_ext(const char *ext, FileTypes *file_types) {
+unsigned short is_xml_ext(const char *ext, const FileTypes *file_types) {
     return index_of_string_in_string_array(ext, file_types->xml_extensions) > -1;
 }
 
-unsigned short is_xml_name(const char *name, FileTypes *file_types) {
+unsigned short is_xml_name(const char *name, const FileTypes *file_types) {
     return index_of_string_in_string_array(name, file_types->xml_names) > -1;
 }
 
-FileType get_file_type_for_filename(const char *filename, FileTypes *file_types)
+FileType get_file_type_for_filename(const char *filename, const FileTypes *file_types)
 {
     FileType file_type = UNKNOWN;
     if (strnlen(filename, 10) > 0) {
@@ -511,7 +511,7 @@ FileType get_file_type_for_filename(const char *filename, FileTypes *file_types)
     return file_type;
 }
 
-FileType get_file_type_for_ext(const char *ext, FileTypes *file_types)
+FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types)
 {
     FileType file_type = UNKNOWN;
     if (strnlen(ext, 10) > 0) {

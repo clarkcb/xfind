@@ -97,7 +97,7 @@ void add_char_split_to_string_node(const char c, const char *s, StringNode *stri
     }
 }
 
-int is_null_or_empty_string_node(StringNode *string_node)
+int is_null_or_empty_string_node(const StringNode *string_node)
 {
     if (string_node == NULL || (string_node->string == NULL && string_node->next == NULL))
         return 1;

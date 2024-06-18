@@ -3,7 +3,6 @@
 #include <time.h>
 
 #include "common.h"
-#include "finderr.h"
 
 void log_msg(const char *msg)
 {

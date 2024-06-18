@@ -6,7 +6,6 @@
 
 #include "common.h"
 #include "fileutil.h"
-#include "stringarray.h"
 
 const char *DOT_DIRS[] = {".", "..", "./", "../"};
 

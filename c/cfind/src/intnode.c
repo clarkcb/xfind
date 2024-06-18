@@ -35,7 +35,7 @@ void add_int_to_int_node(const int *i, IntNode *int_node)
     }
 }
 
-int is_null_or_empty_int_node(IntNode *int_node)
+int is_null_or_empty_int_node(const IntNode *int_node)
 {
     if (int_node == NULL || (int_node->integer == NULL && int_node->next == NULL))
         return 1;

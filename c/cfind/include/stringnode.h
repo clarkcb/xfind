@@ -16,7 +16,7 @@ void add_string_to_string_node(const char *s, StringNode *string_node);
 
 void add_char_split_to_string_node(char c, const char *s, StringNode *string_node);
 
-int is_null_or_empty_string_node(StringNode *string_node);
+int is_null_or_empty_string_node(const StringNode *string_node);
 
 int string_matches_string_node(const char *s, StringNode *string_node);
 

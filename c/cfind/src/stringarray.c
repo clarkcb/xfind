@@ -35,7 +35,7 @@ void add_string_to_string_array(const char *s, StringArray *arr)
 // includes 2 chars for enclosing '[' and ']',
 // 2 chars per string for double quotes
 // and arr_size - 1 for commas
-size_t string_array_strlen(StringArray *arr)
+size_t string_array_strlen(const StringArray *arr)
 {
     size_t arrlen = 2; // for  '[' and ']'
     for (int i=0; i < arr->size; i++) {
@@ -47,7 +47,7 @@ size_t string_array_strlen(StringArray *arr)
     return arrlen;
 }
 
-int index_of_string_in_string_array(const char *s, StringArray *arr)
+int index_of_string_in_string_array(const char *s, const StringArray *arr)
 {
     int j = -1;
     for (int i = 0; i < arr->size; i++) {

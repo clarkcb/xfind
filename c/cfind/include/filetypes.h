@@ -56,45 +56,45 @@ FileTypes *new_file_types(void);
 
 error_t get_file_types(FileTypes *file_types);
 
-unsigned short is_archive_ext(const char *ext, FileTypes *file_types);
+unsigned short is_archive_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_archive_name(const char *name, FileTypes *file_types);
+unsigned short is_archive_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_audio_ext(const char *ext, FileTypes *file_types);
+unsigned short is_audio_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_audio_name(const char *name, FileTypes *file_types);
+unsigned short is_audio_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_binary_ext(const char *ext, FileTypes *file_types);
+unsigned short is_binary_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_binary_name(const char *name, FileTypes *file_types);
+unsigned short is_binary_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_code_ext(const char *ext, FileTypes *file_types);
+unsigned short is_code_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_code_name(const char *name, FileTypes *file_types);
+unsigned short is_code_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_font_ext(const char *ext, FileTypes *file_types);
+unsigned short is_font_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_font_name(const char *name, FileTypes *file_types);
+unsigned short is_font_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_image_ext(const char *ext, FileTypes *file_types);
+unsigned short is_image_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_image_name(const char *name, FileTypes *file_types);
+unsigned short is_image_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_text_ext(const char *ext, FileTypes *file_types);
+unsigned short is_text_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_text_name(const char *name, FileTypes *file_types);
+unsigned short is_text_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_video_ext(const char *ext, FileTypes *file_types);
+unsigned short is_video_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_video_name(const char *name, FileTypes *file_types);
+unsigned short is_video_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_xml_ext(const char *ext, FileTypes *file_types);
+unsigned short is_xml_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_xml_name(const char *name, FileTypes *file_types);
+unsigned short is_xml_name(const char *name, const FileTypes *file_types);
 
-FileType get_file_type_for_filename(const char *filename, FileTypes *file_types);
+FileType get_file_type_for_filename(const char *filename, const FileTypes *file_types);
 
-FileType get_file_type_for_ext(const char *ext, FileTypes *file_types);
+FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
 
 FileType file_type_from_name(const char *name);
 

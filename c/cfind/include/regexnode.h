@@ -23,7 +23,7 @@ void add_regex_to_regex_node(Regex *r, RegexNode *regex_node);
 
 void add_string_to_regex_node(const char *pat, RegexNode *regex_node);
 
-int is_null_or_empty_regex_node(RegexNode *regex_node);
+int is_null_or_empty_regex_node(const RegexNode *regex_node);
 
 int string_matches_regex_node(const char *s, RegexNode *regex_node);
 

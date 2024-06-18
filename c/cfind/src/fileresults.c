@@ -6,15 +6,15 @@
 #include "common.h"
 #include "fileresults.h"
 
-FileResult *new_file_result(const char *d, const char *fn, FileType ft, uint64_t fsize, long mtime)
+FileResult *new_file_result(const char *dir, const char *file_name, const FileType file_type, const uint64_t file_size, const long last_mod)
 {
     FileResult *r = malloc(sizeof(FileResult));
     assert(r != NULL);
-    r->dir = d;
-    r->file_name = fn;
-    r->file_type = ft;
-    r->file_size = fsize;
-    r->mtime = mtime;
+    r->dir = dir;
+    r->file_name = file_name;
+    r->file_type = file_type;
+    r->file_size = file_size;
+    r->last_mod = last_mod;
     return r;
 }
 
@@ -27,7 +27,7 @@ FileResults *empty_file_results(void)
     return results;
 }
 
-int is_null_or_empty_file_results(FileResults *results)
+int is_null_or_empty_file_results(const FileResults *results)
 {
     if (results == NULL || results->result == NULL)
         return 1;
@@ -56,7 +56,7 @@ void add_to_file_results(FileResult *r, FileResults *results)
     }
 }
 
-size_t file_result_strlen(FileResult *r)
+size_t file_result_strlen(const FileResult *r)
 {
     return strlen(r->dir) + strlen(r->file_name) + 1;
     // Include file_size: + 3 is for the space and parens
@@ -76,7 +76,7 @@ size_t file_results_count(FileResults *results)
     return count;
 }
 
-void file_result_to_string(FileResult *r, char *s)
+void file_result_to_string(const FileResult *r, char *s)
 {
     sprintf(s, "%s/%s", r->dir, r->file_name);
     // sprintf(s, "%s/%s (%llu)", r->dir, r->file_name, r->file_size);
@@ -84,8 +84,8 @@ void file_result_to_string(FileResult *r, char *s)
     s[file_result_strlen(r)] = '\0';
 }
 
-void print_file_results(FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
-                        unsigned short sort_descending)
+void print_file_results(FileResults *results, const SortBy sort_by, const unsigned short sort_case_insensitive,
+                        const unsigned short sort_descending)
 {
     size_t results_count = file_results_count(results);
     FileResult *results_array[results_count];
@@ -175,7 +175,7 @@ static int cmp_file_results_by_lastmod(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int timecmp = ((int) ((*r1)->mtime - (*r2)->mtime));
+    int timecmp = ((int) ((*r1)->last_mod - (*r2)->last_mod));
     if (timecmp == 0) {
         return cmp_file_results_by_path(a, b);
     }
@@ -238,7 +238,7 @@ static int cmp_file_results_by_lastmod_ci(const void *a, const void *b)
 {
     FileResult **r1 = (FileResult **)a;
     FileResult **r2 = (FileResult **)b;
-    int timecmp = ((int) ((*r1)->mtime - (*r2)->mtime));
+    int timecmp = ((int) ((*r1)->last_mod - (*r2)->last_mod));
     if (timecmp == 0) {
         return cmp_file_results_by_path_ci(a, b);
     }
@@ -246,10 +246,10 @@ static int cmp_file_results_by_lastmod_ci(const void *a, const void *b)
 }
 
 // sort a FileResult array
-void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned short case_insensitive)
+void sort_file_result_array(FileResult **arr, const size_t n, const SortBy sort_by, const unsigned short case_insensitive)
 {
     if (case_insensitive == 1) {
-        switch (sortby) {
+        switch (sort_by) {
             case FILENAME:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name_ci);
                 break;
@@ -267,7 +267,7 @@ void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned 
                 break;
         }
     } else {
-        switch (sortby) {
+        switch (sort_by) {
             case FILENAME:
                 qsort(arr, n, sizeof(FileResult *), cmp_file_results_by_name);
                 break;
@@ -287,7 +287,7 @@ void sort_file_result_array(FileResult **arr, size_t n, SortBy sortby, unsigned 
     }
 }
 
-void reverse_file_result_array(FileResult *arr[], size_t low, size_t high) {
+void reverse_file_result_array(FileResult *arr[], const size_t low, const size_t high) {
     if (low < high)
     {
         FileResult *temp = arr[low];
@@ -359,9 +359,8 @@ void destroy_file_result(FileResult *r)
 void destroy_file_results(FileResults *results)
 {
     FileResults *current = results;
-    FileResults *next;
     while (current != NULL) {
-        next = current->next;
+        FileResults *next = current->next;
         destroy_file_result(current->result);
         free(current);
         current = next;
