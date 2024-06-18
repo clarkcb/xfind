@@ -12,15 +12,15 @@ const fsStatAsync = promisify(fs.stat);
 const fsReaddirAsync = promisify(fs.readdir);
 
 const {FileResult} = require('./fileresult');
+const {FileType} = require("./filetype");
 const {FileTypes} = require('./filetypes');
 const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
-const {FileType} = require("./filetype");
 const {SortBy} = require("./sortby");
 
 class Finder {
-    //settings = null;
-    //fileTypes = null;
+    settings;
+    fileTypes;
 
     constructor(settings) {
         this.settings = settings;
@@ -39,7 +39,7 @@ class Finder {
                     assert.ok(this.isMatchingDir(p),
                         'Startpath does not match find settings');
                 } else if (stat.isFile()) {
-                    assert.ok(this.filterFile(p),
+                    assert.ok(this.filterFile(p, stat),
                         'Startpath does not match find settings');
                 } else {
                     assert.ok(false, 'Startpath not findable file type');
@@ -49,8 +49,8 @@ class Finder {
                 assert.ok(this.settings.maxDepth >= this.settings.minDepth,
                   'Invalid range for mindepth and maxdepth');
             }
-            if (this.settings.maxLastMod !== null && this.settings.minLastMod !== null) {
-                assert.ok(this.settings.maxLastMod.getTime() >= this.settings.minLastMod.getTime(),
+            if (this.settings.maxLastMod > 0 && this.settings.minLastMod > 0) {
+                assert.ok(this.settings.maxLastMod >= this.settings.minLastMod,
                   'Invalid range for minlastmod and maxlastmod');
             }
             if (this.settings.maxSize > 0 && this.settings.minSize > 0) {
@@ -102,30 +102,12 @@ class Finder {
             this.settings.outDirPatterns));
     }
 
-    isMatchingFile(file) {
+    isMatchingFile(file, stat) {
         // if (!this.settings.includeHidden && FileUtil.isHidden(file)) {
         //     return false;
         // }
-        if (this.settings.inExtensions.length || this.settings.outExtensions.length) {
-            let ext = FileUtil.getExtension(file);
-            if ((this.settings.inExtensions.length &&
-                    !this.matchesAnyElement(ext, this.settings.inExtensions)) ||
-                (this.settings.outExtensions.length &&
-                    this.matchesAnyElement(ext, this.settings.outExtensions))) {
-                return false;
-            }
-        }
-        if ((this.settings.inFilePatterns.length &&
-                !this.matchesAnyPattern(file, this.settings.inFilePatterns)) ||
-            (this.settings.outFilePatterns.length &&
-                this.matchesAnyPattern(file, this.settings.outFilePatterns))) {
-            return false;
-        }
-        let fileType = this.fileTypes.getFileType(file);
-        return !((this.settings.inFileTypes.length &&
-            !this.matchesAnyElement(fileType, this.settings.inFileTypes)) ||
-            (this.settings.outFileTypes.length &&
-                this.matchesAnyElement(fileType, this.settings.outFileTypes)));
+        let fr = this.filePathToFileResult(file, stat);
+        return this.isMatchingFileResult(fr);
     }
 
     isMatchingFileResult(fr) {
@@ -153,15 +135,13 @@ class Finder {
                 this.matchesAnyElement(fr.fileType, this.settings.outFileTypes))) {
             return false;
         }
-        if (fr.stat !== null) {
-            if ((this.settings.maxLastMod !== null && fr.stat.mtime.getTime() > this.settings.maxLastMod.getTime()) ||
-                (this.settings.minLastMod !== null && fr.stat.mtime.getTime() < this.settings.minLastMod.getTime())) {
-                return false;
-            }
-            if ((this.settings.maxSize > 0 && fr.stat.size > this.settings.maxSize) ||
-                (this.settings.minSize > 0 && fr.stat.size < this.settings.minSize)) {
-                return false;
-            }
+        if ((this.settings.maxLastMod > 0 && fr.lastMod > this.settings.maxLastMod) ||
+          (this.settings.minLastMod > 0 && fr.lastMod < this.settings.minLastMod)) {
+            return false;
+        }
+        if ((this.settings.maxSize > 0 && fr.fileSize > this.settings.maxSize) ||
+          (this.settings.minSize > 0 && fr.fileSize < this.settings.minSize)) {
+            return false;
         }
         return true;
     }
@@ -187,27 +167,34 @@ class Finder {
             this.matchesAnyPattern(file, this.settings.outArchiveFilePatterns));
     }
 
-    filterFile(f) {
+    filterFile(f, stat) {
         if (!this.settings.includeHidden && FileUtil.isHidden(f)) {
             return false;
         }
         if (this.fileTypes.isArchiveFile(f)) {
             return (this.settings.findArchives && this.isMatchingArchiveFile(f));
         }
-        return (!this.settings.archivesOnly && this.isMatchingFile(f));
+        return (!this.settings.archivesOnly && this.isMatchingFile(f, stat));
     }
 
-    async filterToFileResult(fp) {
+    filePathToFileResult(fp, stat) {
+        const dirname = path.dirname(fp) || '.';
+        const fileName = path.basename(fp);
+        let fileSize = 0;
+        let lastMod = 0;
+        if (this.settings.needLastMod() || this.settings.needSize()) {
+            stat = stat || fs.statSync(fp);
+            fileSize = stat.size;
+            lastMod = stat.mtime.getTime();
+        }
+        return new FileResult(dirname, fileName, this.fileTypes.getFileType(fileName), fileSize, lastMod);
+    }
+
+    async filterToFileResult(fp, stat) {
         if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
-        const dirname = path.dirname(fp) || '.';
-        const fileName = path.basename(fp);
-        let stat = null;
-        if (this.settings.needStat()) {
-            stat = fs.statSync(fp);
-        }
-        let fr = new FileResult(dirname, fileName, this.fileTypes.getFileType(fileName), stat);
+        const fr = this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.ARCHIVE) {
             if (this.settings.findArchives && this.isMatchingArchiveFile(fr.fileName)) {
                 return fr;
@@ -238,7 +225,7 @@ class Finder {
                 }
             } else if (stats.isFile()) {
                 if (depth >= this.settings.minDepth) {
-                    const fr = await this.filterToFileResult(filePath);
+                    const fr = await this.filterToFileResult(filePath, stats);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
@@ -273,7 +260,7 @@ class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(startPath);
+                let fr = this.filterToFileResult(startPath, stats);
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {
@@ -314,13 +301,10 @@ class Finder {
     }
 
     cmpFileResultsBySize(fr1, fr2) {
-        if (fr1.stat !== null && fr2.stat !== null) {
-            if (fr1.stat.size === fr2.stat.size) {
-                return this.cmpFileResultsByPath(fr1, fr2);
-            }
-            return fr1.stat.size - fr2.stat.size;
+        if (fr1.fileSize === fr2.fileSize) {
+            return this.cmpFileResultsByPath(fr1, fr2);
         }
-        return 0;
+        return fr1.fileSize - fr2.fileSize;
     }
 
     cmpFileResultsByType(fr1, fr2) {
@@ -331,13 +315,10 @@ class Finder {
     }
 
     cmpFileResultsByLastMod(fr1, fr2) {
-        if (fr1.stat !== null && fr2.stat !== null) {
-            if (fr1.stat.mtime.getTime() === fr2.stat.mtime.getTime()) {
-                return this.cmpFileResultsByPath(fr1, fr2);
-            }
-            return fr1.stat.mtime.getTime() - fr2.stat.mtime.getTime();
+        if (fr1.lastMod === fr2.lastMod) {
+            return this.cmpFileResultsByPath(fr1, fr2);
         }
-        return 0;
+        return fr1.lastMod - fr2.lastMod;
     }
 
     sortFileResults(fileResults) {
@@ -361,7 +342,8 @@ class Finder {
         // get the file results
         let fileResults = [];
 
-        const pathFileResultsArrays = await Promise.all(this.settings.paths.map(d => this.getFileResults(d)));
+        const pathFileResultsArrays =
+          await Promise.all(this.settings.paths.map(d => this.getFileResults(d)));
         pathFileResultsArrays.forEach(pathFileResults => {
             fileResults = fileResults.concat(pathFileResults);
         });

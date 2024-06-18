@@ -6,6 +6,9 @@
     "name": "Cary Clark",
     "email": "clarkcb@gmail.com"
   },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/clarkcb/xfind.git"

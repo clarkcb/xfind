@@ -3,6 +3,7 @@
  *
  * encapsulates a file to be found
  */
+const {FileType} = require('./filetype');
 
 const path = require('path');
 
@@ -11,13 +12,16 @@ class FileResult {
     containers = [];
     path = '';
     fileName = '';
-    stat = null;
+    fileType = FileType.UNKNOWN;
+    fileSize = 0;
+    lastMod = 0;
 
-    constructor(path, fileName, fileType, stat) {
+    constructor(path, fileName, fileType, fileSize, lastMod) {
         this.path = path;
         this.fileName = fileName;
         this.fileType = fileType;
-        this.stat = stat;
+        this.fileSize = fileSize;
+        this.lastMod = lastMod;
     }
 
     relativePath() {

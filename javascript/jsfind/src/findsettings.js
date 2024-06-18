@@ -20,10 +20,10 @@ class FindSettings {
     includeArchives = false;
     includeHidden = false;
     maxDepth = -1;
-    #maxLastMod = null;
+    maxLastMod = 0;
     maxSize = 0;
     minDepth = -1;
-    #minLastMod = null;
+    minLastMod = 0;
     minSize = 0;
     outArchiveExtensions = [];
     outArchiveFilePatterns = [];
@@ -136,74 +136,61 @@ class FindSettings {
         this.addFileTypes(fileType, this.outFileTypes);
     }
 
-    get maxLastMod() {
-        return this.#maxLastMod;
-    }
-
-    set maxLastMod(value) {
-        this.#maxLastMod = value;
-    }
-
     maxLastModFromString(s) {
-        this.#maxLastMod = StringUtil.getDateForString(s);
-    }
-
-    get minLastMod() {
-        return this.#minLastMod;
-    }
-
-    set minLastMod(value) {
-        this.#minLastMod = value;
+        this.maxLastMod = StringUtil.getTimestampForString(s);
     }
 
     minLastModFromString(s) {
-        this.#minLastMod = StringUtil.getDateForString(s);
+        this.minLastMod = StringUtil.getTimestampForString(s);
     }
 
-    needStat() {
+    needLastMod() {
+        return this.sortBy === SortBy.LASTMOD ||
+          this.maxLastMod > 0 ||
+          this.minLastMod > 0;
+    }
+
+    needSize() {
         return this.sortBy === SortBy.FILESIZE ||
-            this.sortBy === SortBy.LASTMOD ||
-            this.#maxLastMod !== null ||
-            this.maxSize > 0 ||
-            this.#minLastMod !== null ||
-            this.minSize > 0;
+          this.maxSize > 0 ||
+          this.minSize > 0;
     }
 
     toString() {
         return 'FindSettings(' +
-            'archivesOnly=' + this.archivesOnly +
-            ', debug=' + this.debug +
-            ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +
-            ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
-            ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns) +
-            ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions) +
-            ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns) +
-            ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
-            ', includeArchives=' + this.includeArchives +
-            ', includeHidden=' + this.includeHidden +
-            ', maxDepth=' + this.maxDepth +
-            ', ' + StringUtil.dateToString('maxLastMod', this.maxLastMod) +
-            ', maxSize=' + this.maxSize +
-            ', minDepth=' + this.minDepth +
-            ', ' + StringUtil.dateToString('minLastMod', this.minLastMod) +
-            ', minSize=' + this.minSize +
-            ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions) +
-            ', ' + StringUtil.patternListToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
-            ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns) +
-            ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions) +
-            ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns) +
-            ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
-            ', ' + StringUtil.stringListToString('paths', this.paths) +
-            ', printDirs=' + this.printDirs +
-            ', printFiles=' + this.printFiles +
-            ', printUsage=' + this.printUsage +
-            ', printVersion=' + this.printVersion +
-            ', recursive=' + this.recursive +
-            ', sortBy=' + sortByToName(this.sortBy) +
-            ', sortCaseInsensitive=' + this.sortCaseInsensitive +
-            ', sortDescending=' + this.sortDescending +
-            ', verbose=' + this.verbose +
-            ')';
+          'archivesOnly=' + this.archivesOnly +
+          ', debug=' + this.debug +
+          ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +
+          ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
+          ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns) +
+          ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions) +
+          ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns) +
+          ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes) +
+          ', includeArchives=' + this.includeArchives +
+          ', includeHidden=' + this.includeHidden +
+          ', maxDepth=' + this.maxDepth +
+          ', ' + StringUtil.timestampToString('maxLastMod', this.maxLastMod) +
+          ', maxSize=' + this.maxSize +
+          ', minDepth=' + this.minDepth +
+          ', ' + StringUtil.timestampToString('minLastMod', this.minLastMod) +
+          ', minSize=' + this.minSize +
+          ', ' + StringUtil.stringListToString('outArchiveExtensions', this.outArchiveExtensions) +
+          ', ' + StringUtil.patternListToString('outArchiveFilePatterns', this.outArchiveFilePatterns) +
+          ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns) +
+          ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions) +
+          ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns) +
+          ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes) +
+          ', ' + StringUtil.stringListToString('paths', this.paths) +
+          ', printDirs=' + this.printDirs +
+          ', printFiles=' + this.printFiles +
+          ', printUsage=' + this.printUsage +
+          ', printVersion=' + this.printVersion +
+          ', recursive=' + this.recursive +
+          ', sortBy=' + sortByToName(this.sortBy) +
+          ', sortCaseInsensitive=' + this.sortCaseInsensitive +
+          ', sortDescending=' + this.sortDescending +
+          ', verbose=' + this.verbose +
+          ')';
     }
 }
 

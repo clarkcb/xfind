@@ -15,10 +15,26 @@ const dateToString = (name, dt) => {
     return s;
 };
 
+const timestampToString = (name, ts) => {
+    let s = `${name}=`;
+    if (!ts)
+        s += '0';
+    else {
+        const dt = new Date();
+        dt.setTime(ts);
+        s += `"${dt.toISOString()}"`;
+    }
+    return s;
+};
+
 const getDateForString = (s) => {
     const d = new Date();
     d.setTime(Date.parse(s));
     return d;
+};
+
+const getTimestampForString = (s) => {
+    return Date.parse(s);
 };
 
 const stringListToString = (name, lst) => {
@@ -38,4 +54,4 @@ const patternListToString = (name, lst) => {
     return s;
 };
 
-module.exports = {dateToString, getDateForString, patternListToString, stringListToString};
+module.exports = {dateToString, getDateForString, timestampToString, getTimestampForString, patternListToString, stringListToString};

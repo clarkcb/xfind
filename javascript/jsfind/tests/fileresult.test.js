@@ -11,7 +11,7 @@ describe('testing fileresult', () => {
     it('testFileResultAbsPath', () => {
         const path = `${process.env.HOME}/src/xfind/javascript/jsfind/src`;
         const fileName = 'fileresult.js';
-        const fileResult = new FileResult(path, fileName, FileType.CODE);
+        const fileResult = new FileResult(path, fileName, FileType.CODE, 0, 0);
         const expected = `${process.env.HOME}/src/xfind/javascript/jsfind/src/fileresult.js`;
         expect(fileResult.relativePath()).toEqual(expected);
     });
@@ -19,7 +19,7 @@ describe('testing fileresult', () => {
     it('testFileResultRelPath1', () => {
         const path = '.';
         const fileName = 'fileresult.js';
-        const fileResult = new FileResult(path, fileName, FileType.CODE);
+        const fileResult = new FileResult(path, fileName, FileType.CODE, 0, 0);
         const expected = './fileresult.js';
         expect(fileResult.relativePath()).toEqual(expected);
     });
@@ -27,7 +27,7 @@ describe('testing fileresult', () => {
     it('testFileResultRelPath2', () => {
         const path = './';
         const fileName = 'fileresult.js';
-        const fileResult = new FileResult(path, fileName, FileType.CODE);
+        const fileResult = new FileResult(path, fileName, FileType.CODE, 0, 0);
         const expected = './fileresult.js';
         expect(fileResult.relativePath()).toEqual(expected);
     });
@@ -35,7 +35,7 @@ describe('testing fileresult', () => {
     it('testFileResultRelPath3', () => {
         const path = '..';
         const fileName = 'fileresult.js';
-        const fileResult = new FileResult(path, fileName, FileType.CODE);
+        const fileResult = new FileResult(path, fileName, FileType.CODE, 0, 0);
         const expected = '../fileresult.js';
         expect(fileResult.relativePath()).toEqual(expected);
     });
