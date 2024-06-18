@@ -96,10 +96,21 @@ class FindSettings
         }
     }
 
-    public function need_stat(): bool
+    /**
+     * @return bool
+     */
+    public function need_last_mod(): bool
     {
-        return $this->sort_by == SortBy::Filesize || $this->sort_by == SortBy::LastMod ||
-            $this->max_last_mod != null || $this->min_last_mod != null ||
+        return $this->sort_by == SortBy::LastMod ||
+            $this->max_last_mod != null || $this->min_last_mod != null;
+    }
+
+    /**
+     * @return bool
+     */
+    public function need_size(): bool
+    {
+        return $this->sort_by == SortBy::Filesize ||
             $this->max_size > 0 || $this->min_size > 0;
     }
 

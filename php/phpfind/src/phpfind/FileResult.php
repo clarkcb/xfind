@@ -13,21 +13,24 @@ class FileResult
     public readonly string $path;
     public readonly string $file_name;
     public readonly FileType $file_type;
-    public readonly array|false $stat;
+    public readonly int $file_size;
+    public readonly int $last_mod;
 
     /**
      * @param string $path
      * @param string $file_name
      * @param FileType $file_type
-     * @param array|false $stat
+     * @param int $file_size
+     * @param int $last_mod
      */
-    public function __construct(string $path, string $file_name, FileType $file_type, array|false $stat)
+    public function __construct(string $path, string $file_name, FileType $file_type, int $file_size, int $last_mod)
     {
         $this->containers = array();
         $this->path = $path;
         $this->file_name = $file_name;
         $this->file_type = $file_type;
-        $this->stat = $stat;
+        $this->file_size = $file_size;
+        $this->last_mod = $last_mod;
     }
 
     /**

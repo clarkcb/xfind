@@ -40,7 +40,8 @@ class Finder
                 throw new FindException('Startpath not readable');
             }
         }
-        if ($this->settings->max_depth > -1 && $this->settings->max_depth < $this->settings->min_depth) {
+        if ($this->settings->max_depth > -1 && $this->settings->min_depth > -1
+            && $this->settings->max_depth < $this->settings->min_depth) {
             throw new FindException('Invalid range for mindepth and maxdepth');
         }
         if ($this->settings->max_last_mod != null && $this->settings->min_last_mod != null
@@ -115,11 +116,18 @@ class Finder
         $path_and_filename = FileUtil::split_to_path_and_filename($file_path);
         $path = $path_and_filename[0];
         $file_name = $path_and_filename[1];
-        $stat = false;
-        if ($this->settings->need_stat()) {
+        $file_size = 0;
+        $last_mod = 0;
+        if ($this->settings->need_last_mod() || $this->settings->need_size()) {
             $stat = stat($file_path);
+            if ($this->settings->need_last_mod()) {
+                $last_mod = $stat['mtime'];
+            }
+            if ($this->settings->need_size()) {
+                $file_size = $stat['size'];
+            }
         }
-        return new FileResult($path, $file_name, $this->file_types->get_file_type($file_name), $stat);
+        return new FileResult($path, $file_name, $this->file_types->get_file_type($file_name), $file_size, $last_mod);
     }
 
     /**
@@ -160,13 +168,13 @@ class Finder
         if ($this->settings->out_file_types && in_array($fr->file_type, $this->settings->out_file_types)) {
             return false;
         }
-        if ($fr->stat) {
-            if (($this->settings->max_last_mod != null && $fr->stat['mtime'] > $this->settings->max_last_mod->getTimestamp())
-                || ($this->settings->min_last_mod != null && $fr->stat['mtime'] < $this->settings->min_last_mod->getTimestamp())
-                || ($this->settings->max_size > 0 && $fr->stat['size'] > $this->settings->max_size)
-                || ($this->settings->min_size > 0 && $fr->stat['size'] < $this->settings->min_size)) {
-                return false;
-            }
+        if (($this->settings->max_size > 0 && $fr->file_size > $this->settings->max_size)
+            || ($this->settings->min_size > 0 && $fr->file_size < $this->settings->min_size)) {
+            return false;
+        }
+        if (($this->settings->max_last_mod != null && $fr->last_mod > $this->settings->max_last_mod->getTimestamp())
+            || ($this->settings->min_last_mod != null && $fr->last_mod < $this->settings->min_last_mod->getTimestamp())) {
+            return false;
         }
         return true;
     }
@@ -208,11 +216,19 @@ class Finder
         if (!$this->settings->include_hidden && FileUtil::is_hidden($file_path)) {
             return null;
         }
-        $stat = false;
-        if ($this->settings->need_stat()) {
+        $file_size = 0;
+        $last_mod = 0;
+        if ($this->settings->need_last_mod() || $this->settings->need_size()) {
             $stat = stat($file_path);
+            if ($this->settings->need_last_mod()) {
+                $last_mod = $stat['mtime'];
+            }
+            if ($this->settings->need_size()) {
+                $file_size = $stat['size'];
+            }
         }
-        $file_result = new FileResult($dir, $file_name, $this->file_types->get_file_type($file_name), $stat);
+
+        $file_result = new FileResult($dir, $file_name, $this->file_types->get_file_type($file_name), $file_size, $last_mod);
         if ($file_result->file_type == FileType::Archive) {
             if ($this->settings->include_archives && $this->is_matching_archive_file($file_path)) {
                 return $file_result;
@@ -390,10 +406,10 @@ class Finder
      */
     private function cmp_file_result_file_size(FileResult $fr1, FileResult $fr2): int
     {
-        if ($fr1->stat['size'] == $fr2->stat['size']) {
+        if ($fr1->file_size == $fr2->file_size) {
             return $this->cmp_file_result_path($fr1, $fr2);
         }
-        return ($fr1->stat['size'] < $fr2->stat['size']) ? -1 : 1;
+        return ($fr1->file_size < $fr2->file_size) ? -1 : 1;
     }
 
     /**
@@ -428,10 +444,10 @@ class Finder
      */
     private function cmp_file_result_last_mod(FileResult $fr1, FileResult $fr2): int
     {
-        if ($fr1->stat['mtime'] == $fr2->stat['mtime']) {
+        if ($fr1->last_mod == $fr2->last_mod) {
             return $this->cmp_file_result_path($fr1, $fr2);
         }
-        return ($fr1->stat['mtime'] < $fr2->stat['mtime']) ? -1 : 1;
+        return ($fr1->last_mod < $fr2->last_mod) ? -1 : 1;
     }
 
     /**

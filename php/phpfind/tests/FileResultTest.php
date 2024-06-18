@@ -14,7 +14,7 @@ class FileResultTest extends TestCase
         $path = "$home/src/xfind/php/phpfind/src/phpfind";
         $file_name = 'FileResult.php';
         $file_type = FileType::Code;
-        $file_result = new FileResult($path, $file_name, $file_type, false);
+        $file_result = new FileResult($path, $file_name, $file_type, 0, 0);
         $this->assertEquals("$home/src/xfind/php/phpfind/src/phpfind/FileResult.php",
             $file_result->file_path());
     }
@@ -24,7 +24,7 @@ class FileResultTest extends TestCase
         $path = '.';
         $file_name = 'FileResult.php';
         $file_type = FileType::Code;
-        $file_result = new FileResult($path, $file_name, $file_type, false);
+        $file_result = new FileResult($path, $file_name, $file_type, 0, 0);
         $this->assertEquals('./FileResult.php', $file_result->file_path());
     }
 
@@ -33,7 +33,7 @@ class FileResultTest extends TestCase
         $path = './';
         $file_name = 'FileResult.php';
         $file_type = FileType::Code;
-        $file_result = new FileResult($path, $file_name, $file_type, false);
+        $file_result = new FileResult($path, $file_name, $file_type, 0, 0);
         $this->assertEquals('./FileResult.php', $file_result->file_path());
     }
 
@@ -42,7 +42,7 @@ class FileResultTest extends TestCase
         $path = '..';
         $file_name = 'FileResult.php';
         $file_type = FileType::Code;
-        $file_result = new FileResult($path, $file_name, $file_type, false);
+        $file_result = new FileResult($path, $file_name, $file_type, 0, 0);
         $this->assertEquals('../FileResult.php', $file_result->file_path());
     }
 }
