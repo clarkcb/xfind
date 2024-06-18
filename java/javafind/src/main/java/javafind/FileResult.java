@@ -1,7 +1,7 @@
 package javafind;
 
 import java.nio.file.Path;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,22 +10,24 @@ public class FileResult {
     private final List<String> containers;
     private final Path path;
     private final FileType fileType;
-    private final BasicFileAttributes stat;
+    private final long fileSize;
+    private final FileTime lastMod;
 
     public FileResult(final Path path, final FileType fileType) {
-        this(new ArrayList<>(), path, fileType, null);
+        this(new ArrayList<>(), path, fileType, 0L,null);
     }
 
-    public FileResult(final Path path, final FileType fileType, final BasicFileAttributes stat) {
-        this(new ArrayList<>(), path, fileType, stat);
+    public FileResult(final Path path, final FileType fileType, final long fileSize, final FileTime lastMod) {
+        this(new ArrayList<>(), path, fileType, fileSize, lastMod);
     }
 
     public FileResult(final List<String> containers, final Path path, final FileType fileType,
-                      final BasicFileAttributes stat) {
+                      final long fileSize, final FileTime lastMod) {
         this.containers = containers;
         this.path = path;
         this.fileType = fileType;
-        this.stat = stat;
+        this.fileSize = fileSize;
+        this.lastMod = lastMod;
     }
 
     public final List<String> getContainers() {
@@ -40,8 +42,12 @@ public class FileResult {
         return this.fileType;
     }
 
-    public BasicFileAttributes getStat() {
-        return stat;
+    public final long getFileSize() {
+        return this.fileSize;
+    }
+
+    public final FileTime getLastMod() {
+        return this.lastMod;
     }
 
     public int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
@@ -83,13 +89,10 @@ public class FileResult {
     }
 
     public int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.stat != null && other.stat != null) {
-            if (this.stat.size() == other.stat.size()) {
-                return compareByPath(other, sortCaseInsensitive);
-            }
-            return this.stat.size() <= other.stat.size() ? -1 : 1;
+        if (this.fileSize == other.fileSize) {
+            return compareByPath(other, sortCaseInsensitive);
         }
-        return 0;
+        return this.fileSize <= other.fileSize ? -1 : 1;
     }
 
     public int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
@@ -100,13 +103,10 @@ public class FileResult {
     }
 
     public int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.stat != null && other.stat != null) {
-            if (this.stat.lastModifiedTime().equals(other.stat.lastModifiedTime())) {
-                return compareByPath(other, sortCaseInsensitive);
-            }
-            return this.stat.lastModifiedTime().compareTo(other.stat.lastModifiedTime());
+        if (this.lastMod.equals(other.lastMod)) {
+            return compareByPath(other, sortCaseInsensitive);
         }
-        return 0;
+        return this.lastMod.compareTo(other.lastMod);
     }
 
     public String toString() {
@@ -121,9 +121,6 @@ public class FileResult {
             sb.append(CONTAINER_SEPARATOR);
         }
         sb.append(path.toString());
-//        if (stat != null) {
-//            sb.append(" (").append(stat.lastModifiedTime().toInstant().getEpochSecond()).append(")");
-//        }
         return sb.toString();
     }
 }

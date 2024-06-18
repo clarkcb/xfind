@@ -36,10 +36,10 @@ public class FindSettings {
     private boolean includeHidden;
     private int maxDepth;
     private LocalDateTime maxLastMod;
-    private int maxSize;
+    private long maxSize;
     private int minDepth;
     private LocalDateTime minLastMod;
-    private int minSize;
+    private long minSize;
     private final Set<String> outArchiveExtensions;
     private final Set<Pattern> outArchiveFilePatterns;
     private final Set<Pattern> outDirPatterns;
@@ -177,11 +177,11 @@ public class FindSettings {
         this.maxLastMod = maxLastMod;
     }
 
-    public int getMaxSize() {
+    public long getMaxSize() {
         return maxSize;
     }
 
-    public void setMaxSize(final int maxSize) {
+    public void setMaxSize(final long maxSize) {
         this.maxSize = maxSize;
     }
 
@@ -205,11 +205,11 @@ public class FindSettings {
         this.minLastMod = minLastMod;
     }
 
-    public int getMinSize() {
+    public long getMinSize() {
         return minSize;
     }
 
-    public void setMinSize(final int minSize) {
+    public void setMinSize(final long minSize) {
         this.minSize = minSize;
     }
 
@@ -411,9 +411,13 @@ public class FindSettings {
         addFileTypes(this.outFileTypes, ft);
     }
 
-    public boolean needStat() {
-        return this.sortBy.equals(SortBy.FILESIZE) || this.sortBy.equals(SortBy.LASTMOD) ||
-                this.maxLastMod != null || this.minLastMod != null ||
+    public boolean needLastMod() {
+        return this.sortBy.equals(SortBy.LASTMOD) ||
+                this.maxLastMod != null || this.minLastMod != null;
+    }
+
+    public boolean needSize() {
+        return this.sortBy.equals(SortBy.FILESIZE) ||
                 this.maxSize > 0 || this.minSize > 0;
     }
 

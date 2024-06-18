@@ -13,6 +13,7 @@ package javafind;
 import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -93,45 +94,56 @@ public class Finder {
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
-    boolean isMatchingFileResult(final FileResult fr) {
-        var fileName = fr.getPath().getFileName().toString();
+    boolean hasMatchingExtension(final FileResult fr) {
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
-            String ext = FileUtil.getExtension(fileName);
-            if ((!settings.getInExtensions().isEmpty() && !settings.getInExtensions().contains(ext))
-                    ||
-                    (!settings.getOutExtensions().isEmpty() && settings.getOutExtensions().contains(ext))) {
-                return false;
-            }
-        }
-        if ((!settings.getInFilePatterns().isEmpty()
-                && !matchesAnyPattern(fileName, settings.getInFilePatterns()))
-                ||
-                (!settings.getOutFilePatterns().isEmpty()
-                        &&
-                        matchesAnyPattern(fileName, settings.getOutFilePatterns()))) {
-            return false;
-        }
-        if ((!settings.getInFileTypes().isEmpty()
-                &&
-                !settings.getInFileTypes().contains(fr.getFileType()))
-                ||
-                (!settings.getOutFileTypes().isEmpty()
-                        &&
-                        settings.getOutFileTypes().contains(fr.getFileType()))) {
-            return false;
-        }
-        if (fr.getStat() != null) {
-            var stat = fr.getStat();
-            if ((settings.getMaxLastMod() != null
-                    && stat.lastModifiedTime().toInstant().compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) > 0)
-                    || (settings.getMinLastMod() != null
-                    && stat.lastModifiedTime().toInstant().compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) < 0)
-                    || (settings.getMaxSize() > 0 && stat.size() > settings.getMaxSize())
-                    || (settings.getMinSize() > 0 && stat.size() < settings.getMinSize())) {
-                return false;
-            }
+            var fileName = fr.getPath().getFileName().toString();
+            var ext = FileUtil.getExtension(fileName);
+            return ((settings.getInExtensions().isEmpty()
+                    || settings.getInExtensions().contains(ext))
+                    &&
+                    (settings.getOutExtensions().isEmpty()
+                            || !settings.getOutExtensions().contains(ext)));
         }
         return true;
+    }
+
+    boolean hasMatchingFileName(final FileResult fr) {
+        var fileName = fr.getPath().getFileName().toString();
+        return ((settings.getInFilePatterns().isEmpty()
+                || matchesAnyPattern(fileName, settings.getInFilePatterns()))
+                &&
+                (settings.getOutFilePatterns().isEmpty()
+                        || !matchesAnyPattern(fileName, settings.getOutFilePatterns())));
+    }
+
+    boolean hasMatchingFileType(final FileResult fr) {
+        return ((settings.getInFileTypes().isEmpty()
+                || settings.getInFileTypes().contains(fr.getFileType()))
+                &&
+                (settings.getOutFileTypes().isEmpty()
+                        || !settings.getOutFileTypes().contains(fr.getFileType())));
+    }
+
+    boolean hasMatchingFileSize(final FileResult fr) {
+        return ((settings.getMaxSize() <= 0 || fr.getFileSize() <= settings.getMaxSize())
+                &&
+                (settings.getMinSize() <= 0 || fr.getFileSize() >= settings.getMinSize()));
+    }
+
+    boolean hasMatchingLastMod(final FileResult fr) {
+        return ((settings.getMaxLastMod() == null
+                || fr.getLastMod().toInstant().compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) <= 0
+                &&
+                (settings.getMinLastMod() == null
+                        || fr.getLastMod().toInstant().compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) >= 0)));
+    }
+
+    boolean isMatchingFileResult(final FileResult fr) {
+        return hasMatchingExtension(fr)
+                && hasMatchingFileName(fr)
+                && hasMatchingFileType(fr)
+                && hasMatchingFileSize(fr)
+                && hasMatchingLastMod(fr);
     }
 
     boolean isMatchingArchiveFile(final Path path) {
@@ -167,17 +179,21 @@ public class Finder {
             }
         }
 
-        BasicFileAttributes stat = null;
-        if (settings.needStat()) {
+        long fileSize = 0L;
+        FileTime lastMod = null;
+
+        if (settings.needLastMod() || settings.needSize()) {
             try {
-                stat = Files.readAttributes(path, BasicFileAttributes.class);
+                BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class);
+                fileSize = stat.size();
+                lastMod = stat.lastModifiedTime();
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
                 return Optional.empty();
             }
         }
 
-        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path), stat);
+        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path), fileSize, lastMod);
         if (fileResult.getFileType() == FileType.ARCHIVE) {
             if ((settings.getIncludeArchives() || settings.getArchivesOnly()) && isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult);

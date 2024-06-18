@@ -15,17 +15,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static javafind.Logger.log;
+import static javafind.Logger.logError;
 
 public class FindMain {
 
     private static void handleError(final String message) {
         log("");
-        Logger.logError(message);
+        logError(message);
     }
 
     private static void handleError(final String message, final FindOptions options) {
         log("");
-        Logger.logError(message + "\n");
+        logError(message + "\n");
         options.usage(1);
     }
 
@@ -39,7 +40,7 @@ public class FindMain {
         var dirs = getMatchingDirs(fileResults);
         if (!dirs.isEmpty()) {
             log(String.format("\nMatching directories (%d):", dirs.size()));
-            for (String d : dirs) {
+            for (var d : dirs) {
                 log(d);
             }
         } else {
@@ -55,7 +56,7 @@ public class FindMain {
         var files = getMatchingFiles(fileResults);
         if (!files.isEmpty()) {
             log(String.format("\nMatching files (%d):", files.size()));
-            for (String f : files) {
+            for (var f : files) {
                 log(f);
             }
         } else {
