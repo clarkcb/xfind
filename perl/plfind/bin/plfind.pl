@@ -61,14 +61,14 @@ sub print_matching_files {
 }
 
 sub main {
-    my $findoptions = plfind::FindOptions->new();
-    my ($settings, $errs) = $findoptions->settings_from_args(\@ARGV);
+    my $find_options = plfind::FindOptions->new();
+    my ($settings, $errs) = $find_options->settings_from_args(\@ARGV);
 
     if (scalar @{$errs}) {
         plfind::common::log_msg('');
         plfind::common::log_err($errs->[0]);
         plfind::common::log_msg('');
-        $findoptions->usage();
+        $find_options->usage();
         plfind::common::log_msg('');
         exit;
     }
@@ -79,7 +79,7 @@ sub main {
 
     if ($settings->{print_usage}) {
         plfind::common::log_msg('');
-        $findoptions->usage();
+        $find_options->usage();
         plfind::common::log_msg('');
         exit;
     }
@@ -90,7 +90,7 @@ sub main {
         plfind::common::log_msg('');
         plfind::common::log_err($errs2->[0]);
         plfind::common::log_msg('');
-        $findoptions->usage();
+        $find_options->usage();
         plfind::common::log_msg('');
         exit;
     }

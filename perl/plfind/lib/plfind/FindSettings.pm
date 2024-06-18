@@ -113,14 +113,23 @@ sub add_patterns {
     }
 }
 
-sub needs_stat {
+sub needs_last_mod {
+    my $self = shift;
+    return $self->{sort_by} eq plfind::SortBy->LASTMOD ||
+        blessed($self->{max_last_mod}) ||
+        blessed($self->{min_last_mod});
+}
+
+sub needs_size {
     my $self = shift;
     return $self->{sort_by} eq plfind::SortBy->FILESIZE ||
-           $self->{sort_by} eq plfind::SortBy->LASTMOD ||
-           blessed($self->{max_last_mod}) ||
-           blessed($self->{min_last_mod}) ||
            $self->{max_size} > 0 ||
            $self->{min_size} > 0;
+}
+
+sub needs_stat {
+    my $self = shift;
+    return $self->needs_last_mod || $self->needs_size;
 }
 
 sub to_string {

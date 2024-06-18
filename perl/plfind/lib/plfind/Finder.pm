@@ -136,21 +136,17 @@ sub is_matching_file_result {
         (grep {$_ eq $fr->{file_type}} @{$self->{settings}->{out_file_types}})) {
         return 0;
     }
-    if (scalar @{$fr->{stat}}) {
-        # stat index 7 == size
-        if ($self->{settings}->{max_size} > 0 && $fr->{stat}[7] > $self->{settings}->{max_size}) {
-            return 0;
-        }
-        if ($self->{settings}->{min_size} > 0 && $fr->{stat}[7] < $self->{settings}->{min_size}) {
-            return 0;
-        }
-        # stat index 9 == mtime
-        if (blessed($self->{settings}->{max_last_mod}) && $fr->{stat}[9] > $self->{settings}->{max_last_mod}->epoch) {
-            return 0;
-        }
-        if (blessed($self->{settings}->{min_last_mod}) && $fr->{stat}[9] < $self->{settings}->{min_last_mod}->epoch) {
-            return 0;
-        }
+    if ($self->{settings}->{max_size} > 0 && $fr->{file_size} > $self->{settings}->{max_size}) {
+        return 0;
+    }
+    if ($self->{settings}->{min_size} > 0 && $fr->{file_size} < $self->{settings}->{min_size}) {
+        return 0;
+    }
+    if (blessed($self->{settings}->{max_last_mod}) && $fr->{last_mod} > $self->{settings}->{max_last_mod}->epoch) {
+        return 0;
+    }
+    if (blessed($self->{settings}->{min_last_mod}) && $fr->{last_mod} < $self->{settings}->{min_last_mod}->epoch) {
+        return 0;
     }
     return 1;
 }
@@ -187,12 +183,16 @@ sub filter_to_file_result {
         return;
     }
     my $file_type = $self->{file_types}->get_file_type($f);
-    my $stat = [];
-    if ($self->{settings}->needs_stat) {
+    my $file_size = 0;
+    my $last_mod = 0;
+    if ($self->{settings}->needs_last_mod || $self->{settings}->needs_size) {
         my @fpstat = stat($fp);
-        $stat = \@fpstat;
+        # stat index 7 == size
+        $file_size = $fpstat[7];
+        # stat index 9 == mtime
+        $last_mod = $fpstat[9];
     }
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     if ($file_type eq plfind::FileType->ARCHIVE) {
         if ($self->{settings}->{include_archives} && $self->is_matching_archive_file($f)) {
             return $file_result;
@@ -328,10 +328,10 @@ sub cmp_file_results_by_file_name {
 
 sub cmp_file_results_by_file_size {
     my ($self, $fr1, $fr2) = @_;
-    if ($fr1->{stat}[7] == $fr2->{stat}[7]) {
+    if ($fr1->{file_size} == $fr2->{file_size}) {
         return $self->cmp_file_results_by_path($fr1, $fr2);
     }
-    return $fr1->{stat}[7] <=> $fr2->{stat}[7];
+    return $fr1->{file_size} <=> $fr2->{file_size};
 }
 
 sub cmp_file_results_by_file_type {
@@ -344,10 +344,10 @@ sub cmp_file_results_by_file_type {
 
 sub cmp_file_results_by_last_mod {
     my ($self, $fr1, $fr2) = @_;
-    if ($fr1->{stat}[9] == $fr2->{stat}[9]) {
+    if ($fr1->{last_mod} == $fr2->{last_mod}) {
         return $self->cmp_file_results_by_path($fr1, $fr2);
     }
-    return $fr1->{stat}[9] <=> $fr2->{stat}[9];
+    return $fr1->{last_mod} <=> $fr2->{last_mod};
 }
 
 sub sort_file_results {

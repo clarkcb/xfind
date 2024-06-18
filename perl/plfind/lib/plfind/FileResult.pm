@@ -20,7 +20,8 @@ sub new {
         path => shift,
         file_name => shift,
         file_type => shift,
-        stat => shift,
+        file_size => shift,
+        last_mod => shift,
     };
     bless $self, $class;
     return $self;
