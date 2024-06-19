@@ -80,7 +80,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, ".gitignore"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path has matching in extension" do
@@ -96,7 +96,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, "elixir", "exfind", "lib", "fileutil.ex"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path has matching out extension" do
@@ -104,7 +104,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, "elixir", "exfind", "lib", "fileutil.ex"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path does not have matching out extension" do
@@ -128,7 +128,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, "elixir", "exfind", "lib", "fileutil.ex"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path matches out file pattern" do
@@ -136,7 +136,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, "elixir", "exfind", "lib", "fileutil.ex"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path does not match out file pattern" do
@@ -160,7 +160,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, "elixir", "exfind", "lib", "fileutil.ex"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path has matching out file type" do
@@ -168,7 +168,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.xfind_path, "elixir", "exfind", "lib", "fileutil.ex"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "file path does not have matching out file type" do
@@ -184,7 +184,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.shared_path, "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "archive file path matches with include_archives" do
@@ -216,7 +216,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.shared_path, "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "archive file path matches in archive file pattern" do
@@ -232,7 +232,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.shared_path, "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "archive file path matches out archive file pattern" do
@@ -240,7 +240,7 @@ defmodule ExFindTest.FinderTest do
     finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
     file_path = Path.join([Config.shared_path, "testFiles", "archive.zip"])
     results = Finder.filter_to_file_results(finder, file_path)
-    assert length(results) == 0
+    assert results == []
   end
 
   test "archive file path does not match out archive file pattern" do

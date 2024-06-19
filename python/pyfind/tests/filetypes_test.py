@@ -25,39 +25,39 @@ class FileTypesTest(unittest.TestCase):
 
     def test_get_file_type_archive_file(self):
         file_path = Path('archive.zip')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.ARCHIVE)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.ARCHIVE)
 
     def test_get_file_type_audio_file(self):
         file_path = Path('music.mp3')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.AUDIO)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.AUDIO)
 
     def test_get_file_type_binary_file(self):
         file_path = Path('binary.exe')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.BINARY)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.BINARY)
 
     def test_get_file_type_code_file(self):
         file_path = Path('code.py')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.CODE)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.CODE)
 
     def test_get_file_type_font_file(self):
         file_path = Path('font.ttf')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.FONT)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.FONT)
 
     def test_get_file_type_image_file(self):
         file_path = Path('image.png')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.IMAGE)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.IMAGE)
 
     def test_get_file_type_text_file(self):
         file_path = Path('text.txt')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.TEXT)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.TEXT)
 
     def test_get_file_type_video_file(self):
         file_path = Path('movie.mp4')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.VIDEO)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.VIDEO)
 
     def test_get_file_type_unknown_file(self):
         file_path = Path('unknown.xyz')
-        self.assertEqual(self.file_types.get_file_path_type(file_path), FileType.UNKNOWN)
+        self.assertEqual(self.file_types.get_file_type_for_path(file_path), FileType.UNKNOWN)
 
     def test_is_archive_file(self):
         file_path = Path('archive.tar.bz2')

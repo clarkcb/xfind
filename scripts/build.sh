@@ -397,6 +397,9 @@ build_elixir () {
     then
         log "mix deps.get"
         mix deps.get
+    else
+        log "mix deps.update --all"
+        mix deps.update --all
     fi
 
     log "Creating exfind executable"

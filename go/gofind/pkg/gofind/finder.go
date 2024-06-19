@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"golang.org/x/text/encoding"
 )
@@ -103,7 +104,13 @@ func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResu
 		dir = normalizePath(dir)
 	}
 	t := f.fileTypes.GetFileType(file)
-	return NewFileResult(dir, file, t, fi.Size(), fi.ModTime())
+	var fileSize int64 = 0
+	lastMod := time.Time{}
+	if fi != nil {
+		fileSize = fi.Size()
+		lastMod = fi.ModTime()
+	}
+	return NewFileResult(dir, file, t, fileSize, lastMod)
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {

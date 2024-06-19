@@ -30,6 +30,7 @@ namespace cppfind {
 
     class FindSettings {
     public:
+        FindSettings();
         // property getters
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool debug() const;

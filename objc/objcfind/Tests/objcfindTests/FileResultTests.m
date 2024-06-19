@@ -13,7 +13,8 @@
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
-                              stat:nil];
+                              fileSize:0
+                              lastMod:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }
@@ -23,7 +24,8 @@
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
-                              stat:nil];
+                              fileSize:0
+                              lastMod:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }
@@ -33,7 +35,8 @@
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
-                              stat:nil];
+                              fileSize:0
+                              lastMod:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }
@@ -43,7 +46,8 @@
     FileResult *fileResult = [[FileResult alloc]
                               initWithFilePath:path
                               fileType:FileTypeCode
-                              stat:nil];
+                              fileSize:0
+                              lastMod:nil];
     NSString *fileResultString = [fileResult description];
     XCTAssert([fileResultString isEqualToString:path]);
 }

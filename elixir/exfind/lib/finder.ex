@@ -56,8 +56,8 @@ defmodule ExFind.Finder do
     end
   end
 
-  defp is_matching_extension?(ext, in_extensions, out_extensions) do
-    # IO.puts("is_matching_extension?(#{ext})")
+  defp matching_extension?(ext, in_extensions, out_extensions) do
+    # IO.puts("matching_extension?(#{ext})")
     case {in_extensions, out_extensions} do
       {[], []} -> true
       {in_exts, []} -> Enum.any?(in_exts, fn e -> e == ext end)
@@ -74,7 +74,7 @@ defmodule ExFind.Finder do
       {[], []} -> true
       {in_exts, out_exts} ->
         ext = FileUtil.get_extension(file_name)
-        is_matching_extension?(ext, in_exts, out_exts)
+        matching_extension?(ext, in_exts, out_exts)
     end
   end
 
@@ -84,11 +84,11 @@ defmodule ExFind.Finder do
       {[], []} -> true
       {in_exts, out_exts} ->
         ext = FileUtil.get_extension(file_name)
-        is_matching_extension?(ext, in_exts, out_exts)
+        matching_extension?(ext, in_exts, out_exts)
     end
   end
 
-  defp p_matching_file_name?(file_name, in_file_patterns, out_file_patterns) do
+  defp matching_file_name?(file_name, in_file_patterns, out_file_patterns) do
     # IO.puts("_matching_file_name?(#{file_name})")
     (Enum.empty?(in_file_patterns)
      or Enum.any?(in_file_patterns, fn p -> Regex.match?(p, file_name) end))
@@ -101,7 +101,7 @@ defmodule ExFind.Finder do
     case {finder.settings.in_archive_file_patterns, finder.settings.out_archive_file_patterns} do
       {[], []} -> true
       {in_patterns, out_patterns} ->
-        p_matching_file_name?(file_name, in_patterns, out_patterns)
+        matching_file_name?(file_name, in_patterns, out_patterns)
     end
   end
 
@@ -110,7 +110,7 @@ defmodule ExFind.Finder do
     case {finder.settings.in_file_patterns, finder.settings.out_file_patterns} do
       {[], []} -> true
       {in_patterns, out_patterns} ->
-        p_matching_file_name?(file_name, in_patterns, out_patterns)
+        matching_file_name?(file_name, in_patterns, out_patterns)
     end
   end
 
