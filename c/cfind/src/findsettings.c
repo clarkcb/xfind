@@ -383,7 +383,7 @@ SortBy sort_by_from_name(const char *name)
     if (strncmp(lname, SORT_BY_NAME_LASTMOD, maxlen) == 0) {
         return LASTMOD;
     }
-    if (strncmp(uname, "MIME", maxlen) == 0) {
+    if (strncmp(lname, SORT_BY_NAME_MIMETYPE, maxlen) == 0 || strncmp(lname, SORT_BY_NAME_MIME, maxlen) == 0) {
         return MIMETYPE;
     }
     return FILEPATH;

@@ -17,6 +17,8 @@
 #define SORT_BY_NAME_FILETYPE "filetype"
 #define SORT_BY_NAME_TYPE "type"
 #define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_MIME "mime"
+#define SORT_BY_NAME_MIMETYPE "mimetype"
 #define SORT_BY_NAME_UNKNOWN "unknown"
 
 typedef enum {
