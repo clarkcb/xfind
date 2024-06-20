@@ -13,6 +13,7 @@ defmodule ExFind.FindSettings do
             in_extensions: [],
             in_file_patterns: [],
             in_file_types: [],
+            in_mime_types: [],
             include_archives: false,
             include_hidden: false,
             max_depth: -1,
@@ -27,6 +28,7 @@ defmodule ExFind.FindSettings do
             out_extensions: [],
             out_file_patterns: [],
             out_file_types: [],
+            out_mime_types: [],
             paths: [],
             print_dirs: false,
             print_files: false,
@@ -110,6 +112,12 @@ defmodule ExFind.FindSettings do
     settings.sort_by == :last_mod
     or settings.min_last_mod != nil
     or settings.max_last_mod != nil
+  end
+
+  def need_mime_type?(settings) do
+    settings.sort_by == :mime_type
+    or not Enum.empty?(settings.in_mime_types)
+    or not Enum.empty?(settings.out_mime_types)
   end
 
   def need_size?(settings) do

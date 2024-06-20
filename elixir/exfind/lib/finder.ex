@@ -120,6 +120,33 @@ defmodule ExFind.Finder do
     and (Enum.empty?(finder.settings.out_file_types) or !Enum.any?(finder.settings.out_file_types, fn t -> t == file_type end))
   end
 
+  def has_matching_wildcard_mime_type?(mime_types, mime_type) do
+    # IO.puts("has_matching_wildcard_mime_type?(#{mime_types}, #{mime_type})")
+    case Enum.filter(mime_types, fn t -> String.ends_with?(t, "/*") end) do
+      [] -> false
+      wildcard_mime_types ->
+        wildcard_mime_type = (String.split(mime_type, "/") |> Enum.take(1) |> Enum.fetch!(0)) <> "/*"
+        Enum.any?(wildcard_mime_types, fn t -> t == wildcard_mime_type end)
+    end
+  end
+
+  def matching_mime_type?(finder, mime_type) do
+    # IO.puts("matching_mime_type?(#{mime_type})")
+    case {finder.settings.in_mime_types, finder.settings.out_mime_types} do
+      {[], []} -> true
+      {in_mime_types, out_mime_types} ->
+
+        (Enum.empty?(in_mime_types)
+         or Enum.member?(in_mime_types, "*/*")
+         or Enum.any?(in_mime_types, fn t -> t == mime_type end)
+         or has_matching_wildcard_mime_type?(in_mime_types, mime_type))
+        and (Enum.empty?(out_mime_types)
+             or (!Enum.member?(out_mime_types, "*/*")
+                 and (!Enum.any?(out_mime_types, fn t -> t == mime_type end)
+                      and !has_matching_wildcard_mime_type?(out_mime_types, mime_type))))
+    end
+  end
+
   def matching_file_size?(finder, file_size) do
     # IO.puts("matching_file_size?(#{file_size})")
     (finder.settings.min_size == 0 or file_size >= finder.settings.min_size)
@@ -148,13 +175,14 @@ defmodule ExFind.Finder do
     and matching_archive_file_name?(finder, file_name)
   end
 
-  def matching_file?(finder, file_path, file_type, file_size, last_mod) do
+  def matching_file?(finder, file_path, file_type, mime_type, file_size, last_mod) do
     # IO.puts("matching_file?(#{file_path})")
     file_name = Path.basename(file_path)
     (finder.settings.include_hidden or not FileUtil.hidden?(Path.basename(file_name)))
     and has_matching_extension?(finder, file_name)
     and matching_file_name?(finder, file_name)
     and matching_file_type?(finder, file_type)
+    and matching_mime_type?(finder, mime_type)
     and matching_file_size?(finder, file_size)
     and matching_last_mod?(finder, last_mod)
   end
@@ -162,6 +190,12 @@ defmodule ExFind.Finder do
   def filter_to_file_results(finder, file_path) do
     # IO.puts("filter_to_file_results(#{file_path})")
     file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
+    mime_type =
+      if FindSettings.need_mime_type?(finder.settings) do
+        MIME.from_path(file_path)
+      else
+        ""
+      end
     {file_size, last_mod} =
       if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
         file_stat = File.stat!(file_path, [time: :posix])
@@ -171,13 +205,13 @@ defmodule ExFind.Finder do
       end
     if file_type == :archive do
       if finder.settings.include_archives and matching_archive_file?(finder, file_path, file_size, last_mod) do
-        [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+        [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, mime_type, file_size, last_mod)]
       else
         []
       end
     else
-      if matching_file?(finder, file_path, file_type, file_size, last_mod) do
-        [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+      if matching_file?(finder, file_path, file_type, mime_type, file_size, last_mod) do
+        [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, mime_type, file_size, last_mod)]
       else
         []
       end
@@ -273,6 +307,7 @@ defmodule ExFind.Finder do
         :file_size -> Enum.sort_by(results, fn r -> {r.file_size, String.downcase(r.path), String.downcase(r.name)} end, direction)
         :file_type -> Enum.sort_by(results, fn r -> {r.file_type, String.downcase(r.path), String.downcase(r.name)} end, direction)
         :last_mod -> Enum.sort_by(results, fn r -> {r.last_mod, String.downcase(r.path), String.downcase(r.name)} end, direction)
+        :mime_type -> Enum.sort_by(results, fn r -> {r.mime_type, String.downcase(r.path), String.downcase(r.name)} end, direction)
         _ -> Enum.sort_by(results, fn r -> {String.downcase(r.path), String.downcase(r.name)} end, direction)
       end
     else
@@ -281,6 +316,7 @@ defmodule ExFind.Finder do
         :file_size -> Enum.sort_by(results, fn r -> {r.file_size, r.path, r.name} end, direction)
         :file_type -> Enum.sort_by(results, fn r -> {r.file_type, r.path, r.name} end, direction)
         :last_mod -> Enum.sort_by(results, fn r -> {r.last_mod, r.path, r.name} end, direction)
+        :mime_type -> Enum.sort_by(results, fn r -> {r.mime_type, r.path, r.name} end, direction)
         _ -> Enum.sort_by(results, fn r -> {r.path, r.name} end, direction)
       end
     end

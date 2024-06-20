@@ -25,6 +25,7 @@ defmodule ExFind.MixProject do
   defp deps do
     [
       {:json, "~> 1.4"},
+      {:mime, "~> 2.0"},
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false}
     ]
   end

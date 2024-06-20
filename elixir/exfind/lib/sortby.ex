@@ -3,7 +3,7 @@ defmodule ExFind.SortBy do
   Documentation for `ExFind.SortBy`.
   """
 
-  @sort_types [:file_path, :file_name, :file_size, :file_type, :last_mod]
+  @sort_types [:file_path, :file_name, :file_type, :mime_type, :file_size, :last_mod]
 
   def get_sort_by_for_name(name) do
     sort_types = @sort_types
@@ -14,6 +14,7 @@ defmodule ExFind.SortBy do
       name_atom == :size -> :file_size
       name_atom == :type -> :file_type
       name_atom == :lastmod -> :last_mod
+      name_atom == :mime -> :mime_type
       true -> :file_path
     end
   end

@@ -103,6 +103,7 @@ defmodule ExFind.FindOptions do
       in_ext: fn s, settings -> FindSettings.add_extensions(settings, s, :in_extensions) end,
       in_filepattern: fn s, settings -> FindSettings.add_pattern(settings, s, :in_file_patterns) end,
       in_filetype: fn s, settings -> %{settings | in_file_types: settings.in_file_types ++ [FileTypes.get_file_type_for_name(s)]} end,
+      in_mimetype: fn s, settings -> %{settings | in_mime_types: settings.in_mime_types ++ [s]} end,
       maxlastmod: fn s, settings -> %{settings | max_last_mod: StringUtil.to_datetime(s)} end,
       minlastmod: fn s, settings -> %{settings | min_last_mod: StringUtil.to_datetime(s)} end,
       out_archiveext: fn s, settings -> FindSettings.add_extensions(settings, s, :out_archive_extensions) end,
@@ -111,6 +112,7 @@ defmodule ExFind.FindOptions do
       out_ext: fn s, settings -> FindSettings.add_extensions(settings, s, :out_extensions) end,
       out_filepattern: fn s, settings -> FindSettings.add_pattern(settings, s, :out_file_patterns) end,
       out_filetype: fn s, settings -> %{settings | out_file_types: settings.out_file_types ++ [FileTypes.get_file_type_for_name(s)]} end,
+      out_mimetype: fn s, settings -> %{settings | out_mime_types: settings.out_mime_types ++ [s]} end,
       path: fn s, settings -> %{settings | paths: settings.paths ++ [s]} end,
       sort_by: fn s, settings -> %{settings | sort_by: SortBy.get_sort_by_for_name(s)} end
     }
