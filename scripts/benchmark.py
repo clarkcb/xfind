@@ -82,6 +82,12 @@ filetype_scenarios = [
     Scenario('find "xml" filetype', core_args + ['-t', 'xml'] + startpaths),
     Scenario('find not "xml" filetype', core_args + ['-T', 'xml'] + startpaths),
 ]
+print_scenarios = [
+    # print dirs
+    Scenario('print matching dirs for "{}" extensions'.format(exts), common_args + ['--printdirs']),
+    Scenario('print not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--printdirs'] + startpaths,
+             replace_xfind_name=False),
+]
 mimetype_scenarios = [
     # match mimetype
     Scenario('find "*/*" mimetype', core_args + ['--in-mimetype', '*/*'] + startpaths),
@@ -89,11 +95,6 @@ mimetype_scenarios = [
     Scenario('find not "text/plain" mimetype', core_args + ['--out-mimetype', 'text/plain'] + startpaths),
     Scenario('find "text/*" mimetype', core_args + ['--in-mimetype', 'text/*'] + startpaths),
     Scenario('find not "text/*" mimetype', core_args + ['--out-mimetype', 'text/*'] + startpaths),
-
-    # print dirs
-    Scenario('print matching dirs for "{}" extensions'.format(exts), common_args + ['--printdirs']),
-    Scenario('print not matching dirs for "{}" extensions'.format(exts), core_args + ['-X', exts, '--printdirs'] + startpaths,
-             replace_xfind_name=False),
 ]
 sorting_scenarios = [
     # sorting scenarios
@@ -107,6 +108,8 @@ sorting_scenarios = [
     Scenario('sort shared files by filetype descending', ['--sort-by', 'type', '--sort-descending', sharedpath]),
     Scenario('sort shared files by lastmod', ['--sort-by', 'lastmod', sharedpath]),
     Scenario('sort shared files by lastmod descending', ['--sort-by', 'lastmod', '--sort-descending', sharedpath]),
+    Scenario('sort shared files by mimetype', ['--sort-by', 'mime', sharedpath]),
+    Scenario('sort shared files by mimetype descending', ['--sort-by', 'mime', '--sort-descending', sharedpath]),
 ]
 maxmindepth_scenarios = [
     # filter by maxdepth/mindepth
@@ -137,6 +140,7 @@ scenarios = \
     extension_scenarios + \
     filename_scenarios + \
     filetype_scenarios + \
+    print_scenarios + \
     mimetype_scenarios + \
     sorting_scenarios + \
     maxmindepth_scenarios + \
