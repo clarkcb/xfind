@@ -47,6 +47,8 @@ def get_sort_by_for_name(sort_by_name: str):
             return SortBy.FILETYPE
         case 'LASTMOD':
             return SortBy.LASTMOD
+        case 'MIMETYPE' | 'MIME':
+            return SortBy.MIMETYPE
         case _:
             return SortBy.FILEPATH
 
@@ -63,7 +65,6 @@ class FindSettings:
         'out_mime_types', 'paths', 'print_dirs', 'print_files', 'print_usage', 'print_version',
         'recursive', 'sort_by', 'sort_case_insensitive', 'sort_descending', 'verbose'
     ]
-
 
     def __init__(self,
                  archives_only: bool = False,

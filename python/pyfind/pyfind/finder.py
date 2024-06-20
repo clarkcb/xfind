@@ -300,6 +300,9 @@ class Finder:
     def key_by_last_mod(self, r: FileResult):
         return [r.last_mod] + self.key_by_file_path(r)
 
+    def key_by_mime_type(self, r: FileResult):
+        return [r.mime_type] + self.key_by_file_path(r)
+
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
         """Sort the given list of FileResult instances."""
         match self.settings.sort_by:
@@ -319,7 +322,7 @@ class Finder:
                 return sorted(file_results, key=lambda r: self.key_by_last_mod(r),
                               reverse=self.settings.sort_descending)
             case SortBy.MIMETYPE:
-                return sorted(file_results, key=lambda r: (r.mime_type, filepath_key(r), c(r.file_name)),
+                return sorted(file_results, key=lambda r: self.key_by_mime_type(r),
                               reverse=self.settings.sort_descending)
             case _:
                 return sorted(file_results, key=lambda r: self.key_by_file_path(r),
