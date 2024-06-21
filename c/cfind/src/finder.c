@@ -62,12 +62,23 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
     while (matches == 1 && d != NULL && d->string != NULL) {
         if (!settings->include_hidden && is_hidden(d->string)) {
             matches = 0;
+            continue;
         }
-        // TODO: right now this matches strings, need to switch to regex
-        if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0)
-            && (string_matches_regex_node(dir, settings->in_dir_patterns) == 0))
-            || ((is_null_or_empty_regex_node(settings->out_dir_patterns) == 0)
-                && (string_matches_regex_node(dir, settings->out_dir_patterns) == 1))) {
+        // Trying to figure out why regexes are not matching in release profile, only debug
+        // if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0)
+        //     && (string_matches_regex_node(d->string, settings->in_dir_patterns) == 0))
+        //     || ((is_null_or_empty_regex_node(settings->out_dir_patterns) == 0)
+        //         && (string_matches_regex_node(d->string, settings->out_dir_patterns) == 1))) {
+        //     matches = 0;
+        // }
+        int null_or_empty_in_dir_patterns = is_null_or_empty_regex_node(settings->in_dir_patterns);
+        int matches_in_dir_pattern = string_matches_regex_node(d->string, settings->in_dir_patterns);
+        int null_or_empty_out_dir_patterns = is_null_or_empty_regex_node(settings->out_dir_patterns);
+        int matches_out_dir_pattern = string_matches_regex_node(d->string, settings->out_dir_patterns);
+        if (((null_or_empty_in_dir_patterns == 0)
+            && matches_in_dir_pattern == 0)
+            || ((null_or_empty_out_dir_patterns == 0)
+                && (matches_out_dir_pattern == 1))) {
             matches = 0;
         }
         d = d->next;
@@ -191,7 +202,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
 
         if (S_ISDIR(fpstat.st_mode)) {
             if ((finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
-                && finder->settings->recursive
+                && finder->settings->recursive == 1
                 && is_matching_dir(dent->d_name, finder->settings)) {
                 add_string_to_string_node(file_path, find_dirs);
             }
