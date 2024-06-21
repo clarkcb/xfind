@@ -157,35 +157,86 @@ function BuildC
     Write-Host
     Hdr('BuildC')
 
-    # ensure make is installed
-    if (-not (Get-Command 'make' -ErrorAction 'SilentlyContinue'))
+    if ($IsWindows)
     {
-        PrintError('You need to install make')
+        Log('BuildC - currently unimplemented for Windows')
+        return
+    }
+    if (!$IsMacOS -and !$IsLinux)
+    {
+        Log('Skipping for unknown/unsupported OS')
+        return
+    }
+
+    # ensure cmake is installed
+    if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install cmake')
         return
     }
 
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
-    Log('Building cfind')
-    Log('make')
-    make
-
-    # check for success/failure
-    if ($LASTEXITCODE -eq 0)
+    $configurations = @()
+    if ($debug)
     {
-        Log('Build succeeded')
+        $configurations += 'debug'
+    }
+    if ($release)
+    {
+        $configurations += 'release'
+    }
+    ForEach ($c in $configurations)
+    {
+        $cmakeBuildDir = "cmake-build-$c"
+        $cmakeBuildPath = Join-Path $cfindPath $cmakeBuildDir
+
+        if (-not (Test-Path $cmakeBuildPath))
+        {
+            New-Item -ItemType directory -Path $cmakeBuildPath
+
+            Set-Location $cmakeBuildPath
+
+            Log("cmake -G ""Unix Makefiles"" -DCMAKE_BUILD_TYPE=$c ..")
+            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
+
+            # Log("make -f Makefile")
+            # make -f Makefile
+
+            Set-Location $cfindPath
+        }
+
+        $targets = @('clean', 'cfind', 'cfindapp', 'test_cfind')
+        ForEach ($t in $targets)
+        {
+            Log("cmake --build $cmakeBuildDir --config $c --target $t")
+            cmake --build $cmakeBuildDir --config $c --target $t
+            if ($LASTEXITCODE -eq 0)
+            {
+                Log("Build target $t succeeded")
+            }
+            else
+            {
+                PrintError("Build target $t failed")
+                Set-Location $oldPwd
+                return
+            }
+        }
+    }
+
+    if ($release)
+    {
+        # add release to bin
+        $cfindExe = Join-Path $cfindPath 'bin' 'cfind.release.ps1'
+        AddToBin($cfindExe)
     }
     else
     {
-        PrintError('Build failed')
-        Set-Location $oldPwd
-        return
+        # add debug to bin
+        $cfindExe = Join-Path $cfindPath 'bin' 'cfind.debug.ps1'
+        AddToBin($cfindExe)
     }
-
-    # add to bin
-    $cfindExe = Join-Path $cfindPath 'cfind'
-    AddToBin($cfindExe)
 
     Set-Location $oldPwd
 }

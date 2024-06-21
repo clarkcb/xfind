@@ -56,8 +56,16 @@ function CleanC
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
-    Log('make clean')
-    make clean
+    $configurations = @('debug', 'release')
+    ForEach ($c in $configurations)
+    {
+        $cmakeBuildPath = Join-Path $cfindPath "cmake-build-$c"
+        if (Test-Path $cmakeBuildPath)
+        {
+            Log("Remove-Item $cmakeBuildPath -Recurse -Force")
+            Remove-Item $cmakeBuildPath -Recurse -Force
+        }
+    }
 
     Set-Location $oldPwd
 }
