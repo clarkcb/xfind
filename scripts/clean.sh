@@ -34,16 +34,15 @@ clean_c () {
     echo
     hdr "clean_c"
 
-    # ensure make is installed
-    if [ -z "$(which make)" ]
-    then
-        echo "You need to install make"
-        return
-    fi
-
     cd "$CFIND_PATH"
-    log "make clean"
-    make clean
+
+    CONFIGURATIONS=(debug release)
+    for c in ${CONFIGURATIONS[*]}
+    do
+        log "rm -rf $CFIND_PATH/cmake-build-$c"
+        rm -rf "$CFIND_PATH/cmake-build-$c"
+    done
+
     cd -
 }
 

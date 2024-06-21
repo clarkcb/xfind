@@ -110,30 +110,89 @@ build_c () {
     hdr "build_c"
 
     # ensure make is installed
-    if [ -z "$(which make)" ]
+    if [ -z "$(which cmake)" ]
     then
-        log_error "You need to install make"
+        log_error "You need to install cmake"
         return
     fi
 
     cd "$CFIND_PATH"
 
-    # make
-    log "Building cfind"
-    log "make"
-    make
-
-    # check for success/failure
-    if [ "$?" -eq 0 ]
+    if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
     then
-        log "Build succeeded"
-    else
-        log_error "Build failed"
-        return
+        CONFIGURATIONS=(debug release)
+    elif [ -n "$DEBUG" ]
+    then
+        CONFIGURATIONS=(debug)
+    elif [ -n "$RELEASE" ]
+    then
+        CONFIGURATIONS=(release)
     fi
 
-    # add to bin
-    add_to_bin "$CFIND_PATH/cfind"
+    for c in ${CONFIGURATIONS[*]}
+    do
+        CMAKE_BUILD_DIR="cmake-build-$c"
+        CMAKE_BUILD_PATH="$CFIND_PATH/$CMAKE_BUILD_DIR"
+        CMAKE_BUILD_TYPE="$c"
+
+        if [ ! -d "$CMAKE_BUILD_PATH" ]
+        then
+            log "mkdir -p $CMAKE_BUILD_PATH"
+            mkdir -p "$CMAKE_BUILD_PATH"
+
+            log "cd $CMAKE_BUILD_PATH"
+            cd "$CMAKE_BUILD_PATH"
+
+            log "cmake -G \"Unix Makefiles\" -DCMAKE_BUILD_TYPE=$c .."
+            cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=$c ..
+
+            # exec 5>&1
+            # log "make -f Makefile"
+            # OUTPUT=$(make -f Makefile | tee >(cat - >&5))
+            # I=$(echo "$OUTPUT" | grep "\[100%\] Built target ")
+            # make -f Makefile
+
+            cd -
+        fi
+
+        if [ -d "$CMAKE_BUILD_PATH" ]
+        then
+            TARGETS=(clean cfind cfindapp test_cfind)
+            for t in ${TARGETS[*]}
+            do
+                log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t"
+                cmake --build "$CMAKE_BUILD_DIR" --config "$c" --target "$t"
+
+                # check for success/failure
+                # [ "$?" -ne 0 ] && log "An error occurred while trying to run build target $t" >&2 && exit 1
+                if [ "$?" -eq 0 ]
+                then
+                    log "Build target $t succeeded"
+                else
+                    log_error "Build target $t failed"
+                    return
+                fi
+            done
+
+            # now do the install
+            INSTALL_FILES=Y
+            if [ -n "$INSTALL_FILES" ]
+            then
+                log "Installing cfind files"
+                log "cmake --install $CMAKE_BUILD_DIR --config $c --prefix /usr/local"
+                cmake --install "$CMAKE_BUILD_DIR" --config "$c" --prefix /usr/local
+            fi
+        fi
+    done
+
+    if [ -n "$RELEASE" ]
+    then
+        # add release to bin
+        add_to_bin "$CFIND_PATH/bin/cfind.release.sh"
+    else
+        # add debug to bin
+        add_to_bin "$CFIND_PATH/bin/cfind.debug.sh"
+    fi
 
     cd -
 }
