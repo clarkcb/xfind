@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CFIND_CONFIG_H
+#define CFIND_CONFIG_H
 
 #define MAX_HOMEPATH_LENGTH 100
 #define FILE_TYPES_REL_PATH "shared/filetypes.json"

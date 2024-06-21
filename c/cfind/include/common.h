@@ -1,5 +1,5 @@
-#ifndef COMMON_H
-#define COMMON_H
+#ifndef CFIND_COMMON_H
+#define CFIND_COMMON_H
 
 #include <stdlib.h>
 

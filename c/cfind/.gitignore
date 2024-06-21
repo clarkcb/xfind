@@ -1,3 +1,8 @@
-*.dSYM/
-cfind
+*dSYM/
+cmake-build-debug/
+cmake-build-debug-ninja/
+cmake-build-release/
+cmake-build-release-ninja/
+cmake-build-relwithdebinfo/
 test_cfind
+

@@ -49,9 +49,11 @@ void add_string_to_regex_node(const char *pat, RegexNode *regex_node)
 
 int is_null_or_empty_regex_node(const RegexNode *regex_node)
 {
-    if (regex_node == NULL || (regex_node->regex == NULL && regex_node->next == NULL))
-        return 1;
-    return 0;
+    // if (regex_node == NULL || (regex_node->regex == NULL && regex_node->next == NULL))
+    int retval = 0;
+    if (regex_node == NULL || regex_node->regex == NULL)
+        retval = 1;
+    return retval;
 }
 
 int string_matches_regex_node(const char *s, RegexNode *regex_node)
