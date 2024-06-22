@@ -25,15 +25,33 @@ usage () {
     exit
 }
 
-# copy_json_resources
-copy_json_resources () {
+# copy_config_resources
+copy_config_resources () {
     local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/config.json $resources_path/"
     cp "$XFIND_SHARED_PATH/config.json" "$resources_path/"
+}
+
+# copy_filetypes_resources
+copy_filetypes_resources () {
+    local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/filetypes.json $resources_path/"
     cp "$XFIND_SHARED_PATH/filetypes.json" "$resources_path/"
+}
+
+# copy_searchoptions_resources
+copy_findoptions_resources () {
+    local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/findoptions.json $resources_path/"
     cp "$XFIND_SHARED_PATH/findoptions.json" "$resources_path/"
+}
+
+# copy_json_resources
+copy_json_resources () {
+    local resources_path="$1"
+    copy_config_resources "$resources_path"
+    copy_filetypes_resources "$resources_path"
+    copy_searchoptions_resources "$resources_path"
 }
 
 # copy_xml_resources
@@ -393,14 +411,8 @@ build_elixir () {
     cd "$EXFIND_PATH"
 
     log "Building exfind"
-    if [ ! -f "mix.lock" ]
-    then
-        log "mix deps.get"
-        mix deps.get
-    else
-        log "mix deps.update --all"
-        mix deps.update --all
-    fi
+    log "mix deps.get"
+    mix deps.get
 
     log "Creating exfind executable"
     log "mix escript.build"

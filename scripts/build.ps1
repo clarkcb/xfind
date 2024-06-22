@@ -47,15 +47,28 @@ function Usage
     exit
 }
 
-function CopyJsonResources
+function CopyFileTypesJsonResources
 {
     param([string]$resourcesPath)
     $fileTypesPath = Join-Path $xfindSharedPath 'filetypes.json'
     Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
     Copy-Item $fileTypesPath -Destination $resourcesPath
+}
+
+function CopyFindOptionsJsonResources
+{
+    param([string]$resourcesPath)
+    CopyFileTypesJsonResources($resourcesPath)
     $findOptionsPath = Join-Path $xfindSharedPath 'findoptions.json'
     Log("Copy-Item $findOptionsPath -Destination $resourcesPath")
     Copy-Item $findOptionsPath -Destination $resourcesPath
+}
+
+function CopyJsonResources
+{
+    param([string]$resourcesPath)
+    CopyFileTypesJsonResources($resourcesPath)
+    CopyFindOptionsJsonResources($resourcesPath)
 }
 
 function CopyXmlResources
@@ -279,8 +292,8 @@ function BuildCpp
         $targets = @('clean', 'cppfind', 'cppfindapp', 'cppfind-tests')
         ForEach ($t in $targets)
         {
-            Log("cmake --build $cmakeBuildDir --target $t -- $cmakeCxxFlags")
-            cmake --build $cmakeBuildDir --target $t -- $cmakeCxxFlags
+            Log("cmake --build $cmakeBuildDir --config $c --target $t -- $cmakeCxxFlags")
+            cmake --build $cmakeBuildDir --config $c --target $t -- $cmakeCxxFlags
             if ($LASTEXITCODE -eq 0)
             {
                 Log("Build target $t succeeded")
@@ -465,11 +478,8 @@ function BuildElixir
     Set-Location $exfindPath
 
     Log('Building exfind')
-    if (-not (Test-Path 'mix.lock'))
-    {
-        Log('mix deps.get')
-        mix deps.get
-    }
+    Log('mix deps.get')
+    mix deps.get
 
     Log('Creating exfind executable')
     Log('mix escript.build')
