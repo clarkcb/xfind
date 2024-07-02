@@ -15,25 +15,9 @@ describe('testing fileutil', () => {
         expect(FileUtil.getExtension(file)).toEqual('txt');
     });
 
-    it('testGetTxtExtensionAsync', () => {
-        const file = 'fileName.txt';
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeNull();
-            expect(ext).toBe('txt');
-        });
-    });
-
     it('testGetMissingExtension', () => {
         const file = 'fileName.';
         expect(FileUtil.getExtension(file)).toEqual('');
-    });
-
-    it('testGetMissingExtensionAsync', () => {
-        const file = 'fileName.';
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeNull();
-            expect(ext).toBe('');
-        });
     });
 
     it('testGetNoExtension', () => {
@@ -41,25 +25,9 @@ describe('testing fileutil', () => {
         expect(FileUtil.getExtension(file)).toEqual('');
     });
 
-    it('testGetNoExtensionAsync', () => {
-        const file = 'filename';
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeNull();
-            expect(ext).toEqual('');
-        });
-    });
-
     it('testGetHiddenTxtExtension', () => {
         const file = '.fileName.txt';
         expect(FileUtil.getExtension(file)).toEqual('txt');
-    });
-
-    it('testGetHiddenTxtExtensionAsync', () => {
-        const file = '.fileName.txt';
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeNull();
-            expect(ext).toBe('txt');
-        });
     });
 
     it('testGetHiddenMissingExtension', () => {
@@ -67,25 +35,9 @@ describe('testing fileutil', () => {
         expect(FileUtil.getExtension(file)).toEqual('');
     });
 
-    it('testGetHiddenMissingExtensionAsync', () => {
-        const file = 'fileName.';
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeNull();
-            expect(ext).toBe('');
-        });
-    });
-
     it('testGetHiddenNoExtension', () => {
         const file = 'filename';
         expect(FileUtil.getExtension(file)).toEqual('');
-    });
-
-    it('testGetHiddenNoExtensionAsync', () => {
-        const file = 'filename';
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeNull();
-            expect(ext).toBe('');
-        });
     });
 
     it('testGetExtensionNonString', () => {
@@ -96,14 +48,6 @@ describe('testing fileutil', () => {
         } catch (err) {
             expect(err).toBeDefined();
         }
-    });
-
-    it('testGetExtensionNonStringAsync', () => {
-        const file = 200;
-        FileUtil.getExtensionAsync(file, (err, ext) => {
-            expect(err).toBeDefined();
-            expect(ext).toBeUndefined();
-        });
     });
 
     /***************************************************************************

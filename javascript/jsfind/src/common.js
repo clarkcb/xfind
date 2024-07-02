@@ -25,7 +25,7 @@ const setFromArray = (arr) => {
     let hash = boolHashFromArray(arr);
     let set = [];
     for (let k in hash) {
-        if (hash.hasOwnProperty(k)) {
+        if (Object.prototype.hasOwnProperty.call(hash, k)) {
             set.push(k);
         }
     }

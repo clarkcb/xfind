@@ -21,20 +21,11 @@ export class FileTypes {
     private static fileTypeNameMap: FileTypeMap = FileTypes.fileTypeMaps[1];
 
     private static getFileTypeMaps(): FileTypeMap[] {
-        const fs = require('fs');
-
-        let json = '';
-        if (fs.existsSync(FileUtil.expandPath(config.FILETYPESJSONPATH))) {
-            json = fs.readFileSync(FileUtil.expandPath(config.FILETYPESJSONPATH)).toString();
-        } else {
-            throw new Error('File not found: ' + config.FILETYPESJSONPATH);
-        }
-
         const fileTypeExtMap: FileTypeMap = {};
         const fileTypeNameMap: FileTypeMap = {};
-
+        const json = FileUtil.getFileContentsSync(config.FILETYPESJSONPATH);
         const obj = JSON.parse(json);
-        if (obj.hasOwnProperty('filetypes') && Array.isArray(obj['filetypes'])) {
+        if (Object.prototype.hasOwnProperty.call(obj, 'filetypes') && Array.isArray(obj['filetypes'])) {
             obj['filetypes'].forEach(ft => {
                 const typename: string = ft['type'];
                 const extensions: string[] = ft['extensions'];

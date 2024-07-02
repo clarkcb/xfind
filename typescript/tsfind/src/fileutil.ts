@@ -29,20 +29,23 @@ export class FileUtil {
         return '';
     }
 
-    public static getFileContents(filePath: string, encoding: BufferEncoding='utf-8'): string {
+    public static getFileContentsSync(filePath: string, encoding: BufferEncoding='utf-8'): string {
         return fs.readFileSync(filePath, encoding).toString();
     }
 
-    public static getFileContentsAsync(filePath: string, cb: (contents: string) => void): void {
-        cb(fs.readFileSync(filePath).toString());
+    public static getFileContents(filePath: string, encoding: BufferEncoding='utf-8') {
+        return new Promise((resolve, reject) => {
+            fs.readFile(filePath, { encoding }, (err, data) => {
+                if (err) {
+                    reject(err);
+                }
+                resolve(data.toString());
+            });
+        });
     }
 
-    public static getFileLines(filePath: string, encoding: BufferEncoding='utf-8'): string[] {
-        return FileUtil.getFileContents(filePath, encoding).split(/\r?\n/);
-    }
-
-    public static getFileLinesAsync(filePath: string, encoding: BufferEncoding, cb: (lines: string[]) => void): void {
-        cb(FileUtil.getFileContents(filePath, encoding).split(/\r?\n/));
+    public static getFileLinesSync(filePath: string, encoding: BufferEncoding='utf-8'): string[] {
+        return FileUtil.getFileContentsSync(filePath, encoding).split(/\r?\n/);
     }
 
     public static getRelativePath(filePath: string, startpath: string): string {

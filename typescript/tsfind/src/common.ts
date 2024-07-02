@@ -35,7 +35,7 @@ export function setFromArray(arr: string[]): string[] {
     const hash: {[key:string]: boolean} = boolHashFromArray(arr);
     const set: string[] = [];
     for (const k in hash) {
-        if (hash.hasOwnProperty(k)) {
+        if (Object.prototype.hasOwnProperty.call(hash, k)) {
             set.push(k);
         }
     }

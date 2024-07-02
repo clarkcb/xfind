@@ -104,15 +104,7 @@ class FindOptions {
         // the list of FindOption objects (populated from JSON)
         this.options = [];
         (() => {
-            const fs = require('fs');
-
-            let json = '';
-            if (fs.existsSync(FileUtil.expandPath(config.FINDOPTIONSJSONPATH))) {
-                json = fs.readFileSync(FileUtil.expandPath(config.FINDOPTIONSJSONPATH)).toString();
-            } else {
-                throw new FindError(`File not found: ${config.FINDOPTIONSJSONPATH}`);
-            }
-
+            let json = FileUtil.getFileContentsSync(config.FINDOPTIONSJSONPATH, 'utf-8');
             let obj = JSON.parse(json);
             if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj.findoptions)) {
                 obj.findoptions.forEach(fo => {
@@ -151,7 +143,7 @@ class FindOptions {
     settingsFromFile(filePath, settings) {
         const fs = require('fs');
         if (fs.existsSync(filePath)) {
-            let json = fs.readFileSync(filePath).toString();
+            let json = FileUtil.getFileContentsSync(filePath, 'utf-8');
             return this.settingsFromJson(json, settings);
         } else {
             throw new FindError('Settings file not found');

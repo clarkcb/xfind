@@ -6,6 +6,8 @@
 
 import {Finder} from '../src/finder';
 import {FindSettings} from '../src/findsettings';
+import {FileType} from "../src/filetype";
+import {FileResult} from "../src/fileresult";
 
 const getSettings = function() {
     const settings: FindSettings = new FindSettings();
@@ -78,142 +80,151 @@ describe('testing finder', () => {
     });
 
     /*************************************************************
-     * isMatchingFile tests
+     * isMatchingFileResult tests
      *************************************************************/
-    it('testIsMatchingFile_NoExtensionsNoPatterns_True', () => {
+    it('testIsMatchingFileResult_NoExtensionsNoPatterns_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingFile_MatchesInExtension_True', () => {
+    it('testIsMatchingFileResult_MatchesInExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInExtensions('cs');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingFile_DoesNotMatchInExtension_False', () => {
+    it('testIsMatchingFileResult_DoesNotMatchInExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInExtensions('java');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeFalsy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingFile_MatchesOutExtension_False', () => {
+    it('testIsMatchingFileResult_MatchesOutExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutExtensions('cs');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeFalsy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingFile_DoesNotMatchOutExtension_True', () => {
+    it('testIsMatchingFileResult_DoesNotMatchOutExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutExtensions('java');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingFile_MatchesInPattern_True', () => {
+    it('testIsMatchingFileResult_MatchesInPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('Finder.cs')).toBeTruthy();
+        const fr = new FileResult('.', 'Finder.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingFile_DoesNotMatchInPattern_False', () => {
+    it('testIsMatchingFileResult_DoesNotMatchInPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeFalsy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingFile_MatchesOutPattern_False', () => {
+    it('testIsMatchingFileResult_MatchesOutPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('Finder.cs')).toBeFalsy();
+        const fr = new FileResult('.', 'Finder.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingFile_DoesNotMatchOutPattern_True', () => {
+    it('testIsMatchingFileResult_DoesNotMatchOutPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutFilePatterns('Find');
         const finder: Finder = new Finder(settings);
-        expect(finder.isMatchingFile('FileUtil.cs')).toBeTruthy();
+        const fr = new FileResult('.', 'FileUtil.cs', FileType.Code, 0, 0);
+        expect(finder.isMatchingFileResult(fr)).toBeTruthy();
     });
 
     /*************************************************************
-     * IsArchiveFindFile tests
+     * isMatchingArchiveFileResult tests
      *************************************************************/
-    it('testIsMatchingArchiveFile_NoExtensionsNoPatterns_True', () => {
+    it('testIsMatchingArchiveFileResult_NoExtensionsNoPatterns_True', () => {
         const settings: FindSettings = getSettings();
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingArchiveFile_MatchesInExtension_True', () => {
+    it('testIsMatchingArchiveFileResult_MatchesInExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveExtensions('zip');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingArchiveFile_DoesNotMatchInExtension_False', () => {
+    it('testIsMatchingArchiveFileResult_DoesNotMatchInExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveExtensions('gz');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingArchiveFile_MatchesOutExtension_False', () => {
+    it('testIsMatchingArchiveFileResult_MatchesOutExtension_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveExtensions('zip');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingArchiveFile_DoesNotMatchOutExtension_True', () => {
+    it('testIsMatchingArchiveFileResult_DoesNotMatchOutExtension_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveExtensions('gz');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingArchiveFile_MatchesInPattern_True', () => {
+    it('testIsMatchingArchiveFileResult_MatchesInPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveFilePatterns('arch');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeTruthy();
     });
 
-    it('testIsMatchingArchiveFile_DoesNotMatchInPattern_False', () => {
+    it('testIsMatchingArchiveFileResult_DoesNotMatchInPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addInArchiveFilePatterns('archives');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingArchiveFile_MatchesOutPattern_False', () => {
+    it('testIsMatchingArchiveFileResult_MatchesOutPattern_False', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveFilePatterns('arch');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeFalsy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeFalsy();
     });
 
-    it('testIsMatchingArchiveFile_DoesNotMatchOutPattern_True', () => {
+    it('testIsMatchingArchiveFileResult_DoesNotMatchOutPattern_True', () => {
         const settings: FindSettings = getSettings();
         settings.addOutArchiveFilePatterns('archives');
         const finder: Finder = new Finder(settings);
-        const file = 'archive.zip';
-        expect(finder.isMatchingArchiveFile(file)).toBeTruthy();
+        const fr = new FileResult('.', 'archive.zip', FileType.Archive, 0, 0);
+        expect(finder.isMatchingArchiveFileResult(fr)).toBeTruthy();
     });
 
     /*************************************************************

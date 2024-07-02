@@ -134,13 +134,7 @@ export class FindOptions {
 
     // setOptionsFromJsonFile
     private setOptionsFromJsonFile(): void {
-        let json = '';
-        if (fs.existsSync(FileUtil.expandPath(config.FINDOPTIONSJSONPATH))) {
-            json = fs.readFileSync(FileUtil.expandPath(config.FINDOPTIONSJSONPATH)).toString();
-        } else {
-            throw new Error('File not found: ' + config.FINDOPTIONSJSONPATH);
-        }
-
+        const json = FileUtil.getFileContentsSync(config.FINDOPTIONSJSONPATH);
         const obj = JSON.parse(json);
         if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj['findoptions'])) {
             obj['findoptions'].forEach(so => {
@@ -167,7 +161,7 @@ export class FindOptions {
 
     private settingsFromFile(filePath: string, settings: FindSettings): Error | undefined {
         if (fs.existsSync(filePath)) {
-            const json: string = FileUtil.getFileContents(filePath);
+            const json: string = FileUtil.getFileContentsSync(filePath);
             return this.settingsFromJson(json, settings);
         } else {
             return new Error('Settings file not found');

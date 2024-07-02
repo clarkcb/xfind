@@ -36,14 +36,8 @@ export class Finder {
                 fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
                 // const stat = await lstat(p);
                 const stat = fs.lstatSync(p);
-                if (stat.isDirectory()) {
-                    assert.ok(this.isMatchingDir(p),
-                        'Startpath does not match find settings');
-                } else if (stat.isFile()) {
-                    assert.ok(this.filterFile(p, stat),
-                        'Startpath does not match find settings');
-                } else {
-                    assert.ok(false, 'Startpath not findable file type');
+                if (!stat.isDirectory() && !stat.isFile()) {
+                    assert.ok(false, 'Startpath is unsupported file type');
                 }
             }
             if (this._settings.maxDepth > -1 && this._settings.minDepth > -1) {
@@ -82,10 +76,6 @@ export class Finder {
         return fileTypes.indexOf(ft) > -1;
     }
 
-    private static anyMatchesAnyPattern(ss: string[], patterns: RegExp[]) {
-        return ss.some((s: string) => this.matchesAnyPattern(s, patterns));
-    }
-
     public isMatchingDir(dir: string): boolean {
         if (FileUtil.isDotDir(dir)) {
             return true;
@@ -107,92 +97,83 @@ export class Finder {
             this._settings.outDirPatterns));
     }
 
-    public isMatchingFile(file: string, stat: fs.Stats | null = null): boolean {
-        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
-        //     return false;
-        // }
-        const fr = this.filePathToFileResult(file, stat);
-        return this.isMatchingFileResult(fr);
+    public isMatchingExtension(ext: string, inExtensions: string[], outExtensions: string[]): boolean {
+        return ((inExtensions.length === 0 || Finder.matchesAnyString(ext, inExtensions))
+            && (outExtensions.length === 0 || !Finder.matchesAnyString(ext, outExtensions)));
     }
 
-    public isMatchingFileResult(fr: FileResult): boolean {
-        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
-        //     return false;
-        // }
-        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
+    public hasMatchingArchiveExtension(fr: FileResult): boolean {
+        if (this._settings.inArchiveExtensions.length || this._settings.outArchiveExtensions.length) {
             const ext: string = FileUtil.getExtension(fr.fileName);
-            if ((this._settings.inExtensions.length &&
-                    !Finder.matchesAnyString(ext, this._settings.inExtensions))
-                || (this._settings.outExtensions.length &&
-                    Finder.matchesAnyString(ext, this._settings.outExtensions))) {
-                return false;
-            }
-        }
-        if ((this._settings.inFilePatterns.length &&
-            !Finder.matchesAnyPattern(fr.fileName, this._settings.inFilePatterns))
-            || (this._settings.outFilePatterns.length &&
-                Finder.matchesAnyPattern(fr.fileName, this._settings.outFilePatterns))) {
-            return false;
-        }
-        if ((this._settings.inFileTypes.length &&
-            !Finder.matchesAnyFileType(fr.fileType, this._settings.inFileTypes))
-            || (this._settings.outFileTypes.length &&
-                Finder.matchesAnyFileType(fr.fileType, this._settings.outFileTypes))) {
-                    return false;
-        }
-        if ((this._settings.maxLastMod > 0 && fr.lastMod > this._settings.maxLastMod) ||
-            (this._settings.minLastMod > 0 && fr.lastMod < this._settings.minLastMod)) {
-            return false;
-        }
-        if ((this._settings.maxSize > 0 && fr.fileSize > this._settings.maxSize) ||
-            (this._settings.minSize > 0 && fr.fileSize < this._settings.minSize)) {
-            return false;
+            return this.isMatchingExtension(ext, this._settings.inArchiveExtensions, this._settings.outArchiveExtensions);
         }
         return true;
     }
 
-    public isMatchingArchiveFile(file: string): boolean {
-        // if (FileUtil.isHidden(file) && this._settings.excludeHidden) {
-        //     return false;
-        // }
-        if (this._settings.inArchiveExtensions.length || this._settings.outArchiveExtensions.length) {
-            const ext: string = FileUtil.getExtension(file);
-            if ((this._settings.inArchiveExtensions.length &&
-                    !Finder.matchesAnyString(ext, this._settings.inArchiveExtensions))
-                || (this._settings.outArchiveExtensions.length &&
-                    Finder.matchesAnyString(ext, this._settings.outArchiveExtensions))) {
-                return false;
-            }
+    public hasMatchingExtension(fr: FileResult): boolean {
+        if (this._settings.inExtensions.length || this._settings.outExtensions.length) {
+            const ext: string = FileUtil.getExtension(fr.fileName);
+            return this.isMatchingExtension(ext, this._settings.inExtensions, this._settings.outExtensions);
         }
-        if (this._settings.inArchiveFilePatterns.length &&
-            !Finder.matchesAnyPattern(file, this._settings.inArchiveFilePatterns)) {
-            return false;
-        }
-        return !(this._settings.outArchiveFilePatterns.length &&
-        Finder.matchesAnyPattern(file, this._settings.outArchiveFilePatterns));
+        return true;
     }
 
-    public filterFile(f: string, stat: fs.Stats | null = null): boolean {
-        if (!this._settings.includeHidden && FileUtil.isHidden(f)) {
-            return false;
-        }
-        if (FileTypes.isArchiveFile(f)) {
-            return (this._settings.includeArchives && this.isMatchingArchiveFile(f));
-        }
-        return (!this._settings.archivesOnly && this.isMatchingFile(f, stat));
+    public isMatchingArchiveFileName(fileName: string): boolean {
+        return ((this._settings.inArchiveFilePatterns.length === 0 ||
+                Finder.matchesAnyPattern(fileName, this._settings.inArchiveFilePatterns))
+            && (this._settings.outArchiveFilePatterns.length === 0 ||
+                !Finder.matchesAnyPattern(fileName, this._settings.outArchiveFilePatterns)));
+    }
+
+    public isMatchingFileName(fileName: string): boolean {
+        return ((this._settings.inFilePatterns.length === 0 ||
+                Finder.matchesAnyPattern(fileName, this._settings.inFilePatterns))
+            && (this._settings.outFilePatterns.length === 0 ||
+                !Finder.matchesAnyPattern(fileName, this._settings.outFilePatterns)));
+    }
+
+    public isMatchingFileType(fileType: FileType): boolean {
+        return ((this._settings.inFileTypes.length === 0 ||
+                Finder.matchesAnyFileType(fileType, this._settings.inFileTypes))
+            && (this._settings.outFileTypes.length === 0 ||
+                !Finder.matchesAnyFileType(fileType, this._settings.outFileTypes)));
+    }
+
+    public isMatchingFileSize(fileSize: number): boolean {
+        return ((this._settings.maxSize === 0 || fileSize <= this._settings.maxSize) &&
+            (this._settings.minSize === 0 || fileSize >= this._settings.minSize));
+    }
+
+    public isMatchingLastMod(lastMod: number): boolean {
+        return ((this._settings.maxLastMod === 0 || lastMod <= this._settings.maxLastMod) &&
+            (this._settings.minLastMod === 0 || lastMod >= this._settings.minLastMod));
+    }
+
+    public isMatchingFileResult(fr: FileResult): boolean {
+        return this.hasMatchingExtension(fr)
+            && this.isMatchingFileName(fr.fileName)
+            && this.isMatchingFileType(fr.fileType)
+            && this.isMatchingFileSize(fr.fileSize)
+            && this.isMatchingLastMod(fr.lastMod);
+    }
+
+    public isMatchingArchiveFileResult(fr: FileResult): boolean {
+        return this.hasMatchingArchiveExtension(fr)
+            && this.isMatchingArchiveFileName(fr.fileName);
     }
 
     public filePathToFileResult(fp: string, stat: fs.Stats | null = null): FileResult {
         const dirname = path.dirname(fp) || '.';
-        const filename = path.basename(fp);
+        const fileName = path.basename(fp);
+        const fileType = FileTypes.getFileType(fileName);
         let fileSize = 0;
         let lastMod = 0;
         if (this._settings.needLastMod() || this._settings.needSize()) {
             stat = stat || fs.statSync(fp);
-            fileSize = stat.size;
-            lastMod = stat.mtime.getTime();
+            if (this._settings.needSize()) fileSize = stat.size;
+            if (this._settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        return new FileResult(dirname, filename, FileTypes.getFileType(filename), fileSize, lastMod);
+        return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
     }
 
     public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
@@ -201,7 +182,7 @@ export class Finder {
         }
         const fr = this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.Archive) {
-            if (this._settings.includeArchives && this.isMatchingArchiveFile(fr.fileName)) {
+            if (this._settings.includeArchives && this.isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
             return null;
@@ -252,7 +233,7 @@ export class Finder {
             if (this.isMatchingDir(startPath)) {
                 fileResults = fileResults.concat(this.recGetFileResults(startPath, 1));
             } else {
-                throw new FindError('startPath does not match find criteria');
+                throw new FindError("Startpath does not match find settings");
             }
         } else if (stats.isFile()) {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -265,10 +246,10 @@ export class Finder {
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {
-                    throw new FindError('startPath does not match find criteria');
+                    throw new FindError("Startpath does not match find settings");
                 }
             } else {
-                throw new FindError('startPath does not match find criteria');
+                throw new FindError("Startpath does not match find settings");
             }
         }
         return fileResults;

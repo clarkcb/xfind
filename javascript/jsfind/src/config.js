@@ -4,19 +4,15 @@
  * Configuration values
  */
 
-const config = require('../data/config.json');
+const isWin = /^win/.test(process.platform);
 
-// const isWin = /^win/.test(process.platform);
+const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
+const HOME = process.env[HOME_NAME];
 
-// const HOME_NAME = isWin ? 'USERPROFILE' : 'HOME';
-// const HOME = process.env[HOME_NAME];
-
-// use XFIND_PATH env var if defined
-if (process.env.XFIND_PATH) {
-    config.xfindpath = process.env.XFIND_PATH;
-}
-
-exports.XFINDPATH = config.xfindpath;
-// exports.SHAREDPATH = exports.XFINDPATH + '/shared';
-exports.FILETYPESJSONPATH = __dirname + '/../data/filetypes.json';
-exports.FINDOPTIONSJSONPATH = __dirname + '/../data/findoptions.json';
+exports.XFINDPATH = process.env.XFIND_PATH ? process.env.XFIND_PATH : `${HOME}/src/xfind`;
+// exports.SHAREDPATH = `${exports.XFINDPATH}/shared`;
+// exports.XFINDDB = `${exports.SHAREDPATH}/xfind.db`;
+const JSFINDPATH = `${exports.XFINDPATH}/javascript/jsfind`;
+const DATAPATH = `${JSFINDPATH}/data`;
+exports.FILETYPESJSONPATH = `${DATAPATH}/filetypes.json`;
+exports.FINDOPTIONSJSONPATH = `${DATAPATH}/findoptions.json`;

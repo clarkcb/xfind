@@ -11,38 +11,25 @@ const {FileUtil} = require('./fileutil');
 
 class FileTypes {
     constructor() {
-        [this.fileTypeExtMap, this.fileTypeNameMap] = (() => {
-            let fs = require('fs');
+        this.fileTypeExtMap = {};
+        this.fileTypeNameMap = {};
 
-            let json = '';
-            if (fs.existsSync(FileUtil.expandPath(config.FILETYPESJSONPATH))) {
-                json = fs.readFileSync(FileUtil.expandPath(config.FILETYPESJSONPATH)).toString();
-            } else {
-                throw new Error('File not found: ' + config.FILETYPESJSONPATH);
-            }
-
-            let fileTypeExtMap = {};
-            let fileTypeNameMap = {};
-
-            let obj = JSON.parse(json);
-            if (obj.hasOwnProperty('filetypes') && Array.isArray(obj.filetypes)) {
-                obj.filetypes.forEach(ft => {
-                    let typename = ft.type;
-                    let extensions = ft.extensions;
-                    fileTypeExtMap[typename] = common.setFromArray(extensions);
-                    if (ft.hasOwnProperty('names')) {
-                        fileTypeNameMap[typename] = common.setFromArray(ft.names);
-                    } else {
-                        fileTypeNameMap[typename] = [];
-                    }
-                });
-            } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
-
-            fileTypeExtMap.text = [].concat(fileTypeExtMap.text, fileTypeExtMap.code, fileTypeExtMap.xml);
-            fileTypeNameMap.text = [].concat(fileTypeNameMap.text, fileTypeNameMap.code, fileTypeNameMap.xml);
-
-            return [fileTypeExtMap, fileTypeNameMap];
-        })();
+        const json = FileUtil.getFileContentsSync(config.FILETYPESJSONPATH, 'utf-8');
+        let obj = JSON.parse(json);
+        if (Object.prototype.hasOwnProperty.call(obj, 'filetypes') && Array.isArray(obj.filetypes)) {
+            obj.filetypes.forEach(ft => {
+                let typename = ft.type;
+                let extensions = ft.extensions;
+                this.fileTypeExtMap[typename] = common.setFromArray(extensions);
+                if (Object.prototype.hasOwnProperty.call(ft, 'names')) {
+                    this.fileTypeNameMap[typename] = common.setFromArray(ft.names);
+                } else {
+                    this.fileTypeNameMap[typename] = [];
+                }
+            });
+        } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
+        this.fileTypeExtMap.text = [].concat(this.fileTypeExtMap.text, this.fileTypeExtMap.code, this.fileTypeExtMap.xml);
+        this.fileTypeNameMap.text = [].concat(this.fileTypeNameMap.text, this.fileTypeNameMap.code, this.fileTypeNameMap.xml);
     }
 
     getFileType(filename) {
