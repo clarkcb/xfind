@@ -7,7 +7,7 @@
 #
 ################################################################################
 param([switch]$help = $false,
-      [string]$lang='')
+      [switch]$all = $false)
 
 ########################################
 # Configuration
@@ -22,6 +22,16 @@ $scriptDir = Split-Path $scriptPath -Parent
 # check for help switch
 $help = $help.IsPresent
 
+# check for all switch
+$all = $all.IsPresent
+
+# args holds the remaining arguments
+$langs = $args
+
+Write-Host "help: $help"
+Write-Host "all: $all"
+Write-Host "langs: $langs"
+
 
 ########################################
 # Utility Functions
@@ -29,7 +39,7 @@ $help = $help.IsPresent
 
 function Usage
 {
-    Write-Host "`nUsage: unittest.ps1 [-help] {""all"" | langcode}`n"
+    Write-Host "`nUsage: unittest.ps1 [-help] {""all"" | lang [lang...]}`n"
     exit
 }
 
@@ -559,52 +569,71 @@ function UnitTestAll
 
 function UnitTestMain
 {
-    param($lang='all')
+    param($langs=@())
 
-    switch ($lang)
+    if ($langs.Count -eq 0)
     {
-        'all'        { UnitTestAll }
-        'c'          { UnitTestC }
-        'clj'        { UnitTestClojure }
-        'clojure'    { UnitTestClojure }
-        'cpp'        { UnitTestCpp }
-        'cs'         { UnitTestCsharp }
-        'csharp'     { UnitTestCsharp }
-        'dart'       { UnitTestDart }
-        'fs'         { UnitTestFsharp }
-        'fsharp'     { UnitTestFsharp }
-        'go'         { UnitTestGo }
-        'groovy'     { UnitTestGroovy }
-        'haskell'    { UnitTestHaskell }
-        'hs'         { UnitTestHaskell }
-        'java'       { UnitTestJava }
-        'javascript' { UnitTestJavaScript }
-        'js'         { UnitTestJavaScript }
-        'kotlin'     { UnitTestKotlin }
-        'kt'         { UnitTestKotlin }
-        'objc'       { UnitTestObjc }
-        # 'ocaml'      { UnitTestOcaml }
-        'perl'       { UnitTestPerl }
-        'php'        { UnitTestPhp }
-        'powershell' { UnitTestPowershell }
-        'ps1'        { UnitTestPowershell }
-        'py'         { UnitTestPython }
-        'python'     { UnitTestPython }
-        'rb'         { UnitTestRuby }
-        'ruby'       { UnitTestRuby }
-        'rs'         { UnitTestRust }
-        'rust'       { UnitTestRust }
-        'scala'      { UnitTestScala }
-        'swift'      { UnitTestSwift }
-        'ts'         { UnitTestTypeScript }
-        'typescript' { UnitTestTypeScript }
-        default      { ExitWithError("Unknown option: $lang") }
+        Usage
+    }
+
+    if ($langs -contains 'all')
+    {
+        UnitTestAll
+        exit
+    }
+
+    ForEach ($lang in $langs)
+    {
+        switch ($lang)
+        {
+            'c'          { UnitTestC }
+            'clj'        { UnitTestClojure }
+            'clojure'    { UnitTestClojure }
+            'cpp'        { UnitTestCpp }
+            'cs'         { UnitTestCsharp }
+            'csharp'     { UnitTestCsharp }
+            'dart'       { UnitTestDart }
+            'fs'         { UnitTestFsharp }
+            'fsharp'     { UnitTestFsharp }
+            'go'         { UnitTestGo }
+            'groovy'     { UnitTestGroovy }
+            'haskell'    { UnitTestHaskell }
+            'hs'         { UnitTestHaskell }
+            'java'       { UnitTestJava }
+            'javascript' { UnitTestJavaScript }
+            'js'         { UnitTestJavaScript }
+            'kotlin'     { UnitTestKotlin }
+            'kt'         { UnitTestKotlin }
+            'objc'       { UnitTestObjc }
+            # 'ocaml'      { UnitTestOcaml }
+            'perl'       { UnitTestPerl }
+            'php'        { UnitTestPhp }
+            'powershell' { UnitTestPowershell }
+            'ps1'        { UnitTestPowershell }
+            'py'         { UnitTestPython }
+            'python'     { UnitTestPython }
+            'rb'         { UnitTestRuby }
+            'ruby'       { UnitTestRuby }
+            'rs'         { UnitTestRust }
+            'rust'       { UnitTestRust }
+            'scala'      { UnitTestScala }
+            'swift'      { UnitTestSwift }
+            'ts'         { UnitTestTypeScript }
+            'typescript' { UnitTestTypeScript }
+            default      { ExitWithError("unknown/unsupported language: $lang") }
+        }
     }
 }
 
-if ($help -or $lang -eq '')
+if ($help)
 {
     Usage
 }
 
-UnitTestMain $lang
+if ($all)
+{
+    UnitTestAll
+    exit
+}
+
+UnitTestMain $langs

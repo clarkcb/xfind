@@ -21,7 +21,7 @@ source "$DIR/common.sh"
 ########################################
 
 usage () {
-    echo -e "\nUsage: unittest.sh [-h|--help] {\"all\" | langcode}\n"
+    echo -e "\nUsage: unittest.sh [-h|--help] {\"all\" | lang [lang...]}\n"
     exit
 }
 
@@ -530,7 +530,8 @@ unittest_all () {
 # Unit-testing main
 ########################################
 HELP=
-ARG=all
+TEST_ALL=
+TARGET_LANGS=()
 
 if [ $# == 0 ]
 then
@@ -543,98 +544,117 @@ do
         -h | --help)
             HELP=yes
             ;;
+        --all | all)
+            TEST_ALL=yes
+            ;;
         *)
-            ARG=$1
+            TARGET_LANGS+=($1)
             ;;
     esac
     shift || true
 done
+
+# log the settings
+log "HELP: $HELP"
+log "TEST_ALL: $TEST_ALL"
+log "TARGET_LANGS: ${TARGET_LANGS[*]}"
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $ARG in
-    all)
-        unittest_all
-        ;;
-    # linux)
-    #     unittest_linux
-    #     ;;
-    c)
-        unittest_c
-        ;;
-    clj | clojure)
-        unittest_clojure
-        ;;
-    cpp)
-        unittest_cpp
-        ;;
-    cs | csharp)
-        unittest_csharp
-        ;;
-    dart)
-        unittest_dart
-        ;;
-    elixir | ex)
-        unittest_elixir
-        ;;
-    fs | fsharp)
-        unittest_fsharp
-        ;;
-    go)
-        unittest_go
-        ;;
-    groovy)
-        unittest_groovy
-        ;;
-    haskell | hs)
-        unittest_haskell
-        ;;
-    java)
-        unittest_java
-        ;;
-    javascript | js)
-        unittest_javascript
-        ;;
-    kotlin | kt)
-        unittest_kotlin
-        ;;
-    objc)
-        unittest_objc
-        ;;
-    # ocaml | ml)
-    #     unittest_ocaml
-    #     ;;
-    perl | pl)
-        unittest_perl
-        ;;
-    php)
-        unittest_php
-        ;;
-    ps1 | powershell | pwsh)
-        unittest_powershell
-        ;;
-    py | python)
-        unittest_python
-        ;;
-    rb | ruby)
-        unittest_ruby
-        ;;
-    rs | rust)
-        unittest_rust
-        ;;
-    scala)
-        unittest_scala
-        ;;
-    swift)
-        unittest_swift
-        ;;
-    ts | typescript)
-        unittest_typescript
-        ;;
-    *)
-        log_error "ERROR: unknown unittest argument: $ARG"
-        ;;
-esac
+if [ -n "$TEST_ALL" ]
+then
+    unittest_all
+    exit
+fi
+
+if [ ${#TARGET_LANGS[@]} == 0 ]
+then
+    usage
+fi
+
+for TARGET_LANG in ${TARGET_LANGS[*]}
+do
+    case $TARGET_LANG in
+        # linux)
+        #     unittest_linux
+        #     ;;
+        c)
+            unittest_c
+            ;;
+        clj | clojure)
+            unittest_clojure
+            ;;
+        cpp)
+            unittest_cpp
+            ;;
+        cs | csharp)
+            unittest_csharp
+            ;;
+        dart)
+            unittest_dart
+            ;;
+        elixir | ex)
+            unittest_elixir
+            ;;
+        fs | fsharp)
+            unittest_fsharp
+            ;;
+        go)
+            unittest_go
+            ;;
+        groovy)
+            unittest_groovy
+            ;;
+        haskell | hs)
+            unittest_haskell
+            ;;
+        java)
+            unittest_java
+            ;;
+        javascript | js)
+            unittest_javascript
+            ;;
+        kotlin | kt)
+            unittest_kotlin
+            ;;
+        objc)
+            unittest_objc
+            ;;
+        # ocaml | ml)
+        #     unittest_ocaml
+        #     ;;
+        perl | pl)
+            unittest_perl
+            ;;
+        php)
+            unittest_php
+            ;;
+        ps1 | powershell | pwsh)
+            unittest_powershell
+            ;;
+        py | python)
+            unittest_python
+            ;;
+        rb | ruby)
+            unittest_ruby
+            ;;
+        rs | rust)
+            unittest_rust
+            ;;
+        scala)
+            unittest_scala
+            ;;
+        swift)
+            unittest_swift
+            ;;
+        ts | typescript)
+            unittest_typescript
+            ;;
+        *)
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
+            ;;
+    esac
+done

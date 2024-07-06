@@ -21,7 +21,7 @@ source "$DIR/common.sh"
 ########################################
 
 usage () {
-    echo -e "\nUsage: clean.sh [-h|--help] {\"all\" | langcode}\n"
+    echo -e "\nUsage: clean.sh [-h|--help] {\"all\" | lang [lang...]}\n"
     exit
 }
 
@@ -492,10 +492,11 @@ clean_all () {
 
 
 ########################################
-# Clean Steps
+# Clean Main
 ########################################
 HELP=
-ARG=all
+CLEAN_ALL=
+TARGET_LANGS=()
 
 if [ $# == 0 ]
 then
@@ -508,98 +509,117 @@ do
         -h | --help)
             HELP=yes
             ;;
+        --all | all)
+            CLEAN_ALL=yes
+            ;;
         *)
-            ARG=$1
+            TARGET_LANGS+=($1)
             ;;
     esac
     shift || true
 done
+
+# log the settings
+log "HELP: $HELP"
+log "CLEAN_ALL: $CLEAN_ALL"
+log "TARGET_LANGS: ${TARGET_LANGS[*]}"
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $ARG in
-    all)
-        clean_all
-        ;;
-    linux)
-        clean_linux
-        ;;
-    c)
-        clean_c
-        ;;
-    clj | clojure)
-        clean_clojure
-        ;;
-    cpp)
-        clean_cpp
-        ;;
-    cs | csharp)
-        clean_csharp
-        ;;
-    dart)
-        clean_dart
-        ;;
-    elixir | ex)
-        clean_elixir
-        ;;
-    fs | fsharp)
-        clean_fsharp
-        ;;
-    go)
-        clean_go
-        ;;
-    groovy)
-        clean_groovy
-        ;;
-    haskell | hs)
-        clean_haskell
-        ;;
-    java)
-        clean_java
-        ;;
-    javascript | js)
-        clean_javascript
-        ;;
-    kotlin | kt)
-        clean_kotlin
-        ;;
-    objc)
-        clean_objc
-        ;;
-    ocaml | ml)
-        clean_ocaml
-        ;;
-    perl | pl)
-        clean_perl
-        ;;
-    php)
-        clean_php
-        ;;
-    ps1 | powershell)
-        clean_powershell
-        ;;
-    py | python)
-        clean_python
-        ;;
-    rb | ruby)
-        clean_ruby
-        ;;
-    rs | rust)
-        clean_rust
-        ;;
-    scala)
-        clean_scala
-        ;;
-    swift)
-        clean_swift
-        ;;
-    ts | typescript)
-        clean_typescript
-        ;;
-    *)
-        log_error "ERROR: unknown xfind clean argument: $ARG"
-        ;;
-esac
+if [ -n "$CLEAN_ALL" ]
+then
+    clean_all
+    exit
+fi
+
+if [ ${#TARGET_LANGS[@]} == 0 ]
+then
+    usage
+fi
+
+for TARGET_LANG in ${TARGET_LANGS[*]}
+do
+    case $TARGET_LANG in
+        linux)
+            clean_linux
+            ;;
+        c)
+            clean_c
+            ;;
+        clj | clojure)
+            clean_clojure
+            ;;
+        cpp)
+            clean_cpp
+            ;;
+        cs | csharp)
+            clean_csharp
+            ;;
+        dart)
+            clean_dart
+            ;;
+        elixir | ex)
+            clean_elixir
+            ;;
+        fs | fsharp)
+            clean_fsharp
+            ;;
+        go)
+            clean_go
+            ;;
+        groovy)
+            clean_groovy
+            ;;
+        haskell | hs)
+            clean_haskell
+            ;;
+        java)
+            clean_java
+            ;;
+        javascript | js)
+            clean_javascript
+            ;;
+        kotlin | kt)
+            clean_kotlin
+            ;;
+        objc)
+            clean_objc
+            ;;
+        # ocaml | ml)
+        #     clean_ocaml
+        #     ;;
+        perl | pl)
+            clean_perl
+            ;;
+        php)
+            clean_php
+            ;;
+        ps1 | powershell)
+            clean_powershell
+            ;;
+        py | python)
+            clean_python
+            ;;
+        rb | ruby)
+            clean_ruby
+            ;;
+        rs | rust)
+            clean_rust
+            ;;
+        scala)
+            clean_scala
+            ;;
+        swift)
+            clean_swift
+            ;;
+        ts | typescript)
+            clean_typescript
+            ;;
+        *)
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
+            ;;
+    esac
+done

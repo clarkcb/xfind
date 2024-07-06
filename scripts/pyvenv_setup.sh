@@ -19,6 +19,9 @@ PYTHON_EXE=python3.11
 PIP_EXE=pip3.11
 REQUIREMENTS_PATH=$PYFIND_PATH/requirements.txt
 
+echo "DIR: $DIR"
+echo "VENV_PATH: $VENV_PATH"
+
 
 ########################################
 # Build Functions
@@ -33,15 +36,15 @@ create_activate_venv () {
     then
         log "$VENV_PATH not found, creating..."
 
-        log "$PYTHON_EXE -m venv $PYFIND_PATH/venv"
-        "$PYTHON_EXE" -m venv "$PYFIND_PATH/venv"
+        log "$PYTHON_EXE -m venv $VENV_PATH"
+        "$PYTHON_EXE" -m venv "$VENV_PATH"
     fi
 
     # if venv isn't active, activate it
     if [ -z "$VIRTUAL_ENV" ]
     then
-        log "source $PYFIND_PATH/venv/bin/activate"
-        source "$PYFIND_PATH/venv/bin/activate"
+        log "source $VENV_PATH/bin/activate"
+        source "$VENV_PATH/bin/activate"
 
         # try to upgrade pip
         log "$PYTHON_EXE -m pip install --upgrade pip"

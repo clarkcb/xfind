@@ -21,7 +21,7 @@ source "$DIR/common.sh"
 ########################################
 
 usage () {
-    echo -e "\nUsage: build.sh [-h|--help] [--debug] [--release] [--venv] {\"all\" | langcode}\n"
+    echo -e "\nUsage: build.sh [-h|--help] [--debug] [--release] [--venv] {\"all\" | lang [lang...]}\n"
     exit
 }
 
@@ -1514,7 +1514,9 @@ HELP=
 DEBUG=
 RELEASE=
 VENV=
-TARGET_LANG=all
+BUILD_ALL=
+# TARGET_LANG=all
+TARGET_LANGS=()
 
 if [ $# == 0 ]
 then
@@ -1536,8 +1538,11 @@ do
         --venv)
             VENV=yes
             ;;
+        --all | all)
+            BUILD_ALL=yes
+            ;;
         *)
-            TARGET_LANG=$1
+            TARGET_LANGS+=($1)
             ;;
     esac
     shift || true
@@ -1553,93 +1558,105 @@ log "HELP: $HELP"
 log "DEBUG: $DEBUG"
 log "RELEASE: $RELEASE"
 log "VENV: $VENV"
-log "TARGET_LANG: $TARGET_LANG"
+log "BUILD_ALL: $BUILD_ALL"
+log "TARGET_LANGS: ${TARGET_LANGS[*]}"
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $TARGET_LANG in
-    all)
-        build_all
-        ;;
-    linux)
-        build_linux
-        ;;
-    c)
-        build_c
-        ;;
-    clj | clojure)
-        build_clojure
-        ;;
-    cpp)
-        build_cpp
-        ;;
-    cs | csharp)
-        build_csharp
-        ;;
-    dart)
-        build_dart
-        ;;
-    ex | elixir)
-        build_elixir
-        ;;
-    fs | fsharp)
-        build_fsharp
-        ;;
-    go)
-        build_go
-        ;;
-    groovy)
-        build_groovy
-        ;;
-    haskell | hs)
-        build_haskell
-        ;;
-    java)
-        build_java
-        ;;
-    javascript | js)
-        build_javascript
-        ;;
-    kotlin | kt)
-        build_kotlin
-        ;;
-    objc)
-        build_objc
-        ;;
-    # ocaml | ml)
-    #     build_ocaml
-    #     ;;
-    perl | pl)
-        build_perl
-        ;;
-    php)
-        build_php
-        ;;
-    ps1 | powershell)
-        build_powershell
-        ;;
-    py | python)
-        build_python
-        ;;
-    rb | ruby)
-        build_ruby
-        ;;
-    rs | rust)
-        build_rust
-        ;;
-    scala)
-        build_scala
-        ;;
-    swift)
-        build_swift
-        ;;
-    ts | typescript)
-        build_typescript
-        ;;
-    *)
-        log_error "ERROR: unknown xfind build argument: $TARGET_LANG"
-        ;;
-esac
+if [ -n "$BUILD_ALL" ]
+then
+    build_all
+    exit
+fi
+
+if [ ${#TARGET_LANGS[@]} == 0 ]
+then
+    usage
+fi
+
+for TARGET_LANG in ${TARGET_LANGS[*]}
+do
+    case $TARGET_LANG in
+        linux)
+            build_linux
+            ;;
+        c)
+            build_c
+            ;;
+        clj | clojure)
+            build_clojure
+            ;;
+        cpp)
+            build_cpp
+            ;;
+        cs | csharp)
+            build_csharp
+            ;;
+        dart)
+            build_dart
+            ;;
+        ex | elixir)
+            build_elixir
+            ;;
+        fs | fsharp)
+            build_fsharp
+            ;;
+        go)
+            build_go
+            ;;
+        groovy)
+            build_groovy
+            ;;
+        haskell | hs)
+            build_haskell
+            ;;
+        java)
+            build_java
+            ;;
+        javascript | js)
+            build_javascript
+            ;;
+        kotlin | kt)
+            build_kotlin
+            ;;
+        objc)
+            build_objc
+            ;;
+        # ocaml | ml)
+        #     build_ocaml
+        #     ;;
+        perl | pl)
+            build_perl
+            ;;
+        php)
+            build_php
+            ;;
+        ps1 | powershell)
+            build_powershell
+            ;;
+        py | python)
+            build_python
+            ;;
+        rb | ruby)
+            build_ruby
+            ;;
+        rs | rust)
+            build_rust
+            ;;
+        scala)
+            build_scala
+            ;;
+        swift)
+            build_swift
+            ;;
+        ts | typescript)
+            build_typescript
+            ;;
+        *)
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
+            ;;
+    esac
+done

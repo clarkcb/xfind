@@ -7,7 +7,7 @@
 #
 ################################################################################
 param([switch]$help = $false,
-      [string]$lang='')
+      [switch]$all = $false)
 
 ########################################
 # Configuration
@@ -22,6 +22,16 @@ $scriptDir = Split-Path $scriptPath -Parent
 # check for help switch
 $help = $help.IsPresent
 
+# check for all switch
+$all = $all.IsPresent
+
+# args holds the remaining arguments
+$langs = $args
+
+Write-Host "help: $help"
+Write-Host "all: $all"
+Write-Host "langs: $langs"
+
 
 ########################################
 # Utility Functions
@@ -29,7 +39,7 @@ $help = $help.IsPresent
 
 function Usage
 {
-    Write-Host "`nUsage: clean.ps1 [-help] {""all"" | langcode}`n"
+    Write-Host "`nUsage: clean.ps1 [-help] {""all"" | lang [lang...]}`n"
     exit
 }
 
@@ -316,35 +326,35 @@ function CleanPerl
 {
     Write-Host
     Hdr('CleanPerl')
-    Log('not implemented at this time')
+    Log('Nothing to do for perl')
 }
 
 function CleanPhp
 {
     Write-Host
     Hdr('CleanPhp')
-    Log('not implemented at this time')
+    Log('Nothing to do for php')
 }
 
 function CleanPowerShell
 {
     Write-Host
     Hdr('CleanPowerShell')
-    Log('not implemented at this time')
+    Log('Nothing to do for powershell')
 }
 
 function CleanPython
 {
     Write-Host
     Hdr('CleanPython')
-    Log('not implemented at this time')
+    Log('Nothing to do for python')
 }
 
 function CleanRuby
 {
     Write-Host
     Hdr('CleanRuby')
-    Log('not implemented at this time')
+    Log('Nothing to do for ruby')
 }
 
 function CleanRust
@@ -526,57 +536,76 @@ function CleanAll
 
 function CleanMain
 {
-    param($lang='all')
+    param($langs=@())
 
-    switch ($lang)
+    if ($langs.Count -eq 0)
     {
-        'all'        { CleanAll }
-        'linux'      { CleanLinux }
-        'c'          { CleanC }
-        'clj'        { CleanClojure }
-        'clojure'    { CleanClojure }
-        'cpp'        { CleanCpp }
-        'cs'         { CleanCsharp }
-        'csharp'     { CleanCsharp }
-        'dart'       { CleanDart }
-        'elixir'     { CleanElixir }
-        'ex'         { CleanElixir }
-        'fs'         { CleanFsharp }
-        'fsharp'     { CleanFsharp }
-        'go'         { CleanGo }
-        'groovy'     { CleanGroovy }
-        'haskell'    { CleanHaskell }
-        'hs'         { CleanHaskell }
-        'java'       { CleanJava }
-        'javascript' { CleanJavaScript }
-        'js'         { CleanJavaScript }
-        'kotlin'     { CleanKotlin }
-        'kt'         { CleanKotlin }
-        'objc'       { CleanObjc }
-        'ocaml'      { CleanOcaml }
-        'ml'         { CleanOcaml }
-        'perl'       { CleanPerl }
-        'pl'         { CleanPerl }
-        'php'        { CleanPhp }
-        'powershell' { CleanPowerShell }
-        'ps1'        { CleanPowerShell }
-        'py'         { CleanPython }
-        'python'     { CleanPython }
-        'rb'         { CleanRuby }
-        'ruby'       { CleanRuby }
-        'rs'         { CleanRust }
-        'rust'       { CleanRust }
-        'scala'      { CleanScala }
-        'swift'      { CleanSwift }
-        'ts'         { CleanTypeScript }
-        'typescript' { CleanTypeScript }
-        default      { ExitWithError("Unknown option: $lang") }
+        Usage
+    }
+
+    if ($langs -contains 'all')
+    {
+        CleanAll
+        exit
+    }
+
+    ForEach ($lang in $langs)
+    {
+        switch ($lang)
+        {
+            'linux'      { CleanLinux }
+            'c'          { CleanC }
+            'clj'        { CleanClojure }
+            'clojure'    { CleanClojure }
+            'cpp'        { CleanCpp }
+            'cs'         { CleanCsharp }
+            'csharp'     { CleanCsharp }
+            'dart'       { CleanDart }
+            'elixir'     { CleanElixir }
+            'ex'         { CleanElixir }
+            'fs'         { CleanFsharp }
+            'fsharp'     { CleanFsharp }
+            'go'         { CleanGo }
+            'groovy'     { CleanGroovy }
+            'haskell'    { CleanHaskell }
+            'hs'         { CleanHaskell }
+            'java'       { CleanJava }
+            'javascript' { CleanJavaScript }
+            'js'         { CleanJavaScript }
+            'kotlin'     { CleanKotlin }
+            'kt'         { CleanKotlin }
+            'objc'       { CleanObjc }
+            # 'ocaml'      { CleanOcaml }
+            'ml'         { CleanOcaml }
+            'perl'       { CleanPerl }
+            'pl'         { CleanPerl }
+            'php'        { CleanPhp }
+            'powershell' { CleanPowerShell }
+            'ps1'        { CleanPowerShell }
+            'py'         { CleanPython }
+            'python'     { CleanPython }
+            'rb'         { CleanRuby }
+            'ruby'       { CleanRuby }
+            'rs'         { CleanRust }
+            'rust'       { CleanRust }
+            'scala'      { CleanScala }
+            'swift'      { CleanSwift }
+            'ts'         { CleanTypeScript }
+            'typescript' { CleanTypeScript }
+            default      { ExitWithError("unknown/unsupported language: $lang") }
+        }
     }
 }
 
-if ($help -or $lang -eq '')
+if ($help)
 {
     Usage
 }
 
-CleanMain $lang
+if ($all)
+{
+    CleanAll
+    exit
+}
+
+CleanMain $langs

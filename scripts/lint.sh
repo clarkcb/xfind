@@ -21,7 +21,7 @@ source "$DIR/common.sh"
 ########################################
 
 usage () {
-    echo -e "\nUsage: lint.sh [-h|--help] {\"all\" | langcode}\n"
+    echo -e "\nUsage: lint.sh [-h|--help] {\"all\" | lang [lang...]}\n"
     exit
 }
 
@@ -76,6 +76,13 @@ lint_dart () {
     echo
     hdr "lint_dart"
 
+    # ensure dart is installed
+    if [ -z "$(which dart)" ]
+    then
+        log_error "You need to install dart"
+        return
+    fi
+
     log "Linting dartfind"
     log "dart analyze $DARTFIND_PATH"
     dart analyze "$DARTFIND_PATH"
@@ -84,6 +91,20 @@ lint_dart () {
 lint_elixir () {
     echo
     hdr "lint_elixir"
+
+    # ensure elixir is installed
+    if [ -z "$(which elixir)" ]
+    then
+        log_error "You need to install elixir"
+        return
+    fi
+
+    # ensure mix is installed
+    if [ -z "$(which mix)" ]
+    then
+        log_error "You need to install mix"
+        return
+    fi
 
     log "Linting exfind"
     log "mix credo $EXFIND_PATH"
@@ -100,6 +121,13 @@ lint_fsharp () {
 lint_go () {
     echo
     hdr "lint_go"
+
+    # ensure go is installed
+    if [ -z "$(which go)" ]
+    then
+        echo "You need to install go"
+        return
+    fi
 
     cd "$GOFIND_PATH"
 
@@ -136,6 +164,12 @@ lint_haskell () {
 
     HLINT="$HOME/.local/bin/hlint"
 
+    if [ ! -f "$HLINT" ]
+    then
+        log_error "You need to install hlint"
+        return
+    fi
+
     log "Linting hsfind"
     log "hlint $HSFIND_PATH"
     "$HLINT" "$HSFIND_PATH"
@@ -152,17 +186,22 @@ lint_java () {
         mkdir -p "$TOOLS_PATH"
     fi
 
-    CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | head -n 1)
+    CHECKSTYLE_VERSION="8.41"
+    # CHECKSTYLE_VERSION="10.17.0"
+    CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | grep $CHECKSTYLE_VERSION | head -n 1)
     if [ -z "$CHECKSTYLE_JAR" ]
     then
         log "Checkstyle jar not found, downloading"
-        CHECKSTYLE_VERSION="10.12.5"
+        # https://github.com/checkstyle/checkstyle/releases/download/checkstyle-10.17.0/checkstyle-10.17.0-all.jar
         URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-$CHECKSTYLE_VERSION/checkstyle-$CHECKSTYLE_VERSION-all.jar"
         cd "$TOOLS_PATH"
+        log "curl -J -L -O $URL"
         curl -J -L -O "$URL"
         cd -
-        CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | head -n 1)
+        CHECKSTYLE_JAR=$(find "$TOOLS_PATH" -name "checkstyle*.jar" | grep $CHECKSTYLE_VERSION | head -n 1)
     fi
+
+    log "CHECKSTYLE_JAR: $CHECKSTYLE_JAR"
 
     JAVA="$JAVA_HOME/bin/java"
     # CONFIG=$JAVAFIND_PATH/sun_checks.xml
@@ -298,16 +337,27 @@ lint_python () {
     echo
     hdr "lint_python"
 
-    if [ -z "$(which pylint)" ]
+    LINTER="ruff"
+    LINT_CMD="ruff check"
+
+    if [ -z "$(which $LINTER)" ]
     then
-        echo "You need to install pylint"
-        return
+        echo "Linter ruff not found, trying pylint"
+        LINTER="pylint"
+        LINT_CMD="pylint"
+
+        if [ -z "$(which $LINTER)" ]
+        then
+            echo "You need to install ruff or pylint"
+            return
+        fi
     fi
+
 
     log "Linting pyfind"
     cd "$PYFIND_PATH"
-    log "pylint pyfind"
-    pylint pyfind
+    log "$LINT_CMD pyfind"
+    $LINT_CMD pyfind
     cd -
 }
 
@@ -341,31 +391,33 @@ lint_scala () {
     echo
     hdr "lint_scala"
 
-    TOOLS_PATH=$SCALAFIND_PATH/tools
-    if [ ! -d "$TOOLS_PATH" ]
-    then
-        log "mkdir -p $TOOLS_PATH"
-        mkdir -p "$TOOLS_PATH"
-    fi
+    # TOOLS_PATH=$SCALAFIND_PATH/tools
+    # if [ ! -d "$TOOLS_PATH" ]
+    # then
+    #     log "mkdir -p $TOOLS_PATH"
+    #     mkdir -p "$TOOLS_PATH"
+    # fi
 
-    SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
-    if [ -z "$SCALASTYLE_JAR" ]
-    then
-        log "Scalastyle jar not found, downloading"
-        # TODO: is it the batch jar or the regular jar that should be used?
-        # URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0-batch.jar"
-        URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0.jar"
-        cd "$TOOLS_PATH"
-        curl -O "$URL"
-        cd -
-        SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
-    fi
+    # SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
+    # if [ -z "$SCALASTYLE_JAR" ]
+    # then
+    #     log "Scalastyle jar not found, downloading"
+    #     # TODO: is it the batch jar or the regular jar that should be used?
+    #     # URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0-batch.jar"
+    #     URL="https://repo1.maven.org/maven2/org/scalastyle/scalastyle_2.12/1.0.0/scalastyle_2.12-1.0.0.jar"
+    #     cd "$TOOLS_PATH"
+    #     curl -O "$URL"
+    #     cd -
+    #     SCALASTYLE_JAR=$(find "$TOOLS_PATH" -name "scalastyle*.jar" | head -n 1)
+    # fi
 
-    CONFIG="$SCALAFIND_PATH/scalastyle_config.xml"
+    # CONFIG="$SCALAFIND_PATH/scalastyle_config.xml"
 
-    log "Linting scalafind"
-    log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALAFIND_PATH/src/main/scala"
-    java -jar "$SCALASTYLE_JAR" --config "$CONFIG" "$SCALAFIND_PATH/src/main/scala"
+    # log "Linting scalafind"
+    # log "java -jar $SCALASTYLE_JAR --config $CONFIG $SCALAFIND_PATH/src/main/scala"
+    # java -jar "$SCALASTYLE_JAR" --config "$CONFIG" "$SCALAFIND_PATH/src/main/scala"
+
+    log "not implemented at this time (scalastyle not available for scala 3.x)"
 }
 
 lint_swift () {
@@ -441,7 +493,8 @@ lint_all () {
 # Lint Main
 ########################################
 HELP=
-ARG=all
+LINT_ALL=
+TARGET_LANGS=()
 
 if [ $# == 0 ]
 then
@@ -454,95 +507,114 @@ do
         -h | --help)
             HELP=yes
             ;;
+        --all | all)
+            LINT_ALL=yes
+            ;;
         *)
-            ARG=$1
+            TARGET_LANGS+=($1)
             ;;
     esac
     shift || true
 done
+
+# log the settings
+log "HELP: $HELP"
+log "LINT_ALL: $LINT_ALL"
+log "TARGET_LANGS: ${TARGET_LANGS[*]}"
 
 if [ -n "$HELP" ]
 then
     usage
 fi
 
-case $ARG in
-    all)
-        lint_all
-        ;;
-    c)
-        lint_c
-        ;;
-    clj | clojure)
-        lint_clojure
-        ;;
-    cpp)
-        lint_cpp
-        ;;
-    cs | csharp)
-        lint_csharp
-        ;;
-    dart)
-        lint_dart
-        ;;
-    elixir | ex)
-        lint_elixir
-        ;;
-    fs | fsharp)
-        lint_fsharp
-        ;;
-    go)
-        lint_go
-        ;;
-    groovy)
-        lint_groovy
-        ;;
-    haskell | hs)
-        lint_haskell
-        ;;
-    java)
-        lint_java
-        ;;
-    javascript | js)
-        lint_javascript
-        ;;
-    kotlin | kt)
-        lint_kotlin
-        ;;
-    objc)
-        lint_objc
-        ;;
-    ocaml | ml)
-        lint_ocaml
-        ;;
-    perl | pl)
-        lint_perl
-        ;;
-    php)
-        lint_php
-        ;;
-    ps1 | powershell)
-        lint_powershell
-        ;;
-    py | python)
-        lint_python
-        ;;
-    rb | ruby)
-        lint_ruby
-        ;;
-    rs | rust)
-        lint_rust
-        ;;
-    scala)
-        lint_scala
-        ;;
-    swift)
-        lint_swift
-        ;;
-    ts | typescript)
-        lint_typescript
-        ;;
-    *)
-        log_error "ERROR: unknown xfind lint argument: $ARG"
-        ;;
-esac
+if [ -n "$LINT_ALL" ]
+then
+    lint_all
+    exit
+fi
+
+if [ ${#TARGET_LANGS[@]} == 0 ]
+then
+    usage
+fi
+
+for TARGET_LANG in ${TARGET_LANGS[*]}
+do
+    case $TARGET_LANG in
+        c)
+            lint_c
+            ;;
+        clj | clojure)
+            lint_clojure
+            ;;
+        cpp)
+            lint_cpp
+            ;;
+        cs | csharp)
+            lint_csharp
+            ;;
+        dart)
+            lint_dart
+            ;;
+        elixir | ex)
+            lint_elixir
+            ;;
+        fs | fsharp)
+            lint_fsharp
+            ;;
+        go)
+            lint_go
+            ;;
+        groovy)
+            lint_groovy
+            ;;
+        haskell | hs)
+            lint_haskell
+            ;;
+        java)
+            lint_java
+            ;;
+        javascript | js)
+            lint_javascript
+            ;;
+        kotlin | kt)
+            lint_kotlin
+            ;;
+        objc)
+            lint_objc
+            ;;
+        # ocaml | ml)
+        #     lint_ocaml
+        #     ;;
+        perl | pl)
+            lint_perl
+            ;;
+        php)
+            lint_php
+            ;;
+        ps1 | powershell)
+            lint_powershell
+            ;;
+        py | python)
+            lint_python
+            ;;
+        rb | ruby)
+            lint_ruby
+            ;;
+        rs | rust)
+            lint_rust
+            ;;
+        scala)
+            lint_scala
+            ;;
+        swift)
+            lint_swift
+            ;;
+        ts | typescript)
+            lint_typescript
+            ;;
+        *)
+            log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
+            ;;
+    esac
+done

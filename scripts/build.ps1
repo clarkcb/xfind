@@ -10,7 +10,7 @@ param([switch]$help = $false,
       [switch]$debug = $false,
       [switch]$release = $false,
       [switch]$venv = $false,
-      [string]$lang = '')
+      [switch]$all = $false)
 
 ########################################
 # Configuration
@@ -36,6 +36,19 @@ if (-not $release)
 # for python
 $venv = $venv.IsPresent
 
+# check for all switch
+$all = $all.IsPresent
+
+# args holds the remaining arguments
+$langs = $args
+
+Write-Host "help: $help"
+Write-Host "debug: $debug"
+Write-Host "release: $release"
+Write-Host "venv: $venv"
+Write-Host "all: $all"
+Write-Host "langs: $langs"
+
 
 ########################################
 # Utility Functions
@@ -43,7 +56,7 @@ $venv = $venv.IsPresent
 
 function Usage
 {
-    Write-Host "`nUsage: build.ps1 [-help] [-debug] [-release] [-venv] {""all"" | langcode}`n"
+    Write-Host "`nUsage: build.ps1 [-help] [-debug] [-release] [-venv] {""all"" | lang [lang...]}`n"
     exit
 }
 
@@ -1601,56 +1614,75 @@ function BuildAll
 
 function BuildMain
 {
-    param($lang='')
+    param($langs=@())
 
-    switch ($lang)
+    if ($langs.Count -eq 0)
     {
-        'all'        { BuildAll }
-        'linux'      { BuildLinux }
-        'c'          { Measure-Command { BuildC } }
-        'clj'        { Measure-Command { BuildClojure } }
-        'clojure'    { Measure-Command { BuildClojure } }
-        'cpp'        { Measure-Command { BuildCpp } }
-        'cs'         { Measure-Command { BuildCsharp } }
-        'csharp'     { Measure-Command { BuildCsharp } }
-        'dart'       { Measure-Command { BuildDart } }
-        'elixir'     { Measure-Command { BuildElixir } }
-        'ex'         { Measure-Command { BuildElixir } }
-        'fs'         { Measure-Command { BuildFsharp } }
-        'fsharp'     { Measure-Command { BuildFsharp } }
-        'go'         { Measure-Command { BuildGo } }
-        'haskell'    { Measure-Command { BuildHaskell } }
-        'hs'         { Measure-Command { BuildHaskell } }
-        'java'       { Measure-Command { BuildJava } }
-        'javascript' { Measure-Command { BuildJavaScript } }
-        'js'         { Measure-Command { BuildJavaScript } }
-        'kotlin'     { Measure-Command { BuildKotlin } }
-        'kt'         { Measure-Command { BuildKotlin } }
-        'objc'       { Measure-Command { BuildObjc } }
-        'ocaml'      { Measure-Command { BuildOcaml } }
-        'ml'         { Measure-Command { BuildOcaml } }
-        'perl'       { Measure-Command { BuildPerl } }
-        'pl'         { Measure-Command { BuildPerl } }
-        'php'        { Measure-Command { BuildPhp } }
-        'powershell' { Measure-Command { BuildPowerShell } }
-        'ps1'        { Measure-Command { BuildPowerShell } }
-        'py'         { Measure-Command { BuildPython } }
-        'python'     { Measure-Command { BuildPython } }
-        'rb'         { Measure-Command { BuildRuby } }
-        'ruby'       { Measure-Command { BuildRuby } }
-        'rs'         { Measure-Command { BuildRust } }
-        'rust'       { Measure-Command { BuildRust } }
-        'scala'      { Measure-Command { BuildScala } }
-        'swift'      { Measure-Command { BuildSwift } }
-        'ts'         { Measure-Command { BuildTypeScript } }
-        'typescript' { Measure-Command { BuildTypeScript } }
-        default      { ExitWithError("Unknown option: $lang") }
+        Usage
+    }
+
+    if ($langs -contains 'all')
+    {
+        BuildAll
+        exit
+    }
+
+    ForEach ($lang in $langs)
+    {
+        switch ($lang)
+        {
+            'linux'      { BuildLinux }
+            'c'          { Measure-Command { BuildC } }
+            'clj'        { Measure-Command { BuildClojure } }
+            'clojure'    { Measure-Command { BuildClojure } }
+            'cpp'        { Measure-Command { BuildCpp } }
+            'cs'         { Measure-Command { BuildCsharp } }
+            'csharp'     { Measure-Command { BuildCsharp } }
+            'dart'       { Measure-Command { BuildDart } }
+            'elixir'     { Measure-Command { BuildElixir } }
+            'ex'         { Measure-Command { BuildElixir } }
+            'fs'         { Measure-Command { BuildFsharp } }
+            'fsharp'     { Measure-Command { BuildFsharp } }
+            'go'         { Measure-Command { BuildGo } }
+            'haskell'    { Measure-Command { BuildHaskell } }
+            'hs'         { Measure-Command { BuildHaskell } }
+            'java'       { Measure-Command { BuildJava } }
+            'javascript' { Measure-Command { BuildJavaScript } }
+            'js'         { Measure-Command { BuildJavaScript } }
+            'kotlin'     { Measure-Command { BuildKotlin } }
+            'kt'         { Measure-Command { BuildKotlin } }
+            'objc'       { Measure-Command { BuildObjc } }
+            'ocaml'      { Measure-Command { BuildOcaml } }
+            'ml'         { Measure-Command { BuildOcaml } }
+            'perl'       { Measure-Command { BuildPerl } }
+            'pl'         { Measure-Command { BuildPerl } }
+            'php'        { Measure-Command { BuildPhp } }
+            'powershell' { Measure-Command { BuildPowerShell } }
+            'ps1'        { Measure-Command { BuildPowerShell } }
+            'py'         { Measure-Command { BuildPython } }
+            'python'     { Measure-Command { BuildPython } }
+            'rb'         { Measure-Command { BuildRuby } }
+            'ruby'       { Measure-Command { BuildRuby } }
+            'rs'         { Measure-Command { BuildRust } }
+            'rust'       { Measure-Command { BuildRust } }
+            'scala'      { Measure-Command { BuildScala } }
+            'swift'      { Measure-Command { BuildSwift } }
+            'ts'         { Measure-Command { BuildTypeScript } }
+            'typescript' { Measure-Command { BuildTypeScript } }
+            default      { ExitWithError("unknown/unsupported language: $lang") }
+        }
     }
 }
 
-if ($help -or $lang -eq '')
+if ($help)
 {
     Usage
 }
 
-BuildMain $lang
+if ($all)
+{
+    BuildAll
+    exit
+}
+
+BuildMain $langs
