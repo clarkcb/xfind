@@ -39,7 +39,7 @@ copy_filetypes_resources () {
     cp "$XFIND_SHARED_PATH/filetypes.json" "$resources_path/"
 }
 
-# copy_searchoptions_resources
+# copy_findoptions_resources
 copy_findoptions_resources () {
     local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/findoptions.json $resources_path/"
@@ -51,7 +51,7 @@ copy_json_resources () {
     local resources_path="$1"
     copy_config_resources "$resources_path"
     copy_filetypes_resources "$resources_path"
-    copy_searchoptions_resources "$resources_path"
+    copy_findoptions_resources "$resources_path"
 }
 
 # copy_xml_resources
@@ -157,7 +157,7 @@ build_c () {
 
         if [ -d "$CMAKE_BUILD_PATH" ]
         then
-            TARGETS=(clean cfind cfindapp test_cfind)
+            TARGETS=(clean cfind cfindapp cfind-tests)
             for t in ${TARGETS[*]}
             do
                 log "cmake --build $CMAKE_BUILD_DIR --config $c --target $t"

@@ -34,18 +34,29 @@ unittest_c () {
     echo
     hdr "unittest_c"
 
-    # ensure make is installed
-    if [ -z "$(which make)" ]
-    then
-        echo "You need to install make"
-        return
-    fi
-
     log "Unit-testing cfind"
-    cd "$CFIND_PATH"
-    log "make run_tests"
-    make run_tests
-    cd -
+    CONFIGURATIONS=(debug release)
+    for c in ${CONFIGURATIONS[*]}
+    do
+        CMAKE_BUILD_DIR=$CFIND_PATH/cmake-build-$c
+        if [ -d "$CMAKE_BUILD_DIR" ]
+        then
+            CFIND_TEST_EXE=$CMAKE_BUILD_DIR/cfind-tests
+            if [ -e "$CFIND_TEST_EXE" ]
+            then
+                log "$CFIND_TEST_EXE"
+                $CFIND_TEST_EXE
+                # output=$(script -q tmpout $CFIND_TEST_EXE | tee /dev/tty)
+                # lastline=$(echo "$output" | tail -n 2)
+                # if [[ "$lastline" =~ All[[:space:]]tests[[:space:]]passed ]]
+                # then
+                #     log "All C unit tests passed"
+                # else
+                #     log_error "ERROR: C unit tests failed"
+                # fi
+            fi
+        fi
+    done
 }
 
 unittest_clojure () {
@@ -63,7 +74,14 @@ unittest_clojure () {
     log "Unit-testing cljfind"
     cd "$CLJFIND_PATH"
     log "lein test"
-    lein test
+    output=$(lein test | tee /dev/tty)
+    lastline=$(echo "$output" | tail -n 1)
+    if [[ "$lastline" == "0 failures, 0 errors." ]]
+    then
+        log "All clojure unit tests passed"
+    else
+        log_error "ERROR: clojure unit tests failed"
+    fi
     cd -
 }
 
@@ -82,7 +100,14 @@ unittest_cpp () {
             if [ -e "$CPPFIND_TEST_EXE" ]
             then
                 log "$CPPFIND_TEST_EXE"
-                $CPPFIND_TEST_EXE
+                output=$(script -q tmpout $CPPFIND_TEST_EXE | tee /dev/tty)
+                lastline=$(echo "$output" | tail -n 2)
+                if [[ "$lastline" =~ All[[:space:]]tests[[:space:]]passed ]]
+                then
+                    log "All C++ unit tests passed"
+                else
+                    log_error "ERROR: C++ unit tests failed"
+                fi
             fi
         fi
     done
@@ -170,7 +195,15 @@ unittest_go () {
     cd "$GOFIND_PATH"
     log "go test --cover ./..."
     # cd "$GOSRC_PATH"; go test; cd -
-    go test --cover ./...
+    output=$(go test --cover ./... | tee /dev/tty)
+    lastline=$(echo "$output" | tail -n 1)
+    # echo "lastline: \"$lastline\""
+    if [[ "$lastline" =~ ^ok[[:space:]] ]]
+    then
+        log "All go unit tests passed"
+    else
+        log_error "ERROR: go unit tests failed"
+    fi
     cd -
 }
 
@@ -224,7 +257,15 @@ unittest_java () {
     # run tests via maven
     log "Unit-testing javafind"
     log "mvn -f $JAVAFIND_PATH/pom.xml test"
-    mvn -f "$JAVAFIND_PATH/pom.xml" test
+    output=$(script -q tmpout mvn -f "$JAVAFIND_PATH/pom.xml" test | tee /dev/tty)
+    lastlines=$(echo "$output" | tail -n 9)
+    # echo "lastlines: \"$lastlines\""
+    if [[ "$lastlines" =~ Tests[[:space:]]run:[[:space:]]+[0-9]+,[[:space:]]+Failures:[[:space:]]+0,[[:space:]]+Errors:[[:space:]]+0 ]]
+    then
+        log "All java unit tests passed"
+    else
+        log_error "ERROR: java unit tests failed"
+    fi
 }
 
 unittest_javascript () {
