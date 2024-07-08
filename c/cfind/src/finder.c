@@ -6,7 +6,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include "common.h"
 #include "finderr.h"
 #include "fileresults.h"
 #include "fileutil.h"
@@ -27,12 +26,12 @@ error_t validate_settings(const FindSettings *settings)
     if (path_count < 1) {
         return E_STARTPATH_NOT_DEFINED;
     }
-    StringNode *temp = settings->paths;
-    while (temp != NULL) {
-        if (!dir_or_file_exists(temp->string)) {
+    StringNode *path = settings->paths;
+    while (path != NULL) {
+        if (!dir_or_file_exists(path->string)) {
             return E_STARTPATH_NOT_FOUND;
         }
-        temp = temp->next;
+        path = path->next;
     }
     if (settings->max_depth > -1 && settings->max_depth < settings->min_depth) {
         return E_INVALID_DEPTH_RANGE;
@@ -60,25 +59,18 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
     StringNode *d = dir_elems;
     unsigned short matches = 1;
     while (matches == 1 && d != NULL && d->string != NULL) {
+        if (!strncmp(d->string, ".", 5) || !strncmp(d->string, "..", 5)) {
+            d = d->next;
+            continue;
+        }
         if (!settings->include_hidden && is_hidden(d->string)) {
             matches = 0;
             continue;
         }
-        // Trying to figure out why regexes are not matching in release profile, only debug
-        // if (((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0)
-        //     && (string_matches_regex_node(d->string, settings->in_dir_patterns) == 0))
-        //     || ((is_null_or_empty_regex_node(settings->out_dir_patterns) == 0)
-        //         && (string_matches_regex_node(d->string, settings->out_dir_patterns) == 1))) {
-        //     matches = 0;
-        // }
-        int null_or_empty_in_dir_patterns = is_null_or_empty_regex_node(settings->in_dir_patterns);
-        int matches_in_dir_pattern = string_matches_regex_node(d->string, settings->in_dir_patterns);
-        int null_or_empty_out_dir_patterns = is_null_or_empty_regex_node(settings->out_dir_patterns);
-        int matches_out_dir_pattern = string_matches_regex_node(d->string, settings->out_dir_patterns);
-        if (((null_or_empty_in_dir_patterns == 0)
-            && matches_in_dir_pattern == 0)
-            || ((null_or_empty_out_dir_patterns == 0)
-                && (matches_out_dir_pattern == 1))) {
+        if ((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0
+             && string_matches_regex_node(d->string, settings->in_dir_patterns) == 0)
+            || (is_null_or_empty_regex_node(settings->out_dir_patterns) == 0
+                && string_matches_regex_node(d->string, settings->out_dir_patterns) == 1)) {
             matches = 0;
         }
         d = d->next;
@@ -87,73 +79,122 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
     return matches;
 }
 
-unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat)
+unsigned short is_matching_archive_extension(const char *ext, const FindSettings *settings)
+{
+    return (is_null_or_empty_string_node(settings->in_archive_extensions) == 1
+            || string_matches_string_node(ext, settings->in_archive_extensions) == 1)
+        && (is_null_or_empty_string_node(settings->out_archive_extensions) == 1
+            || string_matches_string_node(ext, settings->out_archive_extensions) == 0);
+}
+
+unsigned short is_matching_extension(const char *ext, const FindSettings *settings)
+{
+    return (is_null_or_empty_string_node(settings->in_extensions) == 1
+            || string_matches_string_node(ext, settings->in_extensions) == 1)
+        && (is_null_or_empty_string_node(settings->out_extensions) == 1
+            || string_matches_string_node(ext, settings->out_extensions) == 0);
+}
+
+unsigned short has_matching_archive_extension(const char *file_name, const FindSettings *settings)
+{
+    if (is_null_or_empty_string_node(settings->in_archive_extensions) == 1
+        && is_null_or_empty_string_node(settings->out_archive_extensions) == 1) {
+        return 1;
+    }
+    if (file_name == NULL) return 0;
+    size_t file_len = strnlen(file_name, 1024);
+    if (file_len < 1) return 0;
+    char ext[file_len];
+    ext[0] = '\0';
+    get_extension(file_name, ext);
+    return is_matching_archive_extension(ext, settings);
+}
+
+unsigned short has_matching_extension(const char *file_name, const FindSettings *settings)
+{
+    if (is_null_or_empty_string_node(settings->in_extensions) == 1
+        && is_null_or_empty_string_node(settings->out_extensions) == 1) {
+        return 1;
+    }
+    if (file_name == NULL) return 0;
+    size_t file_len = strnlen(file_name, 1024);
+    if (file_len < 1) return 0;
+    char ext[file_len];
+    ext[0] = '\0';
+    get_extension(file_name, ext);
+    return is_matching_extension(ext, settings);
+}
+
+unsigned short is_matching_archive_file_name(const char *file_name, const FindSettings *settings)
 {
     if (file_name == NULL) return 0;
     size_t file_len = strnlen(file_name, 1024);
     if (file_len < 1) return 0;
-    unsigned int ext_size;
-    int dot_idx = last_index_of_char_in_string('.', file_name);
-    if (dot_idx == 0 || dot_idx == file_len - 1) ext_size = 0;
-    else ext_size = (unsigned int)file_len - (unsigned int)dot_idx;
-    char ext[ext_size + 1];
-    if (ext_size > 0) get_extension(file_name, ext);
-    else ext[0] = '\0';
-
-    if (*file_type == UNKNOWN) {
-        *file_type = get_file_type_for_filename(file_name, finder->file_types);
-        if (*file_type == UNKNOWN) {
-            *file_type = get_file_type_for_ext(ext, finder->file_types);
-        }
-    }
-
-    if ((is_null_or_empty_int_node(finder->settings->in_file_types) == 0
-          && int_matches_int_node((int *)file_type, finder->settings->in_file_types) == 0)
-        || (is_null_or_empty_int_node(finder->settings->out_file_types) == 0
-             && int_matches_int_node((int *)file_type, finder->settings->out_file_types) == 1)
-        || (finder->settings->max_last_mod > 0L && fpstat->st_mtime > finder->settings->max_last_mod)
-        || (finder->settings->min_last_mod > 0L && fpstat->st_mtime < finder->settings->min_last_mod)
-        || (finder->settings->max_size > 0L && fpstat->st_size > finder->settings->max_size)
-        || (finder->settings->min_size > 0L && fpstat->st_size < finder->settings->min_size)) {
-        return 0;
-    }
-
-    if (*file_type == ARCHIVE) {
-        if (finder->settings->include_archives == 0) return 0;
-
-        if (is_null_or_empty_string_node(finder->settings->in_archive_extensions) == 0
-            && string_matches_string_node(ext, finder->settings->in_archive_extensions) == 0
-            || is_null_or_empty_string_node(finder->settings->out_archive_extensions) == 0
-            && string_matches_string_node(ext, finder->settings->out_archive_extensions) == 1
-            || is_null_or_empty_regex_node(finder->settings->in_archive_file_patterns) == 0
-            && string_matches_regex_node(file_name, finder->settings->in_archive_file_patterns) == 0
-            || is_null_or_empty_regex_node(finder->settings->out_archive_file_patterns) == 0
-            && string_matches_regex_node(file_name, finder->settings->out_archive_file_patterns) == 1) {
-            return 0;
-        }
-    } else {
-        if (finder->settings->archives_only == 1) return 0;
-
-        if (is_null_or_empty_string_node(finder->settings->in_extensions) == 0
-            && string_matches_string_node(ext, finder->settings->in_extensions) == 0
-            || is_null_or_empty_string_node(finder->settings->out_extensions) == 0
-            && string_matches_string_node(ext, finder->settings->out_extensions) == 1
-            || is_null_or_empty_regex_node(finder->settings->in_file_patterns) == 0
-            && string_matches_regex_node(file_name, finder->settings->in_file_patterns) == 0
-            || is_null_or_empty_regex_node(finder->settings->out_file_patterns) == 0
-            && string_matches_regex_node(file_name, finder->settings->out_file_patterns) == 1) {
-            return 0;
-        }
-    }
-
-    return 1;
+    return (is_null_or_empty_regex_node(settings->in_archive_file_patterns) == 1
+            || string_matches_regex_node(file_name, settings->in_archive_file_patterns) == 1)
+        && (is_null_or_empty_regex_node(settings->out_archive_file_patterns) == 1
+            || string_matches_regex_node(file_name, settings->out_archive_file_patterns) == 0);
 }
 
-unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat)
+unsigned short is_matching_file_name(const char *file_name, const FindSettings *settings)
 {
-    if (!finder->settings->include_hidden && is_hidden(file_name))
+    if (file_name == NULL) return 0;
+    size_t file_len = strnlen(file_name, 1024);
+    if (file_len < 1) return 0;
+    return (is_null_or_empty_regex_node(settings->in_file_patterns) == 1
+            || string_matches_regex_node(file_name, settings->in_file_patterns) == 1)
+        && (is_null_or_empty_regex_node(settings->out_file_patterns) == 1
+            || string_matches_regex_node(file_name, settings->out_file_patterns) == 0);
+}
+
+unsigned short is_matching_file_type(const FileType *file_type, const FindSettings *settings)
+{
+    return (is_null_or_empty_int_node(settings->in_file_types) == 1
+            || int_matches_int_node((int *)file_type, settings->in_file_types) == 1)
+        && (is_null_or_empty_int_node(settings->out_file_types) == 1
+            || int_matches_int_node((int *)file_type, settings->out_file_types) == 0);
+}
+
+unsigned short is_matching_file_size(const unsigned long file_size, const FindSettings *settings)
+{
+    return (settings->max_size == 0L
+            || file_size <= settings->max_size)
+        && (settings->min_size == 0L
+            || file_size >= settings->min_size);
+}
+
+unsigned short is_matching_last_mod(const long last_mod, const FindSettings *settings)
+{
+    return (settings->max_last_mod == 0L
+            || last_mod <= settings->max_last_mod)
+        && (settings->min_last_mod == 0L
+            || last_mod >= settings->min_last_mod);
+}
+
+unsigned short is_matching_file(const char *file_name, const FileType *file_type,
+                                const struct stat *fpstat, const FindSettings *settings)
+{
+    if (*file_type == ARCHIVE) {
+        if (settings->include_archives == 0) return 0;
+        return has_matching_archive_extension(file_name, settings) == 1
+            && is_matching_archive_file_name(file_name, settings) == 1;
+    }
+    if (settings->archives_only == 1) return 0;
+    return has_matching_extension(file_name, settings) == 1
+        && is_matching_file_name(file_name, settings) == 1
+        && is_matching_file_type(file_type, settings) == 1
+        && is_matching_file_size(fpstat->st_size, settings) == 1
+        && is_matching_last_mod(fpstat->st_mtime, settings) == 1;
+}
+
+unsigned short filter_file(const char *dir, const char *file_name, const FileType *file_type,
+                           const struct stat *fpstat, const FindSettings *settings)
+{
+    if (settings->include_hidden == 0 && is_hidden(file_name))
         return 0;
-    return is_matching_file(dir, file_name, finder, file_type, fpstat);
+    if (is_matching_dir(dir, settings) == 0)
+        return 0;
+    return is_matching_file(file_name, file_type, fpstat, settings);
 }
 
 static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *results, const int depth)
@@ -163,9 +204,8 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
         destroy_finder((Finder *)finder);
         if (ENOENT == errno) {
             return E_DIRECTORY_NOT_FOUND;
-        } else {
-            return E_UNKNOWN_ERROR;
         }
+        return E_UNKNOWN_ERROR;
     }
 
     size_t dirlen = strlen(dirpath);
@@ -174,7 +214,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
     }
 
     // normalize dirpath (removing trailing / if present)
-    char *normpath = (char *)malloc((dirlen + 1) * sizeof(char));
+    char *normpath = malloc((dirlen + 1) * sizeof(char));
     strncpy(normpath, dirpath, dirlen);
     normpath[dirlen] = '\0';
     normalize_path(normpath);
@@ -187,10 +227,10 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
     StringNode *find_dirs = empty_string_node();
 
     while ((dent = readdir(dir))) {
-        if (!strcmp(dent->d_name, ".") || !strcmp(dent->d_name, ".."))
+        if (!strncmp(dent->d_name, ".", 5) || !strncmp(dent->d_name, "..", 5))
             continue;
 
-        char *file_path = (char *)malloc((normlen + strlen(dent->d_name) + 2) * sizeof(char));
+        char *file_path = malloc((normlen + strlen(dent->d_name) + 2) * sizeof(char));
         join_path(normpath, dent->d_name, file_path);
 
         if (stat(file_path, &fpstat) == -1) {
@@ -207,12 +247,12 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
                 add_string_to_string_node(file_path, find_dirs);
             }
         } else if (S_ISREG(fpstat.st_mode)) {
-            FileType file_type = UNKNOWN;
+            FileType file_type = get_file_type(dent->d_name, finder->file_types);
             if (depth >= finder->settings->min_depth
                 && (finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
-                && filter_file(normpath, dent->d_name, finder, &file_type, &fpstat) == 1) {
+                && filter_file(normpath, dent->d_name, &file_type, &fpstat, finder->settings) == 1) {
                 size_t slen = strlen(dent->d_name);
-                char *file_name = (char *)malloc((slen + 1) * sizeof(char));
+                char *file_name = malloc((slen + 1) * sizeof(char));
                 strncpy(file_name, dent->d_name, slen);
                 file_name[slen] = '\0';
                 FileResult *r = new_file_result(normpath, file_name, file_type, fpstat.st_size,
@@ -251,13 +291,13 @@ error_t find(const FindSettings *settings, FileResults *results)
 
     Finder *finder = new_finder(settings, file_types);
 
-    StringNode *nextpath = settings->paths;
-    while (nextpath != NULL) {
+    StringNode *next_path = settings->paths;
+    while (next_path != NULL) {
         // expand the path in case it has tilde, etc.
-        size_t path_len = strlen(nextpath->string) + 1;
-        char *expanded = (char *)malloc((path_len + 10) * (sizeof(char)));
+        size_t path_len = strlen(next_path->string) + 1;
+        char *expanded = malloc((path_len + 10) * sizeof(char));
         expanded[0] = '\0';
-        expand_path(nextpath->string, &expanded);
+        expand_path(next_path->string, &expanded);
 
         // check whether the file is a directory or file
         // and route accordingly
@@ -283,12 +323,12 @@ error_t find(const FindSettings *settings, FileResults *results)
             // if min_depth > zero, we can skip since the file is at depth zero
             if (finder->settings->min_depth <= 0) {
                 FileType file_type = UNKNOWN;
-                size_t nextpath_len = (strlen(nextpath->string) + 2) * sizeof(char);
-                char *d = (char *)malloc(nextpath_len);
-                char *f = (char *)malloc(nextpath_len);
-                split_path(nextpath->string, &d, &f);
-                if (filter_file(d, f, finder, &file_type, &st) == 1) {
-                    FileResult *r = new_file_result(d, f, file_type, (uint64_t) st.st_size,
+                size_t next_path_len = (strlen(next_path->string) + 2) * sizeof(char);
+                char *d = malloc(next_path_len);
+                char *f = malloc(next_path_len);
+                split_path(next_path->string, &d, &f);
+                if (filter_file(d, f, &file_type, &st, finder->settings) == 1) {
+                    FileResult *r = new_file_result(d, f, file_type, st.st_size,
                                                     st.st_mtime);
                     add_to_file_results(r, results);
                 } else {
@@ -299,7 +339,7 @@ error_t find(const FindSettings *settings, FileResults *results)
             return E_STARTPATH_UNSUPPORTED_FILETYPE;
         }
         free(expanded);
-        nextpath = nextpath->next;
+        next_path = next_path->next;
     }
 
     destroy_finder(finder);

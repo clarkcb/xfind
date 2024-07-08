@@ -46,7 +46,7 @@ long file_size(const char *file_path)
 void get_extension(const char *file_name, char *ext)
 {
     if (file_name == NULL) return;
-    size_t fnlen = strlen(file_name);
+    size_t fnlen = strnlen(file_name, 1024);
     // b.c is the shortest a file_name can be with ext, so skip if shorter than 3
     if (fnlen < 3) return;
     int idx = last_index_of_char_in_string('.', file_name);

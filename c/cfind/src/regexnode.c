@@ -4,12 +4,16 @@
 
 #include "regexnode.h"
 
+#include <stdio.h>
+
 Regex *new_regex(const char *pat)
 {
     Regex *regex = malloc(sizeof(Regex));
     assert(regex != NULL);
     regex->pattern = pat;
-    assert(regcomp(&regex->compiled, pat, 0) == 0);
+    const int res = regcomp(&regex->compiled, pat, 0);
+    if (res > 1) printf("An error occurred trying to compile regex pattern \"%s\": %d", pat, res);
+    assert(res == 0);
     return regex;
 }
 
@@ -49,11 +53,9 @@ void add_string_to_regex_node(const char *pat, RegexNode *regex_node)
 
 int is_null_or_empty_regex_node(const RegexNode *regex_node)
 {
-    // if (regex_node == NULL || (regex_node->regex == NULL && regex_node->next == NULL))
-    int retval = 0;
     if (regex_node == NULL || regex_node->regex == NULL)
-        retval = 1;
-    return retval;
+        return 1;
+    return 0;
 }
 
 int string_matches_regex_node(const char *s, RegexNode *regex_node)
@@ -61,8 +63,11 @@ int string_matches_regex_node(const char *s, RegexNode *regex_node)
     RegexNode *temp = regex_node;
     int matches = 0;
     while (matches == 0 && temp != NULL) {
-        if (regexec(&temp->regex->compiled, s, 0, NULL, 0) == 0) {
+        const int res = regexec(&temp->regex->compiled, s, 0, NULL, 0);
+        if (res == 0) {
             matches++;
+        } else if (res != REG_NOMATCH) {
+            printf("An error occurred trying to match \"%s\": %d\n", s, res);
         }
         temp = temp->next;
     }

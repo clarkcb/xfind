@@ -18,7 +18,7 @@ void test_validate_settings(void)
     assert(err == E_STARTPATH_NOT_DEFINED);
 
     // Add paths
-    char* p1 = "./non_existent_file.h";
+    const char* p1 = "./non_existent_file.h";
     printf("Adding path: \"%s\"\n", p1);
 
     settings->paths = new_string_node(p1);
@@ -26,7 +26,7 @@ void test_validate_settings(void)
     printf("string_node_count(settings->paths): %zu\n", string_node_count(settings->paths));
     assert(string_node_count(settings->paths) == 1);
 
-    char* p2 = "./non_existent_file.c";
+    const char* p2 = "./non_existent_file.c";
     printf("Adding path: \"%s\"\n", p2);
 
     add_string_to_string_node(p2, settings->paths);
@@ -46,21 +46,21 @@ void test_is_matching_dir(void) {
     printf("\ntest_is_matching_dir()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
 
     // test current dot dir
-    char* dot_dir = ".";
+    const char* dot_dir = ".";
     unsigned short res1 = is_matching_dir(dot_dir, settings);
     assert(res1 == 1);
 
     // test parent dot dir
-    char* parent_dir = "..";
+    const char* parent_dir = "..";
     unsigned short res2 = is_matching_dir(parent_dir, settings);
     assert(res2 == 1);
 
     // test "test" dir
-    char* test_dir = "test";
+    const char* test_dir = "test";
     unsigned short res3 = is_matching_dir(test_dir, settings);
     assert(res3 == 1);
 
@@ -71,17 +71,17 @@ void test_is_matching_dir_in_dir_patterns(void) {
     printf("\ntest_is_matching_dir_in_dir_patterns()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
 
     // test "test" dir with "test" in_dir_pattern
-    char* test_dir = "test";
+    const char* test_dir = "test";
     settings->in_dir_patterns = new_regex_node_from_string("test");
     unsigned short res1 = is_matching_dir(test_dir, settings);
     assert(res1 == 1);
 
     // test "other" dir with "test" in_dir_pattern
-    char* other_dir = "other";
+    const char* other_dir = "other";
     unsigned short res2 = is_matching_dir(other_dir, settings);
     assert(res2 == 0);
 
@@ -92,17 +92,17 @@ void test_is_matching_dir_out_dir_patterns(void) {
     printf("\ntest_is_matching_dir_out_dir_patterns()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
 
     // test "test" dir with "test" out_dir_pattern
-    char* test_dir = "test";
+    const char* test_dir = "test";
     settings->out_dir_patterns = new_regex_node_from_string("test");
     unsigned short res1 = is_matching_dir(test_dir, settings);
     assert(res1 == 0);
 
     // test "other" dir with "test" out_dir_pattern
-    char* other_dir = "other";
+    const char* other_dir = "other";
     unsigned short res2 = is_matching_dir(other_dir, settings);
     assert(res2 == 1);
 
@@ -113,27 +113,24 @@ void test_filter_file(void) {
     printf("\ntest_filter_file()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
 
     FileTypes *file_types = new_file_types();
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* test_file = "test_finder.c";
+    const char* test_dir = ".";
+    const char* test_file = "test_finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = filter_file(test_dir, test_file, finder, &ft, &fpstat);
+    unsigned short res1 = filter_file(test_dir, test_file, &ft, &fpstat, settings);
     assert(res1 == 1);
 
-    char* hidden_file = ".hidden.c";
-    unsigned short res2 = filter_file(test_dir, hidden_file, finder, &ft, &fpstat);
+    const char* hidden_file = ".hidden.c";
+    unsigned short res2 = filter_file(test_dir, hidden_file, &ft, &fpstat, settings);
     assert(res2 == 0);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -141,7 +138,7 @@ void test_is_matching_file_in_extensions(void) {
     printf("\ntest_is_matching_file_in_extensions()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
     settings->in_extensions = new_string_node("c");
 
@@ -149,20 +146,16 @@ void test_is_matching_file_in_extensions(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* matching_file = "test_finder.c";
+    const char* matching_file = "test_finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
     assert(res1 == 1);
 
     char* non_matching_file = "test_finder.h";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
     assert(res2 == 0);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -170,7 +163,7 @@ void test_is_matching_file_out_extensions(void) {
     printf("\ntest_is_matching_file_out_extensions()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
     settings->out_extensions = new_string_node("c");
 
@@ -178,20 +171,16 @@ void test_is_matching_file_out_extensions(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* matching_file = "test_finder.c";
+    const char* matching_file = "test_finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
     assert(res1 == 0);
 
-    char* non_matching_file = "test_finder.h";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    const char* non_matching_file = "test_finder.h";
+    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
     assert(res2 == 1);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -199,7 +188,7 @@ void test_is_matching_file_in_file_patterns(void) {
     printf("\ntest_is_matching_file_in_file_patterns()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
     settings->in_file_patterns = new_regex_node_from_string("test");
 
@@ -207,20 +196,16 @@ void test_is_matching_file_in_file_patterns(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* matching_file = "test_finder.c";
+    const char* matching_file = "test_finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
     assert(res1 == 1);
 
-    char* non_matching_file = "finder.c";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    const char* non_matching_file = "finder.c";
+    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
     assert(res2 == 0);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -228,7 +213,7 @@ void test_is_matching_file_out_file_patterns(void) {
     printf("\ntest_is_matching_file_out_file_patterns()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
     settings->out_file_patterns = new_regex_node_from_string("test");
 
@@ -236,20 +221,16 @@ void test_is_matching_file_out_file_patterns(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* matching_file = "test_finder.c";
+    const char* matching_file = "test_finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
     assert(res1 == 0);
 
-    char* non_matching_file = "finder.c";
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    const char* non_matching_file = "finder.c";
+    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
     assert(res2 == 1);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -257,7 +238,7 @@ void test_is_matching_file_in_file_types(void) {
     printf("\ntest_is_matching_file_in_file_types()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
     FileType file_type = CODE;
     int *ftint = malloc(sizeof(int));
@@ -269,21 +250,17 @@ void test_is_matching_file_in_file_types(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* matching_file = "finder.c";
+    const char* matching_file = "finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
     assert(res1 == 1);
 
-    char* non_matching_file = "README.md";
+    const char* non_matching_file = "README.md";
     ft = TEXT;
-    unsigned short res2 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
     assert(res2 == 0);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 
@@ -291,7 +268,7 @@ void test_is_matching_file_out_file_types(void) {
     printf("\ntest_is_matching_file_out_file_types()\n");
 
     FindSettings *settings = default_settings();
-    char* p = ".";
+    const char* p = ".";
     settings->paths = new_string_node(p);
     FileType file_type = CODE;
     int *ftint = malloc(sizeof(int));
@@ -303,21 +280,17 @@ void test_is_matching_file_out_file_types(void) {
     error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
-    Finder *finder = new_finder(settings, file_types);
-
-    char* test_dir = ".";
-    char* non_matching_file = "finder.c";
+    const char* non_matching_file = "finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(test_dir, non_matching_file, finder, &ft, &fpstat);
+    unsigned short res1 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
     assert(res1 == 0);
 
-    char* matching_file = "README.md";
+    const char* matching_file = "README.md";
     ft = TEXT;
-    unsigned short res2 = is_matching_file(test_dir, matching_file, finder, &ft, &fpstat);
+    unsigned short res2 = is_matching_file(matching_file, &ft, &fpstat, settings);
     assert(res2 == 1);
 
-    destroy_finder(finder);
     destroy_settings(settings);
 }
 

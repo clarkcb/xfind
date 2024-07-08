@@ -16,9 +16,11 @@ error_t validate_settings(const FindSettings *settings);
 
 unsigned short is_matching_dir(const char *dir, const FindSettings *settings);
 
-unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat);
+unsigned short is_matching_file(const char *file_name, const FileType *file_type, const struct stat *fpstat,
+                                const FindSettings *settings);
 
-unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat);
+unsigned short filter_file(const char *dir, const char *file_name, const FileType *file_type, const struct stat *fpstat,
+                           const FindSettings *settings);
 
 error_t find(const FindSettings *settings, FileResults *results);
 

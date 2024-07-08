@@ -12,7 +12,7 @@ void test_settings_from_args(void)
         "c",
         "."
     };
-    int argc = 3;
+    const int argc = 3;
 
     FindSettings *settings = default_settings();
     error_t err = settings_from_args(argc, argv, settings);

@@ -541,6 +541,19 @@ FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types)
     return file_type;
 }
 
+FileType get_file_type(const char *file_name, const FileTypes *file_types)
+{
+    if (file_name == NULL) return UNKNOWN;
+    size_t file_len = strnlen(file_name, 1024);
+    if (file_len < 1) return UNKNOWN;
+    FileType file_type = get_file_type_for_filename(file_name, file_types);
+    if (file_type != UNKNOWN) return file_type;
+    char ext[file_len];
+    ext[0] = '\0';
+    get_extension(file_name, ext);
+    return get_file_type_for_ext(ext, file_types);
+}
+
 FileType file_type_from_name(const char *name)
 {
     //printf("name: %s\n", name);

@@ -73,8 +73,8 @@ set(TEST_FILES
         test/test_findsettings.h test/test_findsettings.c
         test/test_cfind.c)
 
-add_executable(test_cfind ${TEST_FILES})
+add_executable(${PROJECT_NAME}-tests ${TEST_FILES})
 
-target_link_libraries(test_cfind ${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME}-tests ${PROJECT_NAME})
 
 unset(XFIND_PATH CACHE)

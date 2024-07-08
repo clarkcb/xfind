@@ -13,21 +13,21 @@ void test_dir_or_file_exists(void)
 
     printf("dir: \"%s\"\n", xfindpath);
     printf("expected exists: 1\n");
-    unsigned int res = dir_or_file_exists(xfindpath);
+    const unsigned int res = dir_or_file_exists(xfindpath);
     printf("actual exists:   %d\n", res);
     assert(res == 1);
 
-    char *nonexistent = "/this/path/should/not/exist";
+    const char *nonexistent = "/this/path/should/not/exist";
     printf("dir: \"%s\"\n", nonexistent);
     printf("expected exists: 0\n");
-    unsigned int res2 = dir_or_file_exists(nonexistent);
+    const unsigned int res2 = dir_or_file_exists(nonexistent);
     printf("actual exists:   %d\n", res2);
     assert(res2 == 0);
 
-    char *tilde_home = "~/Documents";
+    const char *tilde_home = "~/Documents";
     printf("dir: \"%s\"\n", tilde_home);
     printf("expected exists: 0\n");
-    unsigned int res3 = dir_or_file_exists(tilde_home);
+    const unsigned int res3 = dir_or_file_exists(tilde_home);
     printf("actual exists:   %d\n", res3);
     assert(res3 == 0);
 
@@ -37,7 +37,7 @@ void test_dir_or_file_exists(void)
     printf("dir: \"%s\"\n", tilde_home);
     printf("expanded: \"%s\"\n", expanded);
     printf("expected exists: 1\n");
-    unsigned int res4 = dir_or_file_exists(expanded);
+    const unsigned int res4 = dir_or_file_exists(expanded);
     printf("actual exists:   %d\n", res4);
     assert(res4 == 1);
     free(expanded);
@@ -106,7 +106,7 @@ void test_is_dot_dir(void)
 
     for (int i=0; i < arrlen; i++) {
         printf("dir: \"%s\"\n", dirnames[i]);
-        int res = is_dot_dir(dirnames[i]);
+        const int res = is_dot_dir(dirnames[i]);
         printf("expected res: %d\n", expected[i]);
         printf("actual res:   %d\n", res);
         assert(res == expected[i]);
@@ -159,7 +159,7 @@ void test_is_hidden(void)
 
     for (int i=0; i < arrlen; i++) {
         printf("file_name: \"%s\"\n", filenames[i]);
-        int res = is_hidden(filenames[i]);
+        const int res = is_hidden(filenames[i]);
         printf("expected res: %d\n", expected[i]);
         printf("actual res:   %d\n", res);
         assert(res == expected[i]);
@@ -170,16 +170,16 @@ void test_expand_path(void)
 {
     printf("\ntest_expand_path()\n");
 
-    char *expanded = (char *)malloc(50);
+    char *expanded = malloc(50);
     expanded[0] = '\0';
 
-    char *tilde = "~";
+    const char *tilde = "~";
     expand_path(tilde, &expanded);
     printf("original path: %s\n", tilde);
     printf("expanded path: %s\n", expanded);
     assert(strlen(expanded) > strlen(tilde));
 
-    char *homepath = "/home/path";
+    const char *homepath = "/home/path";
     expand_path(homepath, &expanded);
     printf("original path: %s\n", homepath);
     printf("expanded path: %s\n", expanded);
@@ -193,10 +193,10 @@ void test_join_path(void)
 {
     printf("\ntest_join_path()\n");
 
-    char *joined_path = (char *)malloc(100 * sizeof(char));
+    char *joined_path = malloc(100 * sizeof(char));
 
-    char *path1 = "/home";
-    char *path2 = "path";
+    const char *path1 = "/home";
+    const char *path2 = "path";
 
     join_path(path1, path2, joined_path);
     printf("path1: %s\n", path1);
@@ -220,10 +220,10 @@ void test_split_path(void)
 {
     printf("\ntest_split_path()\n");
 
-    char *path = "/home/profile";
+    const char *path = "/home/profile";
 
-    char *d = (char *)malloc(50);
-    char *f = (char *)malloc(50);
+    char *d = malloc(50);
+    char *f = malloc(50);
     split_path(path, &d, &f);
     printf("path: %s\n", path);
     printf("d: %s\n", d);

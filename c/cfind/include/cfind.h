@@ -311,6 +311,8 @@ FileType get_file_type_for_filename(const char *filename, const FileTypes *file_
 
 FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
 
+FileType get_file_type(const char *file_name, const FileTypes *file_types);
+
 FileType file_type_from_name(const char *name);
 
 void file_type_to_name(const FileType file_type, char *name);
@@ -531,9 +533,11 @@ error_t validate_settings(const FindSettings *settings);
 
 unsigned short is_matching_dir(const char *dir, const FindSettings *settings);
 
-unsigned short is_matching_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat);
+unsigned short is_matching_file(const char *file_name, const FileType *file_type, const struct stat *fpstat,
+                                const FindSettings *settings);
 
-unsigned short filter_file(const char *dir, const char *file_name, const Finder *finder, FileType *file_type, const struct stat *fpstat);
+unsigned short filter_file(const char *dir, const char *file_name, const FileType *file_type, const struct stat *fpstat,
+                           const FindSettings *settings);
 
 error_t find(const FindSettings *settings, FileResults *results);
 

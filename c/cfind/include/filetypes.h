@@ -96,6 +96,8 @@ FileType get_file_type_for_filename(const char *filename, const FileTypes *file_
 
 FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
 
+FileType get_file_type(const char *file_name, const FileTypes *file_types);
+
 FileType file_type_from_name(const char *name);
 
 void file_type_to_name(const FileType file_type, char *name);
