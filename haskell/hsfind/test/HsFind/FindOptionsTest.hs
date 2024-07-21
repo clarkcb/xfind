@@ -38,8 +38,8 @@ getSettingsFromArgsTests = do
     Left errMsg -> return []
     Right settings ->
       return [ testCase "paths ." (paths settings @?= ["."])
-             , testCase "-x hs" (inExtensions settings @?= [".hs"])
-             , testCase "-X hi,o" (outExtensions settings @?= [".hi", ".o"])
+             , testCase "-x hs" (inExtensions settings @?= ["hs"])
+             , testCase "-X hi,o" (outExtensions settings @?= ["hi", "o"])
              ]
 
 getArchivesOnlyTests :: IO [Test]

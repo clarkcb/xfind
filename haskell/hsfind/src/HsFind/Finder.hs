@@ -1,29 +1,28 @@
 module HsFind.Finder
     (
       doFind
-    , filterFile
     , filterToFileResult
     , getFileResults
-    , isMatchingArchiveFile
-    , isMatchingDir
-    , isMatchingFile
+    , isMatchingArchiveFilePath
+    , isMatchingDirPath
+    , isMatchingFilePath
     , validateSettings
     ) where
 
 import Control.Monad (forM)
 import Data.Char (toLower)
-import Data.List (sortBy, zipWith4)
-import Data.Maybe (isJust, isNothing)
+import Data.List (partition, sortBy, zipWith4)
+import Data.Maybe (fromJust, isJust, isNothing)
 
 import System.FilePath (dropFileName, splitPath, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
-import HsFind.FileTypes (FileType(..), JsonFileType, getFileTypes, getJsonFileTypes, fileTypeFromJsonFileTypes)
+import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTypesFromJsonFileTypes)
 import HsFind.FileUtil
-    (hasExtension, isHiddenFilePath, getRecursiveFilteredContents, getFileSizes, getModificationTimes)
+    (hasExtension, isHiddenFilePath, getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles)
 import HsFind.FileResult
-    (FileResult(..), isArchiveFile, newFileResult, newFileResultWithSizeAndLastMod)
+    (FileResult(..), newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
 
 
@@ -37,9 +36,19 @@ validateSettings settings = concatMap ($settings) validators
                      ]
         invalidLastModRange s = isJust (maxLastMod s) && isJust (maxLastMod s) && Just (maxLastMod s) < Just (minLastMod s)
 
-getDirTests :: FindSettings -> [FilePath -> Bool]
-getDirTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests
-  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
+getHiddenFilePathTests :: FindSettings -> [FilePath -> Bool]
+getHiddenFilePathTests settings =
+  hiddenPathTests
+  where hiddenPathTests | includeHidden settings = []
+                        | otherwise = [not . isHiddenFilePath]
+
+matchesHiddenFilePathTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesHiddenFilePathTests [] _ = True
+matchesHiddenFilePathTests tests f = all ($f) tests
+
+getDirPathTests :: FindSettings -> [FilePath -> Bool]
+getDirPathTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests
+  where hiddenPathTests = getHiddenFilePathTests settings
         inPatternTests  | null inPatterns = []
                         | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
         outPatternTests | null outPatterns = []
@@ -47,112 +56,118 @@ getDirTests settings = hiddenPathTests ++ inPatternTests ++ outPatternTests
         inPatterns = inDirPatterns settings
         outPatterns = outDirPatterns settings
 
-matchesDirTests :: [FilePath -> Bool] -> FilePath -> Bool
-matchesDirTests tests d = all ($d) tests
+matchesDirPathTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesDirPathTests [] _ = True
+matchesDirPathTests tests d = all ($d) tests
 
-isMatchingDir :: FindSettings -> FilePath -> Bool
-isMatchingDir settings = matchesDirTests dirTests
+isMatchingDirPath :: FindSettings -> FilePath -> Bool
+isMatchingDirPath settings = matchesDirPathTests dirTests
   where dirTests :: [FilePath -> Bool]
-        dirTests = getDirTests settings
+        dirTests = getDirPathTests settings
 
-getFileTests :: FindSettings -> [FilePath -> Bool]
-getFileTests settings =
+getArchiveFilePathTests :: FindSettings -> [FilePath -> Bool]
+getArchiveFilePathTests settings =
   hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
-  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
+  where hiddenPathTests = getHiddenFilePathTests settings
         inExtTests      | null inExts = []
                         | otherwise = [\fp -> any (hasExtension fp) inExts]
         outExtTests     | null outExts = []
                         | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
         inPatternTests  | null inPatterns = []
-                        | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
+                        | otherwise = [\fp -> any (\p -> takeFileName fp =~ p :: Bool) inPatterns]
         outPatternTests | null outPatterns = []
-                        | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
-        inExts = inExtensions settings
-        outExts = outExtensions settings
-        inPatterns = inFilePatterns settings
-        outPatterns = outFilePatterns settings
-
-getAllFileTests :: FindSettings -> [JsonFileType] -> [FilePath -> Bool]
-getAllFileTests settings jsonFileTypes =
-  archiveFileTests ++ hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++
-    outPatternTests ++ inFileTypeTests ++ outFileTypeTests
-  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
-        inExtTests       | null inExts = []
-                         | otherwise = [\fp -> any (hasExtension fp) inExts]
-        outExtTests      | null outExts = []
-                         | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
-        inPatternTests   | null inPatterns = []
-                         | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
-        outPatternTests  | null outPatterns = []
-                         | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
-        inFileTypeTests  | null inTypes = []
-                         | otherwise = [\fp -> getFileType fp `elem` inTypes]
-        outFileTypeTests | null outTypes = []
-                         | otherwise = [\fp -> getFileType fp `notElem` outTypes]
-        archiveFileTests = getArchiveFileTests settings
-        inExts = inExtensions settings
-        outExts = outExtensions settings
-        inPatterns = inFilePatterns settings
-        outPatterns = outFilePatterns settings
-        inTypes = inFileTypes settings
-        outTypes = outFileTypes settings
-        getFileType = fileTypeFromJsonFileTypes jsonFileTypes
-
-matchesFileTests :: [FilePath -> Bool] -> FilePath -> Bool
-matchesFileTests tests f = all ($f) tests
-
-isMatchingFile :: FindSettings -> FilePath -> Bool
-isMatchingFile settings = matchesFileTests fileTests
-  where fileTests :: [FilePath -> Bool]
-        fileTests = getFileTests settings
-
-getArchiveFileTests :: FindSettings -> [FilePath -> Bool]
-getArchiveFileTests settings =
-  hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
-  where hiddenPathTests = [\fp -> includeHidden settings || not (isHiddenFilePath fp)]
-        inExtTests      | null inExts = []
-                        | otherwise = [\fp -> any (hasExtension fp) inExts]
-        outExtTests     | null outExts = []
-                        | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
-        inPatternTests  | null inPatterns = []
-                        | otherwise = [\fp -> any (\p -> fp =~ p :: Bool) inPatterns]
-        outPatternTests | null outPatterns = []
-                        | otherwise = [\fp -> all (\p -> not $ fp =~ p :: Bool) outPatterns]
+                        | otherwise = [\fp -> all (\p -> not $ takeFileName fp =~ p :: Bool) outPatterns]
         inExts = inArchiveExtensions settings
         outExts = outArchiveExtensions settings
         inPatterns = inArchiveFilePatterns settings
         outPatterns = outArchiveFilePatterns settings
 
-matchesArchiveFileTests :: [FilePath -> Bool] -> FilePath -> Bool
-matchesArchiveFileTests tests f = all ($f) tests
+matchesArchiveFilePathTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesArchiveFilePathTests [] _ = True
+matchesArchiveFilePathTests tests f = all ($f) tests
 
-isMatchingArchiveFile :: FindSettings -> FilePath -> Bool
-isMatchingArchiveFile settings = matchesArchiveFileTests archiveFileTests
-  where archiveFileTests :: [FilePath -> Bool]
-        archiveFileTests = getArchiveFileTests settings
+isMatchingArchiveFilePath :: FindSettings -> FilePath -> Bool
+isMatchingArchiveFilePath settings = matchesArchiveFilePathTests archiveFilePathTests
+  where archiveFilePathTests :: [FilePath -> Bool]
+        archiveFilePathTests = getArchiveFilePathTests settings
+
+getFilePathTests :: FindSettings -> [FilePath -> Bool]
+getFilePathTests settings =
+  hiddenPathTests ++ inExtTests ++ outExtTests ++ inPatternTests ++ outPatternTests
+  where hiddenPathTests = getHiddenFilePathTests settings
+        inExtTests      | null inExts = []
+                        | otherwise = [\fp -> any (hasExtension fp) inExts]
+        outExtTests     | null outExts = []
+                        | otherwise = [\fp -> not $ any (hasExtension fp) outExts]
+        inPatternTests  | null inPatterns = []
+                        | otherwise = [\fp -> any (\p -> takeFileName fp =~ p :: Bool) inPatterns]
+        outPatternTests | null outPatterns = []
+                        | otherwise = [\fp -> all (\p -> not $ takeFileName fp =~ p :: Bool) outPatterns]
+        inExts = inExtensions settings
+        outExts = outExtensions settings
+        inPatterns = inFilePatterns settings
+        outPatterns = outFilePatterns settings
+
+matchesFilePathTests :: [FilePath -> Bool] -> FilePath -> Bool
+matchesFilePathTests [] _ = True
+matchesFilePathTests tests f = all ($f) tests
+
+isMatchingFilePath :: FindSettings -> FilePath -> Bool
+isMatchingFilePath settings = matchesFilePathTests filePathTests
+  where filePathTests :: [FilePath -> Bool]
+        filePathTests = getFilePathTests settings
+
+getArchiveFileResultTests :: FindSettings -> [FileResult -> Bool]
+getArchiveFileResultTests settings =
+  archiveFilePathTests
+  where archiveFilePathTests = map (. fileResultPath) $ getArchiveFilePathTests settings
+
+matchesArchiveFileResultTests :: [FileResult -> Bool] -> FileResult -> Bool
+matchesArchiveFileResultTests [] _ = True
+matchesArchiveFileResultTests tests f = all ($f) tests
+
+getFileTypeTests :: FindSettings -> [FileType -> Bool]
+getFileTypeTests settings =
+  archiveFileTypeTests ++ inFileTypeTests ++ outFileTypeTests
+  where archiveFileTypeTests = [\ft -> if ft == Archive then includeArchives settings else not (archivesOnly settings)]
+        inFileTypeTests  | null inTypes = []
+                         | otherwise = [(`elem` inTypes)]
+        outFileTypeTests | null outTypes = []
+                         | otherwise = [(`notElem` outTypes)]
+        inTypes = inFileTypes settings
+        outTypes = outFileTypes settings
+
+matchesFileTypeTests :: [FileType -> Bool] -> FileType -> Bool
+matchesFileTypeTests [] _ = True
+matchesFileTypeTests tests ft = all ($ft) tests
+
+getFileSizeTests :: FindSettings -> [Integer -> Bool]
+getFileSizeTests settings =
+  maxSizeTests ++ minSizeTests
+  where maxSizeTests | maxSize settings == 0 = []
+                     | otherwise = [\i -> i <= maxSize settings]
+        minSizeTests | minSize settings == 0 = []
+                     | otherwise = [\i -> i >= minSize settings]
+
+getLastModTests :: FindSettings -> [Maybe UTCTime -> Bool]
+getLastModTests settings =
+  maxLastModTests ++ minLastModTests
+  where maxLastModTests | isNothing (maxLastMod settings) = []
+                        | otherwise = [\lastMod -> fromJust lastMod <= fromJust (maxLastMod settings)]
+        minLastModTests | isNothing (minLastMod settings) = []
+                        | otherwise = [\lastMod -> fromJust lastMod >= fromJust (minLastMod settings)]
 
 getFileResultTests :: FindSettings -> [FileResult -> Bool]
 getFileResultTests settings =
-  maxSizeTests ++ minSizeTests ++ maxLastModTests ++ minLastModTests
-  where maxSizeTests    | maxSize settings == 0 = []
-                        | otherwise = [\fr -> fileResultSize fr < maxSize settings]
-        minSizeTests    | minSize settings == 0 = []
-                        | otherwise = [\fr -> fileResultSize fr > minSize settings]
-        maxLastModTests | isNothing (maxLastMod settings) = []
-                        | otherwise = [\fr -> fileLastMod fr < maxLastMod settings]
-        minLastModTests | isNothing (minLastMod settings) = []
-                        | otherwise = [\fr -> fileLastMod fr > minLastMod settings]
+  filePathTests ++ fileTypeTests ++ fileSizeTests ++ lastModTests
+  where filePathTests = map (. fileResultPath) $ getFilePathTests settings
+        fileTypeTests = map (. fileResultType) $ getFileTypeTests settings
+        fileSizeTests = map (. fileResultSize) $ getFileSizeTests settings
+        lastModTests = map (. fileLastMod) $ getLastModTests settings
 
 matchesFileResultTests :: [FileResult -> Bool] -> FileResult -> Bool
+matchesFileResultTests [] _ = True
 matchesFileResultTests tests fr = all ($fr) tests
-
-filterFile :: FindSettings -> FileResult -> Bool
-filterFile settings fr | isArchiveFile fr = includeArchiveFile fr
-                       | otherwise        = includeFile fr
-  where includeArchiveFile f = includeArchives settings &&
-                               isMatchingArchiveFile settings (fileResultPath f)
-        includeFile f = not (archivesOnly settings) &&
-                        isMatchingFile settings (fileResultPath f)
 
 filterToFileResult :: FindSettings -> [JsonFileType] -> (FilePath,FileType) -> Maybe FileResult
 filterToFileResult settings jsonFileTypes ft =
@@ -171,28 +186,60 @@ uncurry4 f ~(a,b,c,d) = f a b c d
 getFileResultWithSizeAndLastMod :: (FilePath,FileType,Integer,Maybe UTCTime) -> FileResult
 getFileResultWithSizeAndLastMod = uncurry4 newFileResultWithSizeAndLastMod
 
+getRecursiveFilePaths :: FindSettings -> FilePath -> IO [FilePath]
+getRecursiveFilePaths settings dir = do
+  accRecursiveFilePaths dir 1 minDepth' maxDepth' dirPathFilter hiddenPathFilter
+  where minDepth' = minDepth settings
+        maxDepth' = maxDepth settings
+        dirPathFilter = matchesDirPathTests $ getDirPathTests settings
+        hiddenPathFilter = matchesHiddenFilePathTests $ getHiddenFilePathTests settings
+        accRecursiveFilePaths :: FilePath -> Integer -> Integer -> Integer -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
+        accRecursiveFilePaths dir depth minDepth maxDepth dirPathFilter hiddenPathFilter = do
+          allPaths <- getNonDotDirectoryContents dir
+          (dirPaths, filePaths) <- partitionDirsAndFiles allPaths
+          let filteredDirPaths = if maxDepth < 1 || depth <= maxDepth
+                                 then filter dirPathFilter dirPaths
+                                 else []
+          let filteredFilePaths = if depth >= minDepth && (maxDepth < 1 || depth <= maxDepth)
+                                  then filter hiddenPathFilter filePaths
+                                  else []
+          subDirPaths <- forM filteredDirPaths $ \d -> accRecursiveFilePaths d (depth + 1) minDepth maxDepth dirPathFilter hiddenPathFilter
+          return $ filteredFilePaths ++ concat subDirPaths
+
 getFileResults :: FindSettings -> IO [FileResult]
 getFileResults settings = do
-  let dirTests = getDirTests settings
-  jsonFileTypes <- getJsonFileTypes
-  let fileTests = getAllFileTests settings jsonFileTypes
   pathLists <- forM (paths settings) $ \path ->
-    getRecursiveFilteredContents path 1 (minDepth settings) (maxDepth settings) (matchesDirTests dirTests) (matchesFileTests fileTests)
+    getRecursiveFilePaths settings path
   let allPaths = concat pathLists
-  allFileTypes <- getFileTypes allPaths
-  allFileSizes <- if maxSize settings > 0 || minSize settings > 0 || sortResultsBy settings == SortByFileSize
-                  then getFileSizes allPaths
-                  else return $ replicate (length allPaths) 0
-  allLastMods <- if isJust (maxLastMod settings) || isJust (minLastMod settings) || sortResultsBy settings == SortByLastMod
-                 then do
-                  _allLastMods <- getModificationTimes allPaths
-                  return $ map Just _allLastMods
-                 else return $ replicate (length allPaths) Nothing
-  let fileResultsTests = getFileResultTests settings
-  let fileResults = zipWith4 (curry4 getFileResultWithSizeAndLastMod) allPaths allFileTypes allFileSizes allLastMods
-  if not (includeArchives settings) && Archive `elem` allFileTypes
-  then return $ filter (not . isArchiveFile) fileResults
-  else return $ filter (matchesFileResultTests fileResultsTests) fileResults
+  jsonFileTypes <- getJsonFileTypes
+  let allFileTypes = getFileTypesFromJsonFileTypes jsonFileTypes allPaths
+  let allPathsAndTypes = zip allPaths allFileTypes
+  let fileTypesFilter = matchesFileTypeTests $ getFileTypeTests settings
+  let filteredPathsAndTypes = filter (\(_, ft) -> fileTypesFilter ft) allPathsAndTypes
+  let (filteredPaths, filteredTypes) = unzip filteredPathsAndTypes
+  filteredFileSizes <- if needFileSizes settings
+                       then getFileSizes filteredPaths
+                       else return $ replicate (length filteredPaths) 0
+  filteredLastMods <- if needLastMods settings
+                      then do
+                        filteredLastMods <- getModificationTimes filteredPaths
+                        return $ map Just filteredLastMods
+                      else return $ replicate (length filteredPaths) Nothing
+  let archiveFileResultsFilter = matchesArchiveFileResultTests $ getArchiveFileResultTests settings
+  let fileResultsFilter = matchesFileResultTests $ getFileResultTests settings
+  let fileResults = zipWith4 (curry4 getFileResultWithSizeAndLastMod) filteredPaths filteredTypes filteredFileSizes filteredLastMods
+  let (archiveFileResults, nonArchiveFileResults) = partition (\fr -> fileResultType fr == Archive) fileResults
+  let filteredArchiveFileResults =  if not (includeArchives settings)
+                                    then []
+                                    -- else filter archiveFileResultsFilter $ traceFileResults "archiveFileResults" archiveFileResults
+                                    else filter archiveFileResultsFilter archiveFileResults
+  let filteredNonArchiveFileResults = if archivesOnly settings
+                                      then []
+                                      -- else filter fileResultsFilter $ traceFileResults "nonArchiveFileResults" nonArchiveFileResults
+                                      else filter fileResultsFilter nonArchiveFileResults
+  -- return $ traceFileResults "filteredArchiveFileResults" filteredArchiveFileResults ++
+  --          traceFileResults "filteredNonArchiveFileResults" filteredNonArchiveFileResults
+  return $  filteredArchiveFileResults ++ filteredNonArchiveFileResults
 
 compareStrings :: FindSettings -> String -> String -> Ordering
 compareStrings settings s1 s2 =

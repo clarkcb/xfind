@@ -3,12 +3,15 @@ module HsFind.FindSettings
   , defaultFindSettings
   , findSettingsToString
   , getSortByForName
+  , needFileSizes
+  , needLastMods
   , newExtensions
   , SortBy(..)
   ) where
 
 import Data.List (intercalate)
 import Data.List.Split (splitOn)
+import Data.Maybe (isJust)
 import Data.Time (UTCTime)
 
 import HsFind.FileTypes (FileType, getFileTypeName)
@@ -135,3 +138,9 @@ findSettingsToString settings =
         lastModToString :: Maybe UTCTime -> String
         lastModToString Nothing = "0"
         lastModToString (Just t) = show t
+
+needFileSizes :: FindSettings -> Bool
+needFileSizes settings = minSize settings > 0 || maxSize settings > 0 || sortResultsBy settings == SortByFileSize
+
+needLastMods :: FindSettings -> Bool
+needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod settings) || sortResultsBy settings == SortByLastMod

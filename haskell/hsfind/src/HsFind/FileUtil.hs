@@ -14,7 +14,6 @@ module HsFind.FileUtil
     , getNonDotDirectoryContents
     , getParentPath
     , getRecursiveContents
-    , getRecursiveFilteredContents
     , getRecursiveDirectories
     , hasExtension
     , isDirectory
@@ -22,6 +21,7 @@ module HsFind.FileUtil
     , isFile
     , isHiddenFilePath
     , normalizeExtension
+    , partitionDirsAndFiles
     , pathExists
     ) where
 
@@ -31,12 +31,11 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
-import System.Directory (doesDirectoryExist, doesFileExist, getDirectoryContents, getFileSize, getModificationTime)
+import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime)
 import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 import Data.Time (UTCTime)
 
--- preferring this over System.FilePath (takeExtension)
 getExtension :: FilePath -> Maybe String
 getExtension "" = Nothing
 getExtension fp = case maxDotIndex (takeFileName fp) of
@@ -47,12 +46,12 @@ getExtension fp = case maxDotIndex (takeFileName fp) of
                            [] -> 0
                            idxs -> maximum idxs
         lastIndex name = length name - 1
-        trimToExt name = drop (maxDotIndex name) name
+        trimToExt name = drop (maxDotIndex name + 1) name
 
 normalizeExtension :: String -> String
 normalizeExtension x = case x of
-                       ('.':_) -> lower x
-                       _ -> '.' : lower x
+                       ('.':_) -> drop 1 $ lower x
+                       _ -> lower x
   where lower = map toLower
 
 getParentPath :: FilePath -> FilePath
@@ -67,6 +66,12 @@ filterDirectories = filterM doesDirectoryExist
 filterFiles :: [FilePath] -> IO [FilePath]
 filterFiles = filterM doesFileExist
 
+partitionDirsAndFiles :: [FilePath] -> IO ([FilePath], [FilePath])
+partitionDirsAndFiles filePaths = do
+  dirs <- filterDirectories filePaths
+  files <- filterFiles filePaths
+  return (dirs, files)
+
 isHiddenFilePath :: FilePath -> Bool
 isHiddenFilePath f = any isHidden pathElems
   where isHidden = isPrefixOf "."
@@ -74,7 +79,7 @@ isHiddenFilePath f = any isHidden pathElems
 
 getDirectoryFiles :: FilePath -> IO [FilePath]
 getDirectoryFiles dir = do
-  names <- getNonDotDirectoryContents dir
+  names <- listDirectory dir
   filterFiles names
 
 getFileSizes :: [FilePath] -> IO [Integer]
@@ -87,9 +92,8 @@ getModificationTimes files = do
 
 getNonDotDirectoryContents :: FilePath -> IO [FilePath]
 getNonDotDirectoryContents dir = do
-  names <- getDirectoryContents dir
-  let filteredNames = filter (not . isDotDir) names
-  return $ map (dir </>) filteredNames
+  names <- listDirectory dir
+  return $ map (dir </>) names
 
 dotDirs :: [FilePath]
 dotDirs = [".", "./", "..", "../"]
@@ -120,25 +124,6 @@ getRecursiveContents dir = do
         subNames <- getRecursiveContents path
         return $ path : subNames
     else return [path]
-  return (concat paths)
-
-getRecursiveFilteredContents :: FilePath -> Integer -> Integer -> Integer -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
-getRecursiveFilteredContents dir depth minDepth maxDepth dirFilter fileFilter = do
-  filePaths <- getNonDotDirectoryContents dir
-  paths <- forM filePaths $ \path -> do
-    d <- doesDirectoryExist path
-    f <- doesFileExist path
-    case (d, f) of
-      (True, False) ->
-        if (maxDepth < 1 || depth <= maxDepth) && dirFilter path
-          then getRecursiveFilteredContents path (depth + 1) minDepth maxDepth dirFilter fileFilter
-        else return []
-      (False, True) ->
-        if depth >= minDepth && (maxDepth < 1 || depth <= maxDepth) && fileFilter (takeFileName path)
-          then
-            return [path]
-        else return []
-      (_, _) -> return []
   return (concat paths)
 
 getRecursiveDirectories :: FilePath -> IO [FilePath]

@@ -23,10 +23,12 @@ main = do
   fileUtilTests <- getFileUtilTests
 
   -- Finder tests
-  isMatchingDirTests <- getIsMatchingDirTests
-  isMatchingFileTests <- getIsMatchingFileTests
-  isMatchingArchiveFileTests <- getIsMatchingArchiveFileTests
+  isMatchingDirPathTests <- getIsMatchingDirPathTests
+  isMatchingFilePathTests <- getIsMatchingFilePathTests
+  isMatchingArchiveFilePathTests <- getIsMatchingArchiveFilePathTests
   -- filterFileTests <- getFilterFileTests
+  findRubyFileResultTests <- getFindRubyFileResultTests
+  findPythonFileResultTests <- getFindPythonFileResultTests
 
   -- FindOptions tests
   settingsFromArgsTests <- getSettingsFromArgsTests
@@ -38,9 +40,12 @@ main = do
   defaultFindSettingsTests <- getDefaultFindSettingsTests
   newExtensionsTests <- getNewExtensionsTests
 
-  defaultMain (fileResultTests ++ fileResultWithSizeTests ++ fileTypeTests ++
-    fileTypeFromNameTests ++ fileUtilTests ++ isMatchingDirTests ++ isMatchingFileTests ++
-    isMatchingArchiveFileTests ++
+  defaultMain (fileResultTests ++ fileResultWithSizeTests ++
+    fileTypeTests ++ fileTypeFromNameTests ++
+    fileUtilTests ++ 
+    isMatchingDirPathTests ++ isMatchingFilePathTests ++
+    isMatchingArchiveFilePathTests ++ findPythonFileResultTests ++
+    findRubyFileResultTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
     defaultFindSettingsTests ++ newExtensionsTests)

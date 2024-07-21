@@ -22,26 +22,27 @@ getFileTypeTests = do
   let videoFile = "movie.mp4"
   let xmlFile = "markup.xml"
   let unknownFile = "unknown.xyz"
-  archiveFileType <- getFileType archiveFile
-  audioFileType <- getFileType audioFile
-  binaryFileType <- getFileType binaryFile
-  codeFileType <- getFileType codeFile
-  fontFileType <- getFileType fontFile
-  imageFileType <- getFileType imageFile
-  textFileType <- getFileType textFile
-  videoFileType <- getFileType videoFile
-  xmlFileType <- getFileType xmlFile
-  unknownFileType <- getFileType unknownFile
-  return [ testCase "getFileType archive.zip == Archive" (archiveFileType @?= Archive)
-         , testCase "getFileType music.mp3 == Audio" (audioFileType @?= Audio)
-         , testCase "getFileType binary.exe == Binary" (binaryFileType @?= Binary)
-         , testCase "getFileType FileTypes.hs == Code" (codeFileType @?= Code)
-         , testCase "getFileType font.ttf == Font" (fontFileType @?= Font)
-         , testCase "getFileType image.png == Image" (imageFileType @?= Image)
-         , testCase "getFileType text.txt == Text" (textFileType @?= Text)
-         , testCase "getFileType movie.mp4 == Video" (videoFileType @?= Video)
-         , testCase "getFileType markup.xml == Xml" (xmlFileType @?= Xml)
-         , testCase "getFileType unknown.xyz == Unknown" (unknownFileType @?= Unknown)
+  jsonFileTypes <- getJsonFileTypes
+  let archiveFileType = getFileTypeFromJsonFileTypes jsonFileTypes archiveFile
+  let audioFileType = getFileTypeFromJsonFileTypes jsonFileTypes audioFile
+  let binaryFileType = getFileTypeFromJsonFileTypes jsonFileTypes binaryFile
+  let codeFileType = getFileTypeFromJsonFileTypes jsonFileTypes codeFile
+  let fontFileType = getFileTypeFromJsonFileTypes jsonFileTypes fontFile
+  let imageFileType = getFileTypeFromJsonFileTypes jsonFileTypes imageFile
+  let textFileType = getFileTypeFromJsonFileTypes jsonFileTypes textFile
+  let videoFileType = getFileTypeFromJsonFileTypes jsonFileTypes videoFile
+  let xmlFileType = getFileTypeFromJsonFileTypes jsonFileTypes xmlFile
+  let unknownFileType = getFileTypeFromJsonFileTypes jsonFileTypes unknownFile
+  return [ testCase "getFileTypeFromJsonFileTypes jsonFileTypes archive.zip == Archive" (archiveFileType @?= Archive)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes music.mp3 == Audio" (audioFileType @?= Audio)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes binary.exe == Binary" (binaryFileType @?= Binary)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes FileTypes.hs == Code" (codeFileType @?= Code)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes font.ttf == Font" (fontFileType @?= Font)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes image.png == Image" (imageFileType @?= Image)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes text.txt == Text" (textFileType @?= Text)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes movie.mp4 == Video" (videoFileType @?= Video)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes markup.xml == Xml" (xmlFileType @?= Xml)
+         , testCase "getFileTypeFromJsonFileTypes jsonFileTypes unknown.xyz == Unknown" (unknownFileType @?= Unknown)
          ]
 
 getFileTypeFromNameTests :: IO [Test]

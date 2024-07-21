@@ -30,6 +30,6 @@ getDefaultFindSettingsTests = do
 
 getNewExtensionsTests :: IO [Test]
 getNewExtensionsTests =
-  return [ testCase "hs" (newExtensions "hs" @?= [".hs"])
-         , testCase "hs,py" (newExtensions "hs,py" @?= [".hs", ".py"])
+  return [ testCase "hs" (newExtensions "hs" @?= ["hs"])
+         , testCase "hs,py" (newExtensions "hs,py" @?= ["hs", "py"])
          ]

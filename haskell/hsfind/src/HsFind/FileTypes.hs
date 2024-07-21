@@ -5,6 +5,8 @@ module HsFind.FileTypes
   , getFileType
   , getFileTypes
   , getFileTypeForName
+  , getFileTypeFromJsonFileTypes
+  , getFileTypesFromJsonFileTypes
   , getFileTypeName
   , getJsonFileTypes
   , fileTypeFromJsonFileTypes
@@ -115,6 +117,13 @@ getFileTypes :: [FilePath] -> IO [FileType]
 getFileTypes files = do
   jsonFileTypes <- getJsonFileTypes
   return $ map (fileTypeFromJsonFileTypes jsonFileTypes) files
+
+getFileTypeFromJsonFileTypes :: [JsonFileType] -> FilePath -> FileType
+getFileTypeFromJsonFileTypes = fileTypeFromJsonFileTypes
+
+getFileTypesFromJsonFileTypes :: [JsonFileType] -> [FilePath] -> [FileType]
+getFileTypesFromJsonFileTypes jsonFileTypes =
+  map (fileTypeFromJsonFileTypes jsonFileTypes)
 
 fileTypeFromJsonFileTypes :: [JsonFileType] -> FilePath -> FileType
 fileTypeFromJsonFileTypes jsonFileTypes fp =

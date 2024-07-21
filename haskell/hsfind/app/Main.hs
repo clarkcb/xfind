@@ -6,11 +6,11 @@ import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 import System.IO (hPutStr, stderr)
 
-import HsFind.FileResult
+import HsFind.FileResult (FileResult, fileResultPath, fileResultToString)
 import HsFind.FileUtil (pathExists)
-import HsFind.FindOptions
+import HsFind.FindOptions (FindOption, getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, validateSettings)
-import HsFind.FindSettings
+import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 
 
 errsOrUsage :: [FindOption] -> FindSettings -> Maybe String
@@ -44,7 +44,7 @@ formatMatchingFiles fileResults =
     "\nMatching files (" ++ show (length matchingFiles) ++ "):\n" ++
     unlines matchingFiles
   else "\nMatching files: 0\n"
-  where matchingFiles = map fileResultPath fileResults
+  where matchingFiles = map fileResultToString fileResults
 
 logMsg :: String -> IO ()
 logMsg = putStr

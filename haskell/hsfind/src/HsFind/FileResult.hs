@@ -1,7 +1,7 @@
 module HsFind.FileResult
   ( FileResult(..)
   , blankFileResult
-  , isArchiveFile
+  , fileResultToString
   , newFileResult
   , newFileResultWithSize
   , newFileResultWithSizeAndLastMod
@@ -55,5 +55,12 @@ newFileResultWithSizeAndLastMod fp ft size lastmod = FileResult {
                                                    , fileLastMod=lastmod
                                                    }
 
-isArchiveFile :: FileResult -> Bool
-isArchiveFile fr = fileResultType fr == Archive
+fileResultToString :: FileResult -> String
+fileResultToString = fileResultPath
+-- fileResultToString = fileResultToDetailedString
+
+fileResultToDetailedString :: FileResult -> String
+fileResultToDetailedString fr = 
+  case fileResultSize fr of
+    0 -> fileResultPath fr ++ " (type: " ++ getFileTypeName (fileResultType fr) ++ ")"
+    size -> fileResultPath fr ++ " (size: " ++ show size ++ ", type: " ++ getFileTypeName (fileResultType fr) ++ ")"

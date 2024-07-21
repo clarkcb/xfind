@@ -1,8 +1,10 @@
 module HsFind.FinderTest
   ( getFilterToFileResultTests
-  , getIsMatchingArchiveFileTests
-  , getIsMatchingDirTests
-  , getIsMatchingFileTests
+  , getIsMatchingArchiveFilePathTests
+  , getIsMatchingDirPathTests
+  , getIsMatchingFilePathTests
+  , getFindPythonFileResultTests
+  , getFindRubyFileResultTests
   ) where
 
 import HsFind.FileTypes
@@ -15,63 +17,73 @@ import Test.Framework.Providers.HUnit (testCase)
 import Test.HUnit hiding (Test)
 
 
-getIsMatchingDirTests :: IO [Test]
-getIsMatchingDirTests = do
+getIsMatchingDirPathTests :: IO [Test]
+getIsMatchingDirPathTests = do
   let settings = defaultFindSettings
-  let settingsInDirPattern = settings { inDirPatterns = ["hsfind"] }
-  let settingsOutDirPattern = settings { outDirPatterns = ["csfind"] }
+  let settingsInDirPattern = settings { inDirPatterns = ["hs"] }
+  let settingsOutDirPattern = settings { outDirPatterns = ["cs"] }
   let settingsIncludeHidden = settings { includeHidden = True }
-  return [ testCase "isMatchingDir hsfind default settings" (isMatchingDir settings "hsfind" @?= True)
-         , testCase "isMatchingDir hsfind matching inDirPattern" (isMatchingDir settingsInDirPattern "hsfind" @?= True)
-         , testCase "isMatchingDir hsfind not matching inDirPattern" (isMatchingDir settingsInDirPattern "csfind" @?= False)
-         , testCase "isMatchingDir hsfind matching outDirPattern" (isMatchingDir settingsOutDirPattern "csfind" @?= False)
-         , testCase "isMatchingDir hsfind not matching inDirPattern" (isMatchingDir settingsOutDirPattern "hsfind" @?= True)
-         , testCase "isMatchingDir . default settings" (isMatchingDir settings "." @?= True)
-         , testCase "isMatchingDir .. default settings" (isMatchingDir settings ".." @?= True)
-         , testCase "isMatchingDir .git default settings" (isMatchingDir settings ".git" @?= False)
-         , testCase "isMatchingDir .git includeHidden" (isMatchingDir settingsIncludeHidden ".git" @?= True)
+  let hsFindDir = "hsfind"
+  let csFindDir = "csfind"
+  return [ testCase "isMatchingDirPath hsfind default settings" (isMatchingDirPath settings hsFindDir @?= True)
+         , testCase "isMatchingDirPath hsfind matching inDirPattern" (isMatchingDirPath settingsInDirPattern hsFindDir @?= True)
+         , testCase "isMatchingDirPath hsfind not matching inDirPattern" (isMatchingDirPath settingsInDirPattern csFindDir @?= False)
+         , testCase "isMatchingDirPath hsfind matching outDirPattern" (isMatchingDirPath settingsOutDirPattern csFindDir @?= False)
+         , testCase "isMatchingDirPath hsfind not matching inDirPattern" (isMatchingDirPath settingsOutDirPattern hsFindDir @?= True)
+         , testCase "isMatchingDirPath . default settings" (isMatchingDirPath settings "." @?= True)
+         , testCase "isMatchingDirPath .. default settings" (isMatchingDirPath settings ".." @?= True)
+         , testCase "isMatchingDirPath .git default settings" (isMatchingDirPath settings ".git" @?= False)
+         , testCase "isMatchingDirPath .git includeHidden" (isMatchingDirPath settingsIncludeHidden ".git" @?= True)
          ]
 
-getIsMatchingFileTests :: IO [Test]
-getIsMatchingFileTests = do
+getIsMatchingFilePathTests :: IO [Test]
+getIsMatchingFilePathTests = do
   let settings = defaultFindSettings
   let settingsInExtension = settings { inExtensions = [".hs"] }
   let settingsOutExtension = settings { outExtensions = [".cs"] }
   let settingsInFilePattern = settings { inFilePatterns = ["Find"] }
   let settingsOutFilePattern = settings { outFilePatterns = ["Main"] }
   let settingsIncludeHidden = settings { includeHidden = True }
-  return [ testCase "isMatchingFile Finder.hs default settings" (isMatchingFile settings "Finder.hs" @?= True)
-         , testCase "isMatchingFile Finder.hs matching inExtensions" (isMatchingFile settingsInExtension "Finder.hs" @?= True)
-         , testCase "isMatchingFile Finder.hs not matching inExtensions" (isMatchingFile settingsInExtension "Finder.cs" @?= False)
-         , testCase "isMatchingFile Finder.hs matching outExtensions" (isMatchingFile settingsOutExtension "Finder.cs" @?= False)
-         , testCase "isMatchingFile Finder.hs not matching outExtensions" (isMatchingFile settingsOutExtension "Finder.hs" @?= True)
-         , testCase "isMatchingFile Finder.hs matching inFilePatterns" (isMatchingFile settingsInFilePattern "Finder.hs" @?= True)
-         , testCase "isMatchingFile Main.hs not matching inFilePatterns" (isMatchingFile settingsInFilePattern "Main.hs" @?= False)
-         , testCase "isMatchingFile Main.hs matching outFilePatterns" (isMatchingFile settingsOutFilePattern "Main.hs" @?= False)
-         , testCase "isMatchingFile Finder.hs not matching outFilePatterns" (isMatchingFile settingsOutFilePattern "Finder.hs" @?= True)
-         , testCase "isMatchingFile .gitignore default settings" (isMatchingFile settings ".gitignore" @?= False)
-         , testCase "isMatchingFile .gitignore includeHidden" (isMatchingFile settingsIncludeHidden ".gitignore" @?= True)
+  let finderHsFile = "Finder.hs"
+  let finderCsFile = "Finder.cs"
+  let mainHsFile = "Main.hs"
+  let gitIgnoreFile = ".gitignore"
+  return [ testCase "isMatchingFilePath Finder.hs default settings" (isMatchingFilePath settings finderHsFile @?= True)
+         , testCase "isMatchingFilePath Finder.hs matching inExtensions" (isMatchingFilePath settingsInExtension finderHsFile @?= True)
+         , testCase "isMatchingFilePath Finder.hs not matching inExtensions" (isMatchingFilePath settingsInExtension finderCsFile @?= False)
+         , testCase "isMatchingFilePath Finder.hs matching outExtensions" (isMatchingFilePath settingsOutExtension finderCsFile @?= False)
+         , testCase "isMatchingFilePath Finder.hs not matching outExtensions" (isMatchingFilePath settingsOutExtension finderHsFile @?= True)
+         , testCase "isMatchingFilePath Finder.hs matching inFilePatterns" (isMatchingFilePath settingsInFilePattern finderHsFile @?= True)
+         , testCase "isMatchingFilePath Main.hs not matching inFilePatterns" (isMatchingFilePath settingsInFilePattern mainHsFile @?= False)
+         , testCase "isMatchingFilePath Main.hs matching outFilePatterns" (isMatchingFilePath settingsOutFilePattern mainHsFile @?= False)
+         , testCase "isMatchingFilePath Finder.hs not matching outFilePatterns" (isMatchingFilePath settingsOutFilePattern finderHsFile @?= True)
+         , testCase "isMatchingFilePath .gitignore default settings" (isMatchingFilePath settings gitIgnoreFile @?= False)
+         , testCase "isMatchingFilePath .gitignore includeHidden" (isMatchingFilePath settingsIncludeHidden gitIgnoreFile @?= True)
          ]
 
-getIsMatchingArchiveFileTests :: IO [Test]
-getIsMatchingArchiveFileTests = do
+getIsMatchingArchiveFilePathTests :: IO [Test]
+getIsMatchingArchiveFilePathTests = do
   let settings = defaultFindSettings
   let settingsInArchiveExtension = settings { inArchiveExtensions = [".zip"] }
   let settingsOutArchiveExtension = settings { outArchiveExtensions = [".gz"] }
   let settingsInArchiveFilePattern = settings { inArchiveFilePatterns = ["arch"] }
   let settingsOutArchiveFilePattern = settings { outArchiveFilePatterns = ["comp"] }
   let settingsIncludeHidden = settings { includeHidden = True }
-  return [ testCase "isMatchingArchiveFile archive.zip default settings" (isMatchingArchiveFile settings "archive.zip" @?= True)
-         , testCase "isMatchingArchiveFile archive.zip matching inArchiveExtensions" (isMatchingArchiveFile settingsInArchiveExtension "archive.zip" @?= True)
-         , testCase "isMatchingArchiveFile archive.tar.gz not matching inArchiveExtensions" (isMatchingArchiveFile settingsInArchiveExtension "archive.tar.gz" @?= False)
-         , testCase "isMatchingArchiveFile archive.tar.gz matching outArchiveExtensions" (isMatchingArchiveFile settingsOutArchiveExtension "archive.tar.gz" @?= False)
-         , testCase "isMatchingArchiveFile archive.zip not matching outArchiveExtensions" (isMatchingArchiveFile settingsOutArchiveExtension "archive.zip" @?= True)
-         , testCase "isMatchingArchiveFile archive.zip matching inArchiveFilePatterns" (isMatchingArchiveFile settingsInArchiveFilePattern "archive.zip" @?= True)
-         , testCase "isMatchingArchiveFile compressed.zip not matching inArchiveFilePatterns" (isMatchingArchiveFile settingsInArchiveFilePattern "compressed.zip" @?= False)
-         , testCase "isMatchingArchiveFile compressed.zip matching outArchiveFilePatterns" (isMatchingArchiveFile settingsOutArchiveFilePattern "compressed.zip" @?= False)
-         , testCase "isMatchingArchiveFile archive.zip not matching outArchiveFilePatterns" (isMatchingArchiveFile settingsOutArchiveFilePattern "archive.zip" @?= True)
-         , testCase "isMatchingArchiveFile .gitarchive.zip default settings" (isMatchingArchiveFile settings ".gitarchive.zip" @?= False)
-         , testCase "isMatchingArchiveFile .gitarchive.zip includeHidden" (isMatchingArchiveFile settingsIncludeHidden ".gitarchive.zip" @?= True)
+  let archiveZipFile = "archive.zip"
+  let archiveTarGzFile = "archive.tar.gz"
+  let compressedZipFile = "compressed.zip"
+  let hiddenArchiveZipFile = ".gitarchive.zip"
+  return [ testCase "isMatchingArchiveFilePath archive.zip default settings" (isMatchingArchiveFilePath settings archiveZipFile @?= True)
+         , testCase "isMatchingArchiveFilePath archive.zip matching inArchiveExtensions" (isMatchingArchiveFilePath settingsInArchiveExtension archiveZipFile @?= True)
+         , testCase "isMatchingArchiveFilePath archive.tar.gz not matching inArchiveExtensions" (isMatchingArchiveFilePath settingsInArchiveExtension archiveTarGzFile @?= False)
+         , testCase "isMatchingArchiveFilePath archive.tar.gz matching outArchiveExtensions" (isMatchingArchiveFilePath settingsOutArchiveExtension archiveTarGzFile @?= False)
+         , testCase "isMatchingArchiveFilePath archive.zip not matching outArchiveExtensions" (isMatchingArchiveFilePath settingsOutArchiveExtension archiveZipFile @?= True)
+         , testCase "isMatchingArchiveFilePath archive.zip matching inArchiveFilePatterns" (isMatchingArchiveFilePath settingsInArchiveFilePattern archiveZipFile @?= True)
+         , testCase "isMatchingArchiveFilePath compressed.zip not matching inArchiveFilePatterns" (isMatchingArchiveFilePath settingsInArchiveFilePattern compressedZipFile @?= False)
+         , testCase "isMatchingArchiveFilePath compressed.zip matching outArchiveFilePatterns" (isMatchingArchiveFilePath settingsOutArchiveFilePattern compressedZipFile @?= False)
+         , testCase "isMatchingArchiveFilePath archive.zip not matching outArchiveFilePatterns" (isMatchingArchiveFilePath settingsOutArchiveFilePattern archiveZipFile @?= True)
+         , testCase "isMatchingArchiveFilePath .gitarchive.zip default settings" (isMatchingArchiveFilePath settings hiddenArchiveZipFile @?= False)
+         , testCase "isMatchingArchiveFilePath .gitarchive.zip includeHidden" (isMatchingArchiveFilePath settingsIncludeHidden hiddenArchiveZipFile @?= True)
          ]
 
 getFilterToFileResultTests :: IO [Test]
@@ -83,20 +95,42 @@ getFilterToFileResultTests = do
   let settingsIncludeHidden = settings { includeHidden = True }
   let settingsIncludeArchives = settings { includeArchives = True }
   let settingsArchivesOnly = settingsIncludeArchives { archivesOnly = True }
-  -- let hsTestFileResult = FileResult { fileResultContainers=[], fileResultPath="Finder.hs", fileResultType=Text }
-  let hsTestFile = ("Finder.hs", Code)
-  -- let hsTestFileType = getFileType hsTestFile
-  -- let hiddenTestFileResult = FileResult { fileResultContainers=[], fileResultPath=".gitignore", fileResultType=Text }
-  let hiddenTestFile = (".gitignore", Text)
-  -- let archiveTestFileResult = FileResult { fileResultContainers=[], fileResultPath="archive.zip", fileResultType=Archive }
-  let archiveTestFile = ("archive.zip", Archive)
-  return [ testCase "filterToFileResult Finder.hs default settings" (isJust (filterToFileResult settings jsonFileTypes hsTestFile) @?= True)
-         , testCase "filterToFileResult Finder.hs isMatchingFile" (isJust (filterToFileResult settingsInExtension jsonFileTypes hsTestFile) @?= True)
-         , testCase "filterToFileResult Finder.hs not isMatchingFile" (isJust (filterToFileResult settingsOutExtension jsonFileTypes hsTestFile) @?= False)
-         , testCase "filterToFileResult .gitignore default settings" (isJust (filterToFileResult settings jsonFileTypes hiddenTestFile) @?= False)
-         , testCase "filterToFileResult .gitignore includeHidden" (isJust (filterToFileResult settingsIncludeHidden jsonFileTypes hiddenTestFile) @?= True)
-         , testCase "filterToFileResult archive.zip default settings" (isJust (filterToFileResult settings jsonFileTypes archiveTestFile) @?= False)
-         , testCase "filterToFileResult archive.zip includeArchives" (isJust (filterToFileResult settingsIncludeArchives jsonFileTypes archiveTestFile) @?= True)
-         , testCase "filterToFileResult archive.zip archivesOnly" (isJust (filterToFileResult settingsArchivesOnly jsonFileTypes archiveTestFile) @?= True)
-         , testCase "filterToFileResult Finder.hs archivesOnly" (isJust (filterToFileResult settingsArchivesOnly jsonFileTypes hsTestFile) @?= False)
+  let finderHsFile = ("Finder.hs", Code)
+  let gitignoreFile = (".gitignore", Text)
+  let archiveZipFile = ("archive.zip", Archive)
+  return [ testCase "filterToFileResult Finder.hs default settings" (isJust (filterToFileResult settings jsonFileTypes finderHsFile) @?= True)
+         , testCase "filterToFileResult Finder.hs isMatchingFilePath" (isJust (filterToFileResult settingsInExtension jsonFileTypes finderHsFile) @?= True)
+         , testCase "filterToFileResult Finder.hs not isMatchingFilePath" (isJust (filterToFileResult settingsOutExtension jsonFileTypes finderHsFile) @?= False)
+         , testCase "filterToFileResult .gitignore default settings" (isJust (filterToFileResult settings jsonFileTypes gitignoreFile) @?= False)
+         , testCase "filterToFileResult .gitignore includeHidden" (isJust (filterToFileResult settingsIncludeHidden jsonFileTypes gitignoreFile) @?= True)
+         , testCase "filterToFileResult archive.zip default settings" (isJust (filterToFileResult settings jsonFileTypes archiveZipFile) @?= False)
+         , testCase "filterToFileResult archive.zip includeArchives" (isJust (filterToFileResult settingsIncludeArchives jsonFileTypes archiveZipFile) @?= True)
+         , testCase "filterToFileResult archive.zip archivesOnly" (isJust (filterToFileResult settingsArchivesOnly jsonFileTypes archiveZipFile) @?= True)
+         , testCase "filterToFileResult Finder.hs archivesOnly" (isJust (filterToFileResult settingsArchivesOnly jsonFileTypes finderHsFile) @?= False)
+         ]
+
+-- hsfind -D build -D cmake -D node_modules -D vendor -D venv -t audio /Users/cary/src/xfind/python --debug
+getFindPythonFileResultTests :: IO [Test]
+getFindPythonFileResultTests = do
+  let settings = defaultFindSettings {
+    debug = True,
+    inFileTypes = [Audio],
+    outFilePatterns = ["build", "cmake", "node_modules", "pycache", "vendor", "venv"],
+    paths = ["/Users/cary/src/xfind/python"]
+  }
+  fileResults <- doFind settings
+  return [ testCase "getFindPythonFileResultTests" (length fileResults @?= 0)
+         ]
+
+-- hsfind -D build -D cmake -D node_modules -D vendor -D venv -t audio /Users/cary/src/xfind/ruby --debug
+getFindRubyFileResultTests :: IO [Test]
+getFindRubyFileResultTests = do
+  let settings = defaultFindSettings {
+    debug = True,
+    inFileTypes = [Audio],
+    outFilePatterns = ["build", "cmake", "node_modules", "pycache", "vendor", "venv"],
+    paths = ["/Users/cary/src/xfind/ruby"]
+  }
+  fileResults <- doFind settings
+  return [ testCase "getFindRubyFileResultTests" (length fileResults @?= 0)
          ]
