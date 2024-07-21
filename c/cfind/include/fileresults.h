@@ -2,7 +2,6 @@
 #define FILERESULTS_H
 
 #include <stdint.h>
-#include <sys/stat.h>
 
 #include "filetypes.h"
 #include "stringnode.h"

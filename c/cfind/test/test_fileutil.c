@@ -14,31 +14,31 @@ void test_dir_or_file_exists(void)
     printf("dir: \"%s\"\n", xfindpath);
     printf("expected exists: 1\n");
     const unsigned int res = dir_or_file_exists(xfindpath);
-    printf("actual exists:   %d\n", res);
+    printf("actual exists:   %u\n", res);
     assert(res == 1);
 
     const char *nonexistent = "/this/path/should/not/exist";
     printf("dir: \"%s\"\n", nonexistent);
     printf("expected exists: 0\n");
     const unsigned int res2 = dir_or_file_exists(nonexistent);
-    printf("actual exists:   %d\n", res2);
+    printf("actual exists:   %u\n", res2);
     assert(res2 == 0);
 
     const char *tilde_home = "~/Documents";
     printf("dir: \"%s\"\n", tilde_home);
     printf("expected exists: 0\n");
     const unsigned int res3 = dir_or_file_exists(tilde_home);
-    printf("actual exists:   %d\n", res3);
+    printf("actual exists:   %u\n", res3);
     assert(res3 == 0);
 
-    char *expanded = malloc((strlen(tilde_home) + 1) * sizeof (char *));
+    char *expanded = malloc((strnlen(tilde_home, 100) + 1) * sizeof (char *));
     expanded[0] = '\0';
     expand_path(tilde_home, &expanded);
     printf("dir: \"%s\"\n", tilde_home);
     printf("expanded: \"%s\"\n", expanded);
     printf("expected exists: 1\n");
     const unsigned int res4 = dir_or_file_exists(expanded);
-    printf("actual exists:   %d\n", res4);
+    printf("actual exists:   %u\n", res4);
     assert(res4 == 1);
     free(expanded);
 }
@@ -71,6 +71,7 @@ void test_get_extension(void)
         printf("expected ext: \"%s\"\n", exts[i]);
         printf("actual ext:   \"%s\"\n", ext);
         assert(strcmp(ext, exts[i]) == 0);
+        free(ext);
     }
 }
 
@@ -91,7 +92,7 @@ void test_is_dot_dir(void)
         "/some/root/path"
     };
     const size_t arrlen = 10;
-    int expected[10] = {
+    const int expected[10] = {
         0,
         0,
         1,
@@ -177,13 +178,13 @@ void test_expand_path(void)
     expand_path(tilde, &expanded);
     printf("original path: %s\n", tilde);
     printf("expanded path: %s\n", expanded);
-    assert(strlen(expanded) > strlen(tilde));
+    assert(strnlen(expanded, 100) > strnlen(tilde, 100));
 
     const char *homepath = "/home/path";
     expand_path(homepath, &expanded);
     printf("original path: %s\n", homepath);
     printf("expanded path: %s\n", expanded);
-    assert(strlen(expanded) == strlen(homepath));
+    assert(strnlen(expanded, 100) == strnlen(homepath, 100));
     assert(strcmp(expanded, homepath) == 0);
 
     free(expanded);

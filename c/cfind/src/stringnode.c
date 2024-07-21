@@ -48,7 +48,7 @@ void add_string_to_string_node(const char *s, StringNode *string_node)
 void add_char_split_to_string_node(const char c, const char *s, StringNode *string_node)
 {
     if (s == NULL) return;
-    size_t slen = strlen(s);
+    size_t slen = strnlen(s, 1024);
     if (slen == 0) return;
     if (char_in_string(c, s) == 0) {
         add_string_to_string_node(s, string_node);
@@ -136,7 +136,7 @@ size_t string_node_strlen(StringNode *string_node)
     StringNode *temp = string_node;
     unsigned int nodecount = 0;
     while (temp != NULL && temp->string != NULL) {
-        slen += strlen(temp->string) + 2; // for ""
+        slen += strnlen(temp->string, 1024) + 2; // for ""
         temp = temp->next;
         nodecount++;
     }
@@ -161,7 +161,7 @@ void string_node_to_string(StringNode *string_node, char *s)
         }
         strcat(s, "\"");
         strcat(s, temp->string);
-        // i += strlen(temp->string);
+        // i += strnlen(temp->string, 1024);
         strcat(s, "\"");
         temp = temp->next;
         strcount++;

@@ -14,16 +14,14 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
-#include <filesystem>
-#include <regex>
-#include <string>
-#include <unordered_set>
-#include <vector>
-
 #include "rapidjson/document.h"
 
 
 // common.h
+
+#define MAX_FILENAME_LENGTH 255
+#define MAX_PATH_LENGTH 1024
+#define MAX_STRING_LENGTH 1024
 
 void log_msg(const char *msg);
 

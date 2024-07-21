@@ -2,6 +2,8 @@
 
 #include "test_finder.h"
 
+#include <sys/stat.h>
+
 
 void test_validate_settings(void)
 {

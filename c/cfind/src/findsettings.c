@@ -136,7 +136,7 @@ static size_t last_mod_strlen(long last_mod)
 
 size_t settings_strlen(const FindSettings *settings)
 {
-    return strlen(SETTINGS_TEMPLATE)
+    return strnlen(SETTINGS_TEMPLATE, 1024)
         - (SETTINGS_TOTAL_FIELD_COUNT * 2 + 2) // the + 2 is for the extra formatting letter for each long (%lu)
         + all_bools_strlen(settings)
         + last_mod_strlen(settings->max_last_mod)
@@ -288,7 +288,7 @@ void print_settings(const FindSettings *settings)
     size_t settings_len = settings_strlen(settings);
     char ss[settings_len];
     settings_to_string(settings, ss);
-    char debug_str[11 + strlen(ss)];
+    char debug_str[11 + settings_len];
     sprintf(debug_str, "settings: %s", ss);
     log_msg(debug_str);
 }
@@ -333,8 +333,8 @@ SortBy sort_by_from_name(const char *name)
 {
     //printf("name: %s\n", name);
     size_t maxlen = 10;
-    size_t namelen = strlen(name);
-    size_t minlen = maxlen < namelen ? maxlen : namelen;
+    size_t namelen = strnlen(name, maxlen);
+    size_t minlen = namelen < maxlen  ? namelen : maxlen;
     char lname[10] = {0};
     strncpy(lname, name, minlen);
     //printf("namelen: %zu\n", namelen);

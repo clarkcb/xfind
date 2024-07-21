@@ -91,7 +91,7 @@ size_t regex_node_strlen(RegexNode *regex_node)
     RegexNode *temp = regex_node;
     unsigned int nodecount = 0;
     while (temp != NULL) {
-        slen += strlen(temp->regex->pattern) + 2; // for ""
+        slen += strnlen(temp->regex->pattern, 1024) + 2; // for ""
         temp = temp->next;
         nodecount++;
     }

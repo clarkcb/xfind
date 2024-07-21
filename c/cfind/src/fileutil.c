@@ -3,6 +3,7 @@
 #include <sys/stat.h>
 #include <wordexp.h>
 #include <printf.h>
+#include <stdlib.h>
 
 #include "common.h"
 #include "fileutil.h"
@@ -22,7 +23,7 @@ unsigned short dir_or_file_exists(const char *file_path)
 
 unsigned short is_dot_dir(const char *file_path)
 {
-    if (file_path == NULL || strlen(file_path) < 1) return 0;
+    if (file_path == NULL || strnlen(file_path, 5) < 1) return 0;
     return index_of_string_in_array(file_path, (char **) DOT_DIRS, 4) > -1;
 }
 
@@ -34,7 +35,7 @@ long file_size(const char *file_path)
             return 0; // does not exist
         }
     }
-    return (long) st.st_size;
+    return st.st_size;
 }
 
 /*
@@ -46,10 +47,10 @@ long file_size(const char *file_path)
 void get_extension(const char *file_name, char *ext)
 {
     if (file_name == NULL) return;
-    size_t fnlen = strnlen(file_name, 1024);
+    size_t fnlen = strnlen(file_name, MAX_FILENAME_LENGTH);
     // b.c is the shortest a file_name can be with ext, so skip if shorter than 3
     if (fnlen < 3) return;
-    int idx = last_index_of_char_in_string('.', file_name);
+    const int idx = last_index_of_char_in_string('.', file_name);
     if (idx < 1 || (idx == 1 && file_name[0] == '.') || idx >= (fnlen - 1)) {
         ext = "";
     } else {
@@ -65,15 +66,15 @@ unsigned short is_hidden(const char *file_path)
 {
     // if NULL or empty, return false
     if (file_path == NULL) return 0;
-    size_t fplen = strlen(file_path);
+    size_t fplen = strnlen(file_path, MAX_PATH_LENGTH);
     if (fplen < 1) return 0;
 
     // if file_path has any path separators, call is_hidden on each path segment
-    int sep_count = char_count_in_string(PATH_SEPARATOR, file_path);
+    const int sep_count = char_count_in_string(PATH_SEPARATOR, file_path);
     if (sep_count > 0) {
         int startidx = 0;
         int nextidx = 0;
-        while (nextidx < strlen(file_path)) {
+        while (nextidx < strnlen(file_path, MAX_PATH_LENGTH)) {
             if (file_path[nextidx] == PATH_SEPARATOR) {
                 int seglen = nextidx - startidx;
                 char seg[seglen + 1];
@@ -84,7 +85,7 @@ unsigned short is_hidden(const char *file_path)
                     return 1;
                 }
                 startidx += seglen + 1;
-            } else if (nextidx == strlen(file_path) - 1) {
+            } else if (nextidx == strnlen(file_path, MAX_PATH_LENGTH) - 1) {
                 int seglen = nextidx - startidx + 1;
                 char seg[seglen + 1];
                 memcpy(seg, &file_path[startidx], seglen);
@@ -112,7 +113,7 @@ unsigned short is_hidden(const char *file_path)
 void expand_path(const char *file_path, char **expanded)
 {
     if (file_path == NULL) return;
-    size_t fp_len = strlen(file_path);
+    size_t fp_len = strnlen(file_path, MAX_PATH_LENGTH);
     if (fp_len < 1) return;
 
     if (file_path[0] == '~') {
@@ -124,7 +125,7 @@ void expand_path(const char *file_path, char **expanded)
         wordexp(file_path, &p, 0);
         w = p.we_wordv;
         for (i = 0; i < p.we_wordc; i++) {
-            exp_len += strlen(w[i]);
+            exp_len += strnlen(w[i], MAX_PATH_LENGTH);
         }
 
         // this is probably always true here, but just in case
@@ -147,11 +148,11 @@ void expand_path(const char *file_path, char **expanded)
 
 void join_path(const char *p1, const char *p2, char *joined)
 {
-    size_t joinedlen = (p1 ? strlen(p1) : 0) +
-                       (p2 ? strlen(p2) : 0) + 2;
+    size_t joinedlen = (p1 ? strnlen(p1, MAX_PATH_LENGTH) : 0) +
+                       (p2 ? strnlen(p2, MAX_PATH_LENGTH) : 0) + 2;
 
     if (p1) {
-        size_t p1_len = strlen(p1);
+        size_t p1_len = strnlen(p1, MAX_PATH_LENGTH);
         strncpy(joined, p1, p1_len);
         if (p2) {
             joined[p1_len] = PATH_SEPARATOR;
@@ -161,14 +162,14 @@ void join_path(const char *p1, const char *p2, char *joined)
         *joined = 0;
     }
     if (p2) {
-        strncpy(joined + strlen(joined), p2, strlen(p2));
+        strncpy(joined + strnlen(joined, MAX_PATH_LENGTH), p2, strnlen(p2, MAX_PATH_LENGTH));
     }
     joined[joinedlen - 1] = '\0';
 }
 
 void split_path(const char *fp, char** p, char** f)
 {
-    char* slptr = strrchr(fp, PATH_SEPARATOR);
+    const char* slptr = strrchr(fp, PATH_SEPARATOR);
     if (slptr) {
         *p = strndup(fp, (size_t)(slptr - fp));
         *f = strdup(++slptr);
@@ -180,7 +181,7 @@ void split_path(const char *fp, char** p, char** f)
 
 void normalize_path(char *fp)
 {
-    size_t end_pos = strlen(fp) - 1;
+    size_t end_pos = strnlen(fp, MAX_PATH_LENGTH) - 1;
     while (fp[end_pos] == '\0') {
         end_pos--;
     }

@@ -557,43 +557,43 @@ FileType get_file_type(const char *file_name, const FileTypes *file_types)
 FileType file_type_from_name(const char *name)
 {
     //printf("name: %s\n", name);
-    size_t maxlen = 7;
-    size_t namelen = strlen(name);
-    size_t minlen = maxlen < namelen ? maxlen : namelen;
-    char uname[7] = {0};
-    strncpy(uname, name, minlen);
+    const size_t maxlen = 8;
+    size_t namelen = strnlen(name, maxlen);
+    size_t minlen = namelen < maxlen ? namelen : maxlen;
+    char lname[8] = {0};
+    strncpy(lname, name, minlen);
     //printf("namelen: %zu\n", namelen);
     //printf("minlen: %zu\n", minlen);
     for (int i = 0; i < minlen; i++) {
-        char c = (char)tolower(name[i]);
-        uname[i] = c;
+        const char c = tolower(name[i]);
+        lname[i] = c;
     }
-    //printf("uname: %s\n", uname);
-    if (strncmp(uname, FILE_TYPE_NAME_ARCHIVE, maxlen) == 0) {
+    //printf("lname: %s\n", lname);
+    if (strncmp(lname, FILE_TYPE_NAME_ARCHIVE, minlen) == 0) {
         return ARCHIVE;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_AUDIO, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_AUDIO, minlen) == 0) {
         return AUDIO;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_BINARY, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_BINARY, minlen) == 0) {
         return BINARY;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_CODE, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_CODE, minlen) == 0) {
         return CODE;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_FONT, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_FONT, minlen) == 0) {
         return FONT;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_IMAGE, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_IMAGE, minlen) == 0) {
         return IMAGE;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_TEXT, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_TEXT, minlen) == 0) {
         return TEXT;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_VIDEO, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_VIDEO, minlen) == 0) {
         return VIDEO;
     }
-    if (strncmp(uname, FILE_TYPE_NAME_XML, maxlen) == 0) {
+    if (strncmp(lname, FILE_TYPE_NAME_XML, minlen) == 0) {
         return XML;
     }
     return UNKNOWN;
@@ -653,9 +653,10 @@ size_t file_type_node_strlen(IntNode *file_type_node)
         const FileType *file_type = (const FileType *)temp->integer;
         char *name = malloc(10 * sizeof(char));
         file_type_to_name(*file_type, name);
-        slen += strlen(name) + 2; // for ""
+        slen += strnlen(name, 10) + 2; // for ""
         temp = temp->next;
         nodecount++;
+        free(name);
     }
     if (nodecount > 1) {
         slen += (nodecount - 1); // for commas

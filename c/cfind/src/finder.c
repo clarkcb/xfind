@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include "common.h"
 #include "finderr.h"
 #include "fileresults.h"
 #include "fileutil.h"
@@ -22,7 +23,7 @@ Finder *new_finder(const FindSettings *s, const FileTypes *ft)
 
 error_t validate_settings(const FindSettings *settings)
 {
-    size_t path_count = string_node_count(settings->paths);
+    const size_t path_count = string_node_count(settings->paths);
     if (path_count < 1) {
         return E_STARTPATH_NOT_DEFINED;
     }
@@ -49,7 +50,7 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
 {
     // null or empty dir is a match
     if (dir == NULL) return 1;
-    size_t dirlen = strlen(dir);
+    size_t dirlen = strnlen(dir, MAX_PATH_LENGTH);
     if (dirlen == 0) return 1;
 
     // Split into dir elements to match against
@@ -102,7 +103,7 @@ unsigned short has_matching_archive_extension(const char *file_name, const FindS
         return 1;
     }
     if (file_name == NULL) return 0;
-    size_t file_len = strnlen(file_name, 1024);
+    size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
     if (file_len < 1) return 0;
     char ext[file_len];
     ext[0] = '\0';
@@ -117,7 +118,7 @@ unsigned short has_matching_extension(const char *file_name, const FindSettings 
         return 1;
     }
     if (file_name == NULL) return 0;
-    size_t file_len = strnlen(file_name, 1024);
+    const size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
     if (file_len < 1) return 0;
     char ext[file_len];
     ext[0] = '\0';
@@ -128,7 +129,7 @@ unsigned short has_matching_extension(const char *file_name, const FindSettings 
 unsigned short is_matching_archive_file_name(const char *file_name, const FindSettings *settings)
 {
     if (file_name == NULL) return 0;
-    size_t file_len = strnlen(file_name, 1024);
+    const size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
     if (file_len < 1) return 0;
     return (is_null_or_empty_regex_node(settings->in_archive_file_patterns) == 1
             || string_matches_regex_node(file_name, settings->in_archive_file_patterns) == 1)
@@ -139,7 +140,7 @@ unsigned short is_matching_archive_file_name(const char *file_name, const FindSe
 unsigned short is_matching_file_name(const char *file_name, const FindSettings *settings)
 {
     if (file_name == NULL) return 0;
-    size_t file_len = strnlen(file_name, 1024);
+    const size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
     if (file_len < 1) return 0;
     return (is_null_or_empty_regex_node(settings->in_file_patterns) == 1
             || string_matches_regex_node(file_name, settings->in_file_patterns) == 1)
@@ -208,7 +209,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
         return E_UNKNOWN_ERROR;
     }
 
-    size_t dirlen = strlen(dirpath);
+    size_t dirlen = strnlen(dirpath, MAX_PATH_LENGTH);
     if ((dirlen + 2) >= FILENAME_MAX - 1) {
         return E_FILENAME_TOO_LONG;
     }
@@ -218,7 +219,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
     strncpy(normpath, dirpath, dirlen);
     normpath[dirlen] = '\0';
     normalize_path(normpath);
-    size_t normlen = strlen(normpath);
+    size_t normlen = strnlen(normpath, MAX_PATH_LENGTH);
 
     struct dirent *dent;
     struct stat fpstat;
@@ -230,7 +231,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
         if (!strncmp(dent->d_name, ".", 5) || !strncmp(dent->d_name, "..", 5))
             continue;
 
-        char *file_path = malloc((normlen + strlen(dent->d_name) + 2) * sizeof(char));
+        char *file_path = malloc((normlen + strnlen(dent->d_name, MAX_PATH_LENGTH) + 2) * sizeof(char));
         join_path(normpath, dent->d_name, file_path);
 
         if (stat(file_path, &fpstat) == -1) {
@@ -251,7 +252,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
             if (depth >= finder->settings->min_depth
                 && (finder->settings->max_depth < 1 || depth <= finder->settings->max_depth)
                 && filter_file(normpath, dent->d_name, &file_type, &fpstat, finder->settings) == 1) {
-                size_t slen = strlen(dent->d_name);
+                size_t slen = strnlen(dent->d_name, MAX_PATH_LENGTH);
                 char *file_name = malloc((slen + 1) * sizeof(char));
                 strncpy(file_name, dent->d_name, slen);
                 file_name[slen] = '\0';
@@ -294,7 +295,7 @@ error_t find(const FindSettings *settings, FileResults *results)
     StringNode *next_path = settings->paths;
     while (next_path != NULL) {
         // expand the path in case it has tilde, etc.
-        size_t path_len = strlen(next_path->string) + 1;
+        size_t path_len = strnlen(next_path->string, MAX_PATH_LENGTH) + 1;
         char *expanded = malloc((path_len + 10) * sizeof(char));
         expanded[0] = '\0';
         expand_path(next_path->string, &expanded);
@@ -323,7 +324,7 @@ error_t find(const FindSettings *settings, FileResults *results)
             // if min_depth > zero, we can skip since the file is at depth zero
             if (finder->settings->min_depth <= 0) {
                 FileType file_type = UNKNOWN;
-                size_t next_path_len = (strlen(next_path->string) + 2) * sizeof(char);
+                size_t next_path_len = (strnlen(next_path->string, MAX_PATH_LENGTH) + 2) * sizeof(char);
                 char *d = malloc(next_path_len);
                 char *f = malloc(next_path_len);
                 split_path(next_path->string, &d, &f);

@@ -173,12 +173,12 @@ static error_t parse_find_options(const char * const findoptions_json_str, FindO
         if ((cJSON_IsString(long_json) && (long_json->valuestring != NULL))
              && (cJSON_IsString(desc_json) && (desc_json->valuestring != NULL))) {
 
-            size_t long_len = strlen(long_json->valuestring);
+            size_t long_len = strnlen(long_json->valuestring, 100);
             char *longarg = malloc((long_len + 1) * sizeof(char));
             strncpy(longarg, long_json->valuestring, long_len);
             longarg[long_len] = '\0';
 
-            size_t desc_len = strlen(desc_json->valuestring);
+            size_t desc_len = strnlen(desc_json->valuestring, 1024);
             char *desc = malloc((desc_len + 1) * sizeof(char));
             strncpy(desc, desc_json->valuestring, desc_len);
             desc[desc_len] = '\0';
@@ -204,7 +204,8 @@ error_t get_find_options(FindOptions *options)
 {
     error_t err = E_OK;
 
-    char *full_path = (char *)malloc(MAX_HOMEPATH_LENGTH + 21);
+    size_t maxlen = MAX_HOMEPATH_LENGTH + 21;
+    char *full_path = malloc(maxlen * sizeof(char));
     get_find_options_path(full_path);
 
     assert(full_path != NULL);
@@ -229,7 +230,7 @@ error_t get_find_options(FindOptions *options)
         }
         fclose(fp);
     } else {
-        char *errmsg = (char *)malloc((16 + strlen(full_path)) * sizeof(char));
+        char *errmsg = malloc((16 + strnlen(full_path, maxlen)) * sizeof(char));
         sprintf(errmsg, "Unable to load %s", full_path);
         err = E_UNKNOWN_ERROR;
         free(errmsg);
@@ -454,7 +455,7 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
     int i = 0;
     settings->print_files = 1;
     while (i < argc) {
-        size_t arglen = strlen(argv[i]);
+        const size_t arglen = strnlen(argv[i], MAX_STRING_LENGTH);
         if (arglen < 1) {
             return E_INVALID_ARG;
         }
@@ -467,7 +468,7 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
                 return E_INVALID_ARG;
             }
             char arg_name[arglen - c + 1];
-            strncpy(arg_name, (char*)argv[i] + c, arglen - c);
+            strncpy(arg_name, argv[i] + c, arglen - c);
             arg_name[arglen - c] = '\0';
 
             int arg_idx = index_of_string_in_array(arg_name, arg_names, arg_count);
@@ -476,7 +477,7 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
             }
             if (arg_idx > -1) {
                 if (i < argc - 1) {
-                    if (strlen(argv[i+1]) > 0) {
+                    if (strnlen(argv[i+1], MAX_STRING_LENGTH) > 0) {
                         error_t e = set_arg(arg_idx, argv[i+1], settings);
                         if (e != E_OK) return e;
                         i += 2;
@@ -494,7 +495,7 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
                     flag_idx = index_of_string_in_array(arg_name, flag_abbrs, flag_count);
                 }
                 if (flag_idx > -1) {
-                    error_t e = set_flag(flag_idx, 1, settings);
+                    const error_t e = set_flag(flag_idx, 1, settings);
                     if (e != E_OK) return e;
                     i++;
                 } else {
@@ -527,11 +528,11 @@ size_t find_options_count(FindOptions *options)
     return optcount;
 }
 
-// get the "opt" ("-s,--long") strlen for the option
-static size_t get_option_opt_strlen(FindOption *o)
+// get the "opt" ("-s,--long") strnlen for the option
+static size_t get_option_opt_strlen(const FindOption *o)
 {
     // + 2 for leading --
-    size_t opt_len = strlen(o->long_arg) + 2;
+    size_t opt_len = strnlen(o->long_arg, 100) + 2;
     if (o->short_arg != NULL) {
         opt_len += 3;
     }
@@ -544,10 +545,10 @@ static size_t get_longest_opt_strlen(FindOptions *options)
     size_t longest_len = 0;
     while (temp != NULL && temp->option != NULL) {
         // + 2 for leading --
-        size_t long_len = strlen(temp->option->long_arg) + 2;
+        size_t long_len = strnlen(temp->option->long_arg, 100) + 2;
         if (temp->option->short_arg != NULL) {
             // + 2 for leading - and ,
-            long_len += strlen(temp->option->short_arg) + 1;
+            long_len += strnlen(temp->option->short_arg, 2) + 1;
         }
         if (long_len > longest_len) {
             longest_len = long_len;
@@ -559,9 +560,9 @@ static size_t get_longest_opt_strlen(FindOptions *options)
 
 static size_t find_option_strlen(FindOption *o)
 {
-    size_t optlen = strlen(o->long_arg) + strlen(o->description);
+    size_t optlen = strnlen(o->long_arg, 100) + strnlen(o->description, MAX_STRING_LENGTH);
     if (o->short_arg != NULL) {
-        optlen += strlen(o->short_arg);
+        optlen += strnlen(o->short_arg, 2);
     }
     return optlen;
 }
@@ -569,7 +570,7 @@ static size_t find_option_strlen(FindOption *o)
 size_t find_option_usage_strlen(FindOption *o, size_t longest_opt_len)
 {
     // + 2 for two spaces between opt and description
-    size_t option_len = longest_opt_len + 2 + strlen(o->description);
+    size_t option_len = longest_opt_len + 2 + strnlen(o->description, MAX_STRING_LENGTH);
     return option_len;
 }
 
@@ -595,7 +596,7 @@ static int cmp_find_option(const void *a, const void *b)
     size_t o1_len = find_option_strlen(*o1);
     char opt1[o1_len];
     if ((*o1)->short_arg != NULL) {
-        char c1 = (char)tolower((*o1)->short_arg[0]);
+        const char c1 = tolower((*o1)->short_arg[0]);
         snprintf(opt1, o1_len, "%c@%s", c1, (*o1)->long_arg);
     } else {
         snprintf(opt1, o1_len, "%s", (*o1)->long_arg);
@@ -604,7 +605,7 @@ static int cmp_find_option(const void *a, const void *b)
     size_t o2_len = find_option_strlen(*o2);
     char opt2[o2_len];
     if ((*o2)->short_arg != NULL) {
-        char c2 = (char)tolower((*o2)->short_arg[0]);
+        const char c2 = tolower((*o2)->short_arg[0]);
         snprintf(opt2, o2_len, "%c@%s", c2, (*o2)->long_arg);
     } else {
         snprintf(opt2, o2_len, "%s", (*o2)->long_arg);
@@ -645,7 +646,7 @@ void find_options_to_usage_string(FindOptions *options, char *s)
         }
         opt_buff[opt_len] = '\0';
         // + 5 for three spaces, newline and \0
-        size_t line_len = longest_len + strlen(option_array[i]->description) + 5;
+        size_t line_len = longest_len + strnlen(option_array[i]->description, 1024) + 5;
         char opt_line[line_len];
         snprintf(opt_line, line_len, line_format, opt_buff, option_array[i]->description);
         opt_line[line_len] = '\0';
@@ -686,10 +687,9 @@ void destroy_find_options(FindOptions *options)
 {
     if (options != NULL) {
         FindOptions *current = options;
-        FindOptions *next;
         while (current != NULL) {
             destroy_find_option(current->option);
-            next = current->next;
+            FindOptions *next = current->next;
             free(current);
             current = next;
         }

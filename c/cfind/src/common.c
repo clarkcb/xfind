@@ -17,14 +17,14 @@ void log_err(const char *msg)
 
 int char_in_string(const char c, const char *s)
 {
-    char* cptr = strchr(s, c);
+    const char* cptr = strchr(s, c);
     return (cptr == NULL) ? 0 : 1;
 }
 
 int char_count_in_string(const char c, const char *s)
 {
     int char_count = 0;
-    for (int i = 0; i < strlen(s); i++) {
+    for (int i = 0; i < strnlen(s, MAX_STRING_LENGTH); i++) {
         if (s[i] == c) {
             char_count++;
         }
@@ -36,7 +36,7 @@ int index_of_char_in_string(const char c, const char *s)
 {
     char *p = strchr(s, c);
     if (p)
-        return (int)(p - s);
+        return p - s;
     return -1;
 }
 
@@ -64,7 +64,7 @@ size_t get_longest_strlen(const char **arr, size_t arr_size)
 {
     size_t longest_len = 0;
     for (int i=0; i < arr_size; i++) {
-        size_t len = strlen(arr[i]);
+        size_t len = strnlen(arr[i], MAX_STRING_LENGTH);
         if (len > longest_len) {
             longest_len = len;
         }
@@ -86,7 +86,7 @@ unsigned int num_digits_ulong(unsigned long num)
     return 10;
 }
 
-void time_to_datestring(long t, char *datestr)
+void time_to_datestring(const long t, char *datestr)
 {
     if (t == 0L) {
         sprintf(datestr, "0");

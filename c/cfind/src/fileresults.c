@@ -58,11 +58,11 @@ void add_to_file_results(FileResult *r, FileResults *results)
 
 size_t file_result_strlen(const FileResult *r)
 {
-    return strlen(r->dir) + strlen(r->file_name) + 1;
+    return strnlen(r->dir, MAX_PATH_LENGTH) + strnlen(r->file_name, MAX_FILENAME_LENGTH) + 1;
     // Include file_size: + 3 is for the space and parens
-    // return strlen(r->dir) + strlen(r->file_name) + num_digits_ulong(r->file_size) + 3 + 1;
+    // return strnlen(r->dir, MAX_PATH_LENGTH) + strnlen(r->file_name, MAX_FILENAME_LENGTH) + num_digits_ulong(r->file_size) + 3 + 1;
     // Include mtime: + 3 is for the space and parens
-    // return strlen(r->dir) + strlen(r->file_name) + num_digits_ulong(r->mtime) + 3 + 1;
+    // return strnlen(r->dir, MAX_PATH_LENGTH) + strnlen(r->file_name, MAX_FILENAME_LENGTH) + num_digits_ulong(r->mtime) + 3 + 1;
 }
 
 size_t file_results_count(FileResults *results)
@@ -87,7 +87,7 @@ void file_result_to_string(const FileResult *r, char *s)
 void print_file_results(FileResults *results, const SortBy sort_by, const unsigned short sort_case_insensitive,
                         const unsigned short sort_descending)
 {
-    size_t results_count = file_results_count(results);
+    const size_t results_count = file_results_count(results);
     FileResult *results_array[results_count];
     int i = 0;
     FileResults *temp = results;
@@ -125,9 +125,9 @@ void print_file_results(FileResults *results, const SortBy sort_by, const unsign
 // comparator function for file result paths
 static int cmp_file_results_by_path(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int dircmp = strcmp((*r1)->dir, (*r2)->dir);
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int dircmp = strcmp((*r1)->dir, (*r2)->dir);
     if (dircmp == 0) {
         return strcmp((*r1)->file_name, (*r2)->file_name);
     }
@@ -137,9 +137,9 @@ static int cmp_file_results_by_path(const void *a, const void *b)
 // comparator function for file result filenames
 static int cmp_file_results_by_name(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int namecmp = strcmp((*r1)->file_name, (*r2)->file_name);
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int namecmp = strcmp((*r1)->file_name, (*r2)->file_name);
     if (namecmp == 0) {
         return strcmp((*r1)->dir, (*r2)->dir);
     }
@@ -149,9 +149,9 @@ static int cmp_file_results_by_name(const void *a, const void *b)
 // comparator function for file result sizes
 static int cmp_file_results_by_size(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int sizecmp = ((int) ((*r1)->file_size - (*r2)->file_size));
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int sizecmp = ((int) ((*r1)->file_size - (*r2)->file_size));
     if (sizecmp == 0) {
         return cmp_file_results_by_path(a, b);
     }
@@ -161,9 +161,9 @@ static int cmp_file_results_by_size(const void *a, const void *b)
 // comparator function for file result types
 static int cmp_file_results_by_type(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int typecmp = ((int) ((*r1)->file_type - (*r2)->file_type));
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int typecmp = ((int) ((*r1)->file_type - (*r2)->file_type));
     if (typecmp == 0) {
         return cmp_file_results_by_path(a, b);
     }
@@ -173,9 +173,9 @@ static int cmp_file_results_by_type(const void *a, const void *b)
 // comparator function for file result lastmod
 static int cmp_file_results_by_lastmod(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int timecmp = ((int) ((*r1)->last_mod - (*r2)->last_mod));
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int timecmp = ((int) ((*r1)->last_mod - (*r2)->last_mod));
     if (timecmp == 0) {
         return cmp_file_results_by_path(a, b);
     }
@@ -188,9 +188,9 @@ static int cmp_file_results_by_lastmod(const void *a, const void *b)
 // comparator function for file result paths
 static int cmp_file_results_by_path_ci(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int dircmp = strcasecmp((*r1)->dir, (*r2)->dir);
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int dircmp = strcasecmp((*r1)->dir, (*r2)->dir);
     if (dircmp == 0) {
         return strcasecmp((*r1)->file_name, (*r2)->file_name);
     }
@@ -200,9 +200,9 @@ static int cmp_file_results_by_path_ci(const void *a, const void *b)
 // comparator function for file result filenames
 static int cmp_file_results_by_name_ci(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int namecmp = strcasecmp((*r1)->file_name, (*r2)->file_name);
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int namecmp = strcasecmp((*r1)->file_name, (*r2)->file_name);
     if (namecmp == 0) {
         return strcasecmp((*r1)->dir, (*r2)->dir);
     }
@@ -212,9 +212,9 @@ static int cmp_file_results_by_name_ci(const void *a, const void *b)
 // comparator function for file result sizes
 static int cmp_file_results_by_size_ci(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int sizecmp = ((int) ((*r1)->file_size - (*r2)->file_size));
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int sizecmp = (*r1)->file_size - (*r2)->file_size;
     if (sizecmp == 0) {
         return cmp_file_results_by_path_ci(a, b);
     }
@@ -224,9 +224,9 @@ static int cmp_file_results_by_size_ci(const void *a, const void *b)
 // comparator function for file result types
 static int cmp_file_results_by_type_ci(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int typecmp = ((int) ((*r1)->file_type - (*r2)->file_type));
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int typecmp = (*r1)->file_type - (*r2)->file_type;
     if (typecmp == 0) {
         return cmp_file_results_by_path_ci(a, b);
     }
@@ -236,9 +236,9 @@ static int cmp_file_results_by_type_ci(const void *a, const void *b)
 // comparator function for file result lastmod
 static int cmp_file_results_by_lastmod_ci(const void *a, const void *b)
 {
-    FileResult **r1 = (FileResult **)a;
-    FileResult **r2 = (FileResult **)b;
-    int timecmp = ((int) ((*r1)->last_mod - (*r2)->last_mod));
+    const FileResult **r1 = (FileResult **)a;
+    const FileResult **r2 = (FileResult **)b;
+    const int timecmp = (*r1)->last_mod - (*r2)->last_mod;
     if (timecmp == 0) {
         return cmp_file_results_by_path_ci(a, b);
     }
@@ -316,15 +316,15 @@ StringNode *dir_results(FileResults *results)
 // comparator function for strings
 static int cmp_strings(const void *a, const void *b)
 {
-    char **s1 = (char **)a;
-    char **s2 = (char **)b;
-    return strcmp((*s1), (*s2));
+    const char **s1 = (char **)a;
+    const char **s2 = (char **)b;
+    return strcmp(*s1, *s2);
 }
 
 void print_dir_results(FileResults *results)
 {
     StringNode *dir_node = dir_results(results);
-    size_t dir_count = string_node_count(dir_node);
+    const size_t dir_count = string_node_count(dir_node);
     char *dir_array[dir_count];
 
     int i = 0;
@@ -339,7 +339,7 @@ void print_dir_results(FileResults *results)
     printf("\nMatching directories (%zu):\n", dir_count);
 
     for (i = 0; i < dir_count; i++) {
-        size_t dlen = strlen(dir_array[i]);
+        size_t dlen = strnlen(dir_array[i], MAX_PATH_LENGTH);
         char dstr[dlen + 1];
         strncpy(dstr, dir_array[i], dlen);
         dstr[dlen] = '\0';

@@ -19,12 +19,17 @@ include_directories(/usr/local/include)
 
 
 ################################################################################
+# Dependencies section
+################################################################################
+
+find_package(cjson REQUIRED)
+
+
+################################################################################
 # Library section
 ################################################################################
 
 add_library(${PROJECT_NAME} STATIC)
-
-find_package(cjson REQUIRED)
 
 # https://crascit.com/2016/01/31/enhanced-source-file-handling-with-target_sources/
 target_sources(${PROJECT_NAME}
@@ -57,7 +62,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC cjson)
 
 add_executable(${PROJECT_NAME}app cfind.c)
 
-target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME} cjson)
+target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME})
 
 
 ################################################################################

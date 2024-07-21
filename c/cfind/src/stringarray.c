@@ -25,7 +25,7 @@ StringArray *new_string_array_with_size(size_t size)
 void add_string_to_string_array(const char *s, StringArray *arr)
 {
     // NOTE: this assumes the array is already defined as large enough to add a new value
-    size_t slen = strlen(s);
+    size_t slen = strnlen(s, 1024);
     arr->strings[arr->size] = malloc((slen + 1) * sizeof(char));
     strncpy(arr->strings[arr->size], s, slen);
     arr->strings[arr->size][slen] = '\0';
@@ -39,7 +39,7 @@ size_t string_array_strlen(const StringArray *arr)
 {
     size_t arrlen = 2; // for  '[' and ']'
     for (int i=0; i < arr->size; i++) {
-        arrlen += strlen(arr->strings[i]) + 2; // for ""
+        arrlen += strnlen(arr->strings[i], 1024) + 2; // for ""
     }
     if (arr->size > 0) {
         arrlen += (arr->size - 1); // for commas
