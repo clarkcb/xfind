@@ -12,7 +12,9 @@
 ########################################
 # Config
 ########################################
-if (-not (Test-Path env:XFIND_PATH)) { $env:XFIND_PATH = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xfind' }
+if (-not (Test-Path env:XFIND_PATH)) {
+    $env:XFIND_PATH = Join-Path -Path $HOME -ChildPath 'src' -AdditionalChildPath 'xfind'
+}
 $xfindPath = $env:XFIND_PATH
 $sharedPath = Join-Path -Path $xfindPath -ChildPath 'shared'
 $fileTypesPath = Join-Path -Path $sharedPath -ChildPath 'filetypes.json'
@@ -27,6 +29,7 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 $dotPaths = @('.', '..')
 
 function IsDotDir {
+    [OutputType([bool])]
     param([System.IO.FileSystemInfo]$f)
     return $dotPaths.Contains($f.Name)
 }

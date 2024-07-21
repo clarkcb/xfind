@@ -81,10 +81,8 @@ target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME})
 
 
 ################################################################################
-# Testing section
+# Test dependencies section
 ################################################################################
-
-Include(FetchContent)
 
 FetchContent_Declare(
         Catch2
@@ -95,16 +93,22 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(Catch2)
 
-set(TEST_FILES tests/FileResultTest.cpp
+
+################################################################################
+# Tests section
+################################################################################
+
+set(TEST_FILES
+        tests/FileResultTest.cpp
         tests/FileTypesTest.cpp
         tests/FileUtilTest.cpp
         tests/FinderTest.cpp
         tests/FindOptionsTest.cpp
         tests/FindSettingsTest.cpp)
 
-add_executable(cppfind-tests ${TEST_FILES})
+add_executable(${PROJECT_NAME}-tests ${TEST_FILES})
 
 #target_link_libraries(cppfind-tests ${PROJECT_NAME} Catch2::Catch2)
-target_link_libraries(cppfind-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
+target_link_libraries(${PROJECT_NAME}-tests ${PROJECT_NAME} Catch2::Catch2WithMain)
 
 unset(XFIND_PATH CACHE)

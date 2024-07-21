@@ -40,7 +40,7 @@ sharedpath = os.path.join(XFINDPATH, 'shared')
 
 default_runs = 10
 
-ignore_dirs = ['build', 'cmake', 'node_modules', 'vendor', 'venv']
+ignore_dirs = ['build', 'cmake', 'node_modules', 'pycache', 'vendor', 'venv']
 ignore_args = [elem for ignore_dir in [['-D', d] for d in ignore_dirs] for elem in ignore_dir]
 core_args = ignore_args
 ext_args = ['-x', exts]

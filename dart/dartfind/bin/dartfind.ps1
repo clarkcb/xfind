@@ -6,8 +6,6 @@ if (-not (Test-Path Env:XFIND_PATH))
 }
 
 $dartFindPath = Join-Path $env:XFIND_PATH 'dart' 'dartfind'
-
-$packagesPath = Join-Path $dartFindPath '.packages'
 $dartFindExe = Join-Path $dartFindPath 'bin' 'dartfind.exe'
 
 if (Test-Path $packagesPath -PathType Leaf)

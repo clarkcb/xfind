@@ -14,7 +14,6 @@ namespace cppfind {
         validate_settings(m_settings);
     }
 
-
     void Finder::validate_settings(const FindSettings& settings) {
         if (settings.paths().empty()) {
             throw FindException("Startpath not defined");

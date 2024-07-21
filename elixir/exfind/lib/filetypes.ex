@@ -72,31 +72,31 @@ defmodule ExFind.FileTypes do
     file_type_for_file_name?(file_types, :audio, file_name)
   end
 
-  def  binary_file_name?(file_types, file_name) do
+  def binary_file_name?(file_types, file_name) do
     file_type_for_file_name?(file_types, :binary, file_name)
   end
 
-  def  code_file_name?(file_types, file_name) do
+  def code_file_name?(file_types, file_name) do
     file_type_for_file_name?(file_types, :code, file_name)
   end
 
-  def  font_file_name?(file_types, file_name) do
+  def font_file_name?(file_types, file_name) do
     file_type_for_file_name?(file_types, :font, file_name)
   end
 
-  def  image_file_name?(file_types, file_name) do
+  def image_file_name?(file_types, file_name) do
     file_type_for_file_name?(file_types, :image, file_name)
   end
 
-  def  text_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :text, file_name)
+  def text_file_name?(file_types, file_name) do
+    Enum.any?([:text, :code, :xml], fn t -> file_type_for_file_name?(file_types, t, file_name) end)
   end
 
-  def  video_file_name?(file_types, file_name) do
+  def video_file_name?(file_types, file_name) do
     file_type_for_file_name?(file_types, :video, file_name)
   end
 
-  def  xml_file_name?(file_types, file_name) do
+  def xml_file_name?(file_types, file_name) do
     file_type_for_file_name?(file_types, :xml, file_name)
   end
 

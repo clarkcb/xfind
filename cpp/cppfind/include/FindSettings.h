@@ -31,6 +31,12 @@ namespace cppfind {
     class FindSettings {
     public:
         FindSettings();
+        FindSettings(const FindSettings &) = default;
+        FindSettings(FindSettings &&) = default;
+        ~FindSettings() = default;
+        FindSettings &operator=(const FindSettings &) = default;
+        FindSettings &operator=(FindSettings &&) = default;
+
         // property getters
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool debug() const;

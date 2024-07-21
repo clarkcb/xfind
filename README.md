@@ -10,6 +10,7 @@ implemented in multiple programming languages, currently these [twenty-three](#w
 | C# | [https://learn.microsoft.com/en-us/dotnet/csharp/](https://learn.microsoft.com/en-us/dotnet/csharp/) |
 | C++ | [https://www.stroustrup.com/C++.html](https://www.stroustrup.com/C++.html) |
 | Dart | [https://dart.dev/](https://dart.dev/) |
+| Elixir | [https://elixir-lang.org/](https://elixir-lang.org/) |
 | F# | [https://learn.microsoft.com/en-us/dotnet/fsharp/](https://learn.microsoft.com/en-us/dotnet/fsharp/) |
 | Go | [https://golang.org/](https://golang.org/) |
 | Groovy | [https://groovy-lang.org/](https://groovy-lang.org/) |
@@ -480,7 +481,6 @@ rank them by criteria and requirements.
 * Research Docker best practices to determine if there are ways to reduce the image size
 * Add other language versions (in alphabetical order and subject to change)
   * [Common Lisp](https://lisp-lang.org/) - I want to see how it compares to Clojure and learn more about macros
-  * [Elixir](https://elixir-lang.org/)/[Erlang](https://www.erlang.org/) - Elixir is probably higher priority than Erlang, but it could be interesting to compare both
   * [Julia](https://julialang.org/) - Julia is described as a high-performance scripting language, so I'm interested to see how it compares to existing implementations
   * [Lua](http://www.lua.org/) - another language that I would like to compare with existing implementations
   * [Racket](https://racket-lang.org/) - this might be an alternate choice to Common Lisp, or another comparison point

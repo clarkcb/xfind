@@ -22,7 +22,7 @@ from .findsettings import FindSettings, PatternSet, SortBy
 class Finder:
     """Finder is a class to find files based on find settings."""
 
-    __slots__ = ['settings', 'file_types', '__matching_dir_cache']
+    __slots__ = ['settings', 'file_types', '__matching_dir_cache', 'top_down', 'follow_symlinks']
 
     def __init__(self, settings: FindSettings):
         """Create a new Finder instance."""
@@ -30,13 +30,17 @@ class Finder:
         self.__validate_settings()
         self.file_types = FileTypes()
         self.__matching_dir_cache = set([])
+        # TODO: these should be set in the FindSettings instance
+        self.top_down = True
+        self.follow_symlinks = False
 
     def __validate_settings(self):
         """Validate the required settings in the FindSettings instance."""
         assert len(self.settings.paths) > 0, 'Startpath not defined'
         for p in self.settings.paths:
             assert p.exists(), 'Startpath not found'
-            # assert os.access(p, os.R_OK) or os.access(p.expanduser(), os.R_OK), 'Startpath not readable'
+            # assert os.access(p, os.R_OK) or os.access(p.expanduser(), os.R_OK), \
+            #     'Startpath not readable'
             assert os.access(p, os.R_OK), 'Startpath not readable'
         if self.settings.max_depth > -1 and self.settings.min_depth > -1:
             assert self.settings.max_depth >= self.settings.min_depth, \
@@ -129,14 +133,16 @@ class Finder:
             and (self.settings.max_last_mod is None
                  or last_mod <= self.settings.max_last_mod.timestamp())
 
-    def is_matching_archive_file_path(self, file_path: Path, file_size: int, last_mod: float) -> bool:
+    def is_matching_archive_file_path(self, file_path: Path, file_size: int,
+                                      last_mod: float) -> bool:
         """Check whether the given archive file matches find settings."""
         return self.has_matching_archive_ext(file_path) \
             and self.is_matching_archive_file_name(file_path.name) \
             and self.is_matching_file_size(file_size) \
             and self.is_matching_last_mod(last_mod)
 
-    def is_matching_file_path(self, file_path: Path, file_type: FileType, file_size: int, last_mod: float) -> bool:
+    def is_matching_file_path(self, file_path: Path, file_type: FileType, file_size: int,
+                              last_mod: float) -> bool:
         """Check whether the given file matches find settings."""
         return self.has_matching_ext(file_path) \
             and self.is_matching_file_name(file_path.name) \
@@ -164,9 +170,17 @@ class Finder:
         if file_type == FileType.ARCHIVE:
             if not self.is_matching_archive_file_path(file_path, file_size, last_mod):
                 return None
-        elif self.settings.archives_only or not self.is_matching_file_path(file_path, file_type, file_size, last_mod):
+        elif (self.settings.archives_only
+              or not self.is_matching_file_path(file_path, file_type, file_size, last_mod)):
             return None
-        return FileResult(path=file_path, file_type=file_type, file_size=file_size, last_mod=last_mod)
+        return FileResult(path=file_path, file_type=file_type, file_size=file_size,
+                          last_mod=last_mod)
+
+    def _file_path_walk(self, file_path: Path):
+        return file_path.walk(top_down=self.top_down, follow_symlinks=self.follow_symlinks)
+
+    def _os_walk(self, file_path: Path):
+        return os.walk(file_path, topdown=self.top_down, followlinks=self.follow_symlinks)
 
     def get_file_results(self, file_path: Path) -> list[FileResult]:
         """Get file results for given file path."""
@@ -182,12 +196,13 @@ class Finder:
             if self.is_matching_dir(file_path):
                 # Get a walk method appropriate to the python version
                 if sys.version_info >= (3, 12):
-                    walk = lambda fp: fp.walk(top_down=top_down, follow_symlinks=follow_symlinks)
+                    walk = self._file_path_walk
                 else:
-                    walk = lambda fp: os.walk(fp, topdown=top_down, followlinks=follow_symlinks)
+                    walk = self._os_walk
                 if self.settings.recursive:
                     # TODO: add follow_symlinks to FindSettings and set here
-                    # for root, dirs, files in file_path.walk(top_down=top_down, follow_symlinks=follow_symlinks):
+                    # for root, dirs, files in file_path.walk(top_down=top_down,
+                    #                                         follow_symlinks=follow_symlinks):
                     for root, dirs, files in walk(file_path):
                         if isinstance(root, str):
                             root = Path(root)
@@ -273,22 +288,22 @@ class Finder:
         """Sort the given list of FileResult instances."""
         match self.settings.sort_by:
             case SortBy.FILEPATH:
-                return sorted(file_results, key=lambda r: self.key_by_file_path(r),
+                return sorted(file_results, key=self.key_by_file_path,
                               reverse=self.settings.sort_descending)
             case SortBy.FILENAME:
-                return sorted(file_results, key=lambda r: self.key_by_file_name(r),
+                return sorted(file_results, key=self.key_by_file_name,
                               reverse=self.settings.sort_descending)
             case SortBy.FILESIZE:
-                return sorted(file_results, key=lambda r: self.key_by_file_size(r),
+                return sorted(file_results, key=self.key_by_file_size,
                               reverse=self.settings.sort_descending)
             case SortBy.FILETYPE:
-                return sorted(file_results, key=lambda r: self.key_by_file_type(r),
+                return sorted(file_results, key=self.key_by_file_type,
                               reverse=self.settings.sort_descending)
             case SortBy.LASTMOD:
-                return sorted(file_results, key=lambda r: self.key_by_last_mod(r),
+                return sorted(file_results, key=self.key_by_last_mod,
                               reverse=self.settings.sort_descending)
             case _:
-                return sorted(file_results, key=lambda r: self.key_by_file_path(r),
+                return sorted(file_results, key=self.key_by_file_path,
                               reverse=self.settings.sort_descending)
 
 

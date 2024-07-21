@@ -75,6 +75,10 @@ class FileTypesTest(unittest.TestCase):
         file_path = Path('code.py')
         self.assertTrue(self.file_types.is_code_file_path(file_path))
 
+    def test_is_code_file_by_name(self):
+        file_path = Path('CMakeLists.txt')
+        self.assertTrue(self.file_types.is_code_file_path(file_path))
+
     def test_is_font_file(self):
         file_path = Path('typeset.otf')
         self.assertTrue(self.file_types.is_font_file_path(file_path))
