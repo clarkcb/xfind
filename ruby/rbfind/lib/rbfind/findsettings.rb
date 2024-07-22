@@ -201,7 +201,7 @@ module RbFind
         ', ' + set_to_s('out_extensions', @out_extensions) +
         ', ' + array_to_s('out_file_patterns', @out_file_patterns.map { |p| p.source }) +
         ', ' + file_types_to_s('out_file_types', @out_file_types) +
-        ', ' + set_to_s('paths', @paths) +
+        ', ' + paths_to_s('paths', @paths) +
         ", print_dirs=#{@print_dirs}" +
         ", print_files=#{@print_files}" +
         ", print_usage=#{@print_usage}" +
@@ -243,6 +243,19 @@ module RbFind
       file_types.each do |ft|
         s << ', ' if count.positive?
         s << FileType.to_name(ft)
+        count += 1
+      end
+      s + ']'
+    end
+
+    def paths_to_s(name, path_set)
+      s = "#{name}=["
+      count = 0
+      paths = path_set.to_a
+      paths.sort!
+      paths.each do |p|
+        s << ', ' if count.positive?
+        s << p.to_s
         count += 1
       end
       s + ']'

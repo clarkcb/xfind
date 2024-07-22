@@ -1,6 +1,7 @@
 # FindOptions - generate help, create settings from CLI args
 require 'date'
 require 'json'
+require 'pathname'
 
 require_relative 'common'
 require_relative 'finderror'
@@ -169,7 +170,7 @@ module RbFind
           settings.add_file_types(x, settings.out_file_types)
         },
         'path': lambda { |x, settings|
-          settings.paths.add(x)
+          settings.paths.add(Pathname.new(x))
         },
         'settings-file': lambda { |x, settings|
           settings_from_file(x, settings)

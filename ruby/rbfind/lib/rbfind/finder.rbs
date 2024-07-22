@@ -8,7 +8,7 @@ module RbFind
 
     def initialize: (FindSettings settings) -> void
 
-    def matching_dir?: (String dir_path) -> bool
+    def matching_dir?: (Pathname dir_path) -> bool
 
     def has_matching_archive_ext?: (FileResult file_result) -> bool
 
@@ -28,11 +28,11 @@ module RbFind
 
     def matching_file_result?: (FileResult file_result) -> bool
 
-    def matching_archive_file?: (String file_path) -> bool
+    def matching_archive_file?: (Pathname file_path) -> bool
 
-    def matching_file?: (String file_path) -> bool
+    def matching_file?: (Pathname file_path) -> bool
 
-    def filter_to_file_result: (String file_path) -> (nil | FileResult)
+    def filter_to_file_result: (Pathname file_path) -> (nil | FileResult)
 
     def find: () -> Array[FileResult]
 
@@ -46,8 +46,8 @@ module RbFind
 
     def any_matches_any_pattern?: (Array[String] str_list, Set[Regexp] pattern_set) -> bool
 
-    def file_path_to_file_result: (String file_path) -> FileResult
+    def file_path_to_file_result: (Pathname file_path) -> FileResult
 
-    def get_file_results: (String file_path) -> Array[FileResult]
+    def get_file_results: (Pathname file_path) -> Array[FileResult]
   end
 end

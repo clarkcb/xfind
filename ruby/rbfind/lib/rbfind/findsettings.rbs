@@ -39,7 +39,7 @@ module RbFind
     @out_extensions: Set[String]
     @out_file_patterns: Set[Regexp]
     @out_file_types: Set[FileType]
-    @paths: Set[String]
+    @paths: Set[Pathname]
     @print_dirs: bool
     @print_files: bool
     @print_usage: bool
@@ -72,7 +72,7 @@ module RbFind
     attr_accessor out_extensions: Set[String]
     attr_accessor out_file_patterns: Set[Regexp]
     attr_accessor out_file_types: Set[FileType]
-    attr_accessor paths: Set[String]
+    attr_accessor paths: Set[Pathname]
     attr_accessor print_dirs: bool
     attr_accessor print_files: bool
     attr_accessor print_usage: bool
@@ -116,5 +116,8 @@ module RbFind
     def set_to_s: (String name, Set[String | Regexp] set) -> String
 
     def file_types_to_s: (String name, Set[FileType] file_type_set) -> String
+
+    def paths_to_s: (String name, Set[Pathname] path_set) -> String
+
   end
 end

@@ -22,7 +22,7 @@ module RbFind
     end
 
     def matching_dir?(dir_path)
-      path_elems = dir_path.split(File::SEPARATOR) - FileUtil.dot_dirs
+      path_elems = dir_path.to_s.split(File::SEPARATOR) - FileUtil.dot_dirs
       if !@settings.include_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
         return false
       end
@@ -118,8 +118,8 @@ module RbFind
     end
 
     def filter_to_file_result(file_path)
-      filename = File.basename(file_path)
-      if !@settings.include_hidden && FileUtil.hidden?(filename)
+      file_name = file_path.basename.to_s
+      if !@settings.include_hidden && FileUtil.hidden?(file_name)
         return nil
       end
       file_result = file_path_to_file_result(file_path)
@@ -180,8 +180,8 @@ module RbFind
     def validate_settings
       raise FindError, 'Startpath not defined' if @settings.paths.empty?
       @settings.paths.each do |p|
-        raise FindError, 'Startpath not found' unless File.exist?(p)
-        raise FindError, 'Startpath not readable' unless File.readable?(p)
+        raise FindError, 'Startpath not found' unless p.exist?
+        raise FindError, 'Startpath not readable' unless p.readable?
       end
       if @settings.max_depth > -1 && @settings.min_depth > -1 && @settings.max_depth < @settings.min_depth
         raise FindError, 'Invalid range for mindepth and maxdepth'
@@ -206,13 +206,12 @@ module RbFind
     end
 
     def file_path_to_file_result(file_path)
-      d = File.dirname(file_path) || '.'
-      filename = File.basename(file_path)
-      file_type = @file_types.get_file_type(filename)
+      file_name = file_path.basename.to_s
+      file_type = @file_types.get_file_type(file_name)
       file_size = 0
       last_mod = nil
       if @settings.need_last_mod? || @settings.need_size?
-        stat = File.stat(file_path)
+        stat = file_path.stat
         if @settings.need_last_mod?
           last_mod = stat.mtime
         end
@@ -220,28 +219,28 @@ module RbFind
           file_size = stat.size
         end
       end
-      FileResult.new(d, filename, file_type, file_size, last_mod)
+      FileResult.new(file_path, file_type, file_size, last_mod)
     end
 
     def get_file_results(file_path)
       file_results = []
-      if FileTest.directory?(file_path)
+      if file_path.directory?
         # if max_depth is zero, we can skip since a directory cannot be a result
         if @settings.max_depth == 0
           return []
         end
         if @settings.recursive
           # TODO: get depth of file_path, and get depth of every f below
-          file_path_sep_count = FileUtil.sep_count(file_path)
-          Find.find(file_path) do |f|
-            f_sep_count = FileUtil.sep_count(f)
-            if FileTest.directory?(f)
+          file_path_sep_count = FileUtil.sep_count(file_path.to_s)
+          file_path.find do |f|
+            f_sep_count = FileUtil.sep_count(f.to_s)
+            if f.directory?
               # The +1 is for files under the directory
               depth = f_sep_count - file_path_sep_count + 1
               if (@settings.max_depth > 0 && depth > @settings.max_depth) || !matching_dir?(f)
                 Find.prune
               end
-            elsif FileTest.file?(f)
+            elsif f.file?
               depth = f_sep_count - file_path_sep_count
               if depth < @settings.min_depth || (@settings.max_depth > 0 && depth > @settings.max_depth)
                 Find.prune
@@ -254,8 +253,8 @@ module RbFind
             end
           end
         else
-          Find.find(file_path) do |f|
-            if FileTest.directory?(f)
+          file_path.find do |f|
+            if f.directory?
               Find.prune
             else
               file_result = filter_to_file_result(f)
@@ -265,7 +264,7 @@ module RbFind
             end
           end
         end
-      elsif FileTest.file?(file_path)
+      elsif file_path.file?
         # if min_depth > zero, we can skip since the file is at depth zero
         if @settings.min_depth > 0
           return []
