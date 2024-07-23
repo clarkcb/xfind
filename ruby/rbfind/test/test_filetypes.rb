@@ -17,53 +17,53 @@ module RbFind
     end
 
     def test_get_file_type_archive_file
-      file_name = 'archive.zip'
-      assert_equal(@file_types.get_file_type(file_name), FileType::ARCHIVE)
+      file_path = Pathname.new('archive.zip')
+      assert_equal(@file_types.get_file_type(file_path), FileType::ARCHIVE)
     end
 
     def test_get_file_type_audio_file
-      file_name = 'music.mp3'
-      assert_equal(@file_types.get_file_type(file_name), FileType::AUDIO)
+      file_path = Pathname.new('music.mp3')
+      assert_equal(@file_types.get_file_type(file_path), FileType::AUDIO)
     end
 
     def test_get_file_type_binary_file
-      file_name = 'binary.exe'
-      assert_equal(@file_types.get_file_type(file_name), FileType::BINARY)
+      file_path = Pathname.new('binary.exe')
+      assert_equal(@file_types.get_file_type(file_path), FileType::BINARY)
     end
 
     def test_get_file_type_code_file
-      file_name = 'code.rb'
-      assert_equal(@file_types.get_file_type(file_name), FileType::CODE)
+      file_path = Pathname.new('code.rb')
+      assert_equal(@file_types.get_file_type(file_path), FileType::CODE)
     end
 
     def test_get_file_type_font_file
-      file_name = 'font.ttf'
-      assert_equal(@file_types.get_file_type(file_name), FileType::FONT)
+      file_path = Pathname.new('font.ttf')
+      assert_equal(@file_types.get_file_type(file_path), FileType::FONT)
     end
 
     def test_get_file_type_image_file
-      file_name = 'image.png'
-      assert_equal(@file_types.get_file_type(file_name), FileType::IMAGE)
+      file_path = Pathname.new('image.png')
+      assert_equal(@file_types.get_file_type(file_path), FileType::IMAGE)
     end
 
     def test_get_file_type_text_file
-      file_name = 'text.txt'
-      assert_equal(@file_types.get_file_type(file_name), FileType::TEXT)
+      file_path = Pathname.new('text.txt')
+      assert_equal(@file_types.get_file_type(file_path), FileType::TEXT)
     end
 
     def test_get_file_type_video_file
-      file_name = 'movie.mp4'
-      assert_equal(@file_types.get_file_type(file_name), FileType::VIDEO)
+      file_path = Pathname.new('movie.mp4')
+      assert_equal(@file_types.get_file_type(file_path), FileType::VIDEO)
     end
 
     def test_get_file_type_xml_file
-      file_name = 'markup.xml'
-      assert_equal(@file_types.get_file_type(file_name), FileType::XML)
+      file_path = Pathname.new('markup.xml')
+      assert_equal(@file_types.get_file_type(file_path), FileType::XML)
     end
 
     def test_get_file_type_unknown_file
-      file_name = 'unknown.xyz'
-      assert_equal(@file_types.get_file_type(file_name), FileType::UNKNOWN)
+      file_path = Pathname.new('unknown.xyz')
+      assert_equal(@file_types.get_file_type(file_path), FileType::UNKNOWN)
     end
   end
 end

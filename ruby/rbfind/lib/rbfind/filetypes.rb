@@ -67,76 +67,76 @@ module RbFind
       f&.close
     end
 
-    def get_file_type(file_name)
+    def get_file_type(file_path)
       # more specific first
-      if code_file?(file_name)
+      if code_file?(file_path)
         FileType::CODE
-      elsif archive_file?(file_name)
+      elsif archive_file?(file_path)
         FileType::ARCHIVE
-      elsif audio_file?(file_name)
+      elsif audio_file?(file_path)
         FileType::AUDIO
-      elsif font_file?(file_name)
+      elsif font_file?(file_path)
         FileType::FONT
-      elsif image_file?(file_name)
+      elsif image_file?(file_path)
         FileType::IMAGE
-      elsif video_file?(file_name)
+      elsif video_file?(file_path)
         FileType::VIDEO
 
       # more general last
-      elsif xml_file?(file_name)
+      elsif xml_file?(file_path)
         FileType::XML
-      elsif text_file?(file_name)
+      elsif text_file?(file_path)
         FileType::TEXT
-      elsif binary_file?(file_name)
+      elsif binary_file?(file_path)
         FileType::BINARY
       else
         FileType::UNKNOWN
       end
     end
 
-    def archive_file?(file_name)
-      @file_type_name_map[:archive].include?(file_name) ||
-      @file_type_ext_map[:archive].include?(FileUtil.get_extension(file_name))
+    def archive_file?(file_path)
+      @file_type_name_map[:archive].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:archive].include?(FileUtil.get_extension(file_path))
     end
 
-    def audio_file?(file_name)
-      @file_type_name_map[:audio].include?(file_name) ||
-      @file_type_ext_map[:audio].include?(FileUtil.get_extension(file_name))
+    def audio_file?(file_path)
+      @file_type_name_map[:audio].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:audio].include?(FileUtil.get_extension(file_path))
     end
 
-    def binary_file?(file_name)
-      @file_type_name_map[:binary].include?(file_name) ||
-      @file_type_ext_map[:binary].include?(FileUtil.get_extension(file_name))
+    def binary_file?(file_path)
+      @file_type_name_map[:binary].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:binary].include?(FileUtil.get_extension(file_path))
     end
 
-    def code_file?(file_name)
-      @file_type_name_map[:code].include?(file_name) ||
-      @file_type_ext_map[:code].include?(FileUtil.get_extension(file_name))
+    def code_file?(file_path)
+      @file_type_name_map[:code].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:code].include?(FileUtil.get_extension(file_path))
     end
 
-    def font_file?(file_name)
-      @file_type_name_map[:font].include?(file_name) ||
-      @file_type_ext_map[:font].include?(FileUtil.get_extension(file_name))
+    def font_file?(file_path)
+      @file_type_name_map[:font].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:font].include?(FileUtil.get_extension(file_path))
     end
 
-    def image_file?(file_name)
-      @file_type_name_map[:image].include?(file_name) ||
-      @file_type_ext_map[:image].include?(FileUtil.get_extension(file_name))
+    def image_file?(file_path)
+      @file_type_name_map[:image].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:image].include?(FileUtil.get_extension(file_path))
     end
 
-    def text_file?(file_name)
-      @file_type_name_map[:text].include?(file_name) ||
-      @file_type_ext_map[:text].include?(FileUtil.get_extension(file_name))
+    def text_file?(file_path)
+      @file_type_name_map[:text].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:text].include?(FileUtil.get_extension(file_path))
     end
 
-    def video_file?(file_name)
-      @file_type_name_map[:video].include?(file_name) ||
-      @file_type_ext_map[:video].include?(FileUtil.get_extension(file_name))
+    def video_file?(file_path)
+      @file_type_name_map[:video].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:video].include?(FileUtil.get_extension(file_path))
     end
 
-    def xml_file?(file_name)
-      @file_type_name_map[:xml].include?(file_name) ||
-      @file_type_ext_map[:xml].include?(FileUtil.get_extension(file_name))
+    def xml_file?(file_path)
+      @file_type_name_map[:xml].include?(file_path.basename.to_s) ||
+      @file_type_ext_map[:xml].include?(FileUtil.get_extension(file_path))
     end
   end
 end

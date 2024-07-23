@@ -29,24 +29,24 @@ module RbFind
 
     def set_file_type_maps_from_json: () -> void
 
-    def get_file_type: (String file_name) -> FileType
+    def get_file_type: (Pathname file_path) -> FileType
 
-    def archive_file?: (String file_name) -> bool
+    def archive_file?: (Pathname file_path) -> bool
 
-    def audio_file?: (String file_name) -> bool
+    def audio_file?: (Pathname file_path) -> bool
 
-    def binary_file?: (String file_name) -> bool
+    def binary_file?: (Pathname file_path) -> bool
 
-    def code_file?: (String file_name) -> bool
+    def code_file?: (Pathname file_path) -> bool
 
-    def font_file?: (String file_name) -> bool
+    def font_file?: (Pathname file_path) -> bool
 
-    def image_file?: (String file_name) -> bool
+    def image_file?: (Pathname file_path) -> bool
 
-    def text_file?: (String file_name) -> bool
+    def text_file?: (Pathname file_path) -> bool
 
-    def video_file?: (String file_name) -> bool
+    def video_file?: (Pathname file_path) -> bool
 
-    def xml_file?: (String file_name) -> bool
+    def xml_file?: (Pathname file_path) -> bool
   end
 end
