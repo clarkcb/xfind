@@ -17,39 +17,6 @@ module RbFind
 
   # FindSettings - encapsulates find settings
   class FindSettings
-    @archives_only: bool
-    @debug: bool
-    @in_archive_extensions: Set[String]
-    @in_archive_file_patterns: Set[Regexp]
-    @in_dir_patterns: Set[Regexp]
-    @in_extensions: Set[String]
-    @in_file_patterns: Set[Regexp]
-    @in_file_types: Set[FileType]
-    @include_archives: bool
-    @include_hidden: bool
-    @max_depth: Integer
-    @max_last_mod: DateTime?
-    @max_size: Integer
-    @min_depth: Integer
-    @min_last_mod: DateTime?
-    @min_size: Integer
-    @out_archive_extensions: Set[String]
-    @out_archive_file_patterns: Set[Regexp]
-    @out_dir_patterns: Set[Regexp]
-    @out_extensions: Set[String]
-    @out_file_patterns: Set[Regexp]
-    @out_file_types: Set[FileType]
-    @paths: Set[Pathname]
-    @print_dirs: bool
-    @print_files: bool
-    @print_usage: bool
-    @print_version: bool
-    @recursive: bool
-    @sort_by: SortBy
-    @sort_case_insensitive: bool
-    @sort_descending: bool
-    @verbose: bool
-
     attr_reader archives_only: bool
     attr_reader debug: bool
     attr_accessor in_archive_extensions: Set[String]

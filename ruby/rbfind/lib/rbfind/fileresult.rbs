@@ -1,13 +1,13 @@
 module RbFind
   # FindFile - encapsulates a file to be found
   class FileResult
-    @containers: Array[String]
+    @containers: Array[Pathname]
     @path: Pathname
     @file_type: FileType
     @file_size: Integer
     @last_mod: nil | Time
 
-    attr_accessor containers: Array[String]
+    attr_accessor containers: Array[Pathname]
     attr_reader path: Pathname
     attr_reader file_type: FileType
     attr_reader file_size: Integer
@@ -17,7 +17,11 @@ module RbFind
 
     def initialize: (Pathname path, FileType file_type, Integer file_size, nil | Time last_mod) -> void
 
-    def relative_path: () -> String
+    def dir_name: () -> String
+
+    def file_name: () -> String
+
+    def relative_path: () -> Pathname
 
     def to_s: () -> String
   end

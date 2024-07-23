@@ -10,36 +10,44 @@ module RbFind
       %w[. .. ./ ../]
     end
 
-    def dot_dir?(file_name)
-      f = File.basename(file_name)
-      dot_dirs.include?(f)
+    def dot_dir?(file_path)
+      dot_dirs.include?(file_path.to_s)
     end
 
-    def get_extension(file_name)
-      ext = ''
-      f = File.basename(file_name)
-      index = f.rindex('.')
-      if index&.positive? && index < (f.length - 1)
-        ext = f[index + 1..f.length].downcase
+    def get_extension(file_path)
+      ext = file_path.extname
+      if !ext.empty? && ext.start_with?('.')
+        ext = ext[1..-1]
+      end
+      if ext != 'Z'
+        ext = ext.downcase
       end
       ext
     end
 
-    def hidden?(file_name)
-      f = File.basename(file_name)
-      if f.length > 1 && f[0] == '.' && !dot_dirs.include?(f)
-        true
-      else
-        false
+    def hidden?(file_path)
+      file_path.each_filename do |f|
+        if f.length > 1 && f[0] == '.' && !dot_dirs.include?(f)
+          return true
+        end
       end
+      false
     end
 
-    def sep_indices(file_path)
-      (0 ... file_path.length).find_all { |i| file_path[i,1] == '/' }
+    def path_elems(file_path)
+      elems = []
+      file_path.each_filename do |f|
+        elems.push(f)
+      end
+      elems
     end
 
-    def sep_count(file_path)
-      (0 ... file_path.length).find_all { |i| file_path[i,1] == '/' }.count
+    def elem_count(file_path)
+      elem_count = 0
+      file_path.each_filename do |_|
+        elem_count += 1
+      end
+      elem_count
     end
   end
 end

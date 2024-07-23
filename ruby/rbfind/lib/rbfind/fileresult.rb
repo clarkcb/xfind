@@ -22,16 +22,25 @@ module RbFind
       @last_mod = last_mod
     end
 
+    def dir_name
+      @path.dirname.to_s
+    end
+
+    def file_name
+      @path.basename.to_s
+    end
+
     def relative_path
-      @path.to_s
+      @path
     end
 
     def to_s
       s = ''
       unless @containers.empty?
-        s += @containers.join(CONTAINER_SEPARATOR) + CONTAINER_SEPARATOR
+        containers = @containers.map { |c| c.to_s }
+        s += containers.join(CONTAINER_SEPARATOR) + CONTAINER_SEPARATOR
       end
-      s + relative_path
+      s + @path.to_s
     end
   end
 end

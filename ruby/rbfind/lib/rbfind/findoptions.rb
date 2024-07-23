@@ -45,7 +45,7 @@ module RbFind
             raise FindError, "Invalid option: #{arg}"
           end
         else
-          settings.paths.add(arg)
+          settings.paths.add(Pathname.new(arg))
         end
       end
       settings
@@ -75,7 +75,7 @@ module RbFind
           @bool_flag_action_dict[arg_sym].call(json_hash[arg], settings)
           return if %w[h help V version].include?(arg)
         elsif arg == 'path'
-          settings.paths.push(arg)
+          settings.paths.push(Pathname.new(arg))
         else
           raise FindError, "Invalid option: #{arg}"
         end

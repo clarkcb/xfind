@@ -22,10 +22,10 @@ module RbFind
     end
 
     def matching_dir?(dir_path)
-      path_elems = dir_path.to_s.split(File::SEPARATOR) - FileUtil.dot_dirs
-      if !@settings.include_hidden && path_elems.any? { |p| FileUtil.hidden?(p) }
+      if !@settings.include_hidden && FileUtil.hidden?(dir_path)
         return false
       end
+      path_elems = FileUtil.path_elems(dir_path)
       if !@settings.in_dir_patterns.empty? &&
         !any_matches_any_pattern?(path_elems, @settings.in_dir_patterns)
         return false
@@ -39,7 +39,7 @@ module RbFind
 
     def has_matching_archive_ext?(file_result)
       if !@settings.in_archive_extensions.empty? || !@settings.out_archive_extensions.empty?
-        ext = FileUtil.get_extension(file_result.file_name)
+        ext = FileUtil.get_extension(file_result.path)
         return ((@settings.in_archive_extensions.empty? ||
           @settings.in_archive_extensions.include?(ext)) and
           (@settings.out_archive_extensions.empty? ||
@@ -50,7 +50,7 @@ module RbFind
 
     def has_matching_ext?(file_result)
       if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
-        ext = FileUtil.get_extension(file_result.file_name)
+        ext = FileUtil.get_extension(file_result.path)
         return ((@settings.in_extensions.empty? ||
           @settings.in_extensions.include?(ext)) and
           (@settings.out_extensions.empty? ||
@@ -118,8 +118,7 @@ module RbFind
     end
 
     def filter_to_file_result(file_path)
-      file_name = file_path.basename.to_s
-      if !@settings.include_hidden && FileUtil.hidden?(file_name)
+      if !@settings.include_hidden && FileUtil.hidden?(file_path)
         return nil
       end
       file_result = file_path_to_file_result(file_path)
@@ -152,27 +151,27 @@ module RbFind
     def sort_file_results(file_results)
       if @settings.sort_case_insensitive
         if @settings.sort_by == SortBy::FILENAME
-          file_results.sort_by {|r| [r.file_name.downcase, r.path.downcase]}
+          file_results.sort_by {|r| [r.file_name.downcase, r.dir_name.downcase]}
         elsif @settings.sort_by == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.file_size, r.path.downcase, r.file_name.downcase]}
+          file_results.sort_by {|r| [r.file_size, r.dir_name.downcase, r.file_name.downcase]}
         elsif @settings.sort_by == SortBy::FILETYPE
-          file_results.sort_by {|r| [r.file_type, r.path.downcase, r.file_name.downcase]}
+          file_results.sort_by {|r| [r.file_type, r.dir_name.downcase, r.file_name.downcase]}
         elsif @settings.sort_by == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.last_mod, r.path.downcase, r.file_name.downcase]}
+          file_results.sort_by {|r| [r.last_mod, r.dir_name.downcase, r.file_name.downcase]}
         else
-          file_results.sort_by {|r| [r.path.downcase, r.file_name.downcase]}
+          file_results.sort_by {|r| [r.dir_name.downcase, r.file_name.downcase]}
         end
       else
         if @settings.sort_by == SortBy::FILENAME
-          file_results.sort_by {|r| [r.file_name, r.path]}
+          file_results.sort_by {|r| [r.file_name, r.dir_name]}
         elsif @settings.sort_by == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.file_size, r.path, r.file_name]}
+          file_results.sort_by {|r| [r.file_size, r.dir_name, r.file_name]}
         elsif @settings.sort_by == SortBy::FILETYPE
-          file_results.sort_by {|r| [r.file_type, r.path, r.file_name]}
+          file_results.sort_by {|r| [r.file_type, r.dir_name, r.file_name]}
         elsif @settings.sort_by == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.last_mod, r.path, r.file_name]}
+          file_results.sort_by {|r| [r.last_mod, r.dir_name, r.file_name]}
         else
-          file_results.sort_by {|r| [r.path, r.file_name]}
+          file_results.sort_by {|r| [r.dir_name, r.file_name]}
         end
       end
     end
@@ -180,8 +179,12 @@ module RbFind
     def validate_settings
       raise FindError, 'Startpath not defined' if @settings.paths.empty?
       @settings.paths.each do |p|
-        raise FindError, 'Startpath not found' unless p.exist?
-        raise FindError, 'Startpath not readable' unless p.readable?
+        if p.instance_of?(Pathname)
+          raise FindError, 'Startpath not found' unless p.exist?
+          raise FindError, 'Startpath not readable' unless p.readable?
+        else
+          raise FindError, 'Startpath not a Pathname instance'
+        end
       end
       if @settings.max_depth > -1 && @settings.min_depth > -1 && @settings.max_depth < @settings.min_depth
         raise FindError, 'Invalid range for mindepth and maxdepth'
@@ -206,8 +209,7 @@ module RbFind
     end
 
     def file_path_to_file_result(file_path)
-      file_name = file_path.basename.to_s
-      file_type = @file_types.get_file_type(file_name)
+      file_type = @file_types.get_file_type(file_path)
       file_size = 0
       last_mod = nil
       if @settings.need_last_mod? || @settings.need_size?
@@ -231,17 +233,20 @@ module RbFind
         end
         if @settings.recursive
           # TODO: get depth of file_path, and get depth of every f below
-          file_path_sep_count = FileUtil.sep_count(file_path.to_s)
+          file_path_elem_count = FileUtil.elem_count(file_path)
           file_path.find do |f|
-            f_sep_count = FileUtil.sep_count(f.to_s)
+            if FileUtil.dot_dir?(f)
+              next
+            end
+            f_elem_count = FileUtil.elem_count(f)
             if f.directory?
               # The +1 is for files under the directory
-              depth = f_sep_count - file_path_sep_count + 1
+              depth = f_elem_count - file_path_elem_count + 1
               if (@settings.max_depth > 0 && depth > @settings.max_depth) || !matching_dir?(f)
                 Find.prune
               end
             elsif f.file?
-              depth = f_sep_count - file_path_sep_count
+              depth = f_elem_count - file_path_elem_count
               if depth < @settings.min_depth || (@settings.max_depth > 0 && depth > @settings.max_depth)
                 Find.prune
               else
