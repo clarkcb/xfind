@@ -22,9 +22,11 @@ import {SortBy} from "./sortby";
 
 export class Finder {
     _settings: FindSettings;
+    _fileTypes: FileTypes;
 
     constructor(settings: FindSettings) {
         this._settings = settings;
+        this._fileTypes = new FileTypes();
         this.validateSettings();
     }
 
@@ -32,9 +34,8 @@ export class Finder {
         try {
             assert.ok(this._settings.paths.length > 0, 'Startpath not defined');
             for (const p of this._settings.paths) {
-                // await access(p, fs.constants.F_OK | fs.constants.R_OK);
+                // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
-                // const stat = await lstat(p);
                 const stat = fs.lstatSync(p);
                 if (!stat.isDirectory() && !stat.isFile()) {
                     assert.ok(false, 'Startpath is unsupported file type');
@@ -162,10 +163,10 @@ export class Finder {
             && this.isMatchingArchiveFileName(fr.fileName);
     }
 
-    public filePathToFileResult(fp: string, stat: fs.Stats | null = null): FileResult {
+    public async filePathToFileResult(fp: string, stat: fs.Stats | null = null): Promise<FileResult> {
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
-        const fileType = FileTypes.getFileType(fileName);
+        const fileType = await this._fileTypes.getFileType(fileName);
         let fileSize = 0;
         let lastMod = 0;
         if (this._settings.needLastMod() || this._settings.needSize()) {
@@ -176,11 +177,11 @@ export class Finder {
         return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
     }
 
-    public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
+    public async filterToFileResult(fp: string, stat: fs.Stats | null = null): Promise<FileResult | null> {
         if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
-        const fr = this.filePathToFileResult(fp, stat);
+        const fr = await this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.Archive) {
             if (this._settings.includeArchives && this.isMatchingArchiveFileResult(fr)) {
                 return fr;
@@ -193,15 +194,16 @@ export class Finder {
         return null;
     }
 
-    private recGetFileResults(currentDir: string, depth: number): FileResult[] {
+    private async recGetFileResults(currentDir: string, depth: number): Promise<FileResult[]> {
         if (this._settings.maxDepth > 0 && depth > this._settings.maxDepth) {
             return [];
         }
         const findDirs: string[] = [];
         let fileResults: FileResult[] = [];
-        fs.readdirSync(currentDir).map((f: string) => {
+        const filePaths = fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
-        }).forEach((fp: string) => {
+        });
+        for (const fp of filePaths) {
             const stats = fs.statSync(fp);
             if (stats.isDirectory()) {
                 if (this._settings.recursive && this.isMatchingDir(fp)) {
@@ -209,16 +211,16 @@ export class Finder {
                 }
             } else if (stats.isFile()) {
                 if (depth >= this._settings.minDepth) {
-                    const fr = this.filterToFileResult(fp);
+                    const fr = await this.filterToFileResult(fp);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
                 }
             }
-        });
-        findDirs.forEach(d => {
-            fileResults = fileResults.concat(this.recGetFileResults(d, depth + 1));
-        });
+        }
+        for (const d of findDirs) {
+            fileResults = fileResults.concat(await this.recGetFileResults(d, depth + 1));
+        }
         return fileResults;
     }
 
@@ -231,7 +233,7 @@ export class Finder {
                 return [];
             }
             if (this.isMatchingDir(startPath)) {
-                fileResults = fileResults.concat(this.recGetFileResults(startPath, 1));
+                fileResults = fileResults.concat(await this.recGetFileResults(startPath, 1));
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
@@ -242,7 +244,7 @@ export class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                const fr = this.filterToFileResult(startPath);
+                const fr = await this.filterToFileResult(startPath);
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {
