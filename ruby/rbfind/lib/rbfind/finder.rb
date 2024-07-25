@@ -244,6 +244,28 @@ module RbFind
       FileResult.new(file_path, file_type, file_size, last_mod)
     end
 
+    def rec_get_file_results(dir_path, depth)
+      if depth < @settings.min_depth || (@settings.max_depth > 0 && depth > @settings.max_depth) || !matching_dir?(dir_path)
+        return []
+      end
+      file_results = []
+      dirs_and_files = dir_path.children(true).partition {|fp| fp.directory? }
+      dirs = dirs_and_files[0].filter {|d| !FileUtil.dot_dir?(d)}
+      files = dirs_and_files[1]
+      unless files.empty?
+        files.each do |f|
+          file_result = filter_to_file_result(f)
+          if file_result != nil
+            file_results.push(file_result)
+          end
+        end
+      end
+      dirs.each do |dir|
+        file_results += rec_get_file_results(dir, depth + 1)
+      end
+      file_results
+    end
+
     def get_file_results(file_path)
       file_results = []
       if file_path.directory?
@@ -252,40 +274,13 @@ module RbFind
           return []
         end
         if @settings.recursive
-          # TODO: get depth of file_path, and get depth of every f below
-          file_path_elem_count = FileUtil.elem_count(file_path)
-          file_path.find do |f|
-            if FileUtil.dot_dir?(f)
-              next
-            end
-            f_elem_count = FileUtil.elem_count(f)
-            if f.directory?
-              # The +1 is for files under the directory
-              depth = f_elem_count - file_path_elem_count + 1
-              if (@settings.max_depth > 0 && depth > @settings.max_depth) || !matching_dir?(f)
-                Find.prune
-              end
-            elsif f.file?
-              depth = f_elem_count - file_path_elem_count
-              if depth < @settings.min_depth || (@settings.max_depth > 0 && depth > @settings.max_depth)
-                Find.prune
-              else
-                file_result = filter_to_file_result(f)
-                if file_result != nil
-                  file_results.push(file_result)
-                end
-              end
-            end
-          end
+          file_results += rec_get_file_results(file_path, 1)
         else
-          file_path.find do |f|
-            if f.directory?
-              Find.prune
-            else
-              file_result = filter_to_file_result(f)
-              if file_result != nil
-                file_results.push(file_result)
-              end
+          files = file_path.children(true).select {|fp| fp.file? }
+          files.each do |f|
+            file_result = filter_to_file_result(f)
+            if file_result != nil
+              file_results.push(file_result)
             end
           end
         end
