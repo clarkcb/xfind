@@ -44,6 +44,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
-    "@types/node": "^22.10.2"
+    "@types/node": "^22.10.2",
+    "sqlite3": "^5.1.7"
   }
 }
