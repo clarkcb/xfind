@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 require 'json'
+require 'sqlite3'
+
+require_relative 'config'
 require_relative 'fileutil'
 require_relative 'finderror'
 
@@ -26,6 +29,13 @@ module RbFind
       idx.nil? ? 0 : idx
     end
 
+    def from_index(idx)
+      if idx < 0 || idx > NAMES.size
+        return 0
+      end
+      idx
+    end
+
     def from_sym(sym)
       idx = NAMES.index(sym)
       idx.nil? ? 0 : idx
@@ -44,103 +54,78 @@ module RbFind
   class FileTypes
 
     def initialize
-      set_file_type_maps_from_json
+      @db = SQLite3::Database.open XFINDDB, readonly: true, results_as_hash: true
+      @ext_type_cache = {}
     end
 
-    def set_file_type_maps_from_json
-      @file_type_ext_map = {}
-      @file_type_name_map = {}
-      filetypes_json_path = File.join(File.dirname(__FILE__), "../../data/filetypes.json")
-      f = File.open(filetypes_json_path, mode: 'r')
-      json = f.read
-      json_hash = JSON.parse(json)
-      json_hash['filetypes'].each do |ft|
-        typename = ft['type'].to_sym
-        exts = ft['extensions'].to_set
-        @file_type_ext_map[typename] = exts
-        names = ft['names'].to_set
-        @file_type_name_map[typename] = names
+    def get_file_type_for_file_name(file_name)
+      results = @db.query "SELECT file_type_id FROM file_name WHERE name=?", file_name
+      result = results.next
+      if result
+        file_type_id = result['file_type_id'] - 1
+        return FileType.from_index(file_type_id)
       end
-      @file_type_ext_map[:text] = @file_type_ext_map[:text] + @file_type_ext_map[:code] +
-        @file_type_ext_map[:xml]
-      @file_type_name_map[:text] = @file_type_name_map[:text] + @file_type_name_map[:code] +
-        @file_type_name_map[:xml]
-    rescue StandardError => e
-      raise FindError, "#{e}"
-    ensure
-      f&.close
+      FileType::UNKNOWN
+    end
+
+    def get_file_type_for_file_extension(file_ext)
+      if @ext_type_cache.has_key?(file_ext)
+        return @ext_type_cache[file_ext]
+      end
+      results = @db.query "SELECT file_type_id FROM file_extension WHERE extension=?", file_ext
+      result = results.next
+      if result
+        file_type_id = result['file_type_id'] - 1
+        file_type = FileType.from_index(file_type_id)
+        @ext_type_cache[file_ext] = file_type
+        return file_type
+      end
+      FileType::UNKNOWN
     end
 
     def get_file_type(file_path)
-      # more specific first
-      if code_file?(file_path)
-        FileType::CODE
-      elsif archive_file?(file_path)
-        FileType::ARCHIVE
-      elsif audio_file?(file_path)
-        FileType::AUDIO
-      elsif font_file?(file_path)
-        FileType::FONT
-      elsif image_file?(file_path)
-        FileType::IMAGE
-      elsif video_file?(file_path)
-        FileType::VIDEO
-
-      # more general last
-      elsif xml_file?(file_path)
-        FileType::XML
-      elsif text_file?(file_path)
-        FileType::TEXT
-      elsif binary_file?(file_path)
-        FileType::BINARY
-      else
-        FileType::UNKNOWN
+      file_type_for_file_name = get_file_type_for_file_name(file_path.basename.to_s)
+      if file_type_for_file_name != FileType::UNKNOWN
+        return file_type_for_file_name
       end
+      get_file_type_for_file_extension(FileUtil.get_extension(file_path))
     end
 
     def archive_file?(file_path)
-      @file_type_name_map[:archive].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:archive].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::ARCHIVE
     end
 
     def audio_file?(file_path)
-      @file_type_name_map[:audio].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:audio].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::AUDIO
     end
 
     def binary_file?(file_path)
-      @file_type_name_map[:binary].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:binary].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::BINARY
     end
 
     def code_file?(file_path)
-      @file_type_name_map[:code].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:code].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::CODE
     end
 
     def font_file?(file_path)
-      @file_type_name_map[:font].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:font].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::FONT
     end
 
     def image_file?(file_path)
-      @file_type_name_map[:image].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:image].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::IMAGE
     end
 
     def text_file?(file_path)
-      @file_type_name_map[:text].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:text].include?(FileUtil.get_extension(file_path))
+      file_type = get_file_type(file_path)
+      file_type == FileType::TEXT || file_type == FileType::CODE || file_type == FileType::XML
     end
 
     def video_file?(file_path)
-      @file_type_name_map[:video].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:video].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::VIDEO
     end
 
     def xml_file?(file_path)
-      @file_type_name_map[:xml].include?(file_path.basename.to_s) ||
-      @file_type_ext_map[:xml].include?(FileUtil.get_extension(file_path))
+      get_file_type(file_path) == FileType::XML
     end
   end
 end
