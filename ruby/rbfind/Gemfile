@@ -13,4 +13,6 @@ gem 'test-unit', '~> 3.7.0'
 
 gem 'rubocop', '~> 1.80.0'
 
+gem 'sqlite3', '~> 1.3'
+
 ruby '3.4.5'
