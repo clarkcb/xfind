@@ -7,6 +7,7 @@ WriteMakefile(
     NAME              => 'plfind',
     VERSION_FROM      => 'lib/plfind.pm', # finds $VERSION, requires EU::MM from perl >= 5.5
     CONFIGURE_REQUIRES => {
+        'DBD::SQLite' => 1.74,
         'ExtUtils::MakeMaker' => 7.70,
     },
     TEST_REQUIRES => {

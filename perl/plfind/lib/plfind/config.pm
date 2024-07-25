@@ -22,13 +22,14 @@ use plfind::FileUtil;
 
 our $XFINDPATH = $ENV{'XFIND_PATH'};
 if (!$XFINDPATH) {
-    $XFINDPATH = $ENV{'HOME'} . '/src/xfind';
+    $XFINDPATH = join('/', @{[$ENV{'HOME'}, 'src', 'xfind']});
 }
 our $SHAREDPATH = "$XFINDPATH/shared";
 our $FILETYPESPATH = "$SHAREDPATH/filetypes.json";
 our $FINDOPTIONSPATH = "$SHAREDPATH/findoptions.json";
+our $XFINDDB = "$SHAREDPATH/xfind.db";
 
-our @EXPORT = qw($XFINDPATH $SHAREDPATH $FILETYPESPATH $FINDOPTIONSPATH);
+our @EXPORT = qw($XFINDPATH $SHAREDPATH $FILETYPESPATH $FINDOPTIONSPATH $XFINDDB);
 
 1;
 
