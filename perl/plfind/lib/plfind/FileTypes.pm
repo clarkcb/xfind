@@ -11,159 +11,148 @@ package plfind::FileTypes;
 use strict;
 use warnings;
 
-# use Data::Dumper;
-use JSON::PP qw(decode_json);
+use Data::Dumper;
+use DBD::SQLite;
+use DBI qw(:sql_types);
 use plfind::common;
 use plfind::config;
 use plfind::FileType;
 use plfind::FileUtil;
 
-sub get_json_file_type_hashes {
-    my $file_type_ext_hash = {};
-    my $file_type_name_hash = {};
-    my $contents = $FILE_TYPES_PATH->slurp;
-    my $json_file_type_hash = decode_json $contents;
-    foreach my $file_type (@{$json_file_type_hash->{filetypes}}) {
-        $file_type_ext_hash->{$file_type->{type}} = $file_type->{extensions};
-        $file_type_name_hash->{$file_type->{type}} = $file_type->{names};
-    }
-    my @text_exts = (@{$file_type_ext_hash->{text}}, @{$file_type_ext_hash->{code}},
-        @{$file_type_ext_hash->{xml}});
-    $file_type_ext_hash->{text} = \@text_exts;
-    my @text_names = (@{$file_type_name_hash->{text}}, @{$file_type_name_hash->{code}},
-        @{$file_type_name_hash->{xml}});
-    $file_type_name_hash->{text} = \@text_names;
-    my $hashes = [];
-    push (@$hashes, $file_type_ext_hash);
-    push (@$hashes, $file_type_name_hash);
-
-    return $hashes;
-}
-
 sub new {
     my $class = shift;
-    my $hashes = get_json_file_type_hashes();
+    my $db = DBI->connect("dbi:SQLite:dbname=$XFIND_DB","","", {
+        sqlite_open_flags => DBD::SQLite::OPEN_READONLY,
+        ReadOnly => 1
+    });
+    my $file_types = [
+        plfind::FileType->UNKNOWN,
+        plfind::FileType->ARCHIVE,
+        plfind::FileType->AUDIO,
+        plfind::FileType->BINARY,
+        plfind::FileType->CODE,
+        plfind::FileType->FONT,
+        plfind::FileType->IMAGE,
+        plfind::FileType->TEXT,
+        plfind::FileType->VIDEO,
+        plfind::FileType->XML,
+    ];
     my $self = {
-        file_type_exts => $hashes->[0],
-        file_type_names => $hashes->[1],
+        db => $db,
+        file_types => $file_types,
+        ext_type_cache => {},
     };
     bless $self, $class;
     return $self;
 }
 
-sub get_file_type {
-    my ($self, $file) = @_;
-    # more specific first
-    if ($self->is_code($file)) {
-        return plfind::FileType->CODE;
-    }
-    if ($self->is_archive($file)) {
+sub from_name {
+    my ($name) = @_;
+    my $lname = lc($name);
+    if ($lname eq 'archive') {
         return plfind::FileType->ARCHIVE;
     }
-    if ($self->is_audio($file)) {
+    if ($lname eq 'audio') {
         return plfind::FileType->AUDIO;
     }
-    if ($self->is_font($file)) {
+    if ($lname eq 'binary') {
+        return plfind::FileType->BINARY;
+    }
+    if ($lname eq 'code') {
+        return plfind::FileType->CODE;
+    }
+    if ($lname eq 'font') {
         return plfind::FileType->FONT;
     }
-    if ($self->is_image($file)) {
+    if ($lname eq 'image') {
         return plfind::FileType->IMAGE;
     }
-    if ($self->is_video($file)) {
-        return plfind::FileType->VIDEO;
-    }
-    # more general last
-    if ($self->is_xml($file)) {
-        return plfind::FileType->XML;
-    }
-    if ($self->is_text($file)) {
+    if ($lname eq 'text') {
         return plfind::FileType->TEXT;
     }
-    if ($self->is_binary($file)) {
-        return plfind::FileType->BINARY;
+    if ($lname eq 'video') {
+        return plfind::FileType->VIDEO;
+    }
+    if ($lname eq 'xml') {
+        return plfind::FileType->XML;
     }
     return plfind::FileType->UNKNOWN;
 }
 
+sub get_file_type_for_statement {
+    my ($self, $statement) = @_;
+    $statement->execute();
+    my $row = $statement->fetch;
+    if ($row) {
+        my $file_type_id = $row->[0] - 1;
+        return $self->{file_types}->[$file_type_id];
+    }
+    return plfind::FileType->UNKNOWN;
+}
+
+sub get_file_type_from_file_name {
+    my ($self, $file_name) = @_;
+    my $statement = $self->{db}->prepare("SELECT file_type_id FROM file_name WHERE name = ?");
+    $statement->bind_param(1, $file_name, SQL_VARCHAR);
+    return $self->get_file_type_for_statement($statement);
+}
+
+sub get_file_type_from_extension {
+    my ($self, $file_ext) = @_;
+    if (exists $self->{ext_type_cache}->{$file_ext}) {
+        return $self->{ext_type_cache}->{$file_ext};
+    }
+    my $statement = $self->{db}->prepare("SELECT file_type_id FROM file_extension WHERE extension = ?");
+    $statement->bind_param(1, $file_ext, SQL_VARCHAR);
+    return $self->get_file_type_for_statement($statement);
+}
+
+sub get_file_type {
+    my ($self, $file_name) = @_;
+    my $file_type_for_file_name = $self->get_file_type_from_file_name($file_name);
+    if ($file_type_for_file_name ne plfind::FileType->UNKNOWN) {
+        return $file_type_for_file_name;
+    }
+    my $file_type_for_extension = $self->get_file_type_from_extension(plfind::FileUtil::get_extension($file_name));
+    return $file_type_for_extension;
+}
+
 sub is_archive {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{archive}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{archive}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->ARCHIVE ? 1 : 0;
 }
 
 sub is_audio {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{audio}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{audio}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->AUDIO ? 1 : 0;
 }
 
 sub is_binary {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{binary}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{binary}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->BINARY ? 1 : 0;
 }
 
 sub is_code {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{code}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{code}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->CODE ? 1 : 0;
 }
 
 sub is_font {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{font}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{font}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->FONT ? 1 : 0;
 }
 
 sub is_image {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{image}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{image}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->IMAGE ? 1 : 0;
 }
 
 sub is_text {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{text}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{text}}) {
+    my $file_type = $self->get_file_type($file);
+    if ($file_type == plfind::FileType->TEXT
+        || $file_type == plfind::FileType->CODE
+        || $file_type == plfind::FileType->XML) {
         return 1;
     }
     return 0;
@@ -171,35 +160,17 @@ sub is_text {
 
 sub is_video {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{video}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{video}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->VIDEO ? 1 : 0;
 }
 
 sub is_xml {
     my ($self, $file) = @_;
-    if (grep {$_ eq $file} @{$self->{file_type_names}->{xml}}) {
-        return 1;
-    }
-    my $ext = plfind::FileUtil::get_extension($file);
-    if (grep {$_ eq $ext} @{$self->{file_type_exts}->{xml}}) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->XML ? 1 : 0;
 }
 
 sub is_unknown {
     my ($self, $file) = @_;
-    my $file_type = $self->get_file_type($file);
-    if ($file_type eq plfind::FileType->UNKNOWN) {
-        return 1;
-    }
-    return 0;
+    return $self->get_file_type($file) == plfind::FileType->UNKNOWN ? 1 : 0;
 }
 
 1;
