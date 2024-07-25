@@ -156,16 +156,10 @@ class Finder {
             this.isMatchingLastMod(fr.lastMod);
     }
 
-    filterToFileResult(fp, stat) {
-        if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
-            return null;
-        }
+    async filePathToFileResult(fp, stat) {
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
-        const fileType = this.fileTypes.getFileType(fileName);
-        if (fileType === FileType.ARCHIVE && !this.settings.includeArchives && !this.settings.archivesOnly) {
-            return null;
-        }
+        const fileType = await this.fileTypes.getFileType(fileName);
         let fileSize = 0;
         let lastMod = 0;
         if (this.settings.needLastMod() || this.settings.needSize()) {
@@ -173,8 +167,18 @@ class Finder {
             if (this.settings.needSize()) fileSize = stat.size;
             if (this.settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        const fr = new FileResult(dirname, fileName, fileType, fileSize, lastMod);
+        return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
+    }
+
+    async filterToFileResult(fp, stat) {
+        if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
+            return null;
+        }
+        const fr = await this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.ARCHIVE) {
+            if (!this.settings.includeArchives) {
+                return null;
+            }
             if (this.isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
@@ -242,7 +246,7 @@ class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(startPath, stats);
+                let fr = await this.filterToFileResult(startPath, stats);
                 if (fr !== null) {
                     return [fr];
                 } else {
