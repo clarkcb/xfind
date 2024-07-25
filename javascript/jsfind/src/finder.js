@@ -157,10 +157,10 @@ class Finder {
             this.isMatchingArchiveFileName(fr.fileName);
     }
 
-    filePathToFileResult(fp, stat) {
+    async filePathToFileResult(fp, stat) {
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
-        const fileType = this.fileTypes.getFileType(fileName);
+        const fileType = await this.fileTypes.getFileType(fileName);
         let fileSize = 0;
         let lastMod = 0;
         if (this.settings.needLastMod() || this.settings.needSize()) {
@@ -171,11 +171,11 @@ class Finder {
         return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
     }
 
-    filterToFileResult(fp, stat) {
+    async filterToFileResult(fp, stat) {
         if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
             return null;
         }
-        const fr = this.filePathToFileResult(fp, stat);
+        const fr = await this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.ARCHIVE) {
             if (this.settings.findArchives && this.isMatchingArchiveFileResult(fr)) {
                 return fr;
@@ -206,7 +206,7 @@ class Finder {
                 }
             } else if (stats.isFile()) {
                 if (depth >= this.settings.minDepth) {
-                    const fr = this.filterToFileResult(filePath, stats);
+                    const fr = await this.filterToFileResult(filePath, stats);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
@@ -241,7 +241,7 @@ class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(startPath, stats);
+                let fr = await this.filterToFileResult(startPath, stats);
                 if (fr !== null) {
                     fileResults.push(fr);
                 } else {
