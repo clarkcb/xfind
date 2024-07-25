@@ -19,3 +19,4 @@ const JSFIND_PATH = path.join(exports.XFIND_PATH, 'javascript', 'jsfind');
 const DATA_PATH = path.join(JSFIND_PATH, 'data');
 exports.FILE_TYPES_JSON_PATH = path.join(DATA_PATH, 'filetypes.json');
 exports.FIND_OPTIONS_JSON_PATH = path.join(DATA_PATH, 'findoptions.json');
+exports.XFINDDB = path.join(exports.SHARED_PATH, 'xfind.db');
