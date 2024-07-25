@@ -22,9 +22,11 @@ import {SortBy} from './sortby';
 
 export class Finder {
     _settings: FindSettings;
+    _fileTypes: FileTypes;
 
     constructor(settings: FindSettings) {
         this._settings = settings;
+        this._fileTypes = new FileTypes();
         this.validateSettings();
     }
 
@@ -32,9 +34,8 @@ export class Finder {
         try {
             assert.ok(this._settings.paths.length > 0, 'Startpath not defined');
             for (const p of this._settings.paths) {
-                // await access(p, fs.constants.F_OK | fs.constants.R_OK);
+                // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
-                // const stat = await lstat(p);
                 const stat = fs.lstatSync(p);
                 if (!stat.isDirectory() && !stat.isFile()) {
                     assert.ok(false, 'Startpath is unsupported file type');
@@ -162,18 +163,10 @@ export class Finder {
             && this.isMatchingLastMod(fr.lastMod);
     }
 
-    public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
-        if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
-            return null;
-        }
+    public async filePathToFileResult(fp: string, stat: fs.Stats | null = null): Promise<FileResult> {
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
-        const fileType = FileTypes.getFileType(fileName);
-        if (fileType === FileType.Archive
-            && !this._settings.includeArchives
-            && !this._settings.archivesOnly) {
-            return null;
-        }
+        const fileType = await this._fileTypes.getFileType(fileName);
         let fileSize = 0;
         let lastMod = 0;
         if (this._settings.needLastMod() || this._settings.needSize()) {
@@ -181,8 +174,18 @@ export class Finder {
             if (this._settings.needSize()) fileSize = stat.size;
             if (this._settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        const fr = new FileResult(dirname, fileName, fileType, fileSize, lastMod);
+        return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
+    }
+
+    public async filterToFileResult(fp: string, stat: fs.Stats | null = null): Promise<FileResult | null> {
+        if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
+            return null;
+        }
+        const fr = await this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.Archive) {
+            if (!this._settings.includeArchives) {
+                return null;
+            }
             if (this.isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
@@ -203,19 +206,20 @@ export class Finder {
             return [];
         }
         const findDirs: string[] = [];
-        fs.readdirSync(currentDir).map((f: string) => {
+        const filePaths = fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
-        }).forEach((fp: string) => {
+        });
+        for (const fp of filePaths) {
             const stats = fs.statSync(fp);
             if (stats.isDirectory() && recurse && this.isMatchingDir(fp)) {
                 findDirs.push(fp);
             } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
-                const fr = this.filterToFileResult(fp);
+                const fr = await this.filterToFileResult(fp);
                 if (fr !== null) {
                     fileResults.push(fr);
                 }
             }
-        });
+        }
         const subDirFileResultArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1)));
         subDirFileResultArrays.forEach(subDirFileResults => {
             fileResults = fileResults.concat(subDirFileResults);
@@ -246,7 +250,7 @@ export class Finder {
             }
             const dirname = path.dirname(startPath) || '.';
             if (this.isMatchingDir(dirname)) {
-                const fr = this.filterToFileResult(startPath);
+                const fr = await this.filterToFileResult(startPath);
                 if (fr !== null) {
                     return [fr];
                 } else {
