@@ -18,3 +18,4 @@ const TSFINDPATH = `${XFINDPATH}/typescript/tsfind`;
 const DATAPATH = `${TSFINDPATH}/data`;
 export const FILETYPESJSONPATH: string = `${DATAPATH}/filetypes.json`;
 export const FINDOPTIONSJSONPATH: string = `${DATAPATH}/findoptions.json`;
+export const XFINDDB = `${SHAREDPATH}/xfind.db`;
