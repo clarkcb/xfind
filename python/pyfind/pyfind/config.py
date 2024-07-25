@@ -20,3 +20,4 @@ if not XFINDPATH:
 SHAREDPATH = os.path.join(XFINDPATH, 'shared')
 FILETYPESPATH = os.path.join(data_path, 'filetypes.json')
 FINDOPTIONSPATH = os.path.join(data_path, 'findoptions.json')
+XFINDDB = os.path.join(SHAREDPATH, 'xfind.db')
