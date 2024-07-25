@@ -51,5 +51,8 @@
     "jest": "^30.2.0",
     "jshint": "^2.13.6",
     "standard": "^17.1.2"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.7"
   }
 }
