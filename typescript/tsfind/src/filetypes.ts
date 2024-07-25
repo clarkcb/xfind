@@ -6,40 +6,105 @@
 
 'use strict';
 
+import * as sqlite3 from 'sqlite3';
 import * as config from './config';
 import * as common from './common';
 import {FileType} from './filetype';
 import {FileUtil} from './fileutil';
 
-interface FileTypeMap {
-    [key: string]: string[]
+interface ExtTypeMap {
+    [key: string]: FileType
 }
 
 export class FileTypes {
-    private static fileTypeMaps: FileTypeMap[] = FileTypes.getFileTypeMaps();
-    private static fileTypeExtMap: FileTypeMap = FileTypes.fileTypeMaps[0];
-    private static fileTypeNameMap: FileTypeMap = FileTypes.fileTypeMaps[1];
+    db: sqlite3.Database;
+    ext_file_cache: ExtTypeMap = {};
 
-    private static getFileTypeMaps(): FileTypeMap[] {
-        const fileTypeExtMap: FileTypeMap = {};
-        const fileTypeNameMap: FileTypeMap = {};
-        const json = FileUtil.getFileContentsSync(config.FILE_TYPES_JSON_PATH);
-        const obj = JSON.parse(json);
-        if (Object.prototype.hasOwnProperty.call(obj, 'filetypes') && Array.isArray(obj['filetypes'])) {
-            obj['filetypes'].forEach(ft => {
-                const typename: string = ft['type'];
-                const extensions: string[] = ft['extensions'];
-                fileTypeExtMap[typename] = common.setFromArray(extensions);
-                const names: string[] = ft['names'];
-                fileTypeNameMap[typename] = common.setFromArray(names);
+    constructor() {
+        this.db = new sqlite3.Database(config.XFINDDB, sqlite3.OPEN_READONLY, (err) => {
+            if (err) {
+                common.logError('Error connecting to the xfind database.');
+            }
+        });
+    }
+
+    async getFileTypeForSql(sql: string, params: string[]): Promise<FileType> {
+        return new Promise((resolve, reject) => {
+            this.db.get(sql, params, (err, row: any) => {
+                if (err) {
+                    common.logError(`Error getting file type for sql: ${sql}`);
+                    reject(err);
+                } else {
+                    resolve(row ? row.file_type_id - 1 : FileType.Unknown);
+                }
             });
-        } else throw new Error("Invalid filetypes file: " + config.FILE_TYPES_JSON_PATH);
+        });
+    }
 
-        fileTypeExtMap.text = fileTypeExtMap.text.concat(fileTypeExtMap.code, fileTypeExtMap.xml);
-        fileTypeNameMap.text = fileTypeNameMap.text.concat(fileTypeNameMap.code, fileTypeNameMap.xml);
-        fileTypeExtMap.findable = fileTypeExtMap.text.concat(fileTypeExtMap.binary, fileTypeExtMap.archive);
+    async getFileTypeForFilename(fileName: string): Promise<FileType> {
+        const sql: string = 'SELECT file_type_id FROM file_name WHERE name = ?';
+        return this.getFileTypeForSql(sql, [fileName]);
+    }
 
-        return [fileTypeExtMap, fileTypeNameMap];
+    async getFileTypeForExtension(extension: string): Promise<FileType> {
+        if (extension in this.ext_file_cache) {
+            return this.ext_file_cache[extension];
+        }
+        const sql: string = 'SELECT file_type_id FROM file_extension WHERE extension = ?';
+        const fileType: FileType = await this.getFileTypeForSql(sql, [extension]);
+        this.ext_file_cache[extension] = fileType;
+        return fileType;
+    }
+
+    public async getFileType(fileName: string): Promise<FileType> {
+        const fileTypeForFilename = await this.getFileTypeForFilename(fileName);
+        if (fileTypeForFilename !== FileType.Unknown) {
+            return fileTypeForFilename;
+        }
+        const extension = FileUtil.getExtension(fileName);
+        return await this.getFileTypeForExtension(extension);
+    }
+
+    public async isArchiveFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Archive;
+    }
+
+    public async isAudioFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Audio;
+
+    }
+
+    public async isBinaryFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Binary;
+    }
+
+    public async isCodeFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Code;
+    }
+
+    public async isFontFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Font;
+    }
+
+    public async isImageFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Image;
+    }
+
+    public async isTextFile(fileName: string): Promise<boolean> {
+        const fileType = await this.getFileType(fileName);
+        return fileType === FileType.Text || fileType === FileType.Code || fileType === FileType.Xml;
+    }
+
+    public async isVideoFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Video;
+    }
+
+    public async isXmlFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Xml;
+    }
+
+    public async isUnknownFile(fileName: string): Promise<boolean> {
+        return await this.getFileType(fileName) === FileType.Unknown;
     }
 
     public static fromName(name: string): FileType {
@@ -90,113 +155,5 @@ export class FileTypes {
             default:
                 return 'unknown';
         }
-    }
-
-    public static getFileType(fileName: string): FileType {
-        // most specific first
-        if (FileTypes.isCodeFile(fileName))
-            return FileType.Code;
-        if (FileTypes.isArchiveFile(fileName))
-            return FileType.Archive;
-        if (FileTypes.isAudioFile(fileName))
-            return FileType.Audio;
-        if (FileTypes.isFontFile(fileName))
-            return FileType.Font;
-        if (FileTypes.isImageFile(fileName))
-            return FileType.Image;
-        if (FileTypes.isVideoFile(fileName))
-            return FileType.Video;
-
-        // most general last
-        if (FileTypes.isXmlFile(fileName))
-            return FileType.Xml;
-        if (FileTypes.isTextFile(fileName))
-            return FileType.Text;
-        if (FileTypes.isBinaryFile(fileName))
-            return FileType.Binary;
-        return FileType.Unknown;
-    }
-
-    public static getFileTypeAsync(fileName: string, cb: (ft: FileType) => void): void {
-        // most specific first
-        if (FileTypes.isCodeFile(fileName))
-            return cb(FileType.Code);
-        if (FileTypes.isArchiveFile(fileName))
-            return cb(FileType.Archive);
-        if (FileTypes.isAudioFile(fileName))
-            return cb(FileType.Audio);
-        if (FileTypes.isFontFile(fileName))
-            return cb(FileType.Font);
-        if (FileTypes.isImageFile(fileName))
-            return cb(FileType.Image);
-        if (FileTypes.isVideoFile(fileName))
-            return cb(FileType.Video);
-
-        // most general last
-        if (FileTypes.isXmlFile(fileName))
-            return cb(FileType.Xml);
-        if (FileTypes.isTextFile(fileName))
-            return cb(FileType.Text);
-        if (FileTypes.isBinaryFile(fileName))
-            return cb(FileType.Binary);
-        cb(FileType.Unknown);
-    }
-
-    public static isArchiveFile(fileName: string): boolean {
-        return FileTypes.fileTypeExtMap['archive'].indexOf(FileUtil.getExtension(fileName)) > -1
-            || FileTypes.fileTypeNameMap['archive'].indexOf(fileName) > -1;
-    }
-
-    public static isAudioFile(fileName: string): boolean {
-        return FileTypes.fileTypeExtMap['audio'].indexOf(FileUtil.getExtension(fileName)) > -1
-            || FileTypes.fileTypeNameMap['audio'].indexOf(fileName) > -1;
-    }
-
-    public static isBinaryFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['binary'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['binary'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isCodeFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['code'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['code'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isFontFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['font'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['font'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isImageFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['image'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['image'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isTextFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['text'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['text'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isVideoFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['video'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['video'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isXmlFile(fileName: string): boolean {
-        return FileTypes.fileTypeNameMap['xml'].indexOf(fileName) > -1
-            || FileTypes.fileTypeExtMap['xml'].indexOf(FileUtil.getExtension(fileName)) > -1;
-    }
-
-    public static isUnknownFile(fileName: string): boolean {
-        return FileTypes.getFileType(fileName) === FileType.Unknown;
-    }
-    public static fileTypesToString(name: string, fileTypes: FileType[]): string {
-        let s = `${name}=[`;
-        for (let i=0; i < fileTypes.length; i++) {
-            if (i > 0) s += ', ';
-            s += FileTypes.toName(fileTypes[i]);
-        }
-        s += ']';
-        return s;
     }
 }

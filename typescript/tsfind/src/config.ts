@@ -19,3 +19,4 @@ const TSFIND_PATH = path.join(XFIND_PATH, 'typescript', 'tsfind');
 const DATA_PATH = path.join(TSFIND_PATH, 'data');
 export const FILE_TYPES_JSON_PATH: string = path.join(DATA_PATH, 'filetypes.json');
 export const FIND_OPTIONS_JSON_PATH: string = path.join(DATA_PATH, 'findoptions.json');
+export const XFINDDB: string = path.join(SHARED_PATH, 'xfind.db');
