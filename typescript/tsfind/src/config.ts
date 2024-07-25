@@ -20,3 +20,4 @@ const DATA_PATH = path.join(TSFIND_PATH, 'data');
 export const FILE_TYPES_JSON_PATH: string = path.join(DATA_PATH, 'filetypes.json');
 export const FIND_OPTIONS_JSON_PATH: string = path.join(DATA_PATH, 'findoptions.json');
 export const DEFAULT_FIND_SETTINGS_PATH: string = path.join(HOME, '.config', 'xfind', 'settings.json');
+export const XFINDDB: string = path.join(SHARED_PATH, 'xfind.db');
