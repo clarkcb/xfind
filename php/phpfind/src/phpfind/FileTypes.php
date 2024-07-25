@@ -5,79 +5,48 @@ declare(strict_types=1);
 namespace phpfind;
 
 //require_once __DIR__ . '/../autoload.php';
+use SQLite3;
+use SQLite3Stmt;
+
 
 /**
  * Class FileTypes
  *
  * @package phpfind
- * @property array<string, string[]> $file_type_ext_map
- * @property array<string, string[]> $file_type_name_map
+ * @property SQLite3 $db
+ * @property FileType[] $file_types
+ * @property array<string, FileType> $ext_type_cache
  */
 class FileTypes
 {
+    private readonly SQLite3 $db;
     /**
-     * @var array<string, string[]> $file_type_ext_map
+     * @var FileType[] $file_types
      */
-    private readonly array $file_type_ext_map;
+    private readonly array $file_types;
     /**
-     * @var array<string, string[]> $file_type_name_map
+     * @var array<string, FileType> $ext_type_cache
      */
-    private readonly array $file_type_name_map;
+    private array $ext_type_cache = [];
 
     /**
      * @throws FindException
      */
     public function __construct()
     {
-        $file_type_maps = $this->get_file_type_map_from_json();
-        $this->file_type_ext_map = $file_type_maps[0];
-        $this->file_type_name_map = $file_type_maps[1];
-    }
-
-    /**
-     * @return array<int, array<string, string[]>>
-     * @throws FindException
-     */
-    private function get_file_type_map_from_json(): array
-    {
-        $file_type_ext_map = array();
-        $file_type_name_map = array();
-        $file_types_path = FileUtil::expand_path(Config::FILE_TYPES_PATH);
-        if (file_exists($file_types_path)) {
-            $contents = file_get_contents($file_types_path);
-            if ($contents === false || trim($contents) === '') {
-                return [];
-            }
-            try {
-                $json_obj = (array)json_decode(trim($contents), true, 512, JSON_THROW_ON_ERROR);
-                $file_types = $json_obj['filetypes'];
-                if ($file_types !== null) {
-                    foreach ((array)$file_types as $ft) {
-                        $ft = (array)$ft;
-                        $type = (string)$ft['type'];
-                        $exts = (array)$ft['extensions'];
-                        $file_type_ext_map[$type] = $exts;
-                        $names = (array)$ft['names'];
-                        $file_type_name_map[$type] = $names;
-                    }
-                    $file_type_ext_map['text'] = array_merge(
-                        $file_type_ext_map['text'],
-                        $file_type_ext_map['code'],
-                        $file_type_ext_map['xml']
-                    );
-                    $file_type_name_map['text'] = array_merge(
-                        $file_type_name_map['text'],
-                        $file_type_name_map['code'],
-                        $file_type_name_map['xml']
-                    );
-                }
-            } catch (\JsonException $e) {
-                throw new FindException($e->getMessage());
-            }
-        } else {
-            throw new FindException('File not found: ' . $file_types_path);
-        }
-        return [$file_type_ext_map, $file_type_name_map];
+        $this->db = new \SQLite3(Config::XFIND_DB, SQLITE3_OPEN_READONLY);
+        $this->file_types = [
+            FileType::Unknown,
+            FileType::Archive,
+            FileType::Audio,
+            FileType::Binary,
+            FileType::Code,
+            FileType::Font,
+            FileType::Image,
+            FileType::Text,
+            FileType::Video,
+            FileType::Xml
+        ];
     }
 
     /**
@@ -98,43 +67,62 @@ class FileTypes
         return $type->value;
     }
 
+    private function get_file_type_for_statement(SQLite3Stmt $statement): FileType
+    {
+        if ($db_result = $statement->execute()) {
+            $row = $db_result->fetchArray(SQLITE3_ASSOC);
+            if ($row) {
+                $file_type_id = $row['file_type_id'] - 1;
+                return $this->file_types[$file_type_id];
+            }
+        }
+        return FileType::Unknown;
+    }
+
+    /**
+     * @param string $file_name
+     * @return FileType
+     */
+    public function get_file_type_for_file_name(string $file_name): FileType
+    {
+        $query = 'SELECT file_type_id FROM file_name WHERE name = :name;';
+        if ($statement = $this->db->prepare($query)) {
+            $statement->bindValue(':name', $file_name);
+            return $this->get_file_type_for_statement($statement);
+        }
+        return FileType::Unknown;
+    }
+
+    /**
+     * @param string $file_ext
+     * @return FileType
+     */
+    public function get_file_type_for_extension(string $file_ext): FileType
+    {
+        if (array_key_exists($file_ext, $this->ext_type_cache)) {
+            return $this->ext_type_cache[$file_ext];
+        }
+        $query = 'SELECT file_type_id FROM file_extension WHERE extension = :ext;';
+        if ($statement = $this->db->prepare($query)) {
+            $statement->bindValue(':ext', $file_ext);
+            $file_type = $this->get_file_type_for_statement($statement);
+            $this->ext_type_cache[$file_ext] = $file_type;
+            return $file_type;
+        }
+        return FileType::Unknown;
+    }
+
     /**
      * @param string $file_name
      * @return FileType
      */
     public function get_file_type(string $file_name): FileType
     {
-        # more specific first
-        if ($this->is_code($file_name)) {
-            return FileType::Code;
+        $file_type_for_file_name = $this->get_file_type_for_file_name($file_name);
+        if ($file_type_for_file_name !== FileType::Unknown) {
+            return $file_type_for_file_name;
         }
-        if ($this->is_archive($file_name)) {
-            return FileType::Archive;
-        }
-        if ($this->is_audio($file_name)) {
-            return FileType::Audio;
-        }
-        if ($this->is_font($file_name)) {
-            return FileType::Font;
-        }
-        if ($this->is_image($file_name)) {
-            return FileType::Image;
-        }
-        if ($this->is_video($file_name)) {
-            return FileType::Video;
-        }
-
-        # more general last
-        if ($this->is_xml($file_name)) {
-            return FileType::Xml;
-        }
-        if ($this->is_text($file_name)) {
-            return FileType::Text;
-        }
-        if ($this->is_binary($file_name)) {
-            return FileType::Binary;
-        }
-        return FileType::Unknown;
+        return $this->get_file_type_for_extension(FileUtil::get_extension($file_name));
     }
 
     /**
@@ -143,8 +131,7 @@ class FileTypes
      */
     public function is_archive(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['archive'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['archive']);
+        return $this->get_file_type($file_name) === FileType::Archive;
     }
 
     /**
@@ -153,8 +140,7 @@ class FileTypes
      */
     public function is_audio(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['audio'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['audio']);
+        return $this->get_file_type($file_name) === FileType::Audio;
     }
 
     /**
@@ -163,8 +149,7 @@ class FileTypes
      */
     public function is_binary(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['binary'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['binary']);
+        return $this->get_file_type($file_name) === FileType::Binary;
     }
 
     /**
@@ -173,8 +158,7 @@ class FileTypes
      */
     public function is_code(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['code'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['code']);
+        return $this->get_file_type($file_name) === FileType::Code;
     }
 
     /**
@@ -183,8 +167,7 @@ class FileTypes
      */
     public function is_font(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['font'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['font']);
+        return $this->get_file_type($file_name) === FileType::Font;
     }
 
     /**
@@ -193,8 +176,7 @@ class FileTypes
      */
     public function is_image(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['image'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['image']);
+        return $this->get_file_type($file_name) === FileType::Image;
     }
 
     /**
@@ -203,8 +185,10 @@ class FileTypes
      */
     public function is_text(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['text'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['text']);
+        $file_type = $this->get_file_type($file_name);
+        return $file_type === FileType::Text
+            || $file_type === FileType::Code
+            || $file_type === FileType::Xml;
     }
 
     /**
@@ -213,8 +197,7 @@ class FileTypes
      */
     public function is_video(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['video'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['video']);
+        return $this->get_file_type($file_name) === FileType::Video;
     }
 
     /**
@@ -223,8 +206,7 @@ class FileTypes
      */
     public function is_xml(string $file_name): bool
     {
-        return in_array($file_name, $this->file_type_name_map['xml'])
-            || in_array(FileUtil::get_extension($file_name), $this->file_type_ext_map['xml']);
+        return $this->get_file_type($file_name) === FileType::Xml;
     }
 
     /**
