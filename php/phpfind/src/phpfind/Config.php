@@ -13,6 +13,7 @@ define('Z_XFINDPATH', $config->{'xfindpath'});
 define('Z_SHAREDPATH', $sharedpath);
 define('Z_FILETYPESPATH', $resources_path . '/filetypes.json');
 define('Z_FINDOPTIONSPATH', $resources_path . '/findoptions.json');
+define('Z_XFINDDB', $sharedpath . '/xfind.db');
 
 class Config
 {
@@ -20,4 +21,5 @@ class Config
     const SHAREDPATH = Z_SHAREDPATH;
     const FILETYPESPATH = Z_FILETYPESPATH;
     const FINDOPTIONSPATH = Z_FINDOPTIONSPATH;
+    const XFINDDB = Z_XFINDDB;
 }
