@@ -32,9 +32,11 @@ const startPathDoesNotMatchFindSettings = 'Startpath does not match find setting
 
 export class Finder {
     _settings: FindSettings;
+    _fileTypes: FileTypes;
 
     constructor(settings: FindSettings) {
         this._settings = settings;
+        this._fileTypes = new FileTypes();
         this.validateSettings();
     }
 
@@ -174,7 +176,7 @@ export class Finder {
             && this.isMatchingLastMod(fr.lastMod);
     }
 
-    public filterToFileResult(filePath: string, stat: fs.Stats | null = null): FileResult | null {
+    public async filterToFileResult(filePath: string, stat: fs.Stats | null = null): FileResult | null {
         const dirname = path.dirname(filePath) || '.';
         if (!this.isMatchingDir(dirname)) {
             return null;
@@ -183,7 +185,7 @@ export class Finder {
         if (!this._settings.includeHidden && FileUtil.isHiddenName(fileName)) {
             return null;
         }
-        const fileType = FileTypes.getFileType(fileName);
+        const fileType = await FileTypes.getFileType(fileName);
         if (fileType === FileType.Archive
             && !this._settings.includeArchives
             && !this._settings.archivesOnly) {
@@ -196,8 +198,18 @@ export class Finder {
             if (this._settings.needSize()) fileSize = stat.size;
             if (this._settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        const fr = new FileResult(dirname, fileName, fileType, fileSize, lastMod);
+        return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
+    }
+
+    public async filterToFileResult(fp: string, stat: fs.Stats | null = null): Promise<FileResult | null> {
+        if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
+            return null;
+        }
+        const fr = await this.filePathToFileResult(fp, stat);
         if (fr.fileType === FileType.Archive) {
+            if (!this._settings.includeArchives) {
+                return null;
+            }
             if (this.isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
@@ -227,7 +239,7 @@ export class Finder {
                 if (stats.isDirectory() && recurse && this.filterDirByHidden(filePath) && this.filterDirByOutPatterns(filePath)) {
                     findDirs.push(filePath);
                 } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
-                    const fr = this.filterToFileResult(filePath);
+                    const fr = await this.filterToFileResult(filePath);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
@@ -267,7 +279,7 @@ export class Finder {
             if (this._settings.minDepth > 0) {
                 return [];
             }
-            const fr = this.filterToFileResult(filePath);
+            const fr = await this.filterToFileResult(filePath);
             if (fr !== null) {
                 return [fr];
             } else {
