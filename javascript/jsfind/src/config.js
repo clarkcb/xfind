@@ -17,3 +17,4 @@ const JSFIND_PATH = `${exports.XFIND_PATH}/javascript/jsfind`;
 const DATA_PATH = `${JSFIND_PATH}/data`;
 exports.FILE_TYPES_JSON_PATH = `${DATA_PATH}/filetypes.json`;
 exports.FIND_OPTIONS_JSON_PATH = `${DATA_PATH}/findoptions.json`;
+exports.XFINDDB = `${exports.SHARED_PATH}/xfind.db`;

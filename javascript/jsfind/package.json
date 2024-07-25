@@ -51,5 +51,6 @@
     "standard": "^17.1.2"
   },
   "dependencies": {
+    "sqlite3": "^5.1.7"
   }
 }
