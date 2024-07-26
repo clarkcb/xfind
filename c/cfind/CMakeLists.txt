@@ -24,6 +24,8 @@ include_directories(/usr/local/include)
 
 find_package(cjson REQUIRED)
 
+find_package(SQLite3 REQUIRED)
+
 
 ################################################################################
 # Library section
@@ -60,7 +62,7 @@ target_sources(${PROJECT_NAME}
         include/stringnode.h src/stringnode.c
         include/finder.h src/finder.c)
 
-target_link_libraries(${PROJECT_NAME} PUBLIC cjson)
+target_link_libraries(${PROJECT_NAME} PUBLIC cjson SQLite3)
 
 
 ################################################################################
