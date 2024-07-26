@@ -49,6 +49,7 @@ void time_to_datestring(long t, char *s);
 #define MAX_HOMEPATH_LENGTH 100
 #define FILE_TYPES_REL_PATH "shared/filetypes.json"
 #define FIND_OPTIONS_REL_PATH "shared/findoptions.json"
+#define XFIND_DB_REL_PATH "shared/xfind.db"
 
 void get_home_path(char *dest);
 
@@ -57,6 +58,8 @@ void get_xfind_path(char *dest);
 void get_file_types_path(char *dest);
 
 void get_find_options_path(char *dest);
+
+void get_xfind_db_path(char *dest);
 
 
 // finderr.h
@@ -140,6 +143,8 @@ void destroy_int_node(IntNode *int_node);
 
 
 // regexnode.h
+
+#include "regex.h"
 
 typedef struct Regex {
     const char *pattern;
@@ -230,6 +235,20 @@ void destroy_string_node(StringNode *string_node);
 
 // filetypes.h
 
+#include <sqlite3.h>
+
+#define FILE_TYPE_NAME_ARCHIVE "archive"
+#define FILE_TYPE_NAME_AUDIO "audio"
+#define FILE_TYPE_NAME_BINARY "binary"
+#define FILE_TYPE_NAME_CODE "code"
+#define FILE_TYPE_NAME_FONT "font"
+#define FILE_TYPE_NAME_IMAGE "image"
+#define FILE_TYPE_NAME_TEXT "text"
+#define FILE_TYPE_NAME_VIDEO "video"
+#define FILE_TYPE_NAME_XML "xml"
+#define FILE_TYPE_NAME_NOSEARCH "nosearch"
+#define FILE_TYPE_NAME_UNKNOWN "unknown"
+
 typedef enum {
     UNKNOWN = 0,
     ARCHIVE = 1,
@@ -245,29 +264,18 @@ typedef enum {
 
 
 typedef struct FileTypes {
-    StringArray *archive_extensions;
-    StringArray *archive_names;
-    StringArray *audio_extensions;
-    StringArray *audio_names;
-    StringArray *binary_extensions;
-    StringArray *binary_names;
-    StringArray *code_extensions;
-    StringArray *code_names;
-    StringArray *font_extensions;
-    StringArray *font_names;
-    StringArray *image_extensions;
-    StringArray *image_names;
-    StringArray *text_extensions;
-    StringArray *text_names;
-    StringArray *video_extensions;
-    StringArray *video_names;
-    StringArray *xml_extensions;
-    StringArray *xml_names;
+    sqlite3 *db;
 } FileTypes;
 
 FileTypes *new_file_types(void);
 
 error_t get_file_types(FileTypes *file_types);
+
+FileType get_file_type_for_file_name(const char *file_name, const FileTypes *file_types);
+
+FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
+
+FileType get_file_type(const char *file_name, const FileTypes *file_types);
 
 unsigned short is_archive_ext(const char *ext, const FileTypes *file_types);
 
@@ -305,12 +313,6 @@ unsigned short is_xml_ext(const char *ext, const FileTypes *file_types);
 
 unsigned short is_xml_name(const char *name, const FileTypes *file_types);
 
-FileType get_file_type_for_filename(const char *filename, const FileTypes *file_types);
-
-FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
-
-FileType get_file_type(const char *file_name, const FileTypes *file_types);
-
 FileType file_type_from_name(const char *name);
 
 void file_type_to_name(const FileType file_type, char *name);
@@ -323,6 +325,20 @@ void destroy_file_types(FileTypes *file_types);
 
 
 // findsettings.h
+
+#define BOOLEAN_NAME_FALSE "false"
+#define BOOLEAN_NAME_TRUE "true"
+
+#define SORT_BY_NAME_FILEPATH "filepath"
+#define SORT_BY_NAME_PATH "path"
+#define SORT_BY_NAME_FILENAME "filename"
+#define SORT_BY_NAME_NAME "name"
+#define SORT_BY_NAME_FILESIZE "filesize"
+#define SORT_BY_NAME_SIZE "size"
+#define SORT_BY_NAME_FILETYPE "filetype"
+#define SORT_BY_NAME_TYPE "type"
+#define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_UNKNOWN "unknown"
 
 typedef enum {
     FILEPATH = 0,
@@ -542,4 +558,4 @@ error_t find(const FindSettings *settings, FileResults *results);
 void destroy_finder(Finder *finder);
 
 
-#endif // CPPFIND_H
+#endif // CFIND_H
