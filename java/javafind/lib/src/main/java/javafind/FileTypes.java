@@ -1,105 +1,122 @@
 package javafind;
 
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import org.sqlite.SQLiteConfig;
 
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.List;
 
 public class FileTypes {
-    private static final String FILE_TYPES_JSON_PATH = "/filetypes.json";
-    private static final int fileTypeMapCapacity = 8;
-    private final Map<String, Set<String>> fileTypeExtMap = new HashMap<>(fileTypeMapCapacity);
-    private final Map<String, Set<String>> fileTypeNameMap = new HashMap<>(fileTypeMapCapacity);
+    private static final List<FileType> fileTypes = List.of(
+            FileType.UNKNOWN,
+            FileType.ARCHIVE,
+            FileType.AUDIO,
+            FileType.BINARY,
+            FileType.CODE,
+            FileType.FONT,
+            FileType.IMAGE,
+            FileType.TEXT,
+            FileType.VIDEO,
+            FileType.XML
+    );
+    private static final String SELECT_FILE_TYPE_ID_FOR_FILE_NAME = "SELECT file_type_id FROM file_name WHERE name = ?";
+    private static final String SELECT_FILE_TYPE_ID_FOR_EXTENSION = "SELECT file_type_id FROM file_extension WHERE extension = ?";
 
-    private void setFileTypeMapsFromJson() {
-        var fileTypesInputStream = getClass().getResourceAsStream(FILE_TYPES_JSON_PATH);
+    private Connection _conn = null;
+    private final HashMap<String, FileType> _fileTypeCache;
 
-        try {
-            assert fileTypesInputStream != null;
-            var jsonObj = new JSONObject(new JSONTokener(fileTypesInputStream));
-            var filetypesArray = jsonObj.getJSONArray("filetypes");
-
-            for (var i=0; i < filetypesArray.length(); i++) {
-                var filetypeObj = filetypesArray.getJSONObject(i);
-                var typeName = filetypeObj.getString("type");
-                fileTypeExtMap.put(typeName, filetypeObj.getJSONArray("extensions").toList().stream()
-                        .map(Object::toString).collect(Collectors.toSet()));
-                fileTypeNameMap.put(typeName, filetypeObj.getJSONArray("names").toList().stream()
-                        .map(Object::toString).collect(Collectors.toSet()));
+    private Connection getConnection() {
+        if (_conn == null) {
+            try {
+                // This first line is supposedly needed to load the correct driver
+                var cls = Class.forName("org.sqlite.JDBC");
+                SQLiteConfig config = new SQLiteConfig();
+                config.setReadOnly(true);
+                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties());
+            } catch (SQLException | ClassNotFoundException e) {
+                Logger.logError(e.getMessage());
             }
-            // Add CODE and XML to TEXT extensions
-            fileTypeExtMap.get(FileType.TEXT.toName()).addAll(fileTypeExtMap.get(FileType.CODE.toName()));
-            fileTypeExtMap.get(FileType.TEXT.toName()).addAll(fileTypeExtMap.get(FileType.XML.toName()));
-
-            // Add CODE and XML to TEXT names
-            fileTypeNameMap.get(FileType.TEXT.toName()).addAll(fileTypeNameMap.get(FileType.CODE.toName()));
-            fileTypeNameMap.get(FileType.TEXT.toName()).addAll(fileTypeNameMap.get(FileType.XML.toName()));
-        } catch (AssertionError e) {
-            e.printStackTrace();
         }
+        return _conn;
     }
 
     public FileTypes() {
-        setFileTypeMapsFromJson();
+        _fileTypeCache = new HashMap<>();
     }
 
-    final FileType getFileType(final Path f) {
-        // most specific first
-        if (isCodeFile(f)) return FileType.CODE;
-        if (isArchiveFile(f)) return FileType.ARCHIVE;
-        if (isAudioFile(f)) return FileType.AUDIO;
-        if (isFontFile(f)) return FileType.FONT;
-        if (isImageFile(f)) return FileType.IMAGE;
-        if (isVideoFile(f)) return FileType.VIDEO;
-        // most general last
-        if (isXmlFile(f)) return FileType.XML;
-        if (isTextFile(f)) return FileType.TEXT;
-        if (isBinaryFile(f)) return FileType.BINARY;
+    private FileType getFileTypeForQueryAndElem(final String query, final String elem) {
+        var conn = getConnection();
+        try {
+            var stmt = conn.prepareStatement(query);
+            stmt.setString(1, elem);
+            var rs = stmt.executeQuery();
+            if (rs.next()) {
+                int fileTypeId = rs.getInt("file_type_id") - 1;
+                return fileTypes.get(fileTypeId);
+            }
+        } catch (SQLException e) {
+            Logger.logError(e.getMessage());
+        }
         return FileType.UNKNOWN;
     }
 
+    private FileType getFileTypeForFileName(final String fileName) {
+        return getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_FILE_NAME, fileName);
+    }
+
+    private FileType getFileTypeForExtension(final String fileExt) {
+        if (_fileTypeCache.containsKey(fileExt)) {
+            return _fileTypeCache.get(fileExt);
+        }
+        var fileType = getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_EXTENSION, fileExt);
+        _fileTypeCache.put(fileExt, fileType);
+        return fileType;
+    }
+
+    final FileType getFileType(final Path f) {
+        var fileType = getFileTypeForFileName(f.getFileName().toString());
+        if (fileType != FileType.UNKNOWN) {
+            return fileType;
+        }
+        return getFileTypeForExtension(FileUtil.getExtension(f));
+    }
+
     final boolean isArchiveFile(final Path path) {
-        return fileTypeNameMap.get(FileType.ARCHIVE.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.ARCHIVE.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.ARCHIVE;
     }
 
     final boolean isAudioFile(final Path path) {
-        return fileTypeNameMap.get(FileType.AUDIO.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.AUDIO.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.AUDIO;
     }
 
     final boolean isBinaryFile(final Path path) {
-        return fileTypeNameMap.get(FileType.BINARY.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.BINARY.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.BINARY;
     }
 
     public final boolean isCodeFile(final Path path) {
-        return fileTypeNameMap.get(FileType.CODE.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.CODE.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.CODE;
     }
 
     public final boolean isFontFile(final Path path) {
-        return fileTypeNameMap.get(FileType.FONT.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.FONT.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.FONT;
     }
 
     public final boolean isImageFile(final Path path) {
-        return fileTypeNameMap.get(FileType.IMAGE.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.IMAGE.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.IMAGE;
     }
 
     final boolean isTextFile(final Path path) {
-        return fileTypeNameMap.get(FileType.TEXT.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.TEXT.toName()).contains(FileUtil.getExtension(path));
+        var fileType = getFileType(path);
+        return fileType == FileType.TEXT
+                || fileType == FileType.CODE
+                || fileType == FileType.XML;
     }
 
     final boolean isVideoFile(final Path path) {
-        return fileTypeNameMap.get(FileType.VIDEO.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.VIDEO.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.VIDEO;
     }
 
     final boolean isUnknownFile(final Path path) {
@@ -107,7 +124,6 @@ public class FileTypes {
     }
 
     public final boolean isXmlFile(final Path path) {
-        return fileTypeNameMap.get(FileType.XML.toName()).contains(path.getFileName().toString())
-            || fileTypeExtMap.get(FileType.XML.toName()).contains(FileUtil.getExtension(path));
+        return getFileType(path) == FileType.XML;
     }
 }
