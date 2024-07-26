@@ -16,6 +16,9 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
     implementation("org.json:json:20240303")
+    implementation("org.xerial:sqlite-jdbc:3.43.2.2")
+    implementation("org.slf4j:slf4j-api:1.7.36")
+    implementation("org.slf4j:slf4j-simple:1.7.36")
     testImplementation(kotlin("test"))
 }
 
