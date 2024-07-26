@@ -18,3 +18,8 @@ NSString* getXfindBinPath() {
     NSString *xfindPath = getXfindPath();
     return [xfindPath stringByAppendingPathComponent:@"bin"];
 }
+
+NSString* getXfindDbPath() {
+    NSString *xfindSharedPath = getXfindSharedPath();
+    return [xfindSharedPath stringByAppendingPathComponent:@"xfind.db"];
+}
