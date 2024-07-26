@@ -12,6 +12,7 @@
     <Compile Include="Logger.fs" />
     <Compile Include="EmbeddedResource.fs" />
     <Compile Include="FindException.fs" />
+    <Compile Include="FindConfig.fs" />
     <Compile Include="FileUtil.fs" />
     <Compile Include="ArgTokenizer.fs" />
     <Compile Include="FileTypes.fs" />
@@ -30,6 +31,7 @@
 
   <ItemGroup>
     <PackageReference Update="FSharp.Core" Version="10.0.101" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
   </ItemGroup>
 
 </Project>
