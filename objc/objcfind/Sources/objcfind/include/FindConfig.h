@@ -5,5 +5,6 @@
 
 NSString* getXfindPath();
 NSString* getXfindSharedPath();
+NSString* getXfindDbPath();
 
 #endif /* FindConfig_h */
