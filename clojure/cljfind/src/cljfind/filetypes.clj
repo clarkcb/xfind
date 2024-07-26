@@ -11,9 +11,11 @@
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
   (:require [clojure.java.io :as io])
+  (:require [clojure.java.jdbc :as jdbc])
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
-        [clojure.string :only (join lower-case)]
+        [clojure.string :only (lower-case)]
+        [cljfind.config :only (XFINDDB)]
         [cljfind.fileutil :only (get-ext get-name)]))
 
 (def ^:const ^String ARCHIVE "archive")
@@ -26,117 +28,66 @@
 (def ^:const ^String VIDEO "video")
 (def ^:const ^String XML "xml")
 
-(defn get-file-type-maps-from-json []
-  (let [contents (slurp (io/resource "filetypes.json"))
-        file-types-objs (:filetypes (json/read-str contents :key-fn keyword))
-        typenames (map :type file-types-objs)
-        extension-sets (map #(set %) (map :extensions file-types-objs))
-        file-type-ext-map (zipmap typenames extension-sets)
-        text-ext-map (hash-map "all-text"
-                       (union (get file-type-ext-map TEXT)
-                              (get file-type-ext-map CODE)
-                              (get file-type-ext-map XML)))
-        full-ext-map (merge file-type-ext-map text-ext-map)
-        name-sets (map #(set %) (map :names file-types-objs))
-        file-type-name-map (zipmap typenames name-sets)
-        text-name-map (hash-map "all-text"
-                        (union (get file-type-name-map TEXT)
-                               (get file-type-name-map CODE)
-                               (get file-type-name-map XML)))
-        full-name-map (merge file-type-name-map text-name-map)
-       ]
-    [full-ext-map full-name-map]))
+(def ^:const FILE-TYPES
+  [:unknown :archive :audio :binary :code :font :image :text :video :xml])
 
-(def ^:const FILETYPEMAPS (get-file-type-maps-from-json))
-(def ^:const FILETYPEEXTMAP (nth FILETYPEMAPS 0))
-(def ^:const FILETYPENAMEMAP (nth FILETYPEMAPS 1))
+(def ^:const db
+  {:classname   "org.sqlite.JDBC"
+   :subprotocol "sqlite"
+   :subname     XFINDDB})
 
-(defn archive-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP ARCHIVE) ext))
+(def ^:const ^String FILE-NAME-QUERY "SELECT file_type_id FROM file_name WHERE name = ?")
+(def ^:const ^String FILE-EXT-QUERY "SELECT file_type_id FROM file_extension WHERE extension = ?")
 
-(defn archive-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP ARCHIVE) (get-name f))
-   (contains? (get FILETYPEEXTMAP ARCHIVE) (get-ext f))))
+(defn get-file-type-for-file-name [^String file-name]
+  (let [file-type-id (jdbc/query db [FILE-NAME-QUERY file-name] {:row-fn :file_type_id})]
+    (if (or (nil? file-type-id) (empty? file-type-id))
+      :unknown
+      (nth FILE-TYPES (- (first file-type-id) 1)))))
 
-(defn audio-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP AUDIO) ext))
-
-(defn audio-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP AUDIO) (get-name f))
-   (contains? (get FILETYPEEXTMAP AUDIO) (get-ext f))))
-
-(defn binary-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP BINARY) ext))
-
-(defn binary-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP BINARY) (get-name f))
-   (contains? (get FILETYPEEXTMAP BINARY) (get-ext f))))
-
-(defn code-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP CODE) ext))
-
-(defn code-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP CODE) (get-name f))
-   (contains? (get FILETYPEEXTMAP CODE) (get-ext f))))
-
-(defn font-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP FONT) ext))
-
-(defn font-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP FONT) (get-name f))
-   (contains? (get FILETYPEEXTMAP FONT) (get-ext f))))
-
-(defn image-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP IMAGE) ext))
-
-(defn image-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP IMAGE) (get-name f))
-   (contains? (get FILETYPEEXTMAP IMAGE) (get-ext f))))
-
-(defn text-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP TEXT) ext))
-
-(defn text-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP TEXT) (get-name f))
-   (contains? (get FILETYPEEXTMAP TEXT) (get-ext f))))
-
-(defn video-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP VIDEO) ext))
-
-(defn video-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP VIDEO) (get-name f))
-   (contains? (get FILETYPEEXTMAP VIDEO) (get-ext f))))
-
-(defn xml-ext? [^String ext]
-  (contains? (get FILETYPEEXTMAP XML) ext))
-
-(defn xml-file? [f]
-  (or
-   (contains? (get FILETYPENAMEMAP XML) (get-name f))
-   (contains? (get FILETYPEEXTMAP XML) (get-ext f))))
+(defn get-file-type-for-extension [^String file-ext]
+  (let [file-type-id (jdbc/query db [FILE-EXT-QUERY file-ext] {:row-fn :file_type_id})]
+    (if (or (nil? file-type-id) (empty? file-type-id))
+      :unknown
+      (nth FILE-TYPES (- (first file-type-id) 1)))))
 
 (defn get-file-type [f]
-  (cond
-    ;; most specific first
-    (code-file? f) :code
-    (archive-file? f) :archive
-    (audio-file? f) :audio
-    (font-file? f) :font
-    (image-file? f) :image
-    (video-file? f) :video
-    ;; most general last
-    (xml-file? f) :xml
-    (text-file? f) :text
-    (binary-file? f) :binary
-    :else :unknown))
+  (let [file-name (get-name f)
+        file-type-for-file-name (get-file-type-for-file-name file-name)]
+    (if (not= :unknown file-type-for-file-name)
+      file-type-for-file-name
+      (get-file-type-for-extension (get-ext f)))))
+
+(defn archive-file? [f]
+  (= (get-file-type f) :archive))
+
+(defn audio-file? [f]
+  (= (get-file-type f) :audio))
+
+(defn binary-file? [f]
+  (= (get-file-type f) :binary))
+
+(defn code-file? [f]
+  (= (get-file-type f) :code))
+
+(defn font-file? [f]
+  (= (get-file-type f) :font))
+
+(defn image-file? [f]
+  (= (get-file-type f) :image))
+
+(defn text-file? [f]
+  (let [file-type (get-file-type f)]
+    (or
+     (= file-type :text)
+     (= file-type :code)
+     (= file-type :xml))))
+
+(defn video-file? [f]
+  (= (get-file-type f) :video))
+
+(defn xml-file? [f]
+  (= (get-file-type f) :xml))
 
 (defn unknown-file? [f]
   (= :unknown (get-file-type f)))
