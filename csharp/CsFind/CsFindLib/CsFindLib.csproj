@@ -13,4 +13,8 @@
     <EmbeddedResource Include="Resources\filetypes.json" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.7" />
+  </ItemGroup>
+
 </Project>

@@ -12,6 +12,17 @@ public static class FileUtil
 	private const string ParentPath = "..";
 	private static readonly HashSet<string> DotDirs = [CurrentPath, ParentPath];
 
+	public static string GetFileExtension(FilePath filePath)
+	{
+		var ext = filePath.Extension;
+		if (!string.IsNullOrEmpty(ext) && ext[0] == '.')
+		{
+			ext = ext[1..];
+		}
+
+		return ext;
+	}
+
 	public static string GetHomePath()
 	{
 		return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
