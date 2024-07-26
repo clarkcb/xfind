@@ -70,3 +70,12 @@ void get_find_options_path(char *dest)
     strcat(dest, FIND_OPTIONS_REL_PATH);
     dest[xfind_len + find_options_rel_path_len + 1] = '\0';
 }
+
+void get_xfind_db_path(char *dest)
+{
+    char xfind_path[MAX_PATH_LENGTH + 11]; // + "/src/xfind\0"
+    get_xfind_path(xfind_path);
+    strcat(dest, xfind_path);
+    strcat(dest, "/");
+    strcat(dest, XFIND_DB_REL_PATH);
+}
