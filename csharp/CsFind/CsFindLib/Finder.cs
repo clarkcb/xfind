@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,10 +18,12 @@ public class Finder
 	private readonly FileTypes _fileTypes;
 	private readonly EnumerationOptions _enumerationOptions;
 	private FindSettings Settings { get; }
+
 	public Finder(FindSettings settings)
 	{
 		Settings = settings;
 		ValidateSettings();
+		_enumerationOptions = GetEnumerationOptionsForSettings();
 		_fileTypes = new FileTypes();
 		_enumerationOptions = GetEnumerationOptionsForSettings();
 	}
@@ -337,29 +338,35 @@ public class Finder
 
 	private List<FileResult> GetAllFileResults()
 	{
-		var fileResultsBag = new ConcurrentBag<FileResult>();
-		try
+		// NOTE: this code causes problems when using sqlite, so we use the non-parallel version
+		//       until we can figure out how to make it work
+		// var fileResultsBag = new ConcurrentBag<FileResult>();
+		// try
+		// {
+		// 	Settings.Paths.AsParallel()
+		// 		.Select(GetFileResults)
+		// 		.ForAll(frs =>
+		// 		{
+		// 			foreach (var fr in frs)
+		// 			{
+		// 				fileResultsBag.Add(fr);
+		// 			}
+		// 		});
+		// }
+		// catch (AggregateException ae)
+		// {
+		// 	if (ae.InnerException != null)
+		// 	{
+		// 		throw ae.InnerException;
+		// 	}
+		// 	throw new FindException("Unknown error");
+		// }
+		var fileResults = new List<FileResult>();
+		foreach (var path in Settings.Paths)
 		{
-			Settings.Paths.AsParallel()
-				.Select(GetFileResults)
-				.ForAll(frs =>
-				{
-					foreach (var fr in frs)
-					{
-						fileResultsBag.Add(fr);
-					}
-				});
-		}
-		catch (AggregateException ae)
-		{
-			if (ae.InnerException != null)
-			{
-				throw ae.InnerException;
-			}
-			throw new FindException("Unknown error");
+			fileResults.AddRange(GetFileResults(path));
 		}
 
-		var fileResults = fileResultsBag.ToList();
 		var fileResultSorter = new FileResultSorter(Settings);
 		fileResultSorter.Sort(fileResults);
 		return fileResults;
