@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,10 +12,12 @@ public class Finder
 	private readonly FileTypes _fileTypes;
 	private readonly EnumerationOptions _enumerationOptions;
 	private FindSettings Settings { get; }
+	private EnumerationOptions _enumerationOptions;
 	public Finder(FindSettings settings)
 	{
 		Settings = settings;
 		ValidateSettings();
+		_enumerationOptions = GetEnumerationOptionsForSettings();
 		_fileTypes = new FileTypes();
 		_enumerationOptions = GetEnumerationOptionsForSettings();
 	}
@@ -273,18 +274,13 @@ public class Finder
 
 	private List<FileResult> GetAllFileResults()
 	{
-		var fileResultsBag = new ConcurrentBag<FileResult>();
-		Settings.Paths.AsParallel()
-			.Select(GetFileResults)
-			.ForAll(frs =>
-			{
-				foreach (var fr in frs)
-				{
-					fileResultsBag.Add(fr);
-				}
-			});
+		var fileResults = new List<FileResult>();
+		foreach (var path in Settings.Paths)
+		{
+			fileResults.AddRange(GetFileResults(path));
+		}
 
-		return fileResultsBag.ToList();
+		return fileResults;
 	}
 
 	public IEnumerable<FileResult> Find()
