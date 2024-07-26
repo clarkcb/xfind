@@ -1,10 +1,8 @@
 package ktfind
 
-import java.io.IOException
-
-import org.json.JSONObject
-import org.json.JSONTokener
+import org.sqlite.SQLiteConfig
 import java.nio.file.Path
+import java.sql.*
 import kotlin.io.path.extension
 
 /**
@@ -40,122 +38,105 @@ enum class FileType(val value: String) {
     }
 }
 
-private const val fileTypesJsonPath = "/filetypes.json"
-
 class FileTypes {
+    private val fileTypes = listOf(
+        FileType.UNKNOWN,
+        FileType.ARCHIVE,
+        FileType.AUDIO,
+        FileType.BINARY,
+        FileType.CODE,
+        FileType.FONT,
+        FileType.IMAGE,
+        FileType.TEXT,
+        FileType.VIDEO,
+        FileType.XML)
 
-    private val fileTypeExtMap: MutableMap<String, Set<String>> = mutableMapOf()
-    private val fileTypeNameMap: MutableMap<String, Set<String>> = mutableMapOf()
+    private val SELECT_FILE_TYPE_ID_FOR_FILE_NAME: String = "SELECT file_type_id FROM file_name WHERE name = ?"
+    private val SELECT_FILE_TYPE_ID_FOR_EXTENSION: String = "SELECT file_type_id FROM file_extension WHERE extension = ?"
 
-    init {
-        setFileTypeMapsFromJson()
+    private var _conn: Connection? = null
+    private val _fileTypeCache = HashMap<String, FileType>()
+
+    private fun getConnection(): Connection? {
+        if (_conn == null) {
+            try {
+                val cls = Class.forName("org.sqlite.JDBC")
+                val config = SQLiteConfig()
+                config.setReadOnly(true)
+                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties())
+            } catch (e: Exception) {
+                logError(e.message!!)
+            }
+        }
+        return _conn
     }
 
-    private fun setFileTypeMapsFromJson() {
+    private fun getFileTypeForQueryAndElem(query: String, elem: String): FileType {
+        val conn = getConnection()
         try {
-            val fileTypesInputStream = javaClass.getResourceAsStream(fileTypesJsonPath)
-            val jsonObj = JSONObject(JSONTokener(fileTypesInputStream!!))
-            val fileTypesArray = jsonObj.getJSONArray("filetypes")!!.iterator()
-            while (fileTypesArray.hasNext()) {
-                val it = fileTypesArray.next() as JSONObject
-                val typeName = it.getString("type")!!
-                fileTypeExtMap[typeName] = it.getJSONArray("extensions")!!.toList().map { it.toString() }.toSet()
-                fileTypeNameMap[typeName] = it.getJSONArray("names")!!.toList().map { it.toString() }.toSet()
+            val stmt = conn!!.prepareStatement(query)
+            stmt.setString(1, elem)
+            val rs = stmt.executeQuery()
+            if (rs.next()) {
+                val fileTypeId = rs.getInt("file_type_id") - 1
+                return fileTypes[fileTypeId]
             }
-            val allTextExts: MutableSet<String> = mutableSetOf()
-            allTextExts.addAll(fileTypeExtMap["code"]!!)
-            allTextExts.addAll(fileTypeExtMap["text"]!!)
-            allTextExts.addAll(fileTypeExtMap["xml"]!!)
-            fileTypeExtMap["text"] = allTextExts
-            val allTextNames: MutableSet<String> = mutableSetOf()
-            allTextNames.addAll(fileTypeNameMap["code"]!!)
-            allTextNames.addAll(fileTypeNameMap["text"]!!)
-            allTextNames.addAll(fileTypeNameMap["xml"]!!)
-            fileTypeNameMap["text"] = allTextNames
-        } catch (e: IOException) {
-            e.printStackTrace()
+        } catch (e: SQLException) {
+            logError(e.message!!)
         }
+        return FileType.UNKNOWN
     }
 
-    fun getFileType(path: Path): FileType {
-        when {
-            // more specific file types first
-            isCodeFile(path) -> {
-                return FileType.CODE
-            }
+    private fun getFileTypeForFileName(fileName: String): FileType {
+        return getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_FILE_NAME, fileName)
+    }
 
-            isArchiveFile(path) -> {
-                return FileType.ARCHIVE
-            }
-
-            isAudioFile(path) -> {
-                return FileType.AUDIO
-            }
-
-            isFontFile(path) -> {
-                return FileType.FONT
-            }
-
-            isImageFile(path) -> {
-                return FileType.IMAGE
-            }
-
-            isVideoFile(path) -> {
-                return FileType.VIDEO
-            }
-
-            // more general file types last
-            isXmlFile(path) -> {
-                return FileType.XML
-            }
-
-            isTextFile(path) -> {
-                return FileType.TEXT
-            }
-
-            isBinaryFile(path) -> {
-                return FileType.BINARY
-            }
-
-            else -> {
-                return FileType.UNKNOWN
-            }
+    private fun getFileTypeForExtension(fileExt: String): FileType {
+        if (_fileTypeCache.containsKey(fileExt)) {
+            return _fileTypeCache[fileExt]!!
         }
+        val fileType = getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_EXTENSION, fileExt)
+        _fileTypeCache[fileExt] = fileType
+        return fileType
+    }
+
+    fun getFileType(f: Path): FileType {
+        val fileType = getFileTypeForFileName(f.fileName.toString())
+        if (fileType !== FileType.UNKNOWN) {
+            return fileType
+        }
+        return getFileTypeForExtension(f.extension)
     }
 
     fun isArchiveFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.ARCHIVE.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.ARCHIVE.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.ARCHIVE
     }
 
     fun isAudioFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.AUDIO.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.AUDIO.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.AUDIO
     }
 
     fun isBinaryFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.BINARY.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.BINARY.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.BINARY
     }
 
     fun isCodeFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.CODE.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.CODE.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.CODE
     }
 
     fun isFontFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.FONT.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.FONT.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.FONT
     }
 
     fun isImageFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.IMAGE.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.IMAGE.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.IMAGE
     }
 
     fun isTextFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.TEXT.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.TEXT.value] ?: setOf()).contains(path.extension.lowercase())
+        val fileType = getFileType(path)
+        return fileType == FileType.TEXT
+                || fileType == FileType.CODE
+                || fileType == FileType.XML
     }
 
     fun isUnknownFile(path: Path): Boolean {
@@ -163,12 +144,10 @@ class FileTypes {
     }
 
     fun isVideoFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.VIDEO.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.VIDEO.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.VIDEO
     }
 
     fun isXmlFile(path: Path): Boolean {
-        return (fileTypeNameMap[FileType.XML.value] ?: setOf()).contains(path.fileName.toString())
-                || (fileTypeExtMap[FileType.XML.value] ?: setOf()).contains(path.extension.lowercase())
+        return getFileType(path) == FileType.XML
     }
 }
