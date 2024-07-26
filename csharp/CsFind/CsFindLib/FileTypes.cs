@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text.Json;
-using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data;
+using Microsoft.Data.Sqlite;
 
 namespace CsFindLib;
 
@@ -30,47 +30,23 @@ public class FileTypes
 	private const string Text = "text";
 	private const string Video = "video";
 	private const string Xml = "xml";
-
-	private readonly string _fileTypesResource;
-	private readonly IDictionary<string, ISet<string>> _fileTypeExtDictionary;
-	private readonly IDictionary<string, ISet<string>> _fileTypeNameDictionary;
+	
+	private SqliteConnection _conn;
+	private readonly IDictionary<string, FileType> _fileExtTypeIdDictionary;
 
 	public FileTypes()
 	{
-		_fileTypesResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.filetypes.json");
-		_fileTypeExtDictionary = new Dictionary<string, ISet<string>>();
-		_fileTypeNameDictionary = new Dictionary<string, ISet<string>>();
-		PopulateFileTypesFromJson();
+		_conn = new SqliteConnection("Data Source=" + FindConfig.XfindDb + ";Mode=ReadOnly");
+		_fileExtTypeIdDictionary = new ConcurrentDictionary<string, FileType>();
 	}
 
-	private void PopulateFileTypesFromJson()
+	private SqliteConnection GetConnection()
 	{
-		var filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(_fileTypesResource);
-		if (filetypesDict!.ContainsKey("filetypes"))
+		if (_conn.State == ConnectionState.Closed)
 		{
-			var filetypeDicts = filetypesDict["filetypes"];
-			foreach (var filetypeDict in filetypeDicts)
-			{
-				if (filetypeDict.TryGetValue("type", out var typeValue))
-				{
-					var name = ((JsonElement)typeValue).GetString();
-					if (filetypeDict.TryGetValue("extensions", out var extensionsValue))
-					{
-						var extensions = ((JsonElement)extensionsValue).EnumerateArray()
-							.Select(x => "." + x.GetString());
-						var extensionSet = new HashSet<string>(extensions);
-						_fileTypeExtDictionary[name!] = extensionSet;
-					}
-					if (filetypeDict.TryGetValue("names", out var namesValue))
-					{
-						var names = ((JsonElement)namesValue).EnumerateArray()
-							.Select(x => "" + x.GetString());
-						var nameSet = new HashSet<string>(names);
-						_fileTypeNameDictionary[name!] = nameSet;
-					}
-				}
-			}
+			_conn.Open();
 		}
+		return _conn;
 	}
 
 	public static FileType FromName(string name)
@@ -92,72 +68,100 @@ public class FileTypes
 			};
 	}
 
+	private FileType GetFileTypeForQueryAndElem(string query, string elem)
+	{
+		var conn = GetConnection();
+		using var command = conn.CreateCommand();
+		command.CommandText = query;
+		command.Parameters.AddWithValue("$x0", elem);
+
+		using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
+		if (reader.Read())
+		{
+			var fileTypeId = reader.GetInt32(0) - 1;
+			return (FileType)(fileTypeId);
+		}
+
+		return FileType.Unknown;
+	}
+
+	private FileType GetFileTypeForFileName(string fileName)
+	{
+		if (string.IsNullOrEmpty(fileName))
+		{
+			return FileType.Unknown;
+		}
+
+		const string query = "SELECT file_type_id FROM file_name WHERE name = $x0";
+		return GetFileTypeForQueryAndElem(query, fileName);
+	}
+
+	private FileType GetFileTypeForExtension(string fileExt)
+	{
+		if (string.IsNullOrEmpty(fileExt))
+		{
+			return FileType.Unknown;
+		}
+		if (_fileExtTypeIdDictionary.TryGetValue(fileExt, out var value))
+		{
+			return value;
+		}
+		
+		const string query = "SELECT file_type_id FROM file_extension WHERE extension = $x0";
+		var fileType = GetFileTypeForQueryAndElem(query, fileExt);
+		_fileExtTypeIdDictionary[fileExt] = fileType;
+		return fileType;
+	}
+
 	public FileType GetFileType(FilePath filePath)
 	{
-		// more specific first
-		if (IsCodeFile(filePath)) return FileType.Code;
-		if (IsArchiveFile(filePath)) return FileType.Archive;
-		if (IsAudioFile(filePath)) return FileType.Audio;
-		if (IsFontFile(filePath)) return FileType.Font;
-		if (IsImageFile(filePath)) return FileType.Image;
-		if (IsVideoFile(filePath)) return FileType.Video;
-		// more general last
-		if (IsXmlFile(filePath)) return FileType.Xml;
-		if (IsTextFile(filePath)) return FileType.Text;
-		if (IsBinaryFile(filePath)) return FileType.Binary;
-		return FileType.Unknown;
+		var fileTypeForFileName = GetFileTypeForFileName(filePath.Name);
+		if (fileTypeForFileName != FileType.Unknown)
+		{
+			return fileTypeForFileName;
+		}
+		return GetFileTypeForExtension(FileUtil.GetFileExtension(filePath));
 	}
 
 	public bool IsArchiveFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Archive].Contains(filePath.Name)
-		        || _fileTypeExtDictionary[Archive].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Archive;
 	}
 
 	public bool IsAudioFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Audio].Contains(filePath.Name)
-		        || _fileTypeExtDictionary[Audio].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Audio;
 	}
 
 	public bool IsBinaryFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Binary].Contains(filePath.Name)
-		        || _fileTypeExtDictionary[Binary].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Binary;
 	}
 
 	public bool IsCodeFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Code].Contains(filePath.Name)
-		       || _fileTypeExtDictionary[Code].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Code;
 	}
 
 	public bool IsFontFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Font].Contains(filePath.Name)
-		       || _fileTypeExtDictionary[Font].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Font;
 	}
 
 	public bool IsImageFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Image].Contains(filePath.Name)
-		       || _fileTypeExtDictionary[Image].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Image;
 	}
 
 	public bool IsTextFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Text].Contains(filePath.Name) ||
-		        _fileTypeExtDictionary[Text].Contains(filePath.Extension.ToLowerInvariant()) ||
-		        _fileTypeNameDictionary[Code].Contains(filePath.Name) ||
-		        _fileTypeExtDictionary[Code].Contains(filePath.Extension.ToLowerInvariant()) ||
-		        _fileTypeNameDictionary[Xml].Contains(filePath.Name) ||
-		        _fileTypeExtDictionary[Xml].Contains(filePath.Extension.ToLowerInvariant());
+		var fileType = GetFileType(filePath);
+		return fileType is FileType.Text or FileType.Code or FileType.Xml;
 	}
 
 	public bool IsVideoFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Video].Contains(filePath.Name)
-		       || _fileTypeExtDictionary[Video].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Video;
 	}
 
 	public bool IsUnknownFile(FilePath filePath)
@@ -167,7 +171,6 @@ public class FileTypes
 
 	public bool IsXmlFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Xml].Contains(filePath.Name)
-		        || _fileTypeExtDictionary[Xml].Contains(filePath.Extension.ToLowerInvariant());
+		return GetFileType(filePath) == FileType.Xml;
 	}
 }
