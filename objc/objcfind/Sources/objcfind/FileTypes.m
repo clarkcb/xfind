@@ -16,9 +16,8 @@
 @property NSString *video;
 @property NSString *xml;
 
-
-@property NSDictionary<NSString*,NSSet<NSString*>*> *fileTypeExtDict;
-@property NSDictionary<NSString*,NSSet<NSString*>*> *fileTypeNameDict;
+@property sqlite3 *db;
+@property NSMutableDictionary *extTypeCache;
 
 @end
 
@@ -37,55 +36,16 @@
         self.unknown = [NSString stringWithUTF8String:T_UNKNOWN];
         self.video = [NSString stringWithUTF8String:T_VIDEO];
         self.xml = [NSString stringWithUTF8String:T_XML];
-        NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *ftArr = [self fileTypesFromJson];
-        self.fileTypeExtDict = ftArr[0];
-        self.fileTypeNameDict = ftArr[1];
+        
+        NSString *xfindDbPath = getXfindDbPath();
+        sqlite3 *db;
+        int rc = sqlite3_open_v2([xfindDbPath UTF8String], &db, SQLITE_OPEN_READONLY, nil);
+        if (rc == SQLITE_OK && db != nil) {
+            self.db = db;
+        }
+        self.extTypeCache = [[NSMutableDictionary alloc] initWithCapacity:10];
     }
     return self;
-}
-
-- (NSArray<NSDictionary<NSString*,NSSet<NSString*>*>*>*) fileTypesFromJson {
-    NSMutableString *fileTypesJsonPath = [NSMutableString stringWithString:getXfindSharedPath()];
-    [fileTypesJsonPath appendString:@"/filetypes.json"];
-
-    NSMutableDictionary *fileTypeExtDict = [[NSMutableDictionary alloc] init];
-    NSMutableDictionary *fileTypeNameDict = [[NSMutableDictionary alloc] init];
-
-    if (![[NSFileManager defaultManager] fileExistsAtPath:fileTypesJsonPath]) {
-        return nil;
-    }
-
-    NSData *data = [NSData dataWithContentsOfFile:fileTypesJsonPath];
-
-    if (NSClassFromString(@"NSJSONSerialization")) {
-        NSError *error = nil;
-        id jsonObject = [NSJSONSerialization
-                         JSONObjectWithData:data
-                         options:0
-                         error:&error];
-
-        if (error) { /* JSON was malformed, act appropriately here */ }
-
-        if ([jsonObject isKindOfClass:[NSDictionary class]]) {
-            NSArray *fileTypes = jsonObject[@"filetypes"];
-            for (NSDictionary *typeDict in fileTypes) {
-                NSString *type = typeDict[@"type"];
-                NSArray *extensions = typeDict[@"extensions"];
-                fileTypeExtDict[type] = [NSSet setWithArray:extensions];
-                NSArray *names = typeDict[@"names"];
-                fileTypeNameDict[type] = [NSSet setWithArray:names];
-            }
-        }
-    }
-    NSMutableArray<NSDictionary<NSString*,NSSet<NSString*>*>*> *fileTypesDictionaries = [[NSMutableArray alloc] init];
-    NSDictionary *ftExtDict = [NSDictionary dictionaryWithDictionary:fileTypeExtDict];
-    [fileTypesDictionaries addObject:ftExtDict];
-
-    NSDictionary *ftNameDict = [NSDictionary dictionaryWithDictionary:fileTypeNameDict];
-    [fileTypesDictionaries addObject:ftNameDict];
-
-    return [NSArray arrayWithArray:fileTypesDictionaries];
-
 }
 
 + (FileType) fromName:(NSString*)typeName {
@@ -151,82 +111,84 @@
     return [NSString stringWithUTF8String:T_UNKNOWN];
 }
 
-- (FileType) getFileType:(NSString*)fileName {
-    // most specific first
-    if ([self isCodeFile:fileName]) {
-        return FileTypeCode;
+- (FileType) getFileTypeForQuery:(NSString*)query andElem:(NSString*)elem {
+    FileType fileType = FileTypeUnknown;
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(self.db, [query UTF8String], -1, &stmt, NULL);
+    int rc = sqlite3_bind_text(stmt, 1, [elem UTF8String], -1, SQLITE_TRANSIENT);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "error: %s\n", sqlite3_errmsg(self.db));
     }
-    if ([self isArchiveFile:fileName]) {
-        return FileTypeArchive;
+    if (sqlite3_step(stmt) == SQLITE_ROW) {
+        fileType = sqlite3_column_int(stmt, 0) - 2;
     }
-    if ([self isAudioFile:fileName]) {
-        return FileTypeAudio;
-    }
-    if ([self isFontFile:fileName]) {
-        return FileTypeFont;
-    }
-    if ([self isImageFile:fileName]) {
-        return FileTypeImage;
-    }
-    if ([self isVideoFile:fileName]) {
-        return FileTypeVideo;
-    }
-    // most general last
-    if ([self isXmlFile:fileName]) {
-        return FileTypeXml;
-    }
-    if ([self isTextFile:fileName]) {
-        return FileTypeText;
-    }
-    if ([self isBinaryFile:fileName]) {
-        return FileTypeBinary;
-    }
-    return FileTypeUnknown;
+    sqlite3_finalize(stmt);
+    return fileType;
 }
 
-- (BOOL) isFileOfType:(NSString*)fileName type:(NSString*)typeName {
-    if ([self.fileTypeNameDict[typeName] containsObject:fileName]) {
-        return true;
+- (FileType) getFileTypeForFileName:(NSString *)fileName {
+    NSString *query = @"select file_type_id from file_name where name=?";
+    return [self getFileTypeForQuery:query andElem:fileName];
+}
+
+- (FileType) getFileTypeForExtension:(NSString *)fileExt {
+    if (self.extTypeCache[fileExt]) {
+        NSNumber* n = self.extTypeCache[fileExt];
+        return [n intValue];
+    }
+    NSString *query = @"select file_type_id from file_extension where extension=?";
+    FileType fileType = [self getFileTypeForQuery:query andElem:fileExt];
+    [self.extTypeCache setObject:[NSNumber numberWithInt:fileType] forKey:fileExt];
+    return fileType;
+}
+
+- (FileType) getFileType:(NSString*)fileName {
+    if (fileName == nil || fileName.length == 0) {
+        return FileTypeUnknown;
+    }
+    FileType fileType = [self getFileTypeForFileName:fileName];
+    if (fileType != FileTypeUnknown) {
+        return fileType;
     }
     NSString *ext = [FileUtil getExtension:fileName];
-    return self.fileTypeExtDict[typeName] != nil &&
-    [self.fileTypeExtDict[typeName] containsObject:ext];
+    return [self getFileTypeForExtension:ext];
 }
 
 - (BOOL) isArchiveFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.archive];
+    return [self getFileType:fileName] == FileTypeArchive;
 }
 
 - (BOOL) isAudioFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.audio];
+    return [self getFileType:fileName] == FileTypeAudio;
 }
 
 - (BOOL) isBinaryFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.binary];
+    return [self getFileType:fileName] == FileTypeBinary;
 }
 
 - (BOOL) isCodeFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.code];
+    return [self getFileType:fileName] == FileTypeCode;
 }
 
 - (BOOL) isFontFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.font];
+    return [self getFileType:fileName] == FileTypeFont;
 }
 
 - (BOOL) isImageFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.image];
+    return [self getFileType:fileName] == FileTypeImage;
 }
 
 - (BOOL) isTextFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.text];
+    FileType fileType = [self getFileType:fileName];
+    return fileType == FileTypeText || fileType == FileTypeCode || fileType == FileTypeXml;
 }
 
 - (BOOL) isVideoFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.video];
+    return [self getFileType:fileName] == FileTypeVideo;
 }
 
 - (BOOL) isXmlFile:(NSString*)fileName {
-    return [self isFileOfType:fileName type:self.xml];
+    return [self getFileType:fileName] == FileTypeXml;
 }
 
 - (BOOL) isUnknownFile:(NSString*)fileName {

@@ -2,6 +2,7 @@
 #define FileTypes_h
 
 #import <Foundation/Foundation.h>
+#import <sqlite3.h>
 #import "common.h"
 
 @interface FileTypes : NSObject
@@ -9,6 +10,9 @@
 - (NSArray*) fileTypesFromJson;
 + (FileType) fromName:(NSString*)typeName;
 + (NSString*) toName:(FileType)fileType;
+- (FileType) getFileTypeForQuery:(NSString*)query andElem:(NSString*)elem;
+- (FileType) getFileTypeForFileName:(NSString*)fileName;
+- (FileType) getFileTypeForExtension:(NSString*)fileExt;
 - (FileType) getFileType:(NSString*)fileName;
 - (BOOL) isArchiveFile:(NSString*)fileName;
 - (BOOL) isAudioFile:(NSString*)fileName;
