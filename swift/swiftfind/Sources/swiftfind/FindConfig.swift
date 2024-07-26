@@ -14,6 +14,7 @@ public struct FindConfig {
     public let fileTypesPath: String
     public let findOptionsPath: String
     public let defaultFindSettingsPath: String
+    public let xfindDb: String
 
     public init() {
         if let xfindEnvPath = ProcessInfo.processInfo.environment["XFIND_PATH"] {
@@ -25,5 +26,6 @@ public struct FindConfig {
         fileTypesPath = "\(sharedPath)/filetypes.json"
         findOptionsPath = "\(sharedPath)/findoptions.json"
         defaultFindSettingsPath = "\(NSHomeDirectory())/.config/xfind/settings.json"
+        xfindDb = "\(sharedPath)/xfind.db"
     }
 }
