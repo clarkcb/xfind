@@ -2,9 +2,9 @@
 #define FILETYPES_H
 
 #include <stdbool.h>
+#include <sqlite3.h>
 
 #include "intnode.h"
-#include "stringarray.h"
 #include "finderr.h"
 
 #define FILE_TYPE_NAME_ARCHIVE "archive"
@@ -34,29 +34,18 @@ typedef enum {
 
 
 typedef struct FileTypes {
-    StringArray *archive_extensions;
-    StringArray *archive_names;
-    StringArray *audio_extensions;
-    StringArray *audio_names;
-    StringArray *binary_extensions;
-    StringArray *binary_names;
-    StringArray *code_extensions;
-    StringArray *code_names;
-    StringArray *font_extensions;
-    StringArray *font_names;
-    StringArray *image_extensions;
-    StringArray *image_names;
-    StringArray *text_extensions;
-    StringArray *text_names;
-    StringArray *video_extensions;
-    StringArray *video_names;
-    StringArray *xml_extensions;
-    StringArray *xml_names;
+    sqlite3 *db;
 } FileTypes;
 
 FileTypes *new_file_types(void);
 
 error_t get_file_types(FileTypes *file_types);
+
+FileType get_file_type_for_file_name(const char *file_name, const FileTypes *file_types);
+
+FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
+
+FileType get_file_type(const char *file_name, const FileTypes *file_types);
 
 bool is_archive_ext(const char *ext, const FileTypes *file_types);
 
@@ -93,12 +82,6 @@ bool is_video_name(const char *name, const FileTypes *file_types);
 bool is_xml_ext(const char *ext, const FileTypes *file_types);
 
 bool is_xml_name(const char *name, const FileTypes *file_types);
-
-FileType get_file_type_for_filename(const char *filename, const FileTypes *file_types);
-
-FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
-
-FileType get_file_type(const char *file_name, const FileTypes *file_types);
 
 FileType file_type_from_name(const char *name);
 
