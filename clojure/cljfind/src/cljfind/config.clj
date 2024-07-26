@@ -18,3 +18,6 @@
 
 (def ^:const ^String FINDOPTIONSPATH
   (clojure.string/join java.io.File/separator [SHAREDPATH "findoptions.json"]))
+
+(def ^:const ^String XFINDDB
+  (clojure.string/join java.io.File/separator [SHAREDPATH "xfind.db"]))
