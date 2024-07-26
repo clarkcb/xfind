@@ -7,8 +7,9 @@
 //
 
 import Foundation
+import SQLite
 
-public enum FileType {
+public enum FileType : Int {
     case unknown, archive, audio, binary, code, font, image, text, video, xml
 }
 
@@ -25,37 +26,16 @@ public class FileTypes {
     fileprivate static let fileTypeXmlName = "xml"
 
     private var config: FindConfig
-    private var fileTypeExtDict = [String: Set<String>]()
-    private var fileTypeNameDict = [String: Set<String>]()
+    private var db: Connection?
+    private var extFileTypeCache = [String: FileType]()
 
     public init() {
         config = FindConfig()
-        setFileTypesFromJson()
-    }
-
-    private func setFileTypesFromJson() {
         do {
-            let fileUrl = URL(fileURLWithPath: config.fileTypesPath)
-            let data = try Data(contentsOf: fileUrl, options: .mappedIfSafe)
-            if let json = try JSONSerialization.jsonObject(with: data, options: []) as? [String: Any] {
-                if let filetypes = json["filetypes"] as? [[String: Any]] {
-                    for ft in filetypes {
-                        let typeName = ft["type"] as! String
-                        let extensions = ft["extensions"] as! [String]
-                        fileTypeExtDict[typeName] = Set(extensions)
-                        let names = ft["names"] as! [String]
-                        fileTypeNameDict[typeName] = Set(names)
-                    }
-                    fileTypeExtDict[FileTypes.fileTypeTextName] = fileTypeExtDict[FileTypes.fileTypeTextName]!
-                        .union(fileTypeExtDict[FileTypes.fileTypeCodeName]!)
-                        .union(fileTypeExtDict[FileTypes.fileTypeXmlName]!)
-                    fileTypeNameDict[FileTypes.fileTypeTextName] = fileTypeNameDict[FileTypes.fileTypeTextName]!
-                        .union(fileTypeNameDict[FileTypes.fileTypeCodeName]!)
-                        .union(fileTypeNameDict[FileTypes.fileTypeXmlName]!)
-                }
-            }
-        } catch let error as NSError {
+            db = try Connection(config.xfindDb, readonly: true)
+        } catch {
             print("Failed to load: \(error.localizedDescription)")
+            db = nil
         }
     }
 
@@ -110,75 +90,74 @@ public class FileTypes {
         }
     }
 
-    public func getFileType(_ fileName: String) -> FileType {
-        // most specific first
-        if isCodeFile(fileName) {
-            return FileType.code
-        }
-        if isArchiveFile(fileName) {
-            return FileType.archive
-        }
-        if isAudioFile(fileName) {
-            return FileType.audio
-        }
-        if isFontFile(fileName) {
-            return FileType.font
-        }
-        if isImageFile(fileName) {
-            return FileType.image
-        }
-        if isVideoFile(fileName) {
-            return FileType.video
-        }
-
-        // most general last
-        if isXmlFile(fileName) {
-            return FileType.xml
-        }
-        if isTextFile(fileName) {
-            return FileType.text
-        }
-        if isBinaryFile(fileName) {
-            return FileType.binary
+    private func getFileTypeForQueryAndElem(_ query: String, _ elem: String) -> FileType {
+        do {
+            let stmt = try self.db!.prepare(query, elem)
+            for row in stmt {
+                let fileTypeId = Int(row[0] as! Int64) - 1
+                return FileType(rawValue: fileTypeId)!
+            }
+        } catch {
+            print("Failed to execute file_name query: \(error.localizedDescription)")
         }
         return FileType.unknown
     }
 
-    private func isFileOfType(_ fileName: String, _ typeName: String) -> Bool {
-        fileTypeNameDict[typeName]!.contains(fileName)
-            || fileTypeExtDict[typeName]!.contains(FileUtil.getExtension(fileName))
+    private func getFileTypeFromFileName(_ fileName: String) -> FileType {
+        let query = "SELECT file_type_id FROM file_name WHERE name = ?"
+        return getFileTypeForQueryAndElem(query, fileName)
+    }
+
+    private func getFileTypeFromExtension(_ fileExt: String) -> FileType {
+        if extFileTypeCache.index(forKey: fileExt) != nil {
+            return extFileTypeCache[fileExt]!
+        }
+        let query = "SELECT file_type_id FROM file_extension WHERE extension = ?"
+        let fileType = getFileTypeForQueryAndElem(query, fileExt)
+        extFileTypeCache[fileExt] = fileType
+        return fileType
+    }
+
+    public func getFileType(_ fileName: String) -> FileType {
+        let fileTypeFromFileName = getFileTypeFromFileName(fileName)
+        if fileTypeFromFileName != FileType.unknown {
+            return fileTypeFromFileName
+        }
+        let fileTypeFromExtension = getFileTypeFromExtension(FileUtil.getExtension(fileName))
+        return fileTypeFromExtension
     }
 
     public func isArchiveFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeArchiveName)
+        getFileType(fileName) == FileType.archive
     }
 
     public func isAudioFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeAudioName)
+        getFileType(fileName) == FileType.audio
     }
 
     public func isBinaryFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeBinaryName)
+        getFileType(fileName) == FileType.binary
     }
 
     public func isCodeFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeCodeName)
+        getFileType(fileName) == FileType.code
     }
 
     public func isFontFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeFontName)
+        getFileType(fileName) == FileType.font
     }
 
     public func isImageFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeImageName)
+        getFileType(fileName) == FileType.image
     }
 
     public func isTextFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeTextName)
+        let fileType = getFileType(fileName)
+        return (fileType == FileType.text || fileType == FileType.code || fileType == FileType.xml)
     }
 
     public func isVideoFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeVideoName)
+        getFileType(fileName) == FileType.video
     }
 
     public func isUnknownFile(_ fileName: String) -> Bool {
@@ -186,6 +165,6 @@ public class FileTypes {
     }
 
     public func isXmlFile(_ fileName: String) -> Bool {
-        isFileOfType(fileName, FileTypes.fileTypeXmlName)
+        getFileType(fileName) == FileType.xml
     }
 }
