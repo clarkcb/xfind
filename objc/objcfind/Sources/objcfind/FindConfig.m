@@ -23,3 +23,8 @@ NSString* getXfindDefaultSettingsPath() {
     NSString *xfindDefaultSettingsPath = [[[[NSProcessInfo processInfo] environment] objectForKey:@"HOME"] stringByAppendingString:@"/.config/xfind/settings.json"];
     return xfindDefaultSettingsPath;
 }
+
+NSString* getXfindDbPath() {
+    NSString *xfindSharedPath = getXfindSharedPath();
+    return [xfindSharedPath stringByAppendingPathComponent:@"xfind.db"];
+}
