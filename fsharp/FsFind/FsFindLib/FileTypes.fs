@@ -1,9 +1,10 @@
 ﻿namespace FsFindLib
 
+open Microsoft.Data.Sqlite
 open System
 open System.Collections.Generic
+open System.Data
 open System.IO
-open System.Text.Json
 
 type FileType = 
     | Unknown = 0
@@ -30,40 +31,8 @@ type FileTypes() =
     static let video = "video"
     static let xml = "xml"
     static let unknown = "unknown"
-
-    let PopulateFileTypesFromJson (jsonString : string) =
-        let fileTypeExtDictionary = Dictionary<string, ISet<string>>()
-        let fileTypeNameDictionary = Dictionary<string, ISet<string>>()
-        let filetypesDict = JsonSerializer.Deserialize<FileTypesDictionary>(jsonString)
-        let filetypeDicts = filetypesDict["filetypes"]
-        for filetypeDict in filetypeDicts do
-            let typeName = (filetypeDict["type"] :?> JsonElement).GetString()
-            let extensions =
-                [ for x in (filetypeDict["extensions"] :?> JsonElement).EnumerateArray() do
-                    yield "." + x.GetString() ]
-            fileTypeExtDictionary.Add(typeName, HashSet<String>(extensions))
-            let names =
-                [ for x in (filetypeDict["names"] :?> JsonElement).EnumerateArray() do
-                    yield x.GetString() ]
-            fileTypeNameDictionary.Add(typeName, HashSet<String>(names))
-        let allTextExts = HashSet<String>(fileTypeExtDictionary[text])
-        allTextExts.UnionWith(fileTypeExtDictionary[code])
-        allTextExts.UnionWith(fileTypeExtDictionary[xml])
-        if fileTypeExtDictionary.Remove(text) then
-            fileTypeExtDictionary.Add(text, allTextExts)
-        let allTextNames = HashSet<String>(fileTypeNameDictionary[text])
-        allTextNames.UnionWith(fileTypeNameDictionary[code])
-        allTextNames.UnionWith(fileTypeNameDictionary[xml])
-        if fileTypeNameDictionary.Remove(text) then
-            fileTypeNameDictionary.Add(text, allTextNames)
-        (fileTypeExtDictionary, fileTypeNameDictionary)
-
-    let _fileTypesResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.filetypes.json")
-    let _fileTypeExtDictionary, _fileTypeNameDictionary = PopulateFileTypesFromJson(_fileTypesResource)
-
-    // read-only member properties
-    member this.FileTypeExtDictionary = _fileTypeExtDictionary
-    member this.FileTypeNameDictionary = _fileTypeNameDictionary
+    
+    let _conn = new SqliteConnection("Data Source=" + FindConfig.XfindDb + ";Mode=ReadOnly")
 
     static member FromName (name : string) : FileType =
         let lname = name.ToLowerInvariant()
@@ -91,56 +60,70 @@ type FileTypes() =
         | FileType.Xml -> xml
         | _ -> unknown
 
-    member this.GetFileType (f : FileInfo) : FileType =
-        // most specific first
-        if this.IsCodeFile f then FileType.Code
-        else if this.IsArchiveFile f then FileType.Archive
-        else if this.IsAudioFile f then FileType.Audio
-        else if this.IsFontFile f then FileType.Font
-        else if this.IsImageFile f then FileType.Image
-        else if this.IsVideoFile f then FileType.Video
-        // most general last
-        else if this.IsXmlFile f then FileType.Xml
-        else if this.IsTextFile f then FileType.Text
-        else if this.IsBinaryFile f then FileType.Binary
-        else FileType.Unknown
+    member this.GetConnection () : SqliteConnection =
+        if _conn.State = ConnectionState.Closed then _conn.Open()
+        _conn
+    
+    member this.GetFileTypeForQueryAndElem (query : string) (elem : string) : FileType =
+        let conn = this.GetConnection()
+        use command = conn.CreateCommand()
+        command.CommandText <- query
+        command.Parameters.AddWithValue("$x0", elem)
+        let reader : SqliteDataReader = command.ExecuteReader()
+        if reader.Read() then
+            enum<FileType>(reader.GetInt32(0) - 1)
+        else
+            FileType.Unknown
+
+    member this.GetFileTypeForFileName (fileName : string) : FileType =
+        if String.IsNullOrEmpty(fileName) then
+            FileType.Unknown
+        else
+            let query = "SELECT file_type_id FROM file_name WHERE name = $x0"
+            this.GetFileTypeForQueryAndElem query fileName
+
+    member this.GetFileTypeForExtension (fileExt : string) : FileType =
+        if String.IsNullOrEmpty(fileExt) then
+            FileType.Unknown
+        else
+            let query = "SELECT file_type_id FROM file_extension WHERE extension = $x0"
+            this.GetFileTypeForQueryAndElem query fileExt
+
+    member this.GetFileType (fi : FileInfo) : FileType =
+        match this.GetFileTypeForFileName(fi.Name) with
+        | FileType.Unknown -> this.GetFileTypeForExtension(FileUtil.GetFileExtension(fi))
+        | fileType -> fileType
 
     member this.IsArchiveFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[archive] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[archive]
+        this.GetFileType(f) = FileType.Archive
 
     member this.IsAudioFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[audio] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[audio]
+        this.GetFileType(f) = FileType.Audio
 
     member this.IsBinaryFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[binary] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[binary]
+        this.GetFileType(f) = FileType.Binary
 
     member this.IsCodeFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[code] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[code]
+        this.GetFileType(f) = FileType.Code
 
     member this.IsFontFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[font] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[font]
+        this.GetFileType(f) = FileType.Font
 
     member this.IsImageFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[image] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[image]
+        this.GetFileType(f) = FileType.Image
 
     member this.IsTextFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[text] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[text]
+        let fileType = this.GetFileType(f)
+        fileType = FileType.Text
+        || fileType = FileType.Code
+        || fileType = FileType.Xml
 
     member this.IsVideoFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[video] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[video]
+        this.GetFileType(f) = FileType.Video
 
     member this.IsUnknownFile (f : FileInfo) : bool =
         (this.GetFileType f) = FileType.Unknown
 
     member this.IsXmlFile (f : FileInfo) : bool =
-        Seq.exists (fun x -> x = f.Name) this.FileTypeNameDictionary[xml] ||
-        Seq.exists (fun x -> x = f.Extension.ToLowerInvariant()) this.FileTypeExtDictionary[xml]
+        this.GetFileType(f) = FileType.Xml
     ;;
