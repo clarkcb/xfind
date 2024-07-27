@@ -78,6 +78,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.3"
+  ffi:
+    dependency: transitive
+    description:
+      name: ffi
+      sha256: "493f37e7df1804778ff3a53bd691d8692ddf69702cf4c1c1096a2e41b4779e21"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.2"
   file:
     dependency: transitive
     description:
@@ -278,6 +286,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  sqlite3:
+    dependency: "direct main"
+    description:
+      name: sqlite3
+      sha256: fde692580bee3379374af1f624eb3e113ab2865ecb161dbe2d8ac2de9735dbdb
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.4.5"
   stack_trace:
     dependency: transitive
     description:
