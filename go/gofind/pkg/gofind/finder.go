@@ -27,7 +27,7 @@ type Finder struct {
 func NewFinder(settings *FindSettings) *Finder {
 	return &Finder{
 		settings,               // Settings
-		FileTypesFromJson(),    // fileTypes
+		NewFileTypes(),         // fileTypes
 		NewFileResults(),       // fileResults
 		[]error{},              // errors
 		make(chan *FileResult), // addResultChan
