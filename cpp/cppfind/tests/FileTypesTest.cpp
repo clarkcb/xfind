@@ -17,14 +17,14 @@ TEST_CASE("Verify that files are the expected type", "[FileType]") {
 
 TEST_CASE("Verify that get_filetype returns the expected type", "[FileType]") {
     auto* file_types = new cppfind::FileTypes();
-    REQUIRE(file_types->get_path_type("archive.zip") == cppfind::FileType::ARCHIVE);
-    REQUIRE(file_types->get_path_type("music.mp3") == cppfind::FileType::AUDIO);
-    REQUIRE(file_types->get_path_type("binary.exe") == cppfind::FileType::BINARY);
-    REQUIRE(file_types->get_path_type("source.cpp") == cppfind::FileType::CODE);
-    REQUIRE(file_types->get_path_type("font.ttf") == cppfind::FileType::FONT);
-    REQUIRE(file_types->get_path_type("image.png") == cppfind::FileType::IMAGE);
-    REQUIRE(file_types->get_path_type("textfile.txt") == cppfind::FileType::TEXT);
-    REQUIRE(file_types->get_path_type("movie.mp4") == cppfind::FileType::VIDEO);
-    REQUIRE(file_types->get_path_type("markup.xml") == cppfind::FileType::XML);
-    REQUIRE(file_types->get_path_type("unknown.UNKNOWN") == cppfind::FileType::UNKNOWN);
+    REQUIRE(file_types->get_file_type_for_path("archive.zip") == cppfind::FileType::ARCHIVE);
+    REQUIRE(file_types->get_file_type_for_path("music.mp3") == cppfind::FileType::AUDIO);
+    REQUIRE(file_types->get_file_type_for_path("binary.exe") == cppfind::FileType::BINARY);
+    REQUIRE(file_types->get_file_type_for_path("source.cpp") == cppfind::FileType::CODE);
+    REQUIRE(file_types->get_file_type_for_path("font.ttf") == cppfind::FileType::FONT);
+    REQUIRE(file_types->get_file_type_for_path("image.png") == cppfind::FileType::IMAGE);
+    REQUIRE(file_types->get_file_type_for_path("textfile.txt") == cppfind::FileType::TEXT);
+    REQUIRE(file_types->get_file_type_for_path("movie.mp4") == cppfind::FileType::VIDEO);
+    REQUIRE(file_types->get_file_type_for_path("markup.xml") == cppfind::FileType::XML);
+    REQUIRE(file_types->get_file_type_for_path("unknown.UNKNOWN") == cppfind::FileType::UNKNOWN);
 }
