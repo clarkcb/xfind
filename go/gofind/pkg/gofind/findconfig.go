@@ -11,6 +11,7 @@ type FindConfig struct {
 	FILETYPESPATH           string
 	FINDOPTIONSPATH         string
 	DEFAULTFINDSETTINGSPATH string
+	XFINDDB                 string
 	VERSION                 string
 }
 
@@ -29,6 +30,7 @@ func NewFindConfig() *FindConfig {
 		filepath.Join(sharedPath, "filetypes.json"),
 		filepath.Join(sharedPath, "findoptions.json"),
 		defaultFindSettingsPath,
+		filepath.Join(sharedPath, "xfind.db"),
 		"0.1.0",
 	}
 }

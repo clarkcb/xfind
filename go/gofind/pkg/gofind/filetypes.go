@@ -1,10 +1,9 @@
 package gofind
 
 import (
-	"bytes"
-	"encoding/json"
+	"database/sql"
 	"fmt"
-	"os"
+	_ "github.com/mattn/go-sqlite3"
 	"strings"
 )
 
@@ -37,8 +36,8 @@ const (
 )
 
 type FileTypes struct {
-	fileTypeExtMap  map[string]set
-	fileTypeNameMap map[string]set
+	db             *sql.DB
+	extFileTypeMap map[string]FileType
 }
 
 // used for unmarshalling
@@ -52,173 +51,146 @@ type JsonFileTypes struct {
 	FileTypes []*JsonFileType
 }
 
-func FileTypesFromJson() *FileTypes {
+func NewFileTypes() *FileTypes {
 	config := NewFindConfig()
-
 	var fileTypes FileTypes
-	fileTypes.fileTypeExtMap = make(map[string]set)
-	fileTypes.fileTypeNameMap = make(map[string]set)
-	data, err := os.ReadFile(config.FILETYPESPATH)
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%v?mode=ro", config.XFINDDB))
+
 	if err != nil {
+		//log.Fatal(err)
 		return &fileTypes
 	}
-	var jsonFileTypes JsonFileTypes
-	if err = json.Unmarshal(data, &jsonFileTypes); err != nil {
-		return &fileTypes
-	}
-	for _, ft := range jsonFileTypes.FileTypes {
-		fileTypes.fileTypeExtMap[ft.Type] = MakeStringSet(ft.Extensions)
-		fileTypes.fileTypeNameMap[ft.Type] = MakeStringSet(ft.Names)
-	}
-
-	// TEMPORARY
-	//fileTypes.generateCodeFile("/Users/cary/src/xfind/go/gofind/pkg/gofind/filetypesgen.go")
-
+	fileTypes.db = db
+	fileTypes.extFileTypeMap = make(map[string]FileType)
 	return &fileTypes
 }
 
-func (ft *FileTypes) GetFileType(file string) FileType {
-	// more specific first
-	if ft.IsCodeFile(file) {
-		return FileTypeCode
+func (ft *FileTypes) GetFileTypeForQueryAndElem(query string, elem string) FileType {
+	stmt, err := ft.db.Prepare(query)
+	if err != nil {
+		return FileTypeUnknown
 	}
-	if ft.IsArchiveFile(file) {
-		return FileTypeArchive
+	defer stmt.Close()
+	var fileTypeId int
+	err = stmt.QueryRow(elem).Scan(&fileTypeId)
+	if err != nil {
+		return FileTypeUnknown
 	}
-	if ft.IsAudioFile(file) {
-		return FileTypeAudio
-	}
-	if ft.IsFontFile(file) {
-		return FileTypeFont
-	}
-	if ft.IsImageFile(file) {
-		return FileTypeImage
-	}
-	if ft.IsVideoFile(file) {
-		return FileTypeVideo
-	}
+	return FileType(fileTypeId - 1)
+}
 
-	// more general last
-	if ft.IsXmlFile(file) {
-		return FileTypeXml
+func (ft *FileTypes) GetFileTypeForFileName(fileName string) FileType {
+	query := "select file_type_id from file_name where name = ?"
+	return ft.GetFileTypeForQueryAndElem(query, fileName)
+}
+
+func (ft *FileTypes) GetFileTypeForExtension(ext string) FileType {
+	if ext == "" {
+		return FileTypeUnknown
 	}
-	if ft.IsTextFile(file) {
-		return FileTypeText
+	if fileType, found := ft.extFileTypeMap[ext]; found {
+		return fileType
 	}
-	if ft.IsBinaryFile(file) {
-		return FileTypeBinary
+	query := "select file_type_id from file_extension where extension = ?"
+	fileType := ft.GetFileTypeForQueryAndElem(query, ext)
+	ft.extFileTypeMap[ext] = fileType
+	return fileType
+}
+
+func (ft *FileTypes) GetFileType(file string) FileType {
+	fileTypeForFileName := ft.GetFileTypeForFileName(file)
+	if fileTypeForFileName != FileTypeUnknown {
+		return fileTypeForFileName
 	}
-	return FileTypeUnknown
+	return ft.GetFileTypeForExtension(GetExtension(file))
 }
 
 func GetFileTypeForName(name string) FileType {
 	lname := strings.ToLower(name)
-	if lname == FileTypeNameArchive {
+	switch lname {
+	case FileTypeNameArchive:
 		return FileTypeArchive
-	}
-	if lname == FileTypeNameAudio {
+	case FileTypeNameAudio:
 		return FileTypeAudio
-	}
-	if lname == FileTypeNameBinary {
+	case FileTypeNameBinary:
 		return FileTypeBinary
-	}
-	if lname == FileTypeNameCode {
+	case FileTypeNameCode:
 		return FileTypeCode
-	}
-	if lname == FileTypeNameFont {
+	case FileTypeNameFont:
 		return FileTypeFont
-	}
-	if lname == FileTypeNameImage {
+	case FileTypeNameImage:
 		return FileTypeImage
-	}
-	if lname == FileTypeNameText {
+	case FileTypeNameText:
 		return FileTypeText
-	}
-	if lname == FileTypeNameVideo {
+	case FileTypeNameVideo:
 		return FileTypeVideo
-	}
-	if lname == FileTypeNameXml {
+	case FileTypeNameXml:
 		return FileTypeXml
+	default:
+		return FileTypeUnknown
 	}
-	return FileTypeUnknown
 }
 
 func GetNameForFileType(fileType FileType) string {
-	if fileType == FileTypeArchive {
+	switch fileType {
+	case FileTypeArchive:
 		return FileTypeNameArchive
-	}
-	if fileType == FileTypeAudio {
+	case FileTypeAudio:
 		return FileTypeNameAudio
-	}
-	if fileType == FileTypeBinary {
+	case FileTypeBinary:
 		return FileTypeNameBinary
-	}
-	if fileType == FileTypeCode {
+	case FileTypeCode:
 		return FileTypeNameCode
-	}
-	if fileType == FileTypeFont {
+	case FileTypeFont:
 		return FileTypeNameFont
-	}
-	if fileType == FileTypeImage {
+	case FileTypeImage:
 		return FileTypeNameImage
-	}
-	if fileType == FileTypeText {
+	case FileTypeText:
 		return FileTypeNameText
-	}
-	if fileType == FileTypeVideo {
+	case FileTypeVideo:
 		return FileTypeNameVideo
-	}
-	if fileType == FileTypeXml {
+	case FileTypeXml:
 		return FileTypeNameXml
+	default:
+		return FileTypeNameUnknown
 	}
-	return FileTypeNameUnknown
-}
-
-func (ft *FileTypes) isFileType(fileType string, file string) bool {
-	return ft.fileTypeNameMap[fileType][file] || ft.fileTypeExtMap[fileType][GetExtension(file)]
 }
 
 func (ft *FileTypes) IsArchiveFile(file string) bool {
-	return ft.isFileType(FileTypeNameArchive, file)
+	return ft.GetFileType(file) == FileTypeArchive
 }
 
 func (ft *FileTypes) IsAudioFile(file string) bool {
-	return ft.isFileType(FileTypeNameAudio, file)
+	return ft.GetFileType(file) == FileTypeAudio
 }
 
-// IsBinaryFile going to assume file is binary if it has no extension (for now)
 func (ft *FileTypes) IsBinaryFile(file string) bool {
-	return ft.isFileType(FileTypeNameBinary, file)
+	return ft.GetFileType(file) == FileTypeBinary
 }
 
 func (ft *FileTypes) IsCodeFile(file string) bool {
-	return ft.isFileType(FileTypeNameCode, file)
+	return ft.GetFileType(file) == FileTypeCode
 }
 
 func (ft *FileTypes) IsFontFile(file string) bool {
-	return ft.isFileType(FileTypeNameFont, file)
+	return ft.GetFileType(file) == FileTypeFont
 }
 
 func (ft *FileTypes) IsImageFile(file string) bool {
-	return ft.isFileType(FileTypeNameImage, file)
+	return ft.GetFileType(file) == FileTypeImage
 }
 
 func (ft *FileTypes) IsTextFile(file string) bool {
-	textTypes := [...]string{FileTypeNameCode, FileTypeNameText, FileTypeNameXml}
-	for _, t := range textTypes {
-		if ft.isFileType(t, file) {
-			return true
-		}
-	}
-	return false
+	fileType := ft.GetFileType(file)
+	return fileType == FileTypeText || fileType == FileTypeCode || fileType == FileTypeXml
 }
 
 func (ft *FileTypes) IsVideoFile(file string) bool {
-	return ft.isFileType(FileTypeNameVideo, file)
+	return ft.GetFileType(file) == FileTypeVideo
 }
 
 func (ft *FileTypes) IsXmlFile(file string) bool {
-	return ft.isFileType(FileTypeNameXml, file)
+	return ft.GetFileType(file) == FileTypeXml
 }
 
 func (ft *FileTypes) IsUnknownFile(file string) bool {
@@ -232,35 +204,4 @@ func ContainsFileType(fileTypes []FileType, fileType FileType) bool {
 		}
 	}
 	return false
-}
-
-func (ft *FileTypes) generateCodeFile(filePath string) {
-	var buffer bytes.Buffer
-	depth := 0
-	buffer.WriteString("package gofind\n\n")
-	buffer.WriteString("func GetFileTypes() *FileTypes {\n")
-	depth++
-	buffer.WriteString(fmt.Sprintf("%sreturn &FileTypes{\n", strings.Repeat("\t", depth)))
-	depth++
-	buffer.WriteString(fmt.Sprintf("%smap[string]set{\n", strings.Repeat("\t", depth)))
-	depth++
-	for k, exts := range ft.fileTypeExtMap {
-		buffer.WriteString(fmt.Sprintf("%s\"%s\": MakeStringSet([]string{\"%s\"}),\n",
-			strings.Repeat("\t", depth), k, strings.Join(getSortedSetValues(exts), "\", \"")))
-	}
-	depth--
-	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
-	depth--
-	depth++
-	buffer.WriteString(fmt.Sprintf("%smap[string]set{\n", strings.Repeat("\t", depth)))
-	depth++
-	for k, names := range ft.fileTypeNameMap {
-		buffer.WriteString(fmt.Sprintf("%s\"%s\": MakeStringSet([]string{\"%s\"}),\n",
-			strings.Repeat("\t", depth), k, strings.Join(getSortedSetValues(names), "\", \"")))
-	}
-	depth--
-	buffer.WriteString(fmt.Sprintf("%s},\n", strings.Repeat("\t", depth)))
-	depth--
-	buffer.WriteString(fmt.Sprintf("%s}\n}\n", strings.Repeat("\t", depth)))
-	os.WriteFile(filePath, buffer.Bytes(), 0644)
 }
