@@ -190,7 +190,7 @@ namespace cppfind {
         if (!m_settings.include_hidden() && FileUtil::is_hidden_path(file_path.filename())) {
             return std::nullopt;
         }
-        const auto file_type = m_file_types.get_path_type(file_path.filename());
+        const auto file_type = m_file_types.get_file_type_for_path(file_path.filename());
         if (file_type == FileType::ARCHIVE && !m_settings.include_archives() && !m_settings.archives_only()) {
             return std::nullopt;
         }
