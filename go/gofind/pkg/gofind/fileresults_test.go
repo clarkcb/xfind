@@ -9,7 +9,7 @@ import (
 )
 
 func Test_FileResult_AbsPath(t *testing.T) {
-	fileTypes := FileTypesFromJson()
+	fileTypes := NewFileTypes()
 	home := os.Getenv("HOME")
 	path := home + "/src/xfind/go/gofind/pkg/gofind/fileresults.go"
 	dir, file := filepath.Split(path)
@@ -21,7 +21,7 @@ func Test_FileResult_AbsPath(t *testing.T) {
 }
 
 func Test_FileResult_TildePath(t *testing.T) {
-	fileTypes := FileTypesFromJson()
+	fileTypes := NewFileTypes()
 	path := "~/src/xfind/go/gofind/pkg/gofind/fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
@@ -32,7 +32,7 @@ func Test_FileResult_TildePath(t *testing.T) {
 }
 
 func Test_FileResult_RelPath1(t *testing.T) {
-	fileTypes := FileTypesFromJson()
+	fileTypes := NewFileTypes()
 	path := "./fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
@@ -44,7 +44,7 @@ func Test_FileResult_RelPath1(t *testing.T) {
 }
 
 func Test_FileResult_RelPath2(t *testing.T) {
-	fileTypes := FileTypesFromJson()
+	fileTypes := NewFileTypes()
 	path := "./fileresults.go"
 	dir, file := filepath.Split(path)
 	fileType := fileTypes.GetFileType(file)
