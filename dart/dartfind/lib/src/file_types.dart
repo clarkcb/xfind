@@ -1,7 +1,6 @@
-import 'dart:convert' show json;
-import 'dart:io' show File;
+import 'package:sqlite3/sqlite3.dart';
 
-import 'package:dartfind/src/config.dart' show fileTypesPath;
+import 'package:dartfind/src/config.dart' show xfindDb;
 import 'package:dartfind/src/file_util.dart';
 
 enum FileType {
@@ -56,31 +55,29 @@ class FileTypes {
   static const xml = 'xml';
   static const unknown = 'unknown';
 
-  var fileTypeExtMap = {};
-  var fileTypeNameMap = {};
+  var extFileTypeMap = {};
   late Future ready;
 
+  var fileTypes = [
+    FileType.unknown,
+    FileType.archive,
+    FileType.audio,
+    FileType.binary,
+    FileType.code,
+    FileType.font,
+    FileType.image,
+    FileType.text,
+    FileType.video,
+    FileType.xml,
+  ];
+  Database? db;
+
   FileTypes() {
-    ready = loadFileTypesFromJson();
+    ready = getDatabase();
   }
 
-  Future<void> loadFileTypesFromJson() async {
-    var contents = await File(fileTypesPath).readAsString();
-    Map jsonFileTypesMap = json.decode(contents);
-    if (jsonFileTypesMap.containsKey('filetypes')) {
-      var ftList = jsonFileTypesMap['filetypes'] as List;
-      for (var ft in ftList) {
-        var typeName = (ft as Map)['type'];
-        var extensions = (ft)['extensions'].toSet();
-        fileTypeExtMap[typeName] = extensions;
-        var names = (ft)['names'].toSet();
-        fileTypeNameMap[typeName] = names;
-      }
-      fileTypeExtMap[text] = fileTypeExtMap[text]
-          .union(fileTypeExtMap[code].union(fileTypeExtMap[xml]));
-      fileTypeNameMap[text] = fileTypeNameMap[text]
-          .union(fileTypeNameMap[code].union(fileTypeNameMap[xml]));
-    }
+  Future<void> getDatabase() async {
+    db = sqlite3.open(xfindDb, mode: OpenMode.readOnly);
   }
 
   static FileType fromName(String typeName) {
@@ -108,118 +105,81 @@ class FileTypes {
     }
   }
 
+  FileType getFileTypeForQueryAndElem(String query, String elem) {
+    final ResultSet result = db!.select(query, [elem]);
+    if (result.isEmpty) {
+      return FileType.unknown;
+    }
+    final fileTypeId = result.first['file_type_id'] - 1;
+    return fileTypes[fileTypeId];
+  }
+
+  FileType getFileTypeForFileName(String fileName) {
+    final String query = 'SELECT file_type_id FROM file_name WHERE name = ?';
+    return getFileTypeForQueryAndElem(query, fileName);
+  }
+
+  FileType getFileTypeForExtension(String fileExt) {
+    if (extFileTypeMap.containsKey(fileExt)) {
+      return extFileTypeMap[fileExt];
+    }
+    final String query =
+        'SELECT file_type_id FROM file_extension WHERE extension = ?';
+    FileType fileType = getFileTypeForQueryAndElem(query, fileExt);
+    extFileTypeMap[fileExt] = fileType;
+    return fileType;
+  }
+
   Future<FileType> getFileType(String fileName) async {
     return await ready.then((_) {
-      var ext = FileUtil.extension(fileName);
-      // more specific first
-      if (fileTypeNameMap[code].contains(fileName) ||
-          fileTypeExtMap[code].contains(ext)) {
-        return FileType.code;
+      final fileTypeForFileName = getFileTypeForFileName(fileName);
+      if (fileTypeForFileName != FileType.unknown) {
+        return fileTypeForFileName;
       }
-      if (fileTypeNameMap[archive].contains(fileName) ||
-          fileTypeExtMap[archive].contains(ext)) {
-        return FileType.archive;
-      }
-      if (fileTypeNameMap[audio].contains(fileName) ||
-          fileTypeExtMap[audio].contains(ext)) {
-        return FileType.audio;
-      }
-      if (fileTypeNameMap[font].contains(fileName) ||
-          fileTypeExtMap[font].contains(ext)) {
-        return FileType.font;
-      }
-      if (fileTypeNameMap[image].contains(fileName) ||
-          fileTypeExtMap[image].contains(ext)) {
-        return FileType.image;
-      }
-      if (fileTypeNameMap[video].contains(fileName) ||
-          fileTypeExtMap[video].contains(ext)) {
-        return FileType.video;
-      }
-      // more general last
-      if (fileTypeNameMap[xml].contains(fileName) ||
-          fileTypeExtMap[xml].contains(ext)) {
-        return FileType.xml;
-      }
-      if (fileTypeNameMap[text].contains(fileName) ||
-          fileTypeExtMap[text].contains(ext)) {
-        return FileType.text;
-      }
-      if (fileTypeNameMap[binary].contains(fileName) ||
-          fileTypeExtMap[binary].contains(ext)) {
-        return FileType.binary;
-      }
-      return FileType.unknown;
+      return getFileTypeForExtension(FileUtil.extension(fileName));
     });
   }
 
   Future<bool> isArchiveFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[archive].contains(fileName) ||
-          fileTypeExtMap[archive].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.archive;
   }
 
   Future<bool> isAudioFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[audio].contains(fileName) ||
-          fileTypeExtMap[audio].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.audio;
   }
 
   Future<bool> isBinaryFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[binary].contains(fileName) ||
-          fileTypeExtMap[binary].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.binary;
   }
 
   Future<bool> isCodeFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[code].contains(fileName) ||
-          fileTypeExtMap[code].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.code;
   }
 
   Future<bool> isFontFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[font].contains(fileName) ||
-          fileTypeExtMap[font].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.font;
   }
 
   Future<bool> isImageFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[image].contains(fileName) ||
-          fileTypeExtMap[image].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.image;
   }
 
   Future<bool> isTextFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[text].contains(fileName) ||
-          fileTypeExtMap[text].contains(FileUtil.extension(fileName));
-    });
+    var fileType = await getFileType(fileName);
+    return fileType == FileType.text ||
+        fileType == FileType.code ||
+        fileType == FileType.xml;
   }
 
   Future<bool> isVideoFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[video].contains(fileName) ||
-          fileTypeExtMap[video].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.video;
   }
 
   Future<bool> isXmlFile(String fileName) async {
-    return await ready.then((_) {
-      return fileTypeNameMap[xml].contains(fileName) ||
-          fileTypeExtMap[xml].contains(FileUtil.extension(fileName));
-    });
+    return await getFileType(fileName) == FileType.xml;
   }
 
   Future<bool> isUnknownFile(String fileName) async {
-    return await ready.then((_) async {
-      var fileType = await getFileType(fileName);
-      return fileType == FileType.unknown;
-    });
+    return await getFileType(fileName) == FileType.unknown;
   }
 }

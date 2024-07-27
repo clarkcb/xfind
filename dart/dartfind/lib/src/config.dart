@@ -8,3 +8,4 @@ final String fileTypesPath = '$sharedPath/filetypes.json';
 final String findOptionsPath = '$sharedPath/findoptions.json';
 final String defaultFindSettingsPath =
     '${Platform.environment['HOME']!}/.config/xfind/settings.json';
+final String xfindDb = '$sharedPath/xfind.db';
