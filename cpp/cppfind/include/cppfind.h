@@ -65,7 +65,9 @@ namespace cppfind {
         ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        [[nodiscard]] FileType get_path_type(const std::filesystem::path& file_path) const;
+        [[nodiscard]] FileType get_file_type_for_file_name(std::string_view file_name) const;
+        [[nodiscard]] FileType get_file_type_for_extension(std::string_view file_ext) const;
+        [[nodiscard]] FileType get_file_type_for_path(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_archive_path(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_audio_path(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_binary_path(const std::filesystem::path& file_path) const;
@@ -282,9 +284,9 @@ namespace cppfind {
     // FileResult.h
     class FileResult {
     public:
-        explicit FileResult(const std::filesystem::path& file_path, FileType file_type, uint64_t file_size,
+        FileResult(std::filesystem::path&& file_path, FileType file_type, uint64_t file_size,
                    long last_mod);
-        explicit FileResult(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
+        FileResult(std::vector<std::filesystem::path>&& containers, const std::filesystem::path& file_path,
                    FileType file_type, uint64_t file_size, long last_mod);
         [[nodiscard]] std::vector<std::filesystem::path> containers() const;
         [[nodiscard]] std::filesystem::path file_path() const;
