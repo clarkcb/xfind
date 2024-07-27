@@ -1,9 +1,6 @@
 #include <algorithm>
 #include <string>
 
-#include "rapidjson/document.h"
-#include "rapidjson/filereadstream.h"
-
 #include "FindConfig.h"
 #include "FileTypes.h"
 #include "FileUtil.h"
@@ -13,90 +10,13 @@
 
 namespace cppfind {
     FileTypes::FileTypes() {
-        load_file_types();
-    }
-
-    void FileTypes::load_file_types() {
-        const auto file_types_path = std::filesystem::path(xfindpath()) / "shared/filetypes.json";
-
-        if (!std::filesystem::exists(file_types_path)) {
-            throw FindException("Filetypes file not found: " + file_types_path.string());
-        }
-
-        const uint64_t file_size = std::filesystem::file_size(file_types_path);
-        // current size is 12076, make sure it's not dramatically bigger than that
-        if (file_size > 12100) {
-            throw FindException("Invalid filetypes file");
-        }
-
-        FILE* fp = fopen(file_types_path.c_str(), "r");
-
-        char readBuffer[file_size];
-        rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
-
-        rapidjson::Document document;
-
-        document.ParseStream(is);
-        fclose(fp);
-
-        assert(document.HasMember("filetypes"));
-        const rapidjson::Value& filetypes = document["filetypes"];
-        assert(filetypes.IsArray());
-        for (rapidjson::SizeType i = 0; i < filetypes.Size(); i++) {
-            const rapidjson::Value::ConstObject &filetype = filetypes[i].GetObject();
-            assert(filetype.HasMember("type"));
-            const rapidjson::Value &typeValue = filetype["type"];
-            std::string type = typeValue.GetString();
-
-            assert(filetype.HasMember("extensions"));
-            const rapidjson::Value& extensions = filetype["extensions"];
-
-            for (rapidjson::SizeType j = 0; j < extensions.Size(); j++) {
-                if (type == FILE_TYPE_NAME_ARCHIVE) {
-                    m_archive_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_AUDIO) {
-                    m_audio_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_BINARY) {
-                    m_binary_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_CODE) {
-                    m_code_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_FONT) {
-                    m_font_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_IMAGE) {
-                    m_image_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_TEXT) {
-                    m_text_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_VIDEO) {
-                    m_video_extensions.insert(extensions[j].GetString());
-                } else if (type == FILE_TYPE_NAME_XML) {
-                    m_xml_extensions.insert(extensions[j].GetString());
-                }
-            }
-
-            assert(filetype.HasMember("names"));
-            const rapidjson::Value& names = filetype["names"];
-
-            for (rapidjson::SizeType j = 0; j < names.Size(); j++) {
-                if (type == FILE_TYPE_NAME_ARCHIVE) {
-                    m_archive_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_AUDIO) {
-                    m_audio_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_BINARY) {
-                    m_binary_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_CODE) {
-                    m_code_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_FONT) {
-                    m_font_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_IMAGE) {
-                    m_image_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_TEXT) {
-                    m_text_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_VIDEO) {
-                    m_video_names.insert(names[j].GetString());
-                } else if (type == FILE_TYPE_NAME_XML) {
-                    m_xml_names.insert(names[j].GetString());
-                }
-            }
+        auto xfind_db_path = std::filesystem::path(xfindpath()) / "shared/xfind.db";
+        sqlite3 *db;
+        int rc = sqlite3_open_v2(xfind_db_path.string().c_str(), &db, SQLITE_OPEN_READONLY, nullptr);
+        if (rc == SQLITE_OK && db != nullptr) {
+            this->db = db;
+        } else {
+            throw FindException(sqlite3_errmsg(db));
         }
     }
 
@@ -159,86 +79,78 @@ namespace cppfind {
         }
     }
 
-    FileType FileTypes::get_path_type(const std::filesystem::path& file_path) const {
-        // most specific first
-        if (is_code_path(file_path)) {
-            return FileType::CODE;
+    FileType FileTypes::get_file_type_for_query_and_elem(const char* query, const char* elem) const {
+        sqlite3_stmt *stmt;
+        sqlite3_prepare_v2(this->db, query, -1, &stmt, nullptr);
+        if (const int rc = sqlite3_bind_text(stmt, 1, elem, -1, SQLITE_TRANSIENT);
+            rc != SQLITE_OK) {
+            fprintf(stderr, "error: %s\n", sqlite3_errmsg(this->db));
         }
-        if (is_archive_path(file_path)) {
-            return FileType::ARCHIVE;
-        }
-        if (is_audio_path(file_path)) {
-            return FileType::AUDIO;
-        }
-        if (is_font_path(file_path)) {
-            return FileType::FONT;
-        }
-        if (is_image_path(file_path)) {
-            return FileType::IMAGE;
-        }
-        if (is_video_path(file_path)) {
-            return FileType::VIDEO;
-        }
-        // most general last
-        if (is_xml_path(file_path)) {
-            return FileType::XML;
-        }
-        if (is_text_path(file_path)) {
-            return FileType::TEXT;
-        }
-        if (is_binary_path(file_path)) {
-            return FileType::BINARY;
+        if (sqlite3_step(stmt) == SQLITE_ROW) {
+            const int file_type_id  = sqlite3_column_int(stmt, 0) - 1;
+            return static_cast<FileType>(file_type_id);
         }
         return FileType::UNKNOWN;
     }
 
-    bool is_path_with_extension_or_name(const std::filesystem::path& path,
-        const std::unordered_set<std::string>& extensions, const std::unordered_set<std::string>& filenames) {
-        const auto file_ext = FileUtil::get_path_extension(path);
-        if (!StringUtil::string_in_unordered_set(file_ext, extensions)) {
-            const auto filename = path.filename();
-            return !filename.empty() && StringUtil::string_in_unordered_set(filename.string(), filenames);
+    FileType FileTypes::get_file_type_for_file_name(const std::string_view file_name) const {
+        const auto query = "select file_type_id from file_name where name=?";
+        return get_file_type_for_query_and_elem(query, file_name.data());
+    }
+
+    FileType FileTypes::get_file_type_for_extension(const std::string_view file_ext) const {
+        const auto query = "select file_type_id from file_extension where extension=?";
+        return get_file_type_for_query_and_elem(query, file_ext.data());
+    }
+
+    FileType FileTypes::get_file_type_for_path(const std::filesystem::path& file_path) const {
+        if (const FileType file_type = get_file_type_for_file_name(file_path.filename().string());
+            file_type != FileType::UNKNOWN) {
+            return file_type;
         }
-        return true;
+        return get_file_type_for_extension(FileUtil::get_path_extension(file_path));
     }
 
     bool FileTypes::is_archive_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_archive_extensions, m_archive_names);
+        return get_file_type_for_path(file_path) == FileType::ARCHIVE;
     }
 
     bool FileTypes::is_audio_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_audio_extensions, m_audio_names);
+        return get_file_type_for_path(file_path) == FileType::AUDIO;
     }
 
     bool FileTypes::is_binary_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_binary_extensions, m_binary_names);
+        return get_file_type_for_path(file_path) == FileType::BINARY;
     }
 
     bool FileTypes::is_code_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_code_extensions, m_code_names);
+        return get_file_type_for_path(file_path) == FileType::CODE;
     }
 
     bool FileTypes::is_font_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_font_extensions, m_font_names);
+        return get_file_type_for_path(file_path) == FileType::FONT;
     }
 
     bool FileTypes::is_image_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_image_extensions, m_image_names);
+        return get_file_type_for_path(file_path) == FileType::IMAGE;
     }
 
     bool FileTypes::is_text_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_text_extensions, m_text_names);
+        const FileType file_type = get_file_type_for_path(file_path);
+        return file_type == FileType::TEXT
+            || file_type == FileType::CODE
+            || file_type == FileType::XML;
     }
 
     bool FileTypes::is_video_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_video_extensions, m_video_names);
+        return get_file_type_for_path(file_path) == FileType::VIDEO;
     }
 
     bool FileTypes::is_unknown_path(const std::filesystem::path& file_path) const {
-        return get_path_type(file_path) == FileType::UNKNOWN;
+        return get_file_type_for_path(file_path) == FileType::UNKNOWN;
     }
 
     bool FileTypes::is_xml_path(const std::filesystem::path& file_path) const {
-        return is_path_with_extension_or_name(file_path, m_xml_extensions, m_xml_names);
+        return get_file_type_for_path(file_path) == FileType::XML;
     }
 }

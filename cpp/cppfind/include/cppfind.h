@@ -78,7 +78,9 @@ namespace cppfind {
         ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        [[nodiscard]] FileType get_path_type(const std::filesystem::path& file_path) const;
+        [[nodiscard]] FileType get_file_type_for_file_name(std::string_view file_name) const;
+        [[nodiscard]] FileType get_file_type_for_extension(std::string_view file_ext) const;
+        [[nodiscard]] FileType get_file_type_for_path(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_archive_path(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_audio_path(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_binary_path(const std::filesystem::path& file_path) const;

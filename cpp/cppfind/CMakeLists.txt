@@ -29,6 +29,14 @@ include_directories(/usr/local/include)
 
 
 ################################################################################
+# Dependencies section
+################################################################################
+
+find_package(SQLite3 REQUIRED)
+
+
+
+################################################################################
 # Library section
 ################################################################################
 
@@ -62,27 +70,29 @@ target_sources(${PROJECT_NAME}
         include/Finder.h src/Finder.cpp)
 
 target_link_libraries(${PROJECT_NAME})
+target_link_libraries(${PROJECT_NAME} PUBLIC SQLite3)
 
-install(TARGETS ${PROJECT_NAME}
-        EXPORT ${PROJECT_NAME}Targets
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include)
-
-install(EXPORT ${PROJECT_NAME}Targets
-        FILE ${PROJECT_NAME}Targets.cmake
-        # NAMESPACE ${PROJECT_NAME}::
-        DESTINATION lib/cmake/${PROJECT_NAME})
-
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-        "${PROJECT_NAME}ConfigVersion.cmake"
-        VERSION ${${PROJECT_NAME}_VERSION}
-        COMPATIBILITY AnyNewerVersion)
-
-install(FILES "${PROJECT_NAME}Config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
-        DESTINATION lib/cmake/${PROJECT_NAME})
+# Maybe I don't actually want to install, but just add as a local dependency
+#install(TARGETS ${PROJECT_NAME}
+#        EXPORT ${PROJECT_NAME}Targets
+#        LIBRARY DESTINATION lib
+#        ARCHIVE DESTINATION lib
+#        RUNTIME DESTINATION bin
+#        INCLUDES DESTINATION include)
+#
+#install(EXPORT ${PROJECT_NAME}Targets
+#        FILE ${PROJECT_NAME}Targets.cmake
+#        # NAMESPACE ${PROJECT_NAME}::
+#        DESTINATION lib/cmake/${PROJECT_NAME})
+#
+#include(CMakePackageConfigHelpers)
+#write_basic_package_version_file(
+#        "${PROJECT_NAME}ConfigVersion.cmake"
+#        VERSION ${${PROJECT_NAME}_VERSION}
+#        COMPATIBILITY AnyNewerVersion)
+#
+#install(FILES "${PROJECT_NAME}Config.cmake" "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake"
+#        DESTINATION lib/cmake/${PROJECT_NAME})
 
 
 ################################################################################
