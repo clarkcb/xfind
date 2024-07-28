@@ -23,6 +23,7 @@ main = do
   -- FileTypes tests
   fileTypeTests <- getFileTypeTests
   fileTypeFromNameTests <- getFileTypeFromNameTests
+  isFileTypeTests <- getIsFileTypeTests
 
   -- FileUtil tests
   fileUtilTests <- getFileUtilTests
@@ -51,7 +52,7 @@ main = do
   defaultMain (
     tokenizeArgsNoArgsTests ++ tokenizeArgsWithArgsTests ++
     fileResultTests ++ fileResultWithSizeTests ++
-    fileTypeTests ++ fileTypeFromNameTests ++
+    fileTypeTests ++ fileTypeFromNameTests ++ isFileTypeTests ++
     fileUtilTests ++ 
     isMatchingDirPathTests ++ isMatchingFilePathTests ++
     isMatchingArchiveFilePathTests ++ findPythonFileResultTests ++
