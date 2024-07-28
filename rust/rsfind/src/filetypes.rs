@@ -1,9 +1,7 @@
-use std::collections::HashMap;
-use std::collections::HashSet;
-use std::fs;
 use std::path::Path;
 
 use serde::{Deserialize, Serialize};
+use sqlite::State;
 
 use crate::config::Config;
 use crate::fileutil::FileUtil;
@@ -23,10 +21,11 @@ pub enum FileType {
     Xml,
 }
 
-#[derive(Debug)]
+// #[derive(Debug)]
 pub struct FileTypes {
-    pub file_type_ext_map: HashMap<String, HashSet<String>>,
-    pub file_type_name_map: HashMap<String, HashSet<String>>,
+    pub db: sqlite::Connection,
+    pub file_types: Vec<FileType>,
+    // pub ext_file_type_cache: HashMap<String, FileType>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -44,29 +43,53 @@ pub struct JsonFileTypes {
 impl FileTypes {
     pub fn new() -> Result<FileTypes, FindError> {
         let config = Config::new();
-        let contents: String = match fs::read_to_string(config.file_types_path) {
-            Ok(contents) => contents,
-            Err(error) => return Err(FindError::new(&error.to_string())),
+        let file_types = FileTypes {
+            // TODO: use Connection::open_with_flags to open readonly
+            db: sqlite::open(config.xfind_db_path).unwrap(),
+            file_types: vec![
+                FileType::Unknown,
+                FileType::Archive,
+                FileType::Audio,
+                FileType::Binary,
+                FileType::Code,
+                FileType::Font,
+                FileType::Image,
+                FileType::Text,
+                FileType::Video,
+                FileType::Xml
+            ],
+            // ext_file_type_cache: HashMap::new()
         };
-        let jft: JsonFileTypes = match serde_json::from_str(&contents) {
-            Ok(deserialized) => deserialized,
-            Err(error) => return Err(FindError::new(&error.to_string())),
-        };
-        let mut file_types = FileTypes {
-            file_type_ext_map: HashMap::new(),
-            file_type_name_map: HashMap::new(),
-        };
-        for json_filetype in jft.filetypes.iter() {
-            let extset: HashSet<String> = json_filetype.extensions.iter().cloned().collect();
-            file_types
-                .file_type_ext_map
-                .insert(json_filetype.r#type.clone(), extset);
-            let nameset: HashSet<String> = json_filetype.names.iter().cloned().collect();
-            file_types
-                .file_type_name_map
-                .insert(json_filetype.r#type.clone(), nameset);
-            }
         Ok(file_types)
+    }
+
+    fn get_file_type_for_query_and_elem(&self, query: &str, elem: &str) -> FileType {
+        let mut stmt = self.db.prepare(query).unwrap();
+        stmt.bind((1, elem)).unwrap();
+        match stmt.next() {
+            Ok(State::Row) => {
+                let file_type_id = stmt.read::<i64, _>("file_type_id").unwrap() - 1;
+                self.file_types[file_type_id as usize]
+            },
+            _ => FileType::Unknown,
+        }
+    }
+
+    pub fn get_file_type_for_file_name(&self, file_name: &str) -> FileType {
+        let query = "SELECT file_type_id FROM file_name WHERE name=?";
+        self.get_file_type_for_query_and_elem(query, file_name)
+    }
+
+    pub fn get_file_type_for_extension(&self, file_ext: &str) -> FileType {
+        // if self.ext_file_type_cache.contains_key(file_ext) {
+        //     return self.ext_file_type_cache[file_ext];
+        // }
+        let query = "SELECT file_type_id FROM file_extension WHERE extension=?";
+        let file_type = self.get_file_type_for_query_and_elem(query, file_ext);
+        // TODO: self has to be mutable in order to make the next line valid,
+        //       a better idea might be to keep the ext cache on the consuming side
+        // self.ext_file_type_cache.insert(String::from(file_ext), file_type);
+        file_type
     }
 
     /// Get a FileType for a given filename
@@ -81,37 +104,15 @@ impl FileTypes {
     /// assert_eq!(file_type, FileType::Code);
     /// ```
     pub fn get_file_type(&self, file_name: &str) -> FileType {
-        // most specific first
-        if self.is_code_file(file_name) {
-            return FileType::Code;
+        let file_type = self.get_file_type_for_file_name(&file_name);
+        if file_type != FileType::Unknown {
+            file_type
+        } else {
+            match FileUtil::get_extension(&file_name) {
+                Some(ext) => self.get_file_type_for_extension(ext),
+                None => FileType::Unknown,
+            }
         }
-        if self.is_archive_file(file_name) {
-            return FileType::Archive;
-        }
-        if self.is_audio_file(file_name) {
-            return FileType::Audio;
-        }
-        if self.is_font_file(file_name) {
-            return FileType::Font;
-        }
-        if self.is_image_file(file_name) {
-            return FileType::Image;
-        }
-        if self.is_video_file(file_name) {
-            return FileType::Video;
-        }
-
-        // most general last
-        if self.is_xml_file(file_name) {
-            return FileType::Xml;
-        }
-        if self.is_text_file(file_name) {
-            return FileType::Text;
-        }
-        if self.is_binary_file(file_name) {
-            return FileType::Binary;
-        }
-        FileType::Unknown
     }
 
     pub fn get_file_type_for_path(&self, file_path: &Path) -> FileType {
@@ -142,53 +143,43 @@ impl FileTypes {
         }
     }
 
-    fn is_file_type(&self, type_name: &str, file_name: &str) -> bool {
-        let has_ext = match FileUtil::get_extension(&file_name) {
-            Some(ext) => self.file_type_ext_map.get(type_name).unwrap().contains(ext),
-            None => false,
-        };
-        if has_ext {
-            return true
-        }
-        self.file_type_name_map.get(type_name).unwrap().contains(file_name)
-    }
-
     pub fn is_archive_file(&self, file_name: &str) -> bool {
-        self.is_file_type("archive", file_name)
+        self.get_file_type(&file_name) == FileType::Archive
     }
 
     pub fn is_audio_file(&self, file_name: &str) -> bool {
-        self.is_file_type("audio", file_name)
+        self.get_file_type(&file_name) == FileType::Audio
     }
 
     pub fn is_binary_file(&self, file_name: &str) -> bool {
-        self.is_file_type("binary", file_name)
+        self.get_file_type(&file_name) == FileType::Binary
     }
 
     pub fn is_code_file(&self, file_name: &str) -> bool {
-        self.is_file_type("code", file_name)
+        self.get_file_type(&file_name) == FileType::Code
     }
 
     pub fn is_font_file(&self, file_name: &str) -> bool {
-        self.is_file_type("font", file_name)
+        self.get_file_type(&file_name) == FileType::Font
     }
 
     pub fn is_image_file(&self, file_name: &str) -> bool {
-        self.is_file_type("image", file_name)
+        self.get_file_type(&file_name) == FileType::Image
     }
 
     pub fn is_text_file(&self, file_name: &str) -> bool {
-        self.is_file_type("text", file_name)
-            || self.is_file_type("code", file_name)
-            || self.is_file_type("xml", file_name)
+        let file_type = self.get_file_type(&file_name);
+        file_type == FileType::Text
+            || file_type == FileType::Code
+            || file_type == FileType::Xml
     }
 
     pub fn is_video_file(&self, file_name: &str) -> bool {
-        self.is_file_type("video", file_name)
+        self.get_file_type(&file_name) == FileType::Video
     }
 
     pub fn is_xml_file(&self, file_name: &str) -> bool {
-        self.is_file_type("xml", file_name)
+        self.get_file_type(&file_name) == FileType::Xml
     }
 
     pub fn is_unknown_file(&self, file_name: &str) -> bool {
