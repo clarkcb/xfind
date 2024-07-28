@@ -93,7 +93,6 @@ getIsMatchingArchiveFilePathTests = do
 getFilterToFileResultTests :: IO [Test]
 getFilterToFileResultTests = do
   let settings = defaultFindSettings
-  jsonFileTypes <- getJsonFileTypes
   let settingsInExtension = settings { inExtensions = [".hs"] }
   let settingsOutExtension = settings { outExtensions = [".hs"] }
   let settingsIncludeHidden = settings { includeHidden = True }
@@ -102,15 +101,15 @@ getFilterToFileResultTests = do
   let finderHsFile = ("Finder.hs", Code)
   let gitignoreFile = (".gitignore", Text)
   let archiveZipFile = ("archive.zip", Archive)
-  return [ testCase "filterToFileResult Finder.hs default settings" (isJust (filterToFileResult settings jsonFileTypes finderHsFile) @?= True)
-         , testCase "filterToFileResult Finder.hs isMatchingFilePath" (isJust (filterToFileResult settingsInExtension jsonFileTypes finderHsFile) @?= True)
-         , testCase "filterToFileResult Finder.hs not isMatchingFilePath" (isJust (filterToFileResult settingsOutExtension jsonFileTypes finderHsFile) @?= False)
-         , testCase "filterToFileResult .gitignore default settings" (isJust (filterToFileResult settings jsonFileTypes gitignoreFile) @?= False)
-         , testCase "filterToFileResult .gitignore includeHidden" (isJust (filterToFileResult settingsIncludeHidden jsonFileTypes gitignoreFile) @?= True)
-         , testCase "filterToFileResult archive.zip default settings" (isJust (filterToFileResult settings jsonFileTypes archiveZipFile) @?= False)
-         , testCase "filterToFileResult archive.zip includeArchives" (isJust (filterToFileResult settingsIncludeArchives jsonFileTypes archiveZipFile) @?= True)
-         , testCase "filterToFileResult archive.zip archivesOnly" (isJust (filterToFileResult settingsArchivesOnly jsonFileTypes archiveZipFile) @?= True)
-         , testCase "filterToFileResult Finder.hs archivesOnly" (isJust (filterToFileResult settingsArchivesOnly jsonFileTypes finderHsFile) @?= False)
+  return [ testCase "filterToFileResult Finder.hs default settings" (isJust (filterToFileResult settings finderHsFile) @?= True)
+         , testCase "filterToFileResult Finder.hs isMatchingFilePath" (isJust (filterToFileResult settingsInExtension finderHsFile) @?= True)
+         , testCase "filterToFileResult Finder.hs not isMatchingFilePath" (isJust (filterToFileResult settingsOutExtension finderHsFile) @?= False)
+         , testCase "filterToFileResult .gitignore default settings" (isJust (filterToFileResult settings gitignoreFile) @?= False)
+         , testCase "filterToFileResult .gitignore includeHidden" (isJust (filterToFileResult settingsIncludeHidden gitignoreFile) @?= True)
+         , testCase "filterToFileResult archive.zip default settings" (isJust (filterToFileResult settings archiveZipFile) @?= False)
+         , testCase "filterToFileResult archive.zip includeArchives" (isJust (filterToFileResult settingsIncludeArchives archiveZipFile) @?= True)
+         , testCase "filterToFileResult archive.zip archivesOnly" (isJust (filterToFileResult settingsArchivesOnly archiveZipFile) @?= True)
+         , testCase "filterToFileResult Finder.hs archivesOnly" (isJust (filterToFileResult settingsArchivesOnly finderHsFile) @?= False)
          ]
 
 -- hsfind -D build -D cmake -D node_modules -D vendor -D venv -t audio /Users/cary/src/xfind/python --debug
