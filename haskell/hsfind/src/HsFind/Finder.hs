@@ -18,7 +18,10 @@ import System.FilePath (dropFileName, splitPath, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
-import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTypesFromJsonFileTypes)
+import Database.SQLite.Simple
+
+import HsFind.Config (getXfindDbPath)
+import HsFind.FileTypes (FileType(..), getDbFileTypes)
 import HsFind.FileUtil
     (expandPath, filterDirectories, filterFiles, filterOutSymlinks, hasExtension, isHiddenFilePath,
     getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles,
@@ -178,8 +181,8 @@ matchesFileResultTests :: [FileResult -> Bool] -> FileResult -> Bool
 matchesFileResultTests [] _ = True
 matchesFileResultTests tests fr = all ($fr) tests
 
-filterToFileResult :: FindSettings -> [JsonFileType] -> (FilePath,FileType) -> Maybe FileResult
-filterToFileResult settings jsonFileTypes ft =
+filterToFileResult :: FindSettings -> (FilePath,FileType) -> Maybe FileResult
+filterToFileResult settings ft =
   if (null inTypes || snd ft `elem` inTypes) && (null outTypes || notElem (snd ft) outTypes)
   then Just $ uncurry newFileResult ft
   else Nothing
@@ -223,14 +226,15 @@ getRecursiveFilePaths settings dir = do
 
 getFileResults :: FindSettings -> IO [FileResult]
 getFileResults settings = do
+  xfindDbPath <- getXfindDbPath
+  conn <- open xfindDbPath
   -- TODO: need to handle case where paths are files, not just directories
   pathDirs <- filterDirectories (paths settings)
   pathFiles <- filterFiles (paths settings)
   pathLists <- forM pathDirs $ \path ->
     getRecursiveFilePaths settings path
   let allPaths = concat pathLists ++ pathFiles
-  jsonFileTypes <- getJsonFileTypes
-  let allFileTypes = getFileTypesFromJsonFileTypes jsonFileTypes allPaths
+  allFileTypes <- getDbFileTypes conn allPaths
   let allPathsAndTypes = zip allPaths allFileTypes
   let fileTypesFilter = matchesFileTypeTests $ getFileTypeTests settings
   let filteredPathsAndTypes = filter (\(_, ft) -> fileTypesFilter ft) allPathsAndTypes
