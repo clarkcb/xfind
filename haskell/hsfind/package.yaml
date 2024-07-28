@@ -27,7 +27,8 @@ dependencies:
 - filepath
 - hxt
 - regex-pcre-builtin >=0.95.2
-- split >= 0.2.3
+- split >= 0.2.5
+- sqlite-simple >=0.4.18
 - text
 - time
 - timeit >=2.0

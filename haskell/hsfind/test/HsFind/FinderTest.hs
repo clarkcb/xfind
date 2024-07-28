@@ -109,7 +109,6 @@ getIsMatchingArchiveFilePathTests = do
 getFilterToFileResultTests :: IO [Test]
 getFilterToFileResultTests = do
   let settings = defaultFindSettings
-  -- jsonFileTypes <- getJsonFileTypes
   let finder = getFinder settings
   let settingsInExtension = settings { inExtensions = [".hs"] }
   let finderSettingsInExtension = getFinder settingsInExtension
