@@ -1,8 +1,12 @@
 package groovyfind
 
-import groovy.json.JsonSlurper
+import org.sqlite.SQLiteConfig
+import org.sqlite.JDBC
 
 import java.nio.file.Path
+import java.sql.Connection
+import java.sql.DriverManager
+import java.sql.SQLException
 
 enum FileType {
     UNKNOWN('unknown'),
@@ -38,105 +42,112 @@ enum FileType {
 }
 
 class FileTypes {
-    private static final String UNKNOWN = 'unknown'
-    private static final String FILE_TYPES_JSON_PATH = '/filetypes.json'
-    private static final int fileTypeMapCapacity = 8
-    private final Map<String, Set<String>> fileTypeExtMap = new HashMap<String, Set<String>>(fileTypeMapCapacity)
-    private final Map<String, Set<String>> fileTypeNameMap = new HashMap<String, Set<String>>(fileTypeMapCapacity)
+    private static final List<FileType> fileTypes = List.of(
+            FileType.UNKNOWN,
+            FileType.ARCHIVE,
+            FileType.AUDIO,
+            FileType.BINARY,
+            FileType.CODE,
+            FileType.FONT,
+            FileType.IMAGE,
+            FileType.TEXT,
+            FileType.VIDEO,
+            FileType.XML
+    )
+    private Connection _conn = null
+    private HashMap<String, FileType> _extFileTypeCache
 
-    private void setFileTypeMapsFromJson() {
-        JsonSlurper jsonSlurper = new JsonSlurper()
-        InputStream fileTypesInputStream = getClass().getResourceAsStream(FILE_TYPES_JSON_PATH)
-        assert fileTypesInputStream != null
-
-        try {
-            def jsonObj = jsonSlurper.parse(fileTypesInputStream)
-            assert jsonObj instanceof Map
-            assert jsonObj.filetypes instanceof List
-            List fileTypesList = (List)jsonObj.filetypes
-
-            for (int i=0; i < fileTypesList.size(); i++) {
-                def filetypeObj = fileTypesList[i]
-                assert filetypeObj instanceof Map
-                assert filetypeObj.type instanceof String
-                String typeName = filetypeObj.type
-                fileTypeExtMap[typeName] = filetypeObj.extensions as Set
-                fileTypeNameMap[typeName] = filetypeObj.names as Set
+    private Connection getConnection() {
+        Class.forName("org.sqlite.JDBC")
+        if (_conn == null) {
+            try {
+                def config = new SQLiteConfig()
+                config.setReadOnly(true)
+                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties())
+                Logger.log("Opened database successfully")
+            } catch (SQLException | ClassNotFoundException e) {
+                Logger.logError(e.getMessage())
             }
-
-            Set<String> allTextExts = new HashSet<String>()
-            allTextExts.addAll(fileTypeExtMap.get(FileType.CODE.toName()))
-            allTextExts.addAll(fileTypeExtMap.get(FileType.TEXT.toName()))
-            allTextExts.addAll(fileTypeExtMap.get(FileType.XML.toName()))
-            fileTypeExtMap.put(FileType.TEXT.toName(), allTextExts)
-
-            Set<String> allTextNames = new HashSet<String>()
-            allTextNames.addAll(fileTypeNameMap.get(FileType.CODE.toName()))
-            allTextNames.addAll(fileTypeNameMap.get(FileType.TEXT.toName()))
-            allTextNames.addAll(fileTypeNameMap.get(FileType.XML.toName()))
-            fileTypeNameMap.put(FileType.TEXT.toName(), allTextNames)
-        } catch (AssertionError e) {
-            e.printStackTrace()
         }
+        return _conn
     }
 
     FileTypes() {
-        setFileTypeMapsFromJson()
+        _extFileTypeCache = new HashMap<String, FileType>()
+    }
+
+    private FileType getFileTypeForQueryAndElem(final String query, final String elem) {
+        Connection conn = getConnection()
+        try {
+            def stmt = conn.prepareStatement(query)
+            stmt.setString(1, elem)
+            def rs = stmt.executeQuery()
+            if (rs.next()) {
+                int fileTypeId = rs.getInt("file_type_id") - 1
+                return fileTypes.get(fileTypeId)
+            }
+        } catch (SQLException e) {
+            Logger.logError(e.getMessage())
+        }
+        return FileType.UNKNOWN
+    }
+
+    final FileType getFileTypeForFileName(final String fileName) {
+        def query = "SELECT file_type_id FROM file_name WHERE name = ?"
+        return getFileTypeForQueryAndElem(query, fileName)
+    }
+
+    final FileType getFileTypeForExtension(final String extension) {
+        if (_extFileTypeCache.containsKey(extension)) {
+            return _extFileTypeCache.get(extension)
+        }
+        def query = "SELECT file_type_id FROM file_extension WHERE extension = ?"
+        FileType fileType = getFileTypeForQueryAndElem(query, extension)
+        _extFileTypeCache.put(extension, fileType)
+        return fileType
     }
 
     final FileType getFileType(final Path f) {
-        // most specific first
-        if (isCodeFile(f)) { return FileType.CODE }
-        if (isArchiveFile(f)) { return FileType.ARCHIVE }
-        if (isAudioFile(f)) { return FileType.AUDIO }
-        if (isFontFile(f)) { return FileType.FONT }
-        if (isImageFile(f)) { return FileType.IMAGE }
-        if (isVideoFile(f)) { return FileType.VIDEO }
-        // most general last
-        if (isXmlFile(f)) { return FileType.XML }
-        if (isTextFile(f)) { return FileType.TEXT }
-        if (isBinaryFile(f)) { return FileType.BINARY }
-        FileType.UNKNOWN
+        def fileType = getFileTypeForFileName(f.getFileName().toString())
+        if (fileType != FileType.UNKNOWN) {
+            return fileType
+        }
+        return getFileTypeForExtension(FileUtil.getExtension(f))
     }
 
     final boolean isArchiveFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.ARCHIVE.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.ARCHIVE.toName())
+        return getFileType(path) == FileType.ARCHIVE
     }
 
     final boolean isAudioFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.AUDIO.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.AUDIO.toName())
+        return getFileType(path) == FileType.AUDIO
     }
 
     final boolean isBinaryFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.BINARY.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.BINARY.toName())
+        return getFileType(path) == FileType.BINARY
     }
 
     final boolean isCodeFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.CODE.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.CODE.toName())
+        return getFileType(path) == FileType.CODE
     }
 
     final boolean isFontFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.FONT.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.FONT.toName())
+        return getFileType(path) == FileType.FONT
     }
 
     final boolean isImageFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.IMAGE.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.IMAGE.toName())
+        return getFileType(path) == FileType.IMAGE
     }
 
     final boolean isTextFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.TEXT.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.TEXT.toName())
+        def fileType = getFileType(path)
+        return fileType == FileType.TEXT
+                || fileType == FileType.CODE
+                || fileType == FileType.XML
     }
 
     final boolean isVideoFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.VIDEO.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.VIDEO.toName())
+        return getFileType(path) == FileType.VIDEO
     }
 
     final boolean isUnknownFile(final Path path) {
@@ -144,7 +155,6 @@ class FileTypes {
     }
 
     final boolean isXmlFile(final Path path) {
-        path.fileName.toString() in fileTypeNameMap.get(FileType.XML.toName())
-                || FileUtil.getExtension(path) in fileTypeExtMap.get(FileType.XML.toName())
+        return getFileType(path) == FileType.XML
     }
 }
