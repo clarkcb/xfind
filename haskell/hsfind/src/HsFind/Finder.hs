@@ -17,7 +17,10 @@ import Data.Maybe (isJust)
 import System.FilePath (takeDirectory)
 import Data.Time (UTCTime)
 
-import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTypesFromJsonFileTypes)
+import Database.SQLite.Simple
+
+import HsFind.Config (getXfindDbPath)
+import HsFind.FileTypes (FileType(..), getDbFileTypes)
 import HsFind.FileUtil
     (expandPath, filterOutSymlinks, getFileSizes, getModificationTimes, getNonDotDirectoryContents,
      partitionDirsAndFiles, partitionExisting, pathExists)
@@ -150,8 +153,9 @@ getFileResults finder = do
     pathLists <- forM pathDirs $ \path ->
       getRecursiveFilePaths finder path
     let allPaths = concat pathLists ++ pathFiles
-    jsonFileTypes <- getJsonFileTypes
-    let allFileTypes = getFileTypesFromJsonFileTypes jsonFileTypes allPaths
+    xfindDbPath <- getXfindDbPath
+    conn <- open xfindDbPath
+    let allFileTypes = getDbFileTypes conn allPaths
     let allPathsAndTypes = zip allPaths allFileTypes
     let fileTypesFilter = matchesFileTypeTests $ fileTypeTests $ filterTests finder
     let filteredPathsAndTypes = filter (\(_, ft) -> fileTypesFilter ft) allPathsAndTypes
