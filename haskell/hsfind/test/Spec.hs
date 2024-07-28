@@ -18,6 +18,7 @@ main = do
   -- FileTypes tests
   fileTypeTests <- getFileTypeTests
   fileTypeFromNameTests <- getFileTypeFromNameTests
+  isFileTypeTests <- getIsFileTypeTests
 
   -- FileUtil tests
   fileUtilTests <- getFileUtilTests
@@ -42,7 +43,7 @@ main = do
   newExtensionsTests <- getNewExtensionsTests
 
   defaultMain (fileResultTests ++ fileResultWithSizeTests ++
-    fileTypeTests ++ fileTypeFromNameTests ++
+    fileTypeTests ++ fileTypeFromNameTests ++ isFileTypeTests ++
     fileUtilTests ++ 
     isMatchingDirPathTests ++ isMatchingFilePathTests ++
     isMatchingArchiveFilePathTests ++ findPythonFileResultTests ++
