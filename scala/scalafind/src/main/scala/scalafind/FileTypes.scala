@@ -1,10 +1,12 @@
 package scalafind
 
-import org.json.{JSONObject, JSONTokener}
+import org.sqlite.SQLiteConfig
+import scalafind.FileType.FileType
 
 import java.io.IOException
 import java.nio.file.Path
 import scala.collection.mutable
+import java.sql.{Connection, DriverManager, SQLException}
 import scala.jdk.CollectionConverters.*
 
 object FileType extends Enumeration {
@@ -29,96 +31,106 @@ object FileType extends Enumeration {
   }
 }
 
-object FileTypes {
-  private val _fileTypesJsonPath = "/filetypes.json"
+class FileTypes {
 
-  private val fileTypeMaps: (Map[String, Set[String]], Map[String, Set[String]]) = {
-    val _fileTypeExtMap = mutable.Map.empty[String, Set[String]]
-    val _fileTypeNameMap = mutable.Map.empty[String, Set[String]]
-    val fileTypesInputStream = getClass.getResourceAsStream(_fileTypesJsonPath)
-    try {
-      val jsonObj = new JSONObject(new JSONTokener(fileTypesInputStream))
-      val fileTypesArray = jsonObj.getJSONArray("filetypes").iterator()
-      while (fileTypesArray.hasNext) {
-        val fileTypeObj = fileTypesArray.next().asInstanceOf[JSONObject]
-        val typeName = fileTypeObj.getString("type")
-        _fileTypeExtMap(typeName) = fileTypeObj.getJSONArray("extensions").toList.asScala.map(_.asInstanceOf[String]).toSet
-        _fileTypeNameMap(typeName) = fileTypeObj.getJSONArray("names").toList.asScala.map(_.asInstanceOf[String]).toSet
-      }
-    } catch {
-      case e: IOException =>
-        print(e.getMessage)
+  private val fileTypes = List(
+    FileType.Unknown, FileType.Archive, FileType.Audio, FileType.Binary, FileType.Code,
+    FileType.Font, FileType.Image, FileType.Text, FileType.Video, FileType.Xml
+  )
+
+  private val SELECT_FILE_TYPE_ID_FOR_FILE_NAME = "SELECT file_type_id FROM file_name WHERE name = ?"
+  private val SELECT_FILE_TYPE_ID_FOR_EXTENSION = "SELECT file_type_id FROM file_extension WHERE extension = ?"
+
+  private var _conn: Option[Connection] = None
+  private var _fileTypeCache = Map[String, FileType]()
+
+  private def getConnection: Option[Connection] = {
+    Class.forName("org.sqlite.JDBC")
+    _conn match {
+      case Some(c) => _conn
+      case None =>
+        try {
+          val config = SQLiteConfig()
+          config.setReadOnly(true)
+          _conn = Some(DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties))
+          _conn
+        } catch {
+          case e: Exception =>
+            Common.logError(e.getMessage)
+            None
+        }
     }
-
-    _fileTypeExtMap(FileType.Text.toString) = _fileTypeExtMap(FileType.Text.toString) ++ _fileTypeExtMap(FileType.Code.toString) ++
-      _fileTypeExtMap(FileType.Xml.toString)
-    _fileTypeNameMap(FileType.Text.toString) = _fileTypeNameMap(FileType.Text.toString) ++ _fileTypeNameMap(FileType.Code.toString) ++
-      _fileTypeNameMap(FileType.Xml.toString)
-    (Map.empty[String, Set[String]] ++ _fileTypeExtMap, Map.empty[String, Set[String]] ++ _fileTypeNameMap)
   }
-  private val fileTypeExtMap: Map[String, Set[String]] = fileTypeMaps._1
-  private val fileTypeNameMap: Map[String, Set[String]] = fileTypeMaps._2
 
-  def getFileType(path: Path): FileType.Value = {
-    // most specific types first
-    if (isCodeFile(path)) {
-      FileType.Code
-    } else if (isArchiveFile(path)) {
-      FileType.Archive
-    } else if (isAudioFile(path)) {
-      FileType.Audio
-    } else if (isFontFile(path)) {
-      FileType.Font
-    } else if (isImageFile(path)) {
-      FileType.Image
-    } else if (isVideoFile(path)) {
-      FileType.Video
+  private def getFileTypeForQueryAndElem(query: String, elem: String): FileType = {
+    getConnection match
+      case Some(conn) =>
+        try {
+          val stmt = conn.prepareStatement(query)
+          stmt.setString(1, elem)
+          val rs = stmt.executeQuery()
+          if (rs.next()) {
+            val fileTypeId = rs.getInt("file_type_id") - 1
+            fileTypes(fileTypeId)
+          } else {
+            FileType.Unknown
+          }
+        } catch {
+          case e: SQLException =>
+            Common.logError(e.getMessage)
+            FileType.Unknown
+        }
+      case None =>
+        FileType.Unknown
+  }
 
-      // most general types last
-    } else if (isXmlFile(path)) {
-      FileType.Xml
-    } else if (isTextFile(path)) {
-      FileType.Text
-    } else if (isBinaryFile(path)) {
-      FileType.Binary
-    } else {
-      FileType.Unknown
+  private def getFileTypeForFileName(fileName: String): FileType = {
+    getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_FILE_NAME, fileName)
+  }
+
+  private def getFileTypeForExtension(fileExt: String): FileType = {
+    if (_fileTypeCache.contains(fileExt)) return _fileTypeCache(fileExt)
+    val fileType = getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_EXTENSION, fileExt)
+    _fileTypeCache += (fileExt -> fileType)
+    fileType
+  }
+
+  def getFileType(path: Path): FileType = {
+    val fileTypeForFileName = getFileTypeForFileName(path.getFileName.toString)
+    if (fileTypeForFileName != FileType.Unknown) {
+      return fileTypeForFileName
     }
+    val extension = FileUtil.getExtension(path)
+    getFileTypeForExtension(extension)
   }
 
   def isArchiveFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Archive.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Archive.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Archive
   }
 
   def isAudioFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Audio.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Audio.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Audio
   }
 
   def isBinaryFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Binary.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Binary.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Binary
   }
 
   def isCodeFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Code.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Code.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Code
   }
 
   def isFontFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Font.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Font.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Font
   }
 
   def isImageFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Image.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Image.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Image
   }
 
   def isTextFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Text.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Text.toString).contains(FileUtil.getExtension(path))
+    val fileType = getFileType(path)
+    fileType == FileType.Text || fileType == FileType.Code || fileType == FileType.Xml
   }
 
   def isUnknownFile(path: Path): Boolean = {
@@ -126,15 +138,15 @@ object FileTypes {
   }
 
   def isVideoFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Video.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Video.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Video
   }
 
   def isXmlFile(path: Path): Boolean = {
-    fileTypeNameMap(FileType.Xml.toString).contains(path.getFileName.toString)
-      || fileTypeExtMap(FileType.Xml.toString).contains(FileUtil.getExtension(path))
+    getFileType(path) == FileType.Xml
   }
+}
 
+object FileTypes {
   def isZipArchiveFile(path: Path): Boolean = {
     Set("zip", "jar", "war").contains(FileUtil.getExtension(path))
   }

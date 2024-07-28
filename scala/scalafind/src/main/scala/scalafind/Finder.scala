@@ -13,6 +13,8 @@ import scala.util.matching.Regex
 
 class Finder (settings: FindSettings) {
   import Finder.*
+  
+  val fileTypes = new FileTypes()
 
   private def validateSettings(): Unit = {
     settingsTests.foreach { t =>
