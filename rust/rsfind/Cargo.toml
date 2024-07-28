@@ -10,5 +10,6 @@ magic = "0.16.2"
 regex = "1.10.5"
 serde = { version ="1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
+sqlite = "0.36.0"
 walkdir = "2.5.0"
 zip = "2.1.3"
