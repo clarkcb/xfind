@@ -14,6 +14,8 @@ import scala.util.matching.Regex
 class Finder (settings: FindSettings) {
   import FileUtil.splitPath
   import Finder.*
+  
+  val fileTypes = new FileTypes()
 
   private def validateSettings(): Unit = {
     settingsTests.foreach { t =>
@@ -104,7 +106,7 @@ class Finder (settings: FindSettings) {
         } else {
           (0L, None)
         }
-      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), fileSize, lastMod)
+      val fileResult = new FileResult(p, fileTypes.getFileType(p.getFileName.toString), fileSize, lastMod)
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None
