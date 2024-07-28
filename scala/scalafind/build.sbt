@@ -14,6 +14,17 @@ lazy val scalaFind = (project in file("."))
       "org.json" % "json" % "20251224",
       "org.apache.commons" % "commons-compress" % "1.28.0",
       "org.scalactic" %% "scalactic" % "3.2.19",
+
+      "org.xerial" % "sqlite-jdbc" % "3.46.0.0",
+      // excluding from sqlite-jdbc and added newer slf4j versions didn't work
+      // I still saw warning messages, so I added slf4j-nop that has the same
+      // version as the one included in sqlite-jdbc to suppress them
+      // "org.xerial" % "sqlite-jdbc" % "3.46.0.0" exclude("org.slf4j", "slf4j-api"),
+      // "org.slf4j" % "slf4j-api" % "2.0.12",
+      // "org.slf4j" % "slf4j-simple" % "2.0.13",
+      "org.slf4j" % "slf4j-nop" % "1.7.36",
+      // "org.slf4j" % "slf4j-nop" % "2.0.13",
+
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
       "com.github.sbt" % "junit-interface" % "0.13.3" % Test
     )
