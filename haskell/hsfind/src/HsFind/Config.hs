@@ -1,5 +1,6 @@
 module HsFind.Config
   ( getXfindPath
+  , getXfindDbPath
   , getDataPath
   , getHome
   ) where
@@ -25,6 +26,11 @@ getXfindPath = do
   case maybeXfindPath of
     Just xfindPath -> return xfindPath
     Nothing -> return $ home ++ "/src/xfind"
+
+getXfindDbPath :: IO FilePath
+getXfindDbPath = do
+  xfindPath <- getXfindPath
+  return $ xfindPath ++ "/shared/xfind.db"
 
 getDataPath :: IO FilePath
 getDataPath = do
