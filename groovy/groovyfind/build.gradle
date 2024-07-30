@@ -1,0 +1,41 @@
+plugins {
+    id 'groovy'
+    id 'application'
+}
+
+group = 'xfind'
+version = '0.1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.groovy:groovy:4.0.14'
+    implementation 'org.apache.groovy:groovy-json:4.0.14'
+    implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
+    implementation 'org.slf4j:slf4j-nop:1.7.36'
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+application {
+    // Define the main class for the application.
+    mainClass = 'groovyfind.GroovyFind'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': application.mainClass
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.compileClasspath.filter{ it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}

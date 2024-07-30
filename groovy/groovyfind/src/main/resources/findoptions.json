@@ -1,0 +1,195 @@
+{
+  "findoptions": [
+    {
+      "long": "archivesonly",
+      "desc": "Find only archive files"
+    },
+    {
+      "long": "debug",
+      "desc": "Set output mode to debug"
+    },
+    {
+      "long": "excludearchives",
+      "short": "Z",
+      "desc": "Exclude archive files (bz2, gz, tar, zip)*"
+    },
+    {
+      "long": "excludehidden",
+      "desc": "Exclude hidden files and directories*"
+    },
+    {
+      "long": "help",
+      "short": "h",
+      "desc": "Print this usage and exit"
+    },
+    {
+      "long": "includearchives",
+      "short": "z",
+      "desc": "Include archive files (bz2, gz, tar, zip)"
+    },
+    {
+      "long": "includehidden",
+      "desc": "Include hidden files and directories"
+    },
+    {
+      "long": "in-archiveext",
+      "arg": "extension",
+      "desc": "Specify extension for archive files to include in find"
+    },
+    {
+      "long": "in-archivefilepattern",
+      "arg": "pattern",
+      "desc": "Specify name pattern for archive files to include in find"
+    },
+    {
+      "long": "in-dirpattern",
+      "short": "d",
+      "arg": "pattern",
+      "desc": "Specify name pattern for directories to include in find"
+    },
+    {
+      "long": "in-ext",
+      "short": "x",
+      "arg": "extension",
+      "desc": "Specify extension for files to include in find"
+    },
+    {
+      "long": "in-filepattern",
+      "short": "f",
+      "arg": "pattern",
+      "desc": "Specify name pattern for files to include in find"
+    },
+    {
+      "long": "in-filetype",
+      "short": "t",
+      "arg": "filetype",
+      "desc": "File type to find (text, binary)"
+    },
+    {
+      "long": "maxdepth",
+      "arg": "size",
+      "desc": "Find files at most maxdepth levels below startpath"
+    },
+    {
+      "long": "maxlastmod",
+      "arg": "datetime",
+      "desc": "Find files with lastmod less than or equal to maxlastmod"
+    },
+    {
+      "long": "maxsize",
+      "arg": "size",
+      "desc": "Find files with size <= maxsize"
+    },
+    {
+      "long": "mindepth",
+      "arg": "size",
+      "desc": "Find files at least mindepth levels below startpath"
+    },
+    {
+      "long": "minlastmod",
+      "arg": "datetime",
+      "desc": "Find files with lastmod greater than or equal to minlastmod"
+    },
+    {
+      "long": "minsize",
+      "arg": "size",
+      "desc": "Find files with size >= minsize"
+    },
+    {
+      "long": "noprintdirs",
+      "desc": "Do not print matching directories after finding*"
+    },
+    {
+      "long": "noprintfiles",
+      "desc": "Do not print matching files after finding"
+    },
+    {
+      "long": "norecursive",
+      "short": "R",
+      "desc": "Do not find recursively (no subdirectories)"
+    },
+    {
+      "long": "out-archiveext",
+      "arg": "extension",
+      "desc": "Specify extension for archive files to exclude from find"
+    },
+    {
+      "long": "out-archivefilepattern",
+      "arg": "pattern",
+      "desc": "Specify name pattern for archive files to exclude from find"
+    },
+    {
+      "long": "out-dirpattern",
+      "short": "D",
+      "arg": "pattern",
+      "desc": "Specify name pattern for directories to exclude from find"
+    },
+    {
+      "long": "out-ext",
+      "short": "X",
+      "arg": "extension",
+      "desc": "Specify extension for files to exclude from find"
+    },
+    {
+      "long": "out-filepattern",
+      "short": "F",
+      "arg": "pattern",
+      "desc": "Specify name pattern for files to exclude from find"
+    },
+    {
+      "long": "out-filetype",
+      "short": "T",
+      "arg": "filetype",
+      "desc": "File type not to find (text, binary)"
+    },
+    {
+      "long": "printdirs",
+      "desc": "Print matching directories after finding"
+    },
+    {
+      "long": "printfiles",
+      "desc": "Print matching files after finding*"
+    },
+    {
+      "long": "recursive",
+      "short": "r",
+      "desc": "Find recursively through subdirectories*"
+    },
+    {
+      "long": "settings-file",
+      "arg": "file",
+      "desc": "Path to JSON file with specified find settings"
+    },
+    {
+      "long": "sort-by",
+      "arg": "sort",
+      "desc": "Sort by: PATH, NAME, TYPE, SIZE, LASTMOD"
+    },
+    {
+      "long": "sort-ascending",
+      "desc": "Sort results in ascending order*"
+    },
+    {
+      "long": "sort-casesensitive",
+      "desc": "Sort results case-sensitive*"
+    },
+    {
+      "long": "sort-caseinsensitive",
+      "desc": "Sort results case-insensitive"
+    },
+    {
+      "long": "sort-descending",
+      "desc": "Sort results in descending order"
+    },
+    {
+      "long": "verbose",
+      "short": "v",
+      "desc": "Set output mode to verbose"
+    },
+    {
+      "long": "version",
+      "short": "V",
+      "desc": "Print version and exit"
+    }
+  ]
+}

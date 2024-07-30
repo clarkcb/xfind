@@ -325,5 +325,4 @@ class Finder {
 
         return findFileResultsVisitor.fileResults
     }
-
 }

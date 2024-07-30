@@ -27,7 +27,7 @@ enum FileType {
     }
 
     static FileType forName(final String name) {
-        String lname = name.trim().toLowerCase()
+        def lname = name.trim().toLowerCase()
         for (FileType fileType : values()) {
             if (fileType.name == lname) {
                 return fileType
@@ -38,7 +38,6 @@ enum FileType {
 }
 
 class FileTypes {
-
     private static final String FILE_TYPES_JSON_PATH = '/filetypes.json'
     private static final int fileTypeMapCapacity = 8
     private final def fileTypeExtMap = new HashMap<String, Set<String>>(fileTypeMapCapacity)
@@ -147,5 +146,4 @@ class FileTypes {
         return fileTypeNameMap.get(FileType.XML.toName()).contains(path.fileName.toString())
                 || fileTypeExtMap.get(FileType.XML.toName()).contains(FileUtil.getExtension(path))
     }
-
 }
