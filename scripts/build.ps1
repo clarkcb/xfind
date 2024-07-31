@@ -707,6 +707,67 @@ function BuildGo
     Set-Location $oldPwd
 }
 
+function BuildGroovy
+{
+    Write-Host
+    Hdr('BuildGroovy')
+
+    $oldPwd = Get-Location
+    Set-Location $groovyfindPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+        PrintError('You need to install gradle')
+        return
+    }
+
+    # copy the shared json files to the local resource location
+    $resourcesPath = Join-Path $groovyfindPath 'src' 'main' 'resources'
+    if (-not (Test-Path $resourcesPath))
+    {
+        New-Item -ItemType directory -Path $resourcesPath
+    }
+    CopyJsonResources($resourcesPath)
+
+    # copy the test files to the local test resource location
+    $testResourcesPath = Join-Path $groovyfindPath 'src' 'test' 'resources'
+    if (-not (Test-Path $testResourcesPath))
+    {
+        New-Item -ItemType directory -Path $testResourcesPath
+    }
+    CopyTestResources($testResourcesPath)
+
+    # run the gradle command to build
+    Log('Building groovyfind')
+    
+    $gradleArgs = '--warning-mode all'
+    $gradleTasks = 'clean jar'
+    Log("$gradle $gradleArgs $gradleTasks")
+    & $gradle --warning-mode all clean jar
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Build succeeded')
+    }
+    else
+    {
+        PrintError('Build failed')
+        return
+    }
+
+    # add to bin
+    $groovyfindExe = Join-Path $groovyfindPath 'bin' 'groovyfind.ps1'
+    AddToBin($groovyfindExe)
+
+    Set-Location $oldPwd
+}
+
 function BuildHaskell
 {
     Write-Host
@@ -1628,6 +1689,8 @@ function BuildAll
 
     Measure-Command { BuildGo }
 
+    Measure-Command { BuildGroovy }
+
     Measure-Command { BuildHaskell }
 
     Measure-Command { BuildJava }
@@ -1695,6 +1758,7 @@ function BuildMain
             'fs'         { Measure-Command { BuildFsharp } }
             'fsharp'     { Measure-Command { BuildFsharp } }
             'go'         { Measure-Command { BuildGo } }
+            'groovy'     { Measure-Command { BuildGroovy } }
             'haskell'    { Measure-Command { BuildHaskell } }
             'hs'         { Measure-Command { BuildHaskell } }
             'java'       { Measure-Command { BuildJava } }

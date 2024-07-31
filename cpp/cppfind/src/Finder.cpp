@@ -62,20 +62,24 @@ namespace cppfind {
         return true;
     }
 
-    bool is_matching_extension(const std::string& ext,
-        const std::unordered_set<std::string>& in_extensions,
-        const std::unordered_set<std::string>& out_extensions) {
-        return (in_extensions.empty()
-            || in_extensions.contains(ext))
-            && (out_extensions.empty()
-                || !out_extensions.contains(ext));
+    bool Finder::is_matching_archive_extension(const std::string& file_ext) const {
+        return (m_settings.in_archive_extensions().empty()
+            || m_settings.in_archive_extensions().contains(file_ext))
+            && (m_settings.out_archive_extensions().empty()
+            || !m_settings.out_archive_extensions().contains(file_ext));
+    }
+
+    bool Finder::is_matching_extension(const std::string& file_ext) const {
+        return (m_settings.in_extensions().empty()
+            || m_settings.in_extensions().contains(file_ext))
+            && (m_settings.out_extensions().empty()
+            || !m_settings.out_extensions().contains(file_ext));
     }
 
     bool Finder::has_matching_archive_extension(const FileResult& file_result) const {
         if (!m_settings.in_archive_extensions().empty() || !m_settings.out_archive_extensions().empty()) {
             const auto ext = FileUtil::get_path_extension(file_result.file_path());
-            return is_matching_extension(ext, m_settings.in_archive_extensions(),
-                m_settings.out_archive_extensions());
+            return is_matching_archive_extension(ext);
         }
         return true;
     }
@@ -83,65 +87,57 @@ namespace cppfind {
     bool Finder::has_matching_extension(const FileResult& file_result) const {
         if (!m_settings.in_extensions().empty() || !m_settings.out_extensions().empty()) {
             const auto ext = FileUtil::get_path_extension(file_result.file_path());
-            return is_matching_extension(ext, m_settings.in_extensions(),
-                m_settings.out_extensions());
+            return is_matching_extension(ext);
         }
         return true;
     }
 
-    bool is_matching_file_name(const std::string& file_name,
-        const std::unordered_set<RegexPattern, RegexPatternHash>& in_patterns,
-        const std::unordered_set<RegexPattern, RegexPatternHash>& out_patterns) {
-        return (in_patterns.empty()
-            || matches_any_pattern(file_name, in_patterns))
-            && (out_patterns.empty()
-                || !matches_any_pattern(file_name, out_patterns));
+    bool Finder::is_matching_archive_file_name(const std::string& file_name) const {
+        return (m_settings.in_archive_file_patterns().empty()
+            || matches_any_pattern(file_name, m_settings.in_archive_file_patterns()))
+            && (m_settings.out_archive_file_patterns().empty()
+                || !matches_any_pattern(file_name, m_settings.out_archive_file_patterns()));
     }
 
-    bool Finder::has_matching_archive_file_name(const FileResult& file_result) const {
-        const auto file_name = file_result.file_path().filename().string();
-        return is_matching_file_name(file_name, m_settings.in_archive_file_patterns(),
-            m_settings.out_archive_file_patterns());
+    bool Finder::is_matching_file_name(const std::string& file_name) const {
+        return (m_settings.in_file_patterns().empty()
+            || matches_any_pattern(file_name, m_settings.in_file_patterns()))
+            && (m_settings.out_file_patterns().empty()
+                || !matches_any_pattern(file_name, m_settings.out_file_patterns()));
     }
 
-    bool Finder::has_matching_file_name(const FileResult& file_result) const {
-        const auto file_name = file_result.file_path().filename().string();
-        return is_matching_file_name(file_name, m_settings.in_file_patterns(),
-            m_settings.out_file_patterns());
-    }
-
-    bool Finder::has_matching_file_type(const FileResult& file_result) const {
+    bool Finder::is_matching_file_type(const FileType& file_type) const {
         return (m_settings.in_file_types().empty()
-            || m_settings.in_file_types().contains(file_result.file_type()))
+            || m_settings.in_file_types().contains(file_type))
             && (m_settings.out_file_types().empty()
-                || !m_settings.out_file_types().contains(file_result.file_type()));
+                || !m_settings.out_file_types().contains(file_type));
     }
 
-    bool Finder::has_matching_file_size(const FileResult& file_result) const {
+    bool Finder::is_matching_file_size(const uint64_t file_size) const {
         return (m_settings.max_size() == 0
-            || file_result.file_size() <= m_settings.max_size())
+            || file_size <= m_settings.max_size())
             && (m_settings.min_size() == 0
-                || file_result.file_size() >= m_settings.min_size());
+                || file_size >= m_settings.min_size());
     }
 
-    bool Finder::has_matching_last_mod(const FileResult& file_result) const {
+    bool Finder::is_matching_last_mod(const long last_mod) const {
         return (m_settings.max_last_mod() == 0
-            || file_result.last_mod() <= m_settings.max_last_mod())
+            || last_mod <= m_settings.max_last_mod())
             && (m_settings.min_last_mod() == 0
-                || file_result.last_mod() >= m_settings.min_last_mod());
+                || last_mod >= m_settings.min_last_mod());
     }
 
     bool Finder::is_matching_archive_file_result(const FileResult& file_result) const {
         return has_matching_archive_extension(file_result)
-            && has_matching_archive_file_name(file_result);
+            && is_matching_archive_file_name(file_result.file_name());
     }
 
     bool Finder::is_matching_file_result(const FileResult& file_result) const {
         return has_matching_extension(file_result)
-            && has_matching_file_name(file_result)
-            && has_matching_file_type(file_result)
-            && has_matching_file_size(file_result)
-            && has_matching_last_mod(file_result);
+            && is_matching_file_name(file_result.file_name())
+            && is_matching_file_type(file_result.file_type())
+            && is_matching_file_size(file_result.file_size())
+            && is_matching_last_mod(file_result.last_mod());
     }
 
     std::optional<FileResult> Finder::filter_to_file_result(std::filesystem::path&& file_path) const {

@@ -140,43 +140,85 @@ class Finder
     }
 
     /**
+     * @param string $ext
+     * @return bool
+     */
+    public function is_matching_extension(string $ext): bool
+    {
+        return ((count($this->settings->in_extensions) == 0 || in_array($ext, $this->settings->in_extensions))
+            && (count($this->settings->out_extensions) == 0 | !in_array($ext, $this->settings->out_extensions)));
+    }
+
+    /**
+     * @param FileResult $fr
+     * @return bool
+     */
+    public function has_matching_extension(FileResult $fr): bool
+    {
+        if ($this->settings->in_extensions || $this->settings->out_extensions) {
+            $ext = FileUtil::get_extension($fr->file_name);
+            return $this->is_matching_extension($ext);
+        }
+        return true;
+    }
+
+    /**
+     * @param string $file_name
+     * @return bool
+     */
+    public function is_matching_file_name(string $file_name): bool
+    {
+        return ((count($this->settings->in_file_patterns) == 0
+                || $this->matches_any_pattern($file_name, $this->settings->in_file_patterns))
+            && (count($this->settings->out_file_patterns) == 0
+                || !$this->matches_any_pattern($file_name, $this->settings->out_file_patterns)));
+    }
+
+    /**
+     * @param FileType $file_type
+     * @return bool
+     */
+    public function is_matching_file_type(FileType $file_type): bool
+    {
+        return ((count($this->settings->in_file_types) == 0
+                || in_array($file_type, $this->settings->in_file_types))
+            && (count($this->settings->out_file_types) == 0
+                || !in_array($file_type, $this->settings->out_file_types)));
+    }
+
+    /**
+     * @param int $file_size
+     * @return bool
+     */
+    public function is_matching_file_size(int $file_size): bool
+    {
+        return (($this->settings->max_size == 0 || $file_size <= $this->settings->max_size)
+            && ($this->settings->min_size == 0 || $file_size >= $this->settings->min_size));
+    }
+
+    /**
+     * @param int $last_mod
+     * @return bool
+     */
+    public function is_matching_last_mod(int $last_mod): bool
+    {
+        return (($this->settings->max_last_mod == null
+                || $last_mod <= $this->settings->max_last_mod->getTimestamp())
+            && ($this->settings->min_last_mod == null
+                || $last_mod >= $this->settings->min_last_mod->getTimestamp()));
+    }
+
+    /**
      * @param FileResult $fr
      * @return bool
      */
     public function is_matching_file_result(FileResult $fr): bool
     {
-        if ($this->settings->in_extensions || $this->settings->out_extensions) {
-            $ext = FileUtil::get_extension($fr->file_name);
-            if ($this->settings->in_extensions && !in_array($ext, $this->settings->in_extensions)) {
-                return false;
-            }
-            if ($this->settings->out_extensions && in_array($ext, $this->settings->out_extensions)) {
-                return false;
-            }
-        }
-        if ($this->settings->in_file_patterns &&
-            !$this->matches_any_pattern($fr->file_name, $this->settings->in_file_patterns)) {
-            return false;
-        }
-        if ($this->settings->out_file_patterns &&
-            $this->matches_any_pattern($fr->file_name, $this->settings->out_file_patterns)) {
-            return false;
-        }
-        if ($this->settings->in_file_types && !in_array($fr->file_type, $this->settings->in_file_types)) {
-            return false;
-        }
-        if ($this->settings->out_file_types && in_array($fr->file_type, $this->settings->out_file_types)) {
-            return false;
-        }
-        if (($this->settings->max_size > 0 && $fr->file_size > $this->settings->max_size)
-            || ($this->settings->min_size > 0 && $fr->file_size < $this->settings->min_size)) {
-            return false;
-        }
-        if (($this->settings->max_last_mod != null && $fr->last_mod > $this->settings->max_last_mod->getTimestamp())
-            || ($this->settings->min_last_mod != null && $fr->last_mod < $this->settings->min_last_mod->getTimestamp())) {
-            return false;
-        }
-        return true;
+        return $this->has_matching_extension($fr)
+            && $this->is_matching_file_name($fr->file_name)
+            && $this->is_matching_file_type($fr->file_type)
+            && $this->is_matching_file_size($fr->file_size)
+            && $this->is_matching_last_mod($fr->last_mod);
     }
 
     /**

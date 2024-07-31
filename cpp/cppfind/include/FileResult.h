@@ -17,6 +17,7 @@ namespace cppfind {
                    FileType file_type, uint64_t file_size, long last_mod);
         [[nodiscard]] std::vector<std::filesystem::path> containers() const;
         [[nodiscard]] std::filesystem::path file_path() const;
+        [[nodiscard]] std::string file_name() const;
         [[nodiscard]] FileType file_type() const;
         [[nodiscard]] uint64_t file_size() const;
         [[nodiscard]] long last_mod() const;

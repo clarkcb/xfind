@@ -6,6 +6,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.io.path.extension
 import kotlin.io.path.name
@@ -92,62 +93,69 @@ class Finder(val settings: FindSettings) {
                         || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
-    fun hasMatchingExtension(fr: FileResult): Boolean {
+    fun isMatchingArchiveExtension(ext: String): Boolean {
+        return ((settings.inArchiveExtensions.isEmpty()
+                || settings.inArchiveExtensions.contains(ext))
+                &&
+                (settings.outArchiveExtensions.isEmpty()
+                        || !settings.outArchiveExtensions.contains(ext)))
+    }
+
+    fun isMatchingExtension(ext: String): Boolean {
         return ((settings.inExtensions.isEmpty()
-                || settings.inExtensions.contains(fr.path.extension))
+                || settings.inExtensions.contains(ext))
                 &&
                 (settings.outExtensions.isEmpty()
-                        || !settings.outExtensions.contains(fr.path.extension)))
+                        || !settings.outExtensions.contains(ext)))
     }
 
-    fun hasMatchingFileName(fr: FileResult): Boolean {
+    fun isMatchingArchiveFileName(fileName: String): Boolean {
+        return ((settings.inArchiveFilePatterns.isEmpty()
+                || matchesAnyPattern(fileName, settings.inArchiveFilePatterns))
+                &&
+                (settings.outArchiveFilePatterns.isEmpty()
+                        || !matchesAnyPattern(fileName, settings.outArchiveFilePatterns)))
+    }
+
+    fun isMatchingFileName(fileName: String): Boolean {
         return ((settings.inFilePatterns.isEmpty()
-                || matchesAnyPattern(fr.path.fileName.toString(), settings.inFilePatterns))
+                || matchesAnyPattern(fileName, settings.inFilePatterns))
                 &&
                 (settings.outFilePatterns.isEmpty()
-                        || !matchesAnyPattern(fr.path.fileName.toString(), settings.outFilePatterns)))
+                        || !matchesAnyPattern(fileName, settings.outFilePatterns)))
     }
 
-    fun hasMatchingFileType(fr: FileResult): Boolean {
+    fun isMatchingFileType(fileType: FileType): Boolean {
         return ((settings.inFileTypes.isEmpty()
-                || settings.inFileTypes.contains(fr.fileType))
+                || settings.inFileTypes.contains(fileType))
                 &&
                 (settings.outFileTypes.isEmpty()
-                        || !settings.outFileTypes.contains(fr.fileType)))
+                        || !settings.outFileTypes.contains(fileType)))
     }
 
-    fun hasMatchingFileSize(fr: FileResult): Boolean {
-        return ((settings.maxSize <= 0 || fr.fileSize <= settings.maxSize)
-                && (settings.minSize <= 0 || fr.fileSize >= settings.minSize))
+    fun isMatchingFileSize(fileSize: Long): Boolean {
+        return ((settings.maxSize <= 0 || fileSize <= settings.maxSize)
+                && (settings.minSize <= 0 || fileSize >= settings.minSize))
     }
 
-    fun hasMatchingLastMod(fr: FileResult): Boolean {
-        return ((settings.maxLastMod == null || fr.lastMod == null
-                || fr.lastMod.toInstant() <= settings.maxLastMod.toInstant(ZoneOffset.UTC))
-                && (settings.minLastMod == null || fr.lastMod == null
-                || fr.lastMod.toInstant() >= settings.minLastMod.toInstant(ZoneOffset.UTC)))
+    fun isMatchingLastMod(lastMod: Instant?): Boolean {
+        return (((settings.maxLastMod == null)
+                || lastMod!! <= settings.maxLastMod!!.toInstant(ZoneOffset.UTC))
+                && ((settings.minLastMod == null)
+                || lastMod!! >= settings.minLastMod!!.toInstant(ZoneOffset.UTC)))
     }
 
     fun isMatchingFileResult(fr: FileResult): Boolean {
-        return hasMatchingExtension(fr)
-                && hasMatchingFileName(fr)
-                && hasMatchingFileType(fr)
-                && hasMatchingFileSize(fr)
-                && hasMatchingLastMod(fr)
+        return isMatchingExtension(fr.path.extension)
+                && isMatchingFileName(fr.path.name)
+                && isMatchingFileType(fr.fileType)
+                && isMatchingFileSize(fr.fileSize)
+                && isMatchingLastMod(fr.lastMod?.toInstant())
     }
 
     fun isMatchingArchiveFileResult(fr: FileResult): Boolean {
-        return (settings.inArchiveExtensions.isEmpty()
-                || settings.inArchiveExtensions.contains(fr.path.extension))
-                &&
-                (settings.outArchiveExtensions.isEmpty()
-                        || !settings.outArchiveExtensions.contains(fr.path.extension))
-                &&
-                (settings.inArchiveFilePatterns.isEmpty()
-                        || matchesAnyPattern(fr.path.name, settings.inArchiveFilePatterns))
-                &&
-                (settings.outArchiveFilePatterns.isEmpty()
-                        || !matchesAnyPattern(fr.path.name, settings.outArchiveFilePatterns))
+        return isMatchingArchiveExtension(fr.path.extension)
+                && isMatchingArchiveFileName(fr.path.name)
     }
 
     fun filterToFileResult(f: File): FileResult? {
@@ -161,8 +169,8 @@ class Finder(val settings: FindSettings) {
                 return null
             }
             val stat: BasicFileAttributes = Files.readAttributes(f.toPath(), BasicFileAttributes::class.java)
-            fileSize = stat.size()
-            lastMod = stat.lastModifiedTime()
+            if (needSize(settings)) fileSize = stat.size()
+            if (needLastMod(settings)) lastMod = stat.lastModifiedTime()
         }
         val fr = FileResult(f.toPath(), fileTypes.getFileType(f), fileSize, lastMod)
         if (fr.fileType === FileType.ARCHIVE) {

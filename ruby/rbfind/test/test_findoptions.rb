@@ -43,7 +43,7 @@ module RbFind
       args = %w[-x py,rb .]
       settings = @findoptions.find_settings_from_args(args)
       assert_equal(1, settings.paths.length)
-      assert_equal('.', settings.paths.first)
+      assert_equal(Pathname.new('.'), settings.paths.first)
       assert_equal(2, settings.in_extensions.length)
       assert(settings.in_extensions.include?('py'))
       assert(settings.in_extensions.include?('rb'))
@@ -87,7 +87,7 @@ module RbFind
       JSON
       @findoptions.settings_from_json(json, settings)
       assert_equal(1, settings.paths.length)
-      assert_equal('~/src/xfind/', settings.paths.first)
+      assert_equal(Pathname.new('~/src/xfind/'), settings.paths.first)
       assert_equal(2, settings.in_extensions.length)
       assert(settings.in_extensions.include?('js'))
       assert(settings.in_extensions.include?('ts'))

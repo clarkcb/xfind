@@ -129,6 +129,13 @@ public class FileTypesTests
 	}
 
 	[Test]
+	public void IsUnknownFile_UnknownFile_True()
+	{
+		var unknownFile = new FileInfo("unknown.xyz");
+		Assert.That(_fileTypes.IsUnknownFile(unknownFile));
+	}
+
+	[Test]
 	public void IsVideoFile_VideoFile_True()
 	{
 		var videoFile = new FileInfo("movie.mp4");

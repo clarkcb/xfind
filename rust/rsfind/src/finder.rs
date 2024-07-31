@@ -148,21 +148,21 @@ impl Finder {
                                    self.settings.out_file_patterns())
     }
 
-    fn has_matching_file_type(&self, file_result: &FileResult) -> bool {
+    fn is_matching_file_type(&self, file_type: &FileType) -> bool {
         (self.settings.in_file_types().is_empty()
-            || self.settings.in_file_types().contains(&file_result.file_type))
+            || self.settings.in_file_types().contains(&file_type))
             && (self.settings.out_file_types().is_empty()
-            || !self.settings.out_file_types().contains(&file_result.file_type))
+            || !self.settings.out_file_types().contains(&file_type))
     }
 
-    fn has_matching_file_size(&self, file_result: &FileResult) -> bool {
-        (self.settings.max_size() == 0 || file_result.file_size <= self.settings.max_size())
-            && (self.settings.min_size() == 0 || file_result.file_size >= self.settings.min_size())
+    fn is_matching_file_size(&self, file_size: &u64) -> bool {
+        (self.settings.max_size() == 0 || file_size <= &self.settings.max_size())
+            && (self.settings.min_size() == 0 || file_size >= &self.settings.min_size())
     }
 
-    fn has_matching_last_mod(&self, file_result: &FileResult) -> bool {
-        (self.settings.max_last_mod() == 0 || file_result.last_mod <= self.settings.max_last_mod())
-            && (self.settings.min_last_mod() == 0 || file_result.last_mod >= self.settings.min_last_mod())
+    fn is_matching_last_mod(&self, last_mod: &u64) -> bool {
+        (self.settings.max_last_mod() == 0 || last_mod <= &self.settings.max_last_mod())
+            && (self.settings.min_last_mod() == 0 || last_mod >= &self.settings.min_last_mod())
     }
 
     fn is_matching_archive_file_result(&self, file_result: &FileResult) -> bool {
@@ -187,9 +187,9 @@ impl Finder {
 
         self.has_matching_extension(file_result) &&
             self.has_matching_file_name(file_result) &&
-            self.has_matching_file_type(file_result) &&
-            self.has_matching_file_size(file_result) &&
-            self.has_matching_last_mod(file_result)
+            self.is_matching_file_type(&file_result.file_type) &&
+            self.is_matching_file_size(&file_result.file_size) &&
+            self.is_matching_last_mod(&file_result.last_mod)
     }
 
     fn filter_file_result(&self, file_result: &FileResult) -> bool {

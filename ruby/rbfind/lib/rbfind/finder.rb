@@ -41,7 +41,7 @@ module RbFind
       if !@settings.in_archive_extensions.empty? || !@settings.out_archive_extensions.empty?
         ext = FileUtil.get_extension(file_result.path)
         return ((@settings.in_archive_extensions.empty? ||
-          @settings.in_archive_extensions.include?(ext)) and
+          @settings.in_archive_extensions.include?(ext)) &&
           (@settings.out_archive_extensions.empty? ||
             !@settings.out_archive_extensions.include?(ext)))
       end
@@ -52,61 +52,81 @@ module RbFind
       if !@settings.in_extensions.empty? || !@settings.out_extensions.empty?
         ext = FileUtil.get_extension(file_result.path)
         return ((@settings.in_extensions.empty? ||
-          @settings.in_extensions.include?(ext)) and
+          @settings.in_extensions.include?(ext)) &&
           (@settings.out_extensions.empty? ||
             !@settings.out_extensions.include?(ext)))
       end
       true
     end
 
-    def has_matching_archive_file_name?(file_result)
+    def matching_archive_file_name?(file_name)
       ((@settings.in_archive_file_patterns.empty? ||
-        matches_any_pattern?(file_result.file_name, @settings.in_archive_file_patterns)) and
+        matches_any_pattern?(file_name, @settings.in_archive_file_patterns)) &&
         (@settings.out_archive_file_patterns.empty? ||
-          !matches_any_pattern?(file_result.file_name, @settings.out_archive_file_patterns)))
+          !matches_any_pattern?(file_name, @settings.out_archive_file_patterns)))
+    end
+
+    def has_matching_archive_file_name?(file_result)
+      matching_archive_file_name?(file_result.file_name)
+    end
+
+    def matching_file_name?(file_name)
+      ((@settings.in_file_patterns.empty? ||
+        matches_any_pattern?(file_name, @settings.in_file_patterns)) &&
+        (@settings.out_file_patterns.empty? ||
+          !matches_any_pattern?(file_name, @settings.out_file_patterns)))
     end
 
     def has_matching_file_name?(file_result)
-      ((@settings.in_file_patterns.empty? ||
-        matches_any_pattern?(file_result.file_name, @settings.in_file_patterns)) and
-        (@settings.out_file_patterns.empty? ||
-          !matches_any_pattern?(file_result.file_name, @settings.out_file_patterns)))
+      matching_file_name?(file_result.file_name)
+    end
+
+    def matching_file_type?(file_type)
+      ((@settings.in_file_types.empty? ||
+        @settings.in_file_types.include?(file_type)) &&
+        (@settings.out_file_types.empty? ||
+          !@settings.out_file_types.include?(file_type)))
     end
 
     def has_matching_file_type?(file_result)
-      ((@settings.in_file_types.empty? ||
-        @settings.in_file_types.include?(file_result.file_type)) and
-        (@settings.out_file_types.empty? ||
-          !@settings.out_file_types.include?(file_result.file_type)))
+      matching_file_type?(file_result.file_type)
+    end
+
+    def matching_file_size?(file_size)
+      ((@settings.min_size == 0 ||
+        file_size >= @settings.min_size) &&
+        (@settings.max_size == 0 ||
+          file_size <= @settings.max_size))
     end
 
     def has_matching_file_size?(file_result)
-      ((@settings.min_size == 0 ||
-        file_result.file_size >= @settings.min_size) and
-        (@settings.max_size == 0 ||
-          file_result.file_size <= @settings.max_size))
+      matching_file_size?(file_result.file_size)
+    end
+
+    def matching_last_mod?(last_mod)
+      ((@settings.min_last_mod.nil? ||
+        last_mod >= @settings.min_last_mod.to_time) &&
+        (@settings.max_last_mod.nil? ||
+          last_mod <= @settings.max_last_mod.to_time))
     end
 
     def has_matching_last_mod?(file_result)
-      ((@settings.min_last_mod.nil? ||
-        file_result.last_mod >= @settings.min_last_mod.to_time) and
-        (@settings.max_last_mod.nil? ||
-          file_result.last_mod <= @settings.max_last_mod.to_time))
+      matching_last_mod?(file_result.last_mod)
     end
 
     def matching_archive_file_result?(file_result)
-      has_matching_archive_ext?(file_result) and
-        has_matching_archive_file_name?(file_result) and
-        has_matching_file_size?(file_result) and
-        has_matching_last_mod?(file_result)
+      has_matching_archive_ext?(file_result) &&
+        matching_archive_file_name?(file_result.file_name) &&
+        matching_file_size?(file_result.file_size) &&
+        matching_last_mod?(file_result.last_mod)
     end
 
     def matching_file_result?(file_result)
-      has_matching_ext?(file_result) and
-        has_matching_file_name?(file_result) and
-        has_matching_file_type?(file_result) and
-        has_matching_file_size?(file_result) and
-        has_matching_last_mod?(file_result)
+      has_matching_ext?(file_result) &&
+        matching_file_name?(file_result.file_name) &&
+        matching_file_type?(file_result.file_type) &&
+        matching_file_size?(file_result.file_size) &&
+        matching_last_mod?(file_result.last_mod)
     end
 
     def matching_archive_file?(file_path)

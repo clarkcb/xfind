@@ -613,15 +613,23 @@ build_groovy () {
     echo
     hdr "build_groovy"
 
-    # ensure gradle is installed
-    if [ -z "$(which gradle)" ]
+    cd "$GROOVYFIND_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
         log_error "You need to install gradle"
         return
     fi
 
-    RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/main/resources"
-    TEST_RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/test/resources"
+    RESOURCES_PATH="$GROOVYFIND_PATH/src/main/resources"
+    TEST_RESOURCES_PATH="$GROOVYFIND_PATH/src/test/resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -634,12 +642,13 @@ build_groovy () {
     # run a maven clean build
     log "Building groovyfind"
 
-    cd "$GROOVYFIND_PATH"
-
     # log "gradle --warning-mode all clean jar publishToMavenLocal"
     # gradle --warning-mode all clean jar publishToMavenLocal
-    log "gradle --warning-mode all clean jar"
-    gradle --warning-mode all clean jar
+    # GRADLE_ARGS="--info --warning-mode all"
+    GRADLE_ARGS="--warning-mode all"
+    GRADLE_TASKS="clean jar"
+    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
+    "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
 
     # check for success/failure
     if [ "$?" -eq 0 ]

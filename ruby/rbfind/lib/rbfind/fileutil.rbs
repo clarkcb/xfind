@@ -5,7 +5,7 @@ module RbFind
 
     def self?.dot_dir?: (Pathname file_path) -> bool
 
-    def self?.get_extension: (Pathname file_path) -> String
+    def self?.get_extension: (Pathname | String file_path) -> String
 
     def self?.hidden?: (Pathname file_path) -> bool
 

@@ -42,12 +42,18 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <includes>
-                                    <include>commons-io:commons-io</include>
-                                    <include>org.json:json</include>
-                                </includes>
-                            </artifactSet>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <minimizeJar>true</minimizeJar>
+<!--                            <artifactSet>-->
+<!--                                <includes>-->
+<!--                                    <include>commons-io:commons-io</include>-->
+<!--                                    <include>org.json:json</include>-->
+<!--                                    <include>org.xerial:sqlite-jdbc</include>-->
+<!--                                </includes>-->
+<!--                                <excludes>-->
+<!--                                    <exclude>org.slf4j:slf4j-api</exclude>-->
+<!--                                </excludes>-->
+<!--                            </artifactSet>-->
                             <filters>
                                 <filter>
                                     <artifact>commons-io:commons-io</artifact>

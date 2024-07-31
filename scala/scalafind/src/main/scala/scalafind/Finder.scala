@@ -1,11 +1,12 @@
 package scalafind
 
+import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
 
 import java.io.{File, IOException}
-import java.nio.file.attribute.{BasicFileAttributes}
+import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.{Files, Path, Paths}
-import java.time.{LocalDateTime, ZoneOffset}
+import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
@@ -33,19 +34,22 @@ class Finder (settings: FindSettings) {
     }
   }
 
+  private def isMatchingExtension(ext: String, inExtensions: Set[String], outExtensions: Set[String]): Boolean = {
+    (inExtensions.isEmpty || inExtensions.contains(ext))
+      && (outExtensions.isEmpty || !outExtensions.contains(ext))
+  }
+
   private def hasMatchingExtension(fr: FileResult, inExtensions: Set[String], outExtensions: Set[String]): Boolean = {
     if (inExtensions.nonEmpty || outExtensions.nonEmpty) {
       val ext = getExtension(fr.path.getFileName.toString)
-      (inExtensions.isEmpty || inExtensions.contains(ext))
-        && (outExtensions.isEmpty || !outExtensions.contains(ext))
+      isMatchingExtension(ext, inExtensions, outExtensions)
     } else {
       true
     }
   }
 
-  private def hasMatchingFileName(fr: FileResult, inFilePatterns: Set[Regex], outFilePatterns: Set[Regex]): Boolean = {
+  private def isMatchingFileName(fileName: String, inFilePatterns: Set[Regex], outFilePatterns: Set[Regex]): Boolean = {
     if (inFilePatterns.nonEmpty || outFilePatterns.nonEmpty) {
-      val fileName = fr.path.getFileName.toString
       (inFilePatterns.isEmpty || matchesAnyPattern(fileName, inFilePatterns))
         && (outFilePatterns.isEmpty || !matchesAnyPattern(fileName, outFilePatterns))
     } else {
@@ -53,34 +57,34 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  private def hasMatchingFileType(fr: FileResult): Boolean = {
-    (settings.inFileTypes.isEmpty || settings.inFileTypes.contains(fr.fileType))
-      && (settings.outFileTypes.isEmpty || !settings.outFileTypes.contains(fr.fileType))
+  private def isMatchingFileType(fileType: FileType): Boolean = {
+    (settings.inFileTypes.isEmpty || settings.inFileTypes.contains(fileType))
+      && (settings.outFileTypes.isEmpty || !settings.outFileTypes.contains(fileType))
   }
 
-  private def hasMatchingSize(fr: FileResult): Boolean = {
-    (settings.maxSize <= 0 || fr.fileSize <= settings.maxSize)
-      && (settings.minSize <= 0 || fr.fileSize >= settings.minSize)
+  private def isMatchingSize(fileSize: Long): Boolean = {
+    (settings.maxSize <= 0 || fileSize <= settings.maxSize)
+      && (settings.minSize <= 0 || fileSize >= settings.minSize)
   }
 
-  private def hasMatchingLastMod(fr: FileResult): Boolean = {
-    (settings.maxLastMod.isEmpty || fr.lastMod.isEmpty
-      || fr.lastMod.get.toInstant.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) <= 0)
-      && (settings.minLastMod.isEmpty || fr.lastMod.isEmpty
-      || fr.lastMod.get.toInstant.compareTo(settings.minLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
+  private def isMatchingLastMod(lastMod: Option[Instant]): Boolean = {
+    (settings.maxLastMod.isEmpty
+      || lastMod.get.compareTo(settings.maxLastMod.get.toInstant(ZoneOffset.UTC)) <= 0)
+      && (settings.minLastMod.isEmpty
+      || lastMod.get.compareTo(settings.minLastMod.get.toInstant(ZoneOffset.UTC)) >= 0)
   }
 
   def isMatchingFileResult(fr: FileResult): Boolean = {
     hasMatchingExtension(fr, settings.inExtensions, settings.outExtensions)
-      && hasMatchingFileName(fr, settings.inFilePatterns, settings.outFilePatterns)
-      && hasMatchingFileType(fr)
-      && hasMatchingSize(fr)
-      && hasMatchingLastMod(fr)
+      && isMatchingFileName(fr.path.getFileName.toString, settings.inFilePatterns, settings.outFilePatterns)
+      && isMatchingFileType(fr.fileType)
+      && isMatchingSize(fr.fileSize)
+      && isMatchingLastMod(fr.lastMod.map(_.toInstant))
   }
 
   def isMatchingArchiveFileResult(fr: FileResult): Boolean = {
     hasMatchingExtension(fr, settings.inArchiveExtensions, settings.outArchiveExtensions)
-      && hasMatchingFileName(fr, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
+      && isMatchingFileName(fr.path.getFileName.toString, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
   }
 
   def filterToFileResult(p: Path): Option[FileResult] = {

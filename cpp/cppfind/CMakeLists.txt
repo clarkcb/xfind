@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28.1)
+cmake_minimum_required(VERSION 3.29)
 project(cppfind VERSION 0.1.0 LANGUAGES CXX)
 
 #message("PROJECT_NAME: ${PROJECT_NAME}")
@@ -83,6 +83,8 @@ target_link_libraries(${PROJECT_NAME}app ${PROJECT_NAME})
 ################################################################################
 # Test dependencies section
 ################################################################################
+
+include(FetchContent)
 
 FetchContent_Declare(
         Catch2

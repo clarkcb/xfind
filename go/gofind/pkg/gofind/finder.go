@@ -46,54 +46,68 @@ func (f *Finder) isMatchingDir(d string) bool {
 		(f.Settings.OutDirPatterns().IsEmpty() || !f.Settings.OutDirPatterns().MatchesAny(d))
 }
 
-func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
+func (f *Finder) isMatchingArchiveExtension(ext string) bool {
+	return (len(f.Settings.InArchiveExtensions()) == 0 || Contains(f.Settings.InArchiveExtensions(), ext)) &&
+		(len(f.Settings.OutArchiveExtensions()) == 0 || !Contains(f.Settings.OutArchiveExtensions(), ext))
+}
+
+func (f *Finder) hasMatchingArchiveExtension(fr *FileResult) bool {
 	if len(f.Settings.InArchiveExtensions()) > 0 || len(f.Settings.OutArchiveExtensions()) > 0 {
 		ext := GetExtension(fr.Name)
-		if (len(f.Settings.InArchiveExtensions()) > 0 && !Contains(f.Settings.InArchiveExtensions(), ext)) ||
-			(len(f.Settings.OutArchiveExtensions()) > 0 && Contains(f.Settings.OutArchiveExtensions(), ext)) {
-			return false
-		}
+		return f.isMatchingArchiveExtension(ext)
 	}
-	return (f.Settings.InArchiveFilePatterns().IsEmpty() || f.Settings.InArchiveFilePatterns().MatchesAny(fr.Name)) &&
-		(f.Settings.OutArchiveFilePatterns().IsEmpty() || !f.Settings.OutArchiveFilePatterns().MatchesAny(fr.Name))
+	return true
+}
+
+func (f *Finder) isMatchingExtension(ext string) bool {
+	return (len(f.Settings.InExtensions()) == 0 || Contains(f.Settings.InExtensions(), ext)) &&
+		(len(f.Settings.OutExtensions()) == 0 || !Contains(f.Settings.OutExtensions(), ext))
 }
 
 func (f *Finder) hasMatchingExtension(fr *FileResult) bool {
 	if len(f.Settings.InExtensions()) > 0 || len(f.Settings.OutExtensions()) > 0 {
 		ext := GetExtension(fr.Name)
-		return (len(f.Settings.InExtensions()) == 0 || Contains(f.Settings.InExtensions(), ext)) &&
-			(len(f.Settings.OutExtensions()) == 0 || !Contains(f.Settings.OutExtensions(), ext))
+		return f.isMatchingExtension(ext)
 	}
 	return true
 }
 
-func (f *Finder) hasMatchingFileName(fr *FileResult) bool {
-	return (f.Settings.InFilePatterns().IsEmpty() || f.Settings.InFilePatterns().MatchesAny(fr.Name)) &&
-		(f.Settings.OutFilePatterns().IsEmpty() || !f.Settings.OutFilePatterns().MatchesAny(fr.Name))
+func (f *Finder) isMatchingArchiveFileName(fileName string) bool {
+	return (f.Settings.InArchiveFilePatterns().IsEmpty() || f.Settings.InArchiveFilePatterns().MatchesAny(fileName)) &&
+		(f.Settings.OutArchiveFilePatterns().IsEmpty() || !f.Settings.OutArchiveFilePatterns().MatchesAny(fileName))
 }
 
-func (f *Finder) hasMatchingFileType(fr *FileResult) bool {
-	return (len(f.Settings.InFileTypes()) == 0 || ContainsFileType(f.Settings.InFileTypes(), fr.FileType)) &&
-		(len(f.Settings.OutFileTypes()) == 0 || !ContainsFileType(f.Settings.OutFileTypes(), fr.FileType))
+func (f *Finder) isMatchingFileName(fileName string) bool {
+	return (f.Settings.InFilePatterns().IsEmpty() || f.Settings.InFilePatterns().MatchesAny(fileName)) &&
+		(f.Settings.OutFilePatterns().IsEmpty() || !f.Settings.OutFilePatterns().MatchesAny(fileName))
 }
 
-func (f *Finder) hasMatchingFileSize(fr *FileResult) bool {
-	return (f.Settings.maxSize == 0 || fr.FileSize <= f.Settings.maxSize) &&
-		(f.Settings.minSize == 0 || fr.FileSize >= f.Settings.minSize)
+func (f *Finder) isMatchingFileType(fileType FileType) bool {
+	return (len(f.Settings.InFileTypes()) == 0 || ContainsFileType(f.Settings.InFileTypes(), fileType)) &&
+		(len(f.Settings.OutFileTypes()) == 0 || !ContainsFileType(f.Settings.OutFileTypes(), fileType))
 }
 
-func (f *Finder) hasMatchingLastMod(fr *FileResult) bool {
-	return (f.Settings.maxLastMod.IsZero() || fr.LastMod.Compare(f.Settings.maxLastMod) <= 0) &&
-		(f.Settings.minLastMod.IsZero() || fr.LastMod.Compare(f.Settings.minLastMod) >= 0)
+func (f *Finder) isMatchingFileSize(fileSize int64) bool {
+	return (f.Settings.maxSize == 0 || fileSize <= f.Settings.maxSize) &&
+		(f.Settings.minSize == 0 || fileSize >= f.Settings.minSize)
+}
+
+func (f *Finder) isMatchingLastMod(lastMod time.Time) bool {
+	return (f.Settings.maxLastMod.IsZero() || lastMod.Compare(f.Settings.maxLastMod) <= 0) &&
+		(f.Settings.minLastMod.IsZero() || lastMod.Compare(f.Settings.minLastMod) >= 0)
+}
+
+func (f *Finder) isMatchingArchiveFileResult(fr *FileResult) bool {
+	return f.hasMatchingArchiveExtension(fr) &&
+		f.isMatchingArchiveFileName(fr.Name)
 }
 
 func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 	return f.hasMatchingExtension(fr) &&
-		f.hasMatchingFileName(fr) &&
-		f.hasMatchingFileSize(fr) &&
-		f.hasMatchingFileType(fr) &&
-		f.hasMatchingFileSize(fr) &&
-		f.hasMatchingLastMod(fr)
+		f.isMatchingFileName(fr.Name) &&
+		f.isMatchingFileType(fr.FileType) &&
+		f.isMatchingFileSize(fr.FileSize) &&
+		f.isMatchingLastMod(fr.LastMod)
 }
 
 func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResult {

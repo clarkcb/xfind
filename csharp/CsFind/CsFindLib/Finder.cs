@@ -3,25 +3,29 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 
 namespace CsFindLib;
 
 public class Finder
 {
 	private readonly FileTypes _fileTypes;
+	private readonly EnumerationOptions _enumerationOptions;
 	private FindSettings Settings { get; }
 	public Finder(FindSettings settings)
 	{
 		Settings = settings;
 		ValidateSettings();
 		_fileTypes = new FileTypes();
+		_enumerationOptions = GetEnumerationOptionsForSettings();
 	}
 
 	private void ValidateSettings()
 	{
 		if (Settings.Paths.Count == 0)
 			throw new FindException("Startpath not defined");
-		if (Settings.Paths.Select(FileUtil.ExpandPath).Any(p => !Directory.Exists(p) && !File.Exists(p)))
+		if (Settings.Paths.Select(FileUtil.ExpandPath).Any(p => !Path.Exists(p)))
 		{
 			throw new FindException("Startpath not found");
 		}
@@ -40,70 +44,130 @@ public class Finder
 		}
 	}
 
-	public bool IsMatchingDirectory(DirectoryInfo d)
+	private EnumerationOptions GetEnumerationOptionsForSettings()
 	{
+		var enumerationOptions = new EnumerationOptions
+		{
+			AttributesToSkip = FileAttributes.System,
+			IgnoreInaccessible = true,
+			MatchType = MatchType.Simple,
+			RecurseSubdirectories = Settings.Recursive,
+			ReturnSpecialDirectories = false
+		};
+		if (!Settings.IncludeArchives)
+		{
+			enumerationOptions.AttributesToSkip |= FileAttributes.Compressed;
+		}
 		if (!Settings.IncludeHidden)
 		{
-			if (d.FullName.Split('/', '\\').ToList()
-			    .Where(e => !string.IsNullOrEmpty(e))
-			    .Any(e => FileUtil.IsHidden(e)))
+			enumerationOptions.AttributesToSkip |= FileAttributes.Hidden;
+		}
+		if (Settings.MaxDepth > 0)
+		{
+			enumerationOptions.MaxRecursionDepth = Settings.MaxDepth;
+		}
+
+		return enumerationOptions;
+	}
+
+	private bool MatchesAnyPattern(string s, ISet<Regex> patterns)
+	{
+		return patterns.Any(p => p.Matches(s).Count > 0);
+	}
+
+	private bool AnyMatchesAnyPattern(IEnumerable<string> slist, ISet<Regex> patterns)
+	{
+		return slist.Any(s => MatchesAnyPattern(s, patterns));
+	}
+	
+	public bool IsMatchingDirectory(DirectoryInfo? d)
+	{
+		if (d == null)
+		{
+			return true;
+		}
+
+		var elems = FileUtil.GetPathElems(d.FullName).ToList();
+
+		if (!Settings.IncludeHidden)
+		{
+			if (elems.Any(FileUtil.IsHidden))
 			{
 				return false;
 			}
 		}
 
 		return (Settings.InDirPatterns.Count == 0 ||
-		        Settings.InDirPatterns.Any(p => p.Matches(d.FullName).Count > 0)) &&
+		        AnyMatchesAnyPattern(elems, Settings.InDirPatterns)) &&
 		       (Settings.OutDirPatterns.Count == 0 ||
-		        !Settings.OutDirPatterns.Any(p => p.Matches(d.FullName).Count > 0));
+		        !AnyMatchesAnyPattern(elems, Settings.OutDirPatterns));
+	}
+
+	public bool IsMatchingArchiveFileExtension(string ext)
+	{
+		return (Settings.InArchiveExtensions.Count == 0 ||
+		         Settings.InArchiveExtensions.Contains(ext)) &&
+		        (Settings.OutArchiveExtensions.Count == 0 ||
+		         !Settings.OutArchiveExtensions.Contains(ext));
+	}
+
+	public bool IsMatchingFileExtension(string ext)
+	{
+		return (Settings.InExtensions.Count == 0 ||
+		         Settings.InExtensions.Contains(ext)) &&
+		        (Settings.OutExtensions.Count == 0 ||
+		         !Settings.OutExtensions.Contains(ext));
+	}
+
+	public bool IsMatchingArchiveFileName(string fileName)
+	{
+		return (Settings.InArchiveFilePatterns.Count == 0 ||
+		        Settings.InArchiveFilePatterns.Any(p => p.Match(fileName).Success)) &&
+		       (Settings.OutArchiveFilePatterns.Count == 0 ||
+		        !Settings.OutArchiveFilePatterns.Any(p => p.Match(fileName).Success));
+	}
+
+	public bool IsMatchingFileName(string fileName)
+	{
+		return (Settings.InFilePatterns.Count == 0 ||
+		        Settings.InFilePatterns.Any(p => p.Match(fileName).Success)) &&
+		       (Settings.OutFilePatterns.Count == 0 ||
+		        !Settings.OutFilePatterns.Any(p => p.Match(fileName).Success));
+	}
+
+	public bool IsMatchingFileType(FileType fileType)
+	{
+		return (Settings.InFileTypes.Count == 0 ||
+		        Settings.InFileTypes.Contains(fileType)) &&
+		       (Settings.OutFileTypes.Count == 0 ||
+		        !Settings.OutFileTypes.Contains(fileType));
+	}
+
+	public bool IsMatchingFileSize(long fileSize)
+	{
+		return (Settings.MaxSize == 0 || fileSize <= Settings.MaxSize) &&
+		       (Settings.MinSize == 0 || fileSize >= Settings.MinSize);
+	}
+
+	public bool IsMatchingLastMod(DateTime lastMod)
+	{
+		return (Settings.MaxLastMod == null || lastMod <= Settings.MaxLastMod) &&
+		       (Settings.MinLastMod == null || lastMod >= Settings.MinLastMod);
 	}
 
 	public bool IsMatchingFileResult(FileResult fr)
 	{
-		if ((Settings.InExtensions.Count > 0 &&
-			!Settings.InExtensions.Contains(fr.File.Extension)) ||
-			(Settings.OutExtensions.Count > 0 &&
-			Settings.OutExtensions.Contains(fr.File.Extension)))
-		{
-			return false;
-		}
-		if ((Settings.InFilePatterns.Count > 0 &&
-			!Settings.InFilePatterns.Any(p => p.Match(fr.File.Name).Success)) ||
-			(Settings.OutFilePatterns.Count > 0 &&
-			Settings.OutFilePatterns.Any(p => p.Match(fr.File.Name).Success)))
-		{
-			return false;
-		}
-		if ((Settings.InFileTypes.Count > 0 &&
-			!Settings.InFileTypes.Contains(fr.Type)) ||
-			(Settings.OutFileTypes.Count > 0 &&
-			Settings.OutFileTypes.Contains(fr.Type)))
-		{
-			return false;
-		}
-		if ((Settings.MaxLastMod != null && fr.File.LastWriteTimeUtc > Settings.MaxLastMod) ||
-			(Settings.MinLastMod != null && fr.File.LastWriteTimeUtc < Settings.MinLastMod))
-		{
-			return false;
-		}
-		if ((Settings.MaxSize > 0 && fr.File.Length > Settings.MaxSize) ||
-			(Settings.MinSize > 0 && fr.File.Length < Settings.MinSize))
-		{
-			return false;
-		}
-		return true;
+		return IsMatchingFileExtension(fr.File.Extension) &&
+		       IsMatchingFileName(fr.File.Name) &&
+		       IsMatchingFileType(fr.Type) &&
+		       IsMatchingFileSize(fr.File.Length) &&
+		       IsMatchingLastMod(fr.File.LastWriteTimeUtc);
 	}
 
-	public bool IsMatchingArchiveFile(FileResult fr)
+	public bool IsMatchingArchiveFileResult(FileResult fr)
 	{
-		return (Settings.InArchiveExtensions.Count == 0 ||
-		        Settings.InArchiveExtensions.Contains(fr.File.Extension)) &&
-		       (Settings.OutArchiveExtensions.Count == 0 ||
-		        !Settings.OutArchiveExtensions.Contains(fr.File.Extension)) &&
-		       (Settings.InArchiveFilePatterns.Count == 0 ||
-		        Settings.InArchiveFilePatterns.Any(p => p.Match(fr.File.Name).Success)) &&
-		       (Settings.OutArchiveFilePatterns.Count == 0 ||
-		        !Settings.OutArchiveFilePatterns.Any(p => p.Match(fr.File.Name).Success));
+		return IsMatchingArchiveFileExtension(fr.File.Extension) &&
+		       IsMatchingArchiveFileName(fr.File.Name);
 	}
 
 	public FileResult? FilterToFileResult(FileInfo fi)
@@ -113,7 +177,7 @@ public class Finder
 		var fr = new FileResult(fi, _fileTypes.GetFileType(fi));
 		if (fr.Type.Equals(FileType.Archive))
 		{
-			if (Settings.IncludeArchives && IsMatchingArchiveFile(fr))
+			if (Settings.IncludeArchives && IsMatchingArchiveFileResult(fr))
 			{
 				return fr;
 			}
@@ -130,8 +194,6 @@ public class Finder
 
 	private IEnumerable<FileResult> GetFileResults(string filePath)
 	{
-		var findOption = Settings.Recursive ? SearchOption.AllDirectories :
-			SearchOption.TopDirectoryOnly;
 		var expandedPath = FileUtil.ExpandPath(filePath);
 		var pathSepCount = FileUtil.SepCount(expandedPath);
 		var pathResults = new List<FileResult>();
@@ -152,7 +214,7 @@ public class Finder
 			if (Settings.MaxDepth != 0)
 			{
 				// 1) Sequential file processing
-				pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
+				pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", _enumerationOptions)
 					.Where(f => MatchDirectory(f, pathSepCount))
 					.Select(FilterToFileResult)
 					.Where(fr => fr != null)

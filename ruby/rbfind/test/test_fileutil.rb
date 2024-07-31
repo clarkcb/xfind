@@ -67,23 +67,23 @@ module RbFind
     # is_hidden tests
     ################################################################################
     def test_is_hidden_hidden_file
-      filename = '.filename.txt'
-      assert(FileUtil.hidden?(filename))
+      filepath = Pathname.new('.filename.txt')
+      assert(FileUtil.hidden?(filepath))
     end
 
     def test_is_hidden_not_hidden_file
-      filename = 'filename.txt'
-      assert(!FileUtil.hidden?(filename))
+      filepath = Pathname.new('filename.txt')
+      assert(!FileUtil.hidden?(filepath))
     end
 
     def test_is_hidden_single_dot
-      filename = '.'
-      assert(!FileUtil.hidden?(filename))
+      filepath = Pathname.new('.')
+      assert(!FileUtil.hidden?(filepath))
     end
 
     def test_is_hidden_double_dot
-      filename = '..'
-      assert(!FileUtil.hidden?(filename))
+      filepath = Pathname.new('..')
+      assert(!FileUtil.hidden?(filepath))
     end
   end
 end

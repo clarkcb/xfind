@@ -5,6 +5,7 @@ import groovy.transform.CompileStatic
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
+import java.time.Instant
 import java.time.ZoneOffset
 import java.util.function.Function
 import java.util.regex.Pattern
@@ -81,21 +82,24 @@ class Finder {
                         !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
     }
 
+    boolean isMatchingExtension(final String ext) {
+        return ((settings.getInExtensions().isEmpty()
+                || settings.getInExtensions().contains(ext))
+                &&
+                (settings.getOutExtensions().isEmpty()
+                        || !settings.getOutExtensions().contains(ext)))
+    }
+
     boolean hasMatchingExtension(final FileResult fr) {
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
             def fileName = fr.getPath().getFileName().toString()
             def ext = FileUtil.getExtension(fileName)
-            return ((settings.getInExtensions().isEmpty()
-                    || settings.getInExtensions().contains(ext))
-                    &&
-                    (settings.getOutExtensions().isEmpty()
-                            || !settings.getOutExtensions().contains(ext)))
+            return isMatchingExtension(ext)
         }
         return true
     }
 
-    boolean hasMatchingFileName(final FileResult fr) {
-        def fileName = fr.getPath().getFileName().toString()
+    boolean isMatchingFileName(final String fileName) {
         return ((settings.getInFilePatterns().isEmpty()
                 || matchesAnyPattern(fileName, settings.getInFilePatterns()))
                 &&
@@ -103,34 +107,34 @@ class Finder {
                         || !matchesAnyPattern(fileName, settings.getOutFilePatterns())))
     }
 
-    boolean hasMatchingFileType(final FileResult fr) {
+    boolean isMatchingFileType(final FileType fileType) {
         return ((settings.getInFileTypes().isEmpty()
-                || settings.getInFileTypes().contains(fr.getFileType()))
+                || settings.getInFileTypes().contains(fileType))
                 &&
                 (settings.getOutFileTypes().isEmpty()
-                        || !settings.getOutFileTypes().contains(fr.getFileType())))
+                        || !settings.getOutFileTypes().contains(fileType)))
     }
 
-    boolean hasMatchingFileSize(final FileResult fr) {
-        return ((settings.getMaxSize() <= 0 || fr.getFileSize() <= settings.getMaxSize())
+    boolean isMatchingFileSize(final long fileSize) {
+        return ((settings.getMaxSize() <= 0 || fileSize <= settings.getMaxSize())
                 &&
-                (settings.getMinSize() <= 0 || fr.getFileSize() >= settings.getMinSize()))
+                (settings.getMinSize() <= 0 || fileSize >= settings.getMinSize()))
     }
 
-    boolean hasMatchingLastMod(final FileResult fr) {
+    boolean isMatchingLastMod(final Instant lastMod) {
         return ((settings.getMaxLastMod() == null
-                || fr.getLastMod().toInstant() <= settings.getMaxLastMod().toInstant(ZoneOffset.UTC)
+                || lastMod <= settings.getMaxLastMod().toInstant(ZoneOffset.UTC)
                 &&
                 (settings.getMinLastMod() == null
-                        || fr.getLastMod().toInstant() >= settings.getMinLastMod().toInstant(ZoneOffset.UTC))))
+                        || lastMod >= settings.getMinLastMod().toInstant(ZoneOffset.UTC))))
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
         return hasMatchingExtension(fr)
-                && hasMatchingFileName(fr)
-                && hasMatchingFileType(fr)
-                && hasMatchingFileSize(fr)
-                && hasMatchingLastMod(fr)
+                && isMatchingFileName(fr.path.fileName.toString())
+                && isMatchingFileType(fr.fileType)
+                && isMatchingFileSize(fr.fileSize)
+                && isMatchingLastMod(fr.lastMod == null ? null : fr.lastMod.toInstant())
     }
 
     boolean isMatchingArchiveFile(final Path path) {

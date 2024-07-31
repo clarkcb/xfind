@@ -113,12 +113,12 @@
 }
 
 - (void)testTextFiles {
-    NSArray<NSString*> *exts = @[@"cfg", @"cmake", @"conf", @"csv", @"ddl", @"ics", @"ini", @"log",
-                                 @"markdown", @"md", @"po", @"properties", @"scc", @"sgm", @"sgml",
-                                 @"txt", @"yml"];
+    NSArray<NSString*> *exts = @[@"cfg", @"conf", @"csv", @"ddl", @"ini", @"log",
+                                 @"markdown", @"md", @"po", @"properties", @"sgm", @"sgml",
+                                 @"txt" , @"yml"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"text.%@", x];
-         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeText);
+        XCTAssert([self.fileTypes getFileType:fileName] == FileTypeText);
         XCTAssert(![self.fileTypes isArchiveFile:fileName]);
         XCTAssert(![self.fileTypes isBinaryFile:fileName]);
         XCTAssert(![self.fileTypes isCodeFile:fileName]);

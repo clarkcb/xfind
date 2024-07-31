@@ -21,6 +21,10 @@ namespace cppfind {
         return m_file_path;
     }
 
+    std::string FileResult::file_name() const {
+        return m_file_path.filename().string();
+    }
+
     FileType FileResult::file_type() const {
         return m_file_type;
     }

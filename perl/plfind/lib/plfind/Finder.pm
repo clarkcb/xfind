@@ -96,59 +96,66 @@ sub is_matching_dir {
             }
         }
     }
-    if (scalar @{$self->{settings}->{in_dir_patterns}} &&
-        !any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_dir_patterns}} &&
-        any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})) {
-        return 0;
+    return ((scalar @{$self->{settings}->{in_dir_patterns}} == 0
+        || any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns}))
+        && (scalar @{$self->{settings}->{out_dir_patterns}} == 0
+        || !any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})));
+}
+
+sub is_matching_extension {
+    my ($self, $ext) = @_;
+    return ((scalar @{$self->{settings}->{in_extensions}} == 0
+        || (grep {$_ eq $ext} @{$self->{settings}->{in_extensions}}))
+        && (scalar @{$self->{settings}->{out_extensions}} == 0
+        || !(grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})));
+}
+
+sub has_matching_extension {
+    my ($self, $fr) = @_;
+    if (scalar @{$self->{settings}->{in_extensions}} || scalar @{$self->{settings}->{out_extensions}}) {
+        my $ext = plfind::FileUtil::get_extension($fr->{file_name});
+        return $self->is_matching_extension($ext);
     }
     return 1;
 }
 
+sub is_matching_file_name {
+    my ($self, $file_name) = @_;
+    return ((scalar @{$self->{settings}->{in_file_patterns}} == 0
+        || matches_any_pattern($file_name, $self->{settings}->{in_file_patterns}))
+        && (scalar @{$self->{settings}->{out_file_patterns}} == 0
+        || !matches_any_pattern($file_name, $self->{settings}->{out_file_patterns})));
+}
+
+sub is_matching_file_type {
+    my ($self, $file_type) = @_;
+    return ((scalar @{$self->{settings}->{in_file_types}} == 0
+        || (grep {$_ eq $file_type} @{$self->{settings}->{in_file_types}}))
+        && (scalar @{$self->{settings}->{out_file_types}} == 0
+        || !(grep {$_ eq $file_type} @{$self->{settings}->{out_file_types}})));
+}
+
+sub is_matching_file_size {
+    my ($self, $file_size) = @_;
+    return (($self->{settings}->{max_size} == 0 || $file_size <= $self->{settings}->{max_size})
+        && ($self->{settings}->{min_size} == 0 || $file_size >= $self->{settings}->{min_size}));
+}
+
+sub is_matching_last_mod {
+    my ($self, $last_mod) = @_;
+    return ((!blessed($self->{settings}->{max_last_mod})
+        || $last_mod <= $self->{settings}->{max_last_mod}->epoch)
+        && (!blessed($self->{settings}->{min_last_mod})
+        || $last_mod >= $self->{settings}->{min_last_mod}->epoch));
+}
+
 sub is_matching_file_result {
     my ($self, $fr) = @_;
-    if (scalar @{$self->{settings}->{in_extensions}} || scalar @{$self->{settings}->{out_extensions}}) {
-        my $ext = plfind::FileUtil::get_extension($fr->{file_name});
-        if (scalar @{$self->{settings}->{in_extensions}} &&
-            !(grep {$_ eq $ext} @{$self->{settings}->{in_extensions}})) {
-            return 0;
-        }
-        if (scalar @{$self->{settings}->{out_extensions}} &&
-            (grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})) {
-            return 0;
-        }
-    }
-    if (scalar @{$self->{settings}->{in_file_patterns}} &&
-        !matches_any_pattern($fr->{file_name}, $self->{settings}->{in_file_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_file_patterns}} &&
-        matches_any_pattern($fr->{file_name}, $self->{settings}->{out_file_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{in_file_types}} &&
-        !(grep {$_ eq $fr->{file_type}} @{$self->{settings}->{in_file_types}})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_file_types}} &&
-        (grep {$_ eq $fr->{file_type}} @{$self->{settings}->{out_file_types}})) {
-        return 0;
-    }
-    if ($self->{settings}->{max_size} > 0 && $fr->{file_size} > $self->{settings}->{max_size}) {
-        return 0;
-    }
-    if ($self->{settings}->{min_size} > 0 && $fr->{file_size} < $self->{settings}->{min_size}) {
-        return 0;
-    }
-    if (blessed($self->{settings}->{max_last_mod}) && $fr->{last_mod} > $self->{settings}->{max_last_mod}->epoch) {
-        return 0;
-    }
-    if (blessed($self->{settings}->{min_last_mod}) && $fr->{last_mod} < $self->{settings}->{min_last_mod}->epoch) {
-        return 0;
-    }
-    return 1;
+    return $self->has_matching_extension($fr)
+        && $self->is_matching_file_name($fr->{file_name})
+        && $self->is_matching_file_type($fr->{file_type})
+        && $self->is_matching_file_size($fr->{file_size})
+        && $self->is_matching_last_mod($fr->{last_mod});
 }
 
 sub is_matching_archive_file {

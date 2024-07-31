@@ -115,46 +115,46 @@ class Finder {
 
     isMatchingArchiveFileName(fileName) {
         return ((this.settings.inArchiveFilePatterns.length === 0 ||
-            this.matchesAnyPattern(fileName, this.settings.inArchiveFilePatterns))
-          && (this.settings.outArchiveFilePatterns.length === 0 ||
+            this.matchesAnyPattern(fileName, this.settings.inArchiveFilePatterns)) &&
+            (this.settings.outArchiveFilePatterns.length === 0 ||
             !this.matchesAnyPattern(fileName, this.settings.outArchiveFilePatterns)));
     }
 
     isMatchingFileName(fileName) {
         return ((this.settings.inFilePatterns.length === 0 ||
-            this.matchesAnyPattern(fileName, this.settings.inFilePatterns))
-          && (this.settings.outFilePatterns.length === 0 ||
+            this.matchesAnyPattern(fileName, this.settings.inFilePatterns)) &&
+            (this.settings.outFilePatterns.length === 0 ||
             !this.matchesAnyPattern(fileName, this.settings.outFilePatterns)));
     }
 
     isMatchingFileType(fileType) {
         return ((this.settings.inFileTypes.length === 0 ||
-            this.matchesAnyElement(fileType, this.settings.inFileTypes))
-          && (this.settings.outFileTypes.length === 0 ||
+            this.matchesAnyElement(fileType, this.settings.inFileTypes)) &&
+            (this.settings.outFileTypes.length === 0 ||
             !this.matchesAnyElement(fileType, this.settings.outFileTypes)));
     }
 
     isMatchingFileSize(fileSize) {
         return ((this.settings.maxSize === 0 || fileSize <= this.settings.maxSize) &&
-          (this.settings.minSize === 0 || fileSize >= this.settings.minSize));
+            (this.settings.minSize === 0 || fileSize >= this.settings.minSize));
     }
 
     isMatchingLastMod(lastMod) {
         return ((this.settings.maxLastMod === 0 || lastMod <= this.settings.maxLastMod) &&
-          (this.settings.minLastMod === 0 || lastMod >= this.settings.minLastMod));
+            (this.settings.minLastMod === 0 || lastMod >= this.settings.minLastMod));
     }
 
     isMatchingFileResult(fr) {
-        return this.hasMatchingExtension(fr)
-          && this.isMatchingFileName(fr.fileName)
-          && this.isMatchingFileType(fr.fileType)
-          && this.isMatchingFileSize(fr.fileSize)
-          && this.isMatchingLastMod(fr.lastMod);
+        return this.hasMatchingExtension(fr) &&
+            this.isMatchingFileName(fr.fileName) &&
+            this.isMatchingFileType(fr.fileType) &&
+            this.isMatchingFileSize(fr.fileSize) &&
+            this.isMatchingLastMod(fr.lastMod);
     }
 
     isMatchingArchiveFileResult(fr) {
-        return this.hasMatchingArchiveExtension(fr)
-          && this.isMatchingArchiveFileName(fr.fileName);
+        return this.hasMatchingArchiveExtension(fr) &&
+            this.isMatchingArchiveFileName(fr.fileName);
     }
 
     filePathToFileResult(fp, stat) {

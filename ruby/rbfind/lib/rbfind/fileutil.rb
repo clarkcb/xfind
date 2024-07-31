@@ -15,6 +15,9 @@ module RbFind
     end
 
     def get_extension(file_path)
+      unless file_path.instance_of?(Pathname)
+        file_path = Pathname.new(file_path)
+      end
       ext = file_path.extname
       if !ext.empty? && ext.start_with?('.')
         ext = ext[1..-1]

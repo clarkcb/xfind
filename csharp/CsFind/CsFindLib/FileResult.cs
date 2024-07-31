@@ -21,7 +21,7 @@ public class FileResult
 		this(new List<string>(), fileInfo, type) {}
 
 	public FileResult(string path, string fileName, FileType type) :
-		this(new List<string>(), new FileInfo(FileUtil.JoinPath(path, fileName)), type) {}
+		this(new List<string>(), new FileInfo(Path.Join(path, fileName)), type) {}
 
 	public FileResult(IList<string> containers, FileInfo file, FileType type)
 	{

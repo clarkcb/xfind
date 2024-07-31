@@ -14,13 +14,23 @@ module RbFind
 
     def has_matching_ext?: (FileResult file_result) -> bool
 
+    def matching_archive_file_name?: (String file_name) -> bool
+
     def has_matching_archive_file_name?: (FileResult file_result) -> bool
+
+    def matching_file_name?: (String file_name) -> bool
 
     def has_matching_file_name?: (FileResult file_result) -> bool
 
+    def matching_file_type?: (FileType file_type) -> bool
+
     def has_matching_file_type?: (FileResult file_result) -> bool
 
+    def matching_file_size?: (Integer file_size) -> bool
+
     def has_matching_file_size?: (FileResult file_result) -> bool
+
+    def matching_last_mod?: (nil | Time last_mod) -> bool
 
     def has_matching_last_mod?: (FileResult file_result) -> bool
 

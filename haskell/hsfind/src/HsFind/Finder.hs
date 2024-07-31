@@ -61,9 +61,9 @@ matchesDirPathTests [] _ = True
 matchesDirPathTests tests d = all ($d) tests
 
 isMatchingDirPath :: FindSettings -> FilePath -> Bool
-isMatchingDirPath settings = matchesDirPathTests dirTests
-  where dirTests :: [FilePath -> Bool]
-        dirTests = getDirPathTests settings
+isMatchingDirPath settings = matchesDirPathTests dirPathTests
+  where dirPathTests :: [FilePath -> Bool]
+        dirPathTests = getDirPathTests settings
 
 getArchiveFilePathTests :: FindSettings -> [FilePath -> Bool]
 getArchiveFilePathTests settings =
@@ -244,15 +244,15 @@ getFileResults settings = do
 compareStrings :: FindSettings -> String -> String -> Ordering
 compareStrings settings s1 s2 =
   if sortCaseInsensitive settings
-    then compare (lower s1) (lower s2)
-    else compare s1 s2
+  then compare (lower s1) (lower s2)
+  else compare s1 s2
   where lower = map toLower
 
 comparePaths :: FindSettings -> String -> String -> Ordering
 comparePaths settings p1 p2 =
   if sortCaseInsensitive settings
-    then compare (map lower elems1) (map lower elems2)
-    else compare elems1 elems2
+  then compare (map lower elems1) (map lower elems2)
+  else compare elems1 elems2
   where lower = map toLower
         elems1 = splitPath p1
         elems2 = splitPath p2
@@ -315,8 +315,8 @@ doSortByFileResults settings fileResults =
 sortFileResults :: FindSettings -> [FileResult] -> [FileResult]
 sortFileResults settings fileResults =
   if sortDescending settings
-    then reverse $ doSortByFileResults settings fileResults
-    else doSortByFileResults settings fileResults
+  then reverse $ doSortByFileResults settings fileResults
+  else doSortByFileResults settings fileResults
 
 doFind :: FindSettings -> IO [FileResult]
 doFind settings = do

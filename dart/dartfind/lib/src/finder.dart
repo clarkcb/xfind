@@ -113,23 +113,23 @@ class Finder {
         fileName, settings.inFilePatterns, settings.outFilePatterns);
   }
 
-  bool hasMatchingFileType(FileResult fr) {
+  bool isMatchingFileType(FileType fileType) {
     return (settings.inFileTypes.isEmpty ||
-            settings.inFileTypes.contains(fr.fileType)) &&
+            settings.inFileTypes.contains(fileType)) &&
         (settings.outFileTypes.isEmpty ||
-            !settings.outFileTypes.contains(fr.fileType));
+            !settings.outFileTypes.contains(fileType));
   }
 
-  bool hasMatchingFileSize(FileResult fr) {
-    return ((settings.maxSize == 0 || fr.fileSize <= settings.maxSize) &&
-        (settings.minSize == 0 || fr.fileSize >= settings.minSize));
+  bool isMatchingFileSize(int fileSize) {
+    return ((settings.maxSize == 0 || fileSize <= settings.maxSize) &&
+        (settings.minSize == 0 || fileSize >= settings.minSize));
   }
 
-  bool hasMatchingLastMod(FileResult fr) {
+  bool isMatchingLastMod(DateTime? lastMod) {
     return ((settings.maxLastMod == null ||
-            fr.lastMod!.compareTo(settings.maxLastMod!) <= 0) &&
+            lastMod!.compareTo(settings.maxLastMod!) <= 0) &&
         (settings.minLastMod == null ||
-            fr.lastMod!.compareTo(settings.minLastMod!) >= 0));
+            lastMod!.compareTo(settings.minLastMod!) >= 0));
   }
 
   bool isMatchingArchiveFileResult(FileResult fr) {
@@ -139,9 +139,9 @@ class Finder {
   bool isMatchingFileResult(FileResult fr) {
     return hasMatchingExtension(fr) &&
         hasMatchingFileName(fr) &&
-        hasMatchingFileType(fr) &&
-        hasMatchingFileSize(fr) &&
-        hasMatchingLastMod(fr);
+        isMatchingFileType(fr.fileType) &&
+        isMatchingFileSize(fr.fileSize) &&
+        isMatchingLastMod(fr.lastMod);
   }
 
   Future<FileResult?> filterToFileResult(File f) {

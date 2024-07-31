@@ -1,5 +1,6 @@
 namespace FsFindTests
 
+open System
 open System.IO
 open NUnit.Framework
 open FsFind
@@ -19,6 +20,16 @@ type FinderTests () =
         with
         | :? IOException as e -> raise e
         | :? FindException as e -> raise e
+
+    member this.GetXfindPath () : string =
+        let xfindPath = Environment.GetEnvironmentVariable("XFIND_PATH")
+        if xfindPath = null then
+            Path.Join(FileUtil.GetHomePath(), "src", "xfind")
+        else
+            xfindPath
+
+    member this.GetFsFindPath () : string =
+        Path.Join(this.GetXfindPath(), "fsharp", "FsFind")
 
     member this.GetSettings () : FindSettings =
         let settings = FindSettings()
@@ -106,7 +117,7 @@ type FinderTests () =
     member this.TestIsMatchingFile_NoExtensionsNoPatterns_True () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf))
         ()
@@ -114,9 +125,9 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_MatchesInExtension_True () =
         let settings = this.GetSettings()
-        settings.InExtensions <- settings.AddExtensions "cs" settings.InExtensions 
+        settings.InExtensions <- settings.AddExtensions "fs" settings.InExtensions 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf))
         ()
@@ -126,7 +137,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.InExtensions <- settings.AddExtensions "java" settings.InExtensions 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf), Is.False)
         ()
@@ -134,9 +145,9 @@ type FinderTests () =
     [<Test>]
     member this.TestIsMatchingFile_MatchesOutExtension_False () =
         let settings = this.GetSettings()
-        settings.OutExtensions <- settings.AddExtensions "cs" settings.OutExtensions 
+        settings.OutExtensions <- settings.AddExtensions "fs" settings.OutExtensions 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf), Is.False)
         ()
@@ -146,7 +157,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.OutExtensions <- settings.AddExtensions "java" settings.OutExtensions 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf))
         ()
@@ -156,7 +167,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns 
         let finder = Finder(settings)
-        let file = FileInfo("Finder.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "Finder.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf))
         ()
@@ -166,7 +177,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.InFilePatterns <- settings.AddPattern "Find" settings.InFilePatterns 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf), Is.False)
         ()
@@ -176,7 +187,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.OutFilePatterns <- settings.AddPattern "Find" settings.OutFilePatterns 
         let finder = Finder(settings)
-        let file = FileInfo("Finder.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "Finder.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf), Is.False)
         ()
@@ -186,7 +197,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.OutFilePatterns <- settings.AddPattern "Find" settings.OutFilePatterns 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
         Assert.That(finder.IsMatchingFileResult(sf))
         ()
@@ -201,7 +212,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        Assert.That(finder.IsMatchingArchiveFileResult(sf))
         ()
 
     [<Test>]
@@ -211,7 +222,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        Assert.That(finder.IsMatchingArchiveFileResult(sf))
         ()
 
     [<Test>]
@@ -221,7 +232,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        Assert.That(finder.IsMatchingArchiveFileResult(sf), Is.False)
         ()
 
 
@@ -232,7 +243,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        Assert.That(finder.IsMatchingArchiveFileResult(sf), Is.False)
         ()
 
     [<Test>]
@@ -242,7 +253,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        Assert.That(finder.IsMatchingArchiveFileResult(sf))
         ()
 
     [<Test>]
@@ -252,7 +263,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        Assert.That(finder.IsMatchingArchiveFileResult(sf))
         ()
 
     [<Test>]
@@ -262,7 +273,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        Assert.That(finder.IsMatchingArchiveFileResult(sf), Is.False)
         ()
 
     [<Test>]
@@ -272,7 +283,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf), Is.False)
+        Assert.That(finder.IsMatchingArchiveFileResult(sf), Is.False)
         ()
 
     [<Test>]
@@ -282,7 +293,7 @@ type FinderTests () =
         let finder = Finder(settings)
         let file = FileInfo("archive.zip")
         let sf = FileResult.Create file (this.FileTypes.GetFileType(file))
-        Assert.That(finder.IsMatchingArchiveFile(sf))
+        Assert.That(finder.IsMatchingArchiveFileResult(sf))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -292,7 +303,7 @@ type FinderTests () =
     member this.TestFilterToFileResult_IsHidden_IsNone () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
-        let file = FileInfo(".gitignore")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), ".gitignore"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsNone)
         ()
@@ -302,7 +313,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.IncludeHidden <- true
         let finder = Finder(settings)
-        let file = FileInfo(".gitignore")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), ".gitignore"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsSome)
         ()
@@ -362,7 +373,7 @@ type FinderTests () =
     member this.TestFilterToFileResult_NoExtensionsNoPatterns_IsSome () =
         let settings = this.GetSettings()
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsSome)
         ()
@@ -370,9 +381,9 @@ type FinderTests () =
     [<Test>]
     member this.TestFilterToFileResult_MatchesInExtension_IsSome () =
         let settings = this.GetSettings()
-        settings.InExtensions <- settings.AddExtensions "cs" settings.InExtensions 
+        settings.InExtensions <- settings.AddExtensions "fs" settings.InExtensions 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsSome)
         ()
@@ -380,9 +391,9 @@ type FinderTests () =
     [<Test>]
     member this.TestFilterToFileResult_MatchesOutExtension_IsNone () =
         let settings = this.GetSettings()
-        settings.OutExtensions <- settings.AddExtensions "cs" settings.OutExtensions 
+        settings.OutExtensions <- settings.AddExtensions "fs" settings.OutExtensions 
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsNone)
         ()
@@ -392,7 +403,7 @@ type FinderTests () =
         let settings = this.GetSettings()
         settings.ArchivesOnly <- true
         let finder = Finder(settings)
-        let file = FileInfo("FileUtil.cs")
+        let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsNone)
         ()

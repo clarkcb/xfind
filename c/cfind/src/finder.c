@@ -27,7 +27,7 @@ error_t validate_settings(const FindSettings *settings)
     if (path_count < 1) {
         return E_STARTPATH_NOT_DEFINED;
     }
-    StringNode *path = settings->paths;
+    const StringNode *path = settings->paths;
     while (path != NULL) {
         if (!dir_or_file_exists(path->string)) {
             return E_STARTPATH_NOT_FOUND;
@@ -50,14 +50,14 @@ unsigned short is_matching_dir(const char *dir, const FindSettings *settings)
 {
     // null or empty dir is a match
     if (dir == NULL) return 1;
-    size_t dirlen = strnlen(dir, MAX_PATH_LENGTH);
-    if (dirlen == 0) return 1;
+    const size_t dir_len = strnlen(dir, MAX_PATH_LENGTH);
+    if (dir_len == 0) return 1;
 
     // Split into dir elements to match against
     StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir);
     if (dir_elems == NULL) return 1;
 
-    StringNode *d = dir_elems;
+    const StringNode *d = dir_elems;
     unsigned short matches = 1;
     while (matches == 1 && d != NULL && d->string != NULL) {
         if (!strncmp(d->string, ".", 5) || !strncmp(d->string, "..", 5)) {
@@ -103,7 +103,7 @@ unsigned short has_matching_archive_extension(const char *file_name, const FindS
         return 1;
     }
     if (file_name == NULL) return 0;
-    size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
+    const size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
     if (file_len < 1) return 0;
     char ext[file_len];
     ext[0] = '\0';
@@ -219,7 +219,7 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
     strncpy(normpath, dirpath, dirlen);
     normpath[dirlen] = '\0';
     normalize_path(normpath);
-    size_t normlen = strnlen(normpath, MAX_PATH_LENGTH);
+    const size_t normlen = strnlen(normpath, MAX_PATH_LENGTH);
 
     struct dirent *dent;
     struct stat fpstat;
@@ -266,10 +266,10 @@ static error_t find_dir(const char *dirpath, const Finder *finder, FileResults *
 
     // recursively iterate through find_dirs
     if (is_null_or_empty_string_node(find_dirs) == 0 && finder->settings->recursive) {
-        StringNode *temp = find_dirs;
-        while (temp != NULL) {
-            find_dir(temp->string, finder, results, depth + 1);
-            temp = temp->next;
+        const StringNode *next_dir = find_dirs;
+        while (next_dir != NULL) {
+            find_dir(next_dir->string, finder, results, depth + 1);
+            next_dir = next_dir->next;
         }
     }
 
@@ -292,10 +292,10 @@ error_t find(const FindSettings *settings, FileResults *results)
 
     Finder *finder = new_finder(settings, file_types);
 
-    StringNode *next_path = settings->paths;
+    const StringNode *next_path = settings->paths;
     while (next_path != NULL) {
         // expand the path in case it has tilde, etc.
-        size_t path_len = strnlen(next_path->string, MAX_PATH_LENGTH) + 1;
+        const size_t path_len = strnlen(next_path->string, MAX_PATH_LENGTH) + 1;
         char *expanded = malloc((path_len + 10) * sizeof(char));
         expanded[0] = '\0';
         expand_path(next_path->string, &expanded);
@@ -324,7 +324,7 @@ error_t find(const FindSettings *settings, FileResults *results)
             // if min_depth > zero, we can skip since the file is at depth zero
             if (finder->settings->min_depth <= 0) {
                 FileType file_type = UNKNOWN;
-                size_t next_path_len = (strnlen(next_path->string, MAX_PATH_LENGTH) + 2) * sizeof(char);
+                const size_t next_path_len = (strnlen(next_path->string, MAX_PATH_LENGTH) + 2) * sizeof(char);
                 char *d = malloc(next_path_len);
                 char *f = malloc(next_path_len);
                 split_path(next_path->string, &d, &f);

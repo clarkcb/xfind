@@ -412,7 +412,9 @@ class Benchmarker(object):
             xta = scenario_results.avg_total(x)
             xtr = scenario_results.rank_total(x)
             data.append([x, xr, xra, xrr, xs, xsa, xsr, xu, xua, xur, xt, xta, xtr])
-        self.__print_data_table(title, hdr, data, col_types)
+        sorted_data = sorted(data, key=lambda d: d[12])
+        # self.__print_data_table(title, hdr, data, col_types)
+        self.__print_data_table(title, hdr, sorted_data, col_types)
 
     def print_scenario_result(self, scenario_result: ScenarioResult):
         title = '\nTotal results for scenario {} ("{}") with {} runs\n'.\

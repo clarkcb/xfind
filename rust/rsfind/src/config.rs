@@ -22,10 +22,8 @@ pub const VERSION: &str = "1.0.0";
 
 impl Config {
     pub fn new() -> Config {
-        let xfind_path: String = match env::var("XFIND_PATH") {
-            Ok(path) => path,
-            Err(_error) => env::var("HOME").unwrap() + "/src/xfind",
-        };
+        let xfind_path: String = env::var("XFIND_PATH")
+            .unwrap_or_else(|_error| env::var("HOME").unwrap() + "/src/xfind");
         let version = String::from(VERSION);
         Config::for_values(xfind_path, version)
     }

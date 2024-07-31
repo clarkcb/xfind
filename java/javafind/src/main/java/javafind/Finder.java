@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
+import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -94,21 +95,24 @@ public class Finder {
                  !anyMatchesAnyPattern(pathElems, settings.getOutDirPatterns()));
     }
 
+    boolean isMatchingExtension(final String ext) {
+        return ((settings.getInExtensions().isEmpty()
+                || settings.getInExtensions().contains(ext))
+                &&
+                (settings.getOutExtensions().isEmpty()
+                        || !settings.getOutExtensions().contains(ext)));
+    }
+
     boolean hasMatchingExtension(final FileResult fr) {
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
             var fileName = fr.getPath().getFileName().toString();
             var ext = FileUtil.getExtension(fileName);
-            return ((settings.getInExtensions().isEmpty()
-                    || settings.getInExtensions().contains(ext))
-                    &&
-                    (settings.getOutExtensions().isEmpty()
-                            || !settings.getOutExtensions().contains(ext)));
+            return isMatchingExtension(ext);
         }
         return true;
     }
 
-    boolean hasMatchingFileName(final FileResult fr) {
-        var fileName = fr.getPath().getFileName().toString();
+    boolean isMatchingFileName(final String fileName) {
         return ((settings.getInFilePatterns().isEmpty()
                 || matchesAnyPattern(fileName, settings.getInFilePatterns()))
                 &&
@@ -116,33 +120,38 @@ public class Finder {
                         || !matchesAnyPattern(fileName, settings.getOutFilePatterns())));
     }
 
-    boolean hasMatchingFileType(final FileResult fr) {
+    boolean isMatchingFileType(final FileType fileType) {
         return ((settings.getInFileTypes().isEmpty()
-                || settings.getInFileTypes().contains(fr.getFileType()))
+                || settings.getInFileTypes().contains(fileType))
                 &&
                 (settings.getOutFileTypes().isEmpty()
-                        || !settings.getOutFileTypes().contains(fr.getFileType())));
+                        || !settings.getOutFileTypes().contains(fileType)));
     }
 
-    boolean hasMatchingFileSize(final FileResult fr) {
-        return ((settings.getMaxSize() <= 0 || fr.getFileSize() <= settings.getMaxSize())
+    boolean isMatchingFileSize(final long fileSize) {
+        return ((settings.getMaxSize() <= 0 || fileSize <= settings.getMaxSize())
                 &&
-                (settings.getMinSize() <= 0 || fr.getFileSize() >= settings.getMinSize()));
+                (settings.getMinSize() <= 0 || fileSize >= settings.getMinSize()));
+    }
+
+    boolean isMatchingLastMod(final Instant lastMod) {
+        return ((settings.getMaxLastMod() == null
+                || lastMod.compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) <= 0
+                &&
+                (settings.getMinLastMod() == null
+                        || lastMod.compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) >= 0)));
     }
 
     boolean hasMatchingLastMod(final FileResult fr) {
-        return ((settings.getMaxLastMod() == null
-                || fr.getLastMod().toInstant().compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) <= 0
-                &&
-                (settings.getMinLastMod() == null
-                        || fr.getLastMod().toInstant().compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) >= 0)));
+        Instant lastMod = fr.getLastMod() == null ? null : fr.getLastMod().toInstant();
+        return isMatchingLastMod(lastMod);
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
         return hasMatchingExtension(fr)
-                && hasMatchingFileName(fr)
-                && hasMatchingFileType(fr)
-                && hasMatchingFileSize(fr)
+                && isMatchingFileName(fr.getPath().getFileName().toString())
+                && isMatchingFileType(fr.getFileType())
+                && isMatchingFileSize(fr.getFileSize())
                 && hasMatchingLastMod(fr);
     }
 
@@ -185,8 +194,8 @@ public class Finder {
         if (settings.needLastMod() || settings.needSize()) {
             try {
                 BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class);
-                fileSize = stat.size();
-                lastMod = stat.lastModifiedTime();
+                if (settings.needSize()) fileSize = stat.size();
+                if (settings.needLastMod()) lastMod = stat.lastModifiedTime();
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
                 return Optional.empty();

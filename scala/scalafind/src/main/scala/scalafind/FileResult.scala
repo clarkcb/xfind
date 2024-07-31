@@ -1,8 +1,7 @@
 package scalafind
 
-import java.io.File
 import java.nio.file.Path
-import java.nio.file.attribute.{BasicFileAttributes, FileTime}
+import java.nio.file.attribute.FileTime
 
 class FileResult(val containers: List[String],
                  val path: Path,

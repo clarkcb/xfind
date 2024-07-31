@@ -32,6 +32,9 @@ class FileUtil
         $dot_idx = strrpos($f, '.');
         if ($dot_idx !== false && $dot_idx > 0 && $dot_idx < strlen($f)) {
             $ext = substr($f, $dot_idx+1);
+            if ($ext != 'Z') {
+                $ext = strtolower($ext);
+            }
         }
         return $ext;
     }

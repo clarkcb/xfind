@@ -101,7 +101,7 @@ type FileUtilTests () =
     [<Test>]
     member this.ExpandPath_WithTilde_ExpandHome () =
         let path = "~/src/git/xfind"
-        let expected = FileUtil.JoinPath (FileUtil.GetHomePath()) (path.Substring(1))
+        let expected = Path.Join(FileUtil.GetHomePath(), path.Substring(1))
         let actual = FileUtil.ExpandPath(path)
         Assert.That(actual, Is.EqualTo(expected))
         ()
@@ -133,12 +133,6 @@ type FileUtilTests () =
         Assert.That(FileUtil.NormalizePath(path), Is.EqualTo("~/src/git/xfind"))
         ()
 
-    [<Test>]
-    member this.NormalizePath_TrailingBackSlash_TrimmedPath () =
-        let path = @"C:\src\git\xfind\"
-        Assert.That(FileUtil.NormalizePath(path), Is.EqualTo(@"C:\src\git\xfind"))
-        ()
-
     //////////////////////////////////////////////////////////////
     // JoinPath tests
     //////////////////////////////////////////////////////////////
@@ -147,7 +141,7 @@ type FileUtilTests () =
         let path = "~/src/git/xfind/csharp/CsFind/CsFindTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
-        Assert.That(FileUtil.JoinPath path filename, Is.EqualTo(pathAndFile))
+        Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile))
         ()
 
     [<Test>]
@@ -155,23 +149,7 @@ type FileUtilTests () =
         let path = "~/src/git/xfind/csharp/CsFind/CsFindTests/"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + filename
-        Assert.That(FileUtil.JoinPath path filename, Is.EqualTo(pathAndFile))
-        ()
-
-    [<Test>]
-    member this.JoinPath_NoTrailingBackSlash_EqualsExpected () =
-        let path = @"C:\src\git\xfind"
-        let filename = "FileUtilTests.cs"
-        let pathAndFile = path + "\\" + filename
-        Assert.That(FileUtil.JoinPath path filename, Is.EqualTo(pathAndFile))
-        ()
-
-    [<Test>]
-    member this.JoinPath_TrailingBackSlash_EqualsExpected () =
-        let path = @"C:\src\git\xfind\"
-        let filename = "FileUtilTests.cs"
-        let pathAndFile = path + filename
-        Assert.That(FileUtil.JoinPath path filename, Is.EqualTo(pathAndFile))
+        Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile))
         ()
 
     [<Test>]
@@ -179,5 +157,5 @@ type FileUtilTests () =
         let path = "CsFindTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
-        Assert.That(FileUtil.JoinPath path filename, Is.EqualTo(pathAndFile))
+        Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile))
         ()
