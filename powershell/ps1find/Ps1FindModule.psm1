@@ -7,6 +7,7 @@
 # install module under $env:PSModulePath
 #
 ################################################################################
+# using assembly /Users/cary/src/xfind/shared/Microsoft.Data.Sqlite.dll
 
 #region Config
 ########################################
@@ -19,6 +20,23 @@ $xfindPath = $env:XFIND_PATH
 $sharedPath = Join-Path -Path $xfindPath -ChildPath 'shared'
 $fileTypesPath = Join-Path -Path $sharedPath -ChildPath 'filetypes.json'
 $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
+# $sqliteDllPath = Join-Path -Path $sharedPath -ChildPath 'Microsoft.Data.Sqlite.dll'
+# $xfindDbPath = Join-Path -Path $sharedPath -ChildPath 'xfind.db'
+
+# We'll go ahead and load the SQLite DLL here
+# [Reflection.Assembly]::LoadFile($sqliteDllPath) | Out-Null
+# if (-not (Test-Path $sqliteDllPath)) {
+#     throw "SQLite DLL not found at $sqliteDllPath"
+# }
+# [Reflection.Assembly]::LoadFile($sqliteDllPath)
+# Add-Type -AssemblyName 'Microsoft.Data.Sqlite'
+# Import-Module $sqliteDllPath
+# if ($error) {
+#     throw "Error loading SQLite DLL: $error"
+# } else {
+#     Write-Host "Loaded SQLite DLL from $sqliteDllPath"
+# }
+
 #endregion
 
 
@@ -142,10 +160,20 @@ function ExpandPath {
     return $filePath
 }
 
+function GetFileExtension {
+    [OutputType([string])]
+    param([System.IO.FileInfo]$f)
+    $ext = $f.Extension
+    if (-not [string]::IsNullOrEmpty($ext) -and $ext.StartsWith('.')) {
+        $ext = $ext.Substring(1)
+    }
+    return $ext
+}
+
 function IsDotDir {
     [OutputType([bool])]
-    param([string]$dirName)
-    return $dotPaths.Contains($dirName)
+    param([System.IO.FileSystemInfo]$f)
+    return $dotPaths.Contains($f.Name)
 }
 
 function IsHiddenName {
@@ -177,19 +205,19 @@ function IsHiddenDirectory {
     return $false
 }
 
-function IsReadableFile {
-    [OutputType([bool])]
-    param([System.IO.FileSystemInfo]$f)
+# function IsReadableFile {
+#     [OutputType([bool])]
+#     param([System.IO.FileSystemInfo]$f)
 
-    $readable = $false
-    try {
-        [System.IO.File]::OpenRead($f).Close()
-        $readable = $true
-    } catch {
-        $readable = $false
-    }
-    return $readable
-}
+#     $readable = $false
+#     try {
+#         [System.IO.File]::OpenRead($f).Close()
+#         $readable = $true
+#     } catch {
+#         $readable = $false
+#     }
+#     return $readable
+# }
 
 function PathElems {
     [OutputType([int])]
@@ -243,11 +271,24 @@ function FileTypeToName {
 }
 
 class FileTypes {
+    # [Microsoft.Data.Sqlite.SqliteConnection]$conn
+    # $conn = New-Object Microsoft.Data.Sqlite.SqliteConnection
     $FileTypeExtMap = @{}
     $FileTypeNameMap = @{}
 
     FileTypes() {
-        $this.LoadFileTypesFromJson()
+        # $connectionString = "Data Source=$script:xfindDbPath;Mode=ReadOnly"
+        try {
+            # $this.conn = New-Object Microsoft.Data.Sqlite.SqliteConnection($connectionString)
+            # $this.conn = New-Object Microsoft.Data.Sqlite.SqliteConnection
+            # $this.conn = [Microsoft.Data.Sqlite.SqliteConnection]::new()
+            # $this.conn.ConnectionString = $connectionString
+            # $this.conn.Open()
+            $this.LoadFileTypesFromJson()
+        }
+        catch {
+            Write-Host "Error opening SQLite database: $_ ($_.InnerException)"
+        }
     }
 
     [void]LoadFileTypesFromJson() {
@@ -268,7 +309,42 @@ class FileTypes {
         }
     }
 
+    [FileType]GetFileTypeForFileName([string]$fileName) {
+        if ([string]::IsNullOrEmpty($fileName)) {
+            return [FileType]::Unknown
+        }
+        $command = $this.conn.CreateCommand()
+        $command.CommandText = 'SELECT file_type_id FROM file_name WHERE name = $name'
+        $command.Parameters.AddWithValue('$name', $fileName)
+        $reader = $command.ExecuteReader([System.Data.CommandBehavior]::SingleRow)
+        if ($reader.Read()) {
+            $fileTypeId = $reader.GetInt32(0) - 1
+            return [Enum]::ToObject([FileType], $fileTypeId) 
+        }
+        return [FileType]::Unknown
+    }
+
+    [FileType]GetFileTypeForExtension([string]$fileExt) {
+        if ([string]::IsNullOrEmpty($fileExt)) {
+            return [FileType]::Unknown
+        }
+        $command = $this.conn.CreateCommand()
+        $command.CommandText = 'SELECT file_type_id FROM file_extension WHERE extension = $ext'
+        $command.Parameters.AddWithValue('$ext', $fileExt)
+        $reader = $command.ExecuteReader([System.Data.CommandBehavior]::SingleRow)
+        if ($reader.Read()) {
+            $fileTypeId = $reader.GetInt32(0) - 1
+            return [Enum]::ToObject([FileType], $fileTypeId) 
+        }
+        return [FileType]::Unknown
+    }
+
     [FileType]GetFileType([System.IO.FileInfo]$fileInfo) {
+        # $fileType = $this.GetFileTypeForFileName($fileInfo.Name)
+        # if ($fileType -ne [FileType]::Unknown) {
+        #     return $fileType
+        # }
+        # return GetFileTypeForExtension(GetFileExtension($fileInfo))
         # most specific types first
         if ($this.IsCodeFile($fileInfo)) {
             return [FileType]::Code
