@@ -87,20 +87,26 @@
           (comp-by-path fr1 fr2)
           res)))))
 
+(defn get-comparator
+  "get a comparator for sorting"
+  [^FindSettings settings]
+  (let [sort-by (:sort-by settings)]
+    (cond
+      (= sort-by :filename)
+      (get-comp-by-name settings)
+      (= sort-by :filesize)
+      (get-comp-by-size settings)
+      (= sort-by :filetype)
+      (get-comp-by-type settings)
+      (= sort-by :lastmod)
+      (get-comp-by-lastmod settings)
+      :else
+      (get-comp-by-path settings))))
+
 (defn sort-results
   "sorts file results according to settings"
   [results ^FindSettings settings]
-  (let [sort-fn (cond
-                  (= (:sort-by settings) :filename)
-                  (get-comp-by-name settings)
-                  (= (:sort-by settings) :filesize)
-                  (get-comp-by-size settings)
-                  (= (:sort-by settings) :filetype)
-                  (get-comp-by-type settings)
-                  (= (:sort-by settings) :lastmod)
-                  (get-comp-by-lastmod settings)
-                  :else
-                  (get-comp-by-path settings))
+  (let [sort-fn (get-comparator settings)
         sorted-results (sort sort-fn results)]
     (if (:sort-descending settings)
       (reverse sorted-results)

@@ -202,8 +202,8 @@
     nil
     (let [file-type (get-file-type f)
           stat (if (or (need-last-mod settings) (need-size settings)) (get-stat f) nil)
-          file-size (if (nil? stat) 0 (.size stat))
-          last-mod (if (nil? stat) nil (.lastModifiedTime stat))
+          file-size (if (need-size settings) (.size stat) 0)
+          last-mod (if (need-last-mod settings) (.lastModifiedTime stat) nil)
           fr (new-file-result f file-type file-size last-mod)]
       (if
         (= :archive file-type)
@@ -229,18 +229,19 @@
         (< (:max-depth settings) 1)
         (<= depth (:max-depth settings))))))
 
-(defn get-file-results-under-path [^FindSettings settings, ^File path-file]
-  (if (= (:max-depth settings) 0)
-    []
-    (let [check-depth (or (> (:max-depth settings) 0) (> (:min-depth settings) 0))
-          path-files (if (:recursive settings) (file-seq path-file) (.listFiles path-file))
-          path-sep-count (if check-depth (sep-count (.toString path-file)) 0)
-          filter-by-depth (if check-depth filter-file-by-depth (fn [^File f c settings] true))]
-      (->> path-files
-           (filter #(.isFile %))
-           (filter #(filter-by-depth % path-sep-count settings))
-           (map #(filter-to-file-result % settings))
-           (filter #(not (nil? %)))))))
+(defn get-file-results-under-path
+  [^FindSettings settings, ^File path-file ^Integer min-depth ^Integer max-depth ^Integer current-depth]
+    (if (or (and (> min-depth -1) (< current-depth min-depth)) (and (> max-depth -1) (> current-depth max-depth)))
+      []
+      (let [path-elems (.listFiles path-file)
+            path-dirs (filter #(is-matching-dir? % settings) (filter #(.isDirectory %) path-elems))
+            path-files (filter #(.isFile %) path-elems)
+            path-results (filter #(not (nil? %)) (map #(filter-to-file-result % settings) path-files))
+            next-depth (inc current-depth)]
+        (if (empty? path-dirs)
+          path-results
+          (concat path-results
+                  (mapcat #(get-file-results-under-path settings % min-depth max-depth next-depth) path-dirs))))))
 
 (defn get-file-results-for-path [^FindSettings settings, ^String path]
   (let [path-file (file path)]
@@ -252,16 +253,14 @@
             [path-file-result]
             []))
         [])
-      (get-file-results-under-path settings path-file))))
+      (if (= (:max-depth settings) 0)
+        []
+        (if (:recursive settings)
+          (get-file-results-under-path settings path-file (:min-depth settings) (:max-depth settings) 1)
+          (get-file-results-under-path settings path-file (:min-depth settings) 1 1))))))
 
-(defn get-file-results
-  ([^FindSettings settings]
-    (let [paths (into [] (:paths settings))]
-      (get-file-results settings paths [])))
-  ([^FindSettings settings paths file-results]
-   (if (empty? paths)
-      (sort-results file-results settings)
-      (get-file-results settings (rest paths) (concat file-results (get-file-results-for-path settings (nth paths 0)))))))
+(defn get-file-results [^FindSettings settings]
+  (sort-results (mapcat #(get-file-results-for-path settings %) (:paths settings)) settings))
 
 (defn find-files [^FindSettings settings]
   (let [errs (validate-settings settings)]
