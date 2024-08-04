@@ -3,7 +3,7 @@ defmodule ExFind.FileType do
   Documentation for `ExFind.FileType`.
   """
 
-defstruct type_name: "", extensions: [], names: []
+  defstruct type_name: "", extensions: [], names: []
 
   def new(args), do: __struct__(args)
 end
@@ -13,19 +13,17 @@ defmodule ExFind.FileTypesLoader do
   Documentation for `ExFind.FileTypesLoader`.
   """
 
-def load_file_types() do
+  def load_file_types() do
     # Load the find options from the findoptions.json file.
     file_types_path = ExFind.Config.file_types_path
     IO.puts(file_types_path)
     {:ok, json} = File.read(file_types_path)
     file_types = JSON.decode!(json)
-    IO.puts("\nfile_types: #{inspect(file_types)}")
 
     file_type_map = file_types["filetypes"]
                     |> Enum.map(fn t -> ExFind.FileType.new([type_name: String.to_atom(t["type"]), extensions: t["extensions"], names: t["names"]]) end)
                     |> Enum.map(fn t -> {t.type_name, t} end)
                     |> Map.new()
-    IO.puts("\nfile_type_map: #{inspect(file_type_map)}")
     file_type_map
   end
 end
@@ -39,10 +37,12 @@ defmodule ExFind.FileTypes do
 
   @file_types [:unknown, :archive, :audio, :binary, :code, :font, :image, :text, :video, :xml]
 
-  defstruct file_types: MapSet.new(@file_types),
-            file_types_maps: ExFind.FileTypesLoader.load_file_types()
+  defstruct [:conn, :file_types, :file_types_maps]
 
-  def new(), do: __struct__()
+  def new() do
+    {:ok, conn} = Exqlite.Sqlite3.open(ExFind.Config.xfind_db_path, [:readonly])
+    __struct__([conn: conn, file_types: MapSet.new(@file_types), file_types_maps: ExFind.FileTypesLoader.load_file_types()])
+  end
 
   def get_file_type_for_name(name) do
     file_types = @file_types
