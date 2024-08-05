@@ -2,7 +2,6 @@ package ktfind
 
 // TODO: switch to using kotlin.io.path?
 import java.nio.file.Path
-import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.util.*
 
@@ -10,13 +9,15 @@ import java.util.*
  * @author cary on 7/24/16.
  */
 class FileResult(
-    val containers: List<String>,
+    val containers: List<Path>,
     val path: Path,
     val fileType: FileType,
     val fileSize: Long,
     val lastMod: FileTime? = null
 ) {
-    val CONTAINER_SEPARATOR = "!"
+    companion object {
+        const val CONTAINER_SEPARATOR = "!"
+    }
 
     constructor(path: Path, fileType: FileType) : this(listOf(), path, fileType, 0)
     constructor(path: Path, fileType: FileType, fileSize: Long, lastMod: FileTime?) :
@@ -77,7 +78,7 @@ class FileResult(
                 if (i > 0) {
                     sb.append(CONTAINER_SEPARATOR)
                 }
-                sb.append(containers[i])
+                sb.append(containers[i].toString())
             }
             sb.append(CONTAINER_SEPARATOR)
         }

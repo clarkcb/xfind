@@ -36,11 +36,10 @@ public class Finder {
 
     final void validateSettings() throws FindException {
         var paths = settings.getPaths();
-        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.isEmpty())) {
+        if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
             throw new FindException("Startpath not defined");
         }
-        for (var p : paths) {
-            var path = Paths.get(p);
+        for (var path : paths) {
             if (!Files.exists(path)) {
                 throw new FindException("Startpath not found");
             }
@@ -244,8 +243,7 @@ public class Finder {
         }
         List<Future<List<FileResult>>> futures = new ArrayList<>();
 
-        for (var p : settings.getPaths()) {
-            var path = Paths.get(p);
+        for (var path : settings.getPaths()) {
             if (Files.isDirectory(path)) {
                 // if maxDepth is zero, we can skip since a directory cannot be a result
                 if (settings.getMaxDepth() != 0) {

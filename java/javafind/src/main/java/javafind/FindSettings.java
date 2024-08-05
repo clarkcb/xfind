@@ -10,6 +10,8 @@ Class to encapsulate find settings
 
 package javafind;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,7 +48,7 @@ public class FindSettings {
     private final Set<String> outExtensions;
     private final Set<Pattern> outFilePatterns;
     private final Set<FileType> outFileTypes;
-    private Set<String> paths;
+    private Set<Path> paths;
     private boolean printDirs;
     private boolean printFiles;
     private boolean printUsage;
@@ -92,16 +94,20 @@ public class FindSettings {
         this.verbose = DefaultFindSettings.VERBOSE;
     }
 
-    public final Set<String> getPaths() {
+    public final Set<Path> getPaths() {
         return this.paths;
     }
 
-    public final void setPaths(final Set<String> paths) {
+    public final void setPaths(final Set<Path> paths) {
         this.paths = paths;
     }
 
-    public final void addPath(final String path) {
+    public final void addPath(final Path path) {
         this.paths.add(path);
+    }
+
+    public final void addPath(final String path) {
+        this.paths.add(Paths.get(path));
     }
 
     public final boolean getArchivesOnly() {
@@ -421,46 +427,41 @@ public class FindSettings {
                 this.maxSize > 0 || this.minSize > 0;
     }
 
-    protected static String stringSetToString(final Set<String> set) {
+    protected static String setToString(final Set<String> set, boolean quotes) {
         var sb = new StringBuilder("[");
         int elemCount = 0;
         for (var s : set) {
             if (elemCount > 0) {
                 sb.append(", ");
             }
-            sb.append("\"").append(s).append("\"");
+            if (quotes) {
+                sb.append("\"").append(s).append("\"");
+            } else {
+                sb.append(s);
+            }
             elemCount++;
         }
         sb.append("]");
         return sb.toString();
+    }
+
+    protected static String stringSetToString(final Set<String> set) {
+        return setToString(set, true);
+    }
+
+    protected static String pathSetToString(final Set<Path> set) {
+        var stringSet = set.stream().map(Path::toString).collect(java.util.stream.Collectors.toSet());
+        return setToString(stringSet, true);
     }
 
     protected static String patternSetToString(final Set<Pattern> set) {
-        var sb = new StringBuilder("[");
-        int elemCount = 0;
-        for (var p : set) {
-            if (elemCount > 0) {
-                sb.append(", ");
-            }
-            sb.append("\"").append(p.toString()).append("\"");
-            elemCount++;
-        }
-        sb.append("]");
-        return sb.toString();
+        var stringSet = set.stream().map(Pattern::toString).collect(java.util.stream.Collectors.toSet());
+        return setToString(stringSet, true);
     }
 
     protected static String fileTypeSetToString(final Set<FileType> set) {
-        var sb = new StringBuilder("[");
-        int elemCount = 0;
-        for (var ft : set) {
-            if (elemCount > 0) {
-                sb.append(", ");
-            }
-            sb.append(ft.toName());
-            elemCount++;
-        }
-        sb.append("]");
-        return sb.toString();
+        var stringSet = set.stream().map(FileType::toName).collect(java.util.stream.Collectors.toSet());
+        return setToString(stringSet, false);
     }
 
     protected static String localDateTimeToString(final LocalDateTime dt) {
@@ -494,7 +495,7 @@ public class FindSettings {
                 + ", outExtensions=" + stringSetToString(this.outExtensions)
                 + ", outFilePatterns=" + patternSetToString(this.outFilePatterns)
                 + ", outFileTypes=" + fileTypeSetToString(this.outFileTypes)
-                + ", paths=" + stringSetToString(this.paths)
+                + ", paths=" + pathSetToString(this.paths)
                 + ", printDirs=" + this.printDirs
                 + ", printFiles=" + this.printFiles
                 + ", printUsage=" + this.printUsage

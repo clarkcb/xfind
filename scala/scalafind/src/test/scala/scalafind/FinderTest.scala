@@ -10,7 +10,7 @@ import scala.io.Source
 class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   def getFindSettings: FindSettings = {
-    FindSettings(paths = Set("."))
+    FindSettings(paths = Set(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   def getFileLines(file: File): Iterator[String] = {
@@ -26,7 +26,7 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
   test("testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get(".")))
+    assert(finder.isMatchingDir(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   test("testIsMatchingDir_DoubleDot_True") {

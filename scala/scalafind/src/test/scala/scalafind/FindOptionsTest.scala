@@ -3,10 +3,12 @@ package scalafind
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.funsuite.AnyFunSuite
 
+import java.nio.file.{Path, Paths}
+
 class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
 
-  val startpath = "."
-  val requiredArgs = Array(startpath)
+  val startPath: Path = Paths.get(FileUtil.CURRENT_PATH)
+  val requiredArgs: Array[String] = Array(FileUtil.CURRENT_PATH)
 
   def assertDefaultSettings(settings: FindSettings): Unit = {
     assert(settings.archivesOnly == DefaultFindSettings.archivesOnly)
@@ -26,7 +28,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     val settings = FindOptions.settingsFromArgs(args)
     assertDefaultSettings(settings)
     assert(settings.paths.size == 1)
-    assert(settings.paths.contains(startpath))
+    assert(settings.paths.contains(startPath))
   }
 
   // test requiredArgs only
@@ -35,7 +37,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     println("args: " + args.toList)
     val settings = FindOptions.settingsFromArgs(args)
     assert(settings.paths.size == 1)
-    assert(settings.paths.contains(startpath))
+    assert(settings.paths.contains(startPath))
   }
 
   // test --archivesonly
@@ -314,7 +316,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
                  |}"""
     val settings = FindOptions.settingsFromJson(json.stripMargin, ss)
     assert(settings.paths.size == 1)
-    assert(settings.paths.contains("~/src/xfind/"))
+    assert(settings.paths.contains(Paths.get("~/src/xfind/")))
     assert(settings.inExtensions.size == 2)
     assert(settings.inExtensions.contains("js"))
     assert(settings.inExtensions.contains("ts"))

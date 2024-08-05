@@ -3,13 +3,12 @@ package scalafind
 import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach}
 
-import java.io.File
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Path, Paths}
 
 class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfterAll {
 
   def getFindSettings: FindSettings = {
-    FindSettings(paths = Set("."))
+    FindSettings(paths = Set(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   /** ***********************************************************
@@ -18,13 +17,13 @@ class FinderFilteringTest extends AnyFunSuite with BeforeAndAfterEach with Befor
   test("testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get(".")))
+    assert(finder.isMatchingDir(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   test("test testIsMatchingDir_SingleDot_True") {
     val settings = getFindSettings
     val finder = new Finder(settings)
-    assert(finder.isMatchingDir(Paths.get(".")))
+    assert(finder.isMatchingDir(Paths.get(FileUtil.CURRENT_PATH)))
   }
 
   test("testIsMatchingDir_DoubleDot_True") {

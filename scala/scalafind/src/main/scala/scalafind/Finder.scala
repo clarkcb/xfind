@@ -3,16 +3,15 @@ package scalafind
 import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
 
-import java.io.{File, IOException}
+import java.io.IOException
 import java.nio.file.attribute.BasicFileAttributes
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{Files, Path}
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 import scala.util.matching.Regex
 
 class Finder (settings: FindSettings) {
-  import FileUtil.splitPath
   import Finder.*
 
   private def validateSettings(): Unit = {
@@ -26,7 +25,7 @@ class Finder (settings: FindSettings) {
   validateSettings()
 
   def isMatchingDir(path: Path): Boolean = {
-    val pathElems = splitPath(path.toString)
+    val pathElems = FileUtil.splitPath(path)
     if (!settings.includeHidden && pathElems.exists(p => isHidden(p))) {
       false
     } else {
@@ -104,7 +103,7 @@ class Finder (settings: FindSettings) {
         } else {
           (0L, None)
         }
-      val fileResult = new FileResult(p, FileTypes.getFileType(p.getFileName.toString), fileSize, lastMod)
+      val fileResult = new FileResult(p, FileTypes.getFileType(p), fileSize, lastMod)
       fileResult.fileType match {
         // This is commented out to allow unknown files to match in case settings are permissive
         // case FileType.Unknown => None
@@ -199,8 +198,8 @@ class Finder (settings: FindSettings) {
 
   def find(): Seq[FileResult] = {
     val fileResults = mutable.ArrayBuffer.empty[FileResult]
-    settings.paths.foreach { p =>
-      val path = Paths.get(p)
+    settings.paths.foreach { path =>
+//      val path = Paths.get(p)
       if (Files.isDirectory(path)) {
         // if maxDepth is zero, we can skip since a directory cannot be a result
         if (settings.maxDepth != 0) {
@@ -244,8 +243,8 @@ object Finder {
 
   val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
     ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
-    ss => if (ss.paths.forall { p => new File(p).exists() }) None else Some("Startpath not found"),
-    ss => if (ss.paths.forall { p => new File(p).canRead }) None else Some("Startpath not readable"),
+    ss => if (ss.paths.forall { p => Files.exists(p) }) None else Some("Startpath not found"),
+    ss => if (ss.paths.forall { p => Files.isReadable(p) }) None else Some("Startpath not readable"),
     ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some("Invalid range for mindepth and maxdepth") else None,
     ss => if (compareOptionLocalDateTimes(ss.maxLastMod, ss.minLastMod) < 0) Some("Invalid range for minlastmod and maxlastmod") else None,
     ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some("Invalid range for minsize and maxsize") else None,

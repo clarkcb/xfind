@@ -3,12 +3,11 @@ package scalafind
 import org.json.{JSONArray, JSONObject, JSONTokener}
 
 import java.io.{File, IOException, InputStreamReader}
+import java.nio.file.Paths
+import java.time.LocalDateTime
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
-import java.time.{LocalDate, LocalDateTime}
-import java.time.format.DateTimeFormatter
-import java.time.format.DateTimeParseException
 
 case class FindOption(shortArg: Option[String], longArg: String, desc: String) {
   val sortArg: String = shortArg match {
@@ -97,7 +96,7 @@ object FindOptions {
     "out-filetype" ->
       ((s, ss) => ss.copy(outFileTypes = ss.outFileTypes + FileType.forName(s))),
     "path" ->
-      ((s, ss) => ss.copy(paths = ss.paths + s)),
+      ((s, ss) => ss.copy(paths = ss.paths + Paths.get(s))),
     "settings-file" ->
       ((s, ss) => settingsFromFile(s, ss)),
     "sort-by" ->
@@ -156,7 +155,7 @@ object FindOptions {
       if (this.argActionMap.contains(arg)) {
         argActionMap(arg)(s, ss)
       } else if (arg == "path") {
-        ss.copy(paths = ss.paths + arg)
+        ss.copy(paths = ss.paths + Paths.get(arg))
       } else {
         throw new FindException("Invalid option: " + arg)
       }
@@ -215,7 +214,7 @@ object FindOptions {
               throw new FindException("Invalid option: %s".format(arg))
           }
         case arg :: tail =>
-          nextArg(tail, ss.copy(paths = ss.paths + arg))
+          nextArg(tail, ss.copy(paths = ss.paths + Paths.get(arg)))
       }
     }
     // default printFiles to true since running as cli

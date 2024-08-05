@@ -26,8 +26,7 @@ class Finder {
         if (null == paths || paths.empty || paths.any { p -> p == null || p.empty }) {
             throw new FindException('Startpath not defined')
         }
-        paths.each { p ->
-            def path = Paths.get(p)
+        paths.each { path ->
             if (!Files.exists(path)) {
                 throw new FindException('Startpath not found')
             }
@@ -217,8 +216,7 @@ class Finder {
     final List<FileResult> find() throws FindException {
         List<FileResult> fileResults = []
 
-        settings.paths.each { p ->
-            def path = Paths.get(p)
+        settings.paths.each { path ->
             if (Files.isDirectory(path)) {
                 // if maxDepth is zero, we can skip since a directory cannot be a result
                 if (settings.maxDepth != 0) {

@@ -1,6 +1,7 @@
 package ktfind
 
-import java.io.File
+import java.nio.file.Paths
+import kotlin.io.path.extension
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -14,71 +15,71 @@ class FileTypesTest {
 
     @Test
     fun archiveFileTest() {
-        val file = File("test.zip")
-        assertEquals("zip", file.extension)
-        assertTrue(fileTypes.isArchiveFile(file))
-        assertFalse(fileTypes.isAudioFile(file))
-        assertFalse(fileTypes.isBinaryFile(file))
-        assertFalse(fileTypes.isCodeFile(file))
-        assertFalse(fileTypes.isFontFile(file))
-        assertFalse(fileTypes.isImageFile(file))
-        assertFalse(fileTypes.isTextFile(file))
-        assertFalse(fileTypes.isVideoFile(file))
-        assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(FileType.ARCHIVE, fileTypes.getFileType(file))
+        val path = Paths.get("test.zip")
+        assertEquals("zip", path.extension)
+        assertTrue(fileTypes.isArchiveFile(path))
+        assertFalse(fileTypes.isAudioFile(path))
+        assertFalse(fileTypes.isBinaryFile(path))
+        assertFalse(fileTypes.isCodeFile(path))
+        assertFalse(fileTypes.isFontFile(path))
+        assertFalse(fileTypes.isImageFile(path))
+        assertFalse(fileTypes.isTextFile(path))
+        assertFalse(fileTypes.isVideoFile(path))
+        assertFalse(fileTypes.isXmlFile(path))
+        assertEquals(FileType.ARCHIVE, fileTypes.getFileType(path))
     }
 
     @Test
     fun audioFileTest() {
-        val file = File("music.mp3")
-        assertEquals("mp3", file.extension)
-        assertFalse(fileTypes.isArchiveFile(file))
-        assertTrue(fileTypes.isAudioFile(file))
-        assertFalse(fileTypes.isBinaryFile(file))
-        assertFalse(fileTypes.isCodeFile(file))
-        assertFalse(fileTypes.isFontFile(file))
-        assertFalse(fileTypes.isImageFile(file))
-        assertFalse(fileTypes.isTextFile(file))
-        assertFalse(fileTypes.isVideoFile(file))
-        assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(FileType.AUDIO, fileTypes.getFileType(file))
+        val path = Paths.get("music.mp3")
+        assertEquals("mp3", path.extension)
+        assertFalse(fileTypes.isArchiveFile(path))
+        assertTrue(fileTypes.isAudioFile(path))
+        assertFalse(fileTypes.isBinaryFile(path))
+        assertFalse(fileTypes.isCodeFile(path))
+        assertFalse(fileTypes.isFontFile(path))
+        assertFalse(fileTypes.isImageFile(path))
+        assertFalse(fileTypes.isTextFile(path))
+        assertFalse(fileTypes.isVideoFile(path))
+        assertFalse(fileTypes.isXmlFile(path))
+        assertEquals(FileType.AUDIO, fileTypes.getFileType(path))
     }
 
     @Test
     fun binaryFileTest() {
-        val file = File("test.exe")
-        assertEquals("exe", file.extension)
-        assertFalse(fileTypes.isArchiveFile(file))
-        assertFalse(fileTypes.isAudioFile(file))
-        assertTrue(fileTypes.isBinaryFile(file))
-        assertFalse(fileTypes.isCodeFile(file))
-        assertFalse(fileTypes.isFontFile(file))
-        assertFalse(fileTypes.isImageFile(file))
-        assertFalse(fileTypes.isTextFile(file))
-        assertFalse(fileTypes.isVideoFile(file))
-        assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(FileType.BINARY, fileTypes.getFileType(file))
+        val path = Paths.get("test.exe")
+        assertEquals("exe", path.extension)
+        assertFalse(fileTypes.isArchiveFile(path))
+        assertFalse(fileTypes.isAudioFile(path))
+        assertTrue(fileTypes.isBinaryFile(path))
+        assertFalse(fileTypes.isCodeFile(path))
+        assertFalse(fileTypes.isFontFile(path))
+        assertFalse(fileTypes.isImageFile(path))
+        assertFalse(fileTypes.isTextFile(path))
+        assertFalse(fileTypes.isVideoFile(path))
+        assertFalse(fileTypes.isXmlFile(path))
+        assertEquals(FileType.BINARY, fileTypes.getFileType(path))
     }
 
     @Test
     fun fontFileTest() {
-        val file = File("font.ttf")
-        assertEquals("ttf", file.extension)
-        assertFalse(fileTypes.isArchiveFile(file))
-        assertFalse(fileTypes.isAudioFile(file))
-        assertFalse(fileTypes.isBinaryFile(file))
-        assertFalse(fileTypes.isCodeFile(file))
-        assertTrue(fileTypes.isFontFile(file))
-        assertFalse(fileTypes.isImageFile(file))
-        assertFalse(fileTypes.isTextFile(file))
-        assertFalse(fileTypes.isVideoFile(file))
-        assertFalse(fileTypes.isXmlFile(file))
-        assertEquals(FileType.FONT, fileTypes.getFileType(file))
+        val path = Paths.get("font.ttf")
+        assertEquals("ttf", path.extension)
+        assertFalse(fileTypes.isArchiveFile(path))
+        assertFalse(fileTypes.isAudioFile(path))
+        assertFalse(fileTypes.isBinaryFile(path))
+        assertFalse(fileTypes.isCodeFile(path))
+        assertTrue(fileTypes.isFontFile(path))
+        assertFalse(fileTypes.isImageFile(path))
+        assertFalse(fileTypes.isTextFile(path))
+        assertFalse(fileTypes.isVideoFile(path))
+        assertFalse(fileTypes.isXmlFile(path))
+        assertEquals(FileType.FONT, fileTypes.getFileType(path))
     }
 
     @Test
     fun imageFileTest() {
-        val file = File("Test.png")
+        val file = Paths.get("Test.png")
         assertEquals("png", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isAudioFile(file))
@@ -94,7 +95,7 @@ class FileTypesTest {
 
     @Test
     fun javaFileTest() {
-        val file = File("Test.java")
+        val file = Paths.get("Test.java")
         assertEquals("java", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isAudioFile(file))
@@ -110,7 +111,7 @@ class FileTypesTest {
 
     @Test
     fun textFileTest() {
-        val file = File("test.txt")
+        val file = Paths.get("test.txt")
         assertEquals("txt", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isAudioFile(file))
@@ -126,7 +127,7 @@ class FileTypesTest {
 
     @Test
     fun textFileTestUppercase() {
-        val file = File("TEXT.TXT")
+        val file = Paths.get("TEXT.TXT")
         assertEquals("TXT", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isAudioFile(file))
@@ -142,7 +143,7 @@ class FileTypesTest {
 
     @Test
     fun videoFileTest() {
-        val file = File("movie.mp4")
+        val file = Paths.get("movie.mp4")
         assertEquals("mp4", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isAudioFile(file))
@@ -158,7 +159,7 @@ class FileTypesTest {
 
     @Test
     fun unknownFileTest() {
-        val file = File("unknown.ZZZ")
+        val file = Paths.get("unknown.ZZZ")
         assertEquals("ZZZ", file.extension)
         assertFalse(fileTypes.isArchiveFile(file))
         assertFalse(fileTypes.isAudioFile(file))

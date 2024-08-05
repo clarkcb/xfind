@@ -1,6 +1,5 @@
 package scalafind
 
-import java.io.File
 import java.nio.file.Path
 
 object FindMain {

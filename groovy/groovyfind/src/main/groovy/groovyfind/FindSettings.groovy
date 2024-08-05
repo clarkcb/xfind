@@ -2,6 +2,8 @@ package groovyfind
 
 import groovy.transform.CompileStatic
 
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -58,7 +60,7 @@ class FindSettings {
     final Set<String> outExtensions
     final Set<Pattern> outFilePatterns
     final Set<FileType> outFileTypes
-    Set<String> paths
+    Set<Path> paths
     boolean printDirs
     boolean printFiles
     boolean printUsage
@@ -105,7 +107,7 @@ class FindSettings {
     }
 
     final void addPath(final String path) {
-        this.paths.add(path)
+        this.paths.add(Paths.get(path))
     }
 
     void setArchivesOnly(final boolean archivesOnly) {
@@ -233,46 +235,41 @@ class FindSettings {
                 this.maxSize > 0 || this.minSize > 0
     }
 
-    private static String stringSetToString(final Set<String> set) {
+    private static String setToString(final Set<String> set, final boolean quote) {
         def sb = new StringBuilder('[')
         int elemCount = 0
         set.each { s ->
             if (elemCount > 0) {
                 sb.append(', ')
             }
-            sb.append('"').append(s).append('"')
+            if (quote) {
+                sb.append('"').append(s).append('"')
+            } else {
+                sb.append(s)
+            }
             elemCount++
         }
         sb.append(']')
         return sb.toString()
+    }
+
+    private static String stringSetToString(final Set<String> set) {
+        return setToString(set, true)
+    }
+
+    private static String pathSetToString(final Set<Path> set) {
+        def stringSet = set.collect { p -> p.toString() }.toSet()
+        return setToString(stringSet, true)
     }
 
     private static String patternSetToString(final Set<Pattern> set) {
-        def sb = new StringBuilder('[')
-        int elemCount = 0
-        set.each { p ->
-            if (elemCount > 0) {
-                sb.append(', ')
-            }
-            sb.append('"').append(p.toString()).append('"')
-            elemCount++
-        }
-        sb.append(']')
-        return sb.toString()
+        def stringSet = set.collect { p -> p.toString() }.toSet()
+        return setToString(stringSet, true)
     }
 
     private static String fileTypeSetToString(final Set<FileType> set) {
-        def sb = new StringBuilder('[')
-        int elemCount = 0
-        set.each { ft ->
-            if (elemCount > 0) {
-                sb.append(', ')
-            }
-            sb.append(ft.toName())
-            elemCount++
-        }
-        sb.append(']')
-        return sb.toString()
+        def stringSet = set.collect { ft -> ft.toName() }.toSet()
+        return setToString(stringSet, false)
     }
 
     private static String localDateTimeToString(final LocalDateTime dt) {
@@ -306,7 +303,7 @@ class FindSettings {
                 ', outExtensions=' + stringSetToString(this.outExtensions) +
                 ', outFilePatterns=' + patternSetToString(this.outFilePatterns) +
                 ', outFileTypes=' + fileTypeSetToString(this.outFileTypes) +
-                ', paths=' + stringSetToString(this.paths) +
+                ', paths=' + pathSetToString(this.paths) +
                 ', printDirs=' + this.printDirs +
                 ', printFiles=' + this.printFiles +
                 ', printUsage=' + this.printUsage +

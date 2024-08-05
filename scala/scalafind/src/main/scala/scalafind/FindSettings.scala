@@ -3,6 +3,7 @@ package scalafind
 import scalafind.FileType.FileType
 import scalafind.SortBy.SortBy
 
+import java.nio.file.Path
 import java.time.format.{DateTimeFormatter, DateTimeParseException}
 import java.time.{LocalDate, LocalDateTime}
 import scala.util.matching.Regex
@@ -38,7 +39,7 @@ object DefaultFindSettings {
   val maxSize = 0
   val minDepth: Int = -1
   val minSize = 0
-  var paths: Set[String] = Set.empty[String]
+  var paths: Set[Path] = Set.empty[Path]
   val printDirs = false
   val printFiles = false
   var printUsage = false
@@ -72,7 +73,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
                         outExtensions: Set[String] = Set.empty[String],
                         outFilePatterns: Set[Regex] = Set.empty[Regex],
                         outFileTypes: Set[FileType] = Set.empty[FileType],
-                        paths: Set[String] = DefaultFindSettings.paths,
+                        paths: Set[Path] = DefaultFindSettings.paths,
                         printDirs: Boolean = DefaultFindSettings.printDirs,
                         printFiles: Boolean = DefaultFindSettings.printFiles,
                         printUsage: Boolean = DefaultFindSettings.printUsage,
@@ -114,11 +115,15 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       || maxSize > 0 || minSize > 0
   }
 
-  def setToString(set: Set[String]): String = {
+  private def setToString(set: Set[String]): String = {
     if (set.isEmpty) "[]" else set.mkString("[\"", "\", \"", "\"]")
   }
 
-  def regexSetToString(set: Set[Regex]): String = {
+  private def pathSetToString(set: Set[Path]): String = {
+    if (set.isEmpty) "[]" else set.map(p => p.toString).mkString("[\"", "\", \"", "\"]")
+  }
+
+  private def regexSetToString(set: Set[Regex]): String = {
     if (set.isEmpty) "[]" else set.map(p => p.pattern.pattern()).mkString("[\"", "\", \"", "\"]")
   }
 
@@ -146,7 +151,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
       ", outExtensions=" + setToString(outExtensions) +
       ", outFilePatterns=" + regexSetToString(outFilePatterns) +
       ", outFileTypes=" + outFileTypes.map(ft => ft.toString).mkString("[", ", ", "]") +
-      ", paths=" + setToString(paths) +
+      ", paths=" + pathSetToString(paths) +
       ", printDirs=" + printDirs +
       ", printFiles=" + printFiles +
       ", printUsage=" + printUsage +

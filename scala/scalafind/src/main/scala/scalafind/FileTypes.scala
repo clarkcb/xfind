@@ -2,7 +2,8 @@ package scalafind
 
 import org.json.{JSONObject, JSONTokener}
 
-import java.io.{IOException, InputStreamReader}
+import java.io.IOException
+import java.nio.file.Path
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
 
@@ -58,95 +59,95 @@ object FileTypes {
   private val fileTypeExtMap: Map[String, Set[String]] = fileTypeMaps._1
   private val fileTypeNameMap: Map[String, Set[String]] = fileTypeMaps._2
 
-  def getFileType(fileName: String): FileType.Value = {
+  def getFileType(path: Path): FileType.Value = {
     // most specific types first
-    if (isCodeFile(fileName)) {
+    if (isCodeFile(path)) {
       FileType.Code
-    } else if (isArchiveFile(fileName)) {
+    } else if (isArchiveFile(path)) {
       FileType.Archive
-    } else if (isAudioFile(fileName)) {
+    } else if (isAudioFile(path)) {
       FileType.Audio
-    } else if (isFontFile(fileName)) {
+    } else if (isFontFile(path)) {
       FileType.Font
-    } else if (isImageFile(fileName)) {
+    } else if (isImageFile(path)) {
       FileType.Image
-    } else if (isVideoFile(fileName)) {
+    } else if (isVideoFile(path)) {
       FileType.Video
 
       // most general types last
-    } else if (isXmlFile(fileName)) {
+    } else if (isXmlFile(path)) {
       FileType.Xml
-    } else if (isTextFile(fileName)) {
+    } else if (isTextFile(path)) {
       FileType.Text
-    } else if (isBinaryFile(fileName)) {
+    } else if (isBinaryFile(path)) {
       FileType.Binary
     } else {
       FileType.Unknown
     }
   }
 
-  def isArchiveFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Archive.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Archive.toString).contains(FileUtil.getExtension(fileName))
+  def isArchiveFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Archive.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Archive.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isAudioFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Audio.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Audio.toString).contains(FileUtil.getExtension(fileName))
+  def isAudioFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Audio.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Audio.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isBinaryFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Binary.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Binary.toString).contains(FileUtil.getExtension(fileName))
+  def isBinaryFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Binary.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Binary.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isCodeFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Code.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Code.toString).contains(FileUtil.getExtension(fileName))
+  def isCodeFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Code.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Code.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isFontFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Font.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Font.toString).contains(FileUtil.getExtension(fileName))
+  def isFontFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Font.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Font.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isImageFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Image.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Image.toString).contains(FileUtil.getExtension(fileName))
+  def isImageFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Image.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Image.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isTextFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Text.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Text.toString).contains(FileUtil.getExtension(fileName))
+  def isTextFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Text.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Text.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isUnknownFile(fileName: String): Boolean = {
-    getFileType(fileName) == FileType.Unknown
+  def isUnknownFile(path: Path): Boolean = {
+    getFileType(path) == FileType.Unknown
   }
 
-  def isVideoFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Video.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Video.toString).contains(FileUtil.getExtension(fileName))
+  def isVideoFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Video.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Video.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isXmlFile(fileName: String): Boolean = {
-    fileTypeNameMap(FileType.Xml.toString).contains(fileName)
-      || fileTypeExtMap(FileType.Xml.toString).contains(FileUtil.getExtension(fileName))
+  def isXmlFile(path: Path): Boolean = {
+    fileTypeNameMap(FileType.Xml.toString).contains(path.getFileName.toString)
+      || fileTypeExtMap(FileType.Xml.toString).contains(FileUtil.getExtension(path))
   }
 
-  def isZipArchiveFile(fr: FileResult): Boolean = {
-    Set("zip", "jar", "war").contains(FileUtil.getExtension(fr))
+  def isZipArchiveFile(path: Path): Boolean = {
+    Set("zip", "jar", "war").contains(FileUtil.getExtension(path))
   }
 
-  def isGzArchiveFile(fr: FileResult): Boolean = {
-    Set("gz", "tgz").contains(FileUtil.getExtension(fr))
+  def isGzArchiveFile(path: Path): Boolean = {
+    Set("gz", "tgz").contains(FileUtil.getExtension(path))
   }
 
-  def isBz2ArchiveFile(fr: FileResult): Boolean = {
-    "bz2" == FileUtil.getExtension(fr)
+  def isBz2ArchiveFile(path: Path): Boolean = {
+    "bz2" == FileUtil.getExtension(path)
   }
 
-  def isTarArchiveFile(fr: FileResult): Boolean = {
-    "tar" == FileUtil.getExtension(fr)
+  def isTarArchiveFile(path: Path): Boolean = {
+    "tar" == FileUtil.getExtension(path)
   }
 }

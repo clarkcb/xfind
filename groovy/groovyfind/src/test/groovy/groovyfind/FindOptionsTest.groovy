@@ -1,5 +1,6 @@
 package groovyfind
 
+import java.nio.file.Paths
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.*
@@ -44,7 +45,7 @@ class FindOptionsTest {
             assertTrue(settings.inExtensions.contains('java'))
             assertTrue(settings.inExtensions.contains('scala'))
             assertEquals(1, settings.paths.size())
-            assertEquals(".", settings.paths.toArray()[0])
+            assertEquals(Paths.get('.'), settings.paths.toArray()[0])
         } catch (FindException e) {
             System.out.println("FindException: ${e.message}")
             fail()
@@ -70,7 +71,7 @@ class FindOptionsTest {
             findOptions.settingsFromJson(json.toString(), settings)
 
             assertEquals(1, settings.paths.size())
-            assertEquals('~/src/xfind/', settings.paths.toArray()[0])
+            assertEquals(Paths.get('~/src/xfind/'), settings.paths.toArray()[0])
 
             assertEquals(2, settings.inExtensions.size())
             assertTrue(settings.inExtensions.contains('js'))

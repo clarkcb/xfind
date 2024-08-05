@@ -1,5 +1,7 @@
 package ktfind
 
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -112,40 +114,39 @@ data class FindSettings(
     }
 }
 
-fun stringSetToString(set: Set<String>): String {
+fun setToString(set: Set<String>, quotes: Boolean): String {
     val sb = StringBuilder("[")
     for ((i, s) in set.withIndex()) {
         if (i > 0) {
             sb.append(", ")
         }
-        sb.append("\"").append(s).append("\"")
+        if (quotes) {
+            sb.append("\"").append(s).append("\"")
+        } else {
+            sb.append(s)
+        }
     }
     sb.append("]")
     return sb.toString()
+}
+
+fun stringSetToString(set: Set<String>): String {
+    return setToString(set, true)
+}
+
+fun pathSetToString(set: Set<Path>): String {
+    val stringSet = set.map { it.toString() }.toSet()
+    return setToString(stringSet, true)
 }
 
 fun patternSetToString(set: Set<Regex>): String {
-    val sb = java.lang.StringBuilder("[")
-    for ((i, r) in set.withIndex()) {
-        if (i > 0) {
-            sb.append(", ")
-        }
-        sb.append("\"").append(r.toString()).append("\"")
-    }
-    sb.append("]")
-    return sb.toString()
+    val stringSet = set.map { it.toString() }.toSet()
+    return setToString(stringSet, true)
 }
 
 fun fileTypeSetToString(set: Set<FileType>): String {
-    val sb = java.lang.StringBuilder("[")
-    for ((i, ft) in set.withIndex()) {
-        if (i > 0) {
-            sb.append(", ")
-        }
-        sb.append(ft.value)
-    }
-    sb.append("]")
-    return sb.toString()
+    val stringSet = set.map { it.value }.toSet()
+    return setToString(stringSet, false)
 }
 
 fun getDefaultSettings(): FindSettings {
@@ -193,6 +194,10 @@ fun addExtensions(ext: String, extensions: Set<String>): Set<String> {
 fun addFileTypes(ft: String, fileTypes: Set<FileType>): Set<FileType> {
     val fts = ft.split(',').filter { it.isNotEmpty() }.map { FileType.forName(it) }
     return fileTypes.plus(fts)
+}
+
+fun addPath(p: String, paths: Set<String>): Set<String> {
+    return paths.plus(p)
 }
 
 fun setArchivesOnly(ss: FindSettings, archivesOnly: Boolean): FindSettings {

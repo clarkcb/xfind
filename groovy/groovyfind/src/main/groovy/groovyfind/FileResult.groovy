@@ -7,7 +7,7 @@ import java.nio.file.attribute.FileTime
 class FileResult {
 
     static final String CONTAINER_SEPARATOR = '!'
-    final List<String> containers
+    final List<Path> containers
     final Path path
     final FileType fileType
     final long fileSize
@@ -21,7 +21,7 @@ class FileResult {
         this([], path, fileType, fileSize, lastMod)
     }
 
-    FileResult(final List<String> containers, final Path path, final FileType fileType,
+    FileResult(final List<Path> containers, final Path path, final FileType fileType,
                final long fileSize, final FileTime lastMod) {
         this.containers = containers
         this.path = path
@@ -30,64 +30,54 @@ class FileResult {
         this.lastMod = lastMod
     }
 
-    static int compareElements(final List firstElems, final List secondElems) {
-        int i = 0
-        while (i < firstElems.size() && i < secondElems.size()) {
-            Object firstElem = firstElems.get(i)
-            Object secondElem = secondElems.get(i)
-            if (firstElem != secondElem) {
-                return firstElem <=> secondElem
-            }
-            i++
+    private static int compareStrings(final String first, final String second, final boolean sortCaseInsensitive) {
+        if (sortCaseInsensitive) {
+            return first.toLowerCase() <=> second.toLowerCase()
         }
-        return 0
+        return first <=> second
     }
 
     int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
-        if (sortCaseInsensitive) {
-            return compareElements(
-                    [this.path.parent.toString().toLowerCase(), this.path.fileName.toString().toLowerCase()],
-                    [other.path.parent.toString().toLowerCase(), other.path.fileName.toString().toLowerCase()]
-            )
+        int pComp = compareStrings(this.path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
+        if (pComp == 0) {
+            return compareStrings(this.path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
         }
-        return compareElements(
-                [this.path.parent.toString(), this.path.fileName.toString()],
-                [other.path.parent.toString(), other.path.fileName.toString()]
-        )
+        return pComp
     }
 
     int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
-        if (sortCaseInsensitive) {
-            return compareElements(
-                    [this.path.fileName.toString().toLowerCase(), this.path.parent.toString().toLowerCase()],
-                    [other.path.fileName.toString().toLowerCase(), other.path.parent.toString().toLowerCase()]
-            )
+        int fComp = compareStrings(this.path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
+        if (fComp == 0) {
+            return compareStrings(this.path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
         }
-        return compareElements(
-                [this.path.fileName.toString(), this.path.parent.toString()],
-                [other.path.fileName.toString(), other.path.parent.toString()]
-        )
+        return fComp
     }
 
     int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.fileSize == other.fileSize) {
+        int fsComp = this.fileSize <=> other.fileSize
+        if (fsComp == 0) {
             return compareByPath(other, sortCaseInsensitive)
         }
-        return this.fileSize <= other.fileSize ? -1 : 1
+        return fsComp
     }
 
     int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.fileType == other.fileType) {
+        int ftComp = this.fileType <=> other.fileType
+        if (ftComp == 0) {
             return compareByPath(other, sortCaseInsensitive)
         }
-        return this.fileType <=> other.fileType
+        return ftComp
     }
 
     int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.lastMod == other.lastMod) {
+        if (lastMod == null && other.lastMod == null) return 0
+        if (lastMod == null) return 1
+        if (other.lastMod == null) return -1
+        int lmComp = this.lastMod <=> other.lastMod
+        if (lmComp == 0) {
             return compareByPath(other, sortCaseInsensitive)
         }
-        return this.lastMod <=> other.lastMod
+        return lmComp
     }
 
     String toString() {
@@ -97,7 +87,7 @@ class FileResult {
                 if (i > 0) {
                     sb.append(CONTAINER_SEPARATOR)
                 }
-                sb.append(containers.get(i))
+                sb.append(containers.get(i).toString())
             }
             sb.append(CONTAINER_SEPARATOR)
         }

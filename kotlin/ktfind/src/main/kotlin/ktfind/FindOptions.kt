@@ -6,6 +6,8 @@ import org.json.JSONTokener
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.nio.file.Path
+import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -90,6 +92,8 @@ class FindOptions {
                 { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
         "out-filetype" to
                 { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
+        "path" to
+                { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
         "settings-file" to
                 { s, ss -> settingsFromFile(s, ss) },
         "sort-by" to

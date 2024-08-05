@@ -7,7 +7,7 @@ import java.util.List;
 
 public class FileResult {
     public static final String CONTAINER_SEPARATOR = "!";
-    private final List<String> containers;
+    private final List<Path> containers;
     private final Path path;
     private final FileType fileType;
     private final long fileSize;
@@ -21,7 +21,7 @@ public class FileResult {
         this(new ArrayList<>(), path, fileType, fileSize, lastMod);
     }
 
-    public FileResult(final List<String> containers, final Path path, final FileType fileType,
+    public FileResult(final List<Path> containers, final Path path, final FileType fileType,
                       final long fileSize, final FileTime lastMod) {
         this.containers = containers;
         this.path = path;
@@ -30,7 +30,7 @@ public class FileResult {
         this.lastMod = lastMod;
     }
 
-    public final List<String> getContainers() {
+    public final List<Path> getContainers() {
         return this.containers;
     }
 
@@ -50,63 +50,53 @@ public class FileResult {
         return this.lastMod;
     }
 
-    public int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
-        var p1 = this.path.getParent().toString();
-        var p2 = other.path.getParent().toString();
+    private static int compareStrings(final String s1, final String s2, final boolean sortCaseInsensitive) {
         if (sortCaseInsensitive) {
-            p1 = p1.toLowerCase();
-            p2 = p2.toLowerCase();
+            return s1.toLowerCase().compareTo(s2.toLowerCase());
         }
-        if (p1.equals(p2)) {
-            var f1 = this.path.getFileName().toString();
-            var f2 = other.path.getFileName().toString();
-            if (sortCaseInsensitive) {
-                f1 = f1.toLowerCase();
-                f2 = f2.toLowerCase();
-            }
-            return f1.compareTo(f2);
+        return s1.compareTo(s2);
+    }
+
+    public int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
+        var pComp = compareStrings(this.path.getParent().toString(), other.path.getParent().toString(), sortCaseInsensitive);
+        if (pComp == 0) {
+            return compareStrings(this.path.getFileName().toString(), other.path.getFileName().toString(), sortCaseInsensitive);
         }
-        return p1.compareTo(p2);
+        return pComp;
     }
 
     public int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
-        var f1 = this.path.getFileName().toString();
-        var f2 = other.path.getFileName().toString();
-        if (sortCaseInsensitive) {
-            f1 = f1.toLowerCase();
-            f2 = f2.toLowerCase();
+        int fComp = compareStrings(this.path.getFileName().toString(), other.path.getFileName().toString(), sortCaseInsensitive);
+        if (fComp == 0) {
+            return compareStrings(this.path.getParent().toString(), other.path.getParent().toString(), sortCaseInsensitive);
         }
-        if (f1.equals(f2)) {
-            var p1 = this.path.getParent().toString();
-            var p2 = other.path.getParent().toString();
-            if (sortCaseInsensitive) {
-                p1 = p1.toLowerCase();
-                p2 = p2.toLowerCase();
-            }
-            return p1.compareTo(p2);
-        }
-        return f1.compareTo(f2);
+        return fComp;
     }
 
     public int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
         if (this.fileSize == other.fileSize) {
             return compareByPath(other, sortCaseInsensitive);
         }
-        return this.fileSize <= other.fileSize ? -1 : 1;
+        return this.fileSize < other.fileSize ? -1 : 1;
     }
 
     public int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.getFileType().equals(other.getFileType())) {
+        int ftComp = this.getFileType().compareTo(other.getFileType());
+        if (ftComp == 0) {
             return compareByPath(other, sortCaseInsensitive);
         }
-        return this.getFileType().compareTo(other.getFileType());
+        return ftComp;
     }
 
     public int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
-        if (this.lastMod.equals(other.lastMod)) {
+        if (lastMod == null && other.lastMod == null) return 0;
+        if (lastMod == null) return 1;
+        if (other.lastMod == null) return -1;
+        int lmComp = this.lastMod.compareTo(other.lastMod);
+        if (lmComp == 0) {
             return compareByPath(other, sortCaseInsensitive);
         }
-        return this.lastMod.compareTo(other.lastMod);
+        return lmComp;
     }
 
     public String toString() {
@@ -116,7 +106,7 @@ public class FileResult {
                 if (i > 0) {
                     sb.append(CONTAINER_SEPARATOR);
                 }
-                sb.append(containers.get(i));
+                sb.append(containers.get(i).toString());
             }
             sb.append(CONTAINER_SEPARATOR);
         }

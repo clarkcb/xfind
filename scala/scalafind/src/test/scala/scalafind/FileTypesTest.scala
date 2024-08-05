@@ -2,7 +2,7 @@ package scalafind
 
 import org.scalatest.funsuite.AnyFunSuite
 
-import java.io.File
+import java.nio.file.Paths
 
 class FileTypesTest extends AnyFunSuite {
   private val whitespaceRegex = "\\s+"
@@ -10,7 +10,7 @@ class FileTypesTest extends AnyFunSuite {
   test("test archive extensions") {
     """7z arj bin bz2 cab cpio dmg ear gz hqx iso jar pax rar sit sitx tar tgz war zip zipx Z""".
       split(whitespaceRegex).foreach { ext =>
-        val archiveFile = new File("archive." + ext).getName
+        val archiveFile = Paths.get("archive." + ext)
         // println("archiveFile: " + archiveFile)
         assert(FileTypes.isArchiveFile(archiveFile))
         assert(!FileTypes.isAudioFile(archiveFile))
@@ -28,7 +28,7 @@ class FileTypesTest extends AnyFunSuite {
   test("test audio extensions") {
     """aac cda mid midi mp3 oga opus wav weba""".
       split(whitespaceRegex).foreach { ext =>
-        val audioFile = new File("audio." + ext).getName
+        val audioFile = Paths.get("audio." + ext)
         assert(!FileTypes.isArchiveFile(audioFile))
         assert(FileTypes.isAudioFile(audioFile))
         // assert(!FileTypes.isBinaryFile(audioFile))
@@ -48,7 +48,7 @@ class FileTypesTest extends AnyFunSuite {
       |epub exe fm hi hlp lib lnk mdb mo mobi mpp nib o obj odm odt ott
       |pages pdb ppt pub pyc pyo qxd rpt so swf sys vsd wpd wps wpt wri
       |xls xlt""".stripMargin.split(whitespaceRegex).foreach { ext =>
-        val binFile = new File("binfile." + ext).getName
+        val binFile = Paths.get("binfile." + ext)
         // println("binFile: " + binFile)
         assert(!FileTypes.isArchiveFile(binFile))
         assert(!FileTypes.isAudioFile(binFile))
@@ -59,6 +59,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(!FileTypes.isTextFile(binFile))
         assert(!FileTypes.isUnknownFile(binFile))
         assert(!FileTypes.isVideoFile(binFile))
+        assert(!FileTypes.isXmlFile(binFile))
         val fileType = FileTypes.getFileType(binFile)
         assert(fileType == FileType.Binary)
     }
@@ -71,7 +72,7 @@ class FileTypesTest extends AnyFunSuite {
       |lisp lua m ml pas php php3 php4 php5 pl pm ps1 psc1 psd1 psm1 pxd pxi py
       |pyw pyx r rb rkt rs s sass sbt sc scm scss scala sh swift tcl ts vb vbs""".
       stripMargin.split(whitespaceRegex).foreach { ext =>
-        val codeFile = new File("codefile." + ext).getName
+        val codeFile = Paths.get("codefile." + ext)
         // println("codeFile: " + codeFile)
         assert(!FileTypes.isArchiveFile(codeFile))
         assert(!FileTypes.isAudioFile(codeFile))
@@ -82,6 +83,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(FileTypes.isTextFile(codeFile))
         assert(!FileTypes.isUnknownFile(codeFile))
         assert(!FileTypes.isVideoFile(codeFile))
+        //assert(!FileTypes.isXmlFile(codeFile))
         val fileType = FileTypes.getFileType(codeFile)
         assert(fileType == FileType.Code)
     }
@@ -90,7 +92,7 @@ class FileTypesTest extends AnyFunSuite {
   test("test font extensions") {
     """eot otf ttf woff woff2""".
       stripMargin.split(whitespaceRegex).foreach { ext =>
-        val fontFile = new File("font." + ext).getName
+        val fontFile = Paths.get("font." + ext)
         assert(!FileTypes.isArchiveFile(fontFile))
         assert(!FileTypes.isAudioFile(fontFile))
         // assert(!FileTypes.isBinaryFile(imageFile))
@@ -108,7 +110,7 @@ class FileTypesTest extends AnyFunSuite {
   test("test image extensions") {
     """ai bmp heif indd jpeg jpg png tif tiff""".
       stripMargin.split(whitespaceRegex).foreach { ext =>
-        val imageFile = new File("image." + ext).getName
+        val imageFile = Paths.get("image." + ext)
         // println("imageFile: " + imageFile)
         assert(!FileTypes.isArchiveFile(imageFile))
         assert(!FileTypes.isAudioFile(imageFile))
@@ -135,7 +137,7 @@ class FileTypesTest extends AnyFunSuite {
       |text tk tld tm tmx tsv txt ui uls uml url user vbs vcf vcs vm vssscc
       |vxml webinfo wml wmls wsc wsd wsdd xlf xsp yaml
       |yml""".stripMargin.split(whitespaceRegex).foreach { ext =>
-        val textFile = new File("textFile." + ext).getName
+        val textFile = Paths.get("textFile." + ext)
         // println("textFile: " + textFile)
         assert(!FileTypes.isArchiveFile(textFile))
         assert(!FileTypes.isAudioFile(textFile))
@@ -153,7 +155,7 @@ class FileTypesTest extends AnyFunSuite {
   test("test video extensions") {
     """avi mov mp4 mpeg webm""".
       stripMargin.split(whitespaceRegex).foreach { ext =>
-        val videoFile = new File("video." + ext).getName
+        val videoFile = Paths.get("video." + ext)
         assert(!FileTypes.isArchiveFile(videoFile))
         assert(!FileTypes.isAudioFile(videoFile))
         // assert(!FileTypes.isBinaryFile(imageFile))
@@ -163,6 +165,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(!FileTypes.isTextFile(videoFile))
         assert(!FileTypes.isUnknownFile(videoFile))
         assert(FileTypes.isVideoFile(videoFile))
+        assert(!FileTypes.isXmlFile(videoFile))
         val fileType = FileTypes.getFileType(videoFile)
         assert(fileType == FileType.Video)
       }
@@ -174,7 +177,7 @@ class FileTypesTest extends AnyFunSuite {
       |settings sldx stc std sti stw svgz sxc sxd sxg sxi stw sxm sxw tld
       |vbproj vcproj vdproj wadl wsdd wsdl x3d xaml xjb xlsx xltx xml
       |xps xsd xsl xslt xspf xul""".stripMargin.split(whitespaceRegex).foreach { ext =>
-        val xmlFile = new File("xmlfile." + ext).getName
+        val xmlFile = Paths.get("xmlfile." + ext)
         // println("xmlFile: " + xmlFile)
         assert(!FileTypes.isArchiveFile(xmlFile))
         assert(!FileTypes.isAudioFile(xmlFile))
@@ -185,6 +188,7 @@ class FileTypesTest extends AnyFunSuite {
         assert(FileTypes.isTextFile(xmlFile))
         assert(!FileTypes.isUnknownFile(xmlFile))
         assert(!FileTypes.isVideoFile(xmlFile))
+        assert(FileTypes.isXmlFile(xmlFile))
         val fileType = FileTypes.getFileType(xmlFile)
         assert(fileType == FileType.Xml)
     }

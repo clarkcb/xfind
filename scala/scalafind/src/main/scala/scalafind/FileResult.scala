@@ -1,55 +1,58 @@
 package scalafind
 
+import scalafind.FileResult.{CONTAINER_SEPARATOR, comparePaths}
+
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
 
-class FileResult(val containers: List[String],
+object FileResult {
+  val CONTAINER_SEPARATOR = "!"
+
+  def comparePaths(path1: Path, path2: Path, sortCaseInsensitive: Boolean): Int = {
+    def pathToName(p: Path, sortCaseInsensitive: Boolean): String = {
+      (Option(p), sortCaseInsensitive) match {
+        case (None, _) => ""
+        case (Some(p), true) => p.toString.toLowerCase
+        case (Some(p), false) => p.toString
+      }
+    }
+    val p1 = pathToName(path1, sortCaseInsensitive)
+    val p2 = pathToName(path2, sortCaseInsensitive)
+    p1.compareTo(p2)
+  }
+}
+
+class FileResult(val containers: List[Path],
                  val path: Path,
                  val fileType: FileType.Value,
                  val fileSize: Long,
                  val lastMod: Option[FileTime] = None) {
 
-  val CONTAINER_SEPARATOR = "!"
-
   def this(path: Path, fileType: FileType.Value) = {
-    this(List.empty[String], path, fileType, 0L, None)
+    this(List.empty[Path], path, fileType, 0L, None)
   }
 
   def this(path: Path, fileType: FileType.Value, fileSize: Long, lastMod: Option[FileTime]) = {
-    this(List.empty[String], path, fileType, fileSize, lastMod)
-  }
-
-  private def comparePaths(path1: Path, path2: Path, sortCaseInsensitive: Boolean): Int = {
-    val p1 = (Option(path1), sortCaseInsensitive) match {
-      case (None, _) => ""
-      case (Some(p), true) => p.toString.toLowerCase
-      case (Some(p), false) => p.toString
-    }
-    val p2 = (Option(path2), sortCaseInsensitive) match {
-      case (None, _) => ""
-      case (Some(p), true) => p.toString.toLowerCase
-      case (Some(p), false) => p.toString
-    }
-    p1.compareTo(p2)
+    this(List.empty[Path], path, fileType, fileSize, lastMod)
   }
 
   def compareByPath(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
-    val pres = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
-    if (pres == 0) {
-      val fres = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
-      fres < 0
+    val pComp = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
+    if (pComp == 0) {
+      val fComp = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
+      fComp < 0
     } else {
-      pres < 0
+      pComp < 0
     }
   }
 
   def compareByName(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
-    val fres = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
-    if (fres == 0) {
-      val pres = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
-      pres < 0
+    val fComp = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
+    if (fComp == 0) {
+      val pComp = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
+      pComp < 0
     } else {
-      fres < 0
+      fComp < 0
     }
   }
 

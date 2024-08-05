@@ -13,6 +13,10 @@ object FileUtil {
     getExtension(f.path.getFileName.toString)
   }
 
+  def getExtension(p: Path): String = {
+    getExtension(p.getFileName.toString)
+  }
+
   def getExtension(name: String): String = {
     val lastIndex = name.lastIndexOf('.')
     if (lastIndex > 0 && lastIndex < name.length-1) {
@@ -54,6 +58,13 @@ object FileUtil {
 
   def splitPath(path: String): Iterable[String] = {
     path.split(File.separator).filterNot(_.isEmpty).filterNot(isDotDir)
+  }
+
+  def splitPath(path: Path): Iterable[String] = {
+    Option(path) match {
+      case Some(p) => splitPath(p.toString)
+      case None => Iterable.empty
+    }
   }
 
   def sepCount(path: String): Int = {

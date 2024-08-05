@@ -3,13 +3,13 @@ package ktfind
 import kotlinx.coroutines.*
 import java.io.File
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlin.io.path.extension
-import kotlin.io.path.name
+import kotlin.io.path.*
 import kotlin.streams.toList
 
 /**
@@ -32,11 +32,11 @@ class Finder(val settings: FindSettings) {
             throw FindException("Startpath not defined")
         }
         for (p in settings.paths) {
-            val pFile = File(p)
-            if (!pFile.exists()) {
+            val path = Paths.get(p)
+            if (!Files.exists(path)) {
                 throw FindException("Startpath not found")
             }
-            if (!pFile.canRead()) {
+            if (!Files.isReadable(path)) {
                 throw FindException("Startpath not readable")
             }
         }
@@ -172,7 +172,7 @@ class Finder(val settings: FindSettings) {
             if (needSize(settings)) fileSize = stat.size()
             if (needLastMod(settings)) lastMod = stat.lastModifiedTime()
         }
-        val fr = FileResult(f.toPath(), fileTypes.getFileType(f), fileSize, lastMod)
+        val fr = FileResult(f.toPath(), fileTypes.getFileType(f.toPath()), fileSize, lastMod)
         if (fr.fileType === FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
                 return fr
@@ -193,9 +193,9 @@ class Finder(val settings: FindSettings) {
         return filterToFileResult(f)
     }
 
-    private fun getFileResults(startPath: File): List<FileResult> {
+    private fun getPathFileResults(startPath: Path): List<FileResult> {
         val startPathSepCount = FileUtil.sepCount(startPath.toString())
-        return startPath.walk()
+        return startPath.toFile().walk()
             .maxDepth(if (settings.maxDepth > 0) settings.maxDepth else Int.MAX_VALUE)
             .onEnter { isMatchingDir(it) }
             .filter { it.isFile }
@@ -246,7 +246,7 @@ class Finder(val settings: FindSettings) {
                 if (Files.isDirectory(path)) {
                     // if maxDepth is zero, we can skip since a directory cannot be a result
                     if (settings.maxDepth != 0) {
-                        fileResults.addAll(getFileResults(path.toFile()))
+                        fileResults.addAll(getPathFileResults(path))
                     }
                 } else if (Files.isReadable(path)) {
                     // if minDepth > zero, we can skip since the file is at depth zero
@@ -259,7 +259,7 @@ class Finder(val settings: FindSettings) {
                         }
                     }
                 } else {
-                    throw FindException("Path is invalid file type: $p")
+                    throw FindException("Path is invalid file type: $path")
                 }
             }
         }

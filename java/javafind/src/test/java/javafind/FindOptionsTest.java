@@ -3,6 +3,7 @@ package javafind;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -46,7 +47,7 @@ public class FindOptionsTest {
             assertTrue(settings.getInExtensions().contains("java"));
             assertTrue(settings.getInExtensions().contains("scala"));
             assertEquals(1, settings.getPaths().size());
-            assertEquals(".", settings.getPaths().toArray()[0]);
+            assertEquals(Paths.get("."), settings.getPaths().toArray()[0]);
         } catch (FindException e) {
             System.out.println("FindException: " + e.getMessage());
             fail();
@@ -72,7 +73,7 @@ public class FindOptionsTest {
             findOptions.settingsFromJson(json.toString(), settings);
 
             assertEquals(1, settings.getPaths().size());
-            assertEquals("~/src/xfind/", settings.getPaths().toArray()[0]);
+            assertEquals(Paths.get("~/src/xfind/"), settings.getPaths().toArray()[0]);
 
             assertEquals(2, settings.getInExtensions().size());
             assertTrue(settings.getInExtensions().contains("js"));
