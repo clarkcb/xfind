@@ -1,5 +1,6 @@
 package ktfind
 
+import java.nio.file.Paths
 import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -10,62 +11,122 @@ import kotlin.test.assertTrue
 class FileUtilTest {
 
     /***************************************************************************
-     * isDotDir tests
+     * isDotDir Path tests
      **************************************************************************/
     @Test
-    fun testIsDotDirSingleDot() {
-        val filename = "."
-        assertTrue(FileUtil.isDotDir(filename))
+    fun testIsDotDirPathSingleDot() {
+        val path = Paths.get(".")
+        assertTrue(FileUtil.isDotDir(path))
     }
 
     @Test
-    fun testIsDotDirDoubleDot() {
-        val filename = ".."
-        assertTrue(FileUtil.isDotDir(filename))
+    fun testIsDotDirPathDoubleDot() {
+        val path = Paths.get("..")
+        assertTrue(FileUtil.isDotDir(path))
     }
 
     @Test
-    fun testIsDotDirNotDotDir() {
-        val filename = "~/path"
-        assertFalse(FileUtil.isDotDir(filename))
+    fun testIsDotDirPathNotDotDir() {
+        val path = Paths.get("~/path")
+        assertFalse(FileUtil.isDotDir(path))
     }
 
     @Test
     fun testIsDotDirPathWithDot() {
-        val filename = "./path"
-        assertFalse(FileUtil.isDotDir(filename))
+        val path = Paths.get("./path")
+        assertFalse(FileUtil.isDotDir(path))
     }
 
     @Test
-    fun testIsDotDirHiddenFile() {
-        val filename = ".gitignore"
-        assertFalse(FileUtil.isDotDir(filename))
+    fun testIsDotDirPathHidden() {
+        val path = Paths.get(".gitignore")
+        assertFalse(FileUtil.isDotDir(path))
     }
 
     /***************************************************************************
-     * isHidden tests
+     * isDotDir fileName tests
      **************************************************************************/
     @Test
-    fun testIsHiddenSingleDot() {
-        val filename = "."
-        assertFalse(FileUtil.isHidden(filename))
+    fun testIsDotDirFileNameSingleDot() {
+        val fileName = "."
+        assertTrue(FileUtil.isDotDir(fileName))
     }
 
     @Test
-    fun testIsHiddenDoubleDot() {
-        val filename = ".."
-        assertFalse(FileUtil.isHidden(filename))
+    fun testIsDotDirFileNameDoubleDot() {
+        val fileName = ".."
+        assertTrue(FileUtil.isDotDir(fileName))
     }
 
     @Test
-    fun testIsHiddenHiddenFileName() {
-        val filename = ".gitignore"
-        assertTrue(FileUtil.isHidden(filename))
+    fun testIsDotDirFileNameNotDotDir() {
+        val fileName = "~/path"
+        assertFalse(FileUtil.isDotDir(fileName))
     }
 
     @Test
-    fun testIsHiddenNotHiddenFileName() {
-        val filename = "file.txt"
-        assertFalse(FileUtil.isHidden(filename))
+    fun testIsDotDirFileNameWithDot() {
+        val fileName = "./path"
+        assertFalse(FileUtil.isDotDir(fileName))
+    }
+
+    @Test
+    fun testIsDotDirFileNameHidden() {
+        val fileName = ".gitignore"
+        assertFalse(FileUtil.isDotDir(fileName))
+    }
+
+    /***************************************************************************
+     * isHidden Path tests
+     **************************************************************************/
+    @Test
+    fun testIsHiddenPathSingleDot() {
+        val path = Paths.get(".")
+        assertFalse(FileUtil.isHidden(path))
+    }
+
+    @Test
+    fun testIsHiddenPathDoubleDot() {
+        val path = Paths.get("..")
+        assertFalse(FileUtil.isHidden(path))
+    }
+
+    @Test
+    fun testIsHiddenPathHidden() {
+        val path = Paths.get("./.gitignore")
+        assertTrue(FileUtil.isHidden(path))
+    }
+
+    @Test
+    fun testIsHiddenPathNotHidden() {
+        val path = Paths.get("./file.txt")
+        assertFalse(FileUtil.isHidden(path))
+    }
+
+    /***************************************************************************
+     * isHidden fileName tests
+     **************************************************************************/
+    @Test
+    fun testIsHiddenFileNameSingleDot() {
+        val fileName = "."
+        assertFalse(FileUtil.isHidden(fileName))
+    }
+
+    @Test
+    fun testIsHiddenFileNameDoubleDot() {
+        val fileName = ".."
+        assertFalse(FileUtil.isHidden(fileName))
+    }
+
+    @Test
+    fun testIsHiddenFileNameHidden() {
+        val fileName = ".gitignore"
+        assertTrue(FileUtil.isHidden(fileName))
+    }
+
+    @Test
+    fun testIsHiddenFileNameNotHidden() {
+        val fileName = "file.txt"
+        assertFalse(FileUtil.isHidden(fileName))
     }
 }

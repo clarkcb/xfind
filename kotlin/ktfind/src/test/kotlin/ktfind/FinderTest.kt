@@ -21,7 +21,7 @@ class FinderTest {
     fun testFilterToFileResult_IsHidden_Null() {
         val settings = getSettings()
         val finder = Finder(settings)
-        val file = File(".gitignore")
+        val file = Paths.get(".gitignore")
         assertNull(finder.filterToFileResult(file))
     }
 
@@ -29,7 +29,7 @@ class FinderTest {
     fun testFilterToFileResult_IsHiddenIncludeHidden_NotNull() {
         val settings = getSettings().copy(includeHidden = true)
         val finder = Finder(settings)
-        val file = File(".gitignore")
+        val file = Paths.get(".gitignore")
         assertNotNull(finder.filterToFileResult(file))
     }
 
@@ -37,7 +37,7 @@ class FinderTest {
     fun testFilterToFileResult_ArchiveNoIncludeArchives_Null() {
         val settings = getSettings()
         val finder = Finder(settings)
-        val file = File("archive.zip")
+        val file = Paths.get("archive.zip")
         val fileResult = finder.filterToFileResult(file)
         assertNull(fileResult)
     }
@@ -46,7 +46,7 @@ class FinderTest {
     fun testFilterToFileResult_ArchiveIncludeArchives_NotNull() {
         val settings = getSettings().copy(includeArchives = true)
         val finder = Finder(settings)
-        val file = File("archive.zip")
+        val file = Paths.get("archive.zip")
         assertNotNull(finder.filterToFileResult(file))
     }
 
@@ -54,7 +54,7 @@ class FinderTest {
     fun testFilterToFileResult_IsMatchingArchiveFile_NotNull() {
         val settings = getSettings().copy(includeArchives = true, inArchiveExtensions = setOf("zip"))
         val finder = Finder(settings)
-        val file = File("archive.zip")
+        val file = Paths.get("archive.zip")
         assertNotNull(finder.filterToFileResult(file))
     }
 
@@ -62,7 +62,7 @@ class FinderTest {
     fun testFilterToFileResult_NotIsMatchingArchiveFile_Null() {
         val settings = getSettings().copy(outExtensions = setOf("zip"))
         val finder = Finder(settings)
-        val file = File("archive.zip")
+        val file = Paths.get("archive.zip")
         assertNull(finder.filterToFileResult(file))
     }
 
@@ -70,7 +70,7 @@ class FinderTest {
     fun testFilterToFileResult_ArchiveFileArchivesOnly_NotNull() {
         val settings = getSettings().copy(archivesOnly = true)
         val finder = Finder(settings)
-        val file = File("archive.zip")
+        val file = Paths.get("archive.zip")
         assertNotNull(finder.filterToFileResult(file))
     }
 
@@ -78,7 +78,7 @@ class FinderTest {
     fun testFilterToFileResult_NoExtensionsNoPatterns_NotNull() {
         val settings = getSettings()
         val finder = Finder(settings)
-        val file = File("FileUtil.cs")
+        val file = Paths.get("FileUtil.cs")
         assertNotNull(finder.filterToFileResult(file))
     }
 
@@ -86,7 +86,7 @@ class FinderTest {
     fun testFilterToFileResult_IsMatchingFile_NotNull() {
         val settings = getSettings().copy(inExtensions = setOf("cs"))
         val finder = Finder(settings)
-        val file = File("FileUtil.cs")
+        val file = Paths.get("FileUtil.cs")
         assertNotNull(finder.filterToFileResult(file))
     }
 
@@ -94,7 +94,7 @@ class FinderTest {
     fun testFilterToFileResult_NotIsMatchingFile_Null() {
         val settings = getSettings().copy(outExtensions = setOf("cs"))
         val finder = Finder(settings)
-        val file = File("FileUtil.cs")
+        val file = Paths.get("FileUtil.cs")
         assertNull(finder.filterToFileResult(file))
     }
 
@@ -102,7 +102,7 @@ class FinderTest {
     fun testFilterToFileResult_NonArchiveFileArchivesOnly_Null() {
         val settings = getSettings().copy(archivesOnly = true)
         val finder = Finder(settings)
-        val file = File("FileUtil.cs")
+        val file = Paths.get("FileUtil.cs")
         assertNull(finder.filterToFileResult(file))
     }
 
@@ -113,63 +113,63 @@ class FinderTest {
     fun testIsMatchingDir_SingleDot_True() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(File(".")))
+        assertTrue(finder.isMatchingDir(Paths.get(".")))
     }
 
     @Test
     fun testIsMatchingDir_DoubleDot_True() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(File("..")))
+        assertTrue(finder.isMatchingDir(Paths.get("..")))
     }
 
     @Test
     fun testIsMatchingDir_IsHidden_False() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertFalse(finder.isMatchingDir(File(".git")))
+        assertFalse(finder.isMatchingDir(Paths.get(".git")))
     }
 
     @Test
     fun testIsMatchingDir_IsHiddenIncludeHidden_True() {
         val settings = getSettings().copy(includeHidden = true)
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(File(".git")))
+        assertTrue(finder.isMatchingDir(Paths.get(".git")))
     }
 
     @Test
     fun testIsMatchingDir_NoPatterns_True() {
         val settings = getSettings()
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(File("/Users")))
+        assertTrue(finder.isMatchingDir(Paths.get("/Users")))
     }
 
     @Test
     fun testIsMatchingDir_MatchesInPattern_True() {
         val settings = getSettings().copy(inDirPatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
-        assertTrue(finder.isMatchingDir(File("CsFind")))
+        assertTrue(finder.isMatchingDir(Paths.get("CsFind")))
     }
 
     @Test
     fun testIsMatchingDir_MatchesOutPattern_False() {
         val settings = getSettings().copy(outDirPatterns = setOf(Regex("Find")))
         val finder = Finder(settings)
-        assertFalse(finder.isMatchingDir(File("CsFind")))
+        assertFalse(finder.isMatchingDir(Paths.get("CsFind")))
     }
 
     @Test
     fun testIsMatchingDir_DoesNotMatchInPattern_False() {
         val settings = getSettings().copy(inDirPatterns = setOf(Regex("FindFiles")))
         val finder = Finder(settings)
-        assertFalse(finder.isMatchingDir(File("CsFind")))
+        assertFalse(finder.isMatchingDir(Paths.get("CsFind")))
     }
 
     @Test
     fun testIsMatchingDir_DoesNotMatchOutPattern_True() {
         val settings = getSettings().copy(outDirPatterns = setOf(Regex("FindFiles")))
         val finder = Finder(settings)
-        val dir = File("CsFind")
+        val dir = Paths.get("CsFind")
         assertTrue(finder.isMatchingDir(dir))
     }
 

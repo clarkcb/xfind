@@ -11,7 +11,9 @@ Class to find matching files
 package javafind;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.time.Instant;
@@ -21,7 +23,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 
 public class Finder {
@@ -70,6 +71,10 @@ public class Finder {
     }
 
     boolean isMatchingDir(final Path path) {
+        // null or empty path is a match
+        if (null == path || path.toString().isEmpty()) {
+            return true;
+        }
         if (!settings.getIncludeHidden()) {
             try {
                 // This erroneously returns true for . and ..
@@ -231,6 +236,45 @@ public class Finder {
         }
     }
 
+    private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
+        List<FileResult> pathResults = new ArrayList<>();
+        if (maxDepth > -1 && currentDepth > maxDepth) {
+            return pathResults;
+        }
+        List<Path> pathDirs = new ArrayList<>();
+        try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
+            for (Path path : pathContents) {
+                if (Files.isDirectory(path) && isMatchingDir(path)) {
+                    pathDirs.add(path);
+                } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
+                    Optional<FileResult> optFileResult = filterToFileResult(path);
+                    optFileResult.ifPresent(pathResults::add);
+                }
+            }
+            for (Path pathDir : pathDirs) {
+                pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1));
+            }
+        } catch (IOException e) {
+            Logger.logError(e.getMessage());
+        }
+        return pathResults;
+    }
+
+    private List<FileResult> findPath(final Path filePath) {
+        if (Files.isDirectory(filePath)) {
+            if (settings.getRecursive()) {
+                return recFindPath(filePath, settings.getMinDepth(), settings.getMaxDepth(), 1);
+            }
+            return recFindPath(filePath, settings.getMinDepth(), 1, 1);
+        } else if (Files.isRegularFile(filePath)) {
+            Optional<FileResult> optFileResult = filterToFileResult(filePath);
+            if (optFileResult.isPresent()) {
+                return List.of(optFileResult.get());
+            }
+        }
+        return new ArrayList<>();
+    }
+
     public final List<FileResult> find() throws FindException {
         List<FileResult> fileResults = new ArrayList<>();
 
@@ -256,9 +300,8 @@ public class Finder {
             } else if (Files.isRegularFile(path)) {
                 // if minDepth > zero, we can skip since the file is at depth zero
                 if (settings.getMinDepth() <= 0) {
-                    Optional<FileResult> optFileResult = filterToFileResult(path);
-                    if (optFileResult.isPresent()) {
-                        fileResults.add(optFileResult.get());
+                    if (isMatchingDir(path.getParent())) {
+                        futures.add(executorService.submit(() -> findPath(path)));
                     } else {
                         throw new FindException("Startpath does not match find settings");
                     }
@@ -280,86 +323,5 @@ public class Finder {
 
         sortFileResults(fileResults);
         return fileResults;
-    }
-
-    private static class FindFileResultsVisitor extends SimpleFileVisitor<Path> {
-        Function<Path, Boolean> filterDir;
-        Function<Path, Optional<FileResult>> filterToFileResult;
-        List<FileResult> fileResults;
-
-        FindFileResultsVisitor(final Function<Path, Boolean> filterDir,
-                               final Function<Path, Optional<FileResult>> filterToFileResult) {
-            super();
-            this.filterDir = filterDir;
-            this.filterToFileResult = filterToFileResult;
-            fileResults = new ArrayList<>();
-        }
-
-        @Override
-        public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-            Objects.requireNonNull(dir);
-            Objects.requireNonNull(attrs);
-            if (filterDir.apply(dir)) {
-                return FileVisitResult.CONTINUE;
-            }
-            return FileVisitResult.SKIP_SUBTREE;
-        }
-
-        @Override
-        public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-            Objects.requireNonNull(path);
-            Objects.requireNonNull(attrs);
-            if (attrs.isRegularFile()) {
-                Optional<FileResult> optFileResult = filterToFileResult.apply(path);
-                optFileResult.ifPresent(fileResult -> fileResults.add(fileResult));
-            }
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult visitFileFailed(Path path, IOException exc) {
-            System.err.println(exc.getMessage());
-            return FileVisitResult.CONTINUE;
-        }
-
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            if (exc != null)
-                throw exc;
-            return FileVisitResult.CONTINUE;
-        }
-    }
-
-    private boolean filterDir(final Path dirPath, long startPathSepCount) {
-        if (dirPath == null) return true;
-        var pathSepCount = FileUtil.getSepCount(dirPath);
-        var depth = (int)(pathSepCount - startPathSepCount);
-        return (settings.getMaxDepth() < 1 || depth <= settings.getMaxDepth())
-                && isMatchingDir(dirPath);
-    }
-
-    private Optional<FileResult> filterFile(final Path filePath, long startPathSepCount) {
-        var pathSepCount = FileUtil.getSepCount(filePath);
-        var depth = (int)(pathSepCount - startPathSepCount);
-        if (depth < settings.getMinDepth() || (settings.getMaxDepth() > 0 && depth > settings.getMaxDepth())) {
-            return Optional.empty();
-        }
-        return filterToFileResult(filePath);
-    }
-
-    private List<FileResult> findPath(final Path filePath) {
-        var filePathSepCount = FileUtil.getSepCount(filePath);
-        Function<Path, Boolean> filterDirFunc = (dirPath) -> filterDir(dirPath, filePathSepCount);
-        Function<Path, Optional<FileResult>> filterFileFunc = (path) -> filterFile(path, filePathSepCount);
-        var findFileResultsVisitor = new FindFileResultsVisitor(filterDirFunc, filterFileFunc);
-
-        // walk file tree to find files
-        try {
-            Files.walkFileTree(filePath, findFileResultsVisitor);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return findFileResultsVisitor.fileResults;
     }
 }

@@ -1,6 +1,7 @@
 package ktfind
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -9,7 +10,8 @@ import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.time.ZoneOffset
-import kotlin.io.path.*
+import kotlin.io.path.extension
+import kotlin.io.path.name
 import kotlin.streams.toList
 
 /**
@@ -81,11 +83,22 @@ class Finder(val settings: FindSettings) {
         return patternSet.any { p -> p.containsMatchIn(s) }
     }
 
-    fun isMatchingDir(d: File): Boolean {
-        val pathElems = d.path.split(File.separatorChar)
-        if (!settings.includeHidden && pathElems.any { FileUtil.isHidden(it) }) {
-            return false
+    fun isMatchingDir(path: Path?): Boolean {
+        // null or empty path is a match
+        if (path == null || path.toString().isEmpty()) {
+            return true
         }
+        if (!settings.includeHidden) {
+            try {
+                if (FileUtil.isHidden(path)) {
+                    return false
+                }
+            } catch (e: Exception) {
+                logError(e.message!!)
+                return false
+            }
+        }
+        val pathElems = FileUtil.splitPath(path)
         return (settings.inDirPatterns.isEmpty()
                 || anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
                 &&
@@ -158,21 +171,32 @@ class Finder(val settings: FindSettings) {
                 && isMatchingArchiveFileName(fr.path.name)
     }
 
-    fun filterToFileResult(f: File): FileResult? {
-        if (!settings.includeHidden && f.isHidden) {
-            return null
+    fun filterToFileResult(p: Path): FileResult? {
+        if (!settings.includeHidden) {
+            try {
+                if (Files.isHidden(p)) {
+                    return null
+                }
+            } catch (e: Exception) {
+                logError(e.message!!)
+                return null
+            }
         }
+
         var fileSize = 0L
         var lastMod: FileTime? = null
         if (needLastMod(settings) || needSize(settings)) {
-            if (!f.canRead()) {
+            try {
+                val stat: BasicFileAttributes = Files.readAttributes(p, BasicFileAttributes::class.java)
+                if (needSize(settings)) fileSize = stat.size()
+                if (needLastMod(settings)) lastMod = stat.lastModifiedTime()
+            } catch (e: Exception) {
+                logError(e.message!!)
                 return null
             }
-            val stat: BasicFileAttributes = Files.readAttributes(f.toPath(), BasicFileAttributes::class.java)
-            if (needSize(settings)) fileSize = stat.size()
-            if (needLastMod(settings)) lastMod = stat.lastModifiedTime()
         }
-        val fr = FileResult(f.toPath(), fileTypes.getFileType(f.toPath()), fileSize, lastMod)
+
+        val fr = FileResult(p, fileTypes.getFileType(p), fileSize, lastMod)
         if (fr.fileType === FileType.ARCHIVE) {
             if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
                 return fr
@@ -183,24 +207,6 @@ class Finder(val settings: FindSettings) {
             return fr
         }
         return null
-    }
-
-    // NOTE: we only look at minDepth here since maxDepth can be specified in FileTreeWalk
-    private fun filterFile(f: File, startPathSepCount: Long): FileResult? {
-        val fileSepCount = FileUtil.sepCount(f.toString())
-        val depth = (fileSepCount - startPathSepCount).toInt()
-        if (depth < settings.minDepth) return null
-        return filterToFileResult(f)
-    }
-
-    private fun getPathFileResults(startPath: Path): List<FileResult> {
-        val startPathSepCount = FileUtil.sepCount(startPath.toString())
-        return startPath.toFile().walk()
-            .maxDepth(if (settings.maxDepth > 0) settings.maxDepth else Int.MAX_VALUE)
-            .onEnter { isMatchingDir(it) }
-            .filter { it.isFile }
-            .mapNotNull { filterFile(it, startPathSepCount) }
-            .toList()
     }
 
     private fun sortFileResults(fileResults: List<FileResult>): List<FileResult> {
@@ -239,6 +245,50 @@ class Finder(val settings: FindSettings) {
         return sortedFileResults.toList()
     }
 
+    private fun recFindPath(filePath: Path, minDepth: Int, maxDepth: Int, currentDepth: Int): List<FileResult> {
+        if (maxDepth > -1 && currentDepth > maxDepth) {
+            return emptyList()
+        }
+        val pathDirs: MutableList<Path> = mutableListOf()
+        val pathResults: MutableList<FileResult> = mutableListOf()
+        try {
+            Files.newDirectoryStream(filePath).use { stream ->
+                stream.forEach {
+                    if (Files.isDirectory(it) && isMatchingDir(it)) {
+                        pathDirs.add(it)
+                    } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {
+                        val fr = filterToFileResult(it)
+                        if (fr != null) {
+                            pathResults.add(fr)
+                        }
+                    }
+                }
+                pathDirs.forEach {
+                    pathResults.addAll(recFindPath(it, minDepth, maxDepth, currentDepth + 1))
+                }
+            }
+        } catch (e: Exception) {
+            return emptyList()
+        }
+
+        return pathResults
+    }
+
+    private fun findPath(filePath: Path): List<FileResult> {
+        if (Files.isDirectory(filePath)) {
+            if (settings.recursive) {
+                return recFindPath(filePath, settings.minDepth, settings.maxDepth, 1)
+            }
+            return recFindPath(filePath, settings.minDepth, 1, 1)
+        } else if (Files.isRegularFile(filePath)) {
+            val fr = filterToFileResult(filePath)
+            if (fr != null) {
+                return listOf(fr)
+            }
+        }
+        return emptyList()
+    }
+
     private fun findAsync(fileResults: MutableList<FileResult>): Unit = runBlocking {
         for (p in settings.paths) {
             launch {
@@ -246,14 +296,17 @@ class Finder(val settings: FindSettings) {
                 if (Files.isDirectory(path)) {
                     // if maxDepth is zero, we can skip since a directory cannot be a result
                     if (settings.maxDepth != 0) {
-                        fileResults.addAll(getPathFileResults(path))
+                        if (isMatchingDir(path)) {
+                            fileResults.addAll(findPath(path))
+                        } else {
+                            throw FindException("Startpath does not match find settings")
+                        }
                     }
                 } else if (Files.isReadable(path)) {
                     // if minDepth > zero, we can skip since the file is at depth zero
                     if (settings.minDepth <= 0) {
-                        val fr = filterToFileResult(path.toFile())
-                        if (fr != null) {
-                            fileResults.add(fr)
+                        if (isMatchingDir(path.parent)) {
+                            fileResults.addAll(findPath(path))
                         } else {
                             throw FindException("Startpath does not match find settings")
                         }

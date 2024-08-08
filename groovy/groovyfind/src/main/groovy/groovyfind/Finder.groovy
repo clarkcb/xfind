@@ -2,12 +2,13 @@ package groovyfind
 
 import groovy.transform.CompileStatic
 
-import java.nio.file.*
+import java.nio.file.DirectoryStream
+import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.time.ZoneOffset
-import java.util.function.Function
 import java.util.regex.Pattern
 
 @CompileStatic
@@ -57,6 +58,10 @@ class Finder {
     }
 
     boolean isMatchingDir(final Path path) {
+        // null or empty path is a match
+        if (null == path || path.toString().isEmpty()) {
+            return true;
+        }
         if (!settings.includeHidden) {
             try {
                 // This erroneously returns true for . and ..
@@ -213,8 +218,56 @@ class Finder {
         }
     }
 
+    private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
+        def pathResults = new ArrayList<FileResult>()
+        if (maxDepth > -1 && currentDepth > maxDepth) {
+            return pathResults
+        }
+        def pathDirs = new ArrayList<Path>();
+        try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
+            for (Path path : pathContents) {
+                if (Files.isDirectory(path) && isMatchingDir(path)) {
+                    pathDirs.add(path)
+                } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
+                    Optional<FileResult> optFileResult = filterToFileResult(path)
+                    optFileResult.ifPresent(pathResults::add)
+                }
+            }
+            for (Path pathDir : pathDirs) {
+                pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1))
+            }
+        } catch (IOException e) {
+            e.printStackTrace()
+        }
+        return pathResults
+    }
+
+    private List<FileResult> findPath(final Path filePath) {
+        if (Files.isDirectory(filePath)) {
+            if (settings.getRecursive()) {
+                return recFindPath(filePath, settings.getMinDepth(), settings.getMaxDepth(), 1)
+            }
+            return recFindPath(filePath, settings.getMinDepth(), 1, 1)
+        } else if (Files.isRegularFile(filePath)) {
+            Optional<FileResult> optFileResult = filterToFileResult(filePath);
+            if (optFileResult.isPresent()) {
+                return List.of(optFileResult.get())
+            }
+        }
+        return new ArrayList<>();
+    }
+
     final List<FileResult> find() throws FindException {
         List<FileResult> fileResults = []
+
+        // The Futures way - not working, "ERROR: null"
+//        ExecutorService executorService
+//        if (settings.getPaths().size() == 1) {
+//            executorService = Executors.newSingleThreadExecutor()
+//        } else {
+//            executorService = Executors.newFixedThreadPool(settings.getPaths().size())
+//        }
+//        List<Future<List<FileResult>>> futures = new ArrayList<>()
 
         settings.paths.each { path ->
             if (Files.isDirectory(path)) {
@@ -223,6 +276,7 @@ class Finder {
                     if (isMatchingDir(path)) {
                         // TODO: the findPath call is returning results, but for some reason the future result is null
                         fileResults.addAll(findPath(path))
+//                        futures.add(executorService.submit{findPath(path)} as Future<List<FileResult>>)
                     } else {
                         throw new FindException('Startpath does not match find settings')
                     }
@@ -230,9 +284,10 @@ class Finder {
             } else if (Files.isRegularFile(path)) {
                 // if minDepth > zero, we can skip since the file is at depth zero
                 if (settings.minDepth <= 0) {
-                    Optional<FileResult> optFileResult = filterToFileResult(path)
-                    if (optFileResult.isPresent()) {
-                        fileResults.add(optFileResult.get())
+                    if (isMatchingDir(path.getParent())) {
+                        // TODO: the findPath call is returning results, but for some reason the future result is null
+                        fileResults.addAll(findPath(path))
+//                        futures.add(executorService.submit{findPath(path)} as Future<List<FileResult>>)
                     } else {
                         throw new FindException('Startpath does not match find settings')
                     }
@@ -242,89 +297,17 @@ class Finder {
             }
         }
 
+//        futures.each { future ->
+//            try {
+//                fileResults.addAll(future.get())
+//            } catch (Exception e) {
+//                Logger.logError(e.message)
+//            }
+//        }
+//
+//        executorService.shutdown()
+
         sortFileResults(fileResults)
         return fileResults
-    }
-
-    private static class FindFileResultsVisitor extends SimpleFileVisitor<Path> {
-        Function<Path, Boolean> filterDir
-        Function<Path, Optional<FileResult>> filterToFileResult
-        List<FileResult> fileResults
-
-        FindFileResultsVisitor(final Function<Path, Boolean> filterDir,
-                               final Function<Path, Optional<FileResult>> filterToFileResult) {
-            super()
-            this.filterDir = filterDir
-            this.filterToFileResult = filterToFileResult
-            fileResults = []
-        }
-
-        @Override
-        FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {
-            Objects.requireNonNull(dir)
-            Objects.requireNonNull(attrs)
-            if (filterDir.apply(dir)) {
-                return FileVisitResult.CONTINUE
-            }
-            return FileVisitResult.SKIP_SUBTREE
-        }
-
-        @Override
-        FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
-            Objects.requireNonNull(path)
-            Objects.requireNonNull(attrs)
-            if (attrs.isRegularFile()) {
-                Optional<FileResult> optFileResult = filterToFileResult.apply(path)
-                optFileResult.ifPresent(fileResult -> fileResults.add(fileResult))
-            }
-            return FileVisitResult.CONTINUE
-        }
-
-        @Override
-        FileVisitResult visitFileFailed(Path path, IOException exc) {
-            System.err.println(exc.message)
-            return FileVisitResult.CONTINUE
-        }
-
-        @Override
-        FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-            if (exc != null) {
-                throw exc
-            }
-            return FileVisitResult.CONTINUE
-        }
-    }
-
-    private boolean filterDir(final Path dirPath, long startPathSepCount) {
-        if (dirPath == null) { return true }
-        def pathSepCount = FileUtil.getSepCount(dirPath)
-        def depth = (int)(pathSepCount - startPathSepCount)
-        return (settings.maxDepth < 1 || depth <= settings.maxDepth)
-                && isMatchingDir(dirPath)
-    }
-
-    private Optional<FileResult> filterFile(final Path filePath, long startPathSepCount) {
-        def pathSepCount = FileUtil.getSepCount(filePath)
-        def depth = (int)(pathSepCount - startPathSepCount)
-        if (depth < settings.minDepth || (settings.maxDepth > 0 && depth > settings.maxDepth)) {
-            return Optional.empty()
-        }
-        return filterToFileResult(filePath)
-    }
-
-    private List<FileResult> findPath(final Path filePath) {
-        def filePathSepCount = FileUtil.getSepCount(filePath)
-        Function<Path, Boolean> filterDirFunc = { Path dirPath -> filterDir(dirPath, filePathSepCount) }
-        Function<Path, Optional<FileResult>> filterFileFunc = { Path path -> filterFile(path, filePathSepCount) }
-        def findFileResultsVisitor = new FindFileResultsVisitor(filterDirFunc, filterFileFunc)
-
-        // walk file tree to find files
-        try {
-            Files.walkFileTree(filePath, findFileResultsVisitor)
-        } catch (IOException e) {
-            e.printStackTrace()
-        }
-
-        return findFileResultsVisitor.fileResults
     }
 }
