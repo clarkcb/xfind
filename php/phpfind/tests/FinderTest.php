@@ -341,7 +341,7 @@ class FinderTest extends TestCase
         $this->assertTrue($finder->filter_to_file_result('.', $file) != null);
     }
 
-    public function test_filter_to_file_result_nonarchive_archives_only(): void
+    public function test_filter_to_file_result_non_archive_archives_only(): void
     {
         $settings = $this->get_settings();
         $settings->archives_only = true;

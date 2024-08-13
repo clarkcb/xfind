@@ -100,10 +100,7 @@ class FileUtil
     public static function split_path(string $path): array
     {
         $sep = self::get_separator($path);
-        if ($sep == '/') {
-            $sep = '\\/';
-        }
-        return preg_split("/$sep/", $path);
+        return explode($sep, $path);
     }
 
     /**
@@ -112,13 +109,9 @@ class FileUtil
      */
     public static function split_to_path_and_filename(string $file_path): array
     {
-        $elems = self::split_path($file_path);
-        $file_name = $elems[count($elems)-1];
-        $file_path = '.';
-        if (count($elems) > 1) {
-            array_pop($elems);
-            $file_path = implode(['/'], $elems);
-        }
-        return [$file_path, $file_name];
+        $dir_name = pathinfo($file_path, PATHINFO_DIRNAME);
+        $file_name = pathinfo($file_path, PATHINFO_BASENAME);
+        if (!$dir_name) $dir_name = '.';
+        return [$dir_name, $file_name];
     }
 }
