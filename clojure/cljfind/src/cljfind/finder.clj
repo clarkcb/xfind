@@ -200,34 +200,25 @@
       (not (:include-hidden settings))
       (hidden-file? f))
     nil
-    (let [file-type (get-file-type f)
-          stat (if (or (need-last-mod settings) (need-size settings)) (get-stat f) nil)
-          file-size (if (need-size settings) (.size stat) 0)
-          last-mod (if (need-last-mod settings) (.lastModifiedTime stat) nil)
-          fr (new-file-result f file-type file-size last-mod)]
-      (if
-        (= :archive file-type)
-        (if
-          (or
-            (not (:include-archives settings))
-            (not (is-matching-archive-file-result? fr settings)))
-          nil
-          fr)
-        (if
-          (or
-           (:archives-only settings)
-           (not (is-matching-file-result? fr settings)))
-          nil
-          fr)))))
-
-(defn filter-file-by-depth [^File f path-sep-count ^FindSettings settings]
-  (let [file-sep-count (sep-count (.toString f))
-        depth (- file-sep-count path-sep-count)]
-    (and
-      (>= depth (:min-depth settings))
-      (or
-        (< (:max-depth settings) 1)
-        (<= depth (:max-depth settings))))))
+    (let [file-type (get-file-type f)]
+      (if (and (= :archive file-type) (not (:include-archives settings)) (not (:archives-only settings)))
+        nil
+        (let [stat (if (or (need-last-mod settings) (need-size settings)) (get-stat f) nil)
+              file-size (if (need-size settings) (.size stat) 0)
+              last-mod (if (need-last-mod settings) (.lastModifiedTime stat) nil)
+              fr (new-file-result f file-type file-size last-mod)]
+          (if
+            (= :archive file-type)
+            (if
+              (is-matching-archive-file-result? fr settings)
+              fr
+              nil)
+            (if
+              (and
+                (not (:archives-only settings))
+                (is-matching-file-result? fr settings))
+              fr
+              nil)))))))
 
 (defn get-file-results-under-path
   [^FindSettings settings, ^File path-file ^Integer min-depth ^Integer max-depth ^Integer current-depth]
@@ -237,7 +228,8 @@
       (> current-depth max-depth))
     []
     (let [path-elems (.listFiles path-file)
-          path-dirs (filter #(is-matching-dir? % settings) (filter #(.isDirectory %) path-elems))
+          recurse (or (= max-depth -1) (< current-depth max-depth))
+          path-dirs (if recurse (filter #(is-matching-dir? % settings) (filter #(.isDirectory %) path-elems)) [])
           path-files (if (and (> min-depth -1) (< current-depth min-depth)) [] (filter #(.isFile %) path-elems))
           path-results (filter #(not (nil? %)) (map #(filter-to-file-result % settings) path-files))
           next-depth (inc current-depth)]
