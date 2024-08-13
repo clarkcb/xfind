@@ -28,7 +28,18 @@ impl FileUtil {
         dir_name == "." || dir_name == "./" || dir_name == ".." || dir_name == "../"
     }
 
-    /// Check whether a file path is for a hidden dir/file
+    /// Check whether a Path is for a hidden dir/file
+    pub fn is_hidden_path(file_path: &Path) -> bool {
+        for elem in file_path.iter() {
+            let elem_string = elem.to_str().unwrap().to_string();
+            if elem_string.starts_with('.') && !FileUtil::is_dot_dir(&elem_string) {
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Check whether a str file path is for a hidden dir/file
     ///
     /// # Examples
     ///
@@ -38,13 +49,7 @@ impl FileUtil {
     /// assert!(!FileUtil::is_dot_dir("temp"));
     /// ```
     pub fn is_hidden(file_path: &str) -> bool {
-        for elem in Path::new(file_path).iter() {
-            let elem_string = elem.to_str().unwrap().to_string();
-            if elem_string.starts_with('.') && !FileUtil::is_dot_dir(&elem_string) {
-                return true;
-            }
-        }
-        false
+        Self::is_hidden_path(Path::new(file_path))
     }
 
     /// Expand a file path if it starts with tilde

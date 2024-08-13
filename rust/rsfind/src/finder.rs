@@ -1,15 +1,16 @@
 use std::collections::HashSet;
 use std::fs;
 use std::io;
+use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use regex::Regex;
 use walkdir::WalkDir;
 
+use crate::fileresult::FileResult;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
-use crate::fileresult::FileResult;
 use crate::findsettings::FindSettings;
 use crate::sortby::SortBy;
 
@@ -76,11 +77,12 @@ impl Finder {
         strings.iter().any(|s| s == string)
     }
 
-    fn matches_any_pattern(&self, s: &String, patterns: &[Regex]) -> bool {
+    fn matches_any_pattern(&self, s: &str, patterns: &[Regex]) -> bool {
         patterns.iter().any(|p| p.is_match(s))
     }
 
-    fn is_matching_dir(&self, dir: &String) -> bool {
+    fn is_matching_dir(&self, dir: &str) -> bool {
+        // TODO: verify check for hidden elsewhere
         if !self.settings.include_hidden() && FileUtil::is_hidden(&dir) {
             return false;
         }
@@ -90,62 +92,36 @@ impl Finder {
                 || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns()))
     }
 
-    fn is_matching_extension(&self, ext: &str, in_extensions: &Vec<String>,
-                             out_extensions: &Vec<String>) -> bool {
-        (in_extensions.is_empty()
-            || self.matches_any_string(ext, &in_extensions))
-            && (out_extensions.is_empty()
-            || !self.matches_any_string(ext, &out_extensions))
+    fn is_matching_archive_extension(&self, ext: &str) -> bool {
+        (self.settings.in_archive_extensions().is_empty()
+            || self.matches_any_string(ext, &self.settings.in_archive_extensions()))
+            && (self.settings.out_archive_extensions().is_empty()
+            || !self.matches_any_string(ext, &self.settings.out_archive_extensions()))
     }
 
-    fn has_matching_archive_extension(&self, file_result: &FileResult) -> bool {
-        if !self.settings.in_archive_extensions().is_empty()
-            || !self.settings.out_archive_extensions().is_empty() {
-            return match FileUtil::get_extension(&file_result.file_name) {
-                Some(ext) => {
-                    self.is_matching_extension(ext, self.settings.in_archive_extensions(),
-                                               self.settings.out_archive_extensions())
-                },
-                None => {
-                    self.settings.in_extensions().is_empty()
-                },
-            }
+    fn is_matching_extension(&self, ext: &str) -> bool {
+        (self.settings.in_extensions().is_empty()
+            || self.matches_any_string(ext, &self.settings.in_extensions()))
+            && (self.settings.out_extensions().is_empty()
+            || !self.matches_any_string(ext, &self.settings.out_extensions()))
+    }
+
+    fn is_matching_archive_file_name(&self, file_name: &str) -> bool {
+        (self.settings.in_archive_file_patterns().is_empty()
+            || self.matches_any_pattern(&file_name, &self.settings.in_archive_file_patterns()))
+            && (self.settings.out_archive_file_patterns().is_empty()
+            || !self.matches_any_pattern(&file_name, &self.settings.out_archive_file_patterns()))
+    }
+
+    fn is_matching_file_name(&self, file_name: &str) -> bool {
+        // TODO: verify check for hidden elsewhere
+        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_name) {
+            return false;
         }
-        return true
-    }
-
-    fn has_matching_extension(&self, file_result: &FileResult) -> bool {
-        if !self.settings.in_extensions().is_empty()
-            || !self.settings.out_extensions().is_empty() {
-            return match FileUtil::get_extension(&file_result.file_name) {
-                Some(ext) => {
-                    self.is_matching_extension(ext, self.settings.in_extensions(),
-                                               self.settings.out_extensions())
-                },
-                None => {
-                    self.settings.in_extensions().is_empty()
-                },
-            }
-        }
-        return true
-    }
-
-    fn is_matching_file_name(&self, file_name: &String, in_patterns: &Vec<Regex>,
-                             out_patterns: &Vec<Regex>) -> bool {
-        (in_patterns.is_empty()
-            || self.matches_any_pattern(&file_name, &in_patterns))
-            && (out_patterns.is_empty()
-            || !self.matches_any_pattern(&file_name, &out_patterns))
-    }
-
-    fn has_matching_archive_file_name(&self, file_result: &FileResult) -> bool {
-        self.is_matching_file_name(&file_result.file_name, self.settings.in_archive_file_patterns(),
-                                   self.settings.out_archive_file_patterns())
-    }
-
-    fn has_matching_file_name(&self, file_result: &FileResult) -> bool {
-        self.is_matching_file_name(&file_result.file_name, self.settings.in_file_patterns(),
-                                   self.settings.out_file_patterns())
+        (self.settings.in_file_patterns().is_empty()
+            || self.matches_any_pattern(&file_name, &self.settings.in_file_patterns()))
+            && (self.settings.out_file_patterns().is_empty()
+            || !self.matches_any_pattern(&file_name, &self.settings.out_file_patterns()))
     }
 
     fn is_matching_file_type(&self, file_type: &FileType) -> bool {
@@ -165,59 +141,96 @@ impl Finder {
             && (self.settings.min_last_mod() == 0 || last_mod >= &self.settings.min_last_mod())
     }
 
-    fn is_matching_archive_file_result(&self, file_result: &FileResult) -> bool {
-        if !self.is_matching_dir(&file_result.path) {
-            return false;
+    fn filter_path_to_file_result(&self, file_path: &Path) -> Option<FileResult> {
+        if !self.settings.include_hidden() && FileUtil::is_hidden_path(file_path) {
+            return None;
         }
-        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
-            return false;
-        }
-
-        self.has_matching_archive_extension(file_result) &&
-            self.has_matching_archive_file_name(file_result)
+        let file_type = self.file_types.get_file_type_for_path(&file_path);
+        let (file_size, last_mod) =
+            if self.settings.need_last_mod() || self.settings.need_size() {
+                match file_path.metadata() {
+                    Ok(metadata) => {
+                        let fs = if self.settings.need_size() { metadata.len() } else { 0u64 };
+                        let lm = if self.settings.need_last_mod() {
+                            match metadata.modified() {
+                                Ok(m) => {
+                                    match m.duration_since(SystemTime::UNIX_EPOCH) {
+                                        Ok(d) => d.as_secs(),
+                                        Err(_) => 0u64
+                                    }
+                                }
+                                Err(_) => 0u64
+                            }
+                        } else {
+                            0u64
+                        };
+                        (fs, lm)
+                    }
+                    Err(_) => (0u64, 0u64)
+                }
+            } else {
+                (0u64, 0u64)
+            };
+        self.filter_to_file_result(file_path, &file_type, file_size, last_mod)
     }
 
-    fn is_matching_file_result(&self, file_result: &FileResult) -> bool {
-        if !self.is_matching_dir(&file_result.path) {
-            return false;
+    fn filter_to_file_result(&self, file_path: &Path, file_type: &FileType, file_size: u64, last_mod: u64) -> Option<FileResult> {
+        if !self.settings.include_hidden() && FileUtil::is_hidden_path(file_path) {
+            return None;
         }
-        if !self.settings.include_hidden() && FileUtil::is_hidden(&file_result.file_name) {
-            return false;
+        let parent = match file_path.parent() {
+            Some(p) => String::from(p.to_str()?),
+            None => String::from(".")
+        };
+        if !self.is_matching_dir(&parent) {
+            return None;
         }
-
-        self.has_matching_extension(file_result) &&
-            self.has_matching_file_name(file_result) &&
-            self.is_matching_file_type(&file_result.file_type) &&
-            self.is_matching_file_size(&file_result.file_size) &&
-            self.is_matching_last_mod(&file_result.last_mod)
-    }
-
-    fn filter_file_result(&self, file_result: &FileResult) -> bool {
-        if file_result.file_type == FileType::Archive {
-            return self.settings.include_archives()
-                && self.is_matching_archive_file_result(file_result);
+        let extension = match file_path.extension() {
+            Some(ext) => ext.to_str()?,
+            None => ""
+        };
+        let file_name = file_path.file_name().unwrap().to_str()?;
+        if file_type == &FileType::Archive {
+            if !self.settings.include_archives() && !self.settings.archives_only() {
+                return None;
+            }
+            if !self.is_matching_archive_extension(&extension)
+                || !self.is_matching_archive_file_name(&file_name) {
+                return None;
+            }
+        } else {
+            if !self.is_matching_extension(&extension)
+                || !self.is_matching_file_name(&file_name)
+                || !self.is_matching_file_type(&file_type) {
+                return None;
+            }
         }
-        !self.settings.archives_only() && self.is_matching_file_result(file_result)
+        if !self.is_matching_file_size(&file_size) || !self.is_matching_last_mod(&last_mod) {
+            return None;
+        }
+        let file_result = FileResult::new(file_path.to_path_buf(), file_type.clone(),
+                                          file_size, last_mod);
+        Some(file_result)
     }
 
     fn cmp_by_path(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let pathcmp = fr1.path.cmp(&fr2.path);
-        if pathcmp.is_eq() {
-            return fr1.file_name.cmp(&fr2.file_name);
+        let path_cmp = fr1.parent().cmp(&fr2.parent());
+        if path_cmp.is_eq() {
+            return fr1.file_name().cmp(&fr2.file_name());
         }
-        pathcmp
+        path_cmp
     }
 
     fn cmp_by_path_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let pathcmp = fr1.path.to_lowercase().cmp(&fr2.path.to_lowercase());
-        if pathcmp.is_eq() {
-            return fr1.file_name.to_lowercase().cmp(&fr2.file_name.to_lowercase());
+        let path_cmp = fr1.parent().to_lowercase().cmp(&fr2.parent().to_lowercase());
+        if path_cmp.is_eq() {
+            return fr1.file_name().to_lowercase().cmp(&fr2.file_name().to_lowercase());
         }
-        pathcmp
+        path_cmp
     }
 
     fn get_cmp_by_path(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive() {
+        if self.settings.sort_case_insensitive() {
             Self::cmp_by_path_ci
         } else {
             Self::cmp_by_path
@@ -225,23 +238,23 @@ impl Finder {
     }
 
     fn cmp_by_name(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let namecmp = fr1.file_name.cmp(&fr2.file_name);
-        if namecmp.is_eq() {
-            return fr1.path.cmp(&fr2.path);
+        let name_cmp = fr1.file_name().cmp(&fr2.file_name());
+        if name_cmp.is_eq() {
+            return fr1.parent().cmp(&fr2.parent());
         }
-        namecmp
+        name_cmp
     }
 
     fn cmp_by_name_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let namecmp = fr1.file_name.to_lowercase().cmp(&fr2.file_name.to_lowercase());
-        if namecmp.is_eq() {
-            return fr1.path.to_lowercase().cmp(&fr2.path.to_lowercase());
+        let name_cmp = fr1.file_name().to_lowercase().cmp(&fr2.file_name().to_lowercase());
+        if name_cmp.is_eq() {
+            return fr1.parent().to_lowercase().cmp(&fr2.parent().to_lowercase());
         }
-        namecmp
+        name_cmp
     }
 
     fn get_cmp_by_name(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive() {
+        if self.settings.sort_case_insensitive() {
             Self::cmp_by_name_ci
         } else {
             Self::cmp_by_name
@@ -249,23 +262,23 @@ impl Finder {
     }
 
     fn cmp_by_size(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let sizecmp = fr1.file_size.cmp(&fr2.file_size);
-        if sizecmp.is_eq() {
+        let size_cmp = fr1.file_size.cmp(&fr2.file_size);
+        if size_cmp.is_eq() {
             return Self::cmp_by_path(fr1, fr2);
         }
-        sizecmp
+        size_cmp
     }
 
     fn cmp_by_size_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let sizecmp = fr1.file_size.cmp(&fr2.file_size);
-        if sizecmp.is_eq() {
+        let size_cmp = fr1.file_size.cmp(&fr2.file_size);
+        if size_cmp.is_eq() {
             return Self::cmp_by_path_ci(fr1, fr2);
         }
-        sizecmp
+        size_cmp
     }
 
     fn get_cmp_by_size(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive() {
+        if self.settings.sort_case_insensitive() {
             Self::cmp_by_size_ci
         } else {
             Self::cmp_by_size
@@ -273,23 +286,23 @@ impl Finder {
     }
 
     fn cmp_by_type(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let typecmp = fr1.file_type.cmp(&fr2.file_type);
-        if typecmp.is_eq() {
+        let type_cmp = fr1.file_type.cmp(&fr2.file_type);
+        if type_cmp.is_eq() {
             return Self::cmp_by_path(fr1, fr2);
         }
-        typecmp
+        type_cmp
     }
 
     fn cmp_by_type_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let typecmp = fr1.file_type.cmp(&fr2.file_type);
-        if typecmp.is_eq() {
+        let type_cmp = fr1.file_type.cmp(&fr2.file_type);
+        if type_cmp.is_eq() {
             return Self::cmp_by_path_ci(fr1, fr2);
         }
-        typecmp
+        type_cmp
     }
 
     fn get_cmp_by_type(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive() {
+        if self.settings.sort_case_insensitive() {
             Self::cmp_by_type_ci
         } else {
             Self::cmp_by_type
@@ -297,23 +310,23 @@ impl Finder {
     }
 
     fn cmp_by_last_mod(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let lastmodcmp = fr1.last_mod.cmp(&fr2.last_mod);
-        if lastmodcmp.is_eq() {
+        let last_mod_cmp = fr1.last_mod.cmp(&fr2.last_mod);
+        if last_mod_cmp.is_eq() {
             return Self::cmp_by_path(fr1, fr2);
         }
-        lastmodcmp
+        last_mod_cmp
     }
 
     fn cmp_by_last_mod_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let lastmodcmp = fr1.last_mod.cmp(&fr2.last_mod);
-        if lastmodcmp.is_eq() {
+        let last_mod_cmp = fr1.last_mod.cmp(&fr2.last_mod);
+        if last_mod_cmp.is_eq() {
             return Self::cmp_by_path_ci(fr1, fr2);
         }
-        lastmodcmp
+        last_mod_cmp
     }
 
     fn get_cmp_by_last_mod(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
-        return if self.settings.sort_case_insensitive() {
+        if self.settings.sort_case_insensitive() {
             Self::cmp_by_last_mod_ci
         } else {
             Self::cmp_by_last_mod
@@ -333,13 +346,15 @@ impl Finder {
         }
     }
 
-    /// Initiate a find session for the given settings and get the matching files
-    pub fn find(&self) -> Result<Vec<FileResult>, FindError> {
+    pub fn find_path(&self, path: &String) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
-        for p in self.settings.paths().iter() {
-            let ep = FileUtil::expand_path(p);
+        let ep = FileUtil::expand_path(path);
+        let path_buf = PathBuf::from(&ep);
+        if path_buf.is_dir() {
             let mut dir_walker = WalkDir::new(&ep).follow_links(false); // TODO: add followlinks to settings and use here
-            if self.settings.max_depth() > -1 {
+            if !self.settings.recursive() {
+                dir_walker = dir_walker.max_depth(1usize)
+            } else if self.settings.max_depth() > -1 {
                 dir_walker = dir_walker.max_depth(self.settings.max_depth() as usize)
             }
             if self.settings.min_depth() > -1 {
@@ -350,40 +365,20 @@ impl Finder {
                 .filter_map(|e| e.ok())
                 .filter(|e| e.file_type().is_file())
             {
-                let path = match entry.path().parent() {
-                    Some(parent) => parent.to_str().unwrap().to_string(),
-                    None => ".".to_string(),
-                };
-                if !self.is_matching_dir(&path) {
-                    continue;
-                }
-                let filename = entry.file_name().to_str().unwrap().to_string();
-                let file_type = self.file_types.get_file_type(&filename);
-                // if file_type == FileType::Unknown {
-                //     continue;
-                // }
-                let (file_size, last_mod) = match entry.metadata() {
-                    Ok(metadata) => {
-                        let fs = metadata.len();
-                        let mt = match metadata.modified() {
-                            Ok(m) => {
-                                match m.duration_since(SystemTime::UNIX_EPOCH) {
-                                    Ok(d) => d.as_secs(),
-                                    Err(_) => 0u64
-                                }
-                            }
-                            Err(_) => 0u64
-                        };
-                        (fs, mt)
-                    }
-                    Err(_) => (0u64, 0u64)
-                };
-                let file_result = FileResult::new(path, filename, file_type,
-                                                  file_size, last_mod);
-                if self.filter_file_result(&file_result) {
-                    file_results.push(file_result)
+                let opt_file_result = self.filter_path_to_file_result(&entry.path());
+                if opt_file_result.is_some() {
+                    file_results.push(opt_file_result.unwrap())
                 }
             }
+        }
+        Ok(file_results)
+    }
+
+    /// Initiate a find session for the given settings and get the matching files
+    pub fn find(&self) -> Result<Vec<FileResult>, FindError> {
+        let mut file_results: Vec<FileResult> = Vec::new();
+        for p in self.settings.paths().iter() {
+            file_results.extend(self.find_path(p).unwrap_or(Vec::new()));
         }
         self.sort_file_results(&mut file_results);
         Ok(file_results)
@@ -391,13 +386,13 @@ impl Finder {
 }
 
 /// Get the unique list of directories for matching files
-pub fn get_matching_dirs(file_results: &[FileResult]) -> Vec<&String> {
-    let mut dir_set: HashSet<&String> = HashSet::new();
-    let mut dirs: Vec<&String> = Vec::new();
+pub fn get_matching_dirs(file_results: &[FileResult]) -> Vec<String> {
+    let mut dir_set: HashSet<String> = HashSet::new();
+    let mut dirs: Vec<String> = Vec::new();
     for f in file_results.iter() {
-        if !dir_set.contains(&f.path) {
-            dirs.push(&f.path);
-            dir_set.insert(&f.path);
+        if !dir_set.contains(f.parent()) {
+            dirs.push(String::from(f.parent()));
+            dir_set.insert(String::from(f.parent()));
         }
     }
     dirs
@@ -429,66 +424,6 @@ mod tests {
     }
 
     #[test]
-    fn test_filter_file() {
-        let mut settings = get_default_test_settings();
-        settings.add_in_extension(String::from("js,ts"));
-        settings.add_out_dir_pattern(String::from("temp"));
-        settings.add_out_file_pattern(String::from("temp"));
-        let finder = Finder::new(settings).ok().unwrap();
-
-        let path = String::from(".");
-        let file_name = String::from("codefile.js");
-        let filesize: u64 = 1000;
-        let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
-            Ok(duration) => duration.as_secs(),
-            Err(_error) => 0,
-        };
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                 last_mod);
-        assert!(finder.filter_file_result(&fr));
-
-        let path = String::from(".");
-        let file_name = String::from("codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                 last_mod);
-        assert!(finder.filter_file_result(&fr));
-
-        let path = String::from("./temp/");
-        let file_name = String::from("codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                 last_mod);
-        assert!(!finder.filter_file_result(&fr));
-
-        let path = String::from("./.hidden/");
-        let file_name = String::from("codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                 last_mod);
-        assert!(!finder.filter_file_result(&fr));
-
-        let path = String::from(".");
-        let file_name = String::from(".codefile.ts");
-        let fr = FileResult::new(path, file_name, FileType::Code, filesize,
-                                 last_mod);
-        assert!(!finder.filter_file_result(&fr));
-
-        let path = String::from(".");
-        let file_name = String::from("archive.zip");
-        let fr = FileResult::new(path, file_name, FileType::Archive, filesize,
-                                 last_mod);
-        assert!(!finder.filter_file_result(&fr));
-
-        let mut settings = get_default_test_settings();
-        settings.set_include_archives(true);
-        let finder = Finder::new(settings).ok().unwrap();
-
-        let path = String::from(".");
-        let file_name = String::from("archive.zip");
-        let fr = FileResult::new(path, file_name, FileType::Archive, filesize,
-                                 last_mod);
-        assert!(finder.filter_file_result(&fr));
-    }
-
-    #[test]
     fn test_is_matching_dir() {
         let mut settings = get_default_test_settings();
         settings.add_out_dir_pattern(String::from("temp"));
@@ -505,94 +440,93 @@ mod tests {
     }
 
     #[test]
-    fn test_is_matching_file() {
+    fn test_is_matching_file_name() {
+        let mut settings = get_default_test_settings();
+        settings.add_out_file_pattern(String::from("temp"));
+        let finder = Finder::new(settings).ok().unwrap();
+
+        let file_name = String::from("finder.rs");
+        assert!(finder.is_matching_file_name(&file_name));
+
+        let file_name = String::from(".gitignore");
+        assert!(!finder.is_matching_file_name(&file_name));
+
+        let file_name = String::from("tempfile.rs");
+        assert!(!finder.is_matching_file_name(&file_name));
+    }
+
+    #[test]
+    fn test_is_matching_file_size() {
+        let mut settings = get_default_test_settings();
+        settings.set_min_size(1000u64);
+        settings.set_max_size(5000u64);
+        let finder = Finder::new(settings).ok().unwrap();
+
+        // in between
+        let file_size = 3000u64;
+        assert!(finder.is_matching_file_size(&file_size));
+
+        // matches min size
+        let file_size = 1000u64;
+        assert!(finder.is_matching_file_size(&file_size));
+
+        // below min size
+        let file_size = 100u64;
+        assert!(!finder.is_matching_file_size(&file_size));
+
+        // matches max size
+        let file_size = 5000u64;
+        assert!(finder.is_matching_file_size(&file_size));
+
+        // below min size
+        let file_size = 5500u64;
+        assert!(!finder.is_matching_file_size(&file_size));
+    }
+
+    #[test]
+    fn test_filter_to_file_result() {
         let mut settings = get_default_test_settings();
         settings.add_in_extension(String::from("js,ts"));
         settings.add_out_dir_pattern(String::from("temp"));
         settings.add_out_file_pattern(String::from("temp"));
         let finder = Finder::new(settings).ok().unwrap();
 
-        let path = String::from(".");
-        let file_name = String::from("codefile.js");
+        // js extension
+        let file_path = Path::new("./codefile.js");
+        let file_type = FileType::Code;
         let file_size: u64 = 1000;
         let last_mod = match SystemTime::now().duration_since(SystemTime::UNIX_EPOCH) {
             Ok(duration) => duration.as_secs(),
             Err(_error) => 0,
         };
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          last_mod);
-        assert!(finder.is_matching_file_result(&file_result));
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_some());
 
-        let path = String::from(".");
-        let file_name = String::from("codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          last_mod);
-        assert!(finder.is_matching_file_result(&file_result));
+        // ts extension
+        let file_path = Path::new("./codefile.ts");
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_some());
 
-        let path = String::from("./temp/");
-        let file_name = String::from("codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          last_mod);
-        assert!(!finder.is_matching_file_result(&file_result));
+        // "temp" in path
+        let file_path = Path::new("./temp/codefile.ts");
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_none());
 
-        let path = String::from("./.hidden/");
-        let file_name = String::from("codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          last_mod);
-        assert!(!finder.is_matching_file_result(&file_result));
+        // hidden path
+        let file_path = Path::new("./.hidden/codefile.ts");
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_none());
 
-        let path = String::from("./");
-        let file_name = String::from(".codefile.ts");
-        let file_result = FileResult::new(path, file_name, FileType::Code, file_size,
-                                          last_mod);
-        assert!(!finder.is_matching_file_result(&file_result));
+        // hidden file name
+        let file_path = Path::new("./.codefile.ts");
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_none());
 
-        let path = String::from(".");
-        let file_name = String::from("archive.zip");
-        let file_result = FileResult::new(path, file_name, FileType::Archive, file_size,
-                                          last_mod);
-        assert!(!finder.is_matching_file_result(&file_result));
-    }
+        // archive file
+        let file_path = Path::new("./archive.zip");
+        let file_type = FileType::Archive;
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_none());
 
-    #[test]
-    fn test_is_matching_archive_file() {
+        // archive file + include_archives
         let mut settings = get_default_test_settings();
-        settings.add_in_extension(String::from("js,ts"));
-        settings.add_out_dir_pattern(String::from("temp"));
-        settings.add_out_archive_file_pattern(String::from("temp"));
+        settings.set_include_archives(true);
         let finder = Finder::new(settings).ok().unwrap();
-
-        let path = String::from(".");
-        let file_name = String::from("archive.zip");
-        let file_size: u64 = 1000;
-        let last_mod: u64 = 0;
-        let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
-        assert!(finder.is_matching_archive_file_result(&file_result));
-
-        let path = String::from(".");
-        let file_name = String::from(".archive.zip");
-        let file_size: u64 = 1000;
-        let last_mod: u64 = 0;
-        let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
-        assert!(!finder.is_matching_archive_file_result(&file_result));
-
-        let path = String::from("./temp");
-        let file_name = String::from("archive.zip");
-        let file_size: u64 = 1000;
-        let last_mod: u64 = 0;
-        let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
-        assert!(!finder.is_matching_archive_file_result(&file_result));
-
-        let path = String::from(".");
-        let file_name = String::from("temp_archive.zip");
-        let file_size: u64 = 1000;
-        let last_mod: u64 = 0;
-        let file_result = FileResult::new(path, file_name, FileType::Archive,
-                                          file_size, last_mod);
-        assert!(!finder.is_matching_archive_file_result(&file_result));
+        assert!(finder.filter_to_file_result(&file_path, &file_type, file_size, last_mod).is_some());
     }
 
     #[test]

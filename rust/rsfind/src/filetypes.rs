@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs;
+use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
@@ -113,6 +114,10 @@ impl FileTypes {
         FileType::Unknown
     }
 
+    pub fn get_file_type_for_path(&self, file_path: &Path) -> FileType {
+        self.get_file_type(file_path.file_name().unwrap().to_str().unwrap())
+    }
+
     /// Get a FileType for a given type name
     ///
     /// # Examples
@@ -193,7 +198,7 @@ impl FileTypes {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+    use rsfind::filetypes::{FileType, FileTypes};
 
     #[test]
     fn get_file_type_archive_file() {

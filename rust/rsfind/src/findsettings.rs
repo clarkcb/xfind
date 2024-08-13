@@ -340,6 +340,18 @@ impl FindSettings {
         self._verbose = b
     }
 
+    pub fn need_last_mod(&self) -> bool {
+        self._sort_by == SortBy::LastMod
+            || self._max_last_mod > 0u64
+            || self._min_last_mod > 0u64
+    }
+
+    pub fn need_size(&self) -> bool {
+        self._sort_by == SortBy::FileSize
+            || self._max_size > 0u64
+            || self._min_size > 0u64
+    }
+
     fn get_settings_string(&self) -> String {
         let mut s = String::from("FindSettings(");
         s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
