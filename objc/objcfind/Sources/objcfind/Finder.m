@@ -156,6 +156,9 @@
         return false;
     }
     FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
+    if (fileType == FileTypeArchive && ![self.settings includeArchives] && ![self.settings archivesOnly]) {
+        return nil;
+    }
     unsigned long long fileSize = 0;
     NSDate *lastMod = nil;
     if ([self.settings needSize] || [self.settings needLastMod]) {
@@ -176,32 +179,77 @@
     return nil;
 }
 
-- (NSArray<FileResult*>*) getFileResults:(NSString*)filePath {
+- (NSArray<FileResult*>*) recGetFileResults:(NSString*)dirPath minDepth:(long)minDepth maxDepth:(long)maxDepth currentDepth:(long)currentDepth error:(NSError**)error {
     NSMutableArray *fileResults = [NSMutableArray array];
-    NSDirectoryEnumerator *enumerator = [FileUtil enumeratorForPath:filePath settings:self.settings];
-    NSURL *element = (NSURL*)[enumerator nextObject];
-    while (element != nil) {
-        NSNumber *isDirectory = nil;
-        [element getResourceValue:&isDirectory forKey:NSURLIsDirectoryKey error:nil];
-        if ([isDirectory boolValue]) {
-            if ((self.settings.maxDepth > 0 && enumerator.level > self.settings.maxDepth) || ![self isMatchingDir:[element path]]) {
-                [enumerator skipDescendants];
+    BOOL recurse = true;
+    if (currentDepth == maxDepth) {
+        recurse = false;
+    } else if (maxDepth > -1 && currentDepth > maxDepth) {
+        return fileResults;
+    }
+    
+    NSArray<NSString*>* pathElems = [[NSFileManager defaultManager] contentsOfDirectoryAtPath:dirPath
+                                                                             error:error];
+    if (*error) {
+        return nil;
+    }
+
+    NSMutableArray *pathDirs = [NSMutableArray array];
+    for (NSString *pathElem in pathElems) {
+        NSString* path = [FileUtil joinPath:dirPath childPath:pathElem];
+        if ([FileUtil isDirectory:path]) {
+            if (recurse && [self isMatchingDir:pathElem]) {
+                [pathDirs addObject:path];
             }
         } else {
-            NSNumber *isRegularFile = nil;
-            [element getResourceValue:&isRegularFile forKey:NSURLIsRegularFileKey error:nil];
-            if ([isRegularFile boolValue]) {
-                if ((self.settings.minDepth < 0 || enumerator.level >= self.settings.minDepth) && (self.settings.maxDepth < 1 || enumerator.level <= self.settings.maxDepth)) {
-                    NSString *filePath = [element path];
-                    FileResult *fileResult = [self filterToFileResult:filePath];
-                    if (fileResult != nil) {
-                        [fileResults addObject:fileResult];
-                    }
+            if (minDepth < 0 || currentDepth >= minDepth) {
+                FileResult *fileResult = [self filterToFileResult:path];
+                if (fileResult != nil) {
+                    [fileResults addObject:fileResult];
                 }
             }
         }
-        element = (NSURL*)[enumerator nextObject];
     }
+    
+    for (NSString *pathDir in pathDirs) {
+        NSArray<FileResult*> *pathResults = [self recGetFileResults:pathDir minDepth:minDepth maxDepth:maxDepth currentDepth:(currentDepth + 1) error:error];
+        if (*error) {
+            return nil;
+        }
+        [fileResults addObjectsFromArray:pathResults];
+    }
+
+    return [NSArray arrayWithArray:fileResults];
+}
+
+- (NSArray<FileResult*>*) getFileResults:(NSString*)filePath error:(NSError**)error {
+    NSMutableArray *fileResults = [NSMutableArray array];
+    if ([FileUtil isDirectory:filePath]) {
+        // if maxDepth is zero, we can skip since a directory cannot be a result
+        if (self.settings.maxDepth == 0) {
+            return fileResults;
+        }
+        if ([self isMatchingDir:filePath]) {
+            long maxDepth = self.settings.recursive ? self.settings.maxDepth : 1;
+            return [self recGetFileResults:filePath minDepth:self.settings.minDepth maxDepth:maxDepth currentDepth:1 error:error];
+        } else {
+            setError(error, @"Startpath does not match find settings");
+            return nil;
+        }
+    } else {
+        // if minDepth > zero, we can skip since the file is at depth zero
+        if (self.settings.minDepth > 0) {
+            return fileResults;
+        }
+        FileResult *fileResult = [self filterToFileResult:filePath];
+        if (fileResult != nil) {
+            [fileResults addObject:fileResult];
+        } else {
+            setError(error, @"Startpath does not match find settings");
+            return nil;
+        }
+    }
+
     return [NSArray arrayWithArray:fileResults];
 }
 
@@ -237,21 +285,11 @@
 - (NSArray<FileResult*>*) find:(NSError**)error {
     NSMutableArray<FileResult*> *fileResults = [NSMutableArray array];
     for (NSString *p in self.settings.paths) {
-        if ([FileUtil isDirectory:p]) {
-            // if maxDepth is zero, we can skip since a directory cannot be a result
-            if (self.settings.maxDepth != 0) {
-                NSArray<FileResult*> *pFiles = [self getFileResults:p];
-                [fileResults addObjectsFromArray:pFiles];
-            }
-        } else {
-            // if minDepth > zero, we can skip since the file is at depth zero
-            if (self.settings.minDepth <= 0) {
-                FileResult *fr = [self filterToFileResult:p];
-                if (fr != nil) {
-                    [fileResults addObject:fr];
-                }
-            }
+        NSArray<FileResult*> *pathResults = [self getFileResults:p error:error];
+        if (*error) {
+            return nil;
         }
+        [fileResults addObjectsFromArray:pathResults];
     }
 
     return [self sortFileResults:[NSArray arrayWithArray:fileResults]];
