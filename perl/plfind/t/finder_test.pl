@@ -49,7 +49,7 @@ sub test_is_matching_dir_no_patterns {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = 'plfind';
-    ok($finder->is_matching_dir($dir), "$dir is find dir with no patterns");
+    ok($finder->is_matching_dir($dir), "$dir is matching dir with no patterns");
 }
 
 sub test_is_matching_dir_matches_in_pattern {
@@ -93,7 +93,7 @@ sub test_is_matching_dir_single_dot {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = '.';
-    ok($finder->is_matching_dir($dir), "$dir is find dir");
+    ok($finder->is_matching_dir($dir), "$dir is matching dir");
 }
 
 sub test_is_matching_dir_double_dot {
@@ -101,7 +101,7 @@ sub test_is_matching_dir_double_dot {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = '..';
-    ok($finder->is_matching_dir($dir), "$dir is find dir");
+    ok($finder->is_matching_dir($dir), "$dir is matching dir");
 }
 
 sub test_is_matching_dir_hidden_dir {
@@ -109,7 +109,7 @@ sub test_is_matching_dir_hidden_dir {
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $dir = '.git';
-    ok(!$finder->is_matching_dir($dir), "Hidden dir $dir is not find dir by default");
+    ok(!$finder->is_matching_dir($dir), "Hidden dir $dir is not matching dir by default");
 }
 
 sub test_is_matching_dir_hidden_dir_include_hidden {
@@ -123,7 +123,7 @@ sub test_is_matching_dir_hidden_dir_include_hidden {
 }
 
 ################################################################################
-# is_matching_file tests
+# is_matching_file_result tests
 ################################################################################
 sub test_is_matching_file_matches_by_default {
     my $settings = get_settings();
@@ -132,8 +132,9 @@ sub test_is_matching_file_matches_by_default {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok($finder->is_matching_file_result($file_result), "$f is matching file by default");
 }
 
@@ -145,8 +146,9 @@ sub test_is_matching_file_matches_in_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok($finder->is_matching_file_result($file_result), "$f matches in_extensions");
 }
 
@@ -158,8 +160,9 @@ sub test_is_matching_file_no_match_in_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok(!$finder->is_matching_file_result($file_result), "$f does not match in_extensions");
 }
 
@@ -171,8 +174,9 @@ sub test_is_matching_file_matches_out_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok(!$finder->is_matching_file_result($file_result), "$f matches out_extensions");
 }
 
@@ -184,8 +188,9 @@ sub test_is_matching_file_no_match_out_extension {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok($finder->is_matching_file_result($file_result), "$f does not match out_extensions");
 }
 
@@ -197,8 +202,9 @@ sub test_is_matching_file_matches_in_pattern {
     my $d = '.';
     my $f = 'Finder.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok($finder->is_matching_file_result($file_result), "$f matches in_file_patterns");
 }
 
@@ -210,8 +216,9 @@ sub test_is_matching_file_no_match_in_pattern {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok(!$finder->is_matching_file_result($file_result), "$f does not match in_file_patterns");
 }
 
@@ -223,8 +230,9 @@ sub test_is_matching_file_matches_out_pattern {
     my $d = '.';
     my $f = 'Finder.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok(!$finder->is_matching_file_result($file_result), "$f matches out_file_patterns");
 }
 
@@ -236,8 +244,9 @@ sub test_is_matching_file_no_match_out_pattern {
     my $d = '.';
     my $f = 'FileUtil.pm';
     my $file_type = plfind::FileType->CODE;
-    my $stat = [];
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $stat);
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
     ok($finder->is_matching_file_result($file_result), "$f does not match out_file_patterns");
 }
 
@@ -248,8 +257,13 @@ sub test_is_matching_archive_file_matches_by_default {
     my $settings = get_settings();
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file is archive find file by default");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok($finder->is_matching_archive_file_result($file_result), "$f is matching archive file by default");
 }
 
 sub test_is_matching_archive_file_matches_in_extension {
@@ -257,8 +271,13 @@ sub test_is_matching_archive_file_matches_in_extension {
     push(@{$settings->{in_archive_extensions}}, 'zip');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file matches in_archive_extensions");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok($finder->is_matching_archive_file_result($file_result), "$f matches in_archive_extensions");
 }
 
 sub test_is_matching_archive_file_no_match_in_extension {
@@ -266,8 +285,13 @@ sub test_is_matching_archive_file_no_match_in_extension {
     push(@{$settings->{in_archive_extensions}}, 'gz');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file does not match in_archive_extensions");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok(!$finder->is_matching_archive_file_result($file_result), "$f does not match in_archive_extensions");
 }
 
 sub test_is_matching_archive_file_matches_out_extension {
@@ -275,8 +299,13 @@ sub test_is_matching_archive_file_matches_out_extension {
     push(@{$settings->{out_archive_extensions}}, 'zip');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file matches out_archive_extensions");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok(!$finder->is_matching_archive_file_result($file_result), "$f matches out_archive_extensions");
 }
 
 sub test_is_matching_archive_file_no_match_out_extension {
@@ -284,8 +313,13 @@ sub test_is_matching_archive_file_no_match_out_extension {
     push(@{$settings->{out_archive_extensions}}, 'gz');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file does not match out_archive_extensions");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok($finder->is_matching_archive_file_result($file_result), "$f does not match out_archive_extensions");
 }
 
 sub test_is_matching_archive_file_matches_in_pattern {
@@ -293,8 +327,13 @@ sub test_is_matching_archive_file_matches_in_pattern {
     push(@{$settings->{in_archive_file_patterns}}, 'arch');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file matches in_archive_file_patterns");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok($finder->is_matching_archive_file_result($file_result), "$f matches in_archive_file_patterns");
 }
 
 sub test_is_matching_archive_file_no_match_in_pattern {
@@ -302,8 +341,13 @@ sub test_is_matching_archive_file_no_match_in_pattern {
     push(@{$settings->{in_archive_file_patterns}}, 'archives');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file does not match in_archive_file_patterns");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok(!$finder->is_matching_archive_file_result($file_result), "$f does not match in_archive_file_patterns");
 }
 
 sub test_is_matching_archive_file_matches_out_pattern {
@@ -311,8 +355,13 @@ sub test_is_matching_archive_file_matches_out_pattern {
     push(@{$settings->{out_archive_file_patterns}}, 'arch');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok(!$finder->is_matching_archive_file($file), "$file matches out_archive_file_patterns");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok(!$finder->is_matching_archive_file_result($file_result), "$f matches out_archive_file_patterns");
 }
 
 sub test_is_matching_archive_file_no_match_out_pattern {
@@ -320,12 +369,17 @@ sub test_is_matching_archive_file_no_match_out_pattern {
     push(@{$settings->{out_archive_file_patterns}}, 'archives');
     my ($finder, $errs) = new plfind::Finder($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
-    my $file = 'archive.zip';
-    ok($finder->is_matching_archive_file($file), "$file does not match out_archive_file_patterns");
+    my $d = '.';
+    my $f = 'archive.zip';
+    my $file_type = plfind::FileType->ARCHIVE;
+    my $file_size = 0;
+    my $last_mod = 0;
+    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    ok($finder->is_matching_archive_file_result($file_result), "$f does not match out_archive_file_patterns");
 }
 
 ################################################################################
-# filter_file tests
+# filter_to_file_result tests
 ################################################################################
 sub test_filter_file_matches_by_default {
     my $settings = get_settings();

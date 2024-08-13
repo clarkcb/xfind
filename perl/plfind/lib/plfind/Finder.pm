@@ -11,9 +11,6 @@ package plfind::Finder;
 use strict;
 use warnings;
 
-use Data::Dumper;
-use File::Spec;
-use File::Basename;
 use Scalar::Util qw(blessed);
 
 use plfind::common;
@@ -88,7 +85,7 @@ sub is_matching_dir {
     if (plfind::FileUtil::is_dot_dir($d)) {
         return 1;
     }
-    my @path_elems = grep {$_ ne ''} File::Spec->splitdir($d);
+    my @path_elems = grep {$_ ne ''} plfind::FileUtil::split_dir($d);
     if (!$self->{settings}->{include_hidden}) {
         foreach my $p (@path_elems) {
             if (plfind::FileUtil::is_hidden($p)) {
@@ -102,12 +99,29 @@ sub is_matching_dir {
         || !any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})));
 }
 
+sub is_matching_archive_extension {
+    my ($self, $ext) = @_;
+    return ((scalar @{$self->{settings}->{in_archive_extensions}} == 0
+        || (grep {$_ eq $ext} @{$self->{settings}->{in_archive_extensions}}))
+        && (scalar @{$self->{settings}->{out_archive_extensions}} == 0
+        || !(grep {$_ eq $ext} @{$self->{settings}->{out_archive_extensions}})));
+}
+
 sub is_matching_extension {
     my ($self, $ext) = @_;
     return ((scalar @{$self->{settings}->{in_extensions}} == 0
         || (grep {$_ eq $ext} @{$self->{settings}->{in_extensions}}))
         && (scalar @{$self->{settings}->{out_extensions}} == 0
         || !(grep {$_ eq $ext} @{$self->{settings}->{out_extensions}})));
+}
+
+sub has_matching_archive_extension {
+    my ($self, $fr) = @_;
+    if (scalar @{$self->{settings}->{in_archive_extensions}} || scalar @{$self->{settings}->{out_archive_extensions}}) {
+        my $ext = plfind::FileUtil::get_extension($fr->{file_name});
+        return $self->is_matching_archive_extension($ext);
+    }
+    return 1;
 }
 
 sub has_matching_extension {
@@ -117,6 +131,14 @@ sub has_matching_extension {
         return $self->is_matching_extension($ext);
     }
     return 1;
+}
+
+sub is_matching_archive_file_name {
+    my ($self, $file_name) = @_;
+    return ((scalar @{$self->{settings}->{in_archive_file_patterns}} == 0
+        || matches_any_pattern($file_name, $self->{settings}->{in_archive_file_patterns}))
+        && (scalar @{$self->{settings}->{out_archive_file_patterns}} == 0
+        || !matches_any_pattern($file_name, $self->{settings}->{out_archive_file_patterns})));
 }
 
 sub is_matching_file_name {
@@ -149,6 +171,12 @@ sub is_matching_last_mod {
         || $last_mod >= $self->{settings}->{min_last_mod}->epoch));
 }
 
+sub is_matching_archive_file_result {
+    my ($self, $fr) = @_;
+    return $self->has_matching_archive_extension($fr)
+        && $self->is_matching_archive_file_name($fr->{file_name});
+}
+
 sub is_matching_file_result {
     my ($self, $fr) = @_;
     return $self->has_matching_extension($fr)
@@ -158,50 +186,31 @@ sub is_matching_file_result {
         && $self->is_matching_last_mod($fr->{last_mod});
 }
 
-sub is_matching_archive_file {
-    my ($self, $f) = @_;
-    if (scalar @{$self->{settings}->{in_archive_extensions}} || scalar @{$self->{settings}->{out_archive_extensions}}) {
-        my $ext = plfind::FileUtil::get_extension($f);
-        if (scalar @{$self->{settings}->{in_archive_extensions}} &&
-            !(grep {$_ eq $ext} @{$self->{settings}->{in_archive_extensions}})) {
-            return 0;
-        }
-        if (scalar @{$self->{settings}->{out_archive_extensions}} &&
-            (grep {$_ eq $ext} @{$self->{settings}->{out_archive_extensions}})) {
-            return 0;
-        }
-    }
-    if (scalar @{$self->{settings}->{in_archive_file_patterns}} &&
-        !matches_any_pattern($f, $self->{settings}->{in_archive_file_patterns})) {
-        return 0;
-    }
-    if (scalar @{$self->{settings}->{out_archive_file_patterns}} &&
-        matches_any_pattern($f, $self->{settings}->{out_archive_file_patterns})) {
-        return 0;
-    }
-    return 1;
-}
-
 sub filter_to_file_result {
-    my ($self, $fp) = @_;
-    my $d = dirname($fp);
-    my $f = basename($fp);
-    if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden($f)) {
+    my ($self, $file_path) = @_;
+    my ($dir, $file_name) = plfind::FileUtil::split_path($file_path);
+    if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden($file_name)) {
         return;
     }
-    my $file_type = $self->{file_types}->get_file_type($f);
+    my $file_type = $self->{file_types}->get_file_type($file_name);
+    if ($file_type eq plfind::FileType->ARCHIVE
+        && !$self->{settings}->{include_archives}
+        && !$self->{settings}->{archives_only}) {
+        return;
+    }
     my $file_size = 0;
     my $last_mod = 0;
     if ($self->{settings}->needs_last_mod || $self->{settings}->needs_size) {
+        my $fp = plfind::FileUtil::join_path($dir, $file_name);
         my @fpstat = stat($fp);
         # stat index 7 == size
         $file_size = $fpstat[7];
         # stat index 9 == mtime
         $last_mod = $fpstat[9];
     }
-    my $file_result = plfind::FileResult->new($d, $f, $file_type, $file_size, $last_mod);
+    my $file_result = plfind::FileResult->new($dir, $file_name, $file_type, $file_size, $last_mod);
     if ($file_type eq plfind::FileType->ARCHIVE) {
-        if ($self->{settings}->{include_archives} && $self->is_matching_archive_file($f)) {
+        if ($self->is_matching_archive_file_result($file_result)) {
             return $file_result;
         }
         return;
@@ -212,31 +221,25 @@ sub filter_to_file_result {
     return;
 }
 
-sub get_dir_dir_results {
-    # print "get_dir_dir_results\n";
-    my ($self, $d) = @_;
-    # print "d: $d\n";
-    my $dir_results = [];
-    opendir(DIR, $d) or die $!;
-    while (my $f = readdir(DIR)) {
-        my $sub_file = File::Spec->join($d, $f);
-        if (-d $sub_file && !plfind::FileUtil::is_dot_dir($f) && $self->is_matching_dir($sub_file)) {
-            push(@{$dir_results}, $sub_file);
-        }
+sub rec_get_file_results {
+    my ($self, $dir, $min_depth, $max_depth, $current_depth) = @_;
+    my $recurse = 1;
+    if ($current_depth == $max_depth) {
+        $recurse = 0;
+    } elsif ($max_depth > -1 && $current_depth > $max_depth) {
+        return [];
     }
-    closedir(DIR);
-    return $dir_results;
-}
-
-sub get_dir_file_results {
-    # print "get_dir_file_results\n";
-    my ($self, $d) = @_;
-    # print "d: $d\n";
+    my $dir_results = [];
     my $file_results = [];
-    opendir(DIR, $d) or die $!;
+    opendir(DIR, $dir) or die $!;
     while (my $f = readdir(DIR)) {
-        my $sub_file = File::Spec->join($d, $f);
-        if (-f $sub_file) {
+        if (plfind::FileUtil::is_dot_dir($f)) {
+            next;
+        }
+        my $sub_file = plfind::FileUtil::join_path($dir, $f);
+        if (-d $sub_file && $recurse && $self->is_matching_dir($f)) {
+            push(@{$dir_results}, $sub_file);
+        } elsif (-f $sub_file && ($min_depth < 0 || $current_depth >= $min_depth)) {
             my $file_result = $self->filter_to_file_result($sub_file);
             if (defined $file_result) {
                 push(@{$file_results}, $file_result);
@@ -244,24 +247,8 @@ sub get_dir_file_results {
         }
     }
     closedir(DIR);
-    return $file_results;
-}
-
-sub rec_get_file_results {
-    # print "rec_get_file_results\n";
-    my ($self, $dir, $depth) = @_;
-    # print "dir: $dir\n";
-    my $dir_results = [];
-    if ($self->{settings}->{max_depth} < 1 || $depth <= $self->{settings}->{max_depth}) {
-        $dir_results = $self->get_dir_dir_results($dir);
-    }
-    my $file_results = [];
-    if ($depth >= $self->{settings}->{min_depth}
-        && ($self->{settings}->{max_depth} < 1 || $depth <= $self->{settings}->{max_depth})) {
-        $file_results = $self->get_dir_file_results($dir);
-    }
     foreach my $dir_result (@{$dir_results}) {
-        my $sub_file_results = $self->rec_get_file_results($dir_result, $depth + 1);
+        my $sub_file_results = $self->rec_get_file_results($dir_result, $min_depth, $max_depth, $current_depth + 1);
         push(@{$file_results}, @{$sub_file_results});
     }
     return $file_results;
@@ -275,11 +262,15 @@ sub get_file_results {
         if ($self->{settings}->{max_depth} == 0) {
             return [];
         }
-        if ($self->{settings}->{recursive}) {
-            my $depth = 1;
-            push(@{$file_results}, @{$self->rec_get_file_results($file_path, $depth)});
+        if ($self->is_matching_dir($file_path)) {
+            my $max_depth = $self->{settings}->{max_depth};
+            if (!$self->{settings}->{recursive}) {
+                $max_depth = 1;
+            }
+            push(@{$file_results}, @{$self->rec_get_file_results($file_path, $self->{settings}->{min_depth},
+                $max_depth, 1)});
         } else {
-            push(@{$file_results}, @{$self->get_dir_file_results($file_path)});
+            plfind::common::log_err("Startpath does not match find settings");
         }
     } elsif (-f $file_path) {
         # if min_depth > zero, we can skip since the file is at depth zero
