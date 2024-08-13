@@ -4,7 +4,7 @@ import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
 
 import java.io.IOException
-import java.nio.file.attribute.BasicFileAttributes
+import java.nio.file.attribute.{BasicFileAttributes, FileTime}
 import java.nio.file.{Files, Path}
 import java.time.{Instant, LocalDateTime, ZoneOffset}
 import scala.collection.mutable
@@ -90,39 +90,47 @@ class Finder (settings: FindSettings) {
       && isMatchingFileName(fr.path.getFileName.toString, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
   }
 
+  def getFileSizeAndLastMod(p: Path): (Long, Option[FileTime]) = {
+    if (settings.needLastMod || settings.needSize) {
+      try {
+        val stat = Files.readAttributes(p, classOf[BasicFileAttributes])
+        val size = if (settings.needSize) stat.size() else 0L
+        val lastMod = if (settings.needLastMod) Some(stat.lastModifiedTime()) else None
+        (size, lastMod)
+      } catch {
+        case _: IOException => (0L, None)
+      }
+    } else {
+      (0L, None)
+    }
+  }
+
   def filterToFileResult(p: Path): Option[FileResult] = {
     if (!settings.includeHidden && Files.isHidden(p)) {
       None
     } else {
-      val (fileSize, lastMod) =
-        if (settings.needLastMod || settings.needSize) {
-          try {
-            val stat = Files.readAttributes(p, classOf[BasicFileAttributes])
-            val size = if (settings.needSize) stat.size() else 0
-            val lm = if (settings.needLastMod) Some(stat.lastModifiedTime()) else None
-            (size, lm)
-          } catch {
-            case _: IOException => (0L, None)
-          }
-        } else {
-          (0L, None)
+      val fileType = FileTypes.getFileType(p)
+      if (fileType == FileType.Archive && !settings.includeArchives && !settings.archivesOnly) {
+        None
+      } else {
+        val (fileSize, lastMod) = getFileSizeAndLastMod(p)
+        val fileResult = new FileResult(p, fileType, fileSize, lastMod)
+        fileResult.fileType match {
+          // This is commented out to allow unknown files to match in case settings are permissive
+          // case FileType.Unknown => None
+          case FileType.Archive =>
+            if (settings.includeArchives && isMatchingArchiveFileResult(fileResult)) {
+              Some(fileResult)
+            } else {
+              None
+            }
+          case _ =>
+            if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
+              Some(fileResult)
+            } else {
+              None
+            }
         }
-      val fileResult = new FileResult(p, FileTypes.getFileType(p), fileSize, lastMod)
-      fileResult.fileType match {
-        // This is commented out to allow unknown files to match in case settings are permissive
-        // case FileType.Unknown => None
-        case FileType.Archive =>
-          if (settings.includeArchives && isMatchingArchiveFileResult(fileResult)) {
-            Some(fileResult)
-          } else {
-            None
-          }
-        case _ =>
-          if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
-            Some(fileResult)
-          } else {
-            None
-          }
       }
     }
   }
@@ -148,7 +156,15 @@ class Finder (settings: FindSettings) {
   }
 
   private final def recFindPath(filePath: Path, minDepth: Int, maxDepth: Int, currentDepth: Int): Seq[FileResult] = {
-    if (maxDepth > -1 && currentDepth > maxDepth) {
+    val recurse =
+      if (currentDepth == maxDepth) {
+        RecursionType.NoRecurse
+      } else if (maxDepth > -1 && currentDepth > maxDepth) {
+        RecursionType.Skip
+      } else {
+        RecursionType.Recurse
+      }
+    if (recurse == RecursionType.Skip) {
       Seq.empty[FileResult]
     } else {
       val pathDirs = mutable.ArrayBuffer.empty[Path]
@@ -158,7 +174,7 @@ class Finder (settings: FindSettings) {
         val iterator = pathContents.iterator()
         while (iterator.hasNext) {
           val path = iterator.next
-          if (Files.isDirectory(path) && isMatchingDir(path)) {
+          if (Files.isDirectory(path) && recurse == RecursionType.Recurse && isMatchingDir(path)) {
             pathDirs += path
           } else {
             if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
@@ -176,56 +192,44 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  final def findPath(filePath: Path): Seq[FileResult] = {
+  private final def findPath(filePath: Path): Seq[FileResult] = {
     if (Files.isDirectory(filePath)) {
-      if (settings.recursive) {
-        recFindPath(filePath, settings.minDepth, settings.maxDepth, 1)
+      if (settings.maxDepth == 0) {
+        Seq.empty[FileResult]
       } else {
-        recFindPath(filePath, settings.minDepth, 1, 1)
+        if (isMatchingDir(filePath)) {
+          val maxDepth = if (settings.recursive) settings.maxDepth else 1
+          recFindPath(filePath, settings.minDepth, maxDepth, 1)
+        } else {
+          throw new FindException("Startpath does not match find settings")
+        }
       }
     } else if (Files.isRegularFile(filePath)) {
-      filterToFileResult(filePath) match {
-        case Some(fileResult) =>
-          Seq(fileResult)
-        case None =>
-          Seq.empty[FileResult]
+      if (settings.minDepth > 0) {
+        Seq.empty[FileResult]
+      } else {
+        filterToFileResult(filePath) match {
+          case Some(fileResult) =>
+            Seq(fileResult)
+          case None =>
+            throw new FindException("Startpath does not match find settings")
+        }
       }
     } else {
-      Seq.empty[FileResult]
+      throw new FindException("Startpath is not a findable file type")
     }
   }
 
   def find(): Seq[FileResult] = {
     val fileResults = mutable.ArrayBuffer.empty[FileResult]
     settings.paths.foreach { path =>
-      if (Files.isDirectory(path)) {
-        // if maxDepth is zero, we can skip since a directory cannot be a result
-        if (settings.maxDepth != 0) {
-          if (isMatchingDir(path)) {
-            fileResults ++= findPath(path)
-          } else {
-            throw new FindException("Startpath does not match find settings")
-          }
-        }
-      } else if (Files.isRegularFile(path)) {
-        // if minDepth > zero, we can skip since the file is at depth zero
-        if (settings.minDepth <= 0) {
-          if (isMatchingDir(path.getParent)) {
-            fileResults ++= findPath(path)
-          } else {
-            throw new FindException("Startpath does not match find settings")
-          }
-        }
-      } else {
-        throw new FindException("Startpath is not a findable file type")
-      }
+      fileResults ++= findPath(path)
     }
     sortFileResults(Seq.empty[FileResult] ++ fileResults)
   }
 }
 
 object Finder {
-
   def compareOptionLocalDateTimes(d1: Option[LocalDateTime], d2: Option[LocalDateTime]): Int = {
     if (d1.isEmpty || d2.isEmpty) {
       0
@@ -252,4 +256,9 @@ object Finder {
       &&
       (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
   }
+}
+
+object RecursionType extends Enumeration {
+  type RecursionType = Value
+  val Skip, NoRecurse, Recurse = Value
 }
