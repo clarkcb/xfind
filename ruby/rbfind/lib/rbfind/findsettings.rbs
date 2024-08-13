@@ -58,6 +58,8 @@ module RbFind
 
     def add_pattern: (String pattern, Set[Regexp] pattern_set) -> void
 
+    def add_path: (String path) -> void
+
     def add_file_types: (String | Enumerable[String] file_types, Set[FileType] file_types_set) -> void
 
     def need_last_mod?: () -> bool

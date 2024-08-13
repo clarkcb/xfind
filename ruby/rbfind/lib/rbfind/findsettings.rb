@@ -124,6 +124,10 @@ module RbFind
       pattern_set.add(Regexp.new(pattern))
     end
 
+    def add_path(path)
+      @paths.add(Pathname.new(path))
+    end
+
     def add_file_types(file_types, file_types_set)
       if file_types.instance_of?(String)
         file_types.split(',').each do |t|

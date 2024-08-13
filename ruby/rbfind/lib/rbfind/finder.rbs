@@ -58,6 +58,10 @@ module RbFind
 
     def file_path_to_file_result: (Pathname file_path) -> FileResult
 
+    def rec_get_file_results_for_path: (Pathname dir_path, Integer min_depth, Integer max_depth, Integer current_depth) -> Array[FileResult]
+
+    def get_file_results_for_path: (Pathname file_path) -> Array[FileResult]
+
     def get_file_results: (Pathname file_path) -> Array[FileResult]
   end
 end

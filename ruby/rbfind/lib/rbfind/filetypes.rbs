@@ -18,6 +18,8 @@ module RbFind
     def self?.from_sym: (Symbol sym) -> FileType
 
     def self?.to_name: (FileType file_type) -> String
+
+    def self?.to_sym: (FileType file_type) -> Symbol
   end
 
   # FileTypes - provides basic file type information

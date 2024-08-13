@@ -45,7 +45,7 @@ module RbFind
             raise FindError, "Invalid option: #{arg}"
           end
         else
-          settings.paths.add(Pathname.new(arg))
+          settings.add_path(arg)
         end
       end
       settings
@@ -170,7 +170,7 @@ module RbFind
           settings.add_file_types(x, settings.out_file_types)
         },
         'path': lambda { |x, settings|
-          settings.paths.add(Pathname.new(x))
+          settings.add_path(x)
         },
         'settings-file': lambda { |x, settings|
           settings_from_file(x, settings)

@@ -141,9 +141,24 @@ module RbFind
       if !@settings.include_hidden && FileUtil.hidden?(file_path)
         return nil
       end
-      file_result = file_path_to_file_result(file_path)
+      file_type = @file_types.get_file_type(file_path)
+      if file_type == FileType::ARCHIVE && !@settings.include_archives && !@settings.archives_only
+        return nil
+      end
+      file_size = 0
+      last_mod = nil
+      if @settings.need_last_mod? || @settings.need_size?
+        stat = file_path.stat
+        if @settings.need_last_mod?
+          last_mod = stat.mtime
+        end
+        if @settings.need_size?
+          file_size = stat.size
+        end
+      end
+      file_result = FileResult.new(file_path, file_type, file_size, last_mod)
       if file_result.file_type == FileType::ARCHIVE
-        if @settings.include_archives && matching_archive_file_result?(file_result)
+        if matching_archive_file_result?(file_result)
           return file_result
         end
         return nil
@@ -154,10 +169,64 @@ module RbFind
       nil
     end
 
+    def rec_get_file_results_for_path(dir_path, min_depth, max_depth, current_depth)
+      file_results = []
+      recurse = true
+      if current_depth == max_depth
+        recurse = false
+      elsif max_depth > -1 && current_depth > max_depth
+        return file_results
+      end
+      dirs = []
+      dir_path.each_child do |f|
+        if f.directory? && recurse && matching_dir?(f)
+          dirs << f
+        elsif f.file? && (min_depth < 0 || current_depth >= min_depth)
+          file_result = filter_to_file_result(f)
+          if file_result != nil
+            file_results.push(file_result)
+          end
+        end
+      end
+      dirs.each do |d|
+        file_results = file_results.concat(rec_get_file_results_for_path(d, min_depth, max_depth, current_depth + 1))
+      end
+      file_results
+    end
+
+    def get_file_results_for_path(file_path)
+      if file_path.directory?
+        # if max_depth is zero, we can skip since a directory cannot be a result
+        if @settings.max_depth == 0
+          return []
+        end
+        if matching_dir?(file_path)
+          max_depth = @settings.max_depth
+          unless @settings.recursive
+            max_depth = 1
+          end
+          return rec_get_file_results_for_path(file_path, @settings.min_depth, max_depth, 1)
+        else
+          raise FindError, 'Startpath does not match find settings'
+        end
+      elsif file_path.file?
+        # if min_depth > zero, we can skip since the file is at depth zero
+        if @settings.min_depth > 0
+          return []
+        end
+        file_result = filter_to_file_result(file_path)
+        if file_result != nil
+          return [file_result]
+        else
+          raise FindError, 'Startpath does not match find settings'
+        end
+      end
+    end
+
     def find
       file_results = []
       @settings.paths.each do |p|
-        file_results = file_results.concat(get_file_results(p))
+        file_results = file_results.concat(get_file_results_for_path(p))
       end
       file_results = sort_file_results(file_results)
       if @settings.sort_descending
@@ -243,64 +312,5 @@ module RbFind
       end
       FileResult.new(file_path, file_type, file_size, last_mod)
     end
-
-    def get_file_results(file_path)
-      file_results = []
-      if file_path.directory?
-        # if max_depth is zero, we can skip since a directory cannot be a result
-        if @settings.max_depth == 0
-          return []
-        end
-        if @settings.recursive
-          # TODO: get depth of file_path, and get depth of every f below
-          file_path_elem_count = FileUtil.elem_count(file_path)
-          file_path.find do |f|
-            if FileUtil.dot_dir?(f)
-              next
-            end
-            f_elem_count = FileUtil.elem_count(f)
-            if f.directory?
-              # The +1 is for files under the directory
-              depth = f_elem_count - file_path_elem_count + 1
-              if (@settings.max_depth > 0 && depth > @settings.max_depth) || !matching_dir?(f)
-                Find.prune
-              end
-            elsif f.file?
-              depth = f_elem_count - file_path_elem_count
-              if depth < @settings.min_depth || (@settings.max_depth > 0 && depth > @settings.max_depth)
-                Find.prune
-              else
-                file_result = filter_to_file_result(f)
-                if file_result != nil
-                  file_results.push(file_result)
-                end
-              end
-            end
-          end
-        else
-          file_path.find do |f|
-            if f.directory?
-              Find.prune
-            else
-              file_result = filter_to_file_result(f)
-              if file_result != nil
-                file_results.push(file_result)
-              end
-            end
-          end
-        end
-      elsif file_path.file?
-        # if min_depth > zero, we can skip since the file is at depth zero
-        if @settings.min_depth > 0
-          return []
-        end
-        file_result = filter_to_file_result(file_path)
-        if file_result != nil
-          file_results.push(file_result)
-        end
-      end
-      file_results
-    end
-
   end
 end

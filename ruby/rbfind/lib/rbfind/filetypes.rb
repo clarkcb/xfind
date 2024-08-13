@@ -32,6 +32,10 @@ module RbFind
     end
 
     def to_name(file_type)
+      file_type < NAMES.size ? NAMES[file_type].to_s : NAMES[0].to_s
+    end
+
+    def to_sym(file_type)
       file_type < NAMES.size ? NAMES[file_type] : NAMES[0]
     end
   end

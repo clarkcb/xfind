@@ -5,11 +5,12 @@ if (-not (Test-Path Env:XFIND_PATH))
     $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
 }
 
+$gemfile = Join-Path $env:XFIND_PATH 'ruby' 'rbfind' 'Gemfile'
 $rbFindExe = Join-Path $env:XFIND_PATH 'ruby' 'rbfind' 'bin' 'rbfind.rb'
 
 if (Test-Path $rbFindExe -PathType Leaf)
 {
-    & ruby $rbFindExe $Args
+    & bundle exec --gemfile $gemfile ruby $rbFindExe $Args
 }
 else
 {
