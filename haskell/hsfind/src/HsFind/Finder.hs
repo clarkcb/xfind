@@ -124,7 +124,7 @@ getArchiveFileResultTests settings =
 
 matchesArchiveFileResultTests :: [FileResult -> Bool] -> FileResult -> Bool
 matchesArchiveFileResultTests [] _ = True
-matchesArchiveFileResultTests tests f = all ($f) tests
+matchesArchiveFileResultTests tests fr = all ($fr) tests
 
 getFileTypeTests :: FindSettings -> [FileType -> Bool]
 getFileTypeTests settings =
@@ -190,7 +190,7 @@ getRecursiveFilePaths :: FindSettings -> FilePath -> IO [FilePath]
 getRecursiveFilePaths settings dir = do
   accRecursiveFilePaths dir 1 minDepth' maxDepth' dirPathFilter hiddenPathFilter
   where minDepth' = minDepth settings
-        maxDepth' = maxDepth settings
+        maxDepth' = if recursive settings then maxDepth settings else 1
         dirPathFilter = matchesDirPathTests $ getDirPathTests settings
         hiddenPathFilter = matchesHiddenFilePathTests $ getHiddenFilePathTests settings
         accRecursiveFilePaths :: FilePath -> Integer -> Integer -> Integer -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
