@@ -35,10 +35,14 @@ module FileUtil =
         then fullPath.Replace (startFullPath, normStartPath)
         else fullPath
 
-    let GetPathElems (filePath : string) : string list =
-        filePath.Split(Path.DirectorySeparatorChar)
-        |> Seq.filter (fun s -> not (String.IsNullOrEmpty s))
-        |> Seq.toList
+    let GetDirElems (dir : DirectoryInfo) : string list =
+        let mutable elems = [dir.Name]
+        let mutable parent = dir.Parent
+        let root = Path.DirectorySeparatorChar.ToString()
+        while parent <> null && parent.Name <> root do
+            elems <- parent.Name :: elems
+            parent <- parent.Parent
+        elems
 
     let IsDotDir (filePath : string): bool = dotDirs.Contains(NormalizePath filePath)
 
