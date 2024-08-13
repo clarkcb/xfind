@@ -5,7 +5,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"golang.org/x/text/encoding"
@@ -110,30 +109,29 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 		f.isMatchingLastMod(fr.LastMod)
 }
 
-func (f *Finder) FilePathToFileResult(filePath string, fi os.FileInfo) *FileResult {
+func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
+	if !f.Settings.IncludeHidden() && isHidden(filePath) {
+		return nil
+	}
 	dir, file := filepath.Split(filePath)
 	if dir == "" {
 		dir = "."
 	} else {
 		dir = normalizePath(dir)
 	}
-	t := f.fileTypes.GetFileType(file)
+	fileType := f.fileTypes.GetFileType(file)
+	if fileType == FileTypeArchive && !f.Settings.includeArchives && !f.Settings.archivesOnly {
+		return nil
+	}
 	var fileSize int64 = 0
 	lastMod := time.Time{}
 	if fi != nil {
 		fileSize = fi.Size()
 		lastMod = fi.ModTime()
 	}
-	return NewFileResult(dir, file, t, fileSize, lastMod)
-}
-
-func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
-	if !f.Settings.IncludeHidden() && isHidden(filePath) {
-		return nil
-	}
-	fr := f.FilePathToFileResult(filePath, fi)
+	fr := NewFileResult(dir, file, fileType, fileSize, lastMod)
 	if fr.FileType == FileTypeArchive {
-		if f.Settings.IncludeArchives() && f.isMatchingArchiveFileResult(fr) {
+		if f.isMatchingArchiveFileResult(fr) {
 			return fr
 		}
 		return nil
@@ -146,6 +144,7 @@ func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult
 
 func (f *Finder) checkAddFileResult(filePath string, fi os.FileInfo) {
 	path, _ := filepath.Split(filePath)
+	// TODO: I think the dir has already been checked at this point
 	if f.isMatchingDir(path) {
 		fileResult := f.filterToFileResult(filePath, fi)
 		if fileResult != nil {
@@ -190,65 +189,74 @@ func (f *Finder) activateFindChannels() {
 	}
 }
 
+func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth int, currentDepth int) error {
+	recurse := true
+	if currentDepth == maxDepth {
+		recurse = false
+	} else if maxDepth > -1 && currentDepth > maxDepth {
+		return nil
+	}
+	var dirs []string
+	entries, err := os.ReadDir(path)
+	if err != nil {
+		return err
+	}
+	for _, entry := range entries {
+		if entry.IsDir() && recurse && f.isMatchingDir(entry.Name()) {
+			dirs = append(dirs, filepath.Join(path, entry.Name()))
+		} else if entry.Type().IsRegular() && (minDepth < 0 || currentDepth >= minDepth) {
+			fi, _ := entry.Info()
+			f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
+		}
+	}
+	for _, dir := range dirs {
+		err = f.recSetFileResultsForPath(dir, minDepth, maxDepth, currentDepth+1)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (f *Finder) setFileResultsForPath(path string) error {
+	fi, err := os.Stat(path)
+	if err != nil {
+		return err
+	}
+	if fi.IsDir() {
+		// if MaxDepth is zero, we can skip since a directory cannot be a result
+		if f.Settings.MaxDepth() == 0 {
+			return nil
+		}
+		if f.isMatchingDir(path) {
+			maxDepth := f.Settings.MaxDepth()
+			if !f.Settings.Recursive() {
+				maxDepth = 1
+			}
+			return f.recSetFileResultsForPath(path, f.Settings.MinDepth(), maxDepth, 1)
+		} else if fi.Mode().Type().IsRegular() {
+			if f.Settings.minDepth > 0 {
+				return nil
+			}
+			f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
+		}
+	} else if fi.Mode().IsRegular() {
+		// if MinDepth > zero, we can skip since the file is at depth zero
+		if f.Settings.MinDepth() <= 0 {
+			f.checkAddFileResult(path, fi)
+		}
+	}
+	return nil
+}
+
 func (f *Finder) setFileResults() error {
 	if f.Settings.Verbose() {
 		Log("\nBuilding file result list")
 	}
 
 	for _, p := range f.Settings.Paths() {
-		normPath := normalizePath(p)
-		fi, err := os.Stat(normPath)
-		if err != nil {
+		if err := f.setFileResultsForPath(p); err != nil {
 			return err
-		}
-		if fi.IsDir() {
-			// if MaxDepth is zero, we can skip since a directory cannot be a result
-			if f.Settings.MaxDepth() == 0 {
-				continue
-			}
-			if f.Settings.Recursive() {
-				err := filepath.WalkDir(normPath, func(path string, entry fs.DirEntry, err error) error {
-					if err != nil {
-						fmt.Printf("an error occurred accessing path %q: %v\n", path, err)
-						return err
-					}
-					startPathSepCount := strings.Count(normPath, string(os.PathSeparator))
-					pathSepCount := strings.Count(path, string(os.PathSeparator))
-					depth := pathSepCount - startPathSepCount
-					if entry.IsDir() {
-						if f.Settings.MaxDepth() > -1 && depth > f.Settings.MaxDepth() {
-							return filepath.SkipDir
-						}
-						if !f.isMatchingDir(entry.Name()) {
-							return filepath.SkipDir
-						}
-					} else if entry.Type().IsRegular() {
-						if depth >= f.Settings.MinDepth() && (f.Settings.MaxDepth() < 1 || depth <= f.Settings.MaxDepth()) {
-							fi, _ := entry.Info()
-							f.checkAddFileResult(path, fi)
-						}
-					}
-					return nil
-				})
-				if err != nil {
-					return err
-				}
-			} else {
-				entries, err := os.ReadDir(normPath)
-				if err != nil {
-					return err
-				}
-
-				for _, entry := range entries {
-					fi, _ := entry.Info()
-					f.checkAddFileResult(filepath.Join(p, entry.Name()), fi)
-				}
-			}
-		} else if fi.Mode().IsRegular() {
-			// if MinDepth > zero, we can skip since the file is at depth zero
-			if f.Settings.MinDepth() <= 0 {
-				f.checkAddFileResult(p, fi)
-			}
 		}
 	}
 
