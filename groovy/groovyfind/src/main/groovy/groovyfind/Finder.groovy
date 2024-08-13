@@ -23,7 +23,7 @@ class Finder {
     }
 
     final void validateSettings() throws FindException {
-        def paths = settings.paths
+        Set<Path> paths = settings.paths
         if (null == paths || paths.empty || paths.any { p -> p == null || p.empty }) {
             throw new FindException('Startpath not defined')
         }
@@ -49,18 +49,18 @@ class Finder {
 
     private static boolean anyMatchesAnyPattern(final List<String> sList,
                                                 final Set<Pattern> patternSet) {
-        return sList.any { s -> matchesAnyPattern(s, patternSet) }
+        sList.any { s -> matchesAnyPattern(s, patternSet) }
     }
 
     private static boolean matchesAnyPattern(final String s,
                                              final Set<Pattern> patternSet) {
-        return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find())
+        null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find())
     }
 
     boolean isMatchingDir(final Path path) {
         // null or empty path is a match
         if (null == path || path.toString().isEmpty()) {
-            return true;
+            return true
         }
         if (!settings.includeHidden) {
             try {
@@ -77,7 +77,7 @@ class Finder {
             }
         }
         List<String> pathElems = FileUtil.splitPath(path)
-        return (settings.inDirPatterns.empty
+        (settings.inDirPatterns.empty
                 ||
                 anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
                 &&
@@ -87,54 +87,54 @@ class Finder {
     }
 
     boolean isMatchingExtension(final String ext) {
-        return ((settings.getInExtensions().isEmpty()
-                || settings.getInExtensions().contains(ext))
+        ((settings.inExtensions.empty
+                || ext in settings.inExtensions)
                 &&
-                (settings.getOutExtensions().isEmpty()
-                        || !settings.getOutExtensions().contains(ext)))
+                (settings.outExtensions.isEmpty()
+                        || !settings.outExtensions.contains(ext)))
     }
 
     boolean hasMatchingExtension(final FileResult fr) {
-        if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
-            def fileName = fr.getPath().getFileName().toString()
-            def ext = FileUtil.getExtension(fileName)
+        if (!settings.inExtensions.empty || !settings.outExtensions.empty) {
+            String fileName = fr.getPath().getFileName().toString()
+            String ext = FileUtil.getExtension(fileName)
             return isMatchingExtension(ext)
         }
-        return true
+        true
     }
 
     boolean isMatchingFileName(final String fileName) {
-        return ((settings.getInFilePatterns().isEmpty()
-                || matchesAnyPattern(fileName, settings.getInFilePatterns()))
+        ((settings.inFilePatterns.empty
+                || matchesAnyPattern(fileName, settings.inFilePatterns))
                 &&
-                (settings.getOutFilePatterns().isEmpty()
-                        || !matchesAnyPattern(fileName, settings.getOutFilePatterns())))
+                (settings.outFilePatterns.empty
+                        || !matchesAnyPattern(fileName, settings.outFilePatterns)))
     }
 
     boolean isMatchingFileType(final FileType fileType) {
-        return ((settings.getInFileTypes().isEmpty()
-                || settings.getInFileTypes().contains(fileType))
+        ((settings.inFileTypes.empty
+                || fileType in settings.inFileTypes)
                 &&
-                (settings.getOutFileTypes().isEmpty()
-                        || !settings.getOutFileTypes().contains(fileType)))
+                (settings.outFileTypes.empty
+                        || !settings.outFileTypes.contains(fileType)))
     }
 
     boolean isMatchingFileSize(final long fileSize) {
-        return ((settings.getMaxSize() <= 0 || fileSize <= settings.getMaxSize())
+        ((settings.maxSize <= 0 || fileSize <= settings.maxSize)
                 &&
-                (settings.getMinSize() <= 0 || fileSize >= settings.getMinSize()))
+                (settings.minSize <= 0 || fileSize >= settings.minSize))
     }
 
     boolean isMatchingLastMod(final Instant lastMod) {
-        return ((settings.getMaxLastMod() == null
-                || lastMod <= settings.getMaxLastMod().toInstant(ZoneOffset.UTC)
+        ((settings.maxLastMod == null
+                || lastMod <= settings.maxLastMod.toInstant(ZoneOffset.UTC)
                 &&
-                (settings.getMinLastMod() == null
-                        || lastMod >= settings.getMinLastMod().toInstant(ZoneOffset.UTC))))
+                (settings.minLastMod == null
+                        || lastMod >= settings.minLastMod.toInstant(ZoneOffset.UTC))))
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
-        return hasMatchingExtension(fr)
+        hasMatchingExtension(fr)
                 && isMatchingFileName(fr.path.fileName.toString())
                 && isMatchingFileType(fr.fileType)
                 && isMatchingFileSize(fr.fileSize)
@@ -142,7 +142,7 @@ class Finder {
     }
 
     boolean isMatchingArchiveFile(final Path path) {
-        def fileName = path.fileName.toString()
+        String fileName = path.fileName.toString()
         if (!settings.inArchiveExtensions.empty || !settings.outArchiveExtensions.empty) {
             String ext = FileUtil.getExtension(fileName)
             if ((!settings.inArchiveExtensions.empty && !settings.inArchiveExtensions.contains(ext))
@@ -153,7 +153,7 @@ class Finder {
                 return false
             }
         }
-        return (settings.inArchiveFilePatterns.empty
+        (settings.inArchiveFilePatterns.empty
                 ||
                 matchesAnyPattern(fileName, settings.inArchiveFilePatterns))
                 &&
@@ -174,9 +174,13 @@ class Finder {
             }
         }
 
+        FileType fileType = fileTypes.getFileType(path)
+        if (fileType == FileType.ARCHIVE && !settings.includeArchives && !settings.archivesOnly) {
+            return Optional.empty()
+        }
+
         long fileSize = 0L
         FileTime lastMod = null
-
         if (settings.needSize() || settings.needLastMod()) {
             try {
                 BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class)
@@ -188,9 +192,9 @@ class Finder {
             }
         }
 
-        def fileResult = new FileResult(path, fileTypes.getFileType(path), fileSize, lastMod)
+        FileResult fileResult = new FileResult(path, fileType, fileSize, lastMod)
         if (fileResult.fileType == FileType.ARCHIVE) {
-            if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFile(path)) {
+            if (isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult)
             }
             return Optional.empty()
@@ -198,20 +202,25 @@ class Finder {
         if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
             return Optional.of(fileResult)
         }
-        return Optional.empty()
+        Optional.empty()
     }
 
     final void sortFileResults(List<FileResult> fileResults) {
-        if (settings.sortBy == SortBy.FILENAME) {
-            fileResults.sort((fr1, fr2) -> fr1.compareByName(fr2, settings.sortCaseInsensitive))
-        } else if (settings.sortBy == SortBy.FILESIZE) {
-            fileResults.sort((fr1, fr2) -> fr1.compareBySize(fr2, settings.sortCaseInsensitive))
-        } else if (settings.sortBy == SortBy.FILETYPE) {
-            fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.sortCaseInsensitive))
-        } else if (settings.sortBy == SortBy.LASTMOD) {
-            fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
-        } else {
-            fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.sortCaseInsensitive))
+        switch (settings.sortBy) {
+            case SortBy.FILENAME:
+                fileResults.sort((fr1, fr2) -> fr1.compareByName(fr2, settings.sortCaseInsensitive))
+                break
+            case SortBy.FILESIZE:
+                fileResults.sort((fr1, fr2) -> fr1.compareBySize(fr2, settings.sortCaseInsensitive))
+                break
+            case SortBy.FILETYPE:
+                fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.sortCaseInsensitive))
+                break
+            case SortBy.LASTMOD:
+                fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
+                break
+            default:
+                fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.sortCaseInsensitive))
         }
         if (settings.sortDescending) {
             Collections.reverse(fileResults)
@@ -219,14 +228,17 @@ class Finder {
     }
 
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
-        def pathResults = new ArrayList<FileResult>()
-        if (maxDepth > -1 && currentDepth > maxDepth) {
+        List<FileResult> pathResults = new ArrayList<FileResult>()
+        boolean recurse = true
+        if (currentDepth == maxDepth) {
+            recurse = false
+        } else if (maxDepth > -1 && currentDepth > maxDepth) {
             return pathResults
         }
-        def pathDirs = new ArrayList<Path>();
+        List<Path> pathDirs = new ArrayList<Path>()
         try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
             for (Path path : pathContents) {
-                if (Files.isDirectory(path) && isMatchingDir(path)) {
+                if (Files.isDirectory(path) && recurse && isMatchingDir(path)) {
                     pathDirs.add(path)
                 } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
                     Optional<FileResult> optFileResult = filterToFileResult(path)
@@ -239,22 +251,38 @@ class Finder {
         } catch (IOException e) {
             e.printStackTrace()
         }
-        return pathResults
+        pathResults
     }
 
-    private List<FileResult> findPath(final Path filePath) {
+    private List<FileResult> findPath(final Path filePath) throws FindException {
         if (Files.isDirectory(filePath)) {
-            if (settings.getRecursive()) {
-                return recFindPath(filePath, settings.getMinDepth(), settings.getMaxDepth(), 1)
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (settings.maxDepth == 0) {
+                return Collections.emptyList()
             }
-            return recFindPath(filePath, settings.getMinDepth(), 1, 1)
+            if (isMatchingDir(filePath)) {
+                int maxDepth = settings.maxDepth
+                if (!settings.getRecursive()) {
+                    maxDepth = 1
+                }
+                return recFindPath(filePath, settings.minDepth, maxDepth, 1)
+            } else {
+                throw new FindException('Startpath does not match find settings')
+            }
         } else if (Files.isRegularFile(filePath)) {
-            Optional<FileResult> optFileResult = filterToFileResult(filePath);
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (settings.minDepth > 0) {
+                return Collections.emptyList()
+            }
+            Optional<FileResult> optFileResult = filterToFileResult(filePath)
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get())
+            } else {
+                throw new FindException('Startpath does not match find settings')
             }
+        } else {
+            throw new FindException("Startpath is not a findable file type")
         }
-        return new ArrayList<>();
     }
 
     final List<FileResult> find() throws FindException {
@@ -270,31 +298,8 @@ class Finder {
 //        List<Future<List<FileResult>>> futures = new ArrayList<>()
 
         settings.paths.each { path ->
-            if (Files.isDirectory(path)) {
-                // if maxDepth is zero, we can skip since a directory cannot be a result
-                if (settings.maxDepth != 0) {
-                    if (isMatchingDir(path)) {
-                        // TODO: the findPath call is returning results, but for some reason the future result is null
-                        fileResults.addAll(findPath(path))
-//                        futures.add(executorService.submit{findPath(path)} as Future<List<FileResult>>)
-                    } else {
-                        throw new FindException('Startpath does not match find settings')
-                    }
-                }
-            } else if (Files.isRegularFile(path)) {
-                // if minDepth > zero, we can skip since the file is at depth zero
-                if (settings.minDepth <= 0) {
-                    if (isMatchingDir(path.getParent())) {
-                        // TODO: the findPath call is returning results, but for some reason the future result is null
-                        fileResults.addAll(findPath(path))
-//                        futures.add(executorService.submit{findPath(path)} as Future<List<FileResult>>)
-                    } else {
-                        throw new FindException('Startpath does not match find settings')
-                    }
-                }
-            } else {
-                throw new FindException('Startpath is not a findable file type')
-            }
+            fileResults.addAll(findPath(path))
+//            futures.add(executorService.submit{findPath(path)} as Future<List<FileResult>>)
         }
 
 //        futures.each { future ->
@@ -308,6 +313,6 @@ class Finder {
 //        executorService.shutdown()
 
         sortFileResults(fileResults)
-        return fileResults
+        fileResults
     }
 }

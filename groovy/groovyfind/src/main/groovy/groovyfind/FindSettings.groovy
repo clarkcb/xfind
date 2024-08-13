@@ -12,7 +12,6 @@ import java.util.regex.Pattern
 
 @CompileStatic
 class DefaultFindSettings {
-
     static final boolean ARCHIVES_ONLY = false
     static final boolean DEBUG = false
     static final boolean INCLUDE_ARCHIVES = false
@@ -30,7 +29,6 @@ class DefaultFindSettings {
     static final boolean SORT_CASE_INSENSITIVE = false
     static final boolean SORT_DESCENDING = false
     static final boolean VERBOSE = false
-
 }
 
 @CompileStatic
@@ -130,13 +128,13 @@ class FindSettings {
             lastMod = LocalDateTime.parse(lastModString)
         } catch (DateTimeParseException e) {
             try {
-                def maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
+                LocalDate maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE)
                 lastMod = maxLastModDate.atTime(0, 0, 0)
             } catch (DateTimeParseException e2) {
                 System.out.println('Unable to parse lastModString')
             }
         }
-        return lastMod
+        lastMod
     }
 
     void setMaxLastModFromString(final String maxLastModString) {
@@ -226,17 +224,17 @@ class FindSettings {
     }
 
     boolean needLastMod() {
-        return this.sortBy == SortBy.LASTMOD ||
+        this.sortBy == SortBy.LASTMOD ||
                 this.maxLastMod != null || this.minLastMod != null
     }
 
     boolean needSize() {
-        return this.sortBy == SortBy.FILESIZE ||
+        this.sortBy == SortBy.FILESIZE ||
                 this.maxSize > 0 || this.minSize > 0
     }
 
     private static String setToString(final Set<String> set, final boolean quote) {
-        def sb = new StringBuilder('[')
+        StringBuilder sb = new StringBuilder('[')
         int elemCount = 0
         set.each { s ->
             if (elemCount > 0) {
@@ -250,37 +248,38 @@ class FindSettings {
             elemCount++
         }
         sb.append(']')
-        return sb.toString()
+        sb.toString()
     }
 
     private static String stringSetToString(final Set<String> set) {
-        return setToString(set, true)
+        setToString(set, true)
     }
 
     private static String pathSetToString(final Set<Path> set) {
-        def stringSet = set.collect { p -> p.toString() }.toSet()
-        return setToString(stringSet, true)
+        Set<String> stringSet = set.collect { p -> p.toString() }.toSet()
+        setToString(stringSet, true)
     }
 
     private static String patternSetToString(final Set<Pattern> set) {
-        def stringSet = set.collect { p -> p.toString() }.toSet()
-        return setToString(stringSet, true)
+        Set<String> stringSet = set.collect { p -> p.toString() }.toSet()
+        setToString(stringSet, true)
     }
 
     private static String fileTypeSetToString(final Set<FileType> set) {
-        def stringSet = set.collect { ft -> ft.toName() }.toSet()
-        return setToString(stringSet, false)
+        Set<String> stringSet = set.collect { ft -> ft.toName() }.toSet()
+        setToString(stringSet, false)
     }
 
     private static String localDateTimeToString(final LocalDateTime dt) {
         if (dt == null) {
-            return '0'
+            '0'
+        } else {
+            "\"${dt}\""
         }
-        return "\"${dt}\""
     }
 
     String toString() {
-        return 'FindSettings(' +
+        'FindSettings(' +
                 'archivesOnly=' + this.archivesOnly +
                 ', debug=' + this.debug +
                 ', inArchiveExtensions=' + stringSetToString(this.inArchiveExtensions) +

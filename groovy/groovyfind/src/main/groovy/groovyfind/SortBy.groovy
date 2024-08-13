@@ -7,10 +7,10 @@ enum SortBy {
     FILETYPE('filetype'),
     LASTMOD('lastmod');
 
-    private final String name;
+    private final String name
 
     SortBy(final String name) {
-        this.name = name;
+        this.name = name
     }
 
     static SortBy forName(final String name) {

@@ -32,41 +32,46 @@ class FileResult {
 
     private static int compareStrings(final String first, final String second, final boolean sortCaseInsensitive) {
         if (sortCaseInsensitive) {
-            return first.toLowerCase() <=> second.toLowerCase()
+            first.toLowerCase() <=> second.toLowerCase()
+        } else {
+            first <=> second
         }
-        return first <=> second
     }
 
     int compareByPath(final FileResult other, final boolean sortCaseInsensitive) {
         int pComp = compareStrings(this.path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
         if (pComp == 0) {
-            return compareStrings(this.path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
+            compareStrings(this.path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
+        } else {
+            pComp
         }
-        return pComp
     }
 
     int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
         int fComp = compareStrings(this.path.fileName.toString(), other.path.fileName.toString(), sortCaseInsensitive)
         if (fComp == 0) {
-            return compareStrings(this.path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
+            compareStrings(this.path.parent.toString(), other.path.parent.toString(), sortCaseInsensitive)
+        } else {
+            fComp
         }
-        return fComp
     }
 
     int compareBySize(final FileResult other, final boolean sortCaseInsensitive) {
         int fsComp = this.fileSize <=> other.fileSize
         if (fsComp == 0) {
-            return compareByPath(other, sortCaseInsensitive)
+            compareByPath(other, sortCaseInsensitive)
+        } else {
+            fsComp
         }
-        return fsComp
     }
 
     int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
         int ftComp = this.fileType <=> other.fileType
         if (ftComp == 0) {
-            return compareByPath(other, sortCaseInsensitive)
+            compareByPath(other, sortCaseInsensitive)
+        } else {
+            ftComp
         }
-        return ftComp
     }
 
     int compareByLastMod(final FileResult other, final boolean sortCaseInsensitive) {
@@ -75,9 +80,10 @@ class FileResult {
         if (other.lastMod == null) return -1
         int lmComp = this.lastMod <=> other.lastMod
         if (lmComp == 0) {
-            return compareByPath(other, sortCaseInsensitive)
+            compareByPath(other, sortCaseInsensitive)
+        } else {
+            lmComp
         }
-        return lmComp
     }
 
     String toString() {
@@ -92,10 +98,7 @@ class FileResult {
             sb.append(CONTAINER_SEPARATOR)
         }
         sb.append(path.toString())
-//        if (stat != null) {
-//            sb.append(" (").append(stat.lastModifiedTime().toInstant().getEpochSecond()).append(")");
-//        }
-        return sb.toString()
+        sb.toString()
     }
 
 }

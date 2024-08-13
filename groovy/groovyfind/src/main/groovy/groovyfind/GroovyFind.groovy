@@ -16,7 +16,7 @@ class GroovyFind {
     }
 
     private static List<String> getMatchingDirs(final List<FileResult> fileResults) {
-        return fileResults.collect { fr -> fr.path.parent.toString() }.unique().sort()
+        fileResults.collect { fr -> fr.path.parent.toString() }.unique().sort()
     }
 
     private static void printMatchingDirs(final List<FileResult> fileResults) {
@@ -30,7 +30,7 @@ class GroovyFind {
     }
 
     private static List<String> getMatchingFiles(final List<FileResult> fileResults) {
-        return fileResults.stream().map(FileResult::toString).collect(Collectors.toList())
+        fileResults.stream().map(FileResult::toString).collect(Collectors.toList())
     }
 
     private static void printMatchingFiles(final List<FileResult> fileResults) {
@@ -45,7 +45,7 @@ class GroovyFind {
 
     static void main(final String[] args) {
         try {
-            def options = new FindOptions()
+            FindOptions options = new FindOptions()
 
             try {
                 FindSettings settings = options.settingsFromArgs(args)
@@ -60,9 +60,9 @@ class GroovyFind {
                     options.usage(0)
                 }
 
-                def finder = new Finder(settings)
+                Finder finder = new Finder(settings)
                 finder.validateSettings()
-                def fileResults = finder.find()
+                List<FileResult> fileResults = finder.find()
 
                 if (settings.printDirs) {
                     printMatchingDirs(fileResults)
