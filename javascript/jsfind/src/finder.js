@@ -157,10 +157,16 @@ class Finder {
             this.isMatchingArchiveFileName(fr.fileName);
     }
 
-    filePathToFileResult(fp, stat) {
+    filterToFileResult(fp, stat) {
+        if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
+            return null;
+        }
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
         const fileType = this.fileTypes.getFileType(fileName);
+        if (fileType === FileType.ARCHIVE && !this.settings.includeArchives && !this.settings.archivesOnly) {
+            return null;
+        }
         let fileSize = 0;
         let lastMod = 0;
         if (this.settings.needLastMod() || this.settings.needSize()) {
@@ -168,16 +174,9 @@ class Finder {
             if (this.settings.needSize()) fileSize = stat.size;
             if (this.settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
-    }
-
-    filterToFileResult(fp, stat) {
-        if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
-            return null;
-        }
-        const fr = this.filePathToFileResult(fp, stat);
+        const fr = new FileResult(dirname, fileName, fileType, fileSize, lastMod);
         if (fr.fileType === FileType.ARCHIVE) {
-            if (this.settings.findArchives && this.isMatchingArchiveFileResult(fr)) {
+            if (this.isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
             return null;
@@ -188,33 +187,29 @@ class Finder {
         return null;
     }
 
-    async recGetFileResults(currentDir, depth) {
-        if (this.settings.maxDepth > 0 && depth > this.settings.maxDepth) {
+    async recGetFileResults(currentDir, minDepth, maxDepth, currentDepth) {
+        let fileResults = [];
+        let recurse = true;
+        if (currentDepth === maxDepth) {
+            recurse = false;
+        } else if (maxDepth > -1 && currentDepth > maxDepth) {
             return [];
         }
         let findDirs = [];
-        let fileResults = [];
-        let files = await fsReaddirAsync(currentDir);
-        let filePaths = files.map(f => {
-            return path.join(currentDir, f);
-        });
+        let filePaths = (await fsReaddirAsync(currentDir)).map(f => path.join(currentDir, f));
         for (let filePath of filePaths) {
             const stats = fs.statSync(filePath);
-            if (stats.isDirectory()) {
-                if (this.settings.recursive && this.isMatchingDir(filePath)) {
-                    findDirs.push(filePath);
-                }
-            } else if (stats.isFile()) {
-                if (depth >= this.settings.minDepth) {
-                    const fr = this.filterToFileResult(filePath, stats);
-                    if (fr !== null) {
-                        fileResults.push(fr);
-                    }
+            if (stats.isDirectory() && recurse && this.isMatchingDir(filePath)) {
+                findDirs.push(filePath);
+            } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
+                const fr = this.filterToFileResult(filePath, stats);
+                if (fr !== null) {
+                    fileResults.push(fr);
                 }
             }
         }
 
-        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, depth + 1)));
+        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1)));
         subDirFindFileArrays.forEach(subDirFindFiles => {
             fileResults = fileResults.concat(subDirFindFiles);
         });
@@ -230,7 +225,11 @@ class Finder {
                 return [];
             }
             if (this.isMatchingDir(startPath)) {
-                fileResults = await this.recGetFileResults(startPath, 1);
+                let maxDepth = this.settings.maxDepth;
+                if (!this.settings.recursive) {
+                    maxDepth = 1;
+                }
+                fileResults = await this.recGetFileResults(startPath, this.settings.minDepth, maxDepth, 1);
             } else {
                 throw new FindError("Startpath does not match find settings");
             }

@@ -162,10 +162,18 @@ export class Finder {
             && this.isMatchingArchiveFileName(fr.fileName);
     }
 
-    public filePathToFileResult(fp: string, stat: fs.Stats | null = null): FileResult {
+    public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
+        if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
+            return null;
+        }
         const dirname = path.dirname(fp) || '.';
         const fileName = path.basename(fp);
         const fileType = FileTypes.getFileType(fileName);
+        if (fileType === FileType.Archive
+            && !this._settings.includeArchives
+            && !this._settings.archivesOnly) {
+            return null;
+        }
         let fileSize = 0;
         let lastMod = 0;
         if (this._settings.needLastMod() || this._settings.needSize()) {
@@ -173,16 +181,9 @@ export class Finder {
             if (this._settings.needSize()) fileSize = stat.size;
             if (this._settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
-        return new FileResult(dirname, fileName, fileType, fileSize, lastMod);
-    }
-
-    public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
-        if (!this._settings.includeHidden && FileUtil.isHidden(fp)) {
-            return null;
-        }
-        const fr = this.filePathToFileResult(fp, stat);
+        const fr = new FileResult(dirname, fileName, fileType, fileSize, lastMod);
         if (fr.fileType === FileType.Archive) {
-            if (this._settings.includeArchives && this.isMatchingArchiveFileResult(fr)) {
+            if (this.isMatchingArchiveFileResult(fr)) {
                 return fr;
             }
             return null;
@@ -193,31 +194,31 @@ export class Finder {
         return null;
     }
 
-    private recGetFileResults(currentDir: string, depth: number): FileResult[] {
-        if (this._settings.maxDepth > 0 && depth > this._settings.maxDepth) {
+    private recGetFileResults(currentDir: string, minDepth: number, maxDepth: number, currentDepth: number): FileResult[] {
+        let fileResults: FileResult[] = [];
+        let recurse: boolean = true;
+        if (currentDepth === maxDepth) {
+            recurse = false;
+        } else if (maxDepth > -1 && currentDepth > maxDepth) {
             return [];
         }
         const findDirs: string[] = [];
-        let fileResults: FileResult[] = [];
         fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
         }).forEach((fp: string) => {
             const stats = fs.statSync(fp);
-            if (stats.isDirectory()) {
-                if (this._settings.recursive && this.isMatchingDir(fp)) {
-                    findDirs.push(fp);
-                }
-            } else if (stats.isFile()) {
-                if (depth >= this._settings.minDepth) {
-                    const fr = this.filterToFileResult(fp);
-                    if (fr !== null) {
-                        fileResults.push(fr);
-                    }
+            if (stats.isDirectory() && recurse && this.isMatchingDir(fp)) {
+                findDirs.push(fp);
+            } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
+                const fr = this.filterToFileResult(fp);
+                if (fr !== null) {
+                    fileResults.push(fr);
                 }
             }
         });
         findDirs.forEach(d => {
-            fileResults = fileResults.concat(this.recGetFileResults(d, depth + 1));
+            fileResults = fileResults.concat(
+                this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1));
         });
         return fileResults;
     }
@@ -231,7 +232,12 @@ export class Finder {
                 return [];
             }
             if (this.isMatchingDir(startPath)) {
-                fileResults = fileResults.concat(this.recGetFileResults(startPath, 1));
+                let maxDepth = this._settings.maxDepth;
+                if (!this._settings.recursive) {
+                    maxDepth = 1;
+                }
+                fileResults = fileResults.concat(
+                    this.recGetFileResults(startPath, this._settings.minDepth, maxDepth, 1));
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
