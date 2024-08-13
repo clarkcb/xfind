@@ -51,11 +51,18 @@ public static class FileUtil
 		return filePath;
 	}
 
-	public static IEnumerable<string> GetPathElems(string filePath)
+	public static IEnumerable<string> GetDirElems(DirectoryInfo dir)
 	{
-		var normPath = NormalizePath(filePath);
-		return normPath.Split(Path.DirectorySeparatorChar).ToList()
-			.Where(e => !string.IsNullOrEmpty(e));
+		var elems = new List<string> { dir.Name };
+		var parent = dir.Parent;
+		var root = Path.DirectorySeparatorChar.ToString();
+		while (parent != null && parent.Name != root)
+		{
+			elems.Add(parent.Name);
+			parent = parent.Parent;
+		}
+
+		return elems;
 	}
 
 	public static bool IsDotDir(string fileName)

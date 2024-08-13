@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 
 namespace CsFindLib;
@@ -51,7 +50,8 @@ public class Finder
 			AttributesToSkip = FileAttributes.System,
 			IgnoreInaccessible = true,
 			MatchType = MatchType.Simple,
-			RecurseSubdirectories = Settings.Recursive,
+			// Set recursion to false because we will do it manually
+			RecurseSubdirectories = false,
 			ReturnSpecialDirectories = false
 		};
 		if (!Settings.IncludeArchives)
@@ -61,10 +61,6 @@ public class Finder
 		if (!Settings.IncludeHidden)
 		{
 			enumerationOptions.AttributesToSkip |= FileAttributes.Hidden;
-		}
-		if (Settings.MaxDepth > 0)
-		{
-			enumerationOptions.MaxRecursionDepth = Settings.MaxDepth;
 		}
 
 		return enumerationOptions;
@@ -87,7 +83,7 @@ public class Finder
 			return true;
 		}
 
-		var elems = FileUtil.GetPathElems(d.FullName).ToList();
+		var elems = FileUtil.GetDirElems(d).ToList();
 
 		if (!Settings.IncludeHidden)
 		{
@@ -192,63 +188,68 @@ public class Finder
 		return null;
 	}
 
-	private IEnumerable<FileResult> GetFileResults(string filePath)
+	private IEnumerable<FileResult> RecGetFileResults(DirectoryInfo dir, int minDepth, int maxDepth, int currentDepth)
 	{
-		var expandedPath = FileUtil.ExpandPath(filePath);
-		var pathSepCount = FileUtil.SepCount(expandedPath);
 		var pathResults = new List<FileResult>();
-
-		bool MatchDirectory(FileInfo f, int startPathSepCount)
+		var recurse = true;
+		if (currentDepth == maxDepth)
 		{
-			if (f.Directory == null) return true;
-			var fileSepCount = FileUtil.SepCount(f.FullName);
-			var depth = fileSepCount - startPathSepCount;
-			return depth >= Settings.MinDepth
-			       && (Settings.MaxDepth < 1 || depth <= Settings.MaxDepth)
-			       && IsMatchingDirectory(f.Directory);
+			recurse = false;
+		}
+		else if (maxDepth > -1 && currentDepth > maxDepth)
+		{
+			return pathResults;
 		}
 
-		if (Directory.Exists(expandedPath))
+		if (minDepth < 0 || currentDepth >= minDepth)
 		{
-			// if MaxDepth is zero, we can skip since a directory cannot be a result
-			if (Settings.MaxDepth != 0)
-			{
-				// 1) Sequential file processing
-				pathResults.AddRange(new DirectoryInfo(expandedPath).EnumerateFiles("*", _enumerationOptions)
-					.Where(f => MatchDirectory(f, pathSepCount))
-					.Select(FilterToFileResult)
-					.Where(fr => fr != null)
-					.Select(fr => fr!));
-
-				// // 2) Parallel file processing - this is actually slower than 1
-				// var fileResultBag = new ConcurrentBag<FileResult>();
-				// new DirectoryInfo(expandedPath).EnumerateFiles("*", findOption)
-				// 	.AsParallel()
-				// 	.Where(f => MatchDirectory(f, pathSepCount))
-				// 	.Select(FilterToFileResult)
-				// 	.Where(fr => fr != null)
-				// 	.ForAll(fr => 
-				// 	{
-				// 		fileResultBag.Add(fr!);
-				// 	});
-				// pathResults.AddRange(fileResultBag);
-			}
+			pathResults.AddRange(dir.EnumerateFiles("*", _enumerationOptions)
+				.Select(FilterToFileResult)
+				.Where(fr => fr != null)
+				.Select(fr => fr!));
 		}
-		else if (File.Exists(expandedPath))
+
+		if (recurse)
 		{
-			// if MinDepth > zero, we can skip since the file is at depth zero
-			if (Settings.MinDepth <= 0)
+			var pathDirs = dir.EnumerateDirectories().Where(IsMatchingDirectory);
+			foreach (var pathDir in pathDirs)
 			{
-				var fi = new FileInfo(expandedPath);
-				var fr = FilterToFileResult(fi);
-				if (fr != null)
-				{
-					pathResults.Add(fr);
-				}
+				pathResults.AddRange(RecGetFileResults(pathDir, minDepth, maxDepth, currentDepth + 1));
 			}
 		}
 
 		return pathResults;
+	}
+
+	private IEnumerable<FileResult> GetFileResults(string filePath)
+	{
+		if (Directory.Exists(filePath))
+		{
+			// if MaxDepth is zero, we can skip since a directory cannot be a result
+			if (Settings.MaxDepth == 0)
+			{
+				return [];
+			}
+			var dir = new DirectoryInfo(filePath);
+			if (IsMatchingDirectory(dir))
+			{
+				var maxDepth = Settings.Recursive ? Settings.MaxDepth : 1;
+				return RecGetFileResults(dir, Settings.MinDepth, maxDepth, 1);
+			}
+		}
+		if (File.Exists(filePath))
+		{
+			// if MinDepth > zero, we can skip since the file is at depth zero
+			if (Settings.MinDepth <= 0)
+			{
+				var fileResult = FilterToFileResult(new FileInfo(filePath));
+				if (fileResult != null)
+				{
+					return new[] { fileResult };
+				}
+			}
+		}
+		return [];
 	}
 
 	// private IEnumerable<FileResult> GetAllFileResultsTasks()
@@ -284,13 +285,14 @@ public class Finder
 				}
 			});
 
-		return fileResultsBag.ToList();
+		var fileResults = fileResultsBag.ToList();
+		SortFileResults(fileResults);
+		return fileResults;
 	}
 
 	public IEnumerable<FileResult> Find()
 	{
-		var fileResults = GetAllFileResults().ToList();
-		SortFileResults(fileResults);
+		var fileResults = GetAllFileResults();
 		return fileResults;
 	}
 

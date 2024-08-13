@@ -268,7 +268,6 @@ public class FindSettings
 		var elemCount = 0;
 		foreach (var x in enumerable)
 		{
-			var t = x!.GetType();
 			if (elemCount > 0)
 				sb.Append(", ");
 			if (quote)
