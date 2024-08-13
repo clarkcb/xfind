@@ -192,9 +192,13 @@ public class Finder {
             }
         }
 
+        FileType fileType = fileTypes.getFileType(path);
+        if (fileType == FileType.ARCHIVE && !settings.getIncludeArchives() && !settings.getArchivesOnly()) {
+            return Optional.empty();
+        }
+
         long fileSize = 0L;
         FileTime lastMod = null;
-
         if (settings.needLastMod() || settings.needSize()) {
             try {
                 BasicFileAttributes stat = Files.readAttributes(path, BasicFileAttributes.class);
@@ -206,9 +210,9 @@ public class Finder {
             }
         }
 
-        FileResult fileResult = new FileResult(path, fileTypes.getFileType(path), fileSize, lastMod);
+        FileResult fileResult = new FileResult(path, fileType, fileSize, lastMod);
         if (fileResult.getFileType() == FileType.ARCHIVE) {
-            if ((settings.getIncludeArchives() || settings.getArchivesOnly()) && isMatchingArchiveFile(path)) {
+            if (isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult);
             }
             return Optional.empty();
@@ -238,13 +242,16 @@ public class Finder {
 
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
         List<FileResult> pathResults = new ArrayList<>();
-        if (maxDepth > -1 && currentDepth > maxDepth) {
+        boolean recurse = true;
+        if (currentDepth == maxDepth) {
+            recurse = false;
+        } else if (maxDepth > -1 && currentDepth > maxDepth) {
             return pathResults;
         }
         List<Path> pathDirs = new ArrayList<>();
         try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
             for (Path path : pathContents) {
-                if (Files.isDirectory(path) && isMatchingDir(path)) {
+                if (Files.isDirectory(path) && recurse && isMatchingDir(path)) {
                     pathDirs.add(path);
                 } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
                     Optional<FileResult> optFileResult = filterToFileResult(path);
@@ -260,22 +267,38 @@ public class Finder {
         return pathResults;
     }
 
-    private List<FileResult> findPath(final Path filePath) {
+    private List<FileResult> findPath(final Path filePath) throws FindException {
         if (Files.isDirectory(filePath)) {
-            if (settings.getRecursive()) {
-                return recFindPath(filePath, settings.getMinDepth(), settings.getMaxDepth(), 1);
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (settings.getMaxDepth() == 0) {
+                return Collections.emptyList();
             }
-            return recFindPath(filePath, settings.getMinDepth(), 1, 1);
+            if (isMatchingDir(filePath)) {
+                int maxDepth = settings.getMaxDepth();
+                if (!settings.getRecursive()) {
+                    maxDepth = 1;
+                }
+                return recFindPath(filePath, settings.getMinDepth(), maxDepth, 1);
+            } else {
+                throw new FindException("Startpath does not match find settings");
+            }
         } else if (Files.isRegularFile(filePath)) {
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (settings.getMinDepth() > 0) {
+                return Collections.emptyList();
+            }
             Optional<FileResult> optFileResult = filterToFileResult(filePath);
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get());
+            } else {
+                throw new FindException("Startpath does not match find settings");
             }
+        } else {
+            throw new FindException("Startpath is not a findable file type");
         }
-        return new ArrayList<>();
     }
 
-    public final List<FileResult> find() throws FindException {
+    private List<FileResult> findAsync() throws FindException {
         List<FileResult> fileResults = new ArrayList<>();
 
         // get thread pool the size of the number of paths to find
@@ -288,39 +311,25 @@ public class Finder {
         List<Future<List<FileResult>>> futures = new ArrayList<>();
 
         for (var path : settings.getPaths()) {
-            if (Files.isDirectory(path)) {
-                // if maxDepth is zero, we can skip since a directory cannot be a result
-                if (settings.getMaxDepth() != 0) {
-                    if (isMatchingDir(path)) {
-                        futures.add(executorService.submit(() -> findPath(path)));
-                    } else {
-                        throw new FindException("Startpath does not match find settings");
-                    }
-                }
-            } else if (Files.isRegularFile(path)) {
-                // if minDepth > zero, we can skip since the file is at depth zero
-                if (settings.getMinDepth() <= 0) {
-                    if (isMatchingDir(path.getParent())) {
-                        futures.add(executorService.submit(() -> findPath(path)));
-                    } else {
-                        throw new FindException("Startpath does not match find settings");
-                    }
-                }
-            } else {
-                throw new FindException("Startpath is not a findable file type");
-            }
+            futures.add(executorService.submit(() -> findPath(path)));
         }
 
         for (Future<List<FileResult>> future : futures) {
             try {
                 fileResults.addAll(future.get());
             } catch (InterruptedException | ExecutionException e) {
-                throw new RuntimeException(e);
+                throw new FindException(e.getCause().getMessage());
             }
         }
 
         executorService.shutdown();
 
+        sortFileResults(fileResults);
+        return fileResults;
+    }
+
+    public final List<FileResult> find() throws FindException {
+        List<FileResult> fileResults = findAsync();
         sortFileResults(fileResults);
         return fileResults;
     }
