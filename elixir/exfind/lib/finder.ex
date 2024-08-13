@@ -23,39 +23,6 @@ defmodule ExFind.Finder do
          or !StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.out_dir_patterns))
   end
 
-  defp process_dirs(finder, dirs, depth) do
-    # IO.puts("process_dirs(#{inspect(dirs)})")
-    tasks = Enum.map(dirs, fn d -> Task.async(fn -> find_dir(finder, d, depth) end) end)
-    # IO.puts("tasks: #{inspect(tasks)})")
-    Task.await_many(tasks) |> List.flatten()
-  end
-
-  defp find_in_dir(finder, dir, depth) do
-    # IO.puts("find_in_dir(#{dir})")
-    {dirs, files} = File.ls!(dir)
-                    |> Enum.map(fn f -> Path.join(dir, f) end)
-                    |> Enum.filter(fn f -> File.regular?(f) or File.dir?(f) end)
-                    |> Enum.split_with(fn f -> File.dir?(f) end)
-    file_results = if depth >= finder.settings.min_depth do
-      Enum.map(files, fn f -> find_file(finder, f) end) |> List.flatten()
-    else
-      []
-    end
-    # dir_results = Enum.map(dirs, fn d -> find_dir(finder, d, depth + 1) end) |> List.flatten()
-    dir_results = if Enum.empty?(dirs), do: [], else: process_dirs(finder, dirs, depth + 1)
-    file_results ++ dir_results
-  end
-
-  def find_dir(finder, dir, depth) do
-    # IO.puts("find_dir(#{dir})")
-    cond do
-      !finder.settings.recursive and depth > 1 -> []
-      finder.settings.max_depth > 0 and depth > finder.settings.max_depth -> []
-      !matching_dir?(finder, dir) -> []
-      true -> find_in_dir(finder, dir, depth)
-    end
-  end
-
   defp matching_extension?(ext, in_extensions, out_extensions) do
     # IO.puts("matching_extension?(#{ext})")
     case {in_extensions, out_extensions} do
@@ -128,12 +95,6 @@ defmodule ExFind.Finder do
 
   def matching_last_mod?(finder, last_mod) do
     # IO.puts("matching_last_mod?(#{inspect(last_mod)})")
-    # if finder.settings.min_last_mod != nil do
-    #   IO.puts("min_last_mod: #{DateTime.to_unix(finder.settings.min_last_mod)}")
-    # end
-    # if finder.settings.max_last_mod != nil do
-    #   IO.puts("max_last_mod: #{DateTime.to_unix(finder.settings.max_last_mod)}")
-    # end
     (finder.settings.min_last_mod == nil
      or last_mod >= DateTime.to_unix(finder.settings.min_last_mod))
     and (finder.settings.max_last_mod == nil
@@ -161,32 +122,60 @@ defmodule ExFind.Finder do
 
   def filter_to_file_results(finder, file_path) do
     # IO.puts("filter_to_file_results(#{file_path})")
-    file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
-    {file_size, last_mod} =
-      if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
-        file_stat = File.stat!(file_path, [time: :posix])
-        {file_stat.size, file_stat.mtime}
-      else
-        {0, 0}
-      end
-    if file_type == :archive do
-      if finder.settings.include_archives and matching_archive_file?(finder, file_path, file_size, last_mod) do
-        [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
-      else
-        []
-      end
+    if not finder.settings.include_hidden and FileUtil.hidden?(Path.basename(file_path)) do
+      []
     else
-      if matching_file?(finder, file_path, file_type, file_size, last_mod) do
-        [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
-      else
+      file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
+      if file_type == :archive and not finder.settings.include_archives and not finder.settings.archives_only do
         []
+      else
+        {file_size, last_mod} =
+          if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
+            file_stat = File.stat!(file_path, [time: :posix])
+            {file_stat.size, file_stat.mtime}
+          else
+            {0, 0}
+          end
+        if file_type == :archive do
+          if matching_archive_file?(finder, file_path, file_size, last_mod) do
+            [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+          else
+            []
+          end
+        else
+          if matching_file?(finder, file_path, file_type, file_size, last_mod) do
+            [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+          else
+            []
+          end
+        end
       end
     end
   end
 
-  def find_file(finder, file_path) do
-    # IO.puts("find_file(#{file_path})")
-    filter_to_file_results(finder, file_path)
+  def rec_find_path(finder, path, min_depth, max_depth, current_depth) do
+    # IO.puts("rec_find_path(#{path})")
+    if max_depth > -1 and current_depth > max_depth do
+      []
+    else
+      {dirs, files} = File.ls!(path)
+                      |> Enum.map(fn f -> Path.join(path, f) end)
+                      |> Enum.filter(fn f -> File.regular?(f) or File.dir?(f) end)
+                      |> Enum.split_with(fn f -> File.dir?(f) end)
+      recurse = max_depth == -1 or current_depth < max_depth
+      dirs = if recurse, do: dirs, else: []
+      file_results = if min_depth < 0 or current_depth >= min_depth do
+        Enum.map(files, fn f -> filter_to_file_results(finder, f) end) |> List.flatten()
+      else
+        []
+      end
+      # dir_results = if Enum.empty?(dirs), do: [], else: process_dirs(finder, dirs, current_depth + 1)
+      dir_results = dirs
+                    |> Enum.filter(fn d -> matching_dir?(finder, d) end)
+                    |> Enum.map(fn d -> rec_find_path(finder, d, min_depth, max_depth, current_depth + 1) end)
+                    |> List.flatten()
+      file_results ++ dir_results
+    end
   end
 
   def find_path(finder, path) do
@@ -195,13 +184,18 @@ defmodule ExFind.Finder do
       if finder.settings.max_depth == 0 do
         []
       else
-        find_dir(finder, path, 1)
+        if matching_dir?(finder, path) do
+          max_depth = if finder.settings.recursive, do: finder.settings.max_depth, else: 1
+          rec_find_path(finder, path, finder.settings.min_depth, max_depth, 1)
+        else
+          []
+        end
       end
     else
       if finder.settings.min_depth > 0 do
         []
       else
-        find_file(finder, path)
+        filter_to_file_results(finder, path)
       end
     end
   end

@@ -6,7 +6,7 @@ defmodule ExFind.MixProject do
       app: :exfind,
       version: "0.1.0",
       elixir: "~> 1.17",
-      escript: [main_module: ExFind.Main, path: "./bin/exfind"],
+      escript: [main_module: ExFind.App, path: "./bin/exfind"],
       # start_permanent: Mix.env() == :prod,
       start_permanent: true,
       deps: deps(),

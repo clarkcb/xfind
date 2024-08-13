@@ -1,6 +1,6 @@
-defmodule ExFind.Main do
+defmodule ExFind.App do
   @moduledoc """
-  Documentation for `ExFind.Main`.
+  Documentation for `ExFind.App`.
   """
 
   alias ExFind.FileResult
