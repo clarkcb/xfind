@@ -5,7 +5,7 @@ import 'package:dartfind/src/file_types.dart';
 class FileResult {
   static const String containerSeparator = '!';
 
-  List<String> containers = [];
+  List<File> containers = [];
   final File file;
   final FileType fileType;
   final int fileSize;
@@ -17,7 +17,9 @@ class FileResult {
   String toString() {
     var s = '';
     if (containers.isNotEmpty) {
-      s = containers.join(containerSeparator) + containerSeparator;
+      for (var c in containers) {
+        s += c.path + containerSeparator;
+      }
     }
     s += file.path;
     return s;

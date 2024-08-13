@@ -57,6 +57,7 @@ class FileUtil {
   }
 
   static int sepCount(String filePath) {
-    return Platform.pathSeparator.allMatches(filePath).length;
+    var normPath = normalizePath(filePath);
+    return Platform.pathSeparator.allMatches(normPath).length;
   }
 }

@@ -24,7 +24,7 @@ class Finder {
       throw FindException('Startpath not defined');
     }
     for (var p in settings.paths) {
-      var startPath = FileUtil.expandPath(p);
+      var startPath = FileUtil.expandPath(p!);
       if (FileSystemEntity.typeSync(startPath) ==
           FileSystemEntityType.notFound) {
         throw FindException('Startpath not found');
@@ -176,18 +176,20 @@ class Finder {
   }
 
   Future<List<FileResult>> _getFileResultsForPath(String startPath) async {
-    var isDir = FileSystemEntity.isDirectory(startPath);
-    var isFile = FileSystemEntity.isFile(startPath);
-    return Future.wait([isDir, isFile]).then((res) {
+    return FileSystemEntity.type(startPath).then((fsType) {
       var fileResults = <FileResult>[];
       var startPathSepCount = FileUtil.sepCount(startPath);
-      if (res.first) {
+      if (fsType == FileSystemEntityType.directory) {
         // if max_depth is zero, we can skip since a directory cannot be a result
         if (settings.maxDepth == 0) {
           return [];
         }
         var dir = Directory(startPath);
-        return dir.list(recursive: settings.recursive).listen((f) async {
+        var recursive = settings.recursive;
+        if (settings.maxDepth == 1) {
+          recursive = false;
+        }
+        return dir.list(recursive: recursive).listen((f) async {
           var fileSepCount = FileUtil.sepCount(f.path);
           var depth = fileSepCount - startPathSepCount;
           if (f is File &&
@@ -200,7 +202,7 @@ class Finder {
             }
           }
         }).asFuture(fileResults);
-      } else if (res.last) {
+      } else if (fsType == FileSystemEntityType.file) {
         // if min_depth > zero, we can skip since the file is at depth zero
         if (settings.minDepth > 0) {
           return [];
@@ -326,7 +328,7 @@ class Finder {
   Future<List<FileResult>> _findFiles() async {
     var fileResults = <FileResult>[];
     var pathsFileResultsFutures =
-        settings.paths.map((p) => _getFileResultsForPath(p));
+        settings.paths.map((p) => _getFileResultsForPath(p!));
     await Future.wait(pathsFileResultsFutures).then((pathsFileResults) {
       for (var pathFileResults in pathsFileResults) {
         fileResults.addAll(pathFileResults);

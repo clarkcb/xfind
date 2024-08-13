@@ -19,7 +19,7 @@ void printMatchingDirs(List<FileResult> fileResults, FindSettings settings) {
   var dirs = getMatchingDirs(fileResults);
   if (dirs.isNotEmpty) {
     logMsg('\nMatching directories (${dirs.length}):');
-    if (settings.paths.any((p) => p.startsWith('~'))) {
+    if (settings.paths.any((p) => p!.startsWith('~'))) {
       for (var d in dirs) {
         logMsg(FileUtil.contractPath(d));
       }
@@ -39,7 +39,7 @@ void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {
   var files = getMatchingFiles(fileResults);
   if (files.isNotEmpty) {
     logMsg('\nMatching files (${files.length}):');
-    if (settings.paths.any((p) => p.startsWith('~'))) {
+    if (settings.paths.any((p) => p!.startsWith('~'))) {
       for (var f in files) {
         logMsg(FileUtil.contractPath(f));
       }

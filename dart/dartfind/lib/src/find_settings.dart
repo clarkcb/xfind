@@ -1,4 +1,5 @@
 import 'package:dartfind/src/file_types.dart';
+import 'package:path/path.dart' as path;
 
 const String filePathName = 'filepath';
 const String fileNameName = 'filename';
@@ -97,7 +98,7 @@ class FindSettings {
 
   var outFileTypes = <FileType>{};
 
-  var paths = <String>{};
+  var paths = path.PathSet();
 
   bool printDirs = false;
   bool printFiles = false;
@@ -155,6 +156,10 @@ class FindSettings {
     return '[${patterns.map((p) => '"${(p as RegExp).pattern}"').join(', ')}]';
   }
 
+  String pathSetToString(path.PathSet set) {
+    return '[${set.map((s) => '"$s"').join(', ')}]';
+  }
+
   String stringSetToString(Set<String> set) {
     return '[${set.map((s) => '"$s"').join(', ')}]';
   }
@@ -182,7 +187,7 @@ class FindSettings {
       ', outExtensions=${stringSetToString(outExtensions)}'
       ', outFilePatterns=${patternSetToString(outFilePatterns)}'
       ', outFileTypes=${fileTypeSetToString(outFileTypes)}'
-      ', paths=${stringSetToString(paths)}'
+      ', paths=${pathSetToString(paths)}'
       ', printDirs=$printDirs'
       ', printFiles=$printFiles'
       ', printUsage=$printUsage'
