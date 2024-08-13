@@ -201,26 +201,65 @@ public class Finder {
     }
 
     // gets all FileResults recursively
-    private func getFileResults(_ filePath: String) -> [FileResult] {
+    private func recGetFileResults(_ dirPath: String, minDepth: Int64, maxDepth: Int64, currentDepth: Int64) -> [FileResult] {
         var fileResults = [FileResult]()
-        if let enumerator = FileUtil.enumerator(forPath: filePath, settings: settings) {
-            for case let fileURL as URL in enumerator {
-                do {
-                    let fileAttributes = try fileURL.resourceValues(forKeys: [.isDirectoryKey, .isRegularFileKey])
-                    if fileAttributes.isDirectory! {
-                        if (settings.maxDepth > 0 && enumerator.level > settings.maxDepth)
-                            || !isMatchingDir(fileURL.path) {
-                            enumerator.skipDescendants()
-                        }
-                    } else if fileAttributes.isRegularFile! {
-                        if enumerator.level >= settings.minDepth, settings.maxDepth < 1
-                            || enumerator.level <= settings.maxDepth {
-                            if let fileResult = filterToFileResult(fileURL.path) {
-                                fileResults.append(fileResult)
-                            }
-                        }
+        var recurse: Bool = true
+        if currentDepth == maxDepth {
+            recurse = false
+        } else if (maxDepth > -1 && currentDepth > maxDepth) {
+            return fileResults
+        }
+        
+        let pathElems = try! FileManager.default.contentsOfDirectory(atPath: dirPath)
+        var pathDirs = [String]()
+
+        for pathElem in pathElems {
+            let path = FileUtil.joinPath(dirPath, childPath: pathElem)
+            if FileUtil.isDirectory(path) {
+                if recurse && isMatchingDir(pathElem) {
+                    pathDirs.append(path)
+                }
+            } else {
+                if minDepth < 0 || currentDepth >= minDepth {
+                    let fileResult = filterToFileResult(path)
+                    if fileResult != nil {
+                        fileResults.append(fileResult!)
                     }
-                } catch { print(error, fileURL) }
+                }
+            }
+        }
+        
+        for pathDir in pathDirs {
+            let pathResults = recGetFileResults(pathDir, minDepth: minDepth, maxDepth: maxDepth, currentDepth: (currentDepth + 1))
+            fileResults.append(contentsOf: pathResults)
+        }
+
+        return fileResults
+    }
+
+    // gets all FileResults recursively
+    private func getFileResults(_ filePath: String) throws -> [FileResult] {
+        var fileResults = [FileResult]()
+        if FileUtil.isDirectory(filePath) {
+            if settings.maxDepth == 0 {
+                return fileResults
+            }
+            if self.isMatchingDir(filePath) {
+                let maxDepth = settings.recursive ? settings.maxDepth : 1
+                let pathResults = recGetFileResults(filePath, minDepth: settings.minDepth, maxDepth: maxDepth, currentDepth: 1)
+                fileResults.append(contentsOf: pathResults)
+            } else {
+                throw FindError(msg: "Startpath does not match find settings")
+            }
+        } else {
+            // if minDepth > zero, we can skip since the file is at depth zero
+            if settings.minDepth > 0 {
+                return fileResults
+            }
+            if let fileResult = filterToFileResult(filePath) {
+                fileResults.append(fileResult)
+            } else {
+                throw FindError(msg: "Startpath does not match find settings")
             }
         }
         return fileResults
@@ -308,23 +347,11 @@ public class Finder {
         return sortedFileResults
     }
 
-    public func find() -> [FileResult] {
+    public func find() throws -> [FileResult] {
         var fileResults = [FileResult]()
         for p in settings.paths {
-            if FileUtil.isDirectory(p) {
-                // if maxDepth is zero, we can skip since a directory cannot be a result
-                if settings.maxDepth != 0 {
-                    let pFiles: [FileResult] = getFileResults(p)
-                    fileResults.append(contentsOf: pFiles)
-                }
-            } else {
-                // if minDepth > zero, we can skip since the file is at depth zero
-                if settings.minDepth <= 0 {
-                    if let fileResult = filterToFileResult(p) {
-                        fileResults.append(fileResult)
-                    }
-                }
-            }
+            let pathResults: [FileResult] = try getFileResults(p)
+            fileResults.append(contentsOf: pathResults)
         }
         return sortFileResults(fileResults)
     }

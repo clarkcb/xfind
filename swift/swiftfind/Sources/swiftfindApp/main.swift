@@ -43,7 +43,7 @@ func main() {
 
         let finder = try Finder(settings: settings)
 
-        let fileResults = finder.find()
+        let fileResults = try finder.find()
 
         if settings.printDirs {
             let dirs = getMatchingDirs(fileResults)
