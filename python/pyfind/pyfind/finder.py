@@ -9,20 +9,20 @@
 ###############################################################################
 """
 import os
-import sys
 from pathlib import Path
 from typing import Optional
 
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
+from .findexception import FindException
 from .findsettings import FindSettings, PatternSet, SortBy
 
 
 class Finder:
     """Finder is a class to find files based on find settings."""
 
-    __slots__ = ['settings', 'file_types', '__matching_dir_cache', 'top_down', 'follow_symlinks']
+    __slots__ = ['settings', 'file_types', '__matching_dir_cache']
 
     def __init__(self, settings: FindSettings):
         """Create a new Finder instance."""
@@ -30,9 +30,6 @@ class Finder:
         self.__validate_settings()
         self.file_types = FileTypes()
         self.__matching_dir_cache = set([])
-        # TODO: these should be set in the FindSettings instance
-        self.top_down = True
-        self.follow_symlinks = False
 
     def __validate_settings(self):
         """Validate the required settings in the FindSettings instance."""
@@ -84,17 +81,17 @@ class Finder:
             and (not self.settings.out_extensions
                  or ext not in self.settings.out_extensions)
 
-    def has_matching_archive_ext(self, file_path: Path) -> bool:
+    def has_matching_archive_ext(self, file_result: FileResult) -> bool:
         """Check whether the given extension matches find settings."""
         if self.settings.in_archive_extensions or self.settings.out_archive_extensions:
-            ext = FileUtil.get_extension(file_path.name)
+            ext = FileUtil.get_extension(file_result.path.name)
             return self.is_matching_archive_ext(ext)
         return True
 
-    def has_matching_ext(self, file_path: Path) -> bool:
+    def has_matching_ext(self, file_result: FileResult) -> bool:
         """Check whether the given extension matches find settings."""
         if self.settings.in_extensions or self.settings.out_extensions:
-            ext = FileUtil.get_extension(file_path.name)
+            ext = FileUtil.get_extension(file_result.path.name)
             return self.is_matching_ext(ext)
         return True
 
@@ -133,22 +130,18 @@ class Finder:
             and (self.settings.max_last_mod is None
                  or last_mod <= self.settings.max_last_mod.timestamp())
 
-    def is_matching_archive_file_path(self, file_path: Path, file_size: int,
-                                      last_mod: float) -> bool:
+    def is_matching_archive_file_result(self, file_result: FileResult) -> bool:
         """Check whether the given archive file matches find settings."""
-        return self.has_matching_archive_ext(file_path) \
-            and self.is_matching_archive_file_name(file_path.name) \
-            and self.is_matching_file_size(file_size) \
-            and self.is_matching_last_mod(last_mod)
+        return self.has_matching_archive_ext(file_result) \
+            and self.is_matching_archive_file_name(file_result.path.name)
 
-    def is_matching_file_path(self, file_path: Path, file_type: FileType, file_size: int,
-                              last_mod: float) -> bool:
+    def is_matching_file_result(self, file_result: FileResult) -> bool:
         """Check whether the given file matches find settings."""
-        return self.has_matching_ext(file_path) \
-            and self.is_matching_file_name(file_path.name) \
-            and self.is_matching_file_type(file_type) \
-            and self.is_matching_file_size(file_size) \
-            and self.is_matching_last_mod(last_mod)
+        return self.has_matching_ext(file_result) \
+            and self.is_matching_file_name(file_result.path.name) \
+            and self.is_matching_file_type(file_result.file_type) \
+            and self.is_matching_file_size(file_result.file_size) \
+            and self.is_matching_last_mod(file_result.last_mod)
 
     def filter_to_file_result(self, file_path: Path) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
@@ -167,93 +160,67 @@ class Finder:
                 file_size = stat.st_size
             if self.settings.need_last_mod():
                 last_mod = stat.st_mtime
+        file_result = FileResult(path=file_path, file_type=file_type, file_size=file_size,
+                                 last_mod=last_mod)
         if file_type == FileType.ARCHIVE:
-            if not self.is_matching_archive_file_path(file_path, file_size, last_mod):
-                return None
-        elif (self.settings.archives_only
-              or not self.is_matching_file_path(file_path, file_type, file_size, last_mod)):
+            if self.is_matching_archive_file_result(file_result):
+                return file_result
             return None
-        return FileResult(path=file_path, file_type=file_type, file_size=file_size,
-                          last_mod=last_mod)
+        if not self.settings.archives_only and self.is_matching_file_result(file_result):
+            return file_result
+        return None
 
-    def _file_path_walk(self, file_path: Path):
-        return file_path.walk(top_down=self.top_down, follow_symlinks=self.follow_symlinks)
-
-    def _os_walk(self, file_path: Path):
-        return os.walk(file_path, topdown=self.top_down, followlinks=self.follow_symlinks)
-
-    def get_file_results(self, file_path: Path) -> list[FileResult]:
-        """Get file results for given file path."""
-        # TODO: add the following options to FindSettings:
-        top_down = True
-        follow_symlinks = False
-
+    def _rec_get_file_results_for_path(self, file_path: Path, min_depth: int, max_depth: int,
+                                       current_depth: int) -> list[FileResult]:
+        """Recursively get file results for given file path matching min and max depth"""
         file_results = []
+        recurse = True
+        if current_depth == max_depth:
+            recurse = False
+        elif -1 < max_depth < current_depth:
+            return file_results
+        dirs = []
+        for f in file_path.iterdir():
+            if f.is_dir() and recurse and self.is_matching_dir(f):
+                dirs.append(f)
+            elif f.is_file() and (min_depth < 0 or current_depth >= min_depth):
+                fr = self.filter_to_file_result(f)
+                if fr:
+                    file_results.append(fr)
+        for d in dirs:
+            file_results.extend(self._rec_get_file_results_for_path(d, min_depth, max_depth,
+                                                                    current_depth + 1))
+        return file_results
+
+    def get_file_results_for_path(self, file_path: Path) -> list[FileResult]:
+        """Get file results for given file path."""
         if file_path.is_dir():
             # if max_depth is zero, we can skip since a directory cannot be a result
             if self.settings.max_depth == 0:
                 return []
             if self.is_matching_dir(file_path):
-                # Get a walk method appropriate to the python version
-                if sys.version_info >= (3, 12):
-                    walk = self._file_path_walk
-                else:
-                    walk = self._os_walk
-                if self.settings.recursive:
-                    # TODO: add follow_symlinks to FindSettings and set here
-                    # for root, dirs, files in file_path.walk(top_down=top_down,
-                    #                                         follow_symlinks=follow_symlinks):
-                    for root, dirs, files in walk(file_path):
-                        if isinstance(root, str):
-                            root = Path(root)
-                        if not self.is_matching_dir(root):
-                            dirs[:] = []
-                            continue
-                        if self.settings.max_depth > 0 or self.settings.min_depth > 0:
-                            root_elem_count = len(root.parts)
-                            path_elem_count = len(file_path.parts)
-                            # calculate current depth, adding 1 for the files inside the directory
-                            current_depth = root_elem_count - path_elem_count + 1
-                            # If current_depth == max_depth, set dirs to empty
-                            if current_depth == self.settings.max_depth:
-                                dirs[:] = []
-                            # If current_depth < min_depth, continue
-                            if current_depth < self.settings.min_depth:
-                                continue
-                        if top_down:
-                            # We have to get index for each dir since it changes with each del
-                            del_dirs = [d for d in dirs if not self.is_matching_dir(d)]
-                            for d in del_dirs:
-                                i = dirs.index(d)
-                                del dirs[i]
-                        files = [f for f in [root / f_ for f_ in files] if f.is_file()]
-                        if not follow_symlinks:
-                            files = [f for f in files if not f.is_symlink()]
-                        new_file_results = [self.filter_to_file_result(f) for f in files]
-                        file_results.extend([fr for fr in new_file_results if fr])
-                else:
-                    root, dirs, files = walk(file_path)
-                    # set dirs to empty list to avoid recursion
-                    dirs[:] = []
-                    files = [f for f in [root / f_ for f_ in files] if f.is_file()]
-                    if not follow_symlinks:
-                        files = [f for f in files if not f.is_symlink()]
-                    new_file_results = [self.filter_to_file_result(f) for f in files]
-                    file_results.extend([fr for fr in new_file_results if fr])
+                max_depth = self.settings.max_depth
+                if not self.settings.recursive:
+                    max_depth = 1
+                return self._rec_get_file_results_for_path(file_path, self.settings.min_depth,
+                                                           max_depth, 1)
+            else:
+                raise FindException(f'Startpath does not match find settings')
         elif file_path.is_file():
             # if min_depth > zero, we can skip since the file is at depth zero
             if self.settings.min_depth > 0:
                 return []
             fr = self.filter_to_file_result(file_path)
             if fr:
-                file_results.append(fr)
-        return file_results
+                return [fr]
+            else:
+                raise FindException(f'Startpath does not match find settings')
 
     def find_files(self) -> list[FileResult]:
         """Get the list of all files matching find settings."""
         file_results = []
         for p in self.settings.paths:
-            file_results.extend(self.get_file_results(p))
+            file_results.extend(self.get_file_results_for_path(p))
         return file_results
 
     async def find(self) -> list[FileResult]:
