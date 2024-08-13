@@ -11,9 +11,9 @@
 namespace cppfind {
     class FileResult {
     public:
-        FileResult(std::filesystem::path&& file_path, FileType file_type, uint64_t file_size,
+        FileResult(const std::filesystem::path& file_path, FileType file_type, uint64_t file_size,
                    long last_mod);
-        FileResult(std::vector<std::filesystem::path>&& containers, const std::filesystem::path& file_path,
+        FileResult(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
                    FileType file_type, uint64_t file_size, long last_mod);
         [[nodiscard]] std::vector<std::filesystem::path> containers() const;
         [[nodiscard]] std::filesystem::path file_path() const;

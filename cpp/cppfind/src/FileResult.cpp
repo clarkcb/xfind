@@ -1,13 +1,13 @@
 #include "FileResult.h"
 
 namespace cppfind {
-    FileResult::FileResult(std::filesystem::path&& file_path, const FileType file_type, const uint64_t file_size,
+    FileResult::FileResult(const std::filesystem::path& file_path, const FileType file_type, const uint64_t file_size,
         const long last_mod) :
     m_file_path{file_path}, m_file_type{file_type}, m_file_size{file_size}, m_last_mod{last_mod} {
         this->m_containers = {};
     }
 
-    FileResult::FileResult(std::vector<std::filesystem::path>&& containers, const std::filesystem::path& file_path,
+    FileResult::FileResult(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
                            const FileType file_type, const uint64_t file_size, const long last_mod) :
     m_containers{containers}, m_file_path{file_path}, m_file_type{file_type}, m_file_size{file_size},
     m_last_mod{last_mod} {

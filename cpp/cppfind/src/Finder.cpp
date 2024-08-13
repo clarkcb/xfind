@@ -140,11 +140,14 @@ namespace cppfind {
             && is_matching_last_mod(file_result.last_mod());
     }
 
-    std::optional<FileResult> Finder::filter_to_file_result(std::filesystem::path&& file_path) const {
+    std::optional<FileResult> Finder::filter_to_file_result(const std::filesystem::path& file_path) const {
         if (!m_settings.include_hidden() && FileUtil::is_hidden_path(file_path.filename())) {
             return std::nullopt;
         }
         const auto file_type = m_file_types.get_path_type(file_path.filename());
+        if (file_type == FileType::ARCHIVE && !m_settings.include_archives() && !m_settings.archives_only()) {
+            return std::nullopt;
+        }
         uint64_t file_size = 0;
         long last_mod = 0;
         if (m_settings.need_stat()) {
@@ -156,9 +159,9 @@ namespace cppfind {
             file_size = static_cast<uint64_t>(fpstat.st_size);
             last_mod = static_cast<long>(fpstat.st_mtime);
         }
-        auto file_result = FileResult(std::move(file_path), file_type, file_size, last_mod);
+        auto file_result = FileResult(file_path, file_type, file_size, last_mod);
         if (file_type == FileType::ARCHIVE) {
-            if (m_settings.include_archives() && is_matching_archive_file_result(file_result)) {
+            if (is_matching_archive_file_result(file_result)) {
                 return std::optional{file_result};
             }
             return std::nullopt;
@@ -169,63 +172,76 @@ namespace cppfind {
         return std::nullopt;
     }
 
-    std::vector<FileResult> Finder::get_file_results(const std::filesystem::path& file_path, const int depth) {
+    std::vector<FileResult> Finder::rec_get_file_results(const std::filesystem::path& dir_path, // NOLINT(*-no-recursion)
+        const int min_depth, const int max_depth, const int current_depth) const {
         std::vector<FileResult> file_results{};
+        bool recurse = true;
+        if (current_depth == max_depth) {
+            recurse = false;
+        } else if (max_depth > -1 && current_depth > max_depth) {
+            return file_results;
+        }
 
         std::vector<std::filesystem::directory_entry> dir_entries;
-        copy(std::filesystem::directory_iterator(file_path), std::filesystem::directory_iterator(),
+        copy(std::filesystem::directory_iterator(dir_path), std::filesystem::directory_iterator(),
              back_inserter(dir_entries));
 
-        std::vector<std::filesystem::path> matching_dirs{};
+        std::vector<std::filesystem::path> path_dirs{};
 
         for (const auto& de : dir_entries) {
-            if (std::filesystem::path dir_path = de.path(); std::filesystem::is_directory(dir_path)
-                && (m_settings.max_depth() < 1 || depth <= m_settings.max_depth())
-                && m_settings.recursive()
-                && is_matching_dir_path(dir_path.filename())) {
-                matching_dirs.push_back(dir_path);
-            } else if (std::filesystem::is_regular_file(dir_path)
-                       && depth >= m_settings.min_depth()
-                       && (m_settings.max_depth() < 1 || depth <= m_settings.max_depth())) {
-                if (auto opt_file_result = filter_to_file_result(std::move(dir_path));
+            if (const std::filesystem::path path_elem = de.path();
+                is_directory(path_elem) && recurse && is_matching_dir_path(path_elem.filename())) {
+                path_dirs.push_back(path_elem);
+            } else if (is_regular_file(path_elem) && (min_depth < 0 || current_depth >= min_depth)) {
+                if (auto opt_file_result = filter_to_file_result(path_elem);
                     opt_file_result.has_value()) {
                     file_results.push_back(std::move(opt_file_result.value()));
                 }
             }
         }
 
-        for (const auto& matching_dir : matching_dirs) {
-            std::vector<FileResult> sub_file_results = get_file_results(matching_dir, depth + 1);
-            file_results.insert(file_results.end(), sub_file_results.begin(), sub_file_results.end());
+        for (const auto& path_dir : path_dirs) {
+            std::vector<FileResult> path_dir_results = rec_get_file_results(path_dir, min_depth, max_depth,
+                current_depth + 1);
+            file_results.insert(file_results.end(), path_dir_results.begin(), path_dir_results.end());
         }
 
         return file_results;
     }
 
-    std::vector<FileResult> Finder::find() {
+    std::vector<FileResult> Finder::get_file_results(const std::filesystem::path& file_path) const {
+        std::vector<FileResult> file_results{};
+        if (is_directory(file_path)) {
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (m_settings.max_depth() == 0) {
+                return file_results;
+            }
+            if (is_matching_dir_path(file_path)) {
+                const int max_depth = m_settings.recursive() ?  m_settings.max_depth() : 1;
+                return rec_get_file_results(file_path, m_settings.min_depth(), max_depth, 1);
+            }
+        } else if (is_regular_file(file_path)) {
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (m_settings.min_depth() > 0) {
+                return file_results;
+            }
+            if (auto opt_file_result = filter_to_file_result(file_path);
+                opt_file_result.has_value()) {
+                file_results.push_back(std::move(opt_file_result.value()));
+            }
+        } else {
+            throw FindException("path is an unsupported file type");
+        }
+
+        return file_results;
+    }
+
+    std::vector<FileResult> Finder::find() const {
         std::vector<FileResult> file_results{};
 
         for (const auto& p : m_settings.paths()) {
-            // we check using expanded in case p has tilde
-            if (auto expanded = FileUtil::expand_tilde(p); std::filesystem::is_directory(expanded)) {
-                // if max_depth is zero, we can skip since a directory cannot be a result
-                if (m_settings.max_depth() != 0) {
-                    std::vector<FileResult> p_files = get_file_results(expanded, 1);
-                    file_results.insert(file_results.end(), p_files.begin(), p_files.end());
-                }
-
-            } else if (std::filesystem::is_regular_file(expanded)) {
-                // if min_depth > zero, we can skip since the file is at depth zero
-                if (m_settings.min_depth() <= 0) {
-                    if (auto opt_file_result = filter_to_file_result(std::move(expanded));
-                        opt_file_result.has_value()) {
-                        file_results.push_back(std::move(opt_file_result.value()));
-                    }
-                }
-
-            } else {
-                throw FindException("path is an unsupported file type");
-            }
+            std::vector<FileResult> p_files = get_file_results(p);
+            file_results.insert(file_results.end(), p_files.begin(), p_files.end());
         }
 
         sort_file_results(file_results);
@@ -240,11 +256,11 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_path_ci(const FileResult& fr1, const FileResult& fr2) {
-        const int pathcmp = strcasecmp(fr1.file_path().parent_path().c_str(), fr2.file_path().parent_path().c_str());
-        if (pathcmp == 0) {
+        const int path_cmp = strcasecmp(fr1.file_path().parent_path().c_str(), fr2.file_path().parent_path().c_str());
+        if (path_cmp == 0) {
             return strcasecmp(fr1.file_path().filename().c_str(), fr2.file_path().filename().c_str()) < 0;
         }
-        return pathcmp < 0;
+        return path_cmp < 0;
     }
 
     std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_path(const FindSettings& settings) {
@@ -262,11 +278,11 @@ namespace cppfind {
     }
 
     bool cmp_file_results_by_name_ci(const FileResult& fr1, const FileResult& fr2) {
-        const int filecmp = strcasecmp(fr1.file_path().filename().c_str(), fr2.file_path().filename().c_str());
-        if (filecmp == 0) {
+        const int file_cmp = strcasecmp(fr1.file_path().filename().c_str(), fr2.file_path().filename().c_str());
+        if (file_cmp == 0) {
             return strcasecmp(fr1.file_path().parent_path().c_str(), fr2.file_path().parent_path().c_str()) < 0;
         }
-        return filecmp < 0;
+        return file_cmp < 0;
     }
 
     std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_name(const FindSettings& settings) {
@@ -341,18 +357,18 @@ namespace cppfind {
 
     void Finder::sort_file_results(std::vector<FileResult>& file_results) const {
         if (m_settings.sort_by() == SortBy::FILEPATH) {
-            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_path(m_settings));
+            std::ranges::sort(file_results, get_cmp_file_results_by_path(m_settings));
         } else if (m_settings.sort_by() == SortBy::FILENAME) {
-            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_name(m_settings));
+            std::ranges::sort(file_results, get_cmp_file_results_by_name(m_settings));
         } else if (m_settings.sort_by() == SortBy::FILESIZE) {
-            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_size(m_settings));
+            std::ranges::sort(file_results, get_cmp_file_results_by_size(m_settings));
         } else if (m_settings.sort_by() == SortBy::FILETYPE) {
-            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_type(m_settings));
+            std::ranges::sort(file_results, get_cmp_file_results_by_type(m_settings));
         } else if (m_settings.sort_by() == SortBy::LASTMOD) {
-            std::sort(file_results.begin(), file_results.end(), get_cmp_file_results_by_lastmod(m_settings));
+            std::ranges::sort(file_results, get_cmp_file_results_by_lastmod(m_settings));
         }
         if (m_settings.sort_descending()) {
-            std::reverse(file_results.begin(), file_results.end());
+            std::ranges::reverse(file_results);
         }
     }
 }

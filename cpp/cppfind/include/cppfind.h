@@ -282,9 +282,9 @@ namespace cppfind {
     // FileResult.h
     class FileResult {
     public:
-        explicit FileResult(const std::filesystem::path& file_path, FileType file_type, uint64_t file_size,
+        FileResult(const std::filesystem::path& file_path, FileType file_type, uint64_t file_size,
                    long last_mod);
-        explicit FileResult(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
+        FileResult(const std::vector<std::filesystem::path>& containers, const std::filesystem::path& file_path,
                    FileType file_type, uint64_t file_size, long last_mod);
         [[nodiscard]] std::vector<std::filesystem::path> containers() const;
         [[nodiscard]] std::filesystem::path file_path() const;
@@ -313,7 +313,7 @@ namespace cppfind {
         explicit Finder(const std::unique_ptr<FindSettings>& settings_ptr);
         Finder(Finder& other) = delete;
         Finder(Finder&& other) = delete;
-        std::optional<FileResult> filter_to_file_result(std::filesystem::path&& file_path) const;
+        [[nodiscard]] std::optional<FileResult> filter_to_file_result(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_matching_archive_file_result(const FileResult& file_result) const;
         [[nodiscard]] bool is_matching_dir_path(const std::filesystem::path& dir_path) const;
         [[nodiscard]] bool is_matching_archive_extension(const std::string& file_ext) const;
@@ -326,7 +326,7 @@ namespace cppfind {
         [[nodiscard]] bool is_matching_file_size(uint64_t file_size) const;
         [[nodiscard]] bool is_matching_last_mod(long last_mod) const;
         [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
-        std::vector<FileResult> find();
+        [[nodiscard]] std::vector<FileResult> find() const;
     };
 }
 
