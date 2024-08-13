@@ -2,7 +2,6 @@ package ktfind
 
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -183,6 +182,11 @@ class Finder(val settings: FindSettings) {
             }
         }
 
+        val fileType = fileTypes.getFileType(p)
+        if (fileType === FileType.ARCHIVE && !settings.includeArchives && !settings.archivesOnly) {
+            return null
+        }
+
         var fileSize = 0L
         var lastMod: FileTime? = null
         if (needLastMod(settings) || needSize(settings)) {
@@ -196,9 +200,9 @@ class Finder(val settings: FindSettings) {
             }
         }
 
-        val fr = FileResult(p, fileTypes.getFileType(p), fileSize, lastMod)
+        val fr = FileResult(p, fileType, fileSize, lastMod)
         if (fr.fileType === FileType.ARCHIVE) {
-            if ((settings.includeArchives || settings.archivesOnly) && isMatchingArchiveFileResult(fr)) {
+            if (isMatchingArchiveFileResult(fr)) {
                 return fr
             }
             return null
@@ -246,7 +250,10 @@ class Finder(val settings: FindSettings) {
     }
 
     private fun recFindPath(filePath: Path, minDepth: Int, maxDepth: Int, currentDepth: Int): List<FileResult> {
-        if (maxDepth > -1 && currentDepth > maxDepth) {
+        var recurse = true
+        if (currentDepth == maxDepth) {
+            recurse = false
+        } else if (maxDepth > -1 && currentDepth > maxDepth) {
             return emptyList()
         }
         val pathDirs: MutableList<Path> = mutableListOf()
@@ -254,7 +261,7 @@ class Finder(val settings: FindSettings) {
         try {
             Files.newDirectoryStream(filePath).use { stream ->
                 stream.forEach {
-                    if (Files.isDirectory(it) && isMatchingDir(it)) {
+                    if (Files.isDirectory(it) && recurse && isMatchingDir(it)) {
                         pathDirs.add(it)
                     } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {
                         val fr = filterToFileResult(it)
@@ -276,44 +283,37 @@ class Finder(val settings: FindSettings) {
 
     private fun findPath(filePath: Path): List<FileResult> {
         if (Files.isDirectory(filePath)) {
-            if (settings.recursive) {
-                return recFindPath(filePath, settings.minDepth, settings.maxDepth, 1)
+            // if max_depth is zero, we can skip since a directory cannot be a result
+            if (settings.maxDepth == 0) {
+                return emptyList()
             }
-            return recFindPath(filePath, settings.minDepth, 1, 1)
+            if (isMatchingDir(filePath)) {
+                val maxDepth = if (settings.recursive) settings.maxDepth else 1
+                return recFindPath(filePath, settings.minDepth, maxDepth, 1)
+            } else {
+                throw FindException("Startpath does not match find settings")
+            }
         } else if (Files.isRegularFile(filePath)) {
+            // if min_depth > zero, we can skip since the file is at depth zero
+            if (settings.minDepth > 0) {
+                return emptyList()
+            }
             val fr = filterToFileResult(filePath)
             if (fr != null) {
                 return listOf(fr)
+            } else {
+                throw FindException("Startpath does not match find settings")
             }
+        } else {
+            throw FindException("Startpath is not a findable file type")
         }
-        return emptyList()
     }
 
     private fun findAsync(fileResults: MutableList<FileResult>): Unit = runBlocking {
         for (p in settings.paths) {
             launch {
                 val path = Paths.get(p)
-                if (Files.isDirectory(path)) {
-                    // if maxDepth is zero, we can skip since a directory cannot be a result
-                    if (settings.maxDepth != 0) {
-                        if (isMatchingDir(path)) {
-                            fileResults.addAll(findPath(path))
-                        } else {
-                            throw FindException("Startpath does not match find settings")
-                        }
-                    }
-                } else if (Files.isReadable(path)) {
-                    // if minDepth > zero, we can skip since the file is at depth zero
-                    if (settings.minDepth <= 0) {
-                        if (isMatchingDir(path.parent)) {
-                            fileResults.addAll(findPath(path))
-                        } else {
-                            throw FindException("Startpath does not match find settings")
-                        }
-                    }
-                } else {
-                    throw FindException("Path is invalid file type: $path")
-                }
+                fileResults.addAll(findPath(path))
             }
         }
     }
