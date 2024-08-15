@@ -215,16 +215,16 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     string_node_to_string(settings->paths, paths_s);
-    char *print_dirs_s = settings->print_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *print_files_s = settings->print_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *print_usage_s = settings->print_usage == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *print_version_s = settings->print_version == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *recursive_s = settings->recursive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_dirs_s = settings->print_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_files_s = settings->print_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_usage_s = settings->print_usage == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_version_s = settings->print_version == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *recursive_s = settings->recursive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *sort_by_name = malloc(10 * sizeof(char));
     sort_by_to_name(settings->sort_by, sort_by_name);
-    char *sort_case_insensitive_s = settings->sort_case_insensitive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *sort_descending_s = settings->sort_descending == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *verbose_s = settings->verbose == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *sort_case_insensitive_s = settings->sort_case_insensitive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *sort_descending_s = settings->sort_descending == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *verbose_s = settings->verbose == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
 
     sprintf(s, SETTINGS_TEMPLATE,

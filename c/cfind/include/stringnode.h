@@ -18,13 +18,13 @@ void add_char_split_to_string_node(char c, const char *s, StringNode *string_nod
 
 int is_null_or_empty_string_node(const StringNode *string_node);
 
-int string_matches_string_node(const char *s, StringNode *string_node);
+int string_matches_string_node(const char *s, const StringNode *string_node);
 
-size_t string_node_count(StringNode *string_node);
+size_t string_node_count(const StringNode *string_node);
 
-size_t string_node_strlen(StringNode *string_node);
+size_t string_node_strlen(const StringNode *string_node);
 
-void string_node_to_string(StringNode *string_node, char *s);
+void string_node_to_string(const StringNode *string_node, char *s);
 
 void destroy_string_node(StringNode *string_node);
 

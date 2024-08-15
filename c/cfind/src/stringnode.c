@@ -104,7 +104,7 @@ int is_null_or_empty_string_node(const StringNode *string_node)
     return 0;
 }
 
-int string_matches_string_node(const char *s, StringNode *string_node)
+int string_matches_string_node(const char *s, const StringNode *string_node)
 {
     if (s == NULL || string_node == NULL) return 0;
     StringNode *temp = string_node;
@@ -119,7 +119,7 @@ int string_matches_string_node(const char *s, StringNode *string_node)
     return matches;
 }
 
-size_t string_node_count(StringNode *string_node)
+size_t string_node_count(const StringNode *string_node)
 {
     size_t nodecount = 0;
     StringNode *temp = string_node;
@@ -130,7 +130,7 @@ size_t string_node_count(StringNode *string_node)
     return nodecount;
 }
 
-size_t string_node_strlen(StringNode *string_node)
+size_t string_node_strlen(const StringNode *string_node)
 {
     size_t slen = 2; // for '[' and ']'
     StringNode *temp = string_node;
@@ -146,7 +146,7 @@ size_t string_node_strlen(StringNode *string_node)
     return slen;
 }
 
-void string_node_to_string(StringNode *string_node, char *s)
+void string_node_to_string(const StringNode *string_node, char *s)
 {
     // assumes s has correct allocation size
     // int i = 0;
