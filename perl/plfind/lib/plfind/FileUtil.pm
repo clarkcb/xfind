@@ -55,6 +55,8 @@ sub split_path {
     my ($vol, $dir, $file_name) = File::Spec->splitpath($file_path);
     if (!$dir) {
         $dir = '.';
+    } elsif ($dir =~ m|[/\\]$|) {
+        $dir =~ s|[/\\]$||;
     }
     return ($dir, $file_name);
 }
