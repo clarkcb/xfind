@@ -38,8 +38,10 @@ gradle/
 gradlew
 gradlew.bat
 
-# Project-specific
+# resource files that are copied from shared or unused
 config.json
+filetypes.json
 filetypes.xml
-searchoptions.xml
+findoptions.json
+findoptions.xml
 test*.txt

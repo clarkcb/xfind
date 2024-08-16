@@ -12,7 +12,9 @@ pom.xml.asc
 
 .eastwood
 
-# unused resource files
+# resource files that are copied from shared or unused
 config.json
+filetypes.json
 filetypes.xml
-searchoptions.xml
+findoptions.json
+findoptions.xml

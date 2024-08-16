@@ -21,3 +21,10 @@ Gemfile.lock
 # .ruby-version
 # .ruby-gemset
 *.gem
+
+# resource files that are copied from shared or unused
+config.json
+filetypes.json
+filetypes.xml
+findoptions.json
+findoptions.xml

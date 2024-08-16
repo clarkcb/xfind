@@ -1,11 +1,3 @@
-tools/
-vendor/
-
-.php_cs.cache
-
-# phpunit
-.phpunit.result.cache
-
 # resource files that are copied from shared or unused
 config.json
 filetypes.json

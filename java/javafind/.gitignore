@@ -18,7 +18,9 @@ javasearch/src/test/resources/
 # Maven artifacts
 dependency-reduced-pom.xml
 
-# resource files
+# resource files that are copied from shared or unused
 config.json
+filetypes.json
 filetypes.xml
-searchoptions.xml
+findoptions.json
+findoptions.xml

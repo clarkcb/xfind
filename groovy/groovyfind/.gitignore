@@ -40,3 +40,10 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+# resource files that are copied from shared or unused
+config.json
+filetypes.json
+filetypes.xml
+findoptions.json
+findoptions.xml

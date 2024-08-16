@@ -28,3 +28,10 @@ pip-log.txt
 #virtualenv
 .env/
 venv/
+
+# resource files that are copied from shared or unused
+config.json
+filetypes.json
+filetypes.xml
+findoptions.json
+findoptions.xml

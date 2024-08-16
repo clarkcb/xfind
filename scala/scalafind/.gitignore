@@ -26,3 +26,10 @@ searchoptions.xml
 
 # from https://users.scala-lang.org/t/solved-should-i-add-bsp-directory-in-gitignore/6921
 .bsp/
+
+# resource files that are copied from shared or unused
+config.json
+filetypes.json
+filetypes.xml
+findoptions.json
+findoptions.xml
