@@ -116,6 +116,10 @@ build_c () {
         return
     fi
 
+    # cmake --version output looks like this: cmake version 3.30.2
+    CMAKE_VERSION=$(cmake --version | head -n 1 | cut -d ' ' -f 3)
+    log "cmake version: $CMAKE_VERSION"
+
     cd "$CFIND_PATH"
 
     if [ -n "$DEBUG" ] && [ -n "$RELEASE" ]
@@ -201,12 +205,28 @@ build_clojure () {
     echo
     hdr "build_clojure"
 
+    # ensure clojure is installed
+    if [ -z "$(which clj)" ]
+    then
+        log_error "You need to install clojure"
+        return
+    fi
+
+    # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+    # CLOJURE_VERSION=$(clj -version | head -n 1 | cut -d ' ' -f 3)
+    CLOJURE_VERSION=$(clj -version 2>&1)
+    log "clojure version: $CLOJURE_VERSION"
+
     # ensure leiningen is installed
     if [ -z "$(which lein)" ]
     then
         log_error "You need to install leiningen"
         return
     fi
+
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    LEIN_VERSION=$(lein version)
+    log "lein version: $LEIN_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$CLJFIND_PATH/resources"
@@ -253,6 +273,10 @@ build_cpp () {
         log_error "You need to install cmake"
         return
     fi
+
+    # cmake --version output looks like this: cmake version 3.30.2
+    CMAKE_VERSION=$(cmake --version | head -n 1 | cut -d ' ' -f 3)
+    log "cmake version: $CMAKE_VERSION"
 
     cd "$CPPFIND_PATH"
 
@@ -352,6 +376,9 @@ build_csharp () {
         return
     fi
 
+    DOTNET_VERSION=$(dotnet --version)
+    log "dotnet version: $DOTNET_VERSION"
+
     RESOURCES_PATH="$CSFIND_PATH/CsFindLib/Resources"
     TEST_RESOURCES_PATH="$CSFIND_PATH/CsFindTests/Resources"
 
@@ -412,6 +439,9 @@ build_dart () {
         return
     fi
 
+    DART_VERSION=$(dart --version)
+    log "dart version: $DART_VERSION"
+
     cd "$DARTFIND_PATH"
 
     # RESOURCES_PATH="$DARTFIND_PATH/lib/data"
@@ -460,12 +490,18 @@ build_elixir () {
         return
     fi
 
+    ELIXIR_VERSION=$(elixir --version | grep Elixir)
+    log "elixir version: $ELIXIR_VERSION"
+
     # ensure mix is installed
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
         return
     fi
+
+    MIX_VERSION=$(mix --version | grep Mix)
+    log "mix version: $MIX_VERSION"
 
     cd "$EXFIND_PATH"
 
@@ -502,6 +538,9 @@ build_fsharp () {
         log_error "You need to install dotnet"
         return
     fi
+
+    DOTNET_VERSION=$(dotnet --version)
+    log "dotnet version: $DOTNET_VERSION"
 
     RESOURCES_PATH="$FSFIND_PATH/FsFindLib/Resources"
     TEST_RESOURCES_PATH="$FSFIND_PATH/FsFindTests/Resources"
@@ -563,6 +602,10 @@ build_go () {
         return
     fi
 
+    GO_VERSION=$(go version | sed 's/go version //')
+    # GO_VERSION=$(go version | head -n 1 | cut -d ' ' -f 3)
+    log "go version: $GO_VERSION"
+
     # build the code to generate the dynamic code for gofind
     #log "Building gengofindcode"
     #echo "go install elocale.com/clarkcb/gofindcodegen/gengofindcode"
@@ -613,6 +656,16 @@ build_groovy () {
     echo
     hdr "build_groovy"
 
+    # ensure go is installed
+    if [ -z "$(which groovy)" ]
+    then
+        log_error "You need to install groovy"
+        return
+    fi
+
+    GROOVY_VERSION=$(groovy --version)
+    log "groovy version: $GROOVY_VERSION"
+
     cd "$GROOVYFIND_PATH"
 
     GRADLE=
@@ -627,6 +680,9 @@ build_groovy () {
         log_error "You need to install gradle"
         return
     fi
+
+    GRADLE_VERSION=$($GRADLE --version | grep Gradle)
+    log "$GRADLE version: $GRADLE_VERSION"
 
     RESOURCES_PATH="$GROOVYFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$GROOVYFIND_PATH/src/test/resources"
@@ -669,12 +725,25 @@ build_haskell () {
     echo
     hdr "build_haskell"
 
+    # ensure ghc is installed
+    if [ -z "$(which ghc)" ]
+    then
+        log_error "You need to install ghc"
+        return
+    fi
+
+    GHC_VERSION=$(ghc --version)
+    log "ghc version: $GHC_VERSION"
+
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
         log_error "You need to install stack"
         return
     fi
+
+    STACK_VERSION=$(stack --version)
+    log "stack version: $STACK_VERSION"
 
     # set the default stack settings, e.g. use system ghc
     STACK_DIR=$HOME/.stack
@@ -731,12 +800,25 @@ build_java () {
     echo
     hdr "build_java"
 
+    # ensure java is installed
+    if [ -z "$(which java)" ]
+    then
+        log_error "You need to install java"
+        return
+    fi
+
+    JAVA_VERSION=$(java -version 2>&1 | head -n 1)
+    log "java version: $JAVA_VERSION"
+
     # ensure mvn is installed
     if [ -z "$(which mvn)" ]
     then
         log_error "You need to install maven"
         return
     fi
+
+    MVN_VERSION=$(mvn --version | head -n 1)
+    log "mvn version: $MVN_VERSION"
 
     RESOURCES_PATH="$JAVAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$JAVAFIND_PATH/src/test/resources"
@@ -775,12 +857,25 @@ build_javascript () {
     echo
     hdr "build_javascript"
 
+    # ensure node is installed
+    if [ -z "$(which node)" ]
+    then
+        log_error "You need to install node.js"
+        return
+    fi
+
+    NODE_VERSION=$(node --version)
+    log "node version: $NODE_VERSION"
+
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        log_error "You need to install node.js/npm"
+        log_error "You need to install npm"
         return
     fi
+
+    NPM_VERSION=$(npm --version)
+    log "npm version: $NPM_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$JSFIND_PATH/data"
@@ -816,12 +911,23 @@ build_kotlin () {
     echo
     hdr "build_kotlin"
 
-    # ensure gradle is installed
-    if [ -z "$(which gradle)" ]
+    cd "$KTFIND_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
         log_error "You need to install gradle"
         return
     fi
+
+    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    log "$GRADLE version: $GRADLE_VERSION"
 
     RESOURCES_PATH="$KTFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$KTFIND_PATH/src/test/resources"
@@ -837,10 +943,14 @@ build_kotlin () {
     # run a maven clean build
     log "Building ktfind"
 
-    cd "$KTFIND_PATH"
-
-    log "gradle --warning-mode all clean jar publishToMavenLocal"
-    gradle --warning-mode all clean jar publishToMavenLocal
+    # log "gradle --warning-mode all clean jar publishToMavenLocal"
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    # GRADLE_ARGS="--info --warning-mode all"
+    GRADLE_ARGS="--warning-mode all"
+    GRADLE_TASKS="clean jar"
+    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
+    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
+    "$GRADLE" --warning-mode all clean jar
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -870,6 +980,9 @@ build_objc () {
         log_error "You need to install swift"
         return
     fi
+
+    SWIFT_VERSION=$(swift --version 2>&1 | grep Swift)
+    log "swift version: $SWIFT_VERSION"
 
     # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
@@ -941,11 +1054,14 @@ build_perl () {
         return
     fi
 
-    if [ -z "$(perl -v | grep 'This is perl 5')" ]
+    PERL_VERSION="$(perl -e 'print $^V' | grep '^v5')"
+    if [ -z $PERL_VERSION ]
     then
         log_error "A 5.x version of perl is required"
         return
     fi
+
+    log "perl version: $PERL_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLFIND_PATH/share"
@@ -981,12 +1097,14 @@ build_php () {
         return
     fi
 
-    # TODO: do a real version check
-    if [ -z "$(php -v | grep 'cli')" ]
+    # PHP_VERSION=$(php -r "echo phpversion();")
+    PHP_VERSION=$(php -v | grep '^PHP [78]')
+    if [ -z "$PHP_VERSION" ]
     then
         log_error "A version of PHP >= 7.x is required"
         return
     fi
+    log "php version: $PHP_VERSION"
 
     # ensure composer is installed
     if [ -z "$(which composer)" ]
@@ -994,6 +1112,9 @@ build_php () {
         log_error "Need to install composer"
         return
     fi
+
+    COMPOSER_VERSION=$(composer --version 2>&1 | grep '^Composer')
+    log "composer version: $COMPOSER_VERSION"
 
     CONFIG_PATH="$PHPFIND_PATH/config"
     RESOURCES_PATH="$PHPFIND_PATH/resources"
@@ -1050,8 +1171,10 @@ build_powershell () {
         return
     fi
 
-    MODULEPATH=$(pwsh -c 'echo $env:PSModulePath')
+    POWERSHELL_VERSION=$(pwsh -v)
+    log "powershell version: $POWERSHELL_VERSION"
 
+    MODULEPATH=$(pwsh -c 'echo $env:PSModulePath')
     if [ -z "$MODULEPATH" ]
     then
         log_error "Unable to get powershell module path"
@@ -1092,11 +1215,12 @@ build_python () {
             log 'Using existing venv'
 
             # if venv is active, deactivate it (in case it happens to be another venv that is active)
-            if [ -n "$VIRTUAL_ENV" ]
-            then
-                log 'Deactivating current venv'
-                deactivate
-            fi
+            # NOTE: deactivate doesn't work from here because of how it's defined
+            # if [ -n "$VIRTUAL_ENV" ]
+            # then
+            #     log 'Deactivating current venv'
+            #     deactivate
+            # fi
 
             # if venv isn't active, activate it
             # (TODO: this is probably always true because of earlier deactivation)
@@ -1167,7 +1291,9 @@ build_python () {
     fi
 
     log "Using $PYTHON ($(which $PYTHON))"
-    log "$PYTHON -V: $($PYTHON -V)"
+    log "python version: $($PYTHON -V)"
+
+    # PYTHON_VERSION="$(python -e import sys; vi = sys.version_info; print(f'{vi.major}.{vi.minor}.{vi.micro}'))"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PYFIND_PATH/data"
@@ -1199,12 +1325,13 @@ build_python () {
         ERROR=yes
     fi
 
-    if [ "$USE_VENV" == 'yes' ]
-    then
-        # deactivate at end of setup process
-        log "deactivate"
-        deactivate
-    fi
+    # if [ "$USE_VENV" == 'yes' ]
+    # then
+    #     # deactivate at end of setup process
+    #     # NOTE: deactivate doesn't work from here because of how it's defined
+    #     log "deactivate"
+    #     deactivate
+    # fi
 
     if [ -n "$ERROR" ]
     then
@@ -1230,12 +1357,14 @@ build_ruby () {
         return
     fi
 
-    # TODO: do a real version check (first determine minimum needed version)
-    if [ -z "$(ruby -v | grep 'ruby 3')" ]
+    RUBY_VERSION="$(ruby -v 2>&1 | grep '^ruby 3')"
+    if [ -z "$RUBY_VERSION" ]
     then
         log_error "A version of ruby >= 3.x is required"
         return
     fi
+
+    log "ruby version: $RUBY_VERSION"
 
     # if [ -z "$(which bundle)" ]
     # then
@@ -1268,12 +1397,25 @@ build_rust () {
     echo
     hdr "build_rust"
 
-    # ensure cargo/rust is installed
-    if [ -z "$(which cargo)" ]
+    # ensure rust is installed
+    if [ -z "$(which rustc)" ]
     then
         log_error "You need to install rust"
         return
     fi
+
+    RUST_VERSION=$(rustc --version)
+    log "rustc version: $RUST_VERSION"
+
+    # ensure cargo is installed
+    if [ -z "$(which cargo)" ]
+    then
+        log_error "You need to install cargo"
+        return
+    fi
+
+    CARGO_VERSION=$(cargo --version)
+    log "cargo version: $CARGO_VERSION"
 
     cd "$RSFIND_PATH"
 
@@ -1320,12 +1462,27 @@ build_scala () {
     echo
     hdr "build_scala"
 
+    # ensure scala is installed
+    if [ -z "$(which scalac)" ]
+    then
+        log_error "You need to install scala"
+        return
+    fi
+
+    SCALA_VERSION=$(scalac -version 2>&1 | head -n 1)
+    log "scala version: $SCALA_VERSION"
+
+    cd "$SCALAFIND_PATH"
+
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        log_error "You need to install scala + sbt"
+        log_error "You need to install sbt"
         return
     fi
+
+    SBT_VERSION=$(sbt --version | head -n 1)
+    log "sbt version: $SBT_VERSION"
 
     RESOURCES_PATH="$SCALAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$SCALAFIND_PATH/src/test/resources"
@@ -1337,8 +1494,6 @@ build_scala () {
     # copy the test files to the local test resource location
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
-
-    cd "$SCALAFIND_PATH"
 
     # run sbt assembly
     log "Building scalafind"
@@ -1373,6 +1528,9 @@ build_swift () {
         log_error "You need to install swift"
         return
     fi
+
+    SWIFT_VERSION=$(swift --version 2>&1 | grep Swift)
+    log "swift version: $SWIFT_VERSION"
 
     # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
@@ -1423,12 +1581,25 @@ build_typescript () {
     echo
     hdr "build_typescript"
 
+    # ensure node is installed
+    if [ -z "$(which node)" ]
+    then
+        log_error "You need to install node.js"
+        return
+    fi
+
+    NODE_VERSION=$(node --version)
+    log "node version: $NODE_VERSION"
+
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        log_error "You need to install node.js/npm"
+        log_error "You need to install npm"
         return
     fi
+
+    NPM_VERSION=$(npm --version)
+    log "npm version: $NPM_VERSION"
 
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$TSFIND_PATH/data"

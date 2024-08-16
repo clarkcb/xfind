@@ -22,22 +22,10 @@ $xfindScriptDir = Split-Path $xfindScriptPath -Parent
 . (Join-Path -Path $xfindScriptDir -ChildPath 'config.ps1')
 . (Join-Path -Path $xfindScriptDir -ChildPath 'common.ps1')
 
-# check for help switch
-$help = $help.IsPresent
-
-# for languages that have debug and release builds
-$debug = $debug.IsPresent
-$release = $release.IsPresent
 if (-not $release)
 {
     $debug = $true
 }
-
-# for python
-$venv = $venv.IsPresent
-
-# check for all switch
-$all = $all.IsPresent
 
 # args holds the remaining arguments
 $langs = $args
@@ -175,6 +163,11 @@ function BuildC
         return
     }
 
+    # cmake --version output looks like this: cmake version 3.30.2
+    $cmakeVersion = cmake --version | Select-String -Pattern '^cmake version'
+    $cmakeVersion = @($cmakeVersion -split '\s+')[2]
+    Log("cmake version: $cmakeVersion")
+
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
@@ -207,7 +200,7 @@ function BuildC
             Set-Location $cfindPath
         }
 
-        $targets = @('clean', 'cfind', 'cfindapp', 'test_cfind')
+        $targets = @('clean', 'cfind', 'cfindapp', 'cfind-tests')
         ForEach ($t in $targets)
         {
             Log("cmake --build $cmakeBuildDir --config $c --target $t")
@@ -246,12 +239,27 @@ function BuildClojure
     Write-Host
     Hdr('BuildClojure')
 
+    # ensure clojure is installed
+    if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install clojure')
+        return
+    }
+
+    # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+    $clojureVersion = clj -version 2>&1
+    Log("clojure version: $clojureVersion")
+
     # ensure leiningen is installed
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
         return
     }
+
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    $leinVersion = lein version
+    Log("lein version: $leinVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $cljfindPath 'resources'
@@ -314,6 +322,11 @@ function BuildCpp
         PrintError('You need to install cmake')
         return
     }
+
+    # cmake --version output looks like this: cmake version 3.30.2
+    $cmakeVersion = cmake --version
+    $cmakeVersion = @($cmakeVersion -split '\s+')[2]
+    Log("cmake version: $cmakeVersion")
 
     $oldPwd = Get-Location
     Set-Location $cppfindPath
@@ -399,6 +412,9 @@ function BuildCsharp
         return
     }
 
+    $dotnetVersion = dotnet --version
+    Log("dotnet version: $dotnetVersion")
+
     $resourcesPath = Join-Path $csfindPath 'CsFindLib' 'Resources'
     $testResourcesPath = Join-Path $csfindPath 'CsFindTests' 'Resources'
 
@@ -479,6 +495,9 @@ function BuildDart
         return
     }
 
+    $dartVersion = dart --version
+    Log("dart version: $dartVersion")
+
     $oldPwd = Get-Location
     Set-Location $dartfindPath
 
@@ -531,12 +550,18 @@ function BuildElixir
         return
     }
 
+    $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
+    Log("elixir version: $elixirVersion")
+
     # ensure mix is installed
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
         return
     }
+
+    $mixVersion = mix --version | Select-String -Pattern 'Mix'
+    Log("mix version: $mixVersion")
 
     $oldPwd = Get-Location
     Set-Location $exfindPath
@@ -579,6 +604,9 @@ function BuildFsharp
         PrintError('You need to install dotnet')
         return
     }
+
+    $dotnetVersion = dotnet --version
+    Log("dotnet version: $dotnetVersion")
 
     $resourcesPath = Join-Path $fsfindPath 'FsFindLib' 'Resources'
     $testResourcesPath = Join-Path $fsfindPath 'FsFindTests' 'Resources'
@@ -660,6 +688,9 @@ function BuildGo
         return
     }
 
+    $goVersion = (go version) -replace 'go version ', ''
+    Log("go version: $goVersion")
+
     $oldPwd = Get-Location
     Set-Location $gofindPath
 
@@ -712,6 +743,16 @@ function BuildGroovy
     Write-Host
     Hdr('BuildGroovy')
 
+    # ensure groovy is installed
+    if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install groovy')
+        return
+    }
+
+    $groovyVersion = groovy --version
+    Log("groovy version: $groovyVersion")
+
     $oldPwd = Get-Location
     Set-Location $groovyfindPath
 
@@ -725,6 +766,9 @@ function BuildGroovy
         PrintError('You need to install gradle')
         return
     }
+
+    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    Log("$gradle version: $gradleVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $groovyfindPath 'src' 'main' 'resources'
@@ -744,7 +788,7 @@ function BuildGroovy
 
     # run the gradle command to build
     Log('Building groovyfind')
-    
+
     $gradleArgs = '--warning-mode all'
     $gradleTasks = 'clean jar'
     Log("$gradle $gradleArgs $gradleTasks")
@@ -773,12 +817,25 @@ function BuildHaskell
     Write-Host
     Hdr('BuildHaskell')
 
+    # ensure ghc is installed
+    if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install ghc')
+        return
+    }
+
+    $ghcVersion = ghc --version
+    Log("ghc version: $ghcVersion")
+
     # ensure stack is installed
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
         return
     }
+
+    $stackVersion = stack --version
+    Log("stack version: $stackVersion")
 
     # set the default stack settings, e.g. use system ghc
     $stackDir = Join-Path $HOME '.stack'
@@ -834,12 +891,25 @@ function BuildJava
     Write-Host
     Hdr('BuildJava')
 
+    # ensure java is installed
+    if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install java')
+        return
+    }
+
+    $javaVersion = java -version 2>&1 | Select-String -Pattern 'java version'
+    Log("java version: $javaVersion")
+
     # ensure mvn is installed
     if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install maven')
         return
     }
+
+    $mvnVersion = mvn --version | Select-String -Pattern 'Apache Maven'
+    Log("mvn version: $mvnVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $javafindPath 'src' 'main' 'resources'
@@ -883,12 +953,25 @@ function BuildJavaScript
     Write-Host
     Hdr('BuildJavaScript')
 
+    # ensure node is installed
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install node.js')
+        return
+    }
+
+    $nodeVersion = node --version
+    Log("node version: $nodeVersion")
+
     # ensure npm is installed
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install node.js/npm')
+        PrintError('You need to install npm')
         return
     }
+
+    $npmVersion = npm --version
+    Log("npm version: $npmVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $jsfindPath 'data'
@@ -933,12 +1016,23 @@ function BuildKotlin
     Write-Host
     Hdr('BuildKotlin')
 
-    # ensure gradle is installed
-    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $ktfindPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
         return
     }
+
+    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    Log("$gradle version: $gradleVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $ktfindPath 'src' 'main' 'resources'
@@ -956,13 +1050,14 @@ function BuildKotlin
     }
     CopyTestResources($testResourcesPath)
 
-    $oldPwd = Get-Location
-    Set-Location $ktfindPath
-
     # run a gradle build
     Log('Building ktfind')
-    Log('gradle --warning-mode all clean jar publishToMavenLocal')
-    gradle --warning-mode all clean jar publishToMavenLocal
+    # Log('gradle --warning-mode all clean jar publishToMavenLocal')
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    $gradleArgs = '--warning-mode all'
+    $gradleTasks = 'clean jar'
+    Log("$gradle $gradleArgs $gradleTasks")
+    & $gradle --warning-mode all clean jar
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
@@ -994,6 +1089,9 @@ function BuildObjc
         PrintError('You need to install swift')
         return
     }
+
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
+    Log("swift version: $swiftVersion")
 
     $oldPwd = Get-Location
     Set-Location $objcfindPath
@@ -1064,12 +1162,14 @@ function BuildPerl
         return
     }
 
-    $versionOutput = & perl -v | Select-String -Pattern 'This is perl 5' 2>&1
-    if (-not $versionOutput)
+    $perlVersion = perl -e 'print $^V' | Select-String -Pattern 'v5'
+    if (-not $perlVersion)
     {
         PrintError('A 5.x version of perl is required')
         return
     }
+
+    Log("perl version: $perlVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $plfindPath 'share'
@@ -1107,12 +1207,13 @@ function BuildPhp
         return
     }
 
-    $versionOutput = & php -v | Select-String -Pattern 'PHP [78]' 2>&1
-    if (-not $versionOutput)
+    $phpVersion = & php -v | Select-String -Pattern '^PHP [78]' 2>&1
+    if (-not $phpVersion)
     {
         PrintError('A version of PHP >= 7.x is required')
         return
     }
+    Log("php version: $phpVersion")
 
     # ensure composer is installed
     if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
@@ -1120,6 +1221,9 @@ function BuildPhp
         PrintError('You need to install composer')
         return
     }
+
+    $composerVersion = composer --version 2>&1 | Select-String -Pattern '^Composer'
+    Log("composer version: $composerVersion")
 
     # copy the shared config json file to the local config location
     $configFilePath = Join-Path $xfindSharedPath 'config.json'
@@ -1179,6 +1283,11 @@ function BuildPowerShell
 {
     Write-Host
     Hdr('BuildPowerShell')
+
+    # We don't need to check for powershell, as we're running in it
+
+    $powershellVersion = pwsh -v
+    Log("powershell version: $powershellVersion")
 
     $oldPwd = Get-Location
     Set-Location $ps1findPath
@@ -1297,9 +1406,10 @@ function BuildPython
         }
     }
 
-    Log("Using $python")
-    $pythonVersion = & $python -V
-    Log("$python -V: ($($pythonVersion -replace "`n", ''))")
+    $pythonExePath = Get-Command $python | Select-Object -ExpandProperty Source
+    Log("Using $python ($pythonExePath)")
+    $pythonVersion = & $python -V | Select-String -Pattern '^Python'
+    Log("Version: $pythonVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $pyfindPath 'data'
@@ -1357,12 +1467,14 @@ function BuildRuby
         return
     }
 
-    $versionOutput = & ruby -v | Select-String -Pattern 'ruby 3' 2>&1
-    if (-not $versionOutput)
+    $rubyVersion = & ruby -v 2>&1 | Select-String -Pattern '^ruby 3' 2>&1
+    if (-not $rubyVersion)
     {
         PrintError('A version of ruby >= 3.x is required')
         return
     }
+
+    Log("ruby version: $rubyVersion")
 
     # copy the shared config json file to the local config location
     $configFilePath = Join-Path $xfindSharedPath 'config.json'
@@ -1392,12 +1504,25 @@ function BuildRust
     Write-Host
     Hdr('BuildRust')
 
-    # ensure cargo/rust is installed
-    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
+    # ensure rust is installed
+    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
         return
-}
+    }
+
+    $rustVersion = rustc --version | Select-String -Pattern 'rustc'
+    Log("rustc version: $rustVersion")
+
+    # ensure cargo is installed
+    if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install cargo')
+        return
+    }
+
+    $cargoVersion = cargo --version | Select-String -Pattern 'cargo'
+    Log("cargo version: $cargoVersion")
 
     $oldPwd = Get-Location
     Set-Location $rsfindPath
@@ -1458,12 +1583,28 @@ function BuildScala
     Write-Host
     Hdr('BuildScala')
 
+    # ensure scalac is installed
+    if (-not (Get-Command 'scalac' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install scala')
+        return
+    }
+
+    $scalaVersion = scala --version 2>&1 | Select-String -Pattern 'Scala'
+    Log("scala version: $scalaVersion")
+
+    $oldPwd = Get-Location
+    Set-Location $scalafindPath
+
     # ensure sbt is installed
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install scala + sbt')
+        PrintError('You need to install sbt')
         return
     }
+
+    $sbtVersion = sbt --version | Select-String -Pattern 'project'
+    Log("sbt version: $sbtVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $scalafindPath 'src' 'main' 'resources'
@@ -1480,9 +1621,6 @@ function BuildScala
         New-Item -ItemType directory -Path $testResourcesPath
     }
     CopyTestResources($testResourcesPath)
-
-    $oldPwd = Get-Location
-    Set-Location $scalafindPath
 
     # run sbt assembly
     Log('Building scalafind')
@@ -1519,6 +1657,9 @@ function BuildSwift
         PrintError('You need to install swift')
         return
     }
+
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
+    Log("swift version: $swiftVersion")
 
     $oldPwd = Get-Location
     Set-Location $swiftfindPath
@@ -1579,12 +1720,25 @@ function BuildTypeScript
     Write-Host
     Hdr('BuildTypeScript')
 
+    # ensure node is installed
+    if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install node.js')
+        return
+    }
+
+    $nodeVersion = node --version
+    Log("node version: $nodeVersion")
+
     # ensure npm is installed
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install node.js/npm')
+        PrintError('You need to install npm')
         return
     }
+
+    $npmVersion = npm --version
+    Log("npm version: $npmVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $tsfindPath 'data'
