@@ -116,8 +116,7 @@ def non_matching_lens(xfind_output: dict[str, list[str]],
             y_lines = lines_for_diff(xfind_output[y], skip_blanks=skip_blanks)
             y_len = len(y_lines)
             if x_len != y_len:
-                x_and_y = list(sorted([x, y]))
-                x_and_y = (x_and_y[0], x_and_y[1])
+                x_and_y = tuple(sorted([x, y]))
                 if x_and_y not in non_matching:
                     non_matching.append(x_and_y)
     return non_matching
@@ -150,8 +149,7 @@ def non_matching_outputs(xfind_output: dict[str, list[str]],
             if x_lines != y_lines:
                 # print("\n{}:\n\"{}\"".format(x, x_output))
                 # print("\n{}:\n\"{}\"".format(y, y_output))
-                x_and_y = list(sorted([x, y]))
-                x_and_y = (x_and_y[0], x_and_y[1])
+                x_and_y = tuple(sorted([x, y]))
                 if x_and_y not in non_matching:
                     non_matching.append(x_and_y)
     return non_matching

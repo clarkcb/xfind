@@ -7,11 +7,10 @@
 # A simple benchmarking tool for the various xfind language versions
 #
 ################################################################################
-from dataclasses import dataclass
-import os
-import re
 import subprocess
 import sys
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Union
 
 from tabulate import tabulate
@@ -355,7 +354,7 @@ class Benchmarker(object):
         self.debug = True
         self.exit_on_diff = True
         self.exit_on_sort_diff = True
-        self.diff_outputs = []
+        self.scenario_diff_dict = {}
         self.__dict__.update(kwargs)
         self.shell = os.environ.get('SHELL', '/bin/bash')
 
@@ -388,9 +387,10 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def print_scenario_results(self, scenario_results: ScenarioResults):
-        title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs\n".\
+        now = datetime.now()
+        title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs on {} at {}\n".\
             format(len(scenario_results.scenario_results), len(self.scenarios),
-                   scenario_results.runs, len(self.scenarios) * self.runs)
+                   scenario_results.runs, len(self.scenarios) * self.runs, now.date(), now.time())
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user', 'avg',
                'rank', 'total', 'avg', 'rank']
         data = []
@@ -417,8 +417,10 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, sorted_data, col_types)
 
     def print_scenario_result(self, scenario_result: ScenarioResult):
-        title = '\nTotal results for scenario {} ("{}") with {} runs\n'.\
-            format(scenario_result.index, scenario_result.scenario.name, self.runs)
+        now = datetime.now()
+        title = '\nTotal results for scenario {} ("{}") with {} runs on {} at {}\n'.\
+            format(scenario_result.index, scenario_result.scenario.name, self.runs,
+                   now.date(), now.time())
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user',
                'avg', 'rank', 'total', 'avg', 'rank']
         data = []
@@ -545,11 +547,11 @@ class Benchmarker(object):
         if non_matching:
             print('\nOutputs of these language versions differ:')
             print(non_matching)
+            self.scenario_diff_dict[s.name] = non_matching
             for x, y in non_matching:
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
                 print(f'{x} output:\n"{xfind_output[x]}"')
                 print(f'{y} output:\n"{xfind_output[y]}"')
-                self.diff_outputs.append((sn, x, y))
             # for x in xs:
             #     if non_matching[x]:
             #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
@@ -563,11 +565,11 @@ class Benchmarker(object):
         if non_matching:
             print('\nOutput lengths differ for these language versions:')
             print(non_matching)
+            self.scenario_diff_dict[s.name] = non_matching
             for x, y in non_matching:
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
                 print(f'{x} output:\n"{xfind_output[x]}"')
                 print(f'{y} output:\n"{xfind_output[y]}"')
-                self.diff_outputs.append((sn, x, y))
             # for x in xs:
             #     if non_matching[x]:
             #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
@@ -712,8 +714,10 @@ class Benchmarker(object):
         except KeyboardInterrupt:
             print('\n')
 
-        if self.diff_outputs:
-            print('\nThere were output differences in some scenarios')
+        if self.scenario_diff_dict:
+            print('\nThere were output differences in these scenarios:')
+            for sn, diffs in self.scenario_diff_dict.items():
+                print(f"'{sn}': {diffs}")
         else:
             print('\nOutputs of all versions in all scenarios match')
 
