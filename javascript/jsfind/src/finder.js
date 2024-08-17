@@ -222,7 +222,7 @@ class Finder {
             return [];
         }
         let findDirs = [];
-        let filePaths = (fs.readdirSync(currentDir, {recursive: false}))
+        let filePaths = fs.readdirSync(currentDir, {recursive: false})
           .map(f => path.join(currentDir, f));
         for (let filePath of filePaths) {
             let stats = fs.lstatSync(filePath);
@@ -233,7 +233,7 @@ class Finder {
             if (stats.isDirectory() && recurse && this.filterDirByHidden(filePath) && this.filterDirByOutPatterns(filePath)) {
                 findDirs.push(filePath);
             } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
-                const fr = this.filterToFileResult(filePath, stats);
+                const fr = await this.filterToFileResult(filePath, stats);
                 if (fr !== null) {
                     fileResults.push(fr);
                 }
