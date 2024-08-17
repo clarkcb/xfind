@@ -112,7 +112,7 @@ class Finder (settings: FindSettings) {
     if (!settings.includeHidden && Files.isHidden(p)) {
       None
     } else {
-      val fileType = FileTypes.getFileType(p)
+      val fileType = fileTypes.getFileType(p)
       if (fileType == FileType.Archive && !settings.includeArchives && !settings.archivesOnly) {
         None
       } else {
