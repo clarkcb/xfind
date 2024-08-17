@@ -29,13 +29,38 @@ if (-not $release)
 
 # args holds the remaining arguments
 $langs = $args
+$hostname = [System.Net.Dns]::GetHostName()
 
-Write-Host "help: $help"
-Write-Host "debug: $debug"
-Write-Host "release: $release"
-Write-Host "venv: $venv"
-Write-Host "all: $all"
-Write-Host "langs: $langs"
+Hdr('xfind build script')
+Log("user: $env:USER")
+Log("host: $hostname")
+if ($IsWindows)
+{
+    Log("os: $env:OS")
+}
+elseif ($IsLinux)
+{
+    Log("os: Linux")
+}
+elseif ($IsMacOS)
+{
+    Log("os: Darwin")
+}
+else
+{
+    Log("os: unknown")
+}
+
+$gitBranch = git branch --show-current
+$gitCommit = git rev-parse --short HEAD
+Log("git branch: $gitBranch ($gitCommit)")
+
+Log("help: $help")
+Log("debug: $debug")
+Log("release: $release")
+Log("venv: $venv")
+Log("all: $all")
+Log("langs: $langs")
 
 
 ########################################
@@ -566,9 +591,13 @@ function BuildElixir
     $oldPwd = Get-Location
     Set-Location $exfindPath
 
-    Log('Building exfind')
+    Log('Getting exfind dependencies')
     Log('mix deps.get')
     mix deps.get
+
+    Log('Compiling exfind')
+    Log('mix compile')
+    mix compile
 
     Log('Creating exfind executable')
     Log('mix escript.build')

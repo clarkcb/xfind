@@ -505,9 +505,13 @@ build_elixir () {
 
     cd "$EXFIND_PATH"
 
-    log "Building exfind"
+    log "Getting exfind dependencies"
     log "mix deps.get"
     mix deps.get
+
+    log "Compiling exfind"
+    log "mix compile"
+    mix compile
 
     log "Creating exfind executable"
     log "mix escript.build"
@@ -1751,6 +1755,20 @@ build_all () {
 ########################################
 # Build Main
 ########################################
+echo
+hdr "xfind build script"
+log "user: $USER"
+log "host: $HOSTNAME"
+log "os: $(uname -o)"
+
+# Get the current git branch and commit
+# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse --short HEAD)
+log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
+
+log "args: $*"
+
 HELP=
 DEBUG=
 RELEASE=
@@ -1789,7 +1807,7 @@ do
     shift || true
 done
 
-if [ -z "$DEBUG" ] && [ -z "$RELEASE" ]
+if [ -z "$RELEASE" ]
 then
     DEBUG=yes
 fi
@@ -1825,76 +1843,76 @@ do
             build_linux
             ;;
         c)
-            build_c
+            time build_c
             ;;
         clj | clojure)
-            build_clojure
+            time build_clojure
             ;;
         cpp)
-            build_cpp
+            time build_cpp
             ;;
         cs | csharp)
-            build_csharp
+            time build_csharp
             ;;
         dart)
-            build_dart
+            time build_dart
             ;;
         ex | elixir)
-            build_elixir
+            time build_elixir
             ;;
         fs | fsharp)
-            build_fsharp
+            time build_fsharp
             ;;
         go)
-            build_go
+            time build_go
             ;;
         groovy)
-            build_groovy
+            time build_groovy
             ;;
         haskell | hs)
-            build_haskell
+            time build_haskell
             ;;
         java)
-            build_java
+            time build_java
             ;;
         javascript | js)
-            build_javascript
+            time build_javascript
             ;;
         kotlin | kt)
-            build_kotlin
+            time build_kotlin
             ;;
         objc)
-            build_objc
+            time build_objc
             ;;
         # ocaml | ml)
-        #     build_ocaml
+        #     time build_ocaml
         #     ;;
         perl | pl)
-            build_perl
+            time build_perl
             ;;
         php)
-            build_php
+            time build_php
             ;;
         ps1 | powershell)
-            build_powershell
+            time build_powershell
             ;;
         py | python)
-            build_python
+            time build_python
             ;;
         rb | ruby)
-            build_ruby
+            time build_ruby
             ;;
         rs | rust)
-            build_rust
+            time build_rust
             ;;
         scala)
-            build_scala
+            time build_scala
             ;;
         swift)
-            build_swift
+            time build_swift
             ;;
         ts | typescript)
-            build_typescript
+            time build_typescript
             ;;
         *)
             log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
