@@ -64,7 +64,6 @@ class FileTypes {
                 def config = new SQLiteConfig()
                 config.setReadOnly(true)
                 _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties())
-                Logger.log("Opened database successfully")
             } catch (SQLException | ClassNotFoundException e) {
                 Logger.logError(e.getMessage())
             }
