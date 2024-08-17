@@ -10,9 +10,10 @@
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
   (:import (java.io File))
-  (:require [clojure.java.io :as io])
-  (:require [clojure.java.jdbc :as jdbc])
-  (:require [clojure.data.json :as json])
+  (:require [clojure.java.io :as io]
+            [clojure.java.jdbc :as jdbc]
+            [clojure.data.json :as json]
+            )
   (:use [clojure.set :only (union)]
         [clojure.string :only (lower-case)]
         [cljfind.config :only (XFINDDB)]
@@ -32,9 +33,8 @@
   [:unknown :archive :audio :binary :code :font :image :text :video :xml])
 
 (def ^:const db
-  {:classname   "org.sqlite.JDBC"
-   :subprotocol "sqlite"
-   :subname     XFINDDB})
+  {:dbtype "sqlite"
+   :dbname XFINDDB})
 
 (def ^:const ^String FILE-NAME-QUERY "SELECT file_type_id FROM file_name WHERE name = ?")
 (def ^:const ^String FILE-EXT-QUERY "SELECT file_type_id FROM file_extension WHERE extension = ?")
