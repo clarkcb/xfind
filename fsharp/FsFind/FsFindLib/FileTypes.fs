@@ -68,7 +68,7 @@ type FileTypes() =
         let conn = this.GetConnection()
         use command = conn.CreateCommand()
         command.CommandText <- query
-        command.Parameters.AddWithValue("$x0", elem)
+        let _ = command.Parameters.AddWithValue("$x0", elem)
         let reader : SqliteDataReader = command.ExecuteReader()
         if reader.Read() then
             enum<FileType>(reader.GetInt32(0) - 1)

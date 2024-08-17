@@ -206,9 +206,7 @@ export class Finder {
             return [];
         }
         const findDirs: string[] = [];
-        const filePaths = fs.readdirSync(currentDir).map((f: string) => {
-            return path.join(currentDir, f);
-        });
+        const filePaths = fs.readdirSync(currentDir).map((f: string) =>  path.join(currentDir, f));
         for (const fp of filePaths) {
             if (!this._settings.followSymlinks) {
                 const lstats = fs.lstatSync(fp);
