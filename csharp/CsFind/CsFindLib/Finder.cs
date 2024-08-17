@@ -11,12 +11,10 @@ public class Finder
 	private readonly FileTypes _fileTypes;
 	private readonly EnumerationOptions _enumerationOptions;
 	private FindSettings Settings { get; }
-	private EnumerationOptions _enumerationOptions;
 	public Finder(FindSettings settings)
 	{
 		Settings = settings;
 		ValidateSettings();
-		_enumerationOptions = GetEnumerationOptionsForSettings();
 		_fileTypes = new FileTypes();
 		_enumerationOptions = GetEnumerationOptionsForSettings();
 	}
