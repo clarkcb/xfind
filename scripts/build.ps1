@@ -1494,9 +1494,18 @@ function BuildRuby
     }
     CopyJsonResources($resourcesPath)
 
+    $oldPwd = Get-Location
+    Set-Location $rsfindPath
+
+    Log('Building rbfind')
+    Log('bundle install')
+    bundle install
+
     # add to bin
     $rbfindExe = Join-Path $rbfindPath 'bin' 'rbfind.ps1'
     AddToBin($rbfindExe)
+
+    Set-Location $oldPwd
 }
 
 function BuildRust

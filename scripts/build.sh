@@ -1384,10 +1384,12 @@ build_ruby () {
     copy_test_resources "$TEST_RESOURCES_PATH"
 
     # TODO: figure out how to install dependencies without installing rbfind (which is what bundler does)
-    # cd "$RBFIND_PATH"
-    # log "bundle"
-    # bundle
-    # cd -
+    cd "$RBFIND_PATH"
+
+    log "bundle install"
+    bundle install
+
+    cd -
 
     # add to bin
     add_to_bin "$RBFIND_PATH/bin/rbfind.sh"
