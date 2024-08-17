@@ -206,9 +206,7 @@ export class Finder {
             return [];
         }
         const findDirs: string[] = [];
-        const filePaths = fs.readdirSync(currentDir).map((f: string) => {
-            return path.join(currentDir, f);
-        });
+        const filePaths = fs.readdirSync(currentDir).map((f: string) =>  path.join(currentDir, f));
         for (const fp of filePaths) {
             const stats = fs.statSync(fp);
             if (stats.isDirectory() && recurse && this.isMatchingDir(fp)) {
