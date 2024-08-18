@@ -357,6 +357,17 @@ class Benchmarker(object):
         self.scenario_diff_dict = {}
         self.__dict__.update(kwargs)
         self.shell = os.environ.get('SHELL', '/bin/bash')
+        self.git_info = self.get_git_info()
+
+    def get_git_info(self):
+        git_info = {}
+        try:
+            git_info['branch'] = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip().decode()
+            git_info['commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
+            # git_info['status'] = subprocess.check_output(['git', 'status', '--porcelain']).strip().decode()
+        except Exception as e:
+            print(f'Error getting git info: {str(e)}')
+        return git_info
 
     def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print('\n{}'.format(title))
@@ -387,10 +398,14 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def print_scenario_results(self, scenario_results: ScenarioResults):
-        now = datetime.now()
-        title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs on {} at {}\n".\
+        title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs".\
             format(len(scenario_results.scenario_results), len(self.scenarios),
-                   scenario_results.runs, len(self.scenarios) * self.runs, now.date(), now.time())
+                   scenario_results.runs, len(self.scenarios) * self.runs)
+
+        title += '\n\nDate/time:  {}'.format(datetime.now())
+        title += '\nGit branch: "{}" ({})\n'.format(self.git_info["branch"],
+                                                  self.git_info["commit"])
+
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user', 'avg',
                'rank', 'total', 'avg', 'rank']
         data = []
