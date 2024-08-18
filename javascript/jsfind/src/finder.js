@@ -209,15 +209,14 @@ class Finder {
             }
         }
 
-        const subDirFindFileArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1)));
-        subDirFindFileArrays.forEach(subDirFindFiles => {
-            fileResults = fileResults.concat(subDirFindFiles);
+        const subDirFileResultArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1)));
+        subDirFileResultArrays.forEach(subDirFileResults => {
+            fileResults = fileResults.concat(subDirFileResults);
         });
         return fileResults;
     }
 
     async getFileResults(startPath) {
-        let fileResults = [];
         let stats = await fsStatAsync(startPath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
@@ -229,7 +228,7 @@ class Finder {
                 if (!this.settings.recursive) {
                     maxDepth = 1;
                 }
-                fileResults = await this.recGetFileResults(startPath, this.settings.minDepth, maxDepth, 1);
+                return await this.recGetFileResults(startPath, this.settings.minDepth, maxDepth, 1);
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
@@ -242,7 +241,7 @@ class Finder {
             if (this.isMatchingDir(dirname)) {
                 let fr = this.filterToFileResult(startPath, stats);
                 if (fr !== null) {
-                    fileResults.push(fr);
+                    return [fr];
                 } else {
                     throw new FindError("Startpath does not match find settings");
                 }
@@ -250,7 +249,7 @@ class Finder {
                 throw new FindError("Startpath does not match find settings");
             }
         }
-        return fileResults;
+        return [];
     }
 
     cmpFileResultsByPath(fr1, fr2) {

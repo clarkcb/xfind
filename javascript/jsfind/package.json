@@ -21,6 +21,7 @@
   "scripts": {
     "build": "babel src -d dist",
     "clean": "rm -rf ./dist ./node_modules",
+    "lint": "eslint .",
     "test": "jest",
     "coverage": "jest --coverage"
   },

@@ -194,7 +194,7 @@ export class Finder {
         return null;
     }
 
-    private recGetFileResults(currentDir: string, minDepth: number, maxDepth: number, currentDepth: number): FileResult[] {
+    private async recGetFileResults(currentDir: string, minDepth: number, maxDepth: number, currentDepth: number): Promise<FileResult[]> {
         let fileResults: FileResult[] = [];
         let recurse: boolean = true;
         if (currentDepth === maxDepth) {
@@ -216,15 +216,14 @@ export class Finder {
                 }
             }
         });
-        findDirs.forEach(d => {
-            fileResults = fileResults.concat(
-                this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1));
+        const subDirFileResultArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1)));
+        subDirFileResultArrays.forEach(subDirFileResults => {
+            fileResults = fileResults.concat(subDirFileResults);
         });
         return fileResults;
     }
 
     private async getFileResults(startPath: string): Promise<FileResult[]> {
-        let fileResults: FileResult[] = [];
         const stats = await stat(startPath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
@@ -236,8 +235,7 @@ export class Finder {
                 if (!this._settings.recursive) {
                     maxDepth = 1;
                 }
-                fileResults = fileResults.concat(
-                    this.recGetFileResults(startPath, this._settings.minDepth, maxDepth, 1));
+                return await this.recGetFileResults(startPath, this._settings.minDepth, maxDepth, 1);
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
@@ -250,7 +248,7 @@ export class Finder {
             if (this.isMatchingDir(dirname)) {
                 const fr = this.filterToFileResult(startPath);
                 if (fr !== null) {
-                    fileResults.push(fr);
+                    return [fr];
                 } else {
                     throw new FindError("Startpath does not match find settings");
                 }
@@ -258,7 +256,7 @@ export class Finder {
                 throw new FindError("Startpath does not match find settings");
             }
         }
-        return fileResults;
+        return [];
     }
 
     private cmpFileResultsByPath(fr1: FileResult, fr2: FileResult): number {
