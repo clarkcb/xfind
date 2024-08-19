@@ -8,26 +8,6 @@ defmodule ExFind.FileType do
   def new(args), do: __struct__(args)
 end
 
-defmodule ExFind.FileTypesLoader do
-  @moduledoc """
-  Documentation for `ExFind.FileTypesLoader`.
-  """
-
-  def load_file_types() do
-    # Load the find options from the findoptions.json file.
-    file_types_path = ExFind.Config.file_types_path
-    IO.puts(file_types_path)
-    {:ok, json} = File.read(file_types_path)
-    file_types = JSON.decode!(json)
-
-    file_type_map = file_types["filetypes"]
-                    |> Enum.map(fn t -> ExFind.FileType.new([type_name: String.to_atom(t["type"]), extensions: t["extensions"], names: t["names"]]) end)
-                    |> Enum.map(fn t -> {t.type_name, t} end)
-                    |> Map.new()
-    file_type_map
-  end
-end
-
 defmodule ExFind.FileTypes do
   @moduledoc """
   Documentation for `ExFind.FileTypes`.
@@ -37,11 +17,12 @@ defmodule ExFind.FileTypes do
 
   @file_types [:unknown, :archive, :audio, :binary, :code, :font, :image, :text, :video, :xml]
 
-  defstruct [:conn, :file_types, :file_types_maps]
+  defstruct [:conn, :file_types]
 
   def new() do
     {:ok, conn} = Exqlite.Sqlite3.open(ExFind.Config.xfind_db_path, [:readonly])
-    __struct__([conn: conn, file_types: MapSet.new(@file_types), file_types_maps: ExFind.FileTypesLoader.load_file_types()])
+    :ets.new(:file_ext_cache, [:set, :public, :named_table])
+    __struct__([conn: conn, file_types: @file_types])
   end
 
   def get_file_type_for_name(name) do
@@ -50,74 +31,80 @@ defmodule ExFind.FileTypes do
     if Enum.member?(file_types, name_atom), do: name_atom, else: :unknown
   end
 
-  def get_file_type_for_name(name) when is_binary(name) do
-    name_atom = String.downcase(name) |> String.to_atom()
-    get_file_type_for_name(name_atom)
-  end
-
-  defp file_type_for_file_name?(file_types, file_type, file_name) do
-    if Enum.member?(file_types.file_types_maps[file_type].names, file_name) do
-      true
-    else
-      ext = FileUtil.get_extension(file_name)
-      Enum.member?(file_types.file_types_maps[file_type].extensions, ext)
+  def get_file_type_for_query_and_elem(file_types, query, elem) do
+    {:ok, statement} = Exqlite.Sqlite3.prepare(file_types.conn, query)
+    :ok = Exqlite.Sqlite3.bind(file_types.conn, statement, [elem])
+    file_type = case Exqlite.Sqlite3.step(file_types.conn, statement) do
+      {:row, [file_type_id]} -> Enum.at(file_types.file_types, file_type_id - 1)
+      :done -> :unknown
     end
+    :ok = Exqlite.Sqlite3.release(file_types.conn, statement)
+    file_type
   end
 
-  def archive_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :archive, file_name)
+  def get_db_file_type_for_file_name(file_types, file_name) do
+    query = "SELECT file_type_id FROM file_name WHERE name = ?1;"
+    file_type = get_file_type_for_query_and_elem(file_types, query, file_name)
+    file_type
   end
 
-  def audio_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :audio, file_name)
-  end
-
-  def binary_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :binary, file_name)
-  end
-
-  def code_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :code, file_name)
-  end
-
-  def font_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :font, file_name)
-  end
-
-  def image_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :image, file_name)
-  end
-
-  def text_file_name?(file_types, file_name) do
-    Enum.any?([:text, :code, :xml], fn t -> file_type_for_file_name?(file_types, t, file_name) end)
-  end
-
-  def video_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :video, file_name)
-  end
-
-  def xml_file_name?(file_types, file_name) do
-    file_type_for_file_name?(file_types, :xml, file_name)
+  def get_db_file_type_for_extension(file_types, file_ext) do
+    case :ets.lookup(:file_ext_cache, file_ext) do
+      [{_, file_type}] ->
+        file_type
+      [] ->
+        query = "SELECT file_type_id FROM file_extension WHERE extension = ?1;"
+        file_type = get_file_type_for_query_and_elem(file_types, query, file_ext)
+        :ets.insert(:file_ext_cache, {file_ext, file_type})
+        file_type
+      end
   end
 
   def get_file_type_for_file_name(file_types, file_name) do
-    cond do
-      # more specific types first
-      code_file_name?(file_types, file_name) -> :code
-      archive_file_name?(file_types, file_name) -> :archive
-      audio_file_name?(file_types, file_name) -> :audio
-      font_file_name?(file_types, file_name) -> :font
-      image_file_name?(file_types, file_name) -> :image
-      video_file_name?(file_types, file_name) -> :video
-      # more general types last
-      xml_file_name?(file_types, file_name) -> :xml
-      text_file_name?(file_types, file_name) -> :text
-      binary_file_name?(file_types, file_name) -> :binary
-      true -> :unknown
+    case get_db_file_type_for_file_name(file_types, file_name) do
+      :unknown -> get_db_file_type_for_extension(file_types, FileUtil.get_extension(file_name))
+      file_type -> file_type
     end
   end
 
   def get_file_type_for_path(file_types, file_path) do
     get_file_type_for_file_name(file_types, Path.basename(file_path))
+  end
+
+  def archive_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :archive
+  end
+
+  def audio_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :audio
+  end
+
+  def binary_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :binary
+  end
+
+  def code_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :code
+  end
+
+  def font_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :font
+  end
+
+  def image_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :image
+  end
+
+  def text_file_name?(file_types, file_name) do
+    file_type = get_file_type_for_file_name(file_types, file_name)
+    Enum.any?([:text, :code, :xml], fn t -> t == file_type end)
+  end
+
+  def video_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :video
+  end
+
+  def xml_file_name?(file_types, file_name) do
+    get_file_type_for_file_name(file_types, file_name) == :xml
   end
 end
