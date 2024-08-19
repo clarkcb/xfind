@@ -186,7 +186,6 @@ defmodule ExFind.Finder do
       else
         []
       end
-      # dir_results = if Enum.empty?(dirs), do: [], else: process_dirs(finder, dirs, current_depth + 1)
       dir_results = dirs
                     |> Enum.filter(fn d -> matching_dir?(finder, d) end)
                     |> Enum.map(fn d -> rec_find_path(finder, d, min_depth, max_depth, current_depth + 1) end)
