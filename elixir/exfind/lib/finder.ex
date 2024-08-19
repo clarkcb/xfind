@@ -126,10 +126,11 @@ defmodule ExFind.Finder do
 
   def filter_to_file_results(finder, file_path) do
     # IO.puts("filter_to_file_results(#{file_path})")
-    if not finder.settings.include_hidden and FileUtil.hidden?(Path.basename(file_path)) do
+    file_name = Path.basename(file_path)
+    if not finder.settings.include_hidden and FileUtil.hidden?(file_name) do
       []
     else
-      file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
+      file_type = FileTypes.get_file_type_for_file_name(finder.file_types, file_name)
       if file_type == :archive and not finder.settings.include_archives and not finder.settings.archives_only do
         []
       else
@@ -173,7 +174,6 @@ defmodule ExFind.Finder do
       else
         []
       end
-      # dir_results = if Enum.empty?(dirs), do: [], else: process_dirs(finder, dirs, current_depth + 1)
       dir_results = dirs
                     |> Enum.filter(fn d -> matching_dir?(finder, d) end)
                     |> Enum.map(fn d -> rec_find_path(finder, d, min_depth, max_depth, current_depth + 1) end)
