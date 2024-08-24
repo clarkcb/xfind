@@ -56,9 +56,41 @@ function UnitTestC
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
+    # if cmake is installed, display version
+    if (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')
+    {
+        # cmake --version output looks like this: cmake version 3.30.2
+        $cmakeVersion = cmake --version | Select-String -Pattern '^cmake version'
+        $cmakeVersion = @($cmakeVersion -split '\s+')[2]
+        Log("cmake version: $cmakeVersion")
+    }
+    
     Log('Unit-testing cfind')
-    Log('make run_tests')
-    make run_tests
+
+    $configurations = @('debug', 'release')
+    ForEach ($c in $configurations)
+    {
+        $cmakeBuildDir = "$cfindPath/cmake-build-$c"
+
+        if (Test-Path $cmakeBuildDir)
+        {
+            $cfindTestExe = Join-Path $cmakeBuildDir 'cfind-tests'
+            if (Test-Path $cfindTestExe)
+            {
+                # run tests
+                Log($cfindTestExe)
+                & $cfindTestExe
+            }
+            else
+            {
+                LogError("cfind-tests not found: $cfindTestExe")
+            }
+        }
+        else
+        {
+            LogError("cmake build directory not found: $cmmakeBuildDir")
+        }
+    }
 
     Set-Location $oldPwd
 }
@@ -68,12 +100,23 @@ function UnitTestClojure
     Write-Host
     Hdr('UnitTestClojure')
 
+    if (Get-Command 'lein' -ErrorAction 'SilentlyContinue')
+    {
+        # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+        $clojureVersion = clj -version 2>&1
+        Log("clojure version: $clojureVersion")
+    }
+
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
         return
     }
 
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    $leinVersion = lein version
+    Log("lein version: $leinVersion")
+    
     $oldPwd = Get-Location
     Set-Location $cljfindPath
 
@@ -90,6 +133,15 @@ function UnitTestCpp
     Write-Host
     Hdr('UnitTestCpp')
 
+    # if cmake is installed, display version
+    if (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')
+    {
+        # cmake --version output looks like this: cmake version 3.30.2
+        $cmakeVersion = cmake --version | Select-String -Pattern '^cmake version'
+        $cmakeVersion = @($cmakeVersion -split '\s+')[2]
+        Log("cmake version: $cmakeVersion")
+    }
+
     $configurations = @('debug', 'release')
     ForEach ($c in $configurations)
     {
@@ -98,8 +150,20 @@ function UnitTestCpp
         if (Test-Path $cmakeBuildDir)
         {
             $cppfindTestExe = Join-Path $cmakeBuildDir 'cppfind-tests'
-            Log($cppfindTestExe)
-            & $cppfindTestExe
+            if (Test-Path $cppfindTestExe)
+            {
+                # run tests
+                Log($cppfindTestExe)
+                & $cppfindTestExe
+            }
+            else
+            {
+                LogError("cppfind-tests not found: $cppfindTestExe")
+            }
+        }
+        else
+        {
+            LogError("cmake build directory not found: $cmmakeBuildDir")
         }
     }
 }
@@ -115,12 +179,16 @@ function UnitTestCsharp
         return
     }
 
+    $dotnetVersion = dotnet --version
+    Log("dotnet version: $dotnetVersion")
+
     $csfindSolutionPath = Join-Path $csfindPath 'CsFind.sln'
     # $verbosity = 'quiet'
     # $verbosity = 'minimal'
     $verbosity = 'normal'
     # $verbosity = 'detailed'
 
+    # run tests
     Log('Unit-testing csfind')
     Write-Host "dotnet test $csfindSolutionPath --verbosity $verbosity"
     dotnet test $csfindSolutionPath --verbosity $verbosity
@@ -131,12 +199,52 @@ function UnitTestDart
     Write-Host
     Hdr('UnitTestDart')
 
+    # ensure dart is installed
+    if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install dart')
+        return
+    }
+
+    $dartVersion = dart --version
+    Log("dart version: $dartVersion")
+
     $oldPwd = Get-Location
     Set-Location $dartfindPath
 
+    # run tests
     Log('Unit-testing dartfind')
     Log('dart run test')
     dart run test
+
+    Set-Location $oldPwd
+}
+
+function UnitTestElixir
+{
+    Write-Host
+    Hdr('UnitTestElixir')
+
+    if (Get-Command 'elixir' -ErrorAction 'SilentlyContinue')
+    {
+        $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
+        Log("elixir version: $elixirVersion")
+    }
+
+    # ensure mix is installed
+    if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install mix')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $exfindPath
+
+    # run tests
+    Log('Unit-testing exfind')
+    Log('mix test')
+    mix test
 
     Set-Location $oldPwd
 }
@@ -152,12 +260,16 @@ function UnitTestFsharp
         return
     }
 
+    $dotnetVersion = dotnet --version
+    Log("dotnet version: $dotnetVersion")
+
     $fsfindSolutionPath = Join-Path $fsfindPath 'FsFind.sln'
     # $verbosity = 'quiet'
     # $verbosity = 'minimal'
     $verbosity = 'normal'
     # $verbosity = 'detailed'
 
+    # run tests
     Log('Unit-testing fsfind')
     Write-Host "dotnet test $fsfindSolutionPath --verbosity $verbosity"
     dotnet test $fsfindSolutionPath --verbosity $verbosity
@@ -174,9 +286,13 @@ function UnitTestGo
         return
     }
 
+    $goVersion = (go version) -replace 'go version ', ''
+    Log("go version: $goVersion")
+
     $oldPwd = Get-Location
     Set-Location $gofindPath
 
+    # run tests
     Log('Unit-testing gofind')
     Log('go test --cover ./...')
     go test --cover ./...
@@ -189,19 +305,35 @@ function UnitTestGroovy
     Write-Host
     Hdr('UnitTestGroovy')
 
-    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    # if groovy is installed, display version
+    if (Get-Command 'groovy' -ErrorAction 'SilentlyContinue')
+    {
+        $groovyVersion = groovy --version
+        Log("groovy version: $groovyVersion")
+    }
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
         return
     }
+
+    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    Log("$gradle version: $gradleVersion")
 
     $oldPwd = Get-Location
     Set-Location $groovyfindPath
 
     # run tests via gradle
     Log('Unit-testing ktfind')
-    Log('gradle --warning-mode all test')
-    gradle --warning-mode all test
+    Log("$gradle --warning-mode all test")
+    & $gradle --warning-mode all test
 
     Set-Location $oldPwd
 }
@@ -211,6 +343,14 @@ function UnitTestHaskell
     Write-Host
     Hdr('UnitTestHaskell')
 
+    # if ghc is installed, display version
+    if (Get-Command 'ghc' -ErrorAction 'SilentlyContinue')
+    {
+        $ghcVersion = ghc --version
+        Log("ghc version: $ghcVersion")
+    }
+    
+    # ensure stack is installed
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
@@ -233,11 +373,21 @@ function UnitTestJava
     Write-Host
     Hdr('UnitTestJava')
 
+    # if java is installed, display version
+    if (Get-Command 'java' -ErrorAction 'SilentlyContinue')
+    {
+        $javaVersion = java -version 2>&1 | Select-String -Pattern 'java version'
+        Log("java version: $javaVersion")
+    }
+
     if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mvn')
         return
     }
+
+    $mvnVersion = mvn --version | Select-String -Pattern 'Apache Maven'
+    Log("mvn version: $mvnVersion")
 
     # run tests via maven
     Log('Unit-testing javafind')
@@ -251,6 +401,14 @@ function UnitTestJavaScript
     Write-Host
     Hdr('UnitTestJavaScript')
 
+    # if node is installed, display version
+    if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
+    {
+        $nodeVersion = node --version
+        Log("node version: $nodeVersion")    
+    }
+
+    # ensure npm is installed
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
@@ -273,11 +431,20 @@ function UnitTestKotlin
     Write-Host
     Hdr('UnitTestKotlin')
 
-    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
+    {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
         return
     }
+
+    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    Log("$gradle version: $gradleVersion")
 
     $oldPwd = Get-Location
     Set-Location $ktfindPath
@@ -296,15 +463,20 @@ function UnitTestObjc
     Write-Host
     Hdr('UnitTestObjc')
 
-    if (-not (Get-Command 'xcodebuild' -ErrorAction 'SilentlyContinue'))
+    # ensure swift is installed
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install xcode')
+        PrintError('You need to install swift')
         return
     }
+
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
+    Log("swift version: $swiftVersion")
 
     $oldPwd = Get-Location
     Set-Location $objcfindPath
 
+    # run tests
     Log('Unit-testing objcfind')
     Log('swift test')
     swift test
@@ -329,8 +501,18 @@ function UnitTestPerl
         return
     }
 
+    $perlVersion = perl -e 'print $^V' | Select-String -Pattern 'v5'
+    if (-not $perlVersion)
+    {
+        PrintError('A 5.x version of perl is required')
+        return
+    }
+
+    Log("perl version: $perlVersion")
+
     $plTestsPath = Join-Path $plfindPath 't'
 
+    # run tests
     Log('Unit-testing plfind')
     $pltests = @(Get-ChildItem $plTestsPath |
         Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
@@ -346,6 +528,28 @@ function UnitTestPhp
     Write-Host
     Hdr('UnitTestPhp')
 
+    # if php is installed, display version
+    if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install php')
+        return
+    }
+
+    $phpVersion = & php -v | Select-String -Pattern '^PHP [78]' 2>&1
+    if (-not $phpVersion)
+    {
+        PrintError('A version of PHP >= 7.x is required')
+        return
+    }
+    Log("php version: $phpVersion")
+
+    # if composer is installed, display version
+    if (Get-Command 'composer' -ErrorAction 'SilentlyContinue')
+    {
+        $composerVersion = composer --version 2>&1 | Select-String -Pattern '^Composer'
+        Log("composer version: $composerVersion")    
+    }
+
     if (-not (Get-Command 'phpunit' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install phpunit')
@@ -354,6 +558,7 @@ function UnitTestPhp
 
     $phpTestsPath = Join-Path $phpfindPath 'tests'
 
+    # run tests
     Log('Unit-testing plfind')
     Log("phpunit $phpTestsPath")
     phpunit $phpTestsPath
@@ -364,6 +569,11 @@ function UnitTestPowershell
     Write-Host
     Hdr('UnitTestPowershell')
 
+    # We don't need to check for powershell, as we're running in it
+
+    $powershellVersion = pwsh -v
+    Log("powershell version: $powershellVersion")
+    
     $testsScriptPath = Join-Path $ps1findPath 'ps1find.tests.ps1'
     if (-not (Test-Path $testsScriptPath))
     {  
@@ -371,6 +581,7 @@ function UnitTestPowershell
         return
     }
 
+    # run tests
     Log('Unit-testing ps1find')
     Log("& $testsScriptPath")
     & $testsScriptPath
@@ -413,6 +624,30 @@ function UnitTestRuby
     Write-Host
     Hdr('UnitTestRuby')
 
+    # ensure ruby3.x is installed
+    if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install ruby')
+        return
+    }
+
+    $rubyVersion = & ruby -v 2>&1 | Select-String -Pattern '^ruby 3' 2>&1
+    if (-not $rubyVersion)
+    {
+        PrintError('A version of ruby >= 3.x is required')
+        return
+    }
+
+    Log("ruby version: $rubyVersion")
+
+    # ensure bundler is installed
+    # if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue'))
+    # {
+    #     PrintError('You need to install bundler: https://bundler.io/')
+    #     return
+    # }
+
+    # ensure rake is installed
     if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rake')
@@ -422,9 +657,10 @@ function UnitTestRuby
     $oldPwd = Get-Location
     Set-Location $rbfindPath
 
+    # run tests
     Log('Unit-testing rbfind')
-    Log('rake test')
-    rake test
+    Log('bundle exec rake test')
+    bundle exec rake test
 
     Set-Location $oldPwd
 }
@@ -434,18 +670,29 @@ function UnitTestRust
     Write-Host
     Hdr('UnitTestRust')
 
+    # if rust is installed, display version
+    if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
+    {
+        $rustVersion = rustc --version | Select-String -Pattern 'rustc'
+        Log("rustc version: $rustVersion")
+    }
+
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo/rust')
         return
     }
 
+    $cargoVersion = cargo --version
+    Log("cargo version: $cargoVersion")
+
     $oldPwd = Get-Location
     Set-Location $rsfindPath
 
+    # run tests
     Log('Unit-testing rsfind')
-    Log('cargo test')
-    cargo test
+    Log('cargo test --package rsfind --bin rsfind')
+    cargo test --package rsfind --bin rsfind
 
     Set-Location $oldPwd
 }
@@ -455,6 +702,14 @@ function UnitTestScala
     Write-Host
     Hdr('UnitTestScala')
 
+    # if scala is installed, display version
+    if (Get-Command 'scala' -ErrorAction 'SilentlyContinue')
+    {
+        $scalaVersion = scala --version 2>&1 | Select-Object -Last 1
+        Log($scalaVersion)
+    }
+
+    # ensure sbt is installed
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install sbt')
@@ -464,6 +719,7 @@ function UnitTestScala
     $oldPwd = Get-Location
     Set-Location $scalafindPath
 
+    # run tests
     Log('Unit-testing scalafind')
     Log('sbt test')
     sbt test
@@ -482,9 +738,13 @@ function UnitTestSwift
         return
     }
 
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
+    Log("swift version: $swiftVersion")
+
     $oldPwd = Get-Location
     Set-Location $swiftfindPath
 
+    # run tests
     Log('Unit-testing swiftfind')
     Log('swift test')
     swift test
@@ -497,15 +757,27 @@ function UnitTestTypeScript
     Write-Host
     Hdr('UnitTestTypeScript')
 
+    # if node is installed, display version
+    if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
+    {
+        $nodeVersion = node --version
+        Log("node version: $nodeVersion")
+    }
+
+    # ensure npm is installed
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
         return
     }
 
+    $npmVersion = npm --version
+    Log("npm version: $npmVersion")
+
     $oldPwd = Get-Location
     Set-Location $tsfindPath
 
+    # run tests
     Log('Unit-testing tsfind')
     Log('npm test')
     npm test
@@ -527,6 +799,8 @@ function UnitTestAll
     UnitTestCsharp
 
     UnitTestDart
+
+    UnitTestElixir
 
     UnitTestFsharp
 
@@ -593,6 +867,8 @@ function UnitTestMain
             'cs'         { UnitTestCsharp }
             'csharp'     { UnitTestCsharp }
             'dart'       { UnitTestDart }
+            'elixir'     { UnitTestElixir }
+            'ex'         { UnitTestElixir }
             'fs'         { UnitTestFsharp }
             'fsharp'     { UnitTestFsharp }
             'go'         { UnitTestGo }

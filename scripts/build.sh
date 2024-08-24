@@ -109,7 +109,7 @@ build_c () {
     echo
     hdr "build_c"
 
-    # ensure make is installed
+    # ensure cmake is installed
     if [ -z "$(which cmake)" ]
     then
         log_error "You need to install cmake"
@@ -660,7 +660,7 @@ build_groovy () {
     echo
     hdr "build_groovy"
 
-    # ensure go is installed
+    # ensure groovy is installed
     if [ -z "$(which groovy)" ]
     then
         log_error "You need to install groovy"
@@ -1354,7 +1354,7 @@ build_ruby () {
     echo
     hdr "build_ruby"
 
-    # ensure ruby2.x+ is installed
+    # ensure ruby3.x+ is installed
     if [ -z "$(which ruby)" ]
     then
         log_error "You need to install ruby"
@@ -1469,14 +1469,14 @@ build_scala () {
     hdr "build_scala"
 
     # ensure scala is installed
-    if [ -z "$(which scalac)" ]
+    if [ -z "$(which scala)" ]
     then
         log_error "You need to install scala"
         return
     fi
 
-    SCALA_VERSION=$(scalac -version 2>&1 | head -n 1)
-    log "scala version: $SCALA_VERSION"
+    SCALA_VERSION=$(scala -version 2>&1 | tail -n 1)
+    log "$SCALA_VERSION"
 
     cd "$SCALAFIND_PATH"
 

@@ -1489,7 +1489,7 @@ function BuildRuby
     Write-Host
     Hdr('BuildRuby')
 
-    # ensure ruby2.x is installed
+    # ensure ruby3.x is installed
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ruby')
@@ -1622,14 +1622,14 @@ function BuildScala
     Hdr('BuildScala')
 
     # ensure scalac is installed
-    if (-not (Get-Command 'scalac' -ErrorAction 'SilentlyContinue'))
+    if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala')
         return
     }
 
-    $scalaVersion = scala --version 2>&1 | Select-String -Pattern 'Scala'
-    Log("scala version: $scalaVersion")
+    $scalaVersion = scala --version 2>&1 | Select-Object -Last 1
+    Log($scalaVersion)
 
     $oldPwd = Get-Location
     Set-Location $scalafindPath
