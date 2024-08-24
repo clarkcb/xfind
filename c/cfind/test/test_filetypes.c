@@ -4,6 +4,8 @@
 #include "filetypes.h"
 #include "test_filetypes.h"
 
+#include "color.h"
+
 void test_file_type_from_name(void)
 {
     printf("\ntest_file_type_from_name()\n");
@@ -27,12 +29,16 @@ void test_file_type_from_name(void)
     };
     for (int i=0; i < arrlen; i++) {
         printf("name: \"%s\"\n", names[i]);
-        FileType ft = file_type_from_name(names[i]);
+        const FileType ft = file_type_from_name(names[i]);
         char ftname[8];
         file_type_to_name(expected[i], ftname);
-        printf("expected ft: %s\n", ftname);
+        const char* color = COLOR_GREEN;
+        if (ft != expected[i]) {
+            color = COLOR_RED;
+        }
+        printf("%sexpected ft: %s%s\n", color, ftname, COLOR_RESET);
         file_type_to_name(ft, ftname);
-        printf("actual ft:   %s\n", ftname);
+        printf("%sactual ft:   %s%s\n", color, ftname, COLOR_RESET);
         assert(ft == expected[i]);
     }
 }
@@ -73,9 +79,13 @@ void test_get_file_type_for_ext(void)
         FileType ft = get_file_type_for_ext(exts[i], file_types);
         char ftname[8];
         file_type_to_name(expected[i], ftname);
-        printf("expected ft: %s\n", ftname);
+        const char* color = COLOR_GREEN;
+        if (ft != expected[i]) {
+            color = COLOR_RED;
+        }
+        printf("%sexpected ft: %s%s\n", color, ftname, COLOR_RESET);
         file_type_to_name(ft, ftname);
-        printf("actual ft:   %s\n", ftname);
+        printf("%sactual ft:   %s%s\n", color, ftname, COLOR_RESET);
         assert(ft == expected[i]);
     }
 }
@@ -115,62 +125,72 @@ void test_is_file_type_for_ext(void)
         printf("ext: \"%s\"\n", exts[i]);
         unsigned short expected_is_archive = expected[i] == ARCHIVE ? 1 : 0;
         unsigned short is_archive = is_archive_ext(exts[i], file_types);
-        printf("expected_is_archive: %d\n", expected_is_archive);
-        printf("is_archive: %d\n", is_archive);
+        const char* color = is_archive == expected_is_archive ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_archive: %d%s\n", color, expected_is_archive, COLOR_RESET);
+        printf("%sis_archive: %d%s\n", color, is_archive, COLOR_RESET);
         assert(is_archive == expected_is_archive);
 
         unsigned short expected_is_audio = expected[i] == AUDIO ? 1 : 0;
         unsigned short is_audio = is_audio_ext(exts[i], file_types);
-        printf("expected_is_audio: %d\n", expected_is_audio);
-        printf("is_audio: %d\n", is_audio);
+        color = is_audio == expected_is_audio ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_audio: %d%s\n", color, expected_is_audio, COLOR_RESET);
+        printf("%sis_audio: %d%s\n", color, is_audio, COLOR_RESET);
         assert(is_audio == expected_is_audio);
 
         unsigned short expected_is_binary = expected[i] == BINARY ? 1 : 0;
         unsigned short is_binary = is_binary_ext(exts[i], file_types);
-        printf("expected_is_binary: %d\n", expected_is_binary);
-        printf("is_binary: %d\n", is_binary);
+        color = is_binary == expected_is_binary ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_binary: %d%s\n", color, expected_is_binary, COLOR_RESET);
+        printf("%sis_binary: %d%s\n", color, is_binary, COLOR_RESET);
         assert(is_binary == expected_is_binary);
 
         unsigned short expected_is_code = expected[i] == CODE ? 1 : 0;
         unsigned short is_code = is_code_ext(exts[i], file_types);
-        printf("expected_is_code: %d\n", expected_is_code);
-        printf("is_code: %d\n", is_code);
+        color = is_code == expected_is_code ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_code: %d%s\n", color, expected_is_code, COLOR_RESET);
+        printf("%sis_code: %d%s\n", color, is_code, COLOR_RESET);
         assert(is_code == expected_is_code);
 
         unsigned short expected_is_font = expected[i] == FONT ? 1 : 0;
         unsigned short is_font = is_font_ext(exts[i], file_types);
-        printf("expected_is_font: %d\n", expected_is_font);
-        printf("is_font: %d\n", is_font);
+        color = is_font == expected_is_font ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_font: %d%s\n", color, expected_is_font, COLOR_RESET);
+        printf("%sis_font: %d%s\n", color, is_font, COLOR_RESET);
         assert(is_font == expected_is_font);
 
         unsigned short expected_is_image = expected[i] == IMAGE ? 1 : 0;
         unsigned short is_image = is_image_ext(exts[i], file_types);
-        printf("expected_is_image: %d\n", expected_is_image);
-        printf("is_image: %d\n", is_image);
+        color = is_image == expected_is_image ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_image: %d%s\n", color, expected_is_image, COLOR_RESET);
+        printf("%sis_image: %d%s\n", color, is_image, COLOR_RESET);
         assert(is_image == expected_is_image);
 
         unsigned short expected_is_video = expected[i] == VIDEO ? 1 : 0;
         unsigned short is_video = is_video_ext(exts[i], file_types);
-        printf("expected_is_video: %d\n", expected_is_video);
-        printf("is_video: %d\n", is_video);
+        color = is_video == expected_is_video ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_video: %d%s\n", color, expected_is_video, COLOR_RESET);
+        printf("%sis_video: %d%s\n", color, is_video, COLOR_RESET);
         assert(is_video == expected_is_video);
 
         unsigned short expected_is_xml = expected[i] == XML ? 1 : 0;
         unsigned short is_xml = is_xml_ext(exts[i], file_types);
-        printf("expected_is_xml: %d\n", expected_is_xml);
-        printf("is_xml: %d\n", is_xml);
+        color = is_xml == expected_is_xml ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_xml: %d%s\n", color, expected_is_xml, COLOR_RESET);
+        printf("%sis_xml: %d%s\n", color, is_xml, COLOR_RESET);
         assert(is_xml == expected_is_xml);
 
         unsigned short expected_is_text = (is_code || is_xml || expected[i] == TEXT) ? 1 : 0;
         unsigned short is_text = is_text_ext(exts[i], file_types);
-        printf("expected_is_text: %d\n", expected_is_text);
-        printf("is_text: %d\n", is_text);
+        color = is_text == expected_is_text ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_text: %d%s\n", color, expected_is_text, COLOR_RESET);
+        printf("%sis_text: %d%s\n", color, is_text, COLOR_RESET);
         assert(is_text == expected_is_text);
 
         unsigned short expected_is_unknown = expected[i] == UNKNOWN ? 1 : 0;
         unsigned short is_unknown = !is_archive && !is_audio && !is_binary && !is_code && !is_font && !is_image && !is_text && !is_video && !is_xml;
-        printf("expected_is_unknown: %d\n", expected_is_unknown);
-        printf("is_unknown: %d\n", is_unknown);
+        color = is_unknown == expected_is_unknown ? COLOR_GREEN : COLOR_RED;
+        printf("%sexpected_is_unknown: %d%s\n", color, expected_is_unknown, COLOR_RESET);
+        printf("%sis_unknown: %d%s\n", color, is_unknown, COLOR_RESET);
         assert(is_unknown == expected_is_unknown);
     }
 }

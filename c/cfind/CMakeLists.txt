@@ -39,6 +39,7 @@ target_sources(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cfind.h>
         $<INSTALL_INTERFACE:include/cfind.h>
         PRIVATE
+        include/color.h
         include/common.h src/common.c
         include/config.h src/config.c
         include/fileresults.h src/fileresults.c

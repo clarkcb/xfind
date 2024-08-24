@@ -4,18 +4,23 @@
 
 #include <sys/stat.h>
 
+#include "color.h"
+
 
 void test_validate_settings(void)
 {
     printf("\ntest_validate_settings()\n");
 
     FindSettings *settings = default_settings();
-    printf("is_null_or_empty_string_node(settings->paths): %d\n", is_null_or_empty_string_node(settings->paths));
-    assert(is_null_or_empty_string_node(settings->paths) == 1);
+    int empty_paths = is_null_or_empty_string_node(settings->paths);
+    const char* color = empty_paths == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_null_or_empty_string_node(settings->paths): %d%s\n", color, empty_paths, COLOR_RESET);
+    assert(empty_paths == 1);
 
     error_t err = validate_settings(settings);
+    color = err == E_STARTPATH_NOT_DEFINED ? COLOR_GREEN : COLOR_RED;
     if (err == E_STARTPATH_NOT_DEFINED) {
-        printf("validate_settings(settings): E_STARTPATH_NOT_DEFINED\n");
+        printf("%svalidate_settings(settings): E_STARTPATH_NOT_DEFINED%s\n", color, COLOR_RESET);
     }
     assert(err == E_STARTPATH_NOT_DEFINED);
 
@@ -24,20 +29,27 @@ void test_validate_settings(void)
     printf("Adding path: \"%s\"\n", p1);
 
     settings->paths = new_string_node(p1);
-    assert(is_null_or_empty_string_node(settings->paths) == 0);
-    printf("string_node_count(settings->paths): %zu\n", string_node_count(settings->paths));
-    assert(string_node_count(settings->paths) == 1);
+    empty_paths = is_null_or_empty_string_node(settings->paths);
+    assert(empty_paths == 0);
+    size_t path_count = string_node_count(settings->paths);
+    color = path_count == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sstring_node_count(settings->paths): %zu%s\n", color, path_count, COLOR_RESET);
+    assert(path_count == 1);
 
     const char* p2 = "./non_existent_file.c";
     printf("Adding path: \"%s\"\n", p2);
 
     add_string_to_string_node(p2, settings->paths);
-    printf("string_node_count(settings->paths): %zu\n", string_node_count(settings->paths));
-    assert(string_node_count(settings->paths) == 2);
+    path_count = string_node_count(settings->paths);
+    color = path_count == 2 ? COLOR_GREEN : COLOR_RED;
+    printf("%sstring_node_count(settings->paths): %zu%s\n", color, path_count, COLOR_RESET);
+    path_count = string_node_count(settings->paths);
+    assert(path_count == 2);
 
     err = validate_settings(settings);
+    color = err == E_STARTPATH_NOT_FOUND ? COLOR_GREEN : COLOR_RED;
     if (err == E_STARTPATH_NOT_FOUND) {
-        printf("validate_settings(settings): E_STARTPATH_NOT_FOUND\n");
+        printf("%svalidate_settings(settings): E_STARTPATH_NOT_FOUND%s\n", color, COLOR_RESET);
     }
     assert(err == E_STARTPATH_NOT_FOUND);
 
@@ -53,17 +65,23 @@ void test_is_matching_dir(void) {
 
     // test current dot dir
     const char* dot_dir = ".";
-    unsigned short res1 = is_matching_dir(dot_dir, settings);
+    const unsigned short res1 = is_matching_dir(settings, dot_dir);
+    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, dot_dir, res1, COLOR_RESET);
     assert(res1 == 1);
 
     // test parent dot dir
     const char* parent_dir = "..";
-    unsigned short res2 = is_matching_dir(parent_dir, settings);
+    const unsigned short res2 = is_matching_dir(settings, parent_dir);
+    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, parent_dir, res2, COLOR_RESET);
     assert(res2 == 1);
 
     // test "test" dir
     const char* test_dir = "test";
-    unsigned short res3 = is_matching_dir(test_dir, settings);
+    const unsigned short res3 = is_matching_dir(settings, test_dir);
+    color = res3 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res3, COLOR_RESET);
     assert(res3 == 1);
 
     destroy_settings(settings);
@@ -78,13 +96,18 @@ void test_is_matching_dir_in_dir_patterns(void) {
 
     // test "test" dir with "test" in_dir_pattern
     const char* test_dir = "test";
+    printf("Adding in-dir-pattern: \"%s\"\n", test_dir);
     settings->in_dir_patterns = new_regex_node_from_string("test");
-    unsigned short res1 = is_matching_dir(test_dir, settings);
+    const unsigned short res1 = is_matching_dir(settings, test_dir);
+    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, COLOR_RESET);
     assert(res1 == 1);
 
     // test "other" dir with "test" in_dir_pattern
     const char* other_dir = "other";
-    unsigned short res2 = is_matching_dir(other_dir, settings);
+    const unsigned short res2 = is_matching_dir(settings, other_dir);
+    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, other_dir, res2, COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -99,13 +122,18 @@ void test_is_matching_dir_out_dir_patterns(void) {
 
     // test "test" dir with "test" out_dir_pattern
     const char* test_dir = "test";
+    printf("Adding out-dir-pattern: \"%s\"\n", test_dir);
     settings->out_dir_patterns = new_regex_node_from_string("test");
-    unsigned short res1 = is_matching_dir(test_dir, settings);
+    const unsigned short res1 = is_matching_dir(settings, test_dir);
+    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res1, COLOR_RESET);
     assert(res1 == 0);
 
     // test "other" dir with "test" out_dir_pattern
     const char* other_dir = "other";
-    unsigned short res2 = is_matching_dir(other_dir, settings);
+    const unsigned short res2 = is_matching_dir(settings, other_dir);
+    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_dir(\"%s\"): %d%s\n", color, test_dir, res2, COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -119,18 +147,22 @@ void test_filter_file(void) {
     settings->paths = new_string_node(p);
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* test_dir = ".";
     const char* test_file = "test_finder.c";
-    FileType ft = CODE;
+    const FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = filter_file(test_dir, test_file, &ft, &fpstat, settings);
+    const unsigned short res1 = filter_file(settings, test_dir, test_file, &ft, &fpstat);
+    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sfilter_file(\"%s\"): %d%s\n", color, test_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* hidden_file = ".hidden.c";
-    unsigned short res2 = filter_file(test_dir, hidden_file, &ft, &fpstat, settings);
+    const unsigned short res2 = filter_file(settings, test_dir, hidden_file, &ft, &fpstat);
+    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sfilter_file(\"%s\"): %d%s\n", color, hidden_file, res2, COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -142,20 +174,25 @@ void test_is_matching_file_in_extensions(void) {
     FindSettings *settings = default_settings();
     const char* p = ".";
     settings->paths = new_string_node(p);
+    printf("Adding in-extension: \"c\"\n");
     settings->in_extensions = new_string_node("c");
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
-    FileType ft = CODE;
+    const FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
-    char* non_matching_file = "test_finder.h";
-    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
+    const char* non_matching_file = "test_finder.h";
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -167,20 +204,25 @@ void test_is_matching_file_out_extensions(void) {
     FindSettings *settings = default_settings();
     const char* p = ".";
     settings->paths = new_string_node(p);
+    printf("Adding out-extension: \"c\"\n");
     settings->out_extensions = new_string_node("c");
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
-    FileType ft = CODE;
+    const FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "test_finder.h";
-    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -192,20 +234,25 @@ void test_is_matching_file_in_file_patterns(void) {
     FindSettings *settings = default_settings();
     const char* p = ".";
     settings->paths = new_string_node(p);
+    printf("Adding in-file-pattern: \"test\"\n");
     settings->in_file_patterns = new_regex_node_from_string("test");
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
-    FileType ft = CODE;
+    const FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "finder.c";
-    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -217,20 +264,25 @@ void test_is_matching_file_out_file_patterns(void) {
     FindSettings *settings = default_settings();
     const char* p = ".";
     settings->paths = new_string_node(p);
+    printf("Adding out-file-pattern: \"test\"\n");
     settings->out_file_patterns = new_regex_node_from_string("test");
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
-    FileType ft = CODE;
+    const FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "finder.c";
-    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);
@@ -242,25 +294,30 @@ void test_is_matching_file_in_file_types(void) {
     FindSettings *settings = default_settings();
     const char* p = ".";
     settings->paths = new_string_node(p);
-    FileType file_type = CODE;
+    const FileType file_type = CODE;
     int *ftint = malloc(sizeof(int));
     *ftint = (int)file_type;
+    printf("Adding in-file-type: CODE\n");
     settings->in_file_types = empty_int_node();
     add_int_to_int_node(ftint, settings->in_file_types);
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(matching_file, &ft, &fpstat, settings);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "README.md";
     ft = TEXT;
-    unsigned short res2 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 0);
 
     destroy_settings(settings);
@@ -272,25 +329,30 @@ void test_is_matching_file_out_file_types(void) {
     FindSettings *settings = default_settings();
     const char* p = ".";
     settings->paths = new_string_node(p);
-    FileType file_type = CODE;
+    const FileType file_type = CODE;
     int *ftint = malloc(sizeof(int));
     *ftint = (int)file_type;
+    printf("Adding out-file-type: CODE\n");
     settings->out_file_types = empty_int_node();
     add_int_to_int_node(ftint, settings->out_file_types);
 
     FileTypes *file_types = new_file_types();
-    error_t err = get_file_types(file_types);
+    const error_t err = get_file_types(file_types);
     assert(err == E_OK);
 
     const char* non_matching_file = "finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    unsigned short res1 = is_matching_file(non_matching_file, &ft, &fpstat, settings);
+    const unsigned short res1 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res1, COLOR_RESET);
     assert(res1 == 0);
 
     const char* matching_file = "README.md";
     ft = TEXT;
-    unsigned short res2 = is_matching_file(matching_file, &ft, &fpstat, settings);
+    const unsigned short res2 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res2, COLOR_RESET);
     assert(res2 == 1);
 
     destroy_settings(settings);

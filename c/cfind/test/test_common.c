@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "test_common.h"
 
+#include "color.h"
+
 void test_last_index_of_char_in_string(void)
 {
     printf("\ntest_last_index_of_char_in_string()\n");
@@ -25,9 +27,13 @@ void test_last_index_of_char_in_string(void)
     };
     for (int i=0; i < arrlen; i++) {
         printf("file_name: \"%s\"\n", filenames[i]);
-        int res = last_index_of_char_in_string('.', filenames[i]);
-        printf("expected res: %d\n", expected[i]);
-        printf("actual res:   %d\n", res);
+        const int res = last_index_of_char_in_string('.', filenames[i]);
+        const char* color = COLOR_GREEN;
+        if (res != expected[i]) {
+            color = COLOR_RED;
+        }
+        printf("%sexpected res: %d%s\n", color, expected[i], COLOR_RESET);
+        printf("%sactual res:   %d%s\n", color, res, COLOR_RESET);
         assert(res == expected[i]);
     }
 }
