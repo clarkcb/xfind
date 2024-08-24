@@ -22,11 +22,7 @@ public static class FileUtil
 	public static string GetFileExtension(FileInfo fi)
 	{
 		var ext = fi.Extension;
-		if (string.IsNullOrEmpty(ext))
-		{
-			return "";
-		}
-		return ext.Substring(1);
+		return string.IsNullOrEmpty(ext) ? "" : ext[1..];
 	}
 
 	public static string NormalizePath(string path)
