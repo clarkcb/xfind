@@ -7,12 +7,12 @@
 ################################################################################
 
 require_relative '../lib/rbfind'
-require 'minitest/autorun'
+require 'test/unit'
 require 'pathname'
 
 module RbFind
 
-  class FinderTest < Minitest::Test
+  class FinderTest < Test::Unit::TestCase
 
     def get_settings
       settings = FindSettings.new

@@ -7,11 +7,11 @@
 ################################################################################
 
 require_relative '../lib/rbfind'
-require 'minitest/autorun'
+require 'test/unit'
 
 module RbFind
 
-  class FindSettingsTest < Minitest::Test
+  class FindSettingsTest < Test::Unit::TestCase
     def setup
       @settings = FindSettings.new
     end

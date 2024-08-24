@@ -7,11 +7,11 @@
 ################################################################################
 
 require_relative '../lib/rbfind'
-require 'minitest/autorun'
+require 'test/unit'
 
 module RbFind
 
-  class FileTypesTest < Minitest::Test
+  class FileTypesTest < Test::Unit::TestCase
     def setup
       @file_types = FileTypes.new
     end

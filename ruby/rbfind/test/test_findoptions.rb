@@ -7,11 +7,11 @@
 ################################################################################
 
 require_relative '../lib/rbfind'
-require 'minitest/autorun'
+require 'test/unit'
 
 module RbFind
 
-  class FindOptionsTest < Minitest::Test
+  class FindOptionsTest < Test::Unit::TestCase
     def setup
       @findoptions = RbFind::FindOptions.new
     end

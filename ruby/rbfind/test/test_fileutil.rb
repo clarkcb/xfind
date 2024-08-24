@@ -7,11 +7,11 @@
 ################################################################################
 
 require_relative '../lib/rbfind'
-require 'minitest/autorun'
+require 'test/unit'
 
 module RbFind
 
-  class FileUtilTest < Minitest::Test
+  class FileUtilTest < Test::Unit::TestCase
     ################################################################################
     # get_extension tests
     ################################################################################

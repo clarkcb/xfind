@@ -434,8 +434,9 @@ unittest_ruby () {
 
     # Run all tests via rake
     cd "$RBFIND_PATH"
-    log "rake test"
-    rake test
+    log "bundle exec rake test"
+    bundle exec rake test
+
     cd -
 }
 

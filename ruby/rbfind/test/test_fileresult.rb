@@ -7,12 +7,12 @@
 ################################################################################
 
 require_relative '../lib/rbfind'
-require 'minitest/autorun'
+require 'test/unit'
 require 'pathname'
 
 module RbFind
 
-  class FileResultTest < Minitest::Test
+  class FileResultTest < Test::Unit::TestCase
     def test_file_result_abs_path
       path = Pathname.new(ENV['HOME'] + '/src/xfind/ruby/rbfind/fileresult.rb')
       file_result = FileResult.new(path, FileType::CODE, 0, nil)
