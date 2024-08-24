@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
@@ -114,19 +116,21 @@ class Finder
      * @return FileResult
      */
     private function file_path_to_file_result(string $file_path): FileResult {
-        $path_and_filename = FileUtil::split_to_path_and_filename($file_path);
-        $path = $path_and_filename[0];
-        $file_name = $path_and_filename[1];
+        $path_and_file_name = FileUtil::split_to_path_and_file_name($file_path);
+        $path = $path_and_file_name[0];
+        $file_name = $path_and_file_name[1];
         $file_type = $this->file_types->get_file_type($file_name);
         $file_size = 0;
         $last_mod = 0;
         if ($this->settings->need_last_mod() || $this->settings->need_size()) {
             $stat = stat($file_path);
-            if ($this->settings->need_last_mod()) {
-                $last_mod = $stat['mtime'];
-            }
-            if ($this->settings->need_size()) {
-                $file_size = $stat['size'];
+            if ($stat !== false) {
+                if ($this->settings->need_last_mod()) {
+                    $last_mod = $stat['mtime'];
+                }
+                if ($this->settings->need_size()) {
+                    $file_size = $stat['size'];
+                }
             }
         }
         return new FileResult($path, $file_name, $file_type, $file_size, $last_mod);
@@ -300,13 +304,15 @@ class Finder
         $file_size = 0;
         $last_mod = 0;
         if ($this->settings->need_last_mod() || $this->settings->need_size()) {
-            $file_path = FileUtil::join_path($dir, $file_name);
+            $file_path = FileUtil::join_paths($dir, $file_name);
             $stat = stat($file_path);
-            if ($this->settings->need_last_mod()) {
-                $last_mod = $stat['mtime'];
-            }
-            if ($this->settings->need_size()) {
-                $file_size = $stat['size'];
+            if ($stat !== false) {
+                if ($this->settings->need_last_mod()) {
+                    $last_mod = $stat['mtime'];
+                }
+                if ($this->settings->need_size()) {
+                    $file_size = $stat['size'];
+                }
             }
         }
 
@@ -344,7 +350,7 @@ class Finder
             if (FileUtil::is_dot_dir($entry)) {
                 continue;
             }
-            $entry_path = FileUtil::join_path($dir, $entry);
+            $entry_path = FileUtil::join_paths($dir, $entry);
             if (is_dir($entry_path) && $recurse && $this->is_matching_dir($entry)) {
                 $dir_results[] = $entry_path;
             } else if (is_file($entry_path) && ($min_depth < 0 || $current_depth >= $min_depth)) {
@@ -367,7 +373,7 @@ class Finder
      */
     public function get_file_results(string $file_path): array
     {
-        $file_results = array();
+        $file_results = [];
         if (is_dir($file_path)) {
             # if max_depth is zero, we can skip since a directory cannot be a result
             if ($this->settings->max_depth == 0) {
@@ -406,7 +412,7 @@ class Finder
      */
     public function find(): array
     {
-        $file_results = array();
+        $file_results = [];
         foreach ($this->settings->paths as $p) {
             $file_results = array_merge($file_results, $this->get_file_results($p));
         }
@@ -510,19 +516,19 @@ class Finder
     {
         switch ($this->settings->sort_by) {
             case SortBy::Filename:
-                usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_name($fr1, $fr2));
+                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_name($fr1, $fr2));
                 break;
             case SortBy::Filesize:
-                usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_size($fr1, $fr2));
+                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_size($fr1, $fr2));
                 break;
             case SortBy::Filetype:
-                usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_type($fr1, $fr2));
+                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_type($fr1, $fr2));
                 break;
             case SortBy::LastMod:
-                usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_last_mod($fr1, $fr2));
+                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_last_mod($fr1, $fr2));
                 break;
             default:
-                usort($file_results, fn (FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr1, $fr2));
+                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr1, $fr2));
                 break;
         }
         if ($this->settings->sort_descending) {
@@ -537,7 +543,7 @@ class Finder
      */
     public function get_matching_dirs(array $file_results): array
     {
-        $dirs = array();
+        $dirs = [];
         foreach ($file_results as $f) {
             if (!in_array($f->path, $dirs)) {
                 $dirs[] = $f->path;
@@ -570,10 +576,10 @@ class Finder
      */
     public function get_matching_files(array $file_results): array
     {
-        $file_paths = array();
+        $file_paths = [];
         foreach ($file_results as $f) {
             if (!in_array($f->file_name, $file_paths)) {
-                $file_paths[] = FileUtil::join_path($f->path, $f->file_name);
+                $file_paths[] = FileUtil::join_paths($f->path, $f->file_name);
             }
         }
         return $file_paths;

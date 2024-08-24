@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
@@ -7,6 +9,9 @@ namespace phpfind;
  */
 class FileUtil
 {
+    /**
+     * @var string[] $DOT_PATHS
+     */
     public static array $DOT_PATHS = array('.', '..');
 
     /**
@@ -16,7 +21,17 @@ class FileUtil
     public static function expand_user_home_path(string $path): string
     {
         if (str_starts_with($path, '~')) {
-            return str_replace('~', getenv('HOME'), $path);
+            $home = getenv('HOME');
+            if ($home !== false) {
+                if ($path == '~') {
+                    return $home;
+                }
+                $tilde_prefix = '~' . DIRECTORY_SEPARATOR;
+                if (str_starts_with($path, $tilde_prefix)) {
+                    return str_replace('~', $home, $path);
+                }
+                // TODO: if path begins with ~user, we need to find the named user's home path
+            }
         }
         return $path;
     }
@@ -60,27 +75,14 @@ class FileUtil
 
     /**
      * @param string $path
-     * @param string $file_name
+     * @param string ...$elems
      * @return string
      */
-    public static function join_path(string $path, string $file_name): string
+    public static function join_paths(string $path, string ...$elems): string
     {
-        return self::normalize_path($path) . self::get_separator($path) . $file_name;
-    }
-
-    /**
-     * @param string $path
-     * @return string
-     */
-    public static function get_separator(string $path): string
-    {
-        $sep = '/';
-        if (!str_contains($path, $sep)) {
-            if (str_contains($path, '\\')) {
-                return '\\';
-            }
-        }
-        return $sep;
+        $elems = array_map(fn($elem) => self::normalize_path_elem($elem), $elems);
+        return self::normalize_path($path) . DIRECTORY_SEPARATOR .
+            implode(DIRECTORY_SEPARATOR, $elems);
     }
 
     /**
@@ -89,8 +91,16 @@ class FileUtil
      */
     public static function normalize_path(string $path): string
     {
-        $sep = self::get_separator($path);
-        return rtrim($path, $sep);
+        return rtrim($path, DIRECTORY_SEPARATOR);
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    public static function normalize_path_elem(string $path): string
+    {
+        return trim($path, DIRECTORY_SEPARATOR);
     }
 
     /**
@@ -99,15 +109,14 @@ class FileUtil
      */
     public static function split_path(string $path): array
     {
-        $sep = self::get_separator($path);
-        return explode($sep, $path);
+        return explode(DIRECTORY_SEPARATOR, $path);
     }
 
     /**
      * @param string $file_path
      * @return string[]
      */
-    public static function split_to_path_and_filename(string $file_path): array
+    public static function split_to_path_and_file_name(string $file_path): array
     {
         $dir_name = pathinfo($file_path, PATHINFO_DIRNAME);
         $file_name = pathinfo($file_path, PATHINFO_BASENAME);

@@ -1,11 +1,11 @@
-<?php declare(strict_types=1);
+<?php
 
-use phpfind\SortBy;
+declare(strict_types=1);
+
 use PHPUnit\Framework\TestCase;
 
-require_once __DIR__ . '/../src/autoload.php';
-
 use phpfind\FindSettings;
+use phpfind\SortBy;
 
 class FindSettingsTest extends TestCase
 {
@@ -20,22 +20,45 @@ class FindSettingsTest extends TestCase
         $this->settings = new FindSettings();
     }
 
+    public static function settings_equals_defaults(FindSettings $settings): bool {
+        return
+            !$settings->archives_only &&
+            !$settings->debug &&
+            count($settings->in_archive_extensions) == 0 &&
+            count($settings->in_archive_file_patterns) == 0 &&
+            count($settings->in_dir_patterns) == 0 &&
+            count($settings->in_extensions) == 0 &&
+            count($settings->in_file_patterns) == 0 &&
+            count($settings->in_file_types) == 0 &&
+            !$settings->include_archives &&
+            !$settings->include_hidden &&
+            $settings->max_depth == -1 &&
+            $settings->max_last_mod == null &&
+            $settings->max_size == 0 &&
+            $settings->min_depth == -1 &&
+            $settings->min_last_mod == null &&
+            $settings->min_size == 0 &&
+            count($settings->out_archive_extensions) == 0 &&
+            count($settings->out_archive_file_patterns) == 0 &&
+            count($settings->out_dir_patterns) == 0 &&
+            count($settings->out_extensions) == 0 &&
+            count($settings->out_file_patterns) == 0 &&
+            count($settings->out_file_types) == 0 &&
+            count($settings->paths) == 0 &&
+            !$settings->print_dirs &&
+            !$settings->print_files &&
+            !$settings->print_usage &&
+            !$settings->print_version &&
+            $settings->recursive &&
+            $settings->sort_by == SortBy::Filepath &&
+            !$settings->sort_case_insensitive &&
+            !$settings->sort_descending &&
+            !$settings->verbose;
+    }
+
     public function test_default_settings(): void
     {
-        $this->assertFalse($this->settings->archives_only);
-        $this->assertFalse($this->settings->debug);
-        $this->assertFalse($this->settings->include_archives);
-        $this->assertFalse($this->settings->include_hidden);
-        $this->assertFalse($this->settings->print_dirs);
-        $this->assertFalse($this->settings->print_files);
-        $this->assertFalse($this->settings->print_usage);
-        $this->assertFalse($this->settings->print_version);
-        $this->assertTrue($this->settings->recursive);
-        $this->assertCount(0, $this->settings->paths);
-        $this->assertEquals(SortBy::Filepath, $this->settings->sort_by);
-        $this->assertFalse($this->settings->sort_case_insensitive);
-        $this->assertFalse($this->settings->sort_descending);
-        $this->assertFalse($this->settings->verbose);
+        $this->assertTrue(self::settings_equals_defaults($this->settings));
     }
 
     public function test_add_single_extension(): void

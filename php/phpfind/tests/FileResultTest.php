@@ -1,7 +1,8 @@
-<?php declare(strict_types=1);
-use PHPUnit\Framework\TestCase;
+<?php
 
-require_once __DIR__ . '/../src/autoload.php';
+declare(strict_types=1);
+
+use PHPUnit\Framework\TestCase;
 
 use phpfind\FileResult;
 use phpfind\FileType;

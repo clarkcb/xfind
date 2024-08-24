@@ -1,46 +1,73 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../src/autoload.php';
 
 use phpfind\FindException;
 use phpfind\FindOptions;
 use phpfind\FindSettings;
+use phpfind\SortBy;
 
 class FindOptionsTest extends TestCase
 {
     /**
      * @var FindOptions
      */
-    private FindOptions $findoptions;
+    private FindOptions $find_options;
 
     public function __construct()
     {
         parent::__construct();
-        $this->findoptions = new FindOptions();
+        $this->find_options = new FindOptions();
+    }
+
+    public static function settings_equals_defaults(FindSettings $settings, bool $print_files = false): bool {
+        return
+            !$settings->archives_only &&
+            !$settings->debug &&
+            count($settings->in_archive_extensions) == 0 &&
+            count($settings->in_archive_file_patterns) == 0 &&
+            count($settings->in_dir_patterns) == 0 &&
+            count($settings->in_extensions) == 0 &&
+            count($settings->in_file_patterns) == 0 &&
+            count($settings->in_file_types) == 0 &&
+            !$settings->include_archives &&
+            !$settings->include_hidden &&
+            $settings->max_depth == -1 &&
+            $settings->max_last_mod == null &&
+            $settings->max_size == 0 &&
+            $settings->min_depth == -1 &&
+            $settings->min_last_mod == null &&
+            $settings->min_size == 0 &&
+            count($settings->out_archive_extensions) == 0 &&
+            count($settings->out_archive_file_patterns) == 0 &&
+            count($settings->out_dir_patterns) == 0 &&
+            count($settings->out_extensions) == 0 &&
+            count($settings->out_file_patterns) == 0 &&
+            count($settings->out_file_types) == 0 &&
+            count($settings->paths) == 0 &&
+            !$settings->print_dirs &&
+            $settings->print_files == $print_files &&
+            !$settings->print_usage &&
+            !$settings->print_version &&
+            $settings->recursive &&
+            $settings->sort_by == SortBy::Filepath &&
+            !$settings->sort_case_insensitive &&
+            !$settings->sort_descending &&
+            !$settings->verbose;
     }
 
     public function test_settings_from_args_no_args(): void
     {
-        $settings = $this->findoptions->settings_from_args([]);
-        $this->assertFalse($settings->archives_only);
-        $this->assertFalse($settings->debug);
-        $this->assertFalse($settings->include_archives);
-        $this->assertFalse($settings->include_hidden);
-        $this->assertFalse($settings->print_dirs);
-        $this->assertTrue($settings->print_files);
-        $this->assertFalse($settings->print_usage);
-        $this->assertFalse($settings->print_version);
-        $this->assertCount(0, $settings->paths);
-        $this->assertTrue($settings->recursive);
-        $this->assertFalse($settings->verbose);
+        $settings = $this->find_options->settings_from_args([]);
+        $this->assertTrue(self::settings_equals_defaults($settings, true));
     }
 
     public function test_settings_from_args_valid_args(): void
     {
         $args = ['-x', 'php,py', '.'];
-        $settings = $this->findoptions->settings_from_args($args);
+        $settings = $this->find_options->settings_from_args($args);
         $this->assertCount(2, $settings->in_extensions);
         $this->assertTrue(in_array('php', $settings->in_extensions));
         $this->assertTrue(in_array('py', $settings->in_extensions));
@@ -51,7 +78,7 @@ class FindOptionsTest extends TestCase
     public function test_archives_only_arg(): void
     {
         $args = ['--archivesonly'];
-        $settings = $this->findoptions->settings_from_args($args);
+        $settings = $this->find_options->settings_from_args($args);
         $this->assertTrue($settings->archives_only);
         $this->assertTrue($settings->include_archives);
     }
@@ -59,7 +86,7 @@ class FindOptionsTest extends TestCase
     public function test_debug_arg(): void
     {
         $args = ['--debug'];
-        $settings = $this->findoptions->settings_from_args($args);
+        $settings = $this->find_options->settings_from_args($args);
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
     }
@@ -68,14 +95,14 @@ class FindOptionsTest extends TestCase
     {
         $this->expectException(FindException::class);
         $args = ['-x', 'php,py', '.', '-D'];
-        $this->findoptions->settings_from_args($args);
+        $this->find_options->settings_from_args($args);
     }
 
     public function test_invalid_arg(): void
     {
         $this->expectException(FindException::class);
         $args = ['-x', 'php,py', '.', '-Q'];
-        $this->findoptions->settings_from_args($args);
+        $this->find_options->settings_from_args($args);
     }
 
     public function test_settings_from_json(): void
@@ -91,7 +118,7 @@ class FindOptionsTest extends TestCase
   "includehidden": true
 }
 END_JSON;
-        $this->findoptions->settings_from_json($json, $settings);
+        $this->find_options->settings_from_json($json, $settings);
         $this->assertCount(1, $settings->paths);
         $this->assertEquals('~/src/xfind/', $settings->paths[0]);
         $this->assertCount(2, $settings->in_extensions);
@@ -104,5 +131,21 @@ END_JSON;
         $this->assertTrue($settings->debug);
         $this->assertTrue($settings->verbose);
         $this->assertTrue($settings->include_hidden);
+    }
+
+    public function test_settings_from_empty_json(): void
+    {
+        $settings = new FindSettings();
+        $json = '';
+        $this->find_options->settings_from_json($json, $settings);
+        $this->assertTrue(self::settings_equals_defaults($settings));
+    }
+
+    public function test_settings_from_invalid_json(): void
+    {
+        $settings = new FindSettings();
+        $json = '<this>is invalid</this> JSON';
+        $this->expectException(FindException::class);
+        $this->find_options->settings_from_json($json, $settings);
     }
 }

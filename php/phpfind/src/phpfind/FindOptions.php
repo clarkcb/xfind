@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
@@ -10,9 +12,21 @@ require_once __DIR__ . '/../autoload.php';
  */
 class FindOptions
 {
+    /**
+     * @var FindOption[] $options
+     */
     private array $options;
+    /**
+     * @var array<string, \Closure> $arg_action_map
+     */
     private readonly array $arg_action_map;
+    /**
+     * @var array<string, \Closure> $bool_flag_action_map
+     */
     private readonly array $bool_flag_action_map;
+    /**
+     * @var array<string, string> $long_arg_map
+     */
     private array $long_arg_map;
 
     /**
@@ -20,59 +34,59 @@ class FindOptions
      */
     public function __construct()
     {
-        $this->options = array();
+        $this->options = [];
 
         $this->arg_action_map = [
-            'in-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_archive_extensions),
+            'in-archiveext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_archive_extensions),
             'in-archivefilepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_archive_file_patterns),
-            'in-dirpattern' => fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_dir_patterns),
-            'in-ext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_extensions),
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_archive_file_patterns),
+            'in-dirpattern' => fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_dir_patterns),
+            'in-ext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_extensions),
             'in-filepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_file_patterns),
-            'in-filetype' => fn (string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->in_file_types),
-            'maxdepth' => fn (string $s, FindSettings $fs) => $fs->max_depth = intval($s),
-            'maxlastmod' => fn (string $s, FindSettings $fs) => $fs->max_last_mod = new \DateTime($s),
-            'maxsize' => fn (string $s, FindSettings $fs) => $fs->max_size = intval($s),
-            'mindepth' => fn (string $s, FindSettings $fs) => $fs->min_depth = intval($s),
-            'minlastmod' => fn (string $s, FindSettings $fs) => $fs->min_last_mod = new \DateTime($s),
-            'minsize' => fn (string $s, FindSettings $fs) => $fs->min_size = intval($s),
-            'out-archiveext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archive_extensions),
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_file_patterns),
+            'in-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->in_file_types),
+            'maxdepth' => fn(string $s, FindSettings $fs) => $fs->max_depth = intval($s),
+            'maxlastmod' => fn(string $s, FindSettings $fs) => $fs->max_last_mod = new \DateTime($s),
+            'maxsize' => fn(string $s, FindSettings $fs) => $fs->max_size = intval($s),
+            'mindepth' => fn(string $s, FindSettings $fs) => $fs->min_depth = intval($s),
+            'minlastmod' => fn(string $s, FindSettings $fs) => $fs->min_last_mod = new \DateTime($s),
+            'minsize' => fn(string $s, FindSettings $fs) => $fs->min_size = intval($s),
+            'out-archiveext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archive_extensions),
             'out-archivefilepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_file_patterns),
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_file_patterns),
             'out-dirpattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dir_patterns),
-            'out-ext' => fn (string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_extensions),
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dir_patterns),
+            'out-ext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_extensions),
             'out-filepattern' =>
-                fn (string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
-            'out-filetype' => fn (string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
-            'path' => fn (string $s, FindSettings $fs) => $fs->paths[] = $s,
-            'settings-file' => fn (string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
-            'sort-by' => fn (string $s, FindSettings $fs) => $fs->set_sort_by($s)
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
+            'out-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
+            'path' => fn(string $s, FindSettings $fs) => $fs->paths[] = $s,
+            'settings-file' => fn(string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
+            'sort-by' => fn(string $s, FindSettings $fs) => $fs->set_sort_by($s),
         ];
 
         $this->bool_flag_action_map = [
-            'archivesonly' => fn (bool $b, FindSettings $fs) => $fs->set_archives_only($b),
-            'debug' => fn (bool $b, FindSettings $fs) => $fs->set_debug($b),
-            'excludearchives' => fn (bool $b, FindSettings $fs) => $fs->include_archives = !$b,
-            'excludehidden' => fn (bool $b, FindSettings $fs) => $fs->include_hidden = !$b,
-            'help' => fn (bool $b, FindSettings $fs) => $fs->print_usage = $b,
-            'includearchives' => fn (bool $b, FindSettings $fs) => $fs->include_archives = $b,
-            'includehidden' => fn (bool $b, FindSettings $fs) => $fs->include_hidden = $b,
-            'noprintdirs' => fn (bool $b, FindSettings $fs) => $fs->print_dirs = !$b,
-            'noprintfiles' => fn (bool $b, FindSettings $fs) => $fs->print_files = !$b,
-            'norecursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = !$b,
-            'printdirs' => fn (bool $b, FindSettings $fs) => $fs->print_dirs = $b,
-            'printfiles' => fn (bool $b, FindSettings $fs) => $fs->print_files = $b,
-            'recursive' => fn (bool $b, FindSettings $fs) => $fs->recursive = $b,
-            'sort-ascending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = !$b,
-            'sort-caseinsensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_case_insensitive = $b,
-            'sort-casesensitive' => fn (bool $b, FindSettings $fs) => $fs->sort_case_insensitive = !$b,
-            'sort-descending' => fn (bool $b, FindSettings $fs) => $fs->sort_descending = $b,
-            'verbose' => fn (bool $b, FindSettings $fs) => $fs->verbose = $b,
-            'version' => fn (bool $b, FindSettings $fs) => $fs->print_version = $b
+            'archivesonly' => fn(bool $b, FindSettings $fs) => $fs->set_archives_only($b),
+            'debug' => fn(bool $b, FindSettings $fs) => $fs->set_debug($b),
+            'excludearchives' => fn(bool $b, FindSettings $fs) => $fs->include_archives = !$b,
+            'excludehidden' => fn(bool $b, FindSettings $fs) => $fs->include_hidden = !$b,
+            'help' => fn(bool $b, FindSettings $fs) => $fs->print_usage = $b,
+            'includearchives' => fn(bool $b, FindSettings $fs) => $fs->include_archives = $b,
+            'includehidden' => fn(bool $b, FindSettings $fs) => $fs->include_hidden = $b,
+            'noprintdirs' => fn(bool $b, FindSettings $fs) => $fs->print_dirs = !$b,
+            'noprintfiles' => fn(bool $b, FindSettings $fs) => $fs->print_files = !$b,
+            'norecursive' => fn(bool $b, FindSettings $fs) => $fs->recursive = !$b,
+            'printdirs' => fn(bool $b, FindSettings $fs) => $fs->print_dirs = $b,
+            'printfiles' => fn(bool $b, FindSettings $fs) => $fs->print_files = $b,
+            'recursive' => fn(bool $b, FindSettings $fs) => $fs->recursive = $b,
+            'sort-ascending' => fn(bool $b, FindSettings $fs) => $fs->sort_descending = !$b,
+            'sort-caseinsensitive' => fn(bool $b, FindSettings $fs) => $fs->sort_case_insensitive = $b,
+            'sort-casesensitive' => fn(bool $b, FindSettings $fs) => $fs->sort_case_insensitive = !$b,
+            'sort-descending' => fn(bool $b, FindSettings $fs) => $fs->sort_descending = $b,
+            'verbose' => fn(bool $b, FindSettings $fs) => $fs->verbose = $b,
+            'version' => fn(bool $b, FindSettings $fs) => $fs->print_version = $b,
         ];
-        $this->long_arg_map = array();
+        $this->long_arg_map = [];
         $this->set_options_from_json();
     }
 
@@ -81,22 +95,34 @@ class FindOptions
      */
     private function set_options_from_json(): void
     {
-        $find_options_path = FileUtil::expand_user_home_path(Config::FINDOPTIONSPATH);
+        $find_options_path = FileUtil::expand_user_home_path(Config::FIND_OPTIONS_PATH);
         if (file_exists($find_options_path)) {
-            $json_obj = json_decode(file_get_contents($find_options_path), true);
-            foreach ($json_obj['findoptions'] as $so) {
-                $short = '';
-                $long = (string)$so['long'];
-                $desc = (string)$so['desc'];
-                $this->long_arg_map[$long] = $long;
-                if (array_key_exists('short', $so)) {
-                    $short = (string)$so['short'];
-                    $this->long_arg_map[$short] = $long;
-                }
-                $option = new FindOption($short, $long, $desc);
-                $this->options[] = $option;
+            $contents = file_get_contents($find_options_path);
+            if ($contents === false || trim($contents) === '') {
+                return;
             }
-            usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
+            try {
+                $json_obj = (array)json_decode(trim($contents), true, 512, JSON_THROW_ON_ERROR);
+                $find_options = $json_obj['findoptions'];
+                if ($find_options !== null) {
+                    foreach ((array)$find_options as $fo) {
+                        $fo = (array)$fo;
+                        $short = '';
+                        $long = (string)$fo['long'];
+                        $desc = (string)$fo['desc'];
+                        $this->long_arg_map[$long] = $long;
+                        if (array_key_exists('short', $fo)) {
+                            $short = (string)$fo['short'];
+                            $this->long_arg_map[$short] = $long;
+                        }
+                        $option = new FindOption($short, $long, $desc);
+                        $this->options[] = $option;
+                    }
+                    usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
+                }
+            } catch (\JsonException $e) {
+                throw new FindException($e->getMessage());
+            }
         } else {
             throw new FindException('File not found: ' . $find_options_path);
         }
@@ -114,7 +140,9 @@ class FindOptions
             throw new FindException('Settings file not found');
         }
         $json = file_get_contents($file_path);
-        $this->settings_from_json($json, $settings);
+        if ($json !== false) {
+            $this->settings_from_json($json, $settings);
+        }
     }
 
     /**
@@ -125,25 +153,32 @@ class FindOptions
      */
     public function settings_from_json(string $json, FindSettings $settings): void
     {
-        $json_obj = json_decode($json, true);
-        foreach (array_keys($json_obj) as $k) {
-            if (array_key_exists($k, $this->arg_action_map)) {
-                if (gettype($json_obj[$k]) == 'string') {
-                    $this->arg_action_map[$k]($json_obj[$k], $settings);
-                } elseif (gettype($json_obj[$k]) == 'integer') {
-                    $this->arg_action_map[$k](sprintf('%d', $json_obj[$k]), $settings);
-                } elseif (gettype($json_obj[$k]) == 'array') {
-                    foreach ($json_obj[$k] as $s) {
-                        $this->arg_action_map[$k]($s, $settings);
+        if (trim($json) === '') {
+            return;
+        }
+        try {
+            $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
+            foreach (array_keys($json_obj) as $k) {
+                if (array_key_exists($k, $this->arg_action_map)) {
+                    if (gettype($json_obj[$k]) == 'string') {
+                        $this->arg_action_map[$k]($json_obj[$k], $settings);
+                    } elseif (gettype($json_obj[$k]) == 'integer') {
+                        $this->arg_action_map[$k](sprintf('%d', $json_obj[$k]), $settings);
+                    } elseif (gettype($json_obj[$k]) == 'array') {
+                        foreach ($json_obj[$k] as $s) {
+                            $this->arg_action_map[$k]($s, $settings);
+                        }
+                    } else {
+                        throw new FindException("Invalid setting type: $k");
                     }
+                } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
+                    $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
                 } else {
-                    throw new FindException("Invalid setting type: $k");
+                    throw new FindException("Invalid option: $k");
                 }
-            } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
-                $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
-            } else {
-                throw new FindException("Invalid option: $k");
             }
+        } catch (\JsonException $e) {
+            throw new FindException($e->getMessage());
         }
     }
 
@@ -206,7 +241,7 @@ class FindOptions
     {
         $usage = "Usage:\n phpfind [options] <path> [<path> ...]";
         $usage .= "\n\nOptions:\n";
-        $opt_map = array();
+        $opt_map = [];
         $longest = 0;
         foreach ($this->options as $option) {
             $opt_str = '';

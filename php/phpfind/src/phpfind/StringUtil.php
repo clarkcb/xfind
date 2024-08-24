@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace phpfind;
 
 class StringUtil
@@ -40,7 +42,7 @@ class StringUtil
     public static function file_type_array_to_string(array $arr): string
     {
         if (count($arr)) {
-            $names = array_map(fn (FileType $ft) => FileTypes::to_name($ft), $arr);
+            $names = array_map(fn(FileType $ft): string => FileTypes::to_name($ft), $arr);
             return '[' . implode(', ', $names) . ']';
         }
         return '[]';

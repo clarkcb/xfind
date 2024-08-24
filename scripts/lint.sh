@@ -304,8 +304,8 @@ lint_php () {
 
     log "Linting phpfind"
 
-    log "vendor/bin/phpstan analyse src tests"
-    vendor/bin/phpstan analyse src tests
+    log "vendor/bin/phpstan analyse -l 9 src tests"
+    vendor/bin/phpstan analyse -l 9 src tests
 
     cd -
 }

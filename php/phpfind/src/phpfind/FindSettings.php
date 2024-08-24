@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
@@ -11,12 +13,30 @@ class FindSettings
 {
     public bool $archives_only = false;
     public bool $debug = false;
-    public array $in_archive_extensions = array();
-    public array $in_archive_file_patterns = array();
-    public array $in_dir_patterns = array();
-    public array $in_extensions = array();
-    public array $in_file_patterns = array();
-    public array $in_file_types = array();
+    /**
+     * @var string[] $in_archive_extensions
+     */
+    public array $in_archive_extensions = [];
+    /**
+     * @var string[] $in_archive_file_patterns
+     */
+    public array $in_archive_file_patterns = [];
+    /**
+     * @var string[] $in_dir_patterns
+     */
+    public array $in_dir_patterns = [];
+    /**
+     * @var string[] $in_extensions
+     */
+    public array $in_extensions = [];
+    /**
+     * @var string[] $in_file_patterns
+     */
+    public array $in_file_patterns = [];
+    /**
+     * @var FileType[] $in_file_types
+     */
+    public array $in_file_types = [];
     public bool $include_archives = false;
     public bool $include_hidden = false;
     public int $max_depth = -1;
@@ -25,13 +45,34 @@ class FindSettings
     public int $min_depth = -1;
     public ?DateTime $min_last_mod = null;
     public int $min_size = 0;
-    public array $out_archive_extensions = array();
-    public array $out_archive_file_patterns = array();
-    public array $out_dir_patterns = array();
-    public array $out_extensions = array();
-    public array $out_file_patterns = array();
-    public array $out_file_types = array();
-    public array $paths = array();
+    /**
+     * @var string[] $out_archive_extensions
+     */
+    public array $out_archive_extensions = [];
+    /**
+     * @var string[] $out_archive_file_patterns
+     */
+    public array $out_archive_file_patterns = [];
+    /**
+     * @var string[] $out_dir_patterns
+     */
+    public array $out_dir_patterns = [];
+    /**
+     * @var string[] $out_extensions
+     */
+    public array $out_extensions = [];
+    /**
+     * @var string[] $out_file_patterns
+     */
+    public array $out_file_patterns = [];
+    /**
+     * @var FileType[] $out_file_types
+     */
+    public array $out_file_types = [];
+    /**
+     * @var string[] $paths
+     */
+    public array $paths = [];
     public bool $print_dirs = false;
     public bool $print_files = false;
     public bool $print_usage = false;
@@ -140,7 +181,7 @@ class FindSettings
 
     public function set_sort_by(string $sort_by_name): void
     {
-        $this->sort_by = match (strtoupper($sort_by_name)) {
+        $this->sort_by = match (preg_replace("/[^A-Z]/", '', strtoupper($sort_by_name))) {
             'NAME' => SortBy::Filename,
             'SIZE' => SortBy::Filesize,
             'TYPE' => SortBy::Filetype,

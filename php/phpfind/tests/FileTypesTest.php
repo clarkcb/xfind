@@ -1,8 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../src/autoload.php';
 
 use phpfind\FileType;
 use phpfind\FileTypes;
@@ -23,7 +23,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_archive_file(): void
     {
         $file_name = 'archive.zip';
-        $this->assertEquals(true, $this->file_types->is_archive($file_name));
+        $this->assertTrue($this->file_types->is_archive($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Archive, $file_type);
     }
@@ -31,7 +31,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_audio_file(): void
     {
         $file_name = 'music.mp3';
-        $this->assertEquals(true, $this->file_types->is_audio($file_name));
+        $this->assertTrue($this->file_types->is_audio($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Audio, $file_type);
     }
@@ -39,7 +39,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_binary_file(): void
     {
         $file_name = 'binary.exe';
-        $this->assertEquals(true, $this->file_types->is_binary($file_name));
+        $this->assertTrue($this->file_types->is_binary($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Binary, $file_type);
     }
@@ -47,7 +47,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_code_file(): void
     {
         $file_name = 'code.php';
-        $this->assertEquals(true, $this->file_types->is_code($file_name));
+        $this->assertTrue($this->file_types->is_code($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Code, $file_type);
     }
@@ -55,7 +55,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_font_file(): void
     {
         $file_name = 'font.ttf';
-        $this->assertEquals(true, $this->file_types->is_font($file_name));
+        $this->assertTrue($this->file_types->is_font($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Font, $file_type);
     }
@@ -63,7 +63,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_image_file(): void
     {
         $file_name = 'image.png';
-        $this->assertEquals(true, $this->file_types->is_image($file_name));
+        $this->assertTrue($this->file_types->is_image($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Image, $file_type);
     }
@@ -71,7 +71,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_text_file(): void
     {
         $file_name = 'text.txt';
-        $this->assertEquals(true, $this->file_types->is_text($file_name));
+        $this->assertTrue($this->file_types->is_text($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Text, $file_type);
     }
@@ -79,7 +79,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_video_file(): void
     {
         $file_name = 'movie.mp4';
-        $this->assertEquals(true, $this->file_types->is_video($file_name));
+        $this->assertTrue($this->file_types->is_video($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Video, $file_type);
     }
@@ -87,7 +87,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_xml_file(): void
     {
         $file_name = 'content.xml';
-        $this->assertEquals(true, $this->file_types->is_xml($file_name));
+        $this->assertTrue($this->file_types->is_xml($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Xml, $file_type);
     }
@@ -95,7 +95,7 @@ class FileTypesTest extends TestCase
     public function test_get_file_type_unknown_file(): void
     {
         $file_name = 'unknown.xyz';
-        $this->assertEquals(true, $this->file_types->is_unknown($file_name));
+        $this->assertTrue($this->file_types->is_unknown($file_name));
         $file_type = $this->file_types->get_file_type($file_name);
         $this->assertEquals(FileType::Unknown, $file_type);
     }

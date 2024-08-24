@@ -1,14 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
 /**
  * Class FileResult
+ *
+ * @package phpfind
+ * @property string[] $containers
+ * @property string $path
+ * @property string $file_name
+ * @property int $file_size
+ * @property int $last_mod
  */
+
 class FileResult
 {
-    const CONTAINER_SEPARATOR = '!';
+    const string CONTAINER_SEPARATOR = '!';
 
+    /**
+     * @var string[] $containers
+     */
     public array $containers;
     public readonly string $path;
     public readonly string $file_name;
@@ -25,7 +38,7 @@ class FileResult
      */
     public function __construct(string $path, string $file_name, FileType $file_type, int $file_size, int $last_mod)
     {
-        $this->containers = array();
+        $this->containers = [];
         $this->path = $path;
         $this->file_name = $file_name;
         $this->file_type = $file_type;
@@ -38,7 +51,7 @@ class FileResult
      */
     public function file_path(): string
     {
-        return FileUtil::join_path($this->path, $this->file_name);
+        return FileUtil::join_paths($this->path, $this->file_name);
     }
 
     /**
@@ -51,7 +64,7 @@ class FileResult
             $s = join(FileResult::CONTAINER_SEPARATOR, $this->containers) .
                 FileResult::CONTAINER_SEPARATOR;
         }
-        $s .= FileUtil::join_path($this->path, $this->file_name);
+        $s .= FileUtil::join_paths($this->path, $this->file_name);
         return $s;
     }
 }

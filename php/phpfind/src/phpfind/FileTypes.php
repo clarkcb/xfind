@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
@@ -8,12 +10,18 @@ namespace phpfind;
  * Class FileTypes
  *
  * @package phpfind
- * @property array $file_type_ext_map
- * @property array $file_type_name_map
+ * @property array<string, string[]> $file_type_ext_map
+ * @property array<string, string[]> $file_type_name_map
  */
 class FileTypes
 {
+    /**
+     * @var array<string, string[]> $file_type_ext_map
+     */
     private readonly array $file_type_ext_map;
+    /**
+     * @var array<string, string[]> $file_type_name_map
+     */
     private readonly array $file_type_name_map;
 
     /**
@@ -27,32 +35,45 @@ class FileTypes
     }
 
     /**
+     * @return array<int, array<string, string[]>>
      * @throws FindException
      */
     private function get_file_type_map_from_json(): array
     {
         $file_type_ext_map = array();
         $file_type_name_map = array();
-        $file_types_path = FileUtil::expand_user_home_path(Config::FILETYPESPATH);
+        $file_types_path = FileUtil::expand_user_home_path(Config::FILE_TYPES_PATH);
         if (file_exists($file_types_path)) {
-            $json_obj = json_decode(file_get_contents($file_types_path), true);
-            foreach ($json_obj['filetypes'] as $ft) {
-                $type = (string)$ft['type'];
-                $exts = $ft['extensions'];
-                $file_type_ext_map[$type] = $exts;
-                $names = $ft['names'];
-                $file_type_name_map[$type] = $names;
+            $contents = file_get_contents($file_types_path);
+            if ($contents === false || trim($contents) === '') {
+                return [];
             }
-            $file_type_ext_map['text'] = array_merge(
-                $file_type_ext_map['text'],
-                $file_type_ext_map['code'],
-                $file_type_ext_map['xml']
-            );
-            $file_type_name_map['text'] = array_merge(
-                $file_type_name_map['text'],
-                $file_type_name_map['code'],
-                $file_type_name_map['xml']
-            );
+            try {
+                $json_obj = (array)json_decode(trim($contents), true, 512, JSON_THROW_ON_ERROR);
+                $file_types = $json_obj['filetypes'];
+                if ($file_types !== null) {
+                    foreach ((array)$file_types as $ft) {
+                        $ft = (array)$ft;
+                        $type = (string)$ft['type'];
+                        $exts = (array)$ft['extensions'];
+                        $file_type_ext_map[$type] = $exts;
+                        $names = (array)$ft['names'];
+                        $file_type_name_map[$type] = $names;
+                    }
+                    $file_type_ext_map['text'] = array_merge(
+                        $file_type_ext_map['text'],
+                        $file_type_ext_map['code'],
+                        $file_type_ext_map['xml']
+                    );
+                    $file_type_name_map['text'] = array_merge(
+                        $file_type_name_map['text'],
+                        $file_type_name_map['code'],
+                        $file_type_name_map['xml']
+                    );
+                }
+            } catch (\JsonException $e) {
+                throw new FindException($e->getMessage());
+            }
         } else {
             throw new FindException('File not found: ' . $file_types_path);
         }

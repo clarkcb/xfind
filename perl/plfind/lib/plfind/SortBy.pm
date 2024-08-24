@@ -21,17 +21,18 @@ use constant {
 
 sub name_to_sort_by {
     my ($name) = @_;
-    my $lname = lc($name);
-    if ($lname eq 'filename' || $lname eq 'name') {
+    my $uname = uc($name);
+    $uname =~ s/[^A-Z]//g;
+    if ($uname eq 'FILENAME' || $uname eq 'NAME') {
         return plfind::SortBy->FILENAME;
     }
-    if ($lname eq 'filesize' || $lname eq 'size') {
+    if ($uname eq 'FILESIZE' || $uname eq 'SIZE') {
         return plfind::SortBy->FILESIZE;
     }
-    if ($lname eq 'filetype' || $lname eq 'type') {
+    if ($uname eq 'FILETYPE' || $uname eq 'TYPE') {
         return plfind::SortBy->FILETYPE;
     }
-    if ($lname eq 'lastmod') {
+    if ($uname eq 'LASTMOD') {
         return plfind::SortBy->LASTMOD;
     }
     return plfind::SortBy->FILEPATH;

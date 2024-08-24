@@ -1,8 +1,8 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
-
-require_once __DIR__ . '/../src/autoload.php';
 
 use phpfind\FileUtil;
 
@@ -100,26 +100,20 @@ class FileUtilTest extends TestCase
      **************************************************************************/
     public function test_join_path_forward_slashes(): void
     {
-        $path = '/path/to/nowhere';
+        // $path = '/path/to/nowhere';
+        $path = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, ['path', 'to', 'nowhere']);
         $file = 'nowhere.txt';
-        $joined = FileUtil::join_path($path, $file);
+        $joined = FileUtil::join_paths($path, $file);
         $this->assertEquals('/path/to/nowhere/nowhere.txt', $joined);
-    }
-
-    public function test_join_path_backslashes(): void
-    {
-        $path = 'C:\\path\\to\\nowhere';
-        $file = 'nowhere.txt';
-        $joined = FileUtil::join_path($path, $file);
-        $this->assertEquals('C:\\path\\to\\nowhere\\nowhere.txt', $joined);
     }
 
     public function test_join_path_no_slashes(): void
     {
         $path = 'nowhere';
         $file = 'nowhere.txt';
-        $joined = FileUtil::join_path($path, $file);
-        $this->assertEquals('nowhere/nowhere.txt', $joined);
+        $expected = implode(DIRECTORY_SEPARATOR, ['nowhere', 'nowhere.txt']);
+        $joined = FileUtil::join_paths($path, $file);
+        $this->assertEquals($expected, $joined);
     }
 
     /***************************************************************************
@@ -127,25 +121,18 @@ class FileUtilTest extends TestCase
      **************************************************************************/
     public function test_normalize_path_no_trailing_slash(): void
     {
-        $path = '/path/to/nowhere';
+        // $path = '/path/to/nowhere';
+        $path = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, ['path', 'to', 'nowhere']);
         $this->assertEquals(FileUtil::normalize_path($path), $path);
     }
 
     public function test_normalize_path_trailing_slash(): void
     {
-        $path = '/path/to/nowhere/';
+        // $path = '/path/to/nowhere/';
+        $path = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, ['path', 'to', 'nowhere']);
         $this->assertEquals(
-            '/path/to/nowhere',
-            FileUtil::normalize_path($path)
-        );
-    }
-
-    public function test_normalize_path_trailing_backslash(): void
-    {
-        $path = 'C:\\path\\to\\nowhere\\';
-        $this->assertEquals(
-            'C:\\path\\to\\nowhere',
-            FileUtil::normalize_path($path)
+            $path,
+            FileUtil::normalize_path($path . DIRECTORY_SEPARATOR)
         );
     }
 
@@ -162,7 +149,8 @@ class FileUtilTest extends TestCase
 
     public function test_split_path_slashes(): void
     {
-        $path = '/path/to/nowhere';
+        // $path = '/path/to/nowhere';
+        $path = DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, ['path', 'to', 'nowhere']);
         $split = FileUtil::split_path($path);
         $this->assertCount(4, $split);
         $this->assertEquals('', $split[0]);

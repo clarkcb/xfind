@@ -1,23 +1,35 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace phpfind;
 
-$config_json_path = __DIR__ . '/../../config/config.json';
-$config = json_decode(file_get_contents($config_json_path));
+$xfind_path = getenv('XFIND_PATH');
+if (!$xfind_path) {
+    $home = getenv('HOME');
+    if ($home) {
+        $xfind_path = FileUtil::join_paths($home, 'src', 'xfind');
+    } else {
+        $xfind_path = FileUtil::join_paths(__DIR__, '..', '..', '..', '..');
+    }
+}
 
-$sharedpath = $config->{'xfindpath'} . '/shared';
 
-$resources_path = __DIR__ . '/../../resources';
+$shared_path = FileUtil::join_paths($xfind_path, 'shared');
 
-define('Z_XFINDPATH', $config->{'xfindpath'});
-define('Z_SHAREDPATH', $sharedpath);
-define('Z_FILETYPESPATH', $resources_path . '/filetypes.json');
-define('Z_FINDOPTIONSPATH', $resources_path . '/findoptions.json');
+$resources_path = FileUtil::join_paths(__DIR__, '..', '..', 'resources');
+$file_types_path = FileUtil::join_paths($resources_path, 'filetypes.json');
+$find_options_path = FileUtil::join_paths($resources_path, 'findoptions.json');
+
+define('Z_XFIND_PATH', $xfind_path);
+define('Z_SHARED_PATH', $shared_path);
+define('Z_FILE_TYPES_PATH', $file_types_path);
+define('Z_FIND_OPTIONS_PATH', $find_options_path);
 
 class Config
 {
-    const XFINDPATH = Z_XFINDPATH;
-    const SHAREDPATH = Z_SHAREDPATH;
-    const FILETYPESPATH = Z_FILETYPESPATH;
-    const FINDOPTIONSPATH = Z_FINDOPTIONSPATH;
+    const string XFIND_PATH = Z_XFIND_PATH;
+    const string SHARED_PATH = Z_SHARED_PATH;
+    const string FILE_TYPES_PATH = Z_FILE_TYPES_PATH;
+    const string FIND_OPTIONS_PATH = Z_FIND_OPTIONS_PATH;
 }
