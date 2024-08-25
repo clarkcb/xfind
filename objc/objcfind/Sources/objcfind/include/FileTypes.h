@@ -7,7 +7,6 @@
 
 @interface FileTypes : NSObject
 
-- (NSArray*) fileTypesFromJson;
 + (FileType) fromName:(NSString*)typeName;
 + (NSString*) toName:(FileType)fileType;
 - (FileType) getFileTypeForQuery:(NSString*)query andElem:(NSString*)elem;
