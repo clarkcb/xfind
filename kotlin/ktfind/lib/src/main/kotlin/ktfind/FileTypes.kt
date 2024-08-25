@@ -100,12 +100,12 @@ class FileTypes {
         return fileType
     }
 
-    fun getFileType(f: Path): FileType {
-        val fileType = getFileTypeForFileName(f.fileName.toString())
+    fun getFileType(path: Path): FileType {
+        val fileType = getFileTypeForFileName(path.fileName.toString())
         if (fileType !== FileType.UNKNOWN) {
             return fileType
         }
-        return getFileTypeForExtension(f.extension)
+        return getFileTypeForExtension(FileUtil.getExtension(path))
     }
 
     fun isArchiveFile(path: Path): Boolean {
