@@ -2,6 +2,7 @@ package ktfind
 
 import java.io.File
 import java.nio.file.Path
+import kotlin.io.path.extension
 
 /**
  * @author cary on 7/24/16.
@@ -9,6 +10,17 @@ import java.nio.file.Path
 object FileUtil {
     private val dotDirs: Set<String> = setOf(".", "..", "./", "../")
     //private val DEFAULT_ENCODING = "UTF-8"
+
+    fun getExtension(p: Path): String {
+        val ext = p.extension
+        if (ext.isEmpty()) {
+            return ""
+        }
+        if (ext == "Z") {
+            return "tar.Z"
+        }
+        return ext.lowercase()
+    }
 
     fun isDotDir(p: Path): Boolean {
         return isDotDir(p.toString())
