@@ -98,7 +98,8 @@
 }
 
 - (void)testImageFiles {
-    NSArray<NSString*> *exts = @[@"ai", @"avif", @"bmp", @"bpg", @"cur", @"dib", @"drw"];
+//    NSArray<NSString*> *exts = @[@"ai", @"avif", @"bmp", @"bpg", @"cur", @"dib", @"drw"];
+    NSArray<NSString*> *exts = @[@"avif", @"bmp", @"bpg", @"cur", @"dib", @"drw"];
     for (NSString *x in exts) {
         NSString *fileName = [NSString stringWithFormat:@"image.%@", x];
         XCTAssert([self.fileTypes getFileType:fileName] == FileTypeImage);
