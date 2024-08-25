@@ -22,7 +22,7 @@ use Test::Simple tests => 20;
 use plfind::FileType;
 use plfind::FileTypes;
 
-my $file_types = new plfind::FileTypes();
+my $file_types = plfind::FileTypes->new();
 
 sub test_get_file_type_archive_file {
     my $filename = 'archive.zip';

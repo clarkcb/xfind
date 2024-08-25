@@ -29,7 +29,7 @@ sub test_file_result_abspath {
     my $file_type = plfind::FileType->CODE;
     my $file_size = 0;
     my $last_mod = 0;
-    my $file_result = new plfind::FileResult($path, $file_name, $file_type, $file_size, $last_mod);
+    my $file_result = plfind::FileResult->new($path, $file_name, $file_type, $file_size, $last_mod);
     my $expected = "$path/FileResult.pm";
 
     ok($expected eq $file_result->to_string(), "\$file_result->to_string() eq $expected");

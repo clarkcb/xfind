@@ -21,11 +21,11 @@ use Test::Simple tests => 38;
 
 use plfind::FindOptions;
 
-my $findoptions = new plfind::FindOptions();
+my $find_options = plfind::FindOptions->new();
 
 sub test_no_args {
     my $args = [];
-    my ($settings, $errs) = $findoptions->settings_from_args($args);
+    my ($settings, $errs) = $find_options->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from empty args');
     ok(!$settings->{archives_only}, 'archives_only is false by default');
     ok(!$settings->{debug}, 'debug is false by default');
@@ -42,7 +42,7 @@ sub test_no_args {
 
 sub test_valid_args {
     my $args = ['-x', 'pl,py', '.'];
-    my ($settings, $errs) = $findoptions->settings_from_args($args);
+    my ($settings, $errs) = $find_options->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from valid args');
     ok(scalar @{$settings->{in_extensions}} == 2, 'in_extensions has two extensions');
     ok($settings->{in_extensions}->[0] eq 'pl', 'in_extensions has "pl" extension');
@@ -52,7 +52,7 @@ sub test_valid_args {
 
 sub test_archives_only_arg {
     my $args = ['--archivesonly'];
-    my ($settings, $errs) = $findoptions->settings_from_args($args);
+    my ($settings, $errs) = $find_options->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from valid archives_only arg');
     ok($settings->{archives_only}, 'archives_only is true');
     ok($settings->{include_archives}, 'include_archives is true');
@@ -60,7 +60,7 @@ sub test_archives_only_arg {
 
 sub test_debug_arg {
     my $args = ['--debug'];
-    my ($settings, $errs) = $findoptions->settings_from_args($args);
+    my ($settings, $errs) = $find_options->settings_from_args($args);
     ok(scalar @{$errs} == 0, 'No errors from valid debug arg');
     ok($settings->{debug}, 'debug is true');
     ok($settings->{verbose}, 'verbose is true');
@@ -68,20 +68,20 @@ sub test_debug_arg {
 
 sub test_missing_arg {
     my $args = ['-x'];
-    my ($settings, $errs) = $findoptions->settings_from_args($args);
+    my ($settings, $errs) = $find_options->settings_from_args($args);
     ok(scalar @{$errs} == 1, 'Error from missing value for arg');
     ok($errs->[0] eq 'Missing value for x', 'Correct missing value error message');
 }
 
 sub test_invalid_arg {
     my $args = ['-Q'];
-    my ($settings, $errs) = $findoptions->settings_from_args($args);
+    my ($settings, $errs) = $find_options->settings_from_args($args);
     ok(scalar @{$errs} == 1, 'Error from unknown arg');
     ok($errs->[0] eq 'Invalid option: Q', 'Correct unknown option error message');
 }
 
 sub test_settings_from_json {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     my $json = <<"END_JSON";
 {
   "path": "~/src/xfind/",
@@ -92,7 +92,7 @@ sub test_settings_from_json {
   "includehidden": true
 }
 END_JSON
-    $findoptions->settings_from_json($json, $settings);
+    $find_options->settings_from_json($json, $settings);
     ok(${$settings->{paths}}[0] eq '~/src/xfind/', "paths[0] is set to ~/src/xfind/");
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");

@@ -22,7 +22,7 @@ use Test::Simple tests => 23;
 use plfind::FindSettings;
 
 sub test_default_settings {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     ok(!$settings->{archives_only}, "archives_only is false by default");
     ok(!$settings->{debug}, "debug is false by default");
     ok(!$settings->{include_archives}, "include_archives is false by default");
@@ -39,14 +39,14 @@ sub test_default_settings {
 }
 
 sub test_add_single_extension {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     $settings->add_exts('pl', $settings->{in_extensions});
     ok(scalar @{$settings->{in_extensions}} == 1, "in_extensions has one extension");
     ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
 }
 
 sub test_add_comma_delimited_extensions {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     $settings->add_exts('pl,py', $settings->{in_extensions});
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
@@ -54,7 +54,7 @@ sub test_add_comma_delimited_extensions {
 }
 
 sub test_add_array_extensions {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     $settings->add_exts(['pl','py'], $settings->{in_extensions});
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'pl', "in_extensions contains pl extension");
@@ -62,13 +62,13 @@ sub test_add_array_extensions {
 }
 
 sub test_add_single_pattern {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     $settings->add_patterns('Find', $settings->{in_file_patterns});
     ok(scalar @{$settings->{in_file_patterns}} == 1, "in_file_patterns has one pattern");
 }
 
 sub test_add_array_patterns {
-    my $settings = new plfind::FindSettings();
+    my $settings = plfind::FindSettings->new();
     $settings->add_patterns(['Finder', 'Result'], $settings->{in_file_patterns});
     ok(scalar @{$settings->{in_file_patterns}} == 2, "in_file_patterns has two patterns");
 }
