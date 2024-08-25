@@ -3,6 +3,7 @@ package ktfind
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+import kotlin.io.path.extension
 
 /**
  * @author cary on 7/24/16.
@@ -30,6 +31,17 @@ object FileUtil {
 
         // Return the path as is if it doesn't contain a tilde.
         return path
+    }
+
+    fun getExtension(p: Path): String {
+        val ext = p.extension
+        if (ext.isEmpty()) {
+            return ""
+        }
+        if (ext == "Z") {
+            return "tar.Z"
+        }
+        return ext.lowercase()
     }
 
     fun isDotDir(p: Path): Boolean {
