@@ -13,22 +13,21 @@ use warnings;
 
 use parent 'Exporter';
 
-use Cwd qw(abs_path);
-use File::Basename;
-use File::Spec;
-use JSON::PP qw(decode_json);
+use Path::Class;
 
 use plfind::FileUtil;
 
-our $XFINDPATH = $ENV{'XFIND_PATH'};
-if (!$XFINDPATH) {
-    $XFINDPATH = $ENV{'HOME'} . '/src/xfind';
+our $XFIND_PATH;
+if (defined $ENV{XFIND_PATH}) {
+    $XFIND_PATH = dir($ENV{'XFIND_PATH'})
+} else {
+    $XFIND_PATH = dir($ENV{'HOME'}, 'src', 'xfind');
 }
-our $SHAREDPATH = "$XFINDPATH/shared";
-our $FILETYPESPATH = "$SHAREDPATH/filetypes.json";
-our $FINDOPTIONSPATH = "$SHAREDPATH/findoptions.json";
+our $SHARED_PATH = $XFIND_PATH->subdir('shared');
+our $FILE_TYPES_PATH = $SHARED_PATH->file('filetypes.json');
+our $FIND_OPTIONS_PATH = $SHARED_PATH->file('findoptions.json');
 
-our @EXPORT = qw($XFINDPATH $SHAREDPATH $FILETYPESPATH $FINDOPTIONSPATH);
+our @EXPORT = qw($XFIND_PATH $SHARED_PATH $FILE_TYPES_PATH $FIND_OPTIONS_PATH);
 
 1;
 

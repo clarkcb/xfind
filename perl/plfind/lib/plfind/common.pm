@@ -84,7 +84,7 @@ sub aref_to_string {
             if ($i > 0) {
                 $s .= ', ';
             }
-            if ($quoted) {
+            if ($quoted > 0) {
                 $s .= '"' . $aref->[$i] . '"';
             } else {
                 $s .= $aref->[$i];

@@ -11,7 +11,7 @@ package plfind::FileTypes;
 use strict;
 use warnings;
 
-use Data::Dumper;
+# use Data::Dumper;
 use JSON::PP qw(decode_json);
 use plfind::common;
 use plfind::config;
@@ -21,7 +21,8 @@ use plfind::FileUtil;
 sub get_json_file_type_hashes {
     my $file_type_ext_hash = {};
     my $file_type_name_hash = {};
-    my $json_file_type_hash = decode_json plfind::FileUtil::get_file_contents($FILETYPESPATH);
+    my $contents = $FILE_TYPES_PATH->slurp;
+    my $json_file_type_hash = decode_json $contents;
     foreach my $file_type (@{$json_file_type_hash->{filetypes}}) {
         $file_type_ext_hash->{$file_type->{type}} = $file_type->{extensions};
         $file_type_name_hash->{$file_type->{type}} = $file_type->{names};
@@ -48,39 +49,6 @@ sub new {
     };
     bless $self, $class;
     return $self;
-}
-
-sub from_name {
-    my ($name) = @_;
-    my $lname = lc($name);
-    if ($lname eq 'archive') {
-        return plfind::FileType->ARCHIVE;
-    }
-    if ($lname eq 'audio') {
-        return plfind::FileType->AUDIO;
-    }
-    if ($lname eq 'binary') {
-        return plfind::FileType->BINARY;
-    }
-    if ($lname eq 'code') {
-        return plfind::FileType->CODE;
-    }
-    if ($lname eq 'font') {
-        return plfind::FileType->FONT;
-    }
-    if ($lname eq 'image') {
-        return plfind::FileType->IMAGE;
-    }
-    if ($lname eq 'text') {
-        return plfind::FileType->TEXT;
-    }
-    if ($lname eq 'video') {
-        return plfind::FileType->VIDEO;
-    }
-    if ($lname eq 'xml') {
-        return plfind::FileType->XML;
-    }
-    return plfind::FileType->UNKNOWN;
 }
 
 sub get_file_type {

@@ -8,6 +8,7 @@
 
 package plfind::FindSettings;
 
+use Path::Class;
 use Scalar::Util qw(blessed reftype);
 
 use plfind::common;
@@ -98,7 +99,7 @@ sub add_file_types {
         $fts = \@split;
     }
     foreach my $ft (@{$fts}) {
-        push(@{$ftaref}, plfind::FileTypes::from_name($ft));
+        push(@{$ftaref}, plfind::FileType::from_name($ft));
     }
 }
 
@@ -110,6 +111,22 @@ sub add_patterns {
         }
     } else { # treat as a string
         push(@{$pataref}, $pats);
+    }
+}
+
+sub add_path {
+    my ($self, $path) = @_;
+    if (-d $path) {
+        push(@{$self->{paths}}, dir($path));
+    } elsif (-f $path) {
+        push(@{$self->{paths}}, file($path));
+    } else {
+        my $expanded = plfind::FileUtil::expand_path($path);
+        if (-d $expanded) {
+            push(@{$self->{paths}}, dir($expanded));
+        } elsif (-f $expanded) {
+            push(@{$self->{paths}}, file($expanded));
+        }
     }
 }
 

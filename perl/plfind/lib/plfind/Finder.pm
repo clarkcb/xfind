@@ -11,6 +11,7 @@ package plfind::Finder;
 use strict;
 use warnings;
 
+use Path::Class;
 use Scalar::Util qw(blessed);
 
 use plfind::common;
@@ -81,11 +82,12 @@ sub any_matches_any_pattern {
 }
 
 sub is_matching_dir {
+    # $d is an instance of Path::Class::Dir
     my ($self, $d) = @_;
     if (plfind::FileUtil::is_dot_dir($d)) {
         return 1;
     }
-    my @path_elems = grep {$_ ne ''} plfind::FileUtil::split_dir($d);
+    my @path_elems = grep {$_ ne ''} $d->dir_list;
     if (!$self->{settings}->{include_hidden}) {
         foreach my $p (@path_elems) {
             if (plfind::FileUtil::is_hidden($p)) {
@@ -118,7 +120,7 @@ sub is_matching_extension {
 sub has_matching_archive_extension {
     my ($self, $fr) = @_;
     if (scalar @{$self->{settings}->{in_archive_extensions}} || scalar @{$self->{settings}->{out_archive_extensions}}) {
-        my $ext = plfind::FileUtil::get_extension($fr->{file_name});
+        my $ext = plfind::FileUtil::get_extension($fr->{file_path}->basename);
         return $self->is_matching_archive_extension($ext);
     }
     return 1;
@@ -127,7 +129,7 @@ sub has_matching_archive_extension {
 sub has_matching_extension {
     my ($self, $fr) = @_;
     if (scalar @{$self->{settings}->{in_extensions}} || scalar @{$self->{settings}->{out_extensions}}) {
-        my $ext = plfind::FileUtil::get_extension($fr->{file_name});
+        my $ext = plfind::FileUtil::get_extension($fr->{file_path}->basename);
         return $self->is_matching_extension($ext);
     }
     return 1;
@@ -174,13 +176,13 @@ sub is_matching_last_mod {
 sub is_matching_archive_file_result {
     my ($self, $fr) = @_;
     return $self->has_matching_archive_extension($fr)
-        && $self->is_matching_archive_file_name($fr->{file_name});
+        && $self->is_matching_archive_file_name($fr->{file_path}->basename);
 }
 
 sub is_matching_file_result {
     my ($self, $fr) = @_;
     return $self->has_matching_extension($fr)
-        && $self->is_matching_file_name($fr->{file_name})
+        && $self->is_matching_file_name($fr->{file_path}->basename)
         && $self->is_matching_file_type($fr->{file_type})
         && $self->is_matching_file_size($fr->{file_size})
         && $self->is_matching_last_mod($fr->{last_mod});
@@ -188,7 +190,7 @@ sub is_matching_file_result {
 
 sub filter_to_file_result {
     my ($self, $file_path) = @_;
-    my ($dir, $file_name) = plfind::FileUtil::split_path($file_path);
+    my $file_name = $file_path->basename;
     if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden($file_name)) {
         return;
     }
@@ -201,14 +203,11 @@ sub filter_to_file_result {
     my $file_size = 0;
     my $last_mod = 0;
     if ($self->{settings}->needs_last_mod || $self->{settings}->needs_size) {
-        my $fp = plfind::FileUtil::join_path($dir, $file_name);
-        my @fpstat = stat($fp);
-        # stat index 7 == size
-        $file_size = $fpstat[7];
-        # stat index 9 == mtime
-        $last_mod = $fpstat[9];
+        my $fpstat = $file_path->stat;
+        $file_size = $fpstat->size;
+        $last_mod = $fpstat->mtime;
     }
-    my $file_result = plfind::FileResult->new($dir, $file_name, $file_type, $file_size, $last_mod);
+    my $file_result = plfind::FileResult->new($file_path, $file_type, $file_size, $last_mod);
     if ($file_type eq plfind::FileType->ARCHIVE) {
         if ($self->is_matching_archive_file_result($file_result)) {
             return $file_result;
@@ -231,22 +230,21 @@ sub rec_get_file_results {
     }
     my $dir_results = [];
     my $file_results = [];
-    opendir(DIR, $dir) or die $!;
-    while (my $f = readdir(DIR)) {
-        if (plfind::FileUtil::is_dot_dir($f)) {
-            next;
-        }
-        my $sub_file = plfind::FileUtil::join_path($dir, $f);
-        if (-d $sub_file && $recurse && $self->is_matching_dir($f)) {
-            push(@{$dir_results}, $sub_file);
-        } elsif (-f $sub_file && ($min_depth < 0 || $current_depth >= $min_depth)) {
-            my $file_result = $self->filter_to_file_result($sub_file);
+    while (my $f = $dir->next) {
+        if ($f->is_dir) {
+            if (plfind::FileUtil::is_dot_dir($f->basename)) {
+                next;
+            }
+            if ($recurse && $self->is_matching_dir($f)) {
+                push(@{$dir_results}, $f);
+            }
+        } elsif ($min_depth < 0 || $current_depth >= $min_depth) {
+            my $file_result = $self->filter_to_file_result($f);
             if (defined $file_result) {
                 push(@{$file_results}, $file_result);
             }
         }
     }
-    closedir(DIR);
     foreach my $dir_result (@{$dir_results}) {
         my $sub_file_results = $self->rec_get_file_results($dir_result, $min_depth, $max_depth, $current_depth + 1);
         push(@{$file_results}, @{$sub_file_results});
@@ -257,7 +255,7 @@ sub rec_get_file_results {
 sub get_file_results {
     my ($self, $file_path) = @_;
     my $file_results = [];
-    if (-d $file_path) {
+    if ($file_path->is_dir) {
         # if max_depth is zero, we can skip since a directory cannot be a result
         if ($self->{settings}->{max_depth} == 0) {
             return [];
@@ -272,7 +270,7 @@ sub get_file_results {
         } else {
             plfind::common::log_err("Startpath does not match find settings");
         }
-    } elsif (-f $file_path) {
+    } else {
         # if min_depth > zero, we can skip since the file is at depth zero
         if ($self->{settings}->{min_depth} > 0) {
             return [];
@@ -299,12 +297,12 @@ sub find {
 sub cmp_file_results_by_path {
     my ($self, $fr1, $fr2) = @_;
     my ($path1, $path2) = $self->{settings}->{sort_case_insensitive} ?
-        (lc($fr1->{path}), lc($fr2->{path})) :
-        ($fr1->{path}, $fr2->{path});
+        (lc($fr1->{file_path}->parent), lc($fr2->{file_path}->parent)) :
+        ($fr1->{file_path}->parent, $fr2->{file_path}->parent);
     if ($path1 eq $path2) {
         my ($file_name1, $file_name2) = $self->{settings}->{sort_case_insensitive} ?
-            (lc($fr1->{file_name}), lc($fr2->{file_name})) :
-            ($fr1->{file_name}, $fr2->{file_name});
+            (lc($fr1->{file_path}->basename), lc($fr2->{file_path}->basename)) :
+            ($fr1->{file_path}->basename, $fr2->{file_path}->basename);
         return $file_name1 cmp $file_name2;
     }
     return $path1 cmp $path2;
@@ -313,12 +311,12 @@ sub cmp_file_results_by_path {
 sub cmp_file_results_by_file_name {
     my ($self, $fr1, $fr2) = @_;
     my ($file_name1, $file_name2) = $self->{settings}->{sort_case_insensitive} ?
-        (lc($fr1->{file_name}), lc($fr2->{file_name})) :
-        ($fr1->{file_name}, $fr2->{file_name});
+        (lc($fr1->{file_path}->basename), lc($fr2->{file_path}->basename)) :
+        ($fr1->{file_path}->basename, $fr2->{file_path}->basename);
     if ($file_name1 eq $file_name2) {
         my ($path1, $path2) = $self->{settings}->{sort_case_insensitive} ?
-            (lc($fr1->{path}), lc($fr2->{path})) :
-            ($fr1->{path}, $fr2->{path});
+            (lc($fr1->{file_path}->parent), lc($fr2->{file_path}->parent)) :
+            ($fr1->{file_path}->parent, $fr2->{file_path}->parent);
         return $path1 cmp $path2;
     }
     return $file_name1 cmp $file_name2;

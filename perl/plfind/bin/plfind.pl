@@ -23,7 +23,7 @@ use plfind::FindOptions;
 
 sub get_matching_dirs {
     my ($file_results) = @_;
-    my @dirs = map {$_->{path}} @{$file_results};
+    my @dirs = map {$_->{file_path}->parent} @{$file_results};
     my $uniq = plfind::common::uniq(\@dirs);
     return $uniq;
 }

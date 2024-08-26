@@ -11,14 +11,14 @@ package plfind::FileResult;
 use strict;
 use warnings;
 
-use File::Spec;
+my $CONTAINER_SEP = '!';
 
 sub new {
+    # file_path is a Path::Class instance
     my $class = shift;
     my $self = {
         containers => [],
-        path => shift,
-        file_name => shift,
+        file_path => shift,
         file_type => shift,
         file_size => shift,
         last_mod => shift,
@@ -29,7 +29,12 @@ sub new {
 
 sub to_string {
     my $self = shift @_;
-    my $s = File::Spec->join($self->{path}, $self->{file_name});
+    my $s = '';
+    if (scalar @{$self->{containers}}) {
+        $s = join($CONTAINER_SEP, @{$self->{containers}});
+        $s .= $CONTAINER_SEP;
+    }
+    $s .=  $self->{file_path}->stringify;
     return $s;
 }
 

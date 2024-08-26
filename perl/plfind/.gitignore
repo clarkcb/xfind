@@ -4,3 +4,7 @@ filetypes.json
 filetypes.xml
 findoptions.json
 findoptions.xml
+
+# for cpanfile/carton
+local/
+

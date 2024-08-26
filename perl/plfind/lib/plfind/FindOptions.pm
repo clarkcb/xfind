@@ -11,9 +11,10 @@ package plfind::FindOptions;
 use strict;
 use warnings;
 
-use Data::Dumper;
+# use Data::Dumper;
 use DateTime::Format::DateParse;
 use JSON::PP qw(decode_json);
+use Path::Class;
 
 use plfind::common;
 use plfind::config;
@@ -96,11 +97,11 @@ my $arg_action_hash = {
     },
     'path' => sub {
         my ($s, $settings) = @_;
-        push(@{$settings->{paths}}, $s);
+        $settings->add_path($s);
     },
     'settings-file' => sub {
         my ($s, $settings) = @_;
-        settings_from_file($s, $settings);
+        settings_from_file(file($s), $settings);
     },
     'sort-by' => sub {
         my ($s, $settings) = @_;
@@ -110,80 +111,80 @@ my $arg_action_hash = {
 
 my $bool_flag_action_hash = {
     'archivesonly' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('archives_only', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('archives_only', $bool);
     },
     'debug' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('debug', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('debug', $bool);
     },
     'excludearchives' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('include_archives', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('include_archives', !$bool);
     },
     'excludehidden' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('include_hidden', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('include_hidden', !$bool);
     },
     'help' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_usage', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_usage', $bool);
     },
     'includearchives' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('include_archives', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('include_archives', $bool);
     },
     'includehidden' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('include_hidden', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('include_hidden', $bool);
     },
     'noprintdirs' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_dirs', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_dirs', !$bool);
     },
     'noprintfiles' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_files', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_files', !$bool);
     },
     'norecursive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('recursive', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('recursive', !$bool);
     },
     'printdirs' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_dirs', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_dirs', $bool);
     },
     'printfiles' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_files', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_files', $bool);
     },
     'recursive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('recursive', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('recursive', $bool);
     },
     'sort-ascending' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_descending', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_descending', !$bool);
     },
     'sort-caseinsensitive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_case_insensitive', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_case_insensitive', $bool);
     },
     'sort-casesensitive' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_case_insensitive', !$b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_case_insensitive', !$bool);
     },
     'sort-descending' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('sort_descending', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('sort_descending', $bool);
     },
     'verbose' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('verbose', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('verbose', $bool);
     },
     'version' => sub {
-        my ($b, $settings) = @_;
-        $settings->set_property('print_version', $b);
+        my ($bool, $settings) = @_;
+        $settings->set_property('print_version', $bool);
     }
 };
 
@@ -198,11 +199,12 @@ sub new {
 
 sub set_options_from_json {
     my $options_hash = {};
-    my $options_json_hash = decode_json plfind::FileUtil::get_file_contents($FINDOPTIONSPATH);
-    foreach my $findoption (@{$options_json_hash->{findoptions}}) {
-        my $short = $findoption->{short};
-        my $long = $findoption->{long};
-        my $desc = $findoption->{desc};
+    my $contents = $FIND_OPTIONS_PATH->slurp;
+    my $options_json_hash = decode_json $contents;
+    foreach my $find_option (@{$options_json_hash->{findoptions}}) {
+        my $short = $find_option->{short};
+        my $long = $find_option->{long};
+        my $desc = $find_option->{desc};
         my $func = sub {};
         if (exists $arg_action_hash->{$long}) {
             $func = $arg_action_hash->{$long};
@@ -211,7 +213,7 @@ sub set_options_from_json {
         }
         my $opt = plfind::FindOption->new($short, $long, $desc, $func);
         $options_hash->{$long} = $opt;
-        if ($short) {
+        if (defined $short) {
             $options_hash->{$short} = $options_hash->{$long};
         }
     }
@@ -219,13 +221,14 @@ sub set_options_from_json {
 }
 
 sub settings_from_file {
+    # $file_path is instance of Path::Class::File
     my ($file_path, $settings) = @_;
     my $errs = [];
     unless (-e $file_path) {
         push(@{$errs}, 'Settings file not found: ' . $file_path);
         return $errs;
     }
-    my $json = plfind::FileUtil::get_file_contents($file_path);
+    my $json = $file_path->slurp;
     return __from_json($json, $settings);
 }
 
@@ -240,8 +243,6 @@ sub __from_json {
             &{$arg_action_hash->{$o}}($json_hash->{$o}, $settings);
         } elsif (exists $bool_flag_action_hash->{$o}) {
             &{$bool_flag_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif ($o eq 'startpath') {
-            $settings->{startpath} = $json_hash->{$o};
         } else {
             push(@{$errs}, 'Invalid option: ' . $o);
         }
@@ -282,7 +283,7 @@ sub settings_from_args {
                 push(@errs, "Invalid option: $arg");
             }
         } else {
-            push(@{$settings->{paths}}, $arg);
+            $settings->add_path($arg);
         }
     }
     return ($settings, \@errs);
@@ -303,7 +304,7 @@ sub get_usage_string {
         my $long_arg = $option->{long_arg};
         my $short_arg = $option->{short_arg};
         my $sort_arg = $long_arg;
-        if ($short_arg) {
+        if (defined $short_arg) {
             $sort_arg = lc($short_arg) . 'a' . $long_arg;
         }
         $sort_arg_option_hash->{$sort_arg} = $option;
