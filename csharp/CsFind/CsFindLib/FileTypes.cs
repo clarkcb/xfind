@@ -32,12 +32,15 @@ public class FileTypes
 	private const string Xml = "xml";
 	
 	private SqliteConnection _conn;
-	private readonly IDictionary<string, FileType> _fileExtTypeIdDictionary;
+	private readonly IDictionary<string, FileType> _extTypeCache;
+	private readonly IDictionary<string, FileType> _nameTypeCache;
+	private bool _nameTypeCacheLoaded;
 
 	public FileTypes()
 	{
 		_conn = new SqliteConnection("Data Source=" + FindConfig.XfindDb + ";Mode=ReadOnly");
-		_fileExtTypeIdDictionary = new ConcurrentDictionary<string, FileType>();
+		_extTypeCache = new ConcurrentDictionary<string, FileType>();
+		_nameTypeCache = new ConcurrentDictionary<string, FileType>();
 	}
 
 	private SqliteConnection GetConnection()
@@ -68,18 +71,54 @@ public class FileTypes
 			};
 	}
 
-	private FileType GetFileTypeForQueryAndElem(string query, string elem)
+	private IDictionary<string, FileType> GetFileTypesForQueryAndParams(string query, List<string> param)
 	{
 		var conn = GetConnection();
 		using var command = conn.CreateCommand();
 		command.CommandText = query;
-		command.Parameters.AddWithValue("$x0", elem);
+		for (var i = 0; i < param.Count; i++)
+		{
+			command.Parameters.AddWithValue($"$x{i}", param);
+		}
+		var results = new Dictionary<string, FileType>();
+		using var reader = command.ExecuteReader(CommandBehavior.Default);
+		while (reader.Read())
+		{
+			var key = reader.GetString(0);
+			var fileTypeId = reader.GetInt32(1) - 1;
+			results[key] = (FileType)fileTypeId;
+		}
 
+		return results;
+	}
+
+	private void LoadNameTypeCache()
+	{
+		const string query = "SELECT name, file_type_id FROM file_name";
+		var results = GetFileTypesForQueryAndParams(query, []);
+		foreach (var kv in results)
+		{
+			var name = kv.Key;
+			var fileTypeId = kv.Value;
+			_nameTypeCache[name] = (FileType)fileTypeId;
+		}
+		_nameTypeCacheLoaded = true;
+	}
+
+	private FileType GetFileTypeForQueryAndParams(string query, List<string> param)
+	{
+		var conn = GetConnection();
+		using var command = conn.CreateCommand();
+		command.CommandText = query;
+		for (var i = 0; i < param.Count; i++)
+		{
+			command.Parameters.AddWithValue($"$x{i}", param[i]);
+		}
 		using var reader = command.ExecuteReader(CommandBehavior.SingleRow);
 		if (reader.Read())
 		{
 			var fileTypeId = reader.GetInt32(0) - 1;
-			return (FileType)(fileTypeId);
+			return (FileType)fileTypeId;
 		}
 
 		return FileType.Unknown;
@@ -91,9 +130,17 @@ public class FileTypes
 		{
 			return FileType.Unknown;
 		}
-
-		const string query = "SELECT file_type_id FROM file_name WHERE name = $x0";
-		return GetFileTypeForQueryAndElem(query, fileName);
+		if (!_nameTypeCacheLoaded)
+		{
+			LoadNameTypeCache();
+		}
+		if (_nameTypeCache.TryGetValue(fileName, out var value))
+		{
+			return value;
+		}
+		// const string query = "SELECT file_type_id FROM file_name WHERE name = $x0";
+		// return GetFileTypeForQueryAndParams(query, [fileName]);
+		return FileType.Unknown;
 	}
 
 	private FileType GetFileTypeForExtension(string fileExt)
@@ -102,14 +149,14 @@ public class FileTypes
 		{
 			return FileType.Unknown;
 		}
-		if (_fileExtTypeIdDictionary.TryGetValue(fileExt, out var value))
+		if (_extTypeCache.TryGetValue(fileExt, out var value))
 		{
 			return value;
 		}
 		
 		const string query = "SELECT file_type_id FROM file_extension WHERE extension = $x0";
-		var fileType = GetFileTypeForQueryAndElem(query, fileExt);
-		_fileExtTypeIdDictionary[fileExt] = fileType;
+		var fileType = GetFileTypeForQueryAndParams(query, [fileExt]);
+		_extTypeCache[fileExt] = fileType;
 		return fileType;
 	}
 
