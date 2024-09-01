@@ -78,19 +78,19 @@ namespace cppfind {
         ~FileTypes() = default;
         static FileType from_name(std::string_view name);
         static std::string to_name(const FileType& file_type);
-        [[nodiscard]] FileType get_file_type_for_file_name(std::string_view file_name) const;
-        [[nodiscard]] FileType get_file_type_for_extension(std::string_view file_ext) const;
-        [[nodiscard]] FileType get_file_type_for_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_archive_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_audio_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_binary_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_code_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_font_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_image_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_text_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_unknown_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_video_path(const std::filesystem::path& file_path) const;
-        [[nodiscard]] bool is_xml_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] FileType get_file_type_for_file_name(std::string_view file_name);
+        [[nodiscard]] FileType get_file_type_for_extension(std::string_view file_ext);
+        [[nodiscard]] FileType get_file_type_for_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_archive_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_audio_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_binary_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_code_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_font_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_image_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_text_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_unknown_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_video_path(const std::filesystem::path& file_path);
+        [[nodiscard]] bool is_xml_path(const std::filesystem::path& file_path);
     };
 
     // FileUtil.h
@@ -464,7 +464,7 @@ namespace cppfind {
         explicit Finder(const std::unique_ptr<FindSettings>& settings_ptr);
         Finder(Finder& other) = delete;
         Finder(Finder&& other) = delete;
-        [[nodiscard]] std::optional<FileResult> filter_to_file_result(const std::filesystem::path& file_path) const;
+        [[nodiscard]] std::optional<FileResult> filter_to_file_result(const std::filesystem::path& file_path);
         [[nodiscard]] bool is_matching_archive_file_result(const FileResult& file_result) const;
         [[nodiscard]] bool filter_dir_path_by_hidden(const std::filesystem::path& dir_path) const;
         [[nodiscard]] bool filter_dir_path_by_in_patterns(const std::filesystem::path& dir_path) const;
@@ -480,7 +480,7 @@ namespace cppfind {
         [[nodiscard]] bool is_matching_file_size(uint64_t file_size) const;
         [[nodiscard]] bool is_matching_last_mod(long last_mod) const;
         [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
-        [[nodiscard]] std::vector<FileResult> find() const;
+        [[nodiscard]] std::vector<FileResult> find();
     };
 
     std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results);
