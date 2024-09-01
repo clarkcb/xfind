@@ -6,16 +6,16 @@
  */
 
 const FileType = {
-    UNKNOWN: 1,
-    ARCHIVE: 2,
-    AUDIO:   3,
-    BINARY:  4,
-    CODE:    5,
-    FONT:    6,
-    IMAGE:   7,
-    TEXT:    8,
-    VIDEO:   9,
-    XML:     10
+    UNKNOWN: 0,
+    ARCHIVE: 1,
+    AUDIO:   2,
+    BINARY:  3,
+    CODE:    4,
+    FONT:    5,
+    IMAGE:   6,
+    TEXT:    7,
+    VIDEO:   8,
+    XML:     9
 };
 Object.freeze(FileType);
 
