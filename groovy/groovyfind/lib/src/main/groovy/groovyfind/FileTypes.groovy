@@ -1,11 +1,12 @@
 package groovyfind
 
 import org.sqlite.SQLiteConfig
-import org.sqlite.JDBC
 
 import java.nio.file.Path
 import java.sql.Connection
 import java.sql.DriverManager
+import java.sql.PreparedStatement
+import java.sql.ResultSet
 import java.sql.SQLException
 
 enum FileType {
@@ -55,7 +56,9 @@ class FileTypes {
             FileType.XML
     )
     private Connection _conn = null
-    private HashMap<String, FileType> _extFileTypeCache
+    private Map<String, FileType> _extTypeCache
+    private Map<String, FileType> _nameTypeCache
+    private boolean _nameTypeCacheLoaded = false
 
     private Connection getConnection() {
         Class.forName("org.sqlite.JDBC")
@@ -63,7 +66,7 @@ class FileTypes {
             try {
                 def config = new SQLiteConfig()
                 config.setReadOnly(true)
-                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties())
+                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFIND_DB, config.toProperties())
             } catch (SQLException | ClassNotFoundException e) {
                 Logger.logError(e.getMessage())
             }
@@ -72,15 +75,44 @@ class FileTypes {
     }
 
     FileTypes() {
-        _extFileTypeCache = new HashMap<String, FileType>()
+        _extTypeCache = new HashMap<String, FileType>()
+        _nameTypeCache = new HashMap<String, FileType>()
     }
 
-    private FileType getFileTypeForQueryAndElem(final String query, final String elem) {
+    private Map<String, FileType> getFileTypesForQueryAndParams(final String query, final List<String> params) {
+        Connection conn = getConnection()
+        Map<String, FileType> results = new HashMap<String, FileType>()
+        try {
+            PreparedStatement stmt = conn.prepareStatement(query)
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setString(i + 1, params.get(i))
+            }
+            ResultSet rs = stmt.executeQuery()
+            while (rs.next()) {
+                String key = rs.getString(1)
+                int fileTypeId = rs.getInt(2) - 1
+                results.put(key, fileTypes.get(fileTypeId))
+            }
+        } catch (SQLException e) {
+            Logger.logError(e.getMessage())
+        }
+        return results
+    }
+
+    private void loadNameTypeCache() {
+        String query = "SELECT name, file_type_id FROM file_name"
+        _nameTypeCache = getFileTypesForQueryAndParams(query, [])
+        _nameTypeCacheLoaded = true
+    }
+
+    private FileType getFileTypeForQueryAndParams(final String query, final List<String> params) {
         Connection conn = getConnection()
         try {
-            def stmt = conn.prepareStatement(query)
-            stmt.setString(1, elem)
-            def rs = stmt.executeQuery()
+            PreparedStatement stmt = conn.prepareStatement(query)
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setString(i + 1, params.get(i))
+            }
+            ResultSet rs = stmt.executeQuery()
             if (rs.next()) {
                 int fileTypeId = rs.getInt("file_type_id") - 1
                 return fileTypes.get(fileTypeId)
@@ -92,22 +124,32 @@ class FileTypes {
     }
 
     final FileType getFileTypeForFileName(final String fileName) {
-        def query = "SELECT file_type_id FROM file_name WHERE name = ?"
-        return getFileTypeForQueryAndElem(query, fileName)
+        if (!_nameTypeCacheLoaded) {
+            loadNameTypeCache()
+        }
+        if (_nameTypeCache.containsKey(fileName)) {
+            return _nameTypeCache.get(fileName)
+        }
+//        String query = "SELECT file_type_id FROM file_name WHERE name = ?"
+//        return getFileTypeForQueryAndParams(query, [fileName])
+        return FileType.UNKNOWN
     }
 
     final FileType getFileTypeForExtension(final String extension) {
-        if (_extFileTypeCache.containsKey(extension)) {
-            return _extFileTypeCache.get(extension)
+        if (extension == null || extension.isEmpty()) {
+            return FileType.UNKNOWN
         }
-        def query = "SELECT file_type_id FROM file_extension WHERE extension = ?"
-        FileType fileType = getFileTypeForQueryAndElem(query, extension)
-        _extFileTypeCache.put(extension, fileType)
+        if (_extTypeCache.containsKey(extension)) {
+            return _extTypeCache.get(extension)
+        }
+        String query = "SELECT file_type_id FROM file_extension WHERE extension = ?"
+        FileType fileType = getFileTypeForQueryAndParams(query, [extension])
+        _extTypeCache.put(extension, fileType)
         return fileType
     }
 
     final FileType getFileType(final Path f) {
-        def fileType = getFileTypeForFileName(f.getFileName().toString())
+        FileType fileType = getFileTypeForFileName(f.getFileName().toString())
         if (fileType != FileType.UNKNOWN) {
             return fileType
         }
@@ -139,7 +181,7 @@ class FileTypes {
     }
 
     final boolean isTextFile(final Path path) {
-        def fileType = getFileType(path)
+        FileType fileType = getFileType(path)
         return fileType == FileType.TEXT
                 || fileType == FileType.CODE
                 || fileType == FileType.XML
