@@ -29,6 +29,10 @@
 (def ^:const ^String VIDEO "video")
 (def ^:const ^String XML "xml")
 
+(def ext-type-cache (atom {}))
+(def name-type-cache (atom {}))
+(def name-type-cache-loaded (atom false))
+
 (def ^:const FILE-TYPES
   [:unknown :archive :audio :binary :code :font :image :text :video :xml])
 
@@ -36,24 +40,45 @@
   {:dbtype "sqlite"
    :dbname XFINDDB})
 
+(def ^:const ^String FILE-NAMES-QUERY "SELECT name, file_type_id FROM file_name")
 (def ^:const ^String FILE-NAME-QUERY "SELECT file_type_id FROM file_name WHERE name = ?")
 (def ^:const ^String FILE-EXT-QUERY "SELECT file_type_id FROM file_extension WHERE extension = ?")
 
+(defn load-file-type-cache []
+  (doseq [row (jdbc/query db [FILE-NAMES-QUERY])]
+    (swap! name-type-cache assoc (get row :name) (nth FILE-TYPES (- (get row :file_type_id) 1))))
+  (reset! name-type-cache-loaded true))
+
 (defn get-file-type-for-file-name [^String file-name]
-  (let [file-type-id (jdbc/query db [FILE-NAME-QUERY file-name] {:row-fn :file_type_id})]
-    (if (or (nil? file-type-id) (empty? file-type-id))
-      :unknown
-      (nth FILE-TYPES (- (first file-type-id) 1)))))
+  (if (not @name-type-cache-loaded)
+    (load-file-type-cache))
+  (if-let [file-type (get @name-type-cache file-name)]
+    file-type
+    (let [file-type-id (jdbc/query db [FILE-NAME-QUERY file-name] {:row-fn :file_type_id})]
+      (if (or (nil? file-type-id) (empty? file-type-id))
+        (do
+          (swap! name-type-cache assoc file-name :unknown)
+          :unknown)
+        (do
+          (swap! name-type-cache assoc file-name (nth FILE-TYPES (- (first file-type-id) 1)))
+          (nth FILE-TYPES (- (first file-type-id) 1)))))))
 
 (defn get-file-type-for-extension [^String file-ext]
-  (let [file-type-id (jdbc/query db [FILE-EXT-QUERY file-ext] {:row-fn :file_type_id})]
-    (if (or (nil? file-type-id) (empty? file-type-id))
-      :unknown
-      (nth FILE-TYPES (- (first file-type-id) 1)))))
+  (if (empty? file-ext)
+    :unknown
+    (if-let [file-type (get @ext-type-cache file-ext)]
+      file-type
+      (let [file-type-id (jdbc/query db [FILE-EXT-QUERY file-ext] {:row-fn :file_type_id})]
+        (if (or (nil? file-type-id) (empty? file-type-id))
+          (do
+            (swap! ext-type-cache assoc file-ext :unknown)
+            :unknown)
+          (do
+            (swap! ext-type-cache assoc file-ext (nth FILE-TYPES (- (first file-type-id) 1)))
+            (nth FILE-TYPES (- (first file-type-id) 1))))))))
 
 (defn get-file-type [f]
-  (let [file-name (get-name f)
-        file-type-for-file-name (get-file-type-for-file-name file-name)]
+  (let [file-type-for-file-name (get-file-type-for-file-name (get-name f))]
     (if (not= :unknown file-type-for-file-name)
       file-type-for-file-name
       (get-file-type-for-extension (get-ext f)))))
