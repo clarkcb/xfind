@@ -14,26 +14,26 @@ FileTypes *new_file_types(void)
 {
     FileTypes *file_types = malloc(sizeof(FileTypes));
     file_types->db = NULL;
+    file_types->ext_type_cache = malloc(sizeof(FileTypeMap));
+    file_types->name_type_cache = malloc(sizeof(FileTypeMap));
     return file_types;
 }
 
-error_t parse_file_types(const char * file_types_json_str, FileTypes *file_types);
+error_t parse_file_types(const char *file_types_json_str, FileTypes *file_types);
 
-error_t get_file_types(FileTypes *file_types)
+void load_name_type_cache(FileTypes *file_types);
+
+error_t init_file_types(FileTypes *file_types)
 {
-    error_t err = E_OK;
-
     // Get the database connection
     sqlite3 *db;
-    char *xfind_db_path = malloc(MAX_HOMEPATH_LENGTH + 24);
+    char xfind_db_path[MAX_HOMEPATH_LENGTH + 24] = {0};
     get_xfind_db_path(xfind_db_path);
 
     assert(xfind_db_path != NULL);
 
     if (!dir_or_file_exists(xfind_db_path)) {
-        err = E_FILE_NOT_FOUND;
-        free(xfind_db_path);
-        return err;
+        return E_FILE_NOT_FOUND;
     }
 
     const int rc = sqlite3_open_v2(xfind_db_path, &db, SQLITE_OPEN_READONLY, NULL);
@@ -41,18 +41,49 @@ error_t get_file_types(FileTypes *file_types)
         file_types->db = db;
     } else {
         fprintf(stderr, "error: %s\n", sqlite3_errmsg(db));
-        free(xfind_db_path);
         return E_UNKNOWN_ERROR;
     }
 
-    return err;
+    init_file_type_map(file_types->ext_type_cache);
+    init_file_type_map(file_types->name_type_cache);
+
+    load_name_type_cache(file_types);
+
+    return E_OK;
 }
 
-FileType get_file_type_for_query_and_elem(const char *query, const char *elem, const FileTypes *file_types) {
+void get_file_types_for_query_and_param(const FileTypes *file_types, const char *query, const char *param,
+    FileTypeMap *file_type_map) {
+    sqlite3_stmt *stmt;
+    sqlite3_prepare_v2(file_types->db, query, -1, &stmt, NULL);
+    int rc = SQLITE_OK;
+    if (param != NULL) {
+        rc = sqlite3_bind_text(stmt, 1, param, -1, SQLITE_TRANSIENT);
+    }
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "error: %s\n", sqlite3_errmsg(file_types->db));
+    }
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        const unsigned char *key = sqlite3_column_text(stmt, 0);
+        const FileType file_type = sqlite3_column_int(stmt, 1) - 1;
+        add_entry_to_map(file_type_map, key, file_type);
+    }
+    sqlite3_finalize(stmt);
+}
+
+void load_name_type_cache(FileTypes *file_types) {
+    const char *query = "select name, file_type_id from file_name";
+    get_file_types_for_query_and_param(file_types, query, NULL, file_types->name_type_cache);
+    // printf("name_type_cache:\n");
+    // print_file_type_map(file_types->name_type_cache);
+    // printf("\n");
+}
+
+FileType get_file_type_for_query_and_param(const FileTypes *file_types, const char *query, const char *param) {
     FileType file_type = UNKNOWN;
     sqlite3_stmt *stmt;
     sqlite3_prepare_v2(file_types->db, query, -1, &stmt, NULL);
-    const int rc = sqlite3_bind_text(stmt, 1, elem, -1, SQLITE_TRANSIENT);
+    const int rc = sqlite3_bind_text(stmt, 1, param, -1, SQLITE_TRANSIENT);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "error: %s\n", sqlite3_errmsg(file_types->db));
     }
@@ -63,103 +94,119 @@ FileType get_file_type_for_query_and_elem(const char *query, const char *elem, c
     return file_type;
 }
 
-FileType get_file_type_for_file_name(const char *file_name, const FileTypes *file_types)
+FileType get_file_type_for_file_name(const FileTypes *file_types, const char *file_name)
 {
-    const char *query = "select file_type_id from file_name where name=?";
-    return get_file_type_for_query_and_elem(query, file_name, file_types);
+    // const FileType file_type = get_file_type_for_key(file_types->name_type_cache, file_name);
+    // if (file_type != UNKNOWN) {
+    //     return file_type;
+    // }
+    // const char *query = "select file_type_id from file_name where name=?";
+    // return get_file_type_for_query_and_param(file_types, query, file_name);
+    return get_file_type_for_key(file_types->name_type_cache, file_name);
 }
 
-FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types)
+FileType get_file_type_for_ext(const FileTypes *file_types, const char *ext)
 {
+    if (ext == NULL || strncmp(ext, "", 64) == 0) {
+        return UNKNOWN;
+    }
+    FileType file_type = get_file_type_for_key(file_types->ext_type_cache, ext);
+    if (file_type != UNKNOWN) {
+        return file_type;
+    }
     const char *query = "select file_type_id from file_extension where extension=?";
-    return get_file_type_for_query_and_elem(query, ext, file_types);
+    file_type = get_file_type_for_query_and_param(file_types, query, ext);
+    if (file_type != UNKNOWN) {
+        add_entry_to_map(file_types->ext_type_cache, ext, file_type);
+    }
+    return file_type;
 }
 
-FileType get_file_type(const char *file_name, const FileTypes *file_types)
+FileType get_file_type(const FileTypes *file_types, const char *file_name)
 {
     if (file_name == NULL) return UNKNOWN;
     const size_t file_len = strnlen(file_name, 1024);
     if (file_len < 1) return UNKNOWN;
-    const FileType file_type = get_file_type_for_file_name(file_name, file_types);
+    const FileType file_type = get_file_type_for_file_name(file_types, file_name);
     if (file_type != UNKNOWN) return file_type;
     char ext[file_len];
     ext[0] = '\0';
     get_extension(file_name, ext);
-    return get_file_type_for_ext(ext, file_types);
+    return get_file_type_for_ext(file_types, ext);
 }
 
-unsigned short is_archive_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == ARCHIVE;
+unsigned short is_archive_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == ARCHIVE;
 }
 
-unsigned short is_archive_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == ARCHIVE;
+unsigned short is_archive_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == ARCHIVE;
 }
 
-unsigned short is_audio_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == AUDIO;
+unsigned short is_audio_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == AUDIO;
 }
 
-unsigned short is_audio_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == AUDIO;
+unsigned short is_audio_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == AUDIO;
 }
 
-unsigned short is_binary_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == BINARY;
+unsigned short is_binary_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == BINARY;
 }
 
-unsigned short is_binary_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == BINARY;
+unsigned short is_binary_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == BINARY;
 }
 
-unsigned short is_code_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == CODE;
+unsigned short is_code_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == CODE;
 }
 
-unsigned short is_code_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == CODE;
+unsigned short is_code_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == CODE;
 }
 
-unsigned short is_font_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == FONT;
+unsigned short is_font_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == FONT;
 }
 
-unsigned short is_font_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == FONT;
+unsigned short is_font_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == FONT;
 }
 
-unsigned short is_image_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == IMAGE;
+unsigned short is_image_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == IMAGE;
 }
 
-unsigned short is_image_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == IMAGE;
+unsigned short is_image_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == IMAGE;
 }
 
-unsigned short is_text_ext(const char *ext, const FileTypes *file_types) {
-    const FileType file_type = get_file_type_for_ext(ext, file_types);
+unsigned short is_text_ext(const FileTypes *file_types, const char *ext) {
+    const FileType file_type = get_file_type_for_ext(file_types, ext);
     return file_type == TEXT || file_type == CODE || file_type == XML;
 }
 
-unsigned short is_text_name(const char *name, const FileTypes *file_types) {
-    const FileType file_type = get_file_type_for_file_name(name, file_types);
+unsigned short is_text_name(const FileTypes *file_types, const char *name) {
+    const FileType file_type = get_file_type_for_file_name(file_types, name);
     return file_type == TEXT || file_type == CODE || file_type == XML;
 }
 
-unsigned short is_video_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == VIDEO;
+unsigned short is_video_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == VIDEO;
 }
 
-unsigned short is_video_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == VIDEO;
+unsigned short is_video_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == VIDEO;
 }
 
-unsigned short is_xml_ext(const char *ext, const FileTypes *file_types) {
-    return get_file_type_for_ext(ext, file_types) == XML;
+unsigned short is_xml_ext(const FileTypes *file_types, const char *ext) {
+    return get_file_type_for_ext(file_types, ext) == XML;
 }
 
-unsigned short is_xml_name(const char *name, const FileTypes *file_types) {
-    return get_file_type_for_file_name(name, file_types) == XML;
+unsigned short is_xml_name(const FileTypes *file_types, const char *name) {
+    return get_file_type_for_file_name(file_types, name) == XML;
 }
 
 FileType file_type_from_name(const char *name)
@@ -304,6 +351,8 @@ void destroy_file_types(FileTypes *file_types)
 {
     if (file_types != NULL) {
         sqlite3_close(file_types->db);
+        destroy_file_type_map(file_types->ext_type_cache);
+        destroy_file_type_map(file_types->name_type_cache);
         free(file_types);
     }
 }
