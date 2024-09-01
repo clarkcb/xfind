@@ -54,17 +54,32 @@ module RbFind
   class FileTypes
 
     def initialize
-      @db = SQLite3::Database.open XFINDDB, readonly: true, results_as_hash: true
+      @db = SQLite3::Database.open XFIND_DB, readonly: true, results_as_hash: true
       @ext_type_cache = {}
+      @name_type_cache = {}
+      load_name_type_cache
+    end
+
+    def load_name_type_cache
+      results = @db.query "SELECT name, file_type_id FROM file_name"
+      results.each do |result|
+        name = result['name']
+        file_type = FileType.from_index(result['file_type_id'] - 1)
+        @name_type_cache[name] = file_type
+      end
     end
 
     def get_file_type_for_file_name(file_name)
-      results = @db.query "SELECT file_type_id FROM file_name WHERE name=?", file_name
-      result = results.next
-      if result
-        file_type_id = result['file_type_id'] - 1
-        return FileType.from_index(file_type_id)
+      if @name_type_cache.has_key?(file_name)
+        return @name_type_cache[file_name]
       end
+      # Since the cache is loaded with all db file names, this is not needed
+      # results = @db.query "SELECT file_type_id FROM file_name WHERE name=?", file_name
+      # result = results.next
+      # if result
+      #   file_type_id = result['file_type_id'] - 1
+      #   return FileType.from_index(file_type_id)
+      # end
       FileType::UNKNOWN
     end
 
