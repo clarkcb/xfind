@@ -55,7 +55,9 @@ class FileTypes {
   static const xml = 'xml';
   static const unknown = 'unknown';
 
-  var extFileTypeMap = {};
+  var extTypeCache = {};
+  var nameTypeCache = {};
+  var nameTypeCacheLoaded = false;
   late Future ready;
 
   var fileTypes = [
@@ -105,8 +107,27 @@ class FileTypes {
     }
   }
 
-  FileType getFileTypeForQueryAndElem(String query, String elem) {
-    final ResultSet result = db!.select(query, [elem]);
+  Map<String, FileType> getFileTypesForQueryAndParams(
+      String query, List<String> params) {
+    Map<String, FileType> fileTypeMap = {};
+    final ResultSet result = db!.select(query, params);
+    for (var row in result) {
+      final key = row[result.columnNames[0]];
+      final fileTypeId = row[result.columnNames[1]] - 1;
+      final fileType = fileTypes[fileTypeId];
+      fileTypeMap[key] = fileType;
+    }
+    return fileTypeMap;
+  }
+
+  void loadNameTypeCache() {
+    final String query = 'SELECT name, file_type_id FROM file_name';
+    nameTypeCache = getFileTypesForQueryAndParams(query, []);
+    nameTypeCacheLoaded = true;
+  }
+
+  FileType getFileTypeForQueryAndParams(String query, List<String> params) {
+    final ResultSet result = db!.select(query, params);
     if (result.isEmpty) {
       return FileType.unknown;
     }
@@ -115,18 +136,28 @@ class FileTypes {
   }
 
   FileType getFileTypeForFileName(String fileName) {
-    final String query = 'SELECT file_type_id FROM file_name WHERE name = ?';
-    return getFileTypeForQueryAndElem(query, fileName);
+    if (!nameTypeCacheLoaded) {
+      loadNameTypeCache();
+    }
+    if (nameTypeCache.containsKey(fileName)) {
+      return nameTypeCache[fileName];
+    }
+    // final String query = 'SELECT file_type_id FROM file_name WHERE name = ?';
+    // return getFileTypeForQueryAndParams(query, [fileName]);
+    return FileType.unknown;
   }
 
   FileType getFileTypeForExtension(String fileExt) {
-    if (extFileTypeMap.containsKey(fileExt)) {
-      return extFileTypeMap[fileExt];
+    if (fileExt.isEmpty) {
+      return FileType.unknown;
+    }
+    if (extTypeCache.containsKey(fileExt)) {
+      return extTypeCache[fileExt];
     }
     final String query =
         'SELECT file_type_id FROM file_extension WHERE extension = ?';
-    FileType fileType = getFileTypeForQueryAndElem(query, fileExt);
-    extFileTypeMap[fileExt] = fileType;
+    FileType fileType = getFileTypeForQueryAndParams(query, [fileExt]);
+    extTypeCache[fileExt] = fileType;
     return fileType;
   }
 
