@@ -12,13 +12,11 @@ import * as common from './common';
 import {FileType} from './filetype';
 import {FileUtil} from './fileutil';
 
-interface ExtTypeMap {
-    [key: string]: FileType
-}
-
 export class FileTypes {
     db: sqlite3.Database;
-    ext_file_cache: ExtTypeMap = {};
+    extFileCache: Map<string, FileType> = new Map<string, FileType>();
+    nameTypeCache: Map<string, FileType> = new Map<string, FileType>();
+    nameTypeCacheLoaded: boolean = false;
 
     constructor() {
         this.db = new sqlite3.Database(config.XFINDDB, sqlite3.OPEN_READONLY, (err) => {
@@ -28,11 +26,30 @@ export class FileTypes {
         });
     }
 
-    async getFileTypeForSql(sql: string, params: string[]): Promise<FileType> {
+    async getFileTypesForQueryAndParams(query: string, params: string[]): Promise<Map<string, FileType>> {
         return new Promise((resolve, reject) => {
-            this.db.get(sql, params, (err, row: any) => {
+            this.db.all(query, params, (err, rows: any[]) => {
                 if (err) {
-                    common.logError(`Error getting file type for sql: ${sql}`);
+                    common.logError(`Error getting file type for query: ${query}`);
+                    reject(err);
+                } else {
+                    let results = new Map<string, FileType>(rows.map((r) => [r.name as string, (r.file_type_id - 1) as FileType]));
+                    resolve(results);
+                }
+            });
+        });
+    }
+
+    async loadNameTypeCache() {
+        let query = 'SELECT name, file_type_id FROM file_name';
+        this.nameTypeCache = await this.getFileTypesForQueryAndParams(query, []);
+    }
+
+    async getFileTypeForQueryAndParams(query: string, params: string[]): Promise<FileType> {
+        return new Promise((resolve, reject) => {
+            this.db.get(query, params, (err, row: any) => {
+                if (err) {
+                    common.logError(`Error getting file type for query: ${query}`);
                     reject(err);
                 } else {
                     resolve(row ? row.file_type_id - 1 : FileType.Unknown);
@@ -42,17 +59,28 @@ export class FileTypes {
     }
 
     async getFileTypeForFilename(fileName: string): Promise<FileType> {
-        const sql: string = 'SELECT file_type_id FROM file_name WHERE name = ?';
-        return this.getFileTypeForSql(sql, [fileName]);
+        if (!this.nameTypeCacheLoaded) {
+            await this.loadNameTypeCache();
+            this.nameTypeCacheLoaded = true;
+        }
+        if (this.nameTypeCache.has(fileName)) {
+            return this.nameTypeCache.get(fileName)!;
+        }
+        // const query: string = 'SELECT file_type_id FROM file_name WHERE name = ?';
+        // return this.getFileTypeForQueryAndParams(query, [fileName]);
+        return FileType.Unknown;
     }
 
     async getFileTypeForExtension(extension: string): Promise<FileType> {
-        if (extension in this.ext_file_cache) {
-            return this.ext_file_cache[extension];
+        if (extension === '') {
+            return FileType.Unknown;
         }
-        const sql: string = 'SELECT file_type_id FROM file_extension WHERE extension = ?';
-        const fileType: FileType = await this.getFileTypeForSql(sql, [extension]);
-        this.ext_file_cache[extension] = fileType;
+        if (extension in this.extFileCache) {
+            return this.extFileCache.get(extension)!;
+        }
+        const query: string = 'SELECT file_type_id FROM file_extension WHERE extension = ?';
+        const fileType: FileType = await this.getFileTypeForQueryAndParams(query, [extension]);
+        this.extFileCache.set(extension, fileType);
         return fileType;
     }
 
