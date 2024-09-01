@@ -10,11 +10,23 @@
  *
  */
 
+#include "regex.h"
+#include <sqlite3.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <sys/stat.h>
 
-#include "rapidjson/document.h"
+
+// color.h
+
+#define COLOR_RESET  "\033[0m"
+#define COLOR_BLACK  "\033[30m"
+#define COLOR_RED    "\033[31m"
+#define COLOR_GREEN  "\033[32m"
+#define COLOR_YELLOW "\033[33m"
+#define COLOR_BLUE   "\033[34m"
+#define COLOR_PURPLE "\033[35m"
+#define COLOR_CYAN   "\033[36m"
+#define COLOR_WHITE  "\033[37m"
 
 
 // common.h
@@ -144,8 +156,6 @@ void destroy_int_node(IntNode *int_node);
 
 // regexnode.h
 
-#include "regex.h"
-
 typedef struct Regex {
     const char *pattern;
     regex_t compiled;
@@ -233,9 +243,7 @@ void string_node_to_string(StringNode *string_node, char *s);
 void destroy_string_node(StringNode *string_node);
 
 
-// filetypes.h
-
-#include <sqlite3.h>
+// filetype.h
 
 #define FILE_TYPE_NAME_ARCHIVE "archive"
 #define FILE_TYPE_NAME_AUDIO "audio"
@@ -263,59 +271,88 @@ typedef enum {
 } FileType;
 
 
+// filetypemap.h
+
+#define FILE_TYPE_MAP_SIZE 100
+
+typedef struct FileTypeNode {
+    char *key;
+    int value;
+    struct FileTypeNode *next;
+} FileTypeNode;
+
+typedef struct FileTypeMap {
+    FileTypeNode *buckets[FILE_TYPE_MAP_SIZE];
+} FileTypeMap;
+
+void init_file_type_map(FileTypeMap *map);
+
+void add_entry_to_map(FileTypeMap *map, const char *key, FileType file_type);
+
+FileType get_file_type_for_key(FileTypeMap *map, const char *key);
+
+void print_file_type_map(const FileTypeMap *map);
+
+void destroy_file_type_map(FileTypeMap *map);
+
+
+// filetypes.h
+
 typedef struct FileTypes {
     sqlite3 *db;
+    FileTypeMap *ext_type_cache;
+    FileTypeMap *name_type_cache;
 } FileTypes;
 
 FileTypes *new_file_types(void);
 
-error_t get_file_types(FileTypes *file_types);
+error_t init_file_types(FileTypes *file_types);
 
-FileType get_file_type_for_file_name(const char *file_name, const FileTypes *file_types);
+FileType get_file_type_for_file_name(const FileTypes *file_types, const char *file_name);
 
-FileType get_file_type_for_ext(const char *ext, const FileTypes *file_types);
+FileType get_file_type_for_ext(const FileTypes *file_types, const char *ext);
 
-FileType get_file_type(const char *file_name, const FileTypes *file_types);
+FileType get_file_type(const FileTypes *file_types, const char *file_name);
 
-unsigned short is_archive_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_archive_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_archive_name(const char *name, const FileTypes *file_types);
+unsigned short is_archive_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_audio_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_audio_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_audio_name(const char *name, const FileTypes *file_types);
+unsigned short is_audio_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_binary_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_binary_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_binary_name(const char *name, const FileTypes *file_types);
+unsigned short is_binary_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_code_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_code_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_code_name(const char *name, const FileTypes *file_types);
+unsigned short is_code_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_font_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_font_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_font_name(const char *name, const FileTypes *file_types);
+unsigned short is_font_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_image_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_image_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_image_name(const char *name, const FileTypes *file_types);
+unsigned short is_image_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_text_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_text_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_text_name(const char *name, const FileTypes *file_types);
+unsigned short is_text_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_video_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_video_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_video_name(const char *name, const FileTypes *file_types);
+unsigned short is_video_name(const FileTypes *file_types, const char *name);
 
-unsigned short is_xml_ext(const char *ext, const FileTypes *file_types);
+unsigned short is_xml_ext(const FileTypes *file_types, const char *ext);
 
-unsigned short is_xml_name(const char *name, const FileTypes *file_types);
+unsigned short is_xml_name(const FileTypes *file_types, const char *name);
 
 FileType file_type_from_name(const char *name);
 
-void file_type_to_name(const FileType file_type, char *name);
+void file_type_to_name(FileType file_type, char *name);
 
 size_t file_type_node_strlen(IntNode *file_type_node);
 
