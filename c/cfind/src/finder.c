@@ -258,7 +258,7 @@ static error_t find_dir(const Finder *finder, const char *dir_path, FileResults 
                 add_string_to_string_node(file_path, path_dirs);
             }
         } else if (S_ISREG(fpstat.st_mode)) {
-            FileType file_type = get_file_type(dent->d_name, finder->file_types);
+            FileType file_type = get_file_type(finder->file_types, dent->d_name);
             const uint64_t file_size = fpstat.st_size;
             const long last_mod = fpstat.st_mtime;
             if ((min_depth < 0 || current_depth >= min_depth)
@@ -354,7 +354,7 @@ error_t find(const FindSettings *settings, FileResults *results)
     }
 
     FileTypes *file_types = new_file_types();
-    err = get_file_types(file_types);
+    err = init_file_types(file_types);
     if (err != E_OK) {
         return err;
     }
