@@ -13,21 +13,21 @@ cppfind::FindSettings get_settings(std::string_view path) {
  **************************************************************************/
 TEST_CASE("Test filter_to_file_result hidden file should be false", "[Finder]") {
     const auto settings = get_settings(".");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
     REQUIRE(!finder.filter_to_file_result(".hidden.txt").has_value());
 }
 
 TEST_CASE("Test filter_to_file_result hidden file include-hidden should be true", "[Finder]") {
     auto settings = get_settings(".");
     settings.include_hidden(true);
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("./.hidden.txt").has_value());
 }
 
 TEST_CASE("Test filter_to_file_result archive file should be false", "[Finder]") {
     const auto settings = get_settings(".");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(!finder.filter_to_file_result("archive.zip").has_value());
 }
@@ -35,7 +35,7 @@ TEST_CASE("Test filter_to_file_result archive file should be false", "[Finder]")
 TEST_CASE("Test filter_to_file_result archive file find-archives should be true", "[Finder]") {
     auto settings = get_settings(".");
     settings.include_archives(true);
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("archive.zip").has_value());
 }
@@ -44,7 +44,7 @@ TEST_CASE("Test filter_to_file_result archive file is_archive_file should be tru
     auto settings = get_settings(".");
     settings.include_archives(true);
     settings.add_in_archive_extension("zip");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("archive.zip").has_value());
 }
@@ -53,7 +53,7 @@ TEST_CASE("Test filter_to_file_result archive file !is_archive_file should be fa
     auto settings = get_settings(".");
     settings.include_archives(true);
     settings.add_out_archive_extension("zip");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(!finder.filter_to_file_result("archive.zip").has_value());
 }
@@ -61,7 +61,7 @@ TEST_CASE("Test filter_to_file_result archive file !is_archive_file should be fa
 TEST_CASE("Test filter_to_file_result archive file archives-only should be true", "[Finder]") {
     auto settings = get_settings(".");
     settings.archives_only(true);
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("archive.zip").has_value());
 }
@@ -69,14 +69,14 @@ TEST_CASE("Test filter_to_file_result archive file archives-only should be true"
 TEST_CASE("Test filter_to_file_result non-archive file archives-only should be false", "[Finder]") {
     auto settings = get_settings(".");
     settings.archives_only(true);
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(!finder.filter_to_file_result("FileUtil.cs").has_value());
 }
 
 TEST_CASE("Test filter_to_file_result no exts no patterns should be true", "[Finder]") {
     const auto settings = get_settings(".");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("FileUtil.cs").has_value());
 }
@@ -84,7 +84,7 @@ TEST_CASE("Test filter_to_file_result no exts no patterns should be true", "[Fin
 TEST_CASE("Test filter_to_file_result matching in-ext should be true", "[Finder]") {
     auto settings = get_settings(".");
     settings.add_in_extension("cs");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("FileUtil.cs").has_value());
 }
@@ -92,7 +92,7 @@ TEST_CASE("Test filter_to_file_result matching in-ext should be true", "[Finder]
 TEST_CASE("Test filter_to_file_result not matching in-ext should be false", "[Finder]") {
     auto settings = get_settings(".");
     settings.add_in_extension("cpp");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(!finder.filter_to_file_result("FileUtil.cs").has_value());
 }
@@ -100,7 +100,7 @@ TEST_CASE("Test filter_to_file_result not matching in-ext should be false", "[Fi
 TEST_CASE("Test filter_to_file_result matching out-ext should be false", "[Finder]") {
     auto settings = get_settings(".");
     settings.add_out_extension("cs");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(!finder.filter_to_file_result("FileUtil.cs").has_value());
 }
@@ -108,7 +108,7 @@ TEST_CASE("Test filter_to_file_result matching out-ext should be false", "[Finde
 TEST_CASE("Test filter_to_file_result not matching out-ext should be true", "[Finder]") {
     auto settings = get_settings(".");
     settings.add_out_extension("cpp");
-    const auto finder = cppfind::Finder(settings);
+    auto finder = cppfind::Finder(settings);
 
     REQUIRE(finder.filter_to_file_result("FileUtil.cs").has_value());
 }
