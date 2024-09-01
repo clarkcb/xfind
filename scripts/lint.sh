@@ -430,9 +430,13 @@ lint_swift () {
         return
     fi
 
-    log "Linting swiftfind"
-    log "cd $SWIFTFIND_PATH; swiftlint; cd -"
-    cd "$SWIFTFIND_PATH"; swiftlint; cd -
+    log "Linting swiftfind Sources"
+    log "cd $SWIFTFIND_PATH/Sources; swiftlint; cd -"
+    cd "$SWIFTFIND_PATH/Sources"; swiftlint; cd -
+
+    log "Linting swiftfind Tests"
+    log "cd $SWIFTFIND_PATH/Tests; swiftlint; cd -"
+    cd "$SWIFTFIND_PATH/Tests"; swiftlint; cd -
 }
 
 lint_typescript () {

@@ -70,7 +70,7 @@ function UnitTestC
     $configurations = @('debug', 'release')
     ForEach ($c in $configurations)
     {
-        $cmakeBuildDir = "$cfindPath/cmake-build-$c"
+        $cmakeBuildDir = Join-Path $cfindPath "cmake-build-$c"
 
         if (Test-Path $cmakeBuildDir)
         {
@@ -145,7 +145,7 @@ function UnitTestCpp
     $configurations = @('debug', 'release')
     ForEach ($c in $configurations)
     {
-        $cmakeBuildDir = "$cppfindPath/cmake-build-$c"
+        $cmakeBuildDir = Join-Path $cppfindPath "cmake-build-$c"
 
         if (Test-Path $cmakeBuildDir)
         {

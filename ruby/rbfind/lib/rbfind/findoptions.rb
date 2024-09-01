@@ -4,6 +4,7 @@ require 'json'
 require 'pathname'
 
 require_relative 'common'
+require_relative 'config'
 require_relative 'finderror'
 require_relative 'findoption'
 require_relative 'findsettings'

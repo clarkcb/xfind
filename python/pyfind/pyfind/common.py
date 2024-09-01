@@ -9,7 +9,7 @@
 ###############################################################################
 """
 import sys
-from dateutil.parser import parse
+from dateutil.parser import parse, ParserError
 
 from .findexception import FindException
 
@@ -37,7 +37,9 @@ def parse_datetime_str(datetime_str: str):
     """Try to parse datetime string to datetime instance"""
     try:
         return parse(datetime_str)
-    except:
+    except ParserError:
+        raise FindException(f'Invalid datetime string: {datetime_str}')
+    except OverflowError:
         raise FindException(f'Invalid datetime string: {datetime_str}')
 
 

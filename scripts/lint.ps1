@@ -176,7 +176,7 @@ function LintHaskell
     Write-Host
     Hdr('LintHaskell')
 
-    $hlint = "$HOME/.local/bin/hlint"
+    $hlint = Join-Path $env:HOME '.local' 'bin' 'hlint'
 
     if (-not (Test-Path $hlint))
     {
@@ -194,7 +194,7 @@ function LintJava
     Write-Host
     Hdr('LintJava')
 
-    $toolsPath = "$xfindJavaPath/tools"
+    $toolsPath = Join-Path $xfindJavaPath 'tools'
 
     if (-not (Test-Path $toolsPath))
     {
@@ -225,10 +225,11 @@ function LintJava
 
     Log("Checkstyle jar: $checkStyleJar")
 
-    $checkStyleConfig = "$javafindPath/google_checks.xml"
+    $checkStyleConfig = Join-Path $javafindPath 'google_checks.xml'
 
     Log('Linting javafind')
-    $javaFiles = Get-ChildItem -Path "$javafindPath/src" -Recurse -Include *.java
+    $javaSrcPath = Join-Path $javafindPath 'src'
+    $javaFiles = Get-ChildItem -Path "$javaSrcPath" -Recurse -Include *.java
     ForEach ($f in $javaFiles)
     {
         Log("java -jar $checkStyleJar -c $checkStyleConfig $f")
@@ -241,7 +242,7 @@ function LintJavaScript
     Write-Host
     Hdr('LintJavaScript')
 
-    $jshint = "$jsfindPath/node_modules/bin/jshint"
+    $jshint = Join-Path $jsfindPath 'node_modules' 'bin' 'jshint'
 
     if (-not (Test-Path $jshint))
     {
@@ -250,7 +251,8 @@ function LintJavaScript
     }
 
     Log('Linting jsfind')
-    $jsFiles = Get-ChildItem -Path "$jsfindPath/src" -Recurse -Include *.js
+    $jsSrcPath = Join-Path $jsfindPath 'src'
+    $jsFiles = Get-ChildItem -Path $jsSrcPath -Recurse -Include *.js
     ForEach ($f in $jsFiles)
     {
         Log("jshint $f")
@@ -307,7 +309,7 @@ function LintPhp
     Write-Host
     Hdr('LintPhp')
 
-    $phpStan = "$phpfindPath/vendor/bin/phpstan"
+    $phpStan = Join-Path $phpfindPath 'vendor' 'bin' 'phpstan'
     if (-not (Test-Path $phpStan))
     {
         PrintError('You need to install phpstan')
@@ -418,12 +420,16 @@ function LintSwift
         return
     }
 
-    Log('Linting swiftfind')
-
     $oldPwd = Get-Location
-    Set-Location $swiftfindPath
 
-    Log('swiftlint')
+    Log('Linting swiftfind Sources')
+    $sourcesPath = Join-Path $swiftfindPath 'Sources'
+    Set-Location $sourcesPath
+    swiftlint
+
+    Log('Linting swiftfind Tests')
+    $testsPath = Join-Path $swiftfindPath 'Tests'
+    Set-Location $testsPath
     swiftlint
 
     Set-Location $oldPwd

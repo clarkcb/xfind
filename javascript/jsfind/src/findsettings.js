@@ -9,8 +9,8 @@ const {SortBy, sortByToName} = require("./sortby");
 const StringUtil = require('./stringutil');
 
 class FindSettings {
-    #archivesOnly = false;
-    #debug = false;
+    _archivesOnly = false;
+    _debug = false;
     inArchiveExtensions = [];
     inArchiveFilePatterns = [];
     inDirPatterns = [];
@@ -46,20 +46,20 @@ class FindSettings {
     }
 
     get archivesOnly() {
-        return this.#archivesOnly;
+        return this._archivesOnly;
     }
 
     set archivesOnly(value) {
-        this.#archivesOnly = value;
+        this._archivesOnly = value;
         if (value) this.includeArchives = value;
     }
 
     get debug() {
-        return this.#debug;
+        return this._debug;
     }
 
     set debug(value) {
-        this.#debug = value;
+        this._debug = value;
         if (value) this.verbose = value;
     }
 

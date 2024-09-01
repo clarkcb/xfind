@@ -9,7 +9,6 @@ const fs = require('fs');
 const path = require('path');
 const { promisify } = require('util');
 const fsStatAsync = promisify(fs.stat);
-const fsReaddirAsync = promisify(fs.readdir);
 
 const {FileResult} = require('./fileresult');
 const {FileType} = require("./filetype");

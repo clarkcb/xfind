@@ -205,7 +205,7 @@ class Finder:
                 return self._rec_get_file_results_for_path(file_path, self.settings.min_depth,
                                                            max_depth, 1)
             else:
-                raise FindException(f'Startpath does not match find settings')
+                raise FindException('Startpath does not match find settings')
         elif file_path.is_file():
             # if min_depth > zero, we can skip since the file is at depth zero
             if self.settings.min_depth > 0:
@@ -214,7 +214,7 @@ class Finder:
             if fr:
                 return [fr]
             else:
-                raise FindException(f'Startpath does not match find settings')
+                raise FindException('Startpath does not match find settings')
 
     def find_files(self) -> list[FileResult]:
         """Get the list of all files matching find settings."""

@@ -1,7 +1,6 @@
 package ktfind
 
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

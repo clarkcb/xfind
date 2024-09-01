@@ -958,8 +958,9 @@ function BuildJava
 
     # run maven clean package (skip testing as this is run via unittest.sh)
     Log('Building javafind')
-    Log("mvn -f $javafindPath/pom.xml clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
-    mvn -f $javafindPath/pom.xml clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
+    $javaFindPom = Join-Path $javafindPath 'pom.xml'
+    Log("mvn -f $javafindPom clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
+    mvn -f "$javafindPom" clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
