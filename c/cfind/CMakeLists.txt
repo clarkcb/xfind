@@ -46,6 +46,8 @@ target_sources(${PROJECT_NAME}
         include/config.h src/config.c
         include/pathnode.h src/pathnode.c
         include/fileresults.h src/fileresults.c
+        include/filetype.h
+        include/filetypemap.h src/filetypemap.c
         include/filetypes.h src/filetypes.c
         include/fileutil.h src/fileutil.c
         include/finderr.h src/finderr.c
