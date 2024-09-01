@@ -496,7 +496,7 @@ error_t find(const FindSettings *settings, FileResults *results)
     }
 
     FileTypes *file_types = new_file_types();
-    err = get_file_types(file_types);
+    err = init_file_types(file_types);
     if (err != E_OK) {
         return err;
     }
