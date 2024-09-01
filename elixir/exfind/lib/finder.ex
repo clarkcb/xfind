@@ -12,7 +12,11 @@ defmodule ExFind.Finder do
 
   defstruct [:file_types, :settings]
 
-  def new(args), do: __struct__(args)
+  # def new(args), do: __struct__(args)
+  def new(settings) do
+    file_types = ExFind.FileTypes.new()
+    __struct__([file_types: file_types, settings: settings])
+  end
 
   def matching_dir?(finder, dir) do
     # IO.puts("matching_dir?(#{dir})")

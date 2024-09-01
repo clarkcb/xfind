@@ -53,7 +53,7 @@ defmodule ExFind.App do
         Logging.log("\nExFind version: #{ExFind.Config.version()}")
       end
     else
-      finder = Finder.new([file_types: ExFind.FileTypes.new(), settings: settings])
+      finder = Finder.new(settings)
       case Finder.find(finder) do
         {:error, message} -> handle_error(message, find_options)
         {:ok, results} -> handle_results(results, settings)
