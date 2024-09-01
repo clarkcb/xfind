@@ -36,8 +36,10 @@ const (
 )
 
 type FileTypes struct {
-	db             *sql.DB
-	extFileTypeMap map[string]FileType
+	db                  *sql.DB
+	extTypeCache        map[string]FileType
+	nameTypeCache       map[string]FileType
+	nameTypeCacheLoaded bool
 }
 
 // used for unmarshalling
@@ -61,18 +63,41 @@ func NewFileTypes() *FileTypes {
 		return &fileTypes
 	}
 	fileTypes.db = db
-	fileTypes.extFileTypeMap = make(map[string]FileType)
+	fileTypes.extTypeCache = make(map[string]FileType)
 	return &fileTypes
 }
 
-func (ft *FileTypes) GetFileTypeForQueryAndElem(query string, elem string) FileType {
+func (ft *FileTypes) GetFileTypesForQueryAndParams(query string, params []any) map[string]FileType {
+	results := make(map[string]FileType)
+	rows, err := ft.db.Query(query, params...)
+	if err != nil {
+		return results
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var key string
+		var fileTypeId int
+		if err := rows.Scan(&key, &fileTypeId); err != nil {
+			return results
+		}
+		results[key] = FileType(fileTypeId - 1)
+	}
+	return results
+}
+
+func (ft *FileTypes) loadNameTypeCache() {
+	ft.nameTypeCache = ft.GetFileTypesForQueryAndParams("SELECT name, file_type_id FROM file_name", []any{})
+	ft.nameTypeCacheLoaded = true
+}
+
+func (ft *FileTypes) GetFileTypeForQueryAndParams(query string, params []any) FileType {
 	stmt, err := ft.db.Prepare(query)
 	if err != nil {
 		return FileTypeUnknown
 	}
 	defer stmt.Close()
 	var fileTypeId int
-	err = stmt.QueryRow(elem).Scan(&fileTypeId)
+	err = stmt.QueryRow(params...).Scan(&fileTypeId)
 	if err != nil {
 		return FileTypeUnknown
 	}
@@ -80,20 +105,27 @@ func (ft *FileTypes) GetFileTypeForQueryAndElem(query string, elem string) FileT
 }
 
 func (ft *FileTypes) GetFileTypeForFileName(fileName string) FileType {
-	query := "select file_type_id from file_name where name = ?"
-	return ft.GetFileTypeForQueryAndElem(query, fileName)
+	if !ft.nameTypeCacheLoaded {
+		ft.loadNameTypeCache()
+	}
+	if fileType, found := ft.nameTypeCache[fileName]; found {
+		return fileType
+	}
+	//query := "select file_type_id from file_name where name = ?"
+	//return ft.GetFileTypeForQueryAndParams(query, []any{fileName})
+	return FileTypeUnknown
 }
 
 func (ft *FileTypes) GetFileTypeForExtension(ext string) FileType {
 	if ext == "" {
 		return FileTypeUnknown
 	}
-	if fileType, found := ft.extFileTypeMap[ext]; found {
+	if fileType, found := ft.extTypeCache[ext]; found {
 		return fileType
 	}
 	query := "select file_type_id from file_extension where extension = ?"
-	fileType := ft.GetFileTypeForQueryAndElem(query, ext)
-	ft.extFileTypeMap[ext] = fileType
+	fileType := ft.GetFileTypeForQueryAndParams(query, []any{ext})
+	ft.extTypeCache[ext] = fileType
 	return fileType
 }
 
