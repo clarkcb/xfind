@@ -41,8 +41,10 @@ sub new {
         db => $db,
         file_types => $file_types,
         ext_type_cache => {},
+        name_type_cache => {},
     };
     bless $self, $class;
+    $self->load_name_type_cache;
     return $self;
 }
 
@@ -79,8 +81,34 @@ sub from_name {
     return plfind::FileType->UNKNOWN;
 }
 
-sub get_file_type_for_statement {
-    my ($self, $statement) = @_;
+sub load_name_type_cache {
+    my ($self) = @_;
+    my $query = "SELECT name, file_type_id FROM file_name";
+    $self->{name_type_cache} = $self->get_file_types_from_query_and_elems($query, []);
+}
+
+sub get_file_types_from_query_and_elems {
+    my ($self, $query, $elems) = @_;
+    my $statement = $self->{db}->prepare($query);
+    for (my $i=0; $i < scalar @{$elems}; $i++) {
+        $statement->bind_param($i+1, $elems->[$i], SQL_VARCHAR);
+    }
+    my $results = {};
+    $statement->execute();
+    while(my @row = $statement->fetchrow_array()) {
+        my $key = $row[0];
+        my $file_type_id = int($row[1]) - 1;
+        $results->{$key} = $self->{file_types}->[$file_type_id];
+    }
+    return $results;
+}
+
+sub get_file_type_for_query_and_elems {
+    my ($self, $query, $elems) = @_;
+    my $statement = $self->{db}->prepare($query);
+    for (my $i=0; $i < scalar @{$elems}; $i++) {
+        $statement->bind_param($i+1, $elems->[$i], SQL_VARCHAR);
+    }
     $statement->execute();
     my $row = $statement->fetch;
     if ($row) {
@@ -92,19 +120,26 @@ sub get_file_type_for_statement {
 
 sub get_file_type_from_file_name {
     my ($self, $file_name) = @_;
-    my $statement = $self->{db}->prepare("SELECT file_type_id FROM file_name WHERE name = ?");
-    $statement->bind_param(1, $file_name, SQL_VARCHAR);
-    return $self->get_file_type_for_statement($statement);
+    if (exists $self->{name_type_cache}->{$file_name}) {
+        return $self->{name_type_cache}->{$file_name};
+    }
+    # my $query = "SELECT file_type_id FROM file_name WHERE name = ?";
+    # return $self->get_file_type_for_query_and_elems($query, [$file_name]);
+    return plfind::FileType->UNKNOWN;
 }
 
 sub get_file_type_from_extension {
     my ($self, $file_ext) = @_;
+    if (!defined $file_ext || $file_ext =~ /^\s*$/) {
+        return plfind::FileType->UNKNOWN;
+    }
     if (exists $self->{ext_type_cache}->{$file_ext}) {
         return $self->{ext_type_cache}->{$file_ext};
     }
-    my $statement = $self->{db}->prepare("SELECT file_type_id FROM file_extension WHERE extension = ?");
-    $statement->bind_param(1, $file_ext, SQL_VARCHAR);
-    return $self->get_file_type_for_statement($statement);
+    my $query = "SELECT file_type_id FROM file_extension WHERE extension = ?";
+    my $file_type = $self->get_file_type_for_query_and_elems($query, [$file_ext]);
+    $self->{ext_type_cache}->{$file_ext} = $file_type;
+    return $file_type;
 }
 
 sub get_file_type {
@@ -119,40 +154,40 @@ sub get_file_type {
 
 sub is_archive {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->ARCHIVE ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->ARCHIVE ? 1 : 0;
 }
 
 sub is_audio {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->AUDIO ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->AUDIO ? 1 : 0;
 }
 
 sub is_binary {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->BINARY ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->BINARY ? 1 : 0;
 }
 
 sub is_code {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->CODE ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->CODE ? 1 : 0;
 }
 
 sub is_font {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->FONT ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->FONT ? 1 : 0;
 }
 
 sub is_image {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->IMAGE ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->IMAGE ? 1 : 0;
 }
 
 sub is_text {
     my ($self, $file) = @_;
     my $file_type = $self->get_file_type($file);
-    if ($file_type == plfind::FileType->TEXT
-        || $file_type == plfind::FileType->CODE
-        || $file_type == plfind::FileType->XML) {
+    if ($file_type eq plfind::FileType->TEXT
+        || $file_type eq plfind::FileType->CODE
+        || $file_type eq plfind::FileType->XML) {
         return 1;
     }
     return 0;
@@ -160,17 +195,17 @@ sub is_text {
 
 sub is_video {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->VIDEO ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->VIDEO ? 1 : 0;
 }
 
 sub is_xml {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->XML ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->XML ? 1 : 0;
 }
 
 sub is_unknown {
     my ($self, $file) = @_;
-    return $self->get_file_type($file) == plfind::FileType->UNKNOWN ? 1 : 0;
+    return $self->get_file_type($file) eq plfind::FileType->UNKNOWN ? 1 : 0;
 }
 
 1;
