@@ -8,6 +8,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FileTypes {
     private static final List<FileType> fileTypes = List.of(
@@ -22,11 +23,14 @@ public class FileTypes {
             FileType.VIDEO,
             FileType.XML
     );
-    private static final String SELECT_FILE_TYPE_ID_FOR_FILE_NAME = "SELECT file_type_id FROM file_name WHERE name = ?";
+    private static final String SELECT_FILE_NAME_ENTRIES = "SELECT name, file_type_id FROM file_name";
+    // private static final String SELECT_FILE_TYPE_ID_FOR_FILE_NAME = "SELECT file_type_id FROM file_name WHERE name = ?";
     private static final String SELECT_FILE_TYPE_ID_FOR_EXTENSION = "SELECT file_type_id FROM file_extension WHERE extension = ?";
 
     private Connection _conn = null;
-    private final HashMap<String, FileType> _fileTypeCache;
+    private final Map<String, FileType> _extTypeCache;
+    private final Map<String, FileType> _nameTypeCache;
+    private boolean _nameTypeCacheLoaded = false;
 
     private Connection getConnection() {
         if (_conn == null) {
@@ -35,7 +39,7 @@ public class FileTypes {
                 var cls = Class.forName("org.sqlite.JDBC");
                 SQLiteConfig config = new SQLiteConfig();
                 config.setReadOnly(true);
-                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFINDDB, config.toProperties());
+                _conn = DriverManager.getConnection("jdbc:sqlite:" + FindConfig.XFIND_DB, config.toProperties());
             } catch (SQLException | ClassNotFoundException e) {
                 Logger.logError(e.getMessage());
             }
@@ -44,14 +48,42 @@ public class FileTypes {
     }
 
     public FileTypes() {
-        _fileTypeCache = new HashMap<>();
+        _extTypeCache = new HashMap<>();
+        _nameTypeCache = new HashMap<>();
     }
 
-    private FileType getFileTypeForQueryAndElem(final String query, final String elem) {
+    private Map<String, FileType> getFileTypesForQueryAndParams(final String query, final List<String> params) {
+        var conn = getConnection();
+        var results = new HashMap<String, FileType>();
+        try {
+            var stmt = conn.prepareStatement(query);
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setString(i + 1, params.get(i));
+            }
+            var rs = stmt.executeQuery();
+            while (rs.next()) {
+                var key = rs.getString(1);
+                int fileTypeId = rs.getInt(2) - 1;
+                results.put(key, fileTypes.get(fileTypeId));
+            }
+        } catch (SQLException e) {
+            Logger.logError(e.getMessage());
+        }
+        return results;
+    }
+
+    private void loadNameTypeCache() {
+        _nameTypeCache.putAll(getFileTypesForQueryAndParams(SELECT_FILE_NAME_ENTRIES, List.of()));
+        _nameTypeCacheLoaded = true;
+    }
+
+    private FileType getFileTypeForQueryAndParams(final String query, final List<String> params) {
         var conn = getConnection();
         try {
             var stmt = conn.prepareStatement(query);
-            stmt.setString(1, elem);
+            for (int i = 0; i < params.size(); i++) {
+                stmt.setString(i + 1, params.get(i));
+            }
             var rs = stmt.executeQuery();
             if (rs.next()) {
                 int fileTypeId = rs.getInt("file_type_id") - 1;
@@ -64,15 +96,25 @@ public class FileTypes {
     }
 
     private FileType getFileTypeForFileName(final String fileName) {
-        return getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_FILE_NAME, fileName);
+        if (!_nameTypeCacheLoaded) {
+            loadNameTypeCache();
+        }
+        if (_nameTypeCache.containsKey(fileName)) {
+            return _nameTypeCache.get(fileName);
+        }
+//        return getFileTypeForQueryAndParams(SELECT_FILE_TYPE_ID_FOR_FILE_NAME, List.of(fileName));
+        return FileType.UNKNOWN;
     }
 
     private FileType getFileTypeForExtension(final String fileExt) {
-        if (_fileTypeCache.containsKey(fileExt)) {
-            return _fileTypeCache.get(fileExt);
+        if (fileExt == null || fileExt.isEmpty()) {
+            return FileType.UNKNOWN;
         }
-        var fileType = getFileTypeForQueryAndElem(SELECT_FILE_TYPE_ID_FOR_EXTENSION, fileExt);
-        _fileTypeCache.put(fileExt, fileType);
+        if (_extTypeCache.containsKey(fileExt)) {
+            return _extTypeCache.get(fileExt);
+        }
+        var fileType = getFileTypeForQueryAndParams(SELECT_FILE_TYPE_ID_FOR_EXTENSION, List.of(fileExt));
+        _extTypeCache.put(fileExt, fileType);
         return fileType;
     }
 
