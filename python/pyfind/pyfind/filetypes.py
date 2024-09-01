@@ -55,13 +55,30 @@ class FileTypes:
     ZIPFILE_EXTENSIONS = frozenset(['zip', 'jar', 'war', 'ear', 'obr', 'apk', 'xpi', 'xap', 'xar', 'epub'])
     TARFILE_EXTENSIONS = frozenset(['tar', 'tgz', 'bz2', 'gz', 'xz', 'Z', 'lz', 'lzma'])
 
-    __slots__ = ['__db_connection', '__db_cursor', '__file_types', '__ext_file_type_cache']
+    __slots__ = ['__db_connection', '__db_cursor', '__file_types', '__ext_file_type_cache', '__name_file_type_cache']
 
     def __init__(self):
         self.__db_connection = None
         self.__db_cursor = None
         self.__file_types = list(FileType)
         self.__ext_file_type_cache = {}
+        self.__name_file_type_cache = {}
+        self.__load_name_cache()
+
+    def __load_name_cache(self):
+        """Load name cache"""
+        query = 'SELECT name, file_type_id FROM file_name'
+        res = self.__query_all(query)
+        for r in res:
+            self.__name_file_type_cache[r[0]] = self.__file_types[r[1] - 1]
+
+    def __query_all(self, query: str, params=None):
+        """Return multiple results from query"""
+        if not self.__db_cursor:
+            self.__db_cursor = self.__get_cursor()
+        if not params:
+            params = []
+        return self.__db_cursor.execute(query, params).fetchall()
 
     def __query_one(self, query: str, params=None):
         """Return one result from query"""
@@ -73,11 +90,16 @@ class FileTypes:
 
     def get_file_type_for_name(self, name: str) -> FileType:
         """Return FileType for given file name"""
-        query = 'SELECT file_type_id FROM file_name WHERE name = ?'
-        params = (name,)
-        res = self.__query_one(query, params)
-        if res:
-            return self.__file_types[res[0] - 1]
+        if name in self.__name_file_type_cache:
+            return self.__name_file_type_cache[name]
+        # Since the cache is loaded with all db file names, this is not needed
+        # query = 'SELECT file_type_id FROM file_name WHERE name = ?'
+        # params = (name,)
+        # res = self.__query_one(query, params)
+        # if res:
+        #     file_type = self.__file_types[res[0] - 1]
+        #     self.__name_file_type_cache[name] = file_type
+        #     return file_type
         return FileType.UNKNOWN
 
     def get_file_type_for_extension(self, ext: str) -> FileType:
@@ -88,7 +110,9 @@ class FileTypes:
         params = (ext,)
         res = self.__query_one(query, params)
         if res:
-            return self.__file_types[res[0] - 1]
+            file_type = self.__file_types[res[0] - 1]
+            self.__ext_file_type_cache[ext] = file_type
+            return file_type
         return FileType.UNKNOWN
 
     def get_file_type_for_path(self, file_path: Path) -> FileType:
