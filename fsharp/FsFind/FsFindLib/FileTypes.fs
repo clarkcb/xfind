@@ -33,6 +33,9 @@ type FileTypes() =
     static let unknown = "unknown"
     
     let _conn = new SqliteConnection("Data Source=" + FindConfig.XfindDb + ";Mode=ReadOnly")
+    let mutable _extTypeCache: Map<string, FileType> = Map.empty
+    let mutable _nameTypeCache: Map<string, FileType> = Map.empty
+    let mutable _nameTypeCacheLoaded = false
 
     static member FromName (name : string) : FileType =
         let lname = name.ToLowerInvariant()
@@ -63,12 +66,40 @@ type FileTypes() =
     member this.GetConnection () : SqliteConnection =
         if _conn.State = ConnectionState.Closed then _conn.Open()
         _conn
-    
-    member this.GetFileTypeForQueryAndElem (query : string) (elem : string) : FileType =
+
+    member this.GetFileTypesForQueryAndParams (query : string) (ps : string list) : Map<string, FileType> =
         let conn = this.GetConnection()
         use command = conn.CreateCommand()
         command.CommandText <- query
-        let _ = command.Parameters.AddWithValue("$x0", elem)
+        
+        for i = 0 to (List.length ps) - 1 do
+            let _ = command.Parameters.AddWithValue($"$x%i{i}", ps.[i])
+            ()
+
+        let results = Dictionary<string, FileType>()
+        let reader : SqliteDataReader = command.ExecuteReader(CommandBehavior.Default)
+        while reader.Read() do
+            let key = reader.GetString(0)
+            let fileType = enum<FileType>(reader.GetInt32(1) - 1)
+            results[key] <- fileType
+            ()
+
+        results |> Seq.map (|KeyValue|) |> Map.ofSeq
+
+    member this.LoadNameTypeCache () : unit =
+        let query = "SELECT name, file_type_id FROM file_name"
+        _nameTypeCache <- this.GetFileTypesForQueryAndParams query []
+        ()
+    
+    member this.GetFileTypeForQueryAndParams (query : string) (ps : string list) : FileType =
+        let conn = this.GetConnection()
+        use command = conn.CreateCommand()
+        command.CommandText <- query
+        
+        for i = 0 to (List.length ps) - 1 do
+            let _ = command.Parameters.AddWithValue($"$x%i{i}", ps.[i])
+            ()
+
         let reader : SqliteDataReader = command.ExecuteReader()
         if reader.Read() then
             enum<FileType>(reader.GetInt32(0) - 1)
@@ -79,15 +110,26 @@ type FileTypes() =
         if String.IsNullOrEmpty(fileName) then
             FileType.Unknown
         else
-            let query = "SELECT file_type_id FROM file_name WHERE name = $x0"
-            this.GetFileTypeForQueryAndElem query fileName
+            if not _nameTypeCacheLoaded then
+                this.LoadNameTypeCache()
+            if _nameTypeCache.ContainsKey(fileName) then
+                _nameTypeCache.[fileName]
+            else
+                // let query = "SELECT file_type_id FROM file_name WHERE name = $x0"
+                // this.GetFileTypeForQueryAndParams query [fileName]
+                FileType.Unknown
 
     member this.GetFileTypeForExtension (fileExt : string) : FileType =
         if String.IsNullOrEmpty(fileExt) then
             FileType.Unknown
         else
-            let query = "SELECT file_type_id FROM file_extension WHERE extension = $x0"
-            this.GetFileTypeForQueryAndElem query fileExt
+            if _extTypeCache.ContainsKey(fileExt) then
+                _extTypeCache.[fileExt]
+            else
+                let query = "SELECT file_type_id FROM file_extension WHERE extension = $x0"
+                let fileType = this.GetFileTypeForQueryAndParams query [fileExt]
+                _extTypeCache <- _extTypeCache.Add(fileExt, fileType)
+                fileType
 
     member this.GetFileType (fi : FileInfo) : FileType =
         match this.GetFileTypeForFileName(fi.Name) with
