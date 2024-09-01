@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module RbFind
-  XFINDPATH = ENV['XFINDPATH'].nil? ? File.join(ENV['HOME'], 'src', 'xfind') : ENV['XFINDPATH']
-  SHAREDPATH = File.join(XFINDPATH, 'shared')
-  XFINDDB = File.join(SHAREDPATH, 'xfind.db')
+  XFIND_PATH = ENV['XFIND_PATH'].nil? ? File.join(ENV['HOME'], 'src', 'xfind') : ENV['XFIND_PATH']
+  SHARED_PATH = File.join(XFIND_PATH, 'shared')
+  XFIND_DB = File.join(SHARED_PATH, 'xfind.db')
 end
