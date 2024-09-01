@@ -14,7 +14,7 @@ namespace cppfind {
         explicit Finder(const std::unique_ptr<FindSettings>& settings_ptr);
         Finder(Finder& other) = delete;
         Finder(Finder&& other) = delete;
-        [[nodiscard]] std::optional<FileResult> filter_to_file_result(const std::filesystem::path& file_path) const;
+        [[nodiscard]] std::optional<FileResult> filter_to_file_result(const std::filesystem::path& file_path);
         [[nodiscard]] bool is_matching_archive_file_result(const FileResult& file_result) const;
         [[nodiscard]] bool is_matching_dir_path(const std::filesystem::path& dir_path) const;
         [[nodiscard]] bool is_matching_archive_extension(const std::string& file_ext) const;
@@ -27,7 +27,7 @@ namespace cppfind {
         [[nodiscard]] bool is_matching_file_size(uint64_t file_size) const;
         [[nodiscard]] bool is_matching_last_mod(long last_mod) const;
         [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
-        [[nodiscard]] std::vector<FileResult> find() const;
+        [[nodiscard]] std::vector<FileResult> find();
 
     private:
         FileTypes m_file_types;
