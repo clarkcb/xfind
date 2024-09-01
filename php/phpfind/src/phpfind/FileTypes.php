@@ -28,6 +28,7 @@ class FileTypes
      * @var array<string, FileType> $ext_type_cache
      */
     private array $ext_type_cache = [];
+    private array $name_type_cache = [];
 
     /**
      * @throws FindException
@@ -47,6 +48,7 @@ class FileTypes
             FileType::Video,
             FileType::Xml
         ];
+        $this->load_name_file_type_cache();
     }
 
     /**
@@ -67,6 +69,19 @@ class FileTypes
         return $type->value;
     }
 
+    private function load_name_file_type_cache(): void {
+        $query = 'SELECT name, file_type_id FROM file_name';
+        if ($statement = $this->db->prepare($query)) {
+            if ($db_results = $statement->execute()) {
+                while ($row = $db_results->fetchArray(SQLITE3_ASSOC)) {
+                    $name = $row['name'];
+                    $file_type_id = $row['file_type_id'] - 1;
+                    $this->name_type_cache[$name] = $this->file_types[$file_type_id];
+                }
+            }
+        }
+    }
+
     private function get_file_type_for_statement(SQLite3Stmt $statement): FileType
     {
         if ($db_result = $statement->execute()) {
@@ -85,11 +100,14 @@ class FileTypes
      */
     public function get_file_type_for_file_name(string $file_name): FileType
     {
-        $query = 'SELECT file_type_id FROM file_name WHERE name = :name;';
-        if ($statement = $this->db->prepare($query)) {
-            $statement->bindValue(':name', $file_name);
-            return $this->get_file_type_for_statement($statement);
+        if (array_key_exists($file_name, $this->name_type_cache)) {
+            return $this->name_type_cache[$file_name];
         }
+//        $query = 'SELECT file_type_id FROM file_name WHERE name = :name;';
+//        if ($statement = $this->db->prepare($query)) {
+//            $statement->bindValue(':name', $file_name);
+//            return $this->get_file_type_for_statement($statement);
+//        }
         return FileType::Unknown;
     }
 
@@ -99,6 +117,9 @@ class FileTypes
      */
     public function get_file_type_for_extension(string $file_ext): FileType
     {
+        if ($file_ext == null || $file_ext == '') {
+            return FileType::Unknown;
+        }
         if (array_key_exists($file_ext, $this->ext_type_cache)) {
             return $this->ext_type_cache[$file_ext];
         }
