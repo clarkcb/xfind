@@ -147,7 +147,7 @@ namespace cppfind {
             && is_matching_last_mod(file_result.last_mod());
     }
 
-    std::optional<FileResult> Finder::filter_to_file_result(const std::filesystem::path& file_path) const {
+    std::optional<FileResult> Finder::filter_to_file_result(const std::filesystem::path& file_path) {
         if (!m_settings.include_hidden() && FileUtil::is_hidden_path(file_path.filename())) {
             return std::nullopt;
         }
@@ -187,7 +187,7 @@ namespace cppfind {
     }
 
     std::vector<FileResult> Finder::rec_get_file_results(const std::filesystem::path& dir_path, // NOLINT(*-no-recursion)
-        const int min_depth, const int max_depth, const int current_depth) const {
+        const int min_depth, const int max_depth, const int current_depth) {
         std::vector<FileResult> file_results{};
         bool recurse = true;
         if (current_depth == max_depth) {
@@ -231,7 +231,7 @@ namespace cppfind {
         return file_results;
     }
 
-    std::vector<FileResult> Finder::get_file_results(const std::filesystem::path& file_path) const {
+    std::vector<FileResult> Finder::get_file_results(const std::filesystem::path& file_path) {
         std::vector<FileResult> file_results{};
         if (is_directory(file_path)) {
             // if max_depth is zero, we can skip since a directory cannot be a result
@@ -258,7 +258,7 @@ namespace cppfind {
         return file_results;
     }
 
-    std::vector<FileResult> Finder::find() const {
+    std::vector<FileResult> Finder::find() {
         std::vector<FileResult> file_results{};
 
         for (const auto& p : m_settings.paths()) {
