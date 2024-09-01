@@ -148,7 +148,7 @@ void test_filter_path(void) {
     settings->paths = new_path_node(p);
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* test_file = "./test_finder.c";
@@ -179,7 +179,7 @@ void test_is_matching_path_in_extensions(void) {
     settings->in_extensions = new_string_node("c");
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
@@ -210,7 +210,7 @@ void test_is_matching_path_out_extensions(void) {
     settings->out_extensions = new_string_node("c");
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
@@ -241,7 +241,7 @@ void test_is_matching_path_in_file_patterns(void) {
     settings->in_file_patterns = new_regex_node_from_string("test");
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
@@ -272,7 +272,7 @@ void test_is_matching_path_out_file_patterns(void) {
     settings->out_file_patterns = new_regex_node_from_string("test");
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "test_finder.c";
@@ -307,7 +307,7 @@ void test_is_matching_path_in_file_types(void) {
     add_int_to_int_node(ftint, settings->in_file_types);
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* matching_file = "finder.c";
@@ -343,7 +343,7 @@ void test_is_matching_path_out_file_types(void) {
     add_int_to_int_node(ftint, settings->out_file_types);
 
     FileTypes *file_types = new_file_types();
-    const error_t err = get_file_types(file_types);
+    const error_t err = init_file_types(file_types);
     assert(err == E_OK);
 
     const char* non_matching_file = "finder.c";
