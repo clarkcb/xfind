@@ -27,7 +27,9 @@ public class FileTypes {
 
     private var config: FindConfig
     private var db: Connection?
-    private var extFileTypeCache = [String: FileType]()
+    private var extTypeCache = [String: FileType]()
+    private var nameTypeCache = [String: FileType]()
+    private var nameTypeCacheLoaded = false
 
     public init() {
         config = FindConfig()
@@ -90,9 +92,30 @@ public class FileTypes {
         }
     }
 
-    private func getFileTypeForQueryAndElem(_ query: String, _ elem: String) -> FileType {
+    private func getFileTypesForQueryAndParams(_ query: String, _ params: [String]) -> [String: FileType] {
+        var fileTypeMap = [String: FileType]()
         do {
-            let stmt = try self.db!.prepare(query, elem)
+            let stmt = try self.db!.prepare(query, params)
+            for row in stmt {
+                let key = row[0] as! String
+                let fileTypeId = Int(row[1] as! Int64) - 1
+                fileTypeMap[key] = FileType(rawValue: fileTypeId)
+            }
+        } catch {
+            print("Failed to execute query: \(error.localizedDescription)")
+        }
+        return fileTypeMap
+    }
+    
+    private func loadNameTypeCache() -> Void {
+        let query = "SELECT name, file_type_id FROM file_name"
+        nameTypeCache = getFileTypesForQueryAndParams(query, [])
+        nameTypeCacheLoaded = true
+    }
+
+    private func getFileTypeForQueryAndParams(_ query: String, _ params: [String]) -> FileType {
+        do {
+            let stmt = try self.db!.prepare(query, params)
             for row in stmt {
                 let fileTypeId = Int(row[0] as! Int64) - 1
                 return FileType(rawValue: fileTypeId)!
@@ -104,17 +127,27 @@ public class FileTypes {
     }
 
     private func getFileTypeFromFileName(_ fileName: String) -> FileType {
-        let query = "SELECT file_type_id FROM file_name WHERE name = ?"
-        return getFileTypeForQueryAndElem(query, fileName)
+        if (!nameTypeCacheLoaded) {
+            loadNameTypeCache()
+        }
+        if nameTypeCache.index(forKey: fileName) != nil {
+            return nameTypeCache[fileName]!
+        }
+//        let query = "SELECT file_type_id FROM file_name WHERE name = ?"
+//        return getFileTypeForQueryAndParams(query, [fileName])
+        return FileType.unknown
     }
 
     private func getFileTypeFromExtension(_ fileExt: String) -> FileType {
-        if extFileTypeCache.index(forKey: fileExt) != nil {
-            return extFileTypeCache[fileExt]!
+        if (fileExt.isEmpty) {
+            return FileType.unknown
+        }
+        if extTypeCache.index(forKey: fileExt) != nil {
+            return extTypeCache[fileExt]!
         }
         let query = "SELECT file_type_id FROM file_extension WHERE extension = ?"
-        let fileType = getFileTypeForQueryAndElem(query, fileExt)
-        extFileTypeCache[fileExt] = fileType
+        let fileType = getFileTypeForQueryAndParams(query, [fileExt])
+        extTypeCache[fileExt] = fileType
         return fileType
     }
 
