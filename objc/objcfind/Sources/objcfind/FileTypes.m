@@ -45,8 +45,8 @@
         if (rc == SQLITE_OK && db != nil) {
             self.db = db;
         }
-        self.extTypeCache = [[NSMutableDictionary alloc] initWithCapacity:16];
-        self.nameTypeCache = [[NSMutableDictionary alloc] initWithCapacity:32];
+        self.extTypeCache = [[NSMutableDictionary alloc] initWithCapacity:32];
+        self.nameTypeCache = [[NSMutableDictionary alloc] initWithCapacity:64];
         self.nameTypeCacheLoaded = false;
     }
     return self;
