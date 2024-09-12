@@ -191,7 +191,7 @@
     (is-matching-file-size? (:file-size fr) settings)
     (is-matching-last-mod? (:last-mod fr) settings)))
 
-(defn get-stat [^File f]
+(defn get-stat ^BasicFileAttributes [^File f]
   (Files/readAttributes (.toPath f) BasicFileAttributes (into-array java.nio.file.LinkOption [])))
 
 (defn filter-to-file-result [^File f ^FindSettings settings]

@@ -155,7 +155,7 @@
       (= XML lname) :xml
       :else :unknown)))
 
-(defn to-name [ft]
+(defn to-name ^String [ft]
   (cond
     (= :archive ft) ARCHIVE
     (= :audio ft) AUDIO

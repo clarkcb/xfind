@@ -202,17 +202,17 @@
       (assoc with-debug :verbose true)
       with-debug)))
 
-(defn string-set-to-string [ss]
+(defn string-set-to-string ^String [ss]
   (if (empty? ss)
     "[]"
     (str "[\"" (str/join "\", \"" ss) "\"]")))
 
-(defn pattern-set-to-string [ps]
+(defn pattern-set-to-string ^String [ps]
   (if (empty? ps)
     "[]"
     (str "[\"" (str/join "\", \"" (map #(.pattern %) ps)) "\"]")))
 
-(defn filetype-set-to-string [fts]
+(defn filetype-set-to-string ^String [fts]
   (if (empty? fts)
     "[]"
     (str "[" (str/join ", " (map #(to-name %) fts)) "]")))

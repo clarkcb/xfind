@@ -108,7 +108,7 @@
       (contains? short-long-map arg) (keyword (get short-long-map arg))
       :else nil)))
 
-(defn settings-from-map [^FindSettings settings ks m errs]
+(defn settings-from-map ^FindSettings [^FindSettings settings ks m errs]
   (if (empty? ks)
     [settings errs]
     (let [k (keyword (nth ks 0))
@@ -125,14 +125,14 @@
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
 
 (defn settings-from-json
-  ([^String json]
+  (^FindSettings [^String json]
     (settings-from-json DEFAULT-SETTINGS json))
-  ([^FindSettings settings ^String json]
+  (^FindSettings [^FindSettings settings ^String json]
     (let [obj (json/read-str json :key-fn keyword)
           ks (keys obj)]
       (settings-from-map settings ks obj []))))
 
-(defn settings-from-file [^FindSettings settings ^File f]
+(defn settings-from-file ^FindSettings [^FindSettings settings ^File f]
   (let [contents (slurp f)]
     (settings-from-json settings contents)))
 
@@ -167,7 +167,7 @@
   (let [lens (map #(+ (count (:long-arg %)) (if (:short-arg %) 3 0)) options)]
     (apply max lens)))
 
-(defn option-to-string [^FindOption opt longest]
+(defn option-to-string ^String [^FindOption opt longest]
   (let [s (:short-arg opt)
         l (:long-arg opt)
         d (:desc opt)
@@ -175,7 +175,7 @@
         opt-string (str short-string "--" l)]
     (format (str "%-" longest "s %s") opt-string d)))
 
-(defn usage-string []
+(defn usage-string ^String []
   (let [longest (longest-length OPTIONS)]
     (str
       "Usage:\n"

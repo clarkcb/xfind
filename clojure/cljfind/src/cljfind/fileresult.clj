@@ -28,7 +28,7 @@
   ([containers, ^java.io.File file, file-type file-size last-mod]
    (->FileResult containers file file-type file-size last-mod)))
 
-(defn file-result-path [^FileResult fr]
+(defn file-result-path ^String [^FileResult fr]
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
        (.getPath (:file fr))))
 
