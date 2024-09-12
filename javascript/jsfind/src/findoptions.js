@@ -130,11 +130,11 @@ class FindOptions {
                     }
                 });
             } else throw new FindError(`Invalid findoptions file: ${config.FINDOPTIONSJSONPATH}`);
-            this.options.sort(this.optcmp);
+            this.options.sort(this.optCmp);
         })();
     }
 
-    optcmp(o1, o2) {
+    optCmp(o1, o2) {
         const a = o1.sortArg;
         const b = o2.sortArg;
         return a.localeCompare(b);
@@ -154,7 +154,7 @@ class FindOptions {
         // TODO: should err be thrown as in settingsFromFile or returned a in settingsFromArgs?
         let err = null;
         let obj = JSON.parse(json);
-        for (let k in obj) {
+        for (const k in obj) {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
                 let longKey = this.argNameMap[k];

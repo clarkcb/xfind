@@ -15,7 +15,7 @@ const {FileType} = require("./filetype");
 const {FileTypes} = require('./filetypes');
 const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
-const {SortBy} = require("./sortby");
+const {SortBy} = require('./sortby');
 
 class Finder {
     settings;
@@ -143,17 +143,17 @@ class Finder {
             (this.settings.minLastMod === 0 || lastMod >= this.settings.minLastMod));
     }
 
+    isMatchingArchiveFileResult(fr) {
+        return this.hasMatchingArchiveExtension(fr) &&
+          this.isMatchingArchiveFileName(fr.fileName);
+    }
+
     isMatchingFileResult(fr) {
         return this.hasMatchingExtension(fr) &&
             this.isMatchingFileName(fr.fileName) &&
             this.isMatchingFileType(fr.fileType) &&
             this.isMatchingFileSize(fr.fileSize) &&
             this.isMatchingLastMod(fr.lastMod);
-    }
-
-    isMatchingArchiveFileResult(fr) {
-        return this.hasMatchingArchiveExtension(fr) &&
-            this.isMatchingArchiveFileName(fr.fileName);
     }
 
     filterToFileResult(fp, stat) {
@@ -195,7 +195,7 @@ class Finder {
             return [];
         }
         let findDirs = [];
-        let filePaths = (await fsReaddirAsync(currentDir)).map(f => path.join(currentDir, f));
+        let filePaths = (fs.readdirSync(currentDir)).map(f => path.join(currentDir, f));
         for (let filePath of filePaths) {
             const stats = fs.statSync(filePath);
             if (stats.isDirectory() && recurse && this.isMatchingDir(filePath)) {

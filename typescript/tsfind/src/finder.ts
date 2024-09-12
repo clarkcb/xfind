@@ -18,7 +18,7 @@ import {FileTypes} from './filetypes';
 import {FileUtil} from './fileutil';
 import {FindError} from './finderror';
 import {FindSettings} from './findsettings';
-import {SortBy} from "./sortby";
+import {SortBy} from './sortby';
 
 export class Finder {
     _settings: FindSettings;
@@ -149,17 +149,17 @@ export class Finder {
             (this._settings.minLastMod === 0 || lastMod >= this._settings.minLastMod));
     }
 
+    public isMatchingArchiveFileResult(fr: FileResult): boolean {
+        return this.hasMatchingArchiveExtension(fr)
+            && this.isMatchingArchiveFileName(fr.fileName);
+    }
+
     public isMatchingFileResult(fr: FileResult): boolean {
         return this.hasMatchingExtension(fr)
             && this.isMatchingFileName(fr.fileName)
             && this.isMatchingFileType(fr.fileType)
             && this.isMatchingFileSize(fr.fileSize)
             && this.isMatchingLastMod(fr.lastMod);
-    }
-
-    public isMatchingArchiveFileResult(fr: FileResult): boolean {
-        return this.hasMatchingArchiveExtension(fr)
-            && this.isMatchingArchiveFileName(fr.fileName);
     }
 
     public filterToFileResult(fp: string, stat: fs.Stats | null = null): FileResult | null {
@@ -334,34 +334,5 @@ export class Finder {
 
         this.sortFileResults(fileResults);
         return fileResults;
-    }
-
-    public getMatchingDirs(fileResults: FileResult[]): string[] {
-        const dirs: string[] = fileResults.map(f => f.path);
-        return common.setFromArray(dirs);
-    }
-
-    public printMatchingDirs(fileResults: FileResult[]): void {
-        const dirs: string[] = this.getMatchingDirs(fileResults);
-        if (dirs.length > 0) {
-            common.log("\nMatching directories " + `(${dirs.length}):`);
-            dirs.forEach(d => common.log(d));
-        } else {
-            common.log("\nMatching directories: 0");
-        }
-    }
-
-    public getMatchingFiles(fileResults: FileResult[]): string[] {
-        return fileResults.map(f => f.relativePath());
-    }
-
-    public printMatchingFiles(fileResults: FileResult[]): void {
-        const files: string[] = this.getMatchingFiles(fileResults);
-        if (files.length > 0) {
-            common.log("\nMatching files " + `(${files.length}):`);
-            files.forEach(f => common.log(f));
-        } else {
-            common.log("\nMatching files: 0");
-        }
     }
 }

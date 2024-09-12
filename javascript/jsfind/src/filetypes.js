@@ -32,51 +32,51 @@ class FileTypes {
         this.fileTypeNameMap.text = [].concat(this.fileTypeNameMap.text, this.fileTypeNameMap.code, this.fileTypeNameMap.xml);
     }
 
-    getFileType(filename) {
+    getFileType(fileName) {
         // most specific first
-        if (this.isCodeFile(filename))
+        if (this.isCodeFile(fileName))
             return FileType.CODE;
-        if (this.isArchiveFile(filename))
+        if (this.isArchiveFile(fileName))
             return FileType.ARCHIVE;
-        if (this.isAudioFile(filename))
+        if (this.isAudioFile(fileName))
             return FileType.AUDIO;
-        if (this.isFontFile(filename))
+        if (this.isFontFile(fileName))
             return FileType.FONT;
-        if (this.isImageFile(filename))
+        if (this.isImageFile(fileName))
             return FileType.IMAGE;
-        if (this.isVideoFile(filename))
+        if (this.isVideoFile(fileName))
             return FileType.VIDEO;
         // most general last
-        if (this.isXmlFile(filename))
+        if (this.isXmlFile(fileName))
             return FileType.XML;
-        if (this.isTextFile(filename))
+        if (this.isTextFile(fileName))
             return FileType.TEXT;
-        if (this.isBinaryFile(filename))
+        if (this.isBinaryFile(fileName))
             return FileType.BINARY;
         return FileType.UNKNOWN;
     }
 
-    getFileTypeAsync(filename, cb) {
+    getFileTypeAsync(fileName, cb) {
         try {
             // most specific first
-            if (this.isCodeFile(filename))
+            if (this.isCodeFile(fileName))
                 return cb(null, FileType.CODE);
-            if (this.isArchiveFile(filename))
+            if (this.isArchiveFile(fileName))
                 return cb(null, FileType.ARCHIVE);
-            if (this.isAudioFile(filename))
+            if (this.isAudioFile(fileName))
                 return cb(null, FileType.AUDIO);
-            if (this.isFontFile(filename))
+            if (this.isFontFile(fileName))
                 return cb(null, FileType.FONT);
-            if (this.isImageFile(filename))
+            if (this.isImageFile(fileName))
                 return cb(null, FileType.IMAGE);
-            if (this.isVideoFile(filename))
+            if (this.isVideoFile(fileName))
                 return cb(null, FileType.VIDEO);
             // most general last
-            if (this.isXmlFile(filename))
+            if (this.isXmlFile(fileName))
                 return cb(null, FileType.XML);
-            if (this.isTextFile(filename))
+            if (this.isTextFile(fileName))
                 return cb(null, FileType.TEXT);
-            if (this.isBinaryFile(filename))
+            if (this.isBinaryFile(fileName))
                 return cb(null, FileType.BINARY);
         } catch (err) {
             return cb(err);
@@ -84,53 +84,53 @@ class FileTypes {
         return cb(null, FileType.UNKNOWN);
     }
 
-    isArchiveFile(filename) {
-        return this.fileTypeNameMap.archive.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.archive.indexOf(FileUtil.getExtension(filename)) > -1;
+    isArchiveFile(fileName) {
+        return this.fileTypeNameMap.archive.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.archive.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isAudioFile(filename) {
-        return this.fileTypeNameMap.audio.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.audio.indexOf(FileUtil.getExtension(filename)) > -1;
+    isAudioFile(fileName) {
+        return this.fileTypeNameMap.audio.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.audio.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isBinaryFile(filename) {
-        return this.fileTypeNameMap.binary.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.binary.indexOf(FileUtil.getExtension(filename)) > -1;
+    isBinaryFile(fileName) {
+        return this.fileTypeNameMap.binary.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.binary.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isCodeFile(filename) {
-        return this.fileTypeNameMap.code.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.code.indexOf(FileUtil.getExtension(filename)) > -1;
+    isCodeFile(fileName) {
+        return this.fileTypeNameMap.code.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.code.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isFontFile(filename) {
-        return this.fileTypeNameMap.font.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.font.indexOf(FileUtil.getExtension(filename)) > -1;
+    isFontFile(fileName) {
+        return this.fileTypeNameMap.font.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.font.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isImageFile(filename) {
-        return this.fileTypeNameMap.image.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.image.indexOf(FileUtil.getExtension(filename)) > -1;
+    isImageFile(fileName) {
+        return this.fileTypeNameMap.image.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.image.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isTextFile(filename) {
-        return this.fileTypeNameMap.text.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.text.indexOf(FileUtil.getExtension(filename)) > -1;
+    isTextFile(fileName) {
+        return this.fileTypeNameMap.text.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.text.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isVideoFile(filename) {
-        return this.fileTypeNameMap.video.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.video.indexOf(FileUtil.getExtension(filename)) > -1;
+    isVideoFile(fileName) {
+        return this.fileTypeNameMap.video.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.video.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isXmlFile(filename) {
-        return this.fileTypeNameMap.xml.indexOf(filename) > -1 ||
-            this.fileTypeExtMap.xml.indexOf(FileUtil.getExtension(filename)) > -1;
+    isXmlFile(fileName) {
+        return this.fileTypeNameMap.xml.indexOf(fileName) > -1 ||
+            this.fileTypeExtMap.xml.indexOf(FileUtil.getExtension(fileName)) > -1;
     }
 
-    isUnknownFile(filename) {
-        return this.getFileType(filename) === FileType.UNKNOWN;
+    isUnknownFile(fileName) {
+        return this.getFileType(fileName) === FileType.UNKNOWN;
     }
 
     static fromName(name) {

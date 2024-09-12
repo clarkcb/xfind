@@ -10,11 +10,41 @@ import * as common from './common';
 import {FindOptions} from './findoptions';
 import {FindSettings} from './findsettings';
 import {Finder} from './finder';
+import {FileResult} from "./fileresult";
 
 function handleError(err: Error | any, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
     common.logError('\n' + errMsg + '\n');
     findOptions.usageWithCode(1);
+}
+
+function getMatchingDirs(fileResults: FileResult[]): string[] {
+    const dirs: string[] = fileResults.map(f => f.path);
+    return common.setFromArray(dirs);
+}
+
+function printMatchingDirs(fileResults: FileResult[]): void {
+    const dirs: string[] = getMatchingDirs(fileResults);
+    if (dirs.length > 0) {
+        common.log("\nMatching directories " + `(${dirs.length}):`);
+        dirs.forEach(d => common.log(d));
+    } else {
+        common.log("\nMatching directories: 0");
+    }
+}
+
+function getMatchingFiles(fileResults: FileResult[]): string[] {
+    return fileResults.map(f => f.relativePath());
+}
+
+function printMatchingFiles(fileResults: FileResult[]): void {
+    const files: string[] = getMatchingFiles(fileResults);
+    if (files.length > 0) {
+        common.log("\nMatching files " + `(${files.length}):`);
+        files.forEach(f => common.log(f));
+    } else {
+        common.log("\nMatching files: 0");
+    }
 }
 
 function findMain() {
@@ -44,10 +74,10 @@ function findMain() {
             const fileResults = await finder.find();
 
             if (settings.printDirs) {
-                finder.printMatchingDirs(fileResults);
+                printMatchingDirs(fileResults);
             }
             if (settings.printFiles) {
-                finder.printMatchingFiles(fileResults);
+                printMatchingFiles(fileResults);
             }
 
         } catch (err2) {

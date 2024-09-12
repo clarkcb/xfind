@@ -126,7 +126,7 @@ export class FindOptions {
         this.setOptionsFromJsonFile();
     }
 
-    private static optcmp(o1: FindOption, o2: FindOption) {
+    private static optCmp(o1: FindOption, o2: FindOption) {
         const a: string = o1.sortArg;
         const b: string = o2.sortArg;
         return a.localeCompare(b);
@@ -156,7 +156,7 @@ export class FindOptions {
                 }
             });
         } else throw new Error("Invalid findoptions file: " + config.FINDOPTIONSJSONPATH);
-        this.options.sort(FindOptions.optcmp);
+        this.options.sort(FindOptions.optCmp);
     }
 
     private settingsFromFile(filePath: string, settings: FindSettings): Error | undefined {
@@ -182,7 +182,7 @@ export class FindOptions {
                     }
                 } else if (this.boolFlagActionMap[k]) {
                     this.boolFlagActionMap[k](obj[k], settings);
-                } else if (k == 'path') {
+                } else if (k === 'path') {
                     settings.paths.push(obj[k]);
                 } else {
                     err = new Error("Invalid option: "+k);
@@ -206,15 +206,15 @@ export class FindOptions {
                 while (arg && arg.charAt(0) === '-') {
                     arg = arg.substring(1);
                 }
-                const longarg = this.argNameMap[arg];
-                if (this.argMap[longarg]) {
+                const longArg = this.argNameMap[arg];
+                if (this.argMap[longArg]) {
                     if (args.length > 0) {
-                        err = this.argActionMap[longarg](args.shift(), settings);
+                        err = this.argActionMap[longArg](args.shift(), settings);
                     } else {
                         err = new Error("Missing argument for option " + arg);
                     }
-                } else if (this.flagMap[longarg]) {
-                    this.boolFlagActionMap[longarg](true, settings);
+                } else if (this.flagMap[longArg]) {
+                    this.boolFlagActionMap[longArg](true, settings);
                 } else {
                     err = new Error("Invalid option: " + arg);
                 }
