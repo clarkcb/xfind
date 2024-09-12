@@ -9,7 +9,8 @@
 (ns cljfind.fileutil
   #^{:author "Cary Clark",
      :doc "Module to provide file-related utility functions"}
-  (:import (java.io File))
+  (:import (java.io File)
+           (java.nio.file Files Path Paths LinkOption))
   (:use [clojure.string :only (split)]))
 
 (def ^:const DOT_DIRS #{"." ".."})
@@ -21,45 +22,75 @@
       (str home (.substring f 1))
       f)))
 
-(defn get-name [f]
-  (if (or (instance? java.io.File f)
-          (instance? java.util.zip.ZipEntry f)
-          (instance? java.util.jar.JarEntry f))
-    (.getName f)
-    f))
+(defn exists? [f]
+  (cond
+    (instance? java.nio.file.Path f) (.exists (.toFile f))
+    (instance? java.io.File f) (.exists f)
+    :else false))
 
-(defn get-ext [^File f]
+(defn get-parent ^String [f]
+  (cond
+    (instance? java.nio.file.Path f) (if (nil? (.getParent f)) "" (.toString (.getParent f)))
+    (instance? java.io.File f) (.getParent f)
+    (instance? java.util.zip.ZipEntry f) (.getParent f)
+    (instance? java.util.jar.JarEntry f) (.getParent f)
+    :else f))
+
+(defn get-name ^String [f]
+  (cond
+    (instance? java.nio.file.Path f) (.toString (.getFileName f))
+    (instance? java.io.File f) (.getName f)
+    (instance? java.util.zip.ZipEntry f) (.getName f)
+    (instance? java.util.jar.JarEntry f) (.getName f)
+    :else f))
+
+(defn get-ext [f]
   (let [name (get-name f)
         dotindex (.lastIndexOf name ".")]
-    (if 
+    (if
       (and
-        (> dotindex 0)
-        (< dotindex (- (.length name) 1)))
+       (> dotindex 0)
+       (< dotindex (- (.length name) 1)))
       (.toLowerCase (peek (split name #"\.")))
       "")))
 
-(defn get-files-in-directory [^File d]
-  (filter #(.isFile %) (.listFiles d)))
-
-(defn has-ext? [^File f ^String ext]
+(defn has-ext? [f ^String ext]
   (= (.toLowerCase ext) (get-ext f)))
+
+(defn is-dir? [d]
+  (cond
+    (instance? java.nio.file.Path d) (.isDirectory (.toFile d))
+    (instance? java.io.File d) (.isDirectory d)))
+
+(defn is-file? [f]
+  (not (is-dir? f)))
 
 (defn is-dot-dir? [^String name]
   (contains? DOT_DIRS name))
 
-(defn split-path [^File f]
-  (split (.getPath f) (re-pattern File/separator)))
+(defn path-str [p]
+  (cond (instance? java.nio.file.Path p) (.toString p)
+        (instance? java.io.File p) (.getPath p)
+        (instance? java.util.zip.ZipEntry p) (.getName p)
+        (instance? java.util.jar.JarEntry p) (.getName p)
+        :else p))
+
+(defn to-path [^String f]
+  (Paths/get f (into-array String [])))
+
+(defn split-path [p]
+  (split (path-str p) (re-pattern File/separator)))
 
 (defn hidden? [^String name]
   (and
     (.startsWith name ".")
     (not (is-dot-dir? name))))
 
-(defn hidden-dir? [^File d]
+(defn hidden-dir? [d]
   (let [elems (split-path d)]
     (some #(hidden? %) elems)))
 
-(defn hidden-file? [^File f]
+(defn hidden-file? [f]
   (hidden? (get-name f)))
 
 (defn sep-count [^String f]

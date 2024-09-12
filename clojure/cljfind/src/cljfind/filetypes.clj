@@ -13,7 +13,7 @@
   (:require [clojure.java.io :as io])
   (:require [clojure.data.json :as json])
   (:use [clojure.set :only (union)]
-        [clojure.string :only (lower-case)]
+        [clojure.string :only (join lower-case)]
         [cljfind.fileutil :only (get-ext get-name)]))
 
 (def ^:const ^String ARCHIVE "archive")
@@ -54,7 +54,7 @@
 (defn archive-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP ARCHIVE) ext))
 
-(defn archive-file? [^File f]
+(defn archive-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP ARCHIVE) (get-name f))
    (contains? (get FILETYPEEXTMAP ARCHIVE) (get-ext f))))
@@ -62,7 +62,7 @@
 (defn audio-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP AUDIO) ext))
 
-(defn audio-file? [^File f]
+(defn audio-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP AUDIO) (get-name f))
    (contains? (get FILETYPEEXTMAP AUDIO) (get-ext f))))
@@ -70,7 +70,7 @@
 (defn binary-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP BINARY) ext))
 
-(defn binary-file? [^File f]
+(defn binary-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP BINARY) (get-name f))
    (contains? (get FILETYPEEXTMAP BINARY) (get-ext f))))
@@ -78,7 +78,7 @@
 (defn code-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP CODE) ext))
 
-(defn code-file? [^File f]
+(defn code-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP CODE) (get-name f))
    (contains? (get FILETYPEEXTMAP CODE) (get-ext f))))
@@ -86,7 +86,7 @@
 (defn font-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP FONT) ext))
 
-(defn font-file? [^File f]
+(defn font-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP FONT) (get-name f))
    (contains? (get FILETYPEEXTMAP FONT) (get-ext f))))
@@ -94,7 +94,7 @@
 (defn image-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP IMAGE) ext))
 
-(defn image-file? [^File f]
+(defn image-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP IMAGE) (get-name f))
    (contains? (get FILETYPEEXTMAP IMAGE) (get-ext f))))
@@ -102,7 +102,7 @@
 (defn text-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP TEXT) ext))
 
-(defn text-file? [^File f]
+(defn text-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP TEXT) (get-name f))
    (contains? (get FILETYPEEXTMAP TEXT) (get-ext f))))
@@ -110,7 +110,7 @@
 (defn video-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP VIDEO) ext))
 
-(defn video-file? [^File f]
+(defn video-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP VIDEO) (get-name f))
    (contains? (get FILETYPEEXTMAP VIDEO) (get-ext f))))
@@ -118,12 +118,12 @@
 (defn xml-ext? [^String ext]
   (contains? (get FILETYPEEXTMAP XML) ext))
 
-(defn xml-file? [^File f]
+(defn xml-file? [f]
   (or
    (contains? (get FILETYPENAMEMAP XML) (get-name f))
    (contains? (get FILETYPEEXTMAP XML) (get-ext f))))
 
-(defn get-file-type [^File f]
+(defn get-file-type [f]
   (cond
     ;; most specific first
     (code-file? f) :code
@@ -138,7 +138,7 @@
     (binary-file? f) :binary
     :else :unknown))
 
-(defn unknown-file? [^File f]
+(defn unknown-file? [f]
   (= :unknown (get-file-type f)))
 
 (defn from-name [^String name]

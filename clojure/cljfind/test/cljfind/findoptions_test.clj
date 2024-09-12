@@ -1,6 +1,7 @@
 (ns cljfind.findoptions-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
+        [cljfind.fileutil :only (get-name to-path)]
         [cljfind.findoptions :only (settings-from-args settings-from-json)]))
 
 (deftest test-no-args
@@ -25,7 +26,8 @@
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "clj"))
       (is (contains? (:in-extensions ss) "scala"))
-      (is (contains? (:paths ss) ".")))))
+      (is (= (count (:paths ss)) 1))
+      (is (contains? (:paths ss) (to-path "."))))))
 
 (deftest test-missing-arg
   (let [[ss errs] (settings-from-args ["-x" "clj" "." "-D"])]
@@ -64,7 +66,7 @@
         ]
     (testing "test-debug"
       (is (= (count (:paths ss)) 1))
-      (is (contains? (:paths ss) "~/src/xfind"))
+      (is (contains? (:paths ss) (to-path "~/src/xfind")))
       (is (= (count (:in-extensions ss)) 2))
       (is (contains? (:in-extensions ss) "js"))
       (is (contains? (:in-extensions ss) "ts"))

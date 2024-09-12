@@ -10,27 +10,28 @@
   #^{:author "Cary Clark",
      :doc "Encapsulates a file to be found"}
   (:require [cljfind.findsettings])
-  (:import (cljfind.findsettings FindSettings))
+  (:import (cljfind.findsettings FindSettings)
+           (java.nio.file Paths Path Files))
   (:use [clojure.string :as string :only (join lower-case)]
         [cljfind.filetypes :only (to-name)]
-        [cljfind.fileutil :only (get-name)]
+        [cljfind.fileutil :only (get-name get-parent)]
         ))
 
-; record to hold a file result (file is a File object)
-(defrecord FileResult [containers, ^java.io.File file, file-type,
-                       file-size last-mod])
+; record to hold a file result (path is a Path object)
+(defrecord FileResult [containers, ^java.nio.file.Path path,
+                       file-type, file-size last-mod])
 
 (defn new-file-result
-  ([^java.io.File file, file-type]
-   (->FileResult [] file file-type 0 nil))
-  ([^java.io.File file, file-type, file-size last-mod]
-   (->FileResult [] file file-type file-size last-mod))
-  ([containers, ^java.io.File file, file-type file-size last-mod]
-   (->FileResult containers file file-type file-size last-mod)))
+  ([^java.nio.file.Path path, file-type]
+   (->FileResult [] path file-type 0 nil))
+  ([^java.nio.file.Path path, file-type, file-size last-mod]
+   (->FileResult [] path file-type file-size last-mod))
+  ([containers, ^java.nio.file.Path path, file-type file-size last-mod]
+   (->FileResult containers path file-type file-size last-mod)))
 
 (defn file-result-path ^String [^FileResult fr]
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
-       (.getPath (:file fr))))
+       (.toString (:path fr))))
 
 (defn cmp-strings [^String str1 ^String str2 ^FindSettings settings]
   (let [s1 (if (nil? str1) "" str1)
@@ -43,18 +44,18 @@
   "get a filepath comparator"
   [^FindSettings settings]
   (fn [^FileResult fr1 ^FileResult fr2]
-    (let [pathcmp (cmp-strings (.getParent (:file fr1)) (.getParent (:file fr2)) settings)]
+    (let [pathcmp (cmp-strings (get-parent (:path fr1)) (get-parent (:path fr2)) settings)]
       (if (= 0 pathcmp)
-        (cmp-strings (get-name (:file fr1)) (get-name (:file fr2)) settings)
+        (cmp-strings (get-name (:path fr1)) (get-name (:path fr2)) settings)
         pathcmp))))
 
 (defn get-comp-by-name
   "get a filename comparator"
   [^FindSettings settings]
   (fn [^FileResult fr1 ^FileResult fr2]
-    (let [namecmp (cmp-strings (get-name (:file fr1)) (get-name (:file fr2)) settings)]
+    (let [namecmp (cmp-strings (get-name (:path fr1)) (get-name (:path fr2)) settings)]
       (if (= 0 namecmp)
-        (cmp-strings (.getParent (:file fr1)) (.getParent (:file fr2)) settings)
+        (cmp-strings (get-parent (:path fr1)) (get-parent (:path fr2)) settings)
         namecmp))))
 
 (defn get-comp-by-size

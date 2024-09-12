@@ -12,9 +12,10 @@
   (:require [cljfind.fileresult]
             [cljfind.findsettings])
   (:import (java.io File)
-           (java.nio.file Files)
+           (java.nio.file Files Path Paths)
            (java.nio.file.attribute BasicFileAttributes)
            (java.util.jar JarFile)
+           (java.util.stream Collectors)
            (java.util.zip ZipFile)
            (cljfind.fileresult FileResult)
            (cljfind.findsettings FindSettings))
@@ -24,8 +25,8 @@
          (new-file-result file-result-path sort-results)]
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only
-          (get-ext get-name hidden-dir? hidden-file?
-            is-dot-dir? sep-count)]
+          (exists? get-ext get-name get-parent hidden-dir? hidden-file?
+           is-dir? is-dot-dir? is-file? path-str sep-count)]
         [cljfind.findsettings :only (need-last-mod need-size)])
   (:require [java-time.api :as jt]))
 
@@ -38,7 +39,7 @@
 (defn validate-settings [^FindSettings settings]
   (let [paths (:paths settings)
         tests [(fn [ss] (if (empty? paths) "Startpath not defined" nil))
-               (fn [ss] (if (some #(not (.exists (file %))) paths) "Startpath not found" nil))
+               (fn [ss] (if (some #(not (exists? %)) paths) "Startpath not found" nil))
                (fn [ss]
                  (if
                    (and
@@ -62,7 +63,7 @@
        ]
     (take 1 (filter #(not (nil? %)) (map #(% settings) tests)))))
 
-(defn is-matching-dir? [^File d ^FindSettings settings]
+(defn is-matching-dir? [d ^FindSettings settings]
   (or
     (nil? d)
     (is-dot-dir? (get-name d))
@@ -72,10 +73,10 @@
         (not (hidden-dir? d)))
       (or
         (empty? (:in-dir-patterns settings))
-        (some #(re-find % (.getPath d)) (:in-dir-patterns settings)))
+        (some #(re-find % (path-str d)) (:in-dir-patterns settings)))
       (or
         (empty? (:out-dir-patterns settings))
-        (not-any? #(re-find % (.getPath d)) (:out-dir-patterns settings))))))
+        (not-any? #(re-find % (path-str d)) (:out-dir-patterns settings))))))
 
 (defn is-matching-ext?
   ([^String ext ^FindSettings settings]
@@ -103,7 +104,7 @@
       (and
         (empty? in-extensions)
         (empty? out-extensions))
-      (is-matching-ext? (get-ext (:file fr)) in-extensions out-extensions))))
+      (is-matching-ext? (get-ext (:path fr)) in-extensions out-extensions))))
 
 (defn has-matching-ext?
   ([^FileResult fr ^FindSettings settings]
@@ -113,7 +114,7 @@
      (and
        (empty? in-extensions)
        (empty? out-extensions))
-     (is-matching-ext? (get-ext (:file fr)) in-extensions out-extensions))))
+     (is-matching-ext? (get-ext (:path fr)) in-extensions out-extensions))))
 
 (defn is-matching-file-name?
   ([^String file-name ^FindSettings settings]
@@ -178,35 +179,35 @@
 
 (defn is-matching-archive-file-result? [^FileResult fr ^FindSettings settings]
   (and
-    (is-matching-dir? (.getParentFile (:file fr)) settings)
+    (is-matching-dir? (get-parent (:path fr)) settings)
     (has-matching-archive-ext? fr settings)
-    (is-matching-archive-file-name? (.getName (:file fr)) settings)))
+    (is-matching-archive-file-name? (get-name (:path fr)) settings)))
 
 (defn is-matching-file-result? [^FileResult fr ^FindSettings settings]
   (and
-    (is-matching-dir? (.getParentFile (:file fr)) settings)
+    (is-matching-dir? (get-parent (:path fr)) settings)
     (has-matching-ext? fr settings)
-    (is-matching-file-name? (.getName (:file fr)) settings)
+    (is-matching-file-name? (get-name (:path fr)) settings)
     (is-matching-file-type? (:file-type fr) settings)
     (is-matching-file-size? (:file-size fr) settings)
     (is-matching-last-mod? (:last-mod fr) settings)))
 
-(defn get-stat ^BasicFileAttributes [^File f]
-  (Files/readAttributes (.toPath f) BasicFileAttributes (into-array java.nio.file.LinkOption [])))
+(defn get-stat ^BasicFileAttributes [^Path p]
+  (Files/readAttributes p BasicFileAttributes (into-array java.nio.file.LinkOption [])))
 
-(defn filter-to-file-result [^File f ^FindSettings settings]
+(defn filter-to-file-result [^Path p ^FindSettings settings]
   (if
     (and
       (not (:include-hidden settings))
-      (hidden-file? f))
+      (hidden-file? p))
     nil
-    (let [file-type (get-file-type f)]
+    (let [file-type (get-file-type p)]
       (if (and (= :archive file-type) (not (:include-archives settings)) (not (:archives-only settings)))
         nil
-        (let [stat (if (or (need-last-mod settings) (need-size settings)) (get-stat f) nil)
+        (let [stat (if (or (need-last-mod settings) (need-size settings)) (get-stat p) nil)
               file-size (if (need-size settings) (.size stat) 0)
               last-mod (if (need-last-mod settings) (.lastModifiedTime stat) nil)
-              fr (new-file-result f file-type file-size last-mod)]
+              fr (new-file-result p file-type file-size last-mod)]
           (if
             (= :archive file-type)
             (if
@@ -220,17 +221,25 @@
               fr
               nil)))))))
 
+(defn list-paths-under-dir-path [^Path dir-path]
+  (let [stream (Files/list dir-path)]
+    (try
+      ;; because a java Stream is not the same as a stream in clojure, we need to convert it
+      (vec (iterator-seq (.iterator stream)))
+      (finally
+        (.close stream)))))
+
 (defn get-file-results-under-path
-  [^FindSettings settings, ^File path-file ^Integer min-depth ^Integer max-depth ^Integer current-depth]
+  [^FindSettings settings, ^Path path ^Integer min-depth ^Integer max-depth ^Integer current-depth]
   (if
     (and
       (> max-depth -1)
       (> current-depth max-depth))
     []
-    (let [path-elems (.listFiles path-file)
+    (let [path-elems (list-paths-under-dir-path path)
           recurse (or (= max-depth -1) (< current-depth max-depth))
-          path-dirs (if recurse (filter #(is-matching-dir? % settings) (filter #(.isDirectory %) path-elems)) [])
-          path-files (if (and (> min-depth -1) (< current-depth min-depth)) [] (filter #(.isFile %) path-elems))
+          path-dirs (if recurse (filter #(is-matching-dir? % settings) (filter #(is-dir? %) path-elems)) [])
+          path-files (if (and (> min-depth -1) (< current-depth min-depth)) [] (filter #(is-file? %) path-elems))
           path-results (filter #(not (nil? %)) (map #(filter-to-file-result % settings) path-files))
           next-depth (inc current-depth)]
       (if (empty? path-dirs)
@@ -238,21 +247,20 @@
         (concat path-results
                 (mapcat #(get-file-results-under-path settings % min-depth max-depth next-depth) path-dirs))))))
 
-(defn get-file-results-for-path [^FindSettings settings, ^String path]
-  (let [path-file (file path)]
-    (if (.isFile path-file)
-      (if
-        (< (:min-depth settings) 1)
-        (let [path-file-result (filter-to-file-result path-file settings)]
-          (if (not (nil? path-file-result))
-            [path-file-result]
-            []))
-        [])
-      (if (= (:max-depth settings) 0)
-        []
-        (if (:recursive settings)
-          (get-file-results-under-path settings path-file (:min-depth settings) (:max-depth settings) 1)
-          (get-file-results-under-path settings path-file (:min-depth settings) 1 1))))))
+(defn get-file-results-for-path [^FindSettings settings, ^Path path]
+  (if (is-file? path)
+    (if
+      (< (:min-depth settings) 1)
+      (let [path-file-result (filter-to-file-result path settings)]
+        (if (not (nil? path-file-result))
+          [path-file-result]
+          []))
+      [])
+    (if (= (:max-depth settings) 0)
+      []
+      (if (:recursive settings)
+        (get-file-results-under-path settings path (:min-depth settings) (:max-depth settings) 1)
+        (get-file-results-under-path settings path (:min-depth settings) 1 1)))))
 
 (defn get-file-results [^FindSettings settings]
   (sort-results (mapcat #(get-file-results-for-path settings %) (:paths settings)) settings))
@@ -264,7 +272,7 @@
       [[] errs])))
 
 (defn get-matching-dirs [file-results]
-  (sort (distinct (map #(.getParent (:file %)) file-results))))
+  (sort (distinct (map #(get-parent (:path %)) file-results))))
 
 (defn print-matching-dirs [file-results]
   (let [dirs (get-matching-dirs file-results)]
