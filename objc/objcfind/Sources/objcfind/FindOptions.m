@@ -135,103 +135,103 @@
 typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
 
 - (NSDictionary<NSString*,ArgActionBlockType>*) getArgActionDict {
-    return [[NSDictionary alloc] initWithObjectsAndKeys:
-            ^void (NSString* s, FindSettings *ss) {
-                [ss addInArchiveExtension:s];
-            }, @"in-archiveext",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.inArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-archivefilepattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.inDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-dirpattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss addInExtension:s];
-            }, @"in-ext",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.inFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"in-filepattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss addInFileType:s];
-            }, @"in-filetype",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setMaxDepthFromString:s];
-            }, @"maxdepth",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setMaxLastModFromString:s];
-            }, @"maxlastmod",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setMaxSizeFromString:s];
-            }, @"maxsize",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setMinDepthFromString:s];
-            }, @"mindepth",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setMinLastModFromString:s];
-            }, @"minlastmod",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setMinSizeFromString:s];
-            }, @"minsize",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss addOutArchiveExtension:s];
-            }, @"out-archiveext",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.outArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-archivefilepattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.outDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-dirpattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss addOutExtension:s];
-            }, @"out-ext",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.outFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-            }, @"out-filepattern",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss addOutFileType:s];
-            }, @"out-filetype",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss.paths addObject:s];
-            }, @"path",
-            ^void (NSString* s, FindSettings *ss) {
-                [ss setSortByFromName:s];
-            }, @"sort-by",
-//            ^void (NSString* s, FindSettings *ss) {
-//                [self settingsFromFile:s settings:ss];
-//            }, @"settings-file",
-            nil];
+    return @{
+        @"in-archiveext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addInArchiveExtension:s];
+        },
+        @"in-archivefilepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.inArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-dirpattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.inDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-ext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addInExtension:s];
+        },
+        @"in-filepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.inFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-filetype" : ^void (NSString* s, FindSettings *ss) {
+            [ss addInFileType:s];
+        },
+        @"maxdepth" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMaxDepthFromString:s];
+        },
+        @"maxlastmod" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMaxLastModFromString:s];
+        },
+        @"maxsize" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMaxSizeFromString:s];
+        },
+        @"mindepth" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMinDepthFromString:s];
+        },
+        @"minlastmod" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMinLastModFromString:s];
+        },
+        @"minsize" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMinSizeFromString:s];
+        },
+        @"out-archiveext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addOutArchiveExtension:s];
+        },
+        @"out-archivefilepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.outArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-dirpattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.outDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-ext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addOutExtension:s];
+        },
+        @"out-filepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.outFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-filetype" : ^void (NSString* s, FindSettings *ss) {
+            [ss addOutFileType:s];
+        },
+        @"path" : ^void (NSString* s, FindSettings *ss) {
+            [ss.paths addObject:s];
+        },
+        @"sort-by" : ^void (NSString* s, FindSettings *ss) {
+            [ss setSortByFromName:s];
+        },
+        @"settings-file" : ^void (NSString* s, FindSettings *ss) {
+            [self settingsFromFile:s settings:ss];
+        }
+    };
 }
 
 typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
 
 - (NSDictionary<NSString*,BoolFlagActionBlockType>*) getBoolFlagActionDict {
-    return [[NSDictionary alloc] initWithObjectsAndKeys:
-            [^void (BOOL b, FindSettings *ss) {
-                ss.archivesOnly = b;
-                if (b) ss.includeArchives = true;
-            } copy], @"archivesonly",
-            [^void (BOOL b, FindSettings *ss) {
-                ss.debug = b;
-                if (b) ss.verbose = true;
-            } copy], @"debug",
-            [^void (BOOL b, FindSettings *ss) { ss.includeArchives = !b; } copy], @"excludearchives",
-            [^void (BOOL b, FindSettings *ss) { ss.includeHidden = !b; } copy], @"excludehidden",
-            [^void (BOOL b, FindSettings *ss) { ss.printUsage = b; } copy], @"help",
-            [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy], @"includearchives",
-            [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy], @"includehidden",
-            [^void (BOOL b, FindSettings *ss) { ss.printDirs = !b; } copy], @"noprintdirs",
-            [^void (BOOL b, FindSettings *ss) { ss.printFiles = !b; } copy], @"noprintfiles",
-            [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy], @"norecursive",
-            [^void (BOOL b, FindSettings *ss) { ss.printDirs = b; } copy], @"printdirs",
-            [^void (BOOL b, FindSettings *ss) { ss.printFiles = b; } copy], @"printfiles",
-            [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy], @"recursive",
-            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy], @"sort-ascending",
-            [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = b; } copy], @"sort-caseinsensitive",
-            [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = !b; } copy], @"sort-casesensitive",
-            [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy], @"sort-descending",
-            [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy], @"verbose",
-            [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy], @"version",
-            nil];
+    return @{
+        @"archivesonly" : [^void (BOOL b, FindSettings *ss) {
+            ss.archivesOnly = b;
+            if (b) ss.includeArchives = true;
+        } copy],
+        @"debug" : [^void (BOOL b, FindSettings *ss) {
+            ss.debug = b;
+            if (b) ss.verbose = true;
+        } copy],
+        @"excludearchives" : [^void (BOOL b, FindSettings *ss) { ss.includeArchives = !b; } copy],
+        @"excludehidden" : [^void (BOOL b, FindSettings *ss) { ss.includeHidden = !b; } copy],
+        @"help" : [^void (BOOL b, FindSettings *ss) { ss.printUsage = b; } copy],
+        @"includearchives" : [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy],
+        @"includehidden" : [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy],
+        @"noprintdirs" : [^void (BOOL b, FindSettings *ss) { ss.printDirs = !b; } copy],
+        @"noprintfiles" : [^void (BOOL b, FindSettings *ss) { ss.printFiles = !b; } copy],
+        @"norecursive" : [^void (BOOL b, FindSettings *ss) { ss.recursive = !b; } copy],
+        @"printdirs" : [^void (BOOL b, FindSettings *ss) { ss.printDirs = b; } copy],
+        @"printfiles" : [^void (BOOL b, FindSettings *ss) { ss.printFiles = b; } copy],
+        @"recursive" : [^void (BOOL b, FindSettings *ss) { ss.recursive = b; } copy],
+        @"sort-ascending" : [^void (BOOL b, FindSettings *ss) { ss.sortDescending = !b; } copy],
+        @"sort-caseinsensitive" : [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = b; } copy],
+        @"sort-casesensitive" : [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = !b; } copy],
+        @"sort-descending" : [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy],
+        @"verbose" : [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy],
+        @"version" : [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy],
+    };
 }
 
 - (FindSettings *) settingsFromArgs:(NSArray<NSString*> *)args error:(NSError **)error {
