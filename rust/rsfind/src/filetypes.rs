@@ -1,5 +1,7 @@
 use std::path::Path;
 
+use cached::proc_macro::cached;
+use cached::UnboundCache;
 use serde::{Deserialize, Serialize};
 use sqlite::State;
 
@@ -40,6 +42,33 @@ pub struct JsonFileTypes {
     pub filetypes: Vec<JsonFileType>,
 }
 
+fn db_file_type_for_query_and_elem(db: &sqlite::Connection, query: &str, elem: &str) -> usize {
+    let mut stmt = db.prepare(query).unwrap();
+    stmt.bind((1, elem)).unwrap();
+    match stmt.next() {
+        Ok(State::Row) => {
+            let file_type_id = stmt.read::<i64, _>("file_type_id").unwrap() - 1;
+            file_type_id as usize
+        },
+        _ => 0usize,
+    }
+}
+
+pub fn db_file_type_for_file_name(db: &sqlite::Connection, file_name: &str) -> usize {
+    let query = "SELECT file_type_id FROM file_name WHERE name=?";
+    db_file_type_for_query_and_elem(&db, query, file_name)
+}
+
+#[cached(
+    ty = "UnboundCache<String, usize>",
+    create = "{ UnboundCache::with_capacity(64) }",
+    convert = r#"{ format!("{}", file_ext) }"#
+)]
+fn db_file_type_for_extension(db: &sqlite::Connection, file_ext: &str) -> usize {
+    let query = "SELECT file_type_id FROM file_extension WHERE extension=?";
+    db_file_type_for_query_and_elem(&db, query, file_ext)
+}
+
 impl FileTypes {
     pub fn new() -> Result<FileTypes, FindError> {
         let config = Config::new();
@@ -63,33 +92,14 @@ impl FileTypes {
         Ok(file_types)
     }
 
-    fn get_file_type_for_query_and_elem(&self, query: &str, elem: &str) -> FileType {
-        let mut stmt = self.db.prepare(query).unwrap();
-        stmt.bind((1, elem)).unwrap();
-        match stmt.next() {
-            Ok(State::Row) => {
-                let file_type_id = stmt.read::<i64, _>("file_type_id").unwrap() - 1;
-                self.file_types[file_type_id as usize]
-            },
-            _ => FileType::Unknown,
-        }
-    }
-
     pub fn get_file_type_for_file_name(&self, file_name: &str) -> FileType {
-        let query = "SELECT file_type_id FROM file_name WHERE name=?";
-        self.get_file_type_for_query_and_elem(query, file_name)
+        let file_type_id = db_file_type_for_file_name(&self.db, file_name);
+        self.file_types[file_type_id]
     }
 
     pub fn get_file_type_for_extension(&self, file_ext: &str) -> FileType {
-        // if self.ext_file_type_cache.contains_key(file_ext) {
-        //     return self.ext_file_type_cache[file_ext];
-        // }
-        let query = "SELECT file_type_id FROM file_extension WHERE extension=?";
-        let file_type = self.get_file_type_for_query_and_elem(query, file_ext);
-        // TODO: self has to be mutable in order to make the next line valid,
-        //       a better idea might be to keep the ext cache on the consuming side
-        // self.ext_file_type_cache.insert(String::from(file_ext), file_type);
-        file_type
+        let file_type_id = db_file_type_for_extension(&self.db, file_ext);
+        self.file_types[file_type_id]
     }
 
     /// Get a FileType for a given filename
