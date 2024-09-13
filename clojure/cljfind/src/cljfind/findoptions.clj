@@ -9,13 +9,13 @@
 (ns cljfind.findoptions
   #^{:author "Cary Clark",
      :doc "Defines the available command-line options and utility functions"}
-  (:require [cljfind.findsettings])
+  (:require [cljfind.findsettings]
+            [clojure.java.io :as io]
+            [clojure.string :as str]
+            [clojure.data.json :as json])
   (:import (java.io File)
            (java.nio.file Paths Path Files)
            (cljfind.findsettings FindSettings))
-  (:require [clojure.java.io :as io])
-  (:require [clojure.string :as str])
-  (:require [clojure.data.json :as json])
   (:use [clojure.instant :only (read-instant-date)]
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]

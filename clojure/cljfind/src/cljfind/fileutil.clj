@@ -24,7 +24,7 @@
 
 (defn exists? [f]
   (cond
-    (instance? java.nio.file.Path f) (.exists (.toFile f))
+    (instance? java.nio.file.Path f) (Files/exists f (into-array LinkOption []))
     (instance? java.io.File f) (.exists f)
     :else false))
 
@@ -59,11 +59,13 @@
 
 (defn is-dir? [d]
   (cond
-    (instance? java.nio.file.Path d) (.isDirectory (.toFile d))
+    (instance? java.nio.file.Path d) (Files/isDirectory d (into-array LinkOption []))
     (instance? java.io.File d) (.isDirectory d)))
 
 (defn is-file? [f]
-  (not (is-dir? f)))
+  (cond
+    (instance? java.nio.file.Path f) (Files/isRegularFile f (into-array LinkOption []))
+    (instance? java.io.File f) (.isFile f)))
 
 (defn is-dot-dir? [^String name]
   (contains? DOT_DIRS name))
@@ -71,8 +73,6 @@
 (defn path-str [p]
   (cond (instance? java.nio.file.Path p) (.toString p)
         (instance? java.io.File p) (.getPath p)
-        (instance? java.util.zip.ZipEntry p) (.getName p)
-        (instance? java.util.jar.JarEntry p) (.getName p)
         :else p))
 
 (defn to-path [^String f]
