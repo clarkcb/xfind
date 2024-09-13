@@ -5,6 +5,7 @@ authors = ["Cary Clark <clarkcb@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+cached = "0.53.1"
 chrono = "0.4.39"
 regex = "1.11.1"
 serde = { version ="1.0.216", features = ["derive"] }
