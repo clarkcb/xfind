@@ -1,22 +1,32 @@
 .DS_Store
 
+# Java class files
 *.class
-target/
 
-# for now
-javasearch/src/test/resources/
-
-# Package Files #
+# Package Files
 *.jar
 *.war
 *.ear
 
-# IntelliJ
-.idea/
+# Intellij project files
 *.iml
+*.ipr
+*.iws
+.idea/
 
-# Maven artifacts
+# Maven
 dependency-reduced-pom.xml
+target/
+
+# Gradle
+.gradletasknamecache
+.gradle/
+build/
+
+# TODO: determine whether these should actually be added
+gradle/
+gradlew
+gradlew.bat
 
 # resource files that are copied from shared or unused
 config.json

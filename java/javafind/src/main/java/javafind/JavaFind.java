@@ -1,5 +1,5 @@
 /*******************************************************************************
-FindMain
+JavaFind
 
 Main class for initiating javafind from command line
 
@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import static javafind.Logger.log;
 import static javafind.Logger.logError;
 
-public class FindMain {
+public class JavaFind {
 
     private static void handleError(final String message) {
         log("");

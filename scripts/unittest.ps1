@@ -380,20 +380,31 @@ function UnitTestJava
         Log("java version: $javaVersion")
     }
 
-    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
-        PrintError('You need to install mvn')
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
         return
     }
 
-    $mvnVersion = mvn --version | Select-String -Pattern 'Apache Maven'
-    Log("mvn version: $mvnVersion")
+    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    Log("$gradle version: $gradleVersion")
 
-    # run tests via maven
+    $oldPwd = Get-Location
+    Set-Location $ktfindPath
+
+    # run tests via gradle
     Log('Unit-testing javafind')
-    $pomPath = Join-Path $javafindPath 'pom.xml'
-    Log("mvn -f $pomPath test")
-    mvn -f $pomPath test
+
+    Log('gradle --warning-mode all test')
+    gradle --warning-mode all test
+
+    Set-Location $oldPwd
 }
 
 function UnitTestJavaScript

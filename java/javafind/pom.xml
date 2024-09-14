@@ -80,7 +80,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>javafind.FindMain</mainClass>
+                            <mainClass>javafind.JavaFind</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

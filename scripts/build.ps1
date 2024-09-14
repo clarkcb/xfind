@@ -930,15 +930,23 @@ function BuildJava
     $javaVersion = java -version 2>&1 | Select-String -Pattern 'java version'
     Log("java version: $javaVersion")
 
-    # ensure mvn is installed
-    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $javafindPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
-        PrintError('You need to install maven')
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install gradle')
         return
     }
 
-    $mvnVersion = mvn --version | Select-String -Pattern 'Apache Maven'
-    Log("mvn version: $mvnVersion")
+    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    Log("$gradle version: $gradleVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $javafindPath 'src' 'main' 'resources'
@@ -956,11 +964,15 @@ function BuildJava
     }
     CopyTestResources($testResourcesPath)
 
-    # run maven clean package (skip testing as this is run via unittest.sh)
+    # run a gradle build
     Log('Building javafind')
-    $javaFindPom = Join-Path $javafindPath 'pom.xml'
-    Log("mvn -f $javafindPom clean package -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT")
-    mvn -f "$javafindPom" clean package '-Dmaven.test.skip=true' '-Dmaven.plugin.validation=DEFAULT'
+
+    # Log('gradle --warning-mode all clean jar publishToMavenLocal')
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    $gradleArgs = '--warning-mode all'
+    $gradleTasks = 'clean jar'
+    Log("$gradle $gradleArgs $gradleTasks")
+    & $gradle --warning-mode all clean jar
 
     # check for success/failure
     if ($LASTEXITCODE -eq 0)
@@ -976,6 +988,8 @@ function BuildJava
     # add to bin
     $javafindExe = Join-Path $javafindPath 'bin' 'javafind.ps1'
     AddToBin($javafindExe)
+
+    Set-Location $oldPwd
 }
 
 function BuildJavaScript

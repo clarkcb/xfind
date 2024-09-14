@@ -369,28 +369,30 @@ unittest_java () {
         log "java version: $JAVA_VERSION"
     fi
 
-    # ensure mvn is installed
-    if [ -z "$(which mvn)" ]
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
-        echo "You need to install mvn"
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         return
     fi
 
-    MVN_VERSION=$(mvn --version | head -n 1)
-    log "mvn version: $MVN_VERSION"
+    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    log "$GRADLE version: $GRADLE_VERSION"
 
-    # run tests via maven
-    log "Unit-testing javafind"
-    log "mvn -f $JAVAFIND_PATH/pom.xml test"
-    output=$(script -q tmpout mvn -f "$JAVAFIND_PATH/pom.xml" test | tee /dev/tty)
-    lastlines=$(echo "$output" | tail -n 9)
-    # echo "lastlines: \"$lastlines\""
-    if [[ "$lastlines" =~ Tests[[:space:]]run:[[:space:]]+[0-9]+,[[:space:]]+Failures:[[:space:]]+0,[[:space:]]+Errors:[[:space:]]+0 ]]
-    then
-        log "All java unit tests passed"
-    else
-        log_error "ERROR: java unit tests failed"
-    fi
+    cd "$JAVAFIND_PATH"
+
+    # run tests via gradle
+    log "Unit-testing ktfind"
+    log "$GRADLE --warning-mode all test"
+    "$GRADLE" --warning-mode all test
+
+    cd -
 }
 
 unittest_javascript () {

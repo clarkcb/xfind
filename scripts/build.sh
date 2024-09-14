@@ -814,15 +814,23 @@ build_java () {
     JAVA_VERSION=$(java -version 2>&1 | head -n 1)
     log "java version: $JAVA_VERSION"
 
-    # ensure mvn is installed
-    if [ -z "$(which mvn)" ]
+    cd "$JAVAFIND_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
-        log_error "You need to install maven"
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         return
     fi
 
-    MVN_VERSION=$(mvn --version | head -n 1)
-    log "mvn version: $MVN_VERSION"
+    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    log "$GRADLE version: $GRADLE_VERSION"
 
     RESOURCES_PATH="$JAVAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$JAVAFIND_PATH/src/test/resources"
@@ -835,10 +843,17 @@ build_java () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # run a maven clean build
+    # run a gradle clean jar build
     log "Building javafind"
-    log "mvn -f $JAVAFIND_PATH/pom.xml clean package install -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT"
-    mvn -f "$JAVAFIND_PATH/pom.xml" clean package install -Dmaven.test.skip=true -Dmaven.plugin.validation=DEFAULT
+
+    # log "gradle --warning-mode all clean jar publishToMavenLocal"
+    # gradle --warning-mode all clean jar publishToMavenLocal
+    # GRADLE_ARGS="--info --warning-mode all"
+    GRADLE_ARGS="--warning-mode all"
+    GRADLE_TASKS="clean jar"
+    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
+    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
+    "$GRADLE" --warning-mode all clean jar
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -855,6 +870,8 @@ build_java () {
 
     # add to bin
     add_to_bin "$JAVAFIND_PATH/bin/javafind.sh"
+
+    cd -
 }
 
 build_javascript () {
@@ -944,7 +961,7 @@ build_kotlin () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
-    # run a maven clean build
+    # run a gradle clean jar build
     log "Building ktfind"
 
     # log "gradle --warning-mode all clean jar publishToMavenLocal"

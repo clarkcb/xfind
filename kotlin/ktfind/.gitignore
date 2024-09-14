@@ -11,7 +11,7 @@
 # generated files
 bin/
 gen/
- 
+
 # Local configuration file (sdk path, etc)
 local.properties
  
@@ -33,6 +33,7 @@ proguard/
 .gradle/
 build/
 bin/
+
 # TODO: determine whether these should actually be added
 gradle/
 gradlew
