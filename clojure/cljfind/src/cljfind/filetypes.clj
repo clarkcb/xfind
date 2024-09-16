@@ -49,33 +49,31 @@
     (swap! name-type-cache assoc (get row :name) (nth FILE-TYPES (- (get row :file_type_id) 1))))
   (reset! name-type-cache-loaded true))
 
+(defn get-file-type-for-query-and-params [^String query params]
+  (let [file-type-id (jdbc/query db (into [query] params) {:row-fn :file_type_id})]
+    (if (or (nil? file-type-id) (empty? file-type-id))
+      :unknown
+      (nth FILE-TYPES (- (first file-type-id) 1)))))
+
 (defn get-file-type-for-file-name [^String file-name]
   (if (not @name-type-cache-loaded)
     (load-file-type-cache))
   (if-let [file-type (get @name-type-cache file-name)]
     file-type
-    (let [file-type-id (jdbc/query db [FILE-NAME-QUERY file-name] {:row-fn :file_type_id})]
-      (if (or (nil? file-type-id) (empty? file-type-id))
-        (do
-          (swap! name-type-cache assoc file-name :unknown)
-          :unknown)
-        (do
-          (swap! name-type-cache assoc file-name (nth FILE-TYPES (- (first file-type-id) 1)))
-          (nth FILE-TYPES (- (first file-type-id) 1)))))))
+    (let [file-type (get-file-type-for-query-and-params FILE-NAME-QUERY [file-name])]
+      (do
+        (swap! name-type-cache assoc file-name file-type)
+        file-type))))
 
 (defn get-file-type-for-extension [^String file-ext]
   (if (empty? file-ext)
     :unknown
     (if-let [file-type (get @ext-type-cache file-ext)]
       file-type
-      (let [file-type-id (jdbc/query db [FILE-EXT-QUERY file-ext] {:row-fn :file_type_id})]
-        (if (or (nil? file-type-id) (empty? file-type-id))
-          (do
-            (swap! ext-type-cache assoc file-ext :unknown)
-            :unknown)
-          (do
-            (swap! ext-type-cache assoc file-ext (nth FILE-TYPES (- (first file-type-id) 1)))
-            (nth FILE-TYPES (- (first file-type-id) 1))))))))
+      (let [file-type (get-file-type-for-query-and-params FILE-EXT-QUERY [file-ext])]
+        (do
+          (swap! ext-type-cache assoc file-ext file-type)
+          file-type)))))
 
 (defn get-file-type [f]
   (let [file-type-for-file-name (get-file-type-for-file-name (get-name f))]
