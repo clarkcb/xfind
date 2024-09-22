@@ -36,11 +36,10 @@ clean_c () {
 
     cd "$CFIND_PATH"
 
-    CONFIGURATIONS=(debug release)
-    for c in ${CONFIGURATIONS[*]}
+    for c in $(find . -name "cmake-build-*" -type d -maxdepth 1)
     do
-        log "rm -rf $CFIND_PATH/cmake-build-$c"
-        rm -rf "$CFIND_PATH/cmake-build-$c"
+        log "rm -rf $c"
+        rm -rf "$c"
     done
 
     cd -
@@ -69,11 +68,10 @@ clean_cpp () {
 
     cd "$CPPFIND_PATH"
 
-    CONFIGURATIONS=(debug release)
-    for c in ${CONFIGURATIONS[*]}
+    for c in $(find . -name "cmake-build-*" -type d -maxdepth 1)
     do
-        log "rm -rf $CPPFIND_PATH/cmake-build-$c"
-        rm -rf "$CPPFIND_PATH/cmake-build-$c"
+        log "rm -rf $c"
+        rm -rf "$c"
     done
 
     cd -
