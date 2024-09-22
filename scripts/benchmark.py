@@ -731,8 +731,19 @@ class Benchmarker(object):
 
         if self.scenario_diff_dict:
             print('\nThere were output differences in these scenarios:')
+            version_diffs = dict()
             for sn, diffs in self.scenario_diff_dict.items():
                 print(f"'{sn}': {diffs}")
+                for d in diffs:
+                    if d[0] not in version_diffs:
+                        version_diffs[d[0]] = 0
+                    if d[1] not in version_diffs:
+                        version_diffs[d[1]] = 0
+                    version_diffs[d[0]] += 1
+                    version_diffs[d[1]] += 1
+            for v, d in version_diffs.items():
+                if d > 1:
+                    print(f'{v} had differences with {d} other versions')
         else:
             print('\nOutputs of all versions in all scenarios match')
 
