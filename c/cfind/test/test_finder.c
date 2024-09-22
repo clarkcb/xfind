@@ -154,13 +154,13 @@ void test_filter_file(void) {
     const char* test_file = "test_finder.c";
     const FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = filter_file(settings, test_dir, test_file, &ft, &fpstat);
+    const unsigned short res1 = filter_file(settings, test_dir, test_file, &ft, 0, 0);
     const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sfilter_file(\"%s\"): %d%s\n", color, test_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* hidden_file = ".hidden.c";
-    const unsigned short res2 = filter_file(settings, test_dir, hidden_file, &ft, &fpstat);
+    const unsigned short res2 = filter_file(settings, test_dir, hidden_file, &ft, 0, 0);
     color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sfilter_file(\"%s\"): %d%s\n", color, hidden_file, res2, COLOR_RESET);
     assert(res2 == 0);
@@ -184,13 +184,13 @@ void test_is_matching_file_in_extensions(void) {
     const char* matching_file = "test_finder.c";
     const FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, 0, 0);
     const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "test_finder.h";
-    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, 0, 0);
     color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 0);
@@ -214,13 +214,13 @@ void test_is_matching_file_out_extensions(void) {
     const char* matching_file = "test_finder.c";
     const FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, 0, 0);
     const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "test_finder.h";
-    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, 0, 0);
     color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 1);
@@ -244,13 +244,13 @@ void test_is_matching_file_in_file_patterns(void) {
     const char* matching_file = "test_finder.c";
     const FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, 0, 0);
     const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "finder.c";
-    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, 0, 0);
     color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 0);
@@ -274,13 +274,13 @@ void test_is_matching_file_out_file_patterns(void) {
     const char* matching_file = "test_finder.c";
     const FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, 0, 0);
     const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 0);
 
     const char* non_matching_file = "finder.c";
-    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, 0, 0);
     color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 1);
@@ -308,14 +308,14 @@ void test_is_matching_file_in_file_types(void) {
     const char* matching_file = "finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const unsigned short res1 = is_matching_file(settings, matching_file, &ft, 0, 0);
     const char* color = res1 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res1, COLOR_RESET);
     assert(res1 == 1);
 
     const char* non_matching_file = "README.md";
     ft = TEXT;
-    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const unsigned short res2 = is_matching_file(settings, non_matching_file, &ft, 0, 0);
     color = res2 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res2, COLOR_RESET);
     assert(res2 == 0);
@@ -343,14 +343,14 @@ void test_is_matching_file_out_file_types(void) {
     const char* non_matching_file = "finder.c";
     FileType ft = CODE;
     struct stat fpstat;
-    const unsigned short res1 = is_matching_file(settings, non_matching_file, &ft, &fpstat);
+    const unsigned short res1 = is_matching_file(settings, non_matching_file, &ft, 0, 0);
     const char* color = res1 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, non_matching_file, res1, COLOR_RESET);
     assert(res1 == 0);
 
     const char* matching_file = "README.md";
     ft = TEXT;
-    const unsigned short res2 = is_matching_file(settings, matching_file, &ft, &fpstat);
+    const unsigned short res2 = is_matching_file(settings, matching_file, &ft, 0, 0);
     color = res2 == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sis_matching_file(\"%s\"): %d%s\n", color, matching_file, res2, COLOR_RESET);
     assert(res2 == 1);

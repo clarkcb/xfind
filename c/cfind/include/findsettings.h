@@ -80,4 +80,6 @@ SortBy sort_by_from_name(const char *name);
 
 void sort_by_to_name(const SortBy sort_by, char *name);
 
+int need_stat(const FindSettings *settings);
+
 #endif

@@ -387,3 +387,24 @@ void sort_by_to_name(const SortBy sort_by, char *name)
             name[7] = '\0';
     }
 }
+
+int need_last_mod(const FindSettings *settings) {
+    if (settings->max_last_mod > 0L || settings->min_last_mod > 0L || settings->sort_by == LASTMOD) {
+        return 1;
+    }
+    return 0;
+}
+
+int need_size(const FindSettings *settings) {
+    if (settings->max_size > 0L || settings->min_size > 0L || settings->sort_by == FILESIZE) {
+        return 1;
+    }
+    return 0;
+}
+
+int need_stat(const FindSettings *settings) {
+    if (need_last_mod(settings) || need_size(settings)) {
+        return 1;
+    }
+    return 0;
+}

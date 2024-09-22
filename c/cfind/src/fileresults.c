@@ -108,7 +108,7 @@ void print_file_results(FileResults *results, const SortBy sort_by, const unsign
         printf("\nMatching files (%zu):\n", results_count);
 
         for (i = 0; i < results_count; i++) {
-            size_t frlen = file_result_strlen(results_array[i]);
+            const size_t frlen = file_result_strlen(results_array[i]);
             char resstr[frlen + 1];
             file_result_to_string(results_array[i], resstr);
             resstr[frlen] = '\0';

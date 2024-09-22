@@ -104,6 +104,9 @@ void handle_error(error_t err)
     case E_STARTPATH_NOT_FOUND:
         log_err("Startpath not found");
         break;
+    case E_STARTPATH_NOT_READABLE:
+        log_err("Startpath not readable");
+        break;
     case E_STARTPATH_STAT_FAILED:
         log_err("An unknown error occurred trying to read startpath");
         break;

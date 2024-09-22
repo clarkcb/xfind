@@ -4,6 +4,7 @@
 #include <wordexp.h>
 #include <printf.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "fileutil.h"
@@ -12,13 +13,10 @@ const char *DOT_DIRS[] = {".", "..", "./", "../"};
 
 unsigned short dir_or_file_exists(const char *file_path)
 {
-    struct stat statbuf;
-    if (stat(file_path, &statbuf) == -1) {
-        if (ENOENT == errno) {
-            return 0; // does not exist
-        }
+    if (access(file_path, F_OK) == 0) {
+        return 1;
     }
-    return 1;
+    return 0;
 }
 
 unsigned short is_dot_dir(const char *file_path)
@@ -148,11 +146,11 @@ void expand_path(const char *file_path, char **expanded)
 
 void join_path(const char *p1, const char *p2, char *joined)
 {
-    size_t joinedlen = (p1 ? strnlen(p1, MAX_PATH_LENGTH) : 0) +
-                       (p2 ? strnlen(p2, MAX_PATH_LENGTH) : 0) + 2;
+    size_t p1_len = p1 ? strnlen(p1, MAX_PATH_LENGTH) : 0;
+    size_t p2_len = p2 ? strnlen(p2, MAX_PATH_LENGTH) : 0;
+    const size_t joined_len = p1_len + p2_len + 2;
 
     if (p1) {
-        size_t p1_len = strnlen(p1, MAX_PATH_LENGTH);
         strncpy(joined, p1, p1_len);
         if (p2) {
             joined[p1_len] = PATH_SEPARATOR;
@@ -162,9 +160,9 @@ void join_path(const char *p1, const char *p2, char *joined)
         *joined = 0;
     }
     if (p2) {
-        strncpy(joined + strnlen(joined, MAX_PATH_LENGTH), p2, strnlen(p2, MAX_PATH_LENGTH));
+        strncpy(joined + strnlen(joined, MAX_PATH_LENGTH), p2, p2_len);
     }
-    joined[joinedlen - 1] = '\0';
+    joined[joined_len - 1] = '\0';
 }
 
 void split_path(const char *fp, char** p, char** f)

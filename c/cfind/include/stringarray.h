@@ -1,6 +1,8 @@
 #ifndef STRINGARRAY_H
 #define STRINGARRAY_H
 
+#include <stdlib.h>
+
 typedef struct StringArray {
     char **strings;
     size_t size;

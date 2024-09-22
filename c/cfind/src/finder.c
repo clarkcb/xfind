@@ -2,9 +2,9 @@
 #include <dirent.h>
 #include <errno.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "common.h"
 #include "finderr.h"
@@ -31,6 +31,9 @@ error_t validate_settings(const FindSettings *settings)
     while (path != NULL) {
         if (!dir_or_file_exists(path->string)) {
             return E_STARTPATH_NOT_FOUND;
+        }
+        if (access(path->string, R_OK) != 0) {
+            return E_STARTPATH_NOT_READABLE;
         }
         path = path->next;
     }
@@ -173,7 +176,8 @@ unsigned short is_matching_last_mod(const FindSettings *settings, const long las
 }
 
 unsigned short is_matching_file(const FindSettings *settings, const char *file_name,
-                                const FileType *file_type, const struct stat *fpstat)
+                                const FileType *file_type, const uint64_t file_size,
+                                const long last_mod)
 {
     if (*file_type == ARCHIVE) {
         if (settings->include_archives == 0) return 0;
@@ -184,18 +188,18 @@ unsigned short is_matching_file(const FindSettings *settings, const char *file_n
     return has_matching_extension(settings, file_name) == 1
         && is_matching_file_name(settings, file_name) == 1
         && is_matching_file_type(settings, file_type) == 1
-        && is_matching_file_size(settings, fpstat->st_size) == 1
-        && is_matching_last_mod(settings, fpstat->st_mtime) == 1;
+        && is_matching_file_size(settings, file_size) == 1
+        && is_matching_last_mod(settings, last_mod) == 1;
 }
 
 unsigned short filter_file(const FindSettings *settings, const char *dir, const char *file_name,
-                           const FileType *file_type, const struct stat *fpstat)
+                           const FileType *file_type, const uint64_t file_size, const long last_mod)
 {
     if (settings->include_hidden == 0 && is_hidden(file_name))
         return 0;
     if (is_matching_dir(settings, dir) == 0)
         return 0;
-    return is_matching_file(settings, file_name, file_type, fpstat);
+    return is_matching_file(settings, file_name, file_type, file_size, last_mod);
 }
 
 // the recursive function
@@ -255,8 +259,10 @@ static error_t find_dir(const Finder *finder, const char *dir_path, FileResults 
             }
         } else if (S_ISREG(fpstat.st_mode)) {
             FileType file_type = get_file_type(dent->d_name, finder->file_types);
+            const uint64_t file_size = fpstat.st_size;
+            const long last_mod = fpstat.st_mtime;
             if ((min_depth < 0 || current_depth >= min_depth)
-                && filter_file(finder->settings, norm_path, dent->d_name, &file_type, &fpstat) == 1) {
+                && filter_file(finder->settings, norm_path, dent->d_name, &file_type, file_size, last_mod) == 1) {
                 size_t slen = strnlen(dent->d_name, MAX_PATH_LENGTH);
                 char *file_name = malloc((slen + 1) * sizeof(char));
                 strncpy(file_name, dent->d_name, slen);
@@ -326,7 +332,7 @@ static error_t find_path(const Finder *finder, const char *file_path, FileResult
         char *d = malloc(next_path_len);
         char *f = malloc(next_path_len);
         split_path(file_path, &d, &f);
-        if (filter_file(finder->settings, d, f, &file_type, &st) == 1) {
+        if (filter_file(finder->settings, d, f, &file_type, st.st_size, st.st_mtime) == 1) {
             FileResult *r = new_file_result(d, f, file_type, st.st_size,
                                             st.st_mtime);
             add_to_file_results(r, results);
