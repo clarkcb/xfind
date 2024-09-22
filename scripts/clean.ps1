@@ -56,14 +56,13 @@ function CleanC
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
-    $configurations = @('debug', 'release')
-    ForEach ($c in $configurations)
+    $cmakeBuildDirs = Get-ChildItem . | Where-Object {$_.Name.StartsWith('cmake-build-')}
+    ForEach ($c in $cmakeBuildDirs)
     {
-        $cmakeBuildPath = Join-Path $cfindPath "cmake-build-$c"
-        if (Test-Path $cmakeBuildPath)
+        if (Test-Path $c)
         {
-            Log("Remove-Item $cmakeBuildPath -Recurse -Force")
-            Remove-Item $cmakeBuildPath -Recurse -Force
+            Log("Remove-Item $c -Recurse -Force")
+            Remove-Item $c -Recurse -Force
         }
     }
 
@@ -98,14 +97,13 @@ function CleanCpp
     $oldPwd = Get-Location
     Set-Location $cppfindPath
 
-    $configurations = @('debug', 'release')
-    ForEach ($c in $configurations)
+    $cmakeBuildDirs = Get-ChildItem . | Where-Object {$_.Name.StartsWith('cmake-build-')}
+    ForEach ($c in $cmakeBuildDirs)
     {
-        $cmakeBuildPath = Join-Path $cppfindPath "cmake-build-$c"
-        if (Test-Path $cmakeBuildPath)
+        if (Test-Path $c)
         {
-            Log("Remove-Item $cmakeBuildPath -Recurse -Force")
-            Remove-Item $cmakeBuildPath -Recurse -Force
+            Log("Remove-Item $c -Recurse -Force")
+            Remove-Item $c -Recurse -Force
         }
     }
 
