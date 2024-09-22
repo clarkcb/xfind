@@ -5,6 +5,9 @@
 #include "StringUtil.h"
 #include "Finder.h"
 
+#include <iostream>
+#include <unistd.h>
+
 namespace cppfind {
     Finder::Finder(const FindSettings& settings) : m_settings{settings} {
         validate_settings(settings);
@@ -18,9 +21,13 @@ namespace cppfind {
         if (settings.paths().empty()) {
             throw FindException("Startpath not defined");
         }
-        if (std::ranges::any_of(settings.paths().cbegin(), settings.paths().cend(),
-            [](const std::filesystem::path& p){ return !FileUtil::path_exists(p); })) {
+        for (const auto& p : settings.paths()) {
+            if (!FileUtil::path_exists(p)) {
                 throw FindException("Startpath not found");
+            }
+            if (access(p.c_str(), R_OK) != 0) {
+                throw FindException("Startpath not readable");
+            }
         }
         if (settings.max_depth() > -1 && settings.max_depth() < settings.min_depth()) {
             throw FindException("Invalid range for mindepth and maxdepth");
@@ -151,13 +158,20 @@ namespace cppfind {
         uint64_t file_size = 0;
         long last_mod = 0;
         if (m_settings.need_stat()) {
-            struct stat fpstat;
-            if (stat(file_path.c_str(), &fpstat) == -1) {
-                // TODO: report error
-                return std::nullopt;
-            }
-            file_size = static_cast<uint64_t>(fpstat.st_size);
-            last_mod = static_cast<long>(fpstat.st_mtime);
+            // get file size
+            file_size = static_cast<uint64_t>(std::filesystem::file_size(file_path));
+
+            // get last write time
+            const std::filesystem::file_time_type last_write_time = std::filesystem::last_write_time(file_path);
+
+            // Convert to time since epoch (duration)
+            const auto time_since_epoch = last_write_time.time_since_epoch();
+
+            // Convert to seconds (or nanoseconds, etc.) depending on the representation
+            const auto seconds = std::chrono::duration_cast<std::chrono::seconds>(time_since_epoch).count();
+
+            // Convert to long
+            last_mod = static_cast<long>(seconds);
         }
         auto file_result = FileResult(file_path, file_type, file_size, last_mod);
         if (file_type == FileType::ARCHIVE) {
@@ -182,22 +196,18 @@ namespace cppfind {
             return file_results;
         }
 
-        std::vector<std::filesystem::directory_entry> dir_entries;
-        copy(std::filesystem::directory_iterator(dir_path), std::filesystem::directory_iterator(),
-             back_inserter(dir_entries));
-
         std::vector<std::filesystem::path> path_dirs{};
 
-        for (const auto& de : dir_entries) {
-            if (const std::filesystem::path path_elem = de.path();
-                is_directory(path_elem) && recurse && is_matching_dir_path(path_elem.filename())) {
-                path_dirs.push_back(path_elem);
-            } else if (is_regular_file(path_elem) && (min_depth < 0 || current_depth >= min_depth)) {
-                if (auto opt_file_result = filter_to_file_result(path_elem);
-                    opt_file_result.has_value()) {
-                    file_results.push_back(std::move(opt_file_result.value()));
+        try {
+            for (const std::filesystem::directory_iterator it{dir_path}; const auto& entry : it) {
+                if (entry.is_directory() && recurse && is_matching_dir_path(entry.path().filename())) {
+                    path_dirs.push_back(entry.path());
+                } else if (entry.is_regular_file() && (min_depth < 0 || current_depth >= min_depth)) {
+                    path_files.push_back(entry.path());
                 }
             }
+        } catch (const std::filesystem::filesystem_error& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
         }
 
         for (const auto& path_dir : path_dirs) {
