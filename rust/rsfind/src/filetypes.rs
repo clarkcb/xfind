@@ -72,9 +72,9 @@ fn db_file_type_for_extension(db: &sqlite::Connection, file_ext: &str) -> usize 
 impl FileTypes {
     pub fn new() -> Result<FileTypes, FindError> {
         let config = Config::new();
+        let flags = sqlite::OpenFlags::new().with_read_only();
         let file_types = FileTypes {
-            // TODO: use Connection::open_with_flags to open readonly
-            db: sqlite::open(config.xfind_db_path).unwrap(),
+            db: sqlite::Connection::open_with_flags(config.xfind_db_path, flags).unwrap(),
             file_types: vec![
                 FileType::Unknown,
                 FileType::Archive,
