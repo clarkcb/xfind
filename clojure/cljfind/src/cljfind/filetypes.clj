@@ -38,7 +38,8 @@
 
 (def ^:const db
   {:dbtype "sqlite"
-   :dbname XFINDDB})
+   :dbname XFINDDB
+   :url (join "" ["jdbc:sqlite:" XFINDDB "?readOnly=true"])})
 
 (def ^:const ^String FILE-NAMES-QUERY "SELECT name, file_type_id FROM file_name")
 (def ^:const ^String FILE-NAME-QUERY "SELECT file_type_id FROM file_name WHERE name = ?")
