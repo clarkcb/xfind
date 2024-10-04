@@ -23,7 +23,7 @@ repositories {
 dependencies {
     api(libs.commons.io.commons.io)
     api(libs.org.json.json)
-    testImplementation("org.junit.jupiter:junit-jupiter:5.10.2")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.11.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
