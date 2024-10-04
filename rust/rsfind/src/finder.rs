@@ -5,7 +5,6 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use regex::Regex;
-use walkdir::WalkDir;
 
 use crate::fileresult::FileResult;
 use crate::filetypes::{FileType, FileTypes};
@@ -139,6 +138,13 @@ impl Finder {
     fn is_matching_last_mod(&self, last_mod: &u64) -> bool {
         (self.settings.max_last_mod() == 0 || last_mod <= &self.settings.max_last_mod())
             && (self.settings.min_last_mod() == 0 || last_mod >= &self.settings.min_last_mod())
+    }
+
+    fn filter_paths_to_file_results(&self, file_paths: &Vec<PathBuf>) -> Vec<FileResult> {
+        file_paths.iter()
+            .map(|p| self.filter_path_to_file_result(p))
+            .filter(|p| p.is_some())
+            .map(|p| p.unwrap()).collect()
     }
 
     fn filter_path_to_file_result(&self, file_path: &Path) -> Option<FileResult> {
@@ -346,29 +352,57 @@ impl Finder {
         }
     }
 
+    fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i64, max_depth: i64, current_depth: i64) -> Result<Vec<FileResult>, FindError> {
+        let mut file_results: Vec<FileResult> = Vec::new();
+        if max_depth > -1 && current_depth > max_depth {
+            return Ok(file_results);
+        }
+        let recurse = !(current_depth == max_depth);
+
+        let mut path_dirs = Vec::<PathBuf>::new();
+        let mut path_files = Vec::<PathBuf>::new();
+
+        for dir_entry in dir_path.read_dir().ok().unwrap().flatten() {
+            if dir_entry.path().is_dir() && recurse && self.is_matching_dir(dir_entry.file_name().to_str().unwrap()) {
+                path_dirs.push(dir_entry.path());
+            } else if dir_entry.path().is_file() && (min_depth < 0 || current_depth >= min_depth) {
+                path_files.push(dir_entry.path());
+            }
+        }
+
+        if !path_files.is_empty() {
+            let path_file_results = self.filter_paths_to_file_results(&path_files);
+            file_results.extend(path_file_results);
+        }
+
+        for path_dir in path_dirs {
+            match self.rec_find_path(&path_dir, min_depth, max_depth, current_depth + 1) {
+                Ok(path_dir_results) => file_results.extend(path_dir_results),
+                Err(err) => return Err(err)
+            }
+        }
+
+        Ok(file_results)
+    }
+
     pub fn find_path(&self, path: &String) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
-        let ep = FileUtil::expand_path(path);
-        let path_buf = PathBuf::from(&ep);
+        let path_buf = PathBuf::from(&path);
         if path_buf.is_dir() {
-            let mut dir_walker = WalkDir::new(&ep).follow_links(false); // TODO: add followlinks to settings and use here
-            if !self.settings.recursive() {
-                dir_walker = dir_walker.max_depth(1usize)
-            } else if self.settings.max_depth() > -1 {
-                dir_walker = dir_walker.max_depth(self.settings.max_depth() as usize)
+            if self.settings.max_depth() == 0 {
+                return Ok(file_results);
             }
-            if self.settings.min_depth() > -1 {
-                dir_walker = dir_walker.min_depth(self.settings.min_depth() as usize)
+            if self.is_matching_dir(path) {
+                let max_depth = if self.settings.recursive() { self.settings.max_depth() } else { 1 };
+                return self.rec_find_path(&path_buf, self.settings.min_depth(), max_depth, 1);
             }
-            for entry in dir_walker
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.file_type().is_file())
-            {
-                let opt_file_result = self.filter_path_to_file_result(&entry.path());
-                if opt_file_result.is_some() {
-                    file_results.push(opt_file_result.unwrap())
-                }
+        } else if path_buf.is_file() {
+            if self.settings.min_depth() > 0 {
+                return Ok(file_results);
+            }
+            match self.filter_path_to_file_result(path_buf.as_path()) {
+                Some(file_result) => file_results.push(file_result),
+                None => {}
             }
         }
         Ok(file_results)
