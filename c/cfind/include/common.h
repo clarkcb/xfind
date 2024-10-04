@@ -1,7 +1,7 @@
 #ifndef CFIND_COMMON_H
 #define CFIND_COMMON_H
 
-#include <stdlib.h>
+#include <stddef.h>
 
 #define MAX_FILENAME_LENGTH 255
 #define MAX_PATH_LENGTH 1024

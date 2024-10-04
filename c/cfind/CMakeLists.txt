@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.29)
+cmake_minimum_required(VERSION 3.30)
 project(cfind VERSION 0.1.0 LANGUAGES C)
 
 if (NOT DEFINED CMAKE_C_STANDARD)

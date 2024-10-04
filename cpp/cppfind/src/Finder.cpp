@@ -203,7 +203,10 @@ namespace cppfind {
                 if (entry.is_directory() && recurse && is_matching_dir_path(entry.path().filename())) {
                     path_dirs.push_back(entry.path());
                 } else if (entry.is_regular_file() && (min_depth < 0 || current_depth >= min_depth)) {
-                    path_files.push_back(entry.path());
+                    if (auto opt_file_result = filter_to_file_result(entry.path());
+                        opt_file_result.has_value()) {
+                        file_results.push_back(std::move(opt_file_result.value()));
+                    }
                 }
             }
         } catch (const std::filesystem::filesystem_error& e) {

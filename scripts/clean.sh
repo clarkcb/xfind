@@ -410,6 +410,8 @@ clean_linux () {
 
     clean_go
 
+    clean_groovy
+
     # clean_haskell
 
     clean_java
@@ -455,6 +457,8 @@ clean_all () {
     clean_fsharp
 
     clean_go
+
+    clean_groovy
 
     clean_haskell
 

@@ -11,17 +11,24 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy:4.0.14'
-    implementation 'org.apache.groovy:groovy-json:4.0.14'
+    implementation 'org.apache.groovy:groovy:4.0.23'
+    implementation 'org.apache.groovy:groovy-json:4.0.23'
     implementation 'org.xerial:sqlite-jdbc:3.46.0.0'
     implementation 'org.slf4j:slf4j-nop:1.7.36'
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testImplementation platform('org.junit:junit-bom:5.11.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.1'
 }
 
 application {
     // Define the main class for the application.
     mainClass = 'groovyfind.GroovyFind'
+}
+
+// Apply a specific Java toolchain to ease working on different environments.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(11)
+    }
 }
 
 jar {
