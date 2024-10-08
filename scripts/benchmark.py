@@ -7,6 +7,8 @@
 # A simple benchmarking tool for the various xfind language versions
 #
 ################################################################################
+import argparse
+import json
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -25,6 +27,13 @@ class Scenario:
     args: list
     replace_xfind_name: bool = False
     case_insensitive_cmp: bool = False
+
+
+@dataclass
+class ScenarioGroup:
+    """Class for grouping scenarios"""
+    name: str
+    scenarios: list[Scenario]
 
 
 ########################################
@@ -349,6 +358,7 @@ class ScenarioResults(object):
 class Benchmarker(object):
     def __init__(self, **kwargs):
         self.xfind_names = all_xfind_names
+        self.groups = []
         self.scenarios = []
         self.runs = default_runs
         self.debug = True
@@ -357,17 +367,54 @@ class Benchmarker(object):
         self.scenario_diff_dict = {}
         self.__dict__.update(kwargs)
         self.shell = os.environ.get('SHELL', '/bin/bash')
-        self.git_info = self.get_git_info()
+        self.git_info = get_git_info()
+        # read from scenarios file
+        if isinstance(self.scenarios, str) and os.path.isfile(self.scenarios):
+            self.load_scenarios(self.scenarios)
 
-    def get_git_info(self):
-        git_info = {}
-        try:
-            git_info['branch'] = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip().decode()
-            git_info['commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
-            # git_info['status'] = subprocess.check_output(['git', 'status', '--porcelain']).strip().decode()
-        except Exception as e:
-            print(f'Error getting git info: {str(e)}')
-        return git_info
+    def load_scenarios(self, scenarios_file: str):
+            scenario_group_dict = {}
+            if not os.path.isfile(scenarios_file):
+                print(f'Error: scenarios file not found: {scenarios_file}')
+                return
+            with open(scenarios_file, 'r') as sf:
+                scenarios_dict = json.load(sf)
+            self.scenarios = []
+            XFIND_PATH = os.environ.get('XFIND_PATH', XFINDPATH)
+            for (rk, rv) in scenarios_dict['ref'].items():
+                if rk == 'common_out_dirpatterns':
+                    scenarios_dict['ref'][rk] = [elem for d in [['-D', d] for d in rv] for elem in d]
+                elif rk == 'common_in_extensions':
+                    scenarios_dict['ref'][rk] = ['-x', ','.join(rv)]
+                elif rk == 'common_out_extensions':
+                    scenarios_dict['ref'][rk] = ['-X', ','.join(rv)]
+                elif rk == 'common_startpaths':
+                    for i, p in enumerate(rv):
+                        rv[i] = p.replace('$XFIND_PATH', XFIND_PATH)
+                elif rk == 'scriptpath' or rk == 'sharedpath':
+                    scenarios_dict['ref'][rk] = rv.replace('$XFIND_PATH', XFIND_PATH)
+
+            for s in scenarios_dict['scenarios']:
+                sg_name = s['group']
+                sg = scenario_group_dict.setdefault(sg_name, ScenarioGroup(sg_name, []))
+                args = s['args']
+                if 'common_args' in s:
+                    for ca in s['common_args']:
+                        args.extend(scenarios_dict['ref'][ca]) 
+                scenario = Scenario(s['name'], s['args'])
+                if 'replace_xfind_name' in s:
+                    scenario.replace_xfind_name = s['replace_xfind_name']
+                sg.scenarios.append(scenario)
+            groups = self.groups
+            if not groups:
+                groups = scenario_group_dict.keys()
+            elif any([g not in scenario_group_dict for g in groups]):
+                print(f'Error: group not found in scenarios file: {groups}')
+                sys.exit(1)
+            for g in groups:
+                sg = scenario_group_dict.get(g)
+                if sg:
+                    self.scenarios.extend(sg.scenarios)
 
     def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print('\n{}'.format(title))
@@ -793,14 +840,71 @@ def get_args(args):
     return xfind_names, runs, exit_on_diff, debug
 
 
+def get_git_info():
+    git_info = {}
+    try:
+        git_info['branch'] = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD']).strip().decode()
+        git_info['commit'] = subprocess.check_output(['git', 'rev-parse', 'HEAD']).strip().decode()
+        # git_info['status'] = subprocess.check_output(['git', 'status', '--porcelain']).strip().decode()
+    except Exception as e:
+        print(f'Error getting git info: {str(e)}')
+    return git_info
+
+
+def get_parser():
+    parser = argparse.ArgumentParser(description='Run xfind benchmark')
+    parser.add_argument('-g', '--group', nargs='*', help='Name of scenario group to run')
+    parser.add_argument('-l', '--langs', help='Comma-separated list of language names to benchmark')
+    parser.add_argument('-r', '--runs', type=int, help='Number of runs for each scenario')
+    parser.add_argument('-b', '--exit_on_diff', action='store_true', help='Exit on first output difference')
+    parser.add_argument('-s', '--scenarios', help='A scenarios json file')
+    parser.add_argument('--debug', action='store_true', help='Print debug output')
+    return parser
+
+
 def main():
-    xfind_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
+    # Defaults
+    xfind_names = all_xfind_names
+    groups = []
+    runs = default_runs
+    debug = False
+    exit_on_diff = True
+    scenarios_file = 'scenarios.json'
+
+    parser = get_parser()
+    parsed_args = parser.parse_args(sys.argv[1:])
+
+    if parsed_args.debug:
+        debug = True
+
+    if parsed_args.group:
+        groups.extend(parsed_args.group)
+
+    if parsed_args.langs:
+        xfind_names = []
+        langs = sorted(parsed_args.langs.split(','))
+        for lang in langs:
+            if lang in xfind_dict:
+                xfind_names.append(xfind_dict[lang])
+            else:
+                print(f'Skipping unknown language: {lang}')
+
+    if parsed_args.runs:
+        runs = parsed_args.runs
+
+    if parsed_args.scenarios:
+        scenarios_file = parsed_args.scenarios
+
+    # xfind_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
     print(f'xfind_names: {str(xfind_names)}')
-    print(f'runs: {runs}')
-    print(f'exit_on_diff: {exit_on_diff}')
     print(f'debug: {debug}')
+    print(f'exit_on_diff: {exit_on_diff}')
+    print(f'groups: {groups}')
+    print(f'runs: {runs}')
+    print(f'scenarios: {scenarios_file}')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
-                              scenarios=scenarios, exit_on_diff=exit_on_diff,
+                              groups=groups, scenarios=scenarios_file,
+                              exit_on_diff=exit_on_diff,
                               debug=debug)
     benchmarker.run()
 

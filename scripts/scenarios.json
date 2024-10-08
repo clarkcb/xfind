@@ -1,0 +1,366 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "build", "cmake", "node_modules", "pycache", "target", "vendor", "venv"
+        ],
+        "common_in_extensions": ["py", "rb"],
+        "common_out_extensions": ["py", "rb"],
+        "common_startpaths": ["$XFIND_PATH/python", "$XFIND_PATH/ruby"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "help/usage",
+            "name": "no args",
+            "args": [],
+            "replace_xfind_name": true
+        },
+        {
+            "group": "help/usage",
+            "name": "help",
+            "args": ["-h"],
+            "replace_xfind_name": true
+        },
+        {
+            "group": "match filename",
+            "name": "find with \"find\" in filename",
+            "args": ["-f", "find"],
+            "common_args": [
+                "common_out_dirpatterns", "common_in_extensions", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match filename",
+            "name": "find with \"find\" not in filename",
+            "args": ["-F", "find"],
+            "common_args": [
+                "common_out_dirpatterns", "common_in_extensions", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match filename",
+            "name": "find blank filename (should find nothing)",
+            "args": ["-f", "^$"],
+            "common_args": [
+                "common_out_dirpatterns", "common_in_extensions", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"audio\" filetype",
+            "args": ["-t", "audio"],
+            "common_args": [
+                "common_out_dirpatterns", "common_in_extensions", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"audio\" filetype",
+            "args": ["-T", "audio"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"binary\" filetype",
+            "args": ["-t", "binary"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"binary\" filetype",
+            "args": ["-T", "binary"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"code\" filetype",
+            "args": ["-t", "code"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"code\" filetype",
+            "args": ["-T", "code"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"font\" filetype",
+            "args": ["-t", "font"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"font\" filetype",
+            "args": ["-T", "font"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"image\" filetype",
+            "args": ["-t", "image"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"image\" filetype",
+            "args": ["-T", "image"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"text\" filetype",
+            "args": ["-t", "text"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"text\" filetype",
+            "args": ["-T", "text"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"video\" filetype",
+            "args": ["-t", "video"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"video\" filetype",
+            "args": ["-T", "video"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find \"xml\" filetype",
+            "args": ["-t", "xml"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "match file type",
+            "name": "find not \"xml\" filetype",
+            "args": ["-T", "xml"],
+            "common_args": [
+                "common_out_dirpatterns", "common_startpaths"
+            ]
+        },
+        {
+            "group": "print dirs",
+            "name": "print matching dirs for in-extensions",
+            "args": ["--printdirs"],
+            "common_args": [
+                "common_out_dirpatterns", "common_in_extensions", "common_startpaths"
+            ]
+        },
+        {
+            "group": "print dirs",
+            "name": "print matching dirs for out-extensions",
+            "args": ["--printdirs"],
+            "common_args": [
+                "common_out_dirpatterns", "common_out_extensions", "common_startpaths"
+            ]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by path",
+            "args": ["--sort-by", "path"],
+            "common_args": ["sharedpath"]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by filename",
+            "args": ["--sort-by", "name"],
+            "common_args": ["sharedpath"]
+        },
+        {
+            "group": "sorting",
+            "name": "sort scripts files by path case-insensitive",
+            "args": ["--sort-by", "path", "--sort-caseinsensitive"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "sorting",
+            "name": "sort scripts files by filename case-insensitive",
+            "args": ["--sort-by", "name", "--sort-caseinsensitive"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by filesize",
+            "args": ["--sort-by", "size"],
+            "common_args": ["sharedpath"]
+
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by filesize descending",
+            "args": ["--sort-by", "size", "--sort-descending"],
+            "common_args": ["sharedpath"]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by filetype",
+            "args": ["--sort-by", "type"],
+            "common_args": ["sharedpath"]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by filetype descending",
+            "args": ["--sort-by", "type", "--sort-descending"],
+            "common_args": ["sharedpath"]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by lastmod",
+            "args": ["--sort-by", "lastmod"],
+            "common_args": ["sharedpath"]
+        },
+        {
+            "group": "sorting",
+            "name": "sort shared files by lastmod descending",
+            "args": ["--sort-by", "lastmod", "--sort-descending"],
+            "common_args": ["sharedpath"]
+        },
+
+        {
+            "group": "filter by maxdepth/mindepth",
+            "name": "filter files with depth <= maxdepth",
+            "args": ["--maxdepth", "3"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxdepth/mindepth",
+            "name": "filter files with depth >= mindepth",
+            "args": ["--mindepth", "2"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxdepth/mindepth",
+            "name": "filter files by maxdepth and mindepth",
+            "args": ["--maxdepth", "3", "--mindepth", "2"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxdepth/mindepth",
+            "name": "filter files by invalid range maxdepth and mindepth",
+            "args": ["--maxdepth", "2", "--mindepth", "3"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+
+        {
+            "group": "filter by maxlastmod/minlastmod",
+            "name": "filter files with lastmod <= maxlastmod",
+            "args": ["--maxlastmod", "2022-12-30"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxlastmod/minlastmod",
+            "name": "filter files with lastmod >= minlastmod",
+            "args": ["--minlastmod", "2020-01-01"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxlastmod/minlastmod",
+            "name": "filter files by maxlastmod and minlastmod",
+            "args": ["--maxlastmod", "2022-12-30", "--minlastmod", "2020-01-01"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxlastmod/minlastmod",
+            "name": "filter files by invalid range maxlastmod and minlastmod",
+            "args": ["--maxlastmod", "2020-01-01", "--minlastmod", "2022-12-30"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+
+        {
+            "group": "filter by maxsize/minsize",
+            "name": "filter files with size < maxsize",
+            "args": ["--maxsize", "10000"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxsize/minsize",
+            "name": "filter files with size > minsize",
+            "args": ["--minsize", "1000"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxsize/minsize",
+            "name": "filter files by maxsize and minsize",
+            "args": ["--maxsize", "10000", "--minsize", "5000"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+        {
+            "group": "filter by maxsize/minsize",
+            "name": "filter files by invalid range maxsize and minsize",
+            "args": ["--maxsize", "5000", "--minsize", "10000"],
+            "common_args": [
+                "common_out_dirpatterns", "scriptpath"
+            ]
+        },
+
+        {
+            "group": "settings-only",
+            "name": "settings-only",
+            "args": ["-t", "code", "--settingsonly"],
+            "case_insensitive_cmp": true
+        }
+
+    ]
+}
