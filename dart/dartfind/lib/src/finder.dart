@@ -175,44 +175,73 @@ class Finder {
     });
   }
 
-  Future<List<FileResult>> _getFileResultsForPath(String startPath) async {
-    return FileSystemEntity.type(startPath).then((fsType) {
-      var fileResults = <FileResult>[];
-      var startPathSepCount = FileUtil.sepCount(startPath);
+  Future<List<FileResult>> filterToFileResults(List<File> filePaths) {
+    var fileResultsFutures = filePaths.map((f) => filterToFileResult(f));
+    return Future.wait(fileResultsFutures).then((fileResults) {
+      return fileResults.where((fr) => fr != null).toList().cast<FileResult>();
+    });
+  }
+
+  Future<List<FileResult>> _recGetFileResultsForDir(
+      Directory dir, int minDepth, int maxDepth, int currentDepth) async {
+    var fileResults = <FileResult>[];
+    var recurse = true;
+    if (currentDepth == maxDepth) {
+      recurse = false;
+    } else if (maxDepth > -1 && currentDepth > maxDepth) {
+      return [];
+    }
+
+    // Get dirs and files under filePath
+    var pathDirs = <Directory>[];
+    var pathFiles = <File>[];
+    List<FileSystemEntity> entries = dir.listSync(recursive: false).toList();
+    for (var entry in entries) {
+      if (entry is Directory && recurse && isMatchingDir(entry)) {
+        pathDirs.add(entry);
+      } else if (entry is File && (minDepth < 0 || currentDepth >= minDepth)) {
+        pathFiles.add(entry);
+      }
+    }
+
+    // Filter files
+    filterToFileResults(pathFiles).then((pathResults) {
+      fileResults.addAll(pathResults);
+    });
+
+    // Recurse into dirs
+    for (var pathDir in pathDirs) {
+      var subFileResults = await _recGetFileResultsForDir(
+          pathDir, minDepth, maxDepth, currentDepth + 1);
+      fileResults.addAll(subFileResults);
+    }
+    return fileResults;
+  }
+
+  Future<List<FileResult>> _getFileResultsForPath(String filePath) async {
+    return FileSystemEntity.type(filePath).then((fsType) {
       if (fsType == FileSystemEntityType.directory) {
         // if max_depth is zero, we can skip since a directory cannot be a result
         if (settings.maxDepth == 0) {
           return [];
         }
-        var dir = Directory(startPath);
-        var recursive = settings.recursive;
-        if (settings.maxDepth == 1) {
-          recursive = false;
+        var dir = Directory(filePath);
+        var maxDepth = settings.maxDepth;
+        if (!settings.recursive) {
+          maxDepth = 1;
         }
-        return dir.list(recursive: recursive).listen((f) async {
-          var fileSepCount = FileUtil.sepCount(f.path);
-          var depth = fileSepCount - startPathSepCount;
-          if (f is File &&
-              depth >= settings.minDepth &&
-              (settings.maxDepth < 1 || depth <= settings.maxDepth) &&
-              isMatchingDir(f.parent)) {
-            var fileResult = await filterToFileResult(f);
-            if (fileResult != null) {
-              fileResults.add(fileResult);
-            }
-          }
-        }).asFuture(fileResults);
+        return _recGetFileResultsForDir(dir, settings.minDepth, maxDepth, 1);
       } else if (fsType == FileSystemEntityType.file) {
         // if min_depth > zero, we can skip since the file is at depth zero
         if (settings.minDepth > 0) {
           return [];
         }
-        var startFile = File(startPath);
+        var startFile = File(filePath);
         if (isMatchingDir(startFile.parent)) {
           int fileSize = 0;
           DateTime? lastMod;
           if (settings.needSize() || settings.needLastMod()) {
-            FileStat stat = FileStat.statSync(startPath);
+            FileStat stat = FileStat.statSync(filePath);
             if (settings.needSize()) {
               fileSize = stat.size;
             }
@@ -220,7 +249,7 @@ class Finder {
               lastMod = stat.modified;
             }
           }
-          return _fileTypes.getFileType(startPath).then((fileType) {
+          return _fileTypes.getFileType(filePath).then((fileType) {
             var fileResult = FileResult(startFile, fileType, fileSize, lastMod);
             if (isMatchingFileResult(fileResult)) {
               return [fileResult];
