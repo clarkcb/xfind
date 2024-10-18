@@ -22,6 +22,8 @@ unsigned short is_matching_file(const FindSettings *settings, const char *file_n
 unsigned short filter_file(const FindSettings *settings, const char *dir, const char *file_name,
                            const FileType *file_type, uint64_t file_size, long last_mod);
 
+error_t filter_to_file_results(const Finder *finder, const StringNode *file_paths, FileResults *results);
+
 error_t find(const FindSettings *settings, FileResults *results);
 
 void destroy_finder(Finder *finder);
