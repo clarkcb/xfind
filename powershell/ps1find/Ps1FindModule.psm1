@@ -28,12 +28,6 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 ########################################
 $dotPaths = @('.', '..')
 
-function IsDotDir {
-    [OutputType([bool])]
-    param([System.IO.FileSystemInfo]$f)
-    return $dotPaths.Contains($f.Name)
-}
-
 function IsHiddenFileName {
     [OutputType([bool])]
     param([string]$fileName)
@@ -902,79 +896,84 @@ class Finder {
         return $null
     }
 
+    [FileResult[]]FilterToFileResults([System.IO.FileInfo[]]$files) {
+        $fileResults = @()
+        foreach ($file in $files) {
+            $fileResult = $this.FilterToFileResult($file)
+            if ($null -ne $fileResult) {
+                $fileResults += $fileResult
+            }
+        }
+        return $fileResults
+    }
+
+    [FileResult[]]RecGetPathResults([System.IO.DirectoryInfo]$dirPath, [int]$minDepth, [int]$maxDepth, [int]$currentDepth) {
+        $recurse = $true
+        if ($currentDepth -eq $maxDepth) {
+            $recurse = $false
+        } elseif ($maxDepth -gt -1 -and $currentDepth -gt $minDepth) {
+            return @()
+        }
+
+        # Get the dirs and files under file_path
+        $pathDirs = @()
+        $pathFiles = @()
+        $fileResults = @()
+        if ($recurse) {
+            # Force is needed to get hidden dirs
+            $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.IsMatchingDir($_) }
+        }
+        if ($minDepth -lt 0 -or $currentDepth -ge $minDepth) {
+            # Force is needed to get hidden files
+            $pathFiles = Get-ChildItem -Force -Recurse:$false -Path $dirPath -File
+        }
+
+        # Filter the dirs and files
+        $fileResults += $this.FilterToFileResults($pathFiles)
+        foreach ($pathDir in $pathDirs) {
+            $fileResults += $this.RecGetPathResults($pathDir, $minDepth, $maxDepth, $currentDepth + 1)
+        }
+
+        return $fileResults
+    }
+
+    [FileResult[]]GetPathResults([string]$path) {
+        $fileResults = @()
+        if (Test-Path -Path $path -PathType Container) {
+            # if max_depth is zero, we can skip since a directory cannot be a result
+            if ($this.settings.MaxDepth -eq 0) {
+                return $fileResults
+            }
+            $pathDir = [System.IO.DirectoryInfo]::new($path)
+            if ($this.IsMatchingDir($pathDir)) {
+                $maxDepth = $this.settings.MaxDepth
+                if (-not $this.settings.Recursive) {
+                    $maxDepth = 1
+                }
+                $fileResults += $this.RecGetPathResults($pathDir, $this.settings.MinDepth, $maxDepth, 1)
+            } else {
+                throw "Startpath does not match find settings"
+            }
+        } elseif (Test-Path -Path $path -PathType Leaf) {
+            # if min_depth > zero, we can skip since the file is at depth zero
+            if ($this.settings.MinDepth -gt 0) {
+                return @()
+            }
+            $pathFile = [System.IO.FileInfo]::new($path)
+            $pathFileResult = [FileResult]::new($pathFile, $this.fileTypes.GetFileType($pathFile))
+            if ($this.IsMatchingFileResult($pathFileResult)) {
+                $fileResults += $pathFileResult
+            } else {
+                throw "Startpath does not match find settings"
+            }
+        }
+        return $fileResults
+    }
+
     [FileResult[]]GetFileResults() {
         $fileResults = @()
-        $checkedDirs = @{}
-        # define the scriptblock to check each file's directory
-        $checkDir = {
-            $dir = $_.Directory
-            if ($null -eq $dir) {
-                return $true
-            }
-            if ($checkedDirs.ContainsKey($dir.FullName)) {
-                return $checkedDirs[$dir.FullName]
-            }
-            $isMatchingDir = $this.IsMatchingDir($dir)
-            $checkedDirs[$dir.FullName] = $isMatchingDir
-            return $isMatchingDir
-        }
-        # define the scriptblock that will get the FileResult objects for each path
-        $getPathFileResults = {}
-        $getPathFileResultsString = "param([string]`$path)`nGet-ChildItem -Path `$path -File"
-        if ($this.settings.Recursive) {
-            $getPathFileResultsString += " -Recurse:`$true"
-            # TODO: what to do about MinDepth?
-            if ($this.settings.MaxDepth -gt 0) {
-                $getPathFileResultsString += " -Depth $($this.settings.MaxDepth)"
-            }
-            if ($this.settings.IncludeHidden) {
-                $getPathFileResultsString += " -Force"
-            }
-            $getPathFileResultsString += " |`n"
-            $getPathFileResultsString += "Where-Object -FilterScript `$checkDir |`n"
-        } else {
-            $getPathFileResultsString += " -Recurse:`$false"
-            if ($this.settings.IncludeHidden) {
-                $getPathFileResultsString += " -Force"
-            }
-            $getPathFileResultsString += " |`n"
-        }
-        $getPathFileResultsString += "ForEach-Object { `$this.FilterToFileResult(`$_) } |`n"
-        $getPathFileResultsString += "Where-Object { `$null -ne `$_ }"
-
-        $getPathFileResults = [System.Management.Automation.ScriptBlock]::Create($getPathFileResultsString)
-
         foreach ($path in $this.settings.Paths) {
-            if (Test-Path -Path $path -PathType Container) {
-                # if max_depth is zero, we can skip since a directory cannot be a result
-                if ($this.settings.MaxDepth -ne 0) {
-                    $fileResults += $getPathFileResults.Invoke($path)
-                }
-                # if min_depth > zero, we need to filter results
-                if ($this.settings.MinDepth -gt 0) {
-                    $pathFile = [System.IO.FileInfo]::new($path)
-                    $pathDepth = PathElems($pathFile.FullName)
-                    $minDepthFileResults = @()
-                    foreach ($fileResult in $fileResults) {
-                        $fileResultDepth = PathElems($fileResult.File.FullName)
-                        if ($fileResultDepth - $pathDepth -ge $this.settings.MinDepth) {
-                            $minDepthFileResults += $fileResult
-                        }
-                    }
-                    $fileResults = $minDepthFileResults
-                }
-            } elseif (Test-Path -Path $path -PathType Leaf) {
-                # if min_depth > zero, we can skip since the file is at depth zero
-                if ($this.settings.MinDepth -lt 1) {
-                    $pathFile = [System.IO.FileInfo]::new($path)
-                    $pathFileResult = [FileResult]::new($pathFile, $this.fileTypes.GetFileType($pathFile))
-                    if ($this.IsMatchingFileResult($pathFileResult)) {
-                        $fileResults += $pathFileResult
-                    }
-                }
-            } else {
-                Write-Host "Not container or leaf: $path"
-            }
+            $fileResults += $this.GetPathResults($path)
         }
         return $fileResults
     }
