@@ -286,7 +286,8 @@
             "args": ["--maxdepth", "2", "--mindepth", "3"],
             "common_args": [
                 "common_out_dirpatterns", "scriptpath"
-            ]
+            ],
+            "replace_xfind_name": true
         },
 
         {
@@ -319,7 +320,8 @@
             "args": ["--maxlastmod", "2020-01-01", "--minlastmod", "2022-12-30"],
             "common_args": [
                 "common_out_dirpatterns", "scriptpath"
-            ]
+            ],
+            "replace_xfind_name": true
         },
 
         {
@@ -352,7 +354,8 @@
             "args": ["--maxsize", "5000", "--minsize", "10000"],
             "common_args": [
                 "common_out_dirpatterns", "scriptpath"
-            ]
+            ],
+            "replace_xfind_name": true
         },
 
         {
@@ -361,6 +364,5 @@
             "args": ["-t", "code", "--settingsonly"],
             "case_insensitive_cmp": true
         }
-
     ]
 }

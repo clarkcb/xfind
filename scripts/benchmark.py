@@ -360,6 +360,7 @@ class Benchmarker(object):
         self.xfind_names = all_xfind_names
         self.groups = []
         self.scenarios = []
+        self.scenarios_file = ''
         self.runs = default_runs
         self.debug = True
         self.exit_on_diff = True
@@ -369,8 +370,8 @@ class Benchmarker(object):
         self.shell = os.environ.get('SHELL', '/bin/bash')
         self.git_info = get_git_info()
         # read from scenarios file
-        if isinstance(self.scenarios, str) and os.path.isfile(self.scenarios):
-            self.load_scenarios(self.scenarios)
+        if self.scenarios_file and os.path.isfile(self.scenarios_file):
+            self.load_scenarios(self.scenarios_file)
 
     def load_scenarios(self, scenarios_file: str):
             scenario_group_dict = {}
@@ -392,7 +393,7 @@ class Benchmarker(object):
                     for i, p in enumerate(rv):
                         rv[i] = p.replace('$XFIND_PATH', XFIND_PATH)
                 elif rk == 'scriptpath' or rk == 'sharedpath':
-                    scenarios_dict['ref'][rk] = rv.replace('$XFIND_PATH', XFIND_PATH)
+                    scenarios_dict['ref'][rk] = [rv.replace('$XFIND_PATH', XFIND_PATH)]
 
             for s in scenarios_dict['scenarios']:
                 sg_name = s['group']
@@ -856,8 +857,8 @@ def get_parser():
     parser.add_argument('-g', '--group', nargs='*', help='Name of scenario group to run')
     parser.add_argument('-l', '--langs', help='Comma-separated list of language names to benchmark')
     parser.add_argument('-r', '--runs', type=int, help='Number of runs for each scenario')
-    parser.add_argument('-b', '--exit_on_diff', action='store_true', help='Exit on first output difference')
-    parser.add_argument('-s', '--scenarios', help='A scenarios json file')
+    parser.add_argument('-b', '--exit-on-diff', action='store_true', help='Exit on first output difference')
+    parser.add_argument('-f', '--scenarios-file', help='A scenarios json file')
     parser.add_argument('--debug', action='store_true', help='Print debug output')
     return parser
 
@@ -892,8 +893,8 @@ def main():
     if parsed_args.runs:
         runs = parsed_args.runs
 
-    if parsed_args.scenarios:
-        scenarios_file = parsed_args.scenarios
+    if parsed_args.scenarios_file:
+        scenarios_file = parsed_args.scenarios_file
 
     # xfind_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
     print(f'xfind_names: {str(xfind_names)}')
@@ -901,9 +902,9 @@ def main():
     print(f'exit_on_diff: {exit_on_diff}')
     print(f'groups: {groups}')
     print(f'runs: {runs}')
-    print(f'scenarios: {scenarios_file}')
+    print(f'scenarios_file: {scenarios_file}')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
-                              groups=groups, scenarios=scenarios_file,
+                              groups=groups, scenarios_file=scenarios_file,
                               exit_on_diff=exit_on_diff,
                               debug=debug)
     benchmarker.run()
