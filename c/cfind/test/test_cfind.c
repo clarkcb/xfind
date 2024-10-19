@@ -39,13 +39,13 @@ int main(int argc, char *argv[])
 	test_is_matching_dir();
     test_is_matching_dir_in_dir_patterns();
     test_is_matching_dir_out_dir_patterns();
-    test_filter_file();
-    test_is_matching_file_in_extensions();
-    test_is_matching_file_out_extensions();
-    test_is_matching_file_in_file_patterns();
-    test_is_matching_file_out_file_patterns();
-    test_is_matching_file_in_file_types();
-    test_is_matching_file_out_file_types();
+    test_filter_path();
+    test_is_matching_path_in_extensions();
+    test_is_matching_path_out_extensions();
+    test_is_matching_path_in_file_patterns();
+    test_is_matching_path_out_file_patterns();
+    test_is_matching_path_in_file_types();
+    test_is_matching_path_out_file_types();
 
     return 0;
 }

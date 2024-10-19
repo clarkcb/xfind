@@ -126,7 +126,7 @@ static size_t all_strings_strlen(const FindSettings *settings)
             regex_node_strlen(settings->out_file_patterns) +
             file_type_node_strlen(settings->out_file_types) +
             sortby_strlen +
-            string_node_strlen(settings->paths);
+            path_node_strlen(settings->paths);
 }
 
 static size_t last_mod_strlen(long last_mod)
@@ -212,9 +212,9 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *out_file_types_s = malloc(file_type_node_strlen(settings->out_file_types) + 1);
     out_file_types_s[0] = '\0';
     file_type_node_to_string(settings->out_file_types, out_file_types_s);
-    char *paths_s = malloc(string_node_strlen(settings->paths) + 1);
+    char *paths_s = malloc(path_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
-    string_node_to_string(settings->paths, paths_s);
+    path_node_to_string(settings->paths, paths_s);
     const char *print_dirs_s = settings->print_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     const char *print_files_s = settings->print_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     const char *print_usage_s = settings->print_usage == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;

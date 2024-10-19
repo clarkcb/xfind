@@ -15,6 +15,14 @@ void log_err(const char *msg)
     fprintf(stderr, "\nERROR: %s\n", msg);
 }
 
+int is_null_or_empty_string(const char *s)
+{
+    if (s == NULL || strncmp(s, "", 1) == 0) {
+        return 1;
+    }
+    return 0;
+}
+
 int char_in_string(const char c, const char *s)
 {
     const char* cptr = strchr(s, c);

@@ -2,6 +2,7 @@
 #define FINDSETTINGS_H
 
 #include "intnode.h"
+#include "pathnode.h"
 #include "regexnode.h"
 #include "stringnode.h"
 
@@ -50,7 +51,7 @@ typedef struct FindSettings {
     StringNode *out_extensions;
     RegexNode *out_file_patterns;
     IntNode *out_file_types;
-    StringNode *paths;
+    PathNode *paths;
     unsigned short print_dirs : 1;
     unsigned short print_files : 1;
     unsigned short print_usage : 1;

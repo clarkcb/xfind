@@ -23,7 +23,7 @@ void test_settings_from_args(void)
     assert(err == E_OK);
 
     assert(settings->in_extensions != NULL);
-    const int in_ext_count = string_node_count(settings->in_extensions);
+    const int in_ext_count = (int)string_node_count(settings->in_extensions);
     const char* color = in_ext_count == 1 ? COLOR_GREEN : COLOR_RED;
     printf("%sstring_node_count(settings->in_extensions): %d%s\n", color, in_ext_count, COLOR_RESET);
     assert(in_ext_count == 1);
@@ -33,12 +33,13 @@ void test_settings_from_args(void)
     assert(in_ext_cmp == 0);
 
     assert(settings->paths != NULL);
-    const int path_count = string_node_count(settings->paths);
+    const int path_count = (int)path_node_count(settings->paths);
     color = path_count == 1 ? COLOR_GREEN : COLOR_RED;
-    printf("%sstring_node_count(settings->paths): %d%s\n", color, path_count, COLOR_RESET);
+    printf("%spath_node_count(settings->paths): %d%s\n", color, path_count, COLOR_RESET);
     assert(path_count == 1);
-    const int in_path_cmp = strcmp(settings->paths->string, ".");
+    const Path *p = new_path(".");
+    const int in_path_cmp = path_cmp(settings->paths->path, p);
     color = in_path_cmp == 0 ? COLOR_GREEN : COLOR_RED;
-    printf("%sstrcmp(settings->paths->string, \".\"): %d%s\n", color, in_path_cmp, COLOR_RESET);
+    printf("%sstrcmp(settings->paths->dir, \".\"): %d%s\n", color, in_path_cmp, COLOR_RESET);
     assert(in_path_cmp == 0);
 }

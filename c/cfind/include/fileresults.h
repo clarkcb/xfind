@@ -4,12 +4,12 @@
 #include <stdint.h>
 
 #include "filetypes.h"
+#include "pathnode.h"
 #include "stringnode.h"
 #include "findsettings.h"
 
 typedef struct FileResult {
-    const char *dir;
-    const char *file_name;
+    const Path *path;
     FileType file_type;
     uint64_t file_size;
     long last_mod;
@@ -20,7 +20,7 @@ typedef struct FileResults {
     struct FileResults *next;
 } FileResults;
 
-FileResult *new_file_result(const char *dir, const char *file_name, FileType file_type, uint64_t file_size, long last_mod);
+FileResult *new_file_result(const Path *path, FileType file_type, uint64_t file_size, long last_mod);
 
 FileResults *empty_file_results(void);
 
@@ -32,20 +32,20 @@ void add_to_file_results(FileResult *r, FileResults *results);
 
 size_t file_result_strlen(const FileResult *r);
 
-size_t file_results_count(FileResults *results);
+size_t file_results_count(const FileResults *results);
 
 void file_result_to_string(const FileResult *r, char *s);
 
-void print_file_results(FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
+void print_file_results(const FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
                         unsigned short sort_descending);
 
 void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, unsigned short case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 
-StringNode *dir_results(FileResults *results);
+StringNode *dir_results(const FileResults *results);
 
-void print_dir_results(FileResults *results);
+void print_dir_results(const FileResults *results);
 
 void destroy_file_result(FileResult *r);
 

@@ -366,10 +366,15 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         }
         break;
     case PATH:
-        if (settings->paths == NULL)
-            settings->paths = new_string_node(arg_val);
-        else
-            add_string_to_string_node(arg_val, settings->paths);
+        // this is just to wrap in an expression
+        if (arg_val) {
+            Path *path = new_path(arg_val);
+            if (settings->paths == NULL) {
+                settings->paths = new_path_node(path);
+            } else {
+                add_path_to_path_node(path, settings->paths);
+            }
+        }
         break;
     case SORT_BY:
         // this is just to wrap in an expression
@@ -507,10 +512,12 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
             }
 
         } else {
-            if (settings->paths == NULL)
-                settings->paths = new_string_node(argv[i]);
-            else
-                add_string_to_string_node(argv[i], settings->paths);
+            Path *path = new_path(argv[i]);
+            if (settings->paths == NULL) {
+                settings->paths = new_path_node(path);
+            } else {
+                add_path_to_path_node(path, settings->paths);
+            }
             i++;
         }
     }

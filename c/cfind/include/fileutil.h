@@ -4,12 +4,16 @@
 #if defined(_WIN32) || defined(_WIN64)
 #define OS_WINDOWS 1
 #define PATH_SEPARATOR '\\'
+#define PATH_SEPARATOR_S "\\"
 #else
 #define OS_WINDOWS 0
 #define PATH_SEPARATOR '/'
+#define PATH_SEPARATOR_S "/"
 #endif
 
 unsigned short dir_or_file_exists(const char *file_path);
+
+unsigned short dir_or_file_readable(const char *file_path);
 
 unsigned short is_dot_dir(const char *file_path);
 

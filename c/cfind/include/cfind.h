@@ -14,6 +14,8 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 
+#include "regex.h"
+
 #include "rapidjson/document.h"
 
 
@@ -26,6 +28,8 @@
 void log_msg(const char *msg);
 
 void log_err(const char *msg);
+
+int is_null_or_empty_string(const char *s);
 
 int char_in_string(const char c, const char *s);
 
@@ -69,19 +73,20 @@ void get_find_options_path(char *dest);
 #define E_UNKNOWN_ERROR                  301 /* Unknown error */
 #define E_STARTPATH_NOT_DEFINED          302 /* Startpath not defined */
 #define E_STARTPATH_NOT_FOUND            303 /* Startpath not found */
-#define E_STARTPATH_STAT_FAILED          304 /* Unable to stat startpath */
-#define E_STARTPATH_NON_MATCHING         305 /* Startpath does not match search criteria */
-#define E_STARTPATH_UNSUPPORTED_FILETYPE 306 /* Startpath is an unsupported file type */
-#define E_INVALID_OPTION                 307 /* Invalid option */
-#define E_INVALID_ARG                    308 /* Invalid arg */
-#define E_MISSING_ARG_FOR_OPTION         309 /* Missing arg for arg option */
-#define E_DIRECTORY_NOT_FOUND            310 /* Directory not found */
-#define E_FILE_NOT_FOUND                 311 /* File not found */
-#define E_FILENAME_TOO_LONG              312 /* Filename is too long */
-#define E_INVALID_DATESTRING             313 /* Invalid date string (for max_last_mod/min_last_mod) */
-#define E_INVALID_DEPTH_RANGE            314 /* Invalid depth range (max_depth < min_depth) */
-#define E_INVALID_LASTMOD_RANGE          315 /* Invalid lastmod range (max_last_mod < min_last_mod) */
-#define E_INVALID_SIZE_RANGE             316 /* Invalid size range (max_size < min_size) */
+#define E_STARTPATH_NOT_READABLE         304 /* Startpath not readable */
+#define E_STARTPATH_STAT_FAILED          305 /* Unable to stat startpath */
+#define E_STARTPATH_NON_MATCHING         306 /* Startpath does not match search criteria */
+#define E_STARTPATH_UNSUPPORTED_FILETYPE 307 /* Startpath is an unsupported file type */
+#define E_INVALID_OPTION                 308 /* Invalid option */
+#define E_INVALID_ARG                    309 /* Invalid arg */
+#define E_MISSING_ARG_FOR_OPTION         310 /* Missing arg for arg option */
+#define E_DIRECTORY_NOT_FOUND            311 /* Directory not found */
+#define E_FILE_NOT_FOUND                 312 /* File not found */
+#define E_FILENAME_TOO_LONG              313 /* Filename is too long */
+#define E_INVALID_DATESTRING             314 /* Invalid date string (for max_last_mod/min_last_mod) */
+#define E_INVALID_DEPTH_RANGE            315 /* Invalid depth range (max_depth < min_depth) */
+#define E_INVALID_LASTMOD_RANGE          316 /* Invalid lastmod range (max_last_mod < min_last_mod) */
+#define E_INVALID_SIZE_RANGE             317 /* Invalid size range (max_size < min_size) */
 
 typedef unsigned int error_t;
 
@@ -99,6 +104,8 @@ void handle_error(error_t err);
 #endif
 
 unsigned short dir_or_file_exists(const char *file_path);
+
+unsigned short dir_or_file_readable(const char *file_path);
 
 unsigned short is_dot_dir(const char *file_path);
 
@@ -137,6 +144,67 @@ int int_matches_int_node(const int *i, IntNode *int_node);
 size_t int_node_count(IntNode *int_node);
 
 void destroy_int_node(IntNode *int_node);
+
+
+// pathnode.h
+
+typedef struct Path {
+    const char *dir;
+    const char *file_name;
+} Path;
+
+typedef struct PathNode {
+    Path *path;
+    struct PathNode *next;
+} PathNode;
+
+Path *new_path(const char *file_path);
+
+Path *new_path_from_dir_and_file_name(const char *dir, const char *file_name);
+
+Path *copy_path(const Path *path);
+
+int is_hidden_path(const Path *path);
+
+int path_cmp(const Path *p1, const Path *p2);
+
+int path_case_cmp(const Path *p1, const Path *p2);
+
+int path_file_name_cmp(const Path *p1, const Path *p2);
+
+int path_file_name_case_cmp(const Path *p1, const Path *p2);
+
+unsigned short path_exists(const Path *path);
+
+unsigned short path_readable(const Path *path);
+
+int path_stat(const Path *path, struct stat *);
+
+size_t path_strlen(const Path *path);
+
+void path_to_string(const Path *path, char *s);
+
+void destroy_path(Path *p);
+
+PathNode *empty_path_node(void);
+
+PathNode *new_path_node(Path *p);
+
+PathNode *new_path_node_from_dir_and_file_name(const char *dir, const char *file_name);
+
+void add_path_to_path_node(Path *p, PathNode *path_node);
+
+void add_dir_and_file_name_to_path_node(const char *dir, const char *file_name, PathNode *path_node);
+
+int is_null_or_empty_path_node(const PathNode *path_node);
+
+size_t path_node_count(PathNode *path_node);
+
+size_t path_node_strlen(PathNode *path_node);
+
+void path_node_to_string(PathNode *path_node, char *s);
+
+void destroy_path_node(PathNode *path_node);
 
 
 // regexnode.h
@@ -355,7 +423,7 @@ typedef struct FindSettings {
     StringNode *out_extensions;
     RegexNode *out_file_patterns;
     IntNode *out_file_types;
-    StringNode *paths;
+    PathNode *paths;
     unsigned short print_dirs : 1;
     unsigned short print_files : 1;
     unsigned short print_usage : 1;
@@ -389,8 +457,7 @@ void sort_by_to_name(const SortBy sort_by, char *name);
 // fileresults.h
 
 typedef struct FileResult {
-    const char *dir;
-    const char *file_name;
+    const Path *path;
     FileType file_type;
     uint64_t file_size;
     long last_mod;
@@ -401,7 +468,7 @@ typedef struct FileResults {
     struct FileResults *next;
 } FileResults;
 
-FileResult *new_file_result(const char *dir, const char *file_name, FileType file_type, uint64_t file_size, long last_mod);
+FileResult *new_file_result(const Path *path, FileType file_type, uint64_t file_size, long last_mod);
 
 FileResults *empty_file_results(void);
 
@@ -417,16 +484,16 @@ size_t file_results_count(FileResults *results);
 
 void file_result_to_string(const FileResult *r, char *s);
 
-void print_file_results(FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
+void print_file_results(const FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
                         unsigned short sort_descending);
 
 void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, unsigned short case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 
-StringNode *dir_results(FileResults *results);
+StringNode *dir_results(const FileResults *results);
 
-void print_dir_results(FileResults *results);
+void print_dir_results(const FileResults *results);
 
 void destroy_file_result(FileResult *r);
 
@@ -531,13 +598,13 @@ error_t validate_settings(const FindSettings *settings);
 
 unsigned short is_matching_dir(const FindSettings *settings, const char *dir);
 
-unsigned short is_matching_file(const FindSettings *settings, const char *file_name,
+unsigned short is_matching_path(const FindSettings *settings, const Path *path,
                                 const FileType *file_type, uint64_t file_size, long last_mod);
 
-unsigned short filter_file(const FindSettings *settings, const char *dir, const char *file_name,
+unsigned short filter_path(const FindSettings *settings, const Path *path,
                            const FileType *file_type, uint64_t file_size, long last_mod);
 
-error_t filter_to_file_results(const Finder *finder, const StringNode *file_paths, FileResults *results);
+error_t filter_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
 
 error_t find(const FindSettings *settings, FileResults *results);
 

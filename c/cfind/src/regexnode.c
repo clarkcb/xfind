@@ -17,6 +17,11 @@ Regex *new_regex(const char *pat)
     return regex;
 }
 
+size_t regex_strlen(Regex *regex)
+{
+    return strnlen(regex->pattern, 1024) + 2; // for ""
+}
+
 RegexNode *new_regex_node(Regex *r)
 {
     RegexNode *regex_node = malloc(sizeof(RegexNode));
@@ -91,7 +96,7 @@ size_t regex_node_strlen(RegexNode *regex_node)
     RegexNode *temp = regex_node;
     unsigned int nodecount = 0;
     while (temp != NULL) {
-        slen += strnlen(temp->regex->pattern, 1024) + 2; // for ""
+        slen += regex_strlen(temp->regex) + 2;
         temp = temp->next;
         nodecount++;
     }
