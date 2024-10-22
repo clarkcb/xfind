@@ -358,14 +358,17 @@ class ScenarioResults(object):
 class Benchmarker(object):
     def __init__(self, **kwargs):
         self.xfind_names = all_xfind_names
-        self.groups = []
+        self.group_names = []
+        self.scenario_names = []
         self.scenarios = []
-        self.scenarios_file = ''
+        self.scenarios_file = None
         self.runs = default_runs
         self.debug = True
         self.exit_on_diff = True
         self.exit_on_sort_diff = True
+        self.ignore_blank_lines = True
         self.scenario_diff_dict = {}
+        self.skip_groups = ['settings-only']
         self.__dict__.update(kwargs)
         self.shell = os.environ.get('SHELL', '/bin/bash')
         self.git_info = get_git_info()
@@ -396,6 +399,8 @@ class Benchmarker(object):
                     scenarios_dict['ref'][rk] = [rv.replace('$XFIND_PATH', XFIND_PATH)]
 
             for s in scenarios_dict['scenarios']:
+                if self.scenario_names and s['name'] not in self.scenario_names:
+                    continue
                 sg_name = s['group']
                 sg = scenario_group_dict.setdefault(sg_name, ScenarioGroup(sg_name, []))
                 args = s['args']
@@ -406,12 +411,14 @@ class Benchmarker(object):
                 if 'replace_xfind_name' in s:
                     scenario.replace_xfind_name = s['replace_xfind_name']
                 sg.scenarios.append(scenario)
-            groups = self.groups
+            groups = self.group_names
             if not groups:
                 groups = scenario_group_dict.keys()
             elif any([g not in scenario_group_dict for g in groups]):
                 print(f'Error: group not found in scenarios file: {groups}')
                 sys.exit(1)
+            if self.skip_groups:
+                groups = [g for g in groups if g not in self.skip_groups]
             for g in groups:
                 sg = scenario_group_dict.get(g)
                 if sg:
@@ -613,8 +620,8 @@ class Benchmarker(object):
             self.scenario_diff_dict[s.name] = non_matching
             for x, y in non_matching:
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
-                print(f'{x} output:\n"{xfind_output[x]}"')
-                print(f'{y} output:\n"{xfind_output[y]}"')
+                print(f'{x} output ({len(xfind_output[x])} lines):\n"{xfind_output[x]}"')
+                print(f'{y} output ({len(xfind_output[y])} lines):\n"{xfind_output[y]}"')
             # for x in xs:
             #     if non_matching[x]:
             #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
@@ -631,8 +638,8 @@ class Benchmarker(object):
             self.scenario_diff_dict[s.name] = non_matching
             for x, y in non_matching:
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
-                print(f'{x} output:\n"{xfind_output[x]}"')
-                print(f'{y} output:\n"{xfind_output[y]}"')
+                print(f'{x} output ({len(xfind_output[x])} lines):\n"{xfind_output[x]}"')
+                print(f'{y} output ({len(xfind_output[y])} lines):\n"{xfind_output[y]}"')
             # for x in xs:
             #     if non_matching[x]:
             #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
@@ -855,6 +862,7 @@ def get_git_info():
 def get_parser():
     parser = argparse.ArgumentParser(description='Run xfind benchmark')
     parser.add_argument('-g', '--group', nargs='*', help='Name of scenario group to run')
+    parser.add_argument('-s', '--scenario', nargs='*', help='Name of scenario to run')
     parser.add_argument('-l', '--langs', help='Comma-separated list of language names to benchmark')
     parser.add_argument('-r', '--runs', type=int, help='Number of runs for each scenario')
     parser.add_argument('-b', '--exit-on-diff', action='store_true', help='Exit on first output difference')
@@ -867,6 +875,7 @@ def main():
     # Defaults
     xfind_names = all_xfind_names
     groups = []
+    scenarios = []
     runs = default_runs
     debug = False
     exit_on_diff = True
@@ -880,6 +889,9 @@ def main():
 
     if parsed_args.group:
         groups.extend(parsed_args.group)
+
+    if parsed_args.scenario:
+        scenarios.extend(parsed_args.scenario)
 
     if parsed_args.langs:
         xfind_names = []
@@ -904,7 +916,8 @@ def main():
     print(f'runs: {runs}')
     print(f'scenarios_file: {scenarios_file}')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
-                              groups=groups, scenarios_file=scenarios_file,
+                              group_names=groups, scenario_names=scenarios,
+                              scenarios_file=scenarios_file,
                               exit_on_diff=exit_on_diff,
                               debug=debug)
     benchmarker.run()

@@ -323,7 +323,6 @@
             ],
             "replace_xfind_name": true
         },
-
         {
             "group": "filter by maxsize/minsize",
             "name": "filter files with size < maxsize",
@@ -357,12 +356,12 @@
             ],
             "replace_xfind_name": true
         },
-
         {
             "group": "settings-only",
             "name": "settings-only",
             "args": ["-t", "code", "--settingsonly"],
-            "case_insensitive_cmp": true
+            "case_insensitive_cmp": true,
+            "replace_xfind_name": true
         }
     ]
 }
