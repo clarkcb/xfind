@@ -521,7 +521,7 @@ function BuildDart
     }
 
     $dartVersion = dart --version
-    Log("dart version: $dartVersion")
+    Log("$dartVersion")
 
     $oldPwd = Get-Location
     Set-Location $dartfindPath
@@ -796,8 +796,29 @@ function BuildGroovy
         return
     }
 
-    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    $gradleOutput = & $gradle --version
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle ',''}
     Log("$gradle version: $gradleVersion")
+
+    $gradleGroovyVersion = $gradleOutput | Where-Object {$_.Contains('Groovy')} | ForEach-Object {$_ -replace 'Groovy:\s+',''}
+    Log("Gradle Groovy version: $gradleGroovyVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $groovyfindPath 'src' 'main' 'resources'
@@ -927,12 +948,6 @@ function BuildJava
         return
     }
 
-    $javaVersion = java -version 2>&1 | Select-String -Pattern 'java version'
-    Log("java version: $javaVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $javafindPath
-
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
     if (Test-Path $gradleWrapper)
@@ -945,8 +960,29 @@ function BuildJava
         return
     }
 
-    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    $gradleOutput = & $gradle --version
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle ',''}
     Log("$gradle version: $gradleVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
+
+    $oldPwd = Get-Location
+    Set-Location $javafindPath
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $javafindPath 'src' 'main' 'resources'
@@ -1075,8 +1111,16 @@ function BuildKotlin
         return
     }
 
-    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    $gradleOutput = & $gradle --version
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
     Log("$gradle version: $gradleVersion")
+
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $ktfindPath 'src' 'main' 'resources'
@@ -1656,8 +1700,13 @@ function BuildScala
         return
     }
 
-    $sbtVersion = sbt --version | Select-String -Pattern 'project'
-    Log("sbt version: $sbtVersion")
+    $sbtOutput = sbt --version
+
+    $sbtProjectVersion = $sbtOutput | Select-String -Pattern 'project'
+    Log("$sbtProjectVersion")
+
+    $sbtScriptVersion = $sbtOutput | Select-String -Pattern 'script'
+    Log("$sbtScriptVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $scalafindPath 'src' 'main' 'resources'

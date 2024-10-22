@@ -116,7 +116,7 @@ function UnitTestClojure
     # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
     $leinVersion = lein version
     Log("lein version: $leinVersion")
-    
+
     $oldPwd = Get-Location
     Set-Location $cljfindPath
 
@@ -184,8 +184,8 @@ function UnitTestCsharp
 
     $csfindSolutionPath = Join-Path $csfindPath 'CsFind.sln'
     # $verbosity = 'quiet'
-    # $verbosity = 'minimal'
-    $verbosity = 'normal'
+    $verbosity = 'minimal'
+    # $verbosity = 'normal'
     # $verbosity = 'detailed'
 
     # run tests
@@ -207,7 +207,7 @@ function UnitTestDart
     }
 
     $dartVersion = dart --version
-    Log("dart version: $dartVersion")
+    Log("$dartVersion")
 
     $oldPwd = Get-Location
     Set-Location $dartfindPath
@@ -238,6 +238,9 @@ function UnitTestElixir
         return
     }
 
+    $mixVersion = mix --version | Select-String -Pattern 'Mix'
+    Log("mix version: $mixVersion")
+
     $oldPwd = Get-Location
     Set-Location $exfindPath
 
@@ -265,8 +268,8 @@ function UnitTestFsharp
 
     $fsfindSolutionPath = Join-Path $fsfindPath 'FsFind.sln'
     # $verbosity = 'quiet'
-    # $verbosity = 'minimal'
-    $verbosity = 'normal'
+    $verbosity = 'minimal'
+    # $verbosity = 'normal'
     # $verbosity = 'detailed'
 
     # run tests
@@ -286,7 +289,7 @@ function UnitTestGo
         return
     }
 
-    $goVersion = (go version) -replace 'go version ', ''
+    $goVersion = (go version) -replace 'go version ',''
     Log("go version: $goVersion")
 
     $oldPwd = Get-Location
@@ -324,8 +327,16 @@ function UnitTestGroovy
         return
     }
 
-    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    $gradleOutput = & $gradle --version
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle ',''}
     Log("$gradle version: $gradleVersion")
+
+    $gradleGroovyVersion = $gradleOutput | Where-Object {$_.Contains('Groovy')} | ForEach-Object {$_ -replace 'Groovy:\s+',''}
+    Log("Gradle Groovy version: $gradleGroovyVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
     Set-Location $groovyfindPath
@@ -392,8 +403,13 @@ function UnitTestJava
         return
     }
 
-    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    $gradleOutput = & $gradle --version
+
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle ',''}
     Log("$gradle version: $gradleVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
     Set-Location $ktfindPath
@@ -454,8 +470,14 @@ function UnitTestKotlin
         return
     }
 
-    $gradleVersion = & $gradle --version | Select-String -Pattern 'Gradle'
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
     Log("$gradle version: $gradleVersion")
+
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
+
+    $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
+    Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
     Set-Location $ktfindPath
@@ -726,6 +748,14 @@ function UnitTestScala
         PrintError('You need to install sbt')
         return
     }
+
+    $sbtOutput = sbt --version
+
+    $sbtProjectVersion = $sbtOutput | Select-String -Pattern 'project'
+    Log("$sbtProjectVersion")
+
+    $sbtScriptVersion = $sbtOutput | Select-String -Pattern 'script'
+    Log("$sbtScriptVersion")
 
     $oldPwd = Get-Location
     Set-Location $scalafindPath

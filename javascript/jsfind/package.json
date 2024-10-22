@@ -47,9 +47,9 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^6.1.1",
     "jest": "^29.7.0",
+    "jshint": "^2.13.6",
     "standard": "^17.1.2"
   },
   "dependencies": {
-    "jshint": "^2.13.6"
   }
 }

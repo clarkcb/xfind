@@ -67,6 +67,10 @@ function LintClojure
         return
     }
 
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    $leinVersion = lein version
+    Log("lein version: $leinVersion")
+
     $oldPwd = Get-Location
     Set-Location $cljfindPath
 
@@ -104,6 +108,9 @@ function LintDart
         return
     }
 
+    $dartVersion = dart --version
+    Log("$dartVersion")
+
     Log('Linting dartfind')
     Log("dart analyze $dartfindPath")
     dart analyze $dartfindPath
@@ -121,12 +128,18 @@ function LintElixir
         return
     }
 
+    $elixirVersion = elixir --version | Select-String -Pattern 'Elixir'
+    Log("elixir version: $elixirVersion")
+
     # ensure mix is installed
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
         return
     }
+
+    $mixVersion = mix --version | Select-String -Pattern 'Mix'
+    Log("mix version: $mixVersion")
 
     Log('Linting exfind')
     Log("mix credo $exfindPath")
@@ -152,6 +165,9 @@ function LintGo
         PrintError('You need to install go')
         return
     }
+
+    $goVersion = (go version) -replace 'go version ',''
+    Log("go version: $goVersion")
 
     $oldPwd = Get-Location
     Set-Location $gofindPath

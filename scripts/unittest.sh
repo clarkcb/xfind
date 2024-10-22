@@ -189,7 +189,7 @@ unittest_dart () {
     fi
 
     DART_VERSION=$(dart --version)
-    log "dart version: $DART_VERSION"
+    log "$DART_VERSION"
 
     cd "$DARTFIND_PATH"
 
@@ -298,7 +298,7 @@ unittest_groovy () {
     if [ -n "$(which groovy)" ]
     then
         GROOVY_VERSION=$(groovy --version)
-        log "groovy version: $GROOVY_VERSION"
+        log "$GROOVY_VERSION"
     fi
 
     GRADLE=
@@ -314,8 +314,16 @@ unittest_groovy () {
         return
     fi
 
-    GRADLE_VERSION=$($GRADLE --version | grep Gradle)
+    GRADLE_OUTPUT=$($GRADLE --version)
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    GRADLE_GROOVY_VERSION=$(echo $GRADLE_OUTPUT | grep '^Groovy' | awk '{print $2}')
+    log "Gradle Groovy version: $GRADLE_GROOVY_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     cd "$GROOVYFIND_PATH"
 
@@ -382,8 +390,13 @@ unittest_java () {
         return
     fi
 
-    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    GRADLE_OUTPUT=$($GRADLE --version)
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     cd "$JAVAFIND_PATH"
 
@@ -443,8 +456,16 @@ unittest_kotlin () {
         return
     fi
 
-    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    GRADLE_OUTPUT=$($GRADLE --version)
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
+    log "Kotlin version: $KOTLIN_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     cd "$KTFIND_PATH"
 
@@ -717,8 +738,16 @@ unittest_scala () {
         return
     fi
 
-    SBT_VERSION=$(sbt --version | head -n 1)
-    log "sbt version: $SBT_VERSION"
+    SBT_OUTPUT=$(sbt --version)
+
+    SBT_PROJECT_VERSION=$(echo "$SBT_OUTPUT" | grep 'project')
+    log "$SBT_PROJECT_VERSION"
+
+    SBT_SCRIPT_VERSION=$(echo "$SBT_OUTPUT" | grep 'script')
+    log "$SBT_SCRIPT_VERSION"
+
+    JDK_VERSION=$(java -version  2>&1 | head -n 1)
+    log "JDK version: $JDK_VERSION"
 
     cd "$SCALAFIND_PATH"
 

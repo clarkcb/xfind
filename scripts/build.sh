@@ -440,7 +440,7 @@ build_dart () {
     fi
 
     DART_VERSION=$(dart --version)
-    log "dart version: $DART_VERSION"
+    log "$DART_VERSION"
 
     cd "$DARTFIND_PATH"
 
@@ -668,7 +668,7 @@ build_groovy () {
     fi
 
     GROOVY_VERSION=$(groovy --version)
-    log "groovy version: $GROOVY_VERSION"
+    log "$GROOVY_VERSION"
 
     cd "$GROOVYFIND_PATH"
 
@@ -685,8 +685,29 @@ build_groovy () {
         return
     fi
 
-    GRADLE_VERSION=$($GRADLE --version | grep Gradle)
+    GRADLE_OUTPUT=$($GRADLE --version)
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    GRADLE_GROOVY_VERSION=$(echo $GRADLE_OUTPUT | grep '^Groovy' | awk '{print $2}')
+    log "Gradle Groovy version: $GRADLE_GROOVY_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     RESOURCES_PATH="$GROOVYFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$GROOVYFIND_PATH/src/test/resources"
@@ -829,8 +850,26 @@ build_java () {
         return
     fi
 
-    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    GRADLE_OUTPUT=$($GRADLE --version)
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     RESOURCES_PATH="$JAVAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$JAVAFIND_PATH/src/test/resources"
@@ -947,8 +986,31 @@ build_kotlin () {
         return
     fi
 
-    GRADLE_VERSION=$($GRADLE --version | grep '^Gradle')
+    GRADLE_OUTPUT=$($GRADLE --version)
+    # echo "$GRADLE_OUTPUT"
+
+    # ------------------------------------------------------------
+    # Gradle 8.10.2
+    # ------------------------------------------------------------
+
+    # Build time:    2024-09-23 21:28:39 UTC
+    # Revision:      415adb9e06a516c44b391edff552fd42139443f7
+
+    # Kotlin:        1.9.24
+    # Groovy:        3.0.22
+    # Ant:           Apache Ant(TM) version 1.10.14 compiled on August 16 2023
+    # Launcher JVM:  11.0.24 (Homebrew 11.0.24+0)
+    # Daemon JVM:    /usr/local/Cellar/openjdk@11/11.0.24/libexec/openjdk.jdk/Contents/Home (no JDK specified, using current Java home)
+    # OS:            Mac OS X 14.6.1 x86_64
+
+    GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
+    log "Kotlin version: $KOTLIN_VERSION"
+
+    JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
+    log "JVM version: $JVM_VERSION"
 
     RESOURCES_PATH="$KTFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$KTFIND_PATH/src/test/resources"
@@ -1504,8 +1566,16 @@ build_scala () {
         return
     fi
 
-    SBT_VERSION=$(sbt --version | head -n 1)
-    log "sbt version: $SBT_VERSION"
+    SBT_OUTPUT=$(sbt --version)
+
+    SBT_PROJECT_VERSION=$(echo "$SBT_OUTPUT" | grep 'project')
+    log "$SBT_PROJECT_VERSION"
+
+    SBT_SCRIPT_VERSION=$(echo "$SBT_OUTPUT" | grep 'script')
+    log "$SBT_SCRIPT_VERSION"
+
+    JDK_VERSION=$(java -version  2>&1 | head -n 1)
+    log "JDK version: $JDK_VERSION"
 
     RESOURCES_PATH="$SCALAFIND_PATH/src/main/resources"
     TEST_RESOURCES_PATH="$SCALAFIND_PATH/src/test/resources"

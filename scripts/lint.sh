@@ -41,19 +41,30 @@ lint_clojure () {
     echo
     hdr "lint_clojure"
 
-    LEIN="lein"
-
-    if [ -z "$(which $LEIN)" ]
+    if [ -n "$(which clj)" ]
     then
-        log_error "You need to install $LEIN"
+        # clj -version output looks like this: Clojure CLI version 1.11.4.1474
+        # CLOJURE_VERSION=$(clj -version | head -n 1 | cut -d ' ' -f 3)
+        CLOJURE_VERSION=$(clj -version 2>&1)
+        log "clojure version: $CLOJURE_VERSION"
+    fi
+
+    # ensure lein is installed
+    if [ -z "$(which lein)" ]
+    then
+        echo "You need to install lein"
         return
     fi
+
+    # lein version output looks like this: Leiningen 2.9.7 on Java 11.0.24 OpenJDK 64-Bit Server VM
+    LEIN_VERSION=$(lein version)
+    log "lein version: $LEIN_VERSION"
 
     cd "$CLJFIND_PATH"
 
     log "Linting cljfind"
-    log "$LEIN eastwood"
-    "$LEIN" eastwood
+    log "lein eastwood"
+    lein eastwood
 
     cd -
 }
@@ -83,6 +94,9 @@ lint_dart () {
         return
     fi
 
+    DART_VERSION=$(dart --version)
+    log "$DART_VERSION"
+
     log "Linting dartfind"
     log "dart analyze $DARTFIND_PATH"
     dart analyze "$DARTFIND_PATH"
@@ -99,12 +113,18 @@ lint_elixir () {
         return
     fi
 
+    ELIXIR_VERSION=$(elixir --version | grep Elixir)
+    log "elixir version: $ELIXIR_VERSION"
+
     # ensure mix is installed
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
         return
     fi
+
+    MIX_VERSION=$(mix --version | grep Mix)
+    log "mix version: $MIX_VERSION"
 
     log "Linting exfind"
     log "mix credo $EXFIND_PATH"
@@ -128,6 +148,10 @@ lint_go () {
         echo "You need to install go"
         return
     fi
+
+    GO_VERSION=$(go version | sed 's/go version //')
+    # GO_VERSION=$(go version | head -n 1 | cut -d ' ' -f 3)
+    log "go version: $GO_VERSION"
 
     cd "$GOFIND_PATH"
 
