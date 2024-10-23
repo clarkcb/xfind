@@ -10,7 +10,7 @@ Regex *new_regex(const char *pat)
 {
     Regex *regex = malloc(sizeof(Regex));
     assert(regex != NULL);
-    regex->pattern = pat;
+    regex->pattern = strdup(pat);
     const int res = regcomp(&regex->compiled, pat, 0);
     if (res > 1) printf("An error occurred trying to compile regex pattern \"%s\": %d", pat, res);
     assert(res == 0);

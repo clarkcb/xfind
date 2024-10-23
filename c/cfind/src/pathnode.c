@@ -130,7 +130,7 @@ unsigned short path_exists(const Path *path)
 {
     const size_t path_len = path_strlen(path);
     if (path_len == 0) return 0;
-    char path_s[path_len];
+    char *path_s = malloc(path_len + 1);
     path_s[0] = '\0';
     path_to_string(path, path_s);
     return dir_or_file_exists(path_s);
@@ -140,7 +140,7 @@ unsigned short path_readable(const Path *path)
 {
     const size_t path_len = path_strlen(path);
     if (path_len == 0) return 0;
-    char path_s[path_len];
+    char *path_s = malloc(path_len + 1);
     path_s[0] = '\0';
     path_to_string(path, path_s);
     return dir_or_file_readable(path_s);
@@ -174,6 +174,7 @@ size_t path_strlen(const Path *path) {
 
 void path_to_string(const Path *path, char *s) {
     // assumes s has correct allocation size
+    size_t path_len = path_strlen(path);
     if (path != NULL) {
         if (is_null_or_empty_string(path->dir) && is_null_or_empty_string(path->file_name)) {
             strcat(s, "");
@@ -191,6 +192,7 @@ void path_to_string(const Path *path, char *s) {
             strcat(s, path->file_name);
         }
     }
+    s[path_len] = '\0';
 }
 
 void destroy_path(Path *p) {

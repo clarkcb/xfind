@@ -43,3 +43,56 @@ void test_settings_from_args(void)
     printf("%sstrcmp(settings->paths->dir, \".\"): %d%s\n", color, in_path_cmp, COLOR_RESET);
     assert(in_path_cmp == 0);
 }
+
+void test_settings_from_json_string(void) {
+    printf("\ntest_settings_from_json_string()\n");
+    const char *json_string =
+        "{\n"
+        "  \"path\": \"~/src/xfind/typescript\",\n"
+        "  \"in-ext\": [\"js\", \"ts\"],\n"
+        "  \"out-dirpattern\": [\"build\", \"node_module\", \"test\", \"typing\"],\n"
+        "  \"out-filepattern\": [\"gulpfile\", \"\\\\.min\\\\.\"],\n"
+        "  \"debug\": true,\n"
+        "  \"includehidden\": false\n"
+        "}";
+    FindSettings *settings = default_settings();
+    const error_t err = settings_from_json_string(json_string, settings);
+    assert(err == E_OK);
+
+    assert(settings->paths != NULL);
+    const int path_count = (int)path_node_count(settings->paths);
+    const char* color = path_count == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%spath_node_count(settings->paths): %d%s\n", color, path_count, COLOR_RESET);
+    assert(path_count == 1);
+
+    assert(settings->in_extensions != NULL);
+    const int in_ext_count = (int)string_node_count(settings->in_extensions);
+    color = in_ext_count == 2 ? COLOR_GREEN : COLOR_RED;
+    printf("%sstring_node_count(settings->in_extensions): %d%s\n", color, in_ext_count, COLOR_RESET);
+    assert(in_ext_count == 2);
+
+    assert(settings->out_dir_patterns != NULL);
+    const int out_dir_count = (int)regex_node_count(settings->out_dir_patterns);
+    color = out_dir_count == 4 ? COLOR_GREEN : COLOR_RED;
+    printf("%sregex_node_count(settings->out_dir_patterns): %d%s\n", color, in_ext_count, COLOR_RESET);
+    assert(out_dir_count == 4);
+
+    const int debug = settings->debug ? 1 : 0;
+    color = debug == 1 ? COLOR_GREEN : COLOR_RED;
+    printf("%sdebug: %d%s\n", color, debug, COLOR_RESET);
+    assert(debug == 1);
+
+    const int include_hidden = settings->include_hidden ? 1 : 0;
+    color = include_hidden == 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%sinclude_hidden: %d%s\n", color, include_hidden, COLOR_RESET);
+    assert(include_hidden == 0);
+}
+
+// This is just for temporary testing
+void test_settings_from_json_file(void) {
+    printf("\ntest_settings_from_json_file()\n");
+    const char *json_file = "/Users/cary/src/xfind/shared/settings.json";
+    FindSettings *settings = default_settings();
+    const error_t err = settings_from_json_file(json_file, settings);
+    assert(err == E_OK);
+}

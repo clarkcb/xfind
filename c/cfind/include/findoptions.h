@@ -34,7 +34,8 @@ typedef enum {
     OUT_FILE_PATTERN         = 16,
     OUT_FILE_TYPE            = 17,
     PATH                     = 18,
-    SORT_BY                  = 19
+    SETTINGS_FILE            = 19,
+    SORT_BY                  = 20
 } SettingsCollType;
 
 typedef enum {
@@ -70,6 +71,10 @@ void add_to_find_options(FindOption *o, FindOptions *options);
 error_t get_find_options(FindOptions *options);
 
 error_t settings_from_args(const int argc, char *argv[], FindSettings *settings);
+
+error_t settings_from_json_string(const char *settings_json_str, FindSettings *settings);
+
+error_t settings_from_json_file(const char *settings_json_file_path, FindSettings *settings);
 
 size_t find_options_count(FindOptions *options);
 

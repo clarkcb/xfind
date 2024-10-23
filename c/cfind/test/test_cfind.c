@@ -26,6 +26,8 @@ int main(int argc, char *argv[])
 
 	// test_findoptions
 	test_settings_from_args();
+	test_settings_from_json_string();
+	// test_settings_from_json_file();
 
 	// test_findsettings
 	test_default_settings();

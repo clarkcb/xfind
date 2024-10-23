@@ -19,7 +19,7 @@ StringNode *new_string_node(const char *s)
 {
     StringNode *string_node = malloc(sizeof(StringNode));
     assert(string_node != NULL);
-    string_node->string = s;
+    string_node->string = strdup(s);
     string_node->next = NULL;
     return string_node;
 }
@@ -35,7 +35,7 @@ StringNode *new_string_node_from_char_split(const char c, const char *s)
 void add_string_to_string_node(const char *s, StringNode *string_node)
 {
     if (string_node->string == NULL) {
-        string_node->string = s;
+        string_node->string = strdup(s);
     } else {
         StringNode *temp = string_node;
         while (temp->next != NULL) {

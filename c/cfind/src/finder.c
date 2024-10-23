@@ -262,7 +262,7 @@ static error_t rec_find_path(const Finder *finder, const Path *dir_path, FileRes
         return E_FILENAME_TOO_LONG;
     }
 
-    char dir_path_s[dir_path_len];
+    char dir_path_s[dir_path_len + 1];
     dir_path_s[0] = '\0';
     path_to_string(dir_path, dir_path_s);
 

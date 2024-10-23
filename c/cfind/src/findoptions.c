@@ -12,7 +12,7 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define ARG_COUNT 20
+#define ARG_COUNT 21
 const size_t arg_count = ARG_COUNT;
 char **arg_names = (char *[]) {
     "in-archiveext",
@@ -34,6 +34,7 @@ char **arg_names = (char *[]) {
     "out-filepattern",
     "out-filetype",
     "path",
+    "settings-file",
     "sort-by",
 };
 char **arg_abbrs = (char *[]) {
@@ -56,6 +57,7 @@ char **arg_abbrs = (char *[]) {
     "F", // out-filepattern
     "T", // out-filetype
     "",  // path
+    "",  // settings-file
     ""   // sort-by
 };
 
@@ -376,10 +378,17 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
             }
         }
         break;
+    case SETTINGS_FILE:
+        // this is just to wrap in an expression
+        if (arg_val) {
+            const error_t err = settings_from_json_file(arg_val, settings);
+            if (err != E_OK) return err;
+        }
+        break;
     case SORT_BY:
         // this is just to wrap in an expression
         if (arg_val) {
-            SortBy sort_by = sort_by_from_name(arg_val);
+            const SortBy sort_by = sort_by_from_name(arg_val);
             settings->sort_by = sort_by;
         }
         break;
@@ -522,6 +531,103 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
         }
     }
     return E_OK;
+}
+
+error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *settings) {
+    const cJSON *setting_json = NULL;
+
+    error_t err = E_OK;
+
+    cJSON_ArrayForEach(setting_json, settings_json) {
+        int idx = index_of_string_in_array(setting_json->string, arg_names, ARG_COUNT);
+        if (idx > -1) {
+            if (cJSON_IsString(setting_json) && setting_json->valuestring != NULL) {
+                err = set_arg(idx, setting_json->valuestring, settings);
+                if (err != E_OK) err;
+            } else if (cJSON_IsArray(setting_json)) {
+                // Add each element of array
+                const cJSON *elem_json = NULL;
+                cJSON_ArrayForEach(elem_json, setting_json) {
+                    if (cJSON_IsString(elem_json) && elem_json->valuestring != NULL) {
+                        err = set_arg(idx, elem_json->valuestring, settings);
+                        if (err != E_OK) err;
+                    }
+                }
+            } else if (cJSON_IsNumber(setting_json)) {
+                // TODO: split max/min length/size into separate array for numeric field assignment
+            }
+        } else {
+            idx = index_of_string_in_array(setting_json->string, flag_names, FLAG_COUNT);
+            if (idx > -1 && cJSON_IsBool(setting_json)) {
+                const int flag = cJSON_IsTrue(setting_json) ? 1 : 0;
+                err = set_flag(idx, flag, settings);
+                if (err != E_OK) return err;
+            }
+        }
+    }
+
+    return err;
+}
+
+error_t settings_from_json_string(const char *settings_json_str, FindSettings *settings)
+{
+    cJSON *settings_json = NULL;
+
+    error_t err = E_OK;
+
+    settings_json = cJSON_Parse(settings_json_str);
+    if (settings_json == NULL || cJSON_IsInvalid(settings_json)) {
+        const char *error_ptr = cJSON_GetErrorPtr();
+        if (error_ptr != NULL) {
+            fprintf(stderr, "Error before: %s\n", error_ptr);
+        }
+        err = E_UNKNOWN_ERROR;
+        goto end;
+    }
+
+    // Verify that settings_json is an object
+    if (!cJSON_IsObject(settings_json)) {
+        err = E_INVALID_ARG;
+        goto end;
+    }
+
+    err = settings_from_json_obj(settings_json, settings);
+
+end:
+    cJSON_Delete(settings_json);
+    return err;
+}
+
+error_t settings_from_json_file(const char *settings_json_file_path, FindSettings *settings) {
+    error_t err = E_OK;
+    if (!dir_or_file_exists(settings_json_file_path)) {
+        err = E_FILE_NOT_FOUND;
+        return err;
+    }
+
+    // load the file
+    const long fsize = file_size(settings_json_file_path);
+    // 5096 would be a big settings file, should be large enough for most cases
+    assert(fsize <= 5096);
+    char contents[fsize];
+    contents[0] = '\0';
+    FILE *fp = fopen(settings_json_file_path, "r");
+    int c;
+    if (fp != NULL) {
+        while((c = getc(fp)) != EOF) {
+            strcat(contents, (char *)&c);
+        }
+        fclose(fp);
+    } else {
+        size_t err_size = 16 + strnlen(settings_json_file_path, MAX_PATH_LENGTH) * sizeof(char);
+        char err_msg[err_size];
+        err_msg[0] = '\0';
+        sprintf(err_msg, "Unable to load %s", settings_json_file_path);
+        err = E_UNKNOWN_ERROR;
+        return err;
+    }
+
+    return settings_from_json_string(contents, settings);
 }
 
 size_t find_options_count(FindOptions *options)
