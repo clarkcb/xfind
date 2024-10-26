@@ -258,17 +258,8 @@ is_matching_dir () {
     return 1
 }
 
-is_matching_archive_file () {
-    local file_path="$1"
-    local file_name=$(basename $file_path)
-
-    if [ $INCLUDE_HIDDEN == false ]
-    then
-        if [[ "${file_name:0:1}" == "." ]]
-        then
-            return 0
-        fi
-    fi
+has_matching_archive_ext () {
+    local file_name="$1"
 
     if [ ${#IN_ARCHIVE_EXTENSIONS[@]} -gt 0 -o ${#OUT_ARCHIVE_EXTENSIONS[@]} -gt 0 ]
     then
@@ -300,6 +291,12 @@ is_matching_archive_file () {
             done
         fi
     fi
+
+    return 1
+}
+
+is_matching_archive_file_name () {
+    local file_name="$1"
 
     if [ ${#IN_ARCHIVE_FILE_PATTERNS[@]} -gt 0 -o ${#OUT_ARCHIVE_FILE_PATTERNS[@]} -gt 0 ]
     then
@@ -335,11 +332,8 @@ is_matching_archive_file () {
     return 1
 }
 
-is_matching_file () {
+is_matching_archive_file () {
     local file_path="$1"
-    local file_type="$2"
-    local file_size=$3
-    local last_mod=$4
     local file_name=$(basename $file_path)
 
     if [ $INCLUDE_HIDDEN == false ]
@@ -349,6 +343,24 @@ is_matching_file () {
             return 0
         fi
     fi
+
+    has_matching_archive_ext "$file_name"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    is_matching_archive_file_name "$file_name"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    return 1
+}
+
+has_matching_ext () {
+    local file_name="$1"
 
     if [ ${#IN_EXTENSIONS[@]} -gt 0 -o ${#OUT_EXTENSIONS[@]} -gt 0 ]
     then
@@ -381,6 +393,12 @@ is_matching_file () {
         fi
     fi
 
+    return 1
+}
+
+is_matching_file_name () {
+    local file_name="$1"
+
     if [ ${#IN_FILE_PATTERNS[@]} -gt 0 -o ${#OUT_FILE_PATTERNS[@]} -gt 0 ]
     then
         local file_name_no_ext="${file_name%.*}"
@@ -412,6 +430,12 @@ is_matching_file () {
         fi
     fi
 
+    return 1
+}
+
+is_matching_file_type () {
+    local file_type="$1"
+
     if [ ${#IN_FILE_TYPES[@]} -gt 0 ]
     then
         local found_in_type=0
@@ -439,6 +463,12 @@ is_matching_file () {
         done
     fi
 
+    return 1
+}
+
+is_matching_file_size () {
+    local file_size="$1"
+
     if [ $MAX_SIZE -gt 0 ]
     then
         if [ $file_size -gt $MAX_SIZE ]
@@ -455,6 +485,12 @@ is_matching_file () {
         fi
     fi
 
+    return 1
+}
+
+is_matching_last_mod () {
+    local last_mod="$1"
+
     if [ $MAX_LAST_MOD_EPOCH -gt 0 ]
     then
         if [ $last_mod -gt $MAX_LAST_MOD_EPOCH ]
@@ -469,6 +505,54 @@ is_matching_file () {
         then
             return 0
         fi
+    fi
+
+    return 1
+}
+
+is_matching_file () {
+    local file_path="$1"
+    local file_type="$2"
+    local file_size=$3
+    local last_mod=$4
+    local file_name=$(basename $file_path)
+
+    if [ $INCLUDE_HIDDEN == false ]
+    then
+        if [[ "${file_name:0:1}" == "." ]]
+        then
+            return 0
+        fi
+    fi
+
+    has_matching_ext "$file_name"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    is_matching_file_name "$file_name"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    is_matching_file_type "$file_type"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    is_matching_file_size $file_size
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    is_matching_last_mod $last_mod
+    if [ $? == 0 ]
+    then
+        return 0
     fi
 
     return 1
