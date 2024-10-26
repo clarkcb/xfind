@@ -911,7 +911,7 @@ class Finder {
         $recurse = $true
         if ($currentDepth -eq $maxDepth) {
             $recurse = $false
-        } elseif ($maxDepth -gt -1 -and $currentDepth -gt $minDepth) {
+        } elseif ($maxDepth -gt -1 -and $currentDepth -gt $maxDepth) {
             return @()
         }
 

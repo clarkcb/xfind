@@ -1,2 +1,2 @@
-requires 'perl', '5.38';
+requires 'perl', '5.40';
 requires 'Path::Class', '0.37';
