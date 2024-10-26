@@ -30,6 +30,25 @@ usage () {
 # Unit Test Functions
 ########################################
 
+unittest_bash () {
+    echo
+    hdr "unittest_bash"
+
+    # ensure bash is installed
+    if [ -z "$(which bash)" ]
+    then
+        log_error "You need to install bash"
+        return
+    fi
+
+    BASH_VERSION=$(bash --version | head -n 1)
+    log "bash version: $BASH_VERSION"
+
+    log "Unit-testing bashfind"
+    log "$BASHFIND_PATH/test/bashfindtests.bash"
+    $BASHFIND_PATH/test/bashfindtests.bash
+}
+
 unittest_c () {
     echo
     hdr "unittest_c"
@@ -817,6 +836,8 @@ unittest_typescript () {
 unittest_all () {
     hdr "unittest_all"
 
+    unittest_bash
+
     unittest_c
 
     unittest_clojure
@@ -919,9 +940,9 @@ fi
 for TARGET_LANG in ${TARGET_LANGS[*]}
 do
     case $TARGET_LANG in
-        # linux)
-        #     unittest_linux
-        #     ;;
+        bash)
+            unittest_bash
+            ;;
         c)
             unittest_c
             ;;

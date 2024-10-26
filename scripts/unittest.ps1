@@ -48,6 +48,36 @@ function Usage
 # Unit Test functions
 ################################################################################
 
+function UnitTestBash
+{
+    Write-Host
+    Hdr('UnitTestBash')
+
+    # ensure bash is installed
+    if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install bash')
+        return
+    }
+
+    $bashVersion = bash --version | Select-String -Pattern 'version'
+    Log("bash version: $bashVersion")
+
+    $bashfindTestPath = Join-Path $bashfindPath 'test'
+    $bashfindTestScript = Join-Path $bashfindTestPath 'bashfindtests.bash'
+
+    if (-not (Test-Path $bashfindTestScript))
+    {
+        LogError("Test script not found: $bashfindTestScript")
+        return
+    }
+
+    # run tests
+    Log('Unit-testing bashfind')
+    Log("bash $bashfindTestScript")
+    bash $bashfindTestScript
+}
+
 function UnitTestC
 {
     Write-Host
@@ -831,6 +861,8 @@ function UnitTestAll
     Write-Host
     Hdr('UnitTestAll')
 
+    UnitTestBash
+
     UnitTestC
 
     UnitTestClojure
@@ -901,6 +933,7 @@ function UnitTestMain
     {
         switch ($lang)
         {
+            'bash'       { UnitTestBash }
             'c'          { UnitTestC }
             'clj'        { UnitTestClojure }
             'clojure'    { UnitTestClojure }

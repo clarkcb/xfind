@@ -30,6 +30,13 @@ usage () {
 # Lint Functions
 ########################################
 
+lint_bash () {
+    echo
+    hdr "lint_bash"
+
+    log "not implemented at this time"
+}
+
 lint_c () {
     echo
     hdr "lint_c"
@@ -472,7 +479,9 @@ lint_typescript () {
 
 lint_all () {
     log "lint_all"
-    
+
+    lint_bash
+
     lint_c
 
     lint_clojure
@@ -569,6 +578,9 @@ fi
 for TARGET_LANG in ${TARGET_LANGS[*]}
 do
     case $TARGET_LANG in
+        bash)
+            lint_bash
+            ;;
         c)
             lint_c
             ;;

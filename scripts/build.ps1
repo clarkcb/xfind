@@ -165,6 +165,26 @@ function AddToBin
 # Build functions
 ################################################################################
 
+function BuildBash
+{
+    Write-Host
+    Hdr('BuildBash')
+
+    # ensure bash is installed
+    if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install bash')
+        return
+    }
+
+    $bashVersion = bash --version | Select-String -Pattern 'version'
+    Log("bash version: $bashVersion")
+
+    # add to bin
+    $bashfindExe = Join-Path $bashfindPath 'bin' 'bashfind.bash'
+    AddToBin($bashfindExe)
+}
+
 function BuildC
 {
     Write-Host
@@ -1885,6 +1905,8 @@ function BuildLinux
     Write-Host
     Hdr('BuildLinux')
 
+    Measure-Command { BuildBash }
+
     Measure-Command { BuildC }
 
     # Measure-Command { BuildClojure }
@@ -1928,6 +1950,8 @@ function BuildAll
 {
     Write-Host
     Hdr('BuildAll')
+
+    Measure-Command { BuildBash }
 
     Measure-Command { BuildC }
 
@@ -2002,6 +2026,7 @@ function BuildMain
         switch ($lang)
         {
             'linux'      { BuildLinux }
+            'bash'       { Measure-Command { BuildBash } }
             'c'          { Measure-Command { BuildC } }
             'clj'        { Measure-Command { BuildClojure } }
             'clojure'    { Measure-Command { BuildClojure } }

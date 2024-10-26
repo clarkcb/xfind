@@ -48,6 +48,14 @@ function Usage
 # Lint functions
 ################################################################################
 
+function LintBash
+{
+    Write-Host
+    Hdr('LintBash')
+
+    Log('Not implemented at this time')
+}
+
 function LintC
 {
     Write-Host
@@ -464,6 +472,8 @@ function LintLinux
     Write-Host
     Hdr('LintLinux')
 
+    LintBash
+
     LintC
 
     # LintClojure
@@ -513,6 +523,8 @@ function LintAll
 {
     Write-Host
     Hdr('LintAll')
+
+    LintBash
 
     LintC
 
@@ -585,6 +597,7 @@ function LintMain
         switch ($lang)
         {
             'linux'      { LintLinux }
+            'bash'       { LintBash }
             'c'          { LintC }
             'clj'        { LintClojure }
             'clojure'    { LintClojure }

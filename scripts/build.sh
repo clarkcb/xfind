@@ -83,7 +83,7 @@ add_to_bin () {
 
     cd "$XFIND_BIN_PATH"
 
-    if [[ $script_name == *.sh ]]
+    if [[ $script_name == *.sh || $script_name == *.bash ]]
     then
         script_name=${script_name%%.*}
     fi
@@ -104,6 +104,23 @@ add_to_bin () {
 ########################################
 # Build Functions
 ########################################
+
+build_bash () {
+    echo
+    hdr "build_bash"
+
+    # ensure bash is installed
+    if [ -z "$(which bash)" ]
+    then
+        log_error "You need to install bash"
+        return
+    fi
+
+    BASH_VERSION=$(bash --version | head -n 1)
+    log "bash version: $BASH_VERSION"
+
+    add_to_bin "$BASHFIND_PATH/bin/bashfind.bash"
+}
 
 build_c () {
     echo
@@ -1745,6 +1762,8 @@ build_typescript () {
 build_linux () {
     hdr "build_linux"
 
+    time build_bash
+
     time build_c
 
     # time build_clojure
@@ -1788,6 +1807,8 @@ build_linux () {
 
 build_all () {
     hdr "build_all"
+
+    time build_bash
 
     time build_c
 
@@ -1928,6 +1949,9 @@ do
     case $TARGET_LANG in
         linux)
             build_linux
+            ;;
+        bash)
+            time build_bash
             ;;
         c)
             time build_c

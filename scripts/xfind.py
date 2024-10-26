@@ -14,6 +14,7 @@ import re
 # Configuration
 ########################################
 xfind_dict = {
+    'bash':       'bashfind',
     'c':          'cfind',
     'clj':        'cljfind',
     'clojure':    'cljfind',
