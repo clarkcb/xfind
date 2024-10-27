@@ -214,6 +214,36 @@ validate_settings () {
     fi
 }
 
+is_dot_dir () {
+    local dir_path="$1"
+    local dir_name=$(basename $dir_path)
+    if [[ "$dir_path" =~ ^\.{1,2}[/\\]?$ ]]
+    then
+        return 1
+    fi
+    return 0
+}
+
+is_hidden () {
+    local file_path="$1"
+
+    IFS="/" read -ra elems <<< "$file_path"
+
+    for elem in "${elems[@]}"; do
+        # echo "$elem"
+        if [[ "${elem:0:1}" == "." ]]
+        then
+            is_dot_dir "$elem"
+            if [ $? == 0 ]
+            then
+                return 1
+            fi
+        fi
+    done
+
+    return 0
+}
+
 is_matching_dir () {
     local dir_path="$1"
 
@@ -224,8 +254,8 @@ is_matching_dir () {
 
     if [ $INCLUDE_HIDDEN == false ]
     then
-        local base_dir=$(basename $dir_path)
-        if [[ "${base_dir:0:1}" == "." ]]
+        is_hidden "$dir_path"
+        if [ $? == 1 ]
         then
             return 0
         fi
@@ -338,7 +368,8 @@ is_matching_archive_file () {
 
     if [ $INCLUDE_HIDDEN == false ]
     then
-        if [[ "${file_name:0:1}" == "." ]]
+        is_hidden "$file_name"
+        if [ $? == 1 ]
         then
             return 0
         fi
@@ -519,7 +550,8 @@ is_matching_file () {
 
     if [ $INCLUDE_HIDDEN == false ]
     then
-        if [[ "${file_name:0:1}" == "." ]]
+        is_hidden "$file_name"
+        if [ $? == 1 ]
         then
             return 0
         fi

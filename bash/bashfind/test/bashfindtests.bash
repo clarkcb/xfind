@@ -45,12 +45,20 @@ test_settings_from_json
 test_settings_from_file
 
 
-# # File types tests
+# File types tests
 source "$TESTDIR/test_file_types.bash"
 
 test_is_file_type
 
 test_get_file_type
+
+
+# File util tests
+source "$TESTDIR/test_file_util.bash"
+
+test_is_dot_dir
+
+test_is_hidden
 
 
 # Finder tests
@@ -87,4 +95,3 @@ test_is_matching_file_in_file_types
 test_is_matching_file_out_file_types
 
 test_is_matching_file_by_size
-
