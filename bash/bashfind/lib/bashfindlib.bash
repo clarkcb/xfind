@@ -616,16 +616,6 @@ rec_find_path () {
         path_files=$(find $path -maxdepth 1 -type f)
     fi
 
-    for d in ${path_dirs[*]}
-    do
-        is_matching_dir "$d"
-        local dir_match=$?
-        if [ "$dir_match" == 1 ]
-        then
-            rec_find_path $d $(($current_depth + 1))
-        fi
-    done
-
     for f in ${path_files[*]}
     do
         local file_name=$(basename $f)
@@ -667,6 +657,16 @@ rec_find_path () {
                 local dir_path=$(dirname $f)
                 FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
             fi
+        fi
+    done
+
+    for d in ${path_dirs[*]}
+    do
+        is_matching_dir "$d"
+        local dir_match=$?
+        if [ "$dir_match" == 1 ]
+        then
+            rec_find_path $d $(($current_depth + 1))
         fi
     done
 }
