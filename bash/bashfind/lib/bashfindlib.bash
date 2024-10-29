@@ -590,6 +590,59 @@ is_matching_file () {
     return 1
 }
 
+filter_to_file_result () {
+    local file_path="$1"
+    local file_name=$(basename $file_path)
+    local file_type='unknown'
+    local file_size=0
+    local last_mod=0
+
+    is_file_type 'archive' "$file_name"
+    local archive_match=$?
+    if [ "$archive_match" == 1 ]
+    then
+        file_type='archive'
+        if [ $INCLUDE_ARCHIVES == true ]
+        then
+            is_matching_archive_file "$file_name"
+            local file_match=$?
+            if [ "$file_match" == 1 ]
+            then
+                local dir_path=$(dirname $file_path)
+                FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
+            fi
+        fi
+    else
+        if [ $NEED_FILE_TYPE == true ]
+        then
+            file_type=$(get_file_type $file_path)
+        fi
+        if [ $NEED_FILE_SIZE == true ]
+        then
+            file_size=$(stat -f %z $file_path)
+        fi
+        if [ $NEED_LAST_MOD == true ]
+        then
+            last_mod=$(stat -f %m $file_path)
+        fi
+        is_matching_file "$file_name" "$file_type" $file_size $last_mod
+        if [ $? == 1 ]
+        then
+            local dir_path=$(dirname $file_path)
+            FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
+        fi
+    fi
+}
+
+filter_to_file_results () {
+    local file_paths=("$@")
+
+    for file_path in ${file_paths[*]}
+    do
+        filter_to_file_result $file_path
+    done
+}
+
 rec_find_path () {
     local path="$1"
     local current_depth=$2
@@ -616,49 +669,7 @@ rec_find_path () {
         path_files=$(find $path -maxdepth 1 -type f)
     fi
 
-    for f in ${path_files[*]}
-    do
-        local file_name=$(basename $f)
-        local file_type='unknown'
-        local file_size=0
-        local last_mod=0
-
-        is_file_type 'archive' "$file_name"
-        local archive_match=$?
-        if [ "$archive_match" == 1 ]
-        then
-            file_type='archive'
-            if [ $INCLUDE_ARCHIVES == true ]
-            then
-                is_matching_archive_file "$file_name"
-                local file_match=$?
-                if [ "$file_match" == 1 ]
-                then
-                    local dir_path=$(dirname $f)
-                    FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
-                fi
-            fi
-        else
-            if [ $NEED_FILE_TYPE == true ]
-            then
-                file_type=$(get_file_type $f)
-            fi
-            if [ $NEED_FILE_SIZE == true ]
-            then
-                file_size=$(stat -f %z $f)
-            fi
-            if [ $NEED_LAST_MOD == true ]
-            then
-                last_mod=$(stat -f %m $f)
-            fi
-            is_matching_file "$file_name" "$file_type" $file_size $last_mod
-            if [ $? == 1 ]
-            then
-                local dir_path=$(dirname $f)
-                FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
-            fi
-        fi
-    done
+    filter_to_file_results "${path_files[*]}"
 
     for d in ${path_dirs[*]}
     do
