@@ -30,6 +30,7 @@ repositories {
 dependencies {
     implementation("commons-io:commons-io:2.18.0")
     implementation("org.json:json:20250107")
+    implementation("org.xerial:sqlite-jdbc:3.47.0.0")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
