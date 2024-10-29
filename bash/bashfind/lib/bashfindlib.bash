@@ -22,7 +22,7 @@ fi
 
 BASHFIND_PATH="$XFIND_PATH/bash/bashfind"
 SHARED_PATH="$XFIND_PATH/shared"
-FILE_TYPES_PATH="$XFIND_PATH/shared/filetypes.json"
+XFIND_DB_PATH="$SHARED_PATH/xfind.db"
 FIND_OPTIONS_PATH="$XFIND_PATH/shared/findoptions.json"
 
 # this will be contain the contents of FIND_OPTIONS_PATH if needed
@@ -32,22 +32,21 @@ source "$BASHFIND_PATH/lib/consolecolor.sh"
 
 
 # File Types
-FILE_TYPES=( $(jq -r '.filetypes[] | .type' $FILE_TYPES_PATH) )
-FILE_TYPE_EXTENSIONS=()
+FILE_TYPES=( $(sqlite3 "$XFIND_DB_PATH" "select name from file_type" | tr '[:upper:]' '[:lower:]') )
+FILE_TYPE_EXTS=()
 FILE_TYPE_NAMES=()
-FILE_TYPES_FOR_NAMES=()
-for t in ${FILE_TYPES[*]}
+for i in ${!FILE_TYPES[*]}
 do
-    exts=( $(jq -r ".filetypes[] | select(.type == \"$t\") | .extensions[]" $FILE_TYPES_PATH) )
-    jexts=$(IFS=','; echo "${exts[*]}")
-    FILE_TYPE_EXTENSIONS+=($jexts)
-    names=( $(jq -r ".filetypes[] | select(.type == \"$t\") | .names[]" $FILE_TYPES_PATH) )
-    jnames=$(IFS=','; echo "${names[*]}")
-    FILE_TYPE_NAMES+=($jnames)
+    file_type_id=$((i + 1))
+    names=( $(sqlite3 "$XFIND_DB_PATH" "select name from file_name where file_type_id=$file_type_id") )
     if [ ${#names[@]} -gt 0 ]
     then
-        FILE_TYPES_FOR_NAMES+=($t)
+        jnames=$(IFS=','; echo "${names[*]}")
+        FILE_TYPE_NAMES+=($jnames)
+    else
+        FILE_TYPE_NAMES+=(",,")
     fi
+    FILE_TYPE_EXTS+=(",,")
 done
 
 
@@ -158,85 +157,149 @@ is_arg_type () {
     return 0
 }
 
-is_file_type () {
+get_file_type_id_for_file_type () {
     local file_type="$1"
-    local file_path="$2"
-    local file_name=$(basename $file_path)
 
-    # Check names
-    local name_idx=-1
-    for i in ${!FILE_TYPES_FOR_NAMES[*]}
+    for i in ${!FILE_TYPES[*]}
     do
-        if [ "${FILE_TYPES_FOR_NAMES[$i]}" == "$file_type" ]
+        if [ "${FILE_TYPES[$i]}" == "$file_type" ]
+        then
+            return $i
+        fi
+    done
+
+    return 0
+}
+
+get_file_type_for_file_name () {
+    local file_name="$1"
+
+    # Check the "cache"
+    name_idx=0
+    for i in ${!FILE_TYPE_NAMES[*]}
+    do
+        if [[ ",${FILE_TYPE_NAMES[$i]}," =~ ",$file_name," ]]
         then
             name_idx=$i
             break
         fi
     done
-    if [ $name_idx -gt -1 ]
-    then
-        if [[ ",${FILE_TYPE_NAMES[$name_idx]}," =~ ",$file_name," ]]
-        then
-            return 1
-        fi
-    fi
 
-    # Check extensions
-    local ext_idx=-1
-    for i in ${!FILE_TYPES[*]}
+    echo ${FILE_TYPES[$name_idx]}
+}
+
+update_ext_cache () {
+    local file_type_idx="$1"
+    local file_ext="$2"
+    local ext_cache=()
+
+    if [[ ! ",${FILE_TYPE_EXTS[$file_type_idx]}," =~ ",$file_ext," ]]
+    then
+        local i=0
+        while [ $i -lt $file_type_idx ]
+        do
+            ext_cache+=("${FILE_TYPE_EXTS[$i]}")
+            i=$((i + 1))
+        done
+
+        if [ "${FILE_TYPE_EXTS[$i]}" = ",," ]
+        then
+            ext_cache+=(",$file_ext,")
+        else
+            ext_cache+=("${FILE_TYPE_EXTS[$file_type_idx]}$file_ext,")
+        fi
+
+        i=$((i + 1))
+        while [ $i -lt ${#FILE_TYPE_EXTS[@]} ]
+        do
+            ext_cache+=("${FILE_TYPE_EXTS[$i]}")
+            i=$((i + 1))
+        done
+
+        # Update the global array
+        FILE_TYPE_EXTS=("${ext_cache[@]}")
+    fi
+}
+
+check_array() {
+    echo "FILE_TYPE_EXTS: ${FILE_TYPE_EXTS[@]}"
+}
+
+get_file_type_for_extension () {
+    local file_ext="$1"
+
+    # Check the "cache"
+    ext_idx=0
+    for i in ${!FILE_TYPE_EXTS[*]}
     do
-        if [ "${FILE_TYPES[$i]}" == "$file_type" ]
+        if [[ ",${FILE_TYPE_EXTS[$i]}," =~ ",$file_ext," ]]
         then
             ext_idx=$i
             break
         fi
     done
 
-    if [ $ext_idx -gt -1 ]
+    if [ $ext_idx -gt 0 ]
     then
-        local file_ext="${file_name##*.}"
-        if [[ ",${FILE_TYPE_EXTENSIONS[$ext_idx]}," =~ ",$file_ext," ]]
+        echo "${FILE_TYPES[$ext_idx]}"
+        return
+    fi
+
+    # Query the database
+    if [[ -z $(echo -n "$file_ext" | tr -d 'a-zA-Z0-9') ]]
+    then
+        local query="SELECT file_type_id FROM file_extension WHERE extension='$file_ext';"
+        local file_type_id=$(sqlite3 "$XFIND_DB_PATH" "$query")
+        if [ -n "$file_type_id" ]
+        then
+            file_type_id=$((file_type_id - 1))
+            echo "${FILE_TYPES[$file_type_id]}"
+            return
+        fi
+    fi
+
+    echo 'unknown'
+}
+
+get_file_type () {
+    local file_path="$1"
+    local file_name=$(basename $file_path)
+
+    # Check names
+    file_type=$(get_file_type_for_file_name $file_name)
+    if [ "$file_type" != 'unknown' ]
+    then
+        echo "$file_type"
+        return
+    fi
+
+    # Check extensions
+    local file_ext="${file_name##*.}"
+    echo $(get_file_type_for_extension $file_ext)
+}
+
+is_file_type () {
+    local file_type="$1"
+    local file_path="$2"
+    local file_name=$(basename $file_path)
+
+    db_file_type=$(get_file_type $file_path)
+
+    if [ "$file_type" == 'text' ]
+    then
+        # TODO: code and xml should also be considered text
+        if [ "$db_file_type" == 'text' ]
         then
             return 1
         fi
     fi
 
-    if [ "$file_type" == "unknown" ]
+    if [ "$file_type" == "$db_file_type" -o "$file_type" == "unknown" ]
     then
         return 1
     fi
 
     return 0
-}
-
-get_file_type () {
-    local file_path="$1"
-
-    # start with specific file types
-    specific_types=(code archive audio font image video)
-    for t in "${specific_types[@]}"
-    do
-        is_file_type "$t" "$file_path"
-        if [ $? == 1 ]
-        then
-            echo "$t"
-            return
-        fi
-    done
-
-    # end with general file types
-    general_types=(text binary xml)
-    for t in "${general_types[@]}"
-    do
-        is_file_type "$t" "$file_path"
-        if [ $? == 1 ]
-        then
-            echo "$t"
-            return
-        fi
-    done
-
-    echo 'unknown'
 }
 
 validate_settings () {
@@ -757,6 +820,13 @@ filter_to_file_result () {
         if [ $NEED_FILE_TYPE == true ]
         then
             file_type=$(get_file_type $file_path)
+
+            # Update the "cache"
+            get_file_type_id_for_file_type $file_type
+            file_type_id=$?
+            file_ext="${file_name##*.}"
+            update_ext_cache $file_type_id "$file_ext"
+            # check_array
         fi
         if [ $NEED_FILE_SIZE == true ]
         then
