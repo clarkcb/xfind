@@ -10,7 +10,7 @@
                   [clojure.java-time "1.4.3"]
                   ;; TODO: switch to next.jdbc
                   ;;[com.github.seancorfield/next.jdbc "1.3.939"]
-                  [org.xerial/sqlite-jdbc "3.46.0.1"]
+                  [org.xerial/sqlite-jdbc "3.47.0.0"]
                   [org.slf4j/slf4j-nop "1.7.36"]
                 ]
 ;  :main ^:skip-aot cljfind.cljfind

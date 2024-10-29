@@ -15,7 +15,7 @@
             [clojure.data.json :as json]
             )
   (:use [clojure.set :only (union)]
-        [clojure.string :only (lower-case)]
+        [clojure.string :only (join lower-case)]
         [cljfind.config :only (XFINDDB)]
         [cljfind.fileutil :only (get-ext get-name)]))
 
