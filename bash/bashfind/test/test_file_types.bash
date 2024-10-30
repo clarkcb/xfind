@@ -56,6 +56,10 @@ test_is_file_type () {
     xml_file="pom.xml"
     is_file_type xml "$xml_file"
     assert_equals_number "is_file_type xml $xml_file" $? 1
+
+    unknown_file="unknown.zzz"
+    is_file_type unknown "$unknown_file"
+    assert_equals_number "is_file_type unknown $unknown_file" $? 1
 }
 
 test_get_file_type () {
@@ -103,4 +107,9 @@ test_get_file_type () {
     xml_file="pom.xml"
     xml_file_type=$(get_file_type "$xml_file")
     assert_equals_string "get_file_type $xml_file" "$xml_file_type" xml
+
+    unknown_file="unknown.zzz"
+    unknown_file_type=$(get_file_type "$unknown_file")
+    echo "unknown_file_type: $unknown_file_type"
+    assert_equals_string "get_file_type $unknown_file" "$unknown_file_type" unknown
 }

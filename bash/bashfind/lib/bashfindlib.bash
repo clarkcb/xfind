@@ -147,6 +147,11 @@ is_file_type () {
         fi
     fi
 
+    if [ "$file_type" == "unknown" ]
+    then
+        return 1
+    fi
+
     return 0
 }
 
@@ -646,27 +651,28 @@ filter_to_file_results () {
 rec_find_path () {
     local path="$1"
     local current_depth=$2
-    local recurse=true
-
-    if [ $current_depth == $MAX_DEPTH ]
-    then
-        recurse=false
-    fi
 
     if [ $MAX_DEPTH -gt -1 -a $current_depth -gt $MAX_DEPTH ]
     then
         return 0
     fi
 
+    local recurse=true
+    if [ $current_depth == $MAX_DEPTH ]
+    then
+        recurse=false
+    fi
+
     local path_dirs=()
     local path_files=()
+    local find_options="-maxdepth 1"
     if [ "$recurse" == true ]
     then
-        path_dirs=$(find $path -maxdepth 1 -type d | grep -v "^.$" | grep -v "^..$" | grep -v "^$path$")
+        path_dirs=$(find $path $find_options -type d | grep -v "^$path$")
     fi
     if [ $MIN_DEPTH -lt 0 -o $current_depth -ge $MIN_DEPTH ]
     then
-        path_files=$(find $path -maxdepth 1 -type f)
+        path_files=$(find $path $find_options -type f)
     fi
 
     filter_to_file_results "${path_files[*]}"
