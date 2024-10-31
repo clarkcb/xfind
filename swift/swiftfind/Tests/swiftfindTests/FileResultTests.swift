@@ -35,7 +35,7 @@ class FileResultTests: XCTestCase {
         XCTAssertEqual(filePath, fileResult.description)
     }
 
-    static var allTests = [
+    static let allTests = [
         ("testFileResultAbsPath", testFileResultAbsPath),
         ("testFileResultTildePath", testFileResultTildePath),
         ("testFileResultRelPath1", testFileResultRelPath1),

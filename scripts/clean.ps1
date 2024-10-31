@@ -48,6 +48,13 @@ function Usage
 # Clean functions
 ################################################################################
 
+function CleanBash
+{
+    Write-Host
+    Hdr('CleanBash')
+    Log('Nothing to do for bash')
+}
+
 function CleanC
 {
     Write-Host
@@ -56,7 +63,7 @@ function CleanC
     $oldPwd = Get-Location
     Set-Location $cfindPath
 
-    $cmakeBuildDirs = Get-ChildItem . | Where-Object {$_.Name.StartsWith('cmake-build-')}
+    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
     {
         if (Test-Path $c)
@@ -97,7 +104,7 @@ function CleanCpp
     $oldPwd = Get-Location
     Set-Location $cppfindPath
 
-    $cmakeBuildDirs = Get-ChildItem . | Where-Object {$_.Name.StartsWith('cmake-build-')}
+    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
     {
         if (Test-Path $c)
@@ -126,6 +133,23 @@ function CleanCsharp
 
     Log('dotnet clean')
     dotnet clean
+
+    $csfindProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsFind')}
+    ForEach ($p in $csfindProjectDirs)
+    {
+        $binDir = Join-Path $p.FullName 'bin'
+        if (Test-Path $binDir)
+        {
+            Log("Remove-Item $binDir -Recurse -Force")
+            Remove-Item $binDir -Recurse -Force
+        }
+        $objDir = Join-Path $p.FullName 'obj'
+        if (Test-Path $objDir)
+        {
+            Log("Remove-Item $objDir -Recurse -Force")
+            Remove-Item $objDir -Recurse -Force
+        }
+    }
 
     Set-Location $oldPwd
 }
@@ -196,6 +220,23 @@ function CleanFsharp
     Log('dotnet clean')
     dotnet clean
 
+    $fsfindProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsFind')}
+    ForEach ($p in $fsfindProjectDirs)
+    {
+        $binDir = Join-Path $p.FullName 'bin'
+        if (Test-Path $binDir)
+        {
+            Log("Remove-Item $binDir -Recurse -Force")
+            Remove-Item $binDir -Recurse -Force
+        }
+        $objDir = Join-Path $p.FullName 'obj'
+        if (Test-Path $objDir)
+        {
+            Log("Remove-Item $objDir -Recurse -Force")
+            Remove-Item $objDir -Recurse -Force
+        }
+    }
+
     Set-Location $oldPwd
 }
 
@@ -224,17 +265,22 @@ function CleanGroovy
     Write-Host
     Hdr('CleanGroovy')
 
-    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $groovyfindPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
         return
     }
 
-    $oldPwd = Get-Location
-    Set-Location $groovyfindPath
-
-    Log('gradle -b build.gradle clean')
-    gradle -b 'build.gradle' clean
+    Log("$gradle --warning-mode all clean")
+    & $gradle --warning-mode all clean
 
     Set-Location $oldPwd
 }
@@ -264,14 +310,24 @@ function CleanJava
     Write-Host
     Hdr('CleanJava')
 
-    if (-not (Get-Command 'mvn' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $javafindPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
-        PrintError('You need to install maven')
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+        PrintError('You need to install gradle')
         return
     }
 
-    Log("mvn -f $javafindPath/pom.xml clean")
-    mvn -f $javafindPath/pom.xml clean
+    Log("$gradle --warning-mode all clean")
+    & $gradle --warning-mode all clean
+
+    Set-Location $oldPwd
 }
 
 function CleanJavaScript
@@ -299,17 +355,22 @@ function CleanKotlin
     Write-Host
     Hdr('CleanKotlin')
 
-    if (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    $oldPwd = Get-Location
+    Set-Location $ktfindPath
+
+    $gradle = 'gradle'
+    $gradleWrapper = Join-Path '.' 'gradlew'
+    if (Test-Path $gradleWrapper)
     {
+        $gradle = $gradleWrapper
+    }
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
         return
     }
 
-    $oldPwd = Get-Location
-    Set-Location $ktfindPath
-
-    Log('gradle -b build.gradle clean')
-    gradle -b 'build.gradle' clean
+    Log("$gradle --warning-mode all clean")
+    & $gradle --warning-mode all clean
 
     Set-Location $oldPwd
 }
@@ -318,7 +379,20 @@ function CleanObjc
 {
     Write-Host
     Hdr('CleanObjc')
-    Log('not implemented at this time')
+
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install swift')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $objcfindPath
+
+    Log("swift package clean")
+    swift package clean
+
+    Set-Location $oldPwd
 }
 
 function CleanOcaml
@@ -370,7 +444,7 @@ function CleanRust
 
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install rust')
+        PrintError('You need to install cargo')
     }
 
     $oldPwd = Get-Location
@@ -406,12 +480,19 @@ function CleanSwift
     Write-Host
     Hdr('CleanSwift')
 
-    # if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
-    # {
-    #     PrintError('You need to install swift')
-    #     return
-    # }
-    Log('not implemented at this time')
+    if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
+    {
+        PrintError('You need to install swift')
+        return
+    }
+
+    $oldPwd = Get-Location
+    Set-Location $swiftfindPath
+
+    Log("swift package clean")
+    swift package clean
+
+    Set-Location $oldPwd
 }
 
 function CleanTypeScript
@@ -438,6 +519,8 @@ function CleanLinux
 {
     Write-Host
     Hdr('CleanLinux')
+
+    CleanBash
 
     CleanC
 
@@ -488,6 +571,8 @@ function CleanAll
 {
     Write-Host
     Hdr('CleanAll')
+
+    CleanBash
 
     CleanC
 
@@ -560,6 +645,7 @@ function CleanMain
         switch ($lang)
         {
             'linux'      { CleanLinux }
+            'bash'       { CleanBash }
             'c'          { CleanC }
             'clj'        { CleanClojure }
             'clojure'    { CleanClojure }
@@ -582,7 +668,7 @@ function CleanMain
             'kt'         { CleanKotlin }
             'objc'       { CleanObjc }
             # 'ocaml'      { CleanOcaml }
-            'ml'         { CleanOcaml }
+            # 'ml'         { CleanOcaml }
             'perl'       { CleanPerl }
             'pl'         { CleanPerl }
             'php'        { CleanPhp }

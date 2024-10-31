@@ -30,6 +30,12 @@ usage () {
 # Clean Functions
 ########################################
 
+clean_bash () {
+    echo
+    hdr "clean_bash"
+    log "Nothing to do for bash"
+}
+
 clean_c () {
     echo
     hdr "clean_c"
@@ -57,8 +63,10 @@ clean_clojure () {
     fi
 
     cd "$CLJFIND_PATH"
+
     log "lein clean"
     lein clean
+
     cd -
 }
 
@@ -89,19 +97,19 @@ clean_csharp () {
     fi
 
     cd "$CSFIND_PATH"
+
     log "dotnet clean"
     dotnet clean
 
-    PROJECTS=(CsFind CsFindGen CsFindLib CsFindTests)
-    for p in ${PROJECTS[*]}
+    for p in $(find "$CSFIND_PATH" -name "CsFind*" -type d -maxdepth 1)
     do
-        if [ -d "$CSFIND_PATH/$p" ]
+        if [ -d "$p" ]
         then
-            log "rm -rf $CSFIND_PATH/$p/bin"
-            rm -rf "$CSFIND_PATH/$p/bin"
+            log "rm -rf $p/bin"
+            rm -rf "$p/bin"
 
-            log "rm -rf $CSFIND_PATH/$p/obj"
-            rm -rf "$CSFIND_PATH/$p/obj"
+            log "rm -rf $p/obj"
+            rm -rf "$p/obj"
         fi
     done
 
@@ -121,8 +129,10 @@ clean_dart () {
 
     # pub cache repair is apparently the closest thing to clean for dart
     cd "$DARTFIND_PATH"
+
     log "dart pub cache repair"
     dart pub cache repair
+
     cd -
 }
 
@@ -164,19 +174,19 @@ clean_fsharp () {
     fi
 
     cd "$FSFIND_PATH"
+
     log "dotnet clean"
     dotnet clean
 
-    PROJECTS=(FsFind FsFindGen FsFindLib FsFindTests)
-    for p in ${PROJECTS[*]}
+    for p in $(find "$FSFIND_PATH" -name "FsFind*" -type d -maxdepth 1)
     do
-        if [ -d "$FSFIND_PATH/$p" ]
+        if [ -d "$p" ]
         then
-            log "rm -rf $FSFIND_PATH/$p/bin"
-            rm -rf "$FSFIND_PATH/$p/bin"
+            log "rm -rf $p/bin"
+            rm -rf "$p/bin"
 
-            log "rm -rf $FSFIND_PATH/$p/obj"
-            rm -rf "$FSFIND_PATH/$p/obj"
+            log "rm -rf $p/obj"
+            rm -rf "$p/obj"
         fi
     done
 
@@ -195,8 +205,10 @@ clean_go () {
     fi
 
     cd "$GOFIND_PATH"
+
     log "go clean"
     go clean
+
     cd -
 }
 
@@ -204,16 +216,24 @@ clean_groovy () {
     echo
     hdr "clean_groovy"
 
-    # ensure gradle is installed
-    if [ -z "$(which gradle)" ]
+    cd "$GROOVYFIND_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
-        echo "You need to install gradle"
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         return
     fi
 
-    cd "$GROOVYFIND_PATH"
-    log "gradle --warning-mode all clean"
-    gradle --warning-mode all clean
+    log "$GRADLE --warning-mode all clean"
+    "$GRADLE" --warning-mode all clean
+
     cd -
 }
 
@@ -229,8 +249,10 @@ clean_haskell () {
     fi
 
     cd "$HSFIND_PATH"
+
     log "stack clean"
     stack clean
+
     cd -
 }
 
@@ -238,15 +260,25 @@ clean_java () {
     echo
     hdr "clean_java"
 
-    # ensure mvn is installed
-    if [ -z "$(which mvn)" ]
+    cd "$JAVAFIND_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
-        echo "You need to install mvn"
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         return
     fi
 
-    log "mvn -f $JAVAFIND_PATH/pom.xml clean"
-    mvn -f "$JAVAFIND_PATH/pom.xml" clean
+    log "$GRADLE --warning-mode all clean"
+    "$GRADLE" --warning-mode all clean
+
+    cd -
 }
 
 clean_javascript () {
@@ -261,8 +293,10 @@ clean_javascript () {
     fi
 
     cd "$JSFIND_PATH"
+
     log "npm run clean"
     npm run clean
+
     cd -
 }
 
@@ -270,16 +304,24 @@ clean_kotlin () {
     echo
     hdr "clean_kotlin"
 
-    # ensure gradle is installed
-    if [ -z "$(which gradle)" ]
+    cd "$KTFIND_PATH"
+
+    GRADLE=
+    # check for gradle wrapper
+    if [ -f "gradlew" ]
     then
-        echo "You need to install gradle"
+        GRADLE="./gradlew"
+    elif [ -n "$(which gradle)" ]
+    then
+        GRADLE="gradle"
+    else
+        log_error "You need to install gradle"
         return
     fi
 
-    cd "$KTFIND_PATH"
-    log "gradle --warning-mode all clean"
-    gradle --warning-mode all clean
+    log "$GRADLE --warning-mode all clean"
+    "$GRADLE" --warning-mode all clean
+
     cd -
 }
 
@@ -288,8 +330,10 @@ clean_objc () {
     hdr "clean_objc"
 
     cd "$OBJCFIND_PATH"
+
     log "swift package clean"
     swift package clean
+
     cd -
 }
 
@@ -342,8 +386,10 @@ clean_rust () {
     fi
 
     cd "$RSFIND_PATH"
+
     echo "cargo clean"
     cargo clean
+
     cd -
 }
 
@@ -361,8 +407,10 @@ clean_scala () {
     # TODO: convert to sbt command
 
     cd "$SCALAFIND_PATH"
+
     log "sbt clean"
     sbt clean
+
     cd -
 }
 
@@ -371,8 +419,10 @@ clean_swift () {
     hdr "clean_swift"
 
     cd "$SWIFTFIND_PATH"
+
     log "swift package clean"
     swift package clean
+
     cd -
 }
 
@@ -388,13 +438,17 @@ clean_typescript () {
     fi
 
     cd "$TSFIND_PATH"
+
     log "npm run clean"
     npm run clean
+
     cd -
 }
 
 clean_linux () {
     hdr "clean_linux"
+
+    clean_bash
 
     clean_c
 
@@ -443,6 +497,8 @@ clean_linux () {
 
 clean_all () {
     hdr "clean_all"
+
+    clean_bash
 
     clean_c
 
@@ -546,6 +602,9 @@ do
     case $TARGET_LANG in
         linux)
             clean_linux
+            ;;
+        bash)
+            clean_bash
             ;;
         c)
             clean_c

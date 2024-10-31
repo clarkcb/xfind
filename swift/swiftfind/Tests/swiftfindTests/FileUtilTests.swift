@@ -197,7 +197,7 @@ class FileUtilTests: XCTestCase {
         XCTAssertEqual(child, "somefile.txt")
     }
 
-    static var allTests = [
+    static let allTests = [
         ("testContractPathWithHome", testContractPathWithHome),
         ("testExpandPathHasTilde", testExpandPathHasTilde),
         ("testExpandPathNoTilde", testExpandPathNoTilde),

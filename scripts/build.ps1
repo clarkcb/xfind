@@ -1198,8 +1198,13 @@ function BuildObjc
         return
     }
 
-    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
-    Log("swift version: $swiftVersion")
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Apple Swift'
+    $swiftVersion = @($swiftVersion -split '\s+')[3]
+    Log("swift version: Apple Swift version $swiftVersion")
 
     $oldPwd = Get-Location
     Set-Location $objcfindPath
@@ -1603,7 +1608,7 @@ function BuildRuby
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $rsfindPath
+    Set-Location $rbfindPath
 
     Log('Building rbfind')
     Log('bundle install')
@@ -1707,8 +1712,12 @@ function BuildScala
         return
     }
 
+    # scala --version output looks like this:
+    # Scala code runner version: 1.4.3
+    # Scala version (default): 3.5.2
     $scalaVersion = scala --version 2>&1 | Select-Object -Last 1
-    Log($scalaVersion)
+    $scalaVersion = @($scalaVersion -split '\s+')[3]
+    Log("scala version: $scalaVersion")
 
     $oldPwd = Get-Location
     Set-Location $scalafindPath
@@ -1780,8 +1789,13 @@ function BuildSwift
         return
     }
 
-    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Swift'
-    Log("swift version: $swiftVersion")
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    $swiftVersion = swift --version 2>&1 | Select-String -Pattern 'Apple Swift'
+    $swiftVersion = @($swiftVersion -split '\s+')[3]
+    Log("swift version: Apple Swift version $swiftVersion")
 
     $oldPwd = Get-Location
     Set-Location $swiftfindPath

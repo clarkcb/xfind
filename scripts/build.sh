@@ -1571,8 +1571,11 @@ build_scala () {
         return
     fi
 
-    SCALA_VERSION=$(scala -version 2>&1 | tail -n 1)
-    log "$SCALA_VERSION"
+    # scala --version output looks like this:
+    # Scala code runner version: 1.4.3
+    # Scala version (default): 3.5.2
+    SCALA_VERSION=$(scala -version 2>&1 | tail -n 1 | cut -d ' ' -f 4)
+    log "scala version: $SCALA_VERSION"
 
     cd "$SCALAFIND_PATH"
 

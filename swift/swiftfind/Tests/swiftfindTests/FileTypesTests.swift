@@ -98,7 +98,7 @@ class FileTypesTests: XCTestCase {
         XCTAssert(fileTypes.getFileType(fileName) == FileType.unknown, "\(fileName) is unknown file")
     }
 
-    static var allTests = [
+    static let allTests = [
         ("testArchiveFiles", testArchiveFiles),
         ("testBinaryFiles", testBinaryFiles),
         ("testCodeFile", testCodeFile),
