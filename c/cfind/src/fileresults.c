@@ -26,7 +26,7 @@ FileResults *empty_file_results(void)
     return results;
 }
 
-int is_null_or_empty_file_results(const FileResults *results)
+bool is_null_or_empty_file_results(const FileResults *results)
 {
     if (results == NULL || results->result == NULL)
         return 1;
@@ -85,8 +85,8 @@ void file_result_to_string(const FileResult *r, char *s)
     }
 }
 
-void print_file_results(const FileResults *results, const SortBy sort_by, const unsigned short sort_case_insensitive,
-                        const unsigned short sort_descending)
+void print_file_results(const FileResults *results, const SortBy sort_by, const bool sort_case_insensitive,
+                        const bool sort_descending)
 {
     const size_t results_count = file_results_count(results);
     FileResult *results_array[results_count];
@@ -232,7 +232,7 @@ static int cmp_file_results_by_lastmod_ci(const void *a, const void *b)
 }
 
 // sort a FileResult array
-void sort_file_result_array(FileResult **arr, const size_t n, const SortBy sort_by, const unsigned short case_insensitive)
+void sort_file_result_array(FileResult **arr, const size_t n, const SortBy sort_by, const bool case_insensitive)
 {
     if (case_insensitive == 1) {
         switch (sort_by) {

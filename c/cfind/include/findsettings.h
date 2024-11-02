@@ -1,6 +1,8 @@
 #ifndef FINDSETTINGS_H
 #define FINDSETTINGS_H
 
+#include <stdbool.h>
+
 #include "intnode.h"
 #include "pathnode.h"
 #include "regexnode.h"
@@ -29,16 +31,16 @@ typedef enum {
 } SortBy;
 
 typedef struct FindSettings {
-    unsigned short archives_only : 1;
-    unsigned short debug : 1;
+    bool archives_only : 1;
+    bool debug : 1;
     StringNode *in_archive_extensions;
     RegexNode *in_archive_file_patterns;
     RegexNode *in_dir_patterns;
     StringNode *in_extensions;
     RegexNode *in_file_patterns;
     IntNode *in_file_types;
-    unsigned short include_archives : 1;
-    unsigned short include_hidden : 1;
+    bool include_archives : 1;
+    bool include_hidden : 1;
     int max_depth;
     long max_last_mod;
     unsigned long max_size;
@@ -52,15 +54,15 @@ typedef struct FindSettings {
     RegexNode *out_file_patterns;
     IntNode *out_file_types;
     PathNode *paths;
-    unsigned short print_dirs : 1;
-    unsigned short print_files : 1;
-    unsigned short print_usage : 1;
-    unsigned short print_version : 1;
-    unsigned short recursive : 1;
+    bool print_dirs : 1;
+    bool print_files : 1;
+    bool print_usage : 1;
+    bool print_version : 1;
+    bool recursive : 1;
     SortBy sort_by;
-    unsigned short sort_case_insensitive : 1;
-    unsigned short sort_descending : 1;
-    unsigned short verbose : 1;
+    bool sort_case_insensitive : 1;
+    bool sort_descending : 1;
+    bool verbose : 1;
 } FindSettings;
 
 FindSettings *default_settings(void);
@@ -81,6 +83,6 @@ SortBy sort_by_from_name(const char *name);
 
 void sort_by_to_name(const SortBy sort_by, char *name);
 
-int need_stat(const FindSettings *settings);
+bool need_stat(const FindSettings *settings);
 
 #endif

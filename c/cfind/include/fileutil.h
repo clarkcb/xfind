@@ -1,6 +1,8 @@
 #ifndef FILEUTIL_H
 #define FILEUTIL_H
 
+#include <stdbool.h>
+
 #if defined(_WIN32) || defined(_WIN64)
 #define OS_WINDOWS 1
 #define PATH_SEPARATOR '\\'
@@ -11,17 +13,17 @@
 #define PATH_SEPARATOR_S "/"
 #endif
 
-unsigned short dir_or_file_exists(const char *file_path);
+bool dir_or_file_exists(const char *file_path);
 
-unsigned short dir_or_file_readable(const char *file_path);
+bool dir_or_file_readable(const char *file_path);
 
-unsigned short is_dot_dir(const char *file_path);
+bool is_dot_dir(const char *file_path);
 
 long file_size(const char *file_path);
 
 void get_extension(const char *file_name, char *ext);
 
-unsigned short is_hidden(const char *file_path);
+bool is_hidden(const char *file_path);
 
 void expand_path(const char *file_path, char **expanded);
 

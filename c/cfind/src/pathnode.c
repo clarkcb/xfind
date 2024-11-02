@@ -51,7 +51,7 @@ Path *copy_path(const Path *path)
     return p;
 }
 
-int is_hidden_path(const Path *path) {
+bool is_hidden_path(const Path *path) {
     if (path == NULL) return 0;
     if (path->dir != NULL && is_hidden(path->dir)) {
        return 1;
@@ -126,7 +126,7 @@ int path_file_name_case_cmp(const Path *p1, const Path *p2)
     return f_cmp;
 }
 
-unsigned short path_exists(const Path *path)
+bool path_exists(const Path *path)
 {
     const size_t path_len = path_strlen(path);
     if (path_len == 0) return 0;
@@ -136,7 +136,7 @@ unsigned short path_exists(const Path *path)
     return dir_or_file_exists(path_s);
 }
 
-unsigned short path_readable(const Path *path)
+bool path_readable(const Path *path)
 {
     const size_t path_len = path_strlen(path);
     if (path_len == 0) return 0;
@@ -240,7 +240,7 @@ void add_dir_and_file_name_to_path_node(const char *dir, const char *file_name, 
     add_path_to_path_node(path, path_node);
 }
 
-int is_null_or_empty_path_node(const PathNode *path_node) {
+bool is_null_or_empty_path_node(const PathNode *path_node) {
     if (path_node == NULL || path_node->path == NULL) {
         return 1;
     }

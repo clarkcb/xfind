@@ -1,6 +1,7 @@
 #ifndef PATHNODE_H
 #define PATHNODE_H
 
+#include <stdbool.h>
 #include <stdlib.h>
 
 typedef struct Path {
@@ -19,7 +20,7 @@ Path *new_path_from_dir_and_file_name(const char *dir, const char *file_name);
 
 Path *copy_path(const Path *path);
 
-int is_hidden_path(const Path *path);
+bool is_hidden_path(const Path *path);
 
 int path_cmp(const Path *p1, const Path *p2);
 
@@ -29,9 +30,9 @@ int path_file_name_cmp(const Path *p1, const Path *p2);
 
 int path_file_name_case_cmp(const Path *p1, const Path *p2);
 
-unsigned short path_exists(const Path *path);
+bool path_exists(const Path *path);
 
-unsigned short path_readable(const Path *path);
+bool path_readable(const Path *path);
 
 int path_stat(const Path *path, struct stat *);
 
@@ -51,7 +52,7 @@ void add_path_to_path_node(Path *p, PathNode *path_node);
 
 void add_dir_and_file_name_to_path_node(const char *dir, const char *file_name, PathNode *path_node);
 
-int is_null_or_empty_path_node(const PathNode *path_node);
+bool is_null_or_empty_path_node(const PathNode *path_node);
 
 size_t path_node_count(PathNode *path_node);
 

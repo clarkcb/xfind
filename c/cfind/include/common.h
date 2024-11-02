@@ -1,6 +1,7 @@
 #ifndef CFIND_COMMON_H
 #define CFIND_COMMON_H
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #define MAX_FILENAME_LENGTH 255
@@ -11,7 +12,7 @@ void log_msg(const char *msg);
 
 void log_err(const char *msg);
 
-int is_null_or_empty_string(const char *s);
+bool is_null_or_empty_string(const char *s);
 
 int char_in_string(char c, const char *s);
 

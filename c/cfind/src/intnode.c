@@ -1,6 +1,5 @@
 #include <assert.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "intnode.h"
 
@@ -35,14 +34,14 @@ void add_int_to_int_node(const int *i, IntNode *int_node)
     }
 }
 
-int is_null_or_empty_int_node(const IntNode *int_node)
+bool is_null_or_empty_int_node(const IntNode *int_node)
 {
     if (int_node == NULL || (int_node->integer == NULL && int_node->next == NULL))
         return 1;
     return 0;
 }
 
-int int_matches_int_node(const int *i, IntNode *int_node)
+bool int_matches_int_node(const int *i, IntNode *int_node)
 {
     IntNode *temp = int_node;
     int matches = 0;

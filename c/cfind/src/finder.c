@@ -50,7 +50,7 @@ error_t validate_settings(const FindSettings *settings)
     return E_OK;
 }
 
-unsigned short is_matching_dir(const FindSettings *settings, const char *dir)
+bool is_matching_dir(const FindSettings *settings, const char *dir)
 {
     // null or empty dir is a match
     if (dir == NULL) return 1;
@@ -84,7 +84,7 @@ unsigned short is_matching_dir(const FindSettings *settings, const char *dir)
     return matches;
 }
 
-unsigned short is_matching_archive_extension(const FindSettings *settings, const char *ext)
+bool is_matching_archive_extension(const FindSettings *settings, const char *ext)
 {
     return (is_null_or_empty_string_node(settings->in_archive_extensions) == 1
             || string_matches_string_node(ext, settings->in_archive_extensions) == 1)
@@ -92,7 +92,7 @@ unsigned short is_matching_archive_extension(const FindSettings *settings, const
             || string_matches_string_node(ext, settings->out_archive_extensions) == 0);
 }
 
-unsigned short is_matching_extension(const FindSettings *settings, const char *ext)
+bool is_matching_extension(const FindSettings *settings, const char *ext)
 {
     return (is_null_or_empty_string_node(settings->in_extensions) == 1
             || string_matches_string_node(ext, settings->in_extensions) == 1)
@@ -100,7 +100,7 @@ unsigned short is_matching_extension(const FindSettings *settings, const char *e
             || string_matches_string_node(ext, settings->out_extensions) == 0);
 }
 
-unsigned short has_matching_archive_extension(const FindSettings *settings, const char *file_name)
+bool has_matching_archive_extension(const FindSettings *settings, const char *file_name)
 {
     if (is_null_or_empty_string_node(settings->in_archive_extensions) == 1
         && is_null_or_empty_string_node(settings->out_archive_extensions) == 1) {
@@ -115,7 +115,7 @@ unsigned short has_matching_archive_extension(const FindSettings *settings, cons
     return is_matching_archive_extension(settings, ext);
 }
 
-unsigned short has_matching_extension(const FindSettings *settings, const char *file_name)
+bool has_matching_extension(const FindSettings *settings, const char *file_name)
 {
     if (is_null_or_empty_string_node(settings->in_extensions) == 1
         && is_null_or_empty_string_node(settings->out_extensions) == 1) {
@@ -130,7 +130,7 @@ unsigned short has_matching_extension(const FindSettings *settings, const char *
     return is_matching_extension(settings, ext);
 }
 
-unsigned short is_matching_archive_file_name(const FindSettings *settings, const char *file_name)
+bool is_matching_archive_file_name(const FindSettings *settings, const char *file_name)
 {
     if (file_name == NULL) return 0;
     const size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
@@ -141,7 +141,7 @@ unsigned short is_matching_archive_file_name(const FindSettings *settings, const
             || string_matches_regex_node(file_name, settings->out_archive_file_patterns) == 0);
 }
 
-unsigned short is_matching_file_name(const FindSettings *settings, const char *file_name)
+bool is_matching_file_name(const FindSettings *settings, const char *file_name)
 {
     if (file_name == NULL) return 0;
     const size_t file_len = strnlen(file_name, MAX_PATH_LENGTH);
@@ -152,7 +152,7 @@ unsigned short is_matching_file_name(const FindSettings *settings, const char *f
             || string_matches_regex_node(file_name, settings->out_file_patterns) == 0);
 }
 
-unsigned short is_matching_file_type(const FindSettings *settings, const FileType *file_type)
+bool is_matching_file_type(const FindSettings *settings, const FileType *file_type)
 {
     return (is_null_or_empty_int_node(settings->in_file_types) == 1
             || int_matches_int_node((int *)file_type, settings->in_file_types) == 1)
@@ -160,7 +160,7 @@ unsigned short is_matching_file_type(const FindSettings *settings, const FileTyp
             || int_matches_int_node((int *)file_type, settings->out_file_types) == 0);
 }
 
-unsigned short is_matching_file_size(const FindSettings *settings, const unsigned long file_size)
+bool is_matching_file_size(const FindSettings *settings, const unsigned long file_size)
 {
     return (settings->max_size == 0L
             || file_size <= settings->max_size)
@@ -168,7 +168,7 @@ unsigned short is_matching_file_size(const FindSettings *settings, const unsigne
             || file_size >= settings->min_size);
 }
 
-unsigned short is_matching_last_mod(const FindSettings *settings, const long last_mod)
+bool is_matching_last_mod(const FindSettings *settings, const long last_mod)
 {
     return (settings->max_last_mod == 0L
             || last_mod <= settings->max_last_mod)
@@ -176,9 +176,9 @@ unsigned short is_matching_last_mod(const FindSettings *settings, const long las
             || last_mod >= settings->min_last_mod);
 }
 
-unsigned short is_matching_path(const FindSettings *settings, const Path *path,
-                                const FileType *file_type, const uint64_t file_size,
-                                const long last_mod)
+bool is_matching_path(const FindSettings *settings, const Path *path,
+                      const FileType *file_type, const uint64_t file_size,
+                      const long last_mod)
 {
     if (*file_type == ARCHIVE) {
         if (settings->include_archives == 0) return 0;
@@ -193,8 +193,8 @@ unsigned short is_matching_path(const FindSettings *settings, const Path *path,
         && is_matching_last_mod(settings, last_mod) == 1;
 }
 
-unsigned short filter_path(const FindSettings *settings, const Path *path, const FileType *file_type,
-                           const uint64_t file_size, const long last_mod) {
+bool filter_path(const FindSettings *settings, const Path *path, const FileType *file_type,
+                 const uint64_t file_size, const long last_mod) {
     if (settings->include_hidden == 0 && is_hidden(path->file_name))
         return 0;
     if (is_matching_dir(settings, path->dir) == 0)

@@ -97,14 +97,14 @@ void add_char_split_to_string_node(const char c, const char *s, StringNode *stri
     }
 }
 
-int is_null_or_empty_string_node(const StringNode *string_node)
+bool is_null_or_empty_string_node(const StringNode *string_node)
 {
     if (string_node == NULL || (string_node->string == NULL && string_node->next == NULL))
         return 1;
     return 0;
 }
 
-int string_matches_string_node(const char *s, const StringNode *string_node)
+bool string_matches_string_node(const char *s, const StringNode *string_node)
 {
     if (s == NULL || string_node == NULL) return 0;
     StringNode *temp = string_node;

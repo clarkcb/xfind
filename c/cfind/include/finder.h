@@ -1,6 +1,8 @@
 #ifndef FINDER_H
 #define FINDER_H
 
+#include <stdbool.h>
+
 #include "fileresults.h"
 #include "filetypes.h"
 #include "findsettings.h"
@@ -15,13 +17,13 @@ Finder *new_finder(const FindSettings *s, const FileTypes *ft);
 
 error_t validate_settings(const FindSettings *settings);
 
-unsigned short is_matching_dir(const FindSettings *settings, const char *dir);
+bool is_matching_dir(const FindSettings *settings, const char *dir);
 
-unsigned short is_matching_path(const FindSettings *settings, const Path *path,
-                                const FileType *file_type, uint64_t file_size, long last_mod);
+bool is_matching_path(const FindSettings *settings, const Path *path,
+                      const FileType *file_type, uint64_t file_size, long last_mod);
 
-unsigned short filter_path(const FindSettings *settings, const Path *path,
-                           const FileType *file_type, uint64_t file_size, long last_mod);
+bool filter_path(const FindSettings *settings, const Path *path,
+                 const FileType *file_type, uint64_t file_size, long last_mod);
 
 error_t filter_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
 

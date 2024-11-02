@@ -1,6 +1,7 @@
 #ifndef FILERESULTS_H
 #define FILERESULTS_H
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "filetypes.h"
@@ -24,7 +25,7 @@ FileResult *new_file_result(const Path *path, FileType file_type, uint64_t file_
 
 FileResults *empty_file_results(void);
 
-int is_null_or_empty_file_results(const FileResults *results);
+bool is_null_or_empty_file_results(const FileResults *results);
 
 FileResults *new_file_results(FileResult *r);
 
@@ -36,10 +37,10 @@ size_t file_results_count(const FileResults *results);
 
 void file_result_to_string(const FileResult *r, char *s);
 
-void print_file_results(const FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
-                        unsigned short sort_descending);
+void print_file_results(const FileResults *results, SortBy sort_by, bool sort_case_insensitive,
+                        bool sort_descending);
 
-void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, unsigned short case_insensitive);
+void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, bool case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 

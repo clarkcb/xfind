@@ -56,14 +56,14 @@ void add_string_to_regex_node(const char *pat, RegexNode *regex_node)
     add_regex_to_regex_node(regex, regex_node);
 }
 
-int is_null_or_empty_regex_node(const RegexNode *regex_node)
+bool is_null_or_empty_regex_node(const RegexNode *regex_node)
 {
     if (regex_node == NULL || regex_node->regex == NULL)
         return 1;
     return 0;
 }
 
-int string_matches_regex_node(const char *s, RegexNode *regex_node)
+bool string_matches_regex_node(const char *s, RegexNode *regex_node)
 {
     RegexNode *temp = regex_node;
     int matches = 0;

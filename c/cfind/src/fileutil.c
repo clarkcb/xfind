@@ -11,7 +11,7 @@
 
 const char *DOT_DIRS[] = {".", "..", "./", "../"};
 
-unsigned short dir_or_file_exists(const char *file_path)
+bool dir_or_file_exists(const char *file_path)
 {
     if (access(file_path, F_OK) == 0) {
         return 1;
@@ -19,7 +19,7 @@ unsigned short dir_or_file_exists(const char *file_path)
     return 0;
 }
 
-unsigned short dir_or_file_readable(const char *file_path)
+bool dir_or_file_readable(const char *file_path)
 {
     if (access(file_path, R_OK) == 0) {
         return 1;
@@ -27,7 +27,7 @@ unsigned short dir_or_file_readable(const char *file_path)
     return 0;
 }
 
-unsigned short is_dot_dir(const char *file_path)
+bool is_dot_dir(const char *file_path)
 {
     if (file_path == NULL || strnlen(file_path, 5) < 1) return 0;
     return index_of_string_in_array(file_path, (char **) DOT_DIRS, 4) > -1;
@@ -68,7 +68,7 @@ void get_extension(const char *file_name, char *ext)
     }
 }
 
-unsigned short is_hidden(const char *file_path)
+bool is_hidden(const char *file_path)
 {
     // if NULL or empty, return false
     if (file_path == NULL) return 0;

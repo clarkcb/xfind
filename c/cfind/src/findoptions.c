@@ -398,7 +398,7 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
     return E_OK;
 }
 
-static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings *settings)
+static error_t set_flag(int flag_idx, bool flag_val, FindSettings *settings)
 {
     switch (flag_idx) {
     case ARCHIVES_ONLY:
@@ -408,10 +408,10 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         set_debug(settings, flag_val);
         break;
     case EXCLUDE_ARCHIVES:
-        settings->include_archives = flag_val == 0 ? 1 : 0;
+        settings->include_archives = !flag_val;
         break;
     case EXCLUDE_HIDDEN:
-        settings->include_hidden = flag_val == 0 ? 1 : 0;
+        settings->include_hidden = !flag_val;
         break;
     case INCLUDE_ARCHIVES:
         settings->include_archives = flag_val;
@@ -423,13 +423,13 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         settings->print_usage = flag_val;
         break;
     case NO_PRINT_DIRS:
-        settings->print_dirs = flag_val == 0 ? 1 : 0;
+        settings->print_dirs = !flag_val;
         break;
     case NO_PRINT_FILES:
-        settings->print_files = flag_val == 0 ? 1 : 0;
+        settings->print_files = !flag_val;
         break;
     case NO_RECURSIVE:
-        settings->recursive = flag_val == 0 ? 1 : 0;
+        settings->recursive = !flag_val;
         break;
     case PRINT_DIRS:
         settings->print_dirs = flag_val;
@@ -441,13 +441,13 @@ static error_t set_flag(int flag_idx, unsigned short int flag_val, FindSettings 
         settings->recursive = flag_val;
         break;
     case SORT_ASCENDING:
-        settings->sort_descending = flag_val == 0 ? 1 : 0;
+        settings->sort_descending = !flag_val;
         break;
     case SORT_CASE_INSENSITIVE:
         settings->sort_case_insensitive = flag_val;
         break;
     case SORT_CASE_SENSITIVE:
-        settings->sort_case_insensitive = flag_val == 0 ? 1 : 0;
+        settings->sort_case_insensitive = !flag_val;
         break;
     case SORT_DESCENDING:
         settings->sort_descending = flag_val;
@@ -543,14 +543,14 @@ error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *setting
         if (idx > -1) {
             if (cJSON_IsString(setting_json) && setting_json->valuestring != NULL) {
                 err = set_arg(idx, setting_json->valuestring, settings);
-                if (err != E_OK) err;
+                if (err != E_OK) return err;
             } else if (cJSON_IsArray(setting_json)) {
                 // Add each element of array
                 const cJSON *elem_json = NULL;
                 cJSON_ArrayForEach(elem_json, setting_json) {
                     if (cJSON_IsString(elem_json) && elem_json->valuestring != NULL) {
                         err = set_arg(idx, elem_json->valuestring, settings);
-                        if (err != E_OK) err;
+                        if (err != E_OK) return err;
                     }
                 }
             } else if (cJSON_IsNumber(setting_json)) {
@@ -561,7 +561,7 @@ error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *setting
             if (idx > -1 && cJSON_IsBool(setting_json)) {
                 const int flag = cJSON_IsTrue(setting_json) ? 1 : 0;
                 err = set_flag(idx, flag, settings);
-                if (err != E_OK) return err;
+                //if (err != E_OK) return err;
             }
         }
     }

@@ -15,16 +15,16 @@ FindSettings *default_settings(void)
     FindSettings *settings = malloc(sizeof(FindSettings));
     assert(settings != NULL);
 
-    settings->archives_only = 0;
-    settings->debug = 0;
+    settings->archives_only = false;
+    settings->debug = false;
     settings->in_archive_extensions = NULL;
     settings->in_archive_file_patterns = NULL;
     settings->in_dir_patterns = NULL;
     settings->in_extensions = NULL;
     settings->in_file_patterns = NULL;
     settings->in_file_types = NULL;
-    settings->include_archives = 0;
-    settings->include_hidden = 0;
+    settings->include_archives = false;
+    settings->include_hidden = false;
     settings->max_depth = -1;
     settings->max_last_mod = 0L;
     settings->max_size = 0L;
@@ -38,15 +38,15 @@ FindSettings *default_settings(void)
     settings->out_file_patterns = NULL;
     settings->out_file_types = NULL;
     settings->paths = NULL;
-    settings->print_dirs = 0;
-    settings->print_files = 0;
-    settings->print_usage = 0;
-    settings->print_version = 0;
+    settings->print_dirs = false;
+    settings->print_files = false;
+    settings->print_usage = false;
+    settings->print_version = false;
     settings->recursive = 1;
     settings->sort_by = FILEPATH;
-    settings->sort_case_insensitive = 0;
-    settings->sort_descending = 0;
-    settings->verbose = 0;
+    settings->sort_case_insensitive = false;
+    settings->sort_descending = false;
+    settings->verbose = false;
 
     return settings;
 }
@@ -95,18 +95,18 @@ const char *SETTINGS_TEMPLATE = "FindSettings("
 static size_t all_bools_strlen(const FindSettings *settings)
 {
     return
-            (settings->archives_only == 0 ? 5 : 4) +
-            (settings->debug == 0 ? 5 : 4) +
-            (settings->include_archives == 0 ? 5 : 4) +
-            (settings->include_hidden == 0 ? 5 : 4) +
-            (settings->print_dirs == 0 ? 5 : 4) +
-            (settings->print_files == 0 ? 5 : 4) +
-            (settings->print_usage == 0 ? 5 : 4) +
-            (settings->print_version == 0 ? 5 : 4) +
-            (settings->recursive == 0 ? 5 : 4) +
-            (settings->sort_case_insensitive == 0 ? 5 : 4) +
-            (settings->sort_descending == 0 ? 5 : 4) +
-            (settings->verbose == 0 ? 5 : 4);
+            (settings->archives_only == false ? 5 : 4) +
+            (settings->debug == false ? 5 : 4) +
+            (settings->include_archives == false ? 5 : 4) +
+            (settings->include_hidden == false ? 5 : 4) +
+            (settings->print_dirs == false ? 5 : 4) +
+            (settings->print_files == false ? 5 : 4) +
+            (settings->print_usage == false ? 5 : 4) +
+            (settings->print_version == false ? 5 : 4) +
+            (settings->recursive == false ? 5 : 4) +
+            (settings->sort_case_insensitive == false ? 5 : 4) +
+            (settings->sort_descending == false ? 5 : 4) +
+            (settings->verbose == false ? 5 : 4);
 }
 
 static size_t all_strings_strlen(const FindSettings *settings)
@@ -149,14 +149,14 @@ size_t settings_strlen(const FindSettings *settings)
 void settings_to_string(const FindSettings *settings, char *s)
 {
     // assumes s has correct allocation size
-    char *archives_only_s = settings->archives_only == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *archives_only_s = settings->archives_only == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_archive_extensions_s = malloc(string_node_strlen(settings->in_archive_extensions) + 1);
     in_archive_extensions_s[0] = '\0';
     string_node_to_string(settings->in_archive_extensions, in_archive_extensions_s);
     char *in_archive_file_patterns_s = malloc(regex_node_strlen(settings->in_archive_file_patterns) + 1);
     in_archive_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
-    char *debug_s = settings->debug == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *debug_s = settings->debug == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
     in_dir_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_dir_patterns, in_dir_patterns_s);
@@ -169,8 +169,8 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *in_file_types_s = malloc(file_type_node_strlen(settings->in_file_types) + 1);
     in_file_types_s[0] = '\0';
     file_type_node_to_string(settings->in_file_types, in_file_types_s);
-    char *include_archives_s = settings->include_archives == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    char *include_hidden_s = settings->include_hidden == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *include_archives_s = settings->include_archives == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *include_hidden_s = settings->include_hidden == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
     size_t max_last_mod_strlen = last_mod_strlen(settings->max_last_mod);
     char *max_last_mod_s = malloc(max_last_mod_strlen + 1);
@@ -215,16 +215,16 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *paths_s = malloc(path_node_strlen(settings->paths) + 1);
     paths_s[0] = '\0';
     path_node_to_string(settings->paths, paths_s);
-    const char *print_dirs_s = settings->print_dirs == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    const char *print_files_s = settings->print_files == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    const char *print_usage_s = settings->print_usage == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    const char *print_version_s = settings->print_version == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    const char *recursive_s = settings->recursive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_dirs_s = settings->print_dirs == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_files_s = settings->print_files == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_usage_s = settings->print_usage == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *print_version_s = settings->print_version == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *recursive_s = settings->recursive == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *sort_by_name = malloc(10 * sizeof(char));
     sort_by_to_name(settings->sort_by, sort_by_name);
-    const char *sort_case_insensitive_s = settings->sort_case_insensitive == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    const char *sort_descending_s = settings->sort_descending == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
-    const char *verbose_s = settings->verbose == 0 ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *sort_case_insensitive_s = settings->sort_case_insensitive == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *sort_descending_s = settings->sort_descending == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    const char *verbose_s = settings->verbose == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
 
 
     sprintf(s, SETTINGS_TEMPLATE,
@@ -388,23 +388,23 @@ void sort_by_to_name(const SortBy sort_by, char *name)
     }
 }
 
-int need_last_mod(const FindSettings *settings) {
+bool need_last_mod(const FindSettings *settings) {
     if (settings->max_last_mod > 0L || settings->min_last_mod > 0L || settings->sort_by == LASTMOD) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
-int need_size(const FindSettings *settings) {
+bool need_size(const FindSettings *settings) {
     if (settings->max_size > 0L || settings->min_size > 0L || settings->sort_by == FILESIZE) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
-int need_stat(const FindSettings *settings) {
+bool need_stat(const FindSettings *settings) {
     if (need_last_mod(settings) || need_size(settings)) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }

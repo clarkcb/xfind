@@ -10,6 +10,7 @@
  *
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -29,15 +30,15 @@ void log_msg(const char *msg);
 
 void log_err(const char *msg);
 
-int is_null_or_empty_string(const char *s);
+bool is_null_or_empty_string(const char *s);
 
-int char_in_string(const char c, const char *s);
+int char_in_string(char c, const char *s);
 
-int char_count_in_string(const char c, const char *s);
+int char_count_in_string(char c, const char *s);
 
-int index_of_char_in_string(const char c, const char *s);
+int index_of_char_in_string(char c, const char *s);
 
-int last_index_of_char_in_string(const char c, const char *s);
+int last_index_of_char_in_string(char c, const char *s);
 
 int index_of_string_in_array(const char *s, char **arr, size_t arr_size);
 
@@ -103,17 +104,17 @@ void handle_error(error_t err);
 #define PATH_SEPARATOR '/'
 #endif
 
-unsigned short dir_or_file_exists(const char *file_path);
+bool dir_or_file_exists(const char *file_path);
 
-unsigned short dir_or_file_readable(const char *file_path);
+bool dir_or_file_readable(const char *file_path);
 
-unsigned short is_dot_dir(const char *file_path);
+bool is_dot_dir(const char *file_path);
 
 long file_size(const char *file_path);
 
 void get_extension(const char *file_name, char *ext);
 
-unsigned short is_hidden(const char *file_path);
+bool is_hidden(const char *file_path);
 
 void expand_path(const char *file_path, char **expanded);
 
@@ -137,9 +138,9 @@ IntNode *new_int_node(const int *i);
 
 void add_int_to_int_node(const int *i, IntNode *int_node);
 
-int is_null_or_empty_int_node(const IntNode *int_node);
+bool is_null_or_empty_int_node(const IntNode *int_node);
 
-int int_matches_int_node(const int *i, IntNode *int_node);
+bool int_matches_int_node(const int *i, IntNode *int_node);
 
 size_t int_node_count(IntNode *int_node);
 
@@ -164,7 +165,7 @@ Path *new_path_from_dir_and_file_name(const char *dir, const char *file_name);
 
 Path *copy_path(const Path *path);
 
-int is_hidden_path(const Path *path);
+bool is_hidden_path(const Path *path);
 
 int path_cmp(const Path *p1, const Path *p2);
 
@@ -174,9 +175,9 @@ int path_file_name_cmp(const Path *p1, const Path *p2);
 
 int path_file_name_case_cmp(const Path *p1, const Path *p2);
 
-unsigned short path_exists(const Path *path);
+bool path_exists(const Path *path);
 
-unsigned short path_readable(const Path *path);
+bool path_readable(const Path *path);
 
 int path_stat(const Path *path, struct stat *);
 
@@ -196,7 +197,7 @@ void add_path_to_path_node(Path *p, PathNode *path_node);
 
 void add_dir_and_file_name_to_path_node(const char *dir, const char *file_name, PathNode *path_node);
 
-int is_null_or_empty_path_node(const PathNode *path_node);
+bool is_null_or_empty_path_node(const PathNode *path_node);
 
 size_t path_node_count(PathNode *path_node);
 
@@ -229,9 +230,9 @@ void add_regex_to_regex_node(Regex *r, RegexNode *regex_node);
 
 void add_string_to_regex_node(const char *pat, RegexNode *regex_node);
 
-int is_null_or_empty_regex_node(const RegexNode *regex_node);
+bool is_null_or_empty_regex_node(const RegexNode *regex_node);
 
-int string_matches_regex_node(const char *s, RegexNode *regex_node);
+bool string_matches_regex_node(const char *s, RegexNode *regex_node);
 
 size_t regex_node_count(RegexNode *regex_node);
 
@@ -283,15 +284,15 @@ void add_string_to_string_node(const char *s, StringNode *string_node);
 
 void add_char_split_to_string_node(char c, const char *s, StringNode *string_node);
 
-int is_null_or_empty_string_node(const StringNode *string_node);
+bool is_null_or_empty_string_node(const StringNode *string_node);
 
-int string_matches_string_node(const char *s, StringNode *string_node);
+bool string_matches_string_node(const char *s, const StringNode *string_node);
 
-size_t string_node_count(StringNode *string_node);
+size_t string_node_count(const StringNode *string_node);
 
-size_t string_node_strlen(StringNode *string_node);
+size_t string_node_strlen(const StringNode *string_node);
 
-void string_node_to_string(StringNode *string_node, char *s);
+void string_node_to_string(const StringNode *string_node, char *s);
 
 void destroy_string_node(StringNode *string_node);
 
@@ -337,41 +338,41 @@ FileTypes *new_file_types(void);
 
 error_t get_file_types(FileTypes *file_types);
 
-unsigned short is_archive_ext(const char *ext, const FileTypes *file_types);
+bool is_archive_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_archive_name(const char *name, const FileTypes *file_types);
+bool is_archive_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_audio_ext(const char *ext, const FileTypes *file_types);
+bool is_audio_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_audio_name(const char *name, const FileTypes *file_types);
+bool is_audio_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_binary_ext(const char *ext, const FileTypes *file_types);
+bool is_binary_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_binary_name(const char *name, const FileTypes *file_types);
+bool is_binary_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_code_ext(const char *ext, const FileTypes *file_types);
+bool is_code_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_code_name(const char *name, const FileTypes *file_types);
+bool is_code_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_font_ext(const char *ext, const FileTypes *file_types);
+bool is_font_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_font_name(const char *name, const FileTypes *file_types);
+bool is_font_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_image_ext(const char *ext, const FileTypes *file_types);
+bool is_image_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_image_name(const char *name, const FileTypes *file_types);
+bool is_image_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_text_ext(const char *ext, const FileTypes *file_types);
+bool is_text_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_text_name(const char *name, const FileTypes *file_types);
+bool is_text_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_video_ext(const char *ext, const FileTypes *file_types);
+bool is_video_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_video_name(const char *name, const FileTypes *file_types);
+bool is_video_name(const char *name, const FileTypes *file_types);
 
-unsigned short is_xml_ext(const char *ext, const FileTypes *file_types);
+bool is_xml_ext(const char *ext, const FileTypes *file_types);
 
-unsigned short is_xml_name(const char *name, const FileTypes *file_types);
+bool is_xml_name(const char *name, const FileTypes *file_types);
 
 FileType get_file_type_for_filename(const char *filename, const FileTypes *file_types);
 
@@ -401,16 +402,16 @@ typedef enum {
 } SortBy;
 
 typedef struct FindSettings {
-    unsigned short archives_only : 1;
-    unsigned short debug : 1;
+    bool archives_only : 1;
+    bool debug : 1;
     StringNode *in_archive_extensions;
     RegexNode *in_archive_file_patterns;
     RegexNode *in_dir_patterns;
     StringNode *in_extensions;
     RegexNode *in_file_patterns;
     IntNode *in_file_types;
-    unsigned short include_archives : 1;
-    unsigned short include_hidden : 1;
+    bool include_archives : 1;
+    bool include_hidden : 1;
     int max_depth;
     long max_last_mod;
     unsigned long max_size;
@@ -424,15 +425,15 @@ typedef struct FindSettings {
     RegexNode *out_file_patterns;
     IntNode *out_file_types;
     PathNode *paths;
-    unsigned short print_dirs : 1;
-    unsigned short print_files : 1;
-    unsigned short print_usage : 1;
-    unsigned short print_version : 1;
-    unsigned short recursive : 1;
+    bool print_dirs : 1;
+    bool print_files : 1;
+    bool print_usage : 1;
+    bool print_version : 1;
+    bool recursive : 1;
     SortBy sort_by;
-    unsigned short sort_case_insensitive : 1;
-    unsigned short sort_descending : 1;
-    unsigned short verbose : 1;
+    bool sort_case_insensitive : 1;
+    bool sort_descending : 1;
+    bool verbose : 1;
 } FindSettings;
 
 FindSettings *default_settings(void);
@@ -453,6 +454,8 @@ SortBy sort_by_from_name(const char *name);
 
 void sort_by_to_name(const SortBy sort_by, char *name);
 
+bool need_stat(const FindSettings *settings);
+
 
 // fileresults.h
 
@@ -472,7 +475,7 @@ FileResult *new_file_result(const Path *path, FileType file_type, uint64_t file_
 
 FileResults *empty_file_results(void);
 
-int is_null_or_empty_file_results(const FileResults *results);
+bool is_null_or_empty_file_results(const FileResults *results);
 
 FileResults *new_file_results(FileResult *r);
 
@@ -480,14 +483,14 @@ void add_to_file_results(FileResult *r, FileResults *results);
 
 size_t file_result_strlen(const FileResult *r);
 
-size_t file_results_count(FileResults *results);
+size_t file_results_count(const FileResults *results);
 
 void file_result_to_string(const FileResult *r, char *s);
 
-void print_file_results(const FileResults *results, SortBy sort_by, unsigned short sort_case_insensitive,
-                        unsigned short sort_descending);
+void print_file_results(const FileResults *results, SortBy sort_by, bool sort_case_insensitive,
+                        bool sort_descending);
 
-void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, unsigned short case_insensitive);
+void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, bool case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 
@@ -601,19 +604,21 @@ Finder *new_finder(const FindSettings *s, const FileTypes *ft);
 
 error_t validate_settings(const FindSettings *settings);
 
-unsigned short is_matching_dir(const FindSettings *settings, const char *dir);
+bool is_matching_dir(const FindSettings *settings, const char *dir);
 
-unsigned short is_matching_path(const FindSettings *settings, const Path *path,
-                                const FileType *file_type, uint64_t file_size, long last_mod);
+bool is_matching_path(const FindSettings *settings, const Path *path,
+                      const FileType *file_type, uint64_t file_size, long last_mod);
 
-unsigned short filter_path(const FindSettings *settings, const Path *path,
-                           const FileType *file_type, uint64_t file_size, long last_mod);
+bool filter_path(const FindSettings *settings, const Path *path,
+                 const FileType *file_type, uint64_t file_size, long last_mod);
 
 error_t filter_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
+
+error_t filter_paths_to_file_results(const Finder *finder, const PathNode *file_paths, FileResults *results);
 
 error_t find(const FindSettings *settings, FileResults *results);
 
 void destroy_finder(Finder *finder);
 
 
-#endif // CPPFIND_H
+#endif // CFIND_H

@@ -1,6 +1,8 @@
 #ifndef STRINGNODE_H
 #define STRINGNODE_H
 
+#include <stdbool.h>
+
 typedef struct StringNode {
     const char *string;
     struct StringNode *next;
@@ -16,9 +18,9 @@ void add_string_to_string_node(const char *s, StringNode *string_node);
 
 void add_char_split_to_string_node(char c, const char *s, StringNode *string_node);
 
-int is_null_or_empty_string_node(const StringNode *string_node);
+bool is_null_or_empty_string_node(const StringNode *string_node);
 
-int string_matches_string_node(const char *s, const StringNode *string_node);
+bool string_matches_string_node(const char *s, const StringNode *string_node);
 
 size_t string_node_count(const StringNode *string_node);
 

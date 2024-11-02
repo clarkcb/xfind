@@ -15,7 +15,7 @@ void log_err(const char *msg)
     fprintf(stderr, "\nERROR: %s\n", msg);
 }
 
-int is_null_or_empty_string(const char *s)
+bool is_null_or_empty_string(const char *s)
 {
     if (s == NULL || strncmp(s, "", 1) == 0) {
         return 1;
