@@ -1,8 +1,9 @@
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::filetypes::FileType;
 
-#[derive(Debug, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Debug, Eq, PartialEq, Ord, PartialOrd)]
 pub struct FileResult {
     pub containers: Vec<PathBuf>,
     pub file_path: PathBuf,
@@ -14,6 +15,16 @@ pub struct FileResult {
 impl FileResult {
     pub fn new(file_path: PathBuf, file_type: FileType, file_size: u64, last_mod: u64) -> FileResult {
         FileResult::with_containers(Vec::new(), file_path, file_type, file_size, last_mod)
+    }
+
+    pub fn with_path(file_path: impl AsRef<Path>, file_type: FileType, file_size: u64, last_mod: u64) -> Self {
+        FileResult {
+            containers: Vec::new(),
+            file_path: file_path.as_ref().to_owned(),
+            file_type,
+            file_size,
+            last_mod,
+        }
     }
 
     pub fn with_containers(
@@ -78,8 +89,8 @@ mod tests {
             Err(_error) => 0,
         };
         let file_path = Path::new("~/src/xfind/rust/rsfind/src/finder.rs");
-        let fr = FileResult::new(
-            file_path.to_path_buf(),
+        let fr = FileResult::with_path(
+            file_path,
             FileType::Code,
             1000,
             last_mod
@@ -93,8 +104,8 @@ mod tests {
     #[test]
     fn test_find_file_rel_path() {
         let file_path = Path::new("./finder.rs");
-        let fr = FileResult::new(
-            file_path.to_path_buf(),
+        let fr = FileResult::with_path(
+            file_path,
             FileType::Code,
             1000,
             0

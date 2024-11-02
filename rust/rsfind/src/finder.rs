@@ -214,7 +214,7 @@ impl Finder {
         if !self.is_matching_file_size(&file_size) || !self.is_matching_last_mod(&last_mod) {
             return None;
         }
-        let file_result = FileResult::new(file_path.to_path_buf(), file_type.clone(),
+        let file_result = FileResult::with_path(file_path, file_type.clone(),
                                           file_size, last_mod);
         Some(file_result)
     }
