@@ -15,6 +15,7 @@ import {StringUtil} from "./stringutil";
 export class FindSettings {
     #archivesOnly = false;
     #debug = false;
+    followSymlinks = false;
     inArchiveExtensions: string[] = [];
     inArchiveFilePatterns: RegExp[] = [];
     inDirPatterns: RegExp[] = [];
@@ -165,6 +166,7 @@ export class FindSettings {
         return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
             + ', debug=' + this.debug
+            + ', followSymlinks=' + this.followSymlinks
             + ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions)
             + ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns)
             + ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns)

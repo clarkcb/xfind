@@ -91,12 +91,16 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.includeArchives = !b; },
             'excludehidden':
                 (b: boolean, settings: FindSettings) => { settings.includeHidden = !b; },
+            'followsymlinks':
+                (b: boolean, settings: FindSettings) => { settings.followSymlinks = b; },
             'includearchives':
                 (b: boolean, settings: FindSettings) => { settings.includeArchives = b; },
             'includehidden':
                 (b: boolean, settings: FindSettings) => { settings.includeHidden = b; },
             'help':
                 (b: boolean, settings: FindSettings) => { settings.printUsage = b; },
+            'nofollowsymlinks':
+                (b: boolean, settings: FindSettings) => { settings.followSymlinks = !b; },
             'noprintdirs':
                 (b: boolean, settings: FindSettings) => { settings.printDirs = !b; },
             'noprintfiles':

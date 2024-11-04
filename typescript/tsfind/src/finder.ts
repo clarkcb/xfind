@@ -206,13 +206,16 @@ export class Finder {
         fs.readdirSync(currentDir).map((f: string) => {
             return path.join(currentDir, f);
         }).forEach((fp: string) => {
-            const stats = fs.statSync(fp);
-            if (stats.isDirectory() && recurse && this.isMatchingDir(fp)) {
-                findDirs.push(fp);
-            } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
-                const fr = this.filterToFileResult(fp);
-                if (fr !== null) {
-                    fileResults.push(fr);
+            let stats = fs.lstatSync(fp);
+            if (!stats.isSymbolicLink() || this._settings.followSymlinks) {
+                stats = fs.statSync(fp);
+                if (stats.isDirectory() && recurse && this.isMatchingDir(fp)) {
+                    findDirs.push(fp);
+                } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
+                    const fr = this.filterToFileResult(fp);
+                    if (fr !== null) {
+                        fileResults.push(fr);
+                    }
                 }
             }
         });
