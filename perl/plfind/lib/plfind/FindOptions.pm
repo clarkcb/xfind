@@ -126,6 +126,10 @@ my $bool_flag_action_hash = {
         my ($bool, $settings) = @_;
         $settings->set_property('include_hidden', !$bool);
     },
+    'followsymlinks' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('follow_symlinks', $bool);
+    },
     'help' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('print_usage', $bool);
@@ -137,6 +141,10 @@ my $bool_flag_action_hash = {
     'includehidden' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('include_hidden', $bool);
+    },
+    'nofollowsymlinks' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('follow_symlinks', !$bool);
     },
     'noprintdirs' => sub {
         my ($bool, $settings) = @_;

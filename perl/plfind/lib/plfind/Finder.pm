@@ -231,6 +231,9 @@ sub rec_get_file_results {
     my $dir_results = [];
     my $file_results = [];
     while (my $f = $dir->next) {
+        if (-l $f && !$self->{settings}->{follow_symlinks}) {
+            next;
+        }
         if ($f->is_dir) {
             if (plfind::FileUtil::is_dot_dir($f->basename)) {
                 next;

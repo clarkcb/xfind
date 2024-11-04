@@ -23,6 +23,7 @@ sub new {
     my $self = {
         archives_only => 0,
         debug => 0,
+        follow_symlinks => 0,
         in_archive_extensions => [],
         in_archive_file_patterns => [],
         in_dir_patterns => [],
@@ -155,7 +156,7 @@ sub to_string {
     my $s = "FindSettings(" .
         'archives_only=' . plfind::common::bool_to_string($self->{archives_only}) .
         ', debug=' . plfind::common::bool_to_string($self->{debug}) .
-        ', exclude_hidden=' . plfind::common::bool_to_string($self->{exclude_hidden}) .
+        ', follow_symlinks=' . plfind::common::bool_to_string($self->{follow_symlinks}) .
         ', in_archive_extensions=' . plfind::common::strings_aref_to_string($self->{in_archive_extensions}) .
         ', in_archive_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_archive_file_patterns}) .
         ', in_dir_patterns=' . plfind::common::strings_aref_to_string($self->{in_dir_patterns}) .
@@ -163,6 +164,7 @@ sub to_string {
         ', in_file_patterns=' . plfind::common::strings_aref_to_string($self->{in_file_patterns}) .
         ', in_file_types=' . plfind::common::file_types_aref_to_string($self->{in_file_types}) .
         ', include_archives=' . plfind::common::bool_to_string($self->{include_archives}) .
+        ', include_hidden=' . plfind::common::bool_to_string($self->{include_hidden}) .
         ', max_depth=' . $self->{max_depth} .
         ', max_last_mod=' . plfind::common::datetime_to_string($self->{max_last_mod}) .
         ', max_size=' . $self->{max_size} .
