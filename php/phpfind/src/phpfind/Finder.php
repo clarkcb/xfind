@@ -351,6 +351,9 @@ class Finder
                 continue;
             }
             $entry_path = FileUtil::join_paths($dir, $entry);
+            if (is_link($entry_path) && !$this->settings->follow_symlinks) {
+                continue;
+            }
             if (is_dir($entry_path) && $recurse && $this->is_matching_dir($entry)) {
                 $dir_results[] = $entry_path;
             } else if (is_file($entry_path) && ($min_depth < 0 || $current_depth >= $min_depth)) {

@@ -13,6 +13,7 @@ class FindSettings
 {
     public bool $archives_only = false;
     public bool $debug = false;
+    public bool $follow_symlinks = false;
     /**
      * @var string[] $in_archive_extensions
      */
@@ -198,6 +199,7 @@ class FindSettings
         return 'FindSettings(' .
             'archives_only=' . StringUtil::bool_to_string($this->archives_only) .
             ', debug=' . StringUtil::bool_to_string($this->debug) .
+            ', follow_symlinks=' . StringUtil::bool_to_string($this->follow_symlinks) .
             ', in_archive_extensions=' . StringUtil::string_array_to_string($this->in_archive_extensions) .
             ', in_archive_file_patterns=' . StringUtil::string_array_to_string($this->in_archive_file_patterns) .
             ', in_dir_patterns=' . StringUtil::string_array_to_string($this->in_dir_patterns) .

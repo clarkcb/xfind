@@ -68,11 +68,13 @@ class FindOptions
         $this->bool_flag_action_map = [
             'archivesonly' => fn(bool $b, FindSettings $fs) => $fs->set_archives_only($b),
             'debug' => fn(bool $b, FindSettings $fs) => $fs->set_debug($b),
+            'followsymlinks' => fn(bool $b, FindSettings $fs) => $fs->follow_symlinks = $b,
             'excludearchives' => fn(bool $b, FindSettings $fs) => $fs->include_archives = !$b,
             'excludehidden' => fn(bool $b, FindSettings $fs) => $fs->include_hidden = !$b,
             'help' => fn(bool $b, FindSettings $fs) => $fs->print_usage = $b,
             'includearchives' => fn(bool $b, FindSettings $fs) => $fs->include_archives = $b,
             'includehidden' => fn(bool $b, FindSettings $fs) => $fs->include_hidden = $b,
+            'nofollowsymlinks' => fn(bool $b, FindSettings $fs) => $fs->follow_symlinks = !$b,
             'noprintdirs' => fn(bool $b, FindSettings $fs) => $fs->print_dirs = !$b,
             'noprintfiles' => fn(bool $b, FindSettings $fs) => $fs->print_files = !$b,
             'norecursive' => fn(bool $b, FindSettings $fs) => $fs->recursive = !$b,
