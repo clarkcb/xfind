@@ -39,6 +39,9 @@ class FindOptions:
             'debug':
                 lambda b, settings:
                 settings.set_property('debug', b),
+            'followsymlinks':
+                lambda b, settings:
+                settings.set_property('follow_symlinks', b),
             'excludearchives':
                 lambda b, settings:
                 settings.set_property('include_archives', not b),
@@ -54,6 +57,9 @@ class FindOptions:
             'includehidden':
                 lambda b, settings:
                 settings.set_property('include_hidden', b),
+            'nofollowsymlinks':
+                lambda b, settings:
+                settings.set_property('follow_symlinks', not b),
             'noincludearchives':
                 lambda b, settings:
                 settings.set_property('include_archives', not b),

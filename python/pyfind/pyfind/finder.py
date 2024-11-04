@@ -181,6 +181,11 @@ class Finder:
             return file_results
         dirs = []
         for f in file_path.iterdir():
+            # NOTE: follow_symlinks is added to is_file and is_dir in python 3.13,
+            #       for now we have to check is_symlink and follow_symlinks
+            if f.is_symlink() and not self.settings.follow_symlinks:
+                continue
+            # if f.is_dir(follow_symlinks=self.settings.follow_symlinks) and recurse and self.is_matching_dir(f):
             if f.is_dir() and recurse and self.is_matching_dir(f):
                 dirs.append(f)
             elif f.is_file() and (min_depth < 0 or current_depth >= min_depth):
