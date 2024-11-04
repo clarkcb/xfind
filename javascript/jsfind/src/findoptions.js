@@ -70,12 +70,16 @@ class FindOptions {
                 (b, settings) => { settings.includeArchives = !b; },
             'excludehidden':
                 (b, settings) => { settings.includeHidden = !b; },
+            'followsymlinks':
+                (b, settings) => { settings.followSymlinks = b; },
             'help':
                 (b, settings) => { settings.printUsage = b; },
             'includearchives':
                 (b, settings) => { settings.includeArchives = b; },
             'includehidden':
                 (b, settings) => { settings.includeHidden = b; },
+            'nofollowsymlinks':
+              (b, settings) => { settings.followSymlinks = !b; },
             'noprintdirs':
               (b, settings) => { settings.printDirs = !b; },
             'noprintfiles':

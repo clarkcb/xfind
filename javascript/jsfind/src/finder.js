@@ -197,7 +197,11 @@ class Finder {
         let findDirs = [];
         let filePaths = (fs.readdirSync(currentDir)).map(f => path.join(currentDir, f));
         for (let filePath of filePaths) {
-            const stats = fs.statSync(filePath);
+            let stats = fs.lstatSync(filePath);
+            if (stats.isSymbolicLink() && !this.settings.followSymlinks) {
+                continue;
+            }
+            stats = fs.statSync(filePath);
             if (stats.isDirectory() && recurse && this.isMatchingDir(filePath)) {
                 findDirs.push(filePath);
             } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {

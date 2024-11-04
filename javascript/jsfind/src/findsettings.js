@@ -11,6 +11,7 @@ const StringUtil = require('./stringutil');
 class FindSettings {
     _archivesOnly = false;
     _debug = false;
+    followSymlinks = false;
     inArchiveExtensions = [];
     inArchiveFilePatterns = [];
     inDirPatterns = [];
@@ -160,6 +161,7 @@ class FindSettings {
         return 'FindSettings(' +
           'archivesOnly=' + this.archivesOnly +
           ', debug=' + this.debug +
+          ', followSymlinks=' + this.followSymlinks +
           ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +
           ', ' + StringUtil.patternListToString('inArchiveFilePatterns', this.inArchiveFilePatterns) +
           ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns) +
