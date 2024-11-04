@@ -32,6 +32,7 @@ module RbFind
 
     attr_reader :archives_only
     attr_reader :debug
+    attr_accessor :follow_symlinks
     attr_accessor :in_archive_extensions
     attr_accessor :in_archive_file_patterns
     attr_accessor :in_dir_patterns
@@ -66,6 +67,7 @@ module RbFind
     def initialize
       @archives_only = false
       @debug = false
+      @follow_symlinks = false
       @in_archive_extensions = Set::new
       @in_archive_file_patterns = Set::new
       @in_dir_patterns = Set::new
@@ -185,6 +187,7 @@ module RbFind
       'FindSettings(' +
         "archives_only=#{@archives_only}" +
         ", debug=#{@debug}" +
+        ", follow_symlinks=#{@follow_symlinks}" +
         ', ' + set_to_s('in_archive_extensions', @in_archive_extensions) +
         ', ' + array_to_s('in_archive_file_patterns', @in_archive_file_patterns.map { |p| p.source }) +
         ', ' + array_to_s('in_dir_patterns', @in_dir_patterns.map { |p| p.source }) +

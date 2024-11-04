@@ -19,6 +19,7 @@ module RbFind
   class FindSettings
     attr_reader archives_only: bool
     attr_reader debug: bool
+    attr_accessor follow_symlinks: bool
     attr_accessor in_archive_extensions: Set[String]
     attr_accessor in_archive_file_patterns: Set[Regexp]
     attr_accessor in_dir_patterns: Set[Regexp]

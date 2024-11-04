@@ -179,12 +179,14 @@ module RbFind
       end
       dirs = []
       dir_path.each_child do |f|
-        if f.directory? && recurse && matching_dir?(f)
-          dirs << f
-        elsif f.file? && (min_depth < 0 || current_depth >= min_depth)
-          file_result = filter_to_file_result(f)
-          if file_result != nil
-            file_results.push(file_result)
+        unless f.symlink? && !@settings.follow_symlinks
+          if f.directory? && recurse && matching_dir?(f)
+            dirs << f
+          elsif f.file? && (min_depth < 0 || current_depth >= min_depth)
+            file_result = filter_to_file_result(f)
+            if file_result != nil
+              file_results.push(file_result)
+            end
           end
         end
       end
