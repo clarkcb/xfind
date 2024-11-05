@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 23;
+use Test::Simple tests => 24;
 
 use plfind::FindSettings;
 
@@ -25,6 +25,7 @@ sub test_default_settings {
     my $settings = plfind::FindSettings->new();
     ok(!$settings->{archives_only}, "archives_only is false by default");
     ok(!$settings->{debug}, "debug is false by default");
+    ok(!$settings->{follow_symlinks}, "follow_symlinks is false by default");
     ok(!$settings->{include_archives}, "include_archives is false by default");
     ok(!$settings->{include_hidden}, "include_hidden is false by default");
     ok(@{$settings->{paths}} eq 0, "paths are empty by default");

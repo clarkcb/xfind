@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use PHPUnit\Framework\TestCase;
 
+use phpfind\Config;
+use phpfind\FileUtil;
 use phpfind\Finder;
 use phpfind\FindSettings;
 
@@ -349,5 +351,40 @@ class FinderTest extends TestCase
         $finder = new Finder($settings);
         $file = 'FileUtil.pm';
         $this->assertTrue($finder->filter_to_file_result('.', $file) == null);
+    }
+
+    ################################################################################
+    # test filtering symlink files
+    ################################################################################
+    public function test_default_no_symlinks(): void
+    {
+        $settings = new FindSettings();
+        $bin_path = FileUtil::join_paths(Config::XFIND_PATH, 'bin');
+        $settings->paths = [$bin_path];
+        $finder = new Finder($settings);
+        $file_results = $finder->find();
+        $this->assertTrue(count($file_results) < 3);
+    }
+
+    public function test_follow_symlinks(): void
+    {
+        $settings = new FindSettings();
+        $bin_path = FileUtil::join_paths(Config::XFIND_PATH, 'bin');
+        $settings->paths = [$bin_path];
+        $settings->follow_symlinks = true;
+        $finder = new Finder($settings);
+        $file_results = $finder->find();
+        $this->assertTrue(count($file_results) == 0 || count($file_results) > 2);
+    }
+
+    public function test_no_follow_symlinks(): void
+    {
+        $settings = new FindSettings();
+        $bin_path = FileUtil::join_paths(Config::XFIND_PATH, 'bin');
+        $settings->paths = [$bin_path];
+        $settings->follow_symlinks = false;
+        $finder = new Finder($settings);
+        $file_results = $finder->find();
+        $this->assertTrue(count($file_results) < 3);
     }
 }

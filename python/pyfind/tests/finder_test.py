@@ -257,6 +257,32 @@ class FinderTest(unittest.TestCase):
         file_result = finder.filter_to_file_result(file_path)
         self.assertIsNone(file_result)
 
+################################################################################
+# test filtering symlink files
+################################################################################
+    def test_default_no_symlinks(self):
+        settings = FindSettings()
+        settings.add_path(Path(XFINDPATH, 'bin'))
+        finder = Finder(settings)
+        file_results = finder.find_files()
+        self.assertTrue(len(file_results) < 3)
+
+    def test_follow_symlinks(self):
+        settings = FindSettings()
+        settings.add_path(Path(XFINDPATH, 'bin'))
+        settings.follow_symlinks = True
+        finder = Finder(settings)
+        file_results = finder.find_files()
+        self.assertTrue(len(file_results) == 0 or len(file_results) > 2)
+
+    def test_no_follow_symlinks(self):
+        settings = FindSettings()
+        settings.add_path(Path(XFINDPATH, 'bin'))
+        settings.follow_symlinks = False
+        finder = Finder(settings)
+        file_results = finder.find_files()
+        self.assertTrue(len(file_results) < 3)
+
 
 if __name__ == '__main__':
     unittest.main()

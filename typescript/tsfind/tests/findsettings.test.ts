@@ -11,6 +11,7 @@ describe('testing findsettings', () => {
         const settings: FindSettings = new FindSettings();
         expect(settings.archivesOnly).toBeFalsy();
         expect(settings.debug).toBeFalsy();
+        expect(settings.followSymlinks).toBeFalsy();
         expect(settings.includeArchives).toBeFalsy();
         expect(settings.includeHidden).toBeFalsy();
         expect(settings.paths.length).toEqual(0);

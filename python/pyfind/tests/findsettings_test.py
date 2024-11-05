@@ -25,6 +25,7 @@ class FindSettingsTest(unittest.TestCase):
         # test the props
         self.assertFalse(self.settings.archives_only)
         self.assertFalse(self.settings.debug)
+        self.assertFalse(self.settings.follow_symlinks)
         self.assertFalse(self.settings.include_archives)
         self.assertFalse(self.settings.include_hidden)
         self.assertFalse(self.settings.print_dirs)
@@ -49,6 +50,7 @@ class FindSettingsTest(unittest.TestCase):
         props = {
             'archives_only': True,
             'debug': True,
+            'follow_symlinks': True,
             'include_archives': True,
             'include_hidden': True,
             'print_dirs': True,
@@ -59,16 +61,17 @@ class FindSettingsTest(unittest.TestCase):
             'verbose': True,
         }
         self.settings.set_properties(props)
-        self.assertEqual(True, self.settings.archives_only)
-        self.assertEqual(True, self.settings.debug)
-        self.assertEqual(True, self.settings.include_archives)
-        self.assertEqual(True, self.settings.include_hidden)
-        self.assertEqual(True, self.settings.print_dirs)
-        self.assertEqual(True, self.settings.print_files)
-        self.assertEqual(True, self.settings.print_usage)
-        self.assertEqual(True, self.settings.print_version)
-        self.assertEqual(False, self.settings.recursive)
-        self.assertEqual(True, self.settings.verbose)
+        self.assertTrue(self.settings.archives_only)
+        self.assertTrue(self.settings.debug)
+        self.assertTrue(self.settings.follow_symlinks)
+        self.assertTrue(self.settings.include_archives)
+        self.assertTrue(self.settings.include_hidden)
+        self.assertTrue(self.settings.print_dirs)
+        self.assertTrue(self.settings.print_files)
+        self.assertTrue(self.settings.print_usage)
+        self.assertTrue(self.settings.print_version)
+        self.assertFalse(self.settings.recursive)
+        self.assertTrue(self.settings.verbose)
 
     def test_add_single_extension(self):
         self.settings.add_strs_to_set('py', 'in_extensions')

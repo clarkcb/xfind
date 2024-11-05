@@ -19,6 +19,7 @@ module RbFind
     def test_default_settings
       assert_equal(false, @settings.archives_only)
       assert_equal(false, @settings.debug)
+      assert_equal(false, @settings.follow_symlinks)
       assert_equal(false, @settings.include_archives)
       assert_equal(false, @settings.include_hidden)
       assert_equal(false, @settings.print_dirs)

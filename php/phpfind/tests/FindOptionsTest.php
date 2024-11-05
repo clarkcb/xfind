@@ -26,6 +26,7 @@ class FindOptionsTest extends TestCase
         return
             !$settings->archives_only &&
             !$settings->debug &&
+            !$settings->follow_symlinks &&
             count($settings->in_archive_extensions) == 0 &&
             count($settings->in_archive_file_patterns) == 0 &&
             count($settings->in_dir_patterns) == 0 &&
@@ -115,6 +116,7 @@ class FindOptionsTest extends TestCase
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
   "debug": true,
+  "followsymlinks": true,
   "includehidden": true
 }
 END_JSON;
@@ -129,6 +131,7 @@ END_JSON;
         $this->assertCount(1, $settings->out_file_patterns);
         $this->assertEquals('temp', $settings->out_file_patterns[0]);
         $this->assertTrue($settings->debug);
+        $this->assertTrue($settings->follow_symlinks);
         $this->assertTrue($settings->verbose);
         $this->assertTrue($settings->include_hidden);
     }

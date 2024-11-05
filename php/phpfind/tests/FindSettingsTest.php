@@ -24,6 +24,7 @@ class FindSettingsTest extends TestCase
         return
             !$settings->archives_only &&
             !$settings->debug &&
+            !$settings->follow_symlinks &&
             count($settings->in_archive_extensions) == 0 &&
             count($settings->in_archive_file_patterns) == 0 &&
             count($settings->in_dir_patterns) == 0 &&

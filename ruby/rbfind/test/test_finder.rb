@@ -317,5 +317,37 @@ module RbFind
       f = Pathname.new('fileutil.rb')
       assert(finder.filter_to_file_result(f) == nil)
     end
+
+    ################################################################################
+    # test filtering symlink files
+    ################################################################################
+    def test_default_no_symlinks
+      settings = FindSettings.new
+      bin_path = File.join(File.dirname(__FILE__), "../../../bin")
+      settings.paths.add(Pathname.new(bin_path))
+      finder = Finder.new(settings)
+      file_results = finder.find
+      assert(file_results.length == 0 || file_results.length < 3)
+    end
+
+    def test_follow_symlinks
+      settings = FindSettings.new
+      bin_path = File.join(File.dirname(__FILE__), "../../../bin")
+      settings.paths.add(Pathname.new(bin_path))
+      settings.follow_symlinks = true
+      finder = Finder.new(settings)
+      file_results = finder.find
+      assert(file_results.length == 0 || file_results.length > 2)
+    end
+
+    def test_no_follow_symlinks
+      settings = FindSettings.new
+      bin_path = File.join(File.dirname(__FILE__), "../../../bin")
+      settings.paths.add(Pathname.new(bin_path))
+      settings.follow_symlinks = false
+      finder = Finder.new(settings)
+      file_results = finder.find
+      assert(file_results.length == 0 || file_results.length < 3)
+    end
   end
 end

@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 38;
+use Test::Simple tests => 40;
 
 use plfind::FindOptions;
 
@@ -29,6 +29,7 @@ sub test_no_args {
     ok(scalar @{$errs} == 0, 'No errors from empty args');
     ok(!$settings->{archives_only}, 'archives_only is false by default');
     ok(!$settings->{debug}, 'debug is false by default');
+    ok(!$settings->{follow_symlinks}, 'follow_symlinks is false by default');
     ok(!$settings->{include_archives}, 'include_archives is false by default');
     ok(!$settings->{include_hidden}, 'include_hidden is false by default');
     ok(!$settings->{print_dirs}, 'print_dirs is false by default');
@@ -89,6 +90,7 @@ sub test_settings_from_json {
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
   "debug": true,
+  "followsymlinks": true,
   "includehidden": true
 }
 END_JSON
@@ -104,6 +106,7 @@ END_JSON
     ok(scalar @{$settings->{out_file_patterns}} == 1, "out_file_patterns has one pattern");
     ok($settings->{out_file_patterns}->[0] eq 'temp', "out_file_patterns[0] is temp");
     ok($settings->{debug} == 1, "debug is set to true");
+    ok($settings->{follow_symlinks} == 1, "follow_symlinks is set to true");
     ok($settings->{verbose} == 1, "verbose is set to true");
     ok($settings->{include_hidden} == 1, 'include_hidden is set to true');
 }

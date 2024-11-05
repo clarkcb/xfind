@@ -18,7 +18,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 73;
+use Test::Simple tests => 79;
 
 use plfind::config;
 use plfind::FileUtil;
@@ -445,6 +445,35 @@ sub test_filter_file_nonarchive_archives_only {
     ok(!defined $finder->filter_to_file_result($file), "filter_to_file_result($file) not defined when archives_only=1");
 }
 
+sub test_default_no_symlinks {
+    my $settings = plfind::FindSettings->new();
+    $settings->{paths} = [dir($XFIND_PATH, 'bin')];
+    my ($finder, $errs) = plfind::Finder->new($settings);
+    ok(scalar @{$errs} == 0, 'No errors from valid settings');
+    my $file_results = $finder->find();
+    ok(scalar @{$file_results} < 3, "There are less than three file results");
+}
+
+sub test_follow_symlinks {
+    my $settings = plfind::FindSettings->new();
+    $settings->{paths} = [dir($XFIND_PATH, 'bin')];
+    $settings->{follow_symlinks} = 1;
+    my ($finder, $errs) = plfind::Finder->new($settings);
+    ok(scalar @{$errs} == 0, 'No errors from valid settings');
+    my $file_results = $finder->find();
+    ok(scalar @{$file_results} == 0 || scalar @{$file_results} > 2, "There are more than two file results");
+}
+
+sub test_no_follow_symlinks {
+    my $settings = plfind::FindSettings->new();
+    $settings->{paths} = [dir($XFIND_PATH, 'bin')];
+    $settings->{follow_symlinks} = 0;
+    my ($finder, $errs) = plfind::Finder->new($settings);
+    ok(scalar @{$errs} == 0, 'No errors from valid settings');
+    my $file_results = $finder->find();
+    ok(scalar @{$file_results} < 3, "There are less than three file results");
+}
+
 ################################################################################
 # main
 ################################################################################
@@ -491,10 +520,16 @@ sub main {
     test_filter_file_not_is_matching_file();                # 2 tests
     test_filter_file_is_hidden_file();                      # 2 tests
     test_filter_file_hidden_includehidden();                # 2 tests
-    test_filter_file_archive_no_include_archives();          # 2 tests
-    test_filter_file_archive_include_archives();             # 2 tests
-    test_filter_file_archive_archives_only();                # 2 tests
-    test_filter_file_nonarchive_archives_only();             # 2 tests
+    test_filter_file_archive_no_include_archives();         # 2 tests
+    test_filter_file_archive_include_archives();            # 2 tests
+    test_filter_file_archive_archives_only();               # 2 tests
+    test_filter_file_nonarchive_archives_only();            # 2 tests
+
+    # test filtering symlink files
+    test_default_no_symlinks();                             # 2 tests
+    test_follow_symlinks();                                 # 2 tests
+    test_no_follow_symlinks();                              # 2 tests
+
 }
 
 main();

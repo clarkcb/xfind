@@ -17,6 +17,7 @@ describe('testing findoptions', () => {
             }
             expect(settings.archivesOnly).toBeFalsy();
             expect(settings.debug).toBeFalsy();
+            expect(settings.followSymlinks).toBeFalsy();
             expect(settings.includeArchives).toBeFalsy();
             expect(settings.includeHidden).toBeFalsy();
             expect(settings.printDirs).toBeFalsy();
@@ -67,6 +68,7 @@ describe('testing findoptions', () => {
             '  "out-dirpattern": "node_module",\n' +
             '  "out-filepattern": ["temp"],\n' +
             '  "debug": true,\n' +
+            '  "followsymlinks": true,\n' +
             '  "includehidden": true\n' +
             '}';
         const err: Error|void = findOptions.settingsFromJson(json, settings);
@@ -80,6 +82,7 @@ describe('testing findoptions', () => {
         expect(settings.outFilePatterns[0].source).toEqual('temp');
         expect(settings.debug).toBeTruthy();
         expect(settings.verbose).toBeTruthy();
+        expect(settings.followSymlinks).toBeTruthy();
         expect(settings.includeHidden).toBeTruthy();
     });
 });

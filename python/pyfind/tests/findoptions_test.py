@@ -28,6 +28,7 @@ class FindOptionsTest(unittest.TestCase):
         settings = self.find_options.find_settings_from_args([])
         self.assertFalse(settings.archives_only)
         self.assertFalse(settings.debug)
+        self.assertFalse(settings.follow_symlinks)
         self.assertFalse(settings.include_archives)
         self.assertFalse(settings.include_hidden)
         self.assertFalse(settings.print_dirs)
@@ -86,6 +87,7 @@ class FindOptionsTest(unittest.TestCase):
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
   "debug": true,
+  "followsymlinks": true,
   "includehidden": true
 }'''
         self.find_options.settings_from_json(json, settings)
@@ -96,6 +98,7 @@ class FindOptionsTest(unittest.TestCase):
         self.assertEqual(list(settings.out_dir_patterns)[0].pattern, 'node_module')
         self.assertEqual(list(settings.out_file_patterns)[0].pattern, 'temp')
         self.assertTrue(settings.debug)
+        self.assertTrue(settings.follow_symlinks)
         self.assertTrue(settings.verbose)
         self.assertTrue(settings.include_hidden)
 

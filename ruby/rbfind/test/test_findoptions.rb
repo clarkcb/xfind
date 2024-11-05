@@ -20,6 +20,7 @@ module RbFind
       settings = @findoptions.find_settings_from_args([])
       assert_equal(false, settings.archives_only)
       assert_equal(false, settings.debug)
+      assert_equal(false, settings.follow_symlinks)
       assert_equal(false, settings.include_archives)
       assert_equal(false, settings.include_hidden)
       assert_equal(false, settings.print_dirs)
@@ -82,6 +83,7 @@ module RbFind
         "out-dirpattern": "node_module",
         "out-filepattern": ["temp"],
         "debug": true,
+        "followsymlinks": true,
         "includehidden": true
       }
       JSON
@@ -96,6 +98,7 @@ module RbFind
       assert_equal(1, settings.out_file_patterns.length)
       assert_equal('temp', settings.out_file_patterns.first.source)
       assert(settings.debug)
+      assert(settings.follow_symlinks)
       assert(settings.verbose)
       assert(settings.include_hidden)
     end

@@ -4,10 +4,12 @@
  * Some tests of finder.js
  */
 
+import * as config from '../src/config';
 import {Finder} from '../src/finder';
 import {FindSettings} from '../src/findsettings';
 import {FileType} from "../src/filetype";
 import {FileResult} from "../src/fileresult";
+import path from "path";
 
 const getSettings = function() {
     const settings: FindSettings = new FindSettings();
@@ -314,5 +316,40 @@ describe('testing finder', () => {
         const finder: Finder = new Finder(settings);
         const file = 'FileUtil.cs';
         expect(finder.filterToFileResult(file)).toBeFalsy();
+    });
+
+    /*************************************************************
+     * test filtering symlink files
+     *************************************************************/
+    it('test_default_no_symlinks', () => {
+        let settings = new FindSettings();
+        let binPath = path.join(config.XFINDPATH, 'bin');
+        settings.paths.push(binPath);
+        const finder = new Finder(settings);
+        finder.find().then(fileResults => {
+            expect(fileResults.length < 3).toBeTruthy();
+        });
+    });
+
+    it('test_follow_symlinks', () => {
+        let settings = new FindSettings();
+        let binPath = path.join(config.XFINDPATH, 'bin');
+        settings.paths.push(binPath);
+        settings.followSymlinks = true;
+        const finder = new Finder(settings);
+        finder.find().then(fileResults => {
+            expect(fileResults.length === 0 || fileResults.length > 2).toBeTruthy();
+        });
+    });
+
+    it('test_no_follow_symlinks', () => {
+        let settings = new FindSettings();
+        let binPath = path.join(config.XFINDPATH, 'bin');
+        settings.paths.push(binPath);
+        settings.followSymlinks = false;
+        const finder = new Finder(settings);
+        finder.find().then(fileResults => {
+            expect(fileResults.length < 3).toBeTruthy();
+        });
     });
 });
