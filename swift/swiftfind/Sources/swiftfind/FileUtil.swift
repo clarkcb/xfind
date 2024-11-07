@@ -124,6 +124,21 @@ public enum FileUtil {
         getFileManager().isReadableFile(atPath: expandPath(filePath))
     }
 
+    public static func isSymlink(_ filePath: String) -> Bool {
+        let url = URL(fileURLWithPath: filePath)
+        if let ok = try? url.checkResourceIsReachable(), ok {
+            let vals = try? url.resourceValues(forKeys: [.isSymbolicLinkKey])
+            if let islink = vals?.isSymbolicLink, islink {
+                return islink
+            }
+        }
+        return false
+    }
+    
+    public static func getSymlinkTarget(_ filePath: String) -> String? {
+        return try? getFileManager().destinationOfSymbolicLink(atPath: expandPath(filePath))
+    }
+
     public static func isDotDir(_ filePath: String) -> Bool {
         dotDirs.contains(filePath)
     }
@@ -151,7 +166,7 @@ public enum FileUtil {
         if path.hasSuffix(separator) {
             "\(path)\(childPath)"
         } else {
-            "\(path)/\(childPath)"
+            "\(path)\(separator)\(childPath)"
         }
     }
 }

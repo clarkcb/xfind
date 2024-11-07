@@ -55,6 +55,7 @@ public func sortByToName(_ sortBy: SortBy) -> String {
 public enum DefaultFindSettings {
     public static let archivesOnly = false
     public static let debug = false
+    public static let followSymlinks = false
     public static let includeArchives = false
     public static let includeHidden = false
     public static let maxDepth: Int64 = -1
@@ -77,6 +78,7 @@ open class FindSettings: CustomStringConvertible {
     // these are public because they must be accessible outside the package
     public var _archivesOnly: Bool = DefaultFindSettings.archivesOnly
     public var _debug: Bool = DefaultFindSettings.debug
+    open var followSymlinks: Bool = DefaultFindSettings.followSymlinks
     open var includeArchives: Bool = DefaultFindSettings.includeArchives
     open var includeHidden: Bool = DefaultFindSettings.includeHidden
     open var maxDepth: Int64 = DefaultFindSettings.maxDepth
@@ -255,6 +257,7 @@ open class FindSettings: CustomStringConvertible {
         "FindSettings(" +
             "archivesOnly=\(archivesOnly)" +
             ", debug=\(debug)" +
+            ", followSymlinks=\(followSymlinks)" +
             ", inArchiveExtensions=\(setToString(inArchiveExtensions))" +
             ", inArchiveFilePatterns=\(arrayToString(inArchiveFilePatterns))" +
             ", inDirPatterns=\(arrayToString(inDirPatterns))" +

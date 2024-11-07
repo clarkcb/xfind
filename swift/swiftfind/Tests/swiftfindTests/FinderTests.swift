@@ -11,6 +11,11 @@ class FinderTests: XCTestCase {
         return settings
     }
 
+    func getBinPath() -> String {
+        let config = FindConfig()
+        return FileUtil.joinPath(config.xfindPath, childPath: "bin")
+    }
+
 //    override func setUp() {
 //        super.setUp()
 //    }
@@ -291,6 +296,35 @@ class FinderTests: XCTestCase {
         XCTAssert(finder.filterToFileResult("FileUtil.cs") == nil)
     }
 
+    /* ==========================================================================
+     * followSymlinks tests
+     ========================================================================= */
+    func testFollowSymlinks_DefaultSettings_Excluded() {
+        let settings = FindSettings()
+        settings.addPath(getBinPath())
+        let finder = try! Finder(settings: settings)
+        let fileResults = try! finder.find()
+        XCTAssert(fileResults.count < 3)
+    }
+
+    func testFollowSymlinks_FollowSymlinks_Included() {
+        let settings = FindSettings()
+        settings.addPath(getBinPath())
+        settings.followSymlinks = true
+        let finder = try! Finder(settings: settings)
+        let fileResults = try! finder.find()
+        XCTAssert(fileResults.count == 0 || fileResults.count > 2)
+    }
+
+    func testFollowSymlinks_NoFollowSymlinks_Excluded() {
+        let settings = FindSettings()
+        settings.addPath(getBinPath())
+        settings.followSymlinks = false
+        let finder = try! Finder(settings: settings)
+        let fileResults = try! finder.find()
+        XCTAssert(fileResults.count < 3)
+    }
+
     static var allTests = [
         ("testIsMatchingDir_SingleDot_True", testIsMatchingDir_SingleDot_True),
         ("testIsMatchingDir_DoubleDot_True", testIsMatchingDir_DoubleDot_True),
@@ -338,6 +372,10 @@ class FinderTests: XCTestCase {
         ("testFilterToFileResult_IsFindFile_True", testFilterToFileResult_IsFindFile_True),
         ("testFilterToFileResult_NotIsFindFile_False", testFilterToFileResult_NotIsFindFile_False),
         ("testFilterToFileResult_NonArchiveFileArchivesOnly_False",
-         testFilterToFileResult_NonArchiveFileArchivesOnly_False)
+         testFilterToFileResult_NonArchiveFileArchivesOnly_False),
+        // followSymlinks tests
+        ("testFollowSymlinks_DefaultSettings_Excluded", testFollowSymlinks_DefaultSettings_Excluded),
+        ("testFollowSymlinks_FollowSymlinks_Included", testFollowSymlinks_FollowSymlinks_Included),
+        ("testFollowSymlinks_NoFollowSymlinks_Excluded", testFollowSymlinks_NoFollowSymlinks_Excluded)
     ]
 }

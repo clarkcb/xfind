@@ -209,26 +209,40 @@ public class Finder {
         } else if (maxDepth > -1 && currentDepth > maxDepth) {
             return fileResults
         }
-        
+
         let pathElems = try! FileManager.default.contentsOfDirectory(atPath: dirPath)
         var pathDirs = [String]()
 
         for pathElem in pathElems {
             let path = FileUtil.joinPath(dirPath, childPath: pathElem)
-            if FileUtil.isDirectory(path) {
+            var linkIsDir: Bool = false
+            var linkIsFile: Bool = false
+            if FileUtil.isSymlink(path) {
+                if settings.followSymlinks {
+                    // TODO: determine if dir or file
+                    if let resolvedPath = FileUtil.getSymlinkTarget(path) {
+                        if FileUtil.isDirectory(resolvedPath) {
+                            linkIsDir = true
+                        } else if FileUtil.isReadableFile(path) {
+                            linkIsFile = true
+                        }
+                    }
+                } else {
+                    continue
+                }
+            }
+            if FileUtil.isDirectory(path) || linkIsDir {
                 if recurse && isMatchingDir(pathElem) {
                     pathDirs.append(path)
                 }
-            } else {
-                if minDepth < 0 || currentDepth >= minDepth {
-                    let fileResult = filterToFileResult(path)
-                    if fileResult != nil {
-                        fileResults.append(fileResult!)
-                    }
+            } else if (FileUtil.isReadableFile(path) || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth) {
+                let fileResult = filterToFileResult(path)
+                if fileResult != nil {
+                    fileResults.append(fileResult!)
                 }
             }
         }
-        
+
         for pathDir in pathDirs {
             let pathResults = recGetFileResults(pathDir, minDepth: minDepth, maxDepth: maxDepth, currentDepth: (currentDepth + 1))
             fileResults.append(contentsOf: pathResults)

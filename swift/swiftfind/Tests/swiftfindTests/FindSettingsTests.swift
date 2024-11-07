@@ -22,6 +22,7 @@ class FindSettingsTests: XCTestCase {
     func testDefaultFindSettings() {
         XCTAssert(DefaultFindSettings.archivesOnly == false, "archivesOnly == false")
         XCTAssert(DefaultFindSettings.debug == false, "debug == false")
+        XCTAssert(DefaultFindSettings.followSymlinks == false, "followSymlinks == false")
         XCTAssert(DefaultFindSettings.includeArchives == false, "includeArchives == false")
         XCTAssert(DefaultFindSettings.includeHidden == false, "includeHidden == false")
         XCTAssert(DefaultFindSettings.maxLastMod == nil, "maxLastMod == nil")
@@ -41,6 +42,7 @@ class FindSettingsTests: XCTestCase {
         let settings = FindSettings()
         XCTAssert(settings.archivesOnly == DefaultFindSettings.archivesOnly, "archivesOnly == false")
         XCTAssert(settings.debug == DefaultFindSettings.debug, "debug == false")
+        XCTAssert(settings.followSymlinks == DefaultFindSettings.followSymlinks, "followSymlinks == false")
         XCTAssert(settings.includeArchives == DefaultFindSettings.includeArchives,
                   "includeArchives == false")
         XCTAssert(settings.includeHidden == DefaultFindSettings.includeHidden, "includeHidden == false")

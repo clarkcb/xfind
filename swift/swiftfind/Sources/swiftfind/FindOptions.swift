@@ -138,6 +138,9 @@ public class FindOptions {
         "excludehidden": { (bool: Bool, settings: FindSettings) in
             settings.includeHidden = !bool
         },
+        "followsymlinks": { (bool: Bool, settings: FindSettings) in
+            settings.followSymlinks = bool
+        },
         "help": { (bool: Bool, settings: FindSettings) in
             settings.printUsage = bool
         },
@@ -146,6 +149,9 @@ public class FindOptions {
         },
         "includehidden": { (bool: Bool, settings: FindSettings) in
             settings.includeHidden = bool
+        },
+        "nofollowsymlinks": { (bool: Bool, settings: FindSettings) in
+            settings.followSymlinks = !bool
         },
         "noprintdirs": { (bool: Bool, settings: FindSettings) in
             settings.printDirs = !bool
