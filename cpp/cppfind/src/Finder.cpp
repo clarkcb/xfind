@@ -200,9 +200,18 @@ namespace cppfind {
 
         try {
             for (const std::filesystem::directory_iterator it{dir_path}; const auto& entry : it) {
-                if (entry.is_directory() && recurse && is_matching_dir_path(entry.path().filename())) {
+                std::filesystem::path entry_path{entry.path()};
+                if (entry.is_symlink()) {
+                    if (m_settings.follow_symlinks()) {
+                        // Redefined entry_path as the symlink's target path
+                        entry_path = std::filesystem::read_symlink(entry_path);
+                    } else {
+                        continue;
+                    }
+                }
+                if (std::filesystem::is_directory(entry_path) && recurse && is_matching_dir_path(entry.path().filename())) {
                     path_dirs.push_back(entry.path());
-                } else if (entry.is_regular_file() && (min_depth < 0 || current_depth >= min_depth)) {
+                } else if (std::filesystem::is_regular_file(entry_path) && (min_depth < 0 || current_depth >= min_depth)) {
                     if (auto opt_file_result = filter_to_file_result(entry.path());
                         opt_file_result.has_value()) {
                         file_results.push_back(std::move(opt_file_result.value()));

@@ -9,6 +9,7 @@ namespace cppfind {
     FindSettings::FindSettings() :
     m_archives_only{false},
     m_debug{false},
+    m_follow_symlinks{false},
     m_include_archives{false},
     m_include_hidden{false},
     m_max_depth{-1},
@@ -41,6 +42,14 @@ namespace cppfind {
     void FindSettings::debug(const bool debug) {
         m_debug = debug;
         if (debug) m_verbose = true;
+    }
+
+    bool FindSettings::follow_symlinks() const {
+        return m_follow_symlinks;
+    }
+
+    void FindSettings::follow_symlinks(const bool follow_symlinks) {
+        m_follow_symlinks = follow_symlinks;
     }
 
     std::unordered_set<std::string> FindSettings::in_archive_extensions() const {
@@ -443,6 +452,7 @@ namespace cppfind {
         return std::string("FindSettings(")
                 + "archives_only=" + StringUtil::bool_to_string(m_archives_only)
                 + ", debug=" + StringUtil::bool_to_string(m_debug)
+                + ", follow_symlinks=" + StringUtil::bool_to_string(m_follow_symlinks)
                 + ", in_archive_extensions=" + StringUtil::unordered_string_set_to_string(m_in_archive_extensions)
                 + ", in_archive_file_patterns=" + patterns_to_string(m_in_archive_file_patterns)
                 + ", in_dir_patterns=" + patterns_to_string(m_in_dir_patterns)

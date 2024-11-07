@@ -1,5 +1,6 @@
 #include <catch2/catch_all.hpp>
 #include "FileTypes.h"
+#include "FindConfig.h"
 #include "Finder.h"
 
 cppfind::FindSettings get_settings(std::string_view path) {
@@ -456,4 +457,38 @@ TEST_CASE("Test is_matching_archive_file_result does not match out-pattern shoul
     const auto file_result = cppfind::FileResult(file_path, file_type, file_size, mod_time);
 
     REQUIRE(finder.is_matching_archive_file_result(file_result));
+}
+
+/***************************************************************************
+ * follow_symlinks tests
+ **************************************************************************/
+TEST_CASE("Test follow_symlinks with default settings should exclude symlinks", "[Finder]") {
+    auto settings = cppfind::FindSettings();
+    const auto bin_path = cppfind::xfindpath() + "/bin";
+    settings.add_path(bin_path);
+    const auto finder = cppfind::Finder(settings);
+    const auto file_results = finder.find();
+    REQUIRE(file_results.size() < 3);
+}
+
+TEST_CASE("Test follow_symlinks with follow_symlinks should include symlinks", "[Finder]") {
+    auto settings = cppfind::FindSettings();
+    const auto bin_path = cppfind::xfindpath() + "/bin";
+    settings.add_path(bin_path);
+    settings.follow_symlinks(true);
+    const auto finder = cppfind::Finder(settings);
+    if (const auto file_results = finder.find();
+        !file_results.empty()) {
+        REQUIRE(file_results.size() > 2);
+    }
+}
+
+TEST_CASE("Test follow_symlinks no follow_symlinks should exclude symlinks", "[Finder]") {
+    auto settings = cppfind::FindSettings();
+    const auto bin_path = cppfind::xfindpath() + "/bin";
+    settings.add_path(bin_path);
+    settings.follow_symlinks(false);
+    const auto finder = cppfind::Finder(settings);
+    const auto file_results = finder.find();
+    REQUIRE(file_results.size() < 3);
 }

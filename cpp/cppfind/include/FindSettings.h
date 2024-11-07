@@ -40,6 +40,7 @@ namespace cppfind {
         // property getters
         [[nodiscard]] bool archives_only() const;
         [[nodiscard]] bool debug() const;
+        [[nodiscard]] bool follow_symlinks() const;
         [[nodiscard]] bool include_archives() const;
         [[nodiscard]] bool include_hidden() const;
         [[nodiscard]] int max_depth() const;
@@ -75,6 +76,7 @@ namespace cppfind {
         // property setters
         void archives_only(bool archives_only);
         void debug(bool debug);
+        void follow_symlinks(bool follow_symlinks);
         void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
         void in_dir_patterns(const std::unordered_set<RegexPattern, RegexPatternHash>& in_dir_patterns);
         void in_extensions(const std::unordered_set<std::string>& in_extensions);
@@ -139,6 +141,7 @@ namespace cppfind {
     protected:
         bool m_archives_only;
         bool m_debug;
+        bool m_follow_symlinks;
 
         // add sets of strings that hold extensions and patterns to match on
         std::unordered_set<std::string> m_in_archive_extensions;

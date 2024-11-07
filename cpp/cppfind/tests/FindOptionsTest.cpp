@@ -9,6 +9,7 @@ TEST_CASE("Get FindSettings from minimal args", "[FindOptions]") {
     auto settings = options.settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
+    REQUIRE(!settings.follow_symlinks());
     REQUIRE(!settings.include_archives());
     REQUIRE(!settings.include_hidden());
     REQUIRE(!settings.print_dirs());
@@ -40,6 +41,7 @@ TEST_CASE("Get FindSettings from valid args", "[FindOptions]") {
     auto settings = options.settings_from_args(argc, argv);
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
+    REQUIRE(!settings.follow_symlinks());
     REQUIRE(!settings.include_archives());
     REQUIRE(!settings.include_hidden());
     REQUIRE(!settings.print_dirs());
@@ -80,6 +82,7 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     "out-dirpattern": ["build", "node_module", "tests", "typings"],
     "out-filepattern": ["gulpfile", "\\.min\\."],
     "debug": true,
+    "followsymlinks": true,
     "includehidden": false
 }
 )";
@@ -102,5 +105,7 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
     REQUIRE(unordered_set_has_pattern(settings.out_file_patterns(), "gulpfile"));
     REQUIRE(unordered_set_has_pattern(settings.out_file_patterns(), "\\.min\\."));
     REQUIRE(settings.debug() == true);
+    REQUIRE(settings.verbose() == true);
+    REQUIRE(settings.follow_symlinks() == true);
     REQUIRE(settings.include_hidden() == false);
 }

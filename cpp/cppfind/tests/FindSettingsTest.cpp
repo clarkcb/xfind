@@ -6,6 +6,7 @@ TEST_CASE("Get default FindSettings", "[FindSettings]") {
 
     REQUIRE(!settings.archives_only());
     REQUIRE(!settings.debug());
+    REQUIRE(!settings.follow_symlinks());
     REQUIRE(!settings.include_archives());
     REQUIRE(!settings.include_hidden());
     REQUIRE(settings.max_last_mod() == 0);
@@ -98,6 +99,10 @@ TEST_CASE("Alter booleans in FindSettings", "[FindSettings]") {
     settings.debug(true);
     REQUIRE(settings.debug());
     REQUIRE(settings.verbose());
+
+    REQUIRE(!settings.follow_symlinks());
+    settings.follow_symlinks(true);
+    REQUIRE(settings.follow_symlinks());
 
     REQUIRE(!settings.include_hidden());
     settings.include_hidden(true);
