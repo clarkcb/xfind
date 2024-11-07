@@ -42,13 +42,16 @@ type Finder (settings : FindSettings) =
         Seq.exists (fun s -> this.MatchesAnyPattern s patterns) slist
 
     member this.IsMatchingDir (d : DirectoryInfo) : bool =
-        let elems = FileUtil.GetDirElems(d)
-        (settings.IncludeHidden ||
-         not (Seq.exists FileUtil.IsHidden elems)) &&
-        (Seq.isEmpty settings.InDirPatterns ||
-         this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
-        (Seq.isEmpty settings.OutDirPatterns ||
-         not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
+        if not settings.FollowSymlinks && d.Exists && d.Attributes.HasFlag(FileAttributes.ReparsePoint) then
+            false
+        else
+            let elems = FileUtil.GetDirElems(d)
+            (settings.IncludeHidden ||
+             not (Seq.exists FileUtil.IsHidden elems)) &&
+            (Seq.isEmpty settings.InDirPatterns ||
+             this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
+            (Seq.isEmpty settings.OutDirPatterns ||
+             not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
 
     member this.IsMatchingArchiveExtension (ext : string) : bool =
         (List.isEmpty settings.InArchiveExtensions ||
@@ -99,21 +102,24 @@ type Finder (settings : FindSettings) =
         this.IsMatchingArchiveExtension(fr.File.Extension) &&
         this.IsMatchingArchiveFileName(fr.File.Name)
 
-    member this.FilterToFileResult (f: FileInfo) : FileResult.t Option = 
-        if not settings.IncludeHidden && FileUtil.IsHiddenFile f then
+    member this.FilterToFileResult (f: FileInfo) : FileResult.t Option =
+        if not settings.FollowSymlinks && f.Exists && f.Attributes.HasFlag(FileAttributes.ReparsePoint) then
             None
         else
-            let fr = FileResult.Create f (_fileTypes.GetFileType f)
-            if fr.FileType = FileType.Archive then
-                if settings.IncludeArchives && this.IsMatchingArchiveFileResult fr then
-                    Some fr
-                else
-                    None
+            if not settings.IncludeHidden && FileUtil.IsHiddenFile f then
+                None
             else
-                if not settings.ArchivesOnly && this.IsMatchingFileResult fr then
-                    Some fr
+                let fr = FileResult.Create f (_fileTypes.GetFileType f)
+                if fr.FileType = FileType.Archive then
+                    if settings.IncludeArchives && this.IsMatchingArchiveFileResult fr then
+                        Some fr
+                    else
+                        None
                 else
-                    None
+                    if not settings.ArchivesOnly && this.IsMatchingFileResult fr then
+                        Some fr
+                    else
+                        None
 
     member this.MatchFile (f : FileInfo) (startPathSepCount : int) : bool =
         if f.Directory = null then

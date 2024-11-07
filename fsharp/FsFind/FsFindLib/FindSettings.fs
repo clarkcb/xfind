@@ -21,6 +21,7 @@ type FindSettings() =
             this.Verbose <- value
 
 
+    member val FollowSymlinks : bool = false with get, set
     member val InArchiveExtensions : string list = [] with get, set
     member val InArchiveFilePatterns : Regex list = [] with get, set
     member val InDirPatterns : Regex list = [] with get, set
@@ -89,6 +90,7 @@ type FindSettings() =
             "FindSettings(";
             $"ArchivesOnly=%b{this.ArchivesOnly}";
             $", Debug=%b{this.Debug}";
+            $", FollowSymlinks=%b{this.FollowSymlinks}";
             $", InArchiveExtensions=%s{Common.ListToString(this.InArchiveExtensions)}";
             $", InArchiveFilePatterns=%s{Common.ListToString(this.InArchiveFilePatterns)}";
             $", InDirPatterns=%s{Common.ListToString(this.InDirPatterns)}";

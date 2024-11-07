@@ -35,6 +35,10 @@ type FinderTests () =
         let settings = FindSettings()
         settings.Paths <- ["."]
         settings
+        
+    member this.GetBinPath () : string =
+        Path.Join(this.GetXfindPath(), "bin")
+        
 
 
     //////////////////////////////////////////////////////////////
@@ -406,4 +410,36 @@ type FinderTests () =
         let file = FileInfo(Path.Join(this.GetFsFindPath(), "FsFindLib", "FileUtil.fs"))
         let fr = finder.FilterToFileResult file
         Assert.That(fr.IsNone)
+        ()
+
+    //////////////////////////////////////////////////////////////
+    // FollowSymlinks tests
+    //////////////////////////////////////////////////////////////
+    [<Test>]
+    member this.TestFollowSymlinks_Default_Excluded () =
+        let settings = FindSettings()
+        settings.Paths <- [this.GetBinPath()]
+        let finder = Finder(settings)
+        let fileResults = finder.Find()
+        Assert.That(List.length fileResults, Is.LessThan(3))
+        ()
+
+    [<Test>]
+    member this.TestFollowSymlinks_FollowSymlinks_Included () =
+        let settings = FindSettings()
+        settings.Paths <- [this.GetBinPath()]
+        settings.FollowSymlinks <- true
+        let finder = Finder(settings)
+        let fileResults = finder.Find()
+        Assert.That(List.length fileResults, Is.EqualTo(0).Or.GreaterThan(2))
+        ()
+
+    [<Test>]
+    member this.TestFollowSymlinks_NoFollowSymlinks_Excluded () =
+        let settings = FindSettings()
+        settings.Paths <- [this.GetBinPath()]
+        settings.FollowSymlinks <- false
+        let finder = Finder(settings)
+        let fileResults = finder.Find()
+        Assert.That(List.length fileResults, Is.LessThan(3))
         ()

@@ -16,6 +16,7 @@ type FindOptionsTests () =
         let settings, _ = FindOptions.SettingsFromArgs(args)
         Assert.That(settings.ArchivesOnly, Is.False)
         Assert.That(settings.Debug, Is.False)
+        Assert.That(settings.FollowSymlinks, Is.False)
         Assert.That(settings.IncludeArchives, Is.False)
         Assert.That(settings.IncludeHidden, Is.False)
         Assert.That(settings.Paths.Length, Is.EqualTo(0))

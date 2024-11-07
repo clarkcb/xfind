@@ -47,9 +47,11 @@ module FindOptions =
             ("debug", (fun (b : bool) (settings : FindSettings) -> settings.Debug <- b));
             ("excludearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- not b));
             ("excludehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- not b));
+            ("followsymlinks", (fun (b : bool) (settings : FindSettings) -> settings.FollowSymlinks <- b));
             ("help", (fun (b : bool) (settings : FindSettings) -> settings.PrintUsage <- b));
             ("includearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- b));
             ("includehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- b));
+            ("nofollowsymlinks", (fun (b : bool) (settings : FindSettings) -> settings.FollowSymlinks <- not b));
             ("noprintdirs", (fun (b : bool) (settings : FindSettings) -> settings.PrintDirs <- not b));
             ("noprintfiles", (fun (b : bool) (settings : FindSettings) -> settings.PrintFiles <- not b));
             ("norecursive", (fun (b : bool) (settings : FindSettings) -> settings.Recursive <- not b));
