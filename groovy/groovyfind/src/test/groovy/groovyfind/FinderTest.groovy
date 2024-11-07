@@ -16,6 +16,14 @@ class FinderTest {
         return settings
     }
 
+    private static String getBinPath() {
+        var xfindPath = System.getenv("XFIND_PATH")
+        if (xfindPath == null) {
+            xfindPath = System.getenv("HOME") + "src/xfind"
+        }
+        return xfindPath + "/bin"
+    }
+
     /*************************************************************
      * isMatchingDir tests
      *************************************************************/
@@ -375,4 +383,47 @@ class FinderTest {
         assertFalse(finder.filterToFileResult(path).isPresent())
     }
 
+    /*************************************************************
+     * followSymlinks tests
+     *************************************************************/
+    @Test
+    final void testFollowSymlinks_Default_Excluded() {
+        var settings = new FindSettings()
+        settings.addPath(getBinPath())
+        var finder = new Finder(settings)
+        try {
+            var fileResults = finder.find()
+            assertTrue(fileResults.size() < 3)
+        } catch (FindException e) {
+            fail()
+        }
+    }
+
+    @Test
+    final void testFollowSymlinks_FollowSymlinks_Included() {
+        var settings = new FindSettings()
+        settings.addPath(getBinPath())
+        settings.followSymlinks = true
+        var finder = new Finder(settings)
+        try {
+            var fileResults = finder.find()
+            assertTrue(fileResults.isEmpty() || fileResults.size() > 2)
+        } catch (FindException ignored) {
+            fail()
+        }
+    }
+
+    @Test
+    final void testFollowSymlinks_NoFollowSymlinks_Excluded() {
+        var settings = new FindSettings()
+        settings.addPath(getBinPath())
+        settings.followSymlinks = false
+        var finder = new Finder(settings)
+        try {
+            var fileResults = finder.find()
+            assertTrue(fileResults.size() < 3)
+        } catch (FindException ignored) {
+            fail()
+        }
+    }
 }

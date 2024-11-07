@@ -16,6 +16,7 @@ class FindSettingsTest {
         def settings = new FindSettings()
         assertEquals(DefaultFindSettings.ARCHIVES_ONLY, settings.archivesOnly)
         assertEquals(DefaultFindSettings.DEBUG, settings.debug)
+        assertEquals(DefaultFindSettings.FOLLOW_SYMLINKS, settings.followSymlinks)
         assertEquals(DefaultFindSettings.INCLUDE_HIDDEN, settings.includeHidden)
         assertEquals(DefaultFindSettings.INCLUDE_ARCHIVES, settings.includeArchives)
         assertEquals(DefaultFindSettings.MAX_SIZE, settings.maxSize)

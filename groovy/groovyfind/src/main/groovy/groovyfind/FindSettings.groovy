@@ -14,6 +14,7 @@ import java.util.regex.Pattern
 class DefaultFindSettings {
     static final boolean ARCHIVES_ONLY = false
     static final boolean DEBUG = false
+    static final boolean FOLLOW_SYMLINKS = false
     static final boolean INCLUDE_ARCHIVES = false
     static final boolean INCLUDE_HIDDEN = false
     static final int MAX_DEPTH = -1
@@ -38,6 +39,7 @@ class FindSettings {
 
     boolean archivesOnly
     boolean debug
+    boolean followSymlinks
     final Set<String> inArchiveExtensions
     final Set<Pattern> inArchiveFilePatterns
     final Set<Pattern> inDirPatterns
@@ -72,6 +74,7 @@ class FindSettings {
     FindSettings() {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY
         this.debug = DefaultFindSettings.DEBUG
+        this.followSymlinks = DefaultFindSettings.FOLLOW_SYMLINKS
         this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.inArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
         this.inDirPatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
@@ -282,6 +285,7 @@ class FindSettings {
         'FindSettings(' +
                 'archivesOnly=' + this.archivesOnly +
                 ', debug=' + this.debug +
+                ', followSymlinks=' + this.followSymlinks +
                 ', inArchiveExtensions=' + stringSetToString(this.inArchiveExtensions) +
                 ', inArchiveFilePatterns=' + patternSetToString(this.inArchiveFilePatterns) +
                 ', inDirPatterns=' + patternSetToString(this.inDirPatterns) +

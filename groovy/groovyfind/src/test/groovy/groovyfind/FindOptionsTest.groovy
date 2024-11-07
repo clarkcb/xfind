@@ -19,6 +19,7 @@ class FindOptionsTest {
             def settings = findOptions.settingsFromArgs(args)
             assertFalse(settings.archivesOnly)
             assertFalse(settings.debug)
+            assertFalse(settings.followSymlinks)
             assertFalse(settings.includeArchives)
             assertFalse(settings.includeHidden)
             assertFalse(settings.printDirs)
@@ -63,7 +64,8 @@ class FindOptionsTest {
                 .append('  "out-dirpattern": "node_module",\n')
                 .append('  "out-filepattern": ["temp"],\n')
                 .append('  "debug": true,\n')
-                .append('  "includehidden": false,\n')
+                .append('  "followsymlinks": true,\n')
+                .append('  "includehidden": false\n')
                 .append('}')
         try {
             def findOptions = new FindOptions()
@@ -85,6 +87,7 @@ class FindOptionsTest {
 
             assertTrue(settings.debug)
             assertTrue(settings.verbose)
+            assertTrue(settings.followSymlinks)
             assertFalse(settings.includeHidden)
         } catch (IOException e) {
             System.out.println("IOException: ${e.message}")
