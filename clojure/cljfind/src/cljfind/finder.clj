@@ -26,7 +26,7 @@
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only
           (exists? get-ext get-name get-parent hidden-dir? hidden-file?
-           is-dir? is-dot-dir? is-file? path-str sep-count)]
+           is-dir? is-dot-dir? is-file? is-symlink? path-str sep-count)]
         [cljfind.findsettings :only (need-last-mod need-size)])
   (:require [java-time.api :as jt]))
 
@@ -236,7 +236,7 @@
       (> max-depth -1)
       (> current-depth max-depth))
     []
-    (let [path-elems (list-paths-under-dir-path path)
+    (let [path-elems (filter #(or (not (is-symlink? %)) (:follow-symlinks settings)) (list-paths-under-dir-path path))
           recurse (or (= max-depth -1) (< current-depth max-depth))
           path-dirs (if recurse (filter #(is-matching-dir? % settings) (filter #(is-dir? %) path-elems)) [])
           path-files (if (and (> min-depth -1) (< current-depth min-depth)) [] (filter #(is-file? %) path-elems))

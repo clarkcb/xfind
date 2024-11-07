@@ -9,6 +9,7 @@
     (testing "test-default-settings"
       (is (not (:archives-only settings)))
       (is (not (:debug settings)))
+      (is (not (:follow-symlinks settings)))
       (is (not (:include-archives settings)))
       (is (not (:include-hidden settings)))
       (is (empty? (:paths settings)))

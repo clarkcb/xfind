@@ -51,6 +51,7 @@
   [
     ^Boolean archives-only
     ^Boolean debug
+    ^Boolean follow-symlinks
     ^clojure.lang.PersistentHashSet in-archive-extensions
     ^clojure.lang.PersistentHashSet in-archive-file-patterns
     ^clojure.lang.PersistentHashSet in-dir-patterns
@@ -87,6 +88,7 @@
   (->FindSettings
    false     ; archives-only
    false     ; debug
+   false     ; follow-symlinks
    #{}       ; in-archive-extensions
    #{}       ; in-archive-file-patterns
    #{}       ; in-dir-patterns
@@ -222,6 +224,7 @@
   (.write w (str
              "FindSettings(archives-only=" (:archives-only settings)
              ", debug=" (:debug settings)
+             ", follow-symlinks=" (:follow-symlinks settings)
              ", in-archive-extensions=" (string-set-to-string (:in-archive-extensions settings))
              ", in-archive-file-patterns=" (pattern-set-to-string (:in-archive-file-patterns settings))
              ", in-dir-patterns=" (pattern-set-to-string (:in-dir-patterns settings))

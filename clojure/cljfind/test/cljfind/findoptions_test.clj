@@ -9,6 +9,7 @@
     (testing "test-no-args"
       (is (not (:archives-only ss)))
       (is (not (:debug ss)))
+      (is (not (:follow-symlinks ss)))
       (is (not (:include-archives ss)))
       (is (not (:include-hidden ss)))
       (is (empty? (:path ss)))
@@ -60,6 +61,7 @@
   \"out-dirpattern\": \"node_module\",
   \"out-filepattern\": [\"temp\"],
   \"debug\": true,
+  \"followsymlinks\": true,
   \"includehidden\": true
 }"
         [ss errs] (settings-from-json settings-json)
@@ -74,4 +76,5 @@
       (is (= (count (:out-file-patterns ss)) 1))
       (is (= (:debug ss) true))
       (is (= (:verbose ss) true))
+      (is (= (:follow-symlinks ss) true))
       (is (= (:include-hidden ss) true)))))
