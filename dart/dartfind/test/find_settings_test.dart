@@ -6,6 +6,7 @@ void main() {
     var settings = FindSettings();
     expect(settings.archivesOnly, false);
     expect(settings.debug, false);
+    expect(settings.followSymlinks, false);
     expect(settings.includeArchives, false);
     expect(settings.includeHidden, false);
     expect(settings.printDirs, false);

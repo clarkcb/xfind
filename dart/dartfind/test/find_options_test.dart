@@ -7,6 +7,7 @@ void main() {
     var settings = await options.settingsFromArgs(['.']);
     expect(settings.archivesOnly, false);
     expect(settings.debug, false);
+    expect(settings.followSymlinks, false);
     expect(settings.includeArchives, false);
     expect(settings.includeHidden, false);
     expect(settings.printDirs, false);
@@ -35,6 +36,7 @@ void main() {
         '"out-dirpattern": ["build", "node_module", "tests", "typings"],'
         r'"out-filepattern": ["gulpfile", "\\.min\\."],'
         '"debug": true,'
+        '"followsymlinks": true,'
         '"includehidden": false'
         '}';
     var options = FindOptions();
@@ -62,6 +64,7 @@ void main() {
 
     expect(settings.debug, true);
     expect(settings.verbose, true);
+    expect(settings.followSymlinks, true);
     expect(settings.includeHidden, false);
   });
 }

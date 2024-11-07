@@ -72,6 +72,8 @@ class FindSettings {
     }
   }
 
+  bool followSymlinks = false;
+
   var inArchiveExtensions = <String>{};
   var inArchiveFilePatterns = <Pattern>{};
   var inDirPatterns = <Pattern>{};
@@ -167,6 +169,7 @@ class FindSettings {
   @override
   String toString() => 'FindSettings(archivesOnly=$archivesOnly'
       ', debug=$debug'
+      ', followSymlinks=$followSymlinks'
       ', inArchiveExtensions=${stringSetToString(inArchiveExtensions)}'
       ', inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}'
       ', inDirPatterns=${patternSetToString(inDirPatterns)}'

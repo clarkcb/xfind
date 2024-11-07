@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:dartfind/dartfind.dart';
 import 'package:test/test.dart';
 
-void main() {
-  FindSettings getSettings() {
-    var settings = FindSettings();
-    settings.paths.add('.');
-    return settings;
-  }
+FindSettings getSettings() {
+  var settings = FindSettings();
+  settings.paths.add('.');
+  return settings;
+}
 
+void main() {
   /***************************************************************************
    * isFindDir tests
    **************************************************************************/
@@ -250,6 +250,44 @@ void main() {
       var fileResult =
           FileResult(File('archive.zip'), FileType.archive, 0, null);
       expect(finder.isMatchingArchiveFileResult(fileResult), true);
+    });
+  });
+
+  /***************************************************************************
+   * followSymlink tests
+   **************************************************************************/
+  group('followSymlink tests', () {
+    test('test followSymlinks with default settings', () {
+      var settings = FindSettings();
+      settings.paths.add("$xFindPath/bin");
+      var finder = Finder(settings);
+      finder.find().then((fileResults) {
+        expect(fileResults.length, lessThan(3));
+      });
+    });
+
+    test('test followSymlinks with followSymlinks', () {
+      var settings = FindSettings();
+      settings.paths.add("$xFindPath/bin");
+      settings.followSymlinks = true;
+      var finder = Finder(settings);
+      finder.find().then((fileResults) {
+        if (fileResults.isNotEmpty) {
+          expect(fileResults.length, greaterThan(2));
+        } else {
+          expect(fileResults.length, 0);
+        }
+      });
+    });
+
+    test('test followSymlinks with noFollowSymlinks', () {
+      var settings = FindSettings();
+      settings.paths.add("$xFindPath/bin");
+      settings.followSymlinks = false;
+      var finder = Finder(settings);
+      finder.find().then((fileResults) {
+        expect(fileResults.length, lessThan(3));
+      });
     });
   });
 }

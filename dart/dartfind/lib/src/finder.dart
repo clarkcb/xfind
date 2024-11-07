@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:dartfind/dartfind.dart';
 import 'package:dartfind/src/file_result.dart';
 import 'package:dartfind/src/file_types.dart';
 import 'package:dartfind/src/file_util.dart';
@@ -144,7 +145,7 @@ class Finder {
         isMatchingLastMod(fr.lastMod);
   }
 
-  Future<FileResult?> filterToFileResult(File f) {
+  Future<FileResult?> filterToFileResult(File f) async {
     var fileName = path.basename(f.path);
     if (!settings.includeHidden && FileUtil.isHidden(fileName)) {
       return Future.value(null);
@@ -160,19 +161,18 @@ class Finder {
         lastMod = stat.modified;
       }
     }
-    return _fileTypes.getFileType(fileName).then((fileType) {
-      var fileResult = FileResult(f, fileType, fileSize, lastMod);
-      if (fileResult.fileType == FileType.archive) {
-        if (settings.includeArchives) {
-          return fileResult;
-        }
-        return null;
-      }
-      if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
+    var fileType = await _fileTypes.getFileType(fileName);
+    var fileResult = FileResult(f, fileType, fileSize, lastMod);
+    if (fileResult.fileType == FileType.archive) {
+      if (settings.includeArchives) {
         return fileResult;
       }
       return null;
-    });
+    }
+    if (!settings.archivesOnly && isMatchingFileResult(fileResult)) {
+      return fileResult;
+    }
+    return null;
   }
 
   Future<List<FileResult>> filterToFileResults(List<File> filePaths) {
@@ -195,19 +195,33 @@ class Finder {
     // Get dirs and files under filePath
     var pathDirs = <Directory>[];
     var pathFiles = <File>[];
-    List<FileSystemEntity> entries = dir.listSync(recursive: false).toList();
+    List<FileSystemEntity> entries = dir
+        .listSync(recursive: false, followLinks: settings.followSymlinks)
+        .toList();
     for (var entry in entries) {
-      if (entry is Directory && recurse && isMatchingDir(entry)) {
+      var linkIsDir = false;
+      var linkIsFile = false;
+      if (entry is Link) {
+        var resolvedPath = entry.resolveSymbolicLinksSync();
+        if (resolvedPath is Directory) {
+          linkIsDir = true;
+        } else if (resolvedPath is File) {
+          linkIsFile = true;
+        }
+      }
+      if ((entry is Directory || linkIsDir) &&
+          recurse &&
+          isMatchingDir(entry as Directory)) {
         pathDirs.add(entry);
-      } else if (entry is File && (minDepth < 0 || currentDepth >= minDepth)) {
-        pathFiles.add(entry);
+      } else if ((entry is File || linkIsFile) &&
+          (minDepth < 0 || currentDepth >= minDepth)) {
+        pathFiles.add(entry as File);
       }
     }
 
     // Filter files
-    filterToFileResults(pathFiles).then((pathResults) {
-      fileResults.addAll(pathResults);
-    });
+    var pathResults = await filterToFileResults(pathFiles);
+    fileResults.addAll(pathResults);
 
     // Recurse into dirs
     for (var pathDir in pathDirs) {
