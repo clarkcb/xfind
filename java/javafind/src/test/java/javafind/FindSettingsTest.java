@@ -16,6 +16,7 @@ public class FindSettingsTest {
         var settings = new FindSettings();
         assertEquals(DefaultFindSettings.ARCHIVES_ONLY, settings.getArchivesOnly());
         assertEquals(DefaultFindSettings.DEBUG, settings.getDebug());
+        assertEquals(DefaultFindSettings.FOLLOW_SYMLINKS, settings.getFollowSymlinks());
         assertEquals(DefaultFindSettings.INCLUDE_HIDDEN, settings.getIncludeHidden());
         assertEquals(DefaultFindSettings.INCLUDE_ARCHIVES, settings.getIncludeArchives());
         assertEquals(DefaultFindSettings.MAX_SIZE, settings.getMaxSize());

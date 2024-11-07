@@ -251,6 +251,9 @@ public class Finder {
         List<Path> pathDirs = new ArrayList<>();
         try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
             for (Path path : pathContents) {
+                if (Files.isSymbolicLink(path) && !settings.getFollowSymlinks()) {
+                    continue;
+                }
                 if (Files.isDirectory(path) && recurse && isMatchingDir(path)) {
                     pathDirs.add(path);
                 } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {

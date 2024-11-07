@@ -72,9 +72,11 @@ public class FindOptions {
             put("archivesonly", (b, settings) -> settings.setArchivesOnly(b));
             put("debug", (b, settings) -> settings.setDebug(b));
             put("excludehidden", (b, settings) -> settings.setIncludeHidden(!b));
+            put("followsymlinks", (b, settings) -> settings.setFollowSymlinks(b));
             put("help", (b, settings) -> settings.setPrintUsage(b));
             put("includearchives", (b, settings) -> settings.setIncludeArchives(b));
             put("includehidden", (b, settings) -> settings.setIncludeHidden(b));
+            put("nofollowsymlinks", (b, settings) -> settings.setFollowSymlinks(!b));
             put("noprintdirs", (b, settings) -> settings.setPrintDirs(!b));
             put("noprintfiles", (b, settings) -> settings.setPrintFiles(!b));
             put("norecursive", (b, settings) -> settings.setRecursive(!b));

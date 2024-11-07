@@ -28,6 +28,7 @@ public class FindSettings {
 
     private boolean archivesOnly;
     private boolean debug;
+    private boolean followSymlinks;
     private final Set<String> inArchiveExtensions;
     private final Set<Pattern> inArchiveFilePatterns;
     private final Set<Pattern> inDirPatterns;
@@ -62,6 +63,7 @@ public class FindSettings {
     public FindSettings() {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY;
         this.debug = DefaultFindSettings.DEBUG;
+        this.followSymlinks = DefaultFindSettings.FOLLOW_SYMLINKS;
         this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.inArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.inDirPatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
@@ -130,6 +132,14 @@ public class FindSettings {
         if (debug) {
             this.verbose = true;
         }
+    }
+
+    public boolean getFollowSymlinks() {
+        return followSymlinks;
+    }
+
+    public void setFollowSymlinks(boolean followSymlinks) {
+        this.followSymlinks = followSymlinks;
     }
 
     public final boolean getIncludeHidden() {
@@ -475,6 +485,7 @@ public class FindSettings {
         return "FindSettings("
                 + "archivesOnly=" + this.archivesOnly
                 + ", debug=" + this.debug
+                + ", followSymlinks=" + this.followSymlinks
                 + ", inArchiveExtensions=" + stringSetToString(this.inArchiveExtensions)
                 + ", inArchiveFilePatterns=" + patternSetToString(this.inArchiveFilePatterns)
                 + ", inDirPatterns=" + patternSetToString(this.inDirPatterns)

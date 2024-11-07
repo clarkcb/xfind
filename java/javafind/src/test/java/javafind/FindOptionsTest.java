@@ -21,6 +21,7 @@ public class FindOptionsTest {
             var settings = findOptions.settingsFromArgs(args);
             assertFalse(settings.getArchivesOnly());
             assertFalse(settings.getDebug());
+            assertFalse(settings.getFollowSymlinks());
             assertFalse(settings.getIncludeArchives());
             assertFalse(settings.getIncludeHidden());
             assertFalse(settings.getPrintDirs());
@@ -65,6 +66,7 @@ public class FindOptionsTest {
                 .append("  \"out-dirpattern\": \"node_module\",\n")
                 .append("  \"out-filepattern\": [\"temp\"],\n")
                 .append("  \"debug\": true,\n")
+                .append("  \"followsymlinks\": true,\n")
                 .append("  \"includehidden\": false,\n")
                 .append("}");
         try {
@@ -87,6 +89,7 @@ public class FindOptionsTest {
 
             assertTrue(settings.getDebug());
             assertTrue(settings.getVerbose());
+            assertTrue(settings.getFollowSymlinks());
             assertFalse(settings.getIncludeHidden());
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());

@@ -7,6 +7,7 @@ public final class DefaultFindSettings {
 
     public static final boolean ARCHIVES_ONLY = false;
     public static final boolean DEBUG = false;
+    public static final boolean FOLLOW_SYMLINKS = false;
     public static final boolean INCLUDE_ARCHIVES = false;
     public static final boolean INCLUDE_HIDDEN = false;
     public static final int MAX_DEPTH = -1;
