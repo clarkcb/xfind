@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using CsFindLib;
 using NUnit.Framework;
 
@@ -45,6 +46,16 @@ class FinderTests
 		var settings = new FindSettings();
 		settings.Paths.Add(".");
 		return settings;
+	}
+
+	private static string GetBinPath()
+	{
+		var xfindPath = Environment.GetEnvironmentVariable("XFIND_PATH");
+		if (xfindPath == null)
+		{
+			xfindPath = Path.Join(FileUtil.GetHomePath(), "src", "xfind");
+		}
+		return Path.Join(xfindPath, "bin");
 	}
 
 	/*************************************************************
@@ -336,6 +347,7 @@ class FinderTests
 		Assert.That(finder.IsMatchingArchiveFileResult(sf));
 	}
 
+
 	/*************************************************************
 	 * FilterToFileResult tests
 	*************************************************************/
@@ -447,5 +459,42 @@ class FinderTests
 		var finder = new Finder(settings);
 		var file = new FileInfo(Path.Join(GetCsFindPath(), "CsFindLib", "FileUtil.cs"));
 		Assert.That(finder.FilterToFileResult(file), Is.Null);
+	}
+
+
+	/*************************************************************
+	 * FollowSymlinks tests
+	 *************************************************************/
+
+	[Test]
+	public void TestFollowSymlinks_Default_Excluded()
+	{
+		var settings = new FindSettings();
+		settings.Paths.Add(GetBinPath());
+		var finder = new Finder(settings);
+		var fileResults = finder.Find().ToList();
+		Assert.That(fileResults.Count, Is.LessThan(3));
+	}
+
+	[Test]
+	public void TestFollowSymlinks_FollowSymlinks_Included()
+	{
+		var settings = new FindSettings();
+		settings.Paths.Add(GetBinPath());
+		settings.FollowSymlinks = true;
+		var finder = new Finder(settings);
+		var fileResults = finder.Find().ToList();
+		Assert.That(fileResults.Count, Is.EqualTo(0).Or.GreaterThan(2));
+	}
+
+	[Test]
+	public void TestFollowSymlinks_NoFollowSymlinks_Excluded()
+	{
+		var settings = new FindSettings();
+		settings.Paths.Add(GetBinPath());
+		settings.FollowSymlinks = false;
+		var finder = new Finder(settings);
+		var fileResults = finder.Find().ToList();
+		Assert.That(fileResults.Count, Is.LessThan(3));
 	}
 }

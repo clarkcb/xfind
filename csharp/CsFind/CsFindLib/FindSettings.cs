@@ -31,6 +31,7 @@ public class FindSettings
 		}
 	}
 
+	public bool FollowSymlinks { get; set; }
 	public ISet<string> InArchiveExtensions { get; private set; }
 	public ISet<Regex> InArchiveFilePatterns { get; private set; }
 	public ISet<Regex> InDirPatterns { get; private set; }
@@ -66,6 +67,7 @@ public class FindSettings
 	{
 		ArchivesOnly = false;
 		Debug = false;
+		FollowSymlinks = false;
 		InArchiveExtensions = new HashSet<string>();
 		InArchiveFilePatterns = new HashSet<Regex>();
 		InDirPatterns = new HashSet<Regex>();
@@ -101,6 +103,7 @@ public class FindSettings
 	public FindSettings(
 		bool archivesOnly,
 		bool debug,
+		bool followSymlinks,
 		ISet<string> inArchiveExtensions,
 		ISet<Regex> inArchiveFilePatterns,
 		ISet<Regex> inDirPatterns,
@@ -134,6 +137,7 @@ public class FindSettings
 	{
 		ArchivesOnly = archivesOnly;
 		Debug = debug;
+		FollowSymlinks = followSymlinks;
 		InArchiveExtensions = inArchiveExtensions;
 		InArchiveFilePatterns = inArchiveFilePatterns;
 		InDirPatterns = inDirPatterns;
@@ -286,6 +290,7 @@ public class FindSettings
 		return "FindSettings(" +
 		       "ArchivesOnly=" + ArchivesOnly +
 		       ", Debug=" + Debug +
+		       ", FollowSymlinks=" + FollowSymlinks +
 		       ", InArchiveExtensions=" + EnumerableToString(InArchiveExtensions) +
 		       ", InArchiveFilePatterns=" + EnumerableToString(InArchiveFilePatterns) +
 		       ", InDirPatterns=" + EnumerableToString(InDirPatterns) +

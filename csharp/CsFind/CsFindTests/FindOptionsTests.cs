@@ -17,6 +17,7 @@ public class FindOptionsTests
 		var settings = _findOptions.SettingsFromArgs(new List<string>());
 		Assert.That(settings.ArchivesOnly, Is.False);
 		Assert.That(settings.Debug, Is.False);
+		Assert.That(settings.FollowSymlinks, Is.False);
 		Assert.That(settings.IncludeArchives, Is.False);
 		Assert.That(settings.IncludeHidden, Is.False);
 		Assert.That(settings.PrintDirs, Is.False);
@@ -56,6 +57,7 @@ public class FindOptionsTests
   ""out-dirpattern"": ""node_module"",
   ""out-filepattern"": [""temp""],
   ""debug"": true,
+  ""followsymlinks"": true,
   ""includehidden"": true
 }";
 		var settings = new FindSettings();
@@ -75,6 +77,8 @@ public class FindOptionsTests
 		Assert.That(settings.OutFilePatterns.First().ToString(), Is.EqualTo("temp"));
 
 		Assert.That(settings.Debug);
+		Assert.That(settings.Verbose);
+		Assert.That(settings.FollowSymlinks);
 		Assert.That(settings.IncludeHidden);
 	}
 }

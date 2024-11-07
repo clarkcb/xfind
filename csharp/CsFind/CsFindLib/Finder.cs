@@ -48,7 +48,7 @@ public class Finder
 		var enumerationOptions = new EnumerationOptions
 		{
 			AttributesToSkip = FileAttributes.System,
-			IgnoreInaccessible = true,
+			IgnoreInaccessible = true, // TODO: maybe we want to know when a file isn't accessible?
 			MatchType = MatchType.Simple,
 			// Set recursion to false because we will do it manually
 			RecurseSubdirectories = false,
@@ -81,6 +81,12 @@ public class Finder
 		if (d == null)
 		{
 			return true;
+		}
+
+		// This is how we detect and filter out symlinked directories
+		if (!Settings.FollowSymlinks && d.Exists && d.Attributes.HasFlag(FileAttributes.ReparsePoint))
+		{
+			return false;
 		}
 
 		var elems = FileUtil.GetDirElems(d).ToList();
@@ -168,6 +174,9 @@ public class Finder
 
 	public FileResult? FilterToFileResult(FileInfo fi)
 	{
+		// This is how we check for / filter out symlinked files
+		if (!Settings.FollowSymlinks && fi.Exists && fi.Attributes.HasFlag(FileAttributes.ReparsePoint))
+			return null;
 		if (!Settings.IncludeHidden && FileUtil.IsHiddenFile(fi))
 			return null;
 		var fr = new FileResult(fi, _fileTypes.GetFileType(fi));

@@ -13,6 +13,7 @@ public class FindSettingsTests
 		var settings = new FindSettings();
 		Assert.That(settings.ArchivesOnly, Is.False);
 		Assert.That(settings.Debug, Is.False);
+		Assert.That(settings.FollowSymlinks, Is.False);
 		Assert.That(settings.IncludeArchives, Is.False);
 		Assert.That(settings.IncludeHidden, Is.False);
 		Assert.That(settings.PrintDirs, Is.False);
