@@ -17,6 +17,7 @@ class FindOptionsTest {
         val settings = findOptions.settingsFromArgs(args)
         assertFalse(settings.archivesOnly)
         assertFalse(settings.debug)
+        assertFalse(settings.followSymlinks)
         assertFalse(settings.includeArchives)
         assertFalse(settings.includeHidden)
         assertEquals(1, settings.paths.size)
@@ -48,6 +49,7 @@ class FindOptionsTest {
                  |  "out-dirpattern": ["build", "node_module", "tests", "typings"],
                  |  "out-filepattern": ["gulpfile", "\\.min\\."],
                  |  "debug": true,
+                 |  "followsymlinks": true,
                  |  "includehidden": false
                  |}""".trimMargin()
         val findOptions = FindOptions()
@@ -67,6 +69,8 @@ class FindOptionsTest {
         assertEquals(1, settings.outFilePatterns.count { it.pattern == "gulpfile" })
 
         assertTrue(settings.debug)
+        assertTrue(settings.verbose)
+        assertTrue(settings.followSymlinks)
         assertFalse(settings.includeHidden)
     }
 }

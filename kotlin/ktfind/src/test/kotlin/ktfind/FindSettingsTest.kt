@@ -1,5 +1,6 @@
 package ktfind
 
+import org.junit.jupiter.api.Assertions.assertFalse
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -11,14 +12,15 @@ class FindSettingsTest {
     @Test
     fun testDefaultSettings() {
         val settings = getDefaultSettings()
-        assertEquals(false, settings.archivesOnly)
-        assertEquals(false, settings.debug)
-        assertEquals(false, settings.includeArchives)
-        assertEquals(false, settings.includeHidden)
-        assertEquals(false, settings.printDirs)
-        assertEquals(false, settings.printFiles)
-        assertEquals(false, settings.printUsage)
-        assertEquals(false, settings.printVersion)
+        assertFalse(settings.archivesOnly)
+        assertFalse(settings.debug)
+        assertFalse(settings.followSymlinks)
+        assertFalse(settings.includeArchives)
+        assertFalse(settings.includeHidden)
+        assertFalse(settings.printDirs)
+        assertFalse(settings.printFiles)
+        assertFalse(settings.printUsage)
+        assertFalse(settings.printVersion)
         assertEquals(true, settings.recursive)
         assertEquals(false, settings.verbose)
     }

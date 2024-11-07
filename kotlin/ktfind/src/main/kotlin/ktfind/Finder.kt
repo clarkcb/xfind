@@ -261,12 +261,14 @@ class Finder(val settings: FindSettings) {
         try {
             Files.newDirectoryStream(filePath).use { stream ->
                 stream.forEach {
-                    if (Files.isDirectory(it) && recurse && isMatchingDir(it)) {
-                        pathDirs.add(it)
-                    } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {
-                        val fr = filterToFileResult(it)
-                        if (fr != null) {
-                            pathResults.add(fr)
+                    if (!Files.isSymbolicLink(it) || settings.followSymlinks) {
+                        if (Files.isDirectory(it) && recurse && isMatchingDir(it)) {
+                            pathDirs.add(it)
+                        } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {
+                            val fr = filterToFileResult(it)
+                            if (fr != null) {
+                                pathResults.add(fr)
+                            }
                         }
                     }
                 }

@@ -45,6 +45,7 @@ enum class SortBy(val value: String) {
 data class FindSettings(
     val archivesOnly: Boolean,
     val debug: Boolean,
+    val followSymlinks: Boolean,
     val inArchiveExtensions: Set<String>,
     val inArchiveFilePatterns: Set<Regex>,
     val inDirPatterns: Set<Regex>,
@@ -80,6 +81,7 @@ data class FindSettings(
         return "FindSettings(" +
                 "archivesOnly=$archivesOnly, " +
                 "debug=$debug, " +
+                "followSymlinks=$followSymlinks, " +
                 "inArchiveExtensions=${stringSetToString(inArchiveExtensions)}, " +
                 "inArchiveFilePatterns=${patternSetToString(inArchiveFilePatterns)}, " +
                 "inDirPatterns=${patternSetToString(inDirPatterns)}, " +
@@ -152,6 +154,7 @@ fun getDefaultSettings(): FindSettings {
     return FindSettings(
         archivesOnly = false,
         debug = false,
+        followSymlinks = false,
         inArchiveExtensions = linkedSetOf(),
         inArchiveFilePatterns = linkedSetOf(),
         inDirPatterns = linkedSetOf(),

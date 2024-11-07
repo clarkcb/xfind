@@ -12,6 +12,14 @@ class FinderTest {
         return getDefaultSettings().copy(paths = setOf("."))
     }
 
+    private fun getBinPath(): String {
+        var xfindPath = System.getenv("XFIND_PATH")
+        if (xfindPath == null) {
+            xfindPath = System.getenv("HOME") + "src/xfind"
+        }
+        return "$xfindPath/bin"
+    }
+
 //    private val testFilePath = "/testFile2.txt"
 
     /***************************************************************************
@@ -321,5 +329,32 @@ class FinderTest {
         val finder = Finder(settings)
         val fileResult = FileResult(Paths.get("archive.zip"), FileType.ARCHIVE)
         assertTrue(finder.isMatchingArchiveFileResult(fileResult))
+    }
+
+    /*************************************************************
+     * followSymlinks tests
+     *************************************************************/
+    @Test
+    fun testFollowSymlinks_Default_Excluded() {
+        var settings = getDefaultSettings().copy(paths = setOf(getBinPath()))
+        var finder = Finder(settings)
+        val fileResults: List<FileResult> = finder.find()
+        assertTrue(fileResults.size < 3)
+    }
+
+    @Test
+    fun testFollowSymlinks_FollowSymlinks_Included() {
+        var settings = getDefaultSettings().copy(paths = setOf(getBinPath()), followSymlinks = true)
+        var finder = Finder(settings)
+        val fileResults: List<FileResult> = finder.find()
+        assertTrue(fileResults.isEmpty() || fileResults.size > 2)
+    }
+
+    @Test
+    fun testFollowSymlinks_NoFollowSymlinks_Excluded() {
+        var settings = getDefaultSettings().copy(paths = setOf(getBinPath()), followSymlinks = false)
+        var finder = Finder(settings)
+        val fileResults: List<FileResult> = finder.find()
+        assertTrue(fileResults.size < 3)
     }
 }
