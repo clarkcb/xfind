@@ -5,8 +5,10 @@ module HsFind.FinderTest
   , getIsMatchingFilePathTests
   , getFindPythonFileResultTests
   , getFindRubyFileResultTests
+  , getFollowSymlinksTests
   ) where
 
+import HsFind.Config (getXfindPath)
 import HsFind.FileTypes
 import HsFind.FindSettings
 import HsFind.Finder
@@ -133,4 +135,20 @@ getFindRubyFileResultTests = do
   }
   fileResults <- doFind settings
   return [ testCase "getFindRubyFileResultTests" (length fileResults @?= 0)
+         ]
+
+getFollowSymlinksTests :: IO [Test]
+getFollowSymlinksTests = do
+  xfindPath <- getXfindPath
+  let defaultSettings = defaultFindSettings {
+    paths = [xfindPath ++ "/bin"]
+  }
+  let followSymlinksSettings = defaultSettings { followSymlinks = True }
+  let noFollowSymlinksSettings = defaultSettings { followSymlinks = False }
+  defaultFileResults <- doFind defaultSettings
+  followSymlinksFileResults <- doFind followSymlinksSettings
+  noFollowSymlinksFileResults <- doFind noFollowSymlinksSettings
+  return [ testCase "getFollowSymlinksTests defaultSettings" ((length defaultFileResults < 3) @?= True)
+         , testCase "getFollowSymlinksTests followSymlinks" ((length followSymlinksFileResults > 2) @?= True)
+         , testCase "getFollowSymlinksTests noFollowSymlinks" ((length noFollowSymlinksFileResults < 3) @?= True)
          ]

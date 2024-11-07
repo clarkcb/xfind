@@ -21,6 +21,7 @@ import HsFind.SortBy (SortBy(..), getSortByForName, sortByToString)
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool
                                  , debug :: Bool
+                                 , followSymlinks :: Bool
                                  , inArchiveExtensions :: [String]
                                  , inArchiveFilePatterns :: [String]
                                  , inDirPatterns :: [String]
@@ -57,6 +58,7 @@ defaultFindSettings :: FindSettings
 defaultFindSettings = FindSettings {
                                      archivesOnly=False
                                    , debug=False
+                                   , followSymlinks=False
                                    , inArchiveExtensions=[]
                                    , inArchiveFilePatterns=[]
                                    , inDirPatterns=[]
@@ -100,6 +102,7 @@ findSettingsToString settings =
   "FindSettings(" ++
   "archivesOnly=" ++ show (archivesOnly settings) ++
   ", debug=" ++ show (debug settings) ++
+  ", followSymlinks=" ++ show (followSymlinks settings) ++
   ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
   ", inArchiveFilePatterns=" ++ listToString (inArchiveFilePatterns settings) ++
   ", inDirPatterns=" ++ listToString (inDirPatterns settings) ++

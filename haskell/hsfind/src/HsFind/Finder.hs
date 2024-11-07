@@ -9,7 +9,7 @@ module HsFind.Finder
     , validateSettings
     ) where
 
-import Control.Monad (forM)
+import Control.Monad (forM, filterM)
 import Data.Char (toLower)
 import Data.List (partition, sortBy, zipWith4)
 import Data.Maybe (fromJust, isJust, isNothing)
@@ -20,7 +20,7 @@ import Data.Time (UTCTime)
 
 import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTypesFromJsonFileTypes)
 import HsFind.FileUtil
-    (hasExtension, isHiddenFilePath, getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles)
+    (filterOutSymlinks, hasExtension, isHiddenFilePath, getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles)
 import HsFind.FileResult
     (FileResult(..), newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
@@ -197,11 +197,17 @@ getRecursiveFilePaths settings dir = do
         accRecursiveFilePaths dir depth minDepth maxDepth dirPathFilter hiddenPathFilter = do
           allPaths <- getNonDotDirectoryContents dir
           (dirPaths, filePaths) <- partitionDirsAndFiles allPaths
+          filteredDirPathsBySymlinks <- if followSymlinks settings
+                                        then return dirPaths
+                                        else filterOutSymlinks dirPaths
           let filteredDirPaths = if maxDepth < 1 || depth <= maxDepth
-                                 then filter dirPathFilter dirPaths
+                                 then filter dirPathFilter filteredDirPathsBySymlinks
                                  else []
+          filteredFilePathsBySymlinks <- if followSymlinks settings
+                                         then return filePaths
+                                         else filterOutSymlinks filePaths
           let filteredFilePaths = if depth >= minDepth && (maxDepth < 1 || depth <= maxDepth)
-                                  then filter hiddenPathFilter filePaths
+                                  then filter hiddenPathFilter filteredFilePathsBySymlinks
                                   else []
           subDirPaths <- forM filteredDirPaths $ \d -> accRecursiveFilePaths d (depth + 1) minDepth maxDepth dirPathFilter hiddenPathFilter
           return $ filteredFilePaths ++ concat subDirPaths

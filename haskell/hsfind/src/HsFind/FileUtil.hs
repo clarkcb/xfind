@@ -4,6 +4,7 @@ module HsFind.FileUtil
     (
       filterDirectories
     , filterFiles
+    , filterOutSymlinks
     , getDirectoryFiles
     , getExtension
     , getFileByteString
@@ -31,7 +32,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
-import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime)
+import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime, pathIsSymbolicLink)
 import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 import Data.Time (UTCTime)
@@ -65,6 +66,12 @@ filterDirectories = filterM doesDirectoryExist
 
 filterFiles :: [FilePath] -> IO [FilePath]
 filterFiles = filterM doesFileExist
+
+filterOutSymlinks :: [FilePath] -> IO [FilePath]
+filterOutSymlinks filePaths = do
+  filterM (\f -> do
+             isSymLink <- pathIsSymbolicLink f
+             return $ not isSymLink) filePaths
 
 partitionDirsAndFiles :: [FilePath] -> IO ([FilePath], [FilePath])
 partitionDirsAndFiles filePaths = do

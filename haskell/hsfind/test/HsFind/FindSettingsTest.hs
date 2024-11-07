@@ -14,6 +14,7 @@ getDefaultFindSettingsTests = do
   let settings = defaultFindSettings
   return [ testCase "archivesOnly" (archivesOnly settings @?= False)
          , testCase "debug" (debug settings @?= False)
+         , testCase "followSymlinks" (followSymlinks settings @?= False)
          , testCase "includeArchives" (includeArchives settings @?= False)
          , testCase "includeHidden" (includeHidden settings @?= False)
          , testCase "maxSize" (maxSize settings @?= 0)
