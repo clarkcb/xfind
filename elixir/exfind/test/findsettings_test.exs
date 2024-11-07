@@ -8,6 +8,7 @@ defmodule ExFindTest.FindSettingsTest do
     settings = FindSettings.new()
     assert settings.archives_only == false
     assert settings.debug == false
+    assert settings.follow_symlinks == false
     assert settings.in_archive_extensions == []
     assert settings.in_archive_file_patterns == []
     assert settings.in_dir_patterns == []

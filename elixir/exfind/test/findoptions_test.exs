@@ -8,6 +8,7 @@ defmodule ExFindTest.FindOptionsTest do
     {:ok, settings} = FindOptions.get_settings_from_args([], find_options.options)
     assert settings.archives_only == false
     assert settings.debug == false
+    assert settings.follow_symlinks == false
     assert settings.in_archive_extensions == []
     assert settings.in_archive_file_patterns == []
     assert settings.in_dir_patterns == []
@@ -70,7 +71,8 @@ defmodule ExFindTest.FindOptionsTest do
       "out-dirpattern": ["dep"]
       "out-filepattern": ["test"],
       "debug": true,
-      "includehidden": true,
+      "followsymlinks": true,
+      "includehidden": true
     }
     """
     {status, settings} = FindOptions.get_settings_from_json(json)
@@ -80,6 +82,8 @@ defmodule ExFindTest.FindOptionsTest do
     assert settings.out_dir_patterns == [~r/dep/]
     assert settings.out_file_patterns == [~r/test/]
     assert settings.debug == true
+    assert settings.verbose == true
+    assert settings.follow_symlinks == true
     assert settings.include_hidden == true
   end
 
@@ -106,7 +110,7 @@ defmodule ExFindTest.FindOptionsTest do
       "out-dirpattern": ["dep"]
       "out-filepattern": ["test"],
       "debug": true,
-      "includehidden": true,
+      "includehidden": true
     }
     """
     settings = FindOptions.get_settings_from_json!(json)

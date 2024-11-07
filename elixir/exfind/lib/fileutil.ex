@@ -22,4 +22,19 @@ def dot_dir?(d) do
       ext -> String.slice(ext, 1..-1//1)
     end
   end
+
+  def symlink?(file_path) do
+    case File.read_link(file_path) do
+      {:ok, _} -> true
+      _ -> false
+    end
+  end
+
+  def get_symlink_target(file_path) do
+    case File.read_link(file_path) do
+      {:ok, target} -> target
+      _ -> ""
+    end
+  end
+
 end

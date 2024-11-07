@@ -7,6 +7,7 @@ defmodule ExFind.FindSettings do
 
   defstruct archives_only: false,
             debug: false,
+            follow_symlinks: false,
             in_archive_extensions: [],
             in_archive_file_patterns: [],
             in_dir_patterns: [],

@@ -285,4 +285,37 @@ test "invalid range for mindepth and maxdepth" do
     settings = FindSettings.new([min_last_mod: min_last_mod, max_last_mod: max_last_mod, paths: ["."]])
     assert Finder.validate_settings(settings) == {:error, "Invalid range for minlastmod and maxlastmod"}
   end
+
+  ################################################################################
+  # follow_symlinks tests
+  ################################################################################
+  test "follow symlinks default settings" do
+    bin_path = Path.join([Config.xfind_path, "bin"])
+    settings = FindSettings.new([paths: [bin_path]])
+    finder = Finder.new(settings)
+    case Finder.find(finder) do
+      {:error, _} -> assert false
+      {:ok, results} -> assert length(results) < 3
+    end
+  end
+
+  test "follow symlinks with followsymlinks" do
+    bin_path = Path.join([Config.xfind_path, "bin"])
+    settings = FindSettings.new([paths: [bin_path], follow_symlinks: true])
+    finder = Finder.new(settings)
+    case Finder.find(finder) do
+      {:error, _} -> assert false
+      {:ok, results} -> assert (length(results) == 0 or length(results) > 2)
+    end
+  end
+
+  test "follow symlinks with nofollowsymlinks" do
+    bin_path = Path.join([Config.xfind_path, "bin"])
+    settings = FindSettings.new([paths: [bin_path], follow_symlinks: false])
+    finder = Finder.new(settings)
+    case Finder.find(finder) do
+      {:error, _} -> assert false
+      {:ok, results} -> assert length(results) < 3
+    end
+  end
 end

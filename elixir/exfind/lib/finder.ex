@@ -126,31 +126,42 @@ defmodule ExFind.Finder do
 
   def filter_to_file_results(finder, file_path) do
     # IO.puts("filter_to_file_results(#{file_path})")
-    if not finder.settings.include_hidden and FileUtil.hidden?(Path.basename(file_path)) do
-      []
+    if FileUtil.symlink?(file_path) do
+      if finder.settings.follow_symlinks do
+        case filter_to_file_results(finder, FileUtil.get_symlink_target(file_path)) do
+          [result] -> [FileResult.new(Path.dirname(file_path), Path.basename(file_path), result.file_type, result.file_size, result.last_mod)]
+          _ -> []
+        end
+      else
+        []
+      end
     else
-      file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
-      if file_type == :archive and not finder.settings.include_archives and not finder.settings.archives_only do
+      if not finder.settings.include_hidden and FileUtil.hidden?(Path.basename(file_path)) do
         []
       else
-        {file_size, last_mod} =
-          if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
-            file_stat = File.stat!(file_path, [time: :posix])
-            {file_stat.size, file_stat.mtime}
-          else
-            {0, 0}
-          end
-        if file_type == :archive do
-          if matching_archive_file?(finder, file_path, file_size, last_mod) do
-            [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
-          else
-            []
-          end
+        file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
+        if file_type == :archive and not finder.settings.include_archives and not finder.settings.archives_only do
+          []
         else
-          if matching_file?(finder, file_path, file_type, file_size, last_mod) do
-            [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+          {file_size, last_mod} =
+            if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
+              file_stat = File.stat!(file_path, [time: :posix])
+              {file_stat.size, file_stat.mtime}
+            else
+              {0, 0}
+            end
+          if file_type == :archive do
+            if matching_archive_file?(finder, file_path, file_size, last_mod) do
+              [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+            else
+              []
+            end
           else
-            []
+            if matching_file?(finder, file_path, file_type, file_size, last_mod) do
+              [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+            else
+              []
+            end
           end
         end
       end
