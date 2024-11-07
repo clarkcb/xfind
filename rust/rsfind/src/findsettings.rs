@@ -8,6 +8,7 @@ use crate::sortby::SortBy;
 pub struct FindSettings {
     _archives_only: bool,
     _debug: bool,
+    _follow_symlinks: bool,
     _in_archive_extensions: Vec<String>,
     _in_archive_file_patterns: Vec<Regex>,
     _in_dir_patterns: Vec<Regex>,
@@ -45,6 +46,7 @@ impl FindSettings {
         FindSettings {
             _archives_only: false,
             _debug: false,
+            _follow_symlinks: false,
             _in_archive_extensions: Vec::new(),
             _in_archive_file_patterns: Vec::new(),
             _in_dir_patterns: Vec::new(),
@@ -98,6 +100,14 @@ impl FindSettings {
         if b {
             self._verbose = b;
         }
+    }
+
+    pub fn follow_symlinks(&self) -> bool {
+        self._follow_symlinks
+    }
+
+    pub fn set_follow_symlinks(&mut self, b: bool) {
+        self._follow_symlinks = b
     }
 
     pub fn in_archive_extensions(&self) -> &Vec<String> {
@@ -356,6 +366,7 @@ impl FindSettings {
         let mut s = String::from("FindSettings(");
         s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
         s.push_str(format!(", debug={}", &self.debug()).as_str());
+        s.push_str(format!(", follow_symlinks={}", &self.follow_symlinks()).as_str());
         s.push_str(format!(", in_archive_extensions={:?}", &self.in_archive_extensions()).as_str());
         s.push_str(format!(", in_archive_file_patterns={}", get_regex_vec_string(&self.in_archive_file_patterns())).as_str());
         s.push_str(format!(", in_dir_patterns={}", get_regex_vec_string(&self.in_dir_patterns())).as_str());
@@ -432,6 +443,7 @@ mod tests {
         let settings = FindSettings::default();
         assert_eq!(settings.archives_only(), false);
         assert_eq!(settings.debug(), false);
+        assert_eq!(settings.follow_symlinks(), false);
         assert!(settings.in_archive_extensions().is_empty());
         assert!(settings.in_archive_file_patterns().is_empty());
         assert!(settings.in_dir_patterns().is_empty());

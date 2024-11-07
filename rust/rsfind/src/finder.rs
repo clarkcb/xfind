@@ -363,6 +363,9 @@ impl Finder {
         let mut path_files = Vec::<PathBuf>::new();
 
         for dir_entry in dir_path.read_dir().ok().unwrap().flatten() {
+            if dir_entry.path().is_symlink() && !self.settings.follow_symlinks() {
+                continue;
+            }
             if dir_entry.path().is_dir() && recurse && self.is_matching_dir(dir_entry.file_name().to_str().unwrap()) {
                 path_dirs.push(dir_entry.path());
             } else if dir_entry.path().is_file() && (min_depth < 0 || current_depth >= min_depth) {
@@ -447,8 +450,8 @@ mod tests {
     use std::path::Path;
     use std::time::SystemTime;
 
+    use crate::config::Config;
     use crate::filetypes::FileType;
-
     use super::*;
 
     fn get_default_test_settings() -> FindSettings {
@@ -607,12 +610,12 @@ mod tests {
     fn test_find_zip_file() {
         let mut settings = FindSettings::default();
         let path = Path::new("../../shared/testFiles.zip");
-        let pathstring = if path.exists() {
+        let path_string = if path.exists() {
             String::from("../../shared/testFiles.zip")
         } else {
             String::from("../../shared")
         };
-        settings.add_path(pathstring);
+        settings.add_path(path_string);
         settings.set_include_archives(true);
         let finder = Finder::new(settings).ok().unwrap();
 
@@ -620,5 +623,52 @@ mod tests {
         assert!(file_results.is_ok());
         let file_results = file_results.ok().unwrap();
         println!("file_results: {}", file_results.len());
+    }
+
+    #[test]
+    fn test_follow_symlinks_default_settings() {
+        let mut settings = FindSettings::default();
+        let config = Config::new();
+        let bin_path = Path::new(config.xfind_path.as_str()).join("bin");
+        settings.add_path(bin_path.to_str().unwrap().to_string());
+
+        let finder = Finder::new(settings).unwrap();
+        let file_results = finder.find();
+        assert!(file_results.is_ok());
+        let file_results = file_results.ok().unwrap();
+        println!("file_results: {}", file_results.len());
+        assert!(file_results.len() < 3);
+    }
+
+    #[test]
+    fn test_follow_symlinks_with_follow_symlinks() {
+        let mut settings = FindSettings::default();
+        let config = Config::new();
+        let bin_path = Path::new(config.xfind_path.as_str()).join("bin");
+        settings.add_path(bin_path.to_str().unwrap().to_string());
+        settings.set_follow_symlinks(true);
+
+        let finder = Finder::new(settings).unwrap();
+        let file_results = finder.find();
+        assert!(file_results.is_ok());
+        let file_results = file_results.ok().unwrap();
+        println!("file_results: {}", file_results.len());
+        assert!(file_results.len() == 0 || file_results.len() > 2);
+    }
+
+    #[test]
+    fn test_follow_symlinks_no_follow_symlinks() {
+        let mut settings = FindSettings::default();
+        let config = Config::new();
+        let bin_path = Path::new(config.xfind_path.as_str()).join("bin");
+        settings.add_path(bin_path.to_str().unwrap().to_string());
+        settings.set_follow_symlinks(false);
+
+        let finder = Finder::new(settings).unwrap();
+        let file_results = finder.find();
+        assert!(file_results.is_ok());
+        let file_results = file_results.ok().unwrap();
+        println!("file_results: {}", file_results.len());
+        assert!(file_results.len() < 3);
     }
 }

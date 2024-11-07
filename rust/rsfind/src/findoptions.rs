@@ -468,6 +468,10 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(!b))),
     );
     flag_map.insert(
+        "followsymlinks".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_follow_symlinks(b))),
+    );
+    flag_map.insert(
         "help".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_usage(b))),
     );
@@ -478,6 +482,10 @@ fn get_flag_map() -> HashMap<String, FlagAction> {
     flag_map.insert(
         "includehidden".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(b))),
+    );
+    flag_map.insert(
+        "nofollowsymlinks".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_follow_symlinks(!b))),
     );
     flag_map.insert(
         "noprintdirs".to_string(),
@@ -603,6 +611,7 @@ mod tests {
         let json = r#"
             {
               "debug": true,
+              "followsymlinks": true,
               "in-ext": ["js","ts"],
               "includehidden": true,
               "out-dirpattern": "node_module",
@@ -613,6 +622,7 @@ mod tests {
         match options.settings_from_json(&json.to_string()) {
             Ok(settings) => {
                 assert!(settings.debug());
+                assert!(settings.follow_symlinks());
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
