@@ -60,6 +60,7 @@ const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archives_only=%s"
             ", debug=%s"
+            ", follow_symlinks=%s"
             ", in_archive_extensions=%s"
             ", in_archive_file_patterns=%s"
             ", in_dir_patterns=%s"
@@ -97,6 +98,7 @@ static size_t all_bools_strlen(const FindSettings *settings)
     return
             (settings->archives_only == false ? 5 : 4) +
             (settings->debug == false ? 5 : 4) +
+            (settings->follow_symlinks == false ? 5 : 4) +
             (settings->include_archives == false ? 5 : 4) +
             (settings->include_hidden == false ? 5 : 4) +
             (settings->print_dirs == false ? 5 : 4) +
@@ -157,6 +159,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     in_archive_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
     char *debug_s = settings->debug == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
+    char *follow_symlinks_s = settings->follow_symlinks == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
     in_dir_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_dir_patterns, in_dir_patterns_s);
@@ -230,6 +233,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     sprintf(s, SETTINGS_TEMPLATE,
         archives_only_s,
         debug_s,
+        follow_symlinks_s,
         in_archive_extensions_s,
         in_archive_file_patterns_s,
         in_dir_patterns_s,
@@ -308,7 +312,7 @@ void destroy_settings(FindSettings *settings)
         destroy_string_node(settings->out_extensions);
         destroy_regex_node(settings->out_file_patterns);
         destroy_int_node(settings->out_file_types);
-        destroy_string_node(settings->paths);
+        destroy_path_node(settings->paths);
         free(settings);
     }
 }

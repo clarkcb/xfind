@@ -2,6 +2,7 @@
 
 #include "test_finder.h"
 
+#include <string.h>
 #include <sys/stat.h>
 
 #include "color.h"
@@ -361,6 +362,86 @@ void test_is_matching_path_out_file_types(void) {
     printf("%sis_matching_path(\"%s\"): %d%s\n", color, matching_file, res2, COLOR_RESET);
     assert(res2 == 1);
 
+    destroy_settings(settings);
+}
+
+void test_follow_symlinks_default_settings(void) {
+    printf("\ntest_follow_symlinks_default_settings()\n");
+
+    char bin_path[MAX_HOMEPATH_LENGTH + 1];
+    get_xfind_path(bin_path);
+    strcat(bin_path, "/bin");
+
+    FindSettings *settings = default_settings();
+    Path *p = new_path(bin_path);
+    settings->paths = new_path_node(p);
+
+    FileResults *results = empty_file_results();
+    const error_t err = find(settings, results);
+
+    assert(err == E_OK);
+    const size_t res_count = file_results_count(results);
+    if (res_count > 0) {
+        const char* color = res_count < 3 ? COLOR_GREEN : COLOR_RED;
+        printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
+        assert(res_count < 3);
+    }
+
+    destroy_file_results(results);
+    destroy_settings(settings);
+}
+
+void test_follow_symlinks_follow_symlinks(void) {
+    printf("\ntest_follow_symlinks_follow_symlinks()\n");
+
+    char bin_path[MAX_HOMEPATH_LENGTH + 1];
+    get_xfind_path(bin_path);
+    strcat(bin_path, "/bin");
+
+    FindSettings *settings = default_settings();
+    Path *p = new_path(bin_path);
+    settings->paths = new_path_node(p);
+    settings->follow_symlinks = true;
+
+    FileResults *results = empty_file_results();
+    const error_t err = find(settings, results);
+
+    assert(err == E_OK);
+    const size_t res_count = file_results_count(results);
+    if (res_count > 0) {
+        const char* color = res_count > 2 ? COLOR_GREEN : COLOR_RED;
+        printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
+        assert(res_count < 3);
+    }
+
+    destroy_file_results(results);
+    destroy_settings(settings);
+}
+
+void test_follow_symlinks_no_follow_symlinks(void) {
+    printf("\ntest_follow_symlinks_no_follow_symlinks()\n");
+
+    char bin_path[MAX_HOMEPATH_LENGTH + 1];
+    get_xfind_path(bin_path);
+    strcat(bin_path, "/bin");
+
+    FindSettings *settings = default_settings();
+    Path *p = new_path(bin_path);
+    settings->paths = new_path_node(p);
+    settings->follow_symlinks = false;
+
+    FileResults *results = empty_file_results();
+    const error_t err = find(settings, results);
+
+    assert(err == E_OK);
+    const size_t res_count = file_results_count(results);
+    if (res_count > 0) {
+        const char* color = res_count < 3 ? COLOR_GREEN : COLOR_RED;
+        printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
+        assert(res_count < 3);
+    }
+
+    destroy_file_results(results);
     destroy_settings(settings);
 }
 

@@ -48,6 +48,9 @@ int main(int argc, char *argv[])
     test_is_matching_path_out_file_patterns();
     test_is_matching_path_in_file_types();
     test_is_matching_path_out_file_types();
+	test_follow_symlinks_default_settings();
+	test_follow_symlinks_follow_symlinks();
+	test_follow_symlinks_no_follow_symlinks();
 
     return 0;
 }

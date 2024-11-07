@@ -1,6 +1,6 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
-#include <string.h>
 #include "test_findsettings.h"
 
 #include "color.h"
@@ -10,13 +10,17 @@ void test_default_settings(void)
     printf("\ntest_default_settings()\n");
 
     FindSettings *settings = default_settings();
-    const char* color = settings->archives_only == 0 ? COLOR_GREEN : COLOR_RED;
+    const char* color = settings->archives_only == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->archives_only: %d%s\n", color, settings->archives_only, COLOR_RESET);
-    assert(settings->archives_only == 0);
+    assert(settings->archives_only == false);
 
-    color = settings->debug == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->debug == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->debug: %d%s\n", color, settings->debug, COLOR_RESET);
-    assert(settings->debug == 0);
+    assert(settings->debug == false);
+
+    color = settings->follow_symlinks == false ? COLOR_GREEN : COLOR_RED;
+    printf("%ssettings->follow_symlinks: %d%s\n", color, settings->follow_symlinks, COLOR_RESET);
+    assert(settings->follow_symlinks == false);
 
     const char* in_archive_extensions = settings->in_archive_extensions == NULL ? "NULL" : "NOT NULL";
     color = settings->in_archive_extensions == NULL ? COLOR_GREEN : COLOR_RED;
@@ -48,13 +52,13 @@ void test_default_settings(void)
     printf("%ssettings->in_file_types: %s%s\n", color, in_file_types, COLOR_RESET);
     assert(settings->in_file_types == NULL);
 
-    color = settings->include_archives == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->include_archives == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->include_archives: %d%s\n", color, settings->include_archives, COLOR_RESET);
-    assert(settings->include_archives == 0);
+    assert(settings->include_archives == false);
 
-    color = settings->include_hidden == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->include_hidden == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->include_hidden: %d%s\n", color, settings->include_hidden, COLOR_RESET);
-    assert(settings->include_hidden == 0);
+    assert(settings->include_hidden == false);
 
     color = settings->max_last_mod == 0L ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->max_last_mod: %ld%s\n", color, settings->max_last_mod, COLOR_RESET);
@@ -107,37 +111,37 @@ void test_default_settings(void)
     printf("%ssettings->paths: %s%s\n", color, paths, COLOR_RESET);
     assert(settings->paths == NULL);
 
-    color = settings->print_dirs == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->print_dirs == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->print_dirs: %d%s\n", color, settings->print_dirs, COLOR_RESET);
-    assert(settings->print_dirs == 0);
+    assert(settings->print_dirs == false);
 
-    color = settings->print_files == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->print_files == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->print_files: %d%s\n", color, settings->print_files, COLOR_RESET);
-    assert(settings->print_files == 0);
+    assert(settings->print_files == false);
 
-    color = settings->print_usage == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->print_usage == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->print_usage: %d%s\n", color, settings->print_usage, COLOR_RESET);
-    assert(settings->print_usage == 0);
+    assert(settings->print_usage == false);
 
-    color = settings->print_version == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->print_version == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->print_version: %d%s\n", color, settings->print_version, COLOR_RESET);
-    assert(settings->print_version == 0);
+    assert(settings->print_version == false);
 
-    color = settings->recursive == 1 ? COLOR_GREEN : COLOR_RED;
+    color = settings->recursive == true ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->recursive: %d%s\n", color, settings->recursive, COLOR_RESET);
-    assert(settings->recursive == 1);
+    assert(settings->recursive == true);
 
-    color = settings->sort_case_insensitive == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->sort_case_insensitive == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->sort_case_insensitive: %d%s\n", color, settings->sort_case_insensitive, COLOR_RESET);
-    assert(settings->sort_case_insensitive == 0);
+    assert(settings->sort_case_insensitive == false);
 
-    color = settings->sort_descending == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->sort_descending == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->sort_descending: %d%s\n", color, settings->sort_descending, COLOR_RESET);
-    assert(settings->sort_descending == 0);
+    assert(settings->sort_descending == false);
 
-    color = settings->verbose == 0 ? COLOR_GREEN : COLOR_RED;
+    color = settings->verbose == false ? COLOR_GREEN : COLOR_RED;
     printf("%ssettings->verbose: %d%s\n", color, settings->verbose, COLOR_RESET);
-    assert(settings->verbose == 0);
+    assert(settings->verbose == false);
 
     destroy_settings(settings);
 }
@@ -272,7 +276,7 @@ void test_set_archives_only_in_settings(void)
 
     FindSettings *settings = default_settings();
 
-    assert(settings->archives_only == 0);
+    assert(settings->archives_only == false);
     printf("set_archives_only(1)\n");
     set_archives_only(settings, 1);
     const int expected_val = 1;
@@ -292,7 +296,7 @@ void test_set_debug_in_settings(void)
 
     FindSettings *settings = default_settings();
 
-    assert(settings->debug == 0);
+    assert(settings->debug == false);
     printf("set_debug(1)\n");
     set_debug(settings, 1);
     const int expected_val = 1;

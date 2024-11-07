@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include "finderr.h"
@@ -53,6 +54,7 @@ void test_settings_from_json_string(void) {
         "  \"out-dirpattern\": [\"build\", \"node_module\", \"test\", \"typing\"],\n"
         "  \"out-filepattern\": [\"gulpfile\", \"\\\\.min\\\\.\"],\n"
         "  \"debug\": true,\n"
+        "  \"followsymlinks\": true,\n"
         "  \"includehidden\": false\n"
         "}";
     FindSettings *settings = default_settings();
@@ -77,15 +79,20 @@ void test_settings_from_json_string(void) {
     printf("%sregex_node_count(settings->out_dir_patterns): %d%s\n", color, in_ext_count, COLOR_RESET);
     assert(out_dir_count == 4);
 
-    const int debug = settings->debug ? 1 : 0;
-    color = debug == 1 ? COLOR_GREEN : COLOR_RED;
+    const bool debug = settings->debug;
+    color = debug == true ? COLOR_GREEN : COLOR_RED;
     printf("%sdebug: %d%s\n", color, debug, COLOR_RESET);
-    assert(debug == 1);
+    assert(debug == true);
 
-    const int include_hidden = settings->include_hidden ? 1 : 0;
-    color = include_hidden == 0 ? COLOR_GREEN : COLOR_RED;
+    const bool follow_symlinks = settings->follow_symlinks;
+    color = follow_symlinks == true ? COLOR_GREEN : COLOR_RED;
+    printf("%sfollow_symlinks: %d%s\n", color, follow_symlinks, COLOR_RESET);
+    assert(follow_symlinks == true);
+
+    const bool include_hidden = settings->include_hidden;
+    color = include_hidden == false ? COLOR_GREEN : COLOR_RED;
     printf("%sinclude_hidden: %d%s\n", color, include_hidden, COLOR_RESET);
-    assert(include_hidden == 0);
+    assert(include_hidden == false);
 }
 
 // This is just for temporary testing

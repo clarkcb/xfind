@@ -285,9 +285,43 @@ static error_t rec_find_path(const Finder *finder, const Path *dir_path, FileRes
             continue;
 
         Path *path = new_path_from_dir_and_file_name(dir_path_s, dent->d_name);
-        if (dent->d_type == DT_DIR && recurse == 1 && is_matching_dir(finder->settings, dent->d_name)) {
+        bool link_to_dir = false;
+        bool link_to_file = false;
+        if (dent->d_type == DT_LNK) {
+            if (finder->settings->follow_symlinks == true) {
+                const size_t path_len = path_strlen(path);
+
+                if ((path_len + 2) >= FILENAME_MAX - 1) {
+                    return E_FILENAME_TOO_LONG;
+                }
+
+                char path_s[path_len + 1];
+                path_s[0] = '\0';
+                path_to_string(path, path_s);
+                char resolved_path[FILENAME_MAX];
+                if (realpath(path_s, resolved_path) == NULL) {
+                    return E_UNKNOWN_ERROR;
+                }
+
+                // Check if it's a directory or regular file
+                struct stat st;
+                if (stat(resolved_path, &st) == -1) {
+                    return E_UNKNOWN_ERROR;
+                }
+
+                if (S_ISDIR(st.st_mode)) {
+                    link_to_dir = true;
+                } else if (S_ISREG(st.st_mode)) {
+                    link_to_file = true;
+                }
+
+            } else {
+                continue;
+            }
+        }
+        if ((dent->d_type == DT_DIR || link_to_dir == true) && recurse == 1 && is_matching_dir(finder->settings, dent->d_name)) {
             add_path_to_path_node(path, path_dirs);
-        } else if (dent->d_type == DT_REG && (min_depth < 0 || current_depth >= min_depth)) {
+        } else if ((dent->d_type == DT_REG || link_to_file == true) && (min_depth < 0 || current_depth >= min_depth)) {
             add_path_to_path_node(path, path_files);
         }
     }

@@ -61,16 +61,18 @@ char **arg_abbrs = (char *[]) {
     ""   // sort-by
 };
 
-#define FLAG_COUNT 19
+#define FLAG_COUNT 21
 const size_t flag_count = FLAG_COUNT;
 char **flag_names = (char *[]) {
     "archivesonly",
     "debug",
     "excludearchives",
     "excludehidden",
+    "followsymlinks",
     "includearchives",
     "includehidden",
     "help",
+    "nofollowsymlinks",
     "noprintdirs",
     "noprintfiles",
     "norecursive",
@@ -90,9 +92,11 @@ char **flag_abbrs = (char *[]) {
     "",  // debug
     "Z", // excludearchives
     "",  // excludehidden
+    "",  // followsymlinks
     "z", // includearchives
     "",  // includehidden
     "h", // help
+    "",  // followsymlinks
     "",  // noprintdirs
     "",  // noprintfiles
     "R", // norecursive
@@ -398,7 +402,7 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
     return E_OK;
 }
 
-static error_t set_flag(int flag_idx, bool flag_val, FindSettings *settings)
+static error_t set_flag(const int flag_idx, const bool flag_val, FindSettings *settings)
 {
     switch (flag_idx) {
     case ARCHIVES_ONLY:
@@ -413,6 +417,9 @@ static error_t set_flag(int flag_idx, bool flag_val, FindSettings *settings)
     case EXCLUDE_HIDDEN:
         settings->include_hidden = !flag_val;
         break;
+    case FOLLOW_SYMLINKS:
+        settings->follow_symlinks = flag_val;
+        break;
     case INCLUDE_ARCHIVES:
         settings->include_archives = flag_val;
         break;
@@ -421,6 +428,9 @@ static error_t set_flag(int flag_idx, bool flag_val, FindSettings *settings)
         break;
     case HELP:
         settings->print_usage = flag_val;
+        break;
+    case NO_FOLLOW_SYMLINKS:
+        settings->follow_symlinks = !flag_val;
         break;
     case NO_PRINT_DIRS:
         settings->print_dirs = !flag_val;

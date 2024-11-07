@@ -28,4 +28,10 @@ void test_is_matching_path_in_file_types(void);
 
 void test_is_matching_path_out_file_types(void);
 
+void test_follow_symlinks_default_settings(void);
+
+void test_follow_symlinks_follow_symlinks(void);
+
+void test_follow_symlinks_no_follow_symlinks(void);
+
 #endif

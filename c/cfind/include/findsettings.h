@@ -33,6 +33,7 @@ typedef enum {
 typedef struct FindSettings {
     bool archives_only : 1;
     bool debug : 1;
+    bool follow_symlinks : 1;
     StringNode *in_archive_extensions;
     RegexNode *in_archive_file_patterns;
     RegexNode *in_dir_patterns;
