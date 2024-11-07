@@ -411,3 +411,70 @@ test_is_matching_file_by_size () {
     assert_equals_number "is_matching_file $file4 10001" $? 0
 }
 
+
+#------------------------------------------------
+# follow_symlinks
+#------------------------------------------------
+
+test_follow_symlinks_default () {
+    echo
+    hdr "test_follow_symlinks_default"
+
+    source "$BASHFIND_PATH/lib/bashfindlib.bash"
+
+    args=("$XFIND_PATH/bin")
+    echo "args: ${args[@]}"
+
+    settings_from_args "${args[@]}"
+
+    file1="$BASHFIND_PATH/lib/bashfindlib.bash"
+    do_find
+    if [ ${#FILE_RESULTS[@]} -eq 0 ]
+    then
+        assert_equals_number "follow_symlinks_default" 0 0
+    else
+        assert_less_than_number "follow_symlinks_default" ${#FILE_RESULTS[@]} 3
+    fi
+}
+
+test_follow_symlinks () {
+    echo
+    hdr "test_follow_symlinks"
+
+    source "$BASHFIND_PATH/lib/bashfindlib.bash"
+
+    args=(--followsymlinks "$XFIND_PATH/bin")
+    echo "args: ${args[@]}"
+
+    settings_from_args "${args[@]}"
+
+    file1="$BASHFIND_PATH/lib/bashfindlib.bash"
+    do_find
+    if [ ${#FILE_RESULTS[@]} -eq 0 ]
+    then
+        assert_equals_number "test_follow_symlinks" 0 0
+    else
+        assert_greater_than_number "test_follow_symlinks" ${#FILE_RESULTS[@]} 2
+    fi
+}
+
+test_no_follow_symlinks () {
+    echo
+    hdr "test_no_follow_symlinks"
+
+    source "$BASHFIND_PATH/lib/bashfindlib.bash"
+
+    args=(--nofollowsymlinks "$XFIND_PATH/bin")
+    echo "args: ${args[@]}"
+
+    settings_from_args "${args[@]}"
+
+    file1="$BASHFIND_PATH/lib/bashfindlib.bash"
+    do_find
+    if [ ${#FILE_RESULTS[@]} -eq 0 ]
+    then
+        assert_equals_number "test_no_follow_symlinks" 0 0
+    else
+        assert_less_than_number "test_no_follow_symlinks" ${#FILE_RESULTS[@]} 3
+    fi
+}

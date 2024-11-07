@@ -55,6 +55,7 @@ SORT_BY_TYPES=(path name size type lastmod)
 # Settings
 ARCHIVES_ONLY=false
 DEBUG=false
+FOLLOW_SYMLINKS=false
 INCLUDE_ARCHIVES=false
 INCLUDE_HIDDEN=false
 IN_ARCHIVE_EXTENSIONS=()
@@ -665,14 +666,21 @@ rec_find_path () {
 
     local path_dirs=()
     local path_files=()
-    local find_options="-maxdepth 1"
+    local primary_options=""
+    if [ "$FOLLOW_SYMLINKS" == true ]
+    then
+        primary_options="-L"
+    else
+        primary_options="-P"
+    fi
+    other_options="-maxdepth 1"
     if [ "$recurse" == true ]
     then
-        path_dirs=$(find $path $find_options -type d | grep -v "^$path$")
+        path_dirs=$(find $primary_options $path $other_options -type d | grep -v "^$path$")
     fi
     if [ $MIN_DEPTH -lt 0 -o $current_depth -ge $MIN_DEPTH ]
     then
-        path_files=$(find $path $find_options -type f)
+        path_files=$(find $primary_options $path $other_options -type f)
     fi
 
     filter_to_file_results "${path_files[*]}"
@@ -813,6 +821,7 @@ usage () {
     s+="\n -D,--out-dirpattern       $(get_option_desc 'out-dirpattern')"
     s+="\n --debug                   $(get_option_desc 'debug')"
     s+="\n --excludehidden           $(get_option_desc 'excludehidden')"
+    s+="\n --followsymlinks          $(get_option_desc 'followsymlinks')"
     s+="\n -f,--in-filepattern       $(get_option_desc 'in-filepattern')"
     s+="\n -F,--out-filepattern      $(get_option_desc 'out-filepattern')"
     s+="\n -h,--help                 $(get_option_desc 'help')"
@@ -825,6 +834,7 @@ usage () {
     s+="\n --mindepth                $(get_option_desc 'mindepth')"
     s+="\n --minlastmod              $(get_option_desc 'minlastmod')"
     s+="\n --minsize                 $(get_option_desc 'minsize')"
+    s+="\n --nofollowsymlinks        $(get_option_desc 'nofollowsymlinks')"
     s+="\n --noprintdirs             $(get_option_desc 'noprintdirs')"
     s+="\n --noprintfiles            $(get_option_desc 'noprintfiles')"
     s+="\n --out-archiveext          $(get_option_desc 'out-archiveext')"
@@ -894,6 +904,9 @@ settings_from_args () {
                 ;;
             --excludehidden)
                 INCLUDE_HIDDEN=false
+                ;;
+            --followsymlinks)
+                FOLLOW_SYMLINKS=true
                 ;;
             -h | --help)
                 PRINT_USAGE=true
@@ -1019,6 +1032,9 @@ settings_from_args () {
                 MIN_SIZE=$arg2
                 NEED_FILE_SIZE=true
                 i=$(($i + 1))
+                ;;
+            --nofollowsymlinks)
+                FOLLOW_SYMLINKS=false
                 ;;
             --noprintdirs)
                 PRINT_DIRS=false
@@ -1241,6 +1257,7 @@ settings_from_file () {
 settings_to_string () {
     s="archives_only=$ARCHIVES_ONLY"
     s+=", debug=$DEBUG"
+    s+=", follow_symlinks=$FOLLOW_SYMLINKS"
     s+=", include_archives=$INCLUDE_ARCHIVES"
     s+=", include_hidden=$INCLUDE_HIDDEN"
     s+=", in_archive_extensions=$(array_to_string ${IN_ARCHIVE_EXTENSIONS[*]})"

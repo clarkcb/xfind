@@ -23,6 +23,7 @@ test_default_settings () {
 
     assert_equals_string ARCHIVES_ONLY $ARCHIVES_ONLY false
     assert_equals_string DEBUG $DEBUG false
+    assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS false
     assert_equals_string INCLUDE_ARCHIVES $INCLUDE_ARCHIVES false
     assert_equals_string INCLUDE_HIDDEN $INCLUDE_HIDDEN false
     assert_equals_number '${#IN_ARCHIVE_EXTENSIONS[@]}' ${#IN_ARCHIVE_EXTENSIONS[@]} 0
@@ -65,13 +66,14 @@ test_settings_from_args () {
     source "$BASHFIND_PATH/lib/bashfindlib.bash"
     # DEBUG=true
 
-    args=(-D build --debug --includehidden --maxdepth 5 --maxlastmod '2024-01-01' --mindepth 2 --minlastmod '2020-01-01' --printdirs --printfiles --sort-by size --sort-casesensitive --sort-descending -t code -x c,h .)
+    args=(-D build --debug --followsymlinks --includehidden --maxdepth 5 --maxlastmod '2024-01-01' --mindepth 2 --minlastmod '2020-01-01' --printdirs --printfiles --sort-by size --sort-casesensitive --sort-descending -t code -x c,h .)
 
     echo "args: ${args[@]}"
 
     settings_from_args "${args[@]}"
 
     assert_equals_string DEBUG $DEBUG true
+    assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS true
     assert_equals_string INCLUDE_HIDDEN $INCLUDE_HIDDEN true
     assert_equals_number '${#IN_EXTENSIONS[@]}' ${#IN_EXTENSIONS[@]} 2
     assert_equals_string '${IN_EXTENSIONS[0]}' ${IN_EXTENSIONS[0]} c
@@ -299,6 +301,7 @@ test_settings_from_json () {
             "\\.min\\."
         ],
         "debug": true,
+        "followsymlinks": true,
         "includehidden": false,
         "maxdepth": 10,
         "printdirs": true,
@@ -307,6 +310,8 @@ test_settings_from_json () {
 
     settings_from_json "$json"
 
+    assert_equals_string DEBUG $DEBUG true
+    assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS true
     assert_equals_number '${#IN_EXTENSIONS[@]}' ${#IN_EXTENSIONS[@]} 2
     assert_equals_string '${IN_EXTENSIONS[0]}' ${IN_EXTENSIONS[0]} js
     assert_equals_string '${IN_EXTENSIONS[1]}' ${IN_EXTENSIONS[1]} ts
@@ -318,6 +323,7 @@ test_settings_from_json () {
     assert_contains_string '${PATHS[0]}' ${PATHS[0]} src/xfind
     assert_equals_string PRINT_DIRS $PRINT_DIRS true
     assert_equals_string PRINT_FILES $PRINT_FILES true
+    assert_equals_string VERBOSE $VERBOSE true
 }
 
 test_settings_from_file () {
@@ -330,6 +336,8 @@ test_settings_from_file () {
 
     settings_from_file "$settings_file"
 
+    assert_equals_string DEBUG $DEBUG true
+    assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS true
     assert_equals_number '${#IN_EXTENSIONS[@]}' ${#IN_EXTENSIONS[@]} 2
     assert_equals_string '${IN_EXTENSIONS[0]}' ${IN_EXTENSIONS[0]} js
     assert_equals_string '${IN_EXTENSIONS[1]}' ${IN_EXTENSIONS[1]} ts
@@ -341,4 +349,5 @@ test_settings_from_file () {
     assert_contains_string '${PATHS[0]}' ${PATHS[0]} src/xfind
     assert_equals_string PRINT_DIRS $PRINT_DIRS true
     assert_equals_string PRINT_FILES $PRINT_FILES true
+    assert_equals_string VERBOSE $VERBOSE true
 }

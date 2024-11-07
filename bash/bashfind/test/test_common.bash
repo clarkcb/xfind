@@ -54,6 +54,18 @@ assert_greater_than_number () {
     fi
 }
 
+assert_less_than_number () {
+    local name="$1"
+    local val=$2
+    local expected=$3
+    if [ $val -lt $expected ]
+    then
+        assertion_passed "$name -lt $expected"
+    else
+        assertion_failed "! $name ($val) -lt $expected"
+    fi
+}
+
 assert_equals_string () {
     local name="$1"
     local val="$2"

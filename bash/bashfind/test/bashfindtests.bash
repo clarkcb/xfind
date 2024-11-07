@@ -95,3 +95,9 @@ test_is_matching_file_in_file_types
 test_is_matching_file_out_file_types
 
 test_is_matching_file_by_size
+
+test_follow_symlinks_default
+
+test_follow_symlinks
+
+test_no_follow_symlinks
