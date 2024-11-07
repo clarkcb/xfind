@@ -22,19 +22,20 @@ func GetExtension(file string) string {
 }
 
 func getHome() string {
-	home := ""
+	//home := ""
 	homeName := "HOME"
 	if runtime.GOOS == "windows" {
 		homeName = "USERPROFILE"
 	}
-	env := os.Environ()
-	for _, x := range env {
-		if strings.HasPrefix(x, homeName+"=") {
-			home = strings.TrimPrefix(x, homeName+"=")
-			break
-		}
-	}
-	return home
+	//env := os.Environ()
+	//for _, x := range env {
+	//	if strings.HasPrefix(x, homeName+"=") {
+	//		home = strings.TrimPrefix(x, homeName+"=")
+	//		break
+	//	}
+	//}
+	//return home
+	return os.Getenv(homeName)
 }
 
 func getPathSeparator() string {

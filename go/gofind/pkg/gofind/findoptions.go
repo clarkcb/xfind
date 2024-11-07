@@ -305,6 +305,9 @@ func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		"excludehidden": func(b bool, settings *FindSettings) {
 			settings.SetIncludeHidden(!b)
 		},
+		"followsymlinks": func(b bool, settings *FindSettings) {
+			settings.SetFollowSymlinks(b)
+		},
 		"help": func(b bool, settings *FindSettings) {
 			settings.SetPrintUsage(b)
 		},
@@ -313,6 +316,9 @@ func (fo *FindOptions) getBoolFlagActionMap() map[string]boolFlagAction {
 		},
 		"includehidden": func(b bool, settings *FindSettings) {
 			settings.SetIncludeHidden(b)
+		},
+		"nofollowsymlinks": func(b bool, settings *FindSettings) {
+			settings.SetFollowSymlinks(!b)
 		},
 		"noprintdirs": func(b bool, settings *FindSettings) {
 			settings.SetPrintDirs(!b)

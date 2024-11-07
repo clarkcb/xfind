@@ -66,6 +66,7 @@ func NameForSortBy(sortBy SortBy) string {
 type FindSettings struct {
 	archivesOnly           bool
 	debug                  bool
+	followSymlinks         bool
 	inArchiveExtensions    []string
 	inArchiveFilePatterns  *Patterns
 	inDirPatterns          *Patterns
@@ -102,6 +103,7 @@ func GetDefaultFindSettings() *FindSettings {
 	return &FindSettings{
 		false,          // ArchivesOnly
 		false,          // Debug
+		false,          // FollowSymlinks
 		[]string{},     // InArchiveExtensions
 		NewPatterns(),  // InArchiveFilePatterns
 		NewPatterns(),  // InDirPatterns
@@ -186,6 +188,14 @@ func (f *FindSettings) SetDebug(debug bool) {
 	if debug {
 		f.verbose = true
 	}
+}
+
+func (f *FindSettings) FollowSymlinks() bool {
+	return f.followSymlinks
+}
+
+func (f *FindSettings) SetFollowSymlinks(b bool) {
+	f.followSymlinks = b
 }
 
 func (f *FindSettings) InArchiveExtensions() []string {
@@ -520,6 +530,7 @@ func (f *FindSettings) String() string {
 	const template = "FindSettings(" +
 		"ArchivesOnly=%t" +
 		", Debug=%t" +
+		", FollowSymlinks=%t" +
 		", InArchiveExtensions=%s" +
 		", InArchiveFilePatterns=%s" +
 		", InDirPatterns=%s" +
@@ -553,6 +564,7 @@ func (f *FindSettings) String() string {
 	return fmt.Sprintf(template,
 		f.ArchivesOnly(),
 		f.Debug(),
+		f.FollowSymlinks(),
 		StringListToString(f.InArchiveExtensions()),
 		PatternsToString(f.InArchiveFilePatterns()),
 		PatternsToString(f.InDirPatterns()),

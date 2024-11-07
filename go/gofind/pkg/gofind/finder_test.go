@@ -16,6 +16,14 @@ func getFinder() *Finder {
 	return NewFinder(settings)
 }
 
+func getBinPath() string {
+	xfindPath := os.Getenv("XFIND_PATH")
+	if xfindPath == "" {
+		xfindPath = os.Getenv("HOME") + "/src/xfind"
+	}
+	return xfindPath + "/bin"
+}
+
 /*************************************************************
  * isMatchingDir tests
  *************************************************************/
@@ -308,5 +316,52 @@ func TestIsArchiveFindFile_DoesNotMatchOutPattern_True(t *testing.T) {
 	var fi os.FileInfo
 	if finder.filterToFileResult(f, fi) == nil {
 		t.Errorf("expected match")
+	}
+}
+
+/*************************************************************
+ * followSymlinks tests
+*************************************************************/
+func TestFollowSymlinks_DefaultSettings_Excluded(t *testing.T) {
+	settings := GetDefaultFindSettings()
+	settings.AddPath(getBinPath())
+	finder := NewFinder(settings)
+	fileResults, err := finder.Find()
+	if err == nil {
+		if fileResults.Len() > 2 {
+			t.Errorf("expected less than 3 files")
+		}
+	} else {
+		t.Errorf("expected no error")
+	}
+}
+
+func TestFollowSymlinks_FollowSymlinks_Included(t *testing.T) {
+	settings := GetDefaultFindSettings()
+	settings.AddPath(getBinPath())
+	settings.SetFollowSymlinks(true)
+	finder := NewFinder(settings)
+	fileResults, err := finder.Find()
+	if err == nil {
+		if !fileResults.IsEmpty() && fileResults.Len() < 3 {
+			t.Errorf("expected more than 2 files")
+		}
+	} else {
+		t.Errorf("expected no error")
+	}
+}
+
+func TestFollowSymlinks_NoFollowSymlinks_Excluded(t *testing.T) {
+	settings := GetDefaultFindSettings()
+	settings.AddPath(getBinPath())
+	settings.SetFollowSymlinks(false)
+	finder := NewFinder(settings)
+	fileResults, err := finder.Find()
+	if err == nil {
+		if fileResults.Len() > 2 {
+			t.Errorf("expected less than 3 files")
+		}
+	} else {
+		t.Errorf("expected no error")
 	}
 }

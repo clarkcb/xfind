@@ -14,6 +14,7 @@ func TestFindSettingsFromNoArgs(t *testing.T) {
 
 	if settings.ArchivesOnly() ||
 		settings.Debug() ||
+		settings.FollowSymlinks() ||
 		settings.IncludeArchives() ||
 		settings.IncludeHidden() ||
 		settings.PrintDirs() ||
@@ -62,6 +63,7 @@ func TestFindSettingsFromJson(t *testing.T) {
   "out-dirpattern": "node_module",
   "out-filepattern": ["temp"],
   "debug": true,
+  "followsymlinks": true,
   "includehidden": true
 }`)
 
@@ -112,6 +114,14 @@ func TestFindSettingsFromJson(t *testing.T) {
 
 	if !settings.Debug() {
 		t.Errorf("settings.Debug (%t) != true", settings.Debug())
+	}
+
+	if !settings.Verbose() {
+		t.Errorf("settings.Verbose (%t) != true", settings.Verbose())
+	}
+
+	if !settings.FollowSymlinks() {
+		t.Errorf("settings.FollowSymlinks (%t) != true", settings.FollowSymlinks())
 	}
 
 	if !settings.IncludeHidden() {

@@ -202,11 +202,25 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 		return err
 	}
 	for _, entry := range entries {
-		if entry.IsDir() && recurse && f.isMatchingDir(entry.Name()) {
+		fileInfo, _ := entry.Info()
+		if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
+			if f.Settings.followSymlinks {
+				dst, err := os.Readlink(filepath.Join(path, entry.Name()))
+				if err != nil {
+					return err
+				}
+				fileInfo, err = os.Stat(dst)
+				if err != nil {
+					return err
+				}
+			} else {
+				continue
+			}
+		}
+		if fileInfo.IsDir() && recurse && f.isMatchingDir(entry.Name()) {
 			dirs = append(dirs, filepath.Join(path, entry.Name()))
-		} else if entry.Type().IsRegular() && (minDepth < 0 || currentDepth >= minDepth) {
-			fi, _ := entry.Info()
-			f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
+		} else if fileInfo.Mode().IsRegular() && (minDepth < 0 || currentDepth >= minDepth) {
+			f.checkAddFileResult(filepath.Join(path, entry.Name()), fileInfo)
 		}
 	}
 	for _, dir := range dirs {
