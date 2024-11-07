@@ -28,6 +28,12 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 ########################################
 $dotPaths = @('.', '..')
 
+function IsDotDir {
+    [OutputType([bool])]
+    param([string]$dirName)
+    return $dotPaths.Contains($dirName)
+}
+
 function IsHiddenFileName {
     [OutputType([bool])]
     param([string]$fileName)
@@ -262,6 +268,7 @@ function SortByToName {
 class FindSettings {
     [bool]$ArchivesOnly
     [bool]$Debug
+    [bool]$FollowSymlinks
     [string[]]$InArchiveExtensions
     [Regex[]]$InArchiveFilePatterns
     [Regex[]]$InDirPatterns
@@ -296,6 +303,7 @@ class FindSettings {
     FindSettings() {
 		$this.ArchivesOnly = $false
 		$this.Debug = $false
+		$this.FollowSymlinks = $false
 		$this.InArchiveExtensions = @()
 		$this.InArchiveFilePatterns = @()
 		$this.InDirPatterns = @()
@@ -372,6 +380,7 @@ class FindSettings {
         return "FindSettings(" +
         "ArchivesOnly=$($this.ArchivesOnly)" +
         ", Debug=$($this.Debug)" +
+        ", FollowSymlinks=$($this.FollowSymlinks)" +
         ", InArchiveExtensions=$($this.StringArrayToString($this.InArchiveExtensions))" +
         ", InArchiveFilePatterns=$($this.StringArrayToString($this.InArchiveFilePatterns))" +
         ", InDirPatterns=$($this.StringArrayToString($this.InDirPatterns))" +
@@ -537,6 +546,10 @@ class FindOptions {
             param([bool]$b, [FindSettings]$settings)
             $settings.IncludeHidden = !$b
         }
+        "followsymlinks" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.FollowSymlinks = $b
+        }
         "help" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.PrintUsage = $b
@@ -548,6 +561,10 @@ class FindOptions {
         "includehidden" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.IncludeHidden = $b
+        }
+        "nofollowsymlinks" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.FollowSymlinks = !$b
         }
         "noprintdirs" = {
             param([bool]$b, [FindSettings]$settings)
@@ -922,10 +939,18 @@ class Finder {
         if ($recurse) {
             # Force is needed to get hidden dirs
             $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.IsMatchingDir($_) }
+            if (-not $this.settings.FollowSymlinks) {
+                # filter out symlinks
+                $pathDirs = $pathDirs | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
+            }
         }
         if ($minDepth -lt 0 -or $currentDepth -ge $minDepth) {
             # Force is needed to get hidden files
             $pathFiles = Get-ChildItem -Force -Recurse:$false -Path $dirPath -File
+            if (-not $this.settings.FollowSymlinks) {
+                # filter out symlinks
+                $pathFiles = $pathFiles | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
+            }
         }
 
         # Filter the dirs and files

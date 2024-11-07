@@ -457,4 +457,45 @@ Describe -tag "Finder" -name "test_filter_to_file_result_nonarchive_archives_onl
         $fileResult | Should -BeNullOrEmpty
     }
 }
+
+Describe -tag "Finder" -name "test_follow_symlinks_default_settings" {
+    It "excludes symlinks by default" {
+        $settings = [FindSettings]::new()
+        $binPath = Join-Path -Path "$env:XFIND_PATH" -ChildPath 'bin'
+        $settings.Paths += @($binPath)
+        $finder = [Finder]::new($settings)
+        $fileResults = $finder.Find()
+        if ($fileResults.Count -gt 0) {
+            $fileResults.Count | Should -BeLessThan 3
+        }
+    }
+}
+
+Describe -tag "Finder" -name "test_follow_symlinks_follow_symlinks" {
+    It "includes symlinks with followsymlinks" {
+        $settings = [FindSettings]::new()
+        $binPath = Join-Path -Path $env:XFIND_PATH -ChildPath 'bin'
+        $settings.Paths += @($binPath)
+        $settings.FollowSymlinks = $true
+        $finder = [Finder]::new($settings)
+        $fileResults = $finder.Find()
+        if ($fileResults.Count -gt 0) {
+            $fileResults.Count | Should -BeGreaterThan 2
+        }
+    }
+}
+
+Describe -tag "Finder" -name "test_follow_symlinks_no_follow_symlinks" {
+    It "excludes symlinks with nofollowsymlinks" {
+        $settings = [FindSettings]::new()
+        $binPath = Join-Path -Path $env:XFIND_PATH -ChildPath 'bin'
+        $settings.Paths += @($binPath)
+        $settings.FollowSymlinks = $false
+        $finder = [Finder]::new($settings)
+        $fileResults = $finder.Find()
+        if ($fileResults.Count -gt 0) {
+            $fileResults.Count | Should -BeLessThan 3
+        }
+    }
+}
 #endregion
