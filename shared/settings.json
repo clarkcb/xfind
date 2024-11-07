@@ -6,6 +6,7 @@
   ],
   "out-filepattern": ["gulpfile", "\\.min\\."],
   "debug": true,
+  "followsymlinks": true,
   "includehidden": false,
   "maxdepth": 10,
   "printdirs": true,

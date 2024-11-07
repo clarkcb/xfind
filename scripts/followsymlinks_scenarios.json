@@ -1,0 +1,45 @@
+{
+    "ref": {
+        "common_startpaths": ["$XFIND_PATH/bin"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "help/usage",
+            "name": "no args",
+            "args": [],
+            "replace_xfind_name": true
+        },
+        {
+            "group": "help/usage",
+            "name": "help",
+            "args": ["-h"],
+            "replace_xfind_name": true
+        },
+        {
+            "group": "follow-symlinks",
+            "name": "default no-follow-symlinks",
+            "args": ["-r"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "follow-symlinks",
+            "name": "specify follow-symlinks",
+            "args": ["--followsymlinks"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "follow-symlinks",
+            "name": "specify no-follow-symlinks",
+            "args": ["--nofollowsymlinks"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        }
+    ]
+}

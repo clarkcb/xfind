@@ -60,12 +60,17 @@
 (defn is-dir? [d]
   (cond
     (instance? java.nio.file.Path d) (Files/isDirectory d (into-array LinkOption []))
-    (instance? java.io.File d) (.isDirectory d)))
+    (instance? java.io.File d) (Files/isDirectory (.toPath d) (into-array LinkOption []))))
 
 (defn is-file? [f]
   (cond
     (instance? java.nio.file.Path f) (Files/isRegularFile f (into-array LinkOption []))
-    (instance? java.io.File f) (.isFile f)))
+    (instance? java.io.File f) (Files/isRegularFile (.toPath f) (into-array LinkOption []))))
+
+(defn is-symlink? [f]
+  (cond
+    (instance? java.nio.file.Path f) (Files/isSymbolicLink f)
+    (instance? java.io.File f) (Files/isSymbolicLink (.toPath f))))
 
 (defn is-dot-dir? [^String name]
   (contains? DOT_DIRS name))

@@ -18,6 +18,10 @@
       "desc": "Exclude hidden files and directories*"
     },
     {
+      "long": "followsymlinks",
+      "desc": "Follow symlinks to their linked files or directories"
+    },
+    {
       "long": "help",
       "short": "h",
       "desc": "Print this usage and exit"
@@ -94,6 +98,10 @@
       "long": "minsize",
       "arg": "size",
       "desc": "Find files with size >= minsize"
+    },
+    {
+      "long": "nofollowsymlinks",
+      "desc": "Do not follow symlinks to their linked files or directories"
     },
     {
       "long": "noprintdirs",
