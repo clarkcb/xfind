@@ -20,6 +20,14 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
     lines
   }
 
+  def getBinPath(): String = {
+    var xfindPath = Option(System.getenv("XFIND_PATH")) match {
+      case Some(path) => path
+      case None => System.getenv("HOME") + "/src/xfind"
+    }
+    xfindPath + "/bin"
+  }
+
   /*************************************************************
    * isMatchingDir tests
    *************************************************************/
@@ -291,5 +299,29 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
     val finder = new Finder(settings)
     val file = Paths.get("FileUtil.cs")
     assert(finder.filterToFileResult(file).isEmpty)
+  }
+
+  /*************************************************************
+   * followSymlinks tests
+   *************************************************************/
+  test("testFollowSymlinks_Default_Excluded") {
+    val settings = FindSettings(paths = Set(Paths.get(getBinPath())))
+    val finder = new Finder(settings)
+    val fileResults = finder.find()
+    assert(fileResults.size < 3)
+  }
+
+  test("testFollowSymlinks_FollowSymlinks_Included") {
+    val settings = FindSettings(paths = Set(Paths.get(getBinPath())), followSymlinks = true)
+    val finder = new Finder(settings)
+    val fileResults = finder.find()
+    assert(fileResults.isEmpty || fileResults.size > 2)
+  }
+
+  test("testFollowSymlinks_NoFollowSymlinks_Excluded") {
+    val settings = FindSettings(paths = Set(Paths.get(getBinPath())), followSymlinks = false)
+    val finder = new Finder(settings)
+    val fileResults = finder.find()
+    assert(fileResults.size < 3)
   }
 }

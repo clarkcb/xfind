@@ -174,12 +174,14 @@ class Finder (settings: FindSettings) {
         val iterator = pathContents.iterator()
         while (iterator.hasNext) {
           val path = iterator.next
-          if (Files.isDirectory(path) && recurse == RecursionType.Recurse && isMatchingDir(path)) {
-            pathDirs += path
-          } else {
-            if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
-              val optFileResult: Option[FileResult] = filterToFileResult(path)
-              optFileResult.foreach(pathResults += _)
+          if (!Files.isSymbolicLink(path) || settings.followSymlinks) {
+            if (Files.isDirectory(path) && recurse == RecursionType.Recurse && isMatchingDir(path)) {
+              pathDirs += path
+            } else {
+              if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
+                val optFileResult: Option[FileResult] = filterToFileResult(path)
+                optFileResult.foreach(pathResults += _)
+              }
             }
           }
         }

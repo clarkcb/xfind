@@ -13,6 +13,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
   def assertDefaultSettings(settings: FindSettings): Unit = {
     assert(settings.archivesOnly == DefaultFindSettings.archivesOnly)
     assert(settings.debug == DefaultFindSettings.debug)
+    assert(settings.followSymlinks == DefaultFindSettings.followSymlinks)
     assert(settings.includeArchives == DefaultFindSettings.includeArchives)
     assert(settings.includeHidden == DefaultFindSettings.includeHidden)
     assert(settings.printDirs == DefaultFindSettings.printDirs)
@@ -312,6 +313,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
                  |  "out-dirpattern": ["build", "node_module", "tests", "typings"],
                  |  "out-filepattern": ["gulpfile", "\\.min\\."],
                  |  "debug": true,
+                 |  "followsymlinks": true,
                  |  "includehidden": false
                  |}"""
     val settings = FindOptions.settingsFromJson(json.stripMargin, ss)
@@ -323,6 +325,8 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
     assert(settings.outDirPatterns.size == 4)
     assert(settings.outFilePatterns.size == 2)
     assert(settings.debug)
+    assert(settings.verbose)
+    assert(settings.followSymlinks)
     assert(!settings.includeHidden)
   }
 }

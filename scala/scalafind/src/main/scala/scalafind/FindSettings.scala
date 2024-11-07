@@ -33,6 +33,7 @@ object SortBy extends Enumeration {
 object DefaultFindSettings {
   val archivesOnly = false
   val debug = false
+  val followSymlinks = false
   var includeArchives = false
   val includeHidden = false
   val maxDepth: Int = -1
@@ -53,6 +54,7 @@ object DefaultFindSettings {
 
 case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
                         debug: Boolean = DefaultFindSettings.debug,
+                        followSymlinks: Boolean = DefaultFindSettings.followSymlinks,
                         inArchiveExtensions: Set[String] = Set.empty[String],
                         inArchiveFilePatterns: Set[Regex] = Set.empty[Regex],
                         inDirPatterns: Set[Regex] = Set.empty[Regex],
@@ -131,6 +133,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
     "FindSettings(" +
       "archivesOnly=" + archivesOnly +
       ", debug=" + debug +
+      ", followSymlinks=" + followSymlinks +
       ", inArchiveExtensions=" + setToString(inArchiveExtensions) +
       ", inArchiveFilePatterns=" + regexSetToString(inArchiveFilePatterns) +
       ", inDirPatterns=" + regexSetToString(inDirPatterns) +
