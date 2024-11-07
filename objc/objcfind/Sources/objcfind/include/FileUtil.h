@@ -32,6 +32,8 @@
 + (BOOL) isHiddenFile:(NSString*)fileName;
 + (BOOL) isReadableFile:(NSString*)filePath;
 + (BOOL) allReadable:(NSArray<NSString*>*)filePaths;
++ (BOOL) isSymlink:(NSString*)filePath;
++ (NSString*) getSymlinkTarget:(NSString*)symlinkPath;
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath;
 + (NSString*) normalizePath:(NSString*)path;
 + (NSDirectoryEnumerationOptions) optionsForSettings:(FindSettings*)settings;

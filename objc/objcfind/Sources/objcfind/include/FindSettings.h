@@ -15,6 +15,7 @@
 
 @property(nonatomic) BOOL archivesOnly;
 @property(nonatomic) BOOL debug;
+@property(nonatomic) BOOL followSymlinks;
 @property(nonatomic) BOOL includeArchives;
 @property(nonatomic) BOOL includeHidden;
 @property(nonatomic) BOOL printDirs;

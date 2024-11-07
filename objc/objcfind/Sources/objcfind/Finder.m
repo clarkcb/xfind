@@ -197,16 +197,30 @@
     NSMutableArray *pathDirs = [NSMutableArray array];
     for (NSString *pathElem in pathElems) {
         NSString* path = [FileUtil joinPath:dirPath childPath:pathElem];
-        if ([FileUtil isDirectory:path]) {
+        BOOL linkIsDir = false;
+        BOOL linkIsFile = false;
+        if ([FileUtil isSymlink:path]) {
+            if (self.settings.followSymlinks) {
+                NSString* targetPath = [FileUtil getSymlinkTarget:path];
+                if (targetPath != nil) {
+                    if ([FileUtil isDirectory:targetPath]) {
+                        linkIsDir = true;
+                    } else if ([FileUtil isReadableFile:targetPath]) {
+                        linkIsFile = true;
+                    }
+                }
+            } else {
+                continue;
+            }
+        }
+        if ([FileUtil isDirectory:path] || linkIsDir) {
             if (recurse && [self isMatchingDir:pathElem]) {
                 [pathDirs addObject:path];
             }
-        } else {
-            if (minDepth < 0 || currentDepth >= minDepth) {
-                FileResult *fileResult = [self filterToFileResult:path];
-                if (fileResult != nil) {
-                    [fileResults addObject:fileResult];
-                }
+        } else if (([FileUtil isReadableFile:path] || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth)) {
+            FileResult *fileResult = [self filterToFileResult:path];
+            if (fileResult != nil) {
+                [fileResults addObject:fileResult];
             }
         }
     }

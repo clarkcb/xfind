@@ -165,6 +165,32 @@
     return true;
 }
 
++ (BOOL) isSymlink:(NSString*)filePath {
+    NSURL *url = [NSURL fileURLWithPath:filePath];
+    NSError *error = nil;
+    if ([url checkResourceIsReachableAndReturnError:&error]) {
+        if (error) {
+            return false;
+        }
+        NSArray<NSURLResourceKey> *keys = [NSArray arrayWithObject:NSURLIsSymbolicLinkKey];
+        NSDictionary<NSURLResourceKey, id> *resourceKeyDict = [url resourceValuesForKeys:keys error:&error];
+        BOOL value = [[resourceKeyDict objectForKey:@"NSURLIsSymbolicLinkKey"] boolValue];
+        if (value == YES) {
+            return true;
+        }
+    }
+    return false;
+}
+
++ (NSString*) getSymlinkTarget:(NSString*)symlinkPath {
+    NSError *error = nil;
+    NSString *targetPath = [[self getFileManager] destinationOfSymbolicLinkAtPath:symlinkPath error:&error];
+    if (error) {
+        return nil;
+    }
+    return targetPath;
+}
+
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath {
     NSMutableString *joined = [NSMutableString stringWithString:path];
     if (![joined hasSuffix:@"/"]) {

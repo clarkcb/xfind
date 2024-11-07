@@ -8,6 +8,7 @@
 
 #import <XCTest/XCTest.h>
 #import "FileUtil.h"
+#import "FindConfig.h"
 #import "Finder.h"
 #import "FindSettings.h"
 
@@ -325,6 +326,38 @@
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     XCTAssert([finder filterToFileResult:@"FileUtil.cs"] == nil);
+}
+
+/*************************************************************
+ * followSymlinks tests
+ *************************************************************/
+- (void)testFollowSymlinks_DefaultSettings_Excluded {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addPath:getXfindBinPath()];
+    NSError *error = nil;
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    NSArray<FileResult*>* fileResults = [finder find:&error];
+    XCTAssert([fileResults count] < 3);
+}
+
+- (void)testFollowSymlinks_FollowSymlink_Included {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addPath:getXfindBinPath()];
+    [settings setFollowSymlinks:true];
+    NSError *error = nil;
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    NSArray<FileResult*>* fileResults = [finder find:&error];
+    XCTAssert([fileResults count] == 0 || [fileResults count] > 2);
+}
+
+- (void)testFollowSymlinks_NoFollowSymlink_Excluded {
+    FindSettings *settings = [[FindSettings alloc] init];
+    [settings addPath:getXfindBinPath()];
+    [settings setFollowSymlinks:false];
+    NSError *error = nil;
+    Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
+    NSArray<FileResult*>* fileResults = [finder find:&error];
+    XCTAssert([fileResults count] < 3);
 }
 
 @end

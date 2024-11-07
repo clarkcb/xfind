@@ -12,6 +12,7 @@
     if (self) {
         self.archivesOnly = false;
         self.debug = false;
+        self.followSymlinks = false;
         self.includeArchives = false;
         self.includeHidden = false;
         self.printDirs = false;
@@ -52,6 +53,7 @@
     NSMutableString *d = [[NSMutableString alloc] initWithString:@"FindSettings("];
     [d appendFormat:@"archivesOnly=%@", boolToNSString(self.archivesOnly)];
     [d appendFormat:@", debug=%@", boolToNSString(self.debug)];
+    [d appendFormat:@", followSymlinks=%@", boolToNSString(self.followSymlinks)];
     [d appendFormat:@", inArchiveExtensions=%@", arrayToNSString(self.inArchiveExtensions)];
     [d appendFormat:@", inArchiveFilePatterns=%@", arrayToNSString(self.inArchiveFilePatterns)];
     [d appendFormat:@", inDirPatterns=%@", arrayToNSString(self.inDirPatterns)];

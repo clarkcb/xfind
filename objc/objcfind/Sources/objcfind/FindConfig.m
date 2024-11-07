@@ -13,3 +13,8 @@ NSString* getXfindSharedPath() {
     NSString *xfindPath = getXfindPath();
     return [xfindPath stringByAppendingPathComponent:@"shared"];
 }
+
+NSString* getXfindBinPath() {
+    NSString *xfindPath = getXfindPath();
+    return [xfindPath stringByAppendingPathComponent:@"bin"];
+}

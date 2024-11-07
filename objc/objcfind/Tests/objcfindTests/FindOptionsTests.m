@@ -31,6 +31,7 @@
     FindSettings *settings = [options settingsFromArgs:args error:&error];
     XCTAssert(![settings archivesOnly]);
     XCTAssert(![settings debug]);
+    XCTAssert(![settings followSymlinks]);
     XCTAssert(![settings includeArchives]);
     XCTAssert(![settings includeHidden]);
     XCTAssert(![settings printDirs]);
@@ -66,6 +67,7 @@
                       "\"out-dirpattern\": \"node_module\",\n"
                       "\"out-filepattern\": [\"temp\"],\n"
                       "\"debug\": true,\n"
+                      "\"followsymlinks\": true,\n"
                       "\"includehidden\": true\n"
                       "}", startPath];
 
@@ -84,6 +86,8 @@
     XCTAssert([[settings paths] count] == 1);
     XCTAssert([[[settings paths] objectAtIndex:0] isEqual:@"~/src/xfind"]);
     XCTAssert([settings debug]);
+    XCTAssert([settings verbose]);
+    XCTAssert([settings followSymlinks]);
     XCTAssert([settings includeHidden]);
 }
 
