@@ -2,10 +2,11 @@
 
 namespace CsFindLib;
 
-public class FindOption
+public class FindOption(string? shortArg, string longArg, string description)
 {
-	public string? ShortArg { get; }
-	public string LongArg { get; }
+	public string? ShortArg { get; } = shortArg;
+	public string LongArg { get; } = longArg;
+
 	public string SortArg
 	{
 		get
@@ -16,42 +17,17 @@ public class FindOption
 			return longArg;
 		}
 	}
-	public string Description { get; }
-
-	public FindOption(string? shortArg, string longArg, string description)
-	{
-		ShortArg = shortArg;
-		LongArg = longArg;
-		Description = description;
-	}
+	public string Description { get; } = description;
 }
 
-internal class FindArgOption : FindOption
+internal class FindArgOption(string? shortArg, string longArg, Action<string, FindSettings> action, string description)
+	: FindOption(shortArg, longArg, description)
 {
-	public Action<string, FindSettings> Action { get; private set; }
-	public FindArgOption(string? shortArg, string longArg, Action<string, FindSettings> action, string description) :
-		base(shortArg, longArg, description)
-	{
-		Action = action;
-	}
-	public FindArgOption(FindOption findOption, Action<string, FindSettings> action) :
-		base(findOption.ShortArg, findOption.LongArg, findOption.Description)
-	{
-		Action = action;
-	}
+	public Action<string, FindSettings> Action { get; private set; } = action;
 }
 
-internal class FindFlagOption : FindOption
+internal class FindFlagOption(string? shortArg, string longArg, Action<bool, FindSettings> action, string description)
+	: FindOption(shortArg, longArg, description)
 {
-	public Action<bool, FindSettings> Action { get; private set; }
-	public FindFlagOption(string? shortArg, string longArg, Action<bool, FindSettings> action, string description) :
-		base(shortArg, longArg, description)
-	{
-		Action = action;
-	}
-	public FindFlagOption(FindOption findOption, Action<bool, FindSettings> action) :
-		base(findOption.ShortArg, findOption.LongArg, findOption.Description)
-	{
-		Action = action;
-	}
+	public Action<bool, FindSettings> Action { get; private set; } = action;
 }

@@ -39,7 +39,7 @@ public class FindOptions
 			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
 			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
-			{ "path", (s, settings) => settings.Paths.Add(s) },
+			{ "path", (s, settings) => settings.AddPath(s) },
 			{ "settings-file", SettingsFromFile },
 			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
 		};
@@ -77,7 +77,7 @@ public class FindOptions
 	public FindOptions()
 	{
 		_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
-		Options = new List<FindOption>();
+		Options = [];
 		ArgDictionary = new Dictionary<string, FindOption>();
 		FlagDictionary = new Dictionary<string, FindOption>();
 		SetOptionsFromJson();
@@ -141,7 +141,7 @@ public class FindOptions
 		switch (obj.ValueKind)
 		{
 			case JsonValueKind.String:
-				string? s = obj.GetString();
+				var s = obj.GetString();
 				if (s != null) {
 					ApplySetting(arg, s, settings);
 				}
@@ -171,9 +171,9 @@ public class FindOptions
 
 	private static void ApplySetting(string arg, string val, FindSettings settings)
 	{
-		if (ArgActionDictionary.ContainsKey(arg))
+		if (ArgActionDictionary.TryGetValue(arg, out var value))
 		{
-			ArgActionDictionary[arg](val, settings);
+			value(val, settings);
 		}
 		else
 		{
@@ -183,9 +183,9 @@ public class FindOptions
 
 	private static void ApplySetting(string arg, bool val, FindSettings settings)
 	{
-		if (BoolFlagActionDictionary.ContainsKey(arg))
+		if (BoolFlagActionDictionary.TryGetValue(arg, out Action<bool, FindSettings>? value))
 		{
-			BoolFlagActionDictionary[arg](val, settings);
+			value(val, settings);
 		}
 		else
 		{
@@ -202,13 +202,13 @@ public class FindOptions
 		while (queue.Count > 0)
 		{
 			var s = queue.Dequeue();
-			if (s.StartsWith("-"))
+			if (s.StartsWith('-'))
 			{
 				try
 				{
-					while (s.StartsWith("-"))
+					while (s.StartsWith('-'))
 					{
-						s = s.Substring(1);
+						s = s[1..];
 					}
 				}
 				catch (InvalidOperationException e)
@@ -219,22 +219,22 @@ public class FindOptions
 				{
 					throw new FindException("Invalid option: -");
 				}
-				if (ArgDictionary.ContainsKey(s))
+				if (ArgDictionary.TryGetValue(s, out var value))
 				{
 					try
 					{
-						((FindArgOption)ArgDictionary[s]).Action(queue.Dequeue(), settings);
+						((FindArgOption)value).Action(queue.Dequeue(), settings);
 					}
 					catch (InvalidOperationException e)
 					{
 						throw new FindException(e.Message);
 					}
 				}
-				else if (FlagDictionary.ContainsKey(s))
+				else if (FlagDictionary.TryGetValue(s, out var value1))
 				{
 					try
 					{
-						((FindFlagOption)FlagDictionary[s]).Action(true, settings);
+						((FindFlagOption)value1).Action(true, settings);
 					}
 					catch (InvalidOperationException e)
 					{
@@ -248,7 +248,7 @@ public class FindOptions
 			}
 			else
 			{
-				settings.Paths.Add(s);
+				settings.AddPath(s);
 			}
 		}
 		return settings;

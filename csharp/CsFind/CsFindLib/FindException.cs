@@ -2,9 +2,4 @@
 
 namespace CsFindLib;
 
-public class FindException : Exception
-{
-	public FindException(string message) : base(message)
-	{
-	}
-}
+public class FindException(string message) : Exception(message);

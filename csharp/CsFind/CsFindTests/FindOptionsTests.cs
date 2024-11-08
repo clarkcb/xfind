@@ -9,7 +9,7 @@ namespace CsFindTests;
 [TestFixture]
 public class FindOptionsTests
 {
-	private readonly FindOptions _findOptions = new FindOptions();
+	private readonly FindOptions _findOptions = new();
 
 	[Test]
 	public void SettingsFromArgs_NoArgs_HasDefaultValues()
@@ -35,7 +35,8 @@ public class FindOptionsTests
 		var args = new List<string> { "-x", "cs", "." };
 		var settings = _findOptions.SettingsFromArgs(args);
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
-		Assert.That(settings.Paths.Contains("."));
+		var expectedPath = new FilePath(".");
+		Assert.That(settings.Paths.Contains(expectedPath));
 		Assert.That(settings.InExtensions.Count, Is.EqualTo(1));
 		Assert.That(settings.InExtensions.Contains(".cs"));
 	}
@@ -64,7 +65,8 @@ public class FindOptionsTests
 		FindOptions.SettingsFromJson(json, settings);
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
-		Assert.That(settings.Paths.Contains("~/src/xfind/"));
+		var expectedPath = new FilePath("~/src/xfind/");
+		Assert.That(settings.Paths.Contains(expectedPath));
 
 		Assert.That(settings.InExtensions.Count, Is.EqualTo(2));
 		Assert.That(settings.InExtensions.Contains(".js"));

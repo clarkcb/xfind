@@ -24,7 +24,7 @@ public class Finder
 	{
 		if (Settings.Paths.Count == 0)
 			throw new FindException("Startpath not defined");
-		if (Settings.Paths.Select(FileUtil.ExpandPath).Any(p => !Path.Exists(p)))
+		if (Settings.Paths.Any(p => !p.Exists))
 		{
 			throw new FindException("Startpath not found");
 		}
@@ -66,30 +66,30 @@ public class Finder
 		return enumerationOptions;
 	}
 
-	private bool MatchesAnyPattern(string s, ISet<Regex> patterns)
+	private static bool MatchesAnyPattern(string s, ISet<Regex> patterns)
 	{
 		return patterns.Any(p => p.Matches(s).Count > 0);
 	}
 
-	private bool AnyMatchesAnyPattern(IEnumerable<string> slist, ISet<Regex> patterns)
+	private static bool AnyMatchesAnyPattern(IEnumerable<string> slist, ISet<Regex> patterns)
 	{
 		return slist.Any(s => MatchesAnyPattern(s, patterns));
 	}
 	
-	public bool IsMatchingDirectory(DirectoryInfo? d)
+	public bool IsMatchingDirectory(FilePath d)
 	{
-		if (d == null)
+		if (string.IsNullOrEmpty(d.Path))
 		{
 			return true;
 		}
 
-		// This is how we detect and filter out symlinked directories
-		if (!Settings.FollowSymlinks && d.Exists && d.Attributes.HasFlag(FileAttributes.ReparsePoint))
+		// Detect and filter out symlinked directories if !Settings.FollowSymlinks
+		if (!Settings.FollowSymlinks && d.IsSymlink)
 		{
 			return false;
 		}
 
-		var elems = FileUtil.GetDirElems(d).ToList();
+		var elems = FileUtil.GetPathElems(d).ToList();
 
 		if (!Settings.IncludeHidden)
 		{
@@ -105,7 +105,7 @@ public class Finder
 		        !AnyMatchesAnyPattern(elems, Settings.OutDirPatterns));
 	}
 
-	public bool IsMatchingArchiveFileExtension(string ext)
+	private bool IsMatchingArchiveFileExtension(string ext)
 	{
 		return (Settings.InArchiveExtensions.Count == 0 ||
 		         Settings.InArchiveExtensions.Contains(ext)) &&
@@ -113,7 +113,17 @@ public class Finder
 		         !Settings.OutArchiveExtensions.Contains(ext));
 	}
 
-	public bool IsMatchingFileExtension(string ext)
+	private bool HasMatchingArchiveFileExtension(FilePath filePath)
+	{
+		if (Settings.InArchiveExtensions.Count > 0 || Settings.OutArchiveExtensions.Count > 0)
+		{
+			return IsMatchingArchiveFileExtension(filePath.Extension);
+		}
+
+		return true;
+	}
+
+	private bool IsMatchingFileExtension(string ext)
 	{
 		return (Settings.InExtensions.Count == 0 ||
 		         Settings.InExtensions.Contains(ext)) &&
@@ -121,7 +131,17 @@ public class Finder
 		         !Settings.OutExtensions.Contains(ext));
 	}
 
-	public bool IsMatchingArchiveFileName(string fileName)
+	private bool HasMatchingFileExtension(FilePath filePath)
+	{
+		if (Settings.InExtensions.Count > 0 || Settings.OutExtensions.Count > 0)
+		{
+			return IsMatchingFileExtension(filePath.Extension);
+		}
+
+		return true;
+	}
+
+	private bool IsMatchingArchiveFileName(string fileName)
 	{
 		return (Settings.InArchiveFilePatterns.Count == 0 ||
 		        Settings.InArchiveFilePatterns.Any(p => p.Match(fileName).Success)) &&
@@ -129,7 +149,7 @@ public class Finder
 		        !Settings.OutArchiveFilePatterns.Any(p => p.Match(fileName).Success));
 	}
 
-	public bool IsMatchingFileName(string fileName)
+	private bool IsMatchingFileName(string fileName)
 	{
 		return (Settings.InFilePatterns.Count == 0 ||
 		        Settings.InFilePatterns.Any(p => p.Match(fileName).Success)) &&
@@ -137,7 +157,7 @@ public class Finder
 		        !Settings.OutFilePatterns.Any(p => p.Match(fileName).Success));
 	}
 
-	public bool IsMatchingFileType(FileType fileType)
+	private bool IsMatchingFileType(FileType fileType)
 	{
 		return (Settings.InFileTypes.Count == 0 ||
 		        Settings.InFileTypes.Contains(fileType)) &&
@@ -145,13 +165,13 @@ public class Finder
 		        !Settings.OutFileTypes.Contains(fileType));
 	}
 
-	public bool IsMatchingFileSize(long fileSize)
+	private bool IsMatchingFileSize(long fileSize)
 	{
 		return (Settings.MaxSize == 0 || fileSize <= Settings.MaxSize) &&
 		       (Settings.MinSize == 0 || fileSize >= Settings.MinSize);
 	}
 
-	public bool IsMatchingLastMod(DateTime lastMod)
+	private bool IsMatchingLastMod(DateTime lastMod)
 	{
 		return (Settings.MaxLastMod == null || lastMod <= Settings.MaxLastMod) &&
 		       (Settings.MinLastMod == null || lastMod >= Settings.MinLastMod);
@@ -159,27 +179,27 @@ public class Finder
 
 	public bool IsMatchingFileResult(FileResult fr)
 	{
-		return IsMatchingFileExtension(fr.File.Extension) &&
-		       IsMatchingFileName(fr.File.Name) &&
+		return HasMatchingFileExtension(fr.FilePath) &&
+		       IsMatchingFileName(fr.FilePath.Name) &&
 		       IsMatchingFileType(fr.Type) &&
-		       IsMatchingFileSize(fr.File.Length) &&
-		       IsMatchingLastMod(fr.File.LastWriteTimeUtc);
+		       IsMatchingFileSize(fr.FilePath.Length) &&
+		       IsMatchingLastMod(fr.FilePath.LastWriteTimeUtc);
 	}
 
 	public bool IsMatchingArchiveFileResult(FileResult fr)
 	{
-		return IsMatchingArchiveFileExtension(fr.File.Extension) &&
-		       IsMatchingArchiveFileName(fr.File.Name);
+		return HasMatchingArchiveFileExtension(fr.FilePath) &&
+		       IsMatchingArchiveFileName(fr.FilePath.Name);
 	}
 
-	public FileResult? FilterToFileResult(FileInfo fi)
+	public FileResult? FilterToFileResult(FilePath filePath)
 	{
-		// This is how we check for / filter out symlinked files
-		if (!Settings.FollowSymlinks && fi.Exists && fi.Attributes.HasFlag(FileAttributes.ReparsePoint))
+		// Detect and filter out symlinked files unless Settings.FollowSymlinks
+		if (!Settings.FollowSymlinks && filePath.IsSymlink)
 			return null;
-		if (!Settings.IncludeHidden && FileUtil.IsHiddenFile(fi))
+		if (!Settings.IncludeHidden && FileUtil.IsHiddenFilePath(filePath))
 			return null;
-		var fr = new FileResult(fi, _fileTypes.GetFileType(fi));
+		var fr = new FileResult(filePath, _fileTypes.GetFileType(filePath));
 		if (fr.Type.Equals(FileType.Archive))
 		{
 			if (Settings.IncludeArchives && IsMatchingArchiveFileResult(fr))
@@ -197,22 +217,19 @@ public class Finder
 		return null;
 	}
 
-	private IEnumerable<FileResult> RecGetFileResults(DirectoryInfo dir, int minDepth, int maxDepth, int currentDepth)
+	private List<FileResult> RecGetFileResults(FilePath dirPath, int minDepth, int maxDepth, int currentDepth)
 	{
+		if (maxDepth > -1 && currentDepth > maxDepth)
+		{
+			return [];
+		}
+
 		var pathResults = new List<FileResult>();
-		var recurse = true;
-		if (currentDepth == maxDepth)
-		{
-			recurse = false;
-		}
-		else if (maxDepth > -1 && currentDepth > maxDepth)
-		{
-			return pathResults;
-		}
+		var recurse = currentDepth != maxDepth;
 
 		if (minDepth < 0 || currentDepth >= minDepth)
 		{
-			pathResults.AddRange(dir.EnumerateFiles("*", _enumerationOptions)
+			pathResults.AddRange(dirPath.EnumerateFiles("*", _enumerationOptions)
 				.Select(FilterToFileResult)
 				.Where(fr => fr != null)
 				.Select(fr => fr!));
@@ -220,7 +237,7 @@ public class Finder
 
 		if (recurse)
 		{
-			var pathDirs = dir.EnumerateDirectories().Where(IsMatchingDirectory);
+			var pathDirs = dirPath.EnumerateDirectories().Where(IsMatchingDirectory);
 			foreach (var pathDir in pathDirs)
 			{
 				pathResults.AddRange(RecGetFileResults(pathDir, minDepth, maxDepth, currentDepth + 1));
@@ -230,32 +247,34 @@ public class Finder
 		return pathResults;
 	}
 
-	private IEnumerable<FileResult> GetFileResults(string filePath)
+	private List<FileResult> GetFileResults(FilePath filePath)
 	{
-		if (Directory.Exists(filePath))
+		if (filePath.IsDirectory)
 		{
 			// if MaxDepth is zero, we can skip since a directory cannot be a result
 			if (Settings.MaxDepth == 0)
 			{
 				return [];
 			}
-			var dir = new DirectoryInfo(filePath);
-			if (IsMatchingDirectory(dir))
+			if (IsMatchingDirectory(filePath))
 			{
 				var maxDepth = Settings.Recursive ? Settings.MaxDepth : 1;
-				return RecGetFileResults(dir, Settings.MinDepth, maxDepth, 1);
+				return RecGetFileResults(filePath, Settings.MinDepth, maxDepth, 1);
 			}
+
+			throw new FindException("Startpath does not match find settings");
 		}
-		if (File.Exists(filePath))
+		if (filePath.IsFile)
 		{
 			// if MinDepth > zero, we can skip since the file is at depth zero
 			if (Settings.MinDepth <= 0)
 			{
-				var fileResult = FilterToFileResult(new FileInfo(filePath));
+				var fileResult = FilterToFileResult(filePath);
 				if (fileResult != null)
 				{
-					return new[] { fileResult };
+					return [fileResult];
 				}
+				throw new FindException("Startpath does not match find settings");
 			}
 		}
 		return [];
@@ -284,22 +303,33 @@ public class Finder
 	private List<FileResult> GetAllFileResults()
 	{
 		var fileResultsBag = new ConcurrentBag<FileResult>();
-		Settings.Paths.AsParallel()
-			.Select(GetFileResults)
-			.ForAll(frs =>
-			{
-				foreach (var fr in frs)
+		try
+		{
+			Settings.Paths.AsParallel()
+				.Select(GetFileResults)
+				.ForAll(frs =>
 				{
-					fileResultsBag.Add(fr);
-				}
-			});
+					foreach (var fr in frs)
+					{
+						fileResultsBag.Add(fr);
+					}
+				});
+		}
+		catch (AggregateException ae)
+		{
+			if (ae.InnerException != null)
+			{
+				throw ae.InnerException;
+			}
+			throw new FindException("Unknown error");
+		}
 
 		var fileResults = fileResultsBag.ToList();
 		SortFileResults(fileResults);
 		return fileResults;
 	}
 
-	public IEnumerable<FileResult> Find()
+	public List<FileResult> Find()
 	{
 		var fileResults = GetAllFileResults();
 		return fileResults;
@@ -313,8 +343,8 @@ public class Finder
 		var cmp = Settings.SortCaseInsensitive ?
 			StringComparison.OrdinalIgnoreCase :
 			StringComparison.Ordinal;
-		var dirNameCmp = string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp);
-		return dirNameCmp == 0 ? string.Compare(fr1.File.Name, fr2.File.Name, cmp) : dirNameCmp;
+		var dirNameCmp = string.Compare(fr1.FilePath.Parent?.ToString(), fr2.FilePath.Parent?.ToString(), cmp);
+		return dirNameCmp == 0 ? string.Compare(fr1.FilePath.Name, fr2.FilePath.Name, cmp) : dirNameCmp;
 	}
 	
 	private int CompareByName(FileResult fr1, FileResult fr2)
@@ -325,13 +355,13 @@ public class Finder
 		var cmp = Settings.SortCaseInsensitive ?
 			StringComparison.OrdinalIgnoreCase :
 			StringComparison.Ordinal;
-		var fileNameCmp = string.Compare(fr1.File.Name, fr2.File.Name, cmp);
-		return fileNameCmp == 0 ? string.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) : fileNameCmp;
+		var fileNameCmp = string.Compare(fr1.FilePath.Name, fr2.FilePath.Name, cmp);
+		return fileNameCmp == 0 ? string.Compare(fr1.FilePath.Parent?.ToString(), fr2.FilePath.Parent?.ToString(), cmp) : fileNameCmp;
 	}
 
 	private int CompareBySize(FileResult fr1, FileResult fr2)
 	{
-		return fr1.File.Length == fr2.File.Length ? CompareByPath(fr1, fr2) : fr1.File.Length.CompareTo(fr2.File.Length);
+		return fr1.FilePath.Length == fr2.FilePath.Length ? CompareByPath(fr1, fr2) : fr1.FilePath.Length.CompareTo(fr2.FilePath.Length);
 	}
 
 	private int CompareByType(FileResult fr1, FileResult fr2)
@@ -341,7 +371,7 @@ public class Finder
 
 	private int CompareByLastMod(FileResult fr1, FileResult fr2)
 	{
-		return fr1.File.LastWriteTimeUtc == fr2.File.LastWriteTimeUtc ? CompareByPath(fr1, fr2) : fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc);
+		return fr1.FilePath.LastWriteTimeUtc == fr2.FilePath.LastWriteTimeUtc ? CompareByPath(fr1, fr2) : fr1.FilePath.LastWriteTimeUtc.CompareTo(fr2.FilePath.LastWriteTimeUtc);
 	}
 	
 	private void SortFileResults(List<FileResult> fileResults)
@@ -371,35 +401,22 @@ public class Finder
 		}
 	}
 
-	private static List<DirectoryInfo> GetMatchingDirs(IEnumerable<FileResult> fileResults)
+	private static List<FilePath> GetMatchingDirs(IEnumerable<FileResult> fileResults)
 	{
 		return
 		[
-			..fileResults.Where(fr => fr.File.Directory != null)
-				.Select(fr => fr.File.Directory!)
-				.DistinctBy(d => d.FullName)
+			..fileResults.Where(fr => fr.FilePath.Parent != null)
+				.Select(fr => fr.FilePath.Parent!)
+				.DistinctBy(d => d.ToString())
 		];
 	}
 
-	private string GetRelativePath(string path)
-	{
-		foreach (var p in Settings.Paths)
-		{
-			var relativePath = FileUtil.GetRelativePath(path, p);
-			if (relativePath.Length < path.Length)
-			{
-				return relativePath;
-			}
-		}
-		return path;
-	}
-
-	public void PrintMatchingDirs(IEnumerable<FileResult> fileResults)
+	public static void PrintMatchingDirs(IEnumerable<FileResult> fileResults)
 	{
 		var matchingDirs = GetMatchingDirs(fileResults)
-			.Select(d => GetRelativePath(d.FullName))
+			.Select(d => d.ToString())
 			.ToList();
-		if (matchingDirs.Any()) {
+		if (matchingDirs.Count != 0) {
 			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
 			foreach (var d in matchingDirs)
 			{
@@ -410,19 +427,21 @@ public class Finder
 		}
 	}
 
-	private static List<FileInfo> GetMatchingFiles(IEnumerable<FileResult> fileResults)
+	private static List<FilePath> GetMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
-		return new List<FileInfo>(
-			fileResults
-				.Select(fr => fr.File));
+		return
+		[
+			..fileResults
+				.Select(fr => fr.FilePath)
+		];
 	}
 
-	public void PrintMatchingFiles(IEnumerable<FileResult> fileResults)
+	public static void PrintMatchingFiles(IEnumerable<FileResult> fileResults)
 	{
 		var matchingFiles = GetMatchingFiles(fileResults)
-			.Select(f => GetRelativePath(f.FullName))
+			.Select(f => f.ToString())
 			.ToList();
-		if (matchingFiles.Any()) {
+		if (matchingFiles.Count != 0) {
 			Logger.Log($"\nMatching files ({matchingFiles.Count}):");
 			foreach (var f in matchingFiles)
 			{

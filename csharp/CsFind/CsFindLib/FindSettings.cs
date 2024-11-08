@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -41,10 +42,10 @@ public class FindSettings
 	public bool IncludeArchives { get; set; }
 	public bool IncludeHidden { get; set; }
 	public int MaxDepth { get; set; }
-	public System.DateTime? MaxLastMod { get; set; }
+	public DateTime? MaxLastMod { get; set; }
 	public int MaxSize { get; set; }
 	public int MinDepth { get; set; }
-	public System.DateTime? MinLastMod { get; set; }
+	public DateTime? MinLastMod { get; set; }
 	public int MinSize { get; set; }
 	public ISet<string> OutArchiveExtensions { get; private set; }
 	public ISet<Regex> OutArchiveFilePatterns { get; private set; }
@@ -52,7 +53,7 @@ public class FindSettings
 	public ISet<string> OutExtensions { get; private set; }
 	public ISet<Regex> OutFilePatterns { get; private set; }
 	public ISet<FileType> OutFileTypes { get; private set; }
-	public ISet<string> Paths { get; private set; }
+	public ISet<FilePath> Paths { get; private set; }
 	public bool PrintDirs { get; set; }
 	public bool PrintFiles { get; set; }
 	public bool PrintUsage { get; set; }
@@ -88,7 +89,7 @@ public class FindSettings
 		OutExtensions = new HashSet<string>();
 		OutFilePatterns = new HashSet<Regex>();
 		OutFileTypes = new HashSet<FileType>();
-		Paths = new HashSet<string>();
+		Paths = new HashSet<FilePath>(new FilePathComparer());
 		PrintDirs = false;
 		PrintFiles = false;
 		PrintUsage = false;
@@ -100,83 +101,13 @@ public class FindSettings
 		Verbose = false;
 	}
 
-	public FindSettings(
-		bool archivesOnly,
-		bool debug,
-		bool followSymlinks,
-		ISet<string> inArchiveExtensions,
-		ISet<Regex> inArchiveFilePatterns,
-		ISet<Regex> inDirPatterns,
-		ISet<string> inExtensions,
-		ISet<Regex> inFilePatterns,
-		ISet<FileType> inFileTypes,
-		bool includeArchives,
-		bool includeHidden,
-		int maxDepth,
-		System.DateTime? maxLastMod,
-		int maxSize,
-		int minDepth,
-		System.DateTime? minLastMod,
-		int minSize,
-		ISet<string> outArchiveExtensions,
-		ISet<Regex> outArchiveFilePatterns,
-		ISet<Regex> outDirPatterns,
-		ISet<string> outExtensions,
-		ISet<Regex> outFilePatterns,
-		ISet<FileType> outFileTypes,
-		ISet<string> paths,
-		bool printDirs,
-		bool printFiles,
-		bool printUsage,
-		bool printVersion,
-		bool recursive,
-		SortBy sortBy,
-		bool sortCaseInsensitive,
-		bool sortDescending,
-		bool verbose)
-	{
-		ArchivesOnly = archivesOnly;
-		Debug = debug;
-		FollowSymlinks = followSymlinks;
-		InArchiveExtensions = inArchiveExtensions;
-		InArchiveFilePatterns = inArchiveFilePatterns;
-		InDirPatterns = inDirPatterns;
-		InExtensions = inExtensions;
-		InFilePatterns = inFilePatterns;
-		InFileTypes = inFileTypes;
-		IncludeArchives = includeArchives;
-		IncludeHidden = includeHidden;
-		PrintDirs = printDirs;
-		PrintFiles = printFiles;
-		MaxDepth = maxDepth;
-		MaxLastMod = maxLastMod;
-		MaxSize = maxSize;
-		MinDepth = minDepth;
-		MinLastMod = minLastMod;
-		MinSize = minSize;
-		OutArchiveExtensions = outArchiveExtensions;
-		OutArchiveFilePatterns = outArchiveFilePatterns;
-		OutDirPatterns = outDirPatterns;
-		OutExtensions = outExtensions;
-		OutFilePatterns = outFilePatterns;
-		OutFileTypes = outFileTypes;
-		Paths = paths;
-		PrintUsage = printUsage;
-		PrintVersion = printVersion;
-		Recursive = recursive;
-		SortBy = sortBy;
-		SortCaseInsensitive = sortCaseInsensitive;
-		SortDescending = sortDescending;
-		Verbose = verbose;
-	}
-
 	private static void AddExtension(ISet<string> set, string extList)
 	{
-		var exts = extList.Split(new[] { ',' });
+		var exts = extList.Split([',']);
 		foreach (var x in exts)
 		{
 			var ext = x;
-			if (!ext.StartsWith("."))
+			if (!ext.StartsWith('.'))
 				ext = "." + ext;
 			set.Add(ext.ToLowerInvariant());
 		}
@@ -239,7 +170,7 @@ public class FindSettings
 
 	private static void AddFileType(ISet<FileType> set, string typeNameList)
 	{
-		var typeNames = typeNameList.Split(new[] { ',' });
+		var typeNames = typeNameList.Split([',']);
 		foreach (var t in typeNames)
 		{
 			set.Add(FileTypes.FromName(t));
@@ -256,12 +187,17 @@ public class FindSettings
 		AddFileType(OutFileTypes, typeName);
 	}
 
+	public void AddPath(string path)
+	{
+		Paths.Add(new FilePath(path));
+	}
+
 	public void SetSortBy(string sortByName)
 	{
 		SortBy = SortByUtil.GetSortByFromName(sortByName);
 	}
 
-	private static string DateTimeToString(System.DateTime? dt)
+	private static string DateTimeToString(DateTime? dt)
 	{
 		return dt == null ? "0" : $"\"{dt}\"";
 	}

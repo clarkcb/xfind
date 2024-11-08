@@ -10,19 +10,13 @@ public static class FileUtil
 {
 	private const string CurrentPath = ".";
 	private const string ParentPath = "..";
-	private static readonly ISet<string> DotDirs = new HashSet<string> { CurrentPath, ParentPath };
+	private static readonly HashSet<string> DotDirs = [CurrentPath, ParentPath];
 
 	public static string GetHomePath()
 	{
 		return Environment.GetEnvironmentVariable("HOME")
 		       ?? Environment.GetEnvironmentVariable("USERPROFILE")
 		       ?? "~";
-	}
-
-	public static string GetFileExtension(FileInfo fi)
-	{
-		var ext = fi.Extension;
-		return string.IsNullOrEmpty(ext) ? "" : ext[1..];
 	}
 
 	public static string NormalizePath(string path)
@@ -47,18 +41,10 @@ public static class FileUtil
 		return filePath;
 	}
 
-	public static IEnumerable<string> GetDirElems(DirectoryInfo dir)
+	public static List<string> GetPathElems(FilePath filePath)
 	{
-		var elems = new List<string> { dir.Name };
-		var parent = dir.Parent;
-		var root = Path.DirectorySeparatorChar.ToString();
-		while (parent != null && parent.Name != root)
-		{
-			elems.Add(parent.Name);
-			parent = parent.Parent;
-		}
-
-		return elems;
+		return filePath.Path.Split(Path.DirectorySeparatorChar)
+			.Where(e => !string.IsNullOrWhiteSpace(e)).ToList();
 	}
 
 	public static bool IsDotDir(string fileName)
@@ -66,21 +52,21 @@ public static class FileUtil
 		return DotDirs.Contains(NormalizePath(fileName));
 	}
 
-	public static bool IsHidden(string filePath)
+	public static bool IsHidden(string fileName)
 	{
-		return (filePath.StartsWith(CurrentPath) && !IsDotDir(filePath));
+		return fileName.StartsWith(CurrentPath) && !IsDotDir(fileName);
 	}
 
 	public static bool IsHiddenFile(FileSystemInfo f)
 	{
 		// TODO: the attributes check seems to return some false positives
-		return ((f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
-		        || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0));
+		return (f.Name.StartsWith(CurrentPath) && !IsDotDir(f.Name))
+		       || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0);
 	}
 
-	public static int SepCount(string path)
+	public static bool IsHiddenFilePath(FilePath filePath)
 	{
-		return path.Count(c => c == Path.DirectorySeparatorChar);
+		return IsHiddenFile(filePath.File);
 	}
 
 	public static string GetFileContents(string filePath, Encoding encoding)

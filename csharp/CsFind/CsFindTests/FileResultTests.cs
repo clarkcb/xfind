@@ -6,19 +6,19 @@ namespace CsFindTests;
 [TestFixture]
 class FileResultTests
 {
-	private const string CsFindPath = "~/src/xfind/csharp/CsFind/CsFind";
+	private const string CsFinderPath = "~/src/xfind/csharp/CsFind/CsFind/Finder.cs";
 
 	[Test]
 	public void FileResult_ToString_EqualsExpected()
 	{
-		var fileResult = new FileResult(CsFindPath, "Finder.cs", FileType.Text);
-		Assert.That(fileResult.ToString(), Is.EqualTo(CsFindPath + "/Finder.cs"));
+		var fileResult = new FileResult(CsFinderPath, FileType.Text);
+		Assert.That(fileResult.ToString(), Is.EqualTo(CsFinderPath));
 	}
 
 	[Test]
 	public void FileResultTrailingSlash_ToString_EqualsExpected()
 	{
-		var fileResult = new FileResult(CsFindPath + "/", "Finder.cs", FileType.Text);
-		Assert.That(fileResult.ToString(), Is.EqualTo(CsFindPath + "/Finder.cs"));
+		var fileResult = new FileResult(CsFinderPath, FileType.Code);
+		Assert.That(fileResult.ToString(), Is.EqualTo(CsFinderPath));
 	}
 }

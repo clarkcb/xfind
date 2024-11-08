@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using FileTypesDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string, object>>>;
@@ -93,82 +92,82 @@ public class FileTypes
 			};
 	}
 
-	public FileType GetFileType(FileInfo f)
+	public FileType GetFileType(FilePath filePath)
 	{
 		// more specific first
-		if (IsCodeFile(f)) return FileType.Code;
-		if (IsArchiveFile(f)) return FileType.Archive;
-		if (IsAudioFile(f)) return FileType.Audio;
-		if (IsFontFile(f)) return FileType.Font;
-		if (IsImageFile(f)) return FileType.Image;
-		if (IsVideoFile(f)) return FileType.Video;
+		if (IsCodeFile(filePath)) return FileType.Code;
+		if (IsArchiveFile(filePath)) return FileType.Archive;
+		if (IsAudioFile(filePath)) return FileType.Audio;
+		if (IsFontFile(filePath)) return FileType.Font;
+		if (IsImageFile(filePath)) return FileType.Image;
+		if (IsVideoFile(filePath)) return FileType.Video;
 		// more general last
-		if (IsXmlFile(f)) return FileType.Xml;
-		if (IsTextFile(f)) return FileType.Text;
-		if (IsBinaryFile(f)) return FileType.Binary;
+		if (IsXmlFile(filePath)) return FileType.Xml;
+		if (IsTextFile(filePath)) return FileType.Text;
+		if (IsBinaryFile(filePath)) return FileType.Binary;
 		return FileType.Unknown;
 	}
 
-	public bool IsArchiveFile(FileInfo f)
+	public bool IsArchiveFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Archive].Contains(f.Name)
-		        || _fileTypeExtDictionary[Archive].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Archive].Contains(filePath.Name)
+		        || _fileTypeExtDictionary[Archive].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsAudioFile(FileInfo f)
+	public bool IsAudioFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Audio].Contains(f.Name)
-		        || _fileTypeExtDictionary[Audio].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Audio].Contains(filePath.Name)
+		        || _fileTypeExtDictionary[Audio].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsBinaryFile(FileInfo f)
+	public bool IsBinaryFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Binary].Contains(f.Name)
-		        || _fileTypeExtDictionary[Binary].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Binary].Contains(filePath.Name)
+		        || _fileTypeExtDictionary[Binary].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsCodeFile(FileInfo f)
+	public bool IsCodeFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Code].Contains(f.Name)
-		       || _fileTypeExtDictionary[Code].Contains(f.Extension.ToLowerInvariant());
+		return _fileTypeNameDictionary[Code].Contains(filePath.Name)
+		       || _fileTypeExtDictionary[Code].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsFontFile(FileInfo f)
+	public bool IsFontFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Font].Contains(f.Name)
-		       || _fileTypeExtDictionary[Font].Contains(f.Extension.ToLowerInvariant());
+		return _fileTypeNameDictionary[Font].Contains(filePath.Name)
+		       || _fileTypeExtDictionary[Font].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsImageFile(FileInfo f)
+	public bool IsImageFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Image].Contains(f.Name)
-		       || _fileTypeExtDictionary[Image].Contains(f.Extension.ToLowerInvariant());
+		return _fileTypeNameDictionary[Image].Contains(filePath.Name)
+		       || _fileTypeExtDictionary[Image].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsTextFile(FileInfo f)
+	public bool IsTextFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Text].Contains(f.Name) ||
-		        _fileTypeExtDictionary[Text].Contains(f.Extension.ToLowerInvariant()) ||
-		        _fileTypeNameDictionary[Code].Contains(f.Name) ||
-		        _fileTypeExtDictionary[Code].Contains(f.Extension.ToLowerInvariant()) ||
-		        _fileTypeNameDictionary[Xml].Contains(f.Name) ||
-		        _fileTypeExtDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Text].Contains(filePath.Name) ||
+		        _fileTypeExtDictionary[Text].Contains(filePath.Extension.ToLowerInvariant()) ||
+		        _fileTypeNameDictionary[Code].Contains(filePath.Name) ||
+		        _fileTypeExtDictionary[Code].Contains(filePath.Extension.ToLowerInvariant()) ||
+		        _fileTypeNameDictionary[Xml].Contains(filePath.Name) ||
+		        _fileTypeExtDictionary[Xml].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsVideoFile(FileInfo f)
+	public bool IsVideoFile(FilePath filePath)
 	{
-		return _fileTypeNameDictionary[Video].Contains(f.Name)
-		       || _fileTypeExtDictionary[Video].Contains(f.Extension.ToLowerInvariant());
+		return _fileTypeNameDictionary[Video].Contains(filePath.Name)
+		       || _fileTypeExtDictionary[Video].Contains(filePath.Extension.ToLowerInvariant());
 	}
 
-	public bool IsUnknownFile(FileInfo f)
+	public bool IsUnknownFile(FilePath filePath)
 	{
-		return GetFileType(f) == FileType.Unknown;
+		return GetFileType(filePath) == FileType.Unknown;
 	}
 
-	public bool IsXmlFile(FileInfo f)
+	public bool IsXmlFile(FilePath filePath)
 	{
-		return  _fileTypeNameDictionary[Xml].Contains(f.Name)
-		        || _fileTypeExtDictionary[Xml].Contains(f.Extension.ToLowerInvariant());
+		return  _fileTypeNameDictionary[Xml].Contains(filePath.Name)
+		        || _fileTypeExtDictionary[Xml].Contains(filePath.Extension.ToLowerInvariant());
 	}
 }
