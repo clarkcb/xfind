@@ -11,11 +11,11 @@ import argparse
 import json
 import subprocess
 import sys
+
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Union
-
 from tabulate import tabulate
+from typing import Union
 
 from xfind import *
 
@@ -361,7 +361,7 @@ class Benchmarker(object):
         self.group_names = []
         self.scenario_names = []
         self.scenarios = []
-        self.scenarios_file = None
+        self.scenarios_file = ''
         self.runs = default_runs
         self.debug = True
         self.exit_on_diff = True
@@ -456,11 +456,9 @@ class Benchmarker(object):
         title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs".\
             format(len(scenario_results.scenario_results), len(self.scenarios),
                    scenario_results.runs, len(self.scenarios) * self.runs)
-
         title += '\n\nDate/time:  {}'.format(datetime.now())
         title += '\nGit branch: "{}" ({})\n'.format(self.git_info["branch"],
                                                   self.git_info["commit"])
-
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user', 'avg',
                'rank', 'total', 'avg', 'rank']
         data = []
@@ -483,7 +481,6 @@ class Benchmarker(object):
             xtr = scenario_results.rank_total(x)
             data.append([x, xr, xra, xrr, xs, xsa, xsr, xu, xua, xur, xt, xta, xtr])
         sorted_data = sorted(data, key=lambda d: d[12])
-        # self.__print_data_table(title, hdr, data, col_types)
         self.__print_data_table(title, hdr, sorted_data, col_types)
 
     def print_scenario_result(self, scenario_result: ScenarioResult):
@@ -537,7 +534,6 @@ class Benchmarker(object):
         self.__print_data_table(title, hdr, data, col_types)
 
     def times_from_lines(self, lines: list[str]) -> dict[str, float]:
-        # print(f'times_from_lines: {lines}')
         times_lines = [l for l in lines if l.endswith(' sys')]
         if times_lines:
             time_line_re = re.compile(r'^(\d+\.\d+)\s+(real)\s+(\d+\.\d+)\s+(user)\s+(\d+\.\d+)\s+(sys)$')
@@ -574,7 +570,6 @@ class Benchmarker(object):
         else:
             print(f"Times line not found")
             time_dict = {s: 0 for s in time_keys}
-        # print('time_dict: {}'.format(time_dict))
         return time_dict
 
     def bash_times_from_lines(self, lines: list[str]) -> dict[str, float]:
@@ -591,10 +586,8 @@ class Benchmarker(object):
             for time_name_match in time_name_matches:
                 n = time_name_match.group(3)
                 t = time_name_match.group(1)
-                # print('name: "{}", time: {}'.format(n, t))
                 if n == 'elapsed':
                     colon_idx = t.find(':')
-                    # print('colon_idx: {}'.format(colon_idx))
                     time_dict['real'] = float(t[colon_idx+1:])
                 else:
                     if n == 'system':
@@ -609,7 +602,6 @@ class Benchmarker(object):
                 print(f"Exception: {str(e)}")
                 print(f"Invalid times line: \"{lines[0]}\"")
                 time_dict = {s: 0 for s in time_keys}
-        # print('time_dict: {}'.format(time_dict))
         return time_dict
 
     def compare_outputs(self, s: Scenario, sn: int, xfind_output: dict[str, list[str]]) -> bool:
@@ -622,9 +614,6 @@ class Benchmarker(object):
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
                 print(f'{x} output ({len(xfind_output[x])} lines):\n"{xfind_output[x]}"')
                 print(f'{y} output ({len(xfind_output[y])} lines):\n"{xfind_output[y]}"')
-            # for x in xs:
-            #     if non_matching[x]:
-            #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
             return False
         else:
             print('\nOutputs of all versions match')
@@ -640,9 +629,6 @@ class Benchmarker(object):
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
                 print(f'{x} output ({len(xfind_output[x])} lines):\n"{xfind_output[x]}"')
                 print(f'{y} output ({len(xfind_output[y])} lines):\n"{xfind_output[y]}"')
-            # for x in xs:
-            #     if non_matching[x]:
-            #         print(f'\n{x} output differs with output of {len(non_matching[x])} other language versions: {str(non_matching[x])}')
             return False
         else:
             print('\nOutputs of all versions match')
@@ -665,7 +651,6 @@ class Benchmarker(object):
             print(' '.join(fullargs[1:]))
             xfind_procs[x] = subprocess.Popen(fullargs, bufsize=-1, stdout=subprocess.PIPE,
                                               stderr=subprocess.PIPE)
-            # print('process opened for {}'.format(x))
 
         for x in self.xfind_names:
             p = xfind_procs[x]
@@ -809,45 +794,6 @@ class Benchmarker(object):
 ########################################
 # Main functions
 ########################################
-def get_args(args):
-    xfind_names = all_xfind_names
-    runs = default_runs
-    debug = False
-    exit_on_diff = True
-    while args:
-        arg = args.pop(0)
-        if arg.startswith('-'):
-            if arg == '-l':  # xfind_names
-                xfind_names = []
-                if args:
-                    langs = sorted(args.pop(0).split(','))
-                    for lang in langs:
-                        if lang in xfind_dict:
-                            xfind_names.append(xfind_dict[lang])
-                        else:
-                            print(f'Skipping unknown language: {lang}')
-                else:
-                    print('ERROR: missing language names for -l arg')
-                    sys.exit(1)
-            elif arg == '-r':  # runs
-                if args:
-                    runs = int(args.pop(0))
-                else:
-                    print('ERROR: missing runs value for -r arg')
-                    sys.exit(1)
-            elif arg == '-b':
-                exit_on_diff = True
-            elif arg == '--debug':
-                debug = True
-            else:
-                print(f'ERROR: unknown arg: {arg}')
-                sys.exit(1)
-        else:
-            print(f'ERROR: unknown arg: {arg}')
-            sys.exit(1)
-    return xfind_names, runs, exit_on_diff, debug
-
-
 def get_git_info():
     git_info = {}
     try:

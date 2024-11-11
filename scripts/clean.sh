@@ -30,15 +30,15 @@ usage () {
 # Clean Functions
 ########################################
 
-clean_bash () {
+clean_bashfind () {
     echo
-    hdr "clean_bash"
+    hdr "clean_bashfind"
     log "Nothing to do for bash"
 }
 
-clean_c () {
+clean_cfind () {
     echo
-    hdr "clean_c"
+    hdr "clean_cfind"
 
     cd "$CFIND_PATH"
 
@@ -51,9 +51,9 @@ clean_c () {
     cd -
 }
 
-clean_clojure () {
+clean_cljfind () {
     echo
-    hdr "clean_clojure"
+    hdr "clean_cljfind"
 
     # ensure lein is installed
     if [ -z "$(which lein)" ]
@@ -70,9 +70,9 @@ clean_clojure () {
     cd -
 }
 
-clean_cpp () {
+clean_cppfind () {
     echo
-    hdr "clean_cpp"
+    hdr "clean_cppfind"
 
     cd "$CPPFIND_PATH"
 
@@ -85,9 +85,9 @@ clean_cpp () {
     cd -
 }
 
-clean_csharp () {
+clean_csfind () {
     echo
-    hdr "clean_csharp"
+    hdr "clean_csfind"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -116,9 +116,9 @@ clean_csharp () {
     cd -
 }
 
-clean_dart () {
+clean_dartfind () {
     echo
-    hdr "clean_dart"
+    hdr "clean_dartfind"
 
     # ensure dart is installed
     if [ -z "$(which dart)" ]
@@ -136,9 +136,9 @@ clean_dart () {
     cd -
 }
 
-clean_elixir () {
+clean_exfind () {
     echo
-    hdr "clean_elixir"
+    hdr "clean_exfind"
 
     # ensure elixir is installed
     if [ -z "$(which elixir)" ]
@@ -162,9 +162,9 @@ clean_elixir () {
     cd -
 }
 
-clean_fsharp () {
+clean_fsfind () {
     echo
-    hdr "clean_fsharp"
+    hdr "clean_fsfind"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -193,9 +193,9 @@ clean_fsharp () {
     cd -
 }
 
-clean_go () {
+clean_gofind () {
     echo
-    hdr "clean_go"
+    hdr "clean_gofind"
 
     # ensure go is installed
     if [ -z "$(which go)" ]
@@ -212,9 +212,9 @@ clean_go () {
     cd -
 }
 
-clean_groovy () {
+clean_groovyfind () {
     echo
-    hdr "clean_groovy"
+    hdr "clean_groovyfind"
 
     cd "$GROOVYFIND_PATH"
 
@@ -237,9 +237,9 @@ clean_groovy () {
     cd -
 }
 
-clean_haskell () {
+clean_hsfind () {
     echo
-    hdr "clean_haskell"
+    hdr "clean_hsfind"
 
     # ensure stack is installed
     if [ -z "$(which stack)" ]
@@ -256,9 +256,9 @@ clean_haskell () {
     cd -
 }
 
-clean_java () {
+clean_javafind () {
     echo
-    hdr "clean_java"
+    hdr "clean_javafind"
 
     cd "$JAVAFIND_PATH"
 
@@ -281,9 +281,9 @@ clean_java () {
     cd -
 }
 
-clean_javascript () {
+clean_jsfind () {
     echo
-    hdr "clean_javascript"
+    hdr "clean_jsfind"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
@@ -300,9 +300,9 @@ clean_javascript () {
     cd -
 }
 
-clean_kotlin () {
+clean_ktfind () {
     echo
-    hdr "clean_kotlin"
+    hdr "clean_ktfind"
 
     cd "$KTFIND_PATH"
 
@@ -325,9 +325,9 @@ clean_kotlin () {
     cd -
 }
 
-clean_objc () {
+clean_objcfind () {
     echo
-    hdr "clean_objc"
+    hdr "clean_objcfind"
 
     cd "$OBJCFIND_PATH"
 
@@ -337,46 +337,46 @@ clean_objc () {
     cd -
 }
 
-clean_ocaml () {
+clean_mlfind () {
     echo
-    hdr "clean_ocaml"
+    hdr "clean_mlfind"
 
     # TODO: probably want to delete the _build directory
 }
 
-clean_perl () {
+clean_plfind () {
     echo
-    hdr "clean_perl"
+    hdr "clean_plfind"
     log "Nothing to do for perl"
 }
 
-clean_php () {
+clean_phpfind () {
     echo
-    hdr "clean_php"
+    hdr "clean_phpfind"
     log "Nothing to do for php"
 }
 
-clean_powershell () {
+clean_ps1find () {
     echo
-    hdr "clean_powershell"
+    hdr "clean_ps1find"
     log "Nothing to do for powershell"
 }
 
-clean_python () {
+clean_pyfind () {
     echo
-    hdr "clean_python"
+    hdr "clean_pyfind"
     log "Nothing to do for python"
 }
 
-clean_ruby () {
+clean_rbfind () {
     echo
-    hdr "clean_ruby"
+    hdr "clean_rbfind"
     log "Nothing to do for ruby"
 }
 
-clean_rust () {
+clean_rsfind () {
     echo
-    hdr "clean_rust"
+    hdr "clean_rsfind"
 
     # ensure cargo is installed
     if [ -z "$(which cargo)" ]
@@ -393,9 +393,9 @@ clean_rust () {
     cd -
 }
 
-clean_scala () {
+clean_scalafind () {
     echo
-    hdr "clean_scala"
+    hdr "clean_scalafind"
 
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
@@ -414,9 +414,9 @@ clean_scala () {
     cd -
 }
 
-clean_swift () {
+clean_swiftfind () {
     echo
-    hdr "clean_swift"
+    hdr "clean_swiftfind"
 
     cd "$SWIFTFIND_PATH"
 
@@ -426,9 +426,9 @@ clean_swift () {
     cd -
 }
 
-clean_typescript () {
+clean_tsfind () {
     echo
-    hdr "clean_typescript"
+    hdr "clean_tsfind"
 
     # ensure npm is installed
     if [ -z "$(which npm)" ]
@@ -448,109 +448,123 @@ clean_typescript () {
 clean_linux () {
     hdr "clean_linux"
 
-    clean_bash
+    clean_bashfind
 
-    clean_c
+    clean_cfind
 
-    # clean_clojure
+    # clean_cljfind
 
-    # clean_cpp
+    # clean_cppfind
 
-    clean_csharp
+    clean_csfind
 
-    # clean_dart
+    # clean_dartfind
 
-    clean_fsharp
+    clean_fsfind
 
-    clean_go
+    clean_gofind
 
-    clean_groovy
+    clean_groovyfind
 
-    # clean_haskell
+    # clean_hsfind
 
-    clean_java
+    clean_javafind
 
-    clean_javascript
+    clean_jsfind
 
-    clean_kotlin
+    clean_ktfind
 
-    # clean_objc
+    # clean_objcfind
 
-    # clean_ocaml
+    # clean_mlfind
 
-    clean_perl
+    clean_plfind
 
-    clean_php
+    clean_phpfind
 
-    clean_python
+    clean_pyfind
 
-    clean_ruby
+    clean_rbfind
 
-    clean_rust
+    clean_rsfind
 
-    # clean_scala
+    # clean_scalafind
 
-    clean_swift
+    clean_swiftfind
 
-    clean_typescript
+    clean_tsfind
 }
 
 clean_all () {
     hdr "clean_all"
 
-    clean_bash
+    clean_bashfind
 
-    clean_c
+    clean_cfind
 
-    clean_clojure
+    clean_cljfind
 
-    clean_cpp
+    clean_cppfind
 
-    clean_csharp
+    clean_csfind
 
-    clean_dart
+    clean_dartfind
 
-    clean_fsharp
+    clean_fsfind
 
-    clean_go
+    clean_gofind
 
-    clean_groovy
+    clean_groovyfind
 
-    clean_haskell
+    clean_hsfind
 
-    clean_java
+    clean_javafind
 
-    clean_javascript
+    clean_jsfind
 
-    clean_kotlin
+    clean_ktfind
 
-    clean_objc
+    clean_objcfind
 
-    clean_ocaml
+    clean_mlfind
 
-    clean_perl
+    clean_plfind
 
-    clean_php
+    clean_phpfind
 
-    clean_powershell
+    clean_ps1find
 
-    clean_python
+    clean_pyfind
 
-    clean_ruby
+    clean_rbfind
 
-    clean_rust
+    clean_rsfind
 
-    clean_scala
+    clean_scalafind
 
-    clean_swift
+    clean_swiftfind
 
-    clean_typescript
+    clean_tsfind
 }
 
 
 ########################################
 # Clean Main
 ########################################
+echo
+hdr "xfind clean script"
+log "user: $USER"
+log "host: $HOSTNAME"
+log "os: $(uname -o)"
+
+# Get the current git branch and commit
+# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse --short HEAD)
+log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
+
+log "args: $*"
+
 HELP=
 CLEAN_ALL=
 TARGET_LANGS=()
@@ -604,79 +618,79 @@ do
             clean_linux
             ;;
         bash)
-            clean_bash
+            clean_bashfind
             ;;
         c)
-            clean_c
+            clean_cfind
             ;;
         clj | clojure)
-            clean_clojure
+            clean_cljfind
             ;;
         cpp)
-            clean_cpp
+            clean_cppfind
             ;;
         cs | csharp)
-            clean_csharp
+            clean_csfind
             ;;
         dart)
-            clean_dart
+            clean_dartfind
             ;;
         elixir | ex)
-            clean_elixir
+            clean_exfind
             ;;
         fs | fsharp)
-            clean_fsharp
+            clean_fsfind
             ;;
         go)
-            clean_go
+            clean_gofind
             ;;
         groovy)
-            clean_groovy
+            clean_groovyfind
             ;;
         haskell | hs)
-            clean_haskell
+            clean_hsfind
             ;;
         java)
-            clean_java
+            clean_javafind
             ;;
         javascript | js)
-            clean_javascript
+            clean_jsfind
             ;;
         kotlin | kt)
-            clean_kotlin
+            clean_ktfind
             ;;
         objc)
-            clean_objc
+            clean_objcfind
             ;;
         # ocaml | ml)
-        #     clean_ocaml
+        #     clean_mlfind
         #     ;;
         perl | pl)
-            clean_perl
+            clean_plfind
             ;;
         php)
-            clean_php
+            clean_phpfind
             ;;
         ps1 | powershell)
-            clean_powershell
+            clean_ps1find
             ;;
         py | python)
-            clean_python
+            clean_pyfind
             ;;
         rb | ruby)
-            clean_ruby
+            clean_rbfind
             ;;
         rs | rust)
-            clean_rust
+            clean_rsfind
             ;;
         scala)
-            clean_scala
+            clean_scalafind
             ;;
         swift)
-            clean_swift
+            clean_swiftfind
             ;;
         ts | typescript)
-            clean_typescript
+            clean_tsfind
             ;;
         *)
             log_error "ERROR: unknown/unsupported language: $TARGET_LANG"

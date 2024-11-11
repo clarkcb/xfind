@@ -165,10 +165,11 @@ function AddToBin
 # Build functions
 ################################################################################
 
-function BuildBash
+function BuildBashFind
 {
     Write-Host
-    Hdr('BuildBash')
+    Hdr('BuildBashFind')
+    Log("language: bash")
 
     # ensure bash is installed
     if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
@@ -185,14 +186,15 @@ function BuildBash
     AddToBin($bashfindExe)
 }
 
-function BuildC
+function BuildCFind
 {
     Write-Host
-    Hdr('BuildC')
+    Hdr('BuildCFind')
+    Log("language: C")
 
     if ($IsWindows)
     {
-        Log('BuildC - currently unimplemented for Windows')
+        Log('BuildCFind - currently unimplemented for Windows')
         return
     }
     if (!$IsMacOS -and !$IsLinux)
@@ -279,10 +281,11 @@ function BuildC
     Set-Location $oldPwd
 }
 
-function BuildClojure
+function BuildCljFind
 {
     Write-Host
-    Hdr('BuildClojure')
+    Hdr('BuildCljFind')
+    Log("language: clojure")
 
     # ensure clojure is installed
     if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue'))
@@ -345,14 +348,15 @@ function BuildClojure
     Set-Location $oldPwd
 }
 
-function BuildCpp
+function BuildCppFind
 {
     Write-Host
-    Hdr('BuildCpp')
+    Hdr('BuildCppFind')
+    Log("language: C++")
 
     if ($IsWindows)
     {
-        Log('BuildCpp - currently unimplemented for Windows')
+        Log('BuildCppFind - currently unimplemented for Windows')
         return
     }
     if (!$IsMacOS -and !$IsLinux)
@@ -445,10 +449,11 @@ function BuildCpp
     Set-Location $oldPwd
 }
 
-function BuildCsharp
+function BuildCsFind
 {
     Write-Host
-    Hdr('BuildCsharp')
+    Hdr('BuildCsFind')
+    Log("language: C#")
 
     # ensure dotnet is installed
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
@@ -528,10 +533,11 @@ function BuildCsharp
     Set-Location $oldPwd
 }
 
-function BuildDart
+function BuildDartFind
 {
     Write-Host
-    Hdr('BuildDart')
+    Hdr('BuildDartFind')
+    Log("language: dart")
 
     # ensure dart is installed
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
@@ -583,10 +589,11 @@ function BuildDart
     Set-Location $oldPwd
 }
 
-function BuildElixir
+function BuildExFind
 {
     Write-Host
-    Hdr('BuildElixir')
+    Hdr('BuildExFind')
+    Log("language: elixir")
 
     # ensure elixir is installed
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
@@ -642,10 +649,11 @@ function BuildElixir
     Set-Location $oldPwd
 }
 
-function BuildFsharp
+function BuildFsFind
 {
     Write-Host
-    Hdr('BuildFsharp')
+    Hdr('BuildFsFind')
+    Log("language: F#")
 
     # ensure dotnet is installed
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
@@ -725,10 +733,11 @@ function BuildFsharp
     Set-Location $oldPwd
 }
 
-function BuildGo
+function BuildGoFind
 {
     Write-Host
-    Hdr('BuildGo')
+    Hdr('BuildGoFind')
+    Log("language: go")
 
     # ensure go is installed
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
@@ -787,10 +796,11 @@ function BuildGo
     Set-Location $oldPwd
 }
 
-function BuildGroovy
+function BuildGroovyFind
 {
     Write-Host
-    Hdr('BuildGroovy')
+    Hdr('BuildGroovyFind')
+    Log("language: groovy")
 
     # ensure groovy is installed
     if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue'))
@@ -882,10 +892,11 @@ function BuildGroovy
     Set-Location $oldPwd
 }
 
-function BuildHaskell
+function BuildHsFind
 {
     Write-Host
-    Hdr('BuildHaskell')
+    Hdr('BuildHsFind')
+    Log("language: haskell")
 
     # ensure ghc is installed
     if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
@@ -956,10 +967,11 @@ function BuildHaskell
     Set-Location $oldPwd
 }
 
-function BuildJava
+function BuildJavaFind
 {
     Write-Host
-    Hdr('BuildJava')
+    Hdr('BuildJavaFind')
+    Log("language: java")
 
     # ensure java is installed
     if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
@@ -1048,10 +1060,11 @@ function BuildJava
     Set-Location $oldPwd
 }
 
-function BuildJavaScript
+function BuildJsFind
 {
     Write-Host
-    Hdr('BuildJavaScript')
+    Hdr('BuildJsFind')
+    Log("language: javascript")
 
     # ensure node is installed
     if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
@@ -1111,10 +1124,11 @@ function BuildJavaScript
     Set-Location $oldPwd
 }
 
-function BuildKotlin
+function BuildKtFind
 {
     Write-Host
-    Hdr('BuildKotlin')
+    Hdr('BuildKtFind')
+    Log("language: kotlin")
 
     $oldPwd = Get-Location
     Set-Location $ktfindPath
@@ -1186,10 +1200,11 @@ function BuildKotlin
     Set-Location $oldPwd
 }
 
-function BuildObjc
+function BuildObjcFind
 {
     Write-Host
-    Hdr('BuildObjc')
+    Hdr('BuildObjcFind')
+    Log("language: objc")
 
     # ensure swift is installed
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
@@ -1257,16 +1272,17 @@ function BuildObjc
     Set-Location $oldPwd
 }
 
-function BuildOcaml
+function BuildMlFind
 {
     Write-Host
-    Hdr('BuildOcaml - currently unimplemented')
+    Hdr('BuildMlFind - currently unimplemented')
 }
 
-function BuildPerl
+function BuildPlFind
 {
     Write-Host
-    Hdr('BuildPerl')
+    Hdr('BuildPlFind')
+    Log("language: perl")
 
     # ensure perl is installed
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
@@ -1308,10 +1324,11 @@ function BuildPerl
     AddToBin($plfindExe)
 }
 
-function BuildPhp
+function BuildPhpFind
 {
     Write-Host
-    Hdr('BuildPhp')
+    Hdr('BuildPhpFind')
+    Log("language: php")
 
     # ensure php is installed
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
@@ -1392,10 +1409,11 @@ function BuildPhp
     Set-Location $oldPwd
 }
 
-function BuildPowerShell
+function BuildPs1Find
 {
     Write-Host
-    Hdr('BuildPowerShell')
+    Hdr('BuildPs1Find')
+    Log("language: powershell")
 
     # We don't need to check for powershell, as we're running in it
 
@@ -1427,10 +1445,11 @@ function BuildPowerShell
     Set-Location $oldPwd
 }
 
-function BuildPython
+function BuildPyFind
 {
     Write-Host
-    Hdr('BuildPython')
+    Hdr('BuildPyFind')
+    Log("language: python")
 
     $oldPwd = Get-Location
     Set-Location $pyfindPath
@@ -1568,10 +1587,11 @@ function BuildPython
     Set-Location $oldPwd
 }
 
-function BuildRuby
+function BuildRbFind
 {
     Write-Host
-    Hdr('BuildRuby')
+    Hdr('BuildRbFind')
+    Log("language: ruby")
 
     # ensure ruby3.x is installed
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
@@ -1621,10 +1641,11 @@ function BuildRuby
     Set-Location $oldPwd
 }
 
-function BuildRust
+function BuildRsFind
 {
     Write-Host
-    Hdr('BuildRust')
+    Hdr('BuildRsFind')
+    Log("language: rust")
 
     # ensure rust is installed
     if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
@@ -1700,10 +1721,11 @@ function BuildRust
     Set-Location $oldPwd
 }
 
-function BuildScala
+function BuildScalaFind
 {
     Write-Host
-    Hdr('BuildScala')
+    Hdr('BuildScalaFind')
+    Log("language: scala")
 
     # ensure scalac is installed
     if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
@@ -1777,10 +1799,11 @@ function BuildScala
     Set-Location $oldPwd
 }
 
-function BuildSwift
+function BuildSwiftFind
 {
     Write-Host
-    Hdr('BuildSwift')
+    Hdr('BuildSwiftFind')
+    Log("language: swift")
 
     # ensure swift is installed
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
@@ -1851,10 +1874,11 @@ function BuildSwift
     Set-Location $oldPwd
 }
 
-function BuildTypeScript
+function BuildTsFind
 {
     Write-Host
-    Hdr('BuildTypeScript')
+    Hdr('BuildTsFind')
+    Log("language: typescript")
 
     # ensure node is installed
     if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
@@ -1919,45 +1943,45 @@ function BuildLinux
     Write-Host
     Hdr('BuildLinux')
 
-    Measure-Command { BuildBash }
+    Measure-Command { BuildBashFind }
 
-    Measure-Command { BuildC }
+    Measure-Command { BuildCFind }
 
-    # Measure-Command { BuildClojure }
+    # Measure-Command { BuildCljFind }
 
-    # Measure-Command { BuildCpp }
+    # Measure-Command { BuildCppFind }
 
-    Measure-Command { BuildCsharp }
+    Measure-Command { BuildCsFind }
 
-    Measure-Command { BuildDart }
+    Measure-Command { BuildDartFind }
 
-    Measure-Command { BuildFsharp }
+    Measure-Command { BuildFsFind }
 
-    Measure-Command { BuildGo }
+    Measure-Command { BuildGoFind }
 
-    Measure-Command { BuildJava }
+    Measure-Command { BuildJavaFind }
 
-    Measure-Command { BuildJavaScript }
+    Measure-Command { BuildJsFind }
 
-    # Measure-Command { BuildKotlin }
+    # Measure-Command { BuildKtFind }
 
-    Measure-Command { BuildPerl }
+    Measure-Command { BuildPlFind }
 
-    Measure-Command { BuildPhp }
+    Measure-Command { BuildPhpFind }
 
-    # Measure-Command { BuildPowerShell }
+    # Measure-Command { BuildPs1Find }
 
-    Measure-Command { BuildPython }
+    Measure-Command { BuildPyFind }
 
-    Measure-Command { BuildRuby }
+    Measure-Command { BuildRbFind }
 
-    Measure-Command { BuildRust }
+    Measure-Command { BuildRsFind }
 
-    # Measure-Command { BuildScala }
+    # Measure-Command { BuildScalaFind }
 
-    Measure-Command { BuildSwift }
+    Measure-Command { BuildSwiftFind }
 
-    Measure-Command { BuildTypeScript }
+    Measure-Command { BuildTsFind }
 }
 
 function BuildAll
@@ -1965,55 +1989,55 @@ function BuildAll
     Write-Host
     Hdr('BuildAll')
 
-    Measure-Command { BuildBash }
+    Measure-Command { BuildBashFind }
 
-    Measure-Command { BuildC }
+    Measure-Command { BuildCFind }
 
-    Measure-Command { BuildClojure }
+    Measure-Command { BuildCljFind }
 
-    Measure-Command { BuildCpp }
+    Measure-Command { BuildCppFind }
 
-    Measure-Command { BuildCsharp }
+    Measure-Command { BuildCsFind }
 
-    Measure-Command { BuildDart }
+    Measure-Command { BuildDartFind }
 
-    Measure-Command { BuildElixir }
+    Measure-Command { BuildExFind }
 
-    Measure-Command { BuildFsharp }
+    Measure-Command { BuildFsFind }
 
-    Measure-Command { BuildGo }
+    Measure-Command { BuildGoFind }
 
-    Measure-Command { BuildGroovy }
+    Measure-Command { BuildGroovyFind }
 
-    Measure-Command { BuildHaskell }
+    Measure-Command { BuildHsFind }
 
-    Measure-Command { BuildJava }
+    Measure-Command { BuildJavaFind }
 
-    Measure-Command { BuildJavaScript }
+    Measure-Command { BuildJsFind }
 
-    Measure-Command { BuildKotlin }
+    Measure-Command { BuildKtFind }
 
-    Measure-Command { BuildObjc }
+    Measure-Command { BuildObjcFind }
 
-    # Measure-Command { BuildOcaml }
+    # Measure-Command { BuildMlFind }
 
-    Measure-Command { BuildPerl }
+    Measure-Command { BuildPlFind }
 
-    Measure-Command { BuildPhp }
+    Measure-Command { BuildPhpFind }
 
-    Measure-Command { BuildPowerShell }
+    Measure-Command { BuildPs1Find }
 
-    Measure-Command { BuildPython }
+    Measure-Command { BuildPyFind }
 
-    Measure-Command { BuildRuby }
+    Measure-Command { BuildRbFind }
 
-    Measure-Command { BuildRust }
+    Measure-Command { BuildRsFind }
 
-    Measure-Command { BuildScala }
+    Measure-Command { BuildScalaFind }
 
-    Measure-Command { BuildSwift }
+    Measure-Command { BuildSwiftFind }
 
-    Measure-Command { BuildTypeScript }
+    Measure-Command { BuildTsFind }
 }
 
 ################################################################################
@@ -2040,45 +2064,45 @@ function BuildMain
         switch ($lang)
         {
             'linux'      { BuildLinux }
-            'bash'       { Measure-Command { BuildBash } }
-            'c'          { Measure-Command { BuildC } }
-            'clj'        { Measure-Command { BuildClojure } }
-            'clojure'    { Measure-Command { BuildClojure } }
-            'cpp'        { Measure-Command { BuildCpp } }
-            'cs'         { Measure-Command { BuildCsharp } }
-            'csharp'     { Measure-Command { BuildCsharp } }
-            'dart'       { Measure-Command { BuildDart } }
-            'elixir'     { Measure-Command { BuildElixir } }
-            'ex'         { Measure-Command { BuildElixir } }
-            'fs'         { Measure-Command { BuildFsharp } }
-            'fsharp'     { Measure-Command { BuildFsharp } }
-            'go'         { Measure-Command { BuildGo } }
-            'groovy'     { Measure-Command { BuildGroovy } }
-            'haskell'    { Measure-Command { BuildHaskell } }
-            'hs'         { Measure-Command { BuildHaskell } }
-            'java'       { Measure-Command { BuildJava } }
-            'javascript' { Measure-Command { BuildJavaScript } }
-            'js'         { Measure-Command { BuildJavaScript } }
-            'kotlin'     { Measure-Command { BuildKotlin } }
-            'kt'         { Measure-Command { BuildKotlin } }
-            'objc'       { Measure-Command { BuildObjc } }
-            'ocaml'      { Measure-Command { BuildOcaml } }
-            'ml'         { Measure-Command { BuildOcaml } }
-            'perl'       { Measure-Command { BuildPerl } }
-            'pl'         { Measure-Command { BuildPerl } }
-            'php'        { Measure-Command { BuildPhp } }
-            'powershell' { Measure-Command { BuildPowerShell } }
-            'ps1'        { Measure-Command { BuildPowerShell } }
-            'py'         { Measure-Command { BuildPython } }
-            'python'     { Measure-Command { BuildPython } }
-            'rb'         { Measure-Command { BuildRuby } }
-            'ruby'       { Measure-Command { BuildRuby } }
-            'rs'         { Measure-Command { BuildRust } }
-            'rust'       { Measure-Command { BuildRust } }
-            'scala'      { Measure-Command { BuildScala } }
-            'swift'      { Measure-Command { BuildSwift } }
-            'ts'         { Measure-Command { BuildTypeScript } }
-            'typescript' { Measure-Command { BuildTypeScript } }
+            'bash'       { Measure-Command { BuildBashFind } }
+            'c'          { Measure-Command { BuildCFind } }
+            'clj'        { Measure-Command { BuildCljFind } }
+            'clojure'    { Measure-Command { BuildCljFind } }
+            'cpp'        { Measure-Command { BuildCppFind } }
+            'cs'         { Measure-Command { BuildCsFind } }
+            'csharp'     { Measure-Command { BuildCsFind } }
+            'dart'       { Measure-Command { BuildDartFind } }
+            'elixir'     { Measure-Command { BuildExFind } }
+            'ex'         { Measure-Command { BuildExFind } }
+            'fs'         { Measure-Command { BuildFsFind } }
+            'fsharp'     { Measure-Command { BuildFsFind } }
+            'go'         { Measure-Command { BuildGoFind } }
+            'groovy'     { Measure-Command { BuildGroovyFind } }
+            'haskell'    { Measure-Command { BuildHsFind } }
+            'hs'         { Measure-Command { BuildHsFind } }
+            'java'       { Measure-Command { BuildJavaFind } }
+            'javascript' { Measure-Command { BuildJsFind } }
+            'js'         { Measure-Command { BuildJsFind } }
+            'kotlin'     { Measure-Command { BuildKtFind } }
+            'kt'         { Measure-Command { BuildKtFind } }
+            'objc'       { Measure-Command { BuildObjcFind } }
+            'ocaml'      { Measure-Command { BuildMlFind } }
+            'ml'         { Measure-Command { BuildMlFind } }
+            'perl'       { Measure-Command { BuildPlFind } }
+            'pl'         { Measure-Command { BuildPlFind } }
+            'php'        { Measure-Command { BuildPhpFind } }
+            'powershell' { Measure-Command { BuildPs1Find } }
+            'ps1'        { Measure-Command { BuildPs1Find } }
+            'py'         { Measure-Command { BuildPyFind } }
+            'python'     { Measure-Command { BuildPyFind } }
+            'rb'         { Measure-Command { BuildRbFind } }
+            'ruby'       { Measure-Command { BuildRbFind } }
+            'rs'         { Measure-Command { BuildRsFind } }
+            'rust'       { Measure-Command { BuildRsFind } }
+            'scala'      { Measure-Command { BuildScalaFind } }
+            'swift'      { Measure-Command { BuildSwiftFind } }
+            'ts'         { Measure-Command { BuildTsFind } }
+            'typescript' { Measure-Command { BuildTsFind } }
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }

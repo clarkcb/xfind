@@ -105,9 +105,10 @@ add_to_bin () {
 # Build Functions
 ########################################
 
-build_bash () {
+build_bashfind () {
     echo
-    hdr "build_bash"
+    hdr "build_bashfind"
+    log "language: bash"
 
     # ensure bash is installed
     if [ -z "$(which bash)" ]
@@ -122,9 +123,10 @@ build_bash () {
     add_to_bin "$BASHFIND_PATH/bin/bashfind.bash"
 }
 
-build_c () {
+build_cfind () {
     echo
-    hdr "build_c"
+    hdr "build_cfind"
+    log "language: C"
 
     # ensure cmake is installed
     if [ -z "$(which cmake)" ]
@@ -218,9 +220,10 @@ build_c () {
     cd -
 }
 
-build_clojure () {
+build_cljfind () {
     echo
-    hdr "build_clojure"
+    hdr "build_cljfind"
+    log "language: clojure"
 
     # ensure clojure is installed
     if [ -z "$(which clj)" ]
@@ -280,9 +283,10 @@ build_clojure () {
     cd -
 }
 
-build_cpp () {
+build_cppfind () {
     echo
-    hdr "build_cpp"
+    hdr "build_cppfind"
+    log "language: C++"
 
     # ensure cmake is installed
     if [ -z "$(which cmake)" ]
@@ -382,9 +386,10 @@ build_cpp () {
     cd -
 }
 
-build_csharp () {
+build_csfind () {
     echo
-    hdr "build_csharp"
+    hdr "build_csfind"
+    log "language: C#"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -445,9 +450,10 @@ build_csharp () {
     fi
 }
 
-build_dart () {
+build_dartfind () {
     echo
-    hdr "build_dart"
+    hdr "build_dartfind"
+    log "language: dart"
 
     # ensure dart is installed
     if [ -z "$(which dart)" ]
@@ -496,9 +502,10 @@ build_dart () {
     cd -
 }
 
-build_elixir () {
+build_exfind () {
     echo
-    hdr "build_elixir"
+    hdr "build_exfind"
+    log "language: elixir"
 
     # ensure elixir is installed
     if [ -z "$(which elixir)" ]
@@ -549,9 +556,10 @@ build_elixir () {
     cd -
 }
 
-build_fsharp () {
+build_fsfind () {
     echo
-    hdr "build_fsharp"
+    hdr "build_fsfind"
+    log "language: F#"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -612,9 +620,10 @@ build_fsharp () {
     fi
 }
 
-build_go () {
+build_gofind () {
     echo
-    hdr "build_go"
+    hdr "build_gofind"
+    log "language: go"
 
     # ensure go is installed
     if [ -z "$(which go)" ]
@@ -673,9 +682,10 @@ build_go () {
     cd -
 }
 
-build_groovy () {
+build_groovyfind () {
     echo
-    hdr "build_groovy"
+    hdr "build_groovyfind"
+    log "language: groovy"
 
     # ensure groovy is installed
     if [ -z "$(which groovy)" ]
@@ -763,9 +773,10 @@ build_groovy () {
     cd -
 }
 
-build_haskell () {
+build_hsfind () {
     echo
-    hdr "build_haskell"
+    hdr "build_hsfind"
+    log "language: haskell"
 
     # ensure ghc is installed
     if [ -z "$(which ghc)" ]
@@ -838,9 +849,10 @@ build_haskell () {
     cd -
 }
 
-build_java () {
+build_javafind () {
     echo
-    hdr "build_java"
+    hdr "build_javafind"
+    log "language: java"
 
     # ensure java is installed
     if [ -z "$(which java)" ]
@@ -906,10 +918,10 @@ build_java () {
     # gradle --warning-mode all clean jar publishToMavenLocal
     # GRADLE_ARGS="--info --warning-mode all"
     GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS="clean jar"
+    GRADLE_TASKS="clean jar publishToMavenLocal"
     log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
     # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
-    "$GRADLE" --warning-mode all clean jar
+    "$GRADLE" --warning-mode all clean jar publishToMavenLocal
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -930,9 +942,10 @@ build_java () {
     cd -
 }
 
-build_javascript () {
+build_jsfind () {
     echo
-    hdr "build_javascript"
+    hdr "build_jsfind"
+    log "language: javascript"
 
     # ensure node is installed
     if [ -z "$(which node)" ]
@@ -984,9 +997,10 @@ build_javascript () {
     cd -
 }
 
-build_kotlin () {
+build_ktfind () {
     echo
-    hdr "build_kotlin"
+    hdr "build_ktfind"
+    log "language: kotlin"
 
     cd "$KTFIND_PATH"
 
@@ -1067,9 +1081,10 @@ build_kotlin () {
     cd -
 }
 
-build_objc () {
+build_objcfind () {
     echo
-    hdr "build_objc"
+    hdr "build_objcfind"
+    log "language: objc"
 
     TARGET=alltargets
 
@@ -1129,9 +1144,10 @@ build_objc () {
     cd -
 }
 
-build_ocaml () {
+build_mlfind () {
     echo
-    hdr "build_ocaml"
+    hdr "build_mlfind"
+    log "language: ocaml"
 
     cd "$MLFIND_PATH"
     ./build.sh
@@ -1143,9 +1159,10 @@ build_ocaml () {
     cd -
 }
 
-build_perl () {
+build_plfind () {
     echo
-    hdr "build_perl"
+    hdr "build_plfind"
+    log "language: perl"
 
     # ensure perl is installed
     if [ -z "$(which perl)" ]
@@ -1186,9 +1203,10 @@ build_perl () {
     add_to_bin "$PLFIND_PATH/bin/plfind.sh"
 }
 
-build_php () {
+build_phpfind () {
     echo
-    hdr "build_php"
+    hdr "build_phpfind"
+    log "language: php"
 
     # ensure php is installed
     if [ -z "$(which php)" ]
@@ -1260,9 +1278,10 @@ build_php () {
     cd -
 }
 
-build_powershell () {
+build_ps1find () {
     echo
-    hdr "build_powershell"
+    hdr "build_ps1find"
+    log "language: powershell"
 
     # ensure pwsh is installed
     if [ -z "$(which pwsh)" ]
@@ -1295,9 +1314,10 @@ build_powershell () {
     add_to_bin "$PS1FIND_PATH/ps1find.ps1"
 }
 
-build_python () {
+build_pyfind () {
     echo
-    hdr "build_python"
+    hdr "build_pyfind"
+    log "language: python"
 
     # Set to Yes to use venv
     USE_VENV=$VENV
@@ -1446,9 +1466,10 @@ build_python () {
     cd -
 }
 
-build_ruby () {
+build_rbfind () {
     echo
-    hdr "build_ruby"
+    hdr "build_rbfind"
+    log "language: ruby"
 
     # ensure ruby3.x+ is installed
     if [ -z "$(which ruby)" ]
@@ -1495,9 +1516,10 @@ build_ruby () {
     add_to_bin "$RBFIND_PATH/bin/rbfind.sh"
 }
 
-build_rust () {
+build_rsfind () {
     echo
-    hdr "build_rust"
+    hdr "build_rsfind"
+    log "language: rust"
 
     # ensure rust is installed
     if [ -z "$(which rustc)" ]
@@ -1560,9 +1582,10 @@ build_rust () {
     cd -
 }
 
-build_scala () {
+build_scalafind () {
     echo
-    hdr "build_scala"
+    hdr "build_scalafind"
+    log "language: scala"
 
     # ensure scala is installed
     if [ -z "$(which scala)" ]
@@ -1631,9 +1654,10 @@ build_scala () {
     cd -
 }
 
-build_swift () {
+build_swiftfind () {
     echo
-    hdr "build_swift"
+    hdr "build_swiftfind"
+    log "language: swift"
 
     # ensure swift is installed
     if [ -z "$(which swift)" ]
@@ -1690,9 +1714,10 @@ build_swift () {
     cd -
 }
 
-build_typescript () {
+build_tsfind () {
     echo
-    hdr "build_typescript"
+    hdr "build_tsfind"
+    log "language: typescript"
 
     # ensure node is installed
     if [ -z "$(which node)" ]
@@ -1745,121 +1770,121 @@ build_typescript () {
 
 # build_linux - builds the versions that are currently supported in the linux container
 # Notes about some of the builds:
-# - build_clojure    - this build is _really_ slow (10+ minutes?), so call its build directly if you want to try it
-# - build_cpp        - this build takes a decent amount of time to complete (though nowhere near as much as clojure)
-# - build_go         - go is known for having very fast builds, and it's true, the only builds that are faster here
-#                      are the ones that do nothing except copy over resources files (e.g. perl)
-# - build_haskell    - having some dependency issues that need to work through to get it buildling again
-# - build_javascript - this fails to build in the vscode terminal right now due to some debug plugin issue; building
-#                      in an external terminal fixes the problem
-# - build_kotlin     - This build can sometimes be quite slow, other times fairly fast. In particular, the first
-#                      time will likely be quite slow, and I think it will also be slow when a build hasn't been run
-#                      in a while
-# - build_objc       - not sure if it's even possible to build this on linux, but excluding for now
-# - build_ocaml      - had a number of different issues trying to get this version building again, finally
-#                      gave up for now after it appeared that there were a lot of changes to the main API, etc.
-# - build_rust       - the first time this build is run it will pretty time-consuming, particularly for release
-#                      target, but intermittent builds should be pretty fast
-# - build_scala      - this build isn't as slow as the clojure version's, but it's slow enough to run separately
-# - build_typescript - this build has the same problem as build_javascript; run the build in an external terminal
+# - build_cljfind   - this build is _really_ slow (10+ minutes?), so call its build directly if you want to try it
+# - build_cppfind   - this build takes a decent amount of time to complete (though nowhere near as much as clojure)
+# - build_gofind    - go is known for having very fast builds, and it's true, the only builds that are faster here
+#                     are the ones that do nothing except copy over resources files (e.g. perl)
+# - build_hsfind    - having some dependency issues that need to work through to get it buildling again
+# - build_jsfind    - this fails to build in the vscode terminal right now due to some debug plugin issue; building
+#                     in an external terminal fixes the problem
+# - build_ktfind    - This build can sometimes be quite slow, other times fairly fast. In particular, the first
+#                     time will likely be quite slow, and I think it will also be slow when a build hasn't been run
+#                     in a while
+# - build_objcfind  - not sure if it's even possible to build this on linux, but excluding for now
+# - build_mlfind    - had a number of different issues trying to get this version building again, finally
+#                     gave up for now after it appeared that there were a lot of changes to the main API, etc.
+# - build_rsfind      - the first time this build is run it will pretty time-consuming, particularly for release
+#                     target, but intermittent builds should be pretty fast
+# - build_scalafind - this build isn't as slow as the clojure version's, but it's slow enough to run separately
+# - build_tsfind    - this build has the same problem as build_jsfind; run the build in an external terminal
 build_linux () {
     hdr "build_linux"
 
-    time build_bash
+    time build_bashfind
 
-    time build_c
+    time build_cfind
 
-    # time build_clojure
+    # time build_cljfind
 
-    # time build_cpp
+    # time build_cppfind
 
-    time build_csharp
+    time build_csfind
 
-    time build_dart
+    time build_dartfind
 
-    time build_fsharp
+    time build_fsfind
 
-    time build_go
+    time build_gofind
 
-    # time build_groovy
+    # time build_groovyfind
 
-    time build_java
+    time build_javafind
 
-    time build_javascript
+    time build_jsfind
 
-    # time build_kotlin
+    # time build_ktfind
 
-    time build_perl
+    time build_plfind
 
-    time build_php
+    time build_phpfind
 
-    # time build_powershell
+    # time build_ps1find
 
-    time build_python
+    time build_pyfind
 
-    time build_ruby
+    time build_rbfind
 
-    time build_rust
+    time build_rsfind
 
-    # time build_scala
+    # time build_scalafind
 
-    time build_swift
+    time build_swiftfind
 
-    time build_typescript
+    time build_tsfind
 }
 
 build_all () {
     hdr "build_all"
 
-    time build_bash
+    time build_bashfind
 
-    time build_c
+    time build_cfind
 
-    time build_clojure
+    time build_cljfind
 
-    time build_cpp
+    time build_cppfind
 
-    time build_csharp
+    time build_csfind
 
-    time build_dart
+    time build_dartfind
 
-    time build_elixir
+    time build_exfind
 
-    time build_fsharp
+    time build_fsfind
 
-    time build_go
+    time build_gofind
 
-    time build_groovy
+    time build_groovyfind
 
-    time build_haskell
+    time build_hsfind
 
-    time build_java
+    time build_javafind
 
-    time build_javascript
+    time build_jsfind
 
-    time build_kotlin
+    time build_ktfind
 
-    time build_objc
+    time build_objcfind
 
-    # time build_ocaml
+    # time build_mlfind
 
-    time build_perl
+    time build_plfind
 
-    time build_php
+    time build_phpfind
 
-    time build_powershell
+    time build_ps1find
 
-    time build_python
+    time build_pyfind
 
-    time build_ruby
+    time build_rbfind
 
-    time build_rust
+    time build_rsfind
 
-    time build_scala
+    time build_scalafind
 
-    time build_swift
+    time build_swiftfind
 
-    time build_typescript
+    time build_tsfind
 }
 
 
@@ -1954,79 +1979,79 @@ do
             build_linux
             ;;
         bash)
-            time build_bash
+            time build_bashfind
             ;;
         c)
-            time build_c
+            time build_cfind
             ;;
         clj | clojure)
-            time build_clojure
+            time build_cljfind
             ;;
         cpp)
-            time build_cpp
+            time build_cppfind
             ;;
         cs | csharp)
-            time build_csharp
+            time build_csfind
             ;;
         dart)
-            time build_dart
+            time build_dartfind
             ;;
         ex | elixir)
-            time build_elixir
+            time build_exfind
             ;;
         fs | fsharp)
-            time build_fsharp
+            time build_fsfind
             ;;
         go)
-            time build_go
+            time build_gofind
             ;;
         groovy)
-            time build_groovy
+            time build_groovyfind
             ;;
         haskell | hs)
-            time build_haskell
+            time build_hsfind
             ;;
         java)
-            time build_java
+            time build_javafind
             ;;
         javascript | js)
-            time build_javascript
+            time build_jsfind
             ;;
         kotlin | kt)
-            time build_kotlin
+            time build_ktfind
             ;;
         objc)
-            time build_objc
+            time build_objcfind
             ;;
         # ocaml | ml)
-        #     time build_ocaml
+        #     time build_mlfind
         #     ;;
         perl | pl)
-            time build_perl
+            time build_plfind
             ;;
         php)
-            time build_php
+            time build_phpfind
             ;;
         ps1 | powershell)
-            time build_powershell
+            time build_ps1find
             ;;
         py | python)
-            time build_python
+            time build_pyfind
             ;;
         rb | ruby)
-            time build_ruby
+            time build_rbfind
             ;;
         rs | rust)
-            time build_rust
+            time build_rsfind
             ;;
         scala)
-            time build_scala
+            time build_scalafind
             ;;
         swift)
-            time build_swift
+            time build_swiftfind
             ;;
         ts | typescript)
-            time build_typescript
+            time build_tsfind
             ;;
         *)
             log_error "ERROR: unknown/unsupported language: $TARGET_LANG"

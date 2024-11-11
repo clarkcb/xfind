@@ -48,10 +48,10 @@ function Usage
 # Unit Test functions
 ################################################################################
 
-function UnitTestBash
+function UnitTestBashFind
 {
     Write-Host
-    Hdr('UnitTestBash')
+    Hdr('UnitTestBashFind')
 
     # ensure bash is installed
     if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
@@ -78,10 +78,10 @@ function UnitTestBash
     bash $bashfindTestScript
 }
 
-function UnitTestC
+function UnitTestCFind
 {
     Write-Host
-    Hdr('UnitTestC')
+    Hdr('UnitTestCFind')
 
     $oldPwd = Get-Location
     Set-Location $cfindPath
@@ -125,10 +125,10 @@ function UnitTestC
     Set-Location $oldPwd
 }
 
-function UnitTestClojure
+function UnitTestCljFind
 {
     Write-Host
-    Hdr('UnitTestClojure')
+    Hdr('UnitTestCljFind')
 
     if (Get-Command 'lein' -ErrorAction 'SilentlyContinue')
     {
@@ -158,10 +158,10 @@ function UnitTestClojure
     Set-Location $oldPwd
 }
 
-function UnitTestCpp
+function UnitTestCppFind
 {
     Write-Host
-    Hdr('UnitTestCpp')
+    Hdr('UnitTestCppFind')
 
     # if cmake is installed, display version
     if (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')
@@ -198,10 +198,10 @@ function UnitTestCpp
     }
 }
 
-function UnitTestCsharp
+function UnitTestCsFind
 {
     Write-Host
-    Hdr('UnitTestCsharp')
+    Hdr('UnitTestCsFind')
 
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
@@ -224,10 +224,10 @@ function UnitTestCsharp
     dotnet test $csfindSolutionPath --verbosity $verbosity
 }
 
-function UnitTestDart
+function UnitTestDartFind
 {
     Write-Host
-    Hdr('UnitTestDart')
+    Hdr('UnitTestDartFind')
 
     # ensure dart is installed
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
@@ -250,10 +250,10 @@ function UnitTestDart
     Set-Location $oldPwd
 }
 
-function UnitTestElixir
+function UnitTestExFind
 {
     Write-Host
-    Hdr('UnitTestElixir')
+    Hdr('UnitTestExFind')
 
     if (Get-Command 'elixir' -ErrorAction 'SilentlyContinue')
     {
@@ -282,10 +282,10 @@ function UnitTestElixir
     Set-Location $oldPwd
 }
 
-function UnitTestFsharp
+function UnitTestFsFind
 {
     Write-Host
-    Hdr('UnitTestFsharp')
+    Hdr('UnitTestFsFind')
 
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
@@ -308,10 +308,10 @@ function UnitTestFsharp
     dotnet test $fsfindSolutionPath --verbosity $verbosity
 }
 
-function UnitTestGo
+function UnitTestGoFind
 {
     Write-Host
-    Hdr('UnitTestGo')
+    Hdr('UnitTestGoFind')
 
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
@@ -333,10 +333,10 @@ function UnitTestGo
     Set-Location $oldPwd
 }
 
-function UnitTestGroovy
+function UnitTestGroovyFind
 {
     Write-Host
-    Hdr('UnitTestGroovy')
+    Hdr('UnitTestGroovyFind')
 
     # if groovy is installed, display version
     if (Get-Command 'groovy' -ErrorAction 'SilentlyContinue')
@@ -379,10 +379,10 @@ function UnitTestGroovy
     Set-Location $oldPwd
 }
 
-function UnitTestHaskell
+function UnitTestHsFind
 {
     Write-Host
-    Hdr('UnitTestHaskell')
+    Hdr('UnitTestHsFind')
 
     # if ghc is installed, display version
     if (Get-Command 'ghc' -ErrorAction 'SilentlyContinue')
@@ -409,10 +409,10 @@ function UnitTestHaskell
     Set-Location $oldPwd
 }
 
-function UnitTestJava
+function UnitTestJavaFind
 {
     Write-Host
-    Hdr('UnitTestJava')
+    Hdr('UnitTestJavaFind')
 
     # if java is installed, display version
     if (Get-Command 'java' -ErrorAction 'SilentlyContinue')
@@ -453,10 +453,10 @@ function UnitTestJava
     Set-Location $oldPwd
 }
 
-function UnitTestJavaScript
+function UnitTestJsFind
 {
     Write-Host
-    Hdr('UnitTestJavaScript')
+    Hdr('UnitTestJsFind')
 
     # if node is installed, display version
     if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
@@ -483,10 +483,10 @@ function UnitTestJavaScript
     Set-Location $oldPwd
 }
 
-function UnitTestKotlin
+function UnitTestKtFind
 {
     Write-Host
-    Hdr('UnitTestKotlin')
+    Hdr('UnitTestKtFind')
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -521,10 +521,10 @@ function UnitTestKotlin
     Set-Location $oldPwd
 }
 
-function UnitTestObjc
+function UnitTestObjcFind
 {
     Write-Host
-    Hdr('UnitTestObjc')
+    Hdr('UnitTestObjcFind')
 
     # ensure swift is installed
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
@@ -547,16 +547,16 @@ function UnitTestObjc
     Set-Location $oldPwd
 }
 
-function UnitTestOcaml
+function UnitTestMlFind
 {
     Write-Host
-    Hdr('UnitTestOcaml - currently unimplemented')
+    Hdr('UnitTestMlFind - currently unimplemented')
 }
 
-function UnitTestPerl
+function UnitTestPlFind
 {
     Write-Host
-    Hdr('UnitTestPerl')
+    Hdr('UnitTestPlFind')
 
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
@@ -586,10 +586,10 @@ function UnitTestPerl
     }
 }
 
-function UnitTestPhp
+function UnitTestPhpFind
 {
     Write-Host
-    Hdr('UnitTestPhp')
+    Hdr('UnitTestPhpFind')
 
     # if php is installed, display version
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
@@ -650,10 +650,10 @@ function UnitTestPowershell
     & $testsScriptPath
 }
 
-function UnitTestPython
+function UnitTestPyFind
 {
     Write-Host
-    Hdr('UnitTestPython')
+    Hdr('UnitTestPyFind')
 
     $venvPath = Join-Path $pyfindPath 'venv'
     if (-not (Test-Path $venvPath))
@@ -682,10 +682,10 @@ function UnitTestPython
     Set-Location $oldPwd
 }
 
-function UnitTestRuby
+function UnitTestRbFind
 {
     Write-Host
-    Hdr('UnitTestRuby')
+    Hdr('UnitTestRbFind')
 
     # ensure ruby3.x is installed
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
@@ -728,10 +728,10 @@ function UnitTestRuby
     Set-Location $oldPwd
 }
 
-function UnitTestRust
+function UnitTestRsFind
 {
     Write-Host
-    Hdr('UnitTestRust')
+    Hdr('UnitTestRsFind')
 
     # if rust is installed, display version
     if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
@@ -760,10 +760,10 @@ function UnitTestRust
     Set-Location $oldPwd
 }
 
-function UnitTestScala
+function UnitTestScalaFind
 {
     Write-Host
-    Hdr('UnitTestScala')
+    Hdr('UnitTestScalaFind')
 
     # if scala is installed, display version
     if (Get-Command 'scala' -ErrorAction 'SilentlyContinue')
@@ -798,10 +798,10 @@ function UnitTestScala
     Set-Location $oldPwd
 }
 
-function UnitTestSwift
+function UnitTestSwiftFind
 {
     Write-Host
-    Hdr('UnitTestSwift')
+    Hdr('UnitTestSwiftFind')
 
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
@@ -823,10 +823,10 @@ function UnitTestSwift
     Set-Location $oldPwd
 }
 
-function UnitTestTypeScript
+function UnitTestTsFind
 {
     Write-Host
-    Hdr('UnitTestTypeScript')
+    Hdr('UnitTestTsFind')
 
     # if node is installed, display version
     if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
@@ -861,53 +861,53 @@ function UnitTestAll
     Write-Host
     Hdr('UnitTestAll')
 
-    UnitTestBash
+    UnitTestBashFind
 
-    UnitTestC
+    UnitTestCFind
 
-    UnitTestClojure
+    UnitTestCljFind
 
-    UnitTestCpp
+    UnitTestCppFind
 
-    UnitTestCsharp
+    UnitTestCsFind
 
-    UnitTestDart
+    UnitTestDartFind
 
-    UnitTestElixir
+    UnitTestExFind
 
-    UnitTestFsharp
+    UnitTestFsFind
 
-    UnitTestGo
+    UnitTestGoFind
 
-    UnitTestGroovy
+    UnitTestGroovyFind
 
-    UnitTestHaskell
+    UnitTestHsFind
 
-    UnitTestJava
+    UnitTestJavaFind
 
-    UnitTestJavaScript
+    UnitTestJsFind
 
-    UnitTestKotlin
+    UnitTestKtFind
 
-    UnitTestObjc
+    UnitTestObjcFind
 
-    # UnitTestOcaml
+    # UnitTestMlFind
 
-    UnitTestPerl
+    UnitTestPlFind
 
-    UnitTestPhp
+    UnitTestPhpFind
 
-    UnitTestPython
+    UnitTestPyFind
 
-    UnitTestRuby
+    UnitTestRbFind
 
-    UnitTestRust
+    UnitTestRsFind
 
-    UnitTestScala
+    UnitTestScalaFind
 
-    UnitTestSwift
+    UnitTestSwiftFind
 
-    UnitTestTypeScript
+    UnitTestTsFind
 }
 
 ################################################################################
@@ -933,43 +933,43 @@ function UnitTestMain
     {
         switch ($lang)
         {
-            'bash'       { UnitTestBash }
-            'c'          { UnitTestC }
-            'clj'        { UnitTestClojure }
-            'clojure'    { UnitTestClojure }
-            'cpp'        { UnitTestCpp }
-            'cs'         { UnitTestCsharp }
-            'csharp'     { UnitTestCsharp }
-            'dart'       { UnitTestDart }
-            'elixir'     { UnitTestElixir }
-            'ex'         { UnitTestElixir }
-            'fs'         { UnitTestFsharp }
-            'fsharp'     { UnitTestFsharp }
-            'go'         { UnitTestGo }
-            'groovy'     { UnitTestGroovy }
-            'haskell'    { UnitTestHaskell }
-            'hs'         { UnitTestHaskell }
-            'java'       { UnitTestJava }
-            'javascript' { UnitTestJavaScript }
-            'js'         { UnitTestJavaScript }
-            'kotlin'     { UnitTestKotlin }
-            'kt'         { UnitTestKotlin }
-            'objc'       { UnitTestObjc }
-            # 'ocaml'      { UnitTestOcaml }
-            'perl'       { UnitTestPerl }
-            'php'        { UnitTestPhp }
-            'powershell' { UnitTestPowershell }
-            'ps1'        { UnitTestPowershell }
-            'py'         { UnitTestPython }
-            'python'     { UnitTestPython }
-            'rb'         { UnitTestRuby }
-            'ruby'       { UnitTestRuby }
-            'rs'         { UnitTestRust }
-            'rust'       { UnitTestRust }
-            'scala'      { UnitTestScala }
-            'swift'      { UnitTestSwift }
-            'ts'         { UnitTestTypeScript }
-            'typescript' { UnitTestTypeScript }
+            'bash'       { UnitTestBashFind }
+            'c'          { UnitTestCFind }
+            'clj'        { UnitTestCljFind }
+            'clojure'    { UnitTestCljFind }
+            'cpp'        { UnitTestCppFind }
+            'cs'         { UnitTestCsFind }
+            'csharp'     { UnitTestCsFind }
+            'dart'       { UnitTestDartFind }
+            'elixir'     { UnitTestExFind }
+            'ex'         { UnitTestExFind }
+            'fs'         { UnitTestFsFind }
+            'fsharp'     { UnitTestFsFind }
+            'go'         { UnitTestGoFind }
+            'groovy'     { UnitTestGroovyFind }
+            'haskell'    { UnitTestHsFind }
+            'hs'         { UnitTestHsFind }
+            'java'       { UnitTestJavaFind }
+            'javascript' { UnitTestJsFind }
+            'js'         { UnitTestJsFind }
+            'kotlin'     { UnitTestKtFind }
+            'kt'         { UnitTestKtFind }
+            'objc'       { UnitTestObjcFind }
+            # 'ocaml'      { UnitTestMlFind }
+            'perl'       { UnitTestPlFind }
+            'php'        { UnitTestPhpFind }
+            'powershell' { UnitTestPs1Find }
+            'ps1'        { UnitTestPs1Find }
+            'py'         { UnitTestPyFind }
+            'python'     { UnitTestPyFind }
+            'rb'         { UnitTestRbFind }
+            'ruby'       { UnitTestRbFind }
+            'rs'         { UnitTestRsFind }
+            'rust'       { UnitTestRsFind }
+            'scala'      { UnitTestScalaFind }
+            'swift'      { UnitTestSwiftFind }
+            'ts'         { UnitTestTsFind }
+            'typescript' { UnitTestTsFind }
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }

@@ -4,9 +4,17 @@ project(cppfind VERSION 0.1.0 LANGUAGES CXX)
 #message("PROJECT_NAME: ${PROJECT_NAME}")
 #message("PROJECT_SOURCE_DIR: ${PROJECT_SOURCE_DIR}")
 
-set(CMAKE_CXX_STANDARD 20)
+if (CMAKE_CXX_FLAGS STREQUAL "")
+        set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wshadow -Wnon-virtual-dtor -pedantic")
+endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+# Adding AddressSanitizer
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address -g")
+
+if (NOT DEFINED CMAKE_CXX_STANDARD)
+        set(CMAKE_CXX_STANDARD 20)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
+endif()
 
 if (DEFINED ENV{XFIND_PATH})
         set(XFIND_PATH $ENV{XFIND_PATH})

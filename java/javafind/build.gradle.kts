@@ -44,8 +44,16 @@ application {
 }
 
 publishing {
-    publications.create<MavenPublication>("maven") {
-        from(components["java"])
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+            groupId = "xfind"
+            artifactId = "javafind"
+            version = "0.1.0-SNAPSHOT"
+        }
+    }
+    repositories {
+        mavenLocal()
     }
 }
 

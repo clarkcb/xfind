@@ -48,17 +48,17 @@ function Usage
 # Clean functions
 ################################################################################
 
-function CleanBash
+function CleanBashFind
 {
     Write-Host
-    Hdr('CleanBash')
+    Hdr('CleanBashFind')
     Log('Nothing to do for bash')
 }
 
-function CleanC
+function CleanCFind
 {
     Write-Host
-    Hdr('CleanC')
+    Hdr('CleanCFind')
 
     $oldPwd = Get-Location
     Set-Location $cfindPath
@@ -76,10 +76,10 @@ function CleanC
     Set-Location $oldPwd
 }
 
-function CleanClojure
+function CleanCljFind
 {
     Write-Host
-    Hdr('CleanClojure')
+    Hdr('CleanCljFind')
 
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
@@ -96,10 +96,10 @@ function CleanClojure
     Set-Location $oldPwd
 }
 
-function CleanCpp
+function CleanCppFind
 {
     Write-Host
-    Hdr('CleanCpp')
+    Hdr('CleanCppFind')
 
     $oldPwd = Get-Location
     Set-Location $cppfindPath
@@ -117,10 +117,10 @@ function CleanCpp
     Set-Location $oldPwd
 }
 
-function CleanCsharp
+function CleanCsFind
 {
     Write-Host
-    Hdr('CleanCsharp')
+    Hdr('CleanCsFind')
 
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
@@ -154,10 +154,10 @@ function CleanCsharp
     Set-Location $oldPwd
 }
 
-function CleanDart
+function CleanDartFind
 {
     Write-Host
-    Hdr('CleanDart')
+    Hdr('CleanDartFind')
 
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
@@ -174,10 +174,10 @@ function CleanDart
     Set-Location $oldPwd
 }
 
-function CleanElixir
+function CleanExFind
 {
     Write-Host
-    Hdr('CleanElixir')
+    Hdr('CleanExFind')
 
     # ensure elixir is installed
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
@@ -202,11 +202,11 @@ function CleanElixir
     Set-Location $oldPwd
 }
 
-function CleanFsharp
+function CleanFsFind
 {
 
     Write-Host
-    Hdr('CleanFsharp')
+    Hdr('CleanFsFind')
 
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
@@ -240,10 +240,10 @@ function CleanFsharp
     Set-Location $oldPwd
 }
 
-function CleanGo
+function CleanGoFind
 {
     Write-Host
-    Hdr('CleanGo')
+    Hdr('CleanGoFind')
 
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
@@ -260,10 +260,10 @@ function CleanGo
     Set-Location $oldPwd
 }
 
-function CleanGroovy
+function CleanGroovyFind
 {
     Write-Host
-    Hdr('CleanGroovy')
+    Hdr('CleanGroovyFind')
 
     $oldPwd = Get-Location
     Set-Location $groovyfindPath
@@ -285,10 +285,10 @@ function CleanGroovy
     Set-Location $oldPwd
 }
 
-function CleanHaskell
+function CleanHsFind
 {
     Write-Host
-    Hdr('CleanHaskell')
+    Hdr('CleanHsFind')
 
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
@@ -305,10 +305,10 @@ function CleanHaskell
     Set-Location $oldPwd
 }
 
-function CleanJava
+function CleanJavaFind
 {
     Write-Host
-    Hdr('CleanJava')
+    Hdr('CleanJavaFind')
 
     $oldPwd = Get-Location
     Set-Location $javafindPath
@@ -330,10 +330,10 @@ function CleanJava
     Set-Location $oldPwd
 }
 
-function CleanJavaScript
+function CleanJsFind
 {
     Write-Host
-    Hdr('CleanJavaScript')
+    Hdr('CleanJsFind')
 
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
@@ -350,10 +350,10 @@ function CleanJavaScript
     Set-Location $oldPwd
 }
 
-function CleanKotlin
+function CleanKtFind
 {
     Write-Host
-    Hdr('CleanKotlin')
+    Hdr('CleanKtFind')
 
     $oldPwd = Get-Location
     Set-Location $ktfindPath
@@ -375,10 +375,10 @@ function CleanKotlin
     Set-Location $oldPwd
 }
 
-function CleanObjc
+function CleanObjcFind
 {
     Write-Host
-    Hdr('CleanObjc')
+    Hdr('CleanObjcFind')
 
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
@@ -395,52 +395,52 @@ function CleanObjc
     Set-Location $oldPwd
 }
 
-function CleanOcaml
+function CleanMlFind
 {
     Write-Host
-    Hdr('CleanOcaml')
+    Hdr('CleanMlFind')
     Log('not implemented at this time')
 }
 
-function CleanPerl
+function CleanPlFind
 {
     Write-Host
-    Hdr('CleanPerl')
+    Hdr('CleanPlFind')
     Log('Nothing to do for perl')
 }
 
-function CleanPhp
+function CleanPhpFind
 {
     Write-Host
-    Hdr('CleanPhp')
+    Hdr('CleanPhpFind')
     Log('Nothing to do for php')
 }
 
-function CleanPowerShell
+function CleanPs1Find
 {
     Write-Host
-    Hdr('CleanPowerShell')
+    Hdr('CleanPs1Find')
     Log('Nothing to do for powershell')
 }
 
-function CleanPython
+function CleanPyFind
 {
     Write-Host
-    Hdr('CleanPython')
+    Hdr('CleanPyFind')
     Log('Nothing to do for python')
 }
 
-function CleanRuby
+function CleanRbFind
 {
     Write-Host
-    Hdr('CleanRuby')
+    Hdr('CleanRbFind')
     Log('Nothing to do for ruby')
 }
 
-function CleanRust
+function CleanRsFind
 {
     Write-Host
-    Hdr('CleanRust')
+    Hdr('CleanRsFind')
 
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
@@ -456,10 +456,10 @@ function CleanRust
     Set-Location $oldPwd
 }
 
-function CleanScala
+function CleanScalaFind
 {
     Write-Host
-    Hdr('CleanScala')
+    Hdr('CleanScalaFind')
 
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
@@ -475,10 +475,10 @@ function CleanScala
     Set-Location $oldPwd
 }
 
-function CleanSwift
+function CleanSwiftFind
 {
     Write-Host
-    Hdr('CleanSwift')
+    Hdr('CleanSwiftFind')
 
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
@@ -495,10 +495,10 @@ function CleanSwift
     Set-Location $oldPwd
 }
 
-function CleanTypeScript
+function CleanTsFind
 {
     Write-Host
-    Hdr('CleanTypeScript')
+    Hdr('CleanTsFind')
 
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
@@ -520,51 +520,51 @@ function CleanLinux
     Write-Host
     Hdr('CleanLinux')
 
-    CleanBash
+    CleanBashFind
 
-    CleanC
+    CleanCFind
 
-    # CleanClojure
+    # CleanCljFind
 
-    # CleanCpp
+    # CleanCppFind
 
-    CleanCsharp
+    CleanCsFind
 
-    CleanDart
+    CleanDartFind
 
-    CleanFsharp
+    CleanFsFind
 
-    CleanGo
+    CleanGoFind
 
-    # CleanGroovy
+    # CleanGroovyFind
 
-    # CleanHaskell
+    # CleanHsFind
 
-    CleanJava
+    CleanJavaFind
 
-    CleanJavaScript
+    CleanJsFind
 
-    CleanKotlin
+    CleanKtFind
 
-    # CleanObjc
+    # CleanObjcFind
 
-    # CleanOcaml
+    # CleanMlFind
 
-    CleanPerl
+    CleanPlFind
 
-    CleanPhp
+    CleanPhpFind
 
-    CleanPython
+    CleanPyFind
 
-    CleanRuby
+    CleanRbFind
 
-    CleanRust
+    CleanRsFind
 
-    # CleanScala
+    # CleanScalaFind
 
-    CleanSwift
+    CleanSwiftFind
 
-    CleanTypeScript
+    CleanTsFind
 }
 
 function CleanAll
@@ -572,53 +572,53 @@ function CleanAll
     Write-Host
     Hdr('CleanAll')
 
-    CleanBash
+    CleanBashFind
 
-    CleanC
+    CleanCFind
 
-    CleanClojure
+    CleanCljFind
 
-    CleanCpp
+    CleanCppFind
 
-    CleanCsharp
+    CleanCsFind
 
-    CleanDart
+    CleanDartFind
 
-    CleanFsharp
+    CleanFsFind
 
-    CleanGo
+    CleanGoFind
 
-    CleanGroovy
+    CleanGroovyFind
 
-    CleanHaskell
+    CleanHsFind
 
-    CleanJava
+    CleanJavaFind
 
-    CleanJavaScript
+    CleanJsFind
 
-    CleanKotlin
+    CleanKtFind
 
-    CleanObjc
+    CleanObjcFind
 
-    CleanOcaml
+    CleanMlFind
 
-    CleanPerl
+    CleanPlFind
 
-    CleanPhp
+    CleanPhpFind
 
-    CleanPowerShell
+    CleanPs1Find
 
-    CleanPython
+    CleanPyFind
 
-    CleanRuby
+    CleanRbFind
 
-    CleanRust
+    CleanRsFind
 
-    CleanScala
+    CleanScalaFind
 
-    CleanSwift
+    CleanSwiftFind
 
-    CleanTypeScript
+    CleanTsFind
 }
 
 ################################################################################
@@ -645,45 +645,45 @@ function CleanMain
         switch ($lang)
         {
             'linux'      { CleanLinux }
-            'bash'       { CleanBash }
-            'c'          { CleanC }
-            'clj'        { CleanClojure }
-            'clojure'    { CleanClojure }
-            'cpp'        { CleanCpp }
-            'cs'         { CleanCsharp }
-            'csharp'     { CleanCsharp }
-            'dart'       { CleanDart }
-            'elixir'     { CleanElixir }
-            'ex'         { CleanElixir }
-            'fs'         { CleanFsharp }
-            'fsharp'     { CleanFsharp }
-            'go'         { CleanGo }
-            'groovy'     { CleanGroovy }
-            'haskell'    { CleanHaskell }
-            'hs'         { CleanHaskell }
-            'java'       { CleanJava }
-            'javascript' { CleanJavaScript }
-            'js'         { CleanJavaScript }
-            'kotlin'     { CleanKotlin }
-            'kt'         { CleanKotlin }
-            'objc'       { CleanObjc }
-            # 'ocaml'      { CleanOcaml }
-            # 'ml'         { CleanOcaml }
-            'perl'       { CleanPerl }
-            'pl'         { CleanPerl }
-            'php'        { CleanPhp }
-            'powershell' { CleanPowerShell }
-            'ps1'        { CleanPowerShell }
-            'py'         { CleanPython }
-            'python'     { CleanPython }
-            'rb'         { CleanRuby }
-            'ruby'       { CleanRuby }
-            'rs'         { CleanRust }
-            'rust'       { CleanRust }
-            'scala'      { CleanScala }
-            'swift'      { CleanSwift }
-            'ts'         { CleanTypeScript }
-            'typescript' { CleanTypeScript }
+            'bash'       { CleanBashFind }
+            'c'          { CleanCFind }
+            'clj'        { CleanCljFind }
+            'clojure'    { CleanCljFind }
+            'cpp'        { CleanCppFind }
+            'cs'         { CleanCsFind }
+            'csharp'     { CleanCsFind }
+            'dart'       { CleanDartFind }
+            'elixir'     { CleanExFind }
+            'ex'         { CleanExFind }
+            'fs'         { CleanFsFind }
+            'fsharp'     { CleanFsFind }
+            'go'         { CleanGoFind }
+            'groovy'     { CleanGroovyFind }
+            'haskell'    { CleanHsFind }
+            'hs'         { CleanHsFind }
+            'java'       { CleanJavaFind }
+            'javascript' { CleanJsFind }
+            'js'         { CleanJsFind }
+            'kotlin'     { CleanKtFind }
+            'kt'         { CleanKtFind }
+            'objc'       { CleanObjcFind }
+            # 'ocaml'      { CleanMlFind }
+            # 'ml'         { CleanMlFind }
+            'perl'       { CleanPlFind }
+            'pl'         { CleanPlFind }
+            'php'        { CleanPhpFind }
+            'powershell' { CleanPs1Find }
+            'ps1'        { CleanPs1Find }
+            'py'         { CleanPyFind }
+            'python'     { CleanPyFind }
+            'rb'         { CleanRbFind }
+            'ruby'       { CleanRbFind }
+            'rs'         { CleanRsFind }
+            'rust'       { CleanRsFind }
+            'scala'      { CleanScalaFind }
+            'swift'      { CleanSwiftFind }
+            'ts'         { CleanTsFind }
+            'typescript' { CleanTsFind }
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }

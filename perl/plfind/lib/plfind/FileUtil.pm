@@ -66,6 +66,31 @@ sub is_hidden_path {
     return is_hidden($path->basename);
 }
 
+sub get_file_handle {
+    my ($file) = @_;
+    open(FILE, "<$file") || die "File I/O error: $file: $!\n";
+    return \*FILE;
+}
+
+sub get_file_contents {
+    my ($file) = @_;
+    my $fh = get_file_handle($file);
+    local $/;
+    my $delim = undef $/;
+    my $contents = <$fh>;
+    close($fh);
+    $/ = $delim;
+    return $contents;
+}
+
+sub get_file_lines {
+    my ($file) = @_;
+    my $fh = get_file_handle($file);
+    my @lines = <$fh>;
+    close($fh);
+    return \@lines;
+}
+
 1;
 
 __END__

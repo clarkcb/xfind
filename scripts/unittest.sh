@@ -30,9 +30,9 @@ usage () {
 # Unit Test Functions
 ########################################
 
-unittest_bash () {
+unittest_bashfind () {
     echo
-    hdr "unittest_bash"
+    hdr "unittest_bashfind"
 
     # ensure bash is installed
     if [ -z "$(which bash)" ]
@@ -49,9 +49,9 @@ unittest_bash () {
     $BASHFIND_PATH/test/bashfindtests.bash
 }
 
-unittest_c () {
+unittest_cfind () {
     echo
-    hdr "unittest_c"
+    hdr "unittest_cfind"
 
     # if cmake is installed, display version
     if [ -n "$(which cmake)" ]
@@ -90,9 +90,9 @@ unittest_c () {
     done
 }
 
-unittest_clojure () {
+unittest_cljfind () {
     echo
-    hdr "unittest_clojure"
+    hdr "unittest_cljfind"
 
     # if clojure is installed, display version
     if [ -n "$(which clj)" ]
@@ -131,9 +131,9 @@ unittest_clojure () {
     cd -
 }
 
-unittest_cpp () {
+unittest_cppfind () {
     echo
-    hdr "unittest_cpp"
+    hdr "unittest_cppfind"
 
     # if cmake is installed, display version
     if [ -n "$(which cmake)" ]
@@ -171,9 +171,9 @@ unittest_cpp () {
     done
 }
 
-unittest_csharp () {
+unittest_csfind () {
     echo
-    hdr "unittest_csharp"
+    hdr "unittest_csfind"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -196,9 +196,9 @@ unittest_csharp () {
     dotnet test "$CSFIND_PATH/CsFind.sln" --verbosity $VERBOSITY
 }
 
-unittest_dart () {
+unittest_dartfind () {
     echo
-    hdr "unittest_dart"
+    hdr "unittest_dartfind"
 
     # ensure dart is installed
     if [ -z "$(which dart)" ]
@@ -219,9 +219,9 @@ unittest_dart () {
     cd -
 }
 
-unittest_elixir () {
+unittest_exfind () {
     echo
-    hdr "unittest_elixir"
+    hdr "unittest_exfind"
 
     # if elixir is installed, display version
     if [ -n "$(which elixir)" ]
@@ -250,9 +250,9 @@ unittest_elixir () {
     cd -
 }
 
-unittest_fsharp () {
+unittest_fsfind () {
     echo
-    hdr "unittest_fsharp"
+    hdr "unittest_fsfind"
 
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
@@ -275,9 +275,9 @@ unittest_fsharp () {
     dotnet test "$FSFIND_PATH/FsFind.sln" --verbosity $VERBOSITY
 }
 
-unittest_go () {
+unittest_gofind () {
     echo
-    hdr "unittest_go"
+    hdr "unittest_gofind"
 
     # ensure go is installed
     if [ -z "$(which go)" ]
@@ -309,9 +309,9 @@ unittest_go () {
     cd -
 }
 
-unittest_groovy () {
+unittest_groovyfind () {
     echo
-    hdr "unittest_groovy"
+    hdr "unittest_groovyfind"
 
     # if groovy is installed, display version
     if [ -n "$(which groovy)" ]
@@ -354,9 +354,9 @@ unittest_groovy () {
     cd -
 }
 
-unittest_haskell () {
+unittest_hsfind () {
     echo
-    hdr "unittest_haskell"
+    hdr "unittest_hsfind"
 
     # if ghc is installed, display version
     if [ -n "$(which ghc)" ]
@@ -385,9 +385,9 @@ unittest_haskell () {
     cd -
 }
 
-unittest_java () {
+unittest_javafind () {
     echo
-    hdr "unittest_java"
+    hdr "unittest_javafind"
 
     # if java is installed, display version
     if [ -n "$(which java)" ]
@@ -427,9 +427,9 @@ unittest_java () {
     cd -
 }
 
-unittest_javascript () {
+unittest_jsfind () {
     echo
-    hdr "unittest_javascript"
+    hdr "unittest_jsfind"
 
     # if node is installed, display version
     if [ -n "$(which node)" ]
@@ -458,9 +458,9 @@ unittest_javascript () {
     cd -
 }
 
-unittest_kotlin () {
+unittest_ktfind () {
     echo
-    hdr "unittest_kotlin"
+    hdr "unittest_ktfind"
 
     GRADLE=
     # check for gradle wrapper
@@ -496,9 +496,9 @@ unittest_kotlin () {
     cd -
 }
 
-unittest_objc () {
+unittest_objcfind () {
     echo
-    hdr "unittest_objc"
+    hdr "unittest_objcfind"
 
     # TODO: copy resource files locally?
     # ensure swift is installed
@@ -520,9 +520,9 @@ unittest_objc () {
     cd -
 }
 
-# unittest_ocaml () {
+# unittest_mlfind () {
 #     echo
-#     hdr "unittest_ocaml"
+#     hdr "unittest_mlfind"
 
 #     cd "$MLFIND_PATH"
 #     log "Unit-testing mlfind"
@@ -530,9 +530,9 @@ unittest_objc () {
 #     cd -
 # }
 
-unittest_perl () {
+unittest_plfind () {
     echo
-    hdr "unittest_perl"
+    hdr "unittest_plfind"
 
     # ensure perl is installed
     if [ -z "$(which perl)" ]
@@ -562,9 +562,9 @@ unittest_perl () {
     done
 }
 
-unittest_php () {
+unittest_phpfind () {
     echo
-    hdr "unittest_php"
+    hdr "unittest_phpfind"
 
     # ensure php is installed
     if [ -z "$(which php)" ]
@@ -604,9 +604,9 @@ unittest_php () {
     "$PHPUNIT" "$TESTS_PATH"
 }
 
-unittest_powershell () {
+unittest_ps1find () {
     echo
-    hdr "unittest_powershell"
+    hdr "unittest_ps1find"
 
     # ensure pwsh is installed
     if [ -z "$(which pwsh)" ]
@@ -631,9 +631,9 @@ unittest_powershell () {
     pwsh "$TESTS_SCRIPT"
 }
 
-unittest_python () {
+unittest_pyfind () {
     echo
-    hdr "unittest_python"
+    hdr "unittest_pyfind"
 
     TESTS_PATH="$PYFIND_PATH/tests"
     VENV_PATH="$PYFIND_PATH/venv"
@@ -664,9 +664,9 @@ unittest_python () {
     cd -
 }
 
-unittest_ruby () {
+unittest_rbfind () {
     echo
-    hdr "unittest_ruby"
+    hdr "unittest_rbfind"
 
     # ensure ruby3.x+ is installed
     if [ -z "$(which ruby)" ]
@@ -708,9 +708,9 @@ unittest_ruby () {
     cd -
 }
 
-unittest_rust () {
+unittest_rsfind () {
     echo
-    hdr "unittest_rust"
+    hdr "unittest_rsfind"
 
     # if rust is installed, display version
     if [ -n "$(which rustc)" ]
@@ -739,9 +739,9 @@ unittest_rust () {
     cd -
 }
 
-unittest_scala () {
+unittest_scalafind () {
     echo
-    hdr "unittest_scala"
+    hdr "unittest_scalafind"
 
     # if scala is installed, display version
     if [ -n "$(which scala)" ]
@@ -778,9 +778,9 @@ unittest_scala () {
     cd -
 }
 
-unittest_swift () {
+unittest_swiftfind () {
     echo
-    hdr "unittest_swift"
+    hdr "unittest_swiftfind"
 
     # ensure swift is installed
     if [ -z "$(which swift)" ]
@@ -802,9 +802,9 @@ unittest_swift () {
     cd -
 }
 
-unittest_typescript () {
+unittest_tsfind () {
     echo
-    hdr "unittest_typescript"
+    hdr "unittest_tsfind"
 
     # if node is installed, display version
     if [ -n "$(which node)" ]
@@ -836,61 +836,75 @@ unittest_typescript () {
 unittest_all () {
     hdr "unittest_all"
 
-    unittest_bash
+    unittest_bashfind
 
-    unittest_c
+    unittest_cfind
 
-    unittest_clojure
+    unittest_cljfind
 
-    unittest_cpp
+    unittest_cppfind
 
-    unittest_csharp
+    unittest_csfind
 
-    unittest_dart
+    unittest_dartfind
 
-    unittest_elixir
+    unittest_exfind
 
-    unittest_fsharp
+    unittest_fsfind
 
-    unittest_go
+    unittest_gofind
 
-    unittest_groovy
+    unittest_groovyfind
 
-    unittest_haskell
+    unittest_hsfind
 
-    unittest_java
+    unittest_javafind
 
-    unittest_javascript
+    unittest_jsfind
 
-    unittest_kotlin
+    unittest_ktfind
 
-    unittest_objc
+    unittest_objcfind
 
-    # unittest_ocaml
+    # unittest_mlfind
 
-    unittest_perl
+    unittest_plfind
 
-    unittest_php
+    unittest_phpfind
 
-    unittest_powershell
+    unittest_ps1find
 
-    unittest_python
+    unittest_pyfind
 
-    unittest_ruby
+    unittest_rbfind
 
-    unittest_rust
+    unittest_rsfind
 
-    unittest_scala
+    unittest_scalafind
 
-    unittest_swift
+    unittest_swiftfind
 
-    unittest_typescript
+    unittest_tsfind
 }
 
 
 ########################################
 # Unit-testing main
 ########################################
+echo
+hdr "xfind unittest script"
+log "user: $USER"
+log "host: $HOSTNAME"
+log "os: $(uname -o)"
+
+# Get the current git branch and commit
+# GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+GIT_BRANCH=$(git branch --show-current)
+GIT_COMMIT=$(git rev-parse --short HEAD)
+log "git branch: '$GIT_BRANCH' ($GIT_COMMIT)"
+
+log "args: $*"
+
 HELP=
 TEST_ALL=
 TARGET_LANGS=()
@@ -941,79 +955,79 @@ for TARGET_LANG in ${TARGET_LANGS[*]}
 do
     case $TARGET_LANG in
         bash)
-            unittest_bash
+            unittest_bashfind
             ;;
         c)
-            unittest_c
+            unittest_cfind
             ;;
         clj | clojure)
-            unittest_clojure
+            unittest_cljfind
             ;;
         cpp)
-            unittest_cpp
+            unittest_cppfind
             ;;
         cs | csharp)
-            unittest_csharp
+            unittest_csfind
             ;;
         dart)
-            unittest_dart
+            unittest_dartfind
             ;;
         elixir | ex)
-            unittest_elixir
+            unittest_exfind
             ;;
         fs | fsharp)
-            unittest_fsharp
+            unittest_fsfind
             ;;
         go)
-            unittest_go
+            unittest_gofind
             ;;
         groovy)
-            unittest_groovy
+            unittest_groovyfind
             ;;
         haskell | hs)
-            unittest_haskell
+            unittest_hsfind
             ;;
         java)
-            unittest_java
+            unittest_javafind
             ;;
         javascript | js)
-            unittest_javascript
+            unittest_jsfind
             ;;
         kotlin | kt)
-            unittest_kotlin
+            unittest_ktfind
             ;;
         objc)
-            unittest_objc
+            unittest_objcfind
             ;;
         # ocaml | ml)
-        #     unittest_ocaml
+        #     unittest_mlfind
         #     ;;
         perl | pl)
-            unittest_perl
+            unittest_plfind
             ;;
         php)
-            unittest_php
+            unittest_phpfind
             ;;
         ps1 | powershell | pwsh)
-            unittest_powershell
+            unittest_ps1find
             ;;
         py | python)
-            unittest_python
+            unittest_pyfind
             ;;
         rb | ruby)
-            unittest_ruby
+            unittest_rbfind
             ;;
         rs | rust)
-            unittest_rust
+            unittest_rsfind
             ;;
         scala)
-            unittest_scala
+            unittest_scalafind
             ;;
         swift)
-            unittest_swift
+            unittest_swiftfind
             ;;
         ts | typescript)
-            unittest_typescript
+            unittest_tsfind
             ;;
         *)
             log_error "ERROR: unknown/unsupported language: $TARGET_LANG"
