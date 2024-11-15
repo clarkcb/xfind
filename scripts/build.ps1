@@ -1464,15 +1464,39 @@ function BuildPyFind
     $python = ''
     $venvPath = Join-Path $pyFindPath 'venv'
 
+    $activeVenv = ''
+
     if ($useVenv)
     {
         Log('Using venv')
 
-        if (Test-Path $venvPath)
+        # 3 possibilities:
+        # 1. venv exists and is active
+        # 2. venv exists and is not active
+        # 3. venv does not exist
+
+        if ($env:VIRTUAL_ENV)
         {
+            # 1. venv exists and is active
+            Log("Already active venv: $env:VIRTUAL_ENV")
+            $activeVenv = $env:VIRTUAL_ENV
+
+            ForEach ($p in $pythonVersions)
+            {
+                $pythonCmd = Get-Command $p -ErrorAction 'SilentlyContinue'
+                if ($null -ne $pythonCmd)
+                {
+                    $python = $p
+                    break
+                }
+            }
+        }
+        elseif (Test-Path $venvPath)
+        {
+            # 2. venv exists and is not active
             Log('Using existing venv')
 
-            # activate the virtual env
+            # activate the venv
             $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
             Log("$activatePath")
             & $activatePath
@@ -1489,6 +1513,7 @@ function BuildPyFind
         }
         else
         {
+            # 3. venv does not exist
             # ensure python3.9+ is installed
             ForEach ($p in $pythonVersions)
             {
@@ -1546,7 +1571,7 @@ function BuildPyFind
     Log("Version: $pythonVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $pyFindPath 'data'
+    $resourcesPath = Join-Path $pyFindPath 'pyfind' 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1569,7 +1594,8 @@ function BuildPyFind
         $buildError = $true
     }
 
-    if ($useVenv)
+    # if there was not an active venv before the build, deactivate the venv
+    if ($useVenv -and -not $activeVenv)
     {
         # deactivate at end of setup process
         Log('deactivate')

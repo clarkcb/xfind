@@ -1326,34 +1326,40 @@ build_pyfind () {
     PYTHON_VERSIONS=(python3.11 python3.10 python3.9)
     PYTHON=
 
+    ACTIVE_VENV=
+
     if [ "$USE_VENV" == 'yes' ]
     then
         log 'Using venv'
 
-        if [ -d "$PYFIND_PATH/venv" ]
+        # 3 possibilities:
+        # 1. venv exists and is active
+        # 2. venv exists and is not active
+        # 3. venv does not exist
+
+        if [ -n "$VIRTUAL_ENV" ]
         then
-            log 'Using existing venv'
+            # 1. venv exists and is active
+            log "Already active venv: $VIRTUAL_ENV"
+            ACTIVE_VENV="$VIRTUAL_ENV"
 
-            # if venv is active, deactivate it (in case it happens to be another venv that is active)
-            # NOTE: deactivate doesn't work from here because of how it's defined
-            # if [ -n "$VIRTUAL_ENV" ]
-            # then
-            #     log 'Deactivating current venv'
-            #     deactivate
-            # fi
-
-            # if venv isn't active, activate it
-            # (TODO: this is probably always true because of earlier deactivation)
-            if [ -z "$VIRTUAL_ENV" ]
-            then
-                log "source $PYFIND_PATH/venv/bin/activate"
-                source $PYFIND_PATH/venv/bin/activate
-            fi
-
-            # PYTHON=$(find "$PYFIND_PATH/venv/bin" -name python3 | head -n 1)
             PYTHON=$(which python3)
             PYTHON=$(basename "$PYTHON")
+
+        elif [ -d "$PYFIND_PATH/venv" ]
+        then
+            # 2. venv exists and is not active
+            log 'Using existing venv'
+
+            # activate the venv
+            log "source $PYFIND_PATH/venv/bin/activate"
+            source $PYFIND_PATH/venv/bin/activate
+
+            PYTHON=$(which python3)
+            PYTHON=$(basename "$PYTHON")
+
         else
+            # 3. venv does not exist
             # ensure python3.9+ is installed
             for p in ${PYTHON_VERSIONS[*]}
             do
@@ -1413,13 +1419,7 @@ build_pyfind () {
     log "Using $PYTHON ($(which $PYTHON))"
     log "python version: $($PYTHON -V)"
 
-    # PYTHON_VERSION="$(python -e import sys; vi = sys.version_info; print(f'{vi.major}.{vi.minor}.{vi.micro}'))"
-
-    # copy the shared json files to the local resource location
-    RESOURCES_PATH="$PYFIND_PATH/data"
-    mkdir -p "$RESOURCES_PATH"
-    copy_json_resources "$RESOURCES_PATH"
-    # TODO: this next path is the *real* resource path, need to remove the other one
+    # # copy the shared json files to the local resource location
     RESOURCES_PATH="$PYFIND_PATH/pyfind/data"
     mkdir -p "$RESOURCES_PATH"
     copy_json_resources "$RESOURCES_PATH"
@@ -1445,16 +1445,17 @@ build_pyfind () {
         ERROR=yes
     fi
 
-    # if [ "$USE_VENV" == 'yes' ]
-    # then
-    #     # deactivate at end of setup process
-    #     # NOTE: deactivate doesn't work from here because of how it's defined
-    #     log "deactivate"
-    #     deactivate
-    # fi
+    # if there was not an active venv before the build, deactivate the venv
+    if [ "$USE_VENV" == 'yes' -a -z "$ACTIVE_VENV" ]
+    then
+        # deactivate at end of setup process
+        log "deactivate"
+        deactivate
+    fi
 
     if [ -n "$ERROR" ]
     then
+        cd -
         return
     fi
 
