@@ -204,6 +204,22 @@
       (assoc with-debug :verbose true)
       with-debug)))
 
+(defn set-int-val [^FindSettings settings n numname]
+  (let [t (type n)]
+    (cond
+      (= t (type ""))
+      (assoc settings numname (Integer/parseInt n))
+      :else
+      (assoc settings numname n))))
+
+(defn set-long-val [^FindSettings settings n numname]
+  (let [t (type n)]
+    (cond
+      (= t (type ""))
+      (assoc settings numname (Long/parseLong n))
+      :else
+      (assoc settings numname n))))
+
 (defn string-set-to-string ^String [ss]
   (if (empty? ss)
     "[]"

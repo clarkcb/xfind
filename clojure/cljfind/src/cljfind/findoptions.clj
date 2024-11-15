@@ -23,7 +23,8 @@
         [cljfind.fileutil :only (expand-path to-path)]
         [cljfind.findsettings :only
          (->FindSettings DEFAULT-SETTINGS add-extension add-file-type add-path
-            add-pattern set-archives-only set-debug sort-by-from-name)]))
+            add-pattern set-archives-only set-debug set-int-val set-long-val
+            sort-by-from-name)]))
 
 (defrecord FindOption [short-arg long-arg desc])
 
@@ -61,12 +62,12 @@
     :in-ext (fn [^FindSettings settings ^String s] (add-extension settings s :in-extensions))
     :in-filepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :in-file-patterns))
     :in-filetype (fn [^FindSettings settings ^String s] (add-file-type settings s :in-file-types))
-    :maxdepth (fn [^FindSettings settings ^String s] (assoc settings :max-depth (Integer/parseInt s)))
+    :maxdepth (fn [^FindSettings settings ^String s] (set-int-val settings s :max-depth))
     :maxlastmod (fn [^FindSettings settings ^String s] (assoc settings :max-last-mod (read-instant-date s)))
-    :maxsize (fn [^FindSettings settings ^String s] (assoc settings :max-size (Long/parseLong s)))
-    :mindepth (fn [^FindSettings settings ^String s] (assoc settings :min-depth (Integer/parseInt s)))
+    :maxsize (fn [^FindSettings settings ^String s] (set-long-val settings s :max-size))
+    :mindepth (fn [^FindSettings settings ^String s] (set-int-val settings s :min-depth))
     :minlastmod (fn [^FindSettings settings ^String s] (assoc settings :min-last-mod (read-instant-date s)))
-    :minsize (fn [^FindSettings settings ^String s] (assoc settings :min-size (Long/parseLong s)))
+    :minsize (fn [^FindSettings settings ^String s] (set-long-val settings s :min-size))
     :out-archiveext (fn [^FindSettings settings ^String s] (add-extension settings s :out-archive-extensions))
     :out-archivefilepattern (fn [^FindSettings settings ^String s] (add-pattern settings s :out-archive-file-pattern))
     :out-dirpattern (fn [^FindSettings settings ^String s] (add-pattern settings s :out-dir-patterns))
