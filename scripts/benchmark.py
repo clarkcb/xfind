@@ -771,8 +771,8 @@ class Benchmarker(object):
 
         if self.scenario_diff_dict:
             print('\nThere were output differences in these scenarios:')
-            version_diffs = dict()
             for sn, diffs in self.scenario_diff_dict.items():
+                version_diffs = dict()
                 print(f"'{sn}': {diffs}")
                 for d in diffs:
                     if d[0] not in version_diffs:
@@ -781,9 +781,9 @@ class Benchmarker(object):
                         version_diffs[d[1]] = 0
                     version_diffs[d[0]] += 1
                     version_diffs[d[1]] += 1
-            for v, d in version_diffs.items():
-                if d > 1:
-                    print(f'{v} had differences with {d} other versions')
+                for v, d in version_diffs.items():
+                    if d > 1:
+                        print(f'{v} had differences with {d} other versions')
         else:
             print('\nOutputs of all versions in all scenarios match')
 
@@ -809,7 +809,8 @@ def get_parser():
     parser = argparse.ArgumentParser(description='Run xfind benchmark')
     parser.add_argument('-g', '--group', nargs='*', help='Name of scenario group to run')
     parser.add_argument('-s', '--scenario', nargs='*', help='Name of scenario to run')
-    parser.add_argument('-l', '--langs', help='Comma-separated list of language names to benchmark')
+    parser.add_argument('-l', '--langs', help='Comma-separated list of languages to include in benchmark')
+    parser.add_argument('-L', '--nolangs', help='Comma-separated list of languages to exclude from benchmark')
     parser.add_argument('-r', '--runs', type=int, help='Number of runs for each scenario')
     parser.add_argument('-b', '--exit-on-diff', action='store_true', help='Exit on first output difference')
     parser.add_argument('-f', '--scenarios-file', help='A scenarios json file')
@@ -848,14 +849,22 @@ def main():
             else:
                 print(f'Skipping unknown language: {lang}')
 
+    if parsed_args.nolangs:
+        nolangs = sorted(parsed_args.nolangs.split(','))
+        for nolang in nolangs:
+            if nolang in xfind_dict:
+                if xfind_dict[nolang] in xfind_names:
+                    del xfind_names[xfind_names.index(xfind_dict[nolang])]
+            else:
+                print(f'Skipping unknown language: {lang}')
+
     if parsed_args.runs:
         runs = parsed_args.runs
 
     if parsed_args.scenarios_file:
         scenarios_file = parsed_args.scenarios_file
 
-    # xfind_names, runs, exit_on_diff, debug = get_args(sys.argv[1:])
-    print(f'xfind_names: {str(xfind_names)}')
+    print(f'xfind_names ({len(xfind_names)}): {str(xfind_names)}')
     print(f'debug: {debug}')
     print(f'exit_on_diff: {exit_on_diff}')
     print(f'groups: {groups}')
