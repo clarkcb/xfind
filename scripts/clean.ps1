@@ -19,18 +19,20 @@ $scriptDir = Split-Path $scriptPath -Parent
 . (Join-Path $scriptDir 'config.ps1')
 . (Join-Path $scriptDir 'common.ps1')
 
-# check for help switch
-$help = $help.IsPresent
-
-# check for all switch
-$all = $all.IsPresent
-
 # args holds the remaining arguments
 $langs = $args
 
+if ($langs -contains 'all')
+{
+    $all = $true
+}
+
 Write-Host "help: $help"
 Write-Host "all: $all"
-Write-Host "langs: $langs"
+if ($langs.Length -gt 0 -and -not $all)
+{
+    Log("langs ($($langs.Length)): $langs")
+}
 
 
 ########################################
@@ -61,7 +63,7 @@ function CleanCFind
     Hdr('CleanCFind')
 
     $oldPwd = Get-Location
-    Set-Location $cfindPath
+    Set-Location $cFindPath
 
     $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
@@ -88,7 +90,7 @@ function CleanCljFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $cljfindPath
+    Set-Location $cljFindPath
 
     Log('lein clean')
     lein clean
@@ -102,7 +104,7 @@ function CleanCppFind
     Hdr('CleanCppFind')
 
     $oldPwd = Get-Location
-    Set-Location $cppfindPath
+    Set-Location $cppFindPath
 
     $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
@@ -129,7 +131,7 @@ function CleanCsFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $csfindPath
+    Set-Location $csFindPath
 
     Log('dotnet clean')
     dotnet clean
@@ -166,7 +168,7 @@ function CleanDartFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $dartfindPath
+    Set-Location $dartFindPath
 
     Log('dart pub cache repair')
     dart pub cache repair
@@ -194,7 +196,7 @@ function CleanExFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $exfindPath
+    Set-Location $exFindPath
 
     Log('mix clean')
     mix clean
@@ -215,7 +217,7 @@ function CleanFsFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $fsfindPath
+    Set-Location $fsFindPath
 
     Log('dotnet clean')
     dotnet clean
@@ -252,7 +254,7 @@ function CleanGoFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $gofindPath
+    Set-Location $goFindPath
 
     Log('go clean')
     go clean
@@ -266,7 +268,7 @@ function CleanGroovyFind
     Hdr('CleanGroovyFind')
 
     $oldPwd = Get-Location
-    Set-Location $groovyfindPath
+    Set-Location $groovyFindPath
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -297,7 +299,7 @@ function CleanHsFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $hsfindPath
+    Set-Location $hsFindPath
 
     Log('stack clean')
     stack clean
@@ -311,7 +313,7 @@ function CleanJavaFind
     Hdr('CleanJavaFind')
 
     $oldPwd = Get-Location
-    Set-Location $javafindPath
+    Set-Location $javaFindPath
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -342,7 +344,7 @@ function CleanJsFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $jsfindPath
+    Set-Location $jsFindPath
 
     Log('npm run clean')
     npm run clean
@@ -356,7 +358,7 @@ function CleanKtFind
     Hdr('CleanKtFind')
 
     $oldPwd = Get-Location
-    Set-Location $ktfindPath
+    Set-Location $ktFindPath
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -387,7 +389,7 @@ function CleanObjcFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $objcfindPath
+    Set-Location $objcFindPath
 
     Log("swift package clean")
     swift package clean
@@ -448,7 +450,7 @@ function CleanRsFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $rsfindPath
+    Set-Location $rsFindPath
 
     Log('cargo clean')
     cargo clean
@@ -467,7 +469,7 @@ function CleanScalaFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $scalafindPath
+    Set-Location $scalaFindPath
 
     Log('sbt clean')
     sbt clean
@@ -487,7 +489,7 @@ function CleanSwiftFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $swiftfindPath
+    Set-Location $swiftFindPath
 
     Log("swift package clean")
     swift package clean
@@ -507,7 +509,7 @@ function CleanTsFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $tsfindPath
+    Set-Location $tsFindPath
 
     Log('npm run clean')
     npm run clean
@@ -565,6 +567,8 @@ function CleanLinux
     CleanSwiftFind
 
     CleanTsFind
+
+    exit
 }
 
 function CleanAll
@@ -619,6 +623,8 @@ function CleanAll
     CleanSwiftFind
 
     CleanTsFind
+
+    exit
 }
 
 ################################################################################
@@ -674,6 +680,7 @@ function CleanMain
             'php'        { CleanPhpFind }
             'powershell' { CleanPs1Find }
             'ps1'        { CleanPs1Find }
+            'pwsh'       { CleanPs1Find }
             'py'         { CleanPyFind }
             'python'     { CleanPyFind }
             'rb'         { CleanRbFind }
@@ -694,10 +701,19 @@ if ($help)
     Usage
 }
 
-if ($all)
-{
-    CleanAll
-    exit
-}
+$oldPwd = Get-Location
 
-CleanMain $langs
+try {
+    if ($all)
+    {
+        CleanAll
+    }
+    
+    CleanMain $langs    
+}
+catch {
+    PrintError($_.Exception.Message)
+}
+finally {
+    Set-Location $oldPwd
+}

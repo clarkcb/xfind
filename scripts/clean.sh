@@ -593,7 +593,10 @@ done
 # log the settings
 log "HELP: $HELP"
 log "CLEAN_ALL: $CLEAN_ALL"
-log "TARGET_LANGS: ${TARGET_LANGS[*]}"
+if [ ${#TARGET_LANGS[@]} -gt 0 ]
+then
+    log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
+fi
 
 if [ -n "$HELP" ]
 then

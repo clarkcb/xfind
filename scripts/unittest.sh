@@ -649,8 +649,8 @@ unittest_pyfind () {
     cd "$PYFIND_PATH"
 
     # activate the virtualenv
-    log "source ./venv/bin/activate"
-    source ./venv/bin/activate
+    log "source $VENV_PATH/bin/activate"
+    source "$VENV_PATH/bin/activate"
 
     # Run the individual tests
     log "Unit-testing pyfind"
@@ -933,7 +933,10 @@ done
 # log the settings
 log "HELP: $HELP"
 log "TEST_ALL: $TEST_ALL"
-log "TARGET_LANGS: ${TARGET_LANGS[*]}"
+if [ ${#TARGET_LANGS[@]} -gt 0 ]
+then
+    log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
+fi
 
 if [ -n "$HELP" ]
 then

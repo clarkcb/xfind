@@ -19,18 +19,20 @@ $scriptDir = Split-Path $scriptPath -Parent
 . (Join-Path $scriptDir 'config.ps1')
 . (Join-Path $scriptDir 'common.ps1')
 
-# check for help switch
-$help = $help.IsPresent
-
-# check for all switch
-$all = $all.IsPresent
-
 # args holds the remaining arguments
 $langs = $args
 
+if ($langs -contains 'all')
+{
+    $all = $true
+}
+
 Write-Host "help: $help"
 Write-Host "all: $all"
-Write-Host "langs: $langs"
+if ($langs.Length -gt 0 -and -not $all)
+{
+    Log("langs ($($langs.Length)): $langs")
+}
 
 
 ########################################
@@ -63,19 +65,19 @@ function UnitTestBashFind
     $bashVersion = bash --version | Select-String -Pattern 'version'
     Log("bash version: $bashVersion")
 
-    $bashfindTestPath = Join-Path $bashfindPath 'test'
-    $bashfindTestScript = Join-Path $bashfindTestPath 'bashfindtests.bash'
+    $bashFindTestPath = Join-Path $bashFindPath 'test'
+    $bashFindTestScript = Join-Path $bashFindTestPath 'bashfindtests.bash'
 
-    if (-not (Test-Path $bashfindTestScript))
+    if (-not (Test-Path $bashFindTestScript))
     {
-        LogError("Test script not found: $bashfindTestScript")
+        LogError("Test script not found: $bashFindTestScript")
         return
     }
 
     # run tests
     Log('Unit-testing bashfind')
-    Log("bash $bashfindTestScript")
-    bash $bashfindTestScript
+    Log("bash $bashFindTestScript")
+    bash $bashFindTestScript
 }
 
 function UnitTestCFind
@@ -84,7 +86,7 @@ function UnitTestCFind
     Hdr('UnitTestCFind')
 
     $oldPwd = Get-Location
-    Set-Location $cfindPath
+    Set-Location $cFindPath
 
     # if cmake is installed, display version
     if (Get-Command 'cmake' -ErrorAction 'SilentlyContinue')
@@ -94,26 +96,26 @@ function UnitTestCFind
         $cmakeVersion = @($cmakeVersion -split '\s+')[2]
         Log("cmake version: $cmakeVersion")
     }
-    
+
     Log('Unit-testing cfind')
 
     $configurations = @('debug', 'release')
     ForEach ($c in $configurations)
     {
-        $cmakeBuildDir = Join-Path $cfindPath "cmake-build-$c"
+        $cmakeBuildDir = Join-Path $cFindPath "cmake-build-$c"
 
         if (Test-Path $cmakeBuildDir)
         {
-            $cfindTestExe = Join-Path $cmakeBuildDir 'cfind-tests'
-            if (Test-Path $cfindTestExe)
+            $cFindTestExe = Join-Path $cmakeBuildDir 'cfind-tests'
+            if (Test-Path $cFindTestExe)
             {
                 # run tests
-                Log($cfindTestExe)
-                & $cfindTestExe
+                Log($cFindTestExe)
+                & $cFindTestExe
             }
             else
             {
-                LogError("cfind-tests not found: $cfindTestExe")
+                LogError("cfind-tests not found: $cFindTestExe")
             }
         }
         else
@@ -130,7 +132,7 @@ function UnitTestCljFind
     Write-Host
     Hdr('UnitTestCljFind')
 
-    if (Get-Command 'lein' -ErrorAction 'SilentlyContinue')
+    if (Get-Command 'clj' -ErrorAction 'SilentlyContinue')
     {
         # clj -version output looks like this: Clojure CLI version 1.11.4.1474
         $clojureVersion = clj -version 2>&1
@@ -148,7 +150,7 @@ function UnitTestCljFind
     Log("lein version: $leinVersion")
 
     $oldPwd = Get-Location
-    Set-Location $cljfindPath
+    Set-Location $cljFindPath
 
     # Test with lein
     Log('Unit-testing cljfind')
@@ -175,20 +177,20 @@ function UnitTestCppFind
     $configurations = @('debug', 'release')
     ForEach ($c in $configurations)
     {
-        $cmakeBuildDir = Join-Path $cppfindPath "cmake-build-$c"
+        $cmakeBuildDir = Join-Path $cppFindPath "cmake-build-$c"
 
         if (Test-Path $cmakeBuildDir)
         {
-            $cppfindTestExe = Join-Path $cmakeBuildDir 'cppfind-tests'
-            if (Test-Path $cppfindTestExe)
+            $cppFindTestExe = Join-Path $cmakeBuildDir 'cppfind-tests'
+            if (Test-Path $cppFindTestExe)
             {
                 # run tests
-                Log($cppfindTestExe)
-                & $cppfindTestExe
+                Log($cppFindTestExe)
+                & $cppFindTestExe
             }
             else
             {
-                LogError("cppfind-tests not found: $cppfindTestExe")
+                LogError("cppfind-tests not found: $cppFindTestExe")
             }
         }
         else
@@ -212,7 +214,7 @@ function UnitTestCsFind
     $dotnetVersion = dotnet --version
     Log("dotnet version: $dotnetVersion")
 
-    $csfindSolutionPath = Join-Path $csfindPath 'CsFind.sln'
+    $csFindSolutionPath = Join-Path $csFindPath 'CsFind.sln'
     # $verbosity = 'quiet'
     $verbosity = 'minimal'
     # $verbosity = 'normal'
@@ -220,8 +222,8 @@ function UnitTestCsFind
 
     # run tests
     Log('Unit-testing csfind')
-    Write-Host "dotnet test $csfindSolutionPath --verbosity $verbosity"
-    dotnet test $csfindSolutionPath --verbosity $verbosity
+    Write-Host "dotnet test $csFindSolutionPath --verbosity $verbosity"
+    dotnet test $csFindSolutionPath --verbosity $verbosity
 }
 
 function UnitTestDartFind
@@ -240,7 +242,7 @@ function UnitTestDartFind
     Log("$dartVersion")
 
     $oldPwd = Get-Location
-    Set-Location $dartfindPath
+    Set-Location $dartFindPath
 
     # run tests
     Log('Unit-testing dartfind')
@@ -272,7 +274,7 @@ function UnitTestExFind
     Log("mix version: $mixVersion")
 
     $oldPwd = Get-Location
-    Set-Location $exfindPath
+    Set-Location $exFindPath
 
     # run tests
     Log('Unit-testing exfind')
@@ -296,7 +298,7 @@ function UnitTestFsFind
     $dotnetVersion = dotnet --version
     Log("dotnet version: $dotnetVersion")
 
-    $fsfindSolutionPath = Join-Path $fsfindPath 'FsFind.sln'
+    $fsFindSolutionPath = Join-Path $fsFindPath 'FsFind.sln'
     # $verbosity = 'quiet'
     $verbosity = 'minimal'
     # $verbosity = 'normal'
@@ -304,8 +306,8 @@ function UnitTestFsFind
 
     # run tests
     Log('Unit-testing fsfind')
-    Write-Host "dotnet test $fsfindSolutionPath --verbosity $verbosity"
-    dotnet test $fsfindSolutionPath --verbosity $verbosity
+    Write-Host "dotnet test $fsFindSolutionPath --verbosity $verbosity"
+    dotnet test $fsFindSolutionPath --verbosity $verbosity
 }
 
 function UnitTestGoFind
@@ -323,7 +325,7 @@ function UnitTestGoFind
     Log("go version: $goVersion")
 
     $oldPwd = Get-Location
-    Set-Location $gofindPath
+    Set-Location $goFindPath
 
     # run tests
     Log('Unit-testing gofind')
@@ -369,7 +371,7 @@ function UnitTestGroovyFind
     Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
-    Set-Location $groovyfindPath
+    Set-Location $groovyFindPath
 
     # run tests via gradle
     Log('Unit-testing ktfind')
@@ -390,7 +392,7 @@ function UnitTestHsFind
         $ghcVersion = ghc --version
         Log("ghc version: $ghcVersion")
     }
-    
+
     # ensure stack is installed
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
@@ -398,8 +400,11 @@ function UnitTestHsFind
         return
     }
 
+    $stackVersion = stack --version
+    Log("stack version: $stackVersion")
+
     $oldPwd = Get-Location
-    Set-Location $hsfindPath
+    Set-Location $hsFindPath
 
     # test with stack
     Log('Unit-testing hsfind')
@@ -442,7 +447,7 @@ function UnitTestJavaFind
     Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
-    Set-Location $ktfindPath
+    Set-Location $ktFindPath
 
     # run tests via gradle
     Log('Unit-testing javafind')
@@ -462,7 +467,7 @@ function UnitTestJsFind
     if (Get-Command 'node' -ErrorAction 'SilentlyContinue')
     {
         $nodeVersion = node --version
-        Log("node version: $nodeVersion")    
+        Log("node version: $nodeVersion")
     }
 
     # ensure npm is installed
@@ -472,8 +477,11 @@ function UnitTestJsFind
         return
     }
 
+    $npmVersion = npm --version
+    Log("npm version: $npmVersion")
+
     $oldPwd = Get-Location
-    Set-Location $jsfindPath
+    Set-Location $jsFindPath
 
     # run tests via npm
     Log('Unit-testing jsfind')
@@ -500,6 +508,8 @@ function UnitTestKtFind
         return
     }
 
+    $gradleOutput = & $gradle --version
+
     $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
     Log("$gradle version: $gradleVersion")
 
@@ -510,13 +520,12 @@ function UnitTestKtFind
     Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
-    Set-Location $ktfindPath
+    Set-Location $ktFindPath
 
     # run tests via gradle
     Log('Unit-testing ktfind')
-    # $buildGradlePath = Join-Path $ktfindPath 'build.gradle'
-    Log('gradle --warning-mode all test')
-    gradle --warning-mode all test
+    Log("$gradle --warning-mode all test")
+    & $gradle --warning-mode all test
 
     Set-Location $oldPwd
 }
@@ -537,7 +546,7 @@ function UnitTestObjcFind
     Log("swift version: $swiftVersion")
 
     $oldPwd = Get-Location
-    Set-Location $objcfindPath
+    Set-Location $objcFindPath
 
     # run tests
     Log('Unit-testing objcfind')
@@ -550,7 +559,8 @@ function UnitTestObjcFind
 function UnitTestMlFind
 {
     Write-Host
-    Hdr('UnitTestMlFind - currently unimplemented')
+    Hdr('UnitTestMlFind')
+    Log('not implemented at this time')
 }
 
 function UnitTestPlFind
@@ -573,16 +583,16 @@ function UnitTestPlFind
 
     Log("perl version: $perlVersion")
 
-    $plTestsPath = Join-Path $plfindPath 't'
+    $plTestsPath = Join-Path $plFindPath 't'
 
     # run tests
     Log('Unit-testing plfind')
-    $pltests = @(Get-ChildItem $plTestsPath |
+    $plTests = @(Get-ChildItem $plTestsPath |
         Where-Object{ !$_.PSIsContainer -and $_.Extension -eq '.pl' })
-    ForEach ($pltest in $pltests)
+    ForEach ($plTest in $plTests)
     {
-        Log("perl $pltest")
-        perl $pltest
+        Log("perl $plTest")
+        perl $plTest
     }
 }
 
@@ -610,7 +620,7 @@ function UnitTestPhpFind
     if (Get-Command 'composer' -ErrorAction 'SilentlyContinue')
     {
         $composerVersion = composer --version 2>&1 | Select-String -Pattern '^Composer'
-        Log("composer version: $composerVersion")    
+        Log("composer version: $composerVersion")
     }
 
     if (-not (Get-Command 'phpunit' -ErrorAction 'SilentlyContinue'))
@@ -619,7 +629,7 @@ function UnitTestPhpFind
         return
     }
 
-    $phpTestsPath = Join-Path $phpfindPath 'tests'
+    $phpTestsPath = Join-Path $phpFindPath 'tests'
 
     # run tests
     Log('Unit-testing plfind')
@@ -627,19 +637,19 @@ function UnitTestPhpFind
     phpunit $phpTestsPath
 }
 
-function UnitTestPowershell
+function UnitTestPs1Find
 {
     Write-Host
-    Hdr('UnitTestPowershell')
+    Hdr('UnitTestPs1Find')
 
     # We don't need to check for powershell, as we're running in it
 
     $powershellVersion = pwsh -v
     Log("powershell version: $powershellVersion")
-    
-    $testsScriptPath = Join-Path $ps1findPath 'ps1find.tests.ps1'
+
+    $testsScriptPath = Join-Path $ps1FindPath 'ps1find.tests.ps1'
     if (-not (Test-Path $testsScriptPath))
-    {  
+    {
         Log("Test script not found: $testsScriptPath")
         return
     }
@@ -655,15 +665,15 @@ function UnitTestPyFind
     Write-Host
     Hdr('UnitTestPyFind')
 
-    $venvPath = Join-Path $pyfindPath 'venv'
+    $venvPath = Join-Path $pyFindPath 'venv'
     if (-not (Test-Path $venvPath))
-    {  
+    {
         Log('venv path not found, you probably need to run the python build (./build.ps1 python)')
         return
     }
 
     $oldPwd = Get-Location
-    Set-Location $pyfindPath
+    Set-Location $pyFindPath
 
     # activate the virtual env
     $activatePath = Join-Path $venvPath 'bin' 'Activate.ps1'
@@ -718,7 +728,7 @@ function UnitTestRbFind
     }
 
     $oldPwd = Get-Location
-    Set-Location $rbfindPath
+    Set-Location $rbFindPath
 
     # run tests
     Log('Unit-testing rbfind')
@@ -742,7 +752,7 @@ function UnitTestRsFind
 
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
-        PrintError('You need to install cargo/rust')
+        PrintError('You need to install cargo')
         return
     }
 
@@ -750,7 +760,7 @@ function UnitTestRsFind
     Log("cargo version: $cargoVersion")
 
     $oldPwd = Get-Location
-    Set-Location $rsfindPath
+    Set-Location $rsFindPath
 
     # run tests
     Log('Unit-testing rsfind')
@@ -788,7 +798,7 @@ function UnitTestScalaFind
     Log("$sbtScriptVersion")
 
     $oldPwd = Get-Location
-    Set-Location $scalafindPath
+    Set-Location $scalaFindPath
 
     # run tests
     Log('Unit-testing scalafind')
@@ -813,7 +823,7 @@ function UnitTestSwiftFind
     Log("swift version: $swiftVersion")
 
     $oldPwd = Get-Location
-    Set-Location $swiftfindPath
+    Set-Location $swiftFindPath
 
     # run tests
     Log('Unit-testing swiftfind')
@@ -846,7 +856,7 @@ function UnitTestTsFind
     Log("npm version: $npmVersion")
 
     $oldPwd = Get-Location
-    Set-Location $tsfindPath
+    Set-Location $tsFindPath
 
     # run tests
     Log('Unit-testing tsfind')
@@ -891,11 +901,13 @@ function UnitTestAll
 
     UnitTestObjcFind
 
-    # UnitTestMlFind
+    UnitTestMlFind
 
     UnitTestPlFind
 
     UnitTestPhpFind
+
+    UnitTestPs1Find
 
     UnitTestPyFind
 
@@ -908,6 +920,8 @@ function UnitTestAll
     UnitTestSwiftFind
 
     UnitTestTsFind
+
+    exit
 }
 
 ################################################################################
@@ -926,7 +940,6 @@ function UnitTestMain
     if ($langs -contains 'all')
     {
         UnitTestAll
-        exit
     }
 
     ForEach ($lang in $langs)
@@ -955,11 +968,13 @@ function UnitTestMain
             'kotlin'     { UnitTestKtFind }
             'kt'         { UnitTestKtFind }
             'objc'       { UnitTestObjcFind }
-            # 'ocaml'      { UnitTestMlFind }
+            'ocaml'      { UnitTestMlFind }
+            'ml'         { UnitTestMlFind }
             'perl'       { UnitTestPlFind }
             'php'        { UnitTestPhpFind }
             'powershell' { UnitTestPs1Find }
             'ps1'        { UnitTestPs1Find }
+            'pwsh'       { UnitTestPs1Find }
             'py'         { UnitTestPyFind }
             'python'     { UnitTestPyFind }
             'rb'         { UnitTestRbFind }
@@ -980,10 +995,19 @@ if ($help)
     Usage
 }
 
-if ($all)
-{
-    UnitTestAll
-    exit
-}
+$oldPwd = Get-Location
 
-UnitTestMain $langs
+try {
+    if ($all)
+    {
+        UnitTestAll
+    }
+
+    UnitTestMain $langs
+}
+catch {
+    PrintError($_.Exception.Message)
+}
+finally {
+    Set-Location $oldPwd
+}

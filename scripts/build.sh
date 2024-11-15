@@ -1954,7 +1954,10 @@ log "DEBUG: $DEBUG"
 log "RELEASE: $RELEASE"
 log "VENV: $VENV"
 log "BUILD_ALL: $BUILD_ALL"
-log "TARGET_LANGS: ${TARGET_LANGS[*]}"
+if [ ${#TARGET_LANGS[@]} -gt 0 ]
+then
+    log "TARGET_LANGS (${#TARGET_LANGS[@]}): ${TARGET_LANGS[*]}"
+fi
 
 if [ -n "$HELP" ]
 then

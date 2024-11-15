@@ -3,7 +3,7 @@
 #
 # build.ps1
 #
-# Builds specified language version of xfind, or all versions
+# Builds specified language versions of xfind, or all versions
 #
 ################################################################################
 param([switch]$help = $false,
@@ -55,12 +55,20 @@ $gitBranch = git branch --show-current
 $gitCommit = git rev-parse --short HEAD
 Log("git branch: $gitBranch ($gitCommit)")
 
+if ($langs -contains 'all')
+{
+    $all = $true
+}
+
 Log("help: $help")
 Log("debug: $debug")
 Log("release: $release")
 Log("venv: $venv")
 Log("all: $all")
-Log("langs: $langs")
+if ($langs.Length -gt 0 -and -not $all)
+{
+    Log("langs ($($langs.Length)): $langs")
+}
 
 
 ########################################
@@ -84,7 +92,6 @@ function CopyFileTypesJsonResources
 function CopyFindOptionsJsonResources
 {
     param([string]$resourcesPath)
-    CopyFileTypesJsonResources($resourcesPath)
     $findOptionsPath = Join-Path $xfindSharedPath 'findoptions.json'
     Log("Copy-Item $findOptionsPath -Destination $resourcesPath")
     Copy-Item $findOptionsPath -Destination $resourcesPath
@@ -95,17 +102,6 @@ function CopyJsonResources
     param([string]$resourcesPath)
     CopyFileTypesJsonResources($resourcesPath)
     CopyFindOptionsJsonResources($resourcesPath)
-}
-
-function CopyXmlResources
-{
-    param([string]$resourcesPath)
-    $fileTypesPath = Join-Path $xfindSharedPath 'filetypes.xml'
-    Log("Copy-Item $fileTypesPath -Destination $resourcesPath")
-    Copy-Item $fileTypesPath -Destination $resourcesPath
-    $findOptionsPath = Join-Path $xfindSharedPath 'findoptions.xml'
-    Log("Copy-Item $findOptionsPath -Destination $resourcesPath")
-    Copy-Item $findOptionsPath -Destination $resourcesPath
 }
 
 function CopyTestResources
@@ -182,8 +178,8 @@ function BuildBashFind
     Log("bash version: $bashVersion")
 
     # add to bin
-    $bashfindExe = Join-Path $bashfindPath 'bin' 'bashfind.bash'
-    AddToBin($bashfindExe)
+    $bashFindExe = Join-Path $bashFindPath 'bin' 'bashfind.bash'
+    AddToBin($bashFindExe)
 }
 
 function BuildCFind
@@ -216,7 +212,7 @@ function BuildCFind
     Log("cmake version: $cmakeVersion")
 
     $oldPwd = Get-Location
-    Set-Location $cfindPath
+    Set-Location $cFindPath
 
     $configurations = @()
     if ($debug)
@@ -230,7 +226,7 @@ function BuildCFind
     ForEach ($c in $configurations)
     {
         $cmakeBuildDir = "cmake-build-$c"
-        $cmakeBuildPath = Join-Path $cfindPath $cmakeBuildDir
+        $cmakeBuildPath = Join-Path $cFindPath $cmakeBuildDir
 
         if (-not (Test-Path $cmakeBuildPath))
         {
@@ -244,7 +240,7 @@ function BuildCFind
             # Log("make -f Makefile")
             # make -f Makefile
 
-            Set-Location $cfindPath
+            Set-Location $cFindPath
         }
 
         $targets = @('clean', 'cfind', 'cfindapp', 'cfind-tests')
@@ -268,14 +264,14 @@ function BuildCFind
     if ($release)
     {
         # add release to bin
-        $cfindExe = Join-Path $cfindPath 'bin' 'cfind.release.ps1'
-        AddToBin($cfindExe)
+        $cFindExe = Join-Path $cFindPath 'bin' 'cfind.release.ps1'
+        AddToBin($cFindExe)
     }
     else
     {
         # add debug to bin
-        $cfindExe = Join-Path $cfindPath 'bin' 'cfind.debug.ps1'
-        AddToBin($cfindExe)
+        $cFindExe = Join-Path $cFindPath 'bin' 'cfind.debug.ps1'
+        AddToBin($cFindExe)
     }
 
     Set-Location $oldPwd
@@ -310,7 +306,7 @@ function BuildCljFind
     Log("lein version: $leinVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $cljfindPath 'resources'
+    $resourcesPath = Join-Path $cljFindPath 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -318,7 +314,7 @@ function BuildCljFind
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $cljfindPath
+    Set-Location $cljFindPath
 
     # Create uberjar with lein
     Log('Building cljfind')
@@ -342,8 +338,8 @@ function BuildCljFind
     }
 
     # add to bin
-    $cljfindExe = Join-Path $cljfindPath 'bin' 'cljfind.ps1'
-    AddToBin($cljfindExe)
+    $cljFindExe = Join-Path $cljFindPath 'bin' 'cljfind.ps1'
+    AddToBin($cljFindExe)
 
     Set-Location $oldPwd
 }
@@ -378,7 +374,7 @@ function BuildCppFind
     Log("cmake version: $cmakeVersion")
 
     $oldPwd = Get-Location
-    Set-Location $cppfindPath
+    Set-Location $cppFindPath
 
     # Set CMAKE_CXX_FLAGS
     $cmakeCxxFlags = "-W -Wall -Werror -Wextra -Wshadow -Wnon-virtual-dtor -pedantic"
@@ -398,7 +394,7 @@ function BuildCppFind
     ForEach ($c in $configurations)
     {
         $cmakeBuildDir = "cmake-build-$c"
-        $cmakeBuildPath = Join-Path $cppfindPath $cmakeBuildDir
+        $cmakeBuildPath = Join-Path $cppFindPath $cmakeBuildDir
 
         if (-not (Test-Path $cmakeBuildPath))
         {
@@ -412,7 +408,7 @@ function BuildCppFind
             # Log("make -f Makefile")
             # make -f Makefile
 
-            Set-Location $cppfindPath
+            Set-Location $cppFindPath
         }
 
         $targets = @('clean', 'cppfind', 'cppfindapp', 'cppfind-tests')
@@ -436,14 +432,14 @@ function BuildCppFind
     if ($release)
     {
         # add release to bin
-        $cppfindExe = Join-Path $cppfindPath 'bin' 'cppfind.release.ps1'
-        AddToBin($cppfindExe)
+        $cppFindExe = Join-Path $cppFindPath 'bin' 'cppfind.release.ps1'
+        AddToBin($cppFindExe)
     }
     else
     {
         # add debug to bin
-        $cppfindExe = Join-Path $cppfindPath 'bin' 'cppfind.debug.ps1'
-        AddToBin($cppfindExe)
+        $cppFindExe = Join-Path $cppFindPath 'bin' 'cppfind.debug.ps1'
+        AddToBin($cppFindExe)
     }
 
     Set-Location $oldPwd
@@ -465,8 +461,8 @@ function BuildCsFind
     $dotnetVersion = dotnet --version
     Log("dotnet version: $dotnetVersion")
 
-    $resourcesPath = Join-Path $csfindPath 'CsFindLib' 'Resources'
-    $testResourcesPath = Join-Path $csfindPath 'CsFindTests' 'Resources'
+    $resourcesPath = Join-Path $csFindPath 'CsFindLib' 'Resources'
+    $testResourcesPath = Join-Path $csFindPath 'CsFindTests' 'Resources'
 
     # copy the shared json files to the local resource location
     if (-not (Test-Path $resourcesPath))
@@ -483,9 +479,9 @@ function BuildCsFind
     CopyTestResources($testResourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $csfindPath
+    Set-Location $csFindPath
 
-    $csFindSolutionPath = Join-Path $csfindPath 'CsFind.sln'
+    $csFindSolutionPath = Join-Path $csFindPath 'CsFind.sln'
 
     $configurations = @()
     if ($debug)
@@ -520,14 +516,14 @@ function BuildCsFind
     if ($release)
     {
         # add release to bin
-        $csfindExe = Join-Path $csfindPath 'bin' 'csfind.release.ps1'
-        AddToBin($csfindExe)
+        $csFindExe = Join-Path $csFindPath 'bin' 'csfind.release.ps1'
+        AddToBin($csFindExe)
     }
     else
     {
         # add debug to bin
-        $csfindExe = Join-Path $csfindPath 'bin' 'csfind.debug.ps1'
-        AddToBin($csfindExe)
+        $csFindExe = Join-Path $csFindPath 'bin' 'csfind.debug.ps1'
+        AddToBin($csFindExe)
     }
 
     Set-Location $oldPwd
@@ -550,11 +546,11 @@ function BuildDartFind
     Log("$dartVersion")
 
     $oldPwd = Get-Location
-    Set-Location $dartfindPath
+    Set-Location $dartFindPath
 
     Log('Building dartfind')
-    if ((-not (Test-Path (Join-Path $dartfindPath '.dart_tool' 'package_config.json'))) -and
-        (-not (Test-Path (Join-Path $dartfindPath '.packages'))))
+    if ((-not (Test-Path (Join-Path $dartFindPath '.dart_tool' 'package_config.json'))) -and
+        (-not (Test-Path (Join-Path $dartFindPath '.packages'))))
     {
         Log('dart pub get')
         dart pub get
@@ -566,7 +562,7 @@ function BuildDartFind
     }
 
     Log('Compiling dartfind')
-    $dartScript = Join-Path $dartfindPath 'bin' 'dartfind.dart'
+    $dartScript = Join-Path $dartFindPath 'bin' 'dartfind.dart'
     Log("dart compile exe $dartScript")
     dart compile exe $dartScript
 
@@ -583,8 +579,8 @@ function BuildDartFind
     }
 
     # add to bin
-    $dartfindExe = Join-Path $dartfindPath 'bin' 'dartfind.ps1'
-    AddToBin($dartfindExe)
+    $dartFindExe = Join-Path $dartFindPath 'bin' 'dartfind.ps1'
+    AddToBin($dartFindExe)
 
     Set-Location $oldPwd
 }
@@ -616,7 +612,7 @@ function BuildExFind
     Log("mix version: $mixVersion")
 
     $oldPwd = Get-Location
-    Set-Location $exfindPath
+    Set-Location $exFindPath
 
     Log('Getting exfind dependencies')
     Log('mix deps.get')
@@ -643,8 +639,8 @@ function BuildExFind
     }
 
     # add to bin
-    $exfindExe = Join-Path $exfindPath 'bin' 'exfind'
-    AddToBin($exfindExe)
+    $exFindExe = Join-Path $exFindPath 'bin' 'exfind'
+    AddToBin($exFindExe)
 
     Set-Location $oldPwd
 }
@@ -665,8 +661,8 @@ function BuildFsFind
     $dotnetVersion = dotnet --version
     Log("dotnet version: $dotnetVersion")
 
-    $resourcesPath = Join-Path $fsfindPath 'FsFindLib' 'Resources'
-    $testResourcesPath = Join-Path $fsfindPath 'FsFindTests' 'Resources'
+    $resourcesPath = Join-Path $fsFindPath 'FsFindLib' 'Resources'
+    $testResourcesPath = Join-Path $fsFindPath 'FsFindTests' 'Resources'
 
     # copy the shared json files to the local resource location
     if (-not (Test-Path $resourcesPath))
@@ -683,9 +679,9 @@ function BuildFsFind
     CopyTestResources($testResourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $fsfindPath
+    Set-Location $fsFindPath
 
-    $fsFindSolutonPath = Join-Path $fsfindPath 'FsFind.sln'
+    $fsFindSolutonPath = Join-Path $fsFindPath 'FsFind.sln'
 
     $configurations = @()
     if ($debug)
@@ -720,14 +716,14 @@ function BuildFsFind
     if ($release)
     {
         # add release to bin
-        $fsfindExe = Join-Path $fsfindPath 'bin' 'fsfind.release.ps1'
-        AddToBin($fsfindExe)
+        $fsFindExe = Join-Path $fsFindPath 'bin' 'fsfind.release.ps1'
+        AddToBin($fsFindExe)
     }
     else
     {
         # add debug to bin
-        $fsfindExe = Join-Path $fsfindPath 'bin' 'fsfind.debug.ps1'
-        AddToBin($fsfindExe)
+        $fsFindExe = Join-Path $fsFindPath 'bin' 'fsfind.debug.ps1'
+        AddToBin($fsFindExe)
     }
 
     Set-Location $oldPwd
@@ -750,7 +746,7 @@ function BuildGoFind
     Log("go version: $goVersion")
 
     $oldPwd = Get-Location
-    Set-Location $gofindPath
+    Set-Location $goFindPath
 
     # go fmt the gofind source (for auto-generated code)
     Log('Auto-formatting gofind')
@@ -789,8 +785,8 @@ function BuildGoFind
     if ($env:GOBIN -ne $xfindBinPath)
     {
         # add to bin
-        $gofindExe = Join-Path $env:GOBIN 'gofind'
-        AddToBin($gofindExe)
+        $goFindExe = Join-Path $env:GOBIN 'gofind'
+        AddToBin($goFindExe)
     }
 
     Set-Location $oldPwd
@@ -813,7 +809,7 @@ function BuildGroovyFind
     Log("groovy version: $groovyVersion")
 
     $oldPwd = Get-Location
-    Set-Location $groovyfindPath
+    Set-Location $groovyFindPath
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -851,7 +847,7 @@ function BuildGroovyFind
     Log("JVM version: $jvmVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $groovyfindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $groovyFindPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -859,7 +855,7 @@ function BuildGroovyFind
     CopyJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $groovyfindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $groovyFindPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
@@ -885,9 +881,12 @@ function BuildGroovyFind
         return
     }
 
+    # Command to install to local maven repository
+    # What worked for me is gradle install -Dmaven.repo.local=~/.m2/repository.
+
     # add to bin
-    $groovyfindExe = Join-Path $groovyfindPath 'bin' 'groovyfind.ps1'
-    AddToBin($groovyfindExe)
+    $groovyFindExe = Join-Path $groovyFindPath 'bin' 'groovyfind.ps1'
+    AddToBin($groovyFindExe)
 
     Set-Location $oldPwd
 }
@@ -931,7 +930,7 @@ function BuildHsFind
     }
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $hsfindPath 'data'
+    $resourcesPath = Join-Path $hsFindPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -939,7 +938,7 @@ function BuildHsFind
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $hsfindPath
+    Set-Location $hsFindPath
 
     # build with stack (via make)
     Log('Building hsfind')
@@ -1014,10 +1013,10 @@ function BuildJavaFind
     Log("JVM version: $jvmVersion")
 
     $oldPwd = Get-Location
-    Set-Location $javafindPath
+    Set-Location $javaFindPath
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $javafindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $javaFindPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1025,7 +1024,7 @@ function BuildJavaFind
     CopyJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $javafindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $javaFindPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
@@ -1054,8 +1053,8 @@ function BuildJavaFind
     }
 
     # add to bin
-    $javafindExe = Join-Path $javafindPath 'bin' 'javafind.ps1'
-    AddToBin($javafindExe)
+    $javaFindExe = Join-Path $javaFindPath 'bin' 'javafind.ps1'
+    AddToBin($javaFindExe)
 
     Set-Location $oldPwd
 }
@@ -1087,7 +1086,7 @@ function BuildJsFind
     Log("npm version: $npmVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $jsfindPath 'data'
+    $resourcesPath = Join-Path $jsFindPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1095,7 +1094,7 @@ function BuildJsFind
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $jsfindPath
+    Set-Location $jsFindPath
 
     # run npm install and build
     Log('Building jsfind')
@@ -1118,8 +1117,8 @@ function BuildJsFind
     }
 
     # add to bin
-    $jsfindExe = Join-Path $jsfindPath 'bin' 'jsfind.ps1'
-    AddToBin($jsfindExe)
+    $jsFindExe = Join-Path $jsFindPath 'bin' 'jsfind.ps1'
+    AddToBin($jsFindExe)
 
     Set-Location $oldPwd
 }
@@ -1131,7 +1130,7 @@ function BuildKtFind
     Log("language: kotlin")
 
     $oldPwd = Get-Location
-    Set-Location $ktfindPath
+    Set-Location $ktFindPath
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -1157,7 +1156,7 @@ function BuildKtFind
     Log("JVM version: $jvmVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $ktfindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $ktFindPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1165,7 +1164,7 @@ function BuildKtFind
     CopyJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $ktfindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $ktFindPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
@@ -1194,8 +1193,8 @@ function BuildKtFind
     }
 
     # add to bin
-    $ktfindExe = Join-Path $ktfindPath 'bin' 'ktfind.ps1'
-    AddToBin($ktfindExe)
+    $ktFindExe = Join-Path $ktFindPath 'bin' 'ktfind.ps1'
+    AddToBin($ktFindExe)
 
     Set-Location $oldPwd
 }
@@ -1222,7 +1221,7 @@ function BuildObjcFind
     Log("swift version: Apple Swift version $swiftVersion")
 
     $oldPwd = Get-Location
-    Set-Location $objcfindPath
+    Set-Location $objcFindPath
 
     if ($debug)
     {
@@ -1259,14 +1258,14 @@ function BuildObjcFind
         }
 
         # add release to bin
-        $objcfindExe = Join-Path $objcfindPath 'bin' 'objcfind.release.ps1'
-        AddToBin($objcfindExe)
+        $objcFindExe = Join-Path $objcFindPath 'bin' 'objcfind.release.ps1'
+        AddToBin($objcFindExe)
     }
     else
     {
         # add debug to bin
-        $objcfindExe = Join-Path $objcfindPath 'bin' 'objcfind.debug.ps1'
-        AddToBin($objcfindExe)
+        $objcFindExe = Join-Path $objcFindPath 'bin' 'objcfind.debug.ps1'
+        AddToBin($objcFindExe)
     }
 
     Set-Location $oldPwd
@@ -1275,7 +1274,10 @@ function BuildObjcFind
 function BuildMlFind
 {
     Write-Host
-    Hdr('BuildMlFind - currently unimplemented')
+    Hdr('BuildMlFind')
+    Log("language: ocaml")
+
+    Log("Not currently implemented")
 }
 
 function BuildPlFind
@@ -1301,7 +1303,7 @@ function BuildPlFind
     Log("perl version: $perlVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $plfindPath 'share'
+    $resourcesPath = Join-Path $plFindPath 'share'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1320,8 +1322,8 @@ function BuildPlFind
     }
 
     # add to bin
-    $plfindExe = Join-Path $plfindPath 'bin' 'plfind.ps1'
-    AddToBin($plfindExe)
+    $plFindExe = Join-Path $plFindPath 'bin' 'plfind.ps1'
+    AddToBin($plFindExe)
 }
 
 function BuildPhpFind
@@ -1357,7 +1359,7 @@ function BuildPhpFind
 
     # copy the shared config json file to the local config location
     $configFilePath = Join-Path $xfindSharedPath 'config.json'
-    $configPath = Join-Path $phpfindPath 'config'
+    $configPath = Join-Path $phpFindPath 'config'
     if (-not (Test-Path $configPath))
     {
         New-Item -ItemType directory -Path $configPath
@@ -1366,7 +1368,7 @@ function BuildPhpFind
     Copy-Item $configFilePath -Destination $configPath
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $phpfindPath 'resources'
+    $resourcesPath = Join-Path $phpFindPath 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1374,12 +1376,12 @@ function BuildPhpFind
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $phpfindPath
+    Set-Location $phpFindPath
 
     # run a composer build
     Log('Building phpfind')
 
-    if (Test-Path (Join-Path $phpfindPath 'vendor'))
+    if (Test-Path (Join-Path $phpFindPath 'vendor'))
     {
         Log('composer update')
         composer update
@@ -1403,8 +1405,8 @@ function BuildPhpFind
     }
 
     # add to bin
-    $phpfindExe = Join-Path $phpfindPath 'bin' 'phpfind.ps1'
-    AddToBin($phpfindExe)
+    $phpFindExe = Join-Path $phpFindPath 'bin' 'phpfind.ps1'
+    AddToBin($phpFindExe)
 
     Set-Location $oldPwd
 }
@@ -1421,7 +1423,7 @@ function BuildPs1Find
     Log("powershell version: $powershellVersion")
 
     $oldPwd = Get-Location
-    Set-Location $ps1findPath
+    Set-Location $ps1FindPath
 
     Log('Building ps1find')
 
@@ -1433,14 +1435,14 @@ function BuildPs1Find
             Log("New-Item -Path $ps1findTargetModulePath -ItemType Directory")
             New-Item -Path $ps1findTargetModulePath -ItemType Directory
         }
-        $ps1findModulePath = Join-Path $ps1findPath 'Ps1FindModule.psm1'
+        $ps1findModulePath = Join-Path $ps1FindPath 'Ps1FindModule.psm1'
         Log("Copy-Item $ps1findModulePath -Destination $ps1findTargetModulePath")
         Copy-Item $ps1findModulePath -Destination $ps1findTargetModulePath
     }
 
     # add to bin
-    $ps1findExe = Join-Path $ps1findPath 'ps1find.ps1'
-    AddToBin($ps1findExe)
+    $ps1FindExe = Join-Path $ps1FindPath 'ps1find.ps1'
+    AddToBin($ps1FindExe)
 
     Set-Location $oldPwd
 }
@@ -1452,7 +1454,7 @@ function BuildPyFind
     Log("language: python")
 
     $oldPwd = Get-Location
-    Set-Location $pyfindPath
+    Set-Location $pyFindPath
 
     # Set to $true to use venv
     $useVenv=$venv
@@ -1460,7 +1462,7 @@ function BuildPyFind
     # We don't want to use python3.12 yet
     $pythonVersions = @('python3.11', 'python3.10', 'python3.9')
     $python = ''
-    $venvPath = Join-Path $pyfindPath 'venv'
+    $venvPath = Join-Path $pyFindPath 'venv'
 
     if ($useVenv)
     {
@@ -1497,7 +1499,7 @@ function BuildPyFind
                     break
                 }
             }
-        
+
             if (-not $python)
             {
                 PrintError('You need to install python(>= 3.9)')
@@ -1530,7 +1532,7 @@ function BuildPyFind
                 break
             }
         }
-    
+
         if (-not $python)
         {
             PrintError('You need to install python(>= 3.9)')
@@ -1544,7 +1546,7 @@ function BuildPyFind
     Log("Version: $pythonVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $pyfindPath 'data'
+    $resourcesPath = Join-Path $pyFindPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1581,8 +1583,8 @@ function BuildPyFind
     }
 
     # add to bin
-    $pyfindExe = Join-Path $pyfindPath 'bin' 'pyfind.ps1'
-    AddToBin($pyfindExe)
+    $pyFindExe = Join-Path $pyFindPath 'bin' 'pyfind.ps1'
+    AddToBin($pyFindExe)
 
     Set-Location $oldPwd
 }
@@ -1606,12 +1608,11 @@ function BuildRbFind
         PrintError('A version of ruby >= 3.x is required')
         return
     }
-
     Log("ruby version: $rubyVersion")
 
     # copy the shared config json file to the local config location
     $configFilePath = Join-Path $xfindSharedPath 'config.json'
-    $configPath = Join-Path $rbfindPath 'data'
+    $configPath = Join-Path $rbFindPath 'data'
     if (-not (Test-Path $configPath))
     {
         New-Item -ItemType directory -Path $configPath
@@ -1620,7 +1621,7 @@ function BuildRbFind
     Copy-Item $configFilePath -Destination $configPath
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $rbfindPath 'data'
+    $resourcesPath = Join-Path $rbFindPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1628,15 +1629,15 @@ function BuildRbFind
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $rbfindPath
+    Set-Location $rbFindPath
 
     Log('Building rbfind')
     Log('bundle install')
     bundle install
 
     # add to bin
-    $rbfindExe = Join-Path $rbfindPath 'bin' 'rbfind.ps1'
-    AddToBin($rbfindExe)
+    $rbFindExe = Join-Path $rbFindPath 'bin' 'rbfind.ps1'
+    AddToBin($rbFindExe)
 
     Set-Location $oldPwd
 }
@@ -1668,7 +1669,7 @@ function BuildRsFind
     Log("cargo version: $cargoVersion")
 
     $oldPwd = Get-Location
-    Set-Location $rsfindPath
+    Set-Location $rsFindPath
 
     Log('Building rsfind')
 
@@ -1708,14 +1709,14 @@ function BuildRsFind
         }
 
         # add release to bin
-        $rsfindExe = Join-Path $rsfindPath 'bin' 'rsfind.release.ps1'
-        AddToBin($rsfindExe)
+        $rsFindExe = Join-Path $rsFindPath 'bin' 'rsfind.release.ps1'
+        AddToBin($rsFindExe)
     }
     else
     {
         # add debug to bin
-        $rsfindExe = Join-Path $rsfindPath 'bin' 'rsfind.debug.ps1'
-        AddToBin($rsfindExe)
+        $rsFindExe = Join-Path $rsFindPath 'bin' 'rsfind.debug.ps1'
+        AddToBin($rsFindExe)
     }
 
     Set-Location $oldPwd
@@ -1742,7 +1743,7 @@ function BuildScalaFind
     Log("scala version: $scalaVersion")
 
     $oldPwd = Get-Location
-    Set-Location $scalafindPath
+    Set-Location $scalaFindPath
 
     # ensure sbt is installed
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
@@ -1760,7 +1761,7 @@ function BuildScalaFind
     Log("$sbtScriptVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $scalafindPath 'src' 'main' 'resources'
+    $resourcesPath = Join-Path $scalaFindPath 'src' 'main' 'resources'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1768,7 +1769,7 @@ function BuildScalaFind
     CopyJsonResources($resourcesPath)
 
     # copy the test files to the local test resource location
-    $testResourcesPath = Join-Path $scalafindPath 'src' 'test' 'resources'
+    $testResourcesPath = Join-Path $scalaFindPath 'src' 'test' 'resources'
     if (-not (Test-Path $testResourcesPath))
     {
         New-Item -ItemType directory -Path $testResourcesPath
@@ -1793,8 +1794,8 @@ function BuildScalaFind
     }
 
     # add to bin
-    $scalafindExe = Join-Path $scalafindPath 'bin' 'scalafind.ps1'
-    AddToBin($scalafindExe)
+    $scalaFindExe = Join-Path $scalaFindPath 'bin' 'scalafind.ps1'
+    AddToBin($scalaFindExe)
 
     Set-Location $oldPwd
 }
@@ -1821,7 +1822,7 @@ function BuildSwiftFind
     Log("swift version: Apple Swift version $swiftVersion")
 
     $oldPwd = Get-Location
-    Set-Location $swiftfindPath
+    Set-Location $swiftFindPath
 
     Log('Building swiftfind')
 
@@ -1861,14 +1862,14 @@ function BuildSwiftFind
         }
 
         # add release to bin
-        $swiftfindExe = Join-Path $swiftfindPath 'bin' 'swiftfind.release.ps1'
-        AddToBin($swiftfindExe)
+        $swiftFindExe = Join-Path $swiftFindPath 'bin' 'swiftfind.release.ps1'
+        AddToBin($swiftFindExe)
         }
     else
     {
         # add debug to bin
-        $swiftfindExe = Join-Path $swiftfindPath 'bin' 'swiftfind.debug.ps1'
-        AddToBin($swiftfindExe)
+        $swiftFindExe = Join-Path $swiftFindPath 'bin' 'swiftfind.debug.ps1'
+        AddToBin($swiftFindExe)
         }
 
     Set-Location $oldPwd
@@ -1901,7 +1902,7 @@ function BuildTsFind
     Log("npm version: $npmVersion")
 
     # copy the shared json files to the local resource location
-    $resourcesPath = Join-Path $tsfindPath 'data'
+    $resourcesPath = Join-Path $tsFindPath 'data'
     if (-not (Test-Path $resourcesPath))
     {
         New-Item -ItemType directory -Path $resourcesPath
@@ -1909,7 +1910,7 @@ function BuildTsFind
     CopyJsonResources($resourcesPath)
 
     $oldPwd = Get-Location
-    Set-Location $tsfindPath
+    Set-Location $tsFindPath
 
     # run npm install and build
     Log('Building tsfind')
@@ -1932,8 +1933,8 @@ function BuildTsFind
     }
 
     # add to bin
-    $tsfindExe = Join-Path $tsfindPath 'bin' 'tsfind.ps1'
-    AddToBin($tsfindExe)
+    $tsFindExe = Join-Path $tsFindPath 'bin' 'tsfind.ps1'
+    AddToBin($tsFindExe)
 
     Set-Location $oldPwd
 }
@@ -1982,6 +1983,8 @@ function BuildLinux
     Measure-Command { BuildSwiftFind }
 
     Measure-Command { BuildTsFind }
+
+    exit
 }
 
 function BuildAll
@@ -2038,6 +2041,8 @@ function BuildAll
     Measure-Command { BuildSwiftFind }
 
     Measure-Command { BuildTsFind }
+
+    exit
 }
 
 ################################################################################
@@ -2061,7 +2066,7 @@ function BuildMain
 
     ForEach ($lang in $langs)
     {
-        switch ($lang)
+        switch ($lang.ToLower())
         {
             'linux'      { BuildLinux }
             'bash'       { Measure-Command { BuildBashFind } }
@@ -2093,6 +2098,7 @@ function BuildMain
             'php'        { Measure-Command { BuildPhpFind } }
             'powershell' { Measure-Command { BuildPs1Find } }
             'ps1'        { Measure-Command { BuildPs1Find } }
+            'pwsh'       { Measure-Command { BuildPs1Find } }
             'py'         { Measure-Command { BuildPyFind } }
             'python'     { Measure-Command { BuildPyFind } }
             'rb'         { Measure-Command { BuildRbFind } }
@@ -2113,10 +2119,19 @@ if ($help)
     Usage
 }
 
-if ($all)
-{
-    BuildAll
-    exit
-}
+$oldPwd = Get-Location
 
-BuildMain $langs
+try {
+    if ($all)
+    {
+        BuildAll
+    }
+
+    BuildMain $langs
+}
+catch {
+    PrintError($_.Exception.Message)
+}
+finally {
+    Set-Location $oldPwd
+}
