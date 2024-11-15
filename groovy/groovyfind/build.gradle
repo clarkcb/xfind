@@ -1,5 +1,6 @@
 plugins {
     id 'groovy'
+    id 'maven-publish'
     id 'application'
 }
 
@@ -7,6 +8,7 @@ group = 'xfind'
 version = '0.1.0-SNAPSHOT'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -40,6 +42,18 @@ jar {
 
     from {
         configurations.compileClasspath.filter{ it.exists() }.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'xfind'
+            artifactId = 'groovyfind'
+            version = '0.1.0'
+
+            from components.java
+        }
     }
 }
 

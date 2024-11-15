@@ -11,63 +11,63 @@ FindSettings getSettings() {
 
 void main() {
   /***************************************************************************
-   * isFindDir tests
+   * isMatchingDir tests
    **************************************************************************/
-  group('isFindDir tests', () {
+  group('isMatchingDir tests', () {
     test('test isFindDir single dot', () {
       var settings = getSettings();
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('.')), true);
     });
 
-    test('test isFindDir double dot', () {
+    test('test isMatchingDir double dot', () {
       var settings = getSettings();
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('..')), true);
     });
 
-    test('test isFindDir hidden dir', () {
+    test('test isMatchingDir hidden dir', () {
       var settings = getSettings();
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('.git')), false);
     });
 
-    test('test isFindDir hidden dir includeHidden', () {
+    test('test isMatchingDir hidden dir includeHidden', () {
       var settings = getSettings();
       settings.includeHidden = true;
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('.git')), true);
     });
 
-    test('test isFindDir no patterns', () {
+    test('test isMatchingDir no patterns', () {
       var settings = getSettings();
       settings.includeHidden = false;
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('/Users')), true);
     });
 
-    test('test isFindDir dir matches inDirPatterns', () {
+    test('test isMatchingDir dir matches inDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('Find', settings.inDirPatterns);
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('./CsFind')), true);
     });
 
-    test('test isFindDir dir does not match inDirPatterns', () {
+    test('test isMatchingDir dir does not match inDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('FindFiles', settings.inDirPatterns);
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('./CsFind')), false);
     });
 
-    test('test isFindDir dir matches outDirPatterns', () {
+    test('test isMatchingDir dir matches outDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('Find', settings.outDirPatterns);
       var finder = Finder(settings);
       expect(finder.isMatchingDir(Directory('./CsFind')), false);
     });
 
-    test('test isFindDir dir does not match outDirPatterns', () {
+    test('test isMatchingDir dir does not match outDirPatterns', () {
       var settings = getSettings();
       settings.addPattern('FindFiles', settings.outDirPatterns);
       var finder = Finder(settings);
@@ -76,10 +76,10 @@ void main() {
   });
 
   /***************************************************************************
-   * isFindFile tests
+   * isMatchingFileResult tests
    **************************************************************************/
-  group('isFindFile tests', () {
-    test('test isFindFile no extensions no patterns', () {
+  group('isMatchingFileResult tests', () {
+    test('test isMatchingFileResult no extensions no patterns', () {
       var settings = getSettings();
       var finder = Finder(settings);
       var fileResult =
@@ -87,7 +87,7 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
-    test('test isFindFile file extension matches inExtensions', () {
+    test('test isMatchingFileResult file extension matches inExtensions', () {
       var settings = getSettings();
       settings.addExtensions('cs', settings.inExtensions);
       var finder = Finder(settings);
@@ -96,7 +96,8 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
-    test('test isFindFile file extension does not match inExtensions', () {
+    test('test isMatchingFileResult file extension does not match inExtensions',
+        () {
       var settings = getSettings();
       settings.addExtensions('java', settings.inExtensions);
       var finder = Finder(settings);
@@ -105,7 +106,7 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
-    test('test isFindFile file extension matches outExtensions', () {
+    test('test isMatchingFileResult file extension matches outExtensions', () {
       var settings = getSettings();
       settings.addExtensions('cs', settings.outExtensions);
       var finder = Finder(settings);
@@ -114,7 +115,9 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
-    test('test isFindFile file extension does not match outExtensions', () {
+    test(
+        'test isMatchingFileResult file extension does not match outExtensions',
+        () {
       var settings = getSettings();
       settings.addExtensions('java', settings.outExtensions);
       var finder = Finder(settings);
@@ -123,7 +126,7 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
-    test('test isFindFile file name matches inFilePatterns', () {
+    test('test isMatchingFileResult file name matches inFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('Find', settings.inFilePatterns);
       var finder = Finder(settings);
@@ -131,7 +134,8 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), true);
     });
 
-    test('test isFindFile file name does not match inFilePatterns', () {
+    test('test isMatchingFileResult file name does not match inFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('Find', settings.inFilePatterns);
       var finder = Finder(settings);
@@ -140,7 +144,7 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
-    test('test isFindFile file name matches outFilePatterns', () {
+    test('test isMatchingFileResult file name matches outFilePatterns', () {
       var settings = getSettings();
       settings.addPattern('Find', settings.outFilePatterns);
       var finder = Finder(settings);
@@ -148,7 +152,8 @@ void main() {
       expect(finder.isMatchingFileResult(fileResult), false);
     });
 
-    test('test isFindFile file name does not match outFilePatterns', () {
+    test('test isMatchingFileResult file name does not match outFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('Find', settings.outFilePatterns);
       var finder = Finder(settings);
@@ -159,10 +164,10 @@ void main() {
   });
 
   /***************************************************************************
-   * isArchiveFindFile tests
+   * isMatchingArchiveFileResult tests
    **************************************************************************/
-  group('isArchiveFindFile tests', () {
-    test('test isArchiveFindFile no extensions no patterns', () {
+  group('isMatchingArchiveFileResult tests', () {
+    test('test isMatchingArchiveFileResult no extensions no patterns', () {
       var settings = getSettings();
       var finder = Finder(settings);
       var fileResult =
@@ -170,7 +175,8 @@ void main() {
       expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
 
-    test('test isArchiveFindFile file extension matches inArchiveExtensions',
+    test(
+        'test isMatchingArchiveFileResult file extension matches inArchiveExtensions',
         () {
       var settings = getSettings();
       settings.addExtensions('zip', settings.inArchiveExtensions);
@@ -181,7 +187,7 @@ void main() {
     });
 
     test(
-        'test isArchiveFindFile file extension does not match inArchiveExtensions',
+        'test isMatchingArchiveFileResult file extension does not match inArchiveExtensions',
         () {
       var settings = getSettings();
       settings.addExtensions('gz', settings.inArchiveExtensions);
@@ -191,7 +197,8 @@ void main() {
       expect(finder.isMatchingArchiveFileResult(fileResult), false);
     });
 
-    test('test isArchiveFindFile file extension matches outArchiveExtensions',
+    test(
+        'test isMatchingArchiveFileResult file extension matches outArchiveExtensions',
         () {
       var settings = getSettings();
       settings.addExtensions('zip', settings.outArchiveExtensions);
@@ -202,7 +209,7 @@ void main() {
     });
 
     test(
-        'test isArchiveFindFile file extension does not match outArchiveExtensions',
+        'test isMatchingArchiveFileResult file extension does not match outArchiveExtensions',
         () {
       var settings = getSettings();
       settings.addExtensions('gz', settings.outArchiveExtensions);
@@ -212,7 +219,9 @@ void main() {
       expect(finder.isMatchingArchiveFileResult(fileResult), true);
     });
 
-    test('test isArchiveFindFile file name matches inArchiveFilePatterns', () {
+    test(
+        'test isMatchingArchiveFileResult file name matches inArchiveFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('arch', settings.inArchiveFilePatterns);
       var finder = Finder(settings);
@@ -222,7 +231,7 @@ void main() {
     });
 
     test(
-        'test isArchiveFindFile file name does not match inArchiveFilePatterns',
+        'test isMatchingArchiveFileResult file name does not match inArchiveFilePatterns',
         () {
       var settings = getSettings();
       settings.addPattern('archives', settings.inArchiveFilePatterns);
@@ -232,7 +241,9 @@ void main() {
       expect(finder.isMatchingArchiveFileResult(fileResult), false);
     });
 
-    test('test isArchiveFindFile file name matches outArchiveFilePatterns', () {
+    test(
+        'test isMatchingArchiveFileResult file name matches outArchiveFilePatterns',
+        () {
       var settings = getSettings();
       settings.addPattern('arch', settings.outArchiveFilePatterns);
       var finder = Finder(settings);
@@ -242,7 +253,7 @@ void main() {
     });
 
     test(
-        'test isArchiveFindFile file name does not match outArchiveFilePatterns',
+        'test isMatchingArchiveFileResult file name does not match outArchiveFilePatterns',
         () {
       var settings = getSettings();
       settings.addPattern('archives', settings.outArchiveFilePatterns);

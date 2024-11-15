@@ -35,7 +35,7 @@ class DefaultFindSettings {
 @CompileStatic
 class FindSettings {
 
-    private static final int INITIAL_SET_CAPACITY = 4
+    static final int INITIAL_SET_CAPACITY = 4
 
     boolean archivesOnly
     boolean debug
@@ -125,7 +125,7 @@ class FindSettings {
         }
     }
 
-    private static LocalDateTime getLastModFromString(final String lastModString) {
+    static LocalDateTime getLastModFromString(final String lastModString) {
         LocalDateTime lastMod = null
         try {
             lastMod = LocalDateTime.parse(lastModString)
@@ -149,11 +149,11 @@ class FindSettings {
     }
 
     // could be a comma-separated list
-    private static void addExtensions(Set<String> set, final String exts) {
+    static void addExtensions(Set<String> set, final String exts) {
         addExtensions(set, Arrays.asList(exts.split(',')))
     }
 
-    private static void addExtensions(Set<String> set, final List<String> exts) {
+    static void addExtensions(Set<String> set, final List<String> exts) {
         exts.each { x ->
             if (!x.isEmpty()) {
                 set.add(x.toLowerCase())
@@ -206,11 +206,11 @@ class FindSettings {
     }
 
     // could be a comma-separated list
-    private static void addFileTypes(Set<FileType> set, final String fts) {
+    static void addFileTypes(Set<FileType> set, final String fts) {
         addFileTypes(set, Arrays.asList(fts.split(',')))
     }
 
-    private static void addFileTypes(Set<FileType> set, final List<String> fts) {
+    static void addFileTypes(Set<FileType> set, final List<String> fts) {
         fts.each { ft ->
             if (!ft.isEmpty()) {
                 set.add(FileType.forName(ft))
@@ -236,7 +236,7 @@ class FindSettings {
                 this.maxSize > 0 || this.minSize > 0
     }
 
-    private static String setToString(final Set<String> set, final boolean quote) {
+    static String setToString(final Set<String> set, final boolean quote) {
         StringBuilder sb = new StringBuilder('[')
         int elemCount = 0
         set.each { s ->
@@ -254,26 +254,26 @@ class FindSettings {
         sb.toString()
     }
 
-    private static String stringSetToString(final Set<String> set) {
+    static String stringSetToString(final Set<String> set) {
         setToString(set, true)
     }
 
-    private static String pathSetToString(final Set<Path> set) {
+    static String pathSetToString(final Set<Path> set) {
         Set<String> stringSet = set.collect { p -> p.toString() }.toSet()
         setToString(stringSet, true)
     }
 
-    private static String patternSetToString(final Set<Pattern> set) {
+    static String patternSetToString(final Set<Pattern> set) {
         Set<String> stringSet = set.collect { p -> p.toString() }.toSet()
         setToString(stringSet, true)
     }
 
-    private static String fileTypeSetToString(final Set<FileType> set) {
+    static String fileTypeSetToString(final Set<FileType> set) {
         Set<String> stringSet = set.collect { ft -> ft.toName() }.toSet()
         setToString(stringSet, false)
     }
 
-    private static String localDateTimeToString(final LocalDateTime dt) {
+    static String localDateTimeToString(final LocalDateTime dt) {
         if (dt == null) {
             '0'
         } else {
