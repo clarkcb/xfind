@@ -45,6 +45,17 @@ function Usage
     exit
 }
 
+function CleanJsonResources
+{
+    param([string]$resourcesPath)
+    $resourceFiles = Get-ChildItem $resourcesPath -Depth 0 | Where-Object {!$_.PsIsContainer -and $_.Extension -eq '.json'}
+    ForEach ($f in $resourceFiles)
+    {
+        Log("Remove-Item $f")
+        Remove-Item $f
+    }
+}
+
 
 ################################################################################
 # Clean functions
@@ -65,7 +76,7 @@ function CleanCFind
     $oldPwd = Get-Location
     Set-Location $cFindPath
 
-    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.Name.StartsWith('cmake-build-')}
+    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
     {
         if (Test-Path $c)
@@ -95,6 +106,9 @@ function CleanCljFind
     Log('lein clean')
     lein clean
 
+    $resourcesPath = Join-Path $cljFindPath 'resources'
+    CleanJsonResources($resourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -106,7 +120,7 @@ function CleanCppFind
     $oldPwd = Get-Location
     Set-Location $cppFindPath
 
-    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
+    $cmakeBuildDirs = Get-ChildItem $cppFindPath -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
     {
         if (Test-Path $c)
@@ -133,11 +147,12 @@ function CleanCsFind
     $oldPwd = Get-Location
     Set-Location $csFindPath
 
-    Log('dotnet clean')
-    dotnet clean
+    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    Log("dotnet clean -v minimal")
+    dotnet clean -v minimal
 
-    $csfindProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsFind')}
-    ForEach ($p in $csfindProjectDirs)
+    $csFindProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('CsFind')}
+    ForEach ($p in $csFindProjectDirs)
     {
         $binDir = Join-Path $p.FullName 'bin'
         if (Test-Path $binDir)
@@ -152,6 +167,9 @@ function CleanCsFind
             Remove-Item $objDir -Recurse -Force
         }
     }
+
+    $resourcesPath = Join-Path $csFindPath 'CsFindLib' 'Resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -219,11 +237,12 @@ function CleanFsFind
     $oldPwd = Get-Location
     Set-Location $fsFindPath
 
-    Log('dotnet clean')
-    dotnet clean
+    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    Log("dotnet clean -v minimal")
+    dotnet clean -v minimal
 
-    $fsfindProjectDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsFind')}
-    ForEach ($p in $fsfindProjectDirs)
+    $fsFindProjectDirs = Get-ChildItem $fsFindPath -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('FsFind')}
+    ForEach ($p in $fsFindProjectDirs)
     {
         $binDir = Join-Path $p.FullName 'bin'
         if (Test-Path $binDir)
@@ -238,6 +257,9 @@ function CleanFsFind
             Remove-Item $objDir -Recurse -Force
         }
     }
+
+    $resourcesPath = Join-Path $fsFindPath 'FsFindLib' 'Resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -284,6 +306,9 @@ function CleanGroovyFind
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
 
+    $resourcesPath = Join-Path $groovyFindPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -303,6 +328,9 @@ function CleanHsFind
 
     Log('stack clean')
     stack clean
+
+    $resourcesPath = Join-Path $hsFindPath 'data'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -329,6 +357,9 @@ function CleanJavaFind
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
 
+    $resourcesPath = Join-Path $javaFindPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -348,6 +379,9 @@ function CleanJsFind
 
     Log('npm run clean')
     npm run clean
+
+    $resourcesPath = Join-Path $jsFindPath 'data'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -373,6 +407,9 @@ function CleanKtFind
 
     Log("$gradle --warning-mode all clean")
     & $gradle --warning-mode all clean
+
+    $resourcesPath = Join-Path $ktFindPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -408,14 +445,18 @@ function CleanPlFind
 {
     Write-Host
     Hdr('CleanPlFind')
-    Log('Nothing to do for perl')
+
+    $resourcesPath = Join-Path $plFindPath 'share'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanPhpFind
 {
     Write-Host
     Hdr('CleanPhpFind')
-    Log('Nothing to do for php')
+
+    $resourcesPath = Join-Path $phpFindPath 'resources'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanPs1Find
@@ -429,14 +470,18 @@ function CleanPyFind
 {
     Write-Host
     Hdr('CleanPyFind')
-    Log('Nothing to do for python')
+
+    $resourcesPath = Join-Path $pyFindPath 'pyfind' 'data'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanRbFind
 {
     Write-Host
     Hdr('CleanRbFind')
-    Log('Nothing to do for ruby')
+
+    $resourcesPath = Join-Path $rbFindPath 'data'
+    CleanJsonResources($resourcesPath)
 }
 
 function CleanRsFind
@@ -473,6 +518,9 @@ function CleanScalaFind
 
     Log('sbt clean')
     sbt clean
+
+    $resourcesPath = Join-Path $scalaFindPath 'src' 'main' 'resources'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }
@@ -513,6 +561,9 @@ function CleanTsFind
 
     Log('npm run clean')
     npm run clean
+
+    $resourcesPath = Join-Path $tsFindPath 'data'
+    CleanJsonResources($resourcesPath)
 
     Set-Location $oldPwd
 }

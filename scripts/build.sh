@@ -54,15 +54,6 @@ copy_json_resources () {
     copy_findoptions_resources "$resources_path"
 }
 
-# copy_xml_resources
-copy_xml_resources () {
-    local resources_path="$1"
-    log "cp $XFIND_SHARED_PATH/filetypes.xml $resources_path/"
-    cp "$XFIND_SHARED_PATH"/filetypes.xml "$resources_path/"
-    log "cp $XFIND_SHARED_PATH/findoptions.xml $resources_path/"
-    cp "$XFIND_SHARED_PATH/findoptions.xml" "$resources_path/"
-}
-
 # copy_test_resources
 copy_test_resources () {
     local test_resources_path="$1"

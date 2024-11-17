@@ -25,6 +25,16 @@ usage () {
     exit
 }
 
+# clean_json_resources
+clean_json_resources () {
+    local resources_path="$1"
+    for f in $(find "$resources_path" -name "*.json" -type f -maxdepth 1)
+    do
+        log "rm $f"
+        rm "$f"
+    done
+}
+
 
 ########################################
 # Clean Functions
@@ -67,6 +77,8 @@ clean_cljfind () {
     log "lein clean"
     lein clean
 
+    clean_json_resources "$CLJFIND_PATH/resources"
+
     cd -
 }
 
@@ -98,8 +110,9 @@ clean_csfind () {
 
     cd "$CSFIND_PATH"
 
-    log "dotnet clean"
-    dotnet clean
+    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    log "dotnet clean -v minimal"
+    dotnet clean -v minimal
 
     for p in $(find "$CSFIND_PATH" -name "CsFind*" -type d -maxdepth 1)
     do
@@ -112,6 +125,8 @@ clean_csfind () {
             rm -rf "$p/obj"
         fi
     done
+
+    clean_json_resources "$CSFIND_PATH/CsFindLib/Resources"
 
     cd -
 }
@@ -175,8 +190,9 @@ clean_fsfind () {
 
     cd "$FSFIND_PATH"
 
-    log "dotnet clean"
-    dotnet clean
+    # Verbosity levels: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    log "dotnet clean -v minimal"
+    dotnet clean -v minimal
 
     for p in $(find "$FSFIND_PATH" -name "FsFind*" -type d -maxdepth 1)
     do
@@ -189,6 +205,8 @@ clean_fsfind () {
             rm -rf "$p/obj"
         fi
     done
+
+    clean_json_resources "$FSFIND_PATH/FsFindLib/Resources"
 
     cd -
 }
@@ -234,6 +252,8 @@ clean_groovyfind () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
+    clean_json_resources "$GROOVYFIND_PATH/src/main/resources"
+
     cd -
 }
 
@@ -252,6 +272,8 @@ clean_hsfind () {
 
     log "stack clean"
     stack clean
+
+    clean_json_resources "$HSFIND_PATH/data"
 
     cd -
 }
@@ -278,6 +300,8 @@ clean_javafind () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
+    clean_json_resources "$JAVAFIND_PATH/src/main/resources"
+
     cd -
 }
 
@@ -296,6 +320,8 @@ clean_jsfind () {
 
     log "npm run clean"
     npm run clean
+
+    clean_json_resources "$JSFIND_PATH/data"
 
     cd -
 }
@@ -322,6 +348,8 @@ clean_ktfind () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
+    clean_json_resources "$KTFIND_PATH/src/main/resources"
+
     cd -
 }
 
@@ -347,13 +375,15 @@ clean_mlfind () {
 clean_plfind () {
     echo
     hdr "clean_plfind"
-    log "Nothing to do for perl"
+
+    clean_json_resources "$PLFIND_PATH/share"
 }
 
 clean_phpfind () {
     echo
     hdr "clean_phpfind"
-    log "Nothing to do for php"
+
+    clean_json_resources "$PHPFIND_PATH/resources"
 }
 
 clean_ps1find () {
@@ -365,13 +395,15 @@ clean_ps1find () {
 clean_pyfind () {
     echo
     hdr "clean_pyfind"
-    log "Nothing to do for python"
+
+    clean_json_resources "$PYFIND_PATH/pyfind/data"
 }
 
 clean_rbfind () {
     echo
     hdr "clean_rbfind"
-    log "Nothing to do for ruby"
+
+    clean_json_resources "$RBFIND_PATH/data"
 }
 
 clean_rsfind () {
@@ -411,6 +443,8 @@ clean_scalafind () {
     log "sbt clean"
     sbt clean
 
+    clean_json_resources "$SCALAFIND_PATH/src/main/resources"
+
     cd -
 }
 
@@ -441,6 +475,8 @@ clean_tsfind () {
 
     log "npm run clean"
     npm run clean
+
+    clean_json_resources "$TSFIND_PATH/data"
 
     cd -
 }
