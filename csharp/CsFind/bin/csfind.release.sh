@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z "$XFIND_PATH" ]
+then
+    XFIND_PATH="$HOME/src/xfind"
+fi
+
+CSFIND_PATH="$XFIND_PATH/csharp/CsFind"
+# CONFIGURATION=Debug
+CONFIGURATION=Release
+DOTNET_VERSION=net9.0
+CSFIND_EXE="$CSFIND_PATH/CsFind/bin/$CONFIGURATION/$DOTNET_VERSION/CsFind"
+
+$CSFIND_EXE "$@"

@@ -1,0 +1,14 @@
+#!/bin/sh
+
+if [ -z "$XFIND_PATH" ]
+then
+    XFIND_PATH="$HOME/src/xfind"
+fi
+
+FSFIND_PATH="$XFIND_PATH/fsharp/FsFind"
+CONFIGURATION=Debug
+# CONFIGURATION=Release
+DOTNET_VERSION=net9.0
+FSFINDEXE="$FSFIND_PATH/FsFind/bin/$CONFIGURATION/$DOTNET_VERSION/FsFind"
+
+$FSFINDEXE "$@"
