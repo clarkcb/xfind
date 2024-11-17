@@ -1,5 +1,10 @@
+#include <algorithm>
+#include <deque>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <boost/format.hpp>
+
 #include "rapidjson/filereadstream.h"
 
 #include "FindConfig.h"
@@ -191,6 +196,9 @@ namespace cppfind {
         }
 
         uint64_t file_size = std::filesystem::file_size(file_path);
+        // ~1MB, an arbitrary limit, but at least a limit
+        assert(file_size <= 1024000);
+
         FILE *fp = fopen(file_path.c_str(), "r");
 
         char readBuffer[file_size];
@@ -215,6 +223,7 @@ namespace cppfind {
         for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
             std::string name = it->name.GetString();
 
+            // TODO: we need to handle numeric types also
             if (it->value.IsArray()) {
                 assert(m_str_arg_map.contains(name));
                 const auto& arr = it->value.GetArray();

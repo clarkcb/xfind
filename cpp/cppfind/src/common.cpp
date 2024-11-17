@@ -3,7 +3,7 @@
 #include "common.h"
 
 namespace cppfind {
-    void log(const std::string_view msg) {
+    void log_msg(const std::string_view msg) {
         std::cout << msg << std::endl << std::flush;
     }
 

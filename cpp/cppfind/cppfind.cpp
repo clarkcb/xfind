@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
     try {
         options = std::make_unique<FindOptions>();
     } catch (const FindException& e) {
-        log("");
+        log_msg("");
         log_error(e.what());
         exit(1);
     }
@@ -42,16 +42,16 @@ int main(int argc, char *argv[]) {
         const auto settings = options->settings_from_args(argc, argv);
 
         if (settings.debug()) {
-            log(settings.string());
+            log_msg(settings.string());
         }
 
         if (settings.print_usage()) {
             options->usage();
         }
 
-        std::unique_ptr<FindSettings> settings_ptr = std::make_unique<FindSettings>(settings);
+        const std::unique_ptr<FindSettings> settings_ptr = std::make_unique<FindSettings>(settings);
 
-        auto finder = Finder(settings_ptr);
+        const auto finder = Finder(settings_ptr);
 
         const std::vector<FileResult> file_results = finder.find();
 
@@ -60,12 +60,12 @@ int main(int argc, char *argv[]) {
             std::string msg{"\nMatching directories"};
             if (dirs.empty()) {
                 msg.append(": 0");
-                log(msg);
+                log_msg(msg);
             } else {
                 msg.append(" (").append(std::to_string(dirs.size())).append("):");
-                log(msg);
+                log_msg(msg);
                 for (const auto& d : dirs) {
-                    log(d);
+                    log_msg(d);
                 }
             }
         }
@@ -75,17 +75,17 @@ int main(int argc, char *argv[]) {
             std::string msg{"\nMatching files"};
             if (files.empty()) {
                 msg.append(": 0");
-                log(msg);
+                log_msg(msg);
             } else {
                 msg.append(" (").append(std::to_string(files.size())).append("):");
-                log(msg);
+                log_msg(msg);
                 for (const auto& f : files) {
-                    log(f);
+                    log_msg(f);
                 }
             }
         }
     } catch (const FindException& e) {
-        log("");
+        log_msg("");
         log_error(e.what());
         options->usage();
     }

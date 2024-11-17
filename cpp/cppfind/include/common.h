@@ -4,7 +4,7 @@
 #include <string>
 
 namespace cppfind {
-    void log(std::string_view msg);
+    void log_msg(std::string_view msg);
     void log_error(std::string_view msg);
 }
 

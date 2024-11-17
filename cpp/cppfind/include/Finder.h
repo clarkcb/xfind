@@ -32,8 +32,8 @@ namespace cppfind {
         FileTypes m_file_types;
         FindSettings m_settings;
         static void validate_settings(const FindSettings& settings);
-        std::vector<FileResult> get_file_results(const std::filesystem::path& file_path) const;
-        std::vector<FileResult> rec_get_file_results(const std::filesystem::path& dir_path, int min_depth,
+        [[nodiscard]] std::vector<FileResult> get_file_results(const std::filesystem::path& file_path) const;
+        [[nodiscard]] std::vector<FileResult> rec_get_file_results(const std::filesystem::path& dir_path, int min_depth,
             int max_depth, int current_depth) const;
         void sort_file_results(std::vector<FileResult>& file_results) const;
     };

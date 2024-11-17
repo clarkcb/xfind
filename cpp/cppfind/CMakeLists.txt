@@ -16,6 +16,9 @@ if (NOT DEFINED CMAKE_CXX_STANDARD)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20")
 endif()
 
+set(Boost_USE_MULTITHREADED ON)
+find_package(Boost REQUIRED COMPONENTS system filesystem)
+
 if (DEFINED ENV{XFIND_PATH})
         set(XFIND_PATH $ENV{XFIND_PATH})
         message("XFIND_PATH (from env): ${XFIND_PATH}")
@@ -55,7 +58,7 @@ target_sources(${PROJECT_NAME}
         include/RegexPattern.h src/RegexPattern.cpp
         include/Finder.h src/Finder.cpp)
 
-#target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
+target_link_libraries(${PROJECT_NAME} ${Boost_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
         EXPORT ${PROJECT_NAME}Targets
