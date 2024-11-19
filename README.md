@@ -262,7 +262,10 @@ Several of the language versions require additional software to build/manage dep
 * `Clojure (cljfind)` - the [leiningen](https://leiningen.org/) tool is used for package management and building
 * `Haskell (hsfind)` - this version requires the [stack](https://docs.haskellstack.org/en/stable/README/)
 utility (instead of just `cabal`)
+* `Java (javafind)` - the [gradle](https://gradle.org/) tool is used to build `javafind`
+* `Kotlin (ktfind)` - the [gradle](https://gradle.org/) tool is also used to build `ktfind`
 * `PHP (phpfind)` - the [composer](https://getcomposer.org/) utility is used for dependency management
+* `Scala (scalafind)` - the [sbt](https://scala-sbt.org/) tool is also used to build `scalafind`
 
 You will also need to set an environment variable called `$XFIND_PATH` to the path that you cloned
 `xfind` to. For example, on my OSX machine is it set to this:
