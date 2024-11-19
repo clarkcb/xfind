@@ -101,7 +101,7 @@
     },
     {
       "long": "nofollowsymlinks",
-      "desc": "Do not follow symlinks to their linked files or directories"
+      "desc": "Do not follow symlinks to their linked files or directories*"
     },
     {
       "long": "noprintdirs",

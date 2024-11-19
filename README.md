@@ -219,22 +219,23 @@ components. On Windows, Visual Studio is a recommended choice that will provide 
 * `Elixir (exfind)` - Instructions for installing elixir can be found [here](https://elixir-lang.org/install.html)
 * `F# (FsFind)` - `FsFind` also runs on .NET 9.0, download available [here](https://dotnet.microsoft.com/download/)
 * `Go (gofind)` - Download the OS-appropriate installer from [here](https://go.dev/dl/)
-* `Groovy (groovyfind)` - The download page is at [here](https://groovy.apache.org/download.html)
+* `Groovy (groovyfind)` - The download page is [here](https://groovy.apache.org/download.html)
 * `Haskell (hsfind)` - Installation instructions [here](https://www.haskell.org/downloads/)
 * `Java (javafind)` - Many different Java installs are available from [Oracle](https://www.oracle.com/java/technologies/downloads/)
 and third parties (e.g. [Red Hat](https://developers.redhat.com/products/openjdk/overview)), but be
 sure to install a JDK for at least Java version 11, preferably 17+.
 * `JavaScript (jsfind)` - `jsfind` runs on Node.js, download avaible from [here](https://nodejs.org/en)
-* `Kotlin (ktfind)` - To install support for Kotlin, you will need to install the IntelliJ IDEA or
-Android Studio IDE from JetBrains.
-* `Objective-C (objcfind)` - On OSX, an Xcode install will provide everything needed. I don't have
-experience with this language on other platforms, but I believe that `gcc` and maybe `clang` have
-some support for compiling it.
+* `Kotlin (ktfind)` - To install support for Kotlin, you will need to install 
+[IntelliJ IDEA](https://www.jetbrains.com/idea/) or
+[Android Studio IDE](https://developer.android.com/studio).
+* `Objective-C (objcfind)` - On OSX, an [Xcode](https://developer.apple.com/xcode/) install will
+provide everything needed. I don't have experience with this language on other platforms, but I
+believe that `gcc` and maybe `clang` have some support for compiling it.
 * `OCaml (mlfind)` - See [https://ocaml.org/(https://ocaml.org/)]
 * `Perl (plfind)` - On Unix-style OSes, `perl` should be installed by default. On Windows, you can
 install [Strawberry Perl](https://strawberryperl.com/) or
 [ActiveState Perl](https://www.activestate.com/platform/supported-languages/perl/), or install it
-via Cygwin.
+via WSL or Cygwin.
 * `PHP (phpfind)` - `phpfind` requires `php` verison 8.3+. On Unix-style OSes, `php` should be
 installed by default, although it might be an older version. On Windows, you can
 download and build `php` from source, but your best bet will probably be to install via WSL or
@@ -250,9 +251,10 @@ versions [here](https://www.python.org/downloads/)
 * `Rust (rsfind)` - See the [Getting started](https://www.rust-lang.org/learn/get-started) page for
 installation instructions
 * `Scala (scalafind)` - `scalafind` requires Scala 3.x. Downloads available from the
-[Scala lang uagehome page](https://www.scala-lang.org/)
-* `Swift (swiftfind)` - Though it is a language created by Apple, there are installations
-available for Linux and Windows, see this [page](https://www.swift.org/install/macos/)
+[Scala language home page](https://www.scala-lang.org/)
+* `Swift (swiftfind)` - On OSX, an [Xcode](https://developer.apple.com/xcode/) install will
+provide everything needed. There are also swift installations available for Linux and Windows,
+see this [page](https://www.swift.org/install/macos/)
 * `TypeScript (tsfind)` - `tsfind` also runs on Node.js, download avaible from [here](https://nodejs.org/en)
 
 
@@ -286,13 +288,13 @@ you will need `python3` to run those.
 ## Building
 
 There is a build script provided to build any/all language versions, and you will definitely
-need use it at least initially, because all language versions, regardless of whether
+need to use it at least initially, because all language versions, regardless of whether
 the language is compiled or interpreted, have some necessary build steps to put the version
 into a runnable state. For example, many of the language builds copy resource files from a
 shared location to the language version's local resource location.
 
 The build script is under _scripts_ and named _build.sh_. If you are on Windows, or if you just
-prefer powershell, you can also use _build.ps1_. To run the build for a specific language,
+prefer PowerShell, you can also use _build.ps1_. To run the build for a specific language,
 run the script on the command line with the name of the language (or the language's extension
 that the language version name is derived from) as the argument. For example, you can build
 the TypeScript version using either of these commands:
@@ -391,7 +393,7 @@ Options:
  --mindepth                Find files at least mindepth levels below startpath
  --minlastmod              Find files with lastmod greater than or equal to minlastmod
  --minsize                 Find files with size >= minsize
- --nofollowsymlinks        Do not follow symlinks to their linked files or directories
+ --nofollowsymlinks        Do not follow symlinks to their linked files or directories*
  --noprintdirs             Do not print matching directories after finding*
  --noprintfiles            Do not print matching files after finding
  --out-archiveext          Specify extension for archive files to exclude from find
@@ -416,6 +418,8 @@ Options:
  -z,--includearchives      Include archive files (bz2, gz, tar, zip)
 
 ```
+
+The asterisk after the help indicates the default value for the option.
 
 Now try running it to find specific files under `$XFIND_PATH`, using the following
 criteria:
@@ -489,20 +493,21 @@ python script _benchmark.py_, an *unscientific* tool for comparing performance a
 functionality (i.e. ensuring matching output of all versions).
 
 By default, the _benchmark.py_ script will run and compare all language versions, but
-this can be customized one of two ways:
+this can be customized one of three ways:
 
-1. pass a comma-separated language/ext code argument, e.g. `-l c,cpp,go,hs,objc,rs,swift`
-2. modify the `lang_dict` dictionary in _xfind.py_
+1. Pass a comma-separated list of languages/extensions to include, e.g. `-l c,cpp,go,hs,objc,rs,swift`
+2. Pass a comma-separated list of languages/extensions to exclude, e.g. `-L clj,groovy,scala`
+3. Modify the `lang_dict` dictionary in _xfind.py_
 
 The _benchmark.py_ script executes a series of "scenarios" for each configured language
 version, and outputs whether the results of all versions match with a table of ranked
-performance. At the end, the performances values from all scenarios are summed and
+performance. At the end, the performance values from all scenarios are summed and
 averaged and a final summary table is presented. 
 
 The scenarios can be read from a json file, and the included _scenarios.json_ will be
 the default if no file is specified.
 
-Here's what the help looks like for benchmark.py:
+Here's what the help looks like for _benchmark.py_:
 
 
 ```sh
@@ -529,7 +534,7 @@ options:
 ```
 
 
-Here's an example of the final output from a run that was executed on 2024-11-14:
+Here's an example of the final output from a run that was executed on 2024-11-18:
 
 ```sh
 $ python3 ./scripts/benchmark.py
