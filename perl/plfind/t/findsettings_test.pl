@@ -17,7 +17,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 24;
+use Test::Simple tests => 30;
 
 use plfind::FindSettings;
 
@@ -28,6 +28,12 @@ sub test_default_settings {
     ok(!$settings->{follow_symlinks}, "follow_symlinks is false by default");
     ok(!$settings->{include_archives}, "include_archives is false by default");
     ok(!$settings->{include_hidden}, "include_hidden is false by default");
+    ok($settings->{max_depth} == -1, "max_depth is -1 by default");
+    ok($settings->{max_last_mod} == 0, "max_last_mod is 0 by default");
+    ok($settings->{max_size} == 0, "max_size is 0 by default");
+    ok($settings->{min_depth} == -1, "min_depth is -1 by default");
+    ok($settings->{min_last_mod} == 0, "min_last_mod is 0 by default");
+    ok($settings->{min_size} == 0, "min_size is 0 by default");
     ok(@{$settings->{paths}} eq 0, "paths are empty by default");
     ok(!$settings->{print_dirs}, "print_dirs is false by default");
     ok(!$settings->{print_files}, "print_files is false by default");

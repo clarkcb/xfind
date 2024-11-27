@@ -11,19 +11,6 @@
 using module 'Ps1FindModule'
 
 
-function LogMsg {
-    param([string]$msg)
-
-    Write-Output $msg
-}
-
-function LogError {
-    param([string]$msg)
-
-    # Write-Output "ERROR: $msg`n"
-    Write-Host "`nERROR: $msg" -ForegroundColor Red
-}
-
 function PrintMatchingDirs {
     param([FileResult[]]$files)
     $dirs = @()

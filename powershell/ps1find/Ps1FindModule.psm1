@@ -22,6 +22,26 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 #endregion
 
 
+#region Common
+########################################
+# Common
+########################################
+function LogMsg {
+    param([string]$msg)
+
+    # Write-Output $msg
+    Write-Host $msg
+}
+
+function LogError {
+    param([string]$msg)
+
+    # Write-Output "ERROR: $msg`n"
+    Write-Host "`nERROR: $msg" -ForegroundColor Red
+}
+#endregion
+
+
 #region FileUtil
 ########################################
 # FileUtil
@@ -443,7 +463,7 @@ class FindOption {
 }
 
 class FindOptions {
-    [FindOption[]]$Options = @()
+    [FindOption[]]$FindOptions = @()
     # $LongArgMap = @{}
     # instantiate this way to get case sensitivity of keys
     $LongArgMap = [system.collections.hashtable]::new()
@@ -617,7 +637,7 @@ class FindOptions {
     }
 
     FindOptions() {
-        $this.Options = $this.LoadOptionsFromJson()
+        $this.FindOptions = $this.LoadOptionsFromJson()
     }
 
     [FindOption[]]LoadOptionsFromJson() {
@@ -682,7 +702,7 @@ class FindOptions {
         $optStrs = @()
         $optMap = @{}
         $longest = 0
-        foreach ($option in $this.Options) {
+        foreach ($option in $this.FindOptions) {
             $optStr = ''
             if ($option.ShortArg) {
                 $optStr = "-$($option.ShortArg),"
@@ -727,37 +747,37 @@ class FileResult {
 # Finder
 ########################################
 class Finder {
-    [FindSettings]$settings
-    [FileTypes]$fileTypes
-    [Scriptblock[]]$dirTests
-    [Scriptblock[]]$fileTests
-    [Scriptblock[]]$archiveFileTests
+    [FindSettings]$Settings
+    [FileTypes]$FileTypes
+    [Scriptblock[]]$DirTests
+    [Scriptblock[]]$FileTests
+    [Scriptblock[]]$ArchiveFileTests
 
     Finder([FindSettings]$settings) {
-        $this.settings = $settings
+        $this.Settings = $settings
         $this.ValidateSettings()
-        $this.fileTypes = [FileTypes]::new()
-        $this.dirTests = $this.GetMatchingDirTests()
-        $this.fileTests = $this.GetMatchingFileTests()
-        $this.archiveFileTests = $this.GetMatchingArchiveFileTests()
+        $this.FileTypes = [FileTypes]::new()
+        $this.DirTests = $this.GetMatchingDirTests()
+        $this.FileTests = $this.GetMatchingFileTests()
+        $this.ArchiveFileTests = $this.GetMatchingArchiveFileTests()
     }
 
     [void]ValidateSettings() {
-        if ($null -eq $this.settings.Paths -or $this.settings.Paths.Count -eq 0) {
+        if ($null -eq $this.Settings.Paths -or $this.Settings.Paths.Count -eq 0) {
             throw "Startpath not defined"
         }
-        foreach ($path in $this.settings.Paths) {
+        foreach ($path in $this.Settings.Paths) {
             if (-not (Test-Path $path)) {
                 throw "Startpath not found"
             }
         }
-        if ($this.settings.MaxDepth -gt -1 -and $this.settings.MinDepth -gt -1 -and $this.settings.MaxDepth -lt $this.settings.MinDepth) {
+        if ($this.Settings.MaxDepth -gt -1 -and $this.Settings.MinDepth -gt -1 -and $this.Settings.MaxDepth -lt $this.Settings.MinDepth) {
             throw "Invalid range for mindepth and maxdepth"
         }
-        if ($this.settings.MaxLastMod -gt [DateTime]::MinValue -and $this.settings.MinLastMod -gt [DateTime]::MinValue -and $this.settings.MaxLastMod -lt $this.settings.MinLastMod) {
+        if ($this.Settings.MaxLastMod -gt [DateTime]::MinValue -and $this.Settings.MinLastMod -gt [DateTime]::MinValue -and $this.Settings.MaxLastMod -lt $this.Settings.MinLastMod) {
             throw "Invalid range for minlastmod and maxlastmod"
         }
-        if ($this.settings.MaxSize -gt 0 -and $this.settings.MinSize -gt 0 -and $this.settings.MaxSize -lt $this.settings.MinSize) {
+        if ($this.Settings.MaxSize -gt 0 -and $this.Settings.MinSize -gt 0 -and $this.Settings.MaxSize -lt $this.Settings.MinSize) {
             throw "Invalid range for minsize and maxsize"
         }
     }
@@ -768,125 +788,125 @@ class Finder {
 
     [Scriptblock[]]GetMatchingDirTests() {
         $tests = @()
-        if (-not $this.settings.IncludeHidden) {
+        if (-not $this.Settings.IncludeHidden) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
                 return !(IsHiddenFile $d)
             }
         }
-        if ($this.settings.InDirPatterns.Count -gt 0) {
+        if ($this.Settings.InDirPatterns.Count -gt 0) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
-                return $this.MatchesAnyPattern($d.FullName, $this.settings.InDirPatterns)
+                return $this.MatchesAnyPattern($d.FullName, $this.Settings.InDirPatterns)
             }
-        } elseif ($this.settings.OutDirPatterns.Count -gt 0) {
+        } elseif ($this.Settings.OutDirPatterns.Count -gt 0) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
-                return !$this.MatchesAnyPattern($d.FullName, $this.settings.OutDirPatterns)
+                return !$this.MatchesAnyPattern($d.FullName, $this.Settings.OutDirPatterns)
             }
         }
         return $tests
     }
 
     [bool]IsMatchingDir([System.IO.DirectoryInfo]$d) {
-        return @($this.dirTests | Where-Object { $_.Invoke($d) }).Count -eq $this.dirTests.Count
+        return @($this.DirTests | Where-Object { $_.Invoke($d) }).Count -eq $this.DirTests.Count
     }
 
     [Scriptblock[]]GetMatchingArchiveFileTests() {
         $tests = @()
-        if ($this.settings.InArchiveExtensions.Count -gt 0) {
+        if ($this.Settings.InArchiveExtensions.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return $this.settings.InArchiveExtensions.Contains($f.File.Extension)
+                return $this.Settings.InArchiveExtensions.Contains($f.File.Extension)
             }
-        } elseif ($this.settings.OutArchiveExtensions.Count -gt 0) {
+        } elseif ($this.Settings.OutArchiveExtensions.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return !$this.settings.OutArchiveExtensions.Contains($f.File.Extension)
+                return !$this.Settings.OutArchiveExtensions.Contains($f.File.Extension)
             }
         }
-        if ($this.settings.InArchiveFilePatterns.Count -gt 0) {
+        if ($this.Settings.InArchiveFilePatterns.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return $this.MatchesAnyPattern($f.File.Name, $this.settings.InArchiveFilePatterns)
+                return $this.MatchesAnyPattern($f.File.Name, $this.Settings.InArchiveFilePatterns)
             }
-        } elseif ($this.settings.OutArchiveFilePatterns.Count -gt 0) {
+        } elseif ($this.Settings.OutArchiveFilePatterns.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return !$this.MatchesAnyPattern($f.File.Name, $this.settings.OutArchiveFilePatterns)
+                return !$this.MatchesAnyPattern($f.File.Name, $this.Settings.OutArchiveFilePatterns)
             }
         }
         return $tests
     }
 
     [bool]IsMatchingArchiveFileResult([FileResult]$f) {
-        return @($this.archiveFileTests | Where-Object { $_.Invoke($f) }).Count -eq $this.archiveFileTests.Count
+        return @($this.ArchiveFileTests | Where-Object { $_.Invoke($f) }).Count -eq $this.ArchiveFileTests.Count
     }
 
     [Scriptblock[]]GetMatchingFileTests() {
         $tests = @()
-        if ($this.settings.InExtensions.Count -gt 0) {
+        if ($this.Settings.InExtensions.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return $this.settings.InExtensions.Contains($f.File.Extension)
+                return $this.Settings.InExtensions.Contains($f.File.Extension)
             }
-        } elseif ($this.settings.OutExtensions.Count -gt 0) {
+        } elseif ($this.Settings.OutExtensions.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return !$this.settings.OutExtensions.Contains($f.File.Extension)
-            }
-        }
-        if ($this.settings.InFilePatterns.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return $this.MatchesAnyPattern($f.File.Name, $this.settings.InFilePatterns)
-            }
-        } elseif ($this.settings.OutFilePatterns.Count -gt 0) {
-            $tests += {
-                param([FileResult]$f)
-                return !$this.MatchesAnyPattern($f.File.Name, $this.settings.OutFilePatterns)
+                return !$this.Settings.OutExtensions.Contains($f.File.Extension)
             }
         }
-        if ($this.settings.InFileTypes.Count -gt 0) {
+        if ($this.Settings.InFilePatterns.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return $this.settings.InFileTypes.Contains($f.Type)
+                return $this.MatchesAnyPattern($f.File.Name, $this.Settings.InFilePatterns)
             }
-        } elseif ($this.settings.OutFileTypes.Count -gt 0) {
+        } elseif ($this.Settings.OutFilePatterns.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return !$this.settings.OutFileTypes.Contains($f.Type)
-            }
-        }
-        if ($this.settings.MaxLastMod -gt [DateTime]::MinValue) {
-            $tests += {
-                param([FileResult]$f)
-                return $f.File.LastWriteTimeUtc -le $this.settings.MaxLastMod
+                return !$this.MatchesAnyPattern($f.File.Name, $this.Settings.OutFilePatterns)
             }
         }
-        if ($this.settings.MinLastMod -gt [DateTime]::MinValue) {
+        if ($this.Settings.InFileTypes.Count -gt 0) {
             $tests += {
                 param([FileResult]$f)
-                return $f.File.LastWriteTimeUtc -ge $this.settings.MinLastMod
+                return $this.Settings.InFileTypes.Contains($f.Type)
+            }
+        } elseif ($this.Settings.OutFileTypes.Count -gt 0) {
+            $tests += {
+                param([FileResult]$f)
+                return !$this.Settings.OutFileTypes.Contains($f.Type)
             }
         }
-        if ($this.settings.MaxSize -gt 0) {
+        if ($this.Settings.MaxLastMod -gt [DateTime]::MinValue) {
             $tests += {
                 param([FileResult]$f)
-                return $f.File.Length -le $this.settings.MaxSize
+                return $f.File.LastWriteTimeUtc -le $this.Settings.MaxLastMod
             }
         }
-        if ($this.settings.MinSize -gt 0) {
+        if ($this.Settings.MinLastMod -gt [DateTime]::MinValue) {
             $tests += {
                 param([FileResult]$f)
-                return $f.File.Length -ge $this.settings.MinSize
+                return $f.File.LastWriteTimeUtc -ge $this.Settings.MinLastMod
+            }
+        }
+        if ($this.Settings.MaxSize -gt 0) {
+            $tests += {
+                param([FileResult]$f)
+                return $f.File.Length -le $this.Settings.MaxSize
+            }
+        }
+        if ($this.Settings.MinSize -gt 0) {
+            $tests += {
+                param([FileResult]$f)
+                return $f.File.Length -ge $this.Settings.MinSize
             }
         }
         return $tests
     }
 
     [bool]IsMatchingFileResult([FileResult]$f) {
-        foreach ($t in $this.fileTests) {
+        foreach ($t in $this.FileTests) {
             if (-not $t.Invoke($f)) {
                 # Write-Host "$f did not pass test: $t"
                 return $false
@@ -897,17 +917,17 @@ class Finder {
 
     [FileResult]FilterToFileResult([System.IO.FileInfo]$file) {
         # Write-Host "FilterToFileResult($file)"
-        if ((-not $this.settings.IncludeHidden) -and (IsHiddenFile($file))) {
+        if ((-not $this.Settings.IncludeHidden) -and (IsHiddenFile($file))) {
             return $null
         }
-        $fileResult = [FileResult]::new($file, $this.fileTypes.GetFileType($file))
+        $fileResult = [FileResult]::new($file, $this.FileTypes.GetFileType($file))
         if ($fileResult.Type -eq [FileType]::Archive) {
-            if ($this.settings.IncludeArchives -and $this.IsMatchingArchiveFileResult($fileResult)) {
+            if ($this.Settings.IncludeArchives -and $this.IsMatchingArchiveFileResult($fileResult)) {
                 return $fileResult
             }
             return $null
         }
-        if (-not $this.settings.ArchivesOnly -and $this.IsMatchingFileResult($fileResult)) {
+        if (-not $this.Settings.ArchivesOnly -and $this.IsMatchingFileResult($fileResult)) {
             return $fileResult
         }
         return $null
@@ -939,7 +959,7 @@ class Finder {
         if ($recurse) {
             # Force is needed to get hidden dirs
             $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.IsMatchingDir($_) }
-            if (-not $this.settings.FollowSymlinks) {
+            if (-not $this.Settings.FollowSymlinks) {
                 # filter out symlinks
                 $pathDirs = $pathDirs | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
             }
@@ -947,7 +967,7 @@ class Finder {
         if ($minDepth -lt 0 -or $currentDepth -ge $minDepth) {
             # Force is needed to get hidden files
             $pathFiles = Get-ChildItem -Force -Recurse:$false -Path $dirPath -File
-            if (-not $this.settings.FollowSymlinks) {
+            if (-not $this.Settings.FollowSymlinks) {
                 # filter out symlinks
                 $pathFiles = $pathFiles | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
             }
@@ -966,26 +986,26 @@ class Finder {
         $fileResults = @()
         if (Test-Path -Path $path -PathType Container) {
             # if max_depth is zero, we can skip since a directory cannot be a result
-            if ($this.settings.MaxDepth -eq 0) {
+            if ($this.Settings.MaxDepth -eq 0) {
                 return $fileResults
             }
             $pathDir = [System.IO.DirectoryInfo]::new($path)
             if ($this.IsMatchingDir($pathDir)) {
-                $maxDepth = $this.settings.MaxDepth
-                if (-not $this.settings.Recursive) {
+                $maxDepth = $this.Settings.MaxDepth
+                if (-not $this.Settings.Recursive) {
                     $maxDepth = 1
                 }
-                $fileResults += $this.RecGetPathResults($pathDir, $this.settings.MinDepth, $maxDepth, 1)
+                $fileResults += $this.RecGetPathResults($pathDir, $this.Settings.MinDepth, $maxDepth, 1)
             } else {
                 throw "Startpath does not match find settings"
             }
         } elseif (Test-Path -Path $path -PathType Leaf) {
             # if min_depth > zero, we can skip since the file is at depth zero
-            if ($this.settings.MinDepth -gt 0) {
+            if ($this.Settings.MinDepth -gt 0) {
                 return @()
             }
             $pathFile = [System.IO.FileInfo]::new($path)
-            $pathFileResult = [FileResult]::new($pathFile, $this.fileTypes.GetFileType($pathFile))
+            $pathFileResult = [FileResult]::new($pathFile, $this.FileTypes.GetFileType($pathFile))
             if ($this.IsMatchingFileResult($pathFileResult)) {
                 $fileResults += $pathFileResult
             } else {
@@ -997,7 +1017,7 @@ class Finder {
 
     [FileResult[]]GetFileResults() {
         $fileResults = @()
-        foreach ($path in $this.settings.Paths) {
+        foreach ($path in $this.Settings.Paths) {
             $fileResults += $this.GetPathResults($path)
         }
         return $fileResults
@@ -1005,16 +1025,16 @@ class Finder {
 
     [FileResult[]]SortFileResults([FileResult[]]$fileResults) {
         $listToSort = @()
-        if ($this.settings.SortBy -eq [SortBy]::FileName) {
+        if ($this.Settings.SortBy -eq [SortBy]::FileName) {
             $listToSort = $fileResults |
                 ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)}
-        } elseif ($this.settings.SortBy -eq [SortBy]::FileSize) {
+        } elseif ($this.Settings.SortBy -eq [SortBy]::FileSize) {
             $listToSort = $fileResults |
                 ForEach-Object {[Tuple]::Create($_.File.Length, $_.File.DirectoryName, $_.File.Name, $_)}
-        } elseif ($this.settings.SortBy -eq [SortBy]::FileType) {
+        } elseif ($this.Settings.SortBy -eq [SortBy]::FileType) {
             $listToSort = $fileResults |
                 ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)}
-        } elseif ($this.settings.SortBy -eq [SortBy]::LastMod) {
+        } elseif ($this.Settings.SortBy -eq [SortBy]::LastMod) {
             $listToSort = $fileResults |
                 ForEach-Object {[Tuple]::Create($_.File.LastWriteTimeUtc, $_.File.DirectoryName, $_.File.Name, $_)}
         } else {
@@ -1022,11 +1042,11 @@ class Finder {
                 ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)}
         }
         $sorted = @()
-        if ($this.settings.SortCaseInsensitive -and $this.settings.SortDescending) {
+        if ($this.Settings.SortCaseInsensitive -and $this.Settings.SortDescending) {
             $sorted = $listToSort | Sort-Object -Descending | ForEach-Object {$_[-1]}
-        } elseif ($this.settings.SortCaseInsensitive) {
+        } elseif ($this.Settings.SortCaseInsensitive) {
             $sorted = $listToSort | Sort-Object | ForEach-Object {$_[-1]}
-        } elseif ($this.settings.SortDescending) {
+        } elseif ($this.Settings.SortDescending) {
             $sorted = $listToSort | Sort-Object -Descending | ForEach-Object {$_[-1]}
         } else {
             $sorted = $listToSort | Sort-Object -CaseSensitive | ForEach-Object {$_[-1]}

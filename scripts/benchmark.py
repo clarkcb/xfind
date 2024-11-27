@@ -386,6 +386,8 @@ class Benchmarker(object):
             self.scenarios = []
             XFIND_PATH = os.environ.get('XFIND_PATH', XFINDPATH)
             for (rk, rv) in scenarios_dict['ref'].items():
+                if rk == 'common_flags':
+                    scenarios_dict['ref'][rk] = rv
                 if rk == 'common_out_dirpatterns':
                     scenarios_dict['ref'][rk] = [elem for d in [['-D', d] for d in rv] for elem in d]
                 elif rk == 'common_in_extensions':
