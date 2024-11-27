@@ -15,6 +15,9 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
 
+# Add failed builds to this array and report failed builds at the end
+FAILED_BUILDS=()
+
 
 ########################################
 # Utility Functions
@@ -25,22 +28,22 @@ usage () {
     exit
 }
 
-# copy_config_resources
-copy_config_resources () {
+# copy_config_json_resources
+copy_config_json_resources () {
     local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/config.json $resources_path/"
     cp "$XFIND_SHARED_PATH/config.json" "$resources_path/"
 }
 
-# copy_filetypes_resources
-copy_filetypes_resources () {
+# copy_filetypes_json_resources
+copy_filetypes_json_resources () {
     local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/filetypes.json $resources_path/"
     cp "$XFIND_SHARED_PATH/filetypes.json" "$resources_path/"
 }
 
-# copy_findoptions_resources
-copy_findoptions_resources () {
+# copy_findoptions_json_resources
+copy_findoptions_json_resources () {
     local resources_path="$1"
     log "cp $XFIND_SHARED_PATH/findoptions.json $resources_path/"
     cp "$XFIND_SHARED_PATH/findoptions.json" "$resources_path/"
@@ -49,9 +52,9 @@ copy_findoptions_resources () {
 # copy_json_resources
 copy_json_resources () {
     local resources_path="$1"
-    copy_config_resources "$resources_path"
-    copy_filetypes_resources "$resources_path"
-    copy_findoptions_resources "$resources_path"
+    copy_config_json_resources "$resources_path"
+    copy_filetypes_json_resources "$resources_path"
+    copy_findoptions_json_resources "$resources_path"
 }
 
 # copy_test_resources
@@ -74,7 +77,7 @@ add_to_bin () {
 
     cd "$XFIND_BIN_PATH"
 
-    if [[ $script_name == *.sh || $script_name == *.bash ]]
+    if [[ $script_name == *.sh || $script_name == *.bash || $script_name == *.ps1 ]]
     then
         script_name=${script_name%%.*}
     fi
@@ -92,6 +95,15 @@ add_to_bin () {
     cd -
 }
 
+print_failed_builds () {
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
+    then
+        log_error "Failed builds: ${FAILED_BUILDS[*]}"
+    else
+        log "All builds succeeded"
+    fi
+}
+
 ########################################
 # Build Functions
 ########################################
@@ -105,6 +117,7 @@ build_bashfind () {
     if [ -z "$(which bash)" ]
     then
         log_error "You need to install bash"
+        FAILED_BUILDS+=("bashfind")
         return
     fi
 
@@ -123,6 +136,7 @@ build_cfind () {
     if [ -z "$(which cmake)" ]
     then
         log_error "You need to install cmake"
+        FAILED_BUILDS+=("cfind")
         return
     fi
 
@@ -184,6 +198,7 @@ build_cfind () {
                     log "Build target $t succeeded"
                 else
                     log_error "Build target $t failed"
+                    FAILED_BUILDS+=("cfind")
                     return
                 fi
             done
@@ -220,6 +235,7 @@ build_cljfind () {
     if [ -z "$(which clj)" ]
     then
         log_error "You need to install clojure"
+        FAILED_BUILDS+=("cljfind")
         return
     fi
 
@@ -232,6 +248,7 @@ build_cljfind () {
     if [ -z "$(which lein)" ]
     then
         log_error "You need to install leiningen"
+        FAILED_BUILDS+=("cljfind")
         return
     fi
 
@@ -265,6 +282,8 @@ build_cljfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("cljfind")
+        cd -
         return
     fi
 
@@ -283,6 +302,7 @@ build_cppfind () {
     if [ -z "$(which cmake)" ]
     then
         log_error "You need to install cmake"
+        FAILED_BUILDS+=("cppfind")
         return
     fi
 
@@ -350,6 +370,8 @@ build_cppfind () {
                     log "Build target $t succeeded"
                 else
                     log_error "Build target $t failed"
+                    FAILED_BUILDS+=("cppfind")
+                    cd -
                     return
                 fi
             done
@@ -386,6 +408,7 @@ build_csfind () {
     if [ -z "$(which dotnet)" ]
     then
         log_error "You need to install dotnet"
+        FAILED_BUILDS+=("csfind")
         return
     fi
 
@@ -427,6 +450,7 @@ build_csfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("csfind")
             return
         fi
     done
@@ -450,6 +474,7 @@ build_dartfind () {
     if [ -z "$(which dart)" ]
     then
         log_error "You need to install dart"
+        FAILED_BUILDS+=("dartfind")
         return
     fi
 
@@ -484,6 +509,8 @@ build_dartfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("dartfind")
+        cd -
         return
     fi
 
@@ -502,6 +529,7 @@ build_exfind () {
     if [ -z "$(which elixir)" ]
     then
         log_error "You need to install elixir"
+        FAILED_BUILDS+=("exfind")
         return
     fi
 
@@ -512,6 +540,7 @@ build_exfind () {
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
+        FAILED_BUILDS+=("exfind")
         return
     fi
 
@@ -538,6 +567,8 @@ build_exfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("exfind")
+        cd -
         return
     fi
 
@@ -597,6 +628,7 @@ build_fsfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("fsfind")
             return
         fi
     done
@@ -667,7 +699,7 @@ build_gofind () {
         log "Build succeeded"
     else
         log_error "Build failed"
-        return
+        FAILED_BUILDS+=("gofind")
     fi
 
     cd -
@@ -700,6 +732,7 @@ build_groovyfind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("groovyfind")
         return
     fi
 
@@ -755,6 +788,8 @@ build_groovyfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("groovyfind")
+        cd -
         return
     fi
 
@@ -773,6 +808,7 @@ build_hsfind () {
     if [ -z "$(which ghc)" ]
     then
         log_error "You need to install ghc"
+        FAILED_BUILDS+=("hsfind")
         return
     fi
 
@@ -783,6 +819,7 @@ build_hsfind () {
     if [ -z "$(which stack)" ]
     then
         log_error "You need to install stack"
+        FAILED_BUILDS+=("hsfind")
         return
     fi
 
@@ -831,6 +868,8 @@ build_hsfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("hsfind")
+        cd -
         return
     fi
 
@@ -849,6 +888,7 @@ build_javafind () {
     if [ -z "$(which java)" ]
     then
         log_error "You need to install java"
+        FAILED_BUILDS+=("javafind")
         return
     fi
 
@@ -867,6 +907,8 @@ build_javafind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("javafind")
+        cd -
         return
     fi
 
@@ -920,6 +962,8 @@ build_javafind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("javafind")
+        cd -
         return
     fi
 
@@ -942,6 +986,7 @@ build_jsfind () {
     if [ -z "$(which node)" ]
     then
         log_error "You need to install node.js"
+        FAILED_BUILDS+=("jsfind")
         return
     fi
 
@@ -952,6 +997,7 @@ build_jsfind () {
     if [ -z "$(which npm)" ]
     then
         log_error "You need to install npm"
+        FAILED_BUILDS+=("jsfind")
         return
     fi
 
@@ -979,6 +1025,8 @@ build_jsfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("jsfind")
+        cd -
         return
     fi
 
@@ -1005,6 +1053,8 @@ build_ktfind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("ktfind")
+        cd -
         return
     fi
 
@@ -1063,6 +1113,8 @@ build_ktfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("ktfind")
+        cd -
         return
     fi
 
@@ -1084,11 +1136,16 @@ build_objcfind () {
     if [ -z "$(which swift)" ]
     then
         log_error "You need to install swift"
+        FAILED_BUILDS+=("objcfind")
         return
     fi
 
-    SWIFT_VERSION=$(swift --version 2>&1 | grep Swift)
-    log "swift version: $SWIFT_VERSION"
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    SWIFT_VERSION=$(swift --version 2>&1 | grep 'Apple Swift' | cut -d ' ' -f 7)
+    log "swift version: Apple Swift version $SWIFT_VERSION"
 
     # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
@@ -1108,6 +1165,8 @@ build_objcfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("objcfind")
+            cd -
             return
         fi
     fi
@@ -1122,6 +1181,8 @@ build_objcfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("objcfind")
+            cd -
             return
         fi
 
@@ -1159,6 +1220,7 @@ build_plfind () {
     if [ -z "$(which perl)" ]
     then
         log_error "You need to install perl"
+        FAILED_BUILDS+=("plfind")
         return
     fi
 
@@ -1166,6 +1228,7 @@ build_plfind () {
     if [ -z $PERL_VERSION ]
     then
         log_error "A 5.x version of perl is required"
+        FAILED_BUILDS+=("plfind")
         return
     fi
 
@@ -1174,12 +1237,7 @@ build_plfind () {
     # copy the shared json files to the local resource location
     RESOURCES_PATH="$PLFIND_PATH/share"
     mkdir -p "$RESOURCES_PATH"
-    log "cp $XFIND_SHARED_PATH/config.json $RESOURCES_PATH/"
-    cp "$XFIND_SHARED_PATH/config.json" "$RESOURCES_PATH/"
-    log "cp $XFIND_SHARED_PATH/filetypes.json $RESOURCES_PATH/"
-    cp "$XFIND_SHARED_PATH/filetypes.json" "$RESOURCES_PATH/"
-    log "cp $XFIND_SHARED_PATH/findoptions.json $RESOURCES_PATH/"
-    cp "$XFIND_SHARED_PATH/findoptions.json" "$RESOURCES_PATH/"
+    copy_json_resources "$RESOURCES_PATH"
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -1187,6 +1245,7 @@ build_plfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("plfind")
         return
     fi
 
@@ -1203,6 +1262,7 @@ build_phpfind () {
     if [ -z "$(which php)" ]
     then
         log_error "You need to install PHP"
+        FAILED_BUILDS+=("phpfind")
         return
     fi
 
@@ -1211,6 +1271,7 @@ build_phpfind () {
     if [ -z "$PHP_VERSION" ]
     then
         log_error "A version of PHP >= 7.x is required"
+        FAILED_BUILDS+=("phpfind")
         return
     fi
     log "php version: $PHP_VERSION"
@@ -1219,6 +1280,7 @@ build_phpfind () {
     if [ -z "$(which composer)" ]
     then
         log_error "Need to install composer"
+        FAILED_BUILDS+=("phpfind")
         return
     fi
 
@@ -1260,6 +1322,8 @@ build_phpfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("phpfind")
+        cd -
         return
     fi
 
@@ -1288,6 +1352,7 @@ build_ps1find () {
     if [ -z "$MODULEPATH" ]
     then
         log_error "Unable to get powershell module path"
+        FAILED_BUILDS+=("ps1find")
         return
     fi
 
@@ -1297,6 +1362,8 @@ build_ps1find () {
     IFS=':' read -ra MODULEPATHS <<< "$MODULEPATH"
     MODULEPATH=${MODULEPATHS[0]}
     PS1FINDMODULEPATH="$MODULEPATH/Ps1FindModule"
+
+    mkdir -p "$PS1FINDMODULEPATH"
 
     log "cp $PS1FIND_PATH/Ps1FindModule.psm1 $PS1FINDMODULEPATH/"
     cp "$PS1FIND_PATH/Ps1FindModule.psm1" "$PS1FINDMODULEPATH/"
@@ -1342,7 +1409,8 @@ build_pyfind () {
             # 2. venv exists and is not active
             log 'Using existing venv'
 
-            # activate the venv
+            # activate the venv - we run this even if this venv or another is already active
+            # because it's the only way to be able to run deactivate later
             log "source $PYFIND_PATH/venv/bin/activate"
             source $PYFIND_PATH/venv/bin/activate
 
@@ -1364,6 +1432,7 @@ build_pyfind () {
             if [ -z "$PYTHON" ]
             then
                 log_error "A version of python >= 3.9 is required"
+                FAILED_BUILDS+=("pyfind")
                 return
             else
                 PYTHON=$(basename "$PYTHON")
@@ -1401,6 +1470,7 @@ build_pyfind () {
         if [ -z "$PYTHON" ]
         then
             log_error "A version of python >= 3.9 is required"
+            FAILED_BUILDS+=("pyfind")
             return
         else
             PYTHON=$(basename "$PYTHON")
@@ -1433,6 +1503,7 @@ build_pyfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("pyfind")
         ERROR=yes
     fi
 
@@ -1467,6 +1538,7 @@ build_rbfind () {
     if [ -z "$(which ruby)" ]
     then
         log_error "You need to install ruby"
+        FAILED_BUILDS+=("rbfind")
         return
     fi
 
@@ -1474,19 +1546,23 @@ build_rbfind () {
     if [ -z "$RUBY_VERSION" ]
     then
         log_error "A version of ruby >= 3.x is required"
+        FAILED_BUILDS+=("rbfind")
+        return
+    fi
+    log "ruby version: $RUBY_VERSION"
+
+    if [ -z "$(which bundle)" ]
+    then
+        log_error "You need to install bundler: https://bundler.io/"
+        FAILED_BUILDS+=("rbfind")
         return
     fi
 
-    log "ruby version: $RUBY_VERSION"
-
-    # if [ -z "$(which bundle)" ]
-    # then
-    #     log_error "You need to install bundler: https://bundler.io/"
-    #     return
-    # fi
+    BUNDLE_VERSION="$(bundle version)"
+    log "$BUNDLE_VERSION"
 
     RESOURCES_PATH="$RBFIND_PATH/data"
-    TEST_RESOURCES_PATH="$RBFIND_PATH/lib/test/fixtures"
+    TEST_RESOURCES_PATH="$RBFIND_PATH/test/fixtures"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -1502,10 +1578,10 @@ build_rbfind () {
     log "bundle install"
     bundle install
 
-    cd -
-
     # add to bin
     add_to_bin "$RBFIND_PATH/bin/rbfind.sh"
+
+    cd -
 }
 
 build_rsfind () {
@@ -1517,6 +1593,7 @@ build_rsfind () {
     if [ -z "$(which rustc)" ]
     then
         log_error "You need to install rust"
+        FAILED_BUILDS+=("rsfind")
         return
     fi
 
@@ -1527,6 +1604,7 @@ build_rsfind () {
     if [ -z "$(which cargo)" ]
     then
         log_error "You need to install cargo"
+        FAILED_BUILDS+=("rsfind")
         return
     fi
 
@@ -1547,6 +1625,8 @@ build_rsfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("rsfind")
+            cd -
             return
         fi
     fi
@@ -1561,6 +1641,8 @@ build_rsfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("rsfind")
+            cd -
             return
         fi
 
@@ -1583,6 +1665,7 @@ build_scalafind () {
     if [ -z "$(which scala)" ]
     then
         log_error "You need to install scala"
+        FAILED_BUILDS+=("scalafind")
         return
     fi
 
@@ -1592,12 +1675,11 @@ build_scalafind () {
     SCALA_VERSION=$(scala -version 2>&1 | tail -n 1 | cut -d ' ' -f 4)
     log "scala version: $SCALA_VERSION"
 
-    cd "$SCALAFIND_PATH"
-
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
         log_error "You need to install sbt"
+        FAILED_BUILDS+=("scalafind")
         return
     fi
 
@@ -1623,6 +1705,8 @@ build_scalafind () {
     mkdir -p "$TEST_RESOURCES_PATH"
     copy_test_resources "$TEST_RESOURCES_PATH"
 
+    cd "$SCALAFIND_PATH"
+
     # run sbt assembly
     log "Building scalafind"
     # log "sbt clean assembly"
@@ -1637,6 +1721,8 @@ build_scalafind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("scalafind")
+        cd -
         return
     fi
 
@@ -1655,11 +1741,16 @@ build_swiftfind () {
     if [ -z "$(which swift)" ]
     then
         log_error "You need to install swift"
+        FAILED_BUILDS+=("swiftfind")
         return
     fi
 
-    SWIFT_VERSION=$(swift --version 2>&1 | grep Swift)
-    log "swift version: $SWIFT_VERSION"
+    # swift --version 2>&1 output looks like this:
+    # (stdout) Apple Swift version 6.0.2 (swiftlang-6.0.2.1.2 clang-1600.0.26.4)
+    # (stdout) Target: x86_64-apple-macosx14.0
+    # (stderr) swift-driver version: 1.115
+    SWIFT_VERSION=$(swift --version 2>&1 | grep 'Apple Swift' | cut -d ' ' -f 7)
+    log "swift version: Apple Swift version $SWIFT_VERSION"
 
     # TODO: copy resource files locally? - embedded resources not currently supported apparently
 
@@ -1679,6 +1770,8 @@ build_swiftfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("swiftfind")
+            cd -
             return
         fi
     fi
@@ -1693,6 +1786,8 @@ build_swiftfind () {
             log "Build succeeded"
         else
             log_error "Build failed"
+            FAILED_BUILDS+=("swiftfind")
+            cd -
             return
         fi
 
@@ -1715,6 +1810,7 @@ build_tsfind () {
     if [ -z "$(which node)" ]
     then
         log_error "You need to install node.js"
+        FAILED_BUILDS+=("tsfind")
         return
     fi
 
@@ -1725,6 +1821,7 @@ build_tsfind () {
     if [ -z "$(which npm)" ]
     then
         log_error "You need to install npm"
+        FAILED_BUILDS+=("tsfind")
         return
     fi
 
@@ -1751,6 +1848,8 @@ build_tsfind () {
         log "Build succeeded"
     else
         log_error "Build failed"
+        FAILED_BUILDS+=("tsfind")
+        cd -
         return
     fi
 
@@ -1809,8 +1908,6 @@ build_linux () {
     time build_plfind
 
     time build_phpfind
-
-    # time build_ps1find
 
     time build_pyfind
 
@@ -1959,6 +2056,7 @@ fi
 if [ -n "$BUILD_ALL" ]
 then
     build_all
+    print_failed_builds
     exit
 fi
 
@@ -2053,3 +2151,5 @@ do
             ;;
     esac
 done
+
+print_failed_builds

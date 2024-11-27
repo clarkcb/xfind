@@ -27,12 +27,15 @@ if ($langs -contains 'all')
     $all = $true
 }
 
-Write-Host "help: $help"
-Write-Host "all: $all"
+Log("help: $help")
+Log("all: $all")
 if ($langs.Length -gt 0 -and -not $all)
 {
     Log("langs ($($langs.Length)): $langs")
 }
+
+# Add failed builds to this array and report failed builds at the end
+$failedBuilds = @()
 
 
 ########################################
@@ -53,6 +56,32 @@ function CleanJsonResources
     {
         Log("Remove-Item $f")
         Remove-Item $f
+    }
+}
+
+function CleanTestResources
+{
+    param([string]$resourcesPath)
+    $resourceFiles = Get-ChildItem $resourcesPath -Depth 0 | Where-Object {!$_.PsIsContainer -and $_.Name -like "testFile*" -and $_.Extension -eq '.txt'}
+    ForEach ($f in $resourceFiles)
+    {
+        Log("Remove-Item $f")
+        Remove-Item $f
+    }
+
+function PrintFailedBuilds
+{
+    if ($global:failedBuilds.Length -gt 0)
+    {
+        Write-Host "`nFailed builds:"
+        ForEach ($fb in $global:failedBuilds)
+        {
+            Write-Host $fb
+        }
+    }
+    else
+    {
+        Write-Host "`nAll builds succeeded"
     }
 }
 
@@ -82,6 +111,7 @@ function CleanCFind
         if (Test-Path $c)
         {
             Log("Remove-Item $c -Recurse -Force")
+            $global:failedBuilds += 'cfind'
             Remove-Item $c -Recurse -Force
         }
     }
@@ -97,6 +127,7 @@ function CleanCljFind
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
+        $global:failedBuilds += 'cljfind'
         return
     }
 
@@ -120,7 +151,7 @@ function CleanCppFind
     $oldPwd = Get-Location
     Set-Location $cppFindPath
 
-    $cmakeBuildDirs = Get-ChildItem $cppFindPath -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
+    $cmakeBuildDirs = Get-ChildItem . -Depth 0 | Where-Object {$_.PsIsContainer -and $_.Name.StartsWith('cmake-build-')}
     ForEach ($c in $cmakeBuildDirs)
     {
         if (Test-Path $c)
@@ -141,6 +172,7 @@ function CleanCsFind
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'csfind'
         return
     }
 
@@ -171,6 +203,9 @@ function CleanCsFind
     $resourcesPath = Join-Path $csFindPath 'CsFindLib' 'Resources'
     CleanJsonResources($resourcesPath)
 
+    $testResourcesPath = Join-Path $csFindPath 'CsFindTests' 'Resources'
+    CleanTestResources($testResourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -182,6 +217,7 @@ function CleanDartFind
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
+        $global:failedBuilds += 'dartfind'
         return
     }
 
@@ -203,6 +239,7 @@ function CleanExFind
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install elixir')
+        $global:failedBuilds += 'exfind'
         return
     }
 
@@ -210,6 +247,7 @@ function CleanExFind
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
+        $global:failedBuilds += 'exfind'
         return
     }
 
@@ -231,6 +269,7 @@ function CleanFsFind
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'fsfind'
         return
     }
 
@@ -261,6 +300,9 @@ function CleanFsFind
     $resourcesPath = Join-Path $fsFindPath 'FsFindLib' 'Resources'
     CleanJsonResources($resourcesPath)
 
+    $testResourcesPath = Join-Path $fsFindPath 'FsFindTests' 'Resources'
+    CleanTestResources($testResourcesPath)
+
     Set-Location $oldPwd
 }
 
@@ -272,6 +314,7 @@ function CleanGoFind
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
+        $global:failedBuilds += 'gofind'
         return
     }
 
@@ -300,6 +343,7 @@ function CleanGroovyFind
     }
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'groovyfind'
         return
     }
 
@@ -308,6 +352,9 @@ function CleanGroovyFind
 
     $resourcesPath = Join-Path $groovyFindPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $groovyFindPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
 }
@@ -320,6 +367,7 @@ function CleanHsFind
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
+        $global:failedBuilds += 'hsfind'
         return
     }
 
@@ -351,6 +399,7 @@ function CleanJavaFind
     }
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'javafind'
         return
     }
 
@@ -359,6 +408,9 @@ function CleanJavaFind
 
     $resourcesPath = Join-Path $javaFindPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $javaFindPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
 }
@@ -371,6 +423,7 @@ function CleanJsFind
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
+        $global:failedBuilds += 'jsfind'
         return
     }
 
@@ -402,6 +455,8 @@ function CleanKtFind
     }
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'ktfind'
+        Set-Location $oldPwd
         return
     }
 
@@ -410,6 +465,9 @@ function CleanKtFind
 
     $resourcesPath = Join-Path $ktFindPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $ktFindPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
 }
@@ -422,6 +480,7 @@ function CleanObjcFind
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'objcfind'
         return
     }
 
@@ -482,6 +541,9 @@ function CleanRbFind
 
     $resourcesPath = Join-Path $rbFindPath 'data'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $rbFindPath 'test' 'fixtures'
+    CleanTestResources($testResourcesPath)
 }
 
 function CleanRsFind
@@ -492,6 +554,8 @@ function CleanRsFind
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo')
+        $global:failedBuilds += 'rsfind'
+        return
     }
 
     $oldPwd = Get-Location
@@ -511,6 +575,8 @@ function CleanScalaFind
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala + sbt')
+        $global:failedBuilds += 'scalafind'
+        return
     }
 
     $oldPwd = Get-Location
@@ -521,6 +587,9 @@ function CleanScalaFind
 
     $resourcesPath = Join-Path $scalaFindPath 'src' 'main' 'resources'
     CleanJsonResources($resourcesPath)
+
+    $testResourcesPath = Join-Path $scalaFindPath 'src' 'test' 'resources'
+    CleanTestResources($testResourcesPath)
 
     Set-Location $oldPwd
 }
@@ -533,6 +602,7 @@ function CleanSwiftFind
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'swiftfind'
         return
     }
 
@@ -553,6 +623,7 @@ function CleanTsFind
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js/npm')
+        $global:failedBuilds += 'tsfind'
         return
     }
 
@@ -619,6 +690,8 @@ function CleanLinux
 
     CleanTsFind
 
+    PrintFailedBuilds
+
     exit
 }
 
@@ -674,6 +747,8 @@ function CleanAll
     CleanSwiftFind
 
     CleanTsFind
+
+    PrintFailedBuilds
 
     exit
 }
@@ -745,6 +820,8 @@ function CleanMain
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
+
+    PrintFailedBuilds
 }
 
 if ($help)

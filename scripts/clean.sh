@@ -15,6 +15,9 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
 
+# Add failed builds to this array and report failed builds at the end
+FAILED_BUILDS=()
+
 
 ########################################
 # Utility Functions
@@ -33,6 +36,25 @@ clean_json_resources () {
         log "rm $f"
         rm "$f"
     done
+}
+
+# clean_test_resources
+clean_test_resources () {
+    local resources_path="$1"
+    for f in $(find "$resources_path" -name "testFile*.txt" -type f -maxdepth 1)
+    do
+        log "rm $f"
+        rm "$f"
+    done
+}
+
+print_failed_builds () {
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
+    then
+        log_error "Failed cleans: ${FAILED_BUILDS[*]}"
+    else
+        log "All cleans succeeded"
+    fi
 }
 
 
@@ -68,7 +90,8 @@ clean_cljfind () {
     # ensure lein is installed
     if [ -z "$(which lein)" ]
     then
-        echo "You need to install lein"
+        log_error "You need to install lein"
+        FAILED_BUILDS+=("cljfind")
         return
     fi
 
@@ -104,7 +127,8 @@ clean_csfind () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("csfind")
         return
     fi
 
@@ -128,6 +152,8 @@ clean_csfind () {
 
     clean_json_resources "$CSFIND_PATH/CsFindLib/Resources"
 
+    clean_test_resources "$CSFIND_PATH/CsFindTests/Resources"
+
     cd -
 }
 
@@ -138,7 +164,8 @@ clean_dartfind () {
     # ensure dart is installed
     if [ -z "$(which dart)" ]
     then
-        echo "You need to install dart"
+        log_error "You need to install dart"
+        FAILED_BUILDS+=("dartfind")
         return
     fi
 
@@ -159,6 +186,7 @@ clean_exfind () {
     if [ -z "$(which elixir)" ]
     then
         log_error "You need to install elixir"
+        FAILED_BUILDS+=("exfind")
         return
     fi
 
@@ -166,6 +194,7 @@ clean_exfind () {
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
+        FAILED_BUILDS+=("exfind")
         return
     fi
 
@@ -184,7 +213,8 @@ clean_fsfind () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("fsfind")
         return
     fi
 
@@ -208,6 +238,8 @@ clean_fsfind () {
 
     clean_json_resources "$FSFIND_PATH/FsFindLib/Resources"
 
+    clean_test_resources "$FSFIND_PATH/FsFindTests/Resources"
+
     cd -
 }
 
@@ -218,7 +250,8 @@ clean_gofind () {
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
-        echo "You need to install go"
+        log_error "You need to install go"
+        FAILED_BUILDS+=("gofind")
         return
     fi
 
@@ -246,6 +279,7 @@ clean_groovyfind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("groovyfind")
         return
     fi
 
@@ -253,6 +287,8 @@ clean_groovyfind () {
     "$GRADLE" --warning-mode all clean
 
     clean_json_resources "$GROOVYFIND_PATH/src/main/resources"
+
+    clean_test_resources "$GROOVYFIND_PATH/src/test/resources"
 
     cd -
 }
@@ -264,7 +300,8 @@ clean_hsfind () {
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
-        echo "You need to install stack"
+        log_error "You need to install stack"
+        FAILED_BUILDS+=("hsfind")
         return
     fi
 
@@ -294,6 +331,8 @@ clean_javafind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("javafind")
+        cd -
         return
     fi
 
@@ -301,6 +340,8 @@ clean_javafind () {
     "$GRADLE" --warning-mode all clean
 
     clean_json_resources "$JAVAFIND_PATH/src/main/resources"
+
+    clean_test_resources "$JAVAFIND_PATH/src/test/resources"
 
     cd -
 }
@@ -312,7 +353,8 @@ clean_jsfind () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install npm"
+        log_error "You need to install npm"
+        FAILED_BUILDS+=("jsfind")
         return
     fi
 
@@ -342,6 +384,8 @@ clean_ktfind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("ktfind")
+        cd -
         return
     fi
 
@@ -350,12 +394,22 @@ clean_ktfind () {
 
     clean_json_resources "$KTFIND_PATH/src/main/resources"
 
+    clean_test_resources "$KTFIND_PATH/src/test/resources"
+
     cd -
 }
 
 clean_objcfind () {
     echo
     hdr "clean_objcfind"
+
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("objcfind")
+        return
+    fi
 
     cd "$OBJCFIND_PATH"
 
@@ -404,6 +458,8 @@ clean_rbfind () {
     hdr "clean_rbfind"
 
     clean_json_resources "$RBFIND_PATH/data"
+
+    clean_test_resources "$RBFIND_PATH/test/fixtures"
 }
 
 clean_rsfind () {
@@ -413,7 +469,8 @@ clean_rsfind () {
     # ensure cargo is installed
     if [ -z "$(which cargo)" ]
     then
-        echo "You need to install cargo"
+        log_error "You need to install cargo"
+        FAILED_BUILDS+=("rsfind")
         return
     fi
 
@@ -432,7 +489,8 @@ clean_scalafind () {
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        echo "You need to install sbt"
+        log_error "You need to install sbt"
+        FAILED_BUILDS+=("scalafind")
         return
     fi
 
@@ -445,12 +503,22 @@ clean_scalafind () {
 
     clean_json_resources "$SCALAFIND_PATH/src/main/resources"
 
+    clean_test_resources "$SCALAFIND_PATH/src/test/resources"
+
     cd -
 }
 
 clean_swiftfind () {
     echo
     hdr "clean_swiftfind"
+
+    # ensure swift is installed
+    if [ -z "$(which swift)" ]
+    then
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("swiftfind")
+        return
+    fi
 
     cd "$SWIFTFIND_PATH"
 
@@ -467,7 +535,8 @@ clean_tsfind () {
     # ensure npm is installed
     if [ -z "$(which npm)" ]
     then
-        echo "You need to install npm"
+        log_error "You need to install npm"
+        FAILED_BUILDS+=("tsfind")
         return
     fi
 
@@ -642,6 +711,7 @@ fi
 if [ -n "$CLEAN_ALL" ]
 then
     clean_all
+    print_failed_builds
     exit
 fi
 
@@ -736,3 +806,5 @@ do
             ;;
     esac
 done
+
+print_failed_builds

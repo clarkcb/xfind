@@ -34,6 +34,9 @@ if ($langs.Length -gt 0 -and -not $all)
     Log("langs ($($langs.Length)): $langs")
 }
 
+# Add failed builds to this array and report failed builds at the end
+$failedBuilds = @()
+
 
 ########################################
 # Utility Functions
@@ -43,6 +46,19 @@ function Usage
 {
     Write-Host "`nUsage: unittest.ps1 [-help] {""all"" | lang [lang...]}`n"
     exit
+}
+
+function PrintFailedBuilds
+{
+    if ($global:failedBuilds.Length -gt 0)
+    {
+        $fbString = $global:failedBuilds -join ' '
+        PrintError("Failed builds: $fbString")
+    }
+    else
+    {
+        Log("All builds succeeded")
+    }
 }
 
 
@@ -59,6 +75,7 @@ function UnitTestBashFind
     if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install bash')
+        $global:failedBuilds += 'bashfind'
         return
     }
 
@@ -71,6 +88,7 @@ function UnitTestBashFind
     if (-not (Test-Path $bashFindTestScript))
     {
         LogError("Test script not found: $bashFindTestScript")
+        $global:failedBuilds += 'bashfind'
         return
     }
 
@@ -116,11 +134,13 @@ function UnitTestCFind
             else
             {
                 LogError("cfind-tests not found: $cFindTestExe")
+                $global:failedBuilds += 'cfind'
             }
         }
         else
         {
             LogError("cmake build directory not found: $cmmakeBuildDir")
+            $global:failedBuilds += 'cfind'
         }
     }
 
@@ -142,6 +162,7 @@ function UnitTestCljFind
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
+        $global:failedBuilds += 'cljfind'
         return
     }
 
@@ -157,6 +178,17 @@ function UnitTestCljFind
     Log('lein test')
     lein test
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'cljfind'
+    }
+    
     Set-Location $oldPwd
 }
 
@@ -187,15 +219,29 @@ function UnitTestCppFind
                 # run tests
                 Log($cppFindTestExe)
                 & $cppFindTestExe
+
+                # check for success/failure
+                if ($LASTEXITCODE -eq 0)
+                {
+                    Log('Tests succeeded')
+                }
+                else
+                {
+                    PrintError('Tests failed')
+                    $global:failedBuilds += 'cppfind'
+                    return
+                }
             }
             else
             {
                 LogError("cppfind-tests not found: $cppFindTestExe")
+                $global:failedBuilds += 'cppfind'
             }
         }
         else
         {
             LogError("cmake build directory not found: $cmmakeBuildDir")
+            $global:failedBuilds += 'cppfind'
         }
     }
 }
@@ -208,6 +254,7 @@ function UnitTestCsFind
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'csfind'
         return
     }
 
@@ -224,6 +271,17 @@ function UnitTestCsFind
     Log('Unit-testing csfind')
     Write-Host "dotnet test $csFindSolutionPath --verbosity $verbosity"
     dotnet test $csFindSolutionPath --verbosity $verbosity
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'csfind'
+    }
 }
 
 function UnitTestDartFind
@@ -235,6 +293,7 @@ function UnitTestDartFind
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
+        $global:failedBuilds += 'dartfind'
         return
     }
 
@@ -248,6 +307,17 @@ function UnitTestDartFind
     Log('Unit-testing dartfind')
     Log('dart run test')
     dart run test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'dartfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -267,6 +337,7 @@ function UnitTestExFind
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
+        $global:failedBuilds += 'exfind'
         return
     }
 
@@ -281,6 +352,17 @@ function UnitTestExFind
     Log('mix test')
     mix test
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'exfind'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -292,6 +374,7 @@ function UnitTestFsFind
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'fsfind'
         return
     }
 
@@ -308,6 +391,17 @@ function UnitTestFsFind
     Log('Unit-testing fsfind')
     Write-Host "dotnet test $fsFindSolutionPath --verbosity $verbosity"
     dotnet test $fsFindSolutionPath --verbosity $verbosity
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'fsfind'
+    }
 }
 
 function UnitTestGoFind
@@ -318,6 +412,7 @@ function UnitTestGoFind
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
+        $global:failedBuilds += 'gofind'
         return
     }
 
@@ -331,6 +426,17 @@ function UnitTestGoFind
     Log('Unit-testing gofind')
     Log('go test --cover ./...')
     go test --cover ./...
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'gofind'
+    }
 
     Set-Location $oldPwd
 }
@@ -356,6 +462,7 @@ function UnitTestGroovyFind
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'groovyfind'
         return
     }
 
@@ -378,6 +485,17 @@ function UnitTestGroovyFind
     Log("$gradle --warning-mode all test")
     & $gradle --warning-mode all test
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'groovyfind'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -397,6 +515,7 @@ function UnitTestHsFind
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
+        $global:failedBuilds += 'hsfind'
         return
     }
 
@@ -410,6 +529,17 @@ function UnitTestHsFind
     Log('Unit-testing hsfind')
     Log('stack test')
     stack test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'hsfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -435,13 +565,17 @@ function UnitTestJavaFind
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'javafind'
         return
     }
 
     $gradleOutput = & $gradle --version
 
-    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle ',''}
+    $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle\s+',''}
     Log("$gradle version: $gradleVersion")
+
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
 
     $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
     Log("JVM version: $jvmVersion")
@@ -451,9 +585,19 @@ function UnitTestJavaFind
 
     # run tests via gradle
     Log('Unit-testing javafind')
-
     Log('gradle --warning-mode all test')
-    gradle --warning-mode all test
+    & $gradle --warning-mode all test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'javafind'
+    }
 
     Set-Location $oldPwd
 }
@@ -474,6 +618,7 @@ function UnitTestJsFind
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'jsfind'
         return
     }
 
@@ -487,6 +632,17 @@ function UnitTestJsFind
     Log('Unit-testing jsfind')
     Log('npm test')
     npm test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'jsfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -505,6 +661,7 @@ function UnitTestKtFind
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'ktfind'
         return
     }
 
@@ -527,6 +684,17 @@ function UnitTestKtFind
     Log("$gradle --warning-mode all test")
     & $gradle --warning-mode all test
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'ktfind'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -539,6 +707,7 @@ function UnitTestObjcFind
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'objcfind'
         return
     }
 
@@ -552,6 +721,17 @@ function UnitTestObjcFind
     Log('Unit-testing objcfind')
     Log('swift test')
     swift test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'objcfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -571,6 +751,7 @@ function UnitTestPlFind
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install perl')
+        $global:failedBuilds += 'plfind'
         return
     }
 
@@ -605,6 +786,7 @@ function UnitTestPhpFind
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install php')
+        $global:failedBuilds += 'phpfind'
         return
     }
 
@@ -612,6 +794,7 @@ function UnitTestPhpFind
     if (-not $phpVersion)
     {
         PrintError('A version of PHP >= 7.x is required')
+        $global:failedBuilds += 'phpfind'
         return
     }
     Log("php version: $phpVersion")
@@ -626,15 +809,27 @@ function UnitTestPhpFind
     if (-not (Get-Command 'phpunit' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install phpunit')
+        $global:failedBuilds += 'phpfind'
         return
     }
 
     $phpTestsPath = Join-Path $phpFindPath 'tests'
 
     # run tests
-    Log('Unit-testing plfind')
+    Log('Unit-testing phpfind')
     Log("phpunit $phpTestsPath")
     phpunit $phpTestsPath
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'phpfind'
+    }
 }
 
 function UnitTestPs1Find
@@ -651,6 +846,7 @@ function UnitTestPs1Find
     if (-not (Test-Path $testsScriptPath))
     {
         Log("Test script not found: $testsScriptPath")
+        $global:failedBuilds += 'ps1find'
         return
     }
 
@@ -668,7 +864,8 @@ function UnitTestPyFind
     $venvPath = Join-Path $pyFindPath 'venv'
     if (-not (Test-Path $venvPath))
     {
-        Log('venv path not found, you probably need to run the python build (./build.ps1 python)')
+        PrintError('venv path not found, you probably need to run the python build (./build.ps1 python)')
+        $global:failedBuilds += 'pyfind'
         return
     }
 
@@ -684,6 +881,17 @@ function UnitTestPyFind
     # Run the individual tests
     Log('pytest')
     pytest
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'pyfind'
+    }
 
     # deactivate at end of setup process
     Log('deactivate')
@@ -701,6 +909,7 @@ function UnitTestRbFind
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ruby')
+        $global:failedBuilds += 'rbfind'
         return
     }
 
@@ -708,6 +917,7 @@ function UnitTestRbFind
     if (-not $rubyVersion)
     {
         PrintError('A version of ruby >= 3.x is required')
+        $global:failedBuilds += 'rbfind'
         return
     }
 
@@ -724,6 +934,7 @@ function UnitTestRbFind
     if (-not (Get-Command 'rake' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rake')
+        $global:failedBuilds += 'rbfind'
         return
     }
 
@@ -734,6 +945,17 @@ function UnitTestRbFind
     Log('Unit-testing rbfind')
     Log('bundle exec rake test')
     bundle exec rake test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'rbfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -753,6 +975,7 @@ function UnitTestRsFind
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo')
+        $global:failedBuilds += 'rsfind'
         return
     }
 
@@ -766,6 +989,17 @@ function UnitTestRsFind
     Log('Unit-testing rsfind')
     Log('cargo test --package rsfind --bin rsfind')
     cargo test --package rsfind --bin rsfind
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'rsfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -786,6 +1020,7 @@ function UnitTestScalaFind
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install sbt')
+        $global:failedBuilds += 'scalafind'
         return
     }
 
@@ -805,6 +1040,17 @@ function UnitTestScalaFind
     Log('sbt test')
     sbt test
 
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'scalafind'
+    }
+
     Set-Location $oldPwd
 }
 
@@ -816,6 +1062,7 @@ function UnitTestSwiftFind
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'swiftfind'
         return
     }
 
@@ -829,6 +1076,17 @@ function UnitTestSwiftFind
     Log('Unit-testing swiftfind')
     Log('swift test')
     swift test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'swiftfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -849,6 +1107,7 @@ function UnitTestTsFind
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'tsfind'
         return
     }
 
@@ -862,6 +1121,17 @@ function UnitTestTsFind
     Log('Unit-testing tsfind')
     Log('npm test')
     npm test
+
+    # check for success/failure
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Tests succeeded')
+    }
+    else
+    {
+        PrintError('Tests failed')
+        $global:failedBuilds += 'tsfind'
+    }
 
     Set-Location $oldPwd
 }
@@ -921,6 +1191,8 @@ function UnitTestAll
 
     UnitTestTsFind
 
+    PrintFailedBuilds
+
     exit
 }
 
@@ -971,6 +1243,7 @@ function UnitTestMain
             'ocaml'      { UnitTestMlFind }
             'ml'         { UnitTestMlFind }
             'perl'       { UnitTestPlFind }
+            'pl'         { UnitTestPlFind }
             'php'        { UnitTestPhpFind }
             'powershell' { UnitTestPs1Find }
             'ps1'        { UnitTestPs1Find }
@@ -988,6 +1261,8 @@ function UnitTestMain
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
+
+    PrintFailedBuilds
 }
 
 if ($help)

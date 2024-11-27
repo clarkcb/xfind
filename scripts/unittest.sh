@@ -15,6 +15,9 @@ DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 source "$DIR/config.sh"
 source "$DIR/common.sh"
 
+# Add failed builds to this array and report failed builds at the end
+FAILED_BUILDS=()
+
 
 ########################################
 # Utility Functions
@@ -25,6 +28,14 @@ usage () {
     exit
 }
 
+print_failed_builds () {
+    if [ ${#FAILED_BUILDS[@]} -gt 0 ]
+    then
+        log_error "Failed unit tests: ${FAILED_BUILDS[*]}"
+    else
+        log "All unit tests succeeded"
+    fi
+}
 
 ########################################
 # Unit Test Functions
@@ -38,6 +49,7 @@ unittest_bashfind () {
     if [ -z "$(which bash)" ]
     then
         log_error "You need to install bash"
+        FAILED_BUILDS+=("bashfind")
         return
     fi
 
@@ -83,9 +95,11 @@ unittest_cfind () {
                 # fi
             else
                 log_error "cfind-tests not found: $CFIND_TEST_EXE"
+                FAILED_BUILDS+=("cfind")
             fi
         else
             log_error "cmake build directory not found: $CMAKE_BUILD_DIR"
+            FAILED_BUILDS+=("cfind")
         fi
     done
 }
@@ -106,7 +120,8 @@ unittest_cljfind () {
     # ensure lein is installed
     if [ -z "$(which lein)" ]
     then
-        echo "You need to install lein"
+        log_error "You need to install lein"
+        FAILED_BUILDS+=("cljfind")
         return
     fi
 
@@ -119,13 +134,15 @@ unittest_cljfind () {
     # Test with lein
     log "Unit-testing cljfind"
     log "lein test"
-    output=$(lein test | tee /dev/tty)
-    lastline=$(echo "$output" | tail -n 1)
-    if [[ "$lastline" == "0 failures, 0 errors." ]]
+    lein test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
     then
-        log "All clojure unit tests passed"
+        log "Tests succeeded"
     else
-        log_error "ERROR: clojure unit tests failed"
+        log_error "Tests failed"
+        FAILED_BUILDS+=("cljfind")
     fi
 
     cd -
@@ -154,19 +171,25 @@ unittest_cppfind () {
             if [ -e "$CPPFIND_TEST_EXE" ]
             then
                 log "$CPPFIND_TEST_EXE"
-                output=$(script -q tmpout $CPPFIND_TEST_EXE | tee /dev/tty)
-                lastline=$(echo "$output" | tail -n 2)
-                if [[ "$lastline" =~ All[[:space:]]tests[[:space:]]passed ]]
+                $CPPFIND_TEST_EXE
+
+                if [ "$?" -eq 0 ]
                 then
-                    log "All C++ unit tests passed"
+                    log "C++ unit test for $c succeeded"
                 else
-                    log_error "ERROR: C++ unit tests failed"
+                    log_error "ERROR: cppfind unit tests for $c failed"
+                    FAILED_BUILDS+=("cppfind")
+                    return
                 fi
             else
                 log_error "cppfind-tests not found: $CPPFIND_TEST_EXE"
+                FAILED_BUILDS+=("cppfind")
+                return
             fi
         else
             log_error "cmake build directory not found: $CMAKE_BUILD_DIR"
+            FAILED_BUILDS+=("cppfind")
+            return
         fi
     done
 }
@@ -178,7 +201,8 @@ unittest_csfind () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("csfind")
         return
     fi
 
@@ -194,6 +218,15 @@ unittest_csfind () {
     log "Unit-testing csfind"
     log "dotnet test $CSFIND_PATH/CsFind.sln --verbosity $VERBOSITY"
     dotnet test "$CSFIND_PATH/CsFind.sln" --verbosity $VERBOSITY
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("csfind")
+    fi
 }
 
 unittest_dartfind () {
@@ -204,6 +237,7 @@ unittest_dartfind () {
     if [ -z "$(which dart)" ]
     then
         log_error "You need to install dart"
+        FAILED_BUILDS+=("dartfind")
         return
     fi
 
@@ -215,6 +249,15 @@ unittest_dartfind () {
     log "Unit-testing dartfind"
     log "dart run test"
     dart run test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("dartfind")
+    fi
 
     cd -
 }
@@ -234,6 +277,7 @@ unittest_exfind () {
     if [ -z "$(which mix)" ]
     then
         log_error "You need to install mix"
+        FAILED_BUILDS+=("exfind")
         return
     fi
 
@@ -247,6 +291,15 @@ unittest_exfind () {
     log "mix test"
     mix test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("exfind")
+    fi
+
     cd -
 }
 
@@ -257,7 +310,8 @@ unittest_fsfind () {
     # ensure dotnet is installed
     if [ -z "$(which dotnet)" ]
     then
-        echo "You need to install dotnet"
+        log_error "You need to install dotnet"
+        FAILED_BUILDS+=("fsfind")
         return
     fi
 
@@ -273,6 +327,15 @@ unittest_fsfind () {
     log "Unit-testing fsfind"
     log "dotnet test $FSFIND_PATH/FsFind.sln --verbosity $VERBOSITY"
     dotnet test "$FSFIND_PATH/FsFind.sln" --verbosity $VERBOSITY
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("fsfind")
+    fi
 }
 
 unittest_gofind () {
@@ -282,7 +345,8 @@ unittest_gofind () {
     # ensure go is installed
     if [ -z "$(which go)" ]
     then
-        echo "You need to install go"
+        log_error "You need to install go"
+        FAILED_BUILDS+=("gofind")
         return
     fi
 
@@ -295,15 +359,15 @@ unittest_gofind () {
     cd "$GOFIND_PATH"
 
     log "go test --cover ./..."
-    # cd "$GOSRC_PATH"; go test; cd -
-    output=$(go test --cover ./... | tee /dev/tty)
-    lastline=$(echo "$output" | tail -n 1)
-    # echo "lastline: \"$lastline\""
-    if [[ "$lastline" =~ ^ok[[:space:]] ]]
+    go test --cover ./...
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
     then
-        log "All go unit tests passed"
+        log "Tests succeeded"
     else
-        log_error "ERROR: go unit tests failed"
+        log_error "Tests failed"
+        FAILED_BUILDS+=("gofind")
     fi
 
     cd -
@@ -330,6 +394,7 @@ unittest_groovyfind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("groovyfind")
         return
     fi
 
@@ -351,6 +416,15 @@ unittest_groovyfind () {
     log "$GRADLE --warning-mode all test"
     "$GRADLE" --warning-mode all test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("groovyfind")
+    fi
+
     cd -
 }
 
@@ -368,7 +442,8 @@ unittest_hsfind () {
     # ensure stack is installed
     if [ -z "$(which stack)" ]
     then
-        echo "You need to install stack"
+        log_error "You need to install stack"
+        FAILED_BUILDS+=("hsfind")
         return
     fi
 
@@ -381,7 +456,16 @@ unittest_hsfind () {
     log "Unit-testing hsfind"
     log "stack test"
     stack test
-    
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("hsfind")
+    fi
+
     cd -
 }
 
@@ -406,6 +490,7 @@ unittest_javafind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("javafind")
         return
     fi
 
@@ -413,6 +498,9 @@ unittest_javafind () {
 
     GRADLE_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Gradle' | awk '{print $2}')
     log "$GRADLE version: $GRADLE_VERSION"
+
+    KOTLIN_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Kotlin' | awk '{print $2}')
+    log "Kotlin version: $KOTLIN_VERSION"
 
     JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
     log "JVM version: $JVM_VERSION"
@@ -423,6 +511,15 @@ unittest_javafind () {
     log "Unit-testing ktfind"
     log "$GRADLE --warning-mode all test"
     "$GRADLE" --warning-mode all test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("javafind")
+    fi
 
     cd -
 }
@@ -442,6 +539,7 @@ unittest_jsfind () {
     if [ -z "$(which npm)" ]
     then
         log_error "You need to install npm"
+        FAILED_BUILDS+=("jsfind")
         return
     fi
 
@@ -454,6 +552,15 @@ unittest_jsfind () {
     log "Unit-testing jsfind"
     log "npm test"
     npm test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("jsfind")
+    fi
 
     cd -
 }
@@ -472,6 +579,7 @@ unittest_ktfind () {
         GRADLE="gradle"
     else
         log_error "You need to install gradle"
+        FAILED_BUILDS+=("ktfind")
         return
     fi
 
@@ -493,6 +601,15 @@ unittest_ktfind () {
     log "$GRADLE --warning-mode all test"
     "$GRADLE" --warning-mode all test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("ktfind")
+    fi
+
     cd -
 }
 
@@ -505,6 +622,7 @@ unittest_objcfind () {
     if [ -z "$(which swift)" ]
     then
         log_error "You need to install swift"
+        FAILED_BUILDS+=("objcfind")
         return
     fi
 
@@ -517,16 +635,27 @@ unittest_objcfind () {
     log "swift test"
     swift test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("objcfind")
+    fi
+
     cd -
 }
 
 # unittest_mlfind () {
 #     echo
 #     hdr "unittest_mlfind"
-
+#
 #     cd "$MLFIND_PATH"
+#
 #     log "Unit-testing mlfind"
 #     ./unittest.sh
+#
 #     cd -
 # }
 
@@ -538,6 +667,7 @@ unittest_plfind () {
     if [ -z "$(which perl)" ]
     then
         log_error "You need to install perl"
+        FAILED_BUILDS+=("plfind")
         return
     fi
 
@@ -545,6 +675,7 @@ unittest_plfind () {
     if [ -z $PERL_VERSION ]
     then
         log_error "A 5.x version of perl is required"
+        FAILED_BUILDS+=("plfind")
         return
     fi
 
@@ -554,11 +685,21 @@ unittest_plfind () {
 
     # run tests using Test::Simple
     log "Unit-testing plfind"
-    FILES=$(find "$TESTS_PATH" -name "*_test.pl")
+    FILES=$(find "$TESTS_PATH" -name "*_test.pl" | sort)
     for f in ${FILES[*]}
     do
         log "perl $f"
-        perl "$f"
+        IFS='' perl "$f" | tail -n +2 |
+        while read line
+        do
+            echo "$line"
+            if [[ ! "$line" =~ ^ok[[:space:]][0-9]+.+$ ]]
+            then
+                log_error "Tests failed"
+                FAILED_BUILDS+=("plfind")
+                return
+            fi
+        done
     done
 }
 
@@ -570,14 +711,15 @@ unittest_phpfind () {
     if [ -z "$(which php)" ]
     then
         log_error "You need to install PHP"
+        FAILED_BUILDS+=("phpfind")
         return
     fi
 
-    # PHP_VERSION=$(php -r "echo phpversion();")
     PHP_VERSION=$(php -v | grep '^PHP [78]')
     if [ -z "$PHP_VERSION" ]
     then
         log_error "A version of PHP >= 7.x is required"
+        FAILED_BUILDS+=("phpfind")
         return
     fi
     log "php version: $PHP_VERSION"
@@ -594,7 +736,8 @@ unittest_phpfind () {
 
     if [ ! -f "$PHPUNIT" ]
     then
-        echo "You need to install phpunit (build.sh php)"
+        log_error "You need to install phpunit (build.sh php)"
+        FAILED_BUILDS+=("phpfind")
         return
     fi
 
@@ -602,6 +745,15 @@ unittest_phpfind () {
     log "Unit-testing phpfind"
     log "$PHPUNIT $TESTS_PATH"
     "$PHPUNIT" "$TESTS_PATH"
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("phpfind")
+    fi
 }
 
 unittest_ps1find () {
@@ -612,6 +764,7 @@ unittest_ps1find () {
     if [ -z "$(which pwsh)" ]
     then
         log_error "You need to install powershell"
+        FAILED_BUILDS+=("ps1find")
         return
     fi
 
@@ -622,6 +775,7 @@ unittest_ps1find () {
     if [ ! -f "$TESTS_SCRIPT" ]
     then
         log_error "Test script not found: $TESTS_SCRIPT"
+        FAILED_BUILDS+=("ps1find")
         return
     fi
 
@@ -629,6 +783,15 @@ unittest_ps1find () {
     log "Unit-testing ps1find"
     log "pwsh $TESTS_SCRIPT"
     pwsh "$TESTS_SCRIPT"
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("ps1find")
+    fi
 }
 
 unittest_pyfind () {
@@ -642,7 +805,8 @@ unittest_pyfind () {
 
     if [ ! -d "$VENV_PATH" ]
     then
-        log "venv path not found, you probably need to run the python build (./build.sh python)"
+        log_error "venv path not found, you probably need to run the python build (./build.sh python)"
+        FAILED_BUILDS+=("pyfind")
         return
     fi
 
@@ -656,6 +820,15 @@ unittest_pyfind () {
     log "Unit-testing pyfind"
     log "pytest"
     pytest
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("pyfind")
+    fi
 
     # deactivate the virtualenv
     log "deactivate"
@@ -672,6 +845,7 @@ unittest_rbfind () {
     if [ -z "$(which ruby)" ]
     then
         log_error "You need to install ruby"
+        FAILED_BUILDS+=("rbfind")
         return
     fi
 
@@ -679,22 +853,25 @@ unittest_rbfind () {
     if [ -z "$RUBY_VERSION" ]
     then
         log_error "A version of ruby >= 3.x is required"
+        FAILED_BUILDS+=("rbfind")
         return
     fi
 
     log "ruby version: $RUBY_VERSION"
 
-    # ensure bundler is installed
-    # if [ -z "$(which bundle)" ]
-    # then
-    #     log_error "You need to install bundler: https://bundler.io/"
-    #     return
-    # fi
+    ensure bundler is installed
+    if [ -z "$(which bundle)" ]
+    then
+        log_error "You need to install bundler: https://bundler.io/"
+        FAILED_BUILDS+=("rbfind")
+        return
+    fi
 
     # ensure rake is installed
     if [ -z "$(which rake)" ]
     then
-        echo "You need to install rake"
+        log_error "You need to install rake"
+        FAILED_BUILDS+=("rbfind")
         return
     fi
 
@@ -704,6 +881,15 @@ unittest_rbfind () {
     log "Unit-testing rbfind"
     log "bundle exec rake test"
     bundle exec rake test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("rbfind")
+    fi
 
     cd -
 }
@@ -723,6 +909,7 @@ unittest_rsfind () {
     if [ -z "$(which cargo)" ]
     then
         log_error "You need to install cargo"
+        FAILED_BUILDS+=("rsfind")
         return
     fi
 
@@ -735,6 +922,15 @@ unittest_rsfind () {
     log "Unit-testing rsfind"
     log "cargo test --package rsfind --bin rsfind"
     cargo test --package rsfind --bin rsfind
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("rsfind")
+    fi
 
     cd -
 }
@@ -753,7 +949,8 @@ unittest_scalafind () {
     # ensure sbt is installed
     if [ -z "$(which sbt)" ]
     then
-        echo "You need to install sbt"
+        log_error "You need to install sbt"
+        FAILED_BUILDS+=("scalafind")
         return
     fi
 
@@ -775,6 +972,15 @@ unittest_scalafind () {
     log "sbt test"
     sbt test
 
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("scalafind")
+    fi
+
     cd -
 }
 
@@ -785,7 +991,8 @@ unittest_swiftfind () {
     # ensure swift is installed
     if [ -z "$(which swift)" ]
     then
-        echo "You need to install swift"
+        log_error "You need to install swift"
+        FAILED_BUILDS+=("swiftfind")
         return
     fi
 
@@ -798,6 +1005,15 @@ unittest_swiftfind () {
     log "Unit-testing swiftfind"
     log "swift test"
     swift test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("swiftfind")
+    fi
 
     cd -
 }
@@ -817,6 +1033,7 @@ unittest_tsfind () {
     if [ -z "$(which npm)" ]
     then
         log_error "You need to install npm"
+        FAILED_BUILDS+=("tsfind")
         return
     fi
 
@@ -829,6 +1046,15 @@ unittest_tsfind () {
     log "Unit-testing tsfind"
     log "npm test"
     npm test
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Tests succeeded"
+    else
+        log_error "Tests failed"
+        FAILED_BUILDS+=("tsfind")
+    fi
 
     cd -
 }
@@ -946,6 +1172,7 @@ fi
 if [ -n "$TEST_ALL" ]
 then
     unittest_all
+    print_failed_builds
     exit
 fi
 
@@ -1037,3 +1264,5 @@ do
             ;;
     esac
 done
+
+print_failed_builds

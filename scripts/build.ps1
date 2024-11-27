@@ -65,10 +65,14 @@ Log("debug: $debug")
 Log("release: $release")
 Log("venv: $venv")
 Log("all: $all")
+Log("args: $args")
 if ($langs.Length -gt 0 -and -not $all)
 {
     Log("langs ($($langs.Length)): $langs")
 }
+
+# Add failed builds to this array and report failed builds at the end
+$failedBuilds = @()
 
 
 ########################################
@@ -156,6 +160,22 @@ function AddToBin
     AddSoftLink $linkPath $xfindScriptPath
 }
 
+function PrintFailedBuilds
+{
+    if ($global:failedBuilds.Length -gt 0)
+    {
+        Write-Host "`nFailed builds:"
+        ForEach ($fb in $global:failedBuilds)
+        {
+            Write-Host $fb
+        }
+    }
+    else
+    {
+        Write-Host "`nAll builds succeeded"
+    }
+}
+
 
 ################################################################################
 # Build functions
@@ -171,6 +191,7 @@ function BuildBashFind
     if (-not (Get-Command 'bash' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install bash')
+        $global:failedBuilds += 'bashfind'
         return
     }
 
@@ -203,6 +224,7 @@ function BuildCFind
     if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cmake')
+        $global:failedBuilds += 'cfind'
         return
     }
 
@@ -255,6 +277,7 @@ function BuildCFind
             else
             {
                 PrintError("Build target $t failed")
+                $global:failedBuilds += 'cfind'
                 Set-Location $oldPwd
                 return
             }
@@ -287,6 +310,7 @@ function BuildCljFind
     if (-not (Get-Command 'clj' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install clojure')
+        $global:failedBuilds += 'cljfind'
         return
     }
 
@@ -298,6 +322,7 @@ function BuildCljFind
     if (-not (Get-Command 'lein' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install leiningen')
+        $global:failedBuilds += 'cljfind'
         return
     }
 
@@ -333,6 +358,7 @@ function BuildCljFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'cljfind'
         Set-Location $oldPwd
         return
     }
@@ -365,6 +391,7 @@ function BuildCppFind
     if (-not (Get-Command 'cmake' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cmake')
+        $global:failedBuilds += 'cppfind'
         return
     }
 
@@ -423,6 +450,7 @@ function BuildCppFind
             else
             {
                 PrintError("Build target $t failed")
+                $global:failedBuilds += 'cppfind'
                 Set-Location $oldPwd
                 return
             }
@@ -455,6 +483,7 @@ function BuildCsFind
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'csfind'
         return
     }
 
@@ -508,6 +537,7 @@ function BuildCsFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'csfind'
             Set-Location $oldPwd
             return
         }
@@ -539,6 +569,7 @@ function BuildDartFind
     if (-not (Get-Command 'dart' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dart')
+        $global:failedBuilds += 'dartfind'
         return
     }
 
@@ -574,6 +605,7 @@ function BuildDartFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'dartfind'
         Set-Location $oldPwd
         return
     }
@@ -595,6 +627,7 @@ function BuildExFind
     if (-not (Get-Command 'elixir' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install elixir')
+        $global:failedBuilds += 'exfind'
         return
     }
 
@@ -605,6 +638,7 @@ function BuildExFind
     if (-not (Get-Command 'mix' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install mix')
+        $global:failedBuilds += 'exfind'
         return
     }
 
@@ -634,6 +668,7 @@ function BuildExFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'exfind'
         Set-Location $oldPwd
         return
     }
@@ -655,6 +690,7 @@ function BuildFsFind
     if (-not (Get-Command 'dotnet' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install dotnet')
+        $global:failedBuilds += 'fsfind'
         return
     }
 
@@ -708,6 +744,7 @@ function BuildFsFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'fsfind'
             Set-Location $oldPwd
             return
         }
@@ -739,6 +776,7 @@ function BuildGoFind
     if (-not (Get-Command 'go' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install go')
+        $global:failedBuilds += 'gofind'
         return
     }
 
@@ -778,6 +816,7 @@ function BuildGoFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'gofind'
         Set-Location $oldPwd
         return
     }
@@ -802,6 +841,7 @@ function BuildGroovyFind
     if (-not (Get-Command 'groovy' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install groovy')
+        $global:failedBuilds += 'groovyfind'
         return
     }
 
@@ -817,8 +857,10 @@ function BuildGroovyFind
     {
         $gradle = $gradleWrapper
     }
-    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue')) {
+    elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
+    {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'groovyfind'
         return
     }
 
@@ -878,6 +920,8 @@ function BuildGroovyFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'groovyfind'
+        Set-Location $oldPwd
         return
     }
 
@@ -901,6 +945,7 @@ function BuildHsFind
     if (-not (Get-Command 'ghc' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ghc')
+        $global:failedBuilds += 'hsfind'
         return
     }
 
@@ -911,6 +956,7 @@ function BuildHsFind
     if (-not (Get-Command 'stack' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install stack')
+        $global:failedBuilds += 'hsfind'
         return
     }
 
@@ -956,6 +1002,7 @@ function BuildHsFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'hsfind'
         Set-Location $oldPwd
         return
     }
@@ -976,8 +1023,15 @@ function BuildJavaFind
     if (-not (Get-Command 'java' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install java')
+        $global:failedBuilds += 'javafind'
         return
     }
+
+    $javaVersion = java -version 2>&1 | Select-String -Pattern 'version'
+    Log("java version: $javaVersion")
+
+    $oldPwd = Get-Location
+    Set-Location $javaFindPath
 
     $gradle = 'gradle'
     $gradleWrapper = Join-Path '.' 'gradlew'
@@ -988,6 +1042,7 @@ function BuildJavaFind
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'javafind'
         return
     }
 
@@ -1009,11 +1064,11 @@ function BuildJavaFind
     $gradleVersion = $gradleOutput | Where-Object {$_.Contains('Gradle')} | ForEach-Object {$_ -replace 'Gradle ',''}
     Log("$gradle version: $gradleVersion")
 
+    $kotlinVersion = $gradleOutput | Where-Object {$_.Contains('Kotlin')} | ForEach-Object {$_ -replace 'Kotlin:\s+',''}
+    Log("Kotlin version: $kotlinVersion")
+
     $jvmVersion = $gradleOutput | Where-Object {$_.Contains('Launcher')} | ForEach-Object {$_ -replace 'Launcher JVM:\s+',''}
     Log("JVM version: $jvmVersion")
-
-    $oldPwd = Get-Location
-    Set-Location $javaFindPath
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $javaFindPath 'src' 'main' 'resources'
@@ -1033,7 +1088,6 @@ function BuildJavaFind
 
     # run a gradle build
     Log('Building javafind')
-
     # Log('gradle --warning-mode all clean jar publishToMavenLocal')
     # gradle --warning-mode all clean jar publishToMavenLocal
     $gradleArgs = '--warning-mode all'
@@ -1049,6 +1103,8 @@ function BuildJavaFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'javafind'
+        Set-Location $oldPwd
         return
     }
 
@@ -1069,6 +1125,7 @@ function BuildJsFind
     if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js')
+        $global:failedBuilds += 'jsfind'
         return
     }
 
@@ -1079,6 +1136,7 @@ function BuildJsFind
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'jsfind'
         return
     }
 
@@ -1112,6 +1170,7 @@ function BuildJsFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'jsfind'
         Set-Location $oldPwd
         return
     }
@@ -1141,6 +1200,7 @@ function BuildKtFind
     elseif (-not (Get-Command 'gradle' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install gradle')
+        $global:failedBuilds += 'ktfind'
         return
     }
 
@@ -1188,6 +1248,7 @@ function BuildKtFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'ktfind'
         Set-Location $oldPwd
         return
     }
@@ -1209,6 +1270,7 @@ function BuildObjcFind
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'objcfind'
         return
     }
 
@@ -1236,6 +1298,7 @@ function BuildObjcFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'objcfind'
             Set-Location $oldPwd
             return
         }
@@ -1253,6 +1316,7 @@ function BuildObjcFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'objcfind'
             Set-Location $oldPwd
             return
         }
@@ -1290,6 +1354,7 @@ function BuildPlFind
     if (-not (Get-Command 'perl' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install perl')
+        $global:failedBuilds += 'plfind'
         return
     }
 
@@ -1297,6 +1362,7 @@ function BuildPlFind
     if (-not $perlVersion)
     {
         PrintError('A 5.x version of perl is required')
+        $global:failedBuilds += 'plfind'
         return
     }
 
@@ -1318,6 +1384,7 @@ function BuildPlFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'plfind'
         return
     }
 
@@ -1336,6 +1403,7 @@ function BuildPhpFind
     if (-not (Get-Command 'php' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install php')
+        $global:failedBuilds += 'phpfind'
         return
     }
 
@@ -1343,6 +1411,7 @@ function BuildPhpFind
     if (-not $phpVersion)
     {
         PrintError('A version of PHP >= 7.x is required')
+        $global:failedBuilds += 'phpfind'
         return
     }
     Log("php version: $phpVersion")
@@ -1351,6 +1420,7 @@ function BuildPhpFind
     if (-not (Get-Command 'composer' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install composer')
+        $global:failedBuilds += 'phpfind'
         return
     }
 
@@ -1400,6 +1470,7 @@ function BuildPhpFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'phpfind'
         Set-Location $oldPwd
         return
     }
@@ -1430,14 +1501,14 @@ function BuildPs1Find
     # copy the file to the first of the module paths, if defined
     $modulePaths = @($env:PSModulePath -split ':')
     if ($modulePaths.Count -gt 0) {
-        $ps1findTargetModulePath = Join-Path $modulePaths[0] 'Ps1FindModule'
-        if (-not (Test-Path $ps1findTargetModulePath)) {
-            Log("New-Item -Path $ps1findTargetModulePath -ItemType Directory")
-            New-Item -Path $ps1findTargetModulePath -ItemType Directory
+        $ps1FindTargetModulePath = Join-Path $modulePaths[0] 'Ps1FindModule'
+        if (-not (Test-Path $ps1FindTargetModulePath)) {
+            Log("New-Item -Path $ps1FindTargetModulePath -ItemType Directory")
+            New-Item -Path $ps1FindTargetModulePath -ItemType Directory
         }
-        $ps1findModulePath = Join-Path $ps1FindPath 'Ps1FindModule.psm1'
-        Log("Copy-Item $ps1findModulePath -Destination $ps1findTargetModulePath")
-        Copy-Item $ps1findModulePath -Destination $ps1findTargetModulePath
+        $ps1FindModulePath = Join-Path $ps1FindPath 'Ps1FindModule.psm1'
+        Log("Copy-Item $ps1FindModulePath -Destination $ps1FindTargetModulePath")
+        Copy-Item $ps1FindModulePath -Destination $ps1FindTargetModulePath
     }
 
     # add to bin
@@ -1528,6 +1599,7 @@ function BuildPyFind
             if (-not $python)
             {
                 PrintError('You need to install python(>= 3.9)')
+                $global:failedBuilds += 'pyfind'
                 return
             }
 
@@ -1591,6 +1663,7 @@ function BuildPyFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'pyfind'
         $buildError = $true
     }
 
@@ -1625,6 +1698,7 @@ function BuildRbFind
     if (-not (Get-Command 'ruby' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install ruby')
+        $global:failedBuilds += 'rbfind'
         return
     }
 
@@ -1632,6 +1706,7 @@ function BuildRbFind
     if (-not $rubyVersion)
     {
         PrintError('A version of ruby >= 3.x is required')
+        $global:failedBuilds += 'rbfind'
         return
     }
     Log("ruby version: $rubyVersion")
@@ -1661,6 +1736,18 @@ function BuildRbFind
     Log('bundle install')
     bundle install
 
+    if ($LASTEXITCODE -eq 0)
+    {
+        Log('Build succeeded')
+    }
+    else
+    {
+        PrintError('Build failed')
+        $global:failedBuilds += 'rbfind'
+        Set-Location $oldPwd
+        return
+    }
+
     # add to bin
     $rbFindExe = Join-Path $rbFindPath 'bin' 'rbfind.ps1'
     AddToBin($rbFindExe)
@@ -1678,6 +1765,7 @@ function BuildRsFind
     if (-not (Get-Command 'rustc' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install rust')
+        $global:failedBuilds += 'rsfind'
         return
     }
 
@@ -1688,6 +1776,7 @@ function BuildRsFind
     if (-not (Get-Command 'cargo' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install cargo')
+        $global:failedBuilds += 'rsfind'
         return
     }
 
@@ -1712,6 +1801,7 @@ function BuildRsFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'rsfind'
             Set-Location $oldPwd
             return
         }
@@ -1730,6 +1820,7 @@ function BuildRsFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'rsfind'
             Set-Location $oldPwd
             return
         }
@@ -1758,6 +1849,7 @@ function BuildScalaFind
     if (-not (Get-Command 'scala' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install scala')
+        $global:failedBuilds += 'scalafind'
         return
     }
 
@@ -1775,6 +1867,7 @@ function BuildScalaFind
     if (-not (Get-Command 'sbt' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install sbt')
+        $global:failedBuilds += 'scalafind'
         return
     }
 
@@ -1815,6 +1908,7 @@ function BuildScalaFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'scalafind'
         Set-Location $oldPwd
         return
     }
@@ -1836,6 +1930,7 @@ function BuildSwiftFind
     if (-not (Get-Command 'swift' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install swift')
+        $global:failedBuilds += 'swiftfind'
         return
     }
 
@@ -1865,6 +1960,7 @@ function BuildSwiftFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'swiftfind'
             Set-Location $oldPwd
             return
         }
@@ -1883,6 +1979,7 @@ function BuildSwiftFind
         else
         {
             PrintError('Build failed')
+            $global:failedBuilds += 'swiftfind'
             Set-Location $oldPwd
             return
         }
@@ -1890,13 +1987,13 @@ function BuildSwiftFind
         # add release to bin
         $swiftFindExe = Join-Path $swiftFindPath 'bin' 'swiftfind.release.ps1'
         AddToBin($swiftFindExe)
-        }
+    }
     else
     {
         # add debug to bin
         $swiftFindExe = Join-Path $swiftFindPath 'bin' 'swiftfind.debug.ps1'
         AddToBin($swiftFindExe)
-        }
+    }
 
     Set-Location $oldPwd
 }
@@ -1911,6 +2008,7 @@ function BuildTsFind
     if (-not (Get-Command 'node' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install node.js')
+        $global:failedBuilds += 'tsfind'
         return
     }
 
@@ -1921,6 +2019,7 @@ function BuildTsFind
     if (-not (Get-Command 'npm' -ErrorAction 'SilentlyContinue'))
     {
         PrintError('You need to install npm')
+        $global:failedBuilds += 'tsfind'
         return
     }
 
@@ -1954,6 +2053,7 @@ function BuildTsFind
     else
     {
         PrintError('Build failed')
+        $global:failedBuilds += 'tsfind'
         Set-Location $oldPwd
         return
     }
@@ -2009,6 +2109,8 @@ function BuildLinux
     Measure-Command { BuildSwiftFind }
 
     Measure-Command { BuildTsFind }
+
+    PrintFailedBuilds
 
     exit
 }
@@ -2068,6 +2170,8 @@ function BuildAll
 
     Measure-Command { BuildTsFind }
 
+    PrintFailedBuilds
+
     exit
 }
 
@@ -2089,12 +2193,16 @@ function BuildMain
         BuildAll
         exit
     }
+    if ($langs -contains 'linux')
+    {
+        BuildLinux
+        exit
+    }
 
     ForEach ($lang in $langs)
     {
         switch ($lang.ToLower())
         {
-            'linux'      { BuildLinux }
             'bash'       { Measure-Command { BuildBashFind } }
             'c'          { Measure-Command { BuildCFind } }
             'clj'        { Measure-Command { BuildCljFind } }
@@ -2138,6 +2246,8 @@ function BuildMain
             default      { ExitWithError("unknown/unsupported language: $lang") }
         }
     }
+
+    PrintFailedBuilds
 }
 
 if ($help)
