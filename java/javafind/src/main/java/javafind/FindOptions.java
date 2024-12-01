@@ -110,7 +110,7 @@ public class FindOptions {
         }
     }
 
-    private void settingsFromFilePath(final String filePath, final FindSettings settings) {
+    private void settingsFromFilePath(final String filePath, FindSettings settings) {
         var path = Paths.get(filePath);
         try {
             if (!Files.exists(path)) {
@@ -118,7 +118,7 @@ public class FindOptions {
                 System.exit(1);
             }
             if (!FileUtil.hasExtension(filePath, "json")) {
-                Logger.log("Invalid settings file type (just be JSON): " + filePath);
+                Logger.log("Invalid settings file type (must be JSON): " + filePath);
                 System.exit(1);
             }
             settingsFromJson(FileUtil.getFileContents(path), settings);
