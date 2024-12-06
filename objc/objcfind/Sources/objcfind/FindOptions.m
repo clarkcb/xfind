@@ -6,8 +6,9 @@
 // private properties
 @property NSArray<FindOption*> *findOptions;
 @property NSDictionary<NSString*,NSString*> *longArgDict;
-@property NSDictionary *argActionDict;
-@property NSDictionary *boolFlagActionDict;
+@property NSDictionary *boolActionDict;
+@property NSDictionary *stringActionDict;
+@property NSDictionary *integerActionDict;
 
 @end
 
@@ -18,8 +19,9 @@
     if (self) {
         self.findOptions = [self findOptionsFromJson];
         self.longArgDict = [self getLongArgDict];
-        self.argActionDict = [self getArgActionDict];
-        self.boolFlagActionDict = [self getBoolFlagActionDict];
+        self.boolActionDict = [self getBoolActionDict];
+        self.stringActionDict = [self getStringActionDict];
+        self.integerActionDict = [self getIntegerActionDict];
     }
     return self;
 }
@@ -65,29 +67,29 @@
 
 - (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(FindSettings *)settings {
     if ([obj isKindOfClass:[NSString class]]) {
-        if ([name isEqualToString:@"path"]) {
-            [settings addPath:(NSString*)obj];
-        } else if (self.argActionDict[name]) {
-            void(^block)(NSObject *, FindSettings *) = self.argActionDict[name];
-            block(obj, settings);
+        NSString *s = (NSString *)obj;
+        if (self.stringActionDict[name]) {
+            void(^block)(NSString *, FindSettings *) = self.stringActionDict[name];
+            block(s, settings);
         }
     } else if ([obj isKindOfClass:[NSNumber class]]) {
         NSNumber *num = (NSNumber *)obj;
-        if (self.argActionDict[name]) {
-            void(^block)(NSString* s, FindSettings* ss) = self.argActionDict[name];
-            block([num description], settings);
-        } else if (self.boolFlagActionDict[name]) {
+        if (self.boolActionDict[name]) {
             BOOL b = [num boolValue];
-            void(^block)(BOOL, FindSettings *) = self.boolFlagActionDict[name];
+            void(^block)(BOOL, FindSettings *) = self.boolActionDict[name];
             block(b, settings);
+        } else if (self.integerActionDict[name]) {
+            NSInteger i = [num integerValue];
+            void(^block)(BOOL, FindSettings *) = self.integerActionDict[name];
+            block(i, settings);
+        } else if (self.stringActionDict[name]) {
+            void(^block)(NSString* s, FindSettings* ss) = self.stringActionDict[name];
+            block([num description], settings);
         }
     } else if ([obj isKindOfClass:[NSArray class]]) {
-        if (self.argActionDict[name]) {
-            void(^block)(NSObject *, FindSettings *) = self.argActionDict[name];
-            NSArray *arr = (NSArray *)obj;
-            for (NSObject *o in arr) {
-                block([o description], settings);
-            }
+        NSArray *arr = (NSArray *)obj;
+        for (NSObject *o in arr) {
+            [self applySetting:name obj:o settings:settings];
         }
     }
 }
@@ -132,79 +134,9 @@
     return [NSDictionary dictionaryWithDictionary:longArgDict];
 }
 
-typedef void (^ArgActionBlockType)(NSString*, FindSettings*);
+typedef void (^BoolActionBlockType)(BOOL, FindSettings*);
 
-- (NSDictionary<NSString*,ArgActionBlockType>*) getArgActionDict {
-    return @{
-        @"in-archiveext" : ^void (NSString* s, FindSettings *ss) {
-            [ss addInArchiveExtension:s];
-        },
-        @"in-archivefilepattern" : ^void (NSString* s, FindSettings *ss) {
-            [ss.inArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-        },
-        @"in-dirpattern" : ^void (NSString* s, FindSettings *ss) {
-            [ss.inDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
-        },
-        @"in-ext" : ^void (NSString* s, FindSettings *ss) {
-            [ss addInExtension:s];
-        },
-        @"in-filepattern" : ^void (NSString* s, FindSettings *ss) {
-            [ss.inFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-        },
-        @"in-filetype" : ^void (NSString* s, FindSettings *ss) {
-            [ss addInFileType:s];
-        },
-        @"maxdepth" : ^void (NSString* s, FindSettings *ss) {
-            [ss setMaxDepthFromString:s];
-        },
-        @"maxlastmod" : ^void (NSString* s, FindSettings *ss) {
-            [ss setMaxLastModFromString:s];
-        },
-        @"maxsize" : ^void (NSString* s, FindSettings *ss) {
-            [ss setMaxSizeFromString:s];
-        },
-        @"mindepth" : ^void (NSString* s, FindSettings *ss) {
-            [ss setMinDepthFromString:s];
-        },
-        @"minlastmod" : ^void (NSString* s, FindSettings *ss) {
-            [ss setMinLastModFromString:s];
-        },
-        @"minsize" : ^void (NSString* s, FindSettings *ss) {
-            [ss setMinSizeFromString:s];
-        },
-        @"out-archiveext" : ^void (NSString* s, FindSettings *ss) {
-            [ss addOutArchiveExtension:s];
-        },
-        @"out-archivefilepattern" : ^void (NSString* s, FindSettings *ss) {
-            [ss.outArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-        },
-        @"out-dirpattern" : ^void (NSString* s, FindSettings *ss) {
-            [ss.outDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
-        },
-        @"out-ext" : ^void (NSString* s, FindSettings *ss) {
-            [ss addOutExtension:s];
-        },
-        @"out-filepattern" : ^void (NSString* s, FindSettings *ss) {
-            [ss.outFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
-        },
-        @"out-filetype" : ^void (NSString* s, FindSettings *ss) {
-            [ss addOutFileType:s];
-        },
-        @"path" : ^void (NSString* s, FindSettings *ss) {
-            [ss.paths addObject:s];
-        },
-        @"sort-by" : ^void (NSString* s, FindSettings *ss) {
-            [ss setSortByFromName:s];
-        },
-        @"settings-file" : ^void (NSString* s, FindSettings *ss) {
-            [self settingsFromFile:s settings:ss];
-        }
-    };
-}
-
-typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
-
-- (NSDictionary<NSString*,BoolFlagActionBlockType>*) getBoolFlagActionDict {
+- (NSDictionary<NSString*,BoolActionBlockType>*) getBoolActionDict {
     return @{
         @"archivesonly" : [^void (BOOL b, FindSettings *ss) {
             ss.archivesOnly = b;
@@ -232,7 +164,73 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
         @"sort-casesensitive" : [^void (BOOL b, FindSettings *ss) { ss.sortCaseInsensitive = !b; } copy],
         @"sort-descending" : [^void (BOOL b, FindSettings *ss) { ss.sortDescending = b; } copy],
         @"verbose" : [^void (BOOL b, FindSettings *ss) { ss.verbose = b; } copy],
-        @"version" : [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy],
+        @"version" : [^void (BOOL b, FindSettings *ss) { ss.printVersion = b; } copy]
+    };
+}
+
+typedef void (^StringActionBlockType)(NSString*, FindSettings*);
+
+- (NSDictionary<NSString*,StringActionBlockType>*) getStringActionDict {
+    return @{
+        @"in-archiveext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addInArchiveExtension:s];
+        },
+        @"in-archivefilepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.inArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-dirpattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.inDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-ext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addInExtension:s];
+        },
+        @"in-filepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.inFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"in-filetype" : ^void (NSString* s, FindSettings *ss) {
+            [ss addInFileType:s];
+        },
+        @"maxlastmod" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMaxLastModFromString:s];
+        },
+        @"minlastmod" : ^void (NSString* s, FindSettings *ss) {
+            [ss setMinLastModFromString:s];
+        },
+        @"out-archiveext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addOutArchiveExtension:s];
+        },
+        @"out-archivefilepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.outArchiveFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-dirpattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.outDirPatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-ext" : ^void (NSString* s, FindSettings *ss) {
+            [ss addOutExtension:s];
+        },
+        @"out-filepattern" : ^void (NSString* s, FindSettings *ss) {
+            [ss.outFilePatterns addObject:[[Regex alloc] initWithPattern:s]];
+        },
+        @"out-filetype" : ^void (NSString* s, FindSettings *ss) {
+            [ss addOutFileType:s];
+        },
+        @"path" : ^void (NSString* s, FindSettings *ss) {
+            [ss addPath:s];
+        },
+        @"sort-by" : ^void (NSString* s, FindSettings *ss) {
+            [ss setSortByFromName:s];
+        }
+    };
+}
+
+typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
+
+- (NSDictionary<NSString*,IntegerActionBlockType>*) getIntegerActionDict {
+    return @{
+        @"maxdepth" : [^void (NSInteger i, FindSettings *ss) { ss.maxDepth = i; } copy],
+        @"maxsize" : [^void (NSInteger i, FindSettings *ss) { ss.maxSize = i; } copy],
+        @"mindepth" : [^void (NSInteger i, FindSettings *ss) { ss.minDepth = i; } copy],
+        @"minsize" : [^void (NSInteger i, FindSettings *ss) { ss.minSize = i; } copy]
     };
 }
 
@@ -251,33 +249,37 @@ typedef void (^BoolFlagActionBlockType)(BOOL, FindSettings*);
             if (self.longArgDict[arg]) {
                 //logMsg([NSString stringWithFormat:@"Option in longArgDict: %@", arg]);
                 NSString *longArg = self.longArgDict[arg];
-                if (self.argActionDict[longArg] || [longArg isEqualToString:@"settings-file"]) {
+                if (self.boolActionDict[longArg]) {
+                    void(^block)(BOOL, FindSettings *) = self.boolActionDict[longArg];
+                    block(true, settings);
+                } else {
+                    NSString *argVal = @"";
                     if ([args count] > i+1) {
-                        NSString *secondArg = args[i+1];
-                        if (self.argActionDict[longArg]) {
-                            void(^block)(NSString *, FindSettings *) = self.argActionDict[longArg];
-                            block(secondArg, settings);
-                        } else {
-                            [self settingsFromFile:secondArg settings:settings];
-                        }
+                        argVal = args[i+1];
                         i++;
                     } else {
                         setError(error, [NSString stringWithFormat:@"Missing argument for option %@", arg]);
                         return nil;
                     }
-                } else if (self.boolFlagActionDict[longArg]) {
-                    void(^block)(BOOL, FindSettings *) = self.boolFlagActionDict[longArg];
-                    block(true, settings);
-                } else {
-                    setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
-                    return nil;
+                    if (self.stringActionDict[longArg]) {
+                        void(^block)(NSString *, FindSettings *) = self.stringActionDict[longArg];
+                        block(argVal, settings);
+                    } else if (self.integerActionDict[longArg]) {
+                        void(^block)(NSInteger, FindSettings *) = self.integerActionDict[longArg];
+                        block([argVal intValue], settings);
+                    } else if ([longArg isEqualToString:@"settings-file"]) {
+                        [self settingsFromFile:argVal settings:settings];
+                    } else {
+                        setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
+                        return nil;
+                    }
                 }
             } else {
                 setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
                 return nil;
             }
         } else {
-            [settings.paths addObject:args[i]];
+            [settings addPath:args[i]];
         }
         i++;
     }
