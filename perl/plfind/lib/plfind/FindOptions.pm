@@ -22,94 +22,7 @@ use plfind::FileUtil;
 use plfind::FindOption;
 use plfind::FindSettings;
 
-my $arg_action_hash = {
-    'in-archiveext' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{in_archive_extensions});
-    },
-    'in-archivefilepattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_archive_file_patterns});
-    },
-    'in-dirpattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_dir_patterns});
-    },
-    'in-ext' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{in_extensions});
-    },
-    'in-filepattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{in_file_patterns});
-    },
-    'in-filetype' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_file_types($s, $settings->{in_file_types});
-    },
-    'maxdepth' => sub {
-        my ($s, $settings) = @_;
-        $settings->{max_depth} = int($s);
-    },
-    'maxlastmod' => sub {
-        my ($s, $settings) = @_;
-        $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
-    },
-    'maxsize' => sub {
-        my ($s, $settings) = @_;
-        $settings->{max_size} = int($s);
-    },
-    'mindepth' => sub {
-        my ($s, $settings) = @_;
-        $settings->{min_depth} = int($s);
-    },
-    'minlastmod' => sub {
-        my ($s, $settings) = @_;
-        $settings->{min_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
-    },
-    'minsize' => sub {
-        my ($s, $settings) = @_;
-        $settings->{min_size} = int($s);
-    },
-    'out-archiveext' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{out_archive_extensions});
-    },
-    'out-archivefilepattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_archive_patterns});
-    },
-    'out-dirpattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_dir_patterns});
-    },
-    'out-ext' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_exts($s, $settings->{out_extensions});
-    },
-    'out-filepattern' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_patterns($s, $settings->{out_file_patterns});
-    },
-    'out-filetype' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_file_types($s, $settings->{out_file_types});
-    },
-    'path' => sub {
-        my ($s, $settings) = @_;
-        $settings->add_path($s);
-    },
-    'settings-file' => sub {
-        my ($s, $settings) = @_;
-        settings_from_file(file($s), $settings);
-    },
-    'sort-by' => sub {
-        my ($s, $settings) = @_;
-        $settings->set_sort_by($s);
-    },
-};
-
-my $bool_flag_action_hash = {
+my $bool_action_hash = {
     'archivesonly' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('archives_only', $bool);
@@ -196,6 +109,96 @@ my $bool_flag_action_hash = {
     }
 };
 
+my $str_action_hash = {
+    'in-archiveext' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_exts($s, $settings->{in_archive_extensions});
+    },
+    'in-archivefilepattern' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_patterns($s, $settings->{in_archive_file_patterns});
+    },
+    'in-dirpattern' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_patterns($s, $settings->{in_dir_patterns});
+    },
+    'in-ext' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_exts($s, $settings->{in_extensions});
+    },
+    'in-filepattern' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_patterns($s, $settings->{in_file_patterns});
+    },
+    'in-filetype' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_file_types($s, $settings->{in_file_types});
+    },
+    'maxlastmod' => sub {
+        my ($s, $settings) = @_;
+        $settings->{max_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
+    },
+    'minlastmod' => sub {
+        my ($s, $settings) = @_;
+        $settings->{min_last_mod} = DateTime::Format::DateParse->parse_datetime($s);
+    },
+    'out-archiveext' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_exts($s, $settings->{out_archive_extensions});
+    },
+    'out-archivefilepattern' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_patterns($s, $settings->{out_archive_patterns});
+    },
+    'out-dirpattern' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_patterns($s, $settings->{out_dir_patterns});
+    },
+    'out-ext' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_exts($s, $settings->{out_extensions});
+    },
+    'out-filepattern' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_patterns($s, $settings->{out_file_patterns});
+    },
+    'out-filetype' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_file_types($s, $settings->{out_file_types});
+    },
+    'path' => sub {
+        my ($s, $settings) = @_;
+        $settings->add_path($s);
+    },
+    'settings-file' => sub {
+        my ($s, $settings) = @_;
+        settings_from_file(file($s), $settings);
+    },
+    'sort-by' => sub {
+        my ($s, $settings) = @_;
+        $settings->set_sort_by($s);
+    },
+};
+
+my $int_action_hash = {
+    'maxdepth' => sub {
+        my ($i, $settings) = @_;
+        $settings->{max_depth} = $i;
+    },
+    'maxsize' => sub {
+        my ($i, $settings) = @_;
+        $settings->{max_size} = $i;
+    },
+    'mindepth' => sub {
+        my ($i, $settings) = @_;
+        $settings->{min_depth} = $i;
+    },
+    'minsize' => sub {
+        my ($i, $settings) = @_;
+        $settings->{min_size} = $i;
+    },
+};
+
 sub new {
     my $class = shift;
     my $self = {
@@ -213,13 +216,7 @@ sub set_options_from_json {
         my $short = $find_option->{short};
         my $long = $find_option->{long};
         my $desc = $find_option->{desc};
-        my $func = sub {};
-        if (exists $arg_action_hash->{$long}) {
-            $func = $arg_action_hash->{$long};
-        } elsif (exists $bool_flag_action_hash->{$long}) {
-            $func = $bool_flag_action_hash->{$long};
-        }
-        my $opt = plfind::FindOption->new($short, $long, $desc, $func);
+        my $opt = plfind::FindOption->new($short, $long, $desc);
         $options_hash->{$long} = $opt;
         if (defined $short) {
             $options_hash->{$short} = $options_hash->{$long};
@@ -247,10 +244,12 @@ sub __from_json {
     my $json_hash = decode_json $json;
     my @opt_names = keys %{$json_hash};
     foreach my $o (@opt_names) {
-        if (exists $arg_action_hash->{$o}) {
-            &{$arg_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif (exists $bool_flag_action_hash->{$o}) {
-            &{$bool_flag_action_hash->{$o}}($json_hash->{$o}, $settings);
+        if (exists $bool_action_hash->{$o}) {
+            &{$bool_action_hash->{$o}}($json_hash->{$o}, $settings);
+        } elsif (exists $str_action_hash->{$o}) {
+            &{$str_action_hash->{$o}}($json_hash->{$o}, $settings);
+        } elsif (exists $int_action_hash->{$o}) {
+            &{$int_action_hash->{$o}}($json_hash->{$o}, $settings);
         } else {
             push(@{$errs}, 'Invalid option: ' . $o);
         }
@@ -277,15 +276,19 @@ sub settings_from_args {
             if (exists $self->{options}->{$arg}) {
                 my $opt = $self->{options}->{$arg};
                 my $long = $opt->{long_arg};
-                if (exists $arg_action_hash->{$long}) {
+                if (exists $bool_action_hash->{$long}) {
+                    &{$bool_action_hash->{$long}}(1, $settings);
+                } elsif (exists $str_action_hash->{$long} || exists $int_action_hash->{$long}) {
                     if (scalar @{$args}) {
                         my $val = shift @{$args};
-                        &{$arg_action_hash->{$long}}($val, $settings);
+                        if (exists $str_action_hash->{$long}) {
+                            &{$str_action_hash->{$long}}($val, $settings);
+                        } else {
+                            &{$int_action_hash->{$long}}(int($val), $settings);
+                        }
                     } else {
                         push(@errs, "Missing value for $arg");
                     }
-                } elsif (exists $bool_flag_action_hash->{$long}) {
-                    &{$bool_flag_action_hash->{$long}}(1, $settings);
                 }
             } else {
                 push(@errs, "Invalid option: $arg");
