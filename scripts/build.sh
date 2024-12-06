@@ -1559,7 +1559,7 @@ build_rbfind () {
     fi
 
     BUNDLE_VERSION="$(bundle version)"
-    log "$BUNDLE_VERSION"
+    log "bundler version: $BUNDLE_VERSION"
 
     RESOURCES_PATH="$RBFIND_PATH/data"
     TEST_RESOURCES_PATH="$RBFIND_PATH/test/fixtures"
@@ -1575,8 +1575,37 @@ build_rbfind () {
     # TODO: figure out how to install dependencies without installing rbfind (which is what bundler does)
     cd "$RBFIND_PATH"
 
+    log "Building rbsearch"
     log "bundle install"
     bundle install
+
+    # check for success/failure
+    if [ "$?" -ne 0 ]
+    then
+        log_error "bundle install failed"
+        FAILED_BUILDS+=("rbfind")
+        cd -
+        return
+    fi
+
+    # Build the gem
+    log "gem build rbfind.gemspec"
+    gem build rbfind.gemspec
+
+    # check for success/failure
+    if [ "$?" -eq 0 ]
+    then
+        log "Build succeeded"
+    else
+        log_error "Build failed"
+        FAILED_BUILDS+=("rbfind")
+        cd -
+        return
+    fi
+
+    # TODO: install the gem?
+    log "gem install rbfind-0.1.0.gem"
+    gem install rbfind-0.1.0.gem
 
     # add to bin
     add_to_bin "$RBFIND_PATH/bin/rbfind.sh"
@@ -2125,7 +2154,7 @@ do
         php)
             time build_phpfind
             ;;
-        ps1 | powershell)
+        ps1 | powershell | pwsh)
             time build_ps1find
             ;;
         py | python)

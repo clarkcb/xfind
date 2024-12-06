@@ -1714,15 +1714,16 @@ function BuildRbFind
     }
     Log("ruby version: $rubyVersion")
 
-    # copy the shared config json file to the local config location
-    $configFilePath = Join-Path $xfindSharedPath 'config.json'
-    $configPath = Join-Path $rbFindPath 'data'
-    if (-not (Test-Path $configPath))
+    # ensure bundler is installed
+    if (-not (Get-Command 'bundle' -ErrorAction 'SilentlyContinue'))
     {
-        New-Item -ItemType directory -Path $configPath
+        PrintError('You need to install bundler')
+        $global:failedBuilds += 'rbfind'
+        return
     }
-    Log("Copy-Item $configFilePath -Destination $configPath")
-    Copy-Item $configFilePath -Destination $configPath
+
+    $bundlerVersion = bundle version
+    Log("bundler version: $bundlerVersion")
 
     # copy the shared json files to the local resource location
     $resourcesPath = Join-Path $rbFindPath 'data'
@@ -1732,12 +1733,31 @@ function BuildRbFind
     }
     CopyJsonResources($resourcesPath)
 
+    # copy the shared test files to the local test resource location
+    $testResourcesPath = Join-Path $rbFindPath 'test' 'fixtures'
+    if (-not (Test-Path $testResourcesPath))
+    {
+        New-Item -ItemType directory -Path $testResourcesPath
+    }
+    CopyTestResources($testResourcesPath)
+
     $oldPwd = Get-Location
     Set-Location $rbFindPath
 
     Log('Building rbfind')
     Log('bundle install')
     bundle install
+
+    if ($LASTEXITCODE -ne 0)
+    {
+        PrintError('bundle install failed')
+        $global:failedBuilds += 'rbfind'
+        Set-Location $oldPwd
+        return
+    }
+
+    Log('gem build rbfind.gemspec')
+    gem build rbfind.gemspec
 
     if ($LASTEXITCODE -eq 0)
     {
@@ -1750,6 +1770,9 @@ function BuildRbFind
         Set-Location $oldPwd
         return
     }
+
+    Log('gem install rbfind-0.1.0.gem')
+    gem install rbfind-0.1.0.gem
 
     # add to bin
     $rbFindExe = Join-Path $rbFindPath 'bin' 'rbfind.ps1'
