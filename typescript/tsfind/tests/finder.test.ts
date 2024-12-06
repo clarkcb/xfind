@@ -323,7 +323,7 @@ describe('testing finder', () => {
      *************************************************************/
     it('test_default_no_symlinks', () => {
         let settings = new FindSettings();
-        let binPath = path.join(config.XFINDPATH, 'bin');
+        let binPath = path.join(config.XFIND_PATH, 'bin');
         settings.paths.push(binPath);
         const finder = new Finder(settings);
         finder.find().then(fileResults => {
@@ -333,7 +333,7 @@ describe('testing finder', () => {
 
     it('test_follow_symlinks', () => {
         let settings = new FindSettings();
-        let binPath = path.join(config.XFINDPATH, 'bin');
+        let binPath = path.join(config.XFIND_PATH, 'bin');
         settings.paths.push(binPath);
         settings.followSymlinks = true;
         const finder = new Finder(settings);
@@ -344,7 +344,7 @@ describe('testing finder', () => {
 
     it('test_no_follow_symlinks', () => {
         let settings = new FindSettings();
-        let binPath = path.join(config.XFINDPATH, 'bin');
+        let binPath = path.join(config.XFIND_PATH, 'bin');
         settings.paths.push(binPath);
         settings.followSymlinks = false;
         const finder = new Finder(settings);

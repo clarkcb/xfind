@@ -14,75 +14,22 @@ import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
 import {SortUtil} from "./sortutil";
 
-interface StringOptionMap {
-    [key: string]: FindOption
-}
-
 interface StringActionMap {
     [key: string]: any
 }
 
 export class FindOptions {
-    // the list of FindOption objects (populated by setOptionsFromXml)
     options: FindOption[];
     argNameMap: {[index: string]:string};
-    argMap: StringOptionMap;
-    flagMap: StringOptionMap;
-    argActionMap: StringActionMap;
-    boolFlagActionMap: StringActionMap;
+    boolActionMap: StringActionMap;
+    stringActionMap: StringActionMap;
+    intActionMap: StringActionMap;
 
     constructor() {
         this.options = [];
         this.argNameMap = {};
-        this.argMap = {};
-        this.flagMap = {};
 
-        this.argActionMap = {
-            'in-archiveext':
-                (x: string, settings: FindSettings) => { settings.addInArchiveExtensions(x); },
-            'in-archivefilepattern':
-                (x: string, settings: FindSettings) => { settings.addInArchiveFilePatterns(x); },
-            'in-dirpattern':
-                (x: string, settings: FindSettings) => { settings.addInDirPatterns(x); },
-            'in-ext':
-                (x: string, settings: FindSettings) => { settings.addInExtensions(x); },
-            'in-filepattern':
-                (x: string, settings: FindSettings) => { settings.addInFilePatterns(x); },
-            'in-filetype':
-                (x: string, settings: FindSettings) => { settings.addInFileTypes(x); },
-            'maxdepth':
-                (x: string, settings: FindSettings) => { settings.maxDepth = parseInt(x, 10); },
-            'maxlastmod':
-                (x: string, settings: FindSettings) => { settings.maxLastModFromString(x); },
-            'maxsize':
-                (x: string, settings: FindSettings) => { settings.maxSize = parseInt(x, 10); },
-            'mindepth':
-                (x: string, settings: FindSettings) => { settings.minDepth = parseInt(x, 10); },
-            'minlastmod':
-                (x: string, settings: FindSettings) => { settings.minLastModFromString(x); },
-            'minsize':
-                (x: string, settings: FindSettings) => { settings.minSize = parseInt(x, 10); },
-            'out-dirpattern':
-                (x: string, settings: FindSettings) => { settings.addOutDirPatterns(x); },
-            'out-archiveext':
-                (x: string, settings: FindSettings) => { settings.addOutArchiveExtensions(x); },
-            'out-archivefilepattern':
-                (x: string, settings: FindSettings) => { settings.addOutArchiveFilePatterns(x); },
-            'out-ext':
-                (x: string, settings: FindSettings) => { settings.addOutExtensions(x); },
-            'out-filepattern':
-                (x: string, settings: FindSettings) => { settings.addOutFilePatterns(x); },
-            'out-filetype':
-                (x: string, settings: FindSettings) => { settings.addOutFileTypes(x); },
-            'path':
-                (x: string, settings: FindSettings) => { settings.paths.push(x); },
-            'settings-file':
-                (x: string, settings: FindSettings) => { this.settingsFromFile(x, settings); },
-            'sort-by':
-                (x: string, settings: FindSettings) => { settings.sortBy = SortUtil.nameToSortBy(x); }
-        };
-
-        this.boolFlagActionMap = {
+        this.boolActionMap = {
             'archivesonly':
                 (b: boolean, settings: FindSettings) => { settings.archivesOnly = b; },
             'debug':
@@ -127,6 +74,54 @@ export class FindOptions {
                 (b: boolean, settings: FindSettings) => { settings.printVersion = b; }
         };
 
+        this.stringActionMap = {
+            'in-archiveext':
+                (s: string, settings: FindSettings) => { settings.addInArchiveExtensions(s); },
+            'in-archivefilepattern':
+                (s: string, settings: FindSettings) => { settings.addInArchiveFilePatterns(s); },
+            'in-dirpattern':
+                (s: string, settings: FindSettings) => { settings.addInDirPatterns(s); },
+            'in-ext':
+                (s: string, settings: FindSettings) => { settings.addInExtensions(s); },
+            'in-filepattern':
+                (s: string, settings: FindSettings) => { settings.addInFilePatterns(s); },
+            'in-filetype':
+                (s: string, settings: FindSettings) => { settings.addInFileTypes(s); },
+            'maxlastmod':
+                (s: string, settings: FindSettings) => { settings.maxLastModFromString(s); },
+            'minlastmod':
+                (s: string, settings: FindSettings) => { settings.minLastModFromString(s); },
+            'out-dirpattern':
+                (s: string, settings: FindSettings) => { settings.addOutDirPatterns(s); },
+            'out-archiveext':
+                (s: string, settings: FindSettings) => { settings.addOutArchiveExtensions(s); },
+            'out-archivefilepattern':
+                (s: string, settings: FindSettings) => { settings.addOutArchiveFilePatterns(s); },
+            'out-ext':
+                (s: string, settings: FindSettings) => { settings.addOutExtensions(s); },
+            'out-filepattern':
+                (s: string, settings: FindSettings) => { settings.addOutFilePatterns(s); },
+            'out-filetype':
+                (s: string, settings: FindSettings) => { settings.addOutFileTypes(s); },
+            'path':
+                (s: string, settings: FindSettings) => { settings.paths.push(s); },
+            'settings-file':
+                (s: string, settings: FindSettings) => { this.settingsFromFile(s, settings); },
+            'sort-by':
+                (s: string, settings: FindSettings) => { settings.sortBy = SortUtil.nameToSortBy(s); }
+        };
+
+        this.intActionMap = {
+            'maxdepth':
+                (i: number, settings: FindSettings) => { settings.maxDepth = i; },
+            'maxsize':
+                (i: number, settings: FindSettings) => { settings.maxSize = i; },
+            'mindepth':
+                (i: number, settings: FindSettings) => { settings.minDepth = i; },
+            'minsize':
+                (i: number, settings: FindSettings) => { settings.minSize = i; },
+        };
+
         this.setOptionsFromJsonFile();
     }
 
@@ -138,28 +133,21 @@ export class FindOptions {
 
     // setOptionsFromJsonFile
     private setOptionsFromJsonFile(): void {
-        const json = FileUtil.getFileContentsSync(config.FINDOPTIONSJSONPATH);
+        const json = FileUtil.getFileContentsSync(config.FIND_OPTIONS_JSON_PATH);
         const obj = JSON.parse(json);
         if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj['findoptions'])) {
-            obj['findoptions'].forEach(so => {
-                const longArg = so['long'];
+            obj['findoptions'].forEach(fo => {
+                const longArg = fo['long'];
                 let shortArg = '';
-                if (Object.prototype.hasOwnProperty.call(so, 'short'))
-                    shortArg = so['short'];
-                const desc = so['desc'];
+                if (Object.prototype.hasOwnProperty.call(fo, 'short'))
+                    shortArg = fo['short'];
+                const desc = fo['desc'];
                 this.argNameMap[longArg] = longArg;
                 if (shortArg) this.argNameMap[shortArg] = longArg;
                 const option = new FindOption(shortArg, longArg, desc);
                 this.options.push(option);
-                if (this.argActionMap[longArg]) {
-                    this.argMap[longArg] = option;
-                    if (shortArg) this.argMap[shortArg] = option;
-                } else if (this.boolFlagActionMap[longArg]) {
-                    this.flagMap[longArg] = option;
-                    if (shortArg) this.flagMap[shortArg] = option;
-                }
             });
-        } else throw new Error("Invalid findoptions file: " + config.FINDOPTIONSJSONPATH);
+        } else throw new Error(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
         this.options.sort(FindOptions.optCmp);
     }
 
@@ -178,18 +166,18 @@ export class FindOptions {
         for (const k in obj) {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
-                if (this.argMap[k]) {
+                if (this.boolActionMap[k]) {
+                    this.boolActionMap[k](obj[k], settings);
+                } else if (this.stringActionMap[k]) {
                     if (obj[k]) {
-                        err = this.argActionMap[k](obj[k], settings);
+                        err = this.stringActionMap[k](obj[k], settings);
                     } else {
-                        err = new Error("Missing argument for option "+k);
+                        err = new Error(`Missing argument for option ${k}`);
                     }
-                } else if (this.boolFlagActionMap[k]) {
-                    this.boolFlagActionMap[k](obj[k], settings);
-                } else if (k === 'path') {
-                    settings.paths.push(obj[k]);
+                } else if (this.intActionMap[k]) {
+                    this.intActionMap[k](obj[k], settings);
                 } else {
-                    err = new Error("Invalid option: "+k);
+                    err = new Error(`Invalid option: ${k}`);
                 }
             }
         }
@@ -211,16 +199,20 @@ export class FindOptions {
                     arg = arg.substring(1);
                 }
                 const longArg = this.argNameMap[arg];
-                if (this.argMap[longArg]) {
+                if (this.boolActionMap[longArg]) {
+                    this.boolActionMap[longArg](true, settings);
+                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg]) {
                     if (args.length > 0) {
-                        err = this.argActionMap[longArg](args.shift(), settings);
+                        if (this.stringActionMap[longArg]) {
+                            this.stringActionMap[longArg](args.shift(), settings);
+                        } else {
+                            this.intActionMap[longArg](parseInt(args.shift()!, 10), settings);
+                        }
                     } else {
-                        err = new Error("Missing argument for option " + arg);
+                        err = new Error(`Missing argument for option ${arg}`);
                     }
-                } else if (this.flagMap[longArg]) {
-                    this.boolFlagActionMap[longArg](true, settings);
                 } else {
-                    err = new Error("Invalid option: " + arg);
+                    err = new Error(`Invalid option: ${arg}`);
                 }
             } else {
                 settings.paths.push(arg);

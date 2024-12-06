@@ -23,7 +23,7 @@ export class FileTypes {
     private static getFileTypeMaps(): FileTypeMap[] {
         const fileTypeExtMap: FileTypeMap = {};
         const fileTypeNameMap: FileTypeMap = {};
-        const json = FileUtil.getFileContentsSync(config.FILETYPESJSONPATH);
+        const json = FileUtil.getFileContentsSync(config.FILE_TYPES_JSON_PATH);
         const obj = JSON.parse(json);
         if (Object.prototype.hasOwnProperty.call(obj, 'filetypes') && Array.isArray(obj['filetypes'])) {
             obj['filetypes'].forEach(ft => {
@@ -33,7 +33,7 @@ export class FileTypes {
                 const names: string[] = ft['names'];
                 fileTypeNameMap[typename] = common.setFromArray(names);
             });
-        } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
+        } else throw new Error("Invalid filetypes file: " + config.FILE_TYPES_JSON_PATH);
 
         fileTypeExtMap.text = fileTypeExtMap.text.concat(fileTypeExtMap.code, fileTypeExtMap.xml);
         fileTypeNameMap.text = fileTypeNameMap.text.concat(fileTypeNameMap.code, fileTypeNameMap.xml);
