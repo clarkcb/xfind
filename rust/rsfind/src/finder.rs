@@ -352,7 +352,7 @@ impl Finder {
         }
     }
 
-    fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i64, max_depth: i64, current_depth: i64) -> Result<Vec<FileResult>, FindError> {
+    fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i32, max_depth: i32, current_depth: i32) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
         if max_depth > -1 && current_depth > max_depth {
             return Ok(file_results);

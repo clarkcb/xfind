@@ -1,5 +1,6 @@
 use core::slice::Iter;
 use std::collections::HashMap;
+use std::convert::TryFrom;
 use std::fs;
 
 use serde::{Deserialize, Serialize};
@@ -19,14 +20,18 @@ pub struct FindOption {
     desc: String,
 }
 
-type ArgAction = Box<dyn Fn(&str, &mut FindSettings) -> Result<(), FindError>>;
-type FlagAction = Box<dyn Fn(bool, &mut FindSettings) -> Result<(), FindError>>;
+type BoolAction = Box<dyn Fn(bool, &mut FindSettings) -> Result<(), FindError>>;
+type StringAction = Box<dyn Fn(&str, &mut FindSettings) -> Result<(), FindError>>;
+type IntAction = Box<dyn Fn(i32, &mut FindSettings) -> Result<(), FindError>>;
+type LongAction = Box<dyn Fn(u64, &mut FindSettings) -> Result<(), FindError>>;
 
 pub struct FindOptions {
     pub find_options: Vec<FindOption>,
     pub version: String,
-    pub arg_map: HashMap<String, ArgAction>,
-    pub flag_map: HashMap<String, FlagAction>,
+    pub bool_action_map: HashMap<String, BoolAction>,
+    pub string_action_map: HashMap<String, StringAction>,
+    pub int_action_map: HashMap<String, IntAction>,
+    pub long_action_map: HashMap<String, LongAction>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -48,8 +53,10 @@ impl FindOptions {
         Ok(FindOptions {
             find_options: jso.findoptions,
             version: config.version.clone(),
-            arg_map: get_arg_map(),
-            flag_map: get_flag_map(),
+            bool_action_map: get_bool_action_map(),
+            string_action_map: get_string_action_map(),
+            int_action_map: get_int_action_map(),
+            long_action_map: get_long_action_map(),
         })
     }
 
@@ -73,7 +80,6 @@ impl FindOptions {
 
     pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
         let mut settings = FindSettings::default();
-        settings.set_print_files(true); // default to true when running from main
         match serde_json::from_str(json_string) {
             Ok(value) => {
                 if let Err(error) = self.settings_from_value(&value, &mut settings) {
@@ -100,14 +106,33 @@ impl FindOptions {
                 }
             },
             Value::Bool(b) => {
-                if let Err(error) = self.apply_flag(name, *b, settings) {
+                if let Err(error) = self.apply_bool_arg(name, *b, settings) {
                     return Err(error);
                 }
             },
             Value::Number(n) => {
-                let s: String = format!("{}", n);
-                if let Err(error) = self.apply_arg(name, &s, settings) {
-                    return Err(error);
+                if self.int_action_map.contains_key(name) {
+                    let l = n.as_i64().unwrap();
+                    match i32::try_from(l) {
+                        Ok(i) => {
+                            if let Err(error) = self.apply_int_arg(name, i, settings) {
+                                return Err(error);
+                            }
+                        }
+                        Err(error) => return Err(FindError::new(&error.to_string())),
+                    }
+                } else if self.long_action_map.contains_key(name) {
+                    match n.as_u64() {
+                        Some(l) => {
+                            if let Err(error) = self.apply_long_arg(name, l, settings) {
+                                return Err(error);
+                            }
+
+                        }
+                        None => return Err(FindError::new(&format!("Invalid value for option {}", name)))
+                    }
+                } else {
+                    return Err(FindError::new(&format!("Unknown or invalid option {}", name)));
                 }
             },
             Value::Object(_) => {
@@ -116,7 +141,7 @@ impl FindOptions {
                 }
             },
             Value::String(s) => {
-                if let Err(error) = self.apply_arg(name, &s, settings) {
+                if let Err(error) = self.apply_string_arg(name, &s, settings) {
                     return Err(error);
                 }
             }
@@ -159,9 +184,9 @@ impl FindOptions {
             }
             match args.next() {
                 Some(next_arg) if next_arg.starts_with("-") => {
-                    let long_arg = next_arg.trim_start_matches('-');
-                    match long_map.get(long_arg) {
-                        Some(arg) if arg == "settings-file" => match args.next() {
+                    let arg = next_arg.trim_start_matches('-');
+                    match long_map.get(arg) {
+                        Some(long_arg) if long_arg == "settings-file" => match args.next() {
                             Some(arg_val) => match self.settings_from_file(&arg_val) {
                                 Ok(file_settings) => settings = file_settings,
                                 Err(error) => return Err(error),
@@ -172,21 +197,37 @@ impl FindOptions {
                                 ));
                             }
                         },
-                        Some(arg) if self.arg_map.contains_key(arg) => match args.next() {
+                        Some(long_arg) if self.bool_action_map.contains_key(long_arg) => {
+                            if let Err(error) = self.apply_bool_arg(long_arg, true, &mut settings) {
+                                return Err(error);
+                            }
+                        },
+                        Some(long_arg) => match args.next() {
                             Some(arg_val) => {
-                                if let Err(error) = self.apply_arg(arg, &arg_val, &mut settings) {
-                                    return Err(error);
+                                if self.string_action_map.contains_key(long_arg) {
+                                    if let Err(error) = self.apply_string_arg(long_arg, &arg_val, &mut settings) {
+                                        return Err(error);
+                                    }
+                                } else if self.int_action_map.contains_key(long_arg) {
+                                    let i = arg_val.parse::<i32>().unwrap_or(0);
+                                    if let Err(error) = self.apply_int_arg(long_arg, i, &mut settings) {
+                                        return Err(error);
+                                    }
+                                } else if self.long_action_map.contains_key(long_arg) {
+                                    let l = arg_val.parse::<u64>().unwrap_or(0);
+                                    if let Err(error) = self.apply_long_arg(long_arg, l, &mut settings) {
+                                        return Err(error);
+                                    }
+                                } else {
+                                    return Err(FindError::new(
+                                        format!("Invalid option: {}", &next_arg).as_str(),
+                                    ))
                                 }
                             }
                             None => {
                                 return Err(FindError::new(
                                     format!("Missing value for option {}", &next_arg).as_str(),
                                 ));
-                            }
-                        },
-                        Some(arg) if self.flag_map.contains_key(arg) => {
-                            if let Err(error) = self.apply_flag(arg, true, &mut settings) {
-                                return Err(error);
                             }
                         },
                         _ => {
@@ -196,9 +237,8 @@ impl FindOptions {
                         }
                     }
                 }
-                Some(nextarg) => {
-                    // settings.startpath = String::from(nextarg);
-                    if let Err(error) = self.apply_arg("path", &nextarg, &mut settings) {
+                Some(next_arg) => {
+                    if let Err(error) = self.apply_string_arg("path", &next_arg, &mut settings) {
                         return Err(error);
                     }
                 },
@@ -212,11 +252,11 @@ impl FindOptions {
     fn get_sort_opt_map(&self) -> HashMap<String, &FindOption> {
         let mut map = HashMap::with_capacity(self.find_options.len());
         for so in self.find_options.iter() {
-            let sortkey = match &so.short {
+            let sort_key = match &so.short {
                 Some(short) => String::from(format!("{}@{}", short.to_ascii_lowercase(), &so.long)),
                 None => String::from(&so.long),
             };
-            map.insert(sortkey, so);
+            map.insert(sort_key, so);
         }
         map
     }
@@ -225,9 +265,9 @@ impl FindOptions {
         let mut usage = String::from("\nUsage:\n rsfind [options] <path> [<path> ...]");
         usage.push_str("\n\nOptions:\n");
         let sort_opt_map = self.get_sort_opt_map();
-        let mut sortkeys: Vec<String> = Vec::with_capacity(self.find_options.len());
+        let mut sort_keys: Vec<String> = Vec::with_capacity(self.find_options.len());
         for key in sort_opt_map.keys() {
-            sortkeys.push(key.clone());
+            sort_keys.push(key.clone());
         }
         let mut maxlen: usize = 0;
         for so in self.find_options.iter() {
@@ -240,15 +280,15 @@ impl FindOptions {
             }
         }
 
-        sortkeys.sort_unstable();
-        for sortkey in sortkeys.iter() {
-            let so = sort_opt_map.get(sortkey).unwrap();
-            let optstring = match &so.short {
+        sort_keys.sort_unstable();
+        for sort_key in sort_keys.iter() {
+            let so = sort_opt_map.get(sort_key).unwrap();
+            let opt_string = match &so.short {
                 Some(short) => String::from(format!(" -{},--{}", short, &so.long)),
                 None => String::from(format!(" --{}", &so.long)),
             };
-            let optstring = format!("{:maxlen$}", optstring.as_str(), maxlen = maxlen + 1);
-            usage.push_str(optstring.as_str());
+            let opt_string = format!("{:maxlen$}", opt_string.as_str(), maxlen = maxlen + 1);
+            usage.push_str(opt_string.as_str());
             usage.push_str("  ");
             usage.push_str(so.desc.as_str());
             usage.push_str("\n");
@@ -265,13 +305,32 @@ impl FindOptions {
         log(format!("xfind version {}", self.version).as_str());
     }
 
-    fn apply_arg(
+    fn apply_bool_arg(
+        &self,
+        arg_name: &str,
+        b: bool,
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
+        match self.bool_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(b, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_string_arg(
         &self,
         arg_name: &str,
         s: &str,
         settings: &mut FindSettings,
     ) -> Result<(), FindError> {
-        return match self.arg_map.get(arg_name) {
+        match self.string_action_map.get(arg_name) {
             Some(arg_fn) => match arg_fn(&s, settings) {
                 Ok(_) => Ok(()),
                 Err(error) => Err(error),
@@ -284,14 +343,33 @@ impl FindOptions {
         }
     }
 
-    fn apply_flag(
+    fn apply_int_arg(
         &self,
         arg_name: &str,
-        b: bool,
+        i: i32,
         settings: &mut FindSettings,
     ) -> Result<(), FindError> {
-        return match self.flag_map.get(arg_name) {
-            Some(arg_fn) => match arg_fn(b, settings) {
+        match self.int_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(i, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_long_arg(
+        &self,
+        arg_name: &str,
+        l: u64,
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
+        match self.long_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(l, settings) {
                 Ok(_) => Ok(()),
                 Err(error) => Err(error),
             },
@@ -304,52 +382,135 @@ impl FindOptions {
     }
 }
 
-fn get_arg_map() -> HashMap<String, ArgAction> {
-    let mut arg_map: HashMap<String, ArgAction> = HashMap::with_capacity(20);
-    arg_map.insert(
+fn get_bool_action_map() -> HashMap<String, BoolAction> {
+    let mut bool_action_map: HashMap<String, BoolAction> = HashMap::with_capacity(21);
+    bool_action_map.insert(
+        "archivesonly".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_archives_only(b))),
+    );
+    bool_action_map.insert(
+        "debug".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_debug(b))),
+    );
+    bool_action_map.insert(
+        "excludearchives".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_archives(!b))),
+    );
+    bool_action_map.insert(
+        "excludehidden".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(!b))),
+    );
+    bool_action_map.insert(
+        "followsymlinks".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_follow_symlinks(b))),
+    );
+    bool_action_map.insert(
+        "help".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_usage(b))),
+    );
+    bool_action_map.insert(
+        "includearchives".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_archives(b))),
+    );
+    bool_action_map.insert(
+        "includehidden".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(b))),
+    );
+    bool_action_map.insert(
+        "nofollowsymlinks".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_follow_symlinks(!b))),
+    );
+    bool_action_map.insert(
+        "noprintdirs".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_dirs(!b))),
+    );
+    bool_action_map.insert(
+        "noprintfiles".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_files(!b))),
+    );
+    bool_action_map.insert(
+        "norecursive".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(!b))),
+    );
+    bool_action_map.insert(
+        "printdirs".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_dirs(b))),
+    );
+    bool_action_map.insert(
+        "printfiles".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_files(b))),
+    );
+    bool_action_map.insert(
+        "recursive".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(b))),
+    );
+    bool_action_map.insert(
+        "sort-ascending".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_descending(!b))),
+    );
+    bool_action_map.insert(
+        "sort-caseinsensitive".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_case_insensitive(b))),
+    );
+    bool_action_map.insert(
+        "sort-casesensitive".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_case_insensitive(!b))),
+    );
+    bool_action_map.insert(
+        "sort-descending".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_descending(b))),
+    );
+    bool_action_map.insert(
+        "verbose".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_verbose(b))),
+    );
+    bool_action_map.insert(
+        "version".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_version(b))),
+    );
+    bool_action_map
+}
+
+fn get_string_action_map() -> HashMap<String, StringAction> {
+    let mut string_action_map: HashMap<String, StringAction> = HashMap::with_capacity(16);
+    string_action_map.insert(
         "in-archiveext".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_archive_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-archivefilepattern".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_archive_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-dirpattern".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_dir_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-ext".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-filepattern".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_in_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "in-filetype".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             let file_type = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_in_file_type(file_type))
         }),
     );
-    arg_map.insert(
-        "maxdepth".to_string(),
-        Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.set_max_depth(s.parse::<i64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "maxlastmod".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             let res = timestamp_from_date_string(s);
@@ -364,19 +525,7 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             }
         }),
     );
-    arg_map.insert(
-        "maxsize".to_string(),
-        Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.set_max_size(s.parse::<u64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
-        "mindepth".to_string(),
-        Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.set_min_depth(s.parse::<i64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "minlastmod".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             let res = timestamp_from_date_string(s);
@@ -391,151 +540,90 @@ fn get_arg_map() -> HashMap<String, ArgAction> {
             }
         }),
     );
-    arg_map.insert(
-        "minsize".to_string(),
-        Box::new(|s: &str, settings: &mut FindSettings| {
-            Ok(settings.set_min_size(s.parse::<u64>().unwrap()))
-        }),
-    );
-    arg_map.insert(
+    string_action_map.insert(
         "out-archiveext".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_archive_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-archivefilepattern".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_archive_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-dirpattern".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_dir_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-ext".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_extension(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-filepattern".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_out_file_pattern(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "out-filetype".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             let file_type = FileTypes::file_type_for_name(&s.to_string());
             Ok(settings.add_out_file_type(file_type))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "path".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.add_path(s.to_string()))
         }),
     );
-    arg_map.insert(
+    string_action_map.insert(
         "sort-by".to_string(),
         Box::new(|s: &str, settings: &mut FindSettings| {
             Ok(settings.set_sort_by(sort_by_from_name(s)))
         }),
     );
-    arg_map
+    string_action_map
 }
 
-fn get_flag_map() -> HashMap<String, FlagAction> {
-    let mut flag_map: HashMap<String, FlagAction> = HashMap::with_capacity(17);
-    flag_map.insert(
-        "archivesonly".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_archives_only(b))),
+fn get_int_action_map() -> HashMap<String, IntAction> {
+    let mut int_action_map: HashMap<String, IntAction> = HashMap::with_capacity(2);
+    int_action_map.insert(
+        "maxdepth".to_string(),
+        Box::new(|i: i32, settings: &mut FindSettings| {
+            Ok(settings.set_max_depth(i))
+        }),
     );
-    flag_map.insert(
-        "debug".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_debug(b))),
+    int_action_map.insert(
+        "mindepth".to_string(),
+        Box::new(|i: i32, settings: &mut FindSettings| {
+            Ok(settings.set_min_depth(i))
+        }),
     );
-    flag_map.insert(
-        "excludearchives".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_archives(!b))),
+    int_action_map
+}
+
+fn get_long_action_map() -> HashMap<String, LongAction> {
+    let mut long_action_map: HashMap<String, LongAction> = HashMap::with_capacity(2);
+    long_action_map.insert(
+        "maxsize".to_string(),
+        Box::new(|l: u64, settings: &mut FindSettings| {
+            Ok(settings.set_max_size(l))
+        }),
     );
-    flag_map.insert(
-        "excludehidden".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(!b))),
+    long_action_map.insert(
+        "minsize".to_string(),
+        Box::new(|l: u64, settings: &mut FindSettings| {
+            Ok(settings.set_min_size(l))
+        }),
     );
-    flag_map.insert(
-        "followsymlinks".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_follow_symlinks(b))),
-    );
-    flag_map.insert(
-        "help".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_usage(b))),
-    );
-    flag_map.insert(
-        "includearchives".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_archives(b))),
-    );
-    flag_map.insert(
-        "includehidden".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(b))),
-    );
-    flag_map.insert(
-        "nofollowsymlinks".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_follow_symlinks(!b))),
-    );
-    flag_map.insert(
-        "noprintdirs".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_dirs(!b))),
-    );
-    flag_map.insert(
-        "noprintfiles".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_files(!b))),
-    );
-    flag_map.insert(
-        "norecursive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(!b))),
-    );
-    flag_map.insert(
-        "printdirs".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_dirs(b))),
-    );
-    flag_map.insert(
-        "printfiles".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_files(b))),
-    );
-    flag_map.insert(
-        "recursive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_recursive(b))),
-    );
-    flag_map.insert(
-        "sort-ascending".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_descending(!b))),
-    );
-    flag_map.insert(
-        "sort-caseinsensitive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_case_insensitive(b))),
-    );
-    flag_map.insert(
-        "sort-casesensitive".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_case_insensitive(!b))),
-    );
-    flag_map.insert(
-        "sort-descending".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_sort_descending(b))),
-    );
-    flag_map.insert(
-        "verbose".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_verbose(b))),
-    );
-    flag_map.insert(
-        "version".to_string(),
-        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_print_version(b))),
-    );
-    flag_map
+    long_action_map
 }
 
 #[cfg(test)]

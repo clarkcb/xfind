@@ -17,10 +17,10 @@ pub struct FindSettings {
     _in_file_types: Vec<filetypes::FileType>,
     _include_archives: bool,
     _include_hidden: bool,
-    _max_depth: i64,
+    _max_depth: i32,
     _max_last_mod: u64,
     _max_size: u64,
-    _min_depth: i64,
+    _min_depth: i32,
     _min_last_mod: u64,
     _min_size: u64,
     _out_archive_extensions: Vec<String>,
@@ -55,10 +55,10 @@ impl FindSettings {
             _in_file_types: Vec::new(),
             _include_archives: false,
             _include_hidden: false,
-            _max_depth: -1i64,
+            _max_depth: -1i32,
             _max_last_mod: 0u64,
             _max_size: 0u64,
-            _min_depth: -1i64,
+            _min_depth: -1i32,
             _min_last_mod: 0u64,
             _min_size: 0u64,
             _out_archive_extensions: Vec::new(),
@@ -174,11 +174,11 @@ impl FindSettings {
         self._include_hidden = b
     }
 
-    pub fn max_depth(&self) -> i64 {
+    pub fn max_depth(&self) -> i32 {
         self._max_depth
     }
 
-    pub fn set_max_depth(&mut self, m: i64) {
+    pub fn set_max_depth(&mut self, m: i32) {
         self._max_depth = m
     }
 
@@ -198,11 +198,11 @@ impl FindSettings {
         self._max_size = m
     }
 
-    pub fn min_depth(&self) -> i64 {
+    pub fn min_depth(&self) -> i32 {
         self._min_depth
     }
 
-    pub fn set_min_depth(&mut self, m: i64) {
+    pub fn set_min_depth(&mut self, m: i32) {
         self._min_depth = m
     }
 
