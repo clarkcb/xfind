@@ -12,58 +12,9 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define ARG_COUNT 21
-const size_t arg_count = ARG_COUNT;
-char **arg_names = (char *[]) {
-    "in-archiveext",
-    "in-archivefilepattern",
-    "in-dirpattern",
-    "in-ext",
-    "in-filepattern",
-    "in-filetype",
-    "maxdepth",
-    "maxlastmod",
-    "maxsize",
-    "mindepth",
-    "minlastmod",
-    "minsize",
-    "out-archiveext",
-    "out-archivefilepattern",
-    "out-dirpattern",
-    "out-ext",
-    "out-filepattern",
-    "out-filetype",
-    "path",
-    "settings-file",
-    "sort-by",
-};
-char **arg_abbrs = (char *[]) {
-    "",  // in-archiveext
-    "",  // in-archivefilepattern
-    "d", // in-dirpattern
-    "x", // in-ext
-    "f", // in-filepattern
-    "t", // in-filetype
-    "",  // maxdepth
-    "",  // maxlastmod
-    "",  // maxsize
-    "",  // mindepth
-    "",  // minlastmod
-    "",  // minsize
-    "",  // out-archiveext
-    "",  // out-archivefilepattern
-    "D", // out-dirpattern
-    "X", // out-ext
-    "F", // out-filepattern
-    "T", // out-filetype
-    "",  // path
-    "",  // settings-file
-    ""   // sort-by
-};
-
-#define FLAG_COUNT 21
-const size_t flag_count = FLAG_COUNT;
-char **flag_names = (char *[]) {
+#define BOOL_OPTION_COUNT 21
+const size_t bool_option_count = BOOL_OPTION_COUNT;
+char **bool_option_names = (char *[]) {
     "archivesonly",
     "debug",
     "excludearchives",
@@ -87,7 +38,7 @@ char **flag_names = (char *[]) {
     "version"
 };
 
-char **flag_abbrs = (char *[]) {
+char **bool_option_abbrs = (char *[]) {
     "a", // archivesonly
     "",  // debug
     "Z", // excludearchives
@@ -109,6 +60,69 @@ char **flag_abbrs = (char *[]) {
     "",  // sort-descending
     "v", // verbose
     "V"  // version
+};
+
+#define STRING_OPTION_COUNT 17
+const size_t string_option_count = STRING_OPTION_COUNT;
+char **string_option_names = (char *[]) {
+    "in-archiveext",
+    "in-archivefilepattern",
+    "in-dirpattern",
+    "in-ext",
+    "in-filepattern",
+    "in-filetype",
+    "maxlastmod",
+    "minlastmod",
+    "out-archiveext",
+    "out-archivefilepattern",
+    "out-dirpattern",
+    "out-ext",
+    "out-filepattern",
+    "out-filetype",
+    "path",
+    "settings-file",
+    "sort-by",
+};
+char **string_option_abbrs = (char *[]) {
+    "",  // in-archiveext
+    "",  // in-archivefilepattern
+    "d", // in-dirpattern
+    "x", // in-ext
+    "f", // in-filepattern
+    "t", // in-filetype
+    "",  // maxlastmod
+    "",  // minlastmod
+    "",  // out-archiveext
+    "",  // out-archivefilepattern
+    "D", // out-dirpattern
+    "X", // out-ext
+    "F", // out-filepattern
+    "T", // out-filetype
+    "",  // path
+    "",  // settings-file
+    ""   // sort-by
+};
+
+#define INT_OPTION_COUNT 2
+const size_t int_option_count = INT_OPTION_COUNT;
+char **int_option_names = (char *[]) {
+    "maxdepth",
+    "mindepth"
+};
+char **int_option_abbrs = (char *[]) {
+    "",  // maxdepth
+    ""   // mindepth
+};
+
+#define LONG_OPTION_COUNT 2
+const size_t long_option_count = LONG_OPTION_COUNT;
+char **long_option_names = (char *[]) {
+    "maxsize",
+    "minsize"
+};
+char **long_option_abbrs = (char *[]) {
+    "",  // maxsize
+    ""   // minsize
 };
 
 FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc)
@@ -250,122 +264,182 @@ error_t get_find_options(FindOptions *options)
     return err;
 }
 
-static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
+static error_t set_bool_setting(const int bool_idx, const bool bool_val, FindSettings *settings)
 {
-    switch (arg_idx) {
+    switch (bool_idx) {
+        case ARCHIVES_ONLY:
+            set_archives_only(settings, bool_val);
+            break;
+        case DEBUG:
+            set_debug(settings, bool_val);
+            break;
+        case EXCLUDE_ARCHIVES:
+            settings->include_archives = !bool_val;
+            break;
+        case EXCLUDE_HIDDEN:
+            settings->include_hidden = !bool_val;
+            break;
+        case FOLLOW_SYMLINKS:
+            settings->follow_symlinks = bool_val;
+            break;
+        case INCLUDE_ARCHIVES:
+            settings->include_archives = bool_val;
+            break;
+        case INCLUDE_HIDDEN:
+            settings->include_hidden = bool_val;
+            break;
+        case HELP:
+            settings->print_usage = bool_val;
+            break;
+        case NO_FOLLOW_SYMLINKS:
+            settings->follow_symlinks = !bool_val;
+            break;
+        case NO_PRINT_DIRS:
+            settings->print_dirs = !bool_val;
+            break;
+        case NO_PRINT_FILES:
+            settings->print_files = !bool_val;
+            break;
+        case NO_RECURSIVE:
+            settings->recursive = !bool_val;
+            break;
+        case PRINT_DIRS:
+            settings->print_dirs = bool_val;
+            break;
+        case PRINT_FILES:
+            settings->print_files = bool_val;
+            break;
+        case RECURSIVE:
+            settings->recursive = bool_val;
+            break;
+        case SORT_ASCENDING:
+            settings->sort_descending = !bool_val;
+            break;
+        case SORT_CASE_INSENSITIVE:
+            settings->sort_case_insensitive = bool_val;
+            break;
+        case SORT_CASE_SENSITIVE:
+            settings->sort_case_insensitive = !bool_val;
+            break;
+        case SORT_DESCENDING:
+            settings->sort_descending = bool_val;
+            break;
+        case VERBOSE:
+            settings->verbose = bool_val;
+            break;
+        case VERSION:
+            settings->print_version = bool_val;
+            break;
+        default:
+            return E_INVALID_OPTION;
+    }
+    return E_OK;
+}
+
+static error_t set_string_setting(int str_idx, char *str_val, FindSettings *settings)
+{
+    switch (str_idx) {
     case IN_ARCHIVE_EXTENSION:
         if (settings->in_archive_extensions == NULL)
-            settings->in_archive_extensions = new_string_node_from_char_split(',', arg_val);
+            settings->in_archive_extensions = new_string_node_from_char_split(',', str_val);
         else
-            add_char_split_to_string_node(',', arg_val, settings->in_archive_extensions);
+            add_char_split_to_string_node(',', str_val, settings->in_archive_extensions);
         break;
     case IN_ARCHIVE_FILE_PATTERN:
         if (settings->in_archive_file_patterns == NULL)
-            settings->in_archive_file_patterns = new_regex_node_from_string(arg_val);
+            settings->in_archive_file_patterns = new_regex_node_from_string(str_val);
         else
-            add_string_to_regex_node(arg_val, settings->in_archive_file_patterns);
+            add_string_to_regex_node(str_val, settings->in_archive_file_patterns);
         break;
     case IN_DIR_PATTERN:
         if (settings->in_dir_patterns == NULL)
-            settings->in_dir_patterns = new_regex_node_from_string(arg_val);
+            settings->in_dir_patterns = new_regex_node_from_string(str_val);
         else
-            add_string_to_regex_node(arg_val, settings->in_dir_patterns);
+            add_string_to_regex_node(str_val, settings->in_dir_patterns);
         break;
     case IN_EXTENSION:
         if (settings->in_extensions == NULL)
-            settings->in_extensions = new_string_node_from_char_split(',', arg_val);
+            settings->in_extensions = new_string_node_from_char_split(',', str_val);
         else
-            add_char_split_to_string_node(',', arg_val, settings->in_extensions);
+            add_char_split_to_string_node(',', str_val, settings->in_extensions);
         break;
     case IN_FILE_PATTERN:
         if (settings->in_file_patterns == NULL)
-            settings->in_file_patterns = new_regex_node_from_string(arg_val);
+            settings->in_file_patterns = new_regex_node_from_string(str_val);
         else
-            add_string_to_regex_node(arg_val, settings->in_file_patterns);
+            add_string_to_regex_node(str_val, settings->in_file_patterns);
         break;
     case IN_FILE_TYPE:
         // this is just to wrap in an expression
-        if (arg_val) {
+        if (str_val) {
             if (settings->in_file_types == NULL) {
                 settings->in_file_types = empty_int_node();
             }
-            FileType file_type = file_type_from_name(arg_val);
+            FileType file_type = file_type_from_name(str_val);
             int *ftint = malloc(sizeof(int));
             *ftint = (int)file_type;
             add_int_to_int_node(ftint, settings->in_file_types);
         }
         break;
-    case MAX_DEPTH:
-        settings->max_depth = atoi(arg_val);
-        break;
     case MAX_LAST_MOD:
-        if (arg_val) {
+        if (str_val) {
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
-            if (strptime(arg_val, "%Y-%m-%d", &tm) == NULL) {
+            if (strptime(str_val, "%Y-%m-%d", &tm) == NULL) {
                 return E_INVALID_DATESTRING;
             } else {
                 settings->max_last_mod = mktime(&tm);
             }
         } 
         break;
-    case MAX_SIZE:
-        settings->max_size = (unsigned long)atoi(arg_val);
-        break;
-    case MIN_DEPTH:
-        settings->min_depth = atoi(arg_val);
-        break;
     case MIN_LAST_MOD:
-        if (arg_val) {
+        if (str_val) {
             struct tm tm;
             memset(&tm, 0, sizeof(tm));
-            if (strptime(arg_val, "%Y-%m-%d", &tm) == NULL) {
+            if (strptime(str_val, "%Y-%m-%d", &tm) == NULL) {
                 return E_INVALID_DATESTRING;
             } else {
                 settings->min_last_mod = mktime(&tm);
             }
         } 
         break;
-    case MIN_SIZE:
-        settings->min_size = (unsigned long)atoi(arg_val);
-        break;
     case OUT_ARCHIVE_EXT:
         if (settings->out_archive_extensions == NULL)
-            settings->out_archive_extensions = new_string_node_from_char_split(',', arg_val);
+            settings->out_archive_extensions = new_string_node_from_char_split(',', str_val);
         else
-            add_char_split_to_string_node(',', arg_val, settings->out_archive_extensions);
+            add_char_split_to_string_node(',', str_val, settings->out_archive_extensions);
         break;
     case OUT_ARCHIVE_FILE_PATTERN:
         if (settings->out_archive_file_patterns == NULL)
-            settings->out_archive_file_patterns = new_regex_node_from_string(arg_val);
+            settings->out_archive_file_patterns = new_regex_node_from_string(str_val);
         else
-            add_string_to_regex_node(arg_val, settings->out_archive_file_patterns);
+            add_string_to_regex_node(str_val, settings->out_archive_file_patterns);
         break;
     case OUT_DIR_PATTERN:
         if (settings->out_dir_patterns == NULL)
-            settings->out_dir_patterns = new_regex_node_from_string(arg_val);
+            settings->out_dir_patterns = new_regex_node_from_string(str_val);
         else
-            add_string_to_regex_node(arg_val, settings->out_dir_patterns);
+            add_string_to_regex_node(str_val, settings->out_dir_patterns);
         break;
     case OUT_EXTENSION:
         if (settings->out_extensions == NULL)
-            settings->out_extensions = new_string_node_from_char_split(',', arg_val);
+            settings->out_extensions = new_string_node_from_char_split(',', str_val);
         else
-            add_char_split_to_string_node(',', arg_val, settings->out_extensions);
+            add_char_split_to_string_node(',', str_val, settings->out_extensions);
         break;
     case OUT_FILE_PATTERN:
         if (settings->out_file_patterns == NULL)
-            settings->out_file_patterns = new_regex_node_from_string(arg_val);
+            settings->out_file_patterns = new_regex_node_from_string(str_val);
         else
-            add_string_to_regex_node(arg_val, settings->out_file_patterns);
+            add_string_to_regex_node(str_val, settings->out_file_patterns);
         break;
     case OUT_FILE_TYPE:
         // this is just to wrap in an expression
-        if (arg_val) {
+        if (str_val) {
             if (settings->out_file_types == NULL) {
                 settings->out_file_types = empty_int_node();
             }
-            FileType file_type = file_type_from_name(arg_val);
+            FileType file_type = file_type_from_name(str_val);
             int *ftint = malloc(sizeof(int));
             *ftint = (int)file_type;
             add_int_to_int_node(ftint, settings->out_file_types);
@@ -373,8 +447,8 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         break;
     case PATH:
         // this is just to wrap in an expression
-        if (arg_val) {
-            Path *path = new_path(arg_val);
+        if (str_val) {
+            Path *path = new_path(str_val);
             if (settings->paths == NULL) {
                 settings->paths = new_path_node(path);
             } else {
@@ -384,92 +458,48 @@ static error_t set_arg(int arg_idx, char *arg_val, FindSettings *settings)
         break;
     case SETTINGS_FILE:
         // this is just to wrap in an expression
-        if (arg_val) {
-            const error_t err = settings_from_json_file(arg_val, settings);
+        if (str_val) {
+            const error_t err = settings_from_json_file(str_val, settings);
             if (err != E_OK) return err;
         }
         break;
     case SORT_BY:
         // this is just to wrap in an expression
-        if (arg_val) {
-            const SortBy sort_by = sort_by_from_name(arg_val);
+        if (str_val) {
+            const SortBy sort_by = sort_by_from_name(str_val);
             settings->sort_by = sort_by;
         }
         break;
     default:
-        break;
+        return E_INVALID_OPTION;
     }
     return E_OK;
 }
 
-static error_t set_flag(const int flag_idx, const bool flag_val, FindSettings *settings)
-{
-    switch (flag_idx) {
-    case ARCHIVES_ONLY:
-        set_archives_only(settings, flag_val);
-        break;
-    case DEBUG:
-        set_debug(settings, flag_val);
-        break;
-    case EXCLUDE_ARCHIVES:
-        settings->include_archives = !flag_val;
-        break;
-    case EXCLUDE_HIDDEN:
-        settings->include_hidden = !flag_val;
-        break;
-    case FOLLOW_SYMLINKS:
-        settings->follow_symlinks = flag_val;
-        break;
-    case INCLUDE_ARCHIVES:
-        settings->include_archives = flag_val;
-        break;
-    case INCLUDE_HIDDEN:
-        settings->include_hidden = flag_val;
-        break;
-    case HELP:
-        settings->print_usage = flag_val;
-        break;
-    case NO_FOLLOW_SYMLINKS:
-        settings->follow_symlinks = !flag_val;
-        break;
-    case NO_PRINT_DIRS:
-        settings->print_dirs = !flag_val;
-        break;
-    case NO_PRINT_FILES:
-        settings->print_files = !flag_val;
-        break;
-    case NO_RECURSIVE:
-        settings->recursive = !flag_val;
-        break;
-    case PRINT_DIRS:
-        settings->print_dirs = flag_val;
-        break;
-    case PRINT_FILES:
-        settings->print_files = flag_val;
-        break;
-    case RECURSIVE:
-        settings->recursive = flag_val;
-        break;
-    case SORT_ASCENDING:
-        settings->sort_descending = !flag_val;
-        break;
-    case SORT_CASE_INSENSITIVE:
-        settings->sort_case_insensitive = flag_val;
-        break;
-    case SORT_CASE_SENSITIVE:
-        settings->sort_case_insensitive = !flag_val;
-        break;
-    case SORT_DESCENDING:
-        settings->sort_descending = flag_val;
-        break;
-    case VERBOSE:
-        settings->verbose = flag_val;
-        break;
-    case VERSION:
-        settings->print_version = flag_val;
-        break;
-    default:
-        break;
+static error_t set_int_setting(const int int_idx, const int int_val, FindSettings *settings) {
+    switch (int_idx) {
+        case MAX_DEPTH:
+            settings->max_depth = int_val;
+            break;
+        case MIN_DEPTH:
+            settings->min_depth = int_val;
+            break;
+        default:
+            return E_INVALID_OPTION;
+    }
+    return E_OK;
+}
+
+static error_t set_long_setting(const int long_idx, const unsigned long long_val, FindSettings *settings) {
+    switch (long_idx) {
+        case MAX_SIZE:
+            settings->max_size = long_val;
+            break;
+        case MIN_SIZE:
+            settings->min_size = long_val;
+            break;
+        default:
+            return E_INVALID_OPTION;
     }
     return E_OK;
 }
@@ -495,38 +525,62 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
             strncpy(arg_name, argv[i] + c, arglen - c);
             arg_name[arglen - c] = '\0';
 
-            int arg_idx = index_of_string_in_array(arg_name, arg_names, arg_count);
-            if (arg_idx == -1) {
-                arg_idx = index_of_string_in_array(arg_name, arg_abbrs, arg_count);
+            int bool_idx = index_of_string_in_array(arg_name, bool_option_names, bool_option_count);
+            if (bool_idx == -1) {
+                bool_idx = index_of_string_in_array(arg_name, bool_option_abbrs, bool_option_count);
             }
-            if (arg_idx > -1) {
+            if (bool_idx > -1) {
+                const error_t e = set_bool_setting(bool_idx, true, settings);
+                if (e != E_OK) return e;
+                i++;
+            } else {
+                char *arg_val = NULL;
                 if (i < argc - 1) {
                     if (strnlen(argv[i+1], MAX_STRING_LENGTH) > 0) {
-                        error_t e = set_arg(arg_idx, argv[i+1], settings);
-                        if (e != E_OK) return e;
+                        arg_val = argv[i+1];
                         i += 2;
                     } else {
                         return E_INVALID_ARG;
                     }
-                } else {
-                    // char err[80];
-                    // sprintf(err, "Missing argument for option %s", arg_name);
-                    return E_MISSING_ARG_FOR_OPTION;
                 }
-            } else {
-                int flag_idx = index_of_string_in_array(arg_name, flag_names, flag_count);
-                if (flag_idx == -1) {
-                    flag_idx = index_of_string_in_array(arg_name, flag_abbrs, flag_count);
+
+                int str_idx = index_of_string_in_array(arg_name, string_option_names, string_option_count);
+                if (str_idx == -1) {
+                    str_idx = index_of_string_in_array(arg_name, string_option_abbrs, string_option_count);
                 }
-                if (flag_idx > -1) {
-                    const error_t e = set_flag(flag_idx, 1, settings);
+                if (str_idx > -1) {
+                    if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                    error_t e = set_string_setting(str_idx, arg_val, settings);
                     if (e != E_OK) return e;
-                    i++;
                 } else {
-                    char err[50];
-                    sprintf(err, "Invalid option: %s", arg_name);
-                    printf("Error: %s\n", err);
-                    return E_INVALID_OPTION;
+                    // check int options
+                    int int_idx = index_of_string_in_array(arg_name, int_option_names, int_option_count);
+                    if (int_idx == -1) {
+                        int_idx = index_of_string_in_array(arg_name, int_option_abbrs, int_option_count);
+                    }
+                    if (int_idx > -1) {
+                        if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                        // const int int_val = atoi(arg_val);
+                        char *end_ptr = NULL;
+                        const int int_val = (int)strtol(arg_val, &end_ptr, 10);
+                        const error_t e = set_int_setting(int_idx, int_val, settings);
+                        if (e != E_OK) return e;
+                    } else {
+                        // check long options
+                        int long_idx = index_of_string_in_array(arg_name, long_option_names, long_option_count);
+                        if (long_idx == -1) {
+                            long_idx = index_of_string_in_array(arg_name, long_option_abbrs, long_option_count);
+                        }
+                        if (long_idx > -1) {
+                            if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                            char *end_ptr = NULL;
+                            const unsigned long long_val = strtoul(arg_val, &end_ptr, 10);
+                            const error_t e = set_long_setting(long_idx, long_val, settings);
+                            if (e != E_OK) return e;
+                        } else {
+                            return E_INVALID_OPTION;
+                        }
+                    }
                 }
             }
 
@@ -549,17 +603,17 @@ error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *setting
     error_t err = E_OK;
 
     cJSON_ArrayForEach(setting_json, settings_json) {
-        int idx = index_of_string_in_array(setting_json->string, arg_names, ARG_COUNT);
+        int idx = index_of_string_in_array(setting_json->string, string_option_names, STRING_OPTION_COUNT);
         if (idx > -1) {
             if (cJSON_IsString(setting_json) && setting_json->valuestring != NULL) {
-                err = set_arg(idx, setting_json->valuestring, settings);
+                err = set_string_setting(idx, setting_json->valuestring, settings);
                 if (err != E_OK) return err;
             } else if (cJSON_IsArray(setting_json)) {
                 // Add each element of array
                 const cJSON *elem_json = NULL;
                 cJSON_ArrayForEach(elem_json, setting_json) {
                     if (cJSON_IsString(elem_json) && elem_json->valuestring != NULL) {
-                        err = set_arg(idx, elem_json->valuestring, settings);
+                        err = set_string_setting(idx, elem_json->valuestring, settings);
                         if (err != E_OK) return err;
                     }
                 }
@@ -567,10 +621,10 @@ error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *setting
                 // TODO: split max/min length/size into separate array for numeric field assignment
             }
         } else {
-            idx = index_of_string_in_array(setting_json->string, flag_names, FLAG_COUNT);
+            idx = index_of_string_in_array(setting_json->string, bool_option_names, BOOL_OPTION_COUNT);
             if (idx > -1 && cJSON_IsBool(setting_json)) {
                 const int flag = cJSON_IsTrue(setting_json) ? 1 : 0;
-                err = set_flag(idx, flag, settings);
+                err = set_bool_setting(idx, flag, settings);
                 //if (err != E_OK) return err;
             }
         }

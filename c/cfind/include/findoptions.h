@@ -15,30 +15,6 @@ typedef struct FindOptions {
 } FindOptions;
 
 typedef enum {
-    IN_ARCHIVE_EXTENSION     = 0,
-    IN_ARCHIVE_FILE_PATTERN  = 1,
-    IN_DIR_PATTERN           = 2,
-    IN_EXTENSION             = 3,
-    IN_FILE_PATTERN          = 4,
-    IN_FILE_TYPE             = 5,
-    MAX_DEPTH                = 6,
-    MAX_LAST_MOD             = 7,
-    MAX_SIZE                 = 8,
-    MIN_DEPTH                = 9,
-    MIN_LAST_MOD             = 10,
-    MIN_SIZE                 = 11,
-    OUT_ARCHIVE_EXT          = 12,
-    OUT_ARCHIVE_FILE_PATTERN = 13,
-    OUT_DIR_PATTERN          = 14,
-    OUT_EXTENSION            = 15,
-    OUT_FILE_PATTERN         = 16,
-    OUT_FILE_TYPE            = 17,
-    PATH                     = 18,
-    SETTINGS_FILE            = 19,
-    SORT_BY                  = 20
-} SettingsCollType;
-
-typedef enum {
     ARCHIVES_ONLY         = 0,
     DEBUG                 = 1,
     EXCLUDE_ARCHIVES      = 2,
@@ -60,7 +36,37 @@ typedef enum {
     SORT_DESCENDING       = 18,
     VERBOSE               = 19,
     VERSION               = 20
-} SettingsFlagType;
+} SettingsBoolType;
+
+typedef enum {
+    IN_ARCHIVE_EXTENSION     = 0,
+    IN_ARCHIVE_FILE_PATTERN  = 1,
+    IN_DIR_PATTERN           = 2,
+    IN_EXTENSION             = 3,
+    IN_FILE_PATTERN          = 4,
+    IN_FILE_TYPE             = 5,
+    MAX_LAST_MOD             = 6,
+    MIN_LAST_MOD             = 7,
+    OUT_ARCHIVE_EXT          = 8,
+    OUT_ARCHIVE_FILE_PATTERN = 9,
+    OUT_DIR_PATTERN          = 10,
+    OUT_EXTENSION            = 11,
+    OUT_FILE_PATTERN         = 12,
+    OUT_FILE_TYPE            = 13,
+    PATH                     = 14,
+    SETTINGS_FILE            = 15,
+    SORT_BY                  = 16
+} SettingsStringType;
+
+typedef enum {
+    MAX_DEPTH                = 0,
+    MIN_DEPTH                = 1
+} SettingsIntType;
+
+typedef enum {
+    MAX_SIZE                 = 0,
+    MIN_SIZE                 = 1
+} SettingsLongType;
 
 FindOption *new_find_option(const char *long_arg, const char *short_arg, const char *desc);
 
