@@ -32,6 +32,7 @@ class FindOption {
 class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = '/findoptions.json'
     private final List<FindOption> options
+    private final Map<String, String> longArgMap = new HashMap<>()
 
     FindOptions() throws IOException {
         options = []
@@ -39,40 +40,11 @@ class FindOptions {
     }
 
     @FunctionalInterface
-    private interface ArgSetter {
-        void set(String s, FindSettings settings);
-    }
-
-    private final Map<String, ArgSetter> argActionMap = [
-            'in-archiveext': { String s, FindSettings settings -> settings.addInArchiveExtension(s) },
-            'in-archivefilepattern': { String s, FindSettings settings -> settings.addInArchiveFilePattern(s) },
-            'in-dirpattern': { String s, FindSettings settings -> settings.addInDirPattern(s) },
-            'in-ext': { String s, FindSettings settings -> settings.addInExtension(s) },
-            'in-filepattern': { String s, FindSettings settings -> settings.addInFilePattern(s) },
-            'in-filetype': { String s, FindSettings settings -> settings.addInFileType(s) },
-            maxdepth: { String s, FindSettings settings -> settings.setMaxDepth(Integer.parseInt(s)) },
-            maxlastmod: { String s, FindSettings settings -> settings.setMaxLastModFromString(s) },
-            maxsize: { String s, FindSettings settings -> settings.setMaxSize(Integer.parseInt(s)) },
-            mindepth: { String s, FindSettings settings -> settings.setMinDepth(Integer.parseInt(s)) },
-            minlastmod: { String s, FindSettings settings -> settings.setMinLastModFromString(s) },
-            minsize: { String s, FindSettings settings -> settings.setMinSize(Integer.parseInt(s)) },
-            'out-archiveext': { String s, FindSettings settings -> settings.addOutArchiveExtension(s) },
-            'out-archivefilepattern': { String s, FindSettings settings -> settings.addOutArchiveFilePattern(s) },
-            'out-dirpattern': { String s, FindSettings settings -> settings.addOutDirPattern(s) },
-            'out-ext': { String s, FindSettings settings -> settings.addOutExtension(s) },
-            'out-filepattern': { String s, FindSettings settings -> settings.addOutFilePattern(s) },
-            'out-filetype': { String s, FindSettings settings -> settings.addOutFileType(s) },
-            path: { String s, FindSettings settings -> settings.addPath(s) },
-            'settings-file': { String s, FindSettings settings -> settingsFromFilePath(s, settings) },
-            'sort-by': { String s, FindSettings settings -> settings.setSortBy(SortBy.forName(s)) }
-    ]
-
-    @FunctionalInterface
-    private interface BooleanFlagSetter {
+    private interface BooleanSetter {
         void set(Boolean b, FindSettings settings);
     }
 
-    private final Map<String, BooleanFlagSetter> boolFlagActionMap = [
+    private final Map<String, BooleanSetter> boolActionMap = [
             archivesonly: { Boolean b, FindSettings settings -> settings.archivesOnly = b },
             debug: { Boolean b, FindSettings settings -> settings.debug = b },
             excludehidden: { Boolean b, FindSettings settings -> settings.includeHidden = !b },
@@ -95,6 +67,51 @@ class FindOptions {
             version: { Boolean b, FindSettings settings -> settings.printVersion = b }
     ]
 
+    @FunctionalInterface
+    private interface StringSetter {
+        void set(String s, FindSettings settings);
+    }
+
+    private final Map<String, StringSetter> stringActionMap = [
+            'in-archiveext': { String s, FindSettings settings -> settings.addInArchiveExtension(s) },
+            'in-archivefilepattern': { String s, FindSettings settings -> settings.addInArchiveFilePattern(s) },
+            'in-dirpattern': { String s, FindSettings settings -> settings.addInDirPattern(s) },
+            'in-ext': { String s, FindSettings settings -> settings.addInExtension(s) },
+            'in-filepattern': { String s, FindSettings settings -> settings.addInFilePattern(s) },
+            'in-filetype': { String s, FindSettings settings -> settings.addInFileType(s) },
+            maxlastmod: { String s, FindSettings settings -> settings.setMaxLastModFromString(s) },
+            minlastmod: { String s, FindSettings settings -> settings.setMinLastModFromString(s) },
+            'out-archiveext': { String s, FindSettings settings -> settings.addOutArchiveExtension(s) },
+            'out-archivefilepattern': { String s, FindSettings settings -> settings.addOutArchiveFilePattern(s) },
+            'out-dirpattern': { String s, FindSettings settings -> settings.addOutDirPattern(s) },
+            'out-ext': { String s, FindSettings settings -> settings.addOutExtension(s) },
+            'out-filepattern': { String s, FindSettings settings -> settings.addOutFilePattern(s) },
+            'out-filetype': { String s, FindSettings settings -> settings.addOutFileType(s) },
+            path: { String s, FindSettings settings -> settings.addPath(s) },
+            'settings-file': { String s, FindSettings settings -> settingsFromFilePath(s, settings) },
+            'sort-by': { String s, FindSettings settings -> settings.setSortBy(SortBy.forName(s)) }
+    ]
+
+    @FunctionalInterface
+    private interface IntegerSetter {
+        void set(Integer i, FindSettings settings);
+    }
+
+    private final Map<String, IntegerSetter> intActionMap = [
+            maxdepth: { Integer i, FindSettings settings -> settings.setMaxDepth(i) },
+            mindepth: { Integer i, FindSettings settings -> settings.setMinDepth(i) }
+    ]
+
+    @FunctionalInterface
+    private interface LongSetter {
+        void set(Long l, FindSettings settings);
+    }
+
+    private final Map<String, LongSetter> longActionMap = [
+            maxsize: { Long l, FindSettings settings -> settings.setMaxSize(l) },
+            minsize: { Long l, FindSettings settings -> settings.setMinSize(l) }
+    ]
+
     private void setOptionsFromJson() throws IOException {
         JsonSlurper jsonSlurper = new JsonSlurper()
         InputStream findOptionsInputStream = getClass().getResourceAsStream(FIND_OPTIONS_JSON_PATH)
@@ -109,10 +126,12 @@ class FindOptions {
         for (int i = 0; i < findOptionsArray.size(); i++) {
             Map findOptionObj = (Map)findOptionsArray[i]
             String longArg = findOptionObj.long
+            longArgMap.put(longArg, longArg)
             String desc = findOptionObj.desc
             String shortArg = ''
             if ('short' in findOptionObj) {
                 shortArg = findOptionObj.short
+                longArgMap.put(shortArg, longArg)
             }
             options.add(new FindOption(shortArg, longArg, desc))
         }
@@ -149,23 +168,34 @@ class FindOptions {
     }
 
     private void applySetting(final String arg, final Object obj, FindSettings settings) {
-        if (obj instanceof String) {
-            try {
-                applySetting(arg, (String)obj, settings)
-            } catch (FindException e) {
-                Logger.logError("FindException: ${e.getMessage()}")
-            }
-        } else if (obj instanceof Boolean) {
+        if (obj instanceof Boolean) {
             try {
                 applySetting(arg, (Boolean)obj, settings)
             } catch (FindException e) {
                 Logger.logError("FindException: ${e.getMessage()}")
             }
-        } else if (obj instanceof Long) {
+        } else if (obj instanceof String) {
             try {
-                applySetting(arg, obj.toString(), settings)
+                applySetting(arg, (String)obj, settings)
             } catch (FindException e) {
                 Logger.logError("FindException: ${e.getMessage()}")
+            }
+        } else if (obj instanceof Integer || obj instanceof Long) {
+            // these are handled together because the json parser might return an Integer or Long
+            if (arg in this.intActionMap) {
+                try {
+                    applySetting(arg, (Integer)obj, settings)
+                } catch (FindException e) {
+                    Logger.logError("FindException: ${e.getMessage()}")
+                }
+            } else if (arg in this.longActionMap) {
+                try {
+                    applySetting(arg, (Long)obj, settings)
+                } catch (FindException e) {
+                    Logger.logError("FindException: ${e.getMessage()}")
+                }
+            } else {
+                Logger.logError('Invalid option: ${arg}')
             }
         } else if (obj instanceof List) {
             for (int i=0; i < ((List)obj).size(); i++) {
@@ -176,19 +206,37 @@ class FindOptions {
         }
     }
 
-    private void applySetting(final String arg, final String val, FindSettings settings)
-            throws FindException {
-        if (arg in this.argActionMap) {
-            ((ArgSetter)this.argActionMap[arg]).set(val, settings)
+    private void applySetting(final String arg, final Boolean val, FindSettings settings)
+            throws FindException{
+        if (arg in this.boolActionMap) {
+            ((BooleanSetter)this.boolActionMap[arg]).set(val, settings)
         } else {
             throw new FindException("Invalid option: ${arg}")
         }
     }
 
-    private void applySetting(final String arg, final Boolean val, FindSettings settings)
-            throws FindException{
-        if (arg in this.boolFlagActionMap) {
-            ((BooleanFlagSetter)this.boolFlagActionMap[arg]).set(val, settings)
+    private void applySetting(final String arg, final String val, FindSettings settings)
+            throws FindException {
+        if (arg in this.stringActionMap) {
+            ((StringSetter)this.stringActionMap[arg]).set(val, settings)
+        } else {
+            throw new FindException("Invalid option: ${arg}")
+        }
+    }
+
+    private void applySetting(final String arg, final Integer val, FindSettings settings)
+            throws FindException {
+        if (arg in this.intActionMap) {
+            ((IntegerSetter)this.intActionMap[arg]).set(val, settings)
+        } else {
+            throw new FindException("Invalid option: ${arg}")
+        }
+    }
+
+    private void applySetting(final String arg, final Long val, FindSettings settings)
+            throws FindException {
+        if (arg in this.longActionMap) {
+            ((LongSetter)this.longActionMap[arg]).set(val, settings)
         } else {
             throw new FindException("Invalid option: ${arg}")
         }
@@ -199,15 +247,6 @@ class FindOptions {
         // default printFiles to true since running from command line
         settings.setPrintFiles(true)
 
-        // add short arg mappings
-        options.stream().filter(o -> !o.shortArg.isEmpty()).forEach(o -> {
-            if (o.longArg in argActionMap) {
-                argActionMap.put(o.shortArg, argActionMap[o.longArg])
-            } else if (o.longArg in boolFlagActionMap) {
-                boolFlagActionMap.put(o.shortArg, boolFlagActionMap[o.longArg])
-            }
-        })
-
         Queue<String> queue = new LinkedList<>(Arrays.asList(args))
         while (!queue.isEmpty()) {
             String arg = queue.remove()
@@ -215,15 +254,24 @@ class FindOptions {
                 while (arg.startsWith('-')) {
                     arg = arg.substring(1)
                 }
-                if (arg in this.argActionMap) {
+                var longArg = longArgMap.get(arg)
+                if (longArg in this.boolActionMap) {
+                    ((BooleanSetter)this.boolActionMap[longArg]).set(true, settings)
+                } else if (longArg in this.stringActionMap
+                        || longArg in this.intActionMap
+                        || longArg in this.longActionMap) {
                     if (!queue.isEmpty()) {
                         String argVal = queue.remove()
-                        ((ArgSetter)this.argActionMap[arg]).set(argVal, settings)
+                        if (longArg in this.stringActionMap) {
+                            ((StringSetter)this.stringActionMap[longArg]).set(argVal, settings)
+                        } else if (longArg in this.intActionMap) {
+                            ((IntegerSetter)this.intActionMap[longArg]).set(Integer.parseInt(argVal), settings)
+                        } else if (longArg in this.longActionMap) {
+                            ((LongSetter)this.longActionMap[longArg]).set(Long.parseLong(argVal), settings)
+                        }
                     } else {
                         throw new FindException("Missing value for option ${arg}")
                     }
-                } else if (arg in this.boolFlagActionMap) {
-                    ((BooleanFlagSetter)this.boolFlagActionMap[arg]).set(true, settings)
                 } else {
                     throw new FindException("Invalid option: ${arg}")
                 }

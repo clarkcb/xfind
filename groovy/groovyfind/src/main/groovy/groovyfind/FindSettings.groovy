@@ -18,9 +18,9 @@ class DefaultFindSettings {
     static final boolean INCLUDE_ARCHIVES = false
     static final boolean INCLUDE_HIDDEN = false
     static final int MAX_DEPTH = -1
-    static final int MAX_SIZE = 0
+    static final long MAX_SIZE = 0L
     static final int MIN_DEPTH = -1
-    static final int MIN_SIZE = 0
+    static final long MIN_SIZE = 0L
     static final boolean PRINT_DIRS = false
     static final boolean PRINT_FILES = true
     static final boolean PRINT_USAGE = false
@@ -50,10 +50,10 @@ class FindSettings {
     boolean includeHidden
     int maxDepth
     LocalDateTime maxLastMod
-    int maxSize
+    long maxSize
     int minDepth
     LocalDateTime minLastMod
-    int minSize
+    long minSize
     final Set<String> outArchiveExtensions
     final Set<Pattern> outArchiveFilePatterns
     final Set<Pattern> outDirPatterns
