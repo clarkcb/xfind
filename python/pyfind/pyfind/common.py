@@ -9,6 +9,7 @@
 ###############################################################################
 """
 import sys
+from datetime import datetime
 from dateutil.parser import parse, ParserError
 
 from .findexception import FindException
@@ -33,7 +34,7 @@ def get_text(nodelist):
     return ''.join(rc)
 
 
-def parse_datetime_str(datetime_str: str):
+def parse_datetime_str(datetime_str: str) -> datetime:
     """Try to parse datetime string to datetime instance"""
     try:
         return parse(datetime_str)

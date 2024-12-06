@@ -32,7 +32,7 @@ class FindOptions:
         self.__set_options_from_json()
 
     def __set_dicts(self):
-        self.__bool_arg_dict = {
+        self.__bool_action_dict = {
             'archivesonly':
                 lambda b, settings:
                 settings.set_property('archives_only', b),
@@ -104,85 +104,79 @@ class FindOptions:
                 settings.set_property('print_version', b)
         }
 
-        self.__coll_arg_dict = {
+        self.__str_action_dict = {
             'in-archiveext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'in_archive_extensions'),
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'in_archive_extensions'),
             'in-archivefilepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_archive_file_patterns'),
+                lambda s, settings:
+                settings.add_patterns(s, 'in_archive_file_patterns'),
             'in-dirpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_dir_patterns'),
+                lambda s, settings:
+                settings.add_patterns(s, 'in_dir_patterns'),
             'in-ext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'in_extensions'),
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'in_extensions'),
             'in-filepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'in_file_patterns'),
+                lambda s, settings:
+                settings.add_patterns(s, 'in_file_patterns'),
             'in-filetype':
-                lambda x, settings:
-                settings.add_file_types(x, 'in_file_types'),
+                lambda s, settings:
+                settings.add_file_types(s, 'in_file_types'),
             'out-archiveext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'out_archive_extensions'),
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'out_archive_extensions'),
             'out-archivefilepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_archive_file_patterns'),
+                lambda s, settings:
+                settings.add_patterns(s, 'out_archive_file_patterns'),
             'out-dirpattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_dir_patterns'),
+                lambda s, settings:
+                settings.add_patterns(s, 'out_dir_patterns'),
             'out-ext':
-                lambda x, settings:
-                settings.add_strs_to_set(x, 'out_extensions'),
+                lambda s, settings:
+                settings.add_strs_to_set(s, 'out_extensions'),
             'out-filepattern':
-                lambda x, settings:
-                settings.add_patterns(x, 'out_file_patterns'),
+                lambda s, settings:
+                settings.add_patterns(s, 'out_file_patterns'),
             'out-filetype':
-                lambda x, settings:
-                settings.add_file_types(x, 'out_file_types'),
+                lambda s, settings:
+                settings.add_file_types(s, 'out_file_types'),
             'path':
-                lambda x, settings:
-                settings.add_path(x),
+                lambda s, settings:
+                settings.add_path(s),
             'sort-by':
-                lambda x, settings:
-                settings.set_sort_by(x),
+                lambda s, settings:
+                settings.set_sort_by(s),
         }
 
-        self.__dt_arg_dict = {
+        self.__dt_action_dict = {
             'lastmod-after':
-                lambda x, settings:
-                settings.set_property('lastmod_after', x),
+                lambda dt, settings:
+                settings.set_property('lastmod_after', dt),
             'lastmod-before':
-                lambda x, settings:
-                settings.set_property('lastmod_before', x),
+                lambda dt, settings:
+                settings.set_property('lastmod_before', dt),
             'maxlastmod':
-                lambda x, settings:
-                settings.set_property('max_last_mod', x),
+                lambda dt, settings:
+                settings.set_property('max_last_mod', dt),
             'minlastmod':
-                lambda x, settings:
-                settings.set_property('min_last_mod', x),
+                lambda dt, settings:
+                settings.set_property('min_last_mod', dt),
         }
 
-        self.__int_arg_dict = {
+        self.__int_action_dict = {
             'maxdepth':
-                lambda x, settings:
-                settings.set_property('max_depth', int(x)),
+                lambda i, settings:
+                settings.set_property('max_depth', i),
             'maxsize':
-                lambda x, settings:
-                settings.set_property('max_size', int(x)),
+                lambda i, settings:
+                settings.set_property('max_size', i),
             'mindepth':
-                lambda x, settings:
-                settings.set_property('min_depth', int(x)),
+                lambda i, settings:
+                settings.set_property('min_depth', i),
             'minsize':
-                lambda x, settings:
-                settings.set_property('min_size', int(x)),
-        }
-
-        self.__str_arg_dict = {
-            'path':
-                lambda x, settings:
-                settings.add_path(x),
+                lambda i, settings:
+                settings.set_property('min_size', i),
         }
 
         self.__long_arg_dict = {}
@@ -198,16 +192,14 @@ class FindOptions:
         """Read settings from a JSON string"""
         json_dict = json.loads(json_str)
         for arg in json_dict:
-            if arg in self.__bool_arg_dict:
-                self.__bool_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__coll_arg_dict:
-                self.__coll_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__dt_arg_dict:
-                self.__dt_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__int_arg_dict:
-                self.__int_arg_dict[arg](json_dict[arg], settings)
-            elif arg in self.__str_arg_dict:
-                self.__str_arg_dict[arg](json_dict[arg], settings)
+            if arg in self.__bool_action_dict:
+                self.__bool_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.__str_action_dict:
+                self.__str_action_dict[arg](json_dict[arg], settings)
+            elif arg in self.__dt_action_dict:
+                self.__dt_action_dict[arg](parse_datetime_str(json_dict[arg]), settings)
+            elif arg in self.__int_action_dict:
+                self.__int_action_dict[arg](json_dict[arg], settings)
             else:
                 raise FindException(f'Invalid option: {arg}')
 
@@ -221,18 +213,14 @@ class FindOptions:
             if 'short' in find_option_obj:
                 short_arg = find_option_obj['short']
             desc = find_option_obj['desc']
-            if long_arg in self.__bool_arg_dict:
-                func = self.__bool_arg_dict[long_arg]
-            elif long_arg in self.__coll_arg_dict:
-                func = self.__coll_arg_dict[long_arg]
-            elif long_arg in self.__dt_arg_dict:
-                func = self.__dt_arg_dict[long_arg]
-            elif long_arg in self.__int_arg_dict:
-                func = self.__int_arg_dict[long_arg]
-            elif long_arg in self.__str_arg_dict:
-                func = self.__str_arg_dict[long_arg]
-            elif long_arg in self.__str_arg_dict:
-                func = self.__str_arg_dict[long_arg]
+            if long_arg in self.__bool_action_dict:
+                func = self.__bool_action_dict[long_arg]
+            elif long_arg in self.__str_action_dict:
+                func = self.__str_action_dict[long_arg]
+            elif long_arg in self.__dt_action_dict:
+                func = self.__dt_action_dict[long_arg]
+            elif long_arg in self.__int_action_dict:
+                func = self.__int_action_dict[long_arg]
             elif long_arg == 'settings-file':
                 func = self.settings_from_file
             else:
@@ -269,25 +257,25 @@ class FindOptions:
                 for a in arg_names:
                     if a in self.__long_arg_dict:
                         long_arg = self.__long_arg_dict[a]
-                        if long_arg in self.__bool_arg_dict:
-                            self.__bool_arg_dict[long_arg](True, settings)
+                        if long_arg in self.__bool_action_dict:
+                            self.__bool_action_dict[long_arg](True, settings)
                             if long_arg in ('help', 'version'):
                                 return settings
-                        elif long_arg in self.__coll_arg_dict or \
-                                long_arg in self.__dt_arg_dict or \
-                                long_arg in self.__int_arg_dict or \
-                                long_arg in self.__str_arg_dict or \
+                        elif long_arg in self.__str_action_dict or \
+                                long_arg in self.__dt_action_dict or \
+                                long_arg in self.__int_action_dict or \
                                 long_arg == 'settings-file':
                             if arg_deque:
                                 arg_val = arg_deque.popleft()
-                                if long_arg in self.__coll_arg_dict:
-                                    self.__coll_arg_dict[long_arg](
+                                if long_arg in self.__str_action_dict:
+                                    self.__str_action_dict[long_arg](
                                         arg_val, settings)
-                                elif long_arg in self.__dt_arg_dict:
-                                    self.__dt_arg_dict[long_arg](
+                                elif long_arg in self.__dt_action_dict:
+                                    self.__dt_action_dict[long_arg](
                                         parse_datetime_str(arg_val), settings)
-                                elif long_arg in self.__int_arg_dict:
+                                elif long_arg in self.__int_action_dict:
                                     invalid_int = False
+                                    i = 0
                                     try:
                                         i = int(arg_val)
                                     except ValueError:
@@ -298,11 +286,7 @@ class FindOptions:
                                     if invalid_int:
                                         err = f'Invalid value for option {arg}: {arg_val}'
                                         raise FindException(err)
-                                    self.__int_arg_dict[long_arg](
-                                        arg_val, settings)
-                                elif long_arg in self.__str_arg_dict:
-                                    self.__str_arg_dict[long_arg](
-                                        arg_val, settings)
+                                    self.__int_action_dict[long_arg](i, settings)
                                 elif long_arg == 'settings-file':
                                     self.settings_from_file(arg_val, settings)
                             else:
