@@ -44,8 +44,8 @@ namespace cppfind {
         };
 
         m_long_arg_map = {
-            {"maxsize", [](const long lng, FindSettings& ss) { ss.max_size(lng); }},
-            {"minsize", [](const long lng, FindSettings& ss) { ss.min_size(lng); }},
+            {"maxsize", [](const uint64_t lng, FindSettings& ss) { ss.max_size(lng); }},
+            {"minsize", [](const uint64_t lng, FindSettings& ss) { ss.min_size(lng); }},
         };
 
         m_str_arg_map = {
@@ -195,7 +195,7 @@ namespace cppfind {
             throw FindException(msg);
         }
 
-        uint64_t file_size = std::filesystem::file_size(file_path);
+        const uint64_t file_size = std::filesystem::file_size(file_path);
         // ~1MB, an arbitrary limit, but at least a limit
         assert(file_size <= 1024000);
 
@@ -223,7 +223,6 @@ namespace cppfind {
         for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
             std::string name = it->name.GetString();
 
-            // TODO: we need to handle numeric types also
             if (it->value.IsArray()) {
                 assert(m_str_arg_map.contains(name));
                 const auto& arr = it->value.GetArray();
@@ -246,6 +245,16 @@ namespace cppfind {
                     const std::string msg = "Invalid option: " + name;
                     throw FindException(msg);
                 }
+
+            } else if (it->value.IsNumber()) {
+                if (m_int_arg_map.contains(name)) {
+                    m_int_arg_map[name](it->value.GetInt(), settings);
+                } else if (m_long_arg_map.contains(name)) {
+                    m_long_arg_map[name](it->value.GetUint64(), settings);
+                } else {
+                    const std::string msg = "Invalid option: " + name;
+                    throw FindException(msg);
+                }
             }
         }
     }
@@ -257,7 +266,9 @@ namespace cppfind {
     }
 
     std::string FindOptions::get_usage_string() {
-        std::string usage_string{"\nUsage:\n cppfind [options] <path> [<path> ...]\n\nOptions:\n"};
+        std::string usage_string;
+        usage_string.reserve(2930);
+        usage_string += "\nUsage:\n cppfind [options] <path> [<path> ...]\n\nOptions:\n";
 
         std::vector<std::string> opt_strings{};
         std::vector<std::string> opt_descs{};

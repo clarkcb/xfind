@@ -24,7 +24,7 @@ namespace cppfind {
     private:
         std::unordered_map<std::string, std::function<void(bool, FindSettings&)>> m_bool_arg_map;
         std::unordered_map<std::string, std::function<void(int, FindSettings&)>> m_int_arg_map;
-        std::unordered_map<std::string, std::function<void(long, FindSettings&)>> m_long_arg_map;
+        std::unordered_map<std::string, std::function<void(uint64_t, FindSettings&)>> m_long_arg_map;
         std::unordered_map<std::string, std::function<void(std::string&, FindSettings&)>> m_str_arg_map;
         std::unordered_map<std::string, std::string> m_arg_name_map;
         std::vector<FindOption> m_options;
