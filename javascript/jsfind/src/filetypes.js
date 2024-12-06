@@ -14,7 +14,7 @@ class FileTypes {
         this.fileTypeExtMap = {};
         this.fileTypeNameMap = {};
 
-        const json = FileUtil.getFileContentsSync(config.FILETYPESJSONPATH, 'utf-8');
+        const json = FileUtil.getFileContentsSync(config.FILE_TYPES_JSON_PATH, 'utf-8');
         let obj = JSON.parse(json);
         if (Object.prototype.hasOwnProperty.call(obj, 'filetypes') && Array.isArray(obj.filetypes)) {
             obj.filetypes.forEach(ft => {
@@ -27,7 +27,7 @@ class FileTypes {
                     this.fileTypeNameMap[typename] = [];
                 }
             });
-        } else throw new Error("Invalid filetypes file: " + config.FILETYPESJSONPATH);
+        } else throw new Error("Invalid filetypes file: " + config.FILE_TYPES_JSON_PATH);
         this.fileTypeExtMap.text = [].concat(this.fileTypeExtMap.text, this.fileTypeExtMap.code, this.fileTypeExtMap.xml);
         this.fileTypeNameMap.text = [].concat(this.fileTypeNameMap.text, this.fileTypeNameMap.code, this.fileTypeNameMap.xml);
     }

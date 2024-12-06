@@ -5,11 +5,10 @@
  */
 
 class FindOption {
-    constructor(shortArg, longArg, desc, func) {
+    constructor(shortArg, longArg, desc) {
         this.shortArg = shortArg;
         this.longArg = longArg;
         this.desc = desc;
-        this.func = func;
 
         this.sortArg = (() => {
             if (this.shortArg)
