@@ -17,13 +17,17 @@ class FindOptions
      */
     private array $options;
     /**
-     * @var array<string, \Closure> $arg_action_map
+     * @var array<string, \Closure> $bool_action_map
      */
-    private readonly array $arg_action_map;
+    private readonly array $bool_action_map;
     /**
-     * @var array<string, \Closure> $bool_flag_action_map
+     * @var array<string, \Closure> $str_action_map
      */
-    private readonly array $bool_flag_action_map;
+    private readonly array $str_action_map;
+    /**
+     * @var array<string, \Closure> $int_action_map
+     */
+    private readonly array $int_action_map;
     /**
      * @var array<string, string> $long_arg_map
      */
@@ -36,36 +40,7 @@ class FindOptions
     {
         $this->options = [];
 
-        $this->arg_action_map = [
-            'in-archiveext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_archive_extensions),
-            'in-archivefilepattern' =>
-                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_archive_file_patterns),
-            'in-dirpattern' => fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_dir_patterns),
-            'in-ext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_extensions),
-            'in-filepattern' =>
-                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_file_patterns),
-            'in-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->in_file_types),
-            'maxdepth' => fn(string $s, FindSettings $fs) => $fs->max_depth = intval($s),
-            'maxlastmod' => fn(string $s, FindSettings $fs) => $fs->max_last_mod = new \DateTime($s),
-            'maxsize' => fn(string $s, FindSettings $fs) => $fs->max_size = intval($s),
-            'mindepth' => fn(string $s, FindSettings $fs) => $fs->min_depth = intval($s),
-            'minlastmod' => fn(string $s, FindSettings $fs) => $fs->min_last_mod = new \DateTime($s),
-            'minsize' => fn(string $s, FindSettings $fs) => $fs->min_size = intval($s),
-            'out-archiveext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archive_extensions),
-            'out-archivefilepattern' =>
-                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_file_patterns),
-            'out-dirpattern' =>
-                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dir_patterns),
-            'out-ext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_extensions),
-            'out-filepattern' =>
-                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
-            'out-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
-            'path' => fn(string $s, FindSettings $fs) => $fs->paths[] = $s,
-            'settings-file' => fn(string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
-            'sort-by' => fn(string $s, FindSettings $fs) => $fs->set_sort_by($s),
-        ];
-
-        $this->bool_flag_action_map = [
+        $this->bool_action_map = [
             'archivesonly' => fn(bool $b, FindSettings $fs) => $fs->set_archives_only($b),
             'debug' => fn(bool $b, FindSettings $fs) => $fs->set_debug($b),
             'followsymlinks' => fn(bool $b, FindSettings $fs) => $fs->follow_symlinks = $b,
@@ -88,6 +63,38 @@ class FindOptions
             'verbose' => fn(bool $b, FindSettings $fs) => $fs->verbose = $b,
             'version' => fn(bool $b, FindSettings $fs) => $fs->print_version = $b,
         ];
+
+        $this->str_action_map = [
+            'in-archiveext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_archive_extensions),
+            'in-archivefilepattern' =>
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_archive_file_patterns),
+            'in-dirpattern' => fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_dir_patterns),
+            'in-ext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->in_extensions),
+            'in-filepattern' =>
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->in_file_patterns),
+            'in-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->in_file_types),
+            'maxlastmod' => fn(string $s, FindSettings $fs) => $fs->max_last_mod = new \DateTime($s),
+            'minlastmod' => fn(string $s, FindSettings $fs) => $fs->min_last_mod = new \DateTime($s),
+            'out-archiveext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_archive_extensions),
+            'out-archivefilepattern' =>
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_archive_file_patterns),
+            'out-dirpattern' =>
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_dir_patterns),
+            'out-ext' => fn(string $s, FindSettings $fs) => $fs->add_exts($s, $fs->out_extensions),
+            'out-filepattern' =>
+                fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
+            'out-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
+            'path' => fn(string $s, FindSettings $fs) => $fs->paths[] = $s,
+            'settings-file' => fn(string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
+            'sort-by' => fn(string $s, FindSettings $fs) => $fs->set_sort_by($s),
+        ];
+
+        $this->int_action_map = [
+            'maxdepth' => fn(int $i, FindSettings $fs) => $fs->max_depth = $i,
+            'maxsize' => fn(int $i, FindSettings $fs) => $fs->max_size = $i,
+            'mindepth' => fn(int $i, FindSettings $fs) => $fs->min_depth = $i,
+            'minsize' => fn(int $i, FindSettings $fs) => $fs->min_size = $i,
+        ];
         $this->long_arg_map = [];
         $this->set_options_from_json();
     }
@@ -106,7 +113,7 @@ class FindOptions
             try {
                 $json_obj = (array)json_decode(trim($contents), true, 512, JSON_THROW_ON_ERROR);
                 $find_options = $json_obj['findoptions'];
-                if ($find_options !== null) {
+                if ($find_options) {
                     foreach ((array)$find_options as $fo) {
                         $fo = (array)$fo;
                         $short = '';
@@ -117,8 +124,7 @@ class FindOptions
                             $short = (string)$fo['short'];
                             $this->long_arg_map[$short] = $long;
                         }
-                        $option = new FindOption($short, $long, $desc);
-                        $this->options[] = $option;
+                        $this->options[] = new FindOption($short, $long, $desc);
                     }
                     usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
                 }
@@ -142,7 +148,7 @@ class FindOptions
             throw new FindException('Settings file not found');
         }
         $json = file_get_contents($file_path);
-        if ($json !== false) {
+        if ($json) {
             $this->settings_from_json($json, $settings);
         }
     }
@@ -161,20 +167,20 @@ class FindOptions
         try {
             $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
             foreach (array_keys($json_obj) as $k) {
-                if (array_key_exists($k, $this->arg_action_map)) {
+                if (array_key_exists($k, $this->bool_action_map)) {
+                    $this->bool_action_map[$k]($json_obj[$k], $settings);
+                } elseif (array_key_exists($k, $this->str_action_map)) {
                     if (gettype($json_obj[$k]) == 'string') {
-                        $this->arg_action_map[$k]($json_obj[$k], $settings);
-                    } elseif (gettype($json_obj[$k]) == 'integer') {
-                        $this->arg_action_map[$k](sprintf('%d', $json_obj[$k]), $settings);
+                        $this->str_action_map[$k]($json_obj[$k], $settings);
                     } elseif (gettype($json_obj[$k]) == 'array') {
                         foreach ($json_obj[$k] as $s) {
-                            $this->arg_action_map[$k]($s, $settings);
+                            $this->str_action_map[$k]($s, $settings);
                         }
                     } else {
                         throw new FindException("Invalid setting type: $k");
                     }
-                } elseif (array_key_exists($k, $this->bool_flag_action_map)) {
-                    $this->bool_flag_action_map[$k]($json_obj[$k], $settings);
+                } elseif (array_key_exists($k, $this->int_action_map)) {
+                    $this->int_action_map[$k]($json_obj[$k], $settings);
                 } else {
                     throw new FindException("Invalid option: $k");
                 }
@@ -204,17 +210,22 @@ class FindOptions
                     throw new FindException("Invalid option: $arg");
                 }
                 $long_arg = $this->long_arg_map[$arg];
-                if (array_key_exists($long_arg, $this->arg_action_map)) {
-                    if (count($args) > 0) {
-                        $val = array_shift($args);
-                        $this->arg_action_map[$long_arg]($val, $settings);
-                    } else {
-                        throw new FindException("Missing value for $arg");
-                    }
-                } elseif (array_key_exists($long_arg, $this->bool_flag_action_map)) {
-                    $this->bool_flag_action_map[$long_arg](true, $settings);
+                if (array_key_exists($long_arg, $this->bool_action_map)) {
+                    $this->bool_action_map[$long_arg](true, $settings);
                     if (in_array($long_arg, array("help", "version"))) {
                         break;
+                    }
+                } elseif (array_key_exists($long_arg, $this->str_action_map)
+                          || array_key_exists($long_arg, $this->int_action_map)) {
+                    if (count($args) > 0) {
+                        $val = array_shift($args);
+                        if (array_key_exists($long_arg, $this->str_action_map)) {
+                            $this->str_action_map[$long_arg]($val, $settings);
+                        } elseif (array_key_exists($long_arg, $this->int_action_map)) {
+                            $this->int_action_map[$long_arg](intval($val), $settings);
+                        }
+                    } else {
+                        throw new FindException("Missing value for $arg");
                     }
                 } else {
                     throw new FindException("Invalid option: $arg");
