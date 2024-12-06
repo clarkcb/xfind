@@ -33,13 +33,14 @@ class FindOption {
 
 class FindOptions {
   List<FindOption> findOptions = [];
-  var stringArgMap = {};
-  var boolArgMap = {};
+  var boolActionMap = {};
+  var stringActionMap = {};
+  var intActionMap = {};
   var longArgMap = {};
   late Future ready;
 
   FindOptions() {
-    ready = loadFindOptionsFromJson().then((f) => setMaps());
+    ready = loadFindOptionsFromJson().then((f) => setActionMaps());
   }
 
   Future<void> loadFindOptionsFromJson() async {
@@ -61,45 +62,8 @@ class FindOptions {
     }
   }
 
-  void setMaps() {
-    stringArgMap = {
-      'in-archiveext': (String s, FindSettings ss) =>
-          ss.addExtensions(s, ss.inArchiveExtensions),
-      'in-archivefilepattern': (String s, FindSettings ss) =>
-          ss.addPattern(s, ss.inArchiveFilePatterns),
-      'in-dirpattern': (String s, FindSettings ss) =>
-          ss.addPattern(s, ss.inDirPatterns),
-      'in-ext': (String s, FindSettings ss) =>
-          ss.addExtensions(s, ss.inExtensions),
-      'in-filepattern': (String s, FindSettings ss) =>
-          ss.addPattern(s, ss.inFilePatterns),
-      'in-filetype': (String s, FindSettings ss) =>
-          ss.inFileTypes.add(FileTypes.fromName(s)),
-      'maxdepth': (String s, FindSettings ss) => ss.maxDepth = int.parse(s),
-      'maxlastmod': (String s, FindSettings ss) =>
-          ss.maxLastMod = DateTime.parse(s),
-      'maxsize': (String s, FindSettings ss) => ss.maxSize = int.parse(s),
-      'mindepth': (String s, FindSettings ss) => ss.minDepth = int.parse(s),
-      'minlastmod': (String s, FindSettings ss) =>
-          ss.minLastMod = DateTime.parse(s),
-      'minsize': (String s, FindSettings ss) => ss.minSize = int.parse(s),
-      'out-archiveext': (String s, FindSettings ss) =>
-          ss.addExtensions(s, ss.outArchiveExtensions),
-      'out-archivefilepattern': (String s, FindSettings ss) =>
-          ss.addPattern(s, ss.outArchiveFilePatterns),
-      'out-dirpattern': (String s, FindSettings ss) =>
-          ss.addPattern(s, ss.outDirPatterns),
-      'out-ext': (String s, FindSettings ss) =>
-          ss.addExtensions(s, ss.outExtensions),
-      'out-filepattern': (String s, FindSettings ss) =>
-          ss.addPattern(s, ss.outFilePatterns),
-      'out-filetype': (String s, FindSettings ss) =>
-          ss.outFileTypes.add(FileTypes.fromName(s)),
-      'path': (String s, FindSettings ss) => ss.paths.add(s),
-      'sort-by': (String s, FindSettings ss) => ss.sortBy = nameToSortBy(s),
-    };
-
-    boolArgMap = {
+  void setActionMaps() {
+    boolActionMap = {
       'archivesonly': (bool b, FindSettings ss) => ss.archivesOnly = b,
       'debug': (bool b, FindSettings ss) => ss.debug = b,
       'excludearchives': (bool b, FindSettings ss) => ss.includeArchives = !b,
@@ -125,6 +89,46 @@ class FindOptions {
       'verbose': (bool b, FindSettings ss) => ss.verbose = b,
       'version': (bool b, FindSettings ss) => ss.printVersion = b,
     };
+
+    stringActionMap = {
+      'in-archiveext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.inArchiveExtensions),
+      'in-archivefilepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.inArchiveFilePatterns),
+      'in-dirpattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.inDirPatterns),
+      'in-ext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.inExtensions),
+      'in-filepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.inFilePatterns),
+      'in-filetype': (String s, FindSettings ss) =>
+          ss.inFileTypes.add(FileTypes.fromName(s)),
+      'maxlastmod': (String s, FindSettings ss) =>
+          ss.maxLastMod = DateTime.parse(s),
+      'minlastmod': (String s, FindSettings ss) =>
+          ss.minLastMod = DateTime.parse(s),
+      'out-archiveext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.outArchiveExtensions),
+      'out-archivefilepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.outArchiveFilePatterns),
+      'out-dirpattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.outDirPatterns),
+      'out-ext': (String s, FindSettings ss) =>
+          ss.addExtensions(s, ss.outExtensions),
+      'out-filepattern': (String s, FindSettings ss) =>
+          ss.addPattern(s, ss.outFilePatterns),
+      'out-filetype': (String s, FindSettings ss) =>
+          ss.outFileTypes.add(FileTypes.fromName(s)),
+      'path': (String s, FindSettings ss) => ss.paths.add(s),
+      'sort-by': (String s, FindSettings ss) => ss.sortBy = nameToSortBy(s),
+    };
+
+    intActionMap = {
+      'maxdepth': (int i, FindSettings ss) => ss.maxDepth = i,
+      'maxsize': (int i, FindSettings ss) => ss.maxSize = i,
+      'mindepth': (int i, FindSettings ss) => ss.minDepth = i,
+      'minsize': (int i, FindSettings ss) => ss.minSize = i,
+    };
   }
 
   Future<void> settingsFromJson(
@@ -132,19 +136,27 @@ class FindOptions {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
       jsonMap.forEach((key, value) {
-        if (stringArgMap.containsKey(key)) {
+        if (boolActionMap.containsKey(key)) {
+          if (value is bool) {
+            boolActionMap[key](value, settings);
+          } else {
+            logError('Invalid value for option $key');
+          }
+        } else if (stringActionMap.containsKey(key)) {
           if (value is String) {
-            stringArgMap[key](value, settings);
+            stringActionMap[key](value, settings);
           } else if (value is num) {
-            stringArgMap[key]('$value', settings);
+            stringActionMap[key]('$value', settings);
           } else {
             value.forEach((elem) {
-              stringArgMap[key](elem, settings);
+              stringActionMap[key](elem, settings);
             });
           }
-        } else if (boolArgMap.containsKey(key)) {
-          if (value is bool) {
-            boolArgMap[key](value, settings);
+        } else if (intActionMap.containsKey(key)) {
+          if (value is int) {
+            intActionMap[key](value, settings);
+          } else {
+            logError('Invalid value for option $key');
           }
         } else {
           logError('Invalid option: $key');
@@ -172,15 +184,20 @@ class FindOptions {
           }
           if (longArgMap.containsKey(arg)) {
             String longArg = longArgMap[arg];
-            if (stringArgMap.containsKey(longArg)) {
+            if (boolActionMap.containsKey(longArg)) {
+              boolActionMap[longArg](true, settings);
+            } else if (stringActionMap.containsKey(longArg) ||
+                intActionMap.containsKey(longArg)) {
               if (it.moveNext()) {
                 var s = it.current;
-                stringArgMap[longArg](s, settings);
+                if (stringActionMap.containsKey(longArg)) {
+                  stringActionMap[longArg](s, settings);
+                } else {
+                  intActionMap[longArg](int.parse(s), settings);
+                }
               } else {
                 throw FindException('Missing value for option $arg');
               }
-            } else if (boolArgMap.containsKey(longArg)) {
-              boolArgMap[longArg](true, settings);
             } else if (longArg == 'settings-file') {
               if (it.moveNext()) {
                 var s = it.current;
