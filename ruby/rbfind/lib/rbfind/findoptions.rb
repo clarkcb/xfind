@@ -16,12 +16,12 @@ module RbFind
 
     def initialize
       @options = []
-      @arg_action_dict = {}
-      @bool_flag_action_dict = {}
+      @bool_action_dict = {}
+      @str_action_dict = {}
+      @int_action_dict = {}
       @long_arg_dict = {}
       set_actions
       set_options_from_json
-      # set_options_from_xml
       @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
     end
 
@@ -34,13 +34,17 @@ module RbFind
         if arg.start_with?('-')
           arg = arg[1..arg.length] while arg && arg.start_with?('-')
           long_arg = @long_arg_dict[arg]
-          if @arg_action_dict.key?(long_arg)
+          if @bool_action_dict.key?(long_arg)
+            @bool_action_dict[long_arg].call(true, settings)
+            return settings if [:help, :version].include?(long_arg)
+          elsif @str_action_dict.key?(long_arg) || @int_action_dict.key?(long_arg)
             raise FindError, "Missing value for option #{arg}" if args.empty?
             arg_val = args.shift
-            @arg_action_dict[long_arg].call(arg_val, settings)
-          elsif @bool_flag_action_dict.key?(long_arg)
-            @bool_flag_action_dict[long_arg].call(true, settings)
-            return settings if %w[help version].include?(long_arg)
+            if @str_action_dict.key?(long_arg)
+              @str_action_dict[long_arg].call(arg_val, settings)
+            else
+              @int_action_dict[long_arg].call(arg_val.to_i, settings)
+            end
           else
             raise FindError, "Invalid option: #{arg}"
           end
@@ -69,13 +73,13 @@ module RbFind
       json_hash = JSON.parse(json)
       json_hash.each_key do |arg|
         arg_sym = arg.to_sym
-        if @arg_action_dict.key?(arg_sym)
-          @arg_action_dict[arg_sym].call(json_hash[arg], settings)
-        elsif @bool_flag_action_dict.key?(arg_sym)
-          @bool_flag_action_dict[arg_sym].call(json_hash[arg], settings)
-          return if %w[h help V version].include?(arg)
-        elsif arg == 'path'
-          settings.paths.push(Pathname.new(arg))
+        if @bool_action_dict.key?(arg_sym)
+          @bool_action_dict[arg_sym].call(json_hash[arg], settings)
+          return if %w[help version].include?(arg)
+        elsif @str_action_dict.key?(arg_sym)
+          @str_action_dict[arg_sym].call(json_hash[arg], settings)
+        elsif @int_action_dict.key?(arg_sym)
+          @int_action_dict[arg_sym].call(json_hash[arg], settings)
         else
           raise FindError, "Invalid option: #{arg}"
         end
@@ -114,72 +118,7 @@ module RbFind
     private
 
     def set_actions
-      @arg_action_dict = {
-        'in-archiveext': lambda { |x, settings|
-          settings.add_exts(x, settings.in_archive_extensions)
-        },
-        'in-archivefilepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_archive_file_patterns)
-        },
-        'in-dirpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_dir_patterns)
-        },
-        'in-ext': lambda { |x, settings|
-          settings.add_exts(x, settings.in_extensions)
-        },
-        'in-filetype': lambda { |x, settings|
-          settings.add_file_types(x, settings.in_file_types)
-        },
-        'in-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.in_file_patterns)
-        },
-        'maxdepth': lambda { |x, settings|
-          settings.max_depth = x.to_i
-        },
-        'maxlastmod': lambda { |x, settings|
-          settings.max_last_mod = DateTime.parse(x)
-        },
-        'maxsize': lambda { |x, settings|
-          settings.max_size = x.to_i
-        },
-        'mindepth': lambda { |x, settings|
-          settings.min_depth = x.to_i
-        },
-        'minlastmod': lambda { |x, settings|
-          settings.min_last_mod = DateTime.parse(x)
-        },
-        'minsize': lambda { |x, settings|
-          settings.min_size = x.to_i
-        },
-        'out-archiveext': lambda { |x, settings|
-          settings.add_exts(x, settings.out_archive_extensions)
-        },
-        'out-archivefilepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_archive_file_patterns)
-        },
-        'out-dirpattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_dir_patterns)
-        },
-        'out-ext': lambda { |x, settings|
-          settings.add_exts(x, settings.out_extensions)
-        },
-        'out-filepattern': lambda { |x, settings|
-          settings.add_patterns(x, settings.out_file_patterns)
-        },
-        'out-filetype': lambda { |x, settings|
-          settings.add_file_types(x, settings.out_file_types)
-        },
-        'path': lambda { |x, settings|
-          settings.add_path(x)
-        },
-        'settings-file': lambda { |x, settings|
-          settings_from_file(x, settings)
-        },
-        'sort-by': lambda { |x, settings|
-          settings.set_sort_by_for_name(x)
-        }
-      }
-      @bool_flag_action_dict = {
+      @bool_action_dict = {
         archivesonly: ->(b, settings) { settings.archives_only = b },
         caseinsensitive: ->(b, settings) { settings.sort_case_insensitive = b },
         casesensitive: ->(b, settings) { settings.sort_case_insensitive = !b },
@@ -203,6 +142,31 @@ module RbFind
         'sort-descending': ->(b, settings) { settings.sort_descending = b },
         verbose: ->(b, settings) { settings.verbose = b },
         version: ->(b, settings) { settings.print_version = b }
+      }
+      @str_action_dict = {
+        'in-archiveext': ->(s, settings) { settings.add_exts(s, settings.in_archive_extensions) },
+        'in-archivefilepattern': ->(s, settings) { settings.add_patterns(s, settings.in_archive_file_patterns) },
+        'in-dirpattern': ->(s, settings) { settings.add_patterns(s, settings.in_dir_patterns) },
+        'in-ext': ->(s, settings) { settings.add_exts(s, settings.in_extensions) },
+        'in-filetype': ->(s, settings) { settings.add_file_types(s, settings.in_file_types) },
+        'in-filepattern': ->(s, settings) { settings.add_patterns(s, settings.in_file_patterns) },
+        maxlastmod: ->(s, settings) { settings.max_last_mod = DateTime.parse(s) },
+        minlastmod: ->(s, settings) { settings.min_last_mod = DateTime.parse(s) },
+        'out-archiveext': ->(s, settings) { settings.add_exts(s, settings.out_archive_extensions) },
+        'out-archivefilepattern': ->(s, settings) { settings.add_patterns(s, settings.out_archive_file_patterns) },
+        'out-dirpattern': ->(s, settings) { settings.add_patterns(s, settings.out_dir_patterns) },
+        'out-ext': ->(s, settings) { settings.add_exts(s, settings.out_extensions) },
+        'out-filepattern': ->(s, settings) { settings.add_patterns(s, settings.out_file_patterns) },
+        'out-filetype': ->(s, settings) { settings.add_file_types(s, settings.out_file_types) },
+        path: ->(s, settings) { settings.add_path(s) },
+        'settings-file': ->(s, settings) { settings_from_file(s, settings) },
+        'sort-by': ->(s, settings) { settings.set_sort_by_for_name(s) }
+      }
+      @int_action_dict = {
+        maxdepth: ->(i, settings) { settings.max_depth = i },
+        maxsize: ->(i, settings) { settings.max_size = i },
+        mindepth: ->(i, settings) { settings.min_depth = i },
+        minsize: ->(i, settings) { settings.min_size = i },
       }
       @long_arg_dict = {}
     end
