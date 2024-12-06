@@ -9,13 +9,13 @@
         [cljfind.finder :only
          (filter-to-file-result find-files is-matching-archive-file-result? is-matching-dir? is-matching-file-result?)]
         [cljfind.findsettings :only
-          (DEFAULT-SETTINGS add-extension add-path add-pattern set-archives-only)]))
+         (DEFAULT-FIND-SETTINGS add-extension add-path add-pattern set-archives-only)]))
 
 (def TESTFILE
   (str/join java.io.File/separator [SHAREDPATH "testFiles" "testFile2.txt"]))
 
 (defn get-settings []
-  (add-pattern DEFAULT-SETTINGS "Finder" :findpatterns))
+  (add-pattern DEFAULT-FIND-SETTINGS "Finder" :findpatterns))
 
 (def ^:const ^String BINPATH
   (str/join java.io.File/separator [XFINDPATH "bin"]))
@@ -25,27 +25,27 @@
 ;; *****************************************************************************
 (deftest test-is-matching-dir?-default-settings
   (testing "test-is-matching-dir?-default-settings"
-           (is (is-matching-dir? (file ".") DEFAULT-SETTINGS))
-           (is (is-matching-dir? (file "..") DEFAULT-SETTINGS))
-           (is (not (is-matching-dir? (file ".git") DEFAULT-SETTINGS)))
-           (is (is-matching-dir? (file "clojure") DEFAULT-SETTINGS))))
+           (is (is-matching-dir? (file ".") DEFAULT-FIND-SETTINGS))
+           (is (is-matching-dir? (file "..") DEFAULT-FIND-SETTINGS))
+           (is (not (is-matching-dir? (file ".git") DEFAULT-FIND-SETTINGS)))
+           (is (is-matching-dir? (file "clojure") DEFAULT-FIND-SETTINGS))))
 
 (deftest test-is-matching-dir?-with-in-dir-patterns
-  (let [settings (add-pattern DEFAULT-SETTINGS "find" :in-dir-patterns)]
+  (let [settings (add-pattern DEFAULT-FIND-SETTINGS "find" :in-dir-patterns)]
     (testing "test-is-matching-dir?-with-in-dir-patterns"
              (is (is-matching-dir? (file "cljfind") settings))
              (is (is-matching-dir? (file "finder") settings))
              (is (not (is-matching-dir? (file "clojure") settings))))))
 
 (deftest test-is-matching-dir?-with-out-dir-patterns
-  (let [settings (add-pattern DEFAULT-SETTINGS "clojure" :out-dir-patterns)]
+  (let [settings (add-pattern DEFAULT-FIND-SETTINGS "clojure" :out-dir-patterns)]
     (testing "test-is-matching-dir?-with-out-dir-patterns"
              (is (is-matching-dir? (file "cljfind") settings))
              (is (is-matching-dir? (file "finder") settings))
              (is (not (is-matching-dir? (file "clojure") settings))))))
 
 (deftest test-is-matching-dir?-with-include-hidden
-  (let [settings (assoc DEFAULT-SETTINGS :include-hidden true)]
+  (let [settings (assoc DEFAULT-FIND-SETTINGS :include-hidden true)]
     (testing "test-is-matching-dir?-with-include-hidden"
              (is (is-matching-dir? (file ".") settings))
              (is (is-matching-dir? (file "..") settings))
@@ -58,10 +58,10 @@
 (deftest test-is-matching-file-result?-default-settings
   (let [result (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/finder.clj") :code 0 nil)]
     (testing "test-is-matching-file-result?-default-settings"
-      (is (is-matching-file-result? result DEFAULT-SETTINGS)))))
+             (is (is-matching-file-result? result DEFAULT-FIND-SETTINGS)))))
 
 (deftest test-is-matching-file-result?-with-in-extensions
-  (let [settings (add-extension DEFAULT-SETTINGS "clj,js" :in-extensions)
+  (let [settings (add-extension DEFAULT-FIND-SETTINGS "clj,js" :in-extensions)
         cljresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/finder.clj") :code 0 nil)
         jsresult (new-file-result (file "~/src/xfind/javascript/jsfind/src/finder.js") :code 0 nil)
         pyresult (new-file-result (file "~/src/xfind/python/pyfind/pyfind/finder.py") :code 0 nil)
@@ -72,7 +72,7 @@
       (is (not (is-matching-file-result? pyresult settings))))))
 
 (deftest test-is-matching-file-result?-with-out-extensions
-  (let [settings (add-extension DEFAULT-SETTINGS "py" :out-extensions)
+  (let [settings (add-extension DEFAULT-FIND-SETTINGS "py" :out-extensions)
         cljresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/finder.clj") :code 0 nil)
         jsresult (new-file-result (file "~/src/xfind/javascript/jsfind/src/finder.js") :code 0 nil)
         pyresult (new-file-result (file "~/src/xfind/python/pyfind/pyfind/finder.py") :code 0 nil)
@@ -83,7 +83,7 @@
       (is (not (is-matching-file-result? pyresult settings))))))
 
 (deftest test-is-matching-file-result?-with-in-file-patterns
-  (let [settings (add-pattern DEFAULT-SETTINGS "find" :in-file-patterns)
+  (let [settings (add-pattern DEFAULT-FIND-SETTINGS "find" :in-file-patterns)
         cljfindresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/cljfind.clj") :code 0 nil)
         finderresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/finder.clj") :code 0 nil)
         fileutilresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/fileutil.clj") :code 0 nil)
@@ -94,7 +94,7 @@
       (is (not (is-matching-file-result? fileutilresult settings))))))
 
 (deftest test-is-matching-file-result?-with-out-file-patterns
-  (let [settings (add-pattern DEFAULT-SETTINGS "find" :out-file-patterns)
+  (let [settings (add-pattern DEFAULT-FIND-SETTINGS "find" :out-file-patterns)
         cljfindresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/cljfind.clj") :code 0 nil)
         finderresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/finder.clj") :code 0 nil)
         fileutilresult (new-file-result (file "~/src/xfind/clojure/cljfind/src/cljfind/fileutil.clj") :code 0 nil)
@@ -110,10 +110,10 @@
 (deftest test-is-matching-archive-file-result?-default-settings
   (let [result (new-file-result (file "./archive.zip") :archive 0 nil)]
     (testing "test-is-matching-archive-file-result?-default-settings"
-             (is (is-matching-archive-file-result? result DEFAULT-SETTINGS)))))
+             (is (is-matching-archive-file-result? result DEFAULT-FIND-SETTINGS)))))
 
 (deftest test-is-matching-archive-file-result?-with-in-earchivextensions
-  (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archive-extensions)
+  (let [settings (add-extension DEFAULT-FIND-SETTINGS "zip,bz2" :in-archive-extensions)
         zipresult (new-file-result (file "./archive.zip") :archive 0 nil)
         bz2result (new-file-result (file "./archive.bz2") :archive 0 nil)
         gzresult (new-file-result (file "./archive.gz") :archive 0 nil)
@@ -124,7 +124,7 @@
              (is (not (is-matching-archive-file-result? gzresult settings))))))
 
 (deftest test-is-matching-archive-file-result?-with-out-archive-extensions
-  (let [settings (add-extension DEFAULT-SETTINGS "gz" :out-archive-extensions)
+  (let [settings (add-extension DEFAULT-FIND-SETTINGS "gz" :out-archive-extensions)
         zipresult (new-file-result (file "./archive.zip") :archive 0 nil)
         bz2result (new-file-result (file "./archive.bz2") :archive 0 nil)
         gzresult (new-file-result (file "./archive.gz") :archive 0 nil)
@@ -135,7 +135,7 @@
              (is (not (is-matching-archive-file-result? gzresult settings))))))
 
 (deftest test-is-matching-archive-file-result?-with-in-archive-file-patterns
-  (let [settings (add-pattern DEFAULT-SETTINGS "arch" :in-archive-file-patterns)
+  (let [settings (add-pattern DEFAULT-FIND-SETTINGS "arch" :in-archive-file-patterns)
         archiveresult (new-file-result (file "./archive.zip") :archive 0 nil)
         archresult (new-file-result (file "./arch.bz2") :archive 0 nil)
         compressedresult (new-file-result (file "./compressed.gz") :archive 0 nil)
@@ -146,7 +146,7 @@
              (is (not (is-matching-archive-file-result? compressedresult settings))))))
 
 (deftest test-is-matching-archive-file-result?-with-out-archive-patterns
-  (let [settings (add-pattern DEFAULT-SETTINGS "compress" :out-archive-file-patterns)
+  (let [settings (add-pattern DEFAULT-FIND-SETTINGS "compress" :out-archive-file-patterns)
         archiveresult (new-file-result (file "./archive.zip") :archive 0 nil)
         archresult (new-file-result (file "./arch.bz2") :archive 0 nil)
         compressedresult (new-file-result (file "./compressed.gz") :archive 0 nil)
@@ -157,7 +157,7 @@
              (is (not (is-matching-archive-file-result? compressedresult settings))))))
 
 (deftest test-is-matching-archive-file-result?-with-include-archives
-  (let [settings (assoc DEFAULT-SETTINGS :include-archives true)
+  (let [settings (assoc DEFAULT-FIND-SETTINGS :include-archives true)
         archiveresult (new-file-result (file "./archive.zip") :archive 0 nil)
         archresult (new-file-result (file "./arch.bz2") :archive 0 nil)
         compressedresult (new-file-result (file "./compressed.gz") :archive 0 nil)
@@ -168,7 +168,7 @@
              (is (is-matching-archive-file-result? compressedresult settings)))))
 
 (deftest test-is-matching-archive-file-result?-with-archives-only
-  (let [settings (set-archives-only DEFAULT-SETTINGS true)
+  (let [settings (set-archives-only DEFAULT-FIND-SETTINGS true)
         archiveresult (new-file-result (file "./archive.zip") :archive 0 nil)
         archresult (new-file-result (file "./arch.bz2") :archive 0 nil)
         compressedresult (new-file-result (file "./compressed.gz") :archive 0 nil)
@@ -183,10 +183,10 @@
 ;; *****************************************************************************
 (deftest test-filter-to-file-result-default-settings
   (testing "test-filter-to-file-result-default-settings"
-    (is (not (nil? (filter-to-file-result (file "finder.clj") DEFAULT-SETTINGS))))))
+           (is (not (nil? (filter-to-file-result (file "finder.clj") DEFAULT-FIND-SETTINGS))))))
 
 (deftest test-filter-to-file-result-with-file-result-settings
-  (let [settings (add-extension DEFAULT-SETTINGS "clj,js" :in-extensions)
+  (let [settings (add-extension DEFAULT-FIND-SETTINGS "clj,js" :in-extensions)
         ]
     (testing "test-filter-to-file-result-with-file-result-settings"
       (is (not (nil? (filter-to-file-result (file "finder.clj") settings))))
@@ -195,7 +195,7 @@
       (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
 
 (deftest test-filter-to-file-result-with-archive-file-result-settings
-  (let [settings (add-extension DEFAULT-SETTINGS "zip,bz2" :in-archive-extensions)
+  (let [settings (add-extension DEFAULT-FIND-SETTINGS "zip,bz2" :in-archive-extensions)
         ]
     (testing "test-filter-to-file-result-with-archive-file-result-settings"
       (is (nil? (filter-to-file-result (file "archive.zip") settings)))
@@ -204,7 +204,7 @@
       (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
 
 (deftest test-filter-to-file-result-with-include-archives
-  (let [settings (assoc DEFAULT-SETTINGS :include-archives true)
+  (let [settings (assoc DEFAULT-FIND-SETTINGS :include-archives true)
         ]
     (testing "test-filter-to-file-result-with-include-archives"
       (is (not (nil? (filter-to-file-result (file "archive.zip") settings))))
@@ -214,7 +214,7 @@
       (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
 
 (deftest test-filter-to-file-result-with-archives-only
-  (let [settings (set-archives-only DEFAULT-SETTINGS true)
+  (let [settings (set-archives-only DEFAULT-FIND-SETTINGS true)
         zipfile (file "archive.zip")
         ziptype (get-file-type zipfile)
         zipresult (filter-to-file-result zipfile settings)
@@ -229,7 +229,7 @@
       (is (nil? (filter-to-file-result (file ".gitignore") settings))))))
 
 (deftest test-filter-to-file-result-with-includehidden
-  (let [settings (assoc DEFAULT-SETTINGS :include-hidden true)
+  (let [settings (assoc DEFAULT-FIND-SETTINGS :include-hidden true)
         ]
     (testing "test-filter-to-file-result-with-includehidden"
       (is (not (nil? (filter-to-file-result (file "finder.clj") settings))))
@@ -240,7 +240,7 @@
 ;; follow-symlink tests
 ;; *****************************************************************************
 (deftest test-follow-symlink-default-settings
-  (let [settings (add-path DEFAULT-SETTINGS (to-path BINPATH))
+  (let [settings (add-path DEFAULT-FIND-SETTINGS (to-path BINPATH))
         [files errs] (find-files settings)
        ]
     (testing "test-follow-symlink-default-settings"
@@ -248,7 +248,7 @@
              (is (< (count files) 3)))))
 
 (deftest test-follow-symlink-with-followsymlinks
-  (let [settings (assoc (add-path DEFAULT-SETTINGS (to-path BINPATH)) :follow-symlinks true)
+  (let [settings (assoc (add-path DEFAULT-FIND-SETTINGS (to-path BINPATH)) :follow-symlinks true)
         [files errs] (find-files settings)
        ]
     (testing "test-follow-symlink-with-followsymlinks"
@@ -256,7 +256,7 @@
              (is (or (empty? files) (> (count files) 2))))))
 
 (deftest test-follow-symlink-with-nofollowsymlinks
-  (let [settings (assoc (add-path DEFAULT-SETTINGS (to-path BINPATH)) :follow-symlinks false)
+  (let [settings (assoc (add-path DEFAULT-FIND-SETTINGS (to-path BINPATH)) :follow-symlinks false)
         [files errs] (find-files settings)
        ]
     (testing "test-follow-symlink-with-nofollowsymlinks"

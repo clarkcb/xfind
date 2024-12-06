@@ -84,7 +84,7 @@
     ^Boolean verbose
   ])
 
-(def ^:const DEFAULT-SETTINGS
+(def ^:const DEFAULT-FIND-SETTINGS
   (->FindSettings
    false     ; archives-only
    false     ; debug

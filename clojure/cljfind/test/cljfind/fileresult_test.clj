@@ -4,7 +4,7 @@
   (:use [clojure.string :as str :only (join)]
         [cljfind.fileresult :only (new-file-result file-result-path sort-results)]
         [cljfind.fileutil :only (get-name to-path)]
-        [cljfind.findsettings :only(DEFAULT-SETTINGS)]))
+        [cljfind.findsettings :only (DEFAULT-FIND-SETTINGS)]))
 
 (deftest test-file-result-abs-path
   (let [path "~/src/xfind/clojure/cljfind/src/cljfind/fileresult.clj"
@@ -30,7 +30,7 @@
                  (new-file-result (to-path "PQR.txt") :text 0 nil)
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
-        settings (assoc DEFAULT-SETTINGS :sort-by :filepath)
+        settings (assoc DEFAULT-FIND-SETTINGS :sort-by :filepath)
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path"
@@ -45,7 +45,7 @@
                  (new-file-result (to-path "PQR.txt") :text 0 nil)
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
-        with-sort-by (assoc DEFAULT-SETTINGS :sort-by :filepath)
+        with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filepath)
         settings (assoc with-sort-by :sort-case-insensitive true)
         sorted-results (sort-results results settings)
         ]
@@ -61,7 +61,7 @@
                  (new-file-result (to-path "PQR.txt") :text 0 nil)
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
-        with-sort-by (assoc DEFAULT-SETTINGS :sort-by :filepath)
+        with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filepath)
         settings (assoc with-sort-by :sort-descending true)
         sorted-results (sort-results results settings)
         ]
@@ -77,7 +77,7 @@
                  (new-file-result (to-path "PQR.txt") :text 0 nil)
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
-        settings (assoc DEFAULT-SETTINGS :sort-by :filename)
+        settings (assoc DEFAULT-FIND-SETTINGS :sort-by :filename)
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename"
@@ -92,7 +92,7 @@
                  (new-file-result (to-path "PQR.txt") :text 0 nil)
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
-        with-sort-by (assoc DEFAULT-SETTINGS :sort-by :filename)
+        with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filename)
         settings (assoc with-sort-by :sort-case-insensitive true)
         sorted-results (sort-results results settings)
         ]
@@ -108,7 +108,7 @@
                  (new-file-result (to-path "PQR.txt") :text 0 nil)
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
-        with-sort-by (assoc DEFAULT-SETTINGS :sort-by :filename)
+        with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filename)
         settings (assoc with-sort-by :sort-descending true)
         sorted-results (sort-results results settings)
         ]
