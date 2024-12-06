@@ -17,31 +17,7 @@ module FindOptions =
         let os2 = if o2.ShortArg <> "" then o2.ShortArg + "@" + o2.LongArg else o2.LongArg
         String.Compare(os1, os2, StringComparison.OrdinalIgnoreCase)
 
-    let argActionMap : Map<string, string -> FindSettings -> Unit> =
-        [
-            ("in-archiveext", (fun (s : string) (settings : FindSettings) -> settings.InArchiveExtensions <- settings.AddExtensions s settings.InArchiveExtensions));
-            ("in-archivefilepattern", (fun (s : string) (settings : FindSettings) -> settings.InArchiveFilePatterns <- settings.AddPattern s settings.InArchiveFilePatterns));
-            ("in-dirpattern", (fun (s : string) (settings : FindSettings) -> settings.InDirPatterns <- settings.AddPattern s settings.InDirPatterns));
-            ("in-ext", (fun (s : string) (settings : FindSettings) -> settings.InExtensions <- settings.AddExtensions s settings.InExtensions));
-            ("in-filepattern", (fun (s : string) (settings : FindSettings) -> settings.InFilePatterns <- settings.AddPattern s settings.InFilePatterns));
-            ("in-filetype", (fun (s : string) (settings : FindSettings) -> settings.InFileTypes <- settings.AddFileTypes s settings.InFileTypes));
-            ("out-archiveext", (fun (s : string) (settings : FindSettings) -> settings.OutArchiveExtensions <- settings.AddExtensions s settings.OutArchiveExtensions));
-            ("out-archivefilepattern", (fun (s : string) (settings : FindSettings) -> settings.OutArchiveFilePatterns <- settings.AddPattern s settings.OutArchiveFilePatterns));
-            ("out-dirpattern", (fun (s : string) (settings : FindSettings) -> settings.OutDirPatterns <- settings.AddPattern s settings.OutDirPatterns));
-            ("out-ext", (fun (s : string) (settings : FindSettings) -> settings.OutExtensions <- settings.AddExtensions s settings.OutExtensions));
-            ("out-filepattern", (fun (s : string) (settings : FindSettings) -> settings.OutFilePatterns <- settings.AddPattern s settings.OutFilePatterns));
-            ("out-filetype", (fun (s : string) (settings : FindSettings) -> settings.OutFileTypes <- settings.AddFileTypes s settings.OutFileTypes));
-            ("maxdepth", (fun (s : string) (settings : FindSettings) -> settings.MaxDepth <- int s));
-            ("maxlastmod", (fun (s : string) (settings : FindSettings) -> settings.MaxLastMod <- Some(DateTime.Parse(s))));
-            ("maxsize", (fun (s : string) (settings : FindSettings) -> settings.MaxSize <- int s));
-            ("mindepth", (fun (s : string) (settings : FindSettings) -> settings.MinDepth <- int s));
-            ("minlastmod", (fun (s : string) (settings : FindSettings) -> settings.MinLastMod <- Some(DateTime.Parse(s))));
-            ("minsize", (fun (s : string) (settings : FindSettings) -> settings.MinSize <- int s));
-            ("path", (fun (s : string) (settings : FindSettings) -> settings.Paths <- settings.AddPath s settings.Paths));
-            ("sort-by", (fun (s : string) (settings : FindSettings) -> settings.SortBy <- SortUtil.SortByFromName s));
-        ] |> Map.ofList
-
-    let flagActionMap : Map<string, bool -> FindSettings -> Unit> =
+    let boolActionMap : Map<string, bool -> FindSettings -> Unit> =
         [
             ("archivesonly", (fun (b : bool) (settings : FindSettings) -> settings.ArchivesOnly <- b));
             ("debug", (fun (b : bool) (settings : FindSettings) -> settings.Debug <- b));
@@ -65,6 +41,34 @@ module FindOptions =
             ("verbose", (fun (b : bool) (settings : FindSettings) -> settings.Verbose <- b));
             ("version", (fun (b : bool) (settings : FindSettings) -> settings.PrintVersion <- b));
         ] |> Map.ofList;
+
+    let stringActionMap : Map<string, string -> FindSettings -> Unit> =
+        [
+            ("in-archiveext", (fun (s : string) (settings : FindSettings) -> settings.InArchiveExtensions <- settings.AddExtensions s settings.InArchiveExtensions));
+            ("in-archivefilepattern", (fun (s : string) (settings : FindSettings) -> settings.InArchiveFilePatterns <- settings.AddPattern s settings.InArchiveFilePatterns));
+            ("in-dirpattern", (fun (s : string) (settings : FindSettings) -> settings.InDirPatterns <- settings.AddPattern s settings.InDirPatterns));
+            ("in-ext", (fun (s : string) (settings : FindSettings) -> settings.InExtensions <- settings.AddExtensions s settings.InExtensions));
+            ("in-filepattern", (fun (s : string) (settings : FindSettings) -> settings.InFilePatterns <- settings.AddPattern s settings.InFilePatterns));
+            ("in-filetype", (fun (s : string) (settings : FindSettings) -> settings.InFileTypes <- settings.AddFileTypes s settings.InFileTypes));
+            ("out-archiveext", (fun (s : string) (settings : FindSettings) -> settings.OutArchiveExtensions <- settings.AddExtensions s settings.OutArchiveExtensions));
+            ("out-archivefilepattern", (fun (s : string) (settings : FindSettings) -> settings.OutArchiveFilePatterns <- settings.AddPattern s settings.OutArchiveFilePatterns));
+            ("out-dirpattern", (fun (s : string) (settings : FindSettings) -> settings.OutDirPatterns <- settings.AddPattern s settings.OutDirPatterns));
+            ("out-ext", (fun (s : string) (settings : FindSettings) -> settings.OutExtensions <- settings.AddExtensions s settings.OutExtensions));
+            ("out-filepattern", (fun (s : string) (settings : FindSettings) -> settings.OutFilePatterns <- settings.AddPattern s settings.OutFilePatterns));
+            ("out-filetype", (fun (s : string) (settings : FindSettings) -> settings.OutFileTypes <- settings.AddFileTypes s settings.OutFileTypes));
+            ("maxlastmod", (fun (s : string) (settings : FindSettings) -> settings.MaxLastMod <- Some(DateTime.Parse(s))));
+            ("minlastmod", (fun (s : string) (settings : FindSettings) -> settings.MinLastMod <- Some(DateTime.Parse(s))));
+            ("path", (fun (s : string) (settings : FindSettings) -> settings.Paths <- settings.AddPath s settings.Paths));
+            ("sort-by", (fun (s : string) (settings : FindSettings) -> settings.SortBy <- SortUtil.SortByFromName s));
+        ] |> Map.ofList
+
+    let intActionMap : Map<string, int -> FindSettings -> Unit> =
+        [
+            ("maxdepth", (fun (i : int) (settings : FindSettings) -> settings.MaxDepth <- i));
+            ("maxsize", (fun (i : int) (settings : FindSettings) -> settings.MaxSize <- i));
+            ("mindepth", (fun (i : int) (settings : FindSettings) -> settings.MinDepth <- i));
+            ("minsize", (fun (i : int) (settings : FindSettings) -> settings.MinSize <- i));
+        ] |> Map.ofList
 
     type FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>
 
@@ -101,19 +105,22 @@ module FindOptions =
                 | IsOption opt ->
                     if optionNameMap.ContainsKey(opt) then
                         let long = optionNameMap[opt]
-                        if argActionMap.ContainsKey(long) then
-                            match tail with
-                            | [] ->
-                                settings, $"Missing value for option: %s{opt}"
-                            | aHead :: aTail ->
-                                argActionMap[long] aHead settings
-                                recSettingsFromArgs aTail settings
-                        elif flagActionMap.ContainsKey(long) then
-                            flagActionMap[long] true settings
+                        if boolActionMap.ContainsKey(long) then
+                            boolActionMap[long] true settings
                             if long = "help" then
                                 recSettingsFromArgs [] settings
                             else
                                 recSettingsFromArgs tail settings
+                        elif stringActionMap.ContainsKey(long) || intActionMap.ContainsKey(long) then
+                            match tail with
+                            | [] ->
+                                settings, $"Missing value for option: %s{opt}"
+                            | aHead :: aTail ->
+                                if stringActionMap.ContainsKey(long) then
+                                    stringActionMap[long] aHead settings
+                                else
+                                    intActionMap[long] (int aHead) settings
+                                recSettingsFromArgs aTail settings
                         else
                             settings, $"Invalid option: %s{opt}"
                     else
