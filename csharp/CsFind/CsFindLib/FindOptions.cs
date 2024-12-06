@@ -12,39 +12,7 @@ public class FindOptions
 {
 	private readonly string _findOptionsResource;
 
-	private static readonly Dictionary<string, Action<string, FindSettings>> ArgActionDictionary =
-		new()
-		{
-			{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
-			{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
-			{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
-			{ "in-ext", (s, settings) => settings.AddInExtension(s) },
-			{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
-			{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
-			{ "maxdepth", (s, settings) => settings.MaxDepth = int.Parse(s) },
-			{ "maxlastmod", (s, settings) => {
-					settings.MaxLastMod = DateTime.Parse(s);
-				}
-			},
-			{ "maxsize", (s, settings) => settings.MaxSize = int.Parse(s) },
-			{ "mindepth", (s, settings) => settings.MinDepth = int.Parse(s) },
-			{ "minlastmod", (s, settings) => {
-					settings.MinLastMod = DateTime.Parse(s);
-				}
-			},
-			{ "minsize", (s, settings) => settings.MinSize = int.Parse(s) },
-			{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
-			{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
-			{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
-			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
-			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
-			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
-			{ "path", (s, settings) => settings.AddPath(s) },
-			{ "settings-file", SettingsFromFile },
-			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
-		};
-
-	private static readonly Dictionary<string, Action<bool, FindSettings>> BoolFlagActionDictionary =
+	private static readonly Dictionary<string, Action<bool, FindSettings>> BoolActionDictionary =
 		new()
 		{
 			{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
@@ -70,48 +38,76 @@ public class FindOptions
 			{ "version", (b, settings) => settings.PrintVersion = b },
 		};
 
+	private static readonly Dictionary<string, Action<string, FindSettings>> StringActionDictionary =
+		new()
+		{
+			{ "in-archiveext", (s, settings) => settings.AddInArchiveExtension(s) },
+			{ "in-archivefilepattern", (s, settings) => settings.AddInArchiveFilePattern(s) },
+			{ "in-dirpattern", (s, settings) => settings.AddInDirPattern(s) },
+			{ "in-ext", (s, settings) => settings.AddInExtension(s) },
+			{ "in-filepattern", (s, settings) => settings.AddInFilePattern(s) },
+			{ "in-filetype", (s, settings) => settings.AddInFileType(s) },
+			{ "maxlastmod", (s, settings) => {
+					settings.MaxLastMod = DateTime.Parse(s);
+				}
+			},
+			{ "minlastmod", (s, settings) => {
+					settings.MinLastMod = DateTime.Parse(s);
+				}
+			},
+			{ "out-archiveext", (s, settings) => settings.AddOutArchiveExtension(s) },
+			{ "out-archivefilepattern", (s, settings) => settings.AddOutArchiveFilePattern(s) },
+			{ "out-dirpattern", (s, settings) => settings.AddOutDirPattern(s) },
+			{ "out-ext", (s, settings) => settings.AddOutExtension(s) },
+			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
+			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
+			{ "path", (s, settings) => settings.AddPath(s) },
+			{ "settings-file", SettingsFromFile },
+			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
+		};
+
+	private static readonly Dictionary<string, Action<int, FindSettings>> IntActionDictionary =
+		new()
+		{
+			{ "maxdepth", (i, settings) => settings.MaxDepth = i },
+			{ "maxsize", (i, settings) => settings.MaxSize = i },
+			{ "mindepth", (i, settings) => settings.MinDepth = i },
+			{ "minsize", (i, settings) => settings.MinSize = i },
+		};
+
 	public List<FindOption> Options { get; }
-	public Dictionary<string, FindOption> ArgDictionary { get; }
-	public Dictionary<string, FindOption> FlagDictionary { get; }
+	private Dictionary<string, string> LongArgDictionary { get; }
 
 	public FindOptions()
 	{
 		_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 		Options = [];
-		ArgDictionary = new Dictionary<string, FindOption>();
-		FlagDictionary = new Dictionary<string, FindOption>();
+		LongArgDictionary = new Dictionary<string, string>();
 		SetOptionsFromJson();
 	}
 
 	private void SetOptionsFromJson()
 	{
 		var findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(_findOptionsResource);
-		var optionDicts = findOptionsDict!["findoptions"];
+		if (findOptionsDict == null
+		    || !findOptionsDict.TryGetValue("findoptions", out List<Dictionary<string, string>>? optionDicts))
+		{
+			throw new FindException("Missing or invalid search options resource");
+		}
+
 		foreach (var optionDict in optionDicts)
 		{
 			var longArg = optionDict["long"];
-			var shortArg = optionDict.GetValueOrDefault("short");
+			LongArgDictionary.Add(longArg, longArg);
+			string? shortArg = null;
+			if (optionDict.TryGetValue("short", out var shortVal))
+			{
+				shortArg = shortVal;
+				LongArgDictionary.Add(shortArg, longArg);
+			}
 			var desc = optionDict["desc"];
-			if (ArgActionDictionary.TryGetValue(longArg, out var argActionValue))
-			{
-				var option = new FindArgOption(shortArg, longArg, argActionValue, desc);
-				Options.Add(option);
-				ArgDictionary.Add(longArg, option);
-				if (!string.IsNullOrWhiteSpace(shortArg))
-				{
-					ArgDictionary.Add(shortArg, option);
-				}
-			}
-			else if (BoolFlagActionDictionary.TryGetValue(longArg, out var boolFlagActionValue))
-			{
-				var option = new FindFlagOption(shortArg, longArg, boolFlagActionValue, desc);
-				Options.Add(option);
-				FlagDictionary.Add(longArg, option);
-				if (!string.IsNullOrWhiteSpace(shortArg))
-				{
-					FlagDictionary.Add(shortArg, option);
-				}
-			}
+			var option = new FindOption(shortArg, longArg, desc);
+			Options.Add(option);
 		}
 	}
 
@@ -127,12 +123,11 @@ public class FindOptions
 	public static void SettingsFromJson(string jsonString, FindSettings settings)
 	{
 		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-		if (settingsDict != null) {
-			foreach (var (key, value) in settingsDict)
-			{
-				var obj = (JsonElement)value;
-				ApplySetting(key, obj, settings);
-			}
+		if (settingsDict == null) return;
+		foreach (var (key, value) in settingsDict)
+		{
+			var obj = (JsonElement)value;
+			ApplySetting(key, obj, settings);
 		}
 	}
 
@@ -142,7 +137,8 @@ public class FindOptions
 		{
 			case JsonValueKind.String:
 				var s = obj.GetString();
-				if (s != null) {
+				if (s != null)
+				{
 					ApplySetting(arg, s, settings);
 				}
 				break;
@@ -153,7 +149,7 @@ public class FindOptions
 				ApplySetting(arg, false, settings);
 				break;
 			case JsonValueKind.Number:
-				ApplySetting(arg, obj.GetInt32().ToString(), settings);
+				ApplySetting(arg, obj.GetInt32(), settings);
 				break;
 			case JsonValueKind.Array:
 				foreach (var arrVal in obj.EnumerateArray())
@@ -169,11 +165,11 @@ public class FindOptions
 		}
 	}
 
-	private static void ApplySetting(string arg, string val, FindSettings settings)
+	private static void ApplySetting(string arg, bool val, FindSettings settings)
 	{
-		if (ArgActionDictionary.TryGetValue(arg, out var value))
+		if (BoolActionDictionary.TryGetValue(arg, out var action))
 		{
-			value(val, settings);
+			action(val, settings);
 		}
 		else
 		{
@@ -181,11 +177,23 @@ public class FindOptions
 		}
 	}
 
-	private static void ApplySetting(string arg, bool val, FindSettings settings)
+	private static void ApplySetting(string arg, string val, FindSettings settings)
 	{
-		if (BoolFlagActionDictionary.TryGetValue(arg, out Action<bool, FindSettings>? value))
+		if (StringActionDictionary.TryGetValue(arg, out var action))
 		{
-			value(val, settings);
+			action(val, settings);
+		}
+		else
+		{
+			throw new FindException($"Invalid option: {arg}");
+		}
+	}
+
+	private static void ApplySetting(string arg, int val, FindSettings settings)
+	{
+		if (IntActionDictionary.TryGetValue(arg, out var action))
+		{
+			action(val, settings);
 		}
 		else
 		{
@@ -201,54 +209,60 @@ public class FindOptions
 
 		while (queue.Count > 0)
 		{
-			var s = queue.Dequeue();
-			if (s.StartsWith('-'))
+			var arg = queue.Dequeue();
+			if (arg.StartsWith('-'))
 			{
 				try
 				{
-					while (s.StartsWith('-'))
+					while (arg.StartsWith('-'))
 					{
-						s = s[1..];
+						arg = arg[1..];
 					}
 				}
 				catch (InvalidOperationException e)
 				{
 					throw new FindException(e.Message);
 				}
-				if (string.IsNullOrWhiteSpace(s))
+				if (string.IsNullOrWhiteSpace(arg))
 				{
 					throw new FindException("Invalid option: -");
 				}
-				if (ArgDictionary.TryGetValue(s, out var value))
+
+				var longArg = LongArgDictionary.GetValueOrDefault(arg, arg);
+				if (BoolActionDictionary.TryGetValue(longArg, out var boolAction))
+				{
+					boolAction(true, settings);
+				}
+				else if (StringActionDictionary.TryGetValue(longArg, out var stringAction))
 				{
 					try
 					{
-						((FindArgOption)value).Action(queue.Dequeue(), settings);
+						stringAction(queue.Dequeue(), settings);
 					}
-					catch (InvalidOperationException e)
+					catch (InvalidOperationException)
 					{
-						throw new FindException(e.Message);
+						throw new FindException($"Missing value for option {arg}");
 					}
 				}
-				else if (FlagDictionary.TryGetValue(s, out var value1))
+				else if (IntActionDictionary.TryGetValue(longArg, out var intAction))
 				{
 					try
 					{
-						((FindFlagOption)value1).Action(true, settings);
+						intAction(int.Parse(queue.Dequeue()), settings);
 					}
-					catch (InvalidOperationException e)
+					catch (InvalidOperationException)
 					{
-						throw new FindException(e.Message);
+						throw new FindException($"Missing value for option {arg}");
 					}
 				}
 				else
 				{
-					throw new FindException($"Invalid option: {s}");
+					throw new FindException($"Invalid option: {arg}");
 				}
 			}
 			else
 			{
-				settings.AddPath(s);
+				settings.AddPath(arg);
 			}
 		}
 		return settings;
