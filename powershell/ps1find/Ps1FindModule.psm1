@@ -467,89 +467,7 @@ class FindOptions {
     # $LongArgMap = @{}
     # instantiate this way to get case sensitivity of keys
     $LongArgMap = [system.collections.hashtable]::new()
-    $ArgActionMap = @{
-        "in-archiveext" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.InArchiveExtensions += $settings.GetExtensions($s)
-        }
-        "in-archivefilepattern" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.InArchiveFilePatterns += [regex]$s
-        }
-        "in-dirpattern" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.InDirPatterns += [regex]$s
-        }
-        "in-ext" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.InExtensions += $settings.GetExtensions($s)
-        }
-        "in-filepattern" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.InFilePatterns += [regex]$s
-        }
-        "in-filetype" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.InFileTypes += GetFileTypeFromName($s)
-        }
-        "maxdepth" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.MaxDepth = [int]$s
-        }
-        "maxlastmod" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.MaxLastMod = [DateTime]$s
-        }
-        "maxsize" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.MaxSize = [int]$s
-        }
-        "mindepth" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.MinDepth = [int]$s
-        }
-        "minlastmod" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.MinLastMod = [DateTime]$s
-        }
-        "minsize" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.MinSize = [int]$s
-        }
-        "out-archiveext" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.OutArchiveExtensions += $settings.GetExtensions($s)
-        }
-        "out-archivefilepattern" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.OutArchiveFilePatterns += [regex]$s
-        }
-        "out-dirpattern" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.OutDirPatterns += [regex]$s
-        }
-        "out-ext" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.OutExtensions += $settings.GetExtensions($s)
-        }
-        "out-filepattern" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.OutFilePatterns += [regex]$s
-        }
-        "out-filetype" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.OutFileTypes += GetFileTypeFromName($s)
-        }
-        "path" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.Paths += $s
-        }
-        "sort-by" = {
-            param([string]$s, [FindSettings]$settings)
-            $settings.SortBy = GetSortByFromName($s)
-        }
-    }
-    $BoolFlagActionMap = @{
+    $BoolActionMap = @{
         "archivesonly" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.SetArchivesOnly($b)
@@ -635,6 +553,90 @@ class FindOptions {
             $settings.PrintVersion = $b
         }
     }
+    $StringActionMap = @{
+        "in-archiveext" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.InArchiveExtensions += $settings.GetExtensions($s)
+        }
+        "in-archivefilepattern" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.InArchiveFilePatterns += [regex]$s
+        }
+        "in-dirpattern" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.InDirPatterns += [regex]$s
+        }
+        "in-ext" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.InExtensions += $settings.GetExtensions($s)
+        }
+        "in-filepattern" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.InFilePatterns += [regex]$s
+        }
+        "in-filetype" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.InFileTypes += GetFileTypeFromName($s)
+        }
+        "maxlastmod" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MaxLastMod = [DateTime]$s
+        }
+        "minlastmod" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.MinLastMod = [DateTime]$s
+        }
+        "out-archiveext" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.OutArchiveExtensions += $settings.GetExtensions($s)
+        }
+        "out-archivefilepattern" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.OutArchiveFilePatterns += [regex]$s
+        }
+        "out-dirpattern" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.OutDirPatterns += [regex]$s
+        }
+        "out-ext" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.OutExtensions += $settings.GetExtensions($s)
+        }
+        "out-filepattern" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.OutFilePatterns += [regex]$s
+        }
+        "out-filetype" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.OutFileTypes += GetFileTypeFromName($s)
+        }
+        "path" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.Paths += $s
+        }
+        "sort-by" = {
+            param([string]$s, [FindSettings]$settings)
+            $settings.SortBy = GetSortByFromName($s)
+        }
+    }
+    $IntActionMap = @{
+        "maxdepth" = {
+            param([int]$i, [FindSettings]$settings)
+            $settings.MaxDepth = $i
+        }
+        "maxsize" = {
+            param([int]$i, [FindSettings]$settings)
+            $settings.MaxSize = $i
+        }
+        "mindepth" = {
+            param([int]$i, [FindSettings]$settings)
+            $settings.MinDepth = $i
+        }
+        "minsize" = {
+            param([int]$i, [FindSettings]$settings)
+            $settings.MinSize = $i
+        }
+    }
 
     FindOptions() {
         $this.FindOptions = $this.LoadOptionsFromJson()
@@ -677,15 +679,20 @@ class FindOptions {
                     throw "Invalid option: $arg"
                 }
                 $longArg = $this.LongArgMap[$arg]
-                if ($this.ArgActionMap.ContainsKey($longArg)) {
+                if ($this.BoolActionMap.ContainsKey($longArg)) {
+                    $this.BoolActionMap[$longArg].Invoke($true, $settings)
+
+                } elseif ($this.StringActionMap.ContainsKey($longArg) -or $this.IntActionMap.ContainsKey($longArg)) {
                     $idx++
                     if ($idx -lt $argList.Count) {
-                        $this.ArgActionMap[$longArg].Invoke($argList[$idx], $settings)
+                        if ($this.StringActionMap.ContainsKey($longArg)) {
+                            $this.StringActionMap[$longArg].Invoke($argList[$idx], $settings)
+                        } else {
+                            $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
+                        }
                     } else {
                         throw "Missing value for $arg"
                     }
-                } elseif ($this.BoolFlagActionMap.ContainsKey($longArg)) {
-                    $this.BoolFlagActionMap[$longArg].Invoke($true, $settings)
                 } else {
                     throw "Invalid option: $arg"
                 }
