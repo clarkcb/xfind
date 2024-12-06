@@ -632,8 +632,16 @@ class Benchmarker(object):
             self.scenario_diff_dict[s.name] = non_matching
             for x, y in non_matching:
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
-                print(f'{x} output ({len(xfind_output[x])} lines):\n"{xfind_output[x]}"')
-                print(f'{y} output ({len(xfind_output[y])} lines):\n"{xfind_output[y]}"')
+                x_output = xfind_output[x]
+                y_output = xfind_output[y]
+                if self.ignore_blank_lines:
+                    x_output = [l for l in x_output if l.strip()]
+                    y_output = [l for l in y_output if l.strip()]
+                print(f'{x} output ({len(x_output)} lines):\n"{x_output}"')
+                print(f'{y} output ({len(y_output)} lines):\n"{y_output}"')
+                for i in range(len(x_output)):
+                    if x_output[i] != y_output[i]:
+                        print(f'Line {i+1}: "{x_output[i]}" != "{y_output[i]}"')
             return False
         else:
             print('\nOutputs of all versions match')
@@ -647,8 +655,13 @@ class Benchmarker(object):
             self.scenario_diff_dict[s.name] = non_matching
             for x, y in non_matching:
                 print(f'\n{x} output != {y} output for args: {" ".join(s.args)}')
-                print(f'{x} output ({len(xfind_output[x])} lines):\n"{xfind_output[x]}"')
-                print(f'{y} output ({len(xfind_output[y])} lines):\n"{xfind_output[y]}"')
+                x_output = xfind_output[x]
+                y_output = xfind_output[y]
+                if self.ignore_blank_lines:
+                    x_output = [l for l in x_output if l.strip()]
+                    y_output = [l for l in y_output if l.strip()]
+                print(f'{x} output ({len(x_output)} lines):\n"{x_output}"')
+                print(f'{y} output ({len(y_output)} lines):\n"{y_output}"')
             return False
         else:
             print('\nOutputs of all versions match')
