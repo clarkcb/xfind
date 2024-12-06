@@ -6,8 +6,6 @@ import org.json.JSONTokener
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.nio.file.Path
-import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -24,6 +22,7 @@ data class FindOption(val shortArg: String?, val longArg: String, val desc: Stri
 class FindOptions {
     private val findOptionsJsonPath = "/findoptions.json"
     private val findOptions: List<FindOption>
+    private var longArgMap = mutableMapOf<String, String>()
 
     init {
         findOptions = loadFindOptionsFromJson()
@@ -37,9 +36,12 @@ class FindOptions {
         while (findOptionsArray.hasNext()) {
             val findOptionObj = findOptionsArray.next() as JSONObject
             val longArg = findOptionObj.getString("long")
+            longArgMap[longArg] = longArg
             val shortArg =
                 if (findOptionObj.has("short")) {
-                    findOptionObj.getString("short")
+                    val sArg = findOptionObj.getString("short")
+                    longArgMap[sArg] = longArg
+                    sArg
                 } else {
                     null
                 }
@@ -49,58 +51,7 @@ class FindOptions {
         return options.toList().sortedBy { it.sortArg }
     }
 
-    private fun getArgMap(): Map<String, String> {
-        val longOpts = findOptions.map { Pair(it.longArg, it.longArg) }.toMap()
-        val shortOpts = findOptions.filter { it.shortArg != null }.map { Pair(it.shortArg!!, it.longArg) }.toMap()
-        return longOpts.plus(shortOpts)
-    }
-
-    private val argActionMap: Map<String, ((String, FindSettings) -> FindSettings)> = mapOf(
-        "in-archiveext" to
-                { s, ss -> ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions)) },
-        "in-archivefilepattern" to
-                { s, ss -> ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns.plus(Regex(s))) },
-        "in-dirpattern" to
-                { s, ss -> ss.copy(inDirPatterns = ss.inDirPatterns.plus(Regex(s))) },
-        "in-ext" to
-                { s, ss -> ss.copy(inExtensions = addExtensions(s, ss.inExtensions)) },
-        "in-filepattern" to
-                { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
-        "in-filetype" to
-                { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
-        "maxdepth" to
-                { s, ss -> ss.copy(maxDepth = Integer.parseInt(s)) },
-        "maxlastmod" to
-                { s, ss -> ss.copy(maxLastMod = getLastModFromString(s)) },
-        "maxsize" to
-                { s, ss -> ss.copy(maxSize = Integer.parseInt(s)) },
-        "mindepth" to
-                { s, ss -> ss.copy(minDepth = Integer.parseInt(s)) },
-        "minlastmod" to
-                { s, ss -> ss.copy(minLastMod = getLastModFromString(s)) },
-        "minsize" to
-                { s, ss -> ss.copy(minSize = Integer.parseInt(s)) },
-        "out-archiveext" to
-                { s, ss -> ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions)) },
-        "out-archivefilepattern" to
-                { s, ss -> ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns.plus(Regex(s))) },
-        "out-dirpattern" to
-                { s, ss -> ss.copy(outDirPatterns = ss.outDirPatterns.plus(Regex(s))) },
-        "out-ext" to
-                { s, ss -> ss.copy(outExtensions = addExtensions(s, ss.outExtensions)) },
-        "out-filepattern" to
-                { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
-        "out-filetype" to
-                { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
-        "path" to
-                { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
-        "settings-file" to
-                { s, ss -> settingsFromFile(s, ss) },
-        "sort-by" to
-                { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
-    )
-
-    private val boolFlagActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
+    private val boolActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
         "archivesonly" to { b, ss ->
             if (b) ss.copy(
                 archivesOnly = b,
@@ -132,14 +83,61 @@ class FindOptions {
         "version" to { b, ss -> ss.copy(printVersion = b) }
     )
 
+    private val stringActionMap: Map<String, ((String, FindSettings) -> FindSettings)> = mapOf(
+        "in-archiveext" to
+                { s, ss -> ss.copy(inArchiveExtensions = addExtensions(s, ss.inArchiveExtensions)) },
+        "in-archivefilepattern" to
+                { s, ss -> ss.copy(inArchiveFilePatterns = ss.inArchiveFilePatterns.plus(Regex(s))) },
+        "in-dirpattern" to
+                { s, ss -> ss.copy(inDirPatterns = ss.inDirPatterns.plus(Regex(s))) },
+        "in-ext" to
+                { s, ss -> ss.copy(inExtensions = addExtensions(s, ss.inExtensions)) },
+        "in-filepattern" to
+                { s, ss -> ss.copy(inFilePatterns = ss.inFilePatterns.plus(Regex(s))) },
+        "in-filetype" to
+                { s, ss -> ss.copy(inFileTypes = addFileTypes(s, ss.inFileTypes)) },
+        "maxlastmod" to
+                { s, ss -> ss.copy(maxLastMod = getLastModFromString(s)) },
+        "minlastmod" to
+                { s, ss -> ss.copy(minLastMod = getLastModFromString(s)) },
+        "out-archiveext" to
+                { s, ss -> ss.copy(outArchiveExtensions = addExtensions(s, ss.outArchiveExtensions)) },
+        "out-archivefilepattern" to
+                { s, ss -> ss.copy(outArchiveFilePatterns = ss.outArchiveFilePatterns.plus(Regex(s))) },
+        "out-dirpattern" to
+                { s, ss -> ss.copy(outDirPatterns = ss.outDirPatterns.plus(Regex(s))) },
+        "out-ext" to
+                { s, ss -> ss.copy(outExtensions = addExtensions(s, ss.outExtensions)) },
+        "out-filepattern" to
+                { s, ss -> ss.copy(outFilePatterns = ss.outFilePatterns.plus(Regex(s))) },
+        "out-filetype" to
+                { s, ss -> ss.copy(outFileTypes = addFileTypes(s, ss.outFileTypes)) },
+        "path" to
+                { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
+        "settings-file" to
+                { s, ss -> settingsFromFile(s, ss) },
+        "sort-by" to
+                { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
+    )
+
+    private val intActionMap: Map<String, ((Int, FindSettings) -> FindSettings)> = mapOf(
+        "maxdepth" to { i, ss -> ss.copy(maxDepth = i) },
+        "mindepth" to { i, ss -> ss.copy(minDepth = i) }
+    )
+
+    private val longActionMap: Map<String, ((Long, FindSettings) -> FindSettings)> = mapOf(
+        "maxsize" to { l, ss -> ss.copy(maxSize = l) },
+        "minsize" to { l, ss -> ss.copy(minSize = l) }
+    )
+
     private fun settingsFromFile(filePath: String, settings: FindSettings): FindSettings {
         val file = File(filePath)
         try {
             val json = file.readText()
             return settingsFromJson(json, settings)
-        } catch (e: FileNotFoundException) {
+        } catch (_: FileNotFoundException) {
             throw FindException("Settings file not found: $filePath")
-        } catch (e: IOException) {
+        } catch (_: IOException) {
             throw FindException("IOException reading settings file: $filePath")
         }
     }
@@ -163,85 +161,100 @@ class FindOptions {
 
     private fun applySetting(key: String, obj: Any, settings: FindSettings): FindSettings {
         when (obj) {
-            is String -> {
-                return applySetting(key, obj, settings)
-            }
-
             is Boolean -> {
-                return applySetting(key, obj, settings)
+                return applyBoolSetting(key, obj, settings)
             }
-
+            is String -> {
+                return applyStringSetting(key, obj, settings)
+            }
             is Int -> {
-                return applySetting(key, obj.toString(), settings)
+                return applyIntSetting(key, obj, settings)
             }
-
             is Long -> {
-                return applySetting(key, obj.toString(), settings)
+                return applyLongSetting(key, obj, settings)
             }
-
             is JSONArray -> {
-                return applySetting(key, obj.toList().map { it as String }, settings)
+                return applySettings(key, obj.toList().map { it as String }, settings)
             }
-
             else -> {
                 return settings
             }
         }
     }
 
-    private fun applySetting(key: String, s: String, settings: FindSettings): FindSettings {
+    private fun applyBoolSetting(key: String, bool: Boolean, settings: FindSettings): FindSettings {
+        if (this.boolActionMap.containsKey(key)) {
+            return this.boolActionMap[key]!!.invoke(bool, settings)
+        } else {
+            throw FindException("Invalid option: $key")
+        }
+    }
+
+    private fun applyStringSetting(key: String, s: String, settings: FindSettings): FindSettings {
         return when {
-            this.argActionMap.containsKey(key) -> {
-                this.argActionMap[key]!!.invoke(s, settings)
+            this.stringActionMap.containsKey(key) -> {
+                this.stringActionMap[key]!!.invoke(s, settings)
             }
-
-            key == "path" -> {
-                settings.copy(paths = settings.paths.plus(s))
-            }
-
             else -> {
                 throw FindException("Invalid option: $key")
             }
         }
     }
 
-    private fun applySetting(key: String, bool: Boolean, settings: FindSettings): FindSettings {
-        if (this.boolFlagActionMap.containsKey(key)) {
-            return this.boolFlagActionMap[key]!!.invoke(bool, settings)
+    private fun applyIntSetting(key: String, i: Int, settings: FindSettings): FindSettings {
+        return if (this.intActionMap.containsKey(key)) {
+            this.intActionMap[key]!!.invoke(i, settings)
+        } else if (this.longActionMap.containsKey(key)) {
+            this.longActionMap[key]!!.invoke(i.toLong(), settings)
         } else {
             throw FindException("Invalid option: $key")
         }
     }
 
-    private fun applySetting(key: String, lst: List<String>, settings: FindSettings): FindSettings {
+    private fun applyLongSetting(key: String, l: Long, settings: FindSettings): FindSettings {
+        return if (this.intActionMap.containsKey(key)) {
+            this.intActionMap[key]!!.invoke(l.toInt(), settings)
+        } else if (this.longActionMap.containsKey(key)) {
+            this.longActionMap[key]!!.invoke(l, settings)
+        } else {
+            throw FindException("Invalid option: $key")
+        }
+    }
+
+    private fun applySettings(key: String, lst: List<String>, settings: FindSettings): FindSettings {
         return if (lst.isEmpty()) settings
         else {
-            applySetting(key, lst.drop(1), applySetting(key, lst.first(), settings))
+            applySettings(key, lst.drop(1), applySetting(key, lst.first(), settings))
         }
     }
 
     fun settingsFromArgs(args: Array<String>): FindSettings {
-        val argMap = getArgMap()
         fun recSettingsFromArgs(args: List<String>, settings: FindSettings): FindSettings {
             if (args.isEmpty()) return settings
             val nextArg = args.first()
             if (nextArg.startsWith("-")) {
                 val arg = nextArg.dropWhile { it == '-' }
-                if (argMap.containsKey(arg)) {
-                    val longArg = argMap[arg]
-                    return if (argActionMap.containsKey(longArg)) {
-                        if (args.size > 1) {
-                            val argVal = args.drop(1).first()
-                            val ss = argActionMap[longArg]!!.invoke(argVal, settings)
-                            recSettingsFromArgs(args.drop(2), ss)
+                val longArg = longArgMap[arg]
+                return if (boolActionMap.containsKey(longArg)) {
+                    val ss = boolActionMap[longArg]!!.invoke(true, settings)
+                    recSettingsFromArgs(args.drop(1), ss)
+                } else if (stringActionMap.containsKey(longArg)
+                    || intActionMap.containsKey(longArg)
+                    || longActionMap.containsKey(longArg)) {
+                    if (args.size > 1) {
+                        val argVal = args.drop(1).first()
+                        val ss = if (stringActionMap.containsKey(longArg)) {
+                            stringActionMap[longArg]!!.invoke(argVal, settings)
+                        } else if (intActionMap.containsKey(longArg)) {
+                            intActionMap[longArg]!!.invoke(argVal.toInt(), settings)
+                        } else if (longActionMap.containsKey(longArg)) {
+                            longActionMap[longArg]!!.invoke(argVal.toLong(), settings)
                         } else {
-                            throw FindException("Missing value for option $arg")
+                            throw FindException("Unhandled option $arg")
                         }
-                    } else if (boolFlagActionMap.containsKey(longArg)) {
-                        val ss = boolFlagActionMap[longArg]!!.invoke(true, settings)
-                        recSettingsFromArgs(args.drop(1), ss)
+                        recSettingsFromArgs(args.drop(2), ss)
                     } else {
-                        throw FindException("Invalid option: $arg")
+                        throw FindException("Missing value for option $arg")
                     }
                 } else {
                     throw FindException("Invalid option: $arg")
@@ -268,7 +281,7 @@ class FindOptions {
         }
 
         val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
-        val longest = optPairs.map { it.first.length }.maxOrNull()
+        val longest = optPairs.maxOfOrNull { it.first.length }
         val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {
             sb.append(String.format(format, o.first, o.second))
