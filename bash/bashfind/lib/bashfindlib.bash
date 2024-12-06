@@ -25,6 +25,9 @@ SHARED_PATH="$XFIND_PATH/shared"
 FILE_TYPES_PATH="$XFIND_PATH/shared/filetypes.json"
 FIND_OPTIONS_PATH="$XFIND_PATH/shared/findoptions.json"
 
+# this will be contain the contents of FIND_OPTIONS_PATH if needed
+FIND_OPTIONS_JSON=
+
 source "$BASHFIND_PATH/lib/color.sh"
 
 
@@ -807,14 +810,20 @@ do_find () {
     fi
 }
 
-get_option_desc () {
+get_option_desc_from_file () {
     local long=$1
     local desc=$(jq -r ".findoptions[] | select(.long == \"$long\") | .desc" $FIND_OPTIONS_PATH)
     echo $desc
 }
 
+get_option_desc () {
+    local long=$1
+    local desc=$(echo "$FIND_OPTIONS_JSON" | jq -r ".findoptions[] | select(.long == \"$long\") | .desc")
+    echo $desc
+}
+
 usage () {
-    # TODO: load options from file
+    FIND_OPTIONS_JSON=$(cat $FIND_OPTIONS_PATH)
     s="\nUsage:\n bashfind [options] <path> [<path> ...]\n\nOptions:"
     s+="\n --archivesonly            $(get_option_desc 'archivesonly')"
     s+="\n -d,--in-dirpattern        $(get_option_desc 'in-dirpattern')"
