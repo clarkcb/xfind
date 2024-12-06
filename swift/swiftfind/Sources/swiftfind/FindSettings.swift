@@ -58,10 +58,10 @@ public enum DefaultFindSettings {
     public static let followSymlinks = false
     public static let includeArchives = false
     public static let includeHidden = false
-    public static let maxDepth: Int64 = -1
+    public static let maxDepth: Int32 = -1
     public static let maxLastMod: Date? = nil
     public static let maxSize: UInt64 = 0
-    public static let minDepth: Int64 = -1
+    public static let minDepth: Int32 = -1
     public static let minLastMod: Date? = nil
     public static let minSize: UInt64 = 0
     public static let printDirs = false
@@ -81,10 +81,10 @@ open class FindSettings: CustomStringConvertible {
     open var followSymlinks: Bool = DefaultFindSettings.followSymlinks
     open var includeArchives: Bool = DefaultFindSettings.includeArchives
     open var includeHidden: Bool = DefaultFindSettings.includeHidden
-    open var maxDepth: Int64 = DefaultFindSettings.maxDepth
+    open var maxDepth: Int32 = DefaultFindSettings.maxDepth
     open var maxLastMod: Date? = DefaultFindSettings.maxLastMod
     open var maxSize: UInt64 = DefaultFindSettings.maxSize
-    open var minDepth: Int64 = DefaultFindSettings.minDepth
+    open var minDepth: Int32 = DefaultFindSettings.minDepth
     open var minLastMod: Date? = DefaultFindSettings.minLastMod
     open var minSize: UInt64 = DefaultFindSettings.minSize
     open var printDirs: Bool = DefaultFindSettings.printDirs
@@ -188,7 +188,7 @@ open class FindSettings: CustomStringConvertible {
     }
 
     public func setMaxDepthFromString(_ maxDepthStr: String) {
-        maxDepth = Int64(maxDepthStr) ?? 0
+        maxDepth = Int32(maxDepthStr) ?? 0
     }
 
     public func setMaxLastModFromString(_ maxLastModStr: String) {
@@ -200,7 +200,7 @@ open class FindSettings: CustomStringConvertible {
     }
 
     public func setMinDepthFromString(_ minDepthStr: String) {
-        minDepth = Int64(minDepthStr) ?? 0
+        minDepth = Int32(minDepthStr) ?? 0
     }
 
     public func setMinLastModFromString(_ minLastModStr: String) {

@@ -201,7 +201,7 @@ public class Finder {
     }
 
     // gets all FileResults recursively
-    private func recGetFileResults(_ dirPath: String, minDepth: Int64, maxDepth: Int64, currentDepth: Int64) -> [FileResult] {
+    private func recGetFileResults(_ dirPath: String, minDepth: Int32, maxDepth: Int32, currentDepth: Int32) -> [FileResult] {
         var fileResults = [FileResult]()
         var recurse: Bool = true
         if currentDepth == maxDepth {
@@ -281,12 +281,11 @@ public class Finder {
 
     private func getSortByFilePath() -> (FileResult, FileResult) -> Bool {
         { (fr1: FileResult, fr2: FileResult) -> Bool in
-            let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive
-                                              ? fr1.filePath.lowercased()
-                                              : fr1.filePath)
-            let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive
-                                              ? fr2.filePath.lowercased()
-                                              : fr2.filePath)
+            let (fp1, fp2) = self.settings.sortCaseInsensitive
+                             ? (fr1.filePath.lowercased(), fr2.filePath.lowercased())
+                             : (fr1.filePath, fr2.filePath)
+            let (p1, f1) = FileUtil.splitPath(fp1)
+            let (p2, f2) = FileUtil.splitPath(fp2)
             if p1 == p2 {
                 return f1 < f2
             }
@@ -296,12 +295,11 @@ public class Finder {
 
     private func getSortByFileName() -> (FileResult, FileResult) -> Bool {
         { (fr1: FileResult, fr2: FileResult) -> Bool in
-            let (p1, f1) = FileUtil.splitPath(self.settings.sortCaseInsensitive
-                                              ? fr1.filePath.lowercased()
-                                              : fr1.filePath)
-            let (p2, f2) = FileUtil.splitPath(self.settings.sortCaseInsensitive
-                                              ? fr2.filePath.lowercased()
-                                              : fr2.filePath)
+            let (fp1, fp2) = self.settings.sortCaseInsensitive
+                             ? (fr1.filePath.lowercased(), fr2.filePath.lowercased())
+                             : (fr1.filePath, fr2.filePath)
+            let (p1, f1) = FileUtil.splitPath(fp1)
+            let (p2, f2) = FileUtil.splitPath(fp2)
             if f1 == f2 {
                 return p1 < p2
             }

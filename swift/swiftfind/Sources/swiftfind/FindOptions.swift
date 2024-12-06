@@ -56,76 +56,7 @@ public class FindOptions {
         }
     }
 
-    // this is computed property so that it can reference self
-    private var argActionDict: [String: (String, FindSettings) -> Void] {
-        [
-            "in-archiveext": { (str: String, settings: FindSettings) in
-                settings.addInArchiveExtension(str)
-            },
-            "in-archivefilepattern": { (str: String, settings: FindSettings) in
-                settings.addInArchiveFilePattern(str)
-            },
-            "in-dirpattern": { (str: String, settings: FindSettings) in
-                settings.addInDirPattern(str)
-            },
-            "in-ext": { (str: String, settings: FindSettings) in
-                settings.addInExtension(str)
-            },
-            "in-filepattern": { (str: String, settings: FindSettings) in
-                settings.addInFilePattern(str)
-            },
-            "in-filetype": { (str: String, settings: FindSettings) in
-                settings.addInFileType(str)
-            },
-            "out-archiveext": { (str: String, settings: FindSettings) in
-                settings.addOutArchiveExtension(str)
-            },
-            "maxdepth": { (str: String, settings: FindSettings) in
-                settings.setMaxDepthFromString(str)
-            },
-            "maxlastmod": { (str: String, settings: FindSettings) in
-                settings.setMaxLastModFromString(str)
-            },
-            "maxsize": { (str: String, settings: FindSettings) in
-                settings.setMaxSizeFromString(str)
-            },
-            "mindepth": { (str: String, settings: FindSettings) in
-                settings.setMinDepthFromString(str)
-            },
-            "minlastmod": { (str: String, settings: FindSettings) in
-                settings.setMinLastModFromString(str)
-            },
-            "minsize": { (str: String, settings: FindSettings) in
-                settings.setMinSizeFromString(str)
-            },
-            "out-archivefilepattern": { (str: String, settings: FindSettings) in
-                settings.addOutArchiveFilePattern(str)
-            },
-            "out-dirpattern": { (str: String, settings: FindSettings) in
-                settings.addOutDirPattern(str)
-            },
-            "out-ext": { (str: String, settings: FindSettings) in
-                settings.addOutExtension(str)
-            },
-            "out-filepattern": { (str: String, settings: FindSettings) in
-                settings.addOutFilePattern(str)
-            },
-            "out-filetype": { (str: String, settings: FindSettings) in
-                settings.addOutFileType(str)
-            },
-            "path": { (str: String, settings: FindSettings) in
-                settings.addPath(str)
-            },
-            "settings-file": { (str: String, settings: FindSettings) in
-                try? self.addSettingsFromFile(str, settings: settings)
-            },
-            "sort-by": { (str: String, settings: FindSettings) in
-                settings.setSortBy(str)
-            }
-        ]
-    }
-
-    private let boolFlagActionDict: [String: (Bool, FindSettings) -> Void] = [
+    private let boolActionDict: [String: (Bool, FindSettings) -> Void] = [
         "archivesonly": { (bool: Bool, settings: FindSettings) in
             settings.archivesOnly = bool
         },
@@ -191,6 +122,81 @@ public class FindOptions {
         }
     ]
 
+    // this is computed property so that it can reference self
+    private var stringActionDict: [String: (String, FindSettings) -> Void] {
+        [
+            "in-archiveext": { (str: String, settings: FindSettings) in
+                settings.addInArchiveExtension(str)
+            },
+            "in-archivefilepattern": { (str: String, settings: FindSettings) in
+                settings.addInArchiveFilePattern(str)
+            },
+            "in-dirpattern": { (str: String, settings: FindSettings) in
+                settings.addInDirPattern(str)
+            },
+            "in-ext": { (str: String, settings: FindSettings) in
+                settings.addInExtension(str)
+            },
+            "in-filepattern": { (str: String, settings: FindSettings) in
+                settings.addInFilePattern(str)
+            },
+            "in-filetype": { (str: String, settings: FindSettings) in
+                settings.addInFileType(str)
+            },
+            "out-archiveext": { (str: String, settings: FindSettings) in
+                settings.addOutArchiveExtension(str)
+            },
+            "maxlastmod": { (str: String, settings: FindSettings) in
+                settings.setMaxLastModFromString(str)
+            },
+            "minlastmod": { (str: String, settings: FindSettings) in
+                settings.setMinLastModFromString(str)
+            },
+            "out-archivefilepattern": { (str: String, settings: FindSettings) in
+                settings.addOutArchiveFilePattern(str)
+            },
+            "out-dirpattern": { (str: String, settings: FindSettings) in
+                settings.addOutDirPattern(str)
+            },
+            "out-ext": { (str: String, settings: FindSettings) in
+                settings.addOutExtension(str)
+            },
+            "out-filepattern": { (str: String, settings: FindSettings) in
+                settings.addOutFilePattern(str)
+            },
+            "out-filetype": { (str: String, settings: FindSettings) in
+                settings.addOutFileType(str)
+            },
+            "path": { (str: String, settings: FindSettings) in
+                settings.addPath(str)
+            },
+            "settings-file": { (str: String, settings: FindSettings) in
+                try? self.addSettingsFromFile(str, settings: settings)
+            },
+            "sort-by": { (str: String, settings: FindSettings) in
+                settings.setSortBy(str)
+            }
+        ]
+    }
+
+    private let intActionDict: [String: (Int32, FindSettings) -> Void] = [
+        "maxdepth": { (i: Int32, settings: FindSettings) in
+            settings.maxDepth = i
+        },
+        "mindepth": { (i: Int32, settings: FindSettings) in
+            settings.minDepth = i
+        },
+    ]
+
+    private let longActionDict: [String: (UInt64, FindSettings) -> Void] = [
+        "maxsize": { (l: UInt64, settings: FindSettings) in
+            settings.maxSize = l
+        },
+        "minsize": { (l: UInt64, settings: FindSettings) in
+            settings.minSize = l
+        },
+    ]
+
     public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
         var i = 0
         let settings = FindSettings()
@@ -204,17 +210,28 @@ public class FindOptions {
                 }
                 if longArgDict.index(forKey: arg) != nil {
                     let longArg = longArgDict[arg]
-                    if argActionDict.index(forKey: longArg!) != nil {
+                    if boolActionDict.index(forKey: longArg!) != nil {
+                        boolActionDict[longArg!]!(true, settings)
+                    } else {
+                        var argVal = ""
                         if args.count > i + 1 {
-                            argActionDict[longArg!]!(args[i + 1], settings)
                             i += 1
+                            argVal = args[i]
                         } else {
                             throw FindError(msg: "Missing argument for option \(arg)")
                         }
-                    } else if boolFlagActionDict.index(forKey: longArg!) != nil {
-                        boolFlagActionDict[longArg!]!(true, settings)
-                    } else {
-                        throw FindError(msg: "Invalid option: \(arg)")
+                        
+                        if stringActionDict.index(forKey: longArg!) != nil {
+                            stringActionDict[longArg!]!(argVal, settings)
+                        } else if intActionDict.index(forKey: longArg!) != nil {
+                            let intVal = Int32(argVal) ?? 0
+                            intActionDict[longArg!]!(intVal, settings)
+                        } else if longActionDict.index(forKey: longArg!) != nil {
+                            let longVal = UInt64(argVal) ?? 0
+                            longActionDict[longArg!]!(longVal, settings)
+                        } else {
+                            throw FindError(msg: "Invalid option: \(arg)")
+                        }
                     }
                 } else {
                     throw FindError(msg: "Invalid option: \(arg)")
@@ -257,25 +274,39 @@ public class FindOptions {
                 for key in json.keys {
                     if longArgDict.index(forKey: key) != nil {
                         let longArg = longArgDict[key]
-                        if argActionDict.index(forKey: longArg!) != nil {
+                        if boolActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let bool = value as? Bool {
+                                boolActionDict[longArg!]!(bool, settings)
+                            } else {
+                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
+                            }
+                        } else if stringActionDict.index(forKey: longArg!) != nil {
                             let value = json[key]
                             if let string = value as? String {
-                                argActionDict[longArg!]!(string, settings)
+                                stringActionDict[longArg!]!(string, settings)
                             } else if let bool = value as? Bool {
-                                argActionDict[longArg!]!(bool.description, settings)
+                                stringActionDict[longArg!]!(bool.description, settings)
                             } else if let int = value as? Int {
-                                argActionDict[longArg!]!(int.description, settings)
+                                stringActionDict[longArg!]!(int.description, settings)
                             } else if let stringArray = value as? [String] {
                                 for s in stringArray {
-                                    argActionDict[longArg!]!(s, settings)
+                                    stringActionDict[longArg!]!(s, settings)
                                 }
                             } else {
                                 throw FindError(msg: "Invalid type for \"\(key)\" entry")
                             }
-                        } else if boolFlagActionDict.index(forKey: longArg!) != nil {
+                        } else if intActionDict.index(forKey: longArg!) != nil {
                             let value = json[key]
-                            if let bool = value as? Bool {
-                                boolFlagActionDict[longArg!]!(bool, settings)
+                            if let intVal = value as? Int32 {
+                                intActionDict[longArg!]!(intVal, settings)
+                            } else {
+                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
+                            }
+                        } else if longActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let longVal = value as? UInt64 {
+                                longActionDict[longArg!]!(longVal, settings)
                             } else {
                                 throw FindError(msg: "Invalid type for \"\(key)\" entry")
                             }
