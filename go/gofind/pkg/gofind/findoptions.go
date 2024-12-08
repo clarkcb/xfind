@@ -95,13 +95,44 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 			}
 		} else if iff, isInt := intActionMap[k]; isInt {
 			if v, hasVal := jsonSettings[k]; hasVal {
-				iff(v.(int), settings)
+				switch v := v.(type) {
+				case int:
+					iff(v, settings)
+				case float32, float64:
+					iff(int(v.(float64)), settings)
+				default:
+					Log(fmt.Sprintf("k: %v", k))
+					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					Log(errMsg)
+					return fmt.Errorf(errMsg)
+				}
 			} else {
 				Log(fmt.Sprintf("value for %v is invalid", k))
 			}
 		} else if lff, isLong := longActionMap[k]; isLong {
 			if v, hasVal := jsonSettings[k]; hasVal {
-				lff(v.(int64), settings)
+				switch v := v.(type) {
+				case int64:
+					lff(v, settings)
+				case float32, float64:
+					lff(int64(v.(float64)), settings)
+				default:
+					Log(fmt.Sprintf("k: %v", k))
+					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
+					errMsg := fmt.Sprintf("Unknown data type in settings file")
+					Log(errMsg)
+					return fmt.Errorf(errMsg)
+				}
+			} else {
+				Log(fmt.Sprintf("value for %v is invalid", k))
+			}
+		} else if k == "settings-file" {
+			if v, hasVal := jsonSettings[k]; hasVal {
+				err := fo.SettingsFromFile(v.(string), settings)
+				if err != nil {
+					return err
+				}
 			} else {
 				Log(fmt.Sprintf("value for %v is invalid", k))
 			}

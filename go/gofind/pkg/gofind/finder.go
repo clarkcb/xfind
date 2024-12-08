@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"golang.org/x/text/encoding"
@@ -205,13 +206,27 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 		fileInfo, _ := entry.Info()
 		if fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
 			if f.Settings.followSymlinks {
-				dst, err := os.Readlink(filepath.Join(path, entry.Name()))
-				if err != nil {
-					return err
-				}
-				fileInfo, err = os.Stat(dst)
-				if err != nil {
-					return err
+				symlinkFilePath := filepath.Join(path, entry.Name())
+				maxTries := 5
+				tries := 0
+				// since a symlink dest can also be a symlink, we loop until no longer true
+				for fileInfo.Mode()&os.ModeSymlink == os.ModeSymlink {
+					dst, err := os.Readlink(symlinkFilePath)
+					if err != nil {
+						return err
+					}
+					symlinkFilePath := dst
+					if !strings.Contains(symlinkFilePath, string(os.PathSeparator)) {
+						symlinkFilePath = filepath.Join(path, dst)
+					}
+					fileInfo, err = os.Lstat(symlinkFilePath)
+					if err != nil {
+						return err
+					}
+					tries++
+					if tries == maxTries {
+						break
+					}
 				}
 			} else {
 				continue
