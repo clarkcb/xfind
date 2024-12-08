@@ -369,6 +369,7 @@ class Benchmarker(object):
         self.ignore_blank_lines = True
         self.scenario_diff_dict = {}
         self.skip_groups = ['settings-only']
+        self.skip_scenarios = ['use invalid settings-file']
         self.__dict__.update(kwargs)
         self.shell = os.environ.get('SHELL', '/bin/bash')
         self.git_info = get_git_info()
@@ -401,27 +402,35 @@ class Benchmarker(object):
                     scenarios_dict['ref'][rk] = [rv.replace('$XFIND_PATH', XFIND_PATH)]
 
             for s in scenarios_dict['scenarios']:
+                if self.group_names and s['group'] not in self.group_names:
+                    continue
                 if self.scenario_names and s['name'] not in self.scenario_names:
                     continue
+                if self.skip_groups and s['group'] in self.skip_groups:
+                    continue
+                if self.skip_scenarios and s['name'] in self.skip_scenarios:
+                    continue
+
                 sg_name = s['group']
                 sg = scenario_group_dict.setdefault(sg_name, ScenarioGroup(sg_name, []))
-                args = s['args']
+                args = [a.replace('$XFIND_PATH', XFIND_PATH) for a in s['args']]
+                # print(f'args: {args}')
                 if 'common_args' in s:
                     for ca in s['common_args']:
                         args.extend(scenarios_dict['ref'][ca]) 
-                scenario = Scenario(s['name'], s['args'])
+                scenario = Scenario(s['name'], args)
                 if 'replace_xfind_name' in s:
                     scenario.replace_xfind_name = s['replace_xfind_name']
                 sg.scenarios.append(scenario)
-            groups = self.group_names
-            if not groups:
-                groups = scenario_group_dict.keys()
-            elif any([g not in scenario_group_dict for g in groups]):
-                print(f'Error: group not found in scenarios file: {groups}')
+            if not self.group_names:
+                self.group_names = scenario_group_dict.keys()
+            elif any([g not in scenario_group_dict for g in self.group_names]):
+                missing_groups = [g not in scenario_group_dict for g in self.group_names]
+                print(f'Error: groups not found in scenarios file: {missing_groups}')
                 sys.exit(1)
             if self.skip_groups:
-                groups = [g for g in groups if g not in self.skip_groups]
-            for g in groups:
+                self.group_names = [g for g in self.group_names if g not in self.skip_groups]
+            for g in self.group_names:
                 sg = scenario_group_dict.get(g)
                 if sg:
                     self.scenarios.extend(sg.scenarios)
@@ -639,7 +648,8 @@ class Benchmarker(object):
                     y_output = [l for l in y_output if l.strip()]
                 print(f'{x} output ({len(x_output)} lines):\n"{x_output}"')
                 print(f'{y} output ({len(y_output)} lines):\n"{y_output}"')
-                for i in range(len(x_output)):
+                min_len = min(len(x_output), len(y_output))
+                for i in range(min_len):
                     if x_output[i] != y_output[i]:
                         print(f'Line {i+1}: "{x_output[i]}" != "{y_output[i]}"')
             return False
@@ -842,9 +852,11 @@ def get_git_info():
 def get_parser():
     parser = argparse.ArgumentParser(description='Run xfind benchmark')
     parser.add_argument('-g', '--group', nargs='*', help='Name of scenario group to run')
+    parser.add_argument('-G', '--skip-group', nargs='*', help='Name of scenario group to skip')
     parser.add_argument('-s', '--scenario', nargs='*', help='Name of scenario to run')
+    parser.add_argument('-S', '--skip-scenario', nargs='*', help='Name of scenario to skip')
     parser.add_argument('-l', '--langs', help='Comma-separated list of languages to include in benchmark')
-    parser.add_argument('-L', '--nolangs', help='Comma-separated list of languages to exclude from benchmark')
+    parser.add_argument('-L', '--skip-langs', help='Comma-separated list of languages to exclude from benchmark')
     parser.add_argument('-r', '--runs', type=int, help='Number of runs for each scenario')
     parser.add_argument('-b', '--exit-on-diff', action='store_true', help='Exit on first output difference')
     parser.add_argument('-f', '--scenarios-file', help='A scenarios json file')
@@ -857,10 +869,15 @@ def main():
     xfind_names = all_xfind_names
     groups = []
     scenarios = []
+    skip_groups = []
+    skip_scenarios = []
     runs = default_runs
     debug = False
     exit_on_diff = True
     scenarios_file = 'scenarios.json'
+
+    # skip_groups = ['settings-only']
+    # skip_scenarios = ['use invalid settings-file']
 
     parser = get_parser()
     parsed_args = parser.parse_args(sys.argv[1:])
@@ -871,11 +888,18 @@ def main():
     if parsed_args.group:
         groups.extend(parsed_args.group)
 
+    if parsed_args.skip_group:
+        skip_groups.extend(parsed_args.skip_group)
+
     if parsed_args.scenario:
         scenarios.extend(parsed_args.scenario)
 
+    if parsed_args.skip_scenario:
+        skip_scenarios.extend(parsed_args.skip_scenario)
+
+    xfind_names = []
+
     if parsed_args.langs:
-        xfind_names = []
         langs = sorted(parsed_args.langs.split(','))
         for lang in langs:
             if lang in xfind_dict:
@@ -883,8 +907,8 @@ def main():
             else:
                 print(f'Skipping unknown language: {lang}')
 
-    if parsed_args.nolangs:
-        nolangs = sorted(parsed_args.nolangs.split(','))
+    if parsed_args.skip_langs:
+        nolangs = sorted(parsed_args.skip_langs.split(','))
         for nolang in nolangs:
             if nolang in xfind_dict:
                 if xfind_dict[nolang] in xfind_names:
@@ -903,9 +927,13 @@ def main():
     print(f'exit_on_diff: {exit_on_diff}')
     print(f'groups: {groups}')
     print(f'runs: {runs}')
+    print(f'scenarios: {scenarios}')
     print(f'scenarios_file: {scenarios_file}')
+    print(f'skip_groups: {skip_groups}')
+    print(f'skip_scenarios: {skip_scenarios}')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
                               group_names=groups, scenario_names=scenarios,
+                              skip_groups=skip_groups, skip_scenarios=skip_scenarios,
                               scenarios_file=scenarios_file,
                               exit_on_diff=exit_on_diff,
                               debug=debug)

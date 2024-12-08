@@ -2,13 +2,14 @@
   "path": "~/src/xfind/",
   "in-ext": ["js", "ts"],
   "out-dirpattern": [
-    "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor"
+    "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor", "venv"
   ],
   "out-filepattern": ["gulpfile", "\\.min\\."],
-  "debug": true,
+  "debug": false,
   "followsymlinks": true,
   "includehidden": false,
   "maxdepth": 10,
+  "maxsize": 2000,
   "printdirs": true,
   "printfiles": true
 }

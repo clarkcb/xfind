@@ -1559,7 +1559,7 @@ build_rbfind () {
     fi
 
     BUNDLE_VERSION="$(bundle version)"
-    log "bundler version: $BUNDLE_VERSION"
+    log "$BUNDLE_VERSION"
 
     RESOURCES_PATH="$RBFIND_PATH/data"
     TEST_RESOURCES_PATH="$RBFIND_PATH/test/fixtures"
@@ -1575,7 +1575,7 @@ build_rbfind () {
     # TODO: figure out how to install dependencies without installing rbfind (which is what bundler does)
     cd "$RBFIND_PATH"
 
-    log "Building rbsearch"
+    log "Building rbfind"
     log "bundle install"
     bundle install
 
