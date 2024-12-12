@@ -74,7 +74,8 @@
     NSData *data = [json dataUsingEncoding:NSUTF8StringEncoding];
 
     FindOptions *options = [[FindOptions alloc] init];
-    [options settingsFromData:data settings:settings];
+    NSError *error = nil;
+    [options settingsFromData:data settings:settings error:&error];
 
     XCTAssert([[settings inExtensions] count] == 2);
     XCTAssert([[[settings inExtensions] objectAtIndex:0] isEqual:@"js"]);

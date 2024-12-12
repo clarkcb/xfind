@@ -9,7 +9,7 @@
 
 - (NSArray<FindOption*>*) findOptionsFromJson;
 - (FindSettings*) settingsFromArgs:(NSArray*)args error:(NSError**)error;
-- (void) settingsFromData:(NSData *)data settings:(FindSettings *)settings;
+- (void) settingsFromData:(NSData *)data settings:(FindSettings *)settings error:(NSError **)error;
 - (NSString*) getUsageString;
 - (void) usage:(int)code;
 

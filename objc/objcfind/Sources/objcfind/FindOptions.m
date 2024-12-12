@@ -65,59 +65,70 @@
     return sortedOptions;
 }
 
-- (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(FindSettings *)settings {
+- (void) applySetting:(NSString *)name obj:(NSObject *)obj settings:(FindSettings *)settings error:(NSError **)error {
     if ([obj isKindOfClass:[NSString class]]) {
         NSString *s = (NSString *)obj;
         if (self.stringActionDict[name]) {
             void(^block)(NSString *, FindSettings *) = self.stringActionDict[name];
             block(s, settings);
+        } else {
+            setError(error, [@"Invalid option: " stringByAppendingString:name]);
+            return;
         }
     } else if ([obj isKindOfClass:[NSNumber class]]) {
         NSNumber *num = (NSNumber *)obj;
         if (self.boolActionDict[name]) {
             BOOL b = [num boolValue];
-            void(^block)(BOOL, FindSettings *) = self.boolActionDict[name];
+            void(^block)(BOOL, FindSettings*) = self.boolActionDict[name];
             block(b, settings);
         } else if (self.integerActionDict[name]) {
             NSInteger i = [num integerValue];
-            void(^block)(BOOL, FindSettings *) = self.integerActionDict[name];
+            void(^block)(NSInteger, FindSettings*) = self.integerActionDict[name];
             block(i, settings);
         } else if (self.stringActionDict[name]) {
-            void(^block)(NSString* s, FindSettings* ss) = self.stringActionDict[name];
+            void(^block)(NSString*, FindSettings*) = self.stringActionDict[name];
             block([num description], settings);
+        } else {
+            setError(error, [@"Invalid option: " stringByAppendingString:name]);
+            return;
         }
     } else if ([obj isKindOfClass:[NSArray class]]) {
         NSArray *arr = (NSArray *)obj;
         for (NSObject *o in arr) {
-            [self applySetting:name obj:o settings:settings];
+            [self applySetting:name obj:o settings:settings error:error];
+            if (*error) {
+                return;
+            }
         }
     }
 }
 
-- (void) settingsFromFile:(NSString *)settingsFilePath settings:(FindSettings *)settings {
+- (void) settingsFromFile:(NSString *)settingsFilePath settings:(FindSettings *)settings error:(NSError **)error {
     if (![[NSFileManager defaultManager] fileExistsAtPath:settingsFilePath]) {
+        setError(error, @"Settings file not found");
         return;
     }
-    
     NSData *data = [NSData dataWithContentsOfFile:settingsFilePath];
-    
-    [self settingsFromData:data settings:settings];
+    [self settingsFromData:data settings:settings error:error];
 }
 
-- (void) settingsFromData:(NSData *)data settings:(FindSettings *)settings {
+- (void) settingsFromData:(NSData *)data settings:(FindSettings *)settings error:(NSError **)error {
     if (NSClassFromString(@"NSJSONSerialization")) {
-        NSError *error = nil;
         id jsonObject = [NSJSONSerialization
                          JSONObjectWithData:data
                          options:0
-                         error:&error];
+                         error:error];
         
-        if (error) { /* JSON was malformed, act appropriately here */ }
+        if (*error) {
+            /* JSON was malformed, act appropriately here */
+            setError(error, @"Malformed JSON");
+            return;
+        }
         
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             for (NSString *key in jsonObject) {
                 NSObject *val = jsonObject[key];
-                [self applySetting:key obj:val settings:settings];
+                [self applySetting:key obj:val settings:settings error:error];
             }
         }
     }
@@ -131,6 +142,8 @@
             longArgDict[so.shortArg] = so.longArg;
         }
     }
+    // Add path here because it isn't included in findoptions.json
+    longArgDict[@"path"] = @"path";
     return [NSDictionary dictionaryWithDictionary:longArgDict];
 }
 
@@ -241,6 +254,9 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
 
     int i = 1;
     while (i < [args count]) {
+        if (*error) {
+            return nil;
+        }
         NSString *arg = args[i];
         if ([arg hasPrefix:@"-"]) {
             while ([arg hasPrefix:@"-"] && [arg length] > 1) {
@@ -266,9 +282,9 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
                         block(argVal, settings);
                     } else if (self.integerActionDict[longArg]) {
                         void(^block)(NSInteger, FindSettings *) = self.integerActionDict[longArg];
-                        block([argVal intValue], settings);
+                        block([argVal integerValue], settings);
                     } else if ([longArg isEqualToString:@"settings-file"]) {
-                        [self settingsFromFile:argVal settings:settings];
+                        [self settingsFromFile:argVal settings:settings error:error];
                     } else {
                         setError(error, [NSString stringWithFormat:@"Invalid option: %@", arg]);
                         return nil;
