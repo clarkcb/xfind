@@ -4,6 +4,8 @@
  * defines the set of find options and provides functionality to define find settings from them
  */
 
+const fs = require('fs');
+
 const config = require('./config');
 const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
@@ -60,39 +62,37 @@ class FindOptions {
         };
         this.stringActionMap = {
             'in-archiveext':
-                (x, settings) => { settings.addInArchiveExtensions(x); },
+              (s, settings) => { settings.addInArchiveExtensions(s); },
             'in-archivefilepattern':
-                (x, settings) => { settings.addInArchiveFilePatterns(x); },
+              (s, settings) => { settings.addInArchiveFilePatterns(s); },
             'in-dirpattern':
-                (x, settings) => { settings.addInDirPatterns(x); },
+              (s, settings) => { settings.addInDirPatterns(s); },
             'in-ext':
-                (x, settings) => { settings.addInExtensions(x); },
+              (s, settings) => { settings.addInExtensions(s); },
             'in-filepattern':
-                (x, settings) => { settings.addInFilePatterns(x); },
+              (s, settings) => { settings.addInFilePatterns(s); },
             'in-filetype':
-                (x, settings) => { settings.addInFileTypes(x); },
+              (s, settings) => { settings.addInFileTypes(s); },
             'maxlastmod':
-                (x, settings) => { settings.maxLastModFromString(x); },
+              (s, settings) => { settings.maxLastModFromString(s); },
             'minlastmod':
-                (x, settings) => { settings.minLastModFromString(x); },
+              (s, settings) => { settings.minLastModFromString(s); },
             'out-dirpattern':
-                (x, settings) => { settings.addOutDirPatterns(x); },
+              (s, settings) => { settings.addOutDirPatterns(s); },
             'out-archiveext':
-                (x, settings) => { settings.addOutArchiveExtensions(x); },
+              (s, settings) => { settings.addOutArchiveExtensions(s); },
             'out-archivefilepattern':
-                (x, settings) => { settings.addOutArchiveFilePatterns(x); },
+              (s, settings) => { settings.addOutArchiveFilePatterns(s); },
             'out-ext':
-                (x, settings) => { settings.addOutExtensions(x); },
+              (s, settings) => { settings.addOutExtensions(s); },
             'out-filepattern':
-                (x, settings) => { settings.addOutFilePatterns(x); },
+              (s, settings) => { settings.addOutFilePatterns(s); },
             'out-filetype':
-                (x, settings) => { settings.addOutFileTypes(x); },
+              (s, settings) => { settings.addOutFileTypes(s); },
             'path':
-                (x, settings) => { settings.paths.push(x); },
-            'settings-file':
-                (x, settings) => { this.settingsFromFile(x, settings); },
+              (s, settings) => { settings.paths.push(s); },
             'sort-by':
-                (x, settings) => { settings.sortBy = nameToSortBy(x); }
+              (s, settings) => { settings.sortBy = nameToSortBy(s); }
         };
         this.intActionMap = {
             'maxdepth':
@@ -113,12 +113,13 @@ class FindOptions {
             if (Object.prototype.hasOwnProperty.call(obj, 'findoptions') && Array.isArray(obj.findoptions)) {
                 obj.findoptions.forEach(fo => {
                     let longArg = fo.long;
-                    let shortArg = '';
-                    if (Object.prototype.hasOwnProperty.call(fo, 'short'))
-                        shortArg = fo.short;
-                    let desc = fo.desc;
                     this.argNameMap[longArg] = longArg;
-                    if (shortArg) this.argNameMap[shortArg] = longArg;
+                    let shortArg = '';
+                    if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
+                        shortArg = fo.short;
+                        this.argNameMap[shortArg] = longArg;
+                    }
+                    let desc = fo.desc;
                     const option = new FindOption(shortArg, longArg, desc);
                     this.options.push(option);
                 });
@@ -134,37 +135,34 @@ class FindOptions {
     }
 
     settingsFromFile(filePath, settings) {
-        const fs = require('fs');
         if (fs.existsSync(filePath)) {
             let json = FileUtil.getFileContentsSync(filePath, 'utf-8');
             return this.settingsFromJson(json, settings);
         } else {
-            throw new FindError('Settings file not found');
+            return new FindError('Settings file not found');
         }
     }
 
     settingsFromJson(json, settings) {
-        // TODO: should err be thrown as in settingsFromFile or returned in settingsFromArgs?
         let err = null;
-        let obj = JSON.parse(json);
+        const obj = JSON.parse(json);
         for (const k in obj) {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
-                let longArg = this.argNameMap[k];
-                if (this.boolActionMap[longArg]) {
-                    this.boolActionMap[longArg](obj[k], settings);
-                } else if (this.stringActionMap[longArg]) {
-                    if (obj[k]) {
+                if (obj[k] !== undefined && obj[k] !== null) {
+                    // path is separate because it is not included as an option in findoptions.json
+                    let longArg = k === 'path' ? 'path' : this.argNameMap[k];
+                    if (this.boolActionMap[longArg]) {
+                        this.boolActionMap[longArg](obj[k], settings);
+                    } else if (this.stringActionMap[longArg]) {
                         this.stringActionMap[longArg](obj[k], settings);
+                    } else if (this.intActionMap[longArg]) {
+                        this.intActionMap[longArg](obj[k], settings);
                     } else {
-                        err = new Error(`Missing argument for option ${k}`);
+                        err = new FindError(`Invalid option: ${k}`);
                     }
-                } else if (this.intActionMap[longArg]) {
-                    this.intActionMap[longArg](obj[k], settings);
-                } else if (k === 'path') {
-                    settings.paths.push(obj[k]);
                 } else {
-                    err = new FindError(`Invalid option: ${k}`);
+                    err = new FindError(`Missing argument for option ${k}`);
                 }
             }
         }
@@ -189,12 +187,14 @@ class FindOptions {
                 let longArg = this.argNameMap[arg];
                 if (this.boolActionMap[longArg]) {
                     this.boolActionMap[longArg](true, settings);
-                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg]) {
+                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg] || longArg === 'settings-file') {
                     if (args.length > 0) {
                         if (this.stringActionMap[longArg]) {
                             err = this.stringActionMap[longArg](args.shift(), settings);
-                        } else {
+                        } else if (this.intActionMap[longArg]) {
                             err = this.intActionMap[longArg](parseInt(args.shift(), 10), settings);
+                        } else {
+                            err = this.settingsFromFile(args.shift(), settings);
                         }
                     } else {
                         err = new Error(`Missing argument for option ${arg}`);
