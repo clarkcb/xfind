@@ -170,10 +170,6 @@ my $str_action_hash = {
         my ($s, $settings) = @_;
         $settings->add_path($s);
     },
-    'settings-file' => sub {
-        my ($s, $settings) = @_;
-        settings_from_file(file($s), $settings);
-    },
     'sort-by' => sub {
         my ($s, $settings) = @_;
         $settings->set_sort_by($s);
@@ -269,7 +265,7 @@ sub settings_from_args {
     # default print_files to true since running as cli
     $settings->set_property('print_files', 1);
     my @errs;
-    while (scalar @{$args}) {
+    while (scalar @{$args} && !(scalar @errs)) {
         my $arg = shift @{$args};
         if ($arg =~ /^\-+/) {
             $arg =~ s/^\-+//;
@@ -278,13 +274,17 @@ sub settings_from_args {
                 my $long = $opt->{long_arg};
                 if (exists $bool_action_hash->{$long}) {
                     &{$bool_action_hash->{$long}}(1, $settings);
-                } elsif (exists $str_action_hash->{$long} || exists $int_action_hash->{$long}) {
+                } elsif (exists $str_action_hash->{$long} || exists $int_action_hash->{$long} || $long eq 'settings-file') {
                     if (scalar @{$args}) {
                         my $val = shift @{$args};
                         if (exists $str_action_hash->{$long}) {
                             &{$str_action_hash->{$long}}($val, $settings);
-                        } else {
+                        } elsif (exists $int_action_hash->{$long}) {
                             &{$int_action_hash->{$long}}(int($val), $settings);
+                        } else {
+                            my $file_path = file($val);
+                            my $settings_file_errors = settings_from_file($file_path, $settings);
+                            push(@errs, @{$settings_file_errors});
                         }
                     } else {
                         push(@errs, "Missing value for $arg");
