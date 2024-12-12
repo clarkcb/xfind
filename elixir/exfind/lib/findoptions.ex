@@ -128,7 +128,7 @@ defmodule ExFind.FindOptions do
     int_opts = Map.keys(int_arg_action_map) |> Enum.map(fn k -> {k, :integer} end)
     # str_opts = Map.keys(str_arg_action_map) |> Enum.map(fn k -> {k, :string} end)
     # :keep allows for duplicates, assumes :string type
-    str_opts = Map.keys(str_arg_action_map) |> Enum.map(fn k -> {k, :keep} end)
+    str_opts = Map.keys(str_arg_action_map) ++ [:settings_file] |> Enum.map(fn k -> {k, :keep} end)
     parser_opts = bool_opts ++ int_opts ++ str_opts
     alias_opts = options
                  |> Enum.filter(fn o -> o.short_arg != "" end)
@@ -154,6 +154,10 @@ defmodule ExFind.FindOptions do
           Map.has_key?(bool_arg_action_map, k) -> update_settings_from_args(Map.get(bool_arg_action_map, k).(v, settings), rest, arg_action_maps)
           Map.has_key?(int_arg_action_map, k) -> update_settings_from_args(Map.get(int_arg_action_map, k).(v, settings), rest, arg_action_maps)
           Map.has_key?(str_arg_action_map, k) -> update_settings_from_args(Map.get(str_arg_action_map, k).(v, settings), rest, arg_action_maps)
+          k == :settings_file -> case update_settings_from_file(settings, v) do
+            {:ok, new_settings} -> update_settings_from_args(new_settings, rest, arg_action_maps)
+            {:error, _} -> update_settings_from_args(settings, rest, arg_action_maps)
+          end
           true -> update_settings_from_args(settings, rest, arg_action_maps)
         end
     end
@@ -234,11 +238,15 @@ defmodule ExFind.FindOptions do
     end
   end
 
-  def get_settings_from_file(json_file) do
+  def update_settings_from_file(settings, json_file) do
     case File.read(json_file) do
-      {:ok, json} -> get_settings_from_json(json)
+      {:ok, json} -> update_settings_from_json(settings, json)
       {:error, e} -> {:error, e}
     end
+  end
+
+  def get_settings_from_file(json_file) do
+    update_settings_from_file(FindSettings.new(), json_file)
   end
 
   def usage(options) do
