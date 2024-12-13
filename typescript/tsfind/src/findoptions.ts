@@ -10,6 +10,7 @@ import * as fs from 'fs';
 
 import * as config from './config';
 import {FileUtil} from './fileutil';
+import {FindError} from "./finderror";
 import {FindOption} from './findoption';
 import {FindSettings} from './findsettings';
 import {SortUtil} from "./sortutil";
@@ -105,8 +106,6 @@ export class FindOptions {
                 (s: string, settings: FindSettings) => { settings.addOutFileTypes(s); },
             'path':
                 (s: string, settings: FindSettings) => { settings.paths.push(s); },
-            'settings-file':
-                (s: string, settings: FindSettings) => { this.settingsFromFile(s, settings); },
             'sort-by':
                 (s: string, settings: FindSettings) => { settings.sortBy = SortUtil.nameToSortBy(s); }
         };
@@ -139,11 +138,12 @@ export class FindOptions {
             obj['findoptions'].forEach(fo => {
                 const longArg = fo['long'];
                 let shortArg = '';
-                if (Object.prototype.hasOwnProperty.call(fo, 'short'))
+                if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
                     shortArg = fo['short'];
+                    this.argNameMap[shortArg] = longArg;
+                }
                 const desc = fo['desc'];
                 this.argNameMap[longArg] = longArg;
-                if (shortArg) this.argNameMap[shortArg] = longArg;
                 const option = new FindOption(shortArg, longArg, desc);
                 this.options.push(option);
             });
@@ -156,7 +156,7 @@ export class FindOptions {
             const json: string = FileUtil.getFileContentsSync(filePath);
             return this.settingsFromJson(json, settings);
         } else {
-            return new Error('Settings file not found');
+            return new FindError('Settings file not found');
         }
     }
 
@@ -166,18 +166,20 @@ export class FindOptions {
         for (const k in obj) {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
-                if (this.boolActionMap[k]) {
-                    this.boolActionMap[k](obj[k], settings);
-                } else if (this.stringActionMap[k]) {
-                    if (obj[k]) {
-                        err = this.stringActionMap[k](obj[k], settings);
+                if (obj[k] !== undefined && obj[k] !== null) {
+                    // path is separate because it is not included as an option in findoptions.json
+                    let longArg = k === 'path' ? 'path' : this.argNameMap[k];
+                    if (this.boolActionMap[longArg]) {
+                        this.boolActionMap[longArg](obj[k], settings);
+                    } else if (this.stringActionMap[longArg]) {
+                        this.stringActionMap[longArg](obj[k], settings);
+                    } else if (this.intActionMap[longArg]) {
+                        this.intActionMap[longArg](obj[k], settings);
                     } else {
-                        err = new Error(`Missing argument for option ${k}`);
+                        err = new FindError(`Invalid option: ${k}`);
                     }
-                } else if (this.intActionMap[k]) {
-                    this.intActionMap[k](obj[k], settings);
                 } else {
-                    err = new Error(`Invalid option: ${k}`);
+                    err = new FindError(`Missing argument for option ${k}`);
                 }
             }
         }
@@ -189,6 +191,7 @@ export class FindOptions {
         const settings: FindSettings = new FindSettings();
         // default printFiles to true since it's being run from cmd line
         settings.printFiles = true;
+
         while(args && !err) {
             let arg: string = args.shift() || '';
             if (!arg) {
@@ -201,12 +204,14 @@ export class FindOptions {
                 const longArg = this.argNameMap[arg];
                 if (this.boolActionMap[longArg]) {
                     this.boolActionMap[longArg](true, settings);
-                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg]) {
+                } else if (this.stringActionMap[longArg] || this.intActionMap[longArg] || longArg === 'settings-file') {
                     if (args.length > 0) {
                         if (this.stringActionMap[longArg]) {
                             this.stringActionMap[longArg](args.shift(), settings);
-                        } else {
+                        } else if (this.intActionMap[longArg]) {
                             this.intActionMap[longArg](parseInt(args.shift()!, 10), settings);
+                        } else {
+                            err = this.settingsFromFile(args.shift()!, settings);
                         }
                     } else {
                         err = new Error(`Missing argument for option ${arg}`);
