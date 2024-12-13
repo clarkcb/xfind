@@ -35,10 +35,9 @@ class Finder:
         """Validate the required settings in the FindSettings instance."""
         assert len(self.settings.paths) > 0, 'Startpath not defined'
         for p in self.settings.paths:
-            assert p.exists(), 'Startpath not found'
-            # assert os.access(p, os.R_OK) or os.access(p.expanduser(), os.R_OK), \
-            #     'Startpath not readable'
-            assert os.access(p, os.R_OK), 'Startpath not readable'
+            assert p.exists() or p.expanduser().exists(), 'Startpath not found'
+            assert os.access(p, os.R_OK) or os.access(p.expanduser(), os.R_OK), \
+                'Startpath not readable'
         if self.settings.max_depth > -1 and self.settings.min_depth > -1:
             assert self.settings.max_depth >= self.settings.min_depth, \
                 'Invalid range for mindepth and maxdepth'
@@ -199,6 +198,8 @@ class Finder:
 
     def get_file_results_for_path(self, file_path: Path) -> list[FileResult]:
         """Get file results for given file path."""
+        if not file_path.exists():
+            file_path = file_path.expanduser()
         if file_path.is_dir():
             # if max_depth is zero, we can skip since a directory cannot be a result
             if self.settings.max_depth == 0:
