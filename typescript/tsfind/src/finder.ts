@@ -230,19 +230,24 @@ export class Finder {
         return fileResults;
     }
 
-    private async getFileResults(startPath: string): Promise<FileResult[]> {
-        const stats = await stat(startPath);
+    private async getFileResults(filePath: string): Promise<FileResult[]> {
+        try {
+            fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK);
+        } catch (err) {
+            filePath = FileUtil.expandPath(filePath);
+        }
+        const stats = await stat(filePath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (this._settings.maxDepth === 0) {
                 return [];
             }
-            if (this.isMatchingDir(startPath)) {
+            if (this.isMatchingDir(filePath)) {
                 let maxDepth = this._settings.maxDepth;
                 if (!this._settings.recursive) {
                     maxDepth = 1;
                 }
-                return await this.recGetFileResults(startPath, this._settings.minDepth, maxDepth, 1);
+                return await this.recGetFileResults(filePath, this._settings.minDepth, maxDepth, 1);
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
@@ -251,9 +256,9 @@ export class Finder {
             if (this._settings.minDepth > 0) {
                 return [];
             }
-            const dirname = path.dirname(startPath) || '.';
+            const dirname = path.dirname(filePath) || '.';
             if (this.isMatchingDir(dirname)) {
-                const fr = this.filterToFileResult(startPath);
+                const fr = this.filterToFileResult(filePath);
                 if (fr !== null) {
                     return [fr];
                 } else {
