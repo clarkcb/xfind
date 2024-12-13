@@ -62,7 +62,7 @@ sub new {
 sub set_property {
     my ($self, $name, $val) = @_;
     $self->{$name} = $val;
-    if ($val == 1) {
+    if ($val eq 1) {
         if ($name eq 'archives_only') {
             $self->{include_archives} = 1;
         } elsif ($name eq 'debug') {

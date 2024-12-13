@@ -204,8 +204,22 @@ sub filter_to_file_result {
     my $last_mod = 0;
     if ($self->{settings}->needs_last_mod || $self->{settings}->needs_size) {
         my $fpstat = $file_path->stat;
-        $file_size = $fpstat->size;
-        $last_mod = $fpstat->mtime;
+        # stat array elements
+        # 0 	Device number of file system
+        # 1 	Inode number
+        # 2 	File mode (type and permissions)
+        # 3 	Number of (hard) links to the file
+        # 4 	Numeric user ID of file.s owner
+        # 5 	Numeric group ID of file.s owner
+        # 6 	The device identifier (special files only)
+        # 7 	File size, in bytes
+        # 8 	Last access time since the epoch
+        # 9 	Last modify time since the epoch
+        # 10 	Inode change time (not creation time!) since the epoch
+        # 11 	Preferred block size for file system I/O
+        # 12	Actual number of blocks allocated
+        $file_size = $fpstat->[7];
+        $last_mod = $fpstat->[9];
     }
     my $file_result = plfind::FileResult->new($file_path, $file_type, $file_size, $last_mod);
     if ($file_type eq plfind::FileType->ARCHIVE) {
