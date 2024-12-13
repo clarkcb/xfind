@@ -24,7 +24,8 @@ struct FindOption {
 public class FindOptions {
     private var config: FindConfig
     private var findOptions = [FindOption]()
-    private var longArgDict: [String: String] = [:]
+    // Add path here because it isn't included in findoptions.json
+    private var longArgDict: [String: String] = ["path": "path"]
 
     public init() {
         config = FindConfig()
@@ -170,9 +171,6 @@ public class FindOptions {
             "path": { (str: String, settings: FindSettings) in
                 settings.addPath(str)
             },
-            "settings-file": { (str: String, settings: FindSettings) in
-                try? self.addSettingsFromFile(str, settings: settings)
-            },
             "sort-by": { (str: String, settings: FindSettings) in
                 settings.setSortBy(str)
             }
@@ -229,6 +227,12 @@ public class FindOptions {
                         } else if longActionDict.index(forKey: longArg!) != nil {
                             let longVal = UInt64(argVal) ?? 0
                             longActionDict[longArg!]!(longVal, settings)
+                        } else if longArg == "settings-file" {
+                            do {
+                                try addSettingsFromFile(argVal, settings: settings)
+                            } catch let err as FindError {
+                                throw err
+                            }
                         } else {
                             throw FindError(msg: "Invalid option: \(arg)")
                         }
@@ -255,7 +259,9 @@ public class FindOptions {
             let fileUrl = URL(fileURLWithPath: filePath)
             let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
             try addSettingsFromJson(jsonString, settings: settings)
-        } catch let error as NSError {
+        } catch let error as FindError {
+            throw error
+        } catch let error {
             throw FindError(msg: "Failed to load: \(error.localizedDescription)")
         }
     }
@@ -279,7 +285,7 @@ public class FindOptions {
                             if let bool = value as? Bool {
                                 boolActionDict[longArg!]!(bool, settings)
                             } else {
-                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
+                                throw FindError(msg: "Invalid option: \(key)")
                             }
                         } else if stringActionDict.index(forKey: longArg!) != nil {
                             let value = json[key]
@@ -294,36 +300,33 @@ public class FindOptions {
                                     stringActionDict[longArg!]!(s, settings)
                                 }
                             } else {
-                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
+                                throw FindError(msg: "Invalid option: \(key)")
                             }
                         } else if intActionDict.index(forKey: longArg!) != nil {
                             let value = json[key]
                             if let intVal = value as? Int32 {
                                 intActionDict[longArg!]!(intVal, settings)
                             } else {
-                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
+                                throw FindError(msg: "Invalid option: \(key)")
                             }
                         } else if longActionDict.index(forKey: longArg!) != nil {
                             let value = json[key]
                             if let longVal = value as? UInt64 {
                                 longActionDict[longArg!]!(longVal, settings)
                             } else {
-                                throw FindError(msg: "Invalid type for \"\(key)\" entry")
+                                throw FindError(msg: "Invalid option: \(key)")
                             }
                         } else {
                             throw FindError(msg: "Invalid option: \(key)")
-                        }
-                    } else if key == "path" {
-                        let value = json[key]
-                        if let string = value as? String {
-                            settings.addPath(string)
                         }
                     } else {
                         throw FindError(msg: "Invalid option: \(key)")
                     }
                 }
             }
-        } catch let error as NSError {
+        } catch let error as FindError {
+            throw error
+        } catch let error {
             throw FindError(msg: "Failed to load: \(error.localizedDescription)")
         }
     }
