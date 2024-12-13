@@ -35,11 +35,19 @@ class Finder
             throw new FindException('Startpath not defined');
         }
         foreach ($this->settings->paths as $p) {
-            if (!file_exists($p)) {
-                throw new FindException('Startpath not found');
-            }
-            if (!is_readable($p)) {
-                throw new FindException('Startpath not readable');
+            if (file_exists($p)) {
+                if (!is_readable($p)) {
+                    throw new FindException('Startpath not readable');
+                }
+            } else {
+                $expanded = FileUtil::expand_user_home_path($p);
+                if (file_exists($expanded)) {
+                    if (!is_readable($expanded)) {
+                        throw new FindException('Startpath not readable');
+                    }
+                } else {
+                    throw new FindException('Startpath not found');
+                }
             }
         }
         if ($this->settings->max_depth > -1 && $this->settings->min_depth > -1
@@ -377,6 +385,9 @@ class Finder
     public function get_file_results(string $file_path): array
     {
         $file_results = [];
+        if (!file_exists($file_path)) {
+            $file_path = FileUtil::expand_user_home_path($file_path);
+        }
         if (is_dir($file_path)) {
             # if max_depth is zero, we can skip since a directory cannot be a result
             if ($this->settings->max_depth == 0) {
