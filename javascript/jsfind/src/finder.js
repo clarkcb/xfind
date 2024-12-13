@@ -32,7 +32,12 @@ class Finder {
             assert.ok(this.settings.paths.length > 0, 'Startpath not defined');
             this.settings.paths.forEach(p => {
                 // Validate existence, accessibility and "findability" of file path (directory or regular file)
-                fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
+                try {
+                    fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
+                } catch (err) {
+                    p = FileUtil.expandPath(p);
+                    fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
+                }
                 const stat = fs.lstatSync(p);
                 if (!stat.isDirectory() && !stat.isFile()) {
                     assert.ok(false, 'Startpath is unsupported file type');
@@ -221,6 +226,11 @@ class Finder {
     }
 
     async getFileResults(filePath) {
+        try {
+            fs.accessSync(filePath, fs.constants.F_OK | fs.constants.R_OK);
+        } catch (err) {
+            filePath = FileUtil.expandPath(filePath);
+        }
         const stats = await fsStatAsync(filePath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
