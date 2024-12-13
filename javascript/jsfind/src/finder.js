@@ -195,7 +195,8 @@ class Finder {
             return [];
         }
         let findDirs = [];
-        let filePaths = (fs.readdirSync(currentDir)).map(f => path.join(currentDir, f));
+        let filePaths = (fs.readdirSync(currentDir, {recursive: false}))
+          .map(f => path.join(currentDir, f));
         for (let filePath of filePaths) {
             let stats = fs.lstatSync(filePath);
             if (stats.isSymbolicLink() && !this.settings.followSymlinks) {
@@ -219,19 +220,19 @@ class Finder {
         return fileResults;
     }
 
-    async getFileResults(startPath) {
-        let stats = await fsStatAsync(startPath);
+    async getFileResults(filePath) {
+        let stats = await fsStatAsync(filePath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (this.settings.maxDepth === 0) {
                 return [];
             }
-            if (this.isMatchingDir(startPath)) {
+            if (this.isMatchingDir(filePath)) {
                 let maxDepth = this.settings.maxDepth;
                 if (!this.settings.recursive) {
                     maxDepth = 1;
                 }
-                return await this.recGetFileResults(startPath, this.settings.minDepth, maxDepth, 1);
+                return await this.recGetFileResults(filePath, this.settings.minDepth, maxDepth, 1);
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
@@ -240,9 +241,9 @@ class Finder {
             if (this.settings.minDepth > 0) {
                 return [];
             }
-            const dirname = path.dirname(startPath) || '.';
+            const dirname = path.dirname(filePath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(startPath, stats);
+                let fr = this.filterToFileResult(filePath, stats);
                 if (fr !== null) {
                     return [fr];
                 } else {
