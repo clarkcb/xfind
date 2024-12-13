@@ -197,6 +197,9 @@ module RbFind
     end
 
     def get_file_results_for_path(file_path)
+      unless file_path.exist?
+        file_path = file_path.expand_path
+      end
       if file_path.directory?
         # if max_depth is zero, we can skip since a directory cannot be a result
         if @settings.max_depth == 0
@@ -271,8 +274,8 @@ module RbFind
       raise FindError, 'Startpath not defined' if @settings.paths.empty?
       @settings.paths.each do |p|
         if p.instance_of?(Pathname)
-          raise FindError, 'Startpath not found' unless p.exist?
-          raise FindError, 'Startpath not readable' unless p.readable?
+          raise FindError, 'Startpath not found' unless p.exist? || p.expand_path.exist?
+          raise FindError, 'Startpath not readable' unless p.readable? || p.expand_path.readable?
         else
           raise FindError, 'Startpath not a Pathname instance'
         end
