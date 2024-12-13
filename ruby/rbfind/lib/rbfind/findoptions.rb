@@ -60,11 +60,11 @@ module RbFind
       json = f.read
       settings_from_json(json, settings)
     rescue IOError => e
-      raise FindError, "#{e} (file: #{file_path})"
+      raise FindError, "#{e}"
     rescue ArgumentError => e
-      raise FindError, "#{e} (file: #{file_path})"
+      raise FindError, "#{e}"
     rescue FindError => e
-      raise FindError, "#{e} (file: #{file_path})"
+      raise FindError, "#{e}"
     ensure
       f&.close
     end
