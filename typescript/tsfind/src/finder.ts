@@ -31,10 +31,14 @@ export class Finder {
     private validateSettings(): void {
         try {
             assert.ok(this._settings.paths.length > 0, 'Startpath not defined');
-            for (const p of this._settings.paths) {
-                // await access(p, fs.constants.F_OK | fs.constants.R_OK);
-                fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
-                // const stat = await lstat(p);
+            for (let p of this._settings.paths) {
+                // Validate existence, accessibility and "findability" of file path (directory or regular file)
+                try {
+                    fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
+                } catch (err: Error | any) {
+                    p = FileUtil.expandPath(p);
+                    fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
+                }
                 const stat = fs.lstatSync(p);
                 if (!stat.isDirectory() && !stat.isFile()) {
                     assert.ok(false, 'Startpath is unsupported file type');
@@ -203,16 +207,16 @@ export class Finder {
             return [];
         }
         const findDirs: string[] = [];
-        fs.readdirSync(currentDir).map((f: string) => {
-            return path.join(currentDir, f);
-        }).forEach((fp: string) => {
-            let stats = fs.lstatSync(fp);
+        let filePaths = fs.readdirSync(currentDir, { recursive: false })
+            .map(f =>  path.join(currentDir, f.toString()));
+        for (let filePath of filePaths) {
+            let stats = fs.lstatSync(filePath);
             if (!stats.isSymbolicLink() || this._settings.followSymlinks) {
-                stats = fs.statSync(fp);
-                if (stats.isDirectory() && recurse && this.isMatchingDir(fp)) {
-                    findDirs.push(fp);
+                stats = fs.statSync(filePath);
+                if (stats.isDirectory() && recurse && this.isMatchingDir(filePath)) {
+                    findDirs.push(filePath);
                 } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
-                    const fr = this.filterToFileResult(fp);
+                    const fr = this.filterToFileResult(filePath);
                     if (fr !== null) {
                         fileResults.push(fr);
                     }
