@@ -221,7 +221,7 @@ class Finder {
     }
 
     async getFileResults(filePath) {
-        let stats = await fsStatAsync(filePath);
+        const stats = await fsStatAsync(filePath);
         if (stats.isDirectory()) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (this.settings.maxDepth === 0) {
@@ -243,7 +243,7 @@ class Finder {
             }
             const dirname = path.dirname(filePath) || '.';
             if (this.isMatchingDir(dirname)) {
-                let fr = this.filterToFileResult(filePath, stats);
+                const fr = this.filterToFileResult(filePath, stats);
                 if (fr !== null) {
                     return [fr];
                 } else {
