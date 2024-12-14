@@ -250,7 +250,11 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 func (f *Finder) setFileResultsForPath(path string) error {
 	fi, err := os.Stat(path)
 	if err != nil {
-		return err
+		path = expandPath(path)
+		fi, err = os.Stat(path)
+		if err != nil {
+			return err
+		}
 	}
 	if fi.IsDir() {
 		// if MaxDepth is zero, we can skip since a directory cannot be a result

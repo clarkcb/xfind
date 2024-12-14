@@ -3,6 +3,7 @@ package gofind
 import (
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -10,8 +11,25 @@ import (
 
 func expandPath(filePath string) string {
 	if strings.HasPrefix(filePath, "~") {
-		home := getHome()
-		return home + strings.TrimPrefix(filePath, "~")
+		usr, err := user.Current()
+		if err != nil || usr == nil {
+			// TODO: handle error
+			return filePath
+		}
+		userPath := usr.HomeDir
+		sepIndex := strings.Index(filePath, string(os.PathSeparator))
+		if filePath != "~" && sepIndex != 1 {
+			// Another user's home directory
+			homePath := filepath.Dir(userPath)
+			userName := ""
+			if sepIndex == -1 {
+				userName = filePath[1:]
+			} else {
+				userName = filePath[1:sepIndex]
+			}
+			userPath = filepath.Join(homePath, userName)
+		}
+		return filepath.Join(userPath, filePath[sepIndex+1:])
 	}
 	return filePath
 }
