@@ -237,15 +237,19 @@
 }
 
 - (NSArray<FileResult*>*) getFileResults:(NSString*)filePath error:(NSError**)error {
+    NSString* fp = filePath;
+    if (![FileUtil exists:filePath]) {
+        fp = [FileUtil expandPath:filePath];
+    }
     NSMutableArray *fileResults = [NSMutableArray array];
-    if ([FileUtil isDirectory:filePath]) {
+    if ([FileUtil isDirectory:fp]) {
         // if maxDepth is zero, we can skip since a directory cannot be a result
         if (self.settings.maxDepth == 0) {
             return fileResults;
         }
-        if ([self isMatchingDir:filePath]) {
+        if ([self isMatchingDir:fp]) {
             long maxDepth = self.settings.recursive ? self.settings.maxDepth : 1;
-            return [self recGetFileResults:filePath minDepth:self.settings.minDepth maxDepth:maxDepth currentDepth:1 error:error];
+            return [self recGetFileResults:fp minDepth:self.settings.minDepth maxDepth:maxDepth currentDepth:1 error:error];
         } else {
             setError(error, @"Startpath does not match find settings");
             return nil;
@@ -255,7 +259,7 @@
         if (self.settings.minDepth > 0) {
             return fileResults;
         }
-        FileResult *fileResult = [self filterToFileResult:filePath];
+        FileResult *fileResult = [self filterToFileResult:fp];
         if (fileResult != nil) {
             [fileResults addObject:fileResult];
         } else {
