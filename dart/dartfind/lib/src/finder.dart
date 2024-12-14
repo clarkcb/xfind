@@ -25,10 +25,12 @@ class Finder {
       throw FindException('Startpath not defined');
     }
     for (var p in settings.paths) {
-      var startPath = FileUtil.expandPath(p!);
-      if (FileSystemEntity.typeSync(startPath) ==
-          FileSystemEntityType.notFound) {
-        throw FindException('Startpath not found');
+      if (FileSystemEntity.typeSync(p!) == FileSystemEntityType.notFound) {
+        var expandedPath = FileUtil.expandPath(p);
+        if (FileSystemEntity.typeSync(expandedPath) ==
+            FileSystemEntityType.notFound) {
+          throw FindException('Startpath not found');
+        }
       }
     }
     if (settings.maxDepth > -1 &&
@@ -233,6 +235,10 @@ class Finder {
   }
 
   Future<List<FileResult>> _getFileResultsForPath(String filePath) async {
+    if (FileSystemEntity.typeSync(filePath) == FileSystemEntityType.notFound) {
+      filePath = FileUtil.expandPath(filePath);
+    }
+
     return FileSystemEntity.type(filePath).then((fsType) {
       if (fsType == FileSystemEntityType.directory) {
         // if max_depth is zero, we can skip since a directory cannot be a result

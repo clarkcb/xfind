@@ -25,8 +25,23 @@ class FileUtil {
 
   static String expandPath(String filePath) {
     if (filePath.startsWith('~')) {
-      var homePath = FileUtil.homePath();
-      return filePath.replaceFirst('~', homePath);
+      var userPath = FileUtil.homePath();
+      if (filePath == '~' || filePath == '~${Platform.pathSeparator}') {
+        return userPath;
+      } else if (filePath.startsWith('~${Platform.pathSeparator}')) {
+        return path.join(userPath, filePath.substring(2));
+      }
+
+      // Another user's home directory
+      var sepIndex = filePath.indexOf(Platform.pathSeparator);
+      var homePath = path.dirname(userPath);
+      if (sepIndex == -1) {
+        var userName = filePath.substring(1);
+        return path.join(homePath, userName);
+      }
+      var userName = filePath.substring(1, sepIndex);
+      userPath = path.join(homePath, userName);
+      return path.join(userPath, filePath.substring(sepIndex + 1));
     }
     return filePath;
   }
