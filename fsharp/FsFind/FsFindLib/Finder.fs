@@ -12,7 +12,7 @@ type Finder (settings : FindSettings) =
     member this.ValidateSettings () : string list =
         [
             (if List.isEmpty settings.Paths then (Some "Startpath not defined") else None);
-            (if (List.exists (fun p -> not (Directory.Exists(p)) && not (File.Exists(p))) settings.Paths)
+            (if (List.exists (fun p -> not (FileUtil.Exists(p))) settings.Paths)
              then (Some "Startpath not found") else None);
             (if settings.MaxDepth > -1 && settings.MinDepth > -1 && settings.MaxDepth < settings.MinDepth
              then (Some "Invalid range for mindepth and maxdepth") else None);
@@ -152,10 +152,14 @@ type Finder (settings : FindSettings) =
             List.concat [fileResults; dirResults]
    
     member this.GetFileResults (filePath : string) : FileResult.t list =
-        if Directory.Exists(filePath) then
+        let fp =
+            if Directory.Exists(filePath) || File.Exists(filePath)
+            then filePath
+            else FileUtil.ExpandPath(filePath)
+        if Directory.Exists(fp) then
             // if MaxDepth is zero, we can skip since a directory cannot be a result
             if settings.MaxDepth <> 0 then
-                let dir = DirectoryInfo(filePath)
+                let dir = DirectoryInfo(fp)
                 if this.IsMatchingDir dir then
                     let maxDepth = if settings.Recursive then settings.MaxDepth else 1
                     this.RecGetFileResults dir settings.MinDepth maxDepth 1
@@ -163,10 +167,10 @@ type Finder (settings : FindSettings) =
                     []
             else
                 []
-        else if File.Exists(filePath) then
+        else if File.Exists(fp) then
             // if MinDepth > zero, we can skip since the file is at depth zero
             if settings.MinDepth <= 0 then
-                let fileInfo = FileInfo(filePath)
+                let fileInfo = FileInfo(fp)
                 let fileResult = this.FilterToFileResult fileInfo
                 if fileResult.IsSome then
                     [fileResult.Value]

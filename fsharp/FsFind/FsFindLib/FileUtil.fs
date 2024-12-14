@@ -25,9 +25,30 @@ module FileUtil =
         path.TrimEnd(Path.DirectorySeparatorChar)
 
     let ExpandPath (filePath : string) : string =
-        if filePath[0] = '~' then Path.Join(GetHomePath(), filePath.Substring(1))
-        else filePath
+        match filePath with
+        | fp when fp = null -> ""
+        | fp when fp = "" -> ""
+        | fp when fp[0] = '~' ->
+            let sepIndex = fp.IndexOf(Path.DirectorySeparatorChar)
+            let userPath =
+                if fp = "~" || sepIndex = 1
+                then Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+                else
+                    let homePath = Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
+                    let userName =
+                        if sepIndex = -1
+                        then fp.Substring(1)
+                        else fp.Substring(1, sepIndex - 1)
+                    Path.Join(homePath, userName)
+            Path.Join(userPath, fp.Substring(sepIndex))
+        | _ -> filePath
 
+    let Exists (filePath : string) : bool =
+        Directory.Exists(filePath) ||
+        Directory.Exists(ExpandPath(filePath)) ||
+        File.Exists(filePath) ||
+        File.Exists(ExpandPath(filePath))
+    
     let GetRelativePath (fullPath : string) (startPath : string) : string =
         let startFullPath = NormalizePath (DirectoryInfo startPath).FullName
         let normStartPath = NormalizePath startPath
