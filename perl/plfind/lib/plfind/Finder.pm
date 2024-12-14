@@ -40,19 +40,29 @@ sub validate_settings {
     }
     foreach my $p (@{$settings->{paths}}) {
         unless (-e $p) {
-            push(@{$errs}, 'Startpath not found');
+            my $expanded = plfind::FileUtil::expand_path($p);
+            unless (-e $expanded) {
+                push(@{$errs}, 'Startpath not found');
+                return $errs;
+            }
         }
         unless (-r $p) {
-            push(@{$errs}, 'Startpath not readable');
+            my $expanded = plfind::FileUtil::expand_path($p);
+            unless (-r $expanded) {
+                push(@{$errs}, 'Startpath not readable');
+                return $errs;
+            }
         }
     }
     if ($settings->{max_depth} > -1 && $settings->{min_depth} > -1
         && $settings->{max_depth} < $settings->{min_depth}) {
         push(@{$errs}, 'Invalid range for mindepth and maxdepth');
+        return $errs;
     }
     if (blessed($settings->{max_last_mod}) && blessed($settings->{min_last_mod})
         && $settings->{max_last_mod} < $settings->{min_last_mod}) {
         push(@{$errs}, 'Invalid range for minlastmod and maxlastmod');
+        return $errs;
     }
     if ($settings->{max_size} > 0 && $settings->{min_size} > 0
         && $settings->{max_size} < $settings->{min_size}) {
@@ -272,6 +282,20 @@ sub rec_get_file_results {
 sub get_file_results {
     my ($self, $file_path) = @_;
     my $file_results = [];
+
+    unless (-e $file_path) {
+        my $expanded = plfind::FileUtil::expand_path($file_path);
+        unless (-e $expanded) {
+            plfind::common::log_err("Startpath not found");
+            return [];
+        }
+        if ($file_path->is_dir) {
+            $file_path = dir($expanded);
+        } else {
+            $file_path = file($expanded);
+        }
+    }
+
     if ($file_path->is_dir) {
         # if max_depth is zero, we can skip since a directory cannot be a result
         if ($self->{settings}->{max_depth} == 0) {
@@ -286,6 +310,7 @@ sub get_file_results {
                 $max_depth, 1)});
         } else {
             plfind::common::log_err("Startpath does not match find settings");
+            return [];
         }
     } else {
         # if min_depth > zero, we can skip since the file is at depth zero
@@ -297,6 +322,7 @@ sub get_file_results {
             push(@{$file_results}, $file_result);
         } else {
             plfind::common::log_err("Startpath does not match find settings");
+            return [];
         }
     }
     return $file_results;

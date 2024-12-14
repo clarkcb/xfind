@@ -124,9 +124,9 @@ sub add_path {
     } else {
         my $expanded = plfind::FileUtil::expand_path($path);
         if (-d $expanded) {
-            push(@{$self->{paths}}, dir($expanded));
+            push(@{$self->{paths}}, dir($path));
         } elsif (-f $expanded) {
-            push(@{$self->{paths}}, file($expanded));
+            push(@{$self->{paths}}, file($path));
         }
     }
 }
