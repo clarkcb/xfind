@@ -195,13 +195,18 @@ defmodule ExFind.Finder do
 
   def find_path(finder, path) do
     # IO.puts("find_path(#{path})")
-    if File.dir?(path) do
+    p = if File.exists?(path) do
+      path
+    else
+      Path.expand(path)
+    end
+    if File.dir?(p) do
       if finder.settings.max_depth == 0 do
         []
       else
-        if matching_dir?(finder, path) do
+        if matching_dir?(finder, p) do
           max_depth = if finder.settings.recursive, do: finder.settings.max_depth, else: 1
-          rec_find_path(finder, path, finder.settings.min_depth, max_depth, 1)
+          rec_find_path(finder, p, finder.settings.min_depth, max_depth, 1)
         else
           []
         end
@@ -210,7 +215,7 @@ defmodule ExFind.Finder do
       if finder.settings.min_depth > 0 do
         []
       else
-        filter_to_file_results(finder, path)
+        filter_to_file_results(finder, p)
       end
     end
   end
@@ -257,8 +262,8 @@ defmodule ExFind.Finder do
     cond do
       Enum.empty?(settings.paths) ->
         {:error, "Startpath not defined"}
-      Enum.any?(settings.paths, fn p -> !File.exists?(p) end) ->
-        {:error, "Startpath not found"}
+        Enum.any?(settings.paths, fn p -> !File.exists?(p) && !File.exists?(Path.expand(p)) end) ->
+          {:error, "Startpath not found"}
       # Enum.any?(settings.paths, fn p -> !readable?(p) end) ->
       #   {:error, "Startpath not readable"}
       settings.min_depth > -1 and settings.max_depth > -1
