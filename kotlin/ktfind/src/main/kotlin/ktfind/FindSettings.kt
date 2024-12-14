@@ -1,6 +1,7 @@
 package ktfind
 
 import java.nio.file.Path
+import java.nio.file.Paths
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -66,7 +67,7 @@ data class FindSettings(
     val outExtensions: Set<String>,
     val outFilePatterns: Set<Regex>,
     val outFileTypes: Set<FileType>,
-    val paths: Set<String>,
+    val paths: Set<Path>,
     val printDirs: Boolean,
     val printFiles: Boolean,
     val printUsage: Boolean,
@@ -102,7 +103,7 @@ data class FindSettings(
                 "outExtensions=${stringSetToString(outExtensions)}, " +
                 "outFilePatterns=${patternSetToString(outFilePatterns)}, " +
                 "outFileTypes=${fileTypeSetToString(outFileTypes)}, " +
-                "paths=${stringSetToString(paths)}, " +
+                "paths=${pathSetToString(paths)}, " +
                 "printDirs=$printDirs, " +
                 "printFiles=$printFiles, " +
                 "printUsage=$printUsage, " +
@@ -198,8 +199,8 @@ fun addFileTypes(ft: String, fileTypes: Set<FileType>): Set<FileType> {
     return fileTypes.plus(fts)
 }
 
-fun addPath(p: String, paths: Set<String>): Set<String> {
-    return paths.plus(p)
+fun addPath(p: String, paths: Set<Path>): Set<Path> {
+    return paths.plus(setOf(Paths.get(p)))
 }
 
 fun setArchivesOnly(ss: FindSettings, archivesOnly: Boolean): FindSettings {

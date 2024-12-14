@@ -260,7 +260,7 @@ class FindOptions {
                     throw FindException("Invalid option: $arg")
                 }
             } else {
-                return recSettingsFromArgs(args.drop(1), settings.copy(paths = settings.paths.plus(nextArg)))
+                return recSettingsFromArgs(args.drop(1), settings.copy(paths = addPath(nextArg, settings.paths)))
             }
         }
         // default printFiles to true since running as cli

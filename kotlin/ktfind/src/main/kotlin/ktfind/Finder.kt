@@ -4,7 +4,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.nio.file.attribute.BasicFileAttributes
 import java.nio.file.attribute.FileTime
 import java.time.Instant
@@ -32,13 +31,20 @@ class Finder(val settings: FindSettings) {
         if (settings.paths.isEmpty()) {
             throw FindException("Startpath not defined")
         }
-        for (p in settings.paths) {
-            val path = Paths.get(p)
-            if (!Files.exists(path)) {
-                throw FindException("Startpath not found")
-            }
-            if (!Files.isReadable(path)) {
-                throw FindException("Startpath not readable")
+        for (path in settings.paths) {
+            if (Files.exists(path)) {
+                if (!Files.isReadable(path)) {
+                    throw FindException("Startpath not readable")
+                }
+            } else {
+                var expandedPath = FileUtil.expandPath(path)
+                if (Files.exists(expandedPath)) {
+                    if (!Files.isReadable(expandedPath)) {
+                        throw FindException("Startpath not readable")
+                    }
+                } else {
+                    throw FindException("Startpath not found")
+                }
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
@@ -152,9 +158,9 @@ class Finder(val settings: FindSettings) {
 
     fun isMatchingLastMod(lastMod: Instant?): Boolean {
         return (((settings.maxLastMod == null)
-                || lastMod!! <= settings.maxLastMod!!.toInstant(ZoneOffset.UTC))
+                || lastMod!! <= settings.maxLastMod.toInstant(ZoneOffset.UTC))
                 && ((settings.minLastMod == null)
-                || lastMod!! >= settings.minLastMod!!.toInstant(ZoneOffset.UTC)))
+                || lastMod!! >= settings.minLastMod.toInstant(ZoneOffset.UTC)))
     }
 
     fun isMatchingFileResult(fr: FileResult): Boolean {
@@ -276,7 +282,7 @@ class Finder(val settings: FindSettings) {
                     pathResults.addAll(recFindPath(it, minDepth, maxDepth, currentDepth + 1))
                 }
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             return emptyList()
         }
 
@@ -284,23 +290,24 @@ class Finder(val settings: FindSettings) {
     }
 
     private fun findPath(filePath: Path): List<FileResult> {
-        if (Files.isDirectory(filePath)) {
+        val fp = if (Files.exists(filePath)) filePath else FileUtil.expandPath(filePath)
+        if (Files.isDirectory(fp)) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (settings.maxDepth == 0) {
                 return emptyList()
             }
-            if (isMatchingDir(filePath)) {
+            if (isMatchingDir(fp)) {
                 val maxDepth = if (settings.recursive) settings.maxDepth else 1
-                return recFindPath(filePath, settings.minDepth, maxDepth, 1)
+                return recFindPath(fp, settings.minDepth, maxDepth, 1)
             } else {
                 throw FindException("Startpath does not match find settings")
             }
-        } else if (Files.isRegularFile(filePath)) {
+        } else if (Files.isRegularFile(fp)) {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (settings.minDepth > 0) {
                 return emptyList()
             }
-            val fr = filterToFileResult(filePath)
+            val fr = filterToFileResult(fp)
             if (fr != null) {
                 return listOf(fr)
             } else {
@@ -312,9 +319,8 @@ class Finder(val settings: FindSettings) {
     }
 
     private fun findAsync(fileResults: MutableList<FileResult>): Unit = runBlocking {
-        for (p in settings.paths) {
+        for (path in settings.paths) {
             launch {
-                val path = Paths.get(p)
                 fileResults.addAll(findPath(path))
             }
         }
