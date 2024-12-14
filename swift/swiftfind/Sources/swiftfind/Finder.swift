@@ -32,9 +32,9 @@ public class Finder {
     private func validateSettings() throws {
         if settings.paths.isEmpty {
             throw FindError(msg: "Startpath not defined")
-        } else if !settings.paths.allSatisfy({ FileUtil.exists($0) }) {
+        } else if !settings.paths.allSatisfy({ FileUtil.exists($0) || FileUtil.exists(FileUtil.expandPath($0)) }) {
             throw FindError(msg: "Startpath not found")
-        } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) }) {
+        } else if !settings.paths.allSatisfy({ FileUtil.isReadableFile($0) || FileUtil.isReadableFile(FileUtil.expandPath($0)) }) {
             throw FindError(msg: "Startpath not readable")
         } else if settings.maxDepth > -1, settings.maxDepth < settings.minDepth {
             throw FindError(msg: "Invalid range for mindepth and maxdepth")
@@ -253,14 +253,18 @@ public class Finder {
 
     // gets all FileResults recursively
     private func getFileResults(_ filePath: String) throws -> [FileResult] {
+        var fp = filePath
+        if !FileUtil.exists(filePath) {
+            fp = FileUtil.expandPath(filePath)
+        }
         var fileResults = [FileResult]()
-        if FileUtil.isDirectory(filePath) {
+        if FileUtil.isDirectory(fp) {
             if settings.maxDepth == 0 {
                 return fileResults
             }
-            if self.isMatchingDir(filePath) {
+            if self.isMatchingDir(fp) {
                 let maxDepth = settings.recursive ? settings.maxDepth : 1
-                let pathResults = recGetFileResults(filePath, minDepth: settings.minDepth, maxDepth: maxDepth, currentDepth: 1)
+                let pathResults = recGetFileResults(fp, minDepth: settings.minDepth, maxDepth: maxDepth, currentDepth: 1)
                 fileResults.append(contentsOf: pathResults)
             } else {
                 throw FindError(msg: "Startpath does not match find settings")
@@ -270,7 +274,7 @@ public class Finder {
             if settings.minDepth > 0 {
                 return fileResults
             }
-            if let fileResult = filterToFileResult(filePath) {
+            if let fileResult = filterToFileResult(fp) {
                 fileResults.append(fileResult)
             } else {
                 throw FindError(msg: "Startpath does not match find settings")

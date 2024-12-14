@@ -109,7 +109,7 @@ public enum FileUtil {
     }
 
     public static func exists(_ filePath: String) -> Bool {
-        getFileManager().fileExists(atPath: expandPath(filePath))
+        getFileManager().fileExists(atPath: filePath)
     }
 
     public static func isDirectory(_ filePath: String) -> Bool {
