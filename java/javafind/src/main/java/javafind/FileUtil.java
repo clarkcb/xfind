@@ -29,6 +29,36 @@ public final class FileUtil {
     private static final Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
     private static final String DEFAULT_ENCODING = "UTF-8";
 
+    public static Path expandPath(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException("Path cannot be null");
+        }
+
+        var pathString = path.toString();
+        if (pathString.startsWith("~")) {
+            Path userPath = Paths.get(System.getProperty("user.home"));
+            if (pathString.equals("~") || pathString.equals("~" + File.separator)) {
+                return userPath;
+            } else if (pathString.startsWith("~" + File.separator)) {
+                return Paths.get(userPath.toString(), pathString.substring(2));
+            }
+            // Another user's home directory
+            int sepIndex = pathString.indexOf(File.separator);
+            Path homePath = userPath.getParent();
+            if (sepIndex == -1) {
+                String userName = pathString.substring(1);
+                return Paths.get(homePath.toString(), userName);
+            }
+
+            String userName = pathString.substring(1, sepIndex);
+            userPath = Paths.get(homePath.toString(), userName);
+            return Paths.get(userPath.toString(), pathString.substring(sepIndex + 1));
+        }
+
+        // Return the path as is if it doesn't contain a tilde
+        return path;
+    }
+
     public static String getExtension(final Path path) {
         return getExtension(path.getFileName().toString());
     }
