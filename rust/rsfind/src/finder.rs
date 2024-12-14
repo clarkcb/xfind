@@ -44,7 +44,7 @@ impl Finder {
             if path == "" {
                 return Err(FindError::new("Startpath not defined"));
             }
-            let p = FileUtil::expand_path(path);
+            let p = FileUtil::expand(path);
             let metadata = fs::metadata(&p);
             if metadata.is_err() {
                 return match metadata.err().unwrap().kind() {
@@ -390,7 +390,10 @@ impl Finder {
 
     pub fn find_path(&self, path: &String) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
-        let path_buf = PathBuf::from(&path);
+        let mut path_buf = PathBuf::from(&path);
+        if !path_buf.exists() {
+            path_buf = FileUtil::expand_path(&path_buf);
+        }
         if path_buf.is_dir() {
             if self.settings.max_depth() == 0 {
                 return Ok(file_results);

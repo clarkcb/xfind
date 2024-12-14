@@ -1,9 +1,23 @@
 use std::ffi::OsStr;
-use std::path::Path;
+use std::{fs, io};
+use std::path::{Path, PathBuf};
 
 pub struct FileUtil {}
 
 impl FileUtil {
+    pub fn exists(file_path: &str) -> bool {
+        let metadata = fs::metadata(&file_path);
+        if metadata.is_err() && metadata.err().unwrap().kind() == io::ErrorKind::NotFound {
+            false
+        } else {
+            true
+        }
+    }
+
+    pub fn get_extension_from_path(path: &Path) -> Option<&str> {
+        path.extension().and_then(OsStr::to_str)
+    }
+
     /// Get a file name's extension, if it exists
     ///
     /// # Examples
@@ -12,7 +26,7 @@ impl FileUtil {
     /// assert_eq!(FileUtil::get_extension("filename.txt"), Some("txt"));
     /// ```
     pub fn get_extension(file_name: &str) -> Option<&str> {
-        Path::new(file_name).extension().and_then(OsStr::to_str)
+        FileUtil::get_extension_from_path(Path::new(file_name))
     }
 
     /// Check whether a dir name is for a "dot dir"
@@ -52,6 +66,34 @@ impl FileUtil {
         Self::is_hidden_path(Path::new(file_path))
     }
 
+    pub fn expand_path(path: &Path) -> PathBuf {
+        if path.starts_with("~") {
+            let user_path = std::env::home_dir().unwrap();
+            let path_string = path.to_str().unwrap().to_string();
+            if path_string.eq("~") || path_string.eq("~/") {
+                return user_path;
+            }
+            if path.starts_with("~/") {
+                return user_path.join(path.strip_prefix("~/").unwrap());
+            }
+
+            // Another user's home directory
+            let home_path = user_path.parent().unwrap().to_path_buf();
+
+            return match path_string.find('/') {
+                None => {
+                    let user_name = &path_string[1..];
+                    home_path.join(user_name)
+                },
+                Some(sep_index) => {
+                    let user_name = &path_string[1..sep_index];
+                    home_path.join(user_name).join(path_string[sep_index + 1..].trim())
+                },
+            }
+        }
+        PathBuf::from(path)
+    }
+
     /// Expand a file path if it starts with tilde
     ///
     /// # Examples
@@ -60,13 +102,9 @@ impl FileUtil {
     /// assert_eq!("/home/user", FileUtil::expand_path("~"));
     /// assert_eq!("/other/path", FileUtil::expand_path("/other/path"));
     /// ```
-    pub fn expand_path(file_path: &str) -> String {
-        if file_path.starts_with("~") {
-            let home = std::env::var("HOME").unwrap();
-            let expanded = file_path.replacen("~", &home, 1);
-            return expanded;
-        }
-        String::from(file_path)
+    pub fn expand(file_path: &str) -> String {
+        let expanded_path = FileUtil::expand_path(Path::new(file_path));
+        expanded_path.to_str().unwrap().to_string()
     }
 }
 
@@ -125,9 +163,9 @@ mod tests {
     #[test]
     fn test_expand_path() {
         let home = std::env::var("HOME").unwrap();
-        assert_eq!(home, FileUtil::expand_path("~"));
+        assert_eq!(home, FileUtil::expand("~"));
         let xfindpath = format!("{}/xfind", home);
-        assert_eq!(xfindpath, FileUtil::expand_path("~/xfind"));
-        assert_eq!(String::from("/path/to/dir"), FileUtil::expand_path("/path/to/dir"));
+        assert_eq!(xfindpath, FileUtil::expand("~/xfind"));
+        assert_eq!(String::from("/path/to/dir"), FileUtil::expand("/path/to/dir"));
     }
 }
