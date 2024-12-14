@@ -14,9 +14,7 @@ public static class FileUtil
 
 	public static string GetHomePath()
 	{
-		return Environment.GetEnvironmentVariable("HOME")
-		       ?? Environment.GetEnvironmentVariable("USERPROFILE")
-		       ?? "~";
+		return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 	}
 
 	public static string NormalizePath(string path)
@@ -26,7 +24,19 @@ public static class FileUtil
 
 	public static string ExpandPath(string filePath)
 	{
-		return filePath[0] == '~' ? Path.Join(GetHomePath(), filePath[1..]) : filePath;
+		ArgumentNullException.ThrowIfNull(filePath);
+		if (filePath.Length == 0) throw new ArgumentException("Invalid path", nameof(filePath));
+		if (filePath[0] != '~') return filePath;
+		var sepIndex = filePath.IndexOf(Path.DirectorySeparatorChar);
+		var userPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+		if (filePath != "~" && sepIndex != 1)
+		{
+			// Another user's home directory
+			var homePath = Path.GetDirectoryName(userPath) ?? ".";
+			var userName = sepIndex == -1 ? filePath[1..] : filePath.Substring(1, sepIndex - 1);
+			userPath = Path.Join(homePath, userName);
+		}
+		return Path.Join(userPath, filePath[sepIndex..]);
 	}
 
 	public static string GetRelativePath(string fullPath, string startPath)
