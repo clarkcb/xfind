@@ -2,6 +2,7 @@ package groovyfind
 
 import groovy.transform.CompileStatic
 
+import java.io.File
 import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
@@ -19,6 +20,35 @@ final class FileUtil {
     private static final Set<String> DOT_DIRS = new HashSet<>(Arrays.asList(DOT, DOT_DOT))
     private static final String DEFAULT_ENCODING = 'UTF-8'
     private static final String Z_EXT = 'Z'
+
+    static Path expandPath(Path path) {
+        if (path == null) {
+            throw new IllegalArgumentException('Path cannot be null')
+        }
+
+        String pathString = path.toString()
+        if (pathString.startsWith("~")) {
+            Path userPath = Paths.get(System.getProperty('user.home'))
+            if (pathString == "~" || pathString == "~" + File.separator) {
+                return userPath
+            } else if (pathString.startsWith("~" + File.separator)) {
+                return Paths.get(userPath.toString(), pathString.substring(2));
+            }
+            // Another user's home directory
+            Path homePath = userPath.getParent()
+            int sepIndex = pathString.indexOf(File.separator)
+            if (sepIndex == -1) {
+                String userName = pathString.substring(1)
+                return Paths.get(homePath.toString(), userName)
+            }
+            String userName = pathString.substring(1, sepIndex)
+            userPath = Paths.get(homePath.toString(), userName)
+            return Paths.get(userPath.toString(), pathString.substring(sepIndex + 1))
+        }
+
+        // Return the path as is if it doesn't contain a tilde
+        return path
+    }
 
     static String getExtension(final Path path) {
         getExtension(path.fileName.toString())

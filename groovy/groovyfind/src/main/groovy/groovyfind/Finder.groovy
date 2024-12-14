@@ -28,11 +28,19 @@ class Finder {
             throw new FindException('Startpath not defined')
         }
         paths.each { path ->
-            if (!Files.exists(path)) {
-                throw new FindException('Startpath not found')
-            }
-            if (!Files.isReadable(path)) {
-                throw new FindException('Startpath not readable')
+            if (Files.exists(path)) {
+                if (!Files.isReadable(path)) {
+                    throw new FindException('Startpath not readable')
+                }
+            } else {
+                Path expandedPath = FileUtil.expandPath(path)
+                if (Files.exists(expandedPath)) {
+                    if (!Files.isReadable(expandedPath)) {
+                        throw new FindException('Startpath not readable')
+                    }
+                } else {
+                    throw new FindException('Startpath not found')
+                }
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
@@ -257,7 +265,10 @@ class Finder {
         pathResults
     }
 
-    private List<FileResult> findPath(final Path filePath) throws FindException {
+    private List<FileResult> findPath(Path filePath) throws FindException {
+        if (!Files.exists(filePath)) {
+            filePath = FileUtil.expandPath(filePath)
+        }
         if (Files.isDirectory(filePath)) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (settings.maxDepth == 0) {
