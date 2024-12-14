@@ -48,6 +48,33 @@ function LogError {
 ########################################
 $dotPaths = @('.', '..')
 
+function GetHomePath {
+    return [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile);
+}
+
+function ExpandPath {
+    param([string]$filePath)
+    if ($filePath.StartsWith('~')) {
+        $userPath = GetHomePath
+        if ($filePath -eq '~' -or $filePath -eq '~/' -or $filePath -eq '~\\') {
+            return $userPath
+        }
+        if ($filePath.StartsWith('~/') -or $filePath.StartsWith('~\\')) {
+            return Join-Path -Path $userPath -ChildPath $filePath.Substring(2)
+        }
+        $sepIndex = $filePath.IndexOf([Path]::DirectorySeparatorChar)
+        $homePath = [Path]::GetDirectoryName($userPath)
+        if ($sepIndex -eq -1) {
+            $userName = $filePath.Substring(1)
+            return Join-Path -Path $homePath -ChildPath $userName
+        }
+        $userName = $filePath.Substring(1, $sepIndex - 1)
+        $userPath = Join-Path -Path $homePath -ChildPath $userName
+        return Join-Path -Path $userPath -ChildPath $filePath.Substring($sepIndex)
+    }
+    return $filePath
+}
+
 function IsDotDir {
     [OutputType([bool])]
     param([string]$dirName)
@@ -774,7 +801,7 @@ class Finder {
             throw "Startpath not defined"
         }
         foreach ($path in $this.Settings.Paths) {
-            if (-not (Test-Path $path)) {
+            if (-not (Test-Path $path) -and -not (Test-Path ExpandPath($path))) {
                 throw "Startpath not found"
             }
         }
@@ -991,6 +1018,9 @@ class Finder {
 
     [FileResult[]]GetPathResults([string]$path) {
         $fileResults = @()
+        if (-not (Test-Path -Path $path)) {
+            $path = ExpandPath($path)
+        }
         if (Test-Path -Path $path -PathType Container) {
             # if max_depth is zero, we can skip since a directory cannot be a result
             if ($this.Settings.MaxDepth -eq 0) {
