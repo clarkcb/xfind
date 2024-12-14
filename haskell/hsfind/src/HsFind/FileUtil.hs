@@ -32,6 +32,7 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
+import System.Posix.User (getUserEntryForName)
 import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime, pathIsSymbolicLink)
 import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
@@ -165,3 +166,11 @@ getFileLines f = do
   case fileByteString of
     Left e -> return $ Left e
     Right contents -> return $ Right (BC.split '\n' contents)
+
+-- expandPath :: FilePath -> IO FilePath
+-- expandPath filePath = do
+--   if isPrefixOf "~" filePath
+--     then do
+--       userEntry <- getUserEntryForName "root"
+--       return $ homeDir ++ (drop 1 filePath)
+--     else return filePath

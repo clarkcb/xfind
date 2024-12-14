@@ -68,6 +68,7 @@ main = do
       case errsOrUsage findOptions settings of
         Just usage -> logMsg $ usage ++ "\n"
         Nothing -> do
+          -- TODO: if paths not found, try expanding them
           foundPaths <- filterM pathExists (paths settings)
           if length foundPaths == length (paths settings) then do
             fileResults <- doFind settings
