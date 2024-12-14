@@ -218,7 +218,7 @@ export class Finder {
                     }
                 }
             }
-        });
+        }
         const subDirFileResultArrays = await Promise.all(findDirs.map(d => this.recGetFileResults(d, minDepth, maxDepth, currentDepth + 1)));
         subDirFileResultArrays.forEach(subDirFileResults => {
             fileResults = fileResults.concat(subDirFileResults);
