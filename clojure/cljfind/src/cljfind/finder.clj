@@ -25,8 +25,8 @@
          (new-file-result file-result-path sort-results)]
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only
-          (exists? get-ext get-name get-parent hidden-dir? hidden-file?
-           is-dir? is-dot-dir? is-file? is-symlink? path-str sep-count)]
+          (exists? expand-path get-ext get-name get-parent hidden-dir? hidden-file?
+           is-dir? is-dot-dir? is-file? is-symlink? path-str readable? sep-count)]
         [cljfind.findsettings :only (need-last-mod need-size)])
   (:require [java-time.api :as jt]))
 
@@ -39,7 +39,22 @@
 (defn validate-settings [^FindSettings settings]
   (let [paths (:paths settings)
         tests [(fn [ss] (if (empty? paths) "Startpath not defined" nil))
-               (fn [ss] (if (some #(not (exists? %)) paths) "Startpath not found" nil))
+               (fn [ss]
+                 (if
+                   (some #(not (exists? %)) paths)
+                   (if
+                     (some #(not (exists? (expand-path %))) paths)
+                     "Startpath not found"
+                     nil)
+                   nil))
+               (fn [ss]
+                 (if
+                   (some #(not (readable? %)) paths)
+                   (if
+                     (some #(not (readable? (expand-path %))) paths)
+                     "Startpath not readable"
+                     nil)
+                   nil))
                (fn [ss]
                  (if
                    (and
@@ -248,19 +263,21 @@
                 (mapcat #(get-file-results-under-path settings % min-depth max-depth next-depth) path-dirs))))))
 
 (defn get-file-results-for-path [^FindSettings settings, ^Path path]
-  (if (is-file? path)
-    (if
-      (< (:min-depth settings) 1)
-      (let [path-file-result (filter-to-file-result path settings)]
-        (if (not (nil? path-file-result))
-          [path-file-result]
-          []))
-      [])
-    (if (= (:max-depth settings) 0)
-      []
-      (if (:recursive settings)
-        (get-file-results-under-path settings path (:min-depth settings) (:max-depth settings) 1)
-        (get-file-results-under-path settings path (:min-depth settings) 1 1)))))
+  (let [expanded-path (expand-path path)]
+    (if (is-file? expanded-path)
+      (if
+        (< (:min-depth settings) 1)
+        (let [path-file-result (filter-to-file-result expanded-path settings)]
+          (if (not (nil? path-file-result))
+            [path-file-result]
+            []))
+        [])
+      (if (= (:max-depth settings) 0)
+        []
+        (if (:recursive settings)
+          (get-file-results-under-path settings expanded-path (:min-depth settings) (:max-depth settings) 1)
+          (get-file-results-under-path settings expanded-path (:min-depth settings) 1 1))))))
+
 
 (defn get-file-results [^FindSettings settings]
   (sort-results (mapcat #(get-file-results-for-path settings %) (:paths settings)) settings))

@@ -5,7 +5,7 @@
         [cljfind.config :only (XFINDPATH SHAREDPATH)]
         [cljfind.fileresult :only (new-file-result)]
         [cljfind.filetypes :only (get-file-type)]
-        [cljfind.fileutil :only (expand-path hidden-file? to-path)]
+        [cljfind.fileutil :only (hidden-file? to-path)]
         [cljfind.finder :only
          (filter-to-file-result find-files is-matching-archive-file-result? is-matching-dir? is-matching-file-result?)]
         [cljfind.findsettings :only

@@ -156,7 +156,7 @@
   (if (empty? paths)
     settings
     (add-paths
-      (update-in settings [:paths] #(add-element (nth paths 0) %)) (rest paths))))
+      (update-in settings [:paths] #(add-element (first paths) %)) (rest paths))))
 
 (defn add-path [^FindSettings settings path]
   (let [t (type path)]

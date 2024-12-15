@@ -20,7 +20,7 @@
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileutil :only (expand-path to-path)]
+        [cljfind.fileutil :only (to-path)]
         [cljfind.findsettings :only
          (->FindSettings DEFAULT-FIND-SETTINGS add-extension add-file-type add-path
                          add-pattern set-archives-only set-debug set-int-val set-long-val
@@ -153,27 +153,31 @@
            a2 (second args)]
        (if a
          (cond
-           ;; 1) boolean option
+           ;; 1) no k
+           (not k)
+           (rec-get-settings-from-args settings long-arg-map (rest args) (conj errs (str "Invalid option: " a)))
+
+           ;; 2) boolean option
            (contains? bool-action-map k)
            (rec-get-settings-from-args ((k bool-action-map) settings true) long-arg-map (rest args) errs)
 
-           ;; 2) option without arg
+           ;; 3) option without arg
            (not a2)
            (rec-get-settings-from-args settings long-arg-map (rest args) (conj errs (str "Missing arg for option " a)))
 
-           ;; 3) string option
+           ;; 4) string option
            (contains? string-action-map k)
            (rec-get-settings-from-args ((k string-action-map) settings a2) long-arg-map (drop 2 args) errs)
 
-           ;; 4) int option
+           ;; 5) int option
            (contains? int-action-map k)
            (rec-get-settings-from-args ((k int-action-map) settings a2) long-arg-map (drop 2 args) errs)
 
-           ;; 5) long option
+           ;; 6) long option
            (contains? long-action-map k)
            (rec-get-settings-from-args ((k long-action-map) settings a2) long-arg-map (drop 2 args) errs)
 
-            ;; 5) file option
+            ;; 7) settings-file option
            (= k :settings-file)
            (let [[file-settings file-errs] (settings-from-file settings a2)]
              (rec-get-settings-from-args file-settings long-arg-map (drop 2 args) (concat errs file-errs)))

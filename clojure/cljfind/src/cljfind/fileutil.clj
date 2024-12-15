@@ -15,17 +15,41 @@
 
 (def ^:const DOT_DIRS #{"." ".."})
 
-; needs string argument and returns string
-(defn expand-path [^String f]
-  (let [home (File. (System/getProperty "user.home"))]
-    (if (.startsWith f "~")
-      (str home (.substring f 1))
-      f)))
+(defn path-str [p]
+  (cond
+    (instance? java.nio.file.Path p) (.toString p)
+    (instance? java.io.File p) (.getPath p)
+    :else p))
+
+(defn to-path [^String f & rest]
+  (let [rest' (if (nil? rest) (into-array String []) (into-array String rest))]
+    (Paths/get f rest')))
+
+(defn expand-path ^java.nio.file.Path [^java.nio.file.Path p]
+  (let [path-str (.toString p)
+        sep-index (.indexOf path-str File/separator)
+        user-str (System/getProperty "user.home")
+        user-path (to-path user-str)
+        home-path (.getParent user-path)
+        home-str (if (nil? home-path) "." (.toString home-path))]
+    (if (.startsWith path-str "~")
+      (if (or (= path-str "~") (= path-str (str "~" File/separator)))
+        user-path
+        (if (= sep-index 1)
+          (to-path user-str (.substring path-str 2))
+          (to-path home-str (.substring path-str 1))))
+      p)))
 
 (defn exists? [f]
   (cond
     (instance? java.nio.file.Path f) (Files/exists f (into-array LinkOption []))
     (instance? java.io.File f) (.exists f)
+    :else false))
+
+(defn readable? [f]
+  (cond
+    (instance? java.nio.file.Path f) (Files/isReadable f)
+    (instance? java.io.File f) (.canRead f)
     :else false))
 
 (defn get-parent ^String [f]
@@ -74,14 +98,6 @@
 
 (defn is-dot-dir? [^String name]
   (contains? DOT_DIRS name))
-
-(defn path-str [p]
-  (cond (instance? java.nio.file.Path p) (.toString p)
-        (instance? java.io.File p) (.getPath p)
-        :else p))
-
-(defn to-path [^String f]
-  (Paths/get f (into-array String [])))
 
 (defn split-path [p]
   (split (path-str p) (re-pattern File/separator)))
