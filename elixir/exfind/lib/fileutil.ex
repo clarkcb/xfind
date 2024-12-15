@@ -3,11 +3,19 @@ defmodule ExFind.FileUtil do
   Documentation for `ExFind.FileUtil`.
   """
 
-@dot_dirs [".", ".."]
+  @dot_dirs [".", ".."]
 
-def dot_dir?(d) do
+  def dot_dir?(d) do
     Path.split(d) |> Enum.count() == 1
     and Enum.member?(@dot_dirs, Path.basename(d))
+  end
+
+  def expand_path(file_path) do
+    cond do
+      file_path == "" || !String.starts_with?(file_path, "~") -> file_path
+      file_path == "~" || String.starts_with?(file_path, "~/") -> Path.expand(file_path)
+      true -> Path.join([Path.dirname(System.user_home()), String.slice(file_path, 1..-1//1)])
+    end
   end
 
   def hidden?(file_path) do
