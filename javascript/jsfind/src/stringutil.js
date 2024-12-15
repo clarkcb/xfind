@@ -54,4 +54,13 @@ const patternListToString = (name, lst) => {
     return s;
 };
 
-module.exports = {dateToString, getDateForString, timestampToString, getTimestampForString, patternListToString, stringListToString};
+const trimFromEnd = (s, chars) => {
+    let i = s.length - 1;
+    while (i >= 0 && chars.indexOf(s[i]) >= 0) {
+        i--;
+    }
+    return s.substring(0, i+1);
+};
+
+module.exports = {dateToString, getDateForString, timestampToString, getTimestampForString, patternListToString,
+    stringListToString, trimFromEnd};

@@ -5,13 +5,26 @@
  */
 
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const common = require('./common');
+const { trimFromEnd } = require('./stringutil')
 
 class FileUtil {
     static expandPath(filePath) {
-        let idx = filePath.indexOf('~');
-        return idx === 0 ? process.env.HOME + filePath.substring(1) : filePath;
+        filePath = trimFromEnd(filePath, '/\\');
+        if (filePath.indexOf('~') === 0) {
+            const userPath = os.homedir();
+            if (filePath === '~') {
+                return userPath;
+            }
+            if (filePath.startsWith('~/')) {
+                return path.join(userPath, filePath.substring(2));
+            }
+            let homePath = path.dirname(userPath);
+            return path.join(homePath, filePath.substring(1));
+        }
+        return filePath;
     }
 
     static getExtension(filePath) {
