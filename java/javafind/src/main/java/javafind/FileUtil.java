@@ -43,16 +43,8 @@ public final class FileUtil {
                 return Paths.get(userPath.toString(), pathString.substring(2));
             }
             // Another user's home directory
-            int sepIndex = pathString.indexOf(File.separator);
             Path homePath = userPath.getParent();
-            if (sepIndex == -1) {
-                String userName = pathString.substring(1);
-                return Paths.get(homePath.toString(), userName);
-            }
-
-            String userName = pathString.substring(1, sepIndex);
-            userPath = Paths.get(homePath.toString(), userName);
-            return Paths.get(userPath.toString(), pathString.substring(sepIndex + 1));
+            return Paths.get(homePath.toString(), pathString.substring(1));
         }
 
         // Return the path as is if it doesn't contain a tilde

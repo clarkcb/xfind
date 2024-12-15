@@ -22,15 +22,7 @@ object FileUtil {
             }
             // Another user's home directory
             val homePath = userPath.parent
-            var sepIndex = pathString.indexOf(File.separator)
-            if (sepIndex == -1) {
-                var userName = pathString.substring(1)
-                return Paths.get(homePath.toString(), userName)
-            }
-            var userName = pathString.substring(1, sepIndex)
-            userPath = Paths.get(homePath.toString(), userName)
-
-            return Paths.get(userPath.toString(), pathString.substring(sepIndex + 1))
+            return Paths.get(homePath.toString(), pathString.substring(1))
         }
 
         // Return the path as is if it doesn't contain a tilde.

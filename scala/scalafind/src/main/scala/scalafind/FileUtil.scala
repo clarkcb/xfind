@@ -15,18 +15,18 @@ object FileUtil {
     path match {
       case p if p.toString.startsWith(tilde) =>
         val pathString = path.toString
-        val userPath: Path =
-          if (pathString == tilde || pathString.startsWith(tilde + File.separator)) {
-            // Current user's home directory
-            Paths.get(System.getProperty("user.home"))
-          } else {
-            // Another user's home directory
-            val homePath = Paths.get(System.getProperty("user.home")).getParent
-            val sepIndex = pathString.indexOf(File.separator)
-            val userName: String = if (sepIndex == -1) pathString.substring(1) else pathString.substring(1, sepIndex)
-            Paths.get(homePath.toString, userName)
-          }
-        Paths.get(userPath.toString, pathString.substring(pathString.indexOf(File.separator) + 1))
+        val userPath = System.getProperty("user.home")
+        if (pathString == tilde || pathString == tilde + File.separator) {
+          // Current user's home directory
+          Paths.get(userPath)
+        } else if (pathString.startsWith(tilde + File.separator)) {
+          // Under current user's home directory
+          Paths.get(userPath, pathString.substring(1))
+        } else {
+          // Another user's home directory
+          val homePath = Paths.get(userPath).getParent
+          Paths.get(homePath.toString, pathString.substring(1))
+        }
 
       case _ => path
     }
