@@ -12,6 +12,7 @@ use strict;
 use warnings;
 
 # use Data::Dumper;
+use Path::Class;
 use plfind::common;
 
 my @DOT_DIRS = ('.', '..');
@@ -30,9 +31,15 @@ sub expand_path {
         return '';
     }
     if (substr($file_path, 0, 1) eq '~') {
+        my $user_path = dir($ENV{HOME});
+        if ($file_path eq "~" || $file_path eq "~/" || $file_path eq "~\\") {
+            return $user_path;
+        }
         if (substr($file_path, 1, 1) eq '/' || substr($file_path, 1, 1) eq '\\') {
             return $ENV{HOME} . substr($file_path, 1);
         }
+        my $home_path = $user_path->parent;
+        return join_paths(@{[$home_path->stringify, substr($file_path, 1)]});
     }
     return $file_path;
 }
@@ -64,6 +71,17 @@ sub is_hidden_path {
     # $path is a Path::Class instance
     my ($path) = @_;
     return is_hidden($path->basename);
+}
+
+sub join_paths {
+    my @paths = @_;
+    if (scalar @paths == 0) {
+        return '';
+    }
+    for (my $i = 0; $i < scalar @paths; $i++) {
+        $paths[$i] =~ s|/$||;
+    }
+    return join('/', @paths);
 }
 
 sub get_file_handle {
