@@ -62,15 +62,8 @@ function ExpandPath {
         if ($filePath.StartsWith('~/') -or $filePath.StartsWith('~\\')) {
             return Join-Path -Path $userPath -ChildPath $filePath.Substring(2)
         }
-        $sepIndex = $filePath.IndexOf([Path]::DirectorySeparatorChar)
-        $homePath = [Path]::GetDirectoryName($userPath)
-        if ($sepIndex -eq -1) {
-            $userName = $filePath.Substring(1)
-            return Join-Path -Path $homePath -ChildPath $userName
-        }
-        $userName = $filePath.Substring(1, $sepIndex - 1)
-        $userPath = Join-Path -Path $homePath -ChildPath $userName
-        return Join-Path -Path $userPath -ChildPath $filePath.Substring($sepIndex)
+        $homePath = Split-Path -parent $userPath
+        return Join-Path -Path $homePath -ChildPath $filePath.Substring(1)
     }
     return $filePath
 }
@@ -1018,7 +1011,7 @@ class Finder {
 
     [FileResult[]]GetPathResults([string]$path) {
         $fileResults = @()
-        if (-not (Test-Path -Path $path)) {
+        if ($path.StartsWith('~')) {
             $path = ExpandPath($path)
         }
         if (Test-Path -Path $path -PathType Container) {
