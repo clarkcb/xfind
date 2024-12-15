@@ -172,7 +172,7 @@ export class FindSettings {
             + ', ' + StringUtil.patternListToString('inDirPatterns', this.inDirPatterns)
             + ', ' + StringUtil.stringListToString('inExtensions', this.inExtensions)
             + ', ' + StringUtil.patternListToString('inFilePatterns', this.inFilePatterns)
-            + ', ' + StringUtil.fileTypesToString('inFileTypes', this.inFileTypes)
+            + ', ' + FileTypes.fileTypesToString('inFileTypes', this.inFileTypes)
             + ', includeArchives=' + this.includeArchives
             + ', includeHidden=' + this.includeHidden
             + ', maxDepth=' + this.maxDepth
@@ -186,7 +186,7 @@ export class FindSettings {
             + ', ' + StringUtil.patternListToString('outDirPatterns', this.outDirPatterns)
             + ', ' + StringUtil.stringListToString('outExtensions', this.outExtensions)
             + ', ' + StringUtil.patternListToString('outFilePatterns', this.outFilePatterns)
-            + ', ' + StringUtil.fileTypesToString('outFileTypes', this.outFileTypes)
+            + ', ' + FileTypes.fileTypesToString('outFileTypes', this.outFileTypes)
             + ', ' + StringUtil.stringListToString('paths', this.paths)
             + ', printDirs=' + this.printDirs
             + ', printFiles=' + this.printFiles

@@ -190,4 +190,13 @@ export class FileTypes {
     public static isUnknownFile(fileName: string): boolean {
         return FileTypes.getFileType(fileName) === FileType.Unknown;
     }
+    public static fileTypesToString(name: string, fileTypes: FileType[]): string {
+        let s = `${name}=[`;
+        for (let i=0; i < fileTypes.length; i++) {
+            if (i > 0) s += ', ';
+            s += FileTypes.toName(fileTypes[i]);
+        }
+        s += ']';
+        return s;
+    }
 }

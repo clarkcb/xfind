@@ -7,15 +7,26 @@
 'use strict';
 
 import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import * as config from './config';
+import {StringUtil} from "./stringutil";
 
 export class FileUtil {
 
     public static expandPath(filePath: string): string {
-        if (filePath[0] === "~") {
-            return config.HOME + filePath.substring(1);
+        filePath = StringUtil.trimFromEnd(filePath, '/');
+        if (filePath.indexOf("~") === 0) {
+            const userPath = os.homedir();
+            if (filePath === "~") {
+                return userPath;
+            }
+            if (filePath.startsWith("~/")) {
+                return path.join(userPath, filePath.substring(2));
+            }
+            let homePath = path.dirname(userPath);
+            return path.join(homePath, filePath.substring(1));
         }
         return filePath;
     }

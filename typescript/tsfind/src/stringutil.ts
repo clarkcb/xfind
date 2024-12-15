@@ -1,6 +1,3 @@
-import {FileType} from "./filetype";
-import {FileTypes} from "./filetypes";
-
 export class StringUtil {
     public static dateToString(name: string, dt: Date | null): string {
         let s = `${name}=`;
@@ -52,15 +49,11 @@ export class StringUtil {
         return s;
     }
 
-    public static fileTypesToString(name: string, fileTypes: FileType[]): string {
-        let s = `${name}=[`;
-        for (let i=0; i < fileTypes.length; i++) {
-            if (i > 0) s += ', ';
-            s += FileTypes.toName(fileTypes[i]);
+    public static trimFromEnd(s: string, chars: string): string {
+        let i = s.length - 1;
+        while (i >= 0 && chars.indexOf(s[i]) >= 0) {
+            i--;
         }
-        s += ']';
-        return s;
+        return s.substring(0, i + 1);
     }
-
-
 }
