@@ -21,16 +21,18 @@ class FileUtil
     public static function expand_user_home_path(string $path): string
     {
         if (str_starts_with($path, '~')) {
-            $home = getenv('HOME');
-            if ($home !== false) {
-                if ($path == '~') {
-                    return $home;
-                }
+            $user_path = getenv('HOME');
+            if ($user_path !== false) {
                 $tilde_prefix = '~' . DIRECTORY_SEPARATOR;
-                if (str_starts_with($path, $tilde_prefix)) {
-                    return str_replace('~', $home, $path);
+                if ($path == '~' || $path == $tilde_prefix) {
+                    return $user_path;
                 }
-                // TODO: if path begins with ~user, we need to find the named user's home path
+                if (str_starts_with($path, $tilde_prefix)) {
+                    return self::join_paths($user_path, substr($path, strlen($tilde_prefix)));
+                }
+                // if path begins with ~user, use their home path
+                $home_path = dirname($user_path);
+                return self::join_paths($home_path, substr($path, 1));
             }
         }
         return $path;
