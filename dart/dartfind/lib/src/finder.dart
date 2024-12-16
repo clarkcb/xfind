@@ -2,11 +2,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dartfind/dartfind.dart';
-import 'package:dartfind/src/file_result.dart';
-import 'package:dartfind/src/file_types.dart';
-import 'package:dartfind/src/file_util.dart';
-import 'package:dartfind/src/find_exception.dart';
-import 'package:dartfind/src/find_settings.dart';
 import 'package:path/path.dart' as path;
 
 class Finder {

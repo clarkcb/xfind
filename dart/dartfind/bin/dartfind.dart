@@ -39,13 +39,7 @@ void printMatchingFiles(List<FileResult> fileResults, FindSettings settings) {
   var files = getMatchingFiles(fileResults);
   if (files.isNotEmpty) {
     logMsg('\nMatching files (${files.length}):');
-    if (settings.paths.any((p) => p!.startsWith('~'))) {
-      for (var f in files) {
-        logMsg(FileUtil.contractPath(f));
-      }
-    } else {
-      files.forEach(logMsg);
-    }
+    files.forEach(logMsg);
   } else {
     logMsg('\nMatching files: 0');
   }

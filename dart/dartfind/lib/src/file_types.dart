@@ -113,24 +113,42 @@ class FileTypes {
       var ext = FileUtil.extension(fileName);
       // more specific first
       if (fileTypeNameMap[code].contains(fileName) ||
-          fileTypeExtMap[code].contains(ext)) return FileType.code;
+          fileTypeExtMap[code].contains(ext)) {
+        return FileType.code;
+      }
       if (fileTypeNameMap[archive].contains(fileName) ||
-          fileTypeExtMap[archive].contains(ext)) return FileType.archive;
+          fileTypeExtMap[archive].contains(ext)) {
+        return FileType.archive;
+      }
       if (fileTypeNameMap[audio].contains(fileName) ||
-          fileTypeExtMap[audio].contains(ext)) return FileType.audio;
+          fileTypeExtMap[audio].contains(ext)) {
+        return FileType.audio;
+      }
       if (fileTypeNameMap[font].contains(fileName) ||
-          fileTypeExtMap[font].contains(ext)) return FileType.font;
+          fileTypeExtMap[font].contains(ext)) {
+        return FileType.font;
+      }
       if (fileTypeNameMap[image].contains(fileName) ||
-          fileTypeExtMap[image].contains(ext)) return FileType.image;
+          fileTypeExtMap[image].contains(ext)) {
+        return FileType.image;
+      }
       if (fileTypeNameMap[video].contains(fileName) ||
-          fileTypeExtMap[video].contains(ext)) return FileType.video;
+          fileTypeExtMap[video].contains(ext)) {
+        return FileType.video;
+      }
       // more general last
       if (fileTypeNameMap[xml].contains(fileName) ||
-          fileTypeExtMap[xml].contains(ext)) return FileType.xml;
+          fileTypeExtMap[xml].contains(ext)) {
+        return FileType.xml;
+      }
       if (fileTypeNameMap[text].contains(fileName) ||
-          fileTypeExtMap[text].contains(ext)) return FileType.text;
+          fileTypeExtMap[text].contains(ext)) {
+        return FileType.text;
+      }
       if (fileTypeNameMap[binary].contains(fileName) ||
-          fileTypeExtMap[binary].contains(ext)) return FileType.binary;
+          fileTypeExtMap[binary].contains(ext)) {
+        return FileType.binary;
+      }
       return FileType.unknown;
     });
   }
