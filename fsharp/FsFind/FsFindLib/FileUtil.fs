@@ -29,18 +29,15 @@ module FileUtil =
         | fp when fp = null -> ""
         | fp when fp = "" -> ""
         | fp when fp[0] = '~' ->
-            let sepIndex = fp.IndexOf(Path.DirectorySeparatorChar)
-            let userPath =
-                if fp = "~" || sepIndex = 1
-                then Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+            let userPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+            if fp = "~" || fp = "~/"
+            then userPath
+            else
+                if fp.StartsWith("~/")
+                then Path.Join(userPath, filePath.Substring(2))
                 else
-                    let homePath = Path.GetDirectoryName(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile))
-                    let userName =
-                        if sepIndex = -1
-                        then fp.Substring(1)
-                        else fp.Substring(1, sepIndex - 1)
-                    Path.Join(homePath, userName)
-            Path.Join(userPath, fp.Substring(sepIndex))
+                    let homePath = Path.GetDirectoryName(userPath)
+                    Path.Join(homePath, filePath.Substring(1))
         | _ -> filePath
 
     let Exists (filePath : string) : bool =
