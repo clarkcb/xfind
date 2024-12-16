@@ -199,11 +199,19 @@ validate_settings () {
     do
         if [ ! -d $p -a ! -f $p ]
         then
-            exit_with_error "Startpath not found"
+            p=$(eval echo "$p")
+            if [ ! -d $p -a ! -f $p ]
+            then
+                exit_with_error "Startpath not found"
+            fi
         fi
         if [ ! -r $p ]
         then
-            exit_with_error "Startpath not readable"
+            p=$(eval echo "$p")
+            if [ ! -r $p ]
+            then
+                exit_with_error "Startpath not readable"
+            fi
         fi
     done
 
@@ -701,6 +709,12 @@ rec_find_path () {
 
 find_path () {
     local path="$1"
+
+    if [ ! -e "$path" ]
+    then
+        # this should result in an expanded path
+        path=$(eval echo "$path")
+    fi
 
     if [ -d "$path" ]
     then
