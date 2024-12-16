@@ -30,11 +30,35 @@ error_t validate_settings(const FindSettings *settings)
     }
     const PathNode *paths = settings->paths;
     while (paths != NULL && paths->path != NULL) {
-        if (!path_exists(paths->path)) {
-            return E_STARTPATH_NOT_FOUND;
-        }
-        if (!path_readable(paths->path)) {
-            return E_STARTPATH_NOT_READABLE;
+        if (path_exists(paths->path)) {
+            if (!path_readable(paths->path)) {
+                return E_STARTPATH_NOT_READABLE;
+            }
+        } else {
+            // expand the path and check again
+            const size_t path_len = path_strlen(paths->path);
+            char *path_s = malloc(path_len + 1);
+            path_s[0] = '\0';
+            char *expanded_s = malloc(path_len * 2 + 1);
+            expanded_s[0] = '\0';
+            path_to_string(paths->path, path_s);
+            expand_path(path_s, &expanded_s);
+
+            Path *expanded_path = new_path(expanded_s);
+
+            error_t err = E_OK;
+            if (path_exists(expanded_path)) {
+                if (!path_readable(expanded_path)) {
+                    err = E_STARTPATH_NOT_READABLE;
+                }
+            } else {
+                err = E_STARTPATH_NOT_FOUND;
+            }
+            destroy_path(expanded_path);
+            free(expanded_s);
+            if (err != E_OK) {
+                return err;
+            }
         }
         paths = paths->next;
     }
@@ -352,14 +376,12 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
 
     // expand the path in case it has tilde, etc.
     const size_t path_len = path_strlen(path) + 1;
-    char path_s[path_len];
+    char *path_s = malloc(path_len + 1);
     path_s[0] = '\0';
     path_to_string(path, path_s);
-    char expanded[path_len + 10];
+    char *expanded = malloc(path_len * 2 + 1);
     expanded[0] = '\0';
-    // have to do this in order to pass as pointer to pointer
-    char *exp = expanded;
-    expand_path(path_s, &exp);
+    expand_path(path_s, &expanded);
 
     struct stat st;
 
@@ -367,8 +389,15 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
         // this shouldn't happen if we made it this far
         err = (error_t)errno;
         if (err == ENOENT) err = E_STARTPATH_NOT_FOUND;
+    }
+
+    if (err != E_OK) {
+        free(expanded);
+        free(path_s);
         return err;
     }
+
+    Path *expanded_path = new_path(expanded);
 
     if (S_ISDIR(st.st_mode)) {
         // if max_depth is zero, we can skip since a directory cannot be a result
@@ -377,30 +406,39 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
         }
         if (is_matching_dir(finder->settings, expanded) == 1) {
             const int max_depth = finder->settings->recursive ? finder->settings->max_depth : 1;
-            err = rec_find_path(finder, path, results, finder->settings->min_depth,
+            err = rec_find_path(finder, expanded_path, results, finder->settings->min_depth,
                 max_depth, 1);
-            if (err != E_OK) {
-                return err;
-            }
         } else {
-            return E_STARTPATH_NON_MATCHING;
+            err = E_STARTPATH_NON_MATCHING;
         }
+
+        if (err != E_OK) {
+            free(expanded);
+            free(path_s);
+            return err;
+        }
+
     } else if (S_ISREG(st.st_mode)) {
         // if min_depth > zero, we can skip since the file is at depth zero
         if (finder->settings->min_depth > 0) {
+            free(expanded);
+            free(path_s);
             return E_OK;
         }
         FileType file_type = UNKNOWN;
-        if (filter_path(finder->settings, path, &file_type, st.st_size, st.st_mtime) == 1) {
-            FileResult *r = new_file_result(path, file_type, st.st_size, st.st_mtime);
+        if (filter_path(finder->settings, expanded_path, &file_type, st.st_size, st.st_mtime) == 1) {
+            FileResult *r = new_file_result(expanded_path, file_type, st.st_size, st.st_mtime);
             add_to_file_results(r, results);
         } else {
-            return E_STARTPATH_NON_MATCHING;
+            err = E_STARTPATH_NON_MATCHING;
         }
     } else {
-        return E_STARTPATH_UNSUPPORTED_FILETYPE;
+        err = E_STARTPATH_UNSUPPORTED_FILETYPE;
     }
 
+    destroy_path(expanded_path);
+    free(expanded);
+    free(path_s);
     return err;
 }
 
