@@ -27,16 +27,17 @@ public static class FileUtil
 		ArgumentNullException.ThrowIfNull(filePath);
 		if (filePath.Length == 0) throw new ArgumentException("Invalid path", nameof(filePath));
 		if (filePath[0] != '~') return filePath;
-		var sepIndex = filePath.IndexOf(Path.DirectorySeparatorChar);
 		var userPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-		if (filePath != "~" && sepIndex != 1)
+		if (filePath.Equals("~") || filePath.Equals("~/"))
 		{
-			// Another user's home directory
-			var homePath = Path.GetDirectoryName(userPath) ?? ".";
-			var userName = sepIndex == -1 ? filePath[1..] : filePath.Substring(1, sepIndex - 1);
-			userPath = Path.Join(homePath, userName);
+			return userPath;
 		}
-		return Path.Join(userPath, filePath[sepIndex..]);
+		if (filePath.StartsWith("~/"))
+		{
+			return Path.Join(userPath, filePath[2..]);
+		}
+		var homePath = Path.GetDirectoryName(userPath) ?? ".";
+		return Path.Join(homePath, filePath[1..]);
 	}
 
 	public static string GetRelativePath(string fullPath, string startPath)
