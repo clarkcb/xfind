@@ -16,7 +16,7 @@ getSettingsFromNoArgsTests :: IO [Test]
 getSettingsFromNoArgsTests = do
   findOptions <- getFindOptions
   case settingsFromArgs findOptions [] of
-    Left errMsg -> return []
+    Left _ -> return []
     Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= False)
              , testCase "debug" (debug settings @?= False)
@@ -36,7 +36,7 @@ getSettingsFromArgsTests = do
   let args = ["-x","hs","-X","hi,o","."]
   findOptions <- getFindOptions
   case settingsFromArgs findOptions args of
-    Left errMsg -> return []
+    Left _ -> return []
     Right settings ->
       return [ testCase "paths ." (paths settings @?= ["."])
              , testCase "-x hs" (inExtensions settings @?= ["hs"])
@@ -48,7 +48,7 @@ getArchivesOnlyTests = do
   let args = ["--archivesonly"]
   findOptions <- getFindOptions
   case settingsFromArgs findOptions args of
-    Left errMsg -> return []
+    Left _ -> return []
     Right settings ->
       return [ testCase "archivesOnly" (archivesOnly settings @?= True)
              , testCase "includeArchives" (includeArchives settings @?= True)
@@ -59,7 +59,7 @@ getDebugTests = do
   let args = ["--debug"]
   findOptions <- getFindOptions
   case settingsFromArgs findOptions args of
-    Left errMsg -> return []
+    Left _ -> return []
     Right settings ->
       return [ testCase "debug" (debug settings @?= True)
              , testCase "verbose" (verbose settings @?= True)

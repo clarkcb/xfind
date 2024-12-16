@@ -59,8 +59,8 @@ fileResultToString :: FileResult -> String
 fileResultToString = fileResultPath
 -- fileResultToString = fileResultToDetailedString
 
-fileResultToDetailedString :: FileResult -> String
-fileResultToDetailedString fr = 
-  case fileResultSize fr of
-    0 -> fileResultPath fr ++ " (type: " ++ getFileTypeName (fileResultType fr) ++ ")"
-    size -> fileResultPath fr ++ " (size: " ++ show size ++ ", type: " ++ getFileTypeName (fileResultType fr) ++ ")"
+-- fileResultToDetailedString :: FileResult -> String
+-- fileResultToDetailedString fr = 
+--   case fileResultSize fr of
+--     0 -> fileResultPath fr ++ " (type: " ++ getFileTypeName (fileResultType fr) ++ ")"
+--     size -> fileResultPath fr ++ " (size: " ++ show size ++ ", type: " ++ getFileTypeName (fileResultType fr) ++ ")"

@@ -1,13 +1,11 @@
 module Main (main) where
 
-import Control.Monad (filterM)
 import Data.List (nub, sort)
 import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 import System.IO (hPutStr, stderr)
 
 import HsFind.FileResult (FileResult, fileResultPath, fileResultToString)
-import HsFind.FileUtil (expandPath, pathExists)
 import HsFind.FindOptions (FindOption, getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, validateSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)

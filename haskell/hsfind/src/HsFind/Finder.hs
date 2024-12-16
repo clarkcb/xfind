@@ -14,7 +14,6 @@ import Data.Char (toLower)
 import Data.List (partition, sortBy, zipWith4)
 import Data.Maybe (fromJust, isJust, isNothing)
 
-import System.Directory (doesDirectoryExist, doesFileExist)
 import System.FilePath (dropFileName, splitPath, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
@@ -23,7 +22,7 @@ import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTy
 import HsFind.FileUtil
     (expandPath, filterDirectories, filterFiles, filterOutSymlinks, hasExtension, isHiddenFilePath,
     getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles,
-    pathExists, pathsExist)
+    pathExists)
 import HsFind.FileResult
     (FileResult(..), newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
@@ -33,11 +32,11 @@ import HsFind.FindSettings
 validateSettings :: FindSettings -> Maybe String
 validateSettings settings = recValidateSettings settings validators []
   where recValidateSettings :: FindSettings -> [FindSettings -> [String]] -> [String] -> Maybe String
-        recValidateSettings settings validators errs = do
+        recValidateSettings settings' validators' errs = do
           case errs of
-            [] -> case validators of
+            [] -> case validators' of
                     [] -> Nothing
-                    (v:vs) -> recValidateSettings settings vs (v settings)
+                    (v:vs) -> recValidateSettings settings' vs (v settings')
             _ -> Just $ head errs
         validators = [ \s -> ["Startpath not defined" | null (paths s)]
                      , \s -> ["Invalid range for mindepth and maxdepth" | maxDepth s > 0 && maxDepth s < minDepth s]
@@ -204,22 +203,22 @@ getRecursiveFilePaths settings dir = do
         dirPathFilter = matchesDirPathTests $ getDirPathTests settings
         hiddenPathFilter = matchesHiddenFilePathTests $ getHiddenFilePathTests settings
         accRecursiveFilePaths :: FilePath -> Integer -> Integer -> Integer -> (FilePath -> Bool) -> (FilePath -> Bool) -> IO [FilePath]
-        accRecursiveFilePaths dir depth minDepth maxDepth dirPathFilter hiddenPathFilter = do
-          allPaths <- getNonDotDirectoryContents dir
+        accRecursiveFilePaths dir' depth minDep maxDep dpFilter hpFilter = do
+          allPaths <- getNonDotDirectoryContents dir'
           (dirPaths, filePaths) <- partitionDirsAndFiles allPaths
           filteredDirPathsBySymlinks <- if followSymlinks settings
                                         then return dirPaths
                                         else filterOutSymlinks dirPaths
-          let filteredDirPaths = if maxDepth < 1 || depth <= maxDepth
-                                 then filter dirPathFilter filteredDirPathsBySymlinks
+          let filteredDirPaths = if maxDep < 1 || depth <= maxDep
+                                 then filter dpFilter filteredDirPathsBySymlinks
                                  else []
           filteredFilePathsBySymlinks <- if followSymlinks settings
                                          then return filePaths
                                          else filterOutSymlinks filePaths
-          let filteredFilePaths = if depth >= minDepth && (maxDepth < 1 || depth <= maxDepth)
-                                  then filter hiddenPathFilter filteredFilePathsBySymlinks
+          let filteredFilePaths = if depth >= minDep && (maxDep < 1 || depth <= maxDep)
+                                  then filter hpFilter filteredFilePathsBySymlinks
                                   else []
-          subDirPaths <- forM filteredDirPaths $ \d -> accRecursiveFilePaths d (depth + 1) minDepth maxDepth dirPathFilter hiddenPathFilter
+          subDirPaths <- forM filteredDirPaths $ \d -> accRecursiveFilePaths d (depth + 1) minDep maxDep dpFilter hpFilter
           return $ filteredFilePaths ++ concat subDirPaths
 
 getFileResults :: FindSettings -> IO [FileResult]
@@ -338,13 +337,13 @@ sortFileResults settings fileResults =
   else doSortByFileResults settings fileResults
 
 getFoundPaths :: [FilePath] -> IO (Either String [FilePath])
-getFoundPaths paths = do
-  foundPaths <- filterM pathExists paths
-  let notFoundPaths = filter (`notElem` foundPaths) paths
+getFoundPaths allPaths = do
+  foundPaths <- filterM pathExists allPaths
+  let notFoundPaths = filter (`notElem` foundPaths) allPaths
   expandedPaths <- mapM expandPath notFoundPaths
   foundExpandedPaths <- filterM pathExists expandedPaths
   let allFoundPaths = foundPaths ++ foundExpandedPaths
-  if length allFoundPaths == length paths then do
+  if length allFoundPaths == length allPaths then do
     return $ Right allFoundPaths
   else do
     return $ Left "Startpath not found"
