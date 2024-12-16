@@ -39,7 +39,7 @@ func NewFinder(settings *FindSettings) *Finder {
 }
 
 func (f *Finder) isMatchingDir(d string) bool {
-	if !f.Settings.IncludeHidden() && isHidden(d) {
+	if !f.Settings.IncludeHidden() && IsHidden(d) {
 		return false
 	}
 	return (f.Settings.InDirPatterns().IsEmpty() || f.Settings.InDirPatterns().MatchesAny(d)) &&
@@ -111,7 +111,7 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
-	if !f.Settings.IncludeHidden() && isHidden(filePath) {
+	if !f.Settings.IncludeHidden() && IsHidden(filePath) {
 		return nil
 	}
 	dir, file := filepath.Split(filePath)
@@ -250,7 +250,7 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 func (f *Finder) setFileResultsForPath(path string) error {
 	fi, err := os.Stat(path)
 	if err != nil {
-		path = expandPath(path)
+		path = ExpandPath(path)
 		fi, err = os.Stat(path)
 		if err != nil {
 			return err

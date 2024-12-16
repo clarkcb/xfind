@@ -143,7 +143,7 @@ func (f *FindSettings) Validate() error {
 	}
 
 	for _, p := range f.Paths() {
-		_, err := os.Stat(expandPath(p))
+		_, err := os.Stat(ExpandPath(p))
 		if err != nil {
 			if os.IsNotExist(err) {
 				return fmt.Errorf("Startpath not found")
