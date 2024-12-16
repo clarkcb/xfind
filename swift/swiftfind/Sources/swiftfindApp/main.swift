@@ -52,7 +52,9 @@ func main() {
             } else {
                 logMsg("\nMatching directories (\(dirs.count)):")
                 for dir in dirs {
-                    logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+                    // TODO: better way to format paths, probably create a FindPath class for this
+                    // logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
+                    logMsg(dir)
                 }
             }
         }
@@ -64,7 +66,9 @@ func main() {
             } else {
                 logMsg("\nMatching files (\(files.count)):")
                 for file in files {
-                    logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+                    // TODO: better way to format paths, probably create a FindPath class for this
+                    // logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
+                    logMsg(file)
                 }
             }
         }
