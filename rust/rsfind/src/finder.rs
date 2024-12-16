@@ -44,7 +44,7 @@ impl Finder {
             if path == "" {
                 return Err(FindError::new("Startpath not defined"));
             }
-            let p = FileUtil::expand(path);
+            let p = FileUtil::expand_path_string(path);
             let metadata = fs::metadata(&p);
             if metadata.is_err() {
                 return match metadata.err().unwrap().kind() {
