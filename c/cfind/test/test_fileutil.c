@@ -184,21 +184,41 @@ void test_expand_path(void)
     char *expanded = malloc(50);
     expanded[0] = '\0';
 
+    // test tilde
     const char *tilde = "~";
     expand_path(tilde, &expanded);
-    const int diff = strnlen(expanded, 100) - strnlen(tilde, 100);
+    const size_t diff = strnlen(expanded, 100) - strnlen(tilde, 100);
     const char* color = diff > 0 ? COLOR_GREEN : COLOR_RED;
     printf("%soriginal path: %s%s\n", color, tilde, COLOR_RESET);
     printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
     assert(diff > 0);
 
+    // test tilde path
+    const char *tilde_path = "~/src/xfind";
+    expand_path(tilde_path, &expanded);
+    const size_t diff2 = strnlen(expanded, 100) - strnlen(tilde, 100);
+    color = diff2 > 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%soriginal path: %s%s\n", color, tilde_path, COLOR_RESET);
+    printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
+    assert(diff2 > 0);
+
+    // test tilde name path
+    const char *tilde_name_path = "~cary/src/xfind";
+    expand_path(tilde_name_path, &expanded);
+    const size_t diff3 = strnlen(expanded, 100) - strnlen(tilde, 100);
+    color = diff3 > 0 ? COLOR_GREEN : COLOR_RED;
+    printf("%soriginal path: %s%s\n", color, tilde_name_path, COLOR_RESET);
+    printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
+    assert(diff3 > 0);
+
+    // test no tilde
     const char *homepath = "/home/path";
     expand_path(homepath, &expanded);
-    const int diff2 = strnlen(expanded, 100) - strnlen(homepath, 100);
-    color = diff2 == 0 ? COLOR_GREEN : COLOR_RED;
+    const size_t diff4 = strnlen(expanded, 100) - strnlen(homepath, 100);
+    color = diff4 == 0 ? COLOR_GREEN : COLOR_RED;
     printf("%soriginal path: %s%s\n", color, homepath, COLOR_RESET);
     printf("%sexpanded path: %s%s\n", color, expanded, COLOR_RESET);
-    assert(diff2 == 0);
+    assert(diff4 == 0);
     assert(strcmp(expanded, homepath) == 0);
 
     free(expanded);

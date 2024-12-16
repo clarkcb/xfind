@@ -1,5 +1,6 @@
 package ktfind
 
+import java.nio.file.Paths
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -21,7 +22,7 @@ class FindOptionsTest {
         assertFalse(settings.includeArchives)
         assertFalse(settings.includeHidden)
         assertEquals(1, settings.paths.size)
-        assertEquals(".", settings.paths.first())
+        assertEquals(Paths.get("."), settings.paths.first())
         assertFalse(settings.printDirs)
         assertTrue(settings.printFiles)
         assertFalse(settings.printUsage)
@@ -38,7 +39,7 @@ class FindOptionsTest {
         assertTrue(settings.inExtensions.contains("java"))
         assertTrue(settings.inExtensions.contains("scala"))
         assertEquals(1, settings.paths.size)
-        assertEquals(".", settings.paths.first())
+        assertEquals(Paths.get("."), settings.paths.first())
     }
 
     @Test
@@ -56,7 +57,7 @@ class FindOptionsTest {
         val settings = findOptions.settingsFromJson(json, getDefaultSettings())
 
         assertEquals(1, settings.paths.size)
-        assertEquals("~/src/xfind/", settings.paths.first())
+        assertEquals(Paths.get("~/src/xfind/"), settings.paths.first())
 
         assertEquals(2, settings.inExtensions.size)
         assertTrue(settings.inExtensions.contains("js"))

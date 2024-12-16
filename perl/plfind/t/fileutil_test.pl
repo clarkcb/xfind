@@ -17,9 +17,33 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 13;
+use Test::Simple tests => 16;
 
 use plfind::FileUtil;
+
+################################################################################
+# expand_path tests
+################################################################################
+sub test_expand_path_tilde {
+    my $path = '~';
+    my $expected = $ENV{HOME};
+    my $expanded = plfind::FileUtil::expand_path($path);
+    ok($expanded eq $expected, "$path expands to home path");
+}
+
+sub test_expand_path_with_tilde {
+    my $path = '~/src/xfind';
+    my $expected = $ENV{HOME} . '/src/xfind';
+    my $expanded = plfind::FileUtil::expand_path($path);
+    ok($expanded eq $expected, "$path expands to start with home path");
+}
+
+sub test_expand_path_with_tilde_and_name {
+    my $path = '~cary/src/xfind';
+    my $expected = $ENV{HOME} . '/src/xfind';
+    my $expanded = plfind::FileUtil::expand_path($path);
+    ok($expanded eq $expected, "$path expands to start with home path");
+}
 
 ################################################################################
 # get_extension tests
@@ -112,6 +136,9 @@ sub test_is_hidden_double_dot {
 # main
 ################################################################################
 sub main {
+    test_expand_path_tilde();
+    test_expand_path_with_tilde();
+    test_expand_path_with_tilde_and_name();
     test_get_extension_has_txt_extension();
     test_get_extension_missing_extension();
     test_get_extension_no_extension();

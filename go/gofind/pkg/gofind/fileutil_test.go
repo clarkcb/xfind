@@ -2,7 +2,8 @@ package gofind
 
 import (
 	"fmt"
-	"strings"
+	"os/user"
+	"path/filepath"
 	"testing"
 )
 
@@ -12,15 +13,33 @@ func TestExpandPath(t *testing.T) {
 		"/a/path/to/where": "/a/path/to/where",
 	}
 	for k, v := range expected {
-		if path := expandPath(k); path != v {
-			t.Errorf("expandPath(\"%s\")=\"%s\", expected=\"%s\"", k, path, v)
+		if path := ExpandPath(k); path != v {
+			t.Errorf("ExpandPath(\"%s\")=\"%s\", expected=\"%s\"", k, path, v)
 		}
 	}
-	expandable := "~/src/git/xfind"
-	expanded := expandPath(expandable)
-	valid := strings.HasPrefix(expanded, "/Users/") || strings.HasPrefix(expanded, "/home/") || strings.HasPrefix(expanded, "/root/")
-	if !valid {
-		t.Errorf("expandPath(\"%s\")=\"%s\", expected expanded", expandable, expanded)
+	usr, err := user.Current()
+	if err != nil || usr == nil {
+		t.Errorf("Unable to get current user")
+	}
+	userPath := usr.HomeDir
+	// test tilde
+	tilde := "~"
+	expandedTilde := ExpandPath(tilde)
+	if expandedTilde != userPath {
+		t.Errorf("ExpandPath(\"%s\")=\"%s\", expected expanded", tilde, userPath)
+	}
+	// test path with tilde
+	tildePath := "~/src/xfind"
+	expandedTildePath := ExpandPath(tildePath)
+	expectedTildePath := filepath.Join(userPath, "src", "xfind")
+	if expandedTildePath != expectedTildePath {
+		t.Errorf("ExpandPath(\"%s\")=\"%s\", expected expanded", tildePath, expectedTildePath)
+	}
+	// test path with tilde and name
+	tildeNamePath := "~cary/src/xfind"
+	expandedTildeNamePath := ExpandPath(tildeNamePath)
+	if expandedTildeNamePath != expectedTildePath {
+		t.Errorf("ExpandPath(\"%s\")=\"%s\", expected expanded", tildeNamePath, expectedTildePath)
 	}
 }
 
@@ -73,8 +92,8 @@ func TestIsHidden(t *testing.T) {
 	}
 
 	for k, v := range expected {
-		if h := isHidden(k); h != v {
-			t.Errorf("isHidden(\"%s\")=%v, expected=%v", k, h, v)
+		if h := IsHidden(k); h != v {
+			t.Errorf("IsHidden(\"%s\")=%v, expected=%v", k, h, v)
 		}
 	}
 }

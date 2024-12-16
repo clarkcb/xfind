@@ -126,6 +126,30 @@ Describe -tag "FileUtil" -name "test_is_dot_dir_is_not_dot_dir" {
     }
 }
 
+Describe -tag "FileUtil" -name "test_expand_tilde_path" {
+    It "expand tilde path" {
+        $homePath = GetHomePath
+        $expandedPath = ExpandPath('~')
+        $expandedPath -eq $homePath | Should -BeTrue
+    }
+}
+
+Describe -tag "FileUtil" -name "test_expand_path_with_tilde" {
+    It "expand path with tilde" {
+        $homePath = GetHomePath
+        $expandedPath = ExpandPath('~/src/xfind')
+        $expandedPath -eq "$homePath/src/xfind" | Should -BeTrue
+    }
+}
+
+Describe -tag "FileUtil" -name "test_expand_path_with_tilde_and_name" {
+    It "expand path with tilde and name" {
+        $homePath = GetHomePath
+        $expandedPath = ExpandPath('~cary/src/xfind')
+        $expandedPath -eq "$homePath/src/xfind" | Should -BeTrue
+    }
+}
+
 Describe -tag "FileUtil" -name "test_is_hidden_hidden_dir" {
     It ".git is hidden dir" {
         $fileInfo = [System.IO.FileInfo]::new('.git')

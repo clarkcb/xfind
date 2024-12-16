@@ -35,9 +35,19 @@
 /***************************************************************************
  * expandPath tests
  **************************************************************************/
+- (void)testExpandPathIsTilde {
+    NSString *expected = NSHomeDirectory();
+    XCTAssert([[FileUtil expandPath:@"~"] isEqualToString:expected]);
+}
+
 - (void)testExpandPathHasTilde {
     NSString *expected = [FileUtil joinPath:NSHomeDirectory() childPath:@"filename.txt"];
     XCTAssert([[FileUtil expandPath:@"~/filename.txt"] isEqualToString:expected]);
+}
+
+- (void)testExpandPathHasTildeAndName {
+    NSString *expected = [FileUtil joinPath:NSHomeDirectory() childPath:@"filename.txt"];
+    XCTAssert([[FileUtil expandPath:@"~cary/filename.txt"] isEqualToString:expected]);
 }
 
 - (void)testExpandPathNoTilde {

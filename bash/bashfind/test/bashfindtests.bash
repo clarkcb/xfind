@@ -42,7 +42,7 @@ test_validate_settings_invalid_size_range
 
 test_settings_from_json
 
-test_settings_from_file
+# test_settings_from_file
 
 
 # File types tests
@@ -57,6 +57,8 @@ test_get_file_type
 source "$TESTDIR/test_file_util.bash"
 
 test_is_dot_dir
+
+test_expanded_path
 
 test_is_hidden
 

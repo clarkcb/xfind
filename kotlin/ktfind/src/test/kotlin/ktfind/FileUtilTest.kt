@@ -2,6 +2,7 @@ package ktfind
 
 import java.nio.file.Paths
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -9,6 +10,30 @@ import kotlin.test.assertTrue
  * @author cary on 7/30/16.
  */
 class FileUtilTest {
+
+    /***************************************************************************
+     * expandPath tests
+     **************************************************************************/
+    @Test
+    fun testExpandPathTilde() {
+        val tildePath = Paths.get("~")
+        val userPath = Paths.get(System.getProperty("user.home"))
+        assertEquals(userPath, FileUtil.expandPath(tildePath))
+    }
+
+    @Test
+    fun testExpandPathTildePath() {
+        val tildePath = Paths.get("~/src/xfind")
+        val userPath = Paths.get(System.getProperty("user.home"), "src/xfind")
+        assertEquals(userPath, FileUtil.expandPath(tildePath))
+    }
+
+    @Test
+    fun testExpandPathTildeNamePath() {
+        val tildePath = Paths.get("~cary/src/xfind")
+        val userPath = Paths.get(System.getProperty("user.home"), "src/xfind")
+        assertEquals(userPath, FileUtil.expandPath(tildePath))
+    }
 
     /***************************************************************************
      * isDotDir Path tests

@@ -11,6 +11,30 @@ class FileUtilTest {
     FileUtilTest() {}
 
     /***************************************************************************
+     * expandPath tests
+     **************************************************************************/
+    @Test
+    final void testExpandPathTilde() {
+        var tildePath = Paths.get("~")
+        var userPath = Paths.get(System.getProperty("user.home"))
+        assertEquals(userPath, FileUtil.expandPath(tildePath))
+    }
+
+    @Test
+    final void testExpandPathTildePath() {
+        var tildePath = Paths.get("~/src/xfind")
+        var expandedPath = Paths.get(System.getProperty("user.home"), "src/xfind")
+        assertEquals(expandedPath, FileUtil.expandPath(tildePath))
+    }
+
+    @Test
+    final void testExpandPathTildeNamePath() {
+        var tildePath = Paths.get("~cary/src/xfind")
+        var expandedPath = Paths.get(System.getProperty("user.home"), "src/xfind")
+        assertEquals(expandedPath, FileUtil.expandPath(tildePath))
+    }
+
+    /***************************************************************************
      * getExtension tests
      **************************************************************************/
     @Test

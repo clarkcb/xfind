@@ -15,6 +15,45 @@ type FileUtilTests () =
         ()
 
     //////////////////////////////////////////////////////////////
+    // ExpandPath tests
+    //////////////////////////////////////////////////////////////
+    [<Test>]
+    member this.ExpandPath_Tilde_ExpandHome () =
+        let path = "~"
+        let expected = Path.Join(FileUtil.GetHomePath())
+        Assert.That(FileUtil.ExpandPath(path), Is.EqualTo(expected))
+        ()
+
+    [<Test>]
+    member this.ExpandPath_WithTilde_ExpandHome () =
+        let path = "~/src/xfind"
+        let expected = Path.Join(FileUtil.GetHomePath(), path.Substring(2))
+        let actual = FileUtil.ExpandPath(path)
+        Assert.That(actual, Is.EqualTo(expected))
+        ()
+
+    [<Test>]
+    member this.ExpandPath_WithTildeAndName_ExpandHome () =
+        let path = "~cary/src/xfind"
+        let expected = Path.Join(Path.GetDirectoryName(FileUtil.GetHomePath()), path.Substring(1))
+        let actual = FileUtil.ExpandPath(path)
+        Assert.That(actual, Is.EqualTo(expected))
+        ()
+
+    [<Test>]
+    member this.ExpandPath_NoTilde_UnchangedPath () =
+        let path = "/a/full/path/"
+        Assert.That(FileUtil.ExpandPath(path), Is.EqualTo(path))
+        ()
+
+    [<Test>]
+    member this.ExpandPath_WithBackSlashes_UnchangedPath () =
+        let path = @"C:\src\git\xfind\"
+        Assert.That(FileUtil.ExpandPath(path), Is.EqualTo(path))
+        ()
+
+
+    //////////////////////////////////////////////////////////////
     // GetRelativePath tests
     //////////////////////////////////////////////////////////////
     [<Test>]
@@ -96,41 +135,18 @@ type FileUtilTests () =
         ()
 
     //////////////////////////////////////////////////////////////
-    // ExpandPath tests
-    //////////////////////////////////////////////////////////////
-    [<Test>]
-    member this.ExpandPath_WithTilde_ExpandHome () =
-        let path = "~/src/git/xfind"
-        let expected = Path.Join(FileUtil.GetHomePath(), path.Substring(1))
-        let actual = FileUtil.ExpandPath(path)
-        Assert.That(actual, Is.EqualTo(expected))
-        ()
-
-    [<Test>]
-    member this.ExpandPath_NoTilde_UnchangedPath () =
-        let path = "/a/full/path/"
-        Assert.That(FileUtil.ExpandPath(path), Is.EqualTo(path))
-        ()
-
-    [<Test>]
-    member this.ExpandPath_WithBackSlashes_UnchangedPath () =
-        let path = @"C:\src\git\xfind\"
-        Assert.That(FileUtil.ExpandPath(path), Is.EqualTo(path))
-        ()
-
-    //////////////////////////////////////////////////////////////
     // NormalizePath tests
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.NormalizePath_NoTrailingSlash_UnchangedPath () =
-        let path = "~/src/git/xfind"
+        let path = "~/src/xfind"
         Assert.That(FileUtil.NormalizePath(path), Is.EqualTo(path))
         ()
 
     [<Test>]
     member this.NormalizePath_TrailingSlash_TrimmedPath () =
-        let path = "~/src/git/xfind/"
-        Assert.That(FileUtil.NormalizePath(path), Is.EqualTo("~/src/git/xfind"))
+        let path = "~/src/xfind/"
+        Assert.That(FileUtil.NormalizePath(path), Is.EqualTo("~/src/xfind"))
         ()
 
     //////////////////////////////////////////////////////////////
@@ -138,7 +154,7 @@ type FileUtilTests () =
     //////////////////////////////////////////////////////////////
     [<Test>]
     member this.JoinPath_NoTrailingSlash_EqualsExpected () =
-        let path = "~/src/git/xfind/csharp/CsFind/CsFindTests"
+        let path = "~/src/xfind/csharp/CsFind/CsFindTests"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + "/" + filename
         Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile))
@@ -146,7 +162,7 @@ type FileUtilTests () =
 
     [<Test>]
     member this.JoinPath_TrailingSlash_EqualsExpected () =
-        let path = "~/src/git/xfind/csharp/CsFind/CsFindTests/"
+        let path = "~/src/xfind/csharp/CsFind/CsFindTests/"
         let filename = "FileUtilTests.cs"
         let pathAndFile = path + filename
         Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile))

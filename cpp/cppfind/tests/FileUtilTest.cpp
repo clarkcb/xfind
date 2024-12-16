@@ -4,18 +4,21 @@
 #include "FindConfig.h"
 #include "FileUtil.h"
 
-TEST_CASE("Expand tilde", "[FileUtil]") {
+TEST_CASE("Expand path", "[FileUtil]") {
     const auto home_path = std::filesystem::path(getenv("HOME"));
     const auto tilde_path = std::filesystem::path("~");
+    const auto tilde_name_path = std::filesystem::path("~cary");
     const std::filesystem::path full_file_path = home_path / "filename.txt";
     const std::filesystem::path tilde_file_path = tilde_path / "filename.txt";
+    const std::filesystem::path tilde_name_file_path = tilde_name_path / "filename.txt";
     const std::filesystem::path file_name_path = full_file_path.filename();
 
-    REQUIRE(cppfind::FileUtil::expand_tilde(home_path) == home_path);
-    REQUIRE(cppfind::FileUtil::expand_tilde(tilde_path) == home_path);
-    REQUIRE(cppfind::FileUtil::expand_tilde(full_file_path) == full_file_path);
-    REQUIRE(cppfind::FileUtil::expand_tilde(tilde_file_path) == full_file_path);
-    REQUIRE(cppfind::FileUtil::expand_tilde(file_name_path) == file_name_path);
+    REQUIRE(cppfind::FileUtil::expand_path(home_path) == home_path);
+    REQUIRE(cppfind::FileUtil::expand_path(tilde_path) == home_path);
+    REQUIRE(cppfind::FileUtil::expand_path(full_file_path) == full_file_path);
+    REQUIRE(cppfind::FileUtil::expand_path(tilde_file_path) == full_file_path);
+    REQUIRE(cppfind::FileUtil::expand_path(tilde_name_file_path) == full_file_path);
+    REQUIRE(cppfind::FileUtil::expand_path(file_name_path) == file_name_path);
 }
 
 TEST_CASE("Get extensions from paths", "[FileUtil]") {

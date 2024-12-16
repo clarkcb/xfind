@@ -2,7 +2,30 @@ package scalafind
 
 import org.scalatest.funsuite.AnyFunSuite
 
+import java.nio.file.Paths
+
 class FileUtilTest extends AnyFunSuite {
+  /***************************************************************************
+    * expandPath tests
+    **************************************************************************/
+  test("test expandPath tilde") {
+    val tildePath = Paths.get("~")
+    val userPath = Paths.get(System.getProperty("user.home"))
+    assert(FileUtil.expandPath(tildePath).equals(userPath))
+  }
+
+  test("test expandPath tilde path") {
+    val tildePath = Paths.get("~/src/xfind")
+    val expandedPath = Paths.get(System.getProperty("user.home"), "src/xfind")
+    assert(FileUtil.expandPath(tildePath).equals(expandedPath))
+  }
+
+  test("test expandPath tilde name path") {
+    val tildePath = Paths.get("~cary/src/xfind")
+    val userPath = Paths.get(System.getProperty("user.home"), "src/xfind")
+    assert(FileUtil.expandPath(tildePath).equals(userPath))
+  }
+
   /***************************************************************************
     * getExtension tests
     **************************************************************************/

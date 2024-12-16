@@ -34,10 +34,21 @@ class FileUtilTests: XCTestCase {
     /* ==========================================================================
      * expandPath tests
      ========================================================================= */
+    func testExpandPathIsTilde() {
+        let expected = NSHomeDirectory()
+        XCTAssertEqual(expected, FileUtil.expandPath("~"))
+    }
+
     func testExpandPathHasTilde() {
         let homePath = NSHomeDirectory()
         let expected = FileUtil.joinPath(homePath, childPath: "filename.txt")
         XCTAssertEqual(expected, FileUtil.expandPath("~/filename.txt"))
+    }
+
+    func testExpandPathHasTildeAndName() {
+        let homePath = NSHomeDirectory()
+        let expected = FileUtil.joinPath(homePath, childPath: "filename.txt")
+        XCTAssertEqual(expected, FileUtil.expandPath("~cary/filename.txt"))
     }
 
     func testExpandPathNoTilde() {

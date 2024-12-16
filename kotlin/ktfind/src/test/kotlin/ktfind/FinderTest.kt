@@ -9,7 +9,7 @@ import kotlin.test.*
  */
 class FinderTest {
     private fun getSettings(): FindSettings {
-        return getDefaultSettings().copy(paths = setOf("."))
+        return getDefaultSettings().copy(paths = setOf(Paths.get(".")))
     }
 
     private fun getBinPath(): String {
@@ -336,7 +336,7 @@ class FinderTest {
      *************************************************************/
     @Test
     fun testFollowSymlinks_Default_Excluded() {
-        var settings = getDefaultSettings().copy(paths = setOf(getBinPath()))
+        var settings = getDefaultSettings().copy(paths = setOf(Paths.get(getBinPath())))
         var finder = Finder(settings)
         val fileResults: List<FileResult> = finder.find()
         assertTrue(fileResults.size < 3)
@@ -344,7 +344,7 @@ class FinderTest {
 
     @Test
     fun testFollowSymlinks_FollowSymlinks_Included() {
-        var settings = getDefaultSettings().copy(paths = setOf(getBinPath()), followSymlinks = true)
+        var settings = getDefaultSettings().copy(paths = setOf(Paths.get(getBinPath())), followSymlinks = true)
         var finder = Finder(settings)
         val fileResults: List<FileResult> = finder.find()
         assertTrue(fileResults.isEmpty() || fileResults.size > 2)
@@ -352,7 +352,7 @@ class FinderTest {
 
     @Test
     fun testFollowSymlinks_NoFollowSymlinks_Excluded() {
-        var settings = getDefaultSettings().copy(paths = setOf(getBinPath()), followSymlinks = false)
+        var settings = getDefaultSettings().copy(paths = setOf(Paths.get(getBinPath())), followSymlinks = false)
         var finder = Finder(settings)
         val fileResults: List<FileResult> = finder.find()
         assertTrue(fileResults.size < 3)

@@ -9,6 +9,30 @@ use phpfind\FileUtil;
 class FileUtilTest extends TestCase
 {
     /***************************************************************************
+     * expand_path tests
+     **************************************************************************/
+    public function test_expand_path_tilde(): void
+    {
+        $path = '~';
+        $expected = $_SERVER['HOME'];
+        $this->assertEquals($expected, FileUtil::expand_path($path));
+    }
+
+    public function test_expand_path_with_tilde(): void
+    {
+        $path = '~/src/xfind';
+        $expected = FileUtil::join_paths($_SERVER['HOME'], 'src/xfind');
+        $this->assertEquals($expected, FileUtil::expand_path($path));
+    }
+
+    public function test_expand_path_with_tilde_and_name(): void
+    {
+        $path = '~cary/src/xfind';
+        $expected = FileUtil::join_paths($_SERVER['HOME'], 'src/xfind');
+        $this->assertEquals($expected, FileUtil::expand_path($path));
+    }
+
+    /***************************************************************************
      * get_extension tests
      **************************************************************************/
     public function test_get_extension_has_txt_extension(): void

@@ -42,6 +42,28 @@ test_is_dot_dir () {
     assert_equals_number "is_dot_dir $dot_git_dir" $? 0
 }
 
+test_expanded_path () {
+    echo
+    hdr "test_expanded_path"
+
+    source "$BASHFIND_PATH/lib/bashfindlib.bash"
+
+    tilde="~"
+    expanded_path=$(eval echo "$tilde")
+    echo "expanded_path: $expanded_path"
+    assert_equals_string expanded_path "$expanded_path" "$HOME"
+
+    tilde_path="~/src/xfind"
+    expanded_path=$(eval echo "$tilde_path")
+    echo "expanded_path: $expanded_path"
+    assert_equals_string expanded_path "$expanded_path" "$HOME/src/xfind"
+
+    tilde_name_path="~cary/src/xfind"
+    expanded_path=$(eval echo "$tilde_name_path")
+    echo "expanded_path: $expanded_path"
+    assert_equals_string expanded_path "$expanded_path" "$HOME/src/xfind"
+}
+
 test_is_hidden () {
     echo
     hdr "test_is_hidden"

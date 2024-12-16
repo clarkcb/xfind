@@ -60,6 +60,21 @@ defmodule ExFindTest.FileUtilTest do
   end
 
   ############################################################################
+  # expand_path tests
+  ############################################################################
+  test "expand tilde path" do
+    assert FileUtil.expand_path("~") == System.user_home()
+  end
+
+  test "expand path with tilde" do
+    assert FileUtil.expand_path("~/src/xfind") == Path.join([System.user_home(), "src", "xfind"])
+  end
+
+  test "expand path with tilde and name" do
+    assert FileUtil.expand_path("~cary/src/xfind") == Path.join([System.user_home(), "src", "xfind"])
+  end
+
+  ############################################################################
   # hidden? tests
   ############################################################################
   test "hidden file is hidden" do

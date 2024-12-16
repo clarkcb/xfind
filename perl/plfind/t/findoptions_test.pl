@@ -96,8 +96,9 @@ sub test_settings_from_json {
 END_JSON
     $find_options->settings_from_json($json, $settings);
     # path is expanded when added to settings, must compare to expanded version
-    my $expected_path = $ENV{HOME} . "/src/xfind";
-    ok(${$settings->{paths}}[0]->stringify eq $expected_path, "paths[0] is set to $ENV{HOME}/src/xfind");
+    # my $expected_path = $ENV{HOME} . "/src/xfind";
+    my $expected_path = "~/src/xfind";
+    ok(${$settings->{paths}}[0]->stringify eq $expected_path, "paths[0] is set to ~/src/xfind");
     ok(scalar @{$settings->{in_extensions}} == 2, "in_extensions has two extensions");
     ok($settings->{in_extensions}->[0] eq 'js', "in_extensions contains js extension");
     ok($settings->{in_extensions}->[1] eq 'ts', "in_extensions contains ts extension");

@@ -106,10 +106,29 @@ class FileUtilTests
 	 * ExpandPath tests
 	*************************************************************/
 	[Test]
+	public void ExpandPath_Tilde_ExpandHome()
+	{
+		const string path = "~";
+		var expected = FileUtil.GetHomePath();
+		var actual = FileUtil.ExpandPath(path);
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+
+	[Test]
 	public void ExpandPath_WithTilde_ExpandHome()
 	{
-		const string path = "~/src/git/xfind";
+		const string path = "~/src/xfind";
 		var expected = Path.Join(FileUtil.GetHomePath(), path.Substring(1));
+		var actual = FileUtil.ExpandPath(path);
+		Assert.That(actual, Is.EqualTo(expected));
+	}
+
+	[Test]
+	public void ExpandPath_WithTildeAndName_ExpandHome()
+	{
+		const string path = "~cary/src/xfind";
+		var homePath = Path.GetDirectoryName(FileUtil.GetHomePath());
+		var expected = Path.Join(homePath, path.Substring(1));
 		var actual = FileUtil.ExpandPath(path);
 		Assert.That(actual, Is.EqualTo(expected));
 	}
@@ -127,15 +146,15 @@ class FileUtilTests
 	[Test]
 	public void NormalizePath_NoTrailingSlash_UnchangedPath()
 	{
-		const string path = "~/src/git/xfind";
+		const string path = "~/src/xfind";
 		Assert.That(FileUtil.NormalizePath(path), Is.EqualTo(path));
 	}
 
 	[Test]
 	public void NormalizePath_TrailingSlash_TrimmedPath()
 	{
-		const string path = "~/src/git/xfind/";
-		Assert.That(FileUtil.NormalizePath(path), Is.EqualTo("~/src/git/xfind"));
+		const string path = "~/src/xfind/";
+		Assert.That(FileUtil.NormalizePath(path), Is.EqualTo("~/src/xfind"));
 	}
 
 	/*************************************************************
@@ -144,7 +163,7 @@ class FileUtilTests
 	[Test]
 	public void JoinPath_NoTrailingSlash_EqualsExpected()
 	{
-		const string path = "~/src/git/xfind/csharp/CsFind/CsFindTests";
+		const string path = "~/src/xfind/csharp/CsFind/CsFindTests";
 		const string filename = "FileUtilTests.cs";
 		var pathAndFile = path + "/" + filename;
 		Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile));
@@ -153,7 +172,7 @@ class FileUtilTests
 	[Test]
 	public void JoinPath_TrailingSlash_EqualsExpected()
 	{
-		const string path = "~/src/git/xfind/csharp/CsFind/CsFindTests/";
+		const string path = "~/src/xfind/csharp/CsFind/CsFindTests/";
 		const string filename = "FileUtilTests.cs";
 		var pathAndFile = path + filename;
 		Assert.That(Path.Join(path, filename), Is.EqualTo(pathAndFile));
