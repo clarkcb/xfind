@@ -105,6 +105,8 @@ public class FilePath
 
     public override string ToString()
     {
+        // This is temporary to ensure benchmark output matching with other language versions
+        if (Path.StartsWith('~')) return File.ToString();
         return Path;
     }
 }
