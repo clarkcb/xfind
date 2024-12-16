@@ -25,6 +25,7 @@ module HsFind.FileUtil
     , normalizeExtension
     , partitionDirsAndFiles
     , pathExists
+    , pathsExist
     ) where
 
 import Control.Exception (IOException, handle)
@@ -136,6 +137,21 @@ pathExists fp = do
   if foundDir
     then return True
     else doesFileExist fp
+
+pathsExist :: [FilePath] -> IO Bool
+pathsExist paths = do
+  foundPaths <- filterM pathExists paths
+  if length foundPaths == length paths then do
+    return True
+  else do
+    let notFoundPaths = filter (`notElem` foundPaths) paths
+    expandedPaths <- mapM expandPath notFoundPaths
+    foundExpandedPaths <- filterM pathExists expandedPaths
+    let allFoundPaths = foundPaths ++ foundExpandedPaths
+    if length allFoundPaths == length paths then do
+      return True
+    else do
+      return False
 
 getRecursiveContents :: FilePath -> IO [FilePath]
 getRecursiveContents dir = do

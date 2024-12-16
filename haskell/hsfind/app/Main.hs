@@ -13,20 +13,6 @@ import HsFind.Finder (doFind, validateSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 
 
-errsOrUsage :: [FindOption] -> FindSettings -> Maybe String
-errsOrUsage findOptions settings =
-  case usage of
-    "" -> Nothing
-    _  -> Just usage
-  where errs   = validateSettings settings
-        errMsg = if not (null errs)
-                 then "\nERROR: " ++ head errs ++ "\n\n"
-                 else ""
-        usage  = case (printUsage settings, not (null errMsg)) of
-                   (True, _)     -> "\n" ++ getUsage findOptions
-                   (False, True) -> errMsg ++ getUsage findOptions
-                   _ -> ""
-
 getMatchingDirs :: [FileResult] -> [FilePath]
 getMatchingDirs = sort . nub . map (takeDirectory . fileResultPath)
 
@@ -65,23 +51,27 @@ main = do
       logMsg $ if debug settings
                then findSettingsToString settings ++ "\n"
                else ""
-      case errsOrUsage findOptions settings of
-        Just usage -> logMsg $ usage ++ "\n"
+      case validateSettings settings of
+        Just errMsg -> do
+          logMsg "\n"
+          logErr $ errMsg ++ "\n"
+          logMsg $ getUsage findOptions ++ "\n"
         Nothing -> do
-          foundPaths <- filterM pathExists (paths settings)
-          let notFoundPaths = filter (`notElem` foundPaths) (paths settings)
-          expandedPaths <- mapM expandPath notFoundPaths
-          let allPaths = foundPaths ++ expandedPaths
-          if length foundPaths == length (paths settings) then do
-            fileResults <- doFind settings
-            logMsg $ if printDirs settings
-                     then formatMatchingDirs fileResults
-                     else ""
-            logMsg $ if printFiles settings
-                     then formatMatchingFiles fileResults
-                     else ""
-            logMsg ""
-          else do
-            logMsg "\n"
-            logErr "Startpath not found\n\n"
-            logMsg $ getUsage findOptions ++ "\n"
+          if printUsage settings
+            then logMsg $ getUsage findOptions ++ "\n"
+            else do
+              findResultsEither <- doFind settings
+              case findResultsEither of
+                Left errMsg -> do
+                  logMsg "\n"
+                  logErr $ errMsg ++ "\n"
+                  logMsg "\n"
+                  logMsg $ getUsage findOptions ++ "\n"
+                Right fileResults -> do
+                  logMsg $ if printDirs settings
+                            then formatMatchingDirs fileResults
+                            else ""
+                  logMsg $ if printFiles settings
+                            then formatMatchingFiles fileResults
+                            else ""
+                  logMsg ""

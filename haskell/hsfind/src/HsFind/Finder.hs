@@ -14,22 +14,32 @@ import Data.Char (toLower)
 import Data.List (partition, sortBy, zipWith4)
 import Data.Maybe (fromJust, isJust, isNothing)
 
+import System.Directory (doesDirectoryExist, doesFileExist)
 import System.FilePath (dropFileName, splitPath, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
 import HsFind.FileTypes (FileType(..), JsonFileType, getJsonFileTypes, getFileTypesFromJsonFileTypes)
 import HsFind.FileUtil
-    (filterOutSymlinks, hasExtension, isHiddenFilePath, getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles)
+    (expandPath, filterDirectories, filterFiles, filterOutSymlinks, hasExtension, isHiddenFilePath,
+    getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles,
+    pathExists, pathsExist)
 import HsFind.FileResult
     (FileResult(..), newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
 
 
--- TODO: need to also validate existence of paths, but since IO is involved, might have to approach differently
-validateSettings :: FindSettings -> [String]
-validateSettings settings = concatMap ($settings) validators
-  where validators = [ \s -> ["Startpath not defined" | null (paths s)]
+-- TODO: need to add validation for path existence, will require IO
+validateSettings :: FindSettings -> Maybe String
+validateSettings settings = recValidateSettings settings validators []
+  where recValidateSettings :: FindSettings -> [FindSettings -> [String]] -> [String] -> Maybe String
+        recValidateSettings settings validators errs = do
+          case errs of
+            [] -> case validators of
+                    [] -> Nothing
+                    (v:vs) -> recValidateSettings settings vs (v settings)
+            _ -> Just $ head errs
+        validators = [ \s -> ["Startpath not defined" | null (paths s)]
                      , \s -> ["Invalid range for mindepth and maxdepth" | maxDepth s > 0 && maxDepth s < minDepth s]
                      , \s -> ["Invalid range for minlastmod and maxlastmod" | invalidLastModRange s]
                      , \s -> ["Invalid range for minsize and maxsize" | maxSize s > 0 && maxSize s < minSize s]
@@ -214,9 +224,12 @@ getRecursiveFilePaths settings dir = do
 
 getFileResults :: FindSettings -> IO [FileResult]
 getFileResults settings = do
-  pathLists <- forM (paths settings) $ \path ->
+  -- TODO: need to handle case where paths are files, not just directories
+  pathDirs <- filterDirectories (paths settings)
+  pathFiles <- filterFiles (paths settings)
+  pathLists <- forM pathDirs $ \path ->
     getRecursiveFilePaths settings path
-  let allPaths = concat pathLists
+  let allPaths = concat pathLists ++ pathFiles
   jsonFileTypes <- getJsonFileTypes
   let allFileTypes = getFileTypesFromJsonFileTypes jsonFileTypes allPaths
   let allPathsAndTypes = zip allPaths allFileTypes
@@ -324,7 +337,24 @@ sortFileResults settings fileResults =
   then reverse $ doSortByFileResults settings fileResults
   else doSortByFileResults settings fileResults
 
-doFind :: FindSettings -> IO [FileResult]
+getFoundPaths :: [FilePath] -> IO (Either String [FilePath])
+getFoundPaths paths = do
+  foundPaths <- filterM pathExists paths
+  let notFoundPaths = filter (`notElem` foundPaths) paths
+  expandedPaths <- mapM expandPath notFoundPaths
+  foundExpandedPaths <- filterM pathExists expandedPaths
+  let allFoundPaths = foundPaths ++ foundExpandedPaths
+  if length allFoundPaths == length paths then do
+    return $ Right allFoundPaths
+  else do
+    return $ Left "Startpath not found"
+
+doFind :: FindSettings -> IO (Either String [FileResult])
 doFind settings = do
-  fileResults <- getFileResults settings
-  return $ sortFileResults settings fileResults
+  foundPathsEither <- getFoundPaths (paths settings)
+  case foundPathsEither of
+    Left errMsg -> return $ Left errMsg
+    Right foundPaths -> do
+      let settings' = settings { paths = foundPaths }
+      fileResults <- getFileResults settings'
+      return $ Right $ sortFileResults settings' fileResults
