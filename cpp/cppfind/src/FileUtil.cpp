@@ -15,7 +15,7 @@
 #include "FileUtil.h"
 
 namespace cppfind {
-    std::filesystem::path FileUtil::expand_tilde(const std::filesystem::path& path) {
+    std::filesystem::path FileUtil::expand_path(const std::filesystem::path& path) {
         std::filesystem::path expanded = path;
         if (path.empty() || path.c_str()[0] != '~') return expanded;
 
@@ -39,7 +39,7 @@ namespace cppfind {
 
     bool FileUtil::path_exists(const std::filesystem::path& path) {
         if (!std::filesystem::exists(path)) {
-            const std::filesystem::path expanded = expand_tilde(path);
+            const std::filesystem::path expanded = expand_path(path);
             return std::filesystem::exists(expanded);
         }
         return true;

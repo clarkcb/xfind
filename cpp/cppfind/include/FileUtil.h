@@ -7,7 +7,7 @@
 namespace cppfind {
     class FileUtil {
     public:
-        static std::filesystem::path expand_tilde(const std::filesystem::path& path);
+        static std::filesystem::path expand_path(const std::filesystem::path& path);
         static bool path_exists(const std::filesystem::path& path);
         static std::string get_path_extension(const std::filesystem::path& file_path);
         static bool is_dot_dir(std::string_view file_name);
