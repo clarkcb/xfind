@@ -42,7 +42,7 @@ class FileTypes
     {
         $file_type_ext_map = array();
         $file_type_name_map = array();
-        $file_types_path = FileUtil::expand_user_home_path(Config::FILE_TYPES_PATH);
+        $file_types_path = FileUtil::expand_path(Config::FILE_TYPES_PATH);
         if (file_exists($file_types_path)) {
             $contents = file_get_contents($file_types_path);
             if ($contents === false || trim($contents) === '') {

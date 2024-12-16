@@ -40,7 +40,7 @@ class Finder
                     throw new FindException('Startpath not readable');
                 }
             } else {
-                $expanded = FileUtil::expand_user_home_path($p);
+                $expanded = FileUtil::expand_path($p);
                 if (file_exists($expanded)) {
                     if (!is_readable($expanded)) {
                         throw new FindException('Startpath not readable');
@@ -386,7 +386,7 @@ class Finder
     {
         $file_results = [];
         if (!file_exists($file_path)) {
-            $file_path = FileUtil::expand_user_home_path($file_path);
+            $file_path = FileUtil::expand_path($file_path);
         }
         if (is_dir($file_path)) {
             # if max_depth is zero, we can skip since a directory cannot be a result

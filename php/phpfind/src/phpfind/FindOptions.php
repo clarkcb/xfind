@@ -104,7 +104,7 @@ class FindOptions
      */
     private function set_options_from_json(): void
     {
-        $find_options_path = FileUtil::expand_user_home_path(Config::FIND_OPTIONS_PATH);
+        $find_options_path = FileUtil::expand_path(Config::FIND_OPTIONS_PATH);
         if (file_exists($find_options_path)) {
             $contents = file_get_contents($find_options_path);
             if ($contents === false || trim($contents) === '') {

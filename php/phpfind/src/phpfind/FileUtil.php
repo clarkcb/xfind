@@ -18,22 +18,20 @@ class FileUtil
      * @param string $path
      * @return string
      */
-    public static function expand_user_home_path(string $path): string
+    public static function expand_path(string $path): string
     {
         if (str_starts_with($path, '~')) {
-            $user_path = getenv('HOME');
-            if ($user_path !== false) {
-                $tilde_prefix = '~' . DIRECTORY_SEPARATOR;
-                if ($path == '~' || $path == $tilde_prefix) {
-                    return $user_path;
-                }
-                if (str_starts_with($path, $tilde_prefix)) {
-                    return self::join_paths($user_path, substr($path, strlen($tilde_prefix)));
-                }
-                // if path begins with ~user, use their home path
-                $home_path = dirname($user_path);
-                return self::join_paths($home_path, substr($path, 1));
+            $user_path = $_SERVER['HOME'];
+            $tilde_prefix = '~' . DIRECTORY_SEPARATOR;
+            if ($path == '~' || $path == $tilde_prefix) {
+                return $user_path;
             }
+            if (str_starts_with($path, $tilde_prefix)) {
+                return self::join_paths($user_path, substr($path, strlen($tilde_prefix)));
+            }
+            // if path begins with ~user, use their home path
+            $home_path = dirname($user_path);
+            return self::join_paths($home_path, substr($path, 1));
         }
         return $path;
     }
