@@ -53,6 +53,7 @@ function GetHomePath {
 }
 
 function ExpandPath {
+    [OutputType([string])]
     param([string]$filePath)
     if ($filePath.StartsWith('~')) {
         $userPath = GetHomePath
@@ -793,9 +794,12 @@ class Finder {
         if ($null -eq $this.Settings.Paths -or $this.Settings.Paths.Count -eq 0) {
             throw "Startpath not defined"
         }
-        foreach ($path in $this.Settings.Paths) {
-            if (-not (Test-Path $path) -and -not (Test-Path ExpandPath($path))) {
-                throw "Startpath not found"
+        foreach ($p in $this.Settings.Paths) {
+            if (-not (Test-Path $p)) {
+                $expanded = ExpandPath($p)
+                if (-not (Test-Path $expanded)) {
+                    throw "Startpath not found"
+                }
             }
         }
         if ($this.Settings.MaxDepth -gt -1 -and $this.Settings.MinDepth -gt -1 -and $this.Settings.MaxDepth -lt $this.Settings.MinDepth) {
