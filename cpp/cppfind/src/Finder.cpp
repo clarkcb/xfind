@@ -22,12 +22,20 @@ namespace cppfind {
             throw FindException("Startpath not defined");
         }
         for (const auto& p : settings.paths()) {
-            if (!FileUtil::path_exists(p)) {
-                throw FindException("Startpath not found");
-            }
-            if (access(p.c_str(), R_OK) != 0) {
-                throw FindException("Startpath not readable");
-            }
+            if (std::filesystem::exists(p)) {
+                if (access(p.c_str(), R_OK) != 0) {
+                    throw FindException("Startpath not readable");
+                }
+             } else {
+                 const std::filesystem::path expanded = FileUtil::expand_path(p);
+                 if (std::filesystem::exists(expanded)) {
+                     if (access(expanded.c_str(), R_OK) != 0) {
+                         throw FindException("Startpath not readable");
+                     }
+                 } else {
+                     throw FindException("Startpath not found");
+                 }
+             }
         }
         if (settings.max_depth() > -1 && settings.max_depth() < settings.min_depth()) {
             throw FindException("Invalid range for mindepth and maxdepth");
@@ -233,21 +241,27 @@ namespace cppfind {
 
     std::vector<FileResult> Finder::get_file_results(const std::filesystem::path& file_path) const {
         std::vector<FileResult> file_results{};
-        if (is_directory(file_path)) {
+
+        std::filesystem::path fp = file_path;
+        if (!std::filesystem::exists(fp)) {
+            fp = FileUtil::expand_path(file_path);
+        }
+
+        if (is_directory(fp)) {
             // if max_depth is zero, we can skip since a directory cannot be a result
             if (m_settings.max_depth() == 0) {
                 return file_results;
             }
-            if (is_matching_dir_path(file_path)) {
+            if (is_matching_dir_path(fp)) {
                 const int max_depth = m_settings.recursive() ?  m_settings.max_depth() : 1;
-                return rec_get_file_results(file_path, m_settings.min_depth(), max_depth, 1);
+                return rec_get_file_results(fp, m_settings.min_depth(), max_depth, 1);
             }
-        } else if (is_regular_file(file_path)) {
+        } else if (is_regular_file(fp)) {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (m_settings.min_depth() > 0) {
                 return file_results;
             }
-            if (auto opt_file_result = filter_to_file_result(file_path);
+            if (auto opt_file_result = filter_to_file_result(fp);
                 opt_file_result.has_value()) {
                 file_results.push_back(std::move(opt_file_result.value()));
             }
