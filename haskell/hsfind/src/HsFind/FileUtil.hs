@@ -2,7 +2,8 @@
 
 module HsFind.FileUtil
     (
-      filterDirectories
+      expandPath
+    , filterDirectories
     , filterFiles
     , filterOutSymlinks
     , getDirectoryFiles
@@ -32,11 +33,25 @@ import qualified Data.ByteString as B
 import qualified Data.ByteString.Char8 as BC
 import Data.Char (toLower)
 import Data.List (elemIndices, isPrefixOf)
-import System.Posix.User (getUserEntryForName)
 import System.Directory (doesDirectoryExist, doesFileExist, listDirectory, getFileSize, getModificationTime, pathIsSymbolicLink)
 import System.FilePath ((</>), dropFileName, splitPath, takeFileName)
 import System.IO (hSetNewlineMode, IOMode(..), universalNewlineMode, withFile)
 import Data.Time (UTCTime)
+
+import HsFind.Config (getHome)
+
+expandPath :: FilePath -> IO FilePath
+expandPath filePath = do
+  if "~" `isPrefixOf` filePath
+    then do
+      userPath <- getHome
+      let homePath = getParentPath userPath
+      case filePath of
+        "~" -> return userPath
+        "~/" -> return userPath
+        ('~':'/':xs) -> return $ userPath ++ "/" ++ xs
+        _ -> return $ homePath ++ drop 1 filePath
+    else return filePath
 
 getExtension :: FilePath -> Maybe String
 getExtension "" = Nothing
@@ -166,11 +181,3 @@ getFileLines f = do
   case fileByteString of
     Left e -> return $ Left e
     Right contents -> return $ Right (BC.split '\n' contents)
-
--- expandPath :: FilePath -> IO FilePath
--- expandPath filePath = do
---   if isPrefixOf "~" filePath
---     then do
---       userEntry <- getUserEntryForName "root"
---       return $ homeDir ++ (drop 1 filePath)
---     else return filePath

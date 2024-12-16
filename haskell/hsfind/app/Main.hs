@@ -7,7 +7,7 @@ import System.FilePath (takeDirectory)
 import System.IO (hPutStr, stderr)
 
 import HsFind.FileResult (FileResult, fileResultPath, fileResultToString)
-import HsFind.FileUtil (pathExists)
+import HsFind.FileUtil (expandPath, pathExists)
 import HsFind.FindOptions (FindOption, getFindOptions, getUsage, settingsFromArgs)
 import HsFind.Finder (doFind, validateSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
@@ -68,8 +68,10 @@ main = do
       case errsOrUsage findOptions settings of
         Just usage -> logMsg $ usage ++ "\n"
         Nothing -> do
-          -- TODO: if paths not found, try expanding them
           foundPaths <- filterM pathExists (paths settings)
+          let notFoundPaths = filter (`notElem` foundPaths) (paths settings)
+          expandedPaths <- mapM expandPath notFoundPaths
+          let allPaths = foundPaths ++ expandedPaths
           if length foundPaths == length (paths settings) then do
             fileResults <- doFind settings
             logMsg $ if printDirs settings

@@ -2,6 +2,7 @@ module HsFind.Config
   (
       getXfindPath
     , getDataPath
+    , getHome
   ) where
 
 import System.Environment (getEnv, lookupEnv)
