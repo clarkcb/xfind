@@ -12,7 +12,7 @@ on:
 defaults:
   run:
     shell: bash
-    working-directory: ./rust/rsfind
+    working-directory: ./python/pyfind
 
 permissions:
   contents: read
