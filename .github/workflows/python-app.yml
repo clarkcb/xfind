@@ -32,6 +32,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install flake8 pytest
+        mkdir -p ./pyfind/data
         cp ../../shared/filetypes.json ./pyfind/data/
         cp ../../shared/findoptions.json ./pyfind/data/
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
