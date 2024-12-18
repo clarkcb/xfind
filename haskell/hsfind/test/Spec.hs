@@ -29,7 +29,9 @@ main = do
   -- filterFileTests <- getFilterFileTests
   findRubyFileResultTests <- getFindRubyFileResultTests
   findPythonFileResultTests <- getFindPythonFileResultTests
-  followSymlinksTests <- getFollowSymlinksTests
+  followSymlinksDefaultTests <- getFollowSymlinksDefaultTests
+  followSymlinksTrueTests <- getFollowSymlinksTrueTests
+  followSymlinksFalseTests <- getFollowSymlinksFalseTests
 
   -- FindOptions tests
   settingsFromArgsTests <- getSettingsFromArgsTests
@@ -49,5 +51,5 @@ main = do
     findRubyFileResultTests ++
     settingsFromArgsTests ++ settingsFromNoArgsTests ++
     archivesOnlyTests ++ debugTests ++
-    followSymlinksTests ++
+    followSymlinksDefaultTests ++ followSymlinksTrueTests ++ followSymlinksFalseTests ++
     defaultFindSettingsTests ++ newExtensionsTests)

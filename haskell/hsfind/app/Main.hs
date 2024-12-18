@@ -6,8 +6,8 @@ import System.FilePath (takeDirectory)
 import System.IO (hPutStr, stderr)
 
 import HsFind.FileResult (FileResult, fileResultPath, fileResultToString)
-import HsFind.FindOptions (FindOption, getFindOptions, getUsage, settingsFromArgs)
-import HsFind.Finder (doFind, validateSettings)
+import HsFind.FindOptions (getFindOptions, getUsage, settingsFromArgs)
+import HsFind.Finder (doFind, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 
 
@@ -49,7 +49,7 @@ main = do
       logMsg $ if debug settings
                then findSettingsToString settings ++ "\n"
                else ""
-      case validateSettings settings of
+      case validateFindSettings settings of
         Just errMsg -> do
           logMsg "\n"
           logErr $ errMsg ++ "\n"

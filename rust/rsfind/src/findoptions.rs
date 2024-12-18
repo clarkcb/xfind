@@ -736,6 +736,7 @@ mod tests {
         }
     }
 
+    // NOTE: this test is unreliable because the settings file can change, should probably deactivate
     #[test]
     fn test_settings_from_file() {
         let options = match FindOptions::new() {

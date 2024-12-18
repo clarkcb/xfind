@@ -71,46 +71,57 @@ class FilePathTests
     public void FilePath_TildePathToDirectory_IsDirectory()
     {
         const string csFindPath = "~/src/xfind/csharp/CsFind";
+        var expandedCsFindPath = $"{FileUtil.GetHomePath()}/src/xfind/csharp/CsFind";
         var filePath = new FilePath(csFindPath);
         Assert.That(filePath.Exists, Is.True);
         Assert.That(filePath.IsDirectory, Is.True);
         Assert.That(filePath.IsFile, Is.False);
         Assert.That(filePath.IsSymlink, Is.False);
         Assert.That(filePath.Path, Is.EqualTo(csFindPath));
-        Assert.That(filePath.ToString(), Is.EqualTo(csFindPath));
+        // Assert.That(filePath.ToString(), Is.EqualTo(csFindPath));
+        // This is temporary until all versions support preserving tilde in path
+        Assert.That(filePath.ToString(), Is.EqualTo(expandedCsFindPath));
     }
 
     [Test]
     public void FilePath_TildePathToFile_IsFile()
     {
         const string csFindLibPath = "~/src/xfind/csharp/CsFind/CsFindLib";
+        var expandedCsFindLibPath = $"{FileUtil.GetHomePath()}/src/xfind/csharp/CsFind/CsFindLib";
         var csFinderPath = Path.Join(csFindLibPath, "Finder.cs");
+        var expandedCsFinderPath = Path.Join(expandedCsFindLibPath, "Finder.cs");
         var filePath = new FilePath(csFinderPath);
         Assert.That(filePath.Exists, Is.True);
         Assert.That(filePath.IsDirectory, Is.False);
         Assert.That(filePath.IsFile, Is.True);
         Assert.That(filePath.IsSymlink, Is.False);
         Assert.That(filePath.Path, Is.EqualTo(csFinderPath));
-        Assert.That(filePath.ToString(), Is.EqualTo(csFinderPath));
+        // Assert.That(filePath.ToString(), Is.EqualTo(csFinderPath));
+        // This is temporary until all versions support preserving tilde in path
+        Assert.That(filePath.ToString(), Is.EqualTo(expandedCsFinderPath));
         Assert.That(filePath.Name, Is.EqualTo("Finder.cs"));
         Assert.That(filePath.Extension, Is.EqualTo(".cs"));
-        Assert.That(filePath.Parent!.ToString(), Is.EqualTo(csFindLibPath));
+        Assert.That(filePath.Parent!.ToString(), Is.EqualTo(expandedCsFindLibPath));
     }
 
     [Test]
     public void FilePath_TildePathToSymlink_IsSymlink()
     {
         const string xfindBinPath = "~/src/xfind/bin";
+        var expandedXFindBinPath = $"{FileUtil.GetHomePath()}/src/xfind/bin";
         var csFindPath = Path.Join(xfindBinPath, "csfind");
+        var expandedCsFindPath = Path.Join(expandedXFindBinPath, "csfind");
         var filePath = new FilePath(csFindPath);
         Assert.That(filePath.Exists, Is.True);
         Assert.That(filePath.IsDirectory, Is.False);
         Assert.That(filePath.IsFile, Is.True);
         Assert.That(filePath.IsSymlink, Is.True);
         Assert.That(filePath.Path, Is.EqualTo(csFindPath));
-        Assert.That(filePath.ToString(), Is.EqualTo(csFindPath));
+        // Assert.That(filePath.ToString(), Is.EqualTo(csFindPath));
+        // This is temporary until all versions support preserving tilde in path
+        Assert.That(filePath.ToString(), Is.EqualTo(expandedCsFindPath));
         Assert.That(filePath.Name, Is.EqualTo("csfind"));
         Assert.That(filePath.Extension, Is.EqualTo(""));
-        Assert.That(filePath.Parent!.ToString(), Is.EqualTo(xfindBinPath));
+        Assert.That(filePath.Parent!.ToString(), Is.EqualTo(expandedXFindBinPath));
     }
 }

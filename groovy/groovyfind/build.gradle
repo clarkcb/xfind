@@ -15,9 +15,8 @@ repositories {
 dependencies {
     implementation 'org.apache.groovy:groovy:4.0.24'
     implementation 'org.apache.groovy:groovy-json:4.0.24'
-    implementation 'org.slf4j:slf4j-nop:1.7.36'
-    testImplementation platform('org.junit:junit-bom:5.11.3')
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+    testImplementation platform('org.junit:junit-bom:5.11.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
 }
 
 application {

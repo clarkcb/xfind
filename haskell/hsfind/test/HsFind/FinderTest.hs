@@ -5,7 +5,9 @@ module HsFind.FinderTest
   , getIsMatchingFilePathTests
   , getFindPythonFileResultTests
   , getFindRubyFileResultTests
-  , getFollowSymlinksTests
+  , getFollowSymlinksDefaultTests
+  , getFollowSymlinksTrueTests
+  , getFollowSymlinksFalseTests
   ) where
 
 import HsFind.Config (getXfindPath)
@@ -120,9 +122,12 @@ getFindPythonFileResultTests = do
     outFilePatterns = ["build", "cmake", "node_modules", "pycache", "vendor", "venv"],
     paths = ["/Users/cary/src/xfind/python"]
   }
-  fileResults <- doFind settings
-  return [ testCase "getFindPythonFileResultTests" (length fileResults @?= 0)
-         ]
+  fileResultsEither <- doFind settings
+  case fileResultsEither of
+    Left _ -> return [ testCase "getFindPythonFileResultTests" (True @?= False)]
+    Right fileResults ->
+        return [ testCase "getFindPythonFileResultTests" (length fileResults @?= 0)
+               ]
 
 -- hsfind -D build -D cmake -D node_modules -D vendor -D venv -t audio /Users/cary/src/xfind/ruby --debug
 getFindRubyFileResultTests :: IO [Test]
@@ -133,22 +138,50 @@ getFindRubyFileResultTests = do
     outFilePatterns = ["build", "cmake", "node_modules", "pycache", "vendor", "venv"],
     paths = ["/Users/cary/src/xfind/ruby"]
   }
-  fileResults <- doFind settings
-  return [ testCase "getFindRubyFileResultTests" (length fileResults @?= 0)
-         ]
+  fileResultsEither <- doFind settings
+  case fileResultsEither of
+    Left _ -> return [ testCase "getFindRubyFileResultTests" (True @?= False)]
+    Right fileResults ->
+        return [ testCase "getFindRubyFileResultTests" (length fileResults @?= 0)
+               ]
 
-getFollowSymlinksTests :: IO [Test]
-getFollowSymlinksTests = do
+getFollowSymlinksDefaultTests :: IO [Test]
+getFollowSymlinksDefaultTests = do
   xfindPath <- getXfindPath
-  let defaultSettings = defaultFindSettings {
+  let settings = defaultFindSettings {
     paths = [xfindPath ++ "/bin"]
   }
-  let followSymlinksSettings = defaultSettings { followSymlinks = True }
-  let noFollowSymlinksSettings = defaultSettings { followSymlinks = False }
-  defaultFileResults <- doFind defaultSettings
-  followSymlinksFileResults <- doFind followSymlinksSettings
-  noFollowSymlinksFileResults <- doFind noFollowSymlinksSettings
-  return [ testCase "getFollowSymlinksTests defaultSettings" ((length defaultFileResults < 3) @?= True)
-         , testCase "getFollowSymlinksTests followSymlinks" ((length followSymlinksFileResults > 2) @?= True)
-         , testCase "getFollowSymlinksTests noFollowSymlinks" ((length noFollowSymlinksFileResults < 3) @?= True)
-         ]
+  fileResultsEither <- doFind settings
+  case fileResultsEither of
+    Left _ -> return [ testCase "getFollowSymlinksTests defaultSettings" (True @?= False)]
+    Right fileResults ->
+        return [ testCase "getFollowSymlinksTests defaultSettings" ((length fileResults < 3) @?= True)
+               ]
+
+getFollowSymlinksTrueTests :: IO [Test]
+getFollowSymlinksTrueTests = do
+  xfindPath <- getXfindPath
+  let settings = defaultFindSettings {
+    paths = [xfindPath ++ "/bin"],
+    followSymlinks = True
+  }
+  fileResultsEither <- doFind settings
+  case fileResultsEither of
+    Left _ -> return [ testCase "getFollowSymlinksTests followSymlinks" (True @?= False)]
+    Right fileResults ->
+        return [ testCase "getFollowSymlinksTests followSymlinks" ((length fileResults > 2) @?= True)
+               ]
+
+getFollowSymlinksFalseTests :: IO [Test]
+getFollowSymlinksFalseTests = do
+  xfindPath <- getXfindPath
+  let settings = defaultFindSettings {
+    paths = [xfindPath ++ "/bin"],
+    followSymlinks = False
+  }
+  fileResultsEither <- doFind settings
+  case fileResultsEither of
+    Left _ -> return [ testCase "getFollowSymlinksTests noFollowSymlinks" (True @?= False)]
+    Right fileResults ->
+        return [ testCase "getFollowSymlinksTests noFollowSymlinks" ((length fileResults < 3) @?= True)
+               ]

@@ -6,7 +6,7 @@ module HsFind.Finder
     , isMatchingArchiveFilePath
     , isMatchingDirPath
     , isMatchingFilePath
-    , validateSettings
+    , validateFindSettings
     ) where
 
 import Control.Monad (forM, filterM)
@@ -29,8 +29,8 @@ import HsFind.FindSettings
 
 
 -- TODO: need to add validation for path existence, will require IO
-validateSettings :: FindSettings -> Maybe String
-validateSettings settings = recValidateSettings settings validators []
+validateFindSettings :: FindSettings -> Maybe String
+validateFindSettings settings = recValidateSettings settings validators []
   where recValidateSettings :: FindSettings -> [FindSettings -> [String]] -> [String] -> Maybe String
         recValidateSettings settings' validators' errs = do
           case errs of
