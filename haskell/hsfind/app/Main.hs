@@ -53,18 +53,17 @@ main = do
         Just errMsg -> do
           logMsg "\n"
           logErr $ errMsg ++ "\n"
-          logMsg $ getUsage findOptions ++ "\n"
+          logMsg $ "\n" ++ getUsage findOptions ++ "\n"
         Nothing -> do
           if printUsage settings
-            then logMsg $ getUsage findOptions ++ "\n"
+            then logMsg $ "\n" ++ getUsage findOptions ++ "\n"
             else do
               findResultsEither <- doFind settings
               case findResultsEither of
                 Left errMsg -> do
                   logMsg "\n"
                   logErr $ errMsg ++ "\n"
-                  logMsg "\n"
-                  logMsg $ getUsage findOptions ++ "\n"
+                  logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                 Right fileResults -> do
                   logMsg $ if printDirs settings
                             then formatMatchingDirs fileResults

@@ -30,7 +30,11 @@ import HsFind.FindSettings
 
 -- TODO: need to add validation for path existence, will require IO
 validateFindSettings :: FindSettings -> Maybe String
-validateFindSettings settings = recValidateSettings settings validators []
+validateFindSettings settings =
+  if printUsage settings
+  then Nothing
+  else
+    recValidateSettings settings validators []
   where recValidateSettings :: FindSettings -> [FindSettings -> [String]] -> [String] -> Maybe String
         recValidateSettings settings' validators' errs = do
           case errs of
