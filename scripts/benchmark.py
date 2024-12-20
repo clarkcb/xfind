@@ -357,7 +357,7 @@ class ScenarioResults(object):
 ########################################
 class Benchmarker(object):
     def __init__(self, **kwargs):
-        self.xfind_names = all_xfind_names
+        self.xfind_names = []
         self.group_names = []
         self.scenario_names = []
         self.scenarios = []
@@ -371,6 +371,8 @@ class Benchmarker(object):
         self.skip_groups = ['settings-only']
         self.skip_scenarios = ['use invalid settings-file']
         self.__dict__.update(kwargs)
+        if not self.xfind_names:
+            self.xfind_names = all_xfind_names
         self.shell = os.environ.get('SHELL', '/bin/bash')
         self.git_info = get_git_info()
         # read from scenarios file
@@ -436,7 +438,7 @@ class Benchmarker(object):
                     self.scenarios.extend(sg.scenarios)
 
     def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
-        print('\n{}'.format(title))
+        print(f'\n{title}')
         print(tabulate(data, headers=hdr))
 
     def print_scenario_summary(self, scenario_results: ScenarioResults):
@@ -445,7 +447,7 @@ class Benchmarker(object):
                    scenario_results.runs, len(self.scenarios) * self.runs)
         hdr = []
         for i in range(len(scenario_results)):
-            hdr.extend(['S{} total'.format(i + 1), 'S{} avg'.format(i + 1), 'S{} rank'.format(i + 1)])
+            hdr.extend([f'S{i + 1} total', f'S{i + 1} avg', f'S{i + 1} rank'])
         hdr.extend(['TOTAL', 'AVG', 'RANK'])
         data = []
         col_types = [float, float, int] * (len(scenario_results) + 1)
@@ -467,7 +469,7 @@ class Benchmarker(object):
         title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs".\
             format(len(scenario_results.scenario_results), len(self.scenarios),
                    scenario_results.runs, len(self.scenarios) * self.runs)
-        title += '\n\nDate/time:  {}'.format(datetime.now())
+        title += f'\n\nDate/time:  {datetime.now()}'
         title += '\nGit branch: "{}" ({})\n'.format(self.git_info["branch"],
                                                   self.git_info["commit"])
         hdr = ['real', 'avg', 'rank', 'sys', 'avg', 'rank', 'user', 'avg',
@@ -498,7 +500,7 @@ class Benchmarker(object):
         title = "\nTotal results for {} out of {} scenarios with {} out of {} total runs".\
             format(len(scenario_results.scenario_results), len(self.scenarios),
                    scenario_results.runs, len(self.scenarios) * self.runs)
-        title += '\n\nDate/time:  {}'.format(datetime.now())
+        title += f'\n\nDate/time:  {datetime.now()}'
         title += '\nGit branch: "{}" ({})\n'.format(self.git_info["branch"],
                                                   self.git_info["commit"])
         hdr = ['total', 'avg', 'rank']
@@ -736,10 +738,10 @@ class Benchmarker(object):
             xfind_times[x] = self.times_from_lines([e for e in error_lines if e])
             time_dict = xfind_times[x]
             if 'real' not in time_dict and 'elapsed' not in time_dict:
-                raise Exception('No real or elapsed time for {}'.format(x))
+                raise Exception(f'No real or elapsed time for {x}')
             treal = time_dict['real'] if 'real' in time_dict else time_dict['elapsed']
             if 'sys' not in time_dict and 'system' not in time_dict:
-                raise Exception('No sys or system time for {}'.format(x))
+                raise Exception(f'No sys or system time for {x}')
             tsys = time_dict['sys'] if 'sys' in time_dict else time_dict['system']
             lang_results.append(LangResult(x, real=treal, sys=tsys, user=time_dict['user']))
         if not self.compare_outputs(s, sn, xfind_output) and self.exit_on_diff:
@@ -866,10 +868,12 @@ def get_parser():
 
 def main():
     # Defaults
-    xfind_names = all_xfind_names
+    xfind_names = []
     groups = []
+    langs = []
     scenarios = []
     skip_groups = []
+    skip_langs = []
     skip_scenarios = []
     runs = default_runs
     debug = False
@@ -897,8 +901,6 @@ def main():
     if parsed_args.skip_scenario:
         skip_scenarios.extend(parsed_args.skip_scenario)
 
-    xfind_names = []
-
     if parsed_args.langs:
         langs = sorted(parsed_args.langs.split(','))
         for lang in langs:
@@ -906,13 +908,15 @@ def main():
                 xfind_names.append(xfind_dict[lang])
             else:
                 print(f'Skipping unknown language: {lang}')
+    else:
+        xfind_names = all_xfind_names
 
     if parsed_args.skip_langs:
-        nolangs = sorted(parsed_args.skip_langs.split(','))
-        for nolang in nolangs:
-            if nolang in xfind_dict:
-                if xfind_dict[nolang] in xfind_names:
-                    del xfind_names[xfind_names.index(xfind_dict[nolang])]
+        skip_langs = sorted(parsed_args.skip_langs.split(','))
+        for skip_lang in skip_langs:
+            if skip_lang in xfind_dict:
+                if xfind_dict[skip_lang] in xfind_names:
+                    del xfind_names[xfind_names.index(xfind_dict[skip_lang])]
             else:
                 print(f'Skipping unknown language: {lang}')
 
@@ -922,15 +926,17 @@ def main():
     if parsed_args.scenarios_file:
         scenarios_file = parsed_args.scenarios_file
 
-    print(f'xfind_names ({len(xfind_names)}): {str(xfind_names)}')
     print(f'debug: {debug}')
     print(f'exit_on_diff: {exit_on_diff}')
     print(f'groups: {groups}')
+    print(f'langs: {langs}')
     print(f'runs: {runs}')
     print(f'scenarios: {scenarios}')
     print(f'scenarios_file: {scenarios_file}')
     print(f'skip_groups: {skip_groups}')
+    print(f'skip_langs: {skip_langs}')
     print(f'skip_scenarios: {skip_scenarios}')
+    print(f'xfind_names ({len(xfind_names)}): {str(xfind_names)}')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
                               group_names=groups, scenario_names=scenarios,
                               skip_groups=skip_groups, skip_scenarios=skip_scenarios,
