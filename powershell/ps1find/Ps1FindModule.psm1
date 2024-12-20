@@ -681,6 +681,49 @@ class FindOptions {
         })
         return $opts | Sort-Object -Property SortArg
     }
+    
+    [void]UpdateSettingsFromJson([string]$json, [FindSettings]$settings) {
+        $settingsHash = $json | ConvertFrom-Json -AsHashtable
+        foreach ($item in $settingsHash.GetEnumerator()) {
+            if ($this.BoolActionMap.ContainsKey($item.Key)) {
+                if ($item.Value -is [bool]) {
+                    $this.BoolActionMap[$item.Key].Invoke($item.Value, $settings)
+                } else {
+                    throw "Invalid value for option: " + $item.Key
+                }
+            } elseif ($this.StringActionMap.ContainsKey($item.Key)) {
+                if ($item.Value -is [string])
+                {
+                    $this.StringActionMap[$item.Key].Invoke($item.Value, $settings)
+                } elseif ($item.Value -is [object]) {
+                    foreach ($val in $item.Value) {
+                        $this.StringActionMap[$item.Key].Invoke($val, $settings)
+                    }
+                } else {
+                    throw "Invalid value for option: " + $item.Key
+                }
+            } elseif ($this.IntActionMap.ContainsKey($item.Key)) {
+                if ($item.Value -is [int] -or $item.Value -is [int64]) {
+                    $this.IntActionMap[$item.Key].Invoke($item.Value, $settings)
+                } else {
+                    throw "Invalid value for option: " + $item.Key
+                }
+            } else {
+                throw "Invalid option: " + $item.Key
+            }
+        }
+    }
+    
+    [void]UpdateSettingsFromFile([string]$filePath, [FindSettings]$settings) {
+        if (-not (Test-Path -Path $filePath)) {
+            throw "Settings file not found: $filePath"
+        }
+        if (-not $filePath.EndsWith(".json")) {
+            throw "Settings file must be a json file"
+        }
+        $json = Get-Content -Path $filePath -Raw
+        $this.UpdateSettingsFromJson($json, $settings)
+    }
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {
         $settings = [FindSettings]::new()
@@ -703,15 +746,32 @@ class FindOptions {
                 if ($this.BoolActionMap.ContainsKey($longArg)) {
                     $this.BoolActionMap[$longArg].Invoke($true, $settings)
 
-                } elseif ($this.StringActionMap.ContainsKey($longArg) -or $this.IntActionMap.ContainsKey($longArg)) {
+                } elseif ($this.StringActionMap.ContainsKey($longArg) -or $this.IntActionMap.ContainsKey($longArg))
+                {
                     $idx++
-                    if ($idx -lt $argList.Count) {
-                        if ($this.StringActionMap.ContainsKey($longArg)) {
+                    if ($idx -lt $argList.Count)
+                    {
+                        if ( $this.StringActionMap.ContainsKey($longArg))
+                        {
                             $this.StringActionMap[$longArg].Invoke($argList[$idx], $settings)
-                        } else {
+                        }
+                        else
+                        {
                             $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
                         }
-                    } else {
+                    }
+                    else
+                    {
+                        throw "Missing value for $arg"
+                    }
+                } elseif ($longArg -eq 'settings-file') {
+                    $idx++
+                    if ($idx -lt $argList.Count)
+                    {
+                        $this.UpdateSettingsFromFile($argList[$idx], $settings)
+                    }
+                    else
+                    {
                         throw "Missing value for $arg"
                     }
                 } else {
