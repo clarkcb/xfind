@@ -88,7 +88,6 @@ class FindOptions {
             'out-filepattern': { String s, FindSettings settings -> settings.addOutFilePattern(s) },
             'out-filetype': { String s, FindSettings settings -> settings.addOutFileType(s) },
             path: { String s, FindSettings settings -> settings.addPath(s) },
-            'settings-file': { String s, FindSettings settings -> settingsFromFilePath(s, settings) },
             'sort-by': { String s, FindSettings settings -> settings.setSortBy(SortBy.forName(s)) }
     ]
 
@@ -274,7 +273,8 @@ class FindOptions {
                     ((BooleanSetter)this.boolActionMap[longArg]).set(true, settings)
                 } else if (longArg in this.stringActionMap
                         || longArg in this.intActionMap
-                        || longArg in this.longActionMap) {
+                        || longArg in this.longActionMap
+                        || longArg == 'settings-file') {
                     if (!queue.isEmpty()) {
                         String argVal = queue.remove()
                         if (longArg in this.stringActionMap) {
@@ -283,6 +283,8 @@ class FindOptions {
                             ((IntegerSetter)this.intActionMap[longArg]).set(Integer.parseInt(argVal), settings)
                         } else if (longArg in this.longActionMap) {
                             ((LongSetter)this.longActionMap[longArg]).set(Long.parseLong(argVal), settings)
+                        } else if (longArg == 'settings-file') {
+                            settingsFromFilePath(argVal, settings)
                         }
                     } else {
                         throw new FindException("Missing value for option ${arg}")
