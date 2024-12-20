@@ -19,8 +19,7 @@
            (java.util.zip ZipFile)
            (cljfind.fileresult FileResult)
            (cljfind.findsettings FindSettings))
-  (:use [clojure.java.io :only (file reader)]
-        [cljfind.common :only (log-msg)]
+  (:use [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only
          (new-file-result file-result-path sort-results)]
         [cljfind.filetypes :only (get-file-type)]

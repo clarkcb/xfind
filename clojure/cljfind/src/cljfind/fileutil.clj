@@ -15,7 +15,7 @@
 
 (def ^:const DOT_DIRS #{"." ".."})
 
-(defn path-str [p]
+(defn path-str ^String [p]
   (cond
     (instance? java.nio.file.Path p) (.toString p)
     (instance? java.io.File p) (.getPath p)

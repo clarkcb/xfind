@@ -17,10 +17,11 @@
            (java.nio.file Paths Path Files)
            (cljfind.findsettings FindSettings))
   (:use [clojure.instant :only (read-instant-date)]
+        [clojure.java.io :only (file)]
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileutil :only (to-path)]
+        [cljfind.fileutil :only (path-str to-path)]
         [cljfind.findsettings :only
          (->FindSettings DEFAULT-FIND-SETTINGS add-extension add-file-type add-path
                          add-pattern set-archives-only set-debug set-int-val set-long-val
@@ -140,9 +141,13 @@
           ks (keys obj)]
       (settings-from-map settings ks obj []))))
 
-(defn settings-from-file ^FindSettings [^FindSettings settings ^File f]
-  (let [contents (slurp f)]
-    (settings-from-json settings contents)))
+(defn settings-from-file
+  (^FindSettings [f]
+    (settings-from-file DEFAULT-FIND-SETTINGS f))
+  (^FindSettings [^FindSettings settings f]
+    (let [filepath (path-str f)
+          contents (slurp filepath)]
+      (settings-from-json settings contents))))
 
 (defn rec-get-settings-from-args ^FindSettings [^FindSettings settings long-arg-map args errs]
    (if (or (empty? args) (not (empty? errs)))

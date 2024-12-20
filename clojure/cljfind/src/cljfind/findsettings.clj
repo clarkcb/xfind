@@ -199,7 +199,7 @@
       with-archives-only)))
 
 (defn set-debug [^FindSettings settings b]
-  (let [with-debug (assoc settings :debug true)]
+  (let [with-debug (assoc settings :debug b)]
     (if b
       (assoc with-debug :verbose true)
       with-debug)))
