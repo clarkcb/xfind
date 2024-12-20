@@ -174,11 +174,26 @@ public class FindOptions {
             } catch (FindException e) {
                 Logger.logError("FindException: " + e.getMessage());
             }
-        } else if (obj instanceof Integer || obj instanceof Long) {
-            // these are handled together because the json parser might return an Integer or Long
+        } else if (obj instanceof Integer) {
             if (intActionMap.containsKey(arg)) {
                 try {
                     applySetting(arg, (Integer)obj, settings);
+                } catch (FindException e) {
+                    Logger.logError("FindException: " + e.getMessage());
+                }
+            } else if (longActionMap.containsKey(arg)) {
+                try {
+                    applySetting(arg, ((Integer) obj).longValue(), settings);
+                } catch (FindException e) {
+                    Logger.logError("FindException: " + e.getMessage());
+                }
+            } else {
+                Logger.logError("Invalid option: " + arg);
+            }
+        } else if (obj instanceof Long) {
+            if (intActionMap.containsKey(arg)) {
+                try {
+                    applySetting(arg, ((Long) obj).intValue(), settings);
                 } catch (FindException e) {
                     Logger.logError("FindException: " + e.getMessage());
                 }
