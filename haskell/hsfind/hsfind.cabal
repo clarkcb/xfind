@@ -55,6 +55,7 @@ library
     , text
     , time
     , timeit >=2.0
+    , vector
   default-language: Haskell2010
 
 executable hsfind
@@ -77,6 +78,7 @@ executable hsfind
     , text
     , time
     , timeit >=2.0
+    , vector
   default-language: Haskell2010
 
 test-suite hsfind-test
@@ -109,4 +111,5 @@ test-suite hsfind-test
     , text
     , time
     , timeit >=2.0
+    , vector
   default-language: Haskell2010

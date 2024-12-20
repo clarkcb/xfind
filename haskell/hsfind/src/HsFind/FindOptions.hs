@@ -4,12 +4,13 @@ module HsFind.FindOptions (
   , getFindOptions
   , getUsage
   , parseDateToUtc
+  , ioSettingsFromArgs
   , settingsFromArgs) where
 
 import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
-import Data.Either (isLeft, lefts, rights)
-import Data.List (isPrefixOf, sortBy)
+import Data.Either (isLeft, lefts, rights, Either (Left))
+import Data.List (isPrefixOf, isSuffixOf, sortBy)
 import Data.Maybe (isJust)
 
 import GHC.Generics
@@ -17,9 +18,10 @@ import Data.Aeson
 
 import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.FileTypes (getFileTypeForName)
-import HsFind.FileUtil (getFileString)
+import HsFind.FileUtil (getFileString, isFile)
 import HsFind.FindSettings
 import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)
+import Data.ByteString (putStr)
 
 data FindOption = FindOption
   { long :: String
@@ -38,16 +40,16 @@ instance FromJSON FindOptions
 findOptionsFile :: FilePath
 findOptionsFile = "findoptions.json"
 
-getFindOptions :: IO [FindOption]
+getFindOptions :: IO (Either String [FindOption])
 getFindOptions = do
   findOptionsPath <- getDataFileName findOptionsFile
   findOptionsJsonString <- getFileString findOptionsPath
   case findOptionsJsonString of
-    (Left _) -> return []
-    (Right jsonString) ->
+    Left e -> return $ Left e
+    Right jsonString ->
       case (eitherDecode (BC.pack jsonString) :: Either String FindOptions) of
-        (Left e) -> return [FindOption {long=e, short=Nothing, desc=e}]
-        (Right jsonFindOptions) -> return (findoptions jsonFindOptions)
+        Left e -> return $ Left e
+        Right jsonFindOptions -> return $ Right (findoptions jsonFindOptions)
 
 getUsage :: [FindOption] -> String
 getUsage findOptions =
@@ -163,6 +165,25 @@ shortToLong opts s | length s == 2 && head s == '-' =
   where optsWithShort = filter (isJust . short) opts
         getLongForShort x = (long . head . filter (\so -> short so == Just (tail x))) optsWithShort
 
+updateSettingsFromJson :: FindSettings -> [FindOption] -> String -> IO (Either String FindSettings)
+updateSettingsFromJson settings opts jsonStr = do
+  case decode (BC.pack jsonStr) of
+    Just json -> return $ Right $ updateFindSettingsFromJsonValue settings json
+    Nothing   -> return $ Left "Failed to parse JSON"
+
+updateSettingsFromFile :: FindSettings -> [FindOption] -> FilePath -> IO (Either String FindSettings)
+updateSettingsFromFile settings opts filePath = do
+  isFile' <- isFile filePath
+  if isFile'
+  then if ".json" `isSuffixOf` filePath
+       then do
+          settingsJsonStringEither <- getFileString filePath
+          case settingsJsonStringEither of
+            Left e -> return $ Left e
+            Right settingsJsonString -> updateSettingsFromJson settings opts settingsJsonString
+       else return $ Left "Settings file must be a json file\n"
+  else return $ Left $ "Settings file not found: " ++ filePath ++ "\n"
+
 updateSettingsFromArgs :: FindSettings -> [FindOption] -> [String] -> Either String FindSettings
 updateSettingsFromArgs settings opts arguments =
   if any isLeft longArgs
@@ -211,3 +232,28 @@ updateSettingsFromArgs settings opts arguments =
 
 settingsFromArgs :: [FindOption] -> [String] -> Either String FindSettings
 settingsFromArgs = updateSettingsFromArgs defaultFindSettings{printFiles=True}
+
+ioUpdateSettingsFromArgs :: FindSettings -> [FindOption] -> [String] -> IO (Either String FindSettings)
+ioUpdateSettingsFromArgs settings opts arguments = do
+  if "--settings-file" `elem` arguments
+    then do
+      let beforeSettingsFileArgs = takeWhile (/="--settings-file") arguments
+      let settingsFileArgs = take 1 $ tail $ dropWhile (/="--settings-file") arguments
+      let afterSettingsFileArgs = drop 2 $ dropWhile (/="--settings-file") arguments
+      let settingsEither1 = updateSettingsFromArgs settings opts beforeSettingsFileArgs
+      case settingsEither1 of
+        Left e -> return $ Left e
+        Right settings1 -> do
+          case settingsFileArgs of
+            [] -> do
+              return $ updateSettingsFromArgs settings1 opts afterSettingsFileArgs
+            [f] -> do
+              settingsEither2 <- updateSettingsFromFile settings1 opts f
+              case settingsEither2 of
+                Left e -> return $ Left e
+                Right settings2 -> do
+                  return $ updateSettingsFromArgs settings2 opts afterSettingsFileArgs
+    else return $ updateSettingsFromArgs settings opts arguments
+
+ioSettingsFromArgs :: [FindOption] -> [String] -> IO (Either String FindSettings)
+ioSettingsFromArgs = ioUpdateSettingsFromArgs defaultFindSettings{printFiles=True}
