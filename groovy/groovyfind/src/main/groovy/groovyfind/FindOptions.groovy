@@ -137,60 +137,45 @@ class FindOptions {
         }
     }
 
-    private void settingsFromFilePath(final String filePath, final FindSettings settings) {
-        Path path = Paths.get(filePath)
-        try {
-            if (!Files.exists(path)) {
-                Logger.log("Settings file not found: ${filePath}")
-                System.exit(1)
-            }
-            if (!FileUtil.hasExtension(filePath, 'json')) {
-                Logger.log("Invalid settings file type (just be JSON): ${filePath}")
-                System.exit(1)
-            }
-            settingsFromJson(FileUtil.getFileContents(path), settings)
-        } catch (FileNotFoundException ignored) {
-            Logger.log("Settings file not found: ${filePath}")
-            System.exit(1)
-        } catch (IOException ignored) {
-            Logger.log("IOException reading settings file: ${filePath}")
-            System.exit(1)
-        }
-    }
-
-    void settingsFromJson(final String json, FindSettings settings) {
-        JsonSlurper jsonSlurper = new JsonSlurper()
-        def jsonObj = jsonSlurper.parseText(json)
-        assert jsonObj instanceof Map<String, Object>
-        jsonObj.keySet().each { ko ->
-            applySetting(ko, jsonObj.get(ko), settings)
-        }
-    }
-
     private void applySetting(final String arg, final Object obj, FindSettings settings) {
         if (obj instanceof Boolean) {
             try {
-                applySetting(arg, (Boolean)obj, settings)
+                applyBoolSetting(arg, (Boolean)obj, settings)
             } catch (FindException e) {
                 Logger.logError("FindException: ${e.getMessage()}")
             }
         } else if (obj instanceof String) {
             try {
-                applySetting(arg, (String)obj, settings)
+                applyStringSetting(arg, (String)obj, settings)
             } catch (FindException e) {
                 Logger.logError("FindException: ${e.getMessage()}")
             }
-        } else if (obj instanceof Integer || obj instanceof Long) {
-            // these are handled together because the json parser might return an Integer or Long
+        } else if (obj instanceof Integer) {
             if (arg in this.intActionMap) {
                 try {
-                    applySetting(arg, (Integer)obj, settings)
+                    applyIntSetting(arg, (Integer)obj, settings)
                 } catch (FindException e) {
                     Logger.logError("FindException: ${e.getMessage()}")
                 }
             } else if (arg in this.longActionMap) {
                 try {
-                    applySetting(arg, (Long)obj, settings)
+                    applyLongSetting(arg, ((Integer) obj).longValue(), settings)
+                } catch (FindException e) {
+                    Logger.logError("FindException: ${e.getMessage()}")
+                }
+            } else {
+                Logger.logError('Invalid option: ${arg}')
+            }
+        } else if (obj instanceof Long) {
+            if (arg in this.intActionMap) {
+                try {
+                    applyIntSetting(arg, ((Long) obj).intValue(), settings)
+                } catch (FindException e) {
+                    Logger.logError("FindException: ${e.getMessage()}")
+                }
+            } else if (arg in this.longActionMap) {
+                try {
+                    applyLongSetting(arg, (Long)obj, settings)
                 } catch (FindException e) {
                     Logger.logError("FindException: ${e.getMessage()}")
                 }
@@ -206,7 +191,7 @@ class FindOptions {
         }
     }
 
-    private void applySetting(final String arg, final Boolean val, FindSettings settings)
+    private void applyBoolSetting(final String arg, final Boolean val, FindSettings settings)
             throws FindException{
         if (arg in this.boolActionMap) {
             ((BooleanSetter)this.boolActionMap[arg]).set(val, settings)
@@ -215,7 +200,7 @@ class FindOptions {
         }
     }
 
-    private void applySetting(final String arg, final String val, FindSettings settings)
+    private void applyStringSetting(final String arg, final String val, FindSettings settings)
             throws FindException {
         if (arg in this.stringActionMap) {
             ((StringSetter)this.stringActionMap[arg]).set(val, settings)
@@ -224,7 +209,7 @@ class FindOptions {
         }
     }
 
-    private void applySetting(final String arg, final Integer val, FindSettings settings)
+    private void applyIntSetting(final String arg, final Integer val, FindSettings settings)
             throws FindException {
         if (arg in this.intActionMap) {
             ((IntegerSetter)this.intActionMap[arg]).set(val, settings)
@@ -233,12 +218,42 @@ class FindOptions {
         }
     }
 
-    private void applySetting(final String arg, final Long val, FindSettings settings)
+    private void applyLongSetting(final String arg, final Long val, FindSettings settings)
             throws FindException {
         if (arg in this.longActionMap) {
             ((LongSetter)this.longActionMap[arg]).set(val, settings)
         } else {
             throw new FindException("Invalid option: ${arg}")
+        }
+    }
+
+    void settingsFromJson(final String json, FindSettings settings) {
+        JsonSlurper jsonSlurper = new JsonSlurper()
+        def jsonObj = jsonSlurper.parseText(json)
+        assert jsonObj instanceof Map<String, Object>
+        jsonObj.keySet().each { ko ->
+            applySetting(ko, jsonObj.get(ko), settings)
+        }
+    }
+
+    private void settingsFromFilePath(final String filePath, final FindSettings settings) {
+        Path path = Paths.get(filePath)
+        try {
+            if (!Files.exists(path)) {
+                Logger.log("Settings file not found: ${filePath}")
+                System.exit(1)
+            }
+            if (!FileUtil.hasExtension(filePath, 'json')) {
+                Logger.log("Invalid settings file type (must be JSON): ${filePath}")
+                System.exit(1)
+            }
+            settingsFromJson(FileUtil.getFileContents(path), settings)
+        } catch (FileNotFoundException ignored) {
+            Logger.log("Settings file not found: ${filePath}")
+            System.exit(1)
+        } catch (IOException ignored) {
+            Logger.log("IOException reading settings file: ${filePath}")
+            System.exit(1)
         }
     }
 
