@@ -62,7 +62,6 @@ public class FindOptions
 			{ "out-filepattern", (s, settings) => settings.AddOutFilePattern(s) },
 			{ "out-filetype", (s, settings) => settings.AddOutFileType(s) },
 			{ "path", (s, settings) => settings.AddPath(s) },
-			{ "settings-file", SettingsFromFile },
 			{ "sort-by", (s, settings) => settings.SetSortBy(s) },
 		};
 
@@ -108,26 +107,6 @@ public class FindOptions
 			var desc = optionDict["desc"];
 			var option = new FindOption(shortArg, longArg, desc);
 			Options.Add(option);
-		}
-	}
-
-	private static void SettingsFromFile(string filePath, FindSettings settings)
-	{
-		var fileInfo = new FileInfo(filePath);
-		if (!fileInfo.Exists)
-			throw new FindException($"Settings file not found: {filePath}");
-		var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
-		SettingsFromJson(contents, settings);
-	}
-
-	public static void SettingsFromJson(string jsonString, FindSettings settings)
-	{
-		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-		if (settingsDict == null) return;
-		foreach (var (key, value) in settingsDict)
-		{
-			var obj = (JsonElement)value;
-			ApplySetting(key, obj, settings);
 		}
 	}
 
@@ -201,6 +180,42 @@ public class FindOptions
 		}
 	}
 
+	public static void UpdateSettingsFromJson(string jsonString, FindSettings settings)
+	{
+		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+		if (settingsDict == null) return;
+		foreach (var (key, value) in settingsDict)
+		{
+			var obj = (JsonElement)value;
+			ApplySetting(key, obj, settings);
+		}
+	}
+
+	private static void UpdateSettingsFromFile(string filePath, FindSettings settings)
+	{
+		var fileInfo = new FileInfo(filePath);
+		if (!fileInfo.Exists)
+			throw new FindException($"Settings file not found: {filePath}");
+		if (!fileInfo.Extension.Equals(".json"))
+			throw new FindException($"Settings file must be a json file");
+		var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
+		UpdateSettingsFromJson(contents, settings);
+	}
+
+	public static FindSettings SettingsFromJson(string jsonString)
+	{
+		var settings = new FindSettings();
+		UpdateSettingsFromJson(jsonString, settings);
+		return settings;
+	}
+
+	public static FindSettings SettingsFromFile(string filePath)
+	{
+		var settings = new FindSettings();
+		UpdateSettingsFromFile(filePath, settings);
+		return settings;
+	}
+
 	public FindSettings SettingsFromArgs(IEnumerable<string> args)
 	{
 		// default to PrintFiles = true since this is called from CLI
@@ -249,6 +264,17 @@ public class FindOptions
 					try
 					{
 						intAction(int.Parse(queue.Dequeue()), settings);
+					}
+					catch (InvalidOperationException)
+					{
+						throw new FindException($"Missing value for option {arg}");
+					}
+				}
+				else if (longArg.Equals("settings-file"))
+				{
+					try
+					{
+						UpdateSettingsFromFile(queue.Dequeue(), settings);
 					}
 					catch (InvalidOperationException)
 					{
