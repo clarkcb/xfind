@@ -110,69 +110,54 @@ public class FindOptions
 		}
 	}
 
-	private static void ApplySetting(string arg, JsonElement obj, FindSettings settings)
+	private static void ApplySetting(string arg, JsonElement elem, FindSettings settings)
 	{
-		switch (obj.ValueKind)
+		if (BoolActionDictionary.TryGetValue(arg, out var boolAction))
 		{
-			case JsonValueKind.String:
-				var s = obj.GetString();
-				if (s != null)
+			if (elem.ValueKind is JsonValueKind.False or JsonValueKind.True)
+			{
+				boolAction(elem.GetBoolean(), settings);
+			}
+			else
+			{
+				throw new FindException($"Invalid value for option: {arg}");
+			}
+		}
+		else if (StringActionDictionary.TryGetValue(arg, out var stringAction))
+		{
+			if (elem.ValueKind is JsonValueKind.String)
+			{
+				var s = elem.GetString();
+				if (s is not null)
 				{
-					ApplySetting(arg, s, settings);
+					stringAction(s, settings);
 				}
-				break;
-			case JsonValueKind.True:
-				ApplySetting(arg, true, settings);
-				break;
-			case JsonValueKind.False:
-				ApplySetting(arg, false, settings);
-				break;
-			case JsonValueKind.Number:
-				ApplySetting(arg, obj.GetInt32(), settings);
-				break;
-			case JsonValueKind.Array:
-				foreach (var arrVal in obj.EnumerateArray())
+				else
+				{
+					throw new FindException($"Invalid value for option: {arg}");
+				}
+			} else if (elem.ValueKind is JsonValueKind.Array)
+			{
+				foreach (var arrVal in elem.EnumerateArray())
 				{
 					ApplySetting(arg, arrVal, settings);
 				}
-				break;
-			case JsonValueKind.Undefined:
-			case JsonValueKind.Object:
-			case JsonValueKind.Null:
-			default:
-				break;
+			}
+			else
+			{
+				throw new FindException($"Invalid value for option: {arg}");
+			}
 		}
-	}
-
-	private static void ApplySetting(string arg, bool val, FindSettings settings)
-	{
-		if (BoolActionDictionary.TryGetValue(arg, out var action))
+		else if (IntActionDictionary.TryGetValue(arg, out var intAction))
 		{
-			action(val, settings);
-		}
-		else
-		{
-			throw new FindException($"Invalid option: {arg}");
-		}
-	}
-
-	private static void ApplySetting(string arg, string val, FindSettings settings)
-	{
-		if (StringActionDictionary.TryGetValue(arg, out var action))
-		{
-			action(val, settings);
-		}
-		else
-		{
-			throw new FindException($"Invalid option: {arg}");
-		}
-	}
-
-	private static void ApplySetting(string arg, int val, FindSettings settings)
-	{
-		if (IntActionDictionary.TryGetValue(arg, out var action))
-		{
-			action(val, settings);
+			if (elem.ValueKind is JsonValueKind.Number)
+			{
+				intAction(elem.GetInt32(), settings);
+			}
+			else
+			{
+				throw new FindException($"Invalid value for option: {arg}");
+			}
 		}
 		else
 		{
@@ -182,12 +167,11 @@ public class FindOptions
 
 	public static void UpdateSettingsFromJson(string jsonString, FindSettings settings)
 	{
-		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
-		if (settingsDict == null) return;
+		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString);
+		if (settingsDict == null) throw new FindException($"Unable to parse json");
 		foreach (var (key, value) in settingsDict)
 		{
-			var obj = (JsonElement)value;
-			ApplySetting(key, obj, settings);
+			ApplySetting(key, value, settings);
 		}
 	}
 
