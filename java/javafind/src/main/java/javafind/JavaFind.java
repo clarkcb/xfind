@@ -72,8 +72,7 @@ public class JavaFind {
                 var settings = options.settingsFromArgs(args);
 
                 if (settings.getDebug()) {
-                    log("\nsettings:");
-                    log(settings.toString() + "\n");
+                    log("\nsettings: " + settings + "\n");
                 }
 
                 if (settings.getPrintUsage()) {

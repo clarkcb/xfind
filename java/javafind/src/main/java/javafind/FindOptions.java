@@ -136,6 +136,58 @@ public class FindOptions {
         }
     }
 
+    private void applySetting(final String arg, final Object obj, FindSettings settings)
+            throws FindException {
+        if (this.boolActionMap.containsKey(arg)) {
+            if (obj instanceof Boolean) {
+                this.boolActionMap.get(arg).set((Boolean)obj, settings);
+            } else {
+                throw new FindException("Invalid value for option: " + arg);
+            }
+        } else if (this.stringActionMap.containsKey(arg)) {
+            if (obj instanceof String) {
+                this.stringActionMap.get(arg).set((String)obj, settings);
+            } else if (obj instanceof JSONArray) {
+                for (int i=0; i < ((JSONArray)obj).length(); i++) {
+                    Object item = ((JSONArray)obj).get(i);
+                    if (item instanceof String) {
+                        this.stringActionMap.get(arg).set((String)item, settings);
+                    } else {
+                        throw new FindException("Invalid value for option: " + arg);
+                    }
+                }
+            } else {
+                throw new FindException("Invalid value for option: " + arg);
+            }
+        } else if (this.intActionMap.containsKey(arg)) {
+            if (obj instanceof Integer) {
+                this.intActionMap.get(arg).set((Integer)obj, settings);
+            } else if (obj instanceof Long) {
+                this.intActionMap.get(arg).set(((Long)obj).intValue(), settings);
+            } else {
+                throw new FindException("Invalid value for option: " + arg);
+            }
+        } else if (this.longActionMap.containsKey(arg)) {
+            if (obj instanceof Integer) {
+                this.longActionMap.get(arg).set(((Integer)obj).longValue(), settings);
+            } else if (obj instanceof Long) {
+                this.longActionMap.get(arg).set((Long)obj, settings);
+            } else {
+                throw new FindException("Invalid value for option: " + arg);
+            }
+        } else {
+            throw new FindException("Invalid option: " + arg);
+        }
+    }
+
+    public void settingsFromJson(final String json, FindSettings settings) throws FindException {
+        var jsonObj = new JSONObject(new JSONTokener(json));
+        for (var ko : jsonObj.keySet()) {
+            var vo = jsonObj.get(ko);
+            applySetting(ko, vo, settings);
+        }
+    }
+
     private void settingsFromFilePath(final String filePath, FindSettings settings) throws FindException {
         var path = Paths.get(filePath);
         try {
@@ -150,106 +202,6 @@ public class FindOptions {
             throw new FindException("Settings file not found: " + filePath);
         } catch (IOException e) {
             throw new FindException("IOException reading settings file: " + filePath);
-        }
-    }
-
-    public void settingsFromJson(final String json, FindSettings settings) {
-        var jsonObj = new JSONObject(new JSONTokener(json));
-        for (var ko : jsonObj.keySet()) {
-            var vo = jsonObj.get(ko);
-            applySetting(ko, vo, settings);
-        }
-    }
-
-    private void applySetting(final String arg, final Object obj, FindSettings settings) {
-        if (obj instanceof Boolean) {
-            try {
-                applySetting(arg, (Boolean)obj, settings);
-            } catch (FindException e) {
-                Logger.logError("FindException: " + e.getMessage());
-            }
-        } else if (obj instanceof String) {
-            try {
-                applySetting(arg, (String)obj, settings);
-            } catch (FindException e) {
-                Logger.logError("FindException: " + e.getMessage());
-            }
-        } else if (obj instanceof Integer) {
-            if (intActionMap.containsKey(arg)) {
-                try {
-                    applySetting(arg, (Integer)obj, settings);
-                } catch (FindException e) {
-                    Logger.logError("FindException: " + e.getMessage());
-                }
-            } else if (longActionMap.containsKey(arg)) {
-                try {
-                    applySetting(arg, ((Integer) obj).longValue(), settings);
-                } catch (FindException e) {
-                    Logger.logError("FindException: " + e.getMessage());
-                }
-            } else {
-                Logger.logError("Invalid option: " + arg);
-            }
-        } else if (obj instanceof Long) {
-            if (intActionMap.containsKey(arg)) {
-                try {
-                    applySetting(arg, ((Long) obj).intValue(), settings);
-                } catch (FindException e) {
-                    Logger.logError("FindException: " + e.getMessage());
-                }
-            } else if (longActionMap.containsKey(arg)) {
-                try {
-                    applySetting(arg, (Long)obj, settings);
-                } catch (FindException e) {
-                    Logger.logError("FindException: " + e.getMessage());
-                }
-            } else {
-                Logger.logError("Invalid option: " + arg);
-            }
-        } else if (obj instanceof JSONArray) {
-            for (int i=0; i < ((JSONArray)obj).length(); i++) {
-                applySetting(arg, ((JSONArray)obj).get(i), settings);
-            }
-        } else {
-            Logger.log("obj is another class type");
-        }
-    }
-
-    private void applySetting(final String arg, final Boolean val, FindSettings settings)
-            throws FindException{
-        if (this.boolActionMap.containsKey(arg)) {
-            this.boolActionMap.get(arg).set(val, settings);
-        } else {
-            throw new FindException("Invalid option: " + arg);
-        }
-    }
-
-    private void applySetting(final String arg, final String val, FindSettings settings)
-            throws FindException {
-        if (this.stringActionMap.containsKey(arg)) {
-            this.stringActionMap.get(arg).set(val, settings);
-        } else if (arg.equals("path")) {
-            settings.addPath(val);
-        } else {
-            throw new FindException("Invalid option: " + arg);
-        }
-    }
-
-    private void applySetting(final String arg, final Integer val, FindSettings settings)
-            throws FindException{
-        if (this.intActionMap.containsKey(arg)) {
-            this.intActionMap.get(arg).set(val, settings);
-        } else {
-            throw new FindException("Invalid option: " + arg);
-        }
-    }
-
-    private void applySetting(final String arg, final Long val, FindSettings settings)
-            throws FindException{
-        if (this.longActionMap.containsKey(arg)) {
-            this.longActionMap.get(arg).set(val, settings);
-        } else {
-            throw new FindException("Invalid option: " + arg);
         }
     }
 

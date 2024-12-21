@@ -94,6 +94,9 @@ public class FindOptionsTest {
         } catch (IOException e) {
             System.out.println("IOException: " + e.getMessage());
             fail();
+        } catch (FindException e) {
+            System.out.println("FindException: " + e.getMessage());
+            fail();
         }
     }
 }
