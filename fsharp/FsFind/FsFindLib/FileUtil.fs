@@ -12,9 +12,7 @@ module FileUtil =
     let dotDirs = Set.ofList [currentPath; parentPath]
 
     let GetHomePath () : string = 
-        match Environment.GetEnvironmentVariable("HOME") with
-        | home when home <> null -> home
-        | _ -> Environment.GetEnvironmentVariable("USERPROFILE")
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
 
     let GetFileExtension (fi : FileInfo): string =
         let ext = fi.Extension

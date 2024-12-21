@@ -28,18 +28,15 @@ module Main =
         match (Array.toList args) with
         | [] -> HandleError "Startpath not defined"
         | _ ->
-            let settings, err = FindOptions.SettingsFromArgs(args)
-
-            if err.Length > 0 then
-                HandleError err
-
-            if settings.Debug then
-                Logger.Log settings.ToString
-
-            if settings.PrintUsage then
-                FindOptions.Usage(0)
-            else
-                Find settings
+            match FindOptions.SettingsFromArgs(args) with
+            | Ok settings ->
+                if settings.Debug then
+                    Logger.Log settings.ToString
+                if settings.PrintUsage then
+                    FindOptions.Usage(0)
+                else
+                    Find settings
+            | Error e -> HandleError e
 
         // main entry point return
         0;;

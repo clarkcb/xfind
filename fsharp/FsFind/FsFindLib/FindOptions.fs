@@ -1,6 +1,9 @@
 ﻿namespace FsFind
 
 open System
+open System.Collections.Generic
+open System.IO
+open System.Text
 open System.Text.Json
 open System.Text.RegularExpressions
 
@@ -70,7 +73,7 @@ module FindOptions =
             ("minsize", (fun (i : int) (settings : FindSettings) -> settings.MinSize <- i));
         ] |> Map.ofList
 
-    type FindOptionsDictionary = System.Collections.Generic.Dictionary<string, System.Collections.Generic.List<System.Collections.Generic.Dictionary<string,string>>>
+    type FindOptionsDictionary = Dictionary<string, List<Dictionary<string,string>>>
 
     let OptionsFromJson (jsonString : string) : FindOption list =
         let findOptionsDict = JsonSerializer.Deserialize<FindOptionsDictionary>(jsonString)
@@ -84,12 +87,89 @@ module FindOptions =
     let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
     let options = OptionsFromJson(_findOptionsResource)
 
-    let SettingsFromArgs (args : string[]) : FindSettings * string =
-        let optionNameMap =
+    let rec ApplySetting (arg : string) (elem : JsonElement) (settings : FindSettings) : Result<FindSettings, string> =
+        match (boolActionMap.ContainsKey(arg), stringActionMap.ContainsKey(arg), intActionMap.ContainsKey(arg)) with
+        | true, false, false ->
+            if elem.ValueKind = JsonValueKind.False then
+                boolActionMap[arg] false settings
+                Ok settings
+            else
+                if elem.ValueKind = JsonValueKind.True then
+                    boolActionMap[arg] true settings
+                    Ok settings
+                else
+                    Error $"Invalid value for option: {arg}"
+        | false, true, false ->
+            if elem.ValueKind = JsonValueKind.String then
+                let s = elem.GetString()
+                if s = null then
+                    Error $"Invalid value for option: {arg}"
+                else
+                    stringActionMap[arg] s settings
+                    Ok settings
+            else
+                if elem.ValueKind = JsonValueKind.Array then
+                    let rec recApplySettings (elems : JsonElement list) (settings : FindSettings) : Result<FindSettings, string> =
+                        match elems with
+                        | [] -> Ok settings
+                        | elem :: tail ->
+                            match ApplySetting arg elem settings with
+                            | Ok nextSettings -> recApplySettings tail nextSettings
+                            | Error e -> Error e
+                    let elems = elem.EnumerateArray() |> List.ofSeq
+                    recApplySettings elems settings
+                else
+                    Error $"Invalid value for option: {arg}"
+        | false, false, true ->
+            if elem.ValueKind = JsonValueKind.Number then
+                intActionMap[arg] (elem.GetInt32()) settings
+                Ok settings
+            else
+                Error $"Invalid value for option: {arg}"
+        | _ ->
+            Error $"Invalid option: {arg}"
+
+    let UpdateSettingsFromJson (jsonString : string) (settings : FindSettings) : Result<FindSettings, string> =
+        match JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString) with
+        | null -> Error "Unable to parse json"
+        | settingsDict ->
+            let rec recSettingsFromArgs (argList : string list) (settings : FindSettings) : Result<FindSettings, string> =
+                match argList with
+                | [] -> Ok settings
+                | arg :: tail ->
+                    match ApplySetting arg settingsDict[arg] settings with
+                    | Ok settings -> recSettingsFromArgs tail settings
+                    | Error e -> Error e
+            let argList = settingsDict.Keys |> List.ofSeq
+            recSettingsFromArgs argList settings
+
+    let UpdateSettingsFromFile (filePath : string) (settings : FindSettings) : Result<FindSettings, string> =
+        let fileInfo = new FileInfo(filePath)
+        if fileInfo.Exists then
+            if fileInfo.Extension.Equals(".json") then
+                let contents = FileUtil.GetFileContents filePath Encoding.Default
+                UpdateSettingsFromJson contents settings
+            else
+                Error "Settings file must be a json file"
+        else
+            Error $"Settings file not found: {filePath}"
+
+    let SettingsFromJson (jsonString : string) : Result<FindSettings, string> =
+        let settings = FindSettings()
+        UpdateSettingsFromJson jsonString settings
+
+    let SettingsFromFile (filePath : string) : Result<FindSettings, string> =
+        let settings = FindSettings()
+        UpdateSettingsFromFile filePath settings
+
+    let GetOptionNameMap : Map<string, string> =
             let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
             let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
             Seq.append shortArgs longArgs
             |> Map.ofSeq
+        
+    let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
+        let optionNameMap = GetOptionNameMap
 
         let argRegex = Regex("^(?:-{1,2})(?<opt>.*)$")
 
@@ -97,34 +177,40 @@ module FindOptions =
             let m = argRegex.Match(arg)
             if m.Success then Some(m.Groups["opt"].Value) else None
 
-        let rec recSettingsFromArgs (argList : string list) (settings : FindSettings) : FindSettings * string =
+        let rec recSettingsFromArgs (argList : string list) (settings : FindSettings) : Result<FindSettings, string> =
             match argList with
-            | [] -> settings, ""
+            | [] -> Ok settings
             | head :: tail ->
                 match head with
                 | IsOption opt ->
                     if optionNameMap.ContainsKey(opt) then
-                        let long = optionNameMap[opt]
-                        if boolActionMap.ContainsKey(long) then
-                            boolActionMap[long] true settings
-                            if long = "help" then
+                        let longArg = optionNameMap[opt]
+                        if boolActionMap.ContainsKey(longArg) then
+                            boolActionMap[longArg] true settings
+                            if longArg = "help" then
                                 recSettingsFromArgs [] settings
                             else
                                 recSettingsFromArgs tail settings
-                        elif stringActionMap.ContainsKey(long) || intActionMap.ContainsKey(long) then
+                        elif stringActionMap.ContainsKey(longArg) || intActionMap.ContainsKey(longArg) || longArg.Equals("settings-file") then
                             match tail with
                             | [] ->
-                                settings, $"Missing value for option: %s{opt}"
+                                Error $"Missing value for option: %s{opt}"
                             | aHead :: aTail ->
-                                if stringActionMap.ContainsKey(long) then
-                                    stringActionMap[long] aHead settings
+                                if stringActionMap.ContainsKey(longArg) then
+                                    stringActionMap[longArg] aHead settings
+                                    recSettingsFromArgs aTail settings
                                 else
-                                    intActionMap[long] (int aHead) settings
-                                recSettingsFromArgs aTail settings
+                                    if intActionMap.ContainsKey(longArg) then
+                                        intActionMap[longArg] (int aHead) settings
+                                        recSettingsFromArgs aTail settings
+                                    else
+                                        match UpdateSettingsFromFile aHead settings with
+                                        | Ok fileSettings -> recSettingsFromArgs aTail fileSettings
+                                        | Error e -> Error e
                         else
-                            settings, $"Invalid option: %s{opt}"
+                            Error $"Invalid option: %s{opt}"
                     else
-                        settings, $"Invalid option: %s{opt}"
+                        Error $"Invalid option: %s{opt}"
                 | _ ->
                     settings.Paths <- settings.AddPath head settings.Paths
                     recSettingsFromArgs tail settings
