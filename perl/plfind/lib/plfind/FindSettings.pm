@@ -152,7 +152,6 @@ sub needs_stat {
 
 sub to_string {
     my $self = shift @_;
-    print "FindSettings\n";
     my $s = "FindSettings(" .
         'archives_only=' . plfind::common::bool_to_string($self->{archives_only}) .
         ', debug=' . plfind::common::bool_to_string($self->{debug}) .

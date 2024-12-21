@@ -62,6 +62,11 @@ sub uniq($) {
     return \@uniqs;
 }
 
+sub is_bool {
+    my $bool = shift;
+    return $bool == 0 || $bool == 1 || $bool =~ /^(true|false)$/;
+}
+
 sub bool_to_string {
     my $bool = shift;
     return $bool ? 'true' : 'false';

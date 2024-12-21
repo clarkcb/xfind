@@ -221,18 +221,6 @@ sub set_options_from_json {
     return $options_hash;
 }
 
-sub settings_from_file {
-    # $file_path is instance of Path::Class::File
-    my ($file_path, $settings) = @_;
-    my $errs = [];
-    unless (-e $file_path) {
-        push(@{$errs}, 'Settings file not found: ' . $file_path);
-        return $errs;
-    }
-    my $json = $file_path->slurp;
-    return __from_json($json, $settings);
-}
-
 # private function
 sub __from_json {
     my ($json, $settings) = @_;
@@ -241,11 +229,19 @@ sub __from_json {
     my @opt_names = keys %{$json_hash};
     foreach my $o (@opt_names) {
         if (exists $bool_action_hash->{$o}) {
-            &{$bool_action_hash->{$o}}($json_hash->{$o}, $settings);
+            if (plfind::common::is_bool($json_hash->{$o})) {
+                &{$bool_action_hash->{$o}}($json_hash->{$o}, $settings);
+            } else {
+                push(@{$errs}, 'Invalid value for option: ' . $o);
+            }
         } elsif (exists $str_action_hash->{$o}) {
             &{$str_action_hash->{$o}}($json_hash->{$o}, $settings);
         } elsif (exists $int_action_hash->{$o}) {
-            &{$int_action_hash->{$o}}($json_hash->{$o}, $settings);
+            if ($json_hash->{$o} =~ /^\d+$/) {
+                &{$int_action_hash->{$o}}($json_hash->{$o}, $settings);
+            } else {
+                push(@{$errs}, 'Invalid value for option: ' . $o);
+            }
         } else {
             push(@{$errs}, 'Invalid option: ' . $o);
         }
@@ -257,6 +253,18 @@ sub __from_json {
 sub settings_from_json {
     my ($self, $json, $settings) = @_;
     __from_json($json, $settings);
+}
+
+sub settings_from_file {
+    # $file_path is instance of Path::Class::File
+    my ($file_path, $settings) = @_;
+    my $errs = [];
+    unless (-e $file_path) {
+        push(@{$errs}, 'Settings file not found: ' . $file_path);
+        return $errs;
+    }
+    my $json = $file_path->slurp;
+    return __from_json($json, $settings);
 }
 
 sub settings_from_args {
@@ -271,16 +279,18 @@ sub settings_from_args {
             $arg =~ s/^\-+//;
             if (exists $self->{options}->{$arg}) {
                 my $opt = $self->{options}->{$arg};
-                my $long = $opt->{long_arg};
-                if (exists $bool_action_hash->{$long}) {
-                    &{$bool_action_hash->{$long}}(1, $settings);
-                } elsif (exists $str_action_hash->{$long} || exists $int_action_hash->{$long} || $long eq 'settings-file') {
+                my $long_arg = $opt->{long_arg};
+                if (exists $bool_action_hash->{$long_arg}) {
+                    &{$bool_action_hash->{$long_arg}}(1, $settings);
+                } elsif (exists $str_action_hash->{$long_arg}
+                         || exists $int_action_hash->{$long_arg}
+                         || $long_arg eq 'settings-file') {
                     if (scalar @{$args}) {
                         my $val = shift @{$args};
-                        if (exists $str_action_hash->{$long}) {
-                            &{$str_action_hash->{$long}}($val, $settings);
-                        } elsif (exists $int_action_hash->{$long}) {
-                            &{$int_action_hash->{$long}}(int($val), $settings);
+                        if (exists $str_action_hash->{$long_arg}) {
+                            &{$str_action_hash->{$long_arg}}($val, $settings);
+                        } elsif (exists $int_action_hash->{$long_arg}) {
+                            &{$int_action_hash->{$long_arg}}(int($val), $settings);
                         } else {
                             my $file_path = file($val);
                             my $settings_file_errors = settings_from_file($file_path, $settings);
