@@ -168,8 +168,11 @@ shortToLong opts s | length s == 2 && head s == '-' =
 updateSettingsFromJson :: FindSettings -> [FindOption] -> String -> IO (Either String FindSettings)
 updateSettingsFromJson settings opts jsonStr = do
   case decode (BC.pack jsonStr) of
-    Just json -> return $ Right $ updateFindSettingsFromJsonValue settings json
-    Nothing   -> return $ Left "Failed to parse JSON"
+    Just json -> 
+      case updateFindSettingsFromJsonValue settings json of
+        Left e -> return $ Left e
+        Right settings' -> return $ Right settings'
+    Nothing -> return $ Left "Failed to parse JSON"
 
 updateSettingsFromFile :: FindSettings -> [FindOption] -> FilePath -> IO (Either String FindSettings)
 updateSettingsFromFile settings opts filePath = do

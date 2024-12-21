@@ -12,7 +12,7 @@ module HsFind.FindSettings
   , updateFindSettingsFromJsonValue
   ) where
 
-import Control.Monad (mzero)
+import Control.Monad (mzero, unless)
 import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.List (intercalate)
@@ -20,6 +20,7 @@ import Data.List.Split (splitOn)
 import Data.Maybe (isJust)
 import Data.Text (Text, unpack)
 import Data.Time (UTCTime, parseTimeM, defaultTimeLocale)
+import qualified Data.HashMap.Strict as HM
 import qualified Data.Vector as V (toList)
 import GHC.Generics (Generic)
 
@@ -158,8 +159,24 @@ needLastMods :: FindSettings -> Bool
 needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod settings) || sortResultsBy settings == SortByLastMod
 
 -- JSON parsing stuff below here
+validKeys :: [Text]
+validKeys = ["archivesonly", "debug", "followsymlinks", "in-archiveext", "in-archivefilepattern",
+             "in-dirpattern", "in-ext", "in-filepattern", "in-filetype", "includearchives",
+             "includehidden", "maxdepth", "maxlastmod", "maxsize", "mindepth", "minlastmod",
+             "minsize", "out-archiveextension", "out-archivefilepattern", "out-dirpattern",
+             "out-ext", "out-filepattern", "out-filetype", "path", "printdirs", "printfiles",
+             "printusage", "printversion", "recursive", "sort-caseinsensitive", "sort-descending",
+             "sort-by", "verbose"]
+
 instance FromJSON FindSettings where
   parseJSON = withObject "FindSettings" $ \obj -> do
+    -- Check for unknown keys
+    let keysInJson = HM.keys obj
+        unknownKeys = filter (`notElem` validKeys) keysInJson
+    unless (null unknownKeys) $
+      fail $ "Invalid option: " ++ unpack (head unknownKeys)
+
+    -- Parse known fields
     archivesOnly <- obj .:? "archivesonly" .!= False
     debug <- obj .:? "debug" .!= False
     followSymlinks <- obj .:? "followsymlinks" .!= False
@@ -262,11 +279,11 @@ parseSortBy Nothing = return SortByFilePath
 parseSortBy (Just (String s)) = return $ getSortByForName (unpack s)
 parseSortBy _ = mzero
 
-updateFindSettingsFromJsonValue :: FindSettings -> Value -> FindSettings
+updateFindSettingsFromJsonValue :: FindSettings -> Value -> Either String FindSettings
 updateFindSettingsFromJsonValue settings json =
   case fromJSON json of
-    Success newSettings -> mergeFindSettings settings newSettings
-    Error e             -> settings {paths = paths settings ++ [e]}
+    Success newSettings -> Right $ mergeFindSettings settings newSettings
+    Error e             -> Left e
 
 mergeFindSettings :: FindSettings -> FindSettings -> FindSettings
 mergeFindSettings old new = FindSettings
