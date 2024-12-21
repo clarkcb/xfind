@@ -51,8 +51,7 @@ class GroovyFind {
                 FindSettings settings = options.settingsFromArgs(args)
 
                 if (settings.debug) {
-                    Logger.log('\nsettings:')
-                    Logger.log(settings.toString() + '\n')
+                    Logger.log('\nsettings: ' + settings.toString() + '\n')
                 }
 
                 if (settings.printUsage) {

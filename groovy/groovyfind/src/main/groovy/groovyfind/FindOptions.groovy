@@ -136,91 +136,45 @@ class FindOptions {
         }
     }
 
-    private void applySetting(final String arg, final Object obj, FindSettings settings) {
-        if (obj instanceof Boolean) {
-            try {
-                applyBoolSetting(arg, (Boolean)obj, settings)
-            } catch (FindException e) {
-                Logger.logError("FindException: ${e.getMessage()}")
-            }
-        } else if (obj instanceof String) {
-            try {
-                applyStringSetting(arg, (String)obj, settings)
-            } catch (FindException e) {
-                Logger.logError("FindException: ${e.getMessage()}")
-            }
-        } else if (obj instanceof Integer) {
-            if (arg in this.intActionMap) {
-                try {
-                    applyIntSetting(arg, (Integer)obj, settings)
-                } catch (FindException e) {
-                    Logger.logError("FindException: ${e.getMessage()}")
-                }
-            } else if (arg in this.longActionMap) {
-                try {
-                    applyLongSetting(arg, ((Integer) obj).longValue(), settings)
-                } catch (FindException e) {
-                    Logger.logError("FindException: ${e.getMessage()}")
-                }
-            } else {
-                Logger.logError('Invalid option: ${arg}')
-            }
-        } else if (obj instanceof Long) {
-            if (arg in this.intActionMap) {
-                try {
-                    applyIntSetting(arg, ((Long) obj).intValue(), settings)
-                } catch (FindException e) {
-                    Logger.logError("FindException: ${e.getMessage()}")
-                }
-            } else if (arg in this.longActionMap) {
-                try {
-                    applyLongSetting(arg, (Long)obj, settings)
-                } catch (FindException e) {
-                    Logger.logError("FindException: ${e.getMessage()}")
-                }
-            } else {
-                Logger.logError('Invalid option: ${arg}')
-            }
-        } else if (obj instanceof List) {
-            for (int i=0; i < ((List)obj).size(); i++) {
-                applySetting(arg, ((List)obj)[i], settings)
-            }
-        } else {
-            Logger.log('obj is another class type')
-        }
-    }
-
-    private void applyBoolSetting(final String arg, final Boolean val, FindSettings settings)
-            throws FindException{
+    private void applySetting(final String arg, final Object obj, FindSettings settings)
+            throws FindException {
         if (arg in this.boolActionMap) {
-            ((BooleanSetter)this.boolActionMap[arg]).set(val, settings)
-        } else {
-            throw new FindException("Invalid option: ${arg}")
-        }
-    }
-
-    private void applyStringSetting(final String arg, final String val, FindSettings settings)
-            throws FindException {
-        if (arg in this.stringActionMap) {
-            ((StringSetter)this.stringActionMap[arg]).set(val, settings)
-        } else {
-            throw new FindException("Invalid option: ${arg}")
-        }
-    }
-
-    private void applyIntSetting(final String arg, final Integer val, FindSettings settings)
-            throws FindException {
-        if (arg in this.intActionMap) {
-            ((IntegerSetter)this.intActionMap[arg]).set(val, settings)
-        } else {
-            throw new FindException("Invalid option: ${arg}")
-        }
-    }
-
-    private void applyLongSetting(final String arg, final Long val, FindSettings settings)
-            throws FindException {
-        if (arg in this.longActionMap) {
-            ((LongSetter)this.longActionMap[arg]).set(val, settings)
+            if (obj instanceof Boolean) {
+                ((BooleanSetter)this.boolActionMap[arg]).set((Boolean)obj, settings)
+            } else {
+                throw new FindException("Invalid value for option: ${arg}");
+            }
+        } else if (arg in this.stringActionMap) {
+            if (obj instanceof String) {
+                ((StringSetter)this.stringActionMap[arg]).set((String)obj, settings)
+            } else if (obj instanceof List) {
+                for (int i = 0; i < ((List) obj).size(); i++) {
+                    Object item = ((List) obj)[i]
+                    if (item instanceof String) {
+                        ((StringSetter) this.stringActionMap[arg]).set((String) item, settings)
+                    } else {
+                        throw new FindException("Invalid value for option: ${arg}");
+                    }
+                }
+            } else {
+                throw new FindException("Invalid value for option: ${arg}");
+            }
+        } else if (arg in this.intActionMap) {
+            if (obj instanceof Integer) {
+                ((IntegerSetter)this.intActionMap[arg]).set((Integer)obj, settings)
+            } else if (obj instanceof Long) {
+                ((IntegerSetter)this.intActionMap[arg]).set(((Long)obj).intValue(), settings)
+            } else {
+                throw new FindException("Invalid value for option: ${arg}");
+            }
+        } else if (arg in this.longActionMap) {
+            if (obj instanceof Integer) {
+                ((LongSetter)this.longActionMap[arg]).set(((Integer)obj).longValue(), settings)
+            } else if (obj instanceof Long) {
+                ((LongSetter)this.longActionMap[arg]).set((Long)obj, settings)
+            } else {
+                throw new FindException("Invalid value for option: ${arg}");
+            }
         } else {
             throw new FindException("Invalid option: ${arg}")
         }
