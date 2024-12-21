@@ -137,23 +137,6 @@ class FindOptions
     }
 
     /**
-     * @param string $file_path
-     * @param FindSettings $settings
-     * @return void
-     * @throws FindException
-     */
-    private function settings_from_file(string $file_path, FindSettings $settings): void
-    {
-        if (!file_exists($file_path)) {
-            throw new FindException('Settings file not found');
-        }
-        $json = file_get_contents($file_path);
-        if ($json) {
-            $this->settings_from_json($json, $settings);
-        }
-    }
-
-    /**
      * @param string $json
      * @param FindSettings $settings
      * @return void
@@ -168,7 +151,11 @@ class FindOptions
             $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
             foreach (array_keys($json_obj) as $k) {
                 if (array_key_exists($k, $this->bool_action_map)) {
-                    $this->bool_action_map[$k]($json_obj[$k], $settings);
+                    if (gettype($json_obj[$k]) == 'boolean') {
+                        $this->bool_action_map[$k]($json_obj[$k], $settings);
+                    } else {
+                        throw new FindException("Invalid value for option: $k");
+                    }
                 } elseif (array_key_exists($k, $this->str_action_map)) {
                     if (gettype($json_obj[$k]) == 'string') {
                         $this->str_action_map[$k]($json_obj[$k], $settings);
@@ -177,16 +164,38 @@ class FindOptions
                             $this->str_action_map[$k]($s, $settings);
                         }
                     } else {
-                        throw new FindException("Invalid setting type: $k");
+                        throw new FindException("Invalid value for option: $k");
                     }
                 } elseif (array_key_exists($k, $this->int_action_map)) {
-                    $this->int_action_map[$k]($json_obj[$k], $settings);
+                    if (gettype($json_obj[$k]) == 'integer') {
+                        $this->int_action_map[$k]($json_obj[$k], $settings);
+                    } else {
+                        throw new FindException("Invalid value for option: $k");
+                    }
+
                 } else {
                     throw new FindException("Invalid option: $k");
                 }
             }
         } catch (\JsonException $e) {
             throw new FindException($e->getMessage());
+        }
+    }
+
+    /**
+     * @param string $file_path
+     * @param FindSettings $settings
+     * @return void
+     * @throws FindException
+     */
+    private function settings_from_file(string $file_path, FindSettings $settings): void
+    {
+        if (!file_exists($file_path)) {
+            throw new FindException('Settings file not found');
+        }
+        $json = file_get_contents($file_path);
+        if ($json) {
+            $this->settings_from_json($json, $settings);
         }
     }
 
