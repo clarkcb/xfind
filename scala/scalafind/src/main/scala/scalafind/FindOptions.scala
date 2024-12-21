@@ -136,13 +136,46 @@ object FindOptions {
     "minsize" -> ((l, ss) => ss.copy(minSize = l)),
   )
 
-  private def settingsFromFile(filePath: String, ss: FindSettings): FindSettings = {
-    val file: File = new File(filePath)
-    if (!file.exists()) {
-      throw new FindException("Settings file not found: %s".format(filePath))
+  @tailrec
+  private def applySettings(arg: String, lst: List[Any], ss: FindSettings): FindSettings = lst match {
+    case Nil => ss
+    case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
+  }
+
+  private def applySetting(arg: String, obj: Any, ss: FindSettings): FindSettings = {
+    if (this.boolActionMap.contains(arg)) {
+      obj match
+        case b: Boolean =>
+          boolActionMap(arg)(b, ss)
+        case _ =>
+          throw new FindException("Invalid value for option: " + arg)
+    } else if (this.stringActionMap.contains(arg)) {
+      obj match
+        case s: String =>
+          stringActionMap(arg)(s, ss)
+        case a: JSONArray =>
+          applySettings(arg, a.toList.asScala.toList, ss)
+        case _ =>
+          throw new FindException("Invalid value for option: " + arg)
+    } else if (this.intActionMap.contains(arg)) {
+      obj match
+        case i: Int =>
+          intActionMap(arg)(i, ss)
+        case l: Long =>
+          intActionMap(arg)(l.toInt, ss)
+        case _ =>
+          throw new FindException("Invalid value for option: " + arg)
+    } else if (this.longActionMap.contains(arg)) {
+      obj match
+        case i: Int =>
+          longActionMap(arg)(i.toLong, ss)
+        case l: Long =>
+          longActionMap(arg)(l, ss)
+        case _ =>
+          throw new FindException("Invalid value for option: " + arg)
+    } else {
+      throw new FindException("Invalid option: " + arg)
     }
-    val json: String = FileUtil.getFileContents(file)
-    settingsFromJson(json, ss)
   }
 
   def settingsFromJson(json: String, ss: FindSettings): FindSettings = {
@@ -157,53 +190,13 @@ object FindOptions {
     recSettingsFromJson(jsonObject.keySet().asScala.toList, ss)
   }
 
-  private def applySetting(arg: String, obj: Any, ss: FindSettings): FindSettings = obj match {
-    case b: Boolean =>
-      if (this.boolActionMap.contains(arg)) {
-        boolActionMap(arg)(b, ss)
-      } else {
-        throw new FindException("Invalid option: " + arg)
-      }
-    case s: String =>
-      if (this.stringActionMap.contains(arg)) {
-        stringActionMap(arg)(s, ss)
-      } else {
-        throw new FindException("Invalid option: " + arg)
-      }
-    case i: Int =>
-      applyIntSetting(arg, i, ss)
-    case l: Long =>
-      applyLongSetting(arg, l, ss)
-    case a: JSONArray =>
-      applySettings(arg, a.toList.asScala.map(_.toString).toList, ss)
-    case _ =>
-      throw new FindException("Unsupported data type")
-  }
-
-  private def applyIntSetting(arg: String, i: Int, ss: FindSettings): FindSettings = {
-    if (this.intActionMap.contains(arg)) {
-      intActionMap(arg)(i, ss)
-    } else if (this.longActionMap.contains(arg)) {
-      longActionMap(arg)(i.toLong, ss)
-    } else {
-      throw new FindException("Invalid option: " + arg)
+  private def settingsFromFile(filePath: String, ss: FindSettings): FindSettings = {
+    val file: File = new File(filePath)
+    if (!file.exists()) {
+      throw new FindException("Settings file not found: %s".format(filePath))
     }
-  }
-
-  private def applyLongSetting(arg: String, l: Long, ss: FindSettings): FindSettings = {
-    if (this.intActionMap.contains(arg)) {
-      intActionMap(arg)(l.toInt, ss)
-    } else if (this.longActionMap.contains(arg)) {
-      longActionMap(arg)(l, ss)
-    } else {
-      throw new FindException("Invalid option: " + arg)
-    }
-  }
-
-  @tailrec
-  private def applySettings(arg: String, lst: List[String], ss: FindSettings): FindSettings = lst match {
-    case Nil => ss
-    case h :: t => applySettings(arg, t, applySetting(arg, h, ss))
+    val json: String = FileUtil.getFileContents(file)
+    settingsFromJson(json, ss)
   }
 
   private def getArgMap: Map[String, String] = {
