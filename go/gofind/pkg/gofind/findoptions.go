@@ -45,14 +45,6 @@ func NewFindOptions() *FindOptions {
 	return findOptions
 }
 
-func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
-	if data, err := os.ReadFile(filePath); err != nil {
-		return err
-	} else {
-		return fo.SettingsFromJson(data, settings)
-	}
-}
-
 func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) error {
 	boolActionMap := fo.getBoolActionMap()
 	stringActionMap := fo.getStringActionMap()
@@ -127,20 +119,19 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 			} else {
 				Log(fmt.Sprintf("value for %v is invalid", k))
 			}
-		} else if k == "settings-file" {
-			if v, hasVal := jsonSettings[k]; hasVal {
-				err := fo.SettingsFromFile(v.(string), settings)
-				if err != nil {
-					return err
-				}
-			} else {
-				Log(fmt.Sprintf("value for %v is invalid", k))
-			}
 		} else {
 			return fmt.Errorf("Invalid option: %s", k)
 		}
 	}
 	return nil
+}
+
+func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
+	if data, err := os.ReadFile(filePath); err != nil {
+		return err
+	} else {
+		return fo.SettingsFromJson(data, settings)
+	}
 }
 
 func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
@@ -151,13 +142,6 @@ func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 	stringActionMap := fo.getStringActionMap()
 	intActionMap := fo.getIntActionMap()
 	longActionMap := fo.getLongActionMap()
-
-	if false {
-		Log(fmt.Sprintf("boolActionMap: %v", boolActionMap))
-		Log(fmt.Sprintf("stringActionMap: %v", stringActionMap))
-		Log(fmt.Sprintf("intActionMap: %v", intActionMap))
-		Log(fmt.Sprintf("longActionMap: %v", longActionMap))
-	}
 
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
