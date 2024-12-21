@@ -140,7 +140,7 @@ class FindOptions {
           if (value is bool) {
             boolActionMap[key](value, settings);
           } else {
-            logError('Invalid value for option $key');
+            throw FindException('Invalid value for option $key');
           }
         } else if (stringActionMap.containsKey(key)) {
           if (value is String) {
@@ -156,10 +156,10 @@ class FindOptions {
           if (value is int) {
             intActionMap[key](value, settings);
           } else {
-            logError('Invalid value for option $key');
+            throw FindException('Invalid value for option $key');
           }
         } else {
-          logError('Invalid option: $key');
+          throw FindException('Invalid option: $key');
         }
       });
     });
