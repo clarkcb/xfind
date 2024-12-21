@@ -5,7 +5,7 @@
     "_", "ansible", "bak", "build", "chef", "dist", "node_module", "target", "test", "typings", "vendor", "venv"
   ],
   "out-filepattern": ["gulpfile", "\\.min\\."],
-  "debug": true,
+  "debug": false,
   "followsymlinks": true,
   "includehidden": false,
   "maxdepth": 10,
