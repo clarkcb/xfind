@@ -53,14 +53,12 @@ class FindOptions {
 
     private val boolActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
         "archivesonly" to { b, ss ->
-            if (b) ss.copy(
-                archivesOnly = b,
-                includeArchives = b
-            ) else ss.copy(archivesOnly = b)
+            if (b) ss.copy(archivesOnly = true, includeArchives = true) else
+                ss.copy(archivesOnly = false)
         },
         "debug" to { b, ss ->
-            if (b) ss.copy(debug = b, verbose = b) else
-                ss.copy(debug = b)
+            if (b) ss.copy(debug = true, verbose = true) else
+                ss.copy(debug = false)
         },
         "excludearchives" to { b, ss -> ss.copy(includeArchives = !b) },
         "excludehidden" to { b, ss -> ss.copy(includeHidden = !b) },
@@ -130,15 +128,46 @@ class FindOptions {
         "minsize" to { l, ss -> ss.copy(minSize = l) }
     )
 
-    private fun settingsFromFile(filePath: String, settings: FindSettings): FindSettings {
-        val file = File(filePath)
-        try {
-            val json = file.readText()
-            return settingsFromJson(json, settings)
-        } catch (_: FileNotFoundException) {
-            throw FindException("Settings file not found: $filePath")
-        } catch (_: IOException) {
-            throw FindException("IOException reading settings file: $filePath")
+    private fun applySettings(key: String, lst: List<Any>, settings: FindSettings): FindSettings {
+        return if (lst.isEmpty()) settings
+        else {
+            applySettings(key, lst.drop(1), applySetting(key, lst.first(), settings))
+        }
+    }
+
+    private fun applySetting(key: String, obj: Any, settings: FindSettings): FindSettings {
+        if (boolActionMap.containsKey(key)) {
+            if (obj is Boolean) {
+                return this.boolActionMap[key]!!.invoke(obj, settings)
+            } else {
+                throw FindException("Invalid value for option: $key")
+            }
+        } else if (stringActionMap.containsKey(key)) {
+            return if (obj is String) {
+                this.stringActionMap[key]!!.invoke(obj, settings)
+            } else if (obj is JSONArray) {
+                applySettings(key, obj.toList(), settings)
+            } else {
+                throw FindException("Invalid value for option: $key")
+            }
+        } else if (intActionMap.containsKey(key)) {
+            return if (obj is Int) {
+                this.intActionMap[key]!!.invoke(obj, settings)
+            } else if (obj is Long) {
+                this.intActionMap[key]!!.invoke(obj.toInt(), settings)
+            } else {
+                throw FindException("Invalid value for option: $key")
+            }
+        } else if (longActionMap.containsKey(key)) {
+            return if (obj is Int) {
+                this.longActionMap[key]!!.invoke(obj.toLong(), settings)
+            } else if (obj is Long) {
+                this.longActionMap[key]!!.invoke(obj, settings)
+            } else {
+                throw FindException("Invalid value for option: $key")
+            }
+        } else {
+            throw FindException("Invalid option: $key")
         }
     }
 
@@ -159,72 +188,15 @@ class FindOptions {
         return recSettingsFromJson(jsonObject.keySet().toList(), settings)
     }
 
-    private fun applySetting(key: String, obj: Any, settings: FindSettings): FindSettings {
-        when (obj) {
-            is Boolean -> {
-                return applyBoolSetting(key, obj, settings)
-            }
-            is String -> {
-                return applyStringSetting(key, obj, settings)
-            }
-            is Int -> {
-                return applyIntSetting(key, obj, settings)
-            }
-            is Long -> {
-                return applyLongSetting(key, obj, settings)
-            }
-            is JSONArray -> {
-                return applySettings(key, obj.toList().map { it as String }, settings)
-            }
-            else -> {
-                return settings
-            }
-        }
-    }
-
-    private fun applyBoolSetting(key: String, bool: Boolean, settings: FindSettings): FindSettings {
-        if (this.boolActionMap.containsKey(key)) {
-            return this.boolActionMap[key]!!.invoke(bool, settings)
-        } else {
-            throw FindException("Invalid option: $key")
-        }
-    }
-
-    private fun applyStringSetting(key: String, s: String, settings: FindSettings): FindSettings {
-        return when {
-            this.stringActionMap.containsKey(key) -> {
-                this.stringActionMap[key]!!.invoke(s, settings)
-            }
-            else -> {
-                throw FindException("Invalid option: $key")
-            }
-        }
-    }
-
-    private fun applyIntSetting(key: String, i: Int, settings: FindSettings): FindSettings {
-        return if (this.intActionMap.containsKey(key)) {
-            this.intActionMap[key]!!.invoke(i, settings)
-        } else if (this.longActionMap.containsKey(key)) {
-            this.longActionMap[key]!!.invoke(i.toLong(), settings)
-        } else {
-            throw FindException("Invalid option: $key")
-        }
-    }
-
-    private fun applyLongSetting(key: String, l: Long, settings: FindSettings): FindSettings {
-        return if (this.intActionMap.containsKey(key)) {
-            this.intActionMap[key]!!.invoke(l.toInt(), settings)
-        } else if (this.longActionMap.containsKey(key)) {
-            this.longActionMap[key]!!.invoke(l, settings)
-        } else {
-            throw FindException("Invalid option: $key")
-        }
-    }
-
-    private fun applySettings(key: String, lst: List<String>, settings: FindSettings): FindSettings {
-        return if (lst.isEmpty()) settings
-        else {
-            applySettings(key, lst.drop(1), applySetting(key, lst.first(), settings))
+    private fun settingsFromFile(filePath: String, settings: FindSettings): FindSettings {
+        val file = File(filePath)
+        try {
+            val json = file.readText()
+            return settingsFromJson(json, settings)
+        } catch (_: FileNotFoundException) {
+            throw FindException("Settings file not found: $filePath")
+        } catch (_: IOException) {
+            throw FindException("IOException reading settings file: $filePath")
         }
     }
 
