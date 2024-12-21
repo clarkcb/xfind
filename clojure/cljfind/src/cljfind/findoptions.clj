@@ -117,21 +117,37 @@
     (merge long-map short-long-map)))
 
 (defn settings-from-map ^FindSettings [^FindSettings settings ks m errs]
-  (if (empty? ks)
+  (if (or (empty? ks) (not (empty? errs)))
     [settings errs]
     (let [k (keyword (first ks))
           v (k m)]
       (cond
         (contains? bool-action-map k)
-          (settings-from-map ((k bool-action-map) settings v) (rest ks) m errs)
+          (if (instance? Boolean v)
+            (settings-from-map ((k bool-action-map) settings v) (rest ks) m errs)
+            (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k))))
         (contains? string-action-map k)
-          (settings-from-map ((k string-action-map) settings v) (rest ks) m errs)
+          (if (instance? String v)
+            (settings-from-map ((k string-action-map) settings v) (rest ks) m errs)
+            (if (coll? v)
+              (if (empty? v)
+                (settings-from-map settings (rest ks) m errs)
+                (settings-from-map ((k string-action-map) settings (first v)) ks (assoc m k (rest v)) errs))
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k)))))
         (contains? int-action-map k)
-          (settings-from-map ((k int-action-map) settings v) (rest ks) m errs)
+          (if (instance? Integer v)
+            (settings-from-map ((k int-action-map) settings v) (rest ks) m errs)
+            (if (instance? Long v)
+              (settings-from-map ((k int-action-map) settings (.intValue v)) (rest ks) m errs)
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k)))))
         (contains? long-action-map k)
-          (settings-from-map ((k long-action-map) settings v) (rest ks) m errs)
+          (if (instance? Integer v)
+            (settings-from-map ((k long-action-map) settings (.longValue v)) (rest ks) m errs)
+            (if (instance? Long v)
+              (settings-from-map ((k long-action-map) settings v) (rest ks) m errs)
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k)))))
         :else
-          (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " k)))))))
+          (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " (name k))))))))
 
 (defn settings-from-json
   (^FindSettings [^String json]
