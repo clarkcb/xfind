@@ -149,7 +149,10 @@ class FindOptions
         }
         try {
             $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
-            foreach (array_keys($json_obj) as $k) {
+            $keys = array_keys($json_obj);
+            # keys are sorted so that output is consistent across all versions
+            sort($keys);
+            foreach ($keys as $k) {
                 if (array_key_exists($k, $this->bool_action_map)) {
                     if (gettype($json_obj[$k]) == 'boolean') {
                         $this->bool_action_map[$k]($json_obj[$k], $settings);
@@ -190,10 +193,14 @@ class FindOptions
      */
     private function settings_from_file(string $file_path, FindSettings $settings): void
     {
-        if (!file_exists($file_path)) {
-            throw new FindException('Settings file not found');
+        $expanded_path = FileUtil::expand_path($file_path);
+        if (!file_exists($expanded_path)) {
+            throw new FindException('Settings file not found: ' . $file_path);
         }
-        $json = file_get_contents($file_path);
+        if (!str_ends_with($expanded_path, '.json')) {
+            throw new FindException('Invalid settings file (must be JSON): ' . $file_path);
+        }
+        $json = file_get_contents($expanded_path);
         if ($json) {
             $this->settings_from_json($json, $settings);
         }
