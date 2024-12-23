@@ -6,6 +6,7 @@ import groovy.transform.CompileStatic
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.stream.Collectors
 
 
 @CompileStatic
@@ -184,29 +185,30 @@ class FindOptions {
         JsonSlurper jsonSlurper = new JsonSlurper()
         def jsonObj = jsonSlurper.parseText(json)
         assert jsonObj instanceof Map<String, Object>
-        jsonObj.keySet().each { ko ->
-            applySetting(ko, jsonObj.get(ko), settings)
+        // keys are sorted so that output is consistent across all versions
+        var keys = jsonObj.keySet().stream().sorted().collect(Collectors.toList())
+        keys.each { ko ->
+            def vo = jsonObj.get(ko)
+            if (vo != null) {
+                applySetting(ko, jsonObj.get(ko), settings)
+            }
         }
     }
 
     private void settingsFromFilePath(final String filePath, final FindSettings settings) {
-        Path path = Paths.get(filePath)
+        Path path = FileUtil.expandPath(Paths.get(filePath))
+        if (!Files.exists(path)) {
+            throw new FindException("Settings file not found: ${filePath}")
+        }
+        if (!filePath.endsWith('.json')) {
+            throw new FindException("Invalid settings file (must be JSON): ${filePath}")
+        }
         try {
-            if (!Files.exists(path)) {
-                Logger.log("Settings file not found: ${filePath}")
-                System.exit(1)
-            }
-            if (!FileUtil.hasExtension(filePath, 'json')) {
-                Logger.log("Invalid settings file type (must be JSON): ${filePath}")
-                System.exit(1)
-            }
             settingsFromJson(FileUtil.getFileContents(path), settings)
         } catch (FileNotFoundException ignored) {
-            Logger.log("Settings file not found: ${filePath}")
-            System.exit(1)
+            throw new FindException("Settings file not found: ${filePath}")
         } catch (IOException ignored) {
-            Logger.log("IOException reading settings file: ${filePath}")
-            System.exit(1)
+            throw new FindException("IOException reading settings file: ${filePath}")
         }
     }
 
