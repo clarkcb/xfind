@@ -49,6 +49,10 @@ object FileUtil {
     }
   }
 
+  def getPathContents(path: Path, enc: String=DEFAULT_ENCODING): String = {
+    getFileContents(path.toFile, enc)
+  }
+
   def getFileContents(f: File, enc: String=DEFAULT_ENCODING): String = {
     val bufferedSource = Source.fromFile(f, enc)
     val contents = bufferedSource.mkString

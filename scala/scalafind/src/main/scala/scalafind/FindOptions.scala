@@ -3,7 +3,7 @@ package scalafind
 import org.json.{JSONArray, JSONObject, JSONTokener}
 
 import java.io.{File, IOException, InputStreamReader}
-import java.nio.file.Paths
+import java.nio.file.{Files, Path, Paths}
 import java.time.LocalDateTime
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -187,16 +187,27 @@ object FindOptions {
         val v = jsonObject.get(k)
         recSettingsFromJson(ks, applySetting(k, v, settings))
     }
-    recSettingsFromJson(jsonObject.keySet().asScala.toList, ss)
+
+    // keys are sorted so that output is consistent across all versions
+    val keys = jsonObject.keySet().asScala.toList.sorted
+    recSettingsFromJson(keys, ss)
   }
 
   private def settingsFromFile(filePath: String, ss: FindSettings): FindSettings = {
-    val file: File = new File(filePath)
-    if (!file.exists()) {
+    val path: Path = FileUtil.expandPath(Paths.get(filePath))
+    if (!Files.exists(path)) {
       throw new FindException("Settings file not found: %s".format(filePath))
     }
-    val json: String = FileUtil.getFileContents(file)
-    settingsFromJson(json, ss)
+    if (!filePath.endsWith(".json")) {
+      throw new FindException("Invalid settings file (must be JSON): %s".format(filePath))
+    }
+    try {
+      val json: String = FileUtil.getPathContents(path)
+      settingsFromJson(json, ss)
+    } catch {
+      case e: IOException =>
+        throw new FindException("Error reading settings file: %s".format(filePath))
+    }
   }
 
   private def getArgMap: Map[String, String] = {
