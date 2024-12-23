@@ -169,20 +169,24 @@ public class FindOptions
 	{
 		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString);
 		if (settingsDict == null) throw new FindException($"Unable to parse json");
-		foreach (var (key, value) in settingsDict)
+		var keys = settingsDict.Keys.ToList();
+		// keys are sorted so that output is consistent across all versions
+		keys.Sort();
+		foreach (var key in keys)
 		{
-			ApplySetting(key, value, settings);
+			ApplySetting(key, settingsDict[key], settings);
 		}
 	}
 
 	private static void UpdateSettingsFromFile(string filePath, FindSettings settings)
 	{
-		var fileInfo = new FileInfo(filePath);
+		var expandedPath = FileUtil.ExpandPath(filePath);
+		var fileInfo = new FileInfo(expandedPath);
 		if (!fileInfo.Exists)
 			throw new FindException($"Settings file not found: {filePath}");
 		if (!fileInfo.Extension.Equals(".json"))
-			throw new FindException($"Settings file must be a json file");
-		var contents = FileUtil.GetFileContents(filePath, Encoding.Default);
+			throw new FindException($"Invalid settings file (must be JSON): {filePath}");
+		var contents = FileUtil.GetFileContents(expandedPath, Encoding.Default);
 		UpdateSettingsFromJson(contents, settings);
 	}
 
