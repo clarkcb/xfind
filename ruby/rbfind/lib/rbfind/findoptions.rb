@@ -55,8 +55,52 @@ module RbFind
       settings
     end
 
+    def settings_from_json(json, settings)
+      json_hash = JSON.parse(json)
+      # keys are sorted so that output is consistent across all versions
+      keys = json_hash.keys.sort
+      keys.each do |arg|
+        arg_sym = arg.to_sym
+        if @bool_action_dict.key?(arg_sym)
+          if json_hash[arg] == true || json_hash[arg] == false
+            @bool_action_dict[arg_sym].call(json_hash[arg], settings)
+            return if %w[help version].include?(arg)
+          else
+            raise FindError, "Invalid value for option: #{arg}"
+          end
+        elsif @str_action_dict.key?(arg_sym)
+          if json_hash[arg].is_a?(String)
+            @str_action_dict[arg_sym].call(json_hash[arg], settings)
+          elsif json_hash[arg].is_a?(Array)
+            json_hash[arg].each do |v|
+              if v.is_a?(String)
+                @str_action_dict[arg_sym].call(v, settings)
+              else
+                raise FindError, "Invalid value for option: #{arg}"
+              end
+            end
+          else
+            raise FindError, "Invalid value for option: #{arg}"
+          end
+        elsif @int_action_dict.key?(arg_sym)
+          if json_hash[arg].is_a?(Numeric)
+            @int_action_dict[arg_sym].call(json_hash[arg], settings)
+          end
+        else
+          raise FindError, "Invalid option: #{arg}"
+        end
+      end
+    end
+
     def settings_from_file(file_path, settings)
-      f = File.open(file_path, mode: 'r')
+      expanded_path = Pathname.new(file_path).expand_path
+      unless expanded_path.exist?
+        raise FindError, "Settings file not found: #{file_path}"
+      end
+      unless expanded_path.extname == '.json'
+        raise FindError, "Invalid settings file (must be JSON): #{file_path}"
+      end
+      f = File.open(expanded_path.to_s, mode: 'r')
       json = f.read
       settings_from_json(json, settings)
     rescue IOError => e
@@ -67,28 +111,6 @@ module RbFind
       raise FindError, "#{e}"
     ensure
       f&.close
-    end
-
-    def settings_from_json(json, settings)
-      json_hash = JSON.parse(json)
-      json_hash.each_key do |arg|
-        arg_sym = arg.to_sym
-        if @bool_action_dict.key?(arg_sym)
-          @bool_action_dict[arg_sym].call(json_hash[arg], settings)
-          return if %w[help version].include?(arg)
-        elsif @str_action_dict.key?(arg_sym)
-          @str_action_dict[arg_sym].call(json_hash[arg], settings)
-        elsif @int_action_dict.key?(arg_sym)
-          @int_action_dict[arg_sym].call(json_hash[arg], settings)
-        else
-          raise FindError, "Invalid option: #{arg}"
-        end
-      end
-    end
-
-    def usage
-      puts "#{get_usage_string}\n"
-      abort
     end
 
     def get_usage_string
@@ -113,6 +135,11 @@ module RbFind
         i += 1
       end
       usage
+    end
+
+    def usage
+      puts "#{get_usage_string}\n"
+      abort
     end
 
     private
