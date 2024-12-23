@@ -64,7 +64,7 @@ sub uniq($) {
 
 sub is_bool {
     my $bool = shift;
-    return $bool == 0 || $bool == 1 || $bool =~ /^(true|false)$/;
+    return $bool =~ /^(0|1|true|false)$/;
 }
 
 sub bool_to_string {

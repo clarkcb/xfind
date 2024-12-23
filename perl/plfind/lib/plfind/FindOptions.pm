@@ -226,7 +226,8 @@ sub __from_json {
     my ($json, $settings) = @_;
     my $errs = [];
     my $json_hash = decode_json $json;
-    my @opt_names = keys %{$json_hash};
+    # keys are sorted so that output is consistent across all versions
+    my @opt_names = sort (keys %{$json_hash});
     foreach my $o (@opt_names) {
         if (exists $bool_action_hash->{$o}) {
             if (plfind::common::is_bool($json_hash->{$o})) {
@@ -259,11 +260,16 @@ sub settings_from_file {
     # $file_path is instance of Path::Class::File
     my ($file_path, $settings) = @_;
     my $errs = [];
-    unless (-e $file_path) {
+    my $expanded_path = file(plfind::FileUtil::expand_path($file_path));
+    unless (-e $expanded_path) {
         push(@{$errs}, 'Settings file not found: ' . $file_path);
         return $errs;
     }
-    my $json = $file_path->slurp;
+    unless ($expanded_path =~ /\.json$/) {
+        push(@{$errs}, 'Invalid settings file (must be JSON): ' . $file_path);
+        return $errs;
+    }
+    my $json = $expanded_path->slurp;
     return __from_json($json, $settings);
 }
 
