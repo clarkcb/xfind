@@ -21,7 +21,7 @@
         [clojure.set :only (union)]
         [clojure.string :as str :only (lower-case)]
         [cljfind.common :only (log-msg)]
-        [cljfind.fileutil :only (path-str to-path)]
+        [cljfind.fileutil :only (exists? expand-path path-str to-path)]
         [cljfind.findsettings :only
          (->FindSettings DEFAULT-FIND-SETTINGS add-extension add-file-type add-path
                          add-pattern set-archives-only set-debug set-int-val set-long-val
@@ -116,7 +116,7 @@
         short-long-map (zipmap (map :short-arg short-options) (map #(keyword %) (map :long-arg short-options)))]
     (merge long-map short-long-map)))
 
-(defn settings-from-map ^FindSettings [^FindSettings settings ks m errs]
+(defn settings-from-map [^FindSettings settings ks m errs]
   (if (or (empty? ks) (not (empty? errs)))
     [settings errs]
     (let [k (keyword (first ks))
@@ -125,7 +125,7 @@
         (contains? bool-action-map k)
           (if (instance? Boolean v)
             (settings-from-map ((k bool-action-map) settings v) (rest ks) m errs)
-            (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k))))
+            (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k)))))
         (contains? string-action-map k)
           (if (instance? String v)
             (settings-from-map ((k string-action-map) settings v) (rest ks) m errs)
@@ -133,37 +133,45 @@
               (if (empty? v)
                 (settings-from-map settings (rest ks) m errs)
                 (settings-from-map ((k string-action-map) settings (first v)) ks (assoc m k (rest v)) errs))
-              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k)))))
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k))))))
         (contains? int-action-map k)
           (if (instance? Integer v)
             (settings-from-map ((k int-action-map) settings v) (rest ks) m errs)
             (if (instance? Long v)
               (settings-from-map ((k int-action-map) settings (.intValue v)) (rest ks) m errs)
-              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k)))))
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k))))))
         (contains? long-action-map k)
           (if (instance? Integer v)
             (settings-from-map ((k long-action-map) settings (.longValue v)) (rest ks) m errs)
             (if (instance? Long v)
               (settings-from-map ((k long-action-map) settings v) (rest ks) m errs)
-              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " k)))))
+              (settings-from-map settings (rest ks) m (conj errs (str "Invalid value for option: " (name k))))))
         :else
           (settings-from-map settings (rest ks) m (conj errs (str "Invalid option: " (name k))))))))
 
 (defn settings-from-json
-  (^FindSettings [^String json]
+  ([^String json]
     (settings-from-json DEFAULT-FIND-SETTINGS json))
-  (^FindSettings [^FindSettings settings ^String json]
+  ([^FindSettings settings ^String json]
     (let [obj (json/read-str json :key-fn keyword)
-          ks (keys obj)]
+          ;; keys are sorted so that output is consistent across all versions
+          ks (sort (keys obj))]
       (settings-from-map settings ks obj []))))
 
 (defn settings-from-file
-  (^FindSettings [f]
+  ([f]
     (settings-from-file DEFAULT-FIND-SETTINGS f))
-  (^FindSettings [^FindSettings settings f]
-    (let [filepath (path-str f)
-          contents (slurp filepath)]
-      (settings-from-json settings contents))))
+  ([^FindSettings settings f]
+    (let [filepath (expand-path (to-path f))
+          pathstr (path-str filepath)]
+      (if (not (exists? filepath))
+        [settings [(str "Settings file not found: " pathstr)]]
+        (if (not (.endsWith pathstr ".json"))
+          [settings [(str "Invalid settings file (must be JSON): " pathstr)]]
+          (try
+            (settings-from-json settings (slurp pathstr))
+            (catch Exception e
+              [settings [(str "Error reading settings file: " pathstr)]])))))))
 
 (defn rec-get-settings-from-args ^FindSettings [^FindSettings settings long-arg-map args errs]
    (if (or (empty? args) (not (empty? errs)))
