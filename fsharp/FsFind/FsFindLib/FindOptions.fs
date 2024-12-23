@@ -140,17 +140,19 @@ module FindOptions =
                     match ApplySetting arg settingsDict[arg] settings with
                     | Ok settings -> recSettingsFromArgs tail settings
                     | Error e -> Error e
-            let argList = settingsDict.Keys |> List.ofSeq
+            // keys are sorted so that output is consistent across all versions
+            let argList = settingsDict.Keys |> List.ofSeq |> List.sort
             recSettingsFromArgs argList settings
 
     let UpdateSettingsFromFile (filePath : string) (settings : FindSettings) : Result<FindSettings, string> =
-        let fileInfo = new FileInfo(filePath)
+        let expandedPath = FileUtil.ExpandPath(filePath)
+        let fileInfo = new FileInfo(expandedPath)
         if fileInfo.Exists then
             if fileInfo.Extension.Equals(".json") then
-                let contents = FileUtil.GetFileContents filePath Encoding.Default
+                let contents = FileUtil.GetFileContents expandedPath Encoding.Default
                 UpdateSettingsFromJson contents settings
             else
-                Error "Settings file must be a json file"
+                Error $"Invalid settings file (must be JSON): {filePath}"
         else
             Error $"Settings file not found: {filePath}"
 
