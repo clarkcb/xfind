@@ -60,7 +60,8 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 			if v, hasVal := jsonSettings[k]; hasVal {
 				bf(v.(bool), settings)
 			} else {
-				Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else if sf, isString := stringActionMap[k]; isString {
 			if v, hasVal := jsonSettings[k]; hasVal {
@@ -83,7 +84,8 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else if iff, isInt := intActionMap[k]; isInt {
 			if v, hasVal := jsonSettings[k]; hasVal {
@@ -96,11 +98,11 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 					Log(fmt.Sprintf("k: %v", k))
 					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
 					errMsg := fmt.Sprintf("Unknown data type in settings file")
-					Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else if lff, isLong := longActionMap[k]; isLong {
 			if v, hasVal := jsonSettings[k]; hasVal {
@@ -117,10 +119,12 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 					return fmt.Errorf(errMsg)
 				}
 			} else {
-				Log(fmt.Sprintf("value for %v is invalid", k))
+				errMsg := fmt.Sprintf("Invalid value for option: %v", k)
+				return fmt.Errorf(errMsg)
 			}
 		} else {
-			return fmt.Errorf("Invalid option: %s", k)
+			errMsg := fmt.Sprintf("Invalid option: %v", k)
+			return fmt.Errorf(errMsg)
 		}
 	}
 	return nil
@@ -172,6 +176,11 @@ func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 						return nil, fmt.Errorf("Invalid value for option %s", k)
 					}
 					lff(longVal, settings)
+				} else if k == "settings-file" {
+					err := fo.SettingsFromFile(val, settings)
+					if err != nil {
+						return nil, err
+					}
 				} else {
 					return nil, fmt.Errorf("Invalid option: %s", k)
 				}
@@ -379,9 +388,6 @@ func (fo *FindOptions) getStringActionMap() map[string]stringAction {
 		},
 		"path": func(s string, settings *FindSettings) {
 			settings.AddPath(s)
-		},
-		"settings-file": func(s string, settings *FindSettings) {
-			fo.SettingsFromFile(s, settings)
 		},
 		"sort-by": func(s string, settings *FindSettings) {
 			settings.SetSortByFromString(s)
