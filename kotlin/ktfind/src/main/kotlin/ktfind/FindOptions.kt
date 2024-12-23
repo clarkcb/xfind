@@ -6,6 +6,8 @@ import org.json.JSONTokener
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -185,13 +187,21 @@ class FindOptions {
                 }
             }
         }
-        return recSettingsFromJson(jsonObject.keySet().toList(), settings)
+        // keys are sorted so that output is consistent across all versions
+        val keys = jsonObject.keySet().toList().sorted()
+        return recSettingsFromJson(keys, settings)
     }
 
     private fun settingsFromFile(filePath: String, settings: FindSettings): FindSettings {
-        val file = File(filePath)
+        val path = FileUtil.expandPath(Paths.get(filePath));
+        if (!Files.exists(path)) {
+            throw FindException("Settings file not found: $filePath")
+        }
+        if (!filePath.endsWith(".json")) {
+            throw FindException("Invalid settings file (must be JSON): $filePath")
+        }
         try {
-            val json = file.readText()
+            val json = path.toFile().readText()
             return settingsFromJson(json, settings)
         } catch (_: FileNotFoundException) {
             throw FindException("Settings file not found: $filePath")
