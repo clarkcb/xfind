@@ -123,59 +123,56 @@ public class FindOptions {
         }
     ]
 
-    // this is computed property so that it can reference self
-    private var stringActionDict: [String: (String, FindSettings) -> Void] {
-        [
-            "in-archiveext": { (str: String, settings: FindSettings) in
-                settings.addInArchiveExtension(str)
-            },
-            "in-archivefilepattern": { (str: String, settings: FindSettings) in
-                settings.addInArchiveFilePattern(str)
-            },
-            "in-dirpattern": { (str: String, settings: FindSettings) in
-                settings.addInDirPattern(str)
-            },
-            "in-ext": { (str: String, settings: FindSettings) in
-                settings.addInExtension(str)
-            },
-            "in-filepattern": { (str: String, settings: FindSettings) in
-                settings.addInFilePattern(str)
-            },
-            "in-filetype": { (str: String, settings: FindSettings) in
-                settings.addInFileType(str)
-            },
-            "out-archiveext": { (str: String, settings: FindSettings) in
-                settings.addOutArchiveExtension(str)
-            },
-            "maxlastmod": { (str: String, settings: FindSettings) in
-                settings.setMaxLastModFromString(str)
-            },
-            "minlastmod": { (str: String, settings: FindSettings) in
-                settings.setMinLastModFromString(str)
-            },
-            "out-archivefilepattern": { (str: String, settings: FindSettings) in
-                settings.addOutArchiveFilePattern(str)
-            },
-            "out-dirpattern": { (str: String, settings: FindSettings) in
-                settings.addOutDirPattern(str)
-            },
-            "out-ext": { (str: String, settings: FindSettings) in
-                settings.addOutExtension(str)
-            },
-            "out-filepattern": { (str: String, settings: FindSettings) in
-                settings.addOutFilePattern(str)
-            },
-            "out-filetype": { (str: String, settings: FindSettings) in
-                settings.addOutFileType(str)
-            },
-            "path": { (str: String, settings: FindSettings) in
-                settings.addPath(str)
-            },
-            "sort-by": { (str: String, settings: FindSettings) in
-                settings.setSortBy(str)
-            }
-        ]
-    }
+    private let stringActionDict: [String: (String, FindSettings) -> Void] = [
+        "in-archiveext": { (str: String, settings: FindSettings) in
+            settings.addInArchiveExtension(str)
+        },
+        "in-archivefilepattern": { (str: String, settings: FindSettings) in
+            settings.addInArchiveFilePattern(str)
+        },
+        "in-dirpattern": { (str: String, settings: FindSettings) in
+            settings.addInDirPattern(str)
+        },
+        "in-ext": { (str: String, settings: FindSettings) in
+            settings.addInExtension(str)
+        },
+        "in-filepattern": { (str: String, settings: FindSettings) in
+            settings.addInFilePattern(str)
+        },
+        "in-filetype": { (str: String, settings: FindSettings) in
+            settings.addInFileType(str)
+        },
+        "out-archiveext": { (str: String, settings: FindSettings) in
+            settings.addOutArchiveExtension(str)
+        },
+        "maxlastmod": { (str: String, settings: FindSettings) in
+            settings.setMaxLastModFromString(str)
+        },
+        "minlastmod": { (str: String, settings: FindSettings) in
+            settings.setMinLastModFromString(str)
+        },
+        "out-archivefilepattern": { (str: String, settings: FindSettings) in
+            settings.addOutArchiveFilePattern(str)
+        },
+        "out-dirpattern": { (str: String, settings: FindSettings) in
+            settings.addOutDirPattern(str)
+        },
+        "out-ext": { (str: String, settings: FindSettings) in
+            settings.addOutExtension(str)
+        },
+        "out-filepattern": { (str: String, settings: FindSettings) in
+            settings.addOutFilePattern(str)
+        },
+        "out-filetype": { (str: String, settings: FindSettings) in
+            settings.addOutFileType(str)
+        },
+        "path": { (str: String, settings: FindSettings) in
+            settings.addPath(str)
+        },
+        "sort-by": { (str: String, settings: FindSettings) in
+            settings.setSortBy(str)
+        }
+    ]
 
     private let intActionDict: [String: (Int32, FindSettings) -> Void] = [
         "maxdepth": { (i: Int32, settings: FindSettings) in
@@ -194,6 +191,98 @@ public class FindOptions {
             settings.minSize = l
         },
     ]
+
+    public func updateSettingsFromJson(_ jsonString: String, settings: FindSettings) throws {
+        do {
+            if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
+                                                           options: []) as? [String: Any]
+            {
+                // keys are sorted so that output is consistent across all versions
+                let keys = json.keys.sorted()
+                for key in keys {
+                    if longArgDict.index(forKey: key) != nil {
+                        let longArg = longArgDict[key]
+                        if boolActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let bool = value as? Bool {
+                                boolActionDict[longArg!]!(bool, settings)
+                            } else {
+                                throw FindError(msg: "Invalid value for option: \(key)")
+                            }
+                        } else if stringActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let string = value as? String {
+                                stringActionDict[longArg!]!(string, settings)
+                            } else if let bool = value as? Bool {
+                                stringActionDict[longArg!]!(bool.description, settings)
+                            } else if let int = value as? Int {
+                                stringActionDict[longArg!]!(int.description, settings)
+                            } else if let stringArray = value as? [String] {
+                                for s in stringArray {
+                                    stringActionDict[longArg!]!(s, settings)
+                                }
+                            } else {
+                                throw FindError(msg: "Invalid value for option: \(key)")
+                            }
+                        } else if intActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let intVal = value as? Int32 {
+                                intActionDict[longArg!]!(intVal, settings)
+                            } else {
+                                throw FindError(msg: "Invalid value for option: \(key)")
+                            }
+                        } else if longActionDict.index(forKey: longArg!) != nil {
+                            let value = json[key]
+                            if let longVal = value as? UInt64 {
+                                longActionDict[longArg!]!(longVal, settings)
+                            } else {
+                                throw FindError(msg: "Invalid value for option: \(key)")
+                            }
+                        } else {
+                            throw FindError(msg: "Invalid option: \(key)")
+                        }
+                    } else {
+                        throw FindError(msg: "Invalid option: \(key)")
+                    }
+                }
+            }
+        } catch let error as FindError {
+            throw error
+        } catch let error {
+            throw FindError(msg: "Failed to load: \(error.localizedDescription)")
+        }
+    }
+
+    public func settingsFromJson(_ jsonString: String) throws -> FindSettings {
+        let settings = FindSettings()
+        try updateSettingsFromJson(jsonString, settings: settings)
+        return settings
+    }
+
+    public func updateSettingsFromFile(_ filePath: String, settings: FindSettings) throws {
+        let expandedPath = FileUtil.expandPath(filePath)
+        if !FileUtil.exists(expandedPath) {
+            throw FindError(msg: "Settings file not found: \(filePath)")
+        }
+        if !expandedPath.hasSuffix(".json") {
+            throw FindError(msg: "Invalid settings file (must be JSON): \(filePath)")
+        }
+        do {
+            let fileUrl = URL(fileURLWithPath: expandedPath)
+            let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
+            try updateSettingsFromJson(jsonString, settings: settings)
+        } catch let error as FindError {
+            throw error
+        } catch let error {
+            throw FindError(msg: "Failed to load: \(error.localizedDescription)")
+        }
+    }
+
+    public func settingsFromFile(_ filePath: String) throws -> FindSettings {
+        let settings = FindSettings()
+        try updateSettingsFromFile(filePath, settings: settings)
+        return settings
+    }
 
     public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
         var i = 0
@@ -229,7 +318,7 @@ public class FindOptions {
                             longActionDict[longArg!]!(longVal, settings)
                         } else if longArg == "settings-file" {
                             do {
-                                try addSettingsFromFile(argVal, settings: settings)
+                                try updateSettingsFromFile(argVal, settings: settings)
                             } catch let err as FindError {
                                 throw err
                             }
@@ -246,94 +335,6 @@ public class FindOptions {
             i += 1
         }
         return settings
-    }
-
-    public func settingsFromFile(_ filePath: String) throws -> FindSettings {
-        let settings = FindSettings()
-        try addSettingsFromFile(filePath, settings: settings)
-        return settings
-    }
-
-    public func addSettingsFromFile(_ filePath: String, settings: FindSettings) throws {
-        do {
-            let fileUrl = URL(fileURLWithPath: filePath)
-            let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
-            try addSettingsFromJson(jsonString, settings: settings)
-        } catch let error as FindError {
-            throw error
-        } catch let error {
-            throw FindError(msg: "Failed to load: \(error.localizedDescription)")
-        }
-    }
-
-    public func settingsFromJson(_ jsonString: String) throws -> FindSettings {
-        let settings = FindSettings()
-        try addSettingsFromJson(jsonString, settings: settings)
-        return settings
-    }
-
-    public func addSettingsFromJson(_ jsonString: String, settings: FindSettings) throws {
-        do {
-            if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
-                                                           options: []) as? [String: Any]
-            {
-                for key in json.keys {
-                    if longArgDict.index(forKey: key) != nil {
-                        let longArg = longArgDict[key]
-                        if boolActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let bool = value as? Bool {
-                                boolActionDict[longArg!]!(bool, settings)
-                            } else {
-                                throw FindError(msg: "Invalid option: \(key)")
-                            }
-                        } else if stringActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let string = value as? String {
-                                stringActionDict[longArg!]!(string, settings)
-                            } else if let bool = value as? Bool {
-                                stringActionDict[longArg!]!(bool.description, settings)
-                            } else if let int = value as? Int {
-                                stringActionDict[longArg!]!(int.description, settings)
-                            } else if let stringArray = value as? [String] {
-                                for s in stringArray {
-                                    stringActionDict[longArg!]!(s, settings)
-                                }
-                            } else {
-                                throw FindError(msg: "Invalid option: \(key)")
-                            }
-                        } else if intActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let intVal = value as? Int32 {
-                                intActionDict[longArg!]!(intVal, settings)
-                            } else {
-                                throw FindError(msg: "Invalid option: \(key)")
-                            }
-                        } else if longActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let longVal = value as? UInt64 {
-                                longActionDict[longArg!]!(longVal, settings)
-                            } else {
-                                throw FindError(msg: "Invalid option: \(key)")
-                            }
-                        } else {
-                            throw FindError(msg: "Invalid option: \(key)")
-                        }
-                    } else {
-                        throw FindError(msg: "Invalid option: \(key)")
-                    }
-                }
-            }
-        } catch let error as FindError {
-            throw error
-        } catch let error {
-            throw FindError(msg: "Failed to load: \(error.localizedDescription)")
-        }
-    }
-
-    public func usage(_ code: Int32 = 0) {
-        logMsg(getUsageString())
-        exit(code)
     }
 
     func getUsageString() -> String {
@@ -364,5 +365,10 @@ public class FindOptions {
             str += optLine
         }
         return str
+    }
+
+    public func usage(_ code: Int32 = 0) {
+        logMsg(getUsageString())
+        exit(code)
     }
 }
