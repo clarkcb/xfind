@@ -48,6 +48,7 @@ defmodule ExFind.FindOptions do
   """
 
   alias ExFind.FileTypes
+  alias ExFind.FileUtil
   alias ExFind.FindError
   alias ExFind.FindSettings
   alias ExFind.SortBy
@@ -239,18 +240,20 @@ defmodule ExFind.FindOptions do
   end
 
   def update_settings_from_file(settings, json_file) do
-    case File.read(json_file) do
-      {:ok, json} -> update_settings_from_json(settings, json)
-      {:error, e} -> {:error, e}
+    expanded_path = FileUtil.expand_path(json_file)
+    cond do
+      not File.exists?(expanded_path) -> {:error, "Settings file not found: #{json_file}"}
+      not String.ends_with?(json_file, ".json") -> {:error, "Invalid settings file (must be JSON): #{json_file}"}
+      true ->
+        case File.read(expanded_path) do
+          {:ok, json} -> update_settings_from_json(settings, json)
+          {:error, _e} -> {:error, "Unable to parse JSON"}
+        end
     end
   end
 
   def get_settings_from_file(json_file) do
     update_settings_from_file(FindSettings.new(), json_file)
-  end
-
-  def usage(options) do
-    IO.puts(get_usage_string(options))
   end
 
   defp get_usage_string(options) do
@@ -266,5 +269,9 @@ defmodule ExFind.FindOptions do
     Options:
     #{Enum.join(opt_lines, "\n")}
     """
+  end
+
+  def usage(options) do
+    IO.puts(get_usage_string(options))
   end
 end
