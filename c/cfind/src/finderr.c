@@ -122,6 +122,9 @@ void handle_error(error_t err)
     case E_INVALID_ARG:
         log_err("Invalid arg");
         break;
+    case E_INVALID_ARG_FOR_OPTION:
+            log_err("Invalid arg for option");
+        break;
     case E_MISSING_ARG_FOR_OPTION:
         log_err("Missing arg for option");
         break;
@@ -145,6 +148,9 @@ void handle_error(error_t err)
         break;
     case E_INVALID_SIZE_RANGE:
         log_err("Invalid range for minsize and maxsize");
+        break;
+    case E_JSON_PARSE_ERROR:
+        log_err("Unable to parse JSON");
         break;
     default:
         log_err("Unknown error occurred");

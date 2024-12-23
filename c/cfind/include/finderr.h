@@ -15,14 +15,16 @@
 #define E_STARTPATH_UNSUPPORTED_FILETYPE 307 /* Startpath is an unsupported file type */
 #define E_INVALID_OPTION                 308 /* Invalid option */
 #define E_INVALID_ARG                    309 /* Invalid arg */
-#define E_MISSING_ARG_FOR_OPTION         310 /* Missing arg for arg option */
-#define E_DIRECTORY_NOT_FOUND            311 /* Directory not found */
-#define E_FILE_NOT_FOUND                 312 /* File not found */
-#define E_FILENAME_TOO_LONG              313 /* Filename is too long */
-#define E_INVALID_DATESTRING             314 /* Invalid date string (for max_last_mod/min_last_mod) */
-#define E_INVALID_DEPTH_RANGE            315 /* Invalid depth range (max_depth < min_depth) */
-#define E_INVALID_LASTMOD_RANGE          316 /* Invalid lastmod range (max_last_mod < min_last_mod) */
-#define E_INVALID_SIZE_RANGE             317 /* Invalid size range (max_size < min_size) */
+#define E_INVALID_ARG_FOR_OPTION         310 /* Missing arg for arg option */
+#define E_MISSING_ARG_FOR_OPTION         311 /* Missing arg for arg option */
+#define E_DIRECTORY_NOT_FOUND            312 /* Directory not found */
+#define E_FILE_NOT_FOUND                 313 /* File not found */
+#define E_FILENAME_TOO_LONG              314 /* Filename is too long */
+#define E_INVALID_DATESTRING             315 /* Invalid date string (for max_last_mod/min_last_mod) */
+#define E_INVALID_DEPTH_RANGE            316 /* Invalid depth range (max_depth < min_depth) */
+#define E_INVALID_LASTMOD_RANGE          317 /* Invalid lastmod range (max_last_mod < min_last_mod) */
+#define E_INVALID_SIZE_RANGE             318 /* Invalid size range (max_size < min_size) */
+#define E_JSON_PARSE_ERROR               319 /* JSON parsing error (invalid on non-JSON) */
 
 typedef unsigned int error_t;
 

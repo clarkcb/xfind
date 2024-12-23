@@ -617,15 +617,39 @@ error_t settings_from_json_obj(const cJSON *settings_json, FindSettings *setting
                         if (err != E_OK) return err;
                     }
                 }
-            } else if (cJSON_IsNumber(setting_json)) {
-                // TODO: split max/min length/size into separate array for numeric field assignment
+            } else {
+                return E_INVALID_ARG_FOR_OPTION;
             }
         } else {
             idx = index_of_string_in_array(setting_json->string, bool_option_names, BOOL_OPTION_COUNT);
-            if (idx > -1 && cJSON_IsBool(setting_json)) {
-                const int flag = cJSON_IsTrue(setting_json) ? 1 : 0;
-                err = set_bool_setting(idx, flag, settings);
-                //if (err != E_OK) return err;
+            if (idx > -1) {
+                if (cJSON_IsBool(setting_json)) {
+                    const int flag = cJSON_IsTrue(setting_json) ? 1 : 0;
+                    err = set_bool_setting(idx, flag, settings);
+                    if (err != E_OK) return err;
+                } else {
+                    return E_INVALID_ARG_FOR_OPTION;
+                }
+            } else {
+                idx = index_of_string_in_array(setting_json->string, int_option_names, INT_OPTION_COUNT);
+                if (idx > -1) {
+                    if (cJSON_IsNumber(setting_json)) {
+                        err = set_int_setting(idx, setting_json->valueint, settings);
+                        if (err != E_OK) return err;
+                    } else {
+                        return E_INVALID_ARG_FOR_OPTION;
+                    }
+                } else {
+                    idx = index_of_string_in_array(setting_json->string, long_option_names, LONG_OPTION_COUNT);
+                    if (idx > -1) {
+                        if (cJSON_IsNumber(setting_json)) {
+                            err = set_long_setting(idx, setting_json->valueint, settings);
+                            if (err != E_OK) return err;
+                        } else {
+                            return E_INVALID_ARG_FOR_OPTION;
+                        }
+                    }
+                }
             }
         }
     }
@@ -641,11 +665,11 @@ error_t settings_from_json_string(const char *settings_json_str, FindSettings *s
 
     settings_json = cJSON_Parse(settings_json_str);
     if (settings_json == NULL || cJSON_IsInvalid(settings_json)) {
-        const char *error_ptr = cJSON_GetErrorPtr();
-        if (error_ptr != NULL) {
-            fprintf(stderr, "Error before: %s\n", error_ptr);
-        }
-        err = E_UNKNOWN_ERROR;
+        // const char *error_ptr = cJSON_GetErrorPtr();
+        // if (error_ptr != NULL) {
+        //     fprintf(stderr, "Error before: %s\n", error_ptr);
+        // }
+        err = E_JSON_PARSE_ERROR;
         goto end;
     }
 
@@ -664,18 +688,34 @@ end:
 
 error_t settings_from_json_file(const char *settings_json_file_path, FindSettings *settings) {
     error_t err = E_OK;
-    if (!dir_or_file_exists(settings_json_file_path)) {
+
+    // TODO: expand path before checking if exists
+    const size_t path_len = strnlen(settings_json_file_path, MAX_PATH_LENGTH);
+    char *expanded_path = malloc(path_len * 2 + 1);
+    expanded_path[0] = '\0';
+    expand_path(settings_json_file_path, &expanded_path);
+
+    if (!dir_or_file_exists(expanded_path)) {
         err = E_FILE_NOT_FOUND;
+        free(expanded_path);
+        return err;
+    }
+
+    // Verify json file (has .json extension)
+    const size_t file_path_len = strlen(settings_json_file_path);
+    if (file_path_len < 6 || strcmp(settings_json_file_path + file_path_len - 5, ".json") != 0) {
+        err = E_INVALID_ARG;
+        free(expanded_path);
         return err;
     }
 
     // load the file
-    const long fsize = file_size(settings_json_file_path);
+    const long fsize = file_size(expanded_path);
     // 5096 would be a big settings file, should be large enough for most cases
     assert(fsize <= 5096);
     char contents[fsize];
     contents[0] = '\0';
-    FILE *fp = fopen(settings_json_file_path, "r");
+    FILE *fp = fopen(expanded_path, "r");
     int c;
     if (fp != NULL) {
         while((c = getc(fp)) != EOF) {
@@ -683,14 +723,16 @@ error_t settings_from_json_file(const char *settings_json_file_path, FindSetting
         }
         fclose(fp);
     } else {
-        size_t err_size = 16 + strnlen(settings_json_file_path, MAX_PATH_LENGTH) * sizeof(char);
+        size_t err_size = 16 + strnlen(expanded_path, MAX_PATH_LENGTH) * sizeof(char);
         char err_msg[err_size];
         err_msg[0] = '\0';
         sprintf(err_msg, "Unable to load %s", settings_json_file_path);
         err = E_UNKNOWN_ERROR;
+        free(expanded_path);
         return err;
     }
 
+    free(expanded_path);
     return settings_from_json_string(contents, settings);
 }
 
