@@ -181,28 +181,6 @@ class FindOptions:
 
         self.__long_arg_dict = {}
 
-    def settings_from_file(self, file_path: str, settings: FindSettings):
-        """Read settings from a JSON file"""
-        assert os.path.exists(file_path), f'Settings file not found: {file_path}'
-        with open(file_path, encoding='UTF-8') as f:
-            json_str = f.read()
-        self.settings_from_json(json_str, settings)
-
-    def settings_from_json(self, json_str: str, settings: FindSettings):
-        """Read settings from a JSON string"""
-        json_dict = json.loads(json_str)
-        for arg in json_dict:
-            if arg in self.__bool_action_dict:
-                self.__bool_action_dict[arg](json_dict[arg], settings)
-            elif arg in self.__str_action_dict:
-                self.__str_action_dict[arg](json_dict[arg], settings)
-            elif arg in self.__dt_action_dict:
-                self.__dt_action_dict[arg](parse_datetime_str(json_dict[arg]), settings)
-            elif arg in self.__int_action_dict:
-                self.__int_action_dict[arg](json_dict[arg], settings)
-            else:
-                raise FindException(f'Invalid option: {arg}')
-
     def __set_options_from_json(self):
         data = importlib.resources.files('pyfind').joinpath('data')
         find_options_json = data.joinpath('findoptions.json').read_text()
@@ -222,7 +200,7 @@ class FindOptions:
             elif long_arg in self.__int_action_dict:
                 func = self.__int_action_dict[long_arg]
             elif long_arg == 'settings-file':
-                func = self.settings_from_file
+                func = self.update_settings_from_file
             else:
                 raise FindException(f'Unknown find option: {long_arg}')
             self.options.append(FindOption(short_arg, long_arg, desc, func))
@@ -230,11 +208,54 @@ class FindOptions:
             if short_arg:
                 self.__long_arg_dict[short_arg] = long_arg
 
-    def find_settings_from_args(self, args: List[str]) -> FindSettings:
-        """Returns a FindSettings instance for a given list of args"""
-        # default print_files to True since running from command line
-        settings = FindSettings(print_files=True)
-        return self.update_settings_from_args(settings, args)
+    def update_settings_from_json(self, json_str: str, settings: FindSettings):
+        """Read settings from a JSON string"""
+        try:
+            json_dict = json.loads(json_str)
+        except json.JSONDecodeError:
+            raise FindException('Unable to parse JSON')
+        # keys are sorted so that output is consistent across all versions
+        keys = sorted(json_dict.keys())
+        for arg in keys:
+            if arg in self.__bool_action_dict:
+                if json_dict[arg] is True or json_dict[arg] == False:
+                    self.__bool_action_dict[arg](json_dict[arg], settings)
+                else:
+                    raise FindException(f'Invalid value for option: {arg}')
+            elif arg in self.__str_action_dict:
+                if type(json_dict[arg]) == str:
+                    self.__str_action_dict[arg](json_dict[arg], settings)
+                elif type(json_dict[arg]) == list:
+                    for item in json_dict[arg]:
+                        if type(item) == str:
+                            self.__str_action_dict[arg](item, settings)
+                        else:
+                            raise FindException(f'Invalid value for option: {arg}')
+                else:
+                    raise FindException(f'Invalid value for option: {arg}')
+            elif arg in self.__dt_action_dict:
+                if type(json_dict[arg]) == str:
+                    self.__dt_action_dict[arg](parse_datetime_str(json_dict[arg]), settings)
+                else:
+                    raise FindException(f'Invalid value for option: {arg}')
+            elif arg in self.__int_action_dict:
+                if type(json_dict[arg]) == int:
+                    self.__int_action_dict[arg](json_dict[arg], settings)
+                else:
+                    raise FindException(f'Invalid value for option: {arg}')
+            else:
+                raise FindException(f'Invalid option: {arg}')
+
+    def update_settings_from_file(self, file_path: str, settings: FindSettings):
+        """Read settings from a JSON file"""
+        expanded_path = os.path.expanduser(file_path)
+        if not os.path.exists(expanded_path):
+            raise FindException(f'Settings file not found: {file_path}')
+        if not file_path.strip().endswith('.json'):
+            raise FindException(f'Invalid settings file (must be JSON): {file_path}')
+        with open(expanded_path, encoding='UTF-8') as f:
+            json_str = f.read()
+        self.update_settings_from_json(json_str, settings)
 
     def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:
         """Updates a FindSettings instance from a given list of args"""
@@ -288,7 +309,7 @@ class FindOptions:
                                         raise FindException(err)
                                     self.__int_action_dict[long_arg](i, settings)
                                 elif long_arg == 'settings-file':
-                                    self.settings_from_file(arg_val, settings)
+                                    self.update_settings_from_file(arg_val, settings)
                             else:
                                 raise FindException(f'Missing value for option {a}')
                         else:
@@ -299,10 +320,11 @@ class FindOptions:
                 settings.add_path(arg)
         return settings
 
-    def usage(self, exit_code: int = 0):
-        """Print the usage string and exit"""
-        print(self.__get_usage_string())
-        sys.exit(exit_code)
+    def find_settings_from_args(self, args: List[str]) -> FindSettings:
+        """Returns a FindSettings instance for a given list of args"""
+        # default print_files to True since running from command line
+        settings = FindSettings(print_files=True)
+        return self.update_settings_from_args(settings, args)
 
     def __get_usage_string(self):
         sio = StringIO()
@@ -325,3 +347,8 @@ class FindOptions:
         usage = sio.getvalue()
         sio.close()
         return usage
+
+    def usage(self, exit_code: int = 0):
+        """Print the usage string and exit"""
+        print(self.__get_usage_string())
+        sys.exit(exit_code)
