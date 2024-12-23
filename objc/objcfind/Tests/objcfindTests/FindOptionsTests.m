@@ -58,8 +58,6 @@
 }
 
 - (void)testSettingsFromJson {
-    FindSettings *settings = [[FindSettings alloc] init];
-
     NSString *startPath = @"~/src/xfind";
     NSString *json = [NSString stringWithFormat:@"{\n"
                       "\"path\": \"%@\",\n"
@@ -75,7 +73,7 @@
 
     FindOptions *options = [[FindOptions alloc] init];
     NSError *error = nil;
-    [options settingsFromData:data settings:settings error:&error];
+    FindSettings *settings = [options settingsFromData:data error:&error];
 
     XCTAssert([[settings inExtensions] count] == 2);
     XCTAssert([[[settings inExtensions] objectAtIndex:0] isEqual:@"js"]);
