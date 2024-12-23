@@ -89,7 +89,7 @@ TEST_CASE("Get FindSettings from JSON", "[FindOptions]") {
 
     auto options = cppfind::FindOptions();
     auto settings = cppfind::FindSettings();
-    options.settings_from_json(json, settings);
+    options.update_settings_from_json(json, settings);
 
     REQUIRE(settings.paths().size() == 1);
     REQUIRE(settings.paths().contains("~/src/xfind/"));

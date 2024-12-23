@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <any>
 #include <deque>
 #include <filesystem>
 #include <fstream>
@@ -10,6 +11,8 @@
 #include "FindConfig.h"
 #include "FindException.h"
 #include "FindOptions.h"
+
+#include "FileUtil.h"
 #include "StringUtil.h"
 
 namespace cppfind {
@@ -64,7 +67,7 @@ namespace cppfind {
             {"out-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_file_pattern(s); }},
             {"out-filetype", [](const std::string& s, FindSettings& ss) { ss.add_out_file_type(FileTypes::from_name(s)); }},
             {"path", [](const std::string& s, FindSettings& ss) { ss.add_path(s); }},
-            {"settings-file", [this](const std::string& s, FindSettings& ss) { this->settings_from_file(s, ss); }},
+            {"settings-file", [this](const std::string& s, FindSettings& ss) { this->update_settings_from_file(s, ss); }},
             {"sort-by", [](const std::string& s, FindSettings& ss) { ss.sort_by(FindSettings::sort_by_from_name(s)); }}
         };
 
@@ -188,18 +191,127 @@ namespace cppfind {
         return settings;
     }
 
-    void FindOptions::settings_from_file(const std::filesystem::path& file_path, FindSettings& settings) {
-        if (!std::filesystem::exists(file_path)) {
+    void FindOptions::update_settings_from_document(rapidjson::Document& document, FindSettings& settings) {
+        assert(document.IsObject());
+
+        // create a map so we can sort the names
+        std::vector<std::string> names;
+        std::unordered_map<std::string, std::any> name_value_map;
+        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
+            std::string name = it->name.GetString();
+            names.push_back(name);
+            if (it->value.IsBool()) {
+                name_value_map.insert(std::make_pair(name, it->value.GetBool()));
+            } else if (it->value.IsString()) {
+                auto s = std::string(it->value.GetString());
+                name_value_map.insert(std::make_pair(name, s));
+            } else if (it->value.IsInt()) {
+                name_value_map.insert(std::make_pair(name, it->value.GetInt()));
+            } else if (it->value.IsUint64()) {
+                name_value_map.insert(std::make_pair(name, it->value.GetUint64()));
+            } else if (it->value.IsArray()) {
+                std::vector<std::string> vec;
+                const auto& arr = it->value.GetArray();
+                for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
+                    if (arr[i].IsString()) {
+                        auto s = std::string(arr[i].GetString());
+                        vec.emplace_back(s);
+                    } else {
+                        std::string msg{"Invalid value for option: " + name};
+                        throw FindException(msg);
+                    }
+                }
+                name_value_map.insert(std::make_pair(name, vec));
+            } else {
+                std::string msg{"Invalid value for option: " + name};
+                throw FindException(msg);
+            }
+        }
+
+        // Sort the names
+        std::ranges::sort(names);
+
+        for (const auto& name : names) {
+            auto value = name_value_map[name];
+
+            if (m_bool_arg_map.contains(name)) {
+                if (value.type() == typeid(bool)) {
+                    const bool b = std::any_cast<bool>(value);
+                    // const bool b = value;
+                    m_bool_arg_map[name](b, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + name};
+                    throw FindException(msg);
+                }
+            } else if (m_str_arg_map.contains(name)) {
+                if (value.type() == typeid(std::string)) {
+                    auto s = std::any_cast<std::string>(value);
+                    m_str_arg_map[name](s, settings);
+                } else if (value.type() == typeid(std::vector<std::string>)) {
+                    for (auto vec = std::any_cast<std::vector<std::string>>(value);
+                         auto& s : vec) {
+                        m_str_arg_map[name](s, settings);
+                    }
+                } else {
+                    std::string msg{"Invalid value for option: " + name};
+                    throw FindException(msg);
+                }
+            } else if (m_int_arg_map.contains(name)) {
+                if (value.type() == typeid(int)) {
+                    const int i = std::any_cast<int>(value);
+                    m_int_arg_map[name](i, settings);
+                } else if (value.type() == typeid(uint64_t)) {
+                    const auto l = std::any_cast<uint64_t>(value);
+                    const int i = 0 + l;
+                    m_int_arg_map[name](i, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + name};
+                    throw FindException(msg);
+                }
+            } else if (m_long_arg_map.contains(name)) {
+                if (value.type() == typeid(int)) {
+                    const int i = std::any_cast<int>(value);
+                    const uint64_t l = 0 + i;
+                    m_long_arg_map[name](l, settings);
+                } else if (value.type() == typeid(uint64_t)) {
+                    const auto l = std::any_cast<uint64_t>(value);
+                    m_long_arg_map[name](l, settings);
+                } else {
+                    std::string msg{"Invalid value for option: " + name};
+                    throw FindException(msg);
+                }
+            } else {
+                const std::string msg = "Invalid option: " + name;
+                throw FindException(msg);
+            }
+        }
+    }
+
+    void FindOptions::update_settings_from_json(const std::string_view json, FindSettings& settings) {
+        rapidjson::Document document;
+        document.Parse(std::string{json}.c_str());
+        update_settings_from_document(document, settings);
+    }
+
+    void FindOptions::update_settings_from_file(const std::filesystem::path& file_path, FindSettings& settings) {
+        std::filesystem::path expanded_path = FileUtil::expand_path(file_path);
+        if (!std::filesystem::exists(expanded_path)) {
             std::string msg{"Settings file not found: "};
             msg.append(file_path);
             throw FindException(msg);
         }
 
-        const uint64_t file_size = std::filesystem::file_size(file_path);
+        if (file_path.extension() != ".json") {
+            std::string msg{"Invalid settings file (must be JSON): "};
+            msg.append(file_path);
+            throw FindException(msg);
+        }
+
+        const uint64_t file_size = std::filesystem::file_size(expanded_path);
         // ~1MB, an arbitrary limit, but at least a limit
         assert(file_size <= 1024000);
 
-        FILE *fp = fopen(file_path.c_str(), "r");
+        FILE *fp = fopen(expanded_path.c_str(), "r");
 
         char readBuffer[file_size];
         rapidjson::FileReadStream is(fp, readBuffer, sizeof(readBuffer));
@@ -208,61 +320,7 @@ namespace cppfind {
         document.ParseStream(is);
         fclose(fp);
 
-        settings_from_document(document, settings);
-    }
-
-    void FindOptions::settings_from_json(const std::string_view json, FindSettings& settings) {
-        rapidjson::Document document;
-        document.Parse(std::string{json}.c_str());
-        settings_from_document(document, settings);
-    }
-
-    void FindOptions::settings_from_document(rapidjson::Document& document, FindSettings& settings) {
-        assert(document.IsObject());
-
-        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
-            std::string name = it->name.GetString();
-
-            if (it->value.IsArray()) {
-                assert(m_str_arg_map.contains(name));
-                const auto& arr = it->value.GetArray();
-                for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-                    assert(arr[i].IsString());
-                    auto s = std::string(arr[i].GetString());
-                    m_str_arg_map[name](s, settings);
-                }
-
-            } else if (it->value.IsBool()) {
-                assert(m_bool_arg_map.contains(name));
-                const bool b = it->value.GetBool();
-                m_bool_arg_map[name](b, settings);
-
-            } else if (it->value.IsString()) {
-                auto s = std::string(it->value.GetString());
-                if (m_str_arg_map.contains(name)) {
-                    m_str_arg_map[name](s, settings);
-                } else {
-                    const std::string msg = "Invalid option: " + name;
-                    throw FindException(msg);
-                }
-
-            } else if (it->value.IsNumber()) {
-                if (m_int_arg_map.contains(name)) {
-                    m_int_arg_map[name](it->value.GetInt(), settings);
-                } else if (m_long_arg_map.contains(name)) {
-                    m_long_arg_map[name](it->value.GetUint64(), settings);
-                } else {
-                    const std::string msg = "Invalid option: " + name;
-                    throw FindException(msg);
-                }
-            }
-        }
-    }
-
-    void FindOptions::usage() {
-        const std::string usage_string{get_usage_string()};
-        std::cout << usage_string << std::endl;
-        exit(1);
+        update_settings_from_document(document, settings);
     }
 
     std::string FindOptions::get_usage_string() {
@@ -297,5 +355,11 @@ namespace cppfind {
             usage_string.append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
         }
         return usage_string;
+    }
+
+    void FindOptions::usage() {
+        const std::string usage_string{get_usage_string()};
+        std::cout << usage_string << std::endl;
+        exit(1);
     }
 }

@@ -16,8 +16,8 @@ namespace cppfind {
     public:
         FindOptions();
         FindSettings settings_from_args(int &argc, char **argv);
-        void settings_from_file(const std::filesystem::path& file_path, FindSettings& settings);
-        void settings_from_json(std::string_view json_str, FindSettings& settings);
+        void update_settings_from_file(const std::filesystem::path& file_path, FindSettings& settings);
+        void update_settings_from_json(std::string_view json_str, FindSettings& settings);
         void usage();
         std::string get_usage_string();
 
@@ -29,7 +29,7 @@ namespace cppfind {
         std::unordered_map<std::string, std::string> m_arg_name_map;
         std::vector<FindOption> m_options;
         void load_options();
-        void settings_from_document(rapidjson::Document& document, FindSettings& settings);
+        void update_settings_from_document(rapidjson::Document& document, FindSettings& settings);
 
     };
 }
