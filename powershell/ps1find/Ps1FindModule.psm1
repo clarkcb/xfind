@@ -684,44 +684,48 @@ class FindOptions {
     
     [void]UpdateSettingsFromJson([string]$json, [FindSettings]$settings) {
         $settingsHash = $json | ConvertFrom-Json -AsHashtable
-        foreach ($item in $settingsHash.GetEnumerator()) {
-            if ($this.BoolActionMap.ContainsKey($item.Key)) {
-                if ($item.Value -is [bool]) {
-                    $this.BoolActionMap[$item.Key].Invoke($item.Value, $settings)
+        # keys are sorted so that output is consistent across all versions
+        $keys = $settingsHash.Keys | Sort-Object
+        foreach ($key in $keys) {
+            $value = $settingsHash[$key]
+            if ($this.BoolActionMap.ContainsKey($key)) {
+                if ($value -is [bool]) {
+                    $this.BoolActionMap[$key].Invoke($value, $settings)
                 } else {
-                    throw "Invalid value for option: " + $item.Key
+                    throw "Invalid value for option: " + $key
                 }
-            } elseif ($this.StringActionMap.ContainsKey($item.Key)) {
-                if ($item.Value -is [string])
+            } elseif ($this.StringActionMap.ContainsKey($key)) {
+                if ($value -is [string])
                 {
-                    $this.StringActionMap[$item.Key].Invoke($item.Value, $settings)
-                } elseif ($item.Value -is [object]) {
-                    foreach ($val in $item.Value) {
-                        $this.StringActionMap[$item.Key].Invoke($val, $settings)
+                    $this.StringActionMap[$key].Invoke($value, $settings)
+                } elseif ($value -is [object]) {
+                    foreach ($val in $value) {
+                        $this.StringActionMap[$key].Invoke($val, $settings)
                     }
                 } else {
-                    throw "Invalid value for option: " + $item.Key
+                    throw "Invalid value for option: " + $key
                 }
-            } elseif ($this.IntActionMap.ContainsKey($item.Key)) {
-                if ($item.Value -is [int] -or $item.Value -is [int64]) {
-                    $this.IntActionMap[$item.Key].Invoke($item.Value, $settings)
+            } elseif ($this.IntActionMap.ContainsKey($key)) {
+                if ($value -is [int] -or $value -is [int64]) {
+                    $this.IntActionMap[$key].Invoke($value, $settings)
                 } else {
-                    throw "Invalid value for option: " + $item.Key
+                    throw "Invalid value for option: " + $key
                 }
             } else {
-                throw "Invalid option: " + $item.Key
+                throw "Invalid option: " + $key
             }
         }
     }
     
     [void]UpdateSettingsFromFile([string]$filePath, [FindSettings]$settings) {
-        if (-not (Test-Path -Path $filePath)) {
+        $expandedPath = ExpandPath($filePath)
+        if (-not (Test-Path -Path $expandedPath)) {
             throw "Settings file not found: $filePath"
         }
         if (-not $filePath.EndsWith(".json")) {
-            throw "Settings file must be a json file"
+            throw "Invalid settings file (must be JSON): $filePath"
         }
-        $json = Get-Content -Path $filePath -Raw
+        $json = Get-Content -Path $expandedPath -Raw
         $this.UpdateSettingsFromJson($json, $settings)
     }
 
