@@ -12,10 +12,10 @@ module HsFind.FindSettings
   , updateFindSettingsFromJsonValue
   ) where
 
-import Control.Monad (mzero, unless)
+import Control.Monad (mzero, unless, MonadFail (fail))
 import Data.Aeson
 import Data.Aeson.Types (Parser)
-import Data.List (intercalate)
+import Data.List (intercalate, sort)
 import Data.List.Split (splitOn)
 import Data.Maybe (isJust)
 import Data.Text (Text, unpack)
@@ -160,19 +160,20 @@ needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod setti
 
 -- JSON parsing stuff below here
 validKeys :: [Text]
-validKeys = ["archivesonly", "debug", "followsymlinks", "in-archiveext", "in-archivefilepattern",
-             "in-dirpattern", "in-ext", "in-filepattern", "in-filetype", "includearchives",
-             "includehidden", "maxdepth", "maxlastmod", "maxsize", "mindepth", "minlastmod",
-             "minsize", "out-archiveextension", "out-archivefilepattern", "out-dirpattern",
-             "out-ext", "out-filepattern", "out-filetype", "path", "printdirs", "printfiles",
-             "printusage", "printversion", "recursive", "sort-caseinsensitive", "sort-descending",
-             "sort-by", "verbose"]
+validKeys = ["archivesonly", "debug", "followsymlinks", "help", "in-archiveext",
+             "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern", "in-filetype",
+             "includearchives", "includehidden", "maxdepth", "maxlastmod", "maxsize", "mindepth",
+             "minlastmod", "minsize", "out-archiveextension", "out-archivefilepattern",
+             "out-dirpattern", "out-ext", "out-filepattern", "out-filetype", "path", "printdirs",
+             "printfiles", "recursive", "sort-caseinsensitive", "sort-descending", "sort-by",
+             "verbose", "version"]
 
 instance FromJSON FindSettings where
   parseJSON = withObject "FindSettings" $ \obj -> do
     -- Check for unknown keys
     let keysInJson = HM.keys obj
-        unknownKeys = filter (`notElem` validKeys) keysInJson
+        -- keys are sorted so that output is consistent across all versions
+        unknownKeys = sort $ filter (`notElem` validKeys) keysInJson
     unless (null unknownKeys) $
       fail $ "Invalid option: " ++ unpack (head unknownKeys)
 
@@ -203,8 +204,8 @@ instance FromJSON FindSettings where
     paths <- obj .:? "path" >>= parseStringOrArray
     printDirs <- obj .:? "printdirs" .!= False
     printFiles <- obj .:? "printfiles" .!= False
-    printUsage <- obj .:? "printusage" .!= False
-    printVersion <- obj .:? "printversion" .!= False
+    printUsage <- obj .:? "help" .!= False
+    printVersion <- obj .:? "version" .!= False
     recursive <- obj .:? "recursive" .!= True
     sortCaseInsensitive <- obj .:? "sort-caseinsensitive" .!= False
     sortDescending <- obj .:? "sort-descending" .!= False
