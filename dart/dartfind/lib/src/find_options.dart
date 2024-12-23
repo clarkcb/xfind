@@ -1,9 +1,10 @@
 import 'dart:convert' show json;
-import 'dart:io' show File;
+import 'dart:io';
 
 import 'package:dartfind/src/common.dart';
 import 'package:dartfind/src/config.dart' show findOptionsPath;
 import 'package:dartfind/src/file_types.dart';
+import 'package:dartfind/src/file_util.dart';
 import 'package:dartfind/src/find_exception.dart';
 import 'package:dartfind/src/find_settings.dart';
 
@@ -135,39 +136,56 @@ class FindOptions {
       String jsonString, FindSettings settings) async {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
-      jsonMap.forEach((key, value) {
+      var keys = jsonMap.keys.toList();
+      // keys are sorted so that output is consistent across all versions
+      keys.sort();
+      for (var key in keys) {
+        var value = jsonMap[key];
         if (boolActionMap.containsKey(key)) {
           if (value is bool) {
             boolActionMap[key](value, settings);
           } else {
-            throw FindException('Invalid value for option $key');
+            throw FindException('Invalid value for option: $key');
           }
         } else if (stringActionMap.containsKey(key)) {
           if (value is String) {
             stringActionMap[key](value, settings);
-          } else if (value is num) {
-            stringActionMap[key]('$value', settings);
+          } else if (value is List) {
+            for (var item in value) {
+              if (item is String) {
+                stringActionMap[key](item, settings);
+              } else {
+                throw FindException('Invalid value for option: $key');
+              }
+            }
           } else {
-            value.forEach((elem) {
-              stringActionMap[key](elem, settings);
-            });
+            throw FindException('Invalid value for option: $key');
           }
         } else if (intActionMap.containsKey(key)) {
           if (value is int) {
             intActionMap[key](value, settings);
           } else {
-            throw FindException('Invalid value for option $key');
+            throw FindException('Invalid value for option: $key');
           }
         } else {
           throw FindException('Invalid option: $key');
         }
-      });
+      }
     });
   }
 
   Future<void> settingsFromFile(String filePath, FindSettings settings) async {
-    var contents = await File(filePath).readAsString();
-    await settingsFromJson(contents, settings);
+    var expandedPath = FileUtil.expandPath(filePath);
+    if (FileSystemEntity.typeSync(expandedPath) ==
+        FileSystemEntityType.notFound) {
+      throw FindException('Settings file not found: $filePath');
+    }
+    if (expandedPath.endsWith('.json')) {
+      var contents = await File(expandedPath).readAsString();
+      await settingsFromJson(contents, settings);
+    } else {
+      throw FindException('Invalid settings file (must be JSON): $filePath');
+    }
   }
 
   Future<FindSettings> settingsFromArgs(List<String> args) async {
