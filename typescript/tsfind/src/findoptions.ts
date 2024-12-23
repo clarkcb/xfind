@@ -151,39 +151,62 @@ export class FindOptions {
         this.options.sort(FindOptions.optCmp);
     }
 
-    private settingsFromFile(filePath: string, settings: FindSettings): Error | undefined {
-        if (fs.existsSync(filePath)) {
-            const json: string = FileUtil.getFileContentsSync(filePath);
-            return this.settingsFromJson(json, settings);
-        } else {
-            return new FindError('Settings file not found');
-        }
-    }
-
-    public settingsFromJson(json: string, settings: FindSettings): Error | undefined {
+    public updateSettingsFromJson(json: string, settings: FindSettings): Error | undefined {
         let err: Error | undefined = undefined;
         const obj = JSON.parse(json);
-        for (const k in obj) {
+        // keys are sorted so that output is consistent across all versions
+        const keys = Object.keys(obj).sort();
+        for (const k of keys) {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
                 if (obj[k] !== undefined && obj[k] !== null) {
                     // path is separate because it is not included as an option in findoptions.json
                     let longArg = k === 'path' ? 'path' : this.argNameMap[k];
                     if (this.boolActionMap[longArg]) {
-                        this.boolActionMap[longArg](obj[k], settings);
+                        if (typeof obj[k] === 'boolean') {
+                            this.boolActionMap[longArg](obj[k], settings);
+                        } else {
+                            err = new FindError(`Invalid value for option: ${k}`);
+                        }
                     } else if (this.stringActionMap[longArg]) {
-                        this.stringActionMap[longArg](obj[k], settings);
+                        if (typeof obj[k] === 'string') {
+                            this.stringActionMap[longArg](obj[k], settings);
+                        } else if (typeof obj[k] === 'object' && obj[k].constructor === Array) {
+                            obj[k].forEach((s: string) => {
+                                this.stringActionMap[longArg](s, settings);
+                            });
+                        } else {
+                            err = new FindError(`Invalid value for option: ${k}`);
+                        }
                     } else if (this.intActionMap[longArg]) {
-                        this.intActionMap[longArg](obj[k], settings);
+                        if (typeof obj[k] === 'number') {
+                            this.intActionMap[longArg](obj[k], settings);
+                        } else {
+                            err = new FindError(`Invalid value for option: ${k}`);
+                        }
                     } else {
                         err = new FindError(`Invalid option: ${k}`);
                     }
                 } else {
-                    err = new FindError(`Missing argument for option ${k}`);
+                    err = new FindError(`Missing value for option ${k}`);
                 }
             }
         }
         return err;
+    }
+
+    private updateSettingsFromFile(filePath: string, settings: FindSettings): Error | undefined {
+        const expandedPath = FileUtil.expandPath(filePath);
+        if (fs.existsSync(expandedPath)) {
+            if (expandedPath.endsWith('.json')) {
+                const json: string = FileUtil.getFileContentsSync(expandedPath);
+                return this.updateSettingsFromJson(json, settings);
+            } else {
+                return new FindError(`Invalid settings file (must be JSON): ${filePath}`);
+            }
+        } else {
+            return new FindError(`Settings file not found: ${filePath}`);
+        }
     }
 
     public settingsFromArgs(args: string[], cb: (err: Error | undefined, settings: FindSettings) => void): void {
@@ -211,7 +234,7 @@ export class FindOptions {
                         } else if (this.intActionMap[longArg]) {
                             this.intActionMap[longArg](parseInt(args.shift()!, 10), settings);
                         } else {
-                            err = this.settingsFromFile(args.shift()!, settings);
+                            err = this.updateSettingsFromFile(args.shift()!, settings);
                         }
                     } else {
                         err = new Error(`Missing argument for option ${arg}`);
@@ -224,15 +247,6 @@ export class FindOptions {
             }
         }
         cb(err, settings);
-    }
-
-    public usage(): void {
-        this.usageWithCode(0);
-    }
-
-    public usageWithCode(exitCode: number): void {
-        console.log(this.getUsageString());
-        process.exit(exitCode);
     }
 
     private getUsageString(): string {
@@ -258,5 +272,14 @@ export class FindOptions {
             usage += os + '  ' + optDescs[i] + '\n';
         }
         return usage;
+    }
+
+    public usageWithCode(exitCode: number): void {
+        console.log(this.getUsageString());
+        process.exit(exitCode);
+    }
+
+    public usage(): void {
+        this.usageWithCode(0);
     }
 }
