@@ -1,7 +1,7 @@
 use core::slice::Iter;
 use std::collections::HashMap;
 use std::convert::TryFrom;
-use std::fs;
+use std::{fs, io};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -9,6 +9,7 @@ use serde_json::Value;
 use crate::common::{log, timestamp_from_date_string};
 use crate::config::Config;
 use crate::filetypes::FileTypes;
+use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
 use crate::sortby::sort_by_from_name;
@@ -71,81 +72,62 @@ impl FindOptions {
         map
     }
 
-    pub fn settings_from_file(&self, json_file: &str) -> Result<FindSettings, FindError> {
-        match fs::read_to_string(json_file) {
-            Ok(json) => self.settings_from_json(&json),
-            Err(error) => Err(FindError::new(&error.to_string())),
-        }
-    }
-
-    pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
-        let mut settings = FindSettings::default();
-        match serde_json::from_str(json_string) {
-            Ok(value) => {
-                if let Err(error) = self.settings_from_value(&value, &mut settings) {
-                    return Err(error);
-                }
-            },
-            Err(error) => return Err(FindError::new(&error.to_string())),
-        }
-        Ok(settings)
-    }
-
     fn settings_from_name_value(
         &self,
         name: &String,
         value: &Value,
         settings: &mut FindSettings,
     ) -> Result<(), FindError> {
-        match value {
-            Value::Array(values) => {
-                for v in values.iter() {
+        if self.bool_action_map.contains_key(name) {
+            if value.is_boolean() {
+                let b = value.as_bool().unwrap();
+                if let Err(error) = self.apply_bool_arg(name, b, settings) {
+                    return Err(error);
+                }
+            } else {
+                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+            }
+        } else if self.string_action_map.contains_key(name) {
+            if value.is_string() {
+                let s = value.as_str().unwrap();
+                if let Err(error) = self.apply_string_arg(name, s, settings) {
+                    return Err(error);
+                }
+            } else if value.is_array() {
+                let array = value.as_array().unwrap();
+                for v in array.iter() {
                     if let Err(error) = self.settings_from_name_value(name, &v, settings) {
                         return Err(error);
                     }
                 }
-            },
-            Value::Bool(b) => {
-                if let Err(error) = self.apply_bool_arg(name, *b, settings) {
-                    return Err(error);
-                }
-            },
-            Value::Number(n) => {
-                if self.int_action_map.contains_key(name) {
-                    let l = n.as_i64().unwrap();
-                    match i32::try_from(l) {
-                        Ok(i) => {
-                            if let Err(error) = self.apply_int_arg(name, i, settings) {
-                                return Err(error);
-                            }
-                        }
-                        Err(error) => return Err(FindError::new(&error.to_string())),
-                    }
-                } else if self.long_action_map.contains_key(name) {
-                    match n.as_u64() {
-                        Some(l) => {
-                            if let Err(error) = self.apply_long_arg(name, l, settings) {
-                                return Err(error);
-                            }
-
-                        }
-                        None => return Err(FindError::new(&format!("Invalid value for option {}", name)))
-                    }
-                } else {
-                    return Err(FindError::new(&format!("Unknown or invalid option {}", name)));
-                }
-            },
-            Value::Object(_) => {
-                if let Err(error) = self.settings_from_value(value, settings) {
-                    return Err(error);
-                }
-            },
-            Value::String(s) => {
-                if let Err(error) = self.apply_string_arg(name, &s, settings) {
-                    return Err(error);
-                }
+            } else {
+                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
             }
-            _ => {}
+        } else if self.int_action_map.contains_key(name) {
+            if value.is_number() {
+                let l = value.as_i64().unwrap();
+                match i32::try_from(l) {
+                    Ok(i) => {
+                        if let Err(error) = self.apply_int_arg(name, i, settings) {
+                            return Err(error);
+                        }
+                    }
+                    Err(error) => return Err(FindError::new(&error.to_string())),
+                }
+            } else {
+                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+            }
+        } else if self.long_action_map.contains_key(name) {
+            if value.is_number() {
+                let l = value.as_u64().unwrap();
+                if let Err(error) = self.apply_long_arg(name, l, settings) {
+                    return Err(error);
+                }
+            } else {
+                return Err(FindError::new(&format!("Invalid value for option: {}", name)));
+            }
+        } else {
+            return Err(FindError::new(&format!("Invalid option: {}", name)));
         }
         Ok(())
     }
@@ -166,6 +148,45 @@ impl FindOptions {
             _ => {}
         }
         Ok(())
+    }
+
+    pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
+        let mut settings = FindSettings::default();
+        match serde_json::from_str(json_string) {
+            Ok(value) => {
+                if let Err(error) = self.settings_from_value(&value, &mut settings) {
+                    return Err(error);
+                }
+            },
+            Err(error) => return Err(FindError::new(&error.to_string())),
+        }
+        Ok(settings)
+    }
+
+    pub fn settings_from_file(&self, json_file: &str) -> Result<FindSettings, FindError> {
+        let expanded_path = FileUtil::expand_path_string(json_file);
+        let metadata = fs::metadata(&expanded_path);
+        if metadata.is_err() {
+            return match metadata.err().unwrap().kind() {
+                io::ErrorKind::NotFound => Err(FindError::new(
+                    format!("Settings file not found: {}", &json_file).as_str())),
+                io::ErrorKind::PermissionDenied => Err(FindError::new(
+                    format!("Settings file not readable: {}", &json_file).as_str())),
+                _ => {
+                    Err(FindError::new(
+                        "An unknown error occurred trying to read settings file"))
+                }
+            }
+        }
+        if json_file.ends_with(".json") {
+            match fs::read_to_string(expanded_path) {
+                Ok(json) => self.settings_from_json(&json),
+                Err(error) => Err(FindError::new(&error.to_string())),
+            }
+        } else {
+            Err(FindError::new(
+                format!("Invalid settings file (must be JSON): {}", &json_file).as_str()))
+        }
     }
 
     pub fn settings_from_args(
