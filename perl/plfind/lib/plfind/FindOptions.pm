@@ -168,7 +168,7 @@ my $str_action_hash = {
     },
     'path' => sub {
         my ($s, $settings) = @_;
-        $settings->add_path($s);
+        $settings->add_paths($s);
     },
     'sort-by' => sub {
         my ($s, $settings) = @_;

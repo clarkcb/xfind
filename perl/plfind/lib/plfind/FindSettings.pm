@@ -131,6 +131,17 @@ sub add_path {
     }
 }
 
+sub add_paths {
+    my ($self, $paths) = @_;
+    if (ref($paths) eq 'ARRAY') {
+        foreach my $p (@{$paths}) {
+            $self->add_path($p);
+        }
+    } else { # treat as a string
+        $self->add_path($paths);
+    }
+}
+
 sub needs_last_mod {
     my $self = shift;
     return $self->{sort_by} eq plfind::SortBy->LASTMOD ||
