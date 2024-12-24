@@ -123,10 +123,10 @@ void handle_error(error_t err)
         log_err("Invalid arg");
         break;
     case E_INVALID_ARG_FOR_OPTION:
-            log_err("Invalid arg for option");
+            log_err("Invalid value for option");
         break;
     case E_MISSING_ARG_FOR_OPTION:
-        log_err("Missing arg for option");
+        log_err("Missing value for option");
         break;
     case E_DIRECTORY_NOT_FOUND:
         log_err("Directory not found");
