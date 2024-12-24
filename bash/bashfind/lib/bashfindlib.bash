@@ -96,6 +96,11 @@ SORT_CASE_SENSITIVE=false
 SORT_DESCENDING=false
 VERBOSE=false
 
+BOOL_OPTS=(archivesonly debug followsymlinks help includearchives includehidden printdirs printfiles recursive sort-casesensitive sort-descending verbose version)
+NUM_OPTS=(maxdepth maxlastmod maxsize mindepth minlastmod minsize)
+STR_OPTS=(in-archiveext in-archivefilepattern in-dirpattern in-ext in-filepattern in-filetype out-archiveext out-archivefilepattern out-dirpattern out-ext
+          out-filepattern out-filetype path settings-file sort-by)
+
 FILE_RESULTS=()
 
 
@@ -664,6 +669,9 @@ rec_find_path () {
     local path="$1"
     local current_depth=$2
 
+    # remove trailing slash if present
+    path="${path%/}" 
+
     if [ $MAX_DEPTH -gt -1 -a $current_depth -gt $MAX_DEPTH ]
     then
         return 0
@@ -684,14 +692,25 @@ rec_find_path () {
     else
         primary_options="-P"
     fi
+    # optimization levels 1-3 from lowest to highest
+    # NOTE: this does not work on macOS's version of find
+    # level_option="-O2"
     other_options="-maxdepth 1"
     if [ "$recurse" == true ]
     then
-        path_dirs=$(find $primary_options $path $other_options -type d | grep -v "^$path$")
+        path_dirs=$(find $primary_options $path -type d $other_options | grep -v "^$path$")
     fi
     if [ $MIN_DEPTH -lt 0 -o $current_depth -ge $MIN_DEPTH ]
     then
-        path_files=$(find $primary_options $path $other_options -type f)
+        if [ $MAX_SIZE -gt 0 ]
+        then
+            other_options+=" -size -${MAX_SIZE}c"
+        fi
+        if [ $MIN_SIZE -gt 0 ]
+        then
+            other_options+=" -size +${MIN_SIZE}c"
+        fi
+        path_files=$(find $primary_options $path -type f $other_options)
     fi
 
     filter_to_file_results "${path_files[*]}"
@@ -1056,6 +1075,9 @@ settings_from_args () {
                 NEED_FILE_SIZE=true
                 i=$(($i + 1))
                 ;;
+            --nodebug)
+                DEBUG=false
+                ;;
             --nofollowsymlinks)
                 FOLLOW_SYMLINKS=false
                 ;;
@@ -1229,35 +1251,57 @@ negate_key () {
 
 settings_from_json () {
     local json="$1"
-    local array_keys=( $(echo "$json" | jq -r 'with_entries(select(.value | type == "array")) | keys | .[]') )
+    local array_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type == "array")) | keys | .[]') )
     for k in ${array_keys[*]}
     do
         local arr=( $(echo "$json" | jq -r ".\"$k\" | .[]") )
-        args=()
+        local arr_args=()
         for a in ${arr[*]}
         do
-            args+=("--$k")
-            args+=("$a")
+            arr_args+=("--$k")
+            arr_args+=("$a")
         done
-        settings_from_args ${args[*]}
+        settings_from_args ${arr_args[*]}
     done
-    local other_keys=( $(echo "$json" | jq -r 'with_entries(select(.value | type != "array")) | keys | .[]') )
-    other_args=()
+    local other_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type != "array")) | keys | .[]') )
+    local other_args=()
     for k in ${other_keys[*]}
     do
         local v=$(echo "$json" | jq -r ".$k")
-        if [ "$v" == "true" -o "$v" == "false" ]
-        then
-            if [ "$v" == "true" ]
+
+        if [[ " ${BOOL_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]; then
+            if [ "$v" == "true" -o "$v" == "false" ]
             then
-                other_args+=("--$k")
+                if [ "$v" == "true" ]
+                then
+                    other_args+=("--$k")
+                else
+                    k=$(negate_key $k)
+                    other_args+=("--$k")
+                fi
             else
-                k=$(negate_key $k)
-                other_args+=("--$k")
+                exit_with_error "Invalid value for option: $k"
             fi
         else
-            other_args+=("--$k")
-            other_args+=("$v")
+            if [[ " ${NUM_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
+            then
+                if [[ -n "$v" ]] && [[ -z "${v//[0-9]}" ]]
+                then
+                    other_args+=("--$k")
+                    other_args+=("$v")
+                else
+                    exit_with_error "Invalid value for option: $k"
+                fi
+            else
+                if [[ " ${STR_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
+                then
+                    # we can't really determine whether value is a string, so we just assume it is
+                    other_args+=("--$k")
+                    other_args+=("$v")
+                else
+                    exit_with_error "Invalid option: $k"
+                fi
+            fi
         fi
     done
     settings_from_args ${other_args[*]}
@@ -1268,13 +1312,18 @@ settings_from_file () {
     local file_name=$(basename $file_path)
     local file_ext="${file_name##*.}"
 
-    if [ -f "$file_path" -a -r "$file_path" -a "$file_ext" == "json" ]
+    expanded_path=$(eval echo "$file_path")
+    if [ ! -f "$expanded_path" ]
     then
-        json=$(cat $file_path)
-        settings_from_json "$json"
-    else
-        exit_with_error "Invalid settings file: $file_path"
+        exit_with_error "Settings file not found: $file_path"
     fi
+    if [ ! "$file_ext" == "json" ]
+    then
+        exit_with_error "Invalid settings file (must be JSON): $file_path"
+    fi
+
+    json=$(cat $expanded_path)
+    settings_from_json "$json"
 }
 
 settings_to_string () {
