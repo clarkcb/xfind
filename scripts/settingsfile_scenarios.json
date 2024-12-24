@@ -1,0 +1,42 @@
+{
+    "ref": {
+        "common_startpaths": ["$XFIND_PATH/scripts"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "settings-file",
+            "name": "use settings-file",
+            "args": ["--settings-file", "$XFIND_PATH/shared/settings.json"],
+            "common_args": [
+            ]
+        },
+        {
+            "group": "settings-file",
+            "name": "use settings-file and other args",
+            "args": ["--settings-file", "$XFIND_PATH/shared/settings.json"],
+            "common_args": [
+                "common_startpaths"
+            ]
+        },
+        {
+            "group": "settings-file",
+            "name": "use invalid settings-file",
+            "args": ["--settings-file", "$XFIND_PATH/shared/config.json"],
+            "replace_xfind_name": true
+        },
+        {
+            "group": "settings-file",
+            "name": "use non-json settings-file",
+            "args": ["--settings-file", "$XFIND_PATH/shared/filetypes.xml"],
+            "replace_xfind_name": true
+        },
+        {
+            "group": "settings-file",
+            "name": "use non-existing settings-file",
+            "args": ["--settings-file", "$XFIND_PATH/shared/nonexistant.json"],
+            "replace_xfind_name": true
+        }
+    ]
+}
