@@ -160,10 +160,10 @@ needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod setti
 
 -- JSON parsing stuff below here
 validKeys :: [Text]
-validKeys = ["archivesonly", "debug", "followsymlinks", "help", "in-archiveext",
-             "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern", "in-filetype",
-             "includearchives", "includehidden", "maxdepth", "maxlastmod", "maxsize", "mindepth",
-             "minlastmod", "minsize", "out-archiveextension", "out-archivefilepattern",
+validKeys = ["archivesonly", "debug", "excludearchives", "excludehidden", "followsymlinks", "help",
+             "in-archiveext", "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern",
+             "in-filetype", "includearchives", "includehidden", "maxdepth", "maxlastmod", "maxsize",
+             "mindepth", "minlastmod", "minsize", "out-archiveextension", "out-archivefilepattern",
              "out-dirpattern", "out-ext", "out-filepattern", "out-filetype", "path", "printdirs",
              "printfiles", "recursive", "sort-caseinsensitive", "sort-descending", "sort-by",
              "verbose", "version"]
@@ -187,8 +187,8 @@ instance FromJSON FindSettings where
     inExtensions <- obj .:? "in-ext" >>= parseStringOrArray
     inFilePatterns <- obj .:? "in-filepattern" >>= parseStringOrArray
     inFileTypes <- obj .:? "in-filetype" >>= parseFileTypes
-    includeArchives <- obj .:? "includearchives" .!= False
-    includeHidden <- obj .:? "includehidden" .!= False
+    includeArchives <- parseIncludeArchives obj
+    includeHidden <- parseIncludeHidden obj
     maxDepth <- obj .:? "maxdepth" .!= (-1)
     maxLastMod <- obj .:? "maxlastmod" >>= parseUTCTime
     maxSize <- obj .:? "maxsize" .!= 0
@@ -246,6 +246,28 @@ instance FromJSON FindSettings where
     , sortResultsBy=sortResultsBy
     , verbose=verbose
     }
+
+-- Custom function to handle "includearchives" or "excludearchives"
+parseIncludeArchives :: Object -> Parser Bool
+parseIncludeArchives obj = do
+  maybeIncludeArchives <- obj .:? "includearchives"
+  maybeExcludeArchives <- obj .:? "excludearchives"
+  case (maybeIncludeArchives, maybeExcludeArchives) of
+    (Just val, _) -> return val             -- Use "includearchives" directly if present
+    (Nothing, Just val) -> return (not val) -- Negate "excludearchives" if present
+    -- (Nothing, Nothing) -> fail "Missing required field: either 'includearchives' or 'excludearchives'"
+    (Nothing, Nothing) -> return False
+
+-- Custom function to handle "includehidden" or "excludehidden"
+parseIncludeHidden :: Object -> Parser Bool
+parseIncludeHidden obj = do
+  maybeIncludeHidden <- obj .:? "includehidden"
+  maybeExcludeHidden <- obj .:? "excludehidden"
+  case (maybeIncludeHidden, maybeExcludeHidden) of
+    (Just val, _) -> return val             -- Use "includehidden" directly if present
+    (Nothing, Just val) -> return (not val) -- Negate "excludehidden" if present
+    -- (Nothing, Nothing) -> fail "Missing required field: either 'includehidden' or 'excludehidden'"
+    (Nothing, Nothing) -> return False
 
 -- Helper function to handle string or array of strings
 parseStringOrArray :: Maybe Value -> Parser [String]

@@ -12,6 +12,7 @@ import Data.Char (toLower)
 import Data.Either (isLeft, lefts, rights, Either (Left))
 import Data.List (isPrefixOf, isSuffixOf, sortBy)
 import Data.Maybe (isJust)
+import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)
 
 import GHC.Generics
 import Data.Aeson
@@ -20,8 +21,6 @@ import HsFind.Paths_hsfind (getDataFileName)
 import HsFind.FileTypes (getFileTypeForName)
 import HsFind.FileUtil (getFileString, isFile)
 import HsFind.FindSettings
-import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)
-import Data.ByteString (putStr)
 
 data FindOption = FindOption
   { long :: String
@@ -160,7 +159,7 @@ shortToLong _ "" = Left "Missing argument"
 shortToLong opts s | length s == 2 && head s == '-' =
                       if any (\so -> short so == Just (tail s)) optsWithShort
                       then Right $ "--" ++ getLongForShort s
-                      else Left $ "Invalid option: " ++ tail s ++ "\n"
+                      else Left $ "Invalid option: " ++ tail s
                    | otherwise = Right s
   where optsWithShort = filter (isJust . short) opts
         getLongForShort x = (long . head . filter (\so -> short so == Just (tail x))) optsWithShort
@@ -172,7 +171,7 @@ updateSettingsFromJson settings opts jsonStr = do
       case updateFindSettingsFromJsonValue settings json of
         Left e -> return $ Left e
         Right settings' -> return $ Right settings'
-    Nothing -> return $ Left "Failed to parse JSON"
+    Nothing -> return $ Left "Unable to parse JSON"
 
 updateSettingsFromFile :: FindSettings -> [FindOption] -> FilePath -> IO (Either String FindSettings)
 updateSettingsFromFile settings opts filePath = do
@@ -183,9 +182,16 @@ updateSettingsFromFile settings opts filePath = do
           settingsJsonStringEither <- getFileString filePath
           case settingsJsonStringEither of
             Left e -> return $ Left e
-            Right settingsJsonString -> updateSettingsFromJson settings opts settingsJsonString
-       else return $ Left "Settings file must be a json file\n"
-  else return $ Left $ "Settings file not found: " ++ filePath ++ "\n"
+            Right settingsJsonString -> do
+              updatedSettingsEither <- updateSettingsFromJson settings opts settingsJsonString
+              case updatedSettingsEither of
+                Left e ->
+                  if e == "Unable to parse JSON"
+                  then return $ Left $ e ++ " in settings file: " ++ filePath
+                  else return $ Left e
+                Right settings' -> return $ Right settings'
+       else return $ Left $ "Invalid settings file (must be JSON):" ++ filePath
+  else return $ Left $ "Settings file not found: " ++ filePath
 
 updateSettingsFromArgs :: FindSettings -> [FindOption] -> [String] -> Either String FindSettings
 updateSettingsFromArgs settings opts arguments =
@@ -200,15 +206,15 @@ updateSettingsFromArgs settings opts arguments =
           [a] | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) []
-              StringActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
-              IntegerActionType -> Left $ "Missing value for option: " ++ a ++ "\n"
-              UnknownActionType -> Left $ "Invalid option: " ++ a ++ "\n"
+              StringActionType -> Left $ "Missing value for option: " ++ a
+               IntegerActionType -> Left $ "Missing value for option: " ++ a
+              UnknownActionType -> Left $ "Invalid option: " ++ a
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) as
               StringActionType -> recSettingsFromArgs (getStringAction (argName a) ss (head as)) (tail as)
               IntegerActionType -> recSettingsFromArgs (getIntegerAction (argName a) ss (read (head as))) (tail as)
-              UnknownActionType -> Left $ "Invalid option: " ++ argName a ++ "\n"
+              UnknownActionType -> Left $ "Invalid option: " ++ argName a
           a:as -> recSettingsFromArgs (ss {paths = paths ss ++ [a]}) as
         longArgs :: [Either String String]
         longArgs = map (shortToLong opts) arguments
