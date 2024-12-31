@@ -72,6 +72,82 @@ impl FindOptions {
         map
     }
 
+    fn apply_bool_arg(
+        &self,
+        arg_name: &str,
+        b: bool,
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
+        match self.bool_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(b, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_string_arg(
+        &self,
+        arg_name: &str,
+        s: &str,
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
+        match self.string_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(&s, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_int_arg(
+        &self,
+        arg_name: &str,
+        i: i32,
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
+        match self.int_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(i, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
+    fn apply_long_arg(
+        &self,
+        arg_name: &str,
+        l: u64,
+        settings: &mut FindSettings,
+    ) -> Result<(), FindError> {
+        match self.long_action_map.get(arg_name) {
+            Some(arg_fn) => match arg_fn(l, settings) {
+                Ok(_) => Ok(()),
+                Err(error) => Err(error),
+            },
+            None => {
+                Err(FindError::new(
+                    format!("Invalid option: {}", arg_name).as_str(),
+                ))
+            }
+        }
+    }
+
     fn settings_from_name_value(
         &self,
         name: &String,
@@ -324,82 +400,6 @@ impl FindOptions {
 
     pub fn print_version(&self) {
         log(format!("xfind version {}", self.version).as_str());
-    }
-
-    fn apply_bool_arg(
-        &self,
-        arg_name: &str,
-        b: bool,
-        settings: &mut FindSettings,
-    ) -> Result<(), FindError> {
-        match self.bool_action_map.get(arg_name) {
-            Some(arg_fn) => match arg_fn(b, settings) {
-                Ok(_) => Ok(()),
-                Err(error) => Err(error),
-            },
-            None => {
-                Err(FindError::new(
-                    format!("Invalid option: {}", arg_name).as_str(),
-                ))
-            }
-        }
-    }
-
-    fn apply_string_arg(
-        &self,
-        arg_name: &str,
-        s: &str,
-        settings: &mut FindSettings,
-    ) -> Result<(), FindError> {
-        match self.string_action_map.get(arg_name) {
-            Some(arg_fn) => match arg_fn(&s, settings) {
-                Ok(_) => Ok(()),
-                Err(error) => Err(error),
-            },
-            None => {
-                Err(FindError::new(
-                    format!("Invalid option: {}", arg_name).as_str(),
-                ))
-            }
-        }
-    }
-
-    fn apply_int_arg(
-        &self,
-        arg_name: &str,
-        i: i32,
-        settings: &mut FindSettings,
-    ) -> Result<(), FindError> {
-        match self.int_action_map.get(arg_name) {
-            Some(arg_fn) => match arg_fn(i, settings) {
-                Ok(_) => Ok(()),
-                Err(error) => Err(error),
-            },
-            None => {
-                Err(FindError::new(
-                    format!("Invalid option: {}", arg_name).as_str(),
-                ))
-            }
-        }
-    }
-
-    fn apply_long_arg(
-        &self,
-        arg_name: &str,
-        l: u64,
-        settings: &mut FindSettings,
-    ) -> Result<(), FindError> {
-        match self.long_action_map.get(arg_name) {
-            Some(arg_fn) => match arg_fn(l, settings) {
-                Ok(_) => Ok(()),
-                Err(error) => Err(error),
-            },
-            None => {
-                Err(FindError::new(
-                    format!("Invalid option: {}", arg_name).as_str(),
-                ))
-            }
-        }
     }
 }
 
