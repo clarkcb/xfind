@@ -36,44 +36,44 @@ sub validate_settings {
     my $settings = shift;
     my $errs = [];
     if (scalar @{$settings->{paths}} < 1) {
-        push(@{$errs}, 'Startpath not defined');
+        push(@$errs, 'Startpath not defined');
     }
     foreach my $p (@{$settings->{paths}}) {
         unless (-e $p) {
             my $expanded = plfind::FileUtil::expand_path($p);
             unless (-e $expanded) {
-                push(@{$errs}, 'Startpath not found');
+                push(@$errs, 'Startpath not found');
                 return $errs;
             }
         }
         unless (-r $p) {
             my $expanded = plfind::FileUtil::expand_path($p);
             unless (-r $expanded) {
-                push(@{$errs}, 'Startpath not readable');
+                push(@$errs, 'Startpath not readable');
                 return $errs;
             }
         }
     }
     if ($settings->{max_depth} > -1 && $settings->{min_depth} > -1
         && $settings->{max_depth} < $settings->{min_depth}) {
-        push(@{$errs}, 'Invalid range for mindepth and maxdepth');
+        push(@$errs, 'Invalid range for mindepth and maxdepth');
         return $errs;
     }
     if (blessed($settings->{max_last_mod}) && blessed($settings->{min_last_mod})
         && $settings->{max_last_mod} < $settings->{min_last_mod}) {
-        push(@{$errs}, 'Invalid range for minlastmod and maxlastmod');
+        push(@$errs, 'Invalid range for minlastmod and maxlastmod');
         return $errs;
     }
     if ($settings->{max_size} > 0 && $settings->{min_size} > 0
         && $settings->{max_size} < $settings->{min_size}) {
-        push(@{$errs}, 'Invalid range for minsize and maxsize');
+        push(@$errs, 'Invalid range for minsize and maxsize');
     }
     return $errs;
 }
 
 sub matches_any_pattern {
     my ($s, $patterns) = @_;
-    foreach my $pattern (@{$patterns}) {
+    foreach my $pattern (@$patterns) {
         if ($s =~ /$pattern/) {
             return 1;
         }
@@ -83,7 +83,7 @@ sub matches_any_pattern {
 
 sub any_matches_any_pattern {
     my ($slist, $patterns) = @_;
-    foreach my $s (@{$slist}) {
+    foreach my $s (@$slist) {
         if (matches_any_pattern($s, $patterns)) {
             return 1;
         }
@@ -263,18 +263,18 @@ sub rec_get_file_results {
                 next;
             }
             if ($recurse && $self->is_matching_dir($f)) {
-                push(@{$dir_results}, $f);
+                push(@$dir_results, $f);
             }
         } elsif ($min_depth < 0 || $current_depth >= $min_depth) {
             my $file_result = $self->filter_to_file_result($f);
             if (defined $file_result) {
-                push(@{$file_results}, $file_result);
+                push(@$file_results, $file_result);
             }
         }
     }
-    foreach my $dir_result (@{$dir_results}) {
+    foreach my $dir_result (@$dir_results) {
         my $sub_file_results = $self->rec_get_file_results($dir_result, $min_depth, $max_depth, $current_depth + 1);
-        push(@{$file_results}, @{$sub_file_results});
+        push(@$file_results, @$sub_file_results);
     }
     return $file_results;
 }
@@ -306,7 +306,7 @@ sub get_file_results {
             if (!$self->{settings}->{recursive}) {
                 $max_depth = 1;
             }
-            push(@{$file_results}, @{$self->rec_get_file_results($file_path, $self->{settings}->{min_depth},
+            push(@$file_results, @{$self->rec_get_file_results($file_path, $self->{settings}->{min_depth},
                 $max_depth, 1)});
         } else {
             plfind::common::log_err("Startpath does not match find settings");
@@ -319,7 +319,7 @@ sub get_file_results {
         }
         my $file_result = $self->filter_to_file_result($file_path);
         if (defined $file_result) {
-            push(@{$file_results}, $file_result);
+            push(@$file_results, $file_result);
         } else {
             plfind::common::log_err("Startpath does not match find settings");
             return [];
@@ -332,7 +332,7 @@ sub find {
     my $self = shift;
     my $file_results = [];
     foreach my $p (@{$self->{settings}->{paths}}) {
-        push(@{$file_results}, @{$self->get_file_results($p)});
+        push(@$file_results, @{$self->get_file_results($p)});
     }
     return $self->sort_file_results($file_results);
 }
@@ -393,15 +393,15 @@ sub sort_file_results {
     my ($self, $file_results) = @_;
     my @sorted;
     if ($self->{settings}->{sort_by} eq plfind::SortBy->FILENAME) {
-        @sorted = sort {$self->cmp_file_results_by_file_name($a, $b)} @{$file_results};
+        @sorted = sort {$self->cmp_file_results_by_file_name($a, $b)} @$file_results;
     } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILESIZE) {
-        @sorted = sort {$self->cmp_file_results_by_file_size($a, $b)} @{$file_results};
+        @sorted = sort {$self->cmp_file_results_by_file_size($a, $b)} @$file_results;
     } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILETYPE) {
-        @sorted = sort {$self->cmp_file_results_by_file_type($a, $b)} @{$file_results};
+        @sorted = sort {$self->cmp_file_results_by_file_type($a, $b)} @$file_results;
     } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->LASTMOD) {
-        @sorted = sort {$self->cmp_file_results_by_last_mod($a, $b)} @{$file_results};
+        @sorted = sort {$self->cmp_file_results_by_last_mod($a, $b)} @$file_results;
     } else {
-        @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @{$file_results};
+        @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @$file_results;
     }
     if ($self->{settings}->{sort_descending}) {
         @sorted = reverse @sorted;

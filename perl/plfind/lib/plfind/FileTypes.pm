@@ -34,8 +34,8 @@ sub get_json_file_type_hashes {
         @{$file_type_name_hash->{xml}});
     $file_type_name_hash->{text} = \@text_names;
     my $hashes = [];
-    push (@{$hashes}, $file_type_ext_hash);
-    push (@{$hashes}, $file_type_name_hash);
+    push (@$hashes, $file_type_ext_hash);
+    push (@$hashes, $file_type_name_hash);
 
     return $hashes;
 }

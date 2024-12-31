@@ -85,8 +85,8 @@ sub add_exts {
         my @split = split(',', $exts);
         $xs = \@split;
     }
-    foreach my $x (@{$xs}) {
-        push(@{$extaref}, $x);
+    foreach my $x (@$xs) {
+        push(@$extaref, $x);
     }
 }
 
@@ -99,19 +99,19 @@ sub add_file_types {
         my @split = split(',', $file_types);
         $fts = \@split;
     }
-    foreach my $ft (@{$fts}) {
-        push(@{$ftaref}, plfind::FileType::from_name($ft));
+    foreach my $ft (@$fts) {
+        push(@$ftaref, plfind::FileType::from_name($ft));
     }
 }
 
 sub add_patterns {
     my ($self, $pats, $pataref) = @_;
     if (ref($pats) eq 'ARRAY') {
-        foreach my $p (@{$pats}) {
-            push (@{$pataref}, $p);
+        foreach my $p (@$pats) {
+            push (@$pataref, $p);
         }
     } else { # treat as a string
-        push(@{$pataref}, $pats);
+        push(@$pataref, $pats);
     }
 }
 
@@ -134,7 +134,7 @@ sub add_path {
 sub add_paths {
     my ($self, $paths) = @_;
     if (ref($paths) eq 'ARRAY') {
-        foreach my $p (@{$paths}) {
+        foreach my $p (@$paths) {
             $self->add_path($p);
         }
     } else { # treat as a string

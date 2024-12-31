@@ -13,17 +13,17 @@ use Scalar::Util qw(blessed reftype);
 use strict;
 use warnings;
 
-sub log_msg($) {
+sub log_msg {
     my $msg = shift;
     print STDOUT $msg . "\n";
 }
 
-sub log_err($) {
+sub log_err {
     my $msg = shift;
     print STDERR 'ERROR: ' . $msg . "\n";
 }
 
-sub trim($) {
+sub trim {
     my $s = shift;
     $s =~ s/^\s+//;
     $s =~ s/\s+$//;
@@ -31,7 +31,7 @@ sub trim($) {
 }
 
 # returns the number of leading whitespace characters
-sub leading_whitespace_chars($) {
+sub leading_whitespace_chars {
     my $s = shift;
     my $trimmed = 0;
 
@@ -43,7 +43,7 @@ sub leading_whitespace_chars($) {
 }
 
 # returns the number of trailing whitespace characters
-sub trailing_whitespace_chars($) {
+sub trailing_whitespace_chars {
     my $s = shift;
     my $trimmed = 0;
 
@@ -55,10 +55,10 @@ sub trailing_whitespace_chars($) {
 }
 
 # returns an array with duplicate values removed
-sub uniq($) {
+sub uniq {
     my $aref = shift;
     my %seen;
-    my @uniqs = grep { !$seen{$_}++ } @{$aref};
+    my @uniqs = grep { !$seen{$_}++ } @$aref;
     return \@uniqs;
 }
 
