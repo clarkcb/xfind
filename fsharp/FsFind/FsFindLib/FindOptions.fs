@@ -165,10 +165,10 @@ module FindOptions =
         UpdateSettingsFromFile filePath settings
 
     let GetOptionNameMap : Map<string, string> =
-            let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
-            let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
-            Seq.append shortArgs longArgs
-            |> Map.ofSeq
+        let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
+        let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
+        Seq.append shortArgs longArgs
+        |> Map.ofSeq
         
     let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
         let optionNameMap = GetOptionNameMap
