@@ -141,26 +141,84 @@ defmodule ExFind.FindOptions do
     OptionParser.parse(args, strict: parser_opts, aliases: alias_opts)
   end
 
-  def update_settings_from_args(settings, args, arg_action_maps) do
-    # IO.puts("\nupdate_settings_from_args()")
+  def update_settings_from_json(settings, json, arg_action_maps) do
+    case JSON.decode(json) do
+      {:ok, parsed_json} ->
+        json_keyword_list = convert_map_to_keyword_list(parsed_json)
+        update_settings_from_args(settings, json_keyword_list, arg_action_maps)
+      {:error, _e} -> {:error, "Unable to parse JSON"}
+    end
+  end
+
+  def get_settings_from_json(json) do
+    update_settings_from_json(FindSettings.new(), json, arg_action_maps())
+  end
+
+  def get_settings_from_json!(json) do
+    case get_settings_from_json(json) do
+      {:error, message} -> raise FindError, message: message
+      {:ok, settings} -> settings
+    end
+  end
+
+  def update_settings_from_file(settings, json_file, arg_action_maps) do
+    expanded_path = FileUtil.expand_path(json_file)
+    cond do
+      not File.exists?(expanded_path) -> {:error, "Settings file not found: #{json_file}"}
+      not String.ends_with?(json_file, ".json") -> {:error, "Invalid settings file (must be JSON): #{json_file}"}
+      true ->
+        case File.read(expanded_path) do
+          {:ok, json} -> update_settings_from_json(settings, json, arg_action_maps)
+          {:error, _e} -> {:error, "Unable to parse JSON"}
+        end
+    end
+  end
+
+  def get_settings_from_file(json_file) do
+    case update_settings_from_file(FindSettings.new(), json_file, arg_action_maps()) do
+      {:error, "Unable to parse JSON"} -> {:error, "Unable to parse JSON in settings file: #{json_file}"}
+      {:error, message} -> {:error, message}
+      {:ok, settings} -> {:ok, settings}
+    end
+  end
+
+  def get_settings_from_file!(json) do
+    case get_settings_from_file(json) do
+      {:error, message} -> raise FindError, message: message
+      {:ok, settings} -> settings
+    end
+  end
+
+  def update_settings_from_args!(settings, args, arg_action_maps) do
+    # IO.puts("\nfindoptions:update_settings_from_args!()")
     # IO.puts("settings=#{inspect(settings)}")
     # IO.puts("args=#{inspect(args)}")
     {bool_arg_action_map, int_arg_action_map, str_arg_action_map} = arg_action_maps
+    # IO.puts("str_arg_action_map=#{inspect(str_arg_action_map)}")
     case args do
       [] -> settings
       [{k, v} | rest] ->
         # IO.puts("k: #{inspect(k)}")
         # IO.puts("v: #{inspect(v)}")
         cond do
-          Map.has_key?(bool_arg_action_map, k) -> update_settings_from_args(Map.get(bool_arg_action_map, k).(v, settings), rest, arg_action_maps)
-          Map.has_key?(int_arg_action_map, k) -> update_settings_from_args(Map.get(int_arg_action_map, k).(v, settings), rest, arg_action_maps)
-          Map.has_key?(str_arg_action_map, k) -> update_settings_from_args(Map.get(str_arg_action_map, k).(v, settings), rest, arg_action_maps)
-          k == :settings_file -> case update_settings_from_file(settings, v) do
-            {:ok, new_settings} -> update_settings_from_args(new_settings, rest, arg_action_maps)
-            {:error, _} -> update_settings_from_args(settings, rest, arg_action_maps)
+          Map.has_key?(bool_arg_action_map, k) -> update_settings_from_args!(Map.get(bool_arg_action_map, k).(v, settings), rest, arg_action_maps)
+          Map.has_key?(int_arg_action_map, k) -> update_settings_from_args!(Map.get(int_arg_action_map, k).(v, settings), rest, arg_action_maps)
+          Map.has_key?(str_arg_action_map, k) -> update_settings_from_args!(Map.get(str_arg_action_map, k).(v, settings), rest, arg_action_maps)
+          k == :settings_file -> case update_settings_from_file(settings, v, arg_action_maps) do
+            {:ok, new_settings} -> update_settings_from_args!(new_settings, rest, arg_action_maps)
+            {:error, message} -> raise FindError, message: message
           end
-          true -> update_settings_from_args(settings, rest, arg_action_maps)
+          # true -> update_settings_from_args(settings, rest, arg_action_maps)
+          true -> raise FindError, message: "Invalid option: #{k}"
         end
+    end
+  end
+
+  def update_settings_from_args(settings, args, arg_action_maps) do
+    try do
+      {:ok, update_settings_from_args!(settings, args, arg_action_maps)}
+    rescue
+      e in FindError -> {:error, e.message}
     end
   end
 
@@ -183,7 +241,7 @@ defmodule ExFind.FindOptions do
 
     case invalid do
       [{opt, nil} | _rest] -> {:error, "Invalid option: #{opt}"}
-      [] -> {:ok, update_settings_from_args(settings, parsed_args_with_paths, arg_action_maps)}
+      [] -> update_settings_from_args(settings, parsed_args_with_paths, arg_action_maps)
     end
   end
 
@@ -214,46 +272,6 @@ defmodule ExFind.FindOptions do
     flattened = flatten_keyword_list(keyword_list, [])
     # IO.puts("flattened=#{inspect(flattened)}")
     flattened
-  end
-
-  def update_settings_from_json(settings, json) do
-    # IO.puts("\nupdate_settings_from_json()")
-    # IO.puts("settings=#{inspect(settings)}")
-    # IO.puts("json=#{inspect(json)}")
-    case JSON.decode(json) do
-      {:ok, parsed_json} ->
-        json_keyword_list = convert_map_to_keyword_list(parsed_json)
-        {:ok, update_settings_from_args(settings, json_keyword_list, arg_action_maps())}
-      {:error, e} -> {:error, e}
-    end
-  end
-
-  def get_settings_from_json(json) do
-    update_settings_from_json(FindSettings.new(), json)
-  end
-
-  def get_settings_from_json!(json) do
-    case get_settings_from_json(json) do
-      {:error, message} -> raise FindError, message: message
-      {:ok, settings} -> settings
-    end
-  end
-
-  def update_settings_from_file(settings, json_file) do
-    expanded_path = FileUtil.expand_path(json_file)
-    cond do
-      not File.exists?(expanded_path) -> {:error, "Settings file not found: #{json_file}"}
-      not String.ends_with?(json_file, ".json") -> {:error, "Invalid settings file (must be JSON): #{json_file}"}
-      true ->
-        case File.read(expanded_path) do
-          {:ok, json} -> update_settings_from_json(settings, json)
-          {:error, _e} -> {:error, "Unable to parse JSON"}
-        end
-    end
-  end
-
-  def get_settings_from_file(json_file) do
-    update_settings_from_file(FindSettings.new(), json_file)
   end
 
   defp get_usage_string(options) do
