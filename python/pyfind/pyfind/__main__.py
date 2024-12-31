@@ -73,6 +73,7 @@ async def main():
                 log('\nMatching files: 0')
 
     except AssertionError as e:
+        log('')
         log_error(f'{e}\n')
         find_options.usage(1)
     except KeyboardInterrupt:

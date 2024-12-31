@@ -218,7 +218,7 @@ class FindOptions:
         keys = sorted(json_dict.keys())
         for arg in keys:
             if arg in self.__bool_action_dict:
-                if json_dict[arg] is True or json_dict[arg] == False:
+                if json_dict[arg] is True or json_dict[arg] is False:
                     self.__bool_action_dict[arg](json_dict[arg], settings)
                 else:
                     raise FindException(f'Invalid value for option: {arg}')
