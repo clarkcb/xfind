@@ -35,7 +35,7 @@ public class Finder {
         this.fileTypes = new FileTypes();
     }
 
-    final void validateSettings() throws FindException {
+    public final void validateSettings() throws FindException {
         var paths = settings.getPaths();
         if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
             throw new FindException("Startpath not defined");
