@@ -373,27 +373,28 @@ public class Finder
 	{
 		return fr1.FilePath.LastWriteTimeUtc == fr2.FilePath.LastWriteTimeUtc ? CompareByPath(fr1, fr2) : fr1.FilePath.LastWriteTimeUtc.CompareTo(fr2.FilePath.LastWriteTimeUtc);
 	}
-	
-	private void SortFileResults(List<FileResult> fileResults)
+
+	public Comparison<FileResult> GetFileResultsComparison()
 	{
 		switch (Settings.SortBy)
 		{
 			case SortBy.FileName:
-				fileResults.Sort(CompareByName);
-				break;
+				return CompareByName;
 			case SortBy.FileSize:
-				fileResults.Sort(CompareBySize);
-				break;
+				return CompareBySize;
 			case SortBy.FileType:
-				fileResults.Sort(CompareByType);
-				break;
+				return CompareByType;
 			case SortBy.LastMod:
-				fileResults.Sort(CompareByLastMod);
-				break;
+				return CompareByLastMod;
 			default:
-				fileResults.Sort(CompareByPath);
-				break;
+				return CompareByPath;
 		}
+	}
+
+	private void SortFileResults(List<FileResult> fileResults)
+	{
+		var comparison = GetFileResultsComparison();
+		fileResults.Sort(comparison);
 
 		if (Settings.SortDescending)
 		{
@@ -416,13 +417,16 @@ public class Finder
 		var matchingDirs = GetMatchingDirs(fileResults)
 			.Select(d => d.ToString())
 			.ToList();
-		if (matchingDirs.Count != 0) {
+		if (matchingDirs.Count != 0)
+		{
 			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
 			foreach (var d in matchingDirs)
 			{
 				Logger.Log(d);
 			}
-		} else {
+		}
+		else
+		{
 			Logger.Log("\nMatching directories: 0");
 		}
 	}
@@ -441,13 +445,16 @@ public class Finder
 		var matchingFiles = GetMatchingFiles(fileResults)
 			.Select(f => f.ToString())
 			.ToList();
-		if (matchingFiles.Count != 0) {
+		if (matchingFiles.Count != 0)
+		{
 			Logger.Log($"\nMatching files ({matchingFiles.Count}):");
 			foreach (var f in matchingFiles)
 			{
 				Logger.Log(f);
 			}
-		} else {
+		}
+		else
+		{
 			Logger.Log("\nMatching files: 0");
 		}
 	}

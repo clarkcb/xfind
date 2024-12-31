@@ -23,7 +23,7 @@ static class Program
 			}
 
 			var finder = new Finder(settings);
-			var fileResults = finder.Find().ToList();
+			var fileResults = finder.Find();
 
 			if (settings.PrintDirs)
 			{

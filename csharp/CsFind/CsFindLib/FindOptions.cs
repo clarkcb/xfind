@@ -282,12 +282,6 @@ public class FindOptions
 		return settings;
 	}
 
-	public void Usage(int exitCode = 0)
-	{
-		Console.WriteLine(GetUsageString());
-		Environment.Exit(exitCode);
-	}
-
 	public string GetUsageString()
 	{
 		var sb = new StringBuilder();
@@ -318,5 +312,11 @@ public class FindOptions
 			sb.AppendLine(string.Format(format, optStrings[i], optDescs[i]));
 		}
 		return sb.ToString();
+	}
+
+	public void Usage(int exitCode = 0)
+	{
+		Console.WriteLine(GetUsageString());
+		Environment.Exit(exitCode);
 	}
 }
