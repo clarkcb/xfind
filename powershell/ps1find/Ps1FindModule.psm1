@@ -681,8 +681,8 @@ class FindOptions {
         })
         return $opts | Sort-Object -Property SortArg
     }
-    
-    [void]UpdateSettingsFromJson([string]$json, [FindSettings]$settings) {
+
+    [void]UpdateSettingsFromJson([FindSettings]$settings, [string]$json) {
         $settingsHash = $json | ConvertFrom-Json -AsHashtable
         # keys are sorted so that output is consistent across all versions
         $keys = $settingsHash.Keys | Sort-Object
@@ -716,8 +716,8 @@ class FindOptions {
             }
         }
     }
-    
-    [void]UpdateSettingsFromFile([string]$filePath, [FindSettings]$settings) {
+
+    [void]UpdateSettingsFromFilePath([FindSettings]$settings, [string]$filePath) {
         $expandedPath = ExpandPath($filePath)
         if (-not (Test-Path -Path $expandedPath)) {
             throw "Settings file not found: $filePath"
@@ -726,7 +726,7 @@ class FindOptions {
             throw "Invalid settings file (must be JSON): $filePath"
         }
         $json = Get-Content -Path $expandedPath -Raw
-        $this.UpdateSettingsFromJson($json, $settings)
+        $this.UpdateSettingsFromJson($settings, $json)
     }
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {
@@ -750,36 +750,20 @@ class FindOptions {
                 if ($this.BoolActionMap.ContainsKey($longArg)) {
                     $this.BoolActionMap[$longArg].Invoke($true, $settings)
 
-                } elseif ($this.StringActionMap.ContainsKey($longArg) -or $this.IntActionMap.ContainsKey($longArg))
-                {
-                    $idx++
-                    if ($idx -lt $argList.Count)
-                    {
-                        if ( $this.StringActionMap.ContainsKey($longArg))
-                        {
-                            $this.StringActionMap[$longArg].Invoke($argList[$idx], $settings)
-                        }
-                        else
-                        {
-                            $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
-                        }
-                    }
-                    else
-                    {
-                        throw "Missing value for $arg"
-                    }
-                } elseif ($longArg -eq 'settings-file') {
-                    $idx++
-                    if ($idx -lt $argList.Count)
-                    {
-                        $this.UpdateSettingsFromFile($argList[$idx], $settings)
-                    }
-                    else
-                    {
-                        throw "Missing value for $arg"
-                    }
                 } else {
-                    throw "Invalid option: $arg"
+                    $idx++
+                    if ($idx -ge $argList.Count) {
+                        throw "Missing value for $arg"
+                    }
+                    if ($this.StringActionMap.ContainsKey($longArg)) {
+                        $this.StringActionMap[$longArg].Invoke($argList[$idx], $settings)
+                    } elseif ($this.IntActionMap.ContainsKey($longArg)) {
+                        $this.IntActionMap[$longArg].Invoke([int]$argList[$idx], $settings)
+                    } elseif ($longArg -eq 'settings-file') {
+                        $this.UpdateSettingsFromFilePath($settings, $argList[$idx])
+                    } else {
+                        throw "Invalid option: $arg"
+                    }
                 }
             } else {
                 $settings.Paths += $arg
