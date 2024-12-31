@@ -23,7 +23,7 @@ use plfind::FindOptions;
 
 sub get_matching_dirs {
     my ($file_results) = @_;
-    my @dirs = map {$_->{file_path}->parent} @{$file_results};
+    my @dirs = map {$_->{file_path}->parent} @$file_results;
     my $uniq = plfind::common::uniq(\@dirs);
     return $uniq;
 }
@@ -31,9 +31,9 @@ sub get_matching_dirs {
 sub print_matching_dirs {
     my ($file_results) = @_;
     my $dirs = get_matching_dirs($file_results);
-    if (scalar @{$dirs}) {
-        plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @{$dirs}));
-        foreach my $d (@{$dirs}) {
+    if (scalar @$dirs) {
+        plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @$dirs));
+        foreach my $d (@$dirs) {
             plfind::common::log_msg($d);
         }
     } else {
@@ -43,16 +43,16 @@ sub print_matching_dirs {
 
 sub get_matching_files {
     my ($file_results) = @_;
-    my @files = map {$_->to_string()} @{$file_results};
+    my @files = map {$_->to_string()} @$file_results;
     return \@files;
 }
 
 sub print_matching_files {
     my ($file_results) = @_;
     my $files = get_matching_files($file_results);
-    if (scalar @{$files}) {
-        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @{$files}));
-        foreach my $f (@{$files}) {
+    if (scalar @$files) {
+        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @$files));
+        foreach my $f (@$files) {
             plfind::common::log_msg($f);
         }
     } else {
@@ -64,7 +64,7 @@ sub main {
     my $find_options = plfind::FindOptions->new();
     my ($settings, $errs) = $find_options->settings_from_args(\@ARGV);
 
-    if (scalar @{$errs}) {
+    if (scalar @$errs) {
         plfind::common::log_msg('');
         plfind::common::log_err($errs->[0]);
         plfind::common::log_msg('');
@@ -86,7 +86,7 @@ sub main {
 
     my ($finder, $errs2) = plfind::Finder->new($settings);
 
-    if (scalar @{$errs2}) {
+    if (scalar @$errs2) {
         plfind::common::log_msg('');
         plfind::common::log_err($errs2->[0]);
         plfind::common::log_msg('');
