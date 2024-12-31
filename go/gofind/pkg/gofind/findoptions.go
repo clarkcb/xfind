@@ -53,7 +53,24 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 	type JsonSettings map[string]interface{}
 	var jsonSettings JsonSettings
 	if err := json.Unmarshal(data, &jsonSettings); err != nil {
-		return err
+		errMsg := fmt.Sprintf("Unable to parse JSON")
+		return fmt.Errorf(errMsg)
+	}
+	for k := range jsonSettings {
+		foundOption := false
+		if k == "path" {
+			foundOption = true
+			continue
+		}
+		for _, o := range fo.FindOptions {
+			if o.Long == k {
+				foundOption = true
+				break
+			}
+		}
+		if !foundOption {
+			return fmt.Errorf(fmt.Sprintf("Invalid option: %v", k))
+		}
 	}
 	for k := range jsonSettings {
 		if bf, isBool := boolActionMap[k]; isBool {
@@ -131,10 +148,18 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 }
 
 func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
-	if data, err := os.ReadFile(filePath); err != nil {
+	expandedPath := ExpandPath(filePath)
+	if data, err := os.ReadFile(expandedPath); err != nil {
 		return err
 	} else {
-		return fo.SettingsFromJson(data, settings)
+		if err := fo.SettingsFromJson(data, settings); err != nil {
+			if err.Error() == "Unable to parse JSON" {
+				errMsg := fmt.Sprintf("Unable to parse JSON in settings file: %v", filePath)
+				return fmt.Errorf(errMsg)
+			}
+			return err
+		}
+		return nil
 	}
 }
 
@@ -150,9 +175,6 @@ func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
 			k := strings.TrimLeft(args[i], "-")
-			if false {
-				Log(fmt.Sprintf("k: %s\n", k))
-			}
 			if bf, isBool := boolActionMap[k]; isBool {
 				bf(true, settings)
 			} else {
