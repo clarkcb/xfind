@@ -2,7 +2,7 @@ package scalafind
 
 import org.json.{JSONArray, JSONObject, JSONTokener}
 
-import java.io.{File, IOException, InputStreamReader}
+import java.io.{IOException, InputStreamReader}
 import java.nio.file.{Files, Path, Paths}
 import java.time.LocalDateTime
 import scala.annotation.tailrec
@@ -117,7 +117,7 @@ object FindOptions {
     "path" ->
       ((s, ss) => ss.copy(paths = ss.paths + Paths.get(s))),
     "settings-file" ->
-      ((s, ss) => settingsFromFile(s, ss)),
+      ((s, ss) => updateSettingsFromFile(s, ss)),
     "sort-by" ->
       ((s, ss) => ss.copy(sortBy = SortBy.forName(s))),
   )
@@ -178,7 +178,7 @@ object FindOptions {
     }
   }
 
-  def settingsFromJson(json: String, ss: FindSettings): FindSettings = {
+  def updateSettingsFromJson(json: String, ss: FindSettings): FindSettings = {
     val jsonObject = new JSONObject(new JSONTokener(json))
     @tailrec
     def recSettingsFromJson(keys: List[String], settings: FindSettings): FindSettings = keys match {
@@ -193,7 +193,7 @@ object FindOptions {
     recSettingsFromJson(keys, ss)
   }
 
-  private def settingsFromFile(filePath: String, ss: FindSettings): FindSettings = {
+  private def updateSettingsFromFile(filePath: String, ss: FindSettings): FindSettings = {
     val path: Path = FileUtil.expandPath(Paths.get(filePath))
     if (!Files.exists(path)) {
       throw new FindException("Settings file not found: %s".format(filePath))
@@ -203,7 +203,7 @@ object FindOptions {
     }
     try {
       val json: String = FileUtil.getPathContents(path)
-      settingsFromJson(json, ss)
+      updateSettingsFromJson(json, ss)
     } catch {
       case e: IOException =>
         throw new FindException("Error reading settings file: %s".format(filePath))

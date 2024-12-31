@@ -21,7 +21,7 @@ object FindMain {
     val dirs = getMatchingDirs(fileResults)
     if (dirs.nonEmpty) {
       Common.log("\nMatching directories (%d):".format(dirs.length))
-      dirs.foreach(f => Common.log(f.toString))
+      dirs.foreach(d => Common.log(d.toString))
     } else {
       Common.log("\nMatching directories: 0")
     }
@@ -31,7 +31,7 @@ object FindMain {
     val files = getMatchingFiles(fileResults)
     if (files.nonEmpty) {
       Common.log("\nMatching files (%d):".format(files.length))
-      files.foreach(f => Common.log(f.toString))
+      files.foreach(f => Common.log(f))
     } else {
       Common.log("\nMatching files: 0")
     }
