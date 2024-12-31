@@ -120,7 +120,7 @@ class FindOptionsTest extends TestCase
   "includehidden": true
 }
 END_JSON;
-        $this->find_options->settings_from_json($json, $settings);
+        $this->find_options->update_settings_from_json($json, $settings);
         $this->assertCount(1, $settings->paths);
         $this->assertEquals('~/src/xfind/', $settings->paths[0]);
         $this->assertCount(2, $settings->in_extensions);
@@ -140,7 +140,7 @@ END_JSON;
     {
         $settings = new FindSettings();
         $json = '';
-        $this->find_options->settings_from_json($json, $settings);
+        $this->find_options->update_settings_from_json($json, $settings);
         $this->assertTrue(self::settings_equals_defaults($settings));
     }
 
@@ -149,6 +149,6 @@ END_JSON;
         $settings = new FindSettings();
         $json = '<this>is invalid</this> JSON';
         $this->expectException(FindException::class);
-        $this->find_options->settings_from_json($json, $settings);
+        $this->find_options->update_settings_from_json($json, $settings);
     }
 }

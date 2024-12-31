@@ -85,7 +85,7 @@ class FindOptions
                 fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
             'out-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
             'path' => fn(string $s, FindSettings $fs) => $fs->paths[] = $s,
-            'settings-file' => fn(string $s, FindSettings $fs) => $this->settings_from_file($s, $fs),
+            'settings-file' => fn(string $s, FindSettings $fs) => $this->update_settings_from_file($s, $fs),
             'sort-by' => fn(string $s, FindSettings $fs) => $fs->set_sort_by($s),
         ];
 
@@ -142,7 +142,7 @@ class FindOptions
      * @return void
      * @throws FindException
      */
-    public function settings_from_json(string $json, FindSettings $settings): void
+    public function update_settings_from_json(string $json, FindSettings $settings): void
     {
         if (trim($json) === '') {
             return;
@@ -175,7 +175,6 @@ class FindOptions
                     } else {
                         throw new FindException("Invalid value for option: $k");
                     }
-
                 } else {
                     throw new FindException("Invalid option: $k");
                 }
@@ -191,7 +190,7 @@ class FindOptions
      * @return void
      * @throws FindException
      */
-    private function settings_from_file(string $file_path, FindSettings $settings): void
+    private function update_settings_from_file(string $file_path, FindSettings $settings): void
     {
         $expanded_path = FileUtil::expand_path($file_path);
         if (!file_exists($expanded_path)) {
@@ -202,7 +201,7 @@ class FindOptions
         }
         $json = file_get_contents($expanded_path);
         if ($json) {
-            $this->settings_from_json($json, $settings);
+            $this->update_settings_from_json($json, $settings);
         }
     }
 
