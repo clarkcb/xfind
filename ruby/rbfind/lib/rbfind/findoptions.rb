@@ -55,7 +55,7 @@ module RbFind
       settings
     end
 
-    def settings_from_json(json, settings)
+    def update_settings_from_json(json, settings)
       json_hash = JSON.parse(json)
       # keys are sorted so that output is consistent across all versions
       keys = json_hash.keys.sort
@@ -85,6 +85,8 @@ module RbFind
         elsif @int_action_dict.key?(arg_sym)
           if json_hash[arg].is_a?(Numeric)
             @int_action_dict[arg_sym].call(json_hash[arg], settings)
+          else
+            raise FindError, "Invalid value for option: #{arg}"
           end
         else
           raise FindError, "Invalid option: #{arg}"
@@ -92,7 +94,7 @@ module RbFind
       end
     end
 
-    def settings_from_file(file_path, settings)
+    def update_settings_from_file(file_path, settings)
       expanded_path = Pathname.new(file_path).expand_path
       unless expanded_path.exist?
         raise FindError, "Settings file not found: #{file_path}"
@@ -102,13 +104,13 @@ module RbFind
       end
       f = File.open(expanded_path.to_s, mode: 'r')
       json = f.read
-      settings_from_json(json, settings)
+      update_settings_from_json(json, settings)
     rescue IOError => e
-      raise FindError, "#{e}"
+      raise FindError, e.to_s
     rescue ArgumentError => e
-      raise FindError, "#{e}"
+      raise FindError, e.to_s
     rescue FindError => e
-      raise FindError, "#{e}"
+      raise FindError, e.to_s
     ensure
       f&.close
     end
@@ -186,7 +188,7 @@ module RbFind
         'out-filepattern': ->(s, settings) { settings.add_patterns(s, settings.out_file_patterns) },
         'out-filetype': ->(s, settings) { settings.add_file_types(s, settings.out_file_types) },
         path: ->(s, settings) { settings.add_path(s) },
-        'settings-file': ->(s, settings) { settings_from_file(s, settings) },
+        'settings-file': ->(s, settings) { update_settings_from_file(s, settings) },
         'sort-by': ->(s, settings) { settings.set_sort_by_for_name(s) }
       }
       @int_action_dict = {

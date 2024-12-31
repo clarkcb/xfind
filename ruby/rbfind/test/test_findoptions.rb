@@ -87,7 +87,7 @@ module RbFind
         "includehidden": true
       }
       JSON
-      @findoptions.settings_from_json(json, settings)
+      @findoptions.update_settings_from_json(json, settings)
       assert_equal(1, settings.paths.length)
       assert_equal(Pathname.new('~/src/xfind/'), settings.paths.first)
       assert_equal(2, settings.in_extensions.length)
