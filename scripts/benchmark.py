@@ -902,23 +902,30 @@ def main():
         skip_scenarios.extend(parsed_args.skip_scenario)
 
     if parsed_args.langs:
-        langs = sorted(parsed_args.langs.split(','))
-        for lang in langs:
-            if lang in xfind_dict:
+        alias_langs = sorted(parsed_args.langs.split(','))
+        for alias_lang in alias_langs:
+            if alias_lang in lang_alias_dict:
+                lang = lang_alias_dict[alias_lang]
+                langs.append(lang)
                 xfind_names.append(xfind_dict[lang])
             else:
                 print(f'Skipping unknown language: {lang}')
     else:
+        langs = all_langs
         xfind_names = all_xfind_names
 
     if parsed_args.skip_langs:
-        skip_langs = sorted(parsed_args.skip_langs.split(','))
-        for skip_lang in skip_langs:
-            if skip_lang in xfind_dict:
+        alias_skip_langs = sorted(parsed_args.skip_langs.split(','))
+        for alias_skip_lang in alias_skip_langs:
+            if alias_skip_lang in lang_alias_dict:
+                skip_lang = lang_alias_dict[alias_skip_lang]
+                skip_langs.append(skip_lang)
+                if skip_lang in langs:
+                    langs.remove(skip_lang)
                 if xfind_dict[skip_lang] in xfind_names:
                     del xfind_names[xfind_names.index(xfind_dict[skip_lang])]
             else:
-                print(f'Skipping unknown language: {lang}')
+                print(f'Skipping unknown language: {alias_skip_lang}')
 
     if parsed_args.runs:
         runs = parsed_args.runs
@@ -929,14 +936,14 @@ def main():
     print(f'debug: {debug}')
     print(f'exit_on_diff: {exit_on_diff}')
     print(f'groups: {groups}')
-    print(f'langs: {langs}')
+    print(f'langs ({len(langs)}): [{", ".join(langs)}]')
     print(f'runs: {runs}')
     print(f'scenarios: {scenarios}')
     print(f'scenarios_file: {scenarios_file}')
     print(f'skip_groups: {skip_groups}')
-    print(f'skip_langs: {skip_langs}')
+    print(f'skip_langs ({len(skip_langs)}): [{", ".join(skip_langs)}]')
     print(f'skip_scenarios: {skip_scenarios}')
-    print(f'xfind_names ({len(xfind_names)}): {str(xfind_names)}')
+    print(f'xfind_names ({len(xfind_names)}): [{", ".join(xfind_names)}]')
     benchmarker = Benchmarker(xfind_names=xfind_names, runs=runs,
                               group_names=groups, scenario_names=scenarios,
                               skip_groups=skip_groups, skip_scenarios=skip_scenarios,
