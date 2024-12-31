@@ -213,10 +213,6 @@ public class FindOptions {
                             let value = json[key]
                             if let string = value as? String {
                                 stringActionDict[longArg!]!(string, settings)
-                            } else if let bool = value as? Bool {
-                                stringActionDict[longArg!]!(bool.description, settings)
-                            } else if let int = value as? Int {
-                                stringActionDict[longArg!]!(int.description, settings)
                             } else if let stringArray = value as? [String] {
                                 for s in stringArray {
                                     stringActionDict[longArg!]!(s, settings)

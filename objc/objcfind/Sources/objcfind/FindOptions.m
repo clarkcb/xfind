@@ -214,6 +214,9 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
                 NSInteger i = [num integerValue];
                 void(^block)(NSInteger, FindSettings*) = self.integerActionDict[name];
                 block(i, settings);
+            } else {
+                setError(error, [@"Invalid value for option: " stringByAppendingString:name]);
+                return;
             }
         } else {
             setError(error, [@"Invalid option: " stringByAppendingString:name]);
@@ -269,7 +272,7 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
         setError(error, [@"Invalid settings file (must be JSON): " stringByAppendingString:settingsFilePath]);
         return;
     }
-    NSData *data = [NSData dataWithContentsOfFile:settingsFilePath];
+    NSData *data = [NSData dataWithContentsOfFile:expandedPath];
     [self updateSettingsFromData:data settings:settings error:error];
 }
 
@@ -295,7 +298,6 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
                 arg = [arg substringFromIndex:1];
             }
             if (self.longArgDict[arg]) {
-                //logMsg([NSString stringWithFormat:@"Option in longArgDict: %@", arg]);
                 NSString *longArg = self.longArgDict[arg];
                 if (self.boolActionDict[longArg]) {
                     void(^block)(BOOL, FindSettings *) = self.boolActionDict[longArg];

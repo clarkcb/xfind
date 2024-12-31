@@ -316,7 +316,7 @@ class FindOptionsTest extends AnyFunSuite with BeforeAndAfterAll {
                  |  "followsymlinks": true,
                  |  "includehidden": false
                  |}"""
-    val settings = FindOptions.settingsFromJson(json.stripMargin, ss)
+    val settings = FindOptions.updateSettingsFromJson(json.stripMargin, ss)
     assert(settings.paths.size == 1)
     assert(settings.paths.contains(Paths.get("~/src/xfind/")))
     assert(settings.inExtensions.size == 2)
