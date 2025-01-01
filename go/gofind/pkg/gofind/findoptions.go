@@ -150,11 +150,15 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
 	expandedPath := ExpandPath(filePath)
 	if data, err := os.ReadFile(expandedPath); err != nil {
+		if strings.HasSuffix(err.Error(), "no such file or directory") {
+			errMsg := fmt.Sprintf("Settings file not found: %v", filePath)
+			return fmt.Errorf(errMsg)
+		}
 		return err
 	} else {
 		if err := fo.SettingsFromJson(data, settings); err != nil {
 			if err.Error() == "Unable to parse JSON" {
-				errMsg := fmt.Sprintf("Unable to parse JSON in settings file: %v", filePath)
+				errMsg := fmt.Sprintf("Invalid settings file (must be JSON): %v", filePath)
 				return fmt.Errorf(errMsg)
 			}
 			return err
