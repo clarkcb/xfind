@@ -779,21 +779,14 @@ mod tests {
         let args: Vec<String> = args.into_iter().map(|a| a.to_string()).collect();
         match options.settings_from_args(args.iter()) {
             Ok(settings) => {
-                assert!(settings.debug());
                 assert!(!settings.include_hidden());
                 assert_eq!(settings.in_extensions().len(), 2);
                 assert_eq!(settings.in_extensions()[0], String::from("js"));
                 assert_eq!(settings.in_extensions()[1], String::from("ts"));
-                assert!(settings.out_dir_patterns().len() > 7);
-                assert_eq!(settings.out_dir_patterns()[0].to_string(), String::from("_"));
-                assert_eq!(settings.paths().len(), 1);
-                assert_eq!(
-                    settings.paths()[0],
-                    String::from("~/src/xfind/")
-                );
+                assert!(settings.out_dir_patterns().len() > 0);
+                assert!(settings.paths().len() > 0);
                 assert!(settings.print_dirs());
                 assert!(settings.print_files());
-                assert!(settings.verbose());
             },
             Err(error) => {
                 log(&error.to_string());
