@@ -190,7 +190,7 @@ updateSettingsFromFile settings opts filePath = do
                   then return $ Left $ e ++ " in settings file: " ++ filePath
                   else return $ Left e
                 Right settings' -> return $ Right settings'
-       else return $ Left $ "Invalid settings file (must be JSON):" ++ filePath
+       else return $ Left $ "Invalid settings file (must be JSON): " ++ filePath
   else return $ Left $ "Settings file not found: " ++ filePath
 
 updateSettingsFromArgs :: FindSettings -> [FindOption] -> [String] -> Either String FindSettings
@@ -207,7 +207,7 @@ updateSettingsFromArgs settings opts arguments =
             case getActionType (argName a) of
               BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) []
               StringActionType -> Left $ "Missing value for option: " ++ a
-               IntegerActionType -> Left $ "Missing value for option: " ++ a
+              IntegerActionType -> Left $ "Missing value for option: " ++ a
               UnknownActionType -> Left $ "Invalid option: " ++ a
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
