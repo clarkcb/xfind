@@ -246,6 +246,13 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
         
         // keys are sorted so that output is consistent across all versions
         NSArray<NSString*> *keys = [[jsonObject allKeys] sortedArrayUsingSelector:@selector(compare:)];
+        // First check for invalid keys
+        for (NSString *key in keys) {
+            if (!self.longArgDict[key]) {
+                setError(error, [@"Invalid option: " stringByAppendingString:key]);
+                return;
+            }
+        }
         for (NSString *key in keys) {
             NSObject *val = jsonObject[key];
             [self applySetting:key obj:val settings:settings error:error];
@@ -274,6 +281,12 @@ typedef void (^IntegerActionBlockType)(NSInteger, FindSettings*);
     }
     NSData *data = [NSData dataWithContentsOfFile:expandedPath];
     [self updateSettingsFromData:data settings:settings error:error];
+    if (*error) {
+        if ([[*error domain] isEqualToString:@"Unable to parse JSON"] || [[*error domain] isEqualToString:@"Invalid JSON"]) {
+            NSString *newErr = [[[*error domain] stringByAppendingString:@" in settings file: "] stringByAppendingString:settingsFilePath];
+            setError(error, newErr);
+        }
+    }
 }
 
 - (FindSettings *) settingsFromFile:(NSString *)settingsFilePath error:(NSError **)error {

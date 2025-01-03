@@ -183,6 +183,10 @@ public class FindOptions {
         var jsonObj = new JSONObject(new JSONTokener(json));
         // keys are sorted so that output is consistent across all versions
         var keys = jsonObj.keySet().stream().sorted().collect(Collectors.toList());
+        var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).collect(Collectors.toList());
+        if (!invalidKeys.isEmpty()) {
+            throw new FindException("Invalid option: " + invalidKeys.get(0));
+        }
         for (var k : keys) {
             var v = jsonObj.get(k);
             if (v != null) {

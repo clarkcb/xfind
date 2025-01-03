@@ -683,9 +683,18 @@ class FindOptions {
     }
 
     [void]UpdateSettingsFromJson([FindSettings]$settings, [string]$json) {
-        $settingsHash = $json | ConvertFrom-Json -AsHashtable
+        $settingsHash = @{}
+        try {
+            $settingsHash = $json | ConvertFrom-Json -AsHashtable
+        } catch {
+            throw "Unable to parse JSON"
+        }
         # keys are sorted so that output is consistent across all versions
         $keys = $settingsHash.Keys | Sort-Object
+        $invalidKeys = @($keys | Where-Object { -not $this.LongArgMap.ContainsKey($_) })
+        if ($invalidKeys.Count -gt 0) {
+            throw "Invalid option: " + $invalidKeys[0]
+        }
         foreach ($key in $keys) {
             $value = $settingsHash[$key]
             if ($this.BoolActionMap.ContainsKey($key)) {
@@ -712,6 +721,7 @@ class FindOptions {
                     throw "Invalid value for option: " + $key
                 }
             } else {
+                # should never reach here
                 throw "Invalid option: " + $key
             }
         }
@@ -726,7 +736,15 @@ class FindOptions {
             throw "Invalid settings file (must be JSON): $filePath"
         }
         $json = Get-Content -Path $expandedPath -Raw
-        $this.UpdateSettingsFromJson($settings, $json)
+        try {
+            $this.UpdateSettingsFromJson($settings, $json)
+        }
+        catch {
+            if ($_.Exception.Message -eq 'Unable to parse JSON') {
+                throw "Unable to parse JSON in settings file: $filePath"
+            }
+            throw $_
+        }
     }
 
     [FindSettings]SettingsFromArgs([string[]]$argList) {

@@ -33,6 +33,9 @@ module RbFind
         arg = args.shift
         if arg.start_with?('-')
           arg = arg[1..arg.length] while arg && arg.start_with?('-')
+          unless @long_arg_dict.key?(arg)
+            raise FindError, "Invalid option: #{arg}"
+          end
           long_arg = @long_arg_dict[arg]
           if @bool_action_dict.key?(long_arg)
             @bool_action_dict[long_arg].call(true, settings)
@@ -59,6 +62,10 @@ module RbFind
       json_hash = JSON.parse(json)
       # keys are sorted so that output is consistent across all versions
       keys = json_hash.keys.sort
+      invalid_keys = keys.reject { |k| @long_arg_dict.key?(k) }
+      unless invalid_keys.empty?
+        raise FindError, "Invalid option: #{invalid_keys[0]}"
+      end
       keys.each do |arg|
         arg_sym = arg.to_sym
         if @bool_action_dict.key?(arg_sym)
@@ -111,6 +118,8 @@ module RbFind
       raise FindError, e.to_s
     rescue FindError => e
       raise FindError, e.to_s
+    rescue JSON::ParserError => e
+      raise FindError, "Unable to parse JSON in settings file: #{file_path}"
     ensure
       f&.close
     end

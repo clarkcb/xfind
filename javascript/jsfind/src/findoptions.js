@@ -139,6 +139,10 @@ class FindOptions {
         const obj = JSON.parse(json);
         // keys are sorted so that output is consistent across all versions
         const keys = Object.keys(obj).sort();
+        const invalidKeys = keys.filter(k => !Object.prototype.hasOwnProperty.call(this.argNameMap, k));
+        if (invalidKeys.length > 0) {
+            return new FindError(`Invalid option: ${invalidKeys[0]}`);
+        }
         for (const k of keys) {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {

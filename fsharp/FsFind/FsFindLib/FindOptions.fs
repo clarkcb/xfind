@@ -87,6 +87,14 @@ module FindOptions =
     let _findOptionsResource = EmbeddedResource.GetResourceFileContents("FsFindLib.Resources.findoptions.json");
     let options = OptionsFromJson(_findOptionsResource)
 
+    let GetOptionNameMap : Map<string, string> =
+        let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
+        let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
+        Seq.append shortArgs longArgs
+        |> Map.ofSeq
+
+    let optionNameMap = GetOptionNameMap
+
     let rec ApplySetting (arg : string) (elem : JsonElement) (settings : FindSettings) : Result<FindSettings, string> =
         match (boolActionMap.ContainsKey(arg), stringActionMap.ContainsKey(arg), intActionMap.ContainsKey(arg)) with
         | true, false, false ->
@@ -141,8 +149,11 @@ module FindOptions =
                     | Ok settings -> recSettingsFromArgs tail settings
                     | Error e -> Error e
             // keys are sorted so that output is consistent across all versions
-            let argList = settingsDict.Keys |> List.ofSeq |> List.sort
-            recSettingsFromArgs argList settings
+            let keys = settingsDict.Keys |> List.ofSeq |> List.sort
+            let invalidKeys = keys |> List.filter (fun k -> not (optionNameMap.ContainsKey(k)))
+            match invalidKeys with
+            | [] -> recSettingsFromArgs keys settings
+            | k :: _ -> Error $"Invalid option: {k}"
 
     let UpdateSettingsFromFile (filePath : string) (settings : FindSettings) : Result<FindSettings, string> =
         let expandedPath = FileUtil.ExpandPath(filePath)
@@ -164,14 +175,7 @@ module FindOptions =
         let settings = FindSettings()
         UpdateSettingsFromFile filePath settings
 
-    let GetOptionNameMap : Map<string, string> =
-        let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
-        let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
-        Seq.append shortArgs longArgs
-        |> Map.ofSeq
-        
     let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
-        let optionNameMap = GetOptionNameMap
 
         let argRegex = Regex("^(?:-{1,2})(?<opt>.*)$")
 

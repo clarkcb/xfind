@@ -32,6 +32,17 @@ object FindOptions {
     List.empty[FindOption] ++ opts
   }
 
+  private var _longArgMap = Map.empty[String, String]
+
+  private def longArgMap: Map[String, String] = {
+    if (_longArgMap.isEmpty) {
+      val longOpts: Map[String, String] = findOptions.map { o => (o.longArg, o.longArg)}.toMap
+      val shortOpts = findOptions.filter(_.shortArg.nonEmpty).map { o => (o.shortArg.get, o.longArg)}.toMap
+      _longArgMap = longOpts ++ shortOpts ++ Map("path" -> "path")
+    }
+    _longArgMap
+  }
+
   private def loadFindOptionsFromJson(): Unit = {
     try {
       val findOptionsInputStream = getClass.getResourceAsStream(_findOptionsJsonPath)
@@ -190,6 +201,10 @@ object FindOptions {
 
     // keys are sorted so that output is consistent across all versions
     val keys = jsonObject.keySet().asScala.toList.sorted
+    val invalidKeys = keys.filter(k => !longArgMap.contains(k))
+    if (invalidKeys.nonEmpty) {
+      throw new FindException("Invalid option: %s".format(invalidKeys.head))
+    }
     recSettingsFromJson(keys, ss)
   }
 
@@ -210,21 +225,14 @@ object FindOptions {
     }
   }
 
-  private def getArgMap: Map[String, String] = {
-    val longOpts: Map[String, String] = findOptions.map { o => (o.longArg, o.longArg)}.toMap
-    val shortOpts = findOptions.filter(_.shortArg.nonEmpty).map { o => (o.shortArg.get, o.longArg)}.toMap
-    longOpts ++ shortOpts
-  }
-
   def settingsFromArgs(args: Array[String]): FindSettings = {
-    val argMap = getArgMap
     val switchPattern = """^-+(\w[\w\-]*)$""".r
     @tailrec
     def nextArg(arglist: List[String], ss: FindSettings): FindSettings = {
       arglist match {
         case Nil => ss
         case switchPattern(arg) :: tail =>
-           argMap.get(arg) match {
+          longArgMap.get(arg) match {
             case Some(longArg) =>
               if (boolActionMap.contains(longArg)) {
                 if (Set("help", "version").contains(longArg)) {

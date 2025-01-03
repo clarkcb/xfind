@@ -210,12 +210,12 @@ class FindOptions:
 
     def update_settings_from_json(self, json_str: str, settings: FindSettings):
         """Read settings from a JSON string"""
-        try:
-            json_dict = json.loads(json_str)
-        except json.JSONDecodeError:
-            raise FindException('Unable to parse JSON')
+        json_dict = json.loads(json_str)
         # keys are sorted so that output is consistent across all versions
         keys = sorted(json_dict.keys())
+        invalid_keys = [k for k in keys if k not in self.__long_arg_dict]
+        if invalid_keys:
+            raise FindException(f'Invalid option: {invalid_keys[0]}')
         for arg in keys:
             if arg in self.__bool_action_dict:
                 if json_dict[arg] is True or json_dict[arg] is False:
@@ -255,7 +255,10 @@ class FindOptions:
             raise FindException(f'Invalid settings file (must be JSON): {file_path}')
         with open(expanded_path, encoding='UTF-8') as f:
             json_str = f.read()
-        self.update_settings_from_json(json_str, settings)
+        try:
+            self.update_settings_from_json(json_str, settings)
+        except json.JSONDecodeError:
+            raise FindException(f'Unable to parse JSON in settings file: {file_path}')
 
     def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:
         """Updates a FindSettings instance from a given list of args"""

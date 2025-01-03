@@ -199,6 +199,10 @@ public class FindOptions {
             {
                 // keys are sorted so that output is consistent across all versions
                 let keys = json.keys.sorted()
+                let invalidKeys = keys.filter { longArgDict.index(forKey: $0) == nil }
+                if !invalidKeys.isEmpty {
+                    throw FindError(msg: "Invalid option: \(invalidKeys[0])")
+                }
                 for key in keys {
                     if longArgDict.index(forKey: key) != nil {
                         let longArg = longArgDict[key]

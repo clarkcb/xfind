@@ -37,7 +37,7 @@ class FindOptions {
   var boolActionMap = {};
   var stringActionMap = {};
   var intActionMap = {};
-  var longArgMap = {};
+  var longArgMap = {'path': 'path'};
   late Future ready;
 
   FindOptions() {
@@ -56,7 +56,7 @@ class FindOptions {
         String? shortArg;
         if ((so).containsKey('short')) {
           shortArg = (so)['short']!;
-          longArgMap[shortArg] = longArg;
+          longArgMap[shortArg!] = longArg;
         }
         findOptions.add(FindOption(shortArg, longArg, desc));
       }
@@ -139,6 +139,12 @@ class FindOptions {
       var keys = jsonMap.keys.toList();
       // keys are sorted so that output is consistent across all versions
       keys.sort();
+      // first check for invalid options
+      for (var key in keys) {
+        if (!longArgMap.containsKey(key)) {
+          throw FindException('Invalid option: $key');
+        }
+      }
       for (var key in keys) {
         var value = jsonMap[key];
         if (boolActionMap.containsKey(key)) {
@@ -201,7 +207,7 @@ class FindOptions {
             arg = arg.substring(1);
           }
           if (longArgMap.containsKey(arg)) {
-            String longArg = longArgMap[arg];
+            var longArg = longArgMap[arg];
             if (boolActionMap.containsKey(longArg)) {
               boolActionMap[longArg](true, settings);
             } else if (stringActionMap.containsKey(longArg) ||
@@ -237,10 +243,6 @@ class FindOptions {
     });
   }
 
-  void usage() async {
-    logMsg(await getUsageString());
-  }
-
   Future<String> getUsageString() async {
     return await ready.then((_) {
       var s = 'Usage:\n'
@@ -256,5 +258,9 @@ class FindOptions {
       }
       return s;
     });
+  }
+
+  void usage() async {
+    logMsg(await getUsageString());
   }
 }

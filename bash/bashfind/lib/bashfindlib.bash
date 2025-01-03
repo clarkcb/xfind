@@ -1265,11 +1265,20 @@ settings_from_json () {
     done
     local other_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type != "array")) | keys | .[]') )
     local other_args=()
+    # first check for invalid keys
+    for k in ${other_keys[*]}
+    do
+        if [[ ! " ${BOOL_OPTS[*]} ${NUM_OPTS[*]} ${STR_OPTS[*]}" =~ [[:space:]]${k}[[:space:]] ]]
+        then
+            exit_with_error "Invalid option: $k"
+        fi
+    done
     for k in ${other_keys[*]}
     do
         local v=$(echo "$json" | jq -r ".$k")
 
-        if [[ " ${BOOL_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]; then
+        if [[ " ${BOOL_OPTS[*]} " =~ [[:space:]]${k}[[:space:]] ]]
+        then
             if [ "$v" == "true" -o "$v" == "false" ]
             then
                 if [ "$v" == "true" ]

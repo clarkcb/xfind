@@ -165,20 +165,25 @@ public class FindOptions
 		}
 	}
 
-	public static void UpdateSettingsFromJson(string jsonString, FindSettings settings)
+	public void UpdateSettingsFromJson(string jsonString, FindSettings settings)
 	{
 		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString);
 		if (settingsDict == null) throw new FindException($"Unable to parse json");
 		var keys = settingsDict.Keys.ToList();
 		// keys are sorted so that output is consistent across all versions
 		keys.Sort();
+		var invalidKeys = keys.Except(LongArgDictionary.Keys).ToList();
+		if (invalidKeys.Count > 0)
+		{
+			throw new FindException($"Invalid option: {invalidKeys[0]}");
+		}
 		foreach (var key in keys)
 		{
 			ApplySetting(key, settingsDict[key], settings);
 		}
 	}
 
-	private static void UpdateSettingsFromFile(string filePath, FindSettings settings)
+	private void UpdateSettingsFromFile(string filePath, FindSettings settings)
 	{
 		var expandedPath = FileUtil.ExpandPath(filePath);
 		var fileInfo = new FileInfo(expandedPath);
@@ -190,14 +195,14 @@ public class FindOptions
 		UpdateSettingsFromJson(contents, settings);
 	}
 
-	public static FindSettings SettingsFromJson(string jsonString)
+	public FindSettings SettingsFromJson(string jsonString)
 	{
 		var settings = new FindSettings();
 		UpdateSettingsFromJson(jsonString, settings);
 		return settings;
 	}
 
-	public static FindSettings SettingsFromFile(string filePath)
+	public FindSettings SettingsFromFile(string filePath)
 	{
 		var settings = new FindSettings();
 		UpdateSettingsFromFile(filePath, settings);

@@ -140,7 +140,7 @@ class FindOptions
      * @param string $json
      * @param FindSettings $settings
      * @return void
-     * @throws FindException
+     * @throws FindException|\JsonException
      */
     public function update_settings_from_json(string $json, FindSettings $settings): void
     {
@@ -152,6 +152,11 @@ class FindOptions
             $keys = array_keys($json_obj);
             # keys are sorted so that output is consistent across all versions
             sort($keys);
+            $is_invalid_key = fn (string $k) => !array_key_exists($k, $this->long_arg_map);
+            $invalid_keys = array_filter($keys, $is_invalid_key);
+            if ($invalid_keys) {
+                throw new FindException("Invalid option: " . array_values($invalid_keys)[0]);
+            }
             foreach ($keys as $k) {
                 if (array_key_exists($k, $this->bool_action_map)) {
                     if (gettype($json_obj[$k]) == 'boolean') {
@@ -180,7 +185,7 @@ class FindOptions
                 }
             }
         } catch (\JsonException $e) {
-            throw new FindException($e->getMessage());
+            throw $e;
         }
     }
 

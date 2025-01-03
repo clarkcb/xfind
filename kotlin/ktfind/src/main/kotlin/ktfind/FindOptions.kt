@@ -1,6 +1,7 @@
 package ktfind
 
 import org.json.JSONArray
+import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
 import java.io.FileNotFoundException
@@ -23,7 +24,8 @@ data class FindOption(val shortArg: String?, val longArg: String, val desc: Stri
 class FindOptions {
     private val findOptionsJsonPath = "/findoptions.json"
     private val findOptions: List<FindOption>
-    private var longArgMap = mutableMapOf<String, String>()
+    // We add path manually since it's not an option in findoptions.json
+    private var longArgMap = mutableMapOf<String, String>("path" to "path")
 
     init {
         findOptions = loadFindOptionsFromJson()
@@ -188,6 +190,10 @@ class FindOptions {
         }
         // keys are sorted so that output is consistent across all versions
         val keys = jsonObject.keySet().toList().sorted()
+        val invalidKeys = keys.filter { !longArgMap.containsKey(it) }
+        if (invalidKeys.isNotEmpty()) {
+            throw FindException("Invalid option: ${invalidKeys[0]}")
+        }
         return recSettingsFromJson(keys, settings)
     }
 
@@ -206,6 +212,8 @@ class FindOptions {
             throw FindException("Settings file not found: $filePath")
         } catch (_: IOException) {
             throw FindException("IOException reading settings file: $filePath")
+        } catch (_: JSONException) {
+            throw FindException("Unable to parse JSON in settings file: $filePath")
         }
     }
 

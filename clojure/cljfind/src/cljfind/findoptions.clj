@@ -151,17 +151,20 @@
 
 (defn settings-from-json
   ([^String json]
-    (settings-from-json DEFAULT-FIND-SETTINGS json))
-  ([^FindSettings settings ^String json]
+    (settings-from-json DEFAULT-FIND-SETTINGS (get-long-arg-map) json))
+  ([^FindSettings settings long-arg-map ^String json]
     (let [obj (json/read-str json :key-fn keyword)
           ;; keys are sorted so that output is consistent across all versions
-          ks (sort (keys obj))]
-      (settings-from-map settings ks obj []))))
+          ks (sort (keys obj))
+          invalid-ks (remove #(contains? long-arg-map %) (map #(name %) ks))]
+      (if (not (empty? invalid-ks))
+        [nil [(str "Invalid option: " (first invalid-ks))]]
+        (settings-from-map settings ks obj [])))))
 
 (defn settings-from-file
   ([f]
-    (settings-from-file DEFAULT-FIND-SETTINGS f))
-  ([^FindSettings settings f]
+    (settings-from-file DEFAULT-FIND-SETTINGS (get-long-arg-map) f))
+  ([^FindSettings settings long-arg-map f]
     (let [filepath (expand-path (to-path f))
           pathstr (path-str filepath)]
       (if (not (exists? filepath))
@@ -169,9 +172,9 @@
         (if (not (.endsWith pathstr ".json"))
           [settings [(str "Invalid settings file (must be JSON): " pathstr)]]
           (try
-            (settings-from-json settings (slurp pathstr))
+            (settings-from-json settings long-arg-map (slurp pathstr))
             (catch Exception e
-              [settings [(str "Error reading settings file: " pathstr)]])))))))
+              [settings [(str "Unable to parse JSON in settings file: " pathstr)]])))))))
 
 (defn rec-get-settings-from-args ^FindSettings [^FindSettings settings long-arg-map args errs]
    (if (or (empty? args) (not (empty? errs)))
@@ -208,7 +211,7 @@
 
             ;; 7) settings-file option
            (= k :settings-file)
-           (let [[file-settings file-errs] (settings-from-file settings a2)]
+           (let [[file-settings file-errs] (settings-from-file settings long-arg-map a2)]
              (rec-get-settings-from-args file-settings long-arg-map (drop 2 args) (concat errs file-errs)))
 
            :else

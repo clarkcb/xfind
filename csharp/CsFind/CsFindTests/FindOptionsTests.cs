@@ -61,7 +61,9 @@ public class FindOptionsTests
   ""followsymlinks"": true,
   ""includehidden"": true
 }";
-		var settings = FindOptions.SettingsFromJson(json);
+		var options = new FindOptions();
+		var settings = new FindSettings();
+		options.UpdateSettingsFromJson(json, settings);
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
 		var expectedPath = new FilePath("~/src/xfind/");

@@ -221,44 +221,43 @@ sub set_options_from_json {
     return $options_hash;
 }
 
-# private function
-sub __from_json {
-    my ($json, $settings) = @_;
+sub settings_from_json {
+    my ($self, $json, $settings) = @_;
     my $errs = [];
     my $json_hash = decode_json $json;
     # keys are sorted so that output is consistent across all versions
-    my @opt_names = sort (keys %{$json_hash});
-    foreach my $o (@opt_names) {
-        if (exists $bool_action_hash->{$o}) {
-            if (plfind::common::is_bool($json_hash->{$o})) {
-                &{$bool_action_hash->{$o}}($json_hash->{$o}, $settings);
+    my @keys = sort (keys %{$json_hash});
+    my @invalid_keys = grep { $_ ne 'path' && !exists($self->{options}->{$_}) } @keys;
+    if (scalar @invalid_keys) {
+        push(@$errs, 'Invalid option: ' . $invalid_keys[0]);
+        return $errs;
+    }
+    foreach my $k (@keys) {
+        if (exists $bool_action_hash->{$k}) {
+            if (plfind::common::is_bool($json_hash->{$k})) {
+                &{$bool_action_hash->{$k}}($json_hash->{$k}, $settings);
             } else {
-                push(@$errs, 'Invalid value for option: ' . $o);
+                push(@$errs, 'Invalid value for option: ' . $k);
             }
-        } elsif (exists $str_action_hash->{$o}) {
-            &{$str_action_hash->{$o}}($json_hash->{$o}, $settings);
-        } elsif (exists $int_action_hash->{$o}) {
-            if ($json_hash->{$o} =~ /^\d+$/) {
-                &{$int_action_hash->{$o}}($json_hash->{$o}, $settings);
+        } elsif (exists $str_action_hash->{$k}) {
+            &{$str_action_hash->{$k}}($json_hash->{$k}, $settings);
+        } elsif (exists $int_action_hash->{$k}) {
+            if ($json_hash->{$k} =~ /^\d+$/) {
+                &{$int_action_hash->{$k}}($json_hash->{$k}, $settings);
             } else {
-                push(@$errs, 'Invalid value for option: ' . $o);
+                push(@$errs, 'Invalid value for option: ' . $k);
             }
         } else {
-            push(@$errs, 'Invalid option: ' . $o);
+            # should never reach here
+            push(@$errs, 'Invalid option: ' . $k);
         }
     }
     return $errs;
 }
 
-# public method (made available for unit testing)
-sub settings_from_json {
-    my ($self, $json, $settings) = @_;
-    __from_json($json, $settings);
-}
-
 sub settings_from_file {
     # $file_path is instance of Path::Class::File
-    my ($file_path, $settings) = @_;
+    my ($self, $file_path, $settings) = @_;
     my $errs = [];
     my $expanded_path = file(plfind::FileUtil::expand_path($file_path));
     unless (-e $expanded_path) {
@@ -270,7 +269,11 @@ sub settings_from_file {
         return $errs;
     }
     my $json = $expanded_path->slurp;
-    return __from_json($json, $settings);
+    my $rc = eval { $errs = $self->settings_from_json($json, $settings); 1; };
+    if (!$rc) {
+        push(@$errs, 'Unable to parse JSON in settings file: ' . $file_path);
+    }
+    return $errs;
 }
 
 sub settings_from_args {
@@ -299,7 +302,7 @@ sub settings_from_args {
                             &{$int_action_hash->{$long_arg}}(int($val), $settings);
                         } else {
                             my $file_path = file($val);
-                            my $settings_file_errors = settings_from_file($file_path, $settings);
+                            my $settings_file_errors = $self->settings_from_file($file_path, $settings);
                             push(@errs, @$settings_file_errors);
                         }
                     } else {

@@ -14,7 +14,7 @@ use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
 use crate::sortby::sort_by_from_name;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct FindOption {
     long: String,
     short: Option<String>,
@@ -33,6 +33,7 @@ pub struct FindOptions {
     pub string_action_map: HashMap<String, StringAction>,
     pub int_action_map: HashMap<String, IntAction>,
     pub long_action_map: HashMap<String, LongAction>,
+    pub long_arg_map: HashMap<String, String>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -52,25 +53,26 @@ impl FindOptions {
             Err(error) => return Err(FindError::new(&error.to_string())),
         };
         Ok(FindOptions {
-            find_options: jso.findoptions,
+            find_options: jso.findoptions.clone(),
             version: config.version.clone(),
             bool_action_map: get_bool_action_map(),
             string_action_map: get_string_action_map(),
             int_action_map: get_int_action_map(),
             long_action_map: get_long_action_map(),
+            long_arg_map: get_long_arg_map(&jso.findoptions),
         })
     }
 
-    fn get_long_map(&self) -> HashMap<String, String> {
-        let mut map = HashMap::new();
-        for so in self.find_options.iter() {
-            map.insert(so.long.to_string(), so.long.to_string());
-            if so.short.is_some() {
-                map.insert(so.short.as_ref().unwrap().to_string(), so.long.to_string());
-            }
-        }
-        map
-    }
+    // fn get_long_map(&self) -> HashMap<String, String> {
+    //     let mut map = HashMap::new();
+    //     for so in self.find_options.iter() {
+    //         map.insert(so.long.to_string(), so.long.to_string());
+    //         if so.short.is_some() {
+    //             map.insert(so.short.as_ref().unwrap().to_string(), so.long.to_string());
+    //         }
+    //     }
+    //     map
+    // }
 
     fn apply_bool_arg(
         &self,
@@ -215,6 +217,15 @@ impl FindOptions {
     ) -> Result<(), FindError> {
         match value {
             Value::Object(obj) => {
+                let mut keys = obj.keys().into_iter().collect::<Vec<&String>>();
+                keys.sort_unstable();
+                for key in keys {
+                    if !self.long_arg_map.contains_key(key) {
+                        return Err(FindError::new(
+                            format!("Invalid option: {}", key).as_str()
+                        ))
+                    }
+                }
                 for (s, v) in obj.iter() {
                     if let Err(error) = self.settings_from_name_value(&s, &v, settings) {
                         return Err(error);
@@ -226,20 +237,22 @@ impl FindOptions {
         Ok(())
     }
 
-    pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
-        let mut settings = FindSettings::default();
+    pub fn update_settings_from_json(&self, settings: &mut FindSettings, json_string: &str) -> Result<(), FindError> {
         match serde_json::from_str(json_string) {
-            Ok(value) => {
-                if let Err(error) = self.settings_from_value(&value, &mut settings) {
-                    return Err(error);
-                }
-            },
-            Err(error) => return Err(FindError::new(&error.to_string())),
+            Ok(value) => self.settings_from_value(&value, settings),
+            Err(_error) => Err(FindError::new("Unable to parse JSON")),
         }
-        Ok(settings)
     }
 
-    pub fn settings_from_file(&self, json_file: &str) -> Result<FindSettings, FindError> {
+    pub fn settings_from_json(&self, json_string: &str) -> Result<FindSettings, FindError> {
+        let mut settings = FindSettings::default();
+        match self.update_settings_from_json(&mut settings, json_string) {
+            Ok(()) => Ok(settings),
+            Err(error) => Err(FindError::new(&error.to_string())),
+        }
+    }
+
+    pub fn update_settings_from_file(&self, settings: &mut FindSettings, json_file: &str) -> Result<(), FindError> {
         let expanded_path = FileUtil::expand_path_string(json_file);
         let metadata = fs::metadata(&expanded_path);
         if metadata.is_err() {
@@ -256,7 +269,17 @@ impl FindOptions {
         }
         if json_file.ends_with(".json") {
             match fs::read_to_string(expanded_path) {
-                Ok(json) => self.settings_from_json(&json),
+                Ok(json) => match self.update_settings_from_json(settings, &json) {
+                    Ok(()) => Ok(()),
+                    Err(error) => {
+                        if error.description.eq("Unable to parse JSON") {
+                            Err(FindError::new(
+                                format!("Unable to parse JSON in settings file: {}", &json_file).as_str()))
+                        } else {
+                            Err(error)
+                        }
+                    },
+                },
                 Err(error) => Err(FindError::new(&error.to_string())),
             }
         } else {
@@ -265,54 +288,53 @@ impl FindOptions {
         }
     }
 
-    pub fn settings_from_args(
-        &self,
-        mut args: Iter<String>,
-    ) -> Result<FindSettings, FindError> {
-        args.next(); // the first arg is assumed to be the executable name/path
+    pub fn settings_from_file(&self, json_file: &str) -> Result<FindSettings, FindError> {
         let mut settings = FindSettings::default();
-        settings.set_print_files(true); // default to true when running from main
+        match self.update_settings_from_file(&mut settings, json_file) {
+            Ok(()) => Ok(settings),
+            Err(error) => Err(error),
+        }
+    }
 
-        let long_map = self.get_long_map();
+    pub fn update_settings_from_args(
+        &self,
+        settings: &mut FindSettings,
+        mut args: Iter<String>,
+    ) -> Result<(), FindError> {
 
         loop {
             if settings.print_usage() || settings.print_version() {
-                return Ok(settings);
+                return Ok(());
             }
             match args.next() {
+                // if it ends with rsfind, it's the executable arg, skip it
+                Some(next_arg) if next_arg.ends_with("rsfind") => {},
                 Some(next_arg) if next_arg.starts_with("-") => {
                     let arg = next_arg.trim_start_matches('-');
-                    match long_map.get(arg) {
-                        Some(long_arg) if long_arg == "settings-file" => match args.next() {
-                            Some(arg_val) => match self.settings_from_file(&arg_val) {
-                                Ok(file_settings) => settings = file_settings,
-                                Err(error) => return Err(error),
-                            },
-                            None => {
-                                return Err(FindError::new(
-                                    format!("Missing value for option {}", &next_arg).as_str(),
-                                ));
-                            }
-                        },
+                    match self.long_arg_map.get(arg) {
                         Some(long_arg) if self.bool_action_map.contains_key(long_arg) => {
-                            if let Err(error) = self.apply_bool_arg(long_arg, true, &mut settings) {
+                            if let Err(error) = self.apply_bool_arg(long_arg, true, settings) {
                                 return Err(error);
                             }
                         },
                         Some(long_arg) => match args.next() {
                             Some(arg_val) => {
                                 if self.string_action_map.contains_key(long_arg) {
-                                    if let Err(error) = self.apply_string_arg(long_arg, &arg_val, &mut settings) {
+                                    if let Err(error) = self.apply_string_arg(long_arg, &arg_val, settings) {
                                         return Err(error);
                                     }
                                 } else if self.int_action_map.contains_key(long_arg) {
                                     let i = arg_val.parse::<i32>().unwrap_or(0);
-                                    if let Err(error) = self.apply_int_arg(long_arg, i, &mut settings) {
+                                    if let Err(error) = self.apply_int_arg(long_arg, i, settings) {
                                         return Err(error);
                                     }
                                 } else if self.long_action_map.contains_key(long_arg) {
                                     let l = arg_val.parse::<u64>().unwrap_or(0);
-                                    if let Err(error) = self.apply_long_arg(long_arg, l, &mut settings) {
+                                    if let Err(error) = self.apply_long_arg(long_arg, l, settings) {
+                                        return Err(error);
+                                    }
+                                } else if long_arg == "settings-file" {
+                                    if let Err(error) = self.update_settings_from_file(settings, &arg_val) {
                                         return Err(error);
                                     }
                                 } else {
@@ -335,7 +357,7 @@ impl FindOptions {
                     }
                 }
                 Some(next_arg) => {
-                    if let Err(error) = self.apply_string_arg("path", &next_arg, &mut settings) {
+                    if let Err(error) = self.apply_string_arg("path", &next_arg, settings) {
                         return Err(error);
                     }
                 },
@@ -343,7 +365,19 @@ impl FindOptions {
             }
         }
 
-        Ok(settings)
+        Ok(())
+    }
+
+    pub fn settings_from_args(
+        &self,
+        args: Iter<String>,
+    ) -> Result<FindSettings, FindError> {
+        let mut settings = FindSettings::default();
+        settings.set_print_files(true); // default to true when running from main
+        match self.update_settings_from_args(&mut settings, args) {
+            Ok(()) => Ok(settings),
+            Err(error) => Err(error),
+        }
     }
 
     fn get_sort_opt_map(&self) -> HashMap<String, &FindOption> {
@@ -645,6 +679,18 @@ fn get_long_action_map() -> HashMap<String, LongAction> {
         }),
     );
     long_action_map
+}
+
+fn get_long_arg_map(options: &Vec<FindOption>) -> HashMap<String, String> {
+    let mut map = HashMap::new();
+    map.insert("path".to_string(), "path".to_string());
+    for so in options.iter() {
+        map.insert(so.long.to_string(), so.long.to_string());
+        if so.short.is_some() {
+            map.insert(so.short.as_ref().unwrap().to_string(), so.long.to_string());
+        }
+    }
+    map
 }
 
 #[cfg(test)]
