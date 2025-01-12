@@ -7,10 +7,10 @@ gemspec
 
 gem 'rake', '~> 13.2.1'
 
-gem 'rbs', '~> 3.7.0'
+gem 'rbs', '~> 3.8.1'
 
 gem 'test-unit', '~> 3.6.7'
 
-gem 'rubocop', '~> 1.69.2'
+gem 'rubocop', '~> 1.70'
 
 ruby '3.3.6'

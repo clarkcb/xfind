@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.summary     = 'ruby version of xfind'
   spec.homepage    = 'https://github.com/clarkcb/xfind'
   spec.license     = 'MIT'
-  spec.required_ruby_version = ">= 3.3.0"
+  spec.required_ruby_version = ">= 3.3.6"
 
   spec.metadata['allowed_push_host'] = "TODO: Set to your gem server 'https://example.com'"
 
