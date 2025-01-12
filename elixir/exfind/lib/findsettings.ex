@@ -43,12 +43,13 @@ defmodule ExFind.FindSettings do
   def new(args), do: __struct__(args)
 
   def add_extensions(settings, extensions, extensions_name) when is_list(extensions) do
-    exts = Enum.map(extensions, fn e -> String.split(e, ",") end) |> List.flatten()
-    case extensions_name do
-      :in_archive_extensions -> %{settings | in_archive_extensions: settings.in_archive_extensions ++ exts}
-      :in_extensions -> %{settings | in_extensions: settings.in_extensions ++ exts}
-      :out_archive_extensions -> %{settings | out_archive_extensions: settings.out_archive_extensions ++ exts}
-      :out_extensions -> %{settings | out_extensions: settings.out_extensions ++ exts}
+    # Treat settings struct as a map to check for and update field
+    if Map.has_key?(settings, extensions_name) and is_list(Map.get(settings, extensions_name)) do
+      new_exts = Enum.map(extensions, fn e -> String.split(e, ",") end) |> List.flatten()
+      ext_list = Map.get(settings, extensions_name)
+      Map.put(settings, extensions_name, ext_list ++ new_exts)
+    else
+      settings
     end
   end
 
