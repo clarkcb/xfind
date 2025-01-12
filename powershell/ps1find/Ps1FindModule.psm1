@@ -668,6 +668,8 @@ class FindOptions {
         if (-not $optionsHash.ContainsKey('findoptions')) {
             throw "Missing findoptions in JSON"
         }
+        # add path manually since it is not in findoptions
+        $this.LongArgMap['path'] = 'path'
         $opts = @(foreach ($optionObj in $optionsHash['findoptions']) {
             $ShortArg = ''
             $LongArg = $optionObj['long']

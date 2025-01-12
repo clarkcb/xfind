@@ -15,7 +15,8 @@ const {nameToSortBy} = require("./sortby");
 
 class FindOptions {
     constructor() {
-        this.argNameMap = {};
+        // path is separate because it is not included as an option in findoptions.json
+        this.argNameMap = {'path' : 'path'};
         this.boolActionMap = {
             'archivesonly':
               (b, settings) => { settings.archivesOnly = b; },
@@ -147,8 +148,8 @@ class FindOptions {
             if (err) break;
             if (Object.prototype.hasOwnProperty.call(obj, k)) {
                 if (obj[k] !== undefined && obj[k] !== null) {
-                    // path is separate because it is not included as an option in findoptions.json
-                    let longArg = k === 'path' ? 'path' : this.argNameMap[k];
+                    // let longArg = k === 'path' ? 'path' : this.argNameMap[k];
+                    let longArg = this.argNameMap[k];
                     if (this.boolActionMap[longArg]) {
                         if (typeof obj[k] === 'boolean') {
                             this.boolActionMap[longArg](obj[k], settings);

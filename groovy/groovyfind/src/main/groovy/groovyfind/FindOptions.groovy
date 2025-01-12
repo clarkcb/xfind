@@ -33,7 +33,7 @@ class FindOption {
 class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = '/findoptions.json'
     private final List<FindOption> options
-    private final Map<String, String> longArgMap = new HashMap<>()
+    private final Map<String, String> longArgMap = [path: 'path']
 
     FindOptions() throws IOException {
         options = []

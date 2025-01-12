@@ -24,7 +24,11 @@ import java.util.stream.Collectors;
 public class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = "/findoptions.json";
     private final List<FindOption> options;
-    private final Map<String, String> longArgMap = new HashMap<>();
+    private final Map<String, String> longArgMap = new HashMap<>(){
+        {
+            put("path", "path");
+        }
+    };
 
     public FindOptions() throws IOException {
         options = new ArrayList<>();
