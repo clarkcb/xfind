@@ -228,26 +228,30 @@ public class FindOptions {
                 while (arg.startsWith("-")) {
                     arg = arg.substring(1);
                 }
-                var longArg = longArgMap.get(arg);
-                if (this.boolActionMap.containsKey(longArg)) {
-                    this.boolActionMap.get(longArg).set(true, settings);
-                } else if (this.stringActionMap.containsKey(longArg)
-                        || this.intActionMap.containsKey(longArg)
-                        || this.longActionMap.containsKey(longArg)
-                        || longArg.equals("settings-file")) {
-                    if (!queue.isEmpty()) {
-                        String argVal = queue.remove();
-                        if (this.stringActionMap.containsKey(longArg)) {
-                            this.stringActionMap.get(longArg).set(argVal, settings);
-                        } else if (this.intActionMap.containsKey(longArg)) {
-                            this.intActionMap.get(longArg).set(Integer.parseInt(argVal), settings);
-                        } else if (this.longActionMap.containsKey(longArg)) {
-                            this.longActionMap.get(longArg).set(Long.parseLong(argVal), settings);
-                        } else if (longArg.equals("settings-file")) {
-                            settingsFromFilePath(argVal, settings);
+                if (longArgMap.containsKey(arg)) {
+                    var longArg = longArgMap.get(arg);
+                    if (this.boolActionMap.containsKey(longArg)) {
+                        this.boolActionMap.get(longArg).set(true, settings);
+                    } else if (this.stringActionMap.containsKey(longArg)
+                            || this.intActionMap.containsKey(longArg)
+                            || this.longActionMap.containsKey(longArg)
+                            || longArg.equals("settings-file")) {
+                        if (!queue.isEmpty()) {
+                            String argVal = queue.remove();
+                            if (this.stringActionMap.containsKey(longArg)) {
+                                this.stringActionMap.get(longArg).set(argVal, settings);
+                            } else if (this.intActionMap.containsKey(longArg)) {
+                                this.intActionMap.get(longArg).set(Integer.parseInt(argVal), settings);
+                            } else if (this.longActionMap.containsKey(longArg)) {
+                                this.longActionMap.get(longArg).set(Long.parseLong(argVal), settings);
+                            } else if (longArg.equals("settings-file")) {
+                                settingsFromFilePath(argVal, settings);
+                            }
+                        } else {
+                            throw new FindException("Missing value for option " + arg);
                         }
                     } else {
-                        throw new FindException("Missing value for option " + arg);
+                        throw new FindException("Invalid option: " + arg);
                     }
                 } else {
                     throw new FindException("Invalid option: " + arg);
