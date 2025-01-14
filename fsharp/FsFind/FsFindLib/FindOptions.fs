@@ -90,7 +90,8 @@ module FindOptions =
     let GetOptionNameMap : Map<string, string> =
         let shortArgs = seq { for opt in options do if opt.ShortArg <> "" then yield (opt.ShortArg, opt.LongArg) }
         let longArgs =  seq { for opt in options do yield (opt.LongArg, opt.LongArg) }
-        Seq.append shortArgs longArgs
+        let longArgsWithPath = Seq.append longArgs [("path", "path")]
+        Seq.append shortArgs longArgsWithPath
         |> Map.ofSeq
 
     let optionNameMap = GetOptionNameMap

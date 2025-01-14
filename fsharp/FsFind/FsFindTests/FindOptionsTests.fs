@@ -56,3 +56,34 @@ type FindOptionsTests () =
         | Error e ->
             Assert.That(e, Is.EqualTo("Invalid option: Q"))
         ()
+
+    [<Test>]
+    member this.SettingsFromJson_EqualsExpected () =
+        let json = String.concat "" [
+            "{";
+            "\"path\": \"~/src/xfind/\",";
+            "\"in-ext\": [\"js\", \"ts\"],"
+            "\"out-dirpattern\": \"node_module\",";
+            "\"out-filepattern\": [\"temp\"],"
+            "\"debug\": true,";
+            "\"followsymlinks\": true,";
+            "\"includehidden\": true"
+            "}"
+        ]
+        match FindOptions.SettingsFromJson(json) with
+        | Ok settings ->
+            Assert.That(settings.Paths.Length, Is.EqualTo(1))
+            Assert.That(settings.Paths.Head.ToString(), Is.EqualTo("~/src/xfind/"))
+            Assert.That(settings.InExtensions.Length, Is.EqualTo(2))
+            Assert.That(settings.InExtensions |> List.exists (fun e -> e = ".js"))
+            Assert.That(settings.InExtensions |> List.exists (fun e -> e = ".ts"))
+            Assert.That(settings.OutDirPatterns.Length, Is.EqualTo(1))
+            Assert.That(settings.OutDirPatterns |> List.exists (fun p -> p.ToString() = "node_module"))
+            Assert.That(settings.OutFilePatterns.Length, Is.EqualTo(1))
+            Assert.That(settings.OutFilePatterns |> List.exists (fun p -> p.ToString() = "temp"))
+            Assert.That(settings.Debug, Is.True)
+            Assert.That(settings.FollowSymlinks, Is.True)
+            Assert.That(settings.IncludeHidden, Is.True)
+        | Error e ->
+            Assert.That(true, Is.False)
+        ()
