@@ -1,7 +1,7 @@
 (ns cljfind.findoptions-test
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
-        [cljfind.fileutil :only (get-name to-path)]
+        [cljfind.fileutil :only (to-path)]
         [cljfind.findoptions :only (settings-from-args settings-from-json)]))
 
 (deftest test-no-args

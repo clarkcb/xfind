@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
         [cljfind.fileresult :only (new-file-result file-result-path sort-results)]
-        [cljfind.fileutil :only (get-name to-path)]
+        [cljfind.fileutil :only (get-path-name to-path)]
         [cljfind.findsettings :only (DEFAULT-FIND-SETTINGS)]))
 
 (deftest test-file-result-abs-path
@@ -34,10 +34,10 @@
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path"
-             (is (= "PQR.txt" (get-name (:path (nth sorted-results 0)))))
-             (is (= "abc.txt" (get-name (:path (nth sorted-results 1)))))
-             (is (= "xyz.txt" (get-name (:path (nth sorted-results 2)))))
-             (is (= "tuv.txt" (get-name (:path (nth sorted-results 3))))))))
+             (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 0)))))
+             (is (= "abc.txt" (get-path-name (:path (nth sorted-results 1)))))
+             (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 2)))))
+             (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 3))))))))
 
 (deftest test-file-result-sort-results-by-path-case-insensitive
   (let [results [(new-file-result (to-path "abc.txt") :text 0 nil)
@@ -50,10 +50,10 @@
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path-case-insensitive"
-             (is (= "abc.txt" (get-name (:path (nth sorted-results 0)))))
-             (is (= "PQR.txt" (get-name (:path (nth sorted-results 1)))))
-             (is (= "xyz.txt" (get-name (:path (nth sorted-results 2)))))
-             (is (= "tuv.txt" (get-name (:path (nth sorted-results 3))))))))
+             (is (= "abc.txt" (get-path-name (:path (nth sorted-results 0)))))
+             (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 1)))))
+             (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 2)))))
+             (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 3))))))))
 
 (deftest test-file-result-sort-results-by-path-sort-descending
   (let [results [(new-file-result (to-path "abc.txt") :text 0 nil)
@@ -66,10 +66,10 @@
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path-sort-descending"
-             (is (= "tuv.txt" (get-name (:path (nth sorted-results 0)))))
-             (is (= "xyz.txt" (get-name (:path (nth sorted-results 1)))))
-             (is (= "abc.txt" (get-name (:path (nth sorted-results 2)))))
-             (is (= "PQR.txt" (get-name (:path (nth sorted-results 3))))))))
+             (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 0)))))
+             (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 1)))))
+             (is (= "abc.txt" (get-path-name (:path (nth sorted-results 2)))))
+             (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 3))))))))
 
 (deftest test-file-result-sort-results-by-filename
   (let [results [(new-file-result (to-path "abc.txt") :text 0 nil)
@@ -81,10 +81,10 @@
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename"
-             (is (= "PQR.txt" (get-name (:path (nth sorted-results 0)))))
-             (is (= "abc.txt" (get-name (:path (nth sorted-results 1)))))
-             (is (= "tuv.txt" (get-name (:path (nth sorted-results 2)))))
-             (is (= "xyz.txt" (get-name (:path (nth sorted-results 3))))))))
+             (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 0)))))
+             (is (= "abc.txt" (get-path-name (:path (nth sorted-results 1)))))
+             (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 2)))))
+             (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 3))))))))
 
 (deftest test-file-result-sort-results-by-filename-case-insensitive
   (let [results [(new-file-result (to-path "abc.txt") :text 0 nil)
@@ -97,10 +97,10 @@
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename-case-insensitive"
-             (is (= "abc.txt" (get-name (:path (nth sorted-results 0)))))
-             (is (= "PQR.txt" (get-name (:path (nth sorted-results 1)))))
-             (is (= "tuv.txt" (get-name (:path (nth sorted-results 2)))))
-             (is (= "xyz.txt" (get-name (:path (nth sorted-results 3))))))))
+             (is (= "abc.txt" (get-path-name (:path (nth sorted-results 0)))))
+             (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 1)))))
+             (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 2)))))
+             (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 3))))))))
 
 (deftest test-file-result-sort-results-by-filename-sort-descending
   (let [results [(new-file-result (to-path "abc.txt") :text 0 nil)
@@ -113,7 +113,7 @@
         sorted-results (sort-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename-sort-descending"
-             (is (= "xyz.txt" (get-name (:path (nth sorted-results 0)))))
-             (is (= "tuv.txt" (get-name (:path (nth sorted-results 1)))))
-             (is (= "abc.txt" (get-name (:path (nth sorted-results 2)))))
-             (is (= "PQR.txt" (get-name (:path (nth sorted-results 3))))))))
+             (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 0)))))
+             (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 1)))))
+             (is (= "abc.txt" (get-path-name (:path (nth sorted-results 2)))))
+             (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 3))))))))

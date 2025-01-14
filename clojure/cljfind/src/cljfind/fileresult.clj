@@ -14,19 +14,19 @@
            (java.nio.file Paths Path Files))
   (:use [clojure.string :as string :only (join lower-case)]
         [cljfind.filetypes :only (to-name)]
-        [cljfind.fileutil :only (get-name get-parent)]
+        [cljfind.fileutil :only (get-path-name get-parent-name)]
         ))
 
 ; record to hold a file result (path is a Path object)
-(defrecord FileResult [containers, ^java.nio.file.Path path,
+(defrecord FileResult [containers, ^Path path,
                        file-type, file-size last-mod])
 
 (defn new-file-result
-  ([^java.nio.file.Path path, file-type]
+  ([^Path path, file-type]
    (->FileResult [] path file-type 0 nil))
-  ([^java.nio.file.Path path, file-type, file-size last-mod]
+  ([^Path path, file-type, file-size last-mod]
    (->FileResult [] path file-type file-size last-mod))
-  ([containers, ^java.nio.file.Path path, file-type file-size last-mod]
+  ([containers, ^Path path, file-type file-size last-mod]
    (->FileResult containers path file-type file-size last-mod)))
 
 (defn file-result-path ^String [^FileResult fr]
@@ -44,18 +44,18 @@
   "get a filepath comparator"
   [^FindSettings settings]
   (fn [^FileResult fr1 ^FileResult fr2]
-    (let [pathcmp (cmp-strings (get-parent (:path fr1)) (get-parent (:path fr2)) settings)]
+    (let [pathcmp (cmp-strings (get-parent-name (:path fr1)) (get-parent-name (:path fr2)) settings)]
       (if (= 0 pathcmp)
-        (cmp-strings (get-name (:path fr1)) (get-name (:path fr2)) settings)
+        (cmp-strings (get-path-name (:path fr1)) (get-path-name (:path fr2)) settings)
         pathcmp))))
 
 (defn get-comp-by-name
   "get a filename comparator"
   [^FindSettings settings]
   (fn [^FileResult fr1 ^FileResult fr2]
-    (let [namecmp (cmp-strings (get-name (:path fr1)) (get-name (:path fr2)) settings)]
+    (let [namecmp (cmp-strings (get-path-name (:path fr1)) (get-path-name (:path fr2)) settings)]
       (if (= 0 namecmp)
-        (cmp-strings (get-parent (:path fr1)) (get-parent (:path fr2)) settings)
+        (cmp-strings (get-parent-name (:path fr1)) (get-parent-name (:path fr2)) settings)
         namecmp))))
 
 (defn get-comp-by-size

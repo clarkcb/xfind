@@ -17,15 +17,15 @@
 
 (defn path-str ^String [p]
   (cond
-    (instance? java.nio.file.Path p) (.toString p)
-    (instance? java.io.File p) (.getPath p)
+    (instance? Path p) (.toString p)
+    (instance? File p) (.getPath p)
     :else p))
 
 (defn to-path [^String f & rest]
   (let [rest' (if (nil? rest) (into-array String []) (into-array String rest))]
     (Paths/get f rest')))
 
-(defn expand-path ^java.nio.file.Path [^java.nio.file.Path p]
+(defn expand-path ^Path [^Path p]
   (let [path-str (.toString p)
         sep-index (.indexOf path-str File/separator)
         user-str (System/getProperty "user.home")
@@ -40,35 +40,28 @@
           (to-path home-str (.substring path-str 1))))
       p)))
 
-(defn exists? [f]
-  (cond
-    (instance? java.nio.file.Path f) (Files/exists f (into-array LinkOption []))
-    (instance? java.io.File f) (.exists f)
-    :else false))
+(defn exists-path? [^Path f]
+  (Files/exists f (into-array LinkOption [])))
 
-(defn readable? [f]
-  (cond
-    (instance? java.nio.file.Path f) (Files/isReadable f)
-    (instance? java.io.File f) (.canRead f)
-    :else false))
+(defn readable-path? [^Path f]
+  (Files/isReadable f))
 
-(defn get-parent ^String [f]
-  (cond
-    (instance? java.nio.file.Path f) (if (nil? (.getParent f)) "" (.toString (.getParent f)))
-    (instance? java.io.File f) (.getParent f)
-    (instance? java.util.zip.ZipEntry f) (.getParent f)
-    (instance? java.util.jar.JarEntry f) (.getParent f)
-    :else f))
+(defn get-parent-name ^String [^Path f]
+  (let [parent (.getParent f)]
+    (if (nil? parent) "" (.toString parent))))
 
 (defn get-name ^String [f]
   (cond
-    (instance? java.nio.file.Path f) (.toString (.getFileName f))
-    (instance? java.io.File f) (.getName f)
+    (instance? Path f) (.toString (.getFileName f))
+    (instance? File f) (.getName f)
     (instance? java.util.zip.ZipEntry f) (.getName f)
     (instance? java.util.jar.JarEntry f) (.getName f)
     :else f))
 
-(defn get-ext [f]
+(defn get-path-name ^String [^Path f]
+  (.toString (.getFileName f)))
+
+(defn get-ext ^String [f]
   (let [name (get-name f)
         dotindex (.lastIndexOf name ".")]
     (if
@@ -78,23 +71,20 @@
       (.toLowerCase (peek (split name #"\.")))
       "")))
 
+(defn get-path-ext ^String [^Path f]
+  (get-ext (.toString (.getFileName f))))
+
 (defn has-ext? [f ^String ext]
   (= (.toLowerCase ext) (get-ext f)))
 
-(defn is-dir? [d]
-  (cond
-    (instance? java.nio.file.Path d) (Files/isDirectory d (into-array LinkOption []))
-    (instance? java.io.File d) (Files/isDirectory (.toPath d) (into-array LinkOption []))))
+(defn is-dir-path? [^Path d]
+  (Files/isDirectory d (into-array LinkOption [])))
 
-(defn is-file? [f]
-  (cond
-    (instance? java.nio.file.Path f) (Files/isRegularFile f (into-array LinkOption []))
-    (instance? java.io.File f) (Files/isRegularFile (.toPath f) (into-array LinkOption []))))
+(defn is-file-path? [^Path f]
+  (Files/isRegularFile f (into-array LinkOption [])))
 
-(defn is-symlink? [f]
-  (cond
-    (instance? java.nio.file.Path f) (Files/isSymbolicLink f)
-    (instance? java.io.File f) (Files/isSymbolicLink (.toPath f))))
+(defn is-symlink-path? [^Path f]
+  (Files/isSymbolicLink f))
 
 (defn is-dot-dir? [^String name]
   (contains? DOT_DIRS name))
@@ -107,12 +97,9 @@
     (.startsWith name ".")
     (not (is-dot-dir? name))))
 
-(defn hidden-dir? [d]
+(defn hidden-dir-path? [^Path d]
   (let [elems (split-path d)]
     (some #(hidden? %) elems)))
 
-(defn hidden-file? [f]
-  (hidden? (get-name f)))
-
-(defn sep-count [^String f]
-  (count (filter #(= % java.io.File/separatorChar) f)))
+(defn hidden-file-path? [^Path f]
+  (hidden? (.toString (.getFileName f))))
