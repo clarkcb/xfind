@@ -28,12 +28,4 @@ public final class StringUtil {
         }
         return trimmed;
     }
-
-    public static String repeatString(final String s, final int times) {
-        var sb = new StringBuilder();
-        for (int i = 0; i < times; i++) {
-            sb.append(s);
-        }
-        return sb.toString();
-    }
 }

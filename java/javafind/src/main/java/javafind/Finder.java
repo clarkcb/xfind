@@ -155,7 +155,7 @@ public class Finder {
     }
 
     boolean hasMatchingLastMod(final FileResult fr) {
-        Instant lastMod = fr.getLastMod() == null ? null : fr.getLastMod().toInstant();
+        var lastMod = fr.getLastMod() == null ? null : fr.getLastMod().toInstant();
         return isMatchingLastMod(lastMod);
     }
 

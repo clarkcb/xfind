@@ -36,14 +36,14 @@ public final class FileUtil {
 
         var pathString = path.toString();
         if (pathString.startsWith("~")) {
-            Path userPath = Paths.get(System.getProperty("user.home"));
+            var userPath = Paths.get(System.getProperty("user.home"));
             if (pathString.equals("~") || pathString.equals("~" + File.separator)) {
                 return userPath;
             } else if (pathString.startsWith("~" + File.separator)) {
                 return Paths.get(userPath.toString(), pathString.substring(2));
             }
             // Another user's home directory
-            Path homePath = userPath.getParent();
+            var homePath = userPath.getParent();
             return Paths.get(homePath.toString(), pathString.substring(1));
         }
 
@@ -115,14 +115,7 @@ public final class FileUtil {
     }
 
     public static String getFileContents(final Path path, final Charset charset) throws IOException {
-        String content;
-        try (var scanner = new Scanner(new InputStreamReader(Files.newInputStream(path), charset))
-                .useDelimiter("\\Z")) {
-            content = getScannerContents(scanner);
-        } catch (NoSuchElementException | IllegalStateException e) {
-            throw e;
-        }
-        return content;
+        return Files.readString(path, charset);
     }
 
     public static String getScannerContents(final Scanner scanner) throws IllegalArgumentException {
@@ -175,9 +168,5 @@ public final class FileUtil {
         }
         scanner.close();
         return lines;
-    }
-
-    public static long getSepCount(final Path path) {
-        return path.toString().chars().filter(c -> c == File.separatorChar).count();
     }
 }
