@@ -15,21 +15,13 @@ public enum SortBy {
 
     public static SortBy forName(final String name) {
         String lname = name.trim().toLowerCase();
-        switch (lname) {
-            case "filename":
-            case "name":
-                return FILENAME;
-            case "filesize":
-            case "size":
-                return FILESIZE;
-            case "filetype":
-            case "type":
-                return FILETYPE;
-            case "lastmod":
-                return LASTMOD;
-            default:
-                return FILEPATH;
-        }
+        return switch (lname) {
+            case "filename", "name" -> FILENAME;
+            case "filesize", "size" -> FILESIZE;
+            case "filetype", "type" -> FILETYPE;
+            case "lastmod" -> LASTMOD;
+            default -> FILEPATH;
+        };
     }
 
     public String toName() {

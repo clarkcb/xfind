@@ -60,19 +60,21 @@ public class FindOptionsTest {
 
     @Test
     public final void testSettingsFromJson() {
-        var json = new StringBuilder("{\n")
-                .append("  \"path\": \"~/src/xfind/\",\n")
-                .append("  \"in-ext\": [\"js\",\"ts\"],\n")
-                .append("  \"out-dirpattern\": \"node_module\",\n")
-                .append("  \"out-filepattern\": [\"temp\"],\n")
-                .append("  \"debug\": true,\n")
-                .append("  \"followsymlinks\": true,\n")
-                .append("  \"includehidden\": false,\n")
-                .append("}");
+        var json = """
+{
+    "path": "~/src/xfind/",
+    "in-ext": ["js","ts"],
+    "out-dirpattern": "node_module",
+    "out-filepattern": ["temp"],
+    "debug": true,
+    "followsymlinks": true,
+    "includehidden": false
+}
+""";
         try {
             var findOptions = new FindOptions();
             var settings = new FindSettings();
-            findOptions.settingsFromJson(json.toString(), settings);
+            findOptions.settingsFromJson(json, settings);
 
             assertEquals(1, settings.getPaths().size());
             assertEquals(Paths.get("~/src/xfind/"), settings.getPaths().toArray()[0]);

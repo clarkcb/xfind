@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = "/findoptions.json";
@@ -142,17 +141,17 @@ public class FindOptions {
     private void applySetting(final String arg, final Object obj, FindSettings settings)
             throws FindException {
         if (this.boolActionMap.containsKey(arg)) {
-            if (obj instanceof Boolean) {
-                this.boolActionMap.get(arg).set((Boolean)obj, settings);
+            if (obj instanceof Boolean b) {
+                this.boolActionMap.get(arg).set(b, settings);
             } else {
                 throw new FindException("Invalid value for option: " + arg);
             }
         } else if (this.stringActionMap.containsKey(arg)) {
-            if (obj instanceof String) {
-                this.stringActionMap.get(arg).set((String)obj, settings);
-            } else if (obj instanceof JSONArray) {
-                for (int i=0; i < ((JSONArray)obj).length(); i++) {
-                    Object item = ((JSONArray)obj).get(i);
+            if (obj instanceof String s) {
+                this.stringActionMap.get(arg).set(s, settings);
+            } else if (obj instanceof JSONArray jsonArray) {
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    Object item = jsonArray.get(i);
                     if (item instanceof String) {
                         this.stringActionMap.get(arg).set((String)item, settings);
                     } else {
@@ -163,18 +162,18 @@ public class FindOptions {
                 throw new FindException("Invalid value for option: " + arg);
             }
         } else if (this.intActionMap.containsKey(arg)) {
-            if (obj instanceof Integer) {
-                this.intActionMap.get(arg).set((Integer)obj, settings);
-            } else if (obj instanceof Long) {
-                this.intActionMap.get(arg).set(((Long)obj).intValue(), settings);
+            if (obj instanceof Integer i) {
+                this.intActionMap.get(arg).set(i, settings);
+            } else if (obj instanceof Long l) {
+                this.intActionMap.get(arg).set(l.intValue(), settings);
             } else {
                 throw new FindException("Invalid value for option: " + arg);
             }
         } else if (this.longActionMap.containsKey(arg)) {
-            if (obj instanceof Integer) {
-                this.longActionMap.get(arg).set(((Integer)obj).longValue(), settings);
-            } else if (obj instanceof Long) {
-                this.longActionMap.get(arg).set((Long)obj, settings);
+            if (obj instanceof Integer i) {
+                this.longActionMap.get(arg).set(i.longValue(), settings);
+            } else if (obj instanceof Long l) {
+                this.longActionMap.get(arg).set(l, settings);
             } else {
                 throw new FindException("Invalid value for option: " + arg);
             }
@@ -186,8 +185,8 @@ public class FindOptions {
     public void updateSettingsFromJson(final String json, FindSettings settings) throws FindException {
         var jsonObj = new JSONObject(new JSONTokener(json));
         // keys are sorted so that output is consistent across all versions
-        var keys = jsonObj.keySet().stream().sorted().collect(Collectors.toList());
-        var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).collect(Collectors.toList());
+        var keys = jsonObj.keySet().stream().sorted().toList();
+        var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).toList();
         if (!invalidKeys.isEmpty()) {
             throw new FindException("Invalid option: " + invalidKeys.get(0));
         }
@@ -281,16 +280,16 @@ public class FindOptions {
         int longest = 0;
         for (var opt : this.options) {
             var optString = new StringBuilder();
-            var shortArg = opt.getShortArg();
+            var shortArg = opt.shortArg();
             if (null != shortArg && !shortArg.isEmpty()) {
                 optString.append("-").append(shortArg).append(",");
             }
-            optString.append("--").append(opt.getLongArg());
+            optString.append("--").append(opt.longArg());
             if (optString.length() > longest) {
                 longest = optString.length();
             }
             optStrings.add(optString.toString());
-            optDescs.add(opt.getDescription());
+            optDescs.add(opt.description());
         }
         final var format = " %1$-" + longest + "s  %2$s\n";
         for (int i = 0; i < optStrings.size(); i++) {

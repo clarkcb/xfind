@@ -11,7 +11,14 @@ plugins {
 group = "xfind"
 version = "0.1.0-SNAPSHOT"
 description = "javafind"
-java.sourceCompatibility = JavaVersion.VERSION_11
+//java.sourceCompatibility = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
+    }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
 
 repositories {
     mavenLocal()
@@ -33,6 +40,7 @@ tasks.test {
 
 tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
+    options.release = 17
 }
 
 tasks.withType<Javadoc>() {
