@@ -1202,6 +1202,10 @@ settings_from_args () {
             *)
                 if [[ "${arg:0:1}" == "-" ]]
                 then
+                    while [[ "${arg:0:1}" == "-" ]]
+                    do
+                        arg=${arg:1}
+                    done
                     exit_with_error "Invalid option: $arg"
                 fi
                 PATHS+=($arg)

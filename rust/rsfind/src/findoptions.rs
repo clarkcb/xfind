@@ -339,7 +339,7 @@ impl FindOptions {
                                     }
                                 } else {
                                     return Err(FindError::new(
-                                        format!("Invalid option: {}", &next_arg).as_str(),
+                                        format!("Invalid option: {}", &arg).as_str(),
                                     ))
                                 }
                             }
@@ -351,7 +351,7 @@ impl FindOptions {
                         },
                         _ => {
                             return Err(FindError::new(
-                                format!("Invalid option: {}", &next_arg).as_str(),
+                                format!("Invalid option: {}", &arg).as_str(),
                             ))
                         }
                     }

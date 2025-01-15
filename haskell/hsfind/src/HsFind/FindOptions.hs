@@ -206,9 +206,9 @@ updateSettingsFromArgs settings opts arguments =
           [a] | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) []
-              StringActionType -> Left $ "Missing value for option: " ++ a
-              IntegerActionType -> Left $ "Missing value for option: " ++ a
-              UnknownActionType -> Left $ "Invalid option: " ++ a
+              StringActionType -> Left $ "Missing value for option: " ++ argName a
+              IntegerActionType -> Left $ "Missing value for option: " ++ argName a
+              UnknownActionType -> Left $ "Invalid option: " ++ argName a
           a:as | "-" `isPrefixOf` a ->
             case getActionType (argName a) of
               BoolActionType -> recSettingsFromArgs (getBoolAction (argName a) ss True) as

@@ -222,6 +222,10 @@ defmodule ExFind.FindOptions do
     end
   end
 
+  def trim_option(option) do
+    String.replace_leading(option, "-", "")
+  end
+
   def get_settings_from_args(args, options) do
     # IO.puts("\nget_settings_from_args()")
     # IO.puts("args=#{inspect(args)}")
@@ -240,7 +244,7 @@ defmodule ExFind.FindOptions do
     # IO.puts("parsed_args_with_paths=#{inspect(parsed_args_with_paths)}")
 
     case invalid do
-      [{opt, nil} | _rest] -> {:error, "Invalid option: #{opt}"}
+      [{opt, nil} | _rest] -> {:error, "Invalid option: #{trim_option(opt)}"}
       [] -> update_settings_from_args(settings, parsed_args_with_paths, arg_action_maps)
     end
   end

@@ -45,6 +45,18 @@ func NewFindOptions() *FindOptions {
 	return findOptions
 }
 
+func (fo *FindOptions) isValidOption(opt string) bool {
+	if opt == "path" {
+		return true
+	}
+	for _, o := range fo.FindOptions {
+		if o.Long == opt || (o.Short != "" && o.Short == opt) {
+			return true
+		}
+	}
+	return false
+}
+
 func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) error {
 	boolActionMap := fo.getBoolActionMap()
 	stringActionMap := fo.getStringActionMap()
@@ -57,18 +69,7 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 		return fmt.Errorf(errMsg)
 	}
 	for k := range jsonSettings {
-		foundOption := false
-		if k == "path" {
-			foundOption = true
-			continue
-		}
-		for _, o := range fo.FindOptions {
-			if o.Long == k {
-				foundOption = true
-				break
-			}
-		}
-		if !foundOption {
+		if !fo.isValidOption(k) {
 			return fmt.Errorf(fmt.Sprintf("Invalid option: %v", k))
 		}
 	}
@@ -179,37 +180,41 @@ func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
 			k := strings.TrimLeft(args[i], "-")
-			if bf, isBool := boolActionMap[k]; isBool {
-				bf(true, settings)
-			} else {
-				i++
-				if len(args) < i+1 {
-					return nil, fmt.Errorf("Missing value for option: %s", k)
-				}
-				val := args[i]
-
-				if sf, isString := stringActionMap[k]; isString {
-					sf(val, settings)
-				} else if iff, isInt := intActionMap[k]; isInt {
-					intVal, err := strconv.Atoi(val)
-					if err != nil {
-						return nil, fmt.Errorf("Invalid value for option %s", k)
-					}
-					iff(intVal, settings)
-				} else if lff, isLong := longActionMap[k]; isLong {
-					longVal, err := strconv.ParseInt(val, 0, 64)
-					if err != nil {
-						return nil, fmt.Errorf("Invalid value for option %s", k)
-					}
-					lff(longVal, settings)
-				} else if k == "settings-file" {
-					err := fo.SettingsFromFile(val, settings)
-					if err != nil {
-						return nil, err
-					}
+			if fo.isValidOption(k) {
+				if bf, isBool := boolActionMap[k]; isBool {
+					bf(true, settings)
 				} else {
-					return nil, fmt.Errorf("Invalid option: %s", k)
+					i++
+					if len(args) < i+1 {
+						return nil, fmt.Errorf("Missing value for option: %s", k)
+					}
+					val := args[i]
+
+					if sf, isString := stringActionMap[k]; isString {
+						sf(val, settings)
+					} else if iff, isInt := intActionMap[k]; isInt {
+						intVal, err := strconv.Atoi(val)
+						if err != nil {
+							return nil, fmt.Errorf("Invalid value for option %s", k)
+						}
+						iff(intVal, settings)
+					} else if lff, isLong := longActionMap[k]; isLong {
+						longVal, err := strconv.ParseInt(val, 0, 64)
+						if err != nil {
+							return nil, fmt.Errorf("Invalid value for option %s", k)
+						}
+						lff(longVal, settings)
+					} else if k == "settings-file" {
+						err := fo.SettingsFromFile(val, settings)
+						if err != nil {
+							return nil, err
+						}
+					} else {
+						return nil, fmt.Errorf("Invalid option: %s", k)
+					}
 				}
+			} else {
+				return nil, fmt.Errorf("Invalid option: %s", k)
 			}
 		} else {
 			settings.AddPath(args[i])
