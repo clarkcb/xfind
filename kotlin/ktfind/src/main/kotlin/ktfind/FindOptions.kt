@@ -116,7 +116,7 @@ class FindOptions {
         "path" to
                 { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
         "settings-file" to
-                { s, ss -> settingsFromFile(s, ss) },
+                { s, ss -> updateSettingsFromFile(s, ss) },
         "sort-by" to
                 { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
     )
@@ -174,7 +174,7 @@ class FindOptions {
         }
     }
 
-    fun settingsFromJson(json: String, settings: FindSettings): FindSettings {
+    fun updateSettingsFromJson(json: String, settings: FindSettings): FindSettings {
         val jsonObject = JSONObject(JSONTokener(json))
         fun recSettingsFromJson(keys: List<String>, settings: FindSettings): FindSettings {
             return if (keys.isEmpty()) settings
@@ -197,7 +197,7 @@ class FindOptions {
         return recSettingsFromJson(keys, settings)
     }
 
-    private fun settingsFromFile(filePath: String, settings: FindSettings): FindSettings {
+    private fun updateSettingsFromFile(filePath: String, settings: FindSettings): FindSettings {
         val path = FileUtil.expandPath(Paths.get(filePath));
         if (!Files.exists(path)) {
             throw FindException("Settings file not found: $filePath")
@@ -207,7 +207,7 @@ class FindOptions {
         }
         try {
             val json = path.toFile().readText()
-            return settingsFromJson(json, settings)
+            return updateSettingsFromJson(json, settings)
         } catch (_: FileNotFoundException) {
             throw FindException("Settings file not found: $filePath")
         } catch (_: IOException) {

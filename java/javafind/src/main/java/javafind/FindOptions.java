@@ -183,7 +183,7 @@ public class FindOptions {
         }
     }
 
-    public void settingsFromJson(final String json, FindSettings settings) throws FindException {
+    public void updateSettingsFromJson(final String json, FindSettings settings) throws FindException {
         var jsonObj = new JSONObject(new JSONTokener(json));
         // keys are sorted so that output is consistent across all versions
         var keys = jsonObj.keySet().stream().sorted().collect(Collectors.toList());
@@ -199,7 +199,7 @@ public class FindOptions {
         }
     }
 
-    private void settingsFromFilePath(final String filePath, FindSettings settings) throws FindException {
+    private void updateSettingsFromFilePath(final String filePath, FindSettings settings) throws FindException {
         var path = FileUtil.expandPath(Paths.get(filePath));
         if (!Files.exists(path)) {
             throw new FindException("Settings file not found: " + filePath);
@@ -208,7 +208,7 @@ public class FindOptions {
             throw new FindException("Invalid settings file (must be JSON): " + filePath);
         }
         try {
-            settingsFromJson(FileUtil.getFileContents(path), settings);
+            updateSettingsFromJson(FileUtil.getFileContents(path), settings);
         } catch (FileNotFoundException e) {
             throw new FindException("Settings file not found: " + filePath);
         } catch (IOException e) {
@@ -245,7 +245,7 @@ public class FindOptions {
                             } else if (this.longActionMap.containsKey(longArg)) {
                                 this.longActionMap.get(longArg).set(Long.parseLong(argVal), settings);
                             } else if (longArg.equals("settings-file")) {
-                                settingsFromFilePath(argVal, settings);
+                                updateSettingsFromFilePath(argVal, settings);
                             }
                         } else {
                             throw new FindException("Missing value for option " + arg);

@@ -132,7 +132,7 @@ class FindOptions {
     };
   }
 
-  Future<void> settingsFromJson(
+  Future<void> updateSettingsFromJson(
       String jsonString, FindSettings settings) async {
     await ready.then((_) {
       Map jsonMap = json.decode(jsonString);
@@ -180,7 +180,8 @@ class FindOptions {
     });
   }
 
-  Future<void> settingsFromFile(String filePath, FindSettings settings) async {
+  Future<void> updateSettingsFromFile(
+      String filePath, FindSettings settings) async {
     var expandedPath = FileUtil.expandPath(filePath);
     if (FileSystemEntity.typeSync(expandedPath) ==
         FileSystemEntityType.notFound) {
@@ -188,7 +189,7 @@ class FindOptions {
     }
     if (expandedPath.endsWith('.json')) {
       var contents = await File(expandedPath).readAsString();
-      await settingsFromJson(contents, settings);
+      await updateSettingsFromJson(contents, settings);
     } else {
       throw FindException('Invalid settings file (must be JSON): $filePath');
     }
@@ -225,7 +226,7 @@ class FindOptions {
             } else if (longArg == 'settings-file') {
               if (it.moveNext()) {
                 var s = it.current;
-                await settingsFromFile(s, settings);
+                await updateSettingsFromFile(s, settings);
               } else {
                 throw FindException('Missing value for option $arg');
               }

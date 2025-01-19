@@ -181,7 +181,7 @@ class FindOptions {
         }
     }
 
-    void settingsFromJson(final String json, FindSettings settings) {
+    void updateSettingsFromJson(final String json, FindSettings settings) {
         JsonSlurper jsonSlurper = new JsonSlurper()
         def jsonObj = jsonSlurper.parseText(json)
         assert jsonObj instanceof Map<String, Object>
@@ -199,7 +199,7 @@ class FindOptions {
         }
     }
 
-    private void settingsFromFilePath(final String filePath, final FindSettings settings) {
+    private void updateSettingsFromFilePath(final String filePath, final FindSettings settings) {
         Path path = FileUtil.expandPath(Paths.get(filePath))
         if (!Files.exists(path)) {
             throw new FindException("Settings file not found: ${filePath}")
@@ -208,7 +208,7 @@ class FindOptions {
             throw new FindException("Invalid settings file (must be JSON): ${filePath}")
         }
         try {
-            settingsFromJson(FileUtil.getFileContents(path), settings)
+            updateSettingsFromJson(FileUtil.getFileContents(path, settings.textFileEncoding), settings)
         } catch (FileNotFoundException ignored) {
             throw new FindException("Settings file not found: ${filePath}")
         } catch (IOException ignored) {
@@ -228,26 +228,30 @@ class FindOptions {
                 while (arg.startsWith('-')) {
                     arg = arg.substring(1)
                 }
-                var longArg = longArgMap.get(arg)
-                if (longArg in this.boolActionMap) {
-                    ((BooleanSetter)this.boolActionMap[longArg]).set(true, settings)
-                } else if (longArg in this.stringActionMap
-                        || longArg in this.intActionMap
-                        || longArg in this.longActionMap
-                        || longArg == 'settings-file') {
-                    if (!queue.isEmpty()) {
-                        String argVal = queue.remove()
-                        if (longArg in this.stringActionMap) {
-                            ((StringSetter)this.stringActionMap[longArg]).set(argVal, settings)
-                        } else if (longArg in this.intActionMap) {
-                            ((IntegerSetter)this.intActionMap[longArg]).set(Integer.parseInt(argVal), settings)
-                        } else if (longArg in this.longActionMap) {
-                            ((LongSetter)this.longActionMap[longArg]).set(Long.parseLong(argVal), settings)
-                        } else if (longArg == 'settings-file') {
-                            settingsFromFilePath(argVal, settings)
+                if (arg in longActionMap) {
+                    var longArg = longArgMap.get(arg)
+                    if (longArg in this.boolActionMap) {
+                        ((BooleanSetter)this.boolActionMap[longArg]).set(true, settings)
+                    } else if (longArg in this.stringActionMap
+                            || longArg in this.intActionMap
+                            || longArg in this.longActionMap
+                            || longArg == 'settings-file') {
+                        if (!queue.isEmpty()) {
+                            String argVal = queue.remove()
+                            if (longArg in this.stringActionMap) {
+                                ((StringSetter)this.stringActionMap[longArg]).set(argVal, settings)
+                            } else if (longArg in this.intActionMap) {
+                                ((IntegerSetter)this.intActionMap[longArg]).set(Integer.parseInt(argVal), settings)
+                            } else if (longArg in this.longActionMap) {
+                                ((LongSetter)this.longActionMap[longArg]).set(Long.parseLong(argVal), settings)
+                            } else if (longArg == 'settings-file') {
+                                updateSettingsFromFilePath(argVal, settings)
+                            }
+                        } else {
+                            throw new FindException("Missing value for option ${arg}")
                         }
                     } else {
-                        throw new FindException("Missing value for option ${arg}")
+                        throw new FindException("Invalid option: ${arg}")
                     }
                 } else {
                     throw new FindException("Invalid option: ${arg}")

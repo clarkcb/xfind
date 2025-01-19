@@ -221,7 +221,7 @@ sub set_options_from_json {
     return $options_hash;
 }
 
-sub settings_from_json {
+sub update_settings_from_json {
     my ($self, $json, $settings) = @_;
     my $errs = [];
     my $json_hash = decode_json $json;
@@ -255,7 +255,7 @@ sub settings_from_json {
     return $errs;
 }
 
-sub settings_from_file {
+sub update_settings_from_file {
     # $file_path is instance of Path::Class::File
     my ($self, $file_path, $settings) = @_;
     my $errs = [];
@@ -269,7 +269,7 @@ sub settings_from_file {
         return $errs;
     }
     my $json = $expanded_path->slurp;
-    my $rc = eval { $errs = $self->settings_from_json($json, $settings); 1; };
+    my $rc = eval { $errs = $self->update_settings_from_json($json, $settings); 1; };
     if (!$rc) {
         push(@$errs, 'Unable to parse JSON in settings file: ' . $file_path);
     }
@@ -302,7 +302,7 @@ sub settings_from_args {
                             &{$int_action_hash->{$long_arg}}(int($val), $settings);
                         } else {
                             my $file_path = file($val);
-                            my $settings_file_errors = $self->settings_from_file($file_path, $settings);
+                            my $settings_file_errors = $self->update_settings_from_file($file_path, $settings);
                             push(@errs, @$settings_file_errors);
                         }
                     } else {

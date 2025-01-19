@@ -57,7 +57,7 @@ class FindOptionsTest {
     }
 
     @Test
-    final void testSettingsFromJson() {
+    final void testUpdateSettingsFromJson() {
         def json = new StringBuilder('{\n')
                 .append('  "path": "~/src/xfind/",\n')
                 .append('  "in-ext": ["js","ts"],\n')
@@ -70,7 +70,7 @@ class FindOptionsTest {
         try {
             def findOptions = new FindOptions()
             def settings = new FindSettings()
-            findOptions.settingsFromJson(json.toString(), settings)
+            findOptions.updateSettingsFromJson(json.toString(), settings)
 
             assertEquals(1, settings.paths.size())
             assertEquals(Paths.get('~/src/xfind/'), settings.paths.toArray()[0])

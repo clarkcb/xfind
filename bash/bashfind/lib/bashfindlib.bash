@@ -1170,7 +1170,7 @@ settings_from_args () {
                     exit_with_error "Missing argument for option $arg"
                 fi
                 # SETTINGS_FILE="$arg2"
-                settings_from_file $arg2
+                update_settings_from_file $arg2
                 i=$(($i + 1))
                 ;;
             --sort-ascending)
@@ -1253,7 +1253,7 @@ negate_key () {
     esac
 }
 
-settings_from_json () {
+update_settings_from_json () {
     local json="$1"
     local array_keys=( $(echo "$json" | jq -S -r 'with_entries(select(.value | type == "array")) | keys | .[]') )
     for k in ${array_keys[*]}
@@ -1320,7 +1320,7 @@ settings_from_json () {
     settings_from_args ${other_args[*]}
 }
 
-settings_from_file () {
+update_settings_from_file () {
     local file_path="$1"
     local file_name=$(basename $file_path)
     local file_ext="${file_name##*.}"
@@ -1336,7 +1336,7 @@ settings_from_file () {
     fi
 
     json=$(cat $expanded_path)
-    settings_from_json "$json"
+    update_settings_from_json "$json"
 }
 
 settings_to_string () {

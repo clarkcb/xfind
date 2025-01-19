@@ -43,7 +43,7 @@ class FindOptionsTest {
     }
 
     @Test
-    fun testSettingsFromJson() {
+    fun testUpdateSettingsFromJson() {
         val json = """{
                  |  "path": "~/src/xfind/",
                  |  "in-ext": ["js","ts"],
@@ -54,7 +54,7 @@ class FindOptionsTest {
                  |  "includehidden": false
                  |}""".trimMargin()
         val findOptions = FindOptions()
-        val settings = findOptions.settingsFromJson(json, getDefaultSettings())
+        val settings = findOptions.updateSettingsFromJson(json, getDefaultSettings())
 
         assertEquals(1, settings.paths.size)
         assertEquals(Paths.get("~/src/xfind/"), settings.paths.first())

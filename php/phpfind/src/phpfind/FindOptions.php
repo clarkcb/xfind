@@ -95,7 +95,7 @@ class FindOptions
             'mindepth' => fn(int $i, FindSettings $fs) => $fs->min_depth = $i,
             'minsize' => fn(int $i, FindSettings $fs) => $fs->min_size = $i,
         ];
-        $this->long_arg_map = [];
+        $this->long_arg_map = ['path' => 'path'];
         $this->set_options_from_json();
     }
 

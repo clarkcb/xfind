@@ -62,8 +62,7 @@ public class FindOptionsTests
   ""includehidden"": true
 }";
 		var options = new FindOptions();
-		var settings = new FindSettings();
-		options.UpdateSettingsFromJson(json, settings);
+		var settings = options.SettingsFromJson(json);
 
 		Assert.That(settings.Paths.Count, Is.EqualTo(1));
 		var expectedPath = new FilePath("~/src/xfind/");

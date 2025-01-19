@@ -57,7 +57,7 @@ func (fo *FindOptions) isValidOption(opt string) bool {
 	return false
 }
 
-func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) error {
+func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSettings) error {
 	boolActionMap := fo.getBoolActionMap()
 	stringActionMap := fo.getStringActionMap()
 	intActionMap := fo.getIntActionMap()
@@ -148,7 +148,7 @@ func (fo *FindOptions) SettingsFromJson(data []byte, settings *FindSettings) err
 	return nil
 }
 
-func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings) error {
+func (fo *FindOptions) UpdateSettingsFromFile(filePath string, settings *FindSettings) error {
 	expandedPath := ExpandPath(filePath)
 	if data, err := os.ReadFile(expandedPath); err != nil {
 		if strings.HasSuffix(err.Error(), "no such file or directory") {
@@ -157,7 +157,7 @@ func (fo *FindOptions) SettingsFromFile(filePath string, settings *FindSettings)
 		}
 		return err
 	} else {
-		if err := fo.SettingsFromJson(data, settings); err != nil {
+		if err := fo.UpdateSettingsFromJson(data, settings); err != nil {
 			if err.Error() == "Unable to parse JSON" {
 				errMsg := fmt.Sprintf("Invalid settings file (must be JSON): %v", filePath)
 				return fmt.Errorf(errMsg)
@@ -205,7 +205,7 @@ func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 						}
 						lff(longVal, settings)
 					} else if k == "settings-file" {
-						err := fo.SettingsFromFile(val, settings)
+						err := fo.UpdateSettingsFromFile(val, settings)
 						if err != nil {
 							return nil, err
 						}

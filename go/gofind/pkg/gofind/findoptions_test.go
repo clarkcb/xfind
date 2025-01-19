@@ -69,7 +69,7 @@ func TestFindSettingsFromJson(t *testing.T) {
 
 	settings := GetDefaultFindSettings()
 	var err error
-	err = findOptions.SettingsFromJson(jsonSettings, settings)
+	err = findOptions.UpdateSettingsFromJson(jsonSettings, settings)
 	if err != nil {
 		t.Errorf("TestFindSettingsFromJson: err: %v", err)
 	}
