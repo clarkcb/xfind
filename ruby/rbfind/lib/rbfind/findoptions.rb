@@ -19,7 +19,7 @@ module RbFind
       @bool_action_dict = {}
       @str_action_dict = {}
       @int_action_dict = {}
-      @long_arg_dict = {"path" => :path}
+      @long_arg_dict = {}
       set_actions
       set_options_from_json
       @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
@@ -206,7 +206,7 @@ module RbFind
         mindepth: ->(i, settings) { settings.min_depth = i },
         minsize: ->(i, settings) { settings.min_size = i },
       }
-      @long_arg_dict = {}
+      @long_arg_dict = {"path" => :path}
     end
 
     def set_options_from_json

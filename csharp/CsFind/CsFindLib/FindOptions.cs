@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -81,7 +81,7 @@ public class FindOptions
 	{
 		_findOptionsResource = EmbeddedResource.GetResourceFileContents("CsFindLib.Resources.findoptions.json");
 		Options = [];
-		LongArgDictionary = new Dictionary<string, string>();
+		LongArgDictionary = new Dictionary<string, string> { { "path", "path" } };
 		SetOptionsFromJson();
 	}
 

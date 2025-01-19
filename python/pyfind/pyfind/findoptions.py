@@ -179,7 +179,7 @@ class FindOptions:
                 settings.set_property('min_size', i),
         }
 
-        self.__long_arg_dict = {}
+        self.__long_arg_dict = {'path': 'path'}
 
     def __set_options_from_json(self):
         data = importlib.resources.files('pyfind').joinpath('data')

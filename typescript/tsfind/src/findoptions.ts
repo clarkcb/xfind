@@ -28,7 +28,7 @@ export class FindOptions {
 
     constructor() {
         this.options = [];
-        this.argNameMap = {};
+        this.argNameMap = {'path': 'path'};
 
         this.boolActionMap = {
             'archivesonly':
