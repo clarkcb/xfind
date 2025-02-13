@@ -5,13 +5,8 @@ import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileResult {
+public record FileResult(List<Path> containers, Path path, FileType fileType, long fileSize, FileTime lastMod) {
     public static final String CONTAINER_SEPARATOR = "!";
-    private final List<Path> containers;
-    private final Path path;
-    private final FileType fileType;
-    private final long fileSize;
-    private final FileTime lastMod;
 
     public FileResult(final Path path, final FileType fileType) {
         this(new ArrayList<>(), path, fileType, 0L,null);
@@ -19,35 +14,6 @@ public class FileResult {
 
     public FileResult(final Path path, final FileType fileType, final long fileSize, final FileTime lastMod) {
         this(new ArrayList<>(), path, fileType, fileSize, lastMod);
-    }
-
-    public FileResult(final List<Path> containers, final Path path, final FileType fileType,
-                      final long fileSize, final FileTime lastMod) {
-        this.containers = containers;
-        this.path = path;
-        this.fileType = fileType;
-        this.fileSize = fileSize;
-        this.lastMod = lastMod;
-    }
-
-    public final List<Path> getContainers() {
-        return this.containers;
-    }
-
-    public final Path getPath() {
-        return this.path;
-    }
-
-    public final FileType getFileType() {
-        return this.fileType;
-    }
-
-    public final long getFileSize() {
-        return this.fileSize;
-    }
-
-    public final FileTime getLastMod() {
-        return this.lastMod;
     }
 
     private static int compareStrings(final String s1, final String s2, final boolean sortCaseInsensitive) {
@@ -66,7 +32,7 @@ public class FileResult {
     }
 
     public int compareByName(final FileResult other, final boolean sortCaseInsensitive) {
-        int fComp = compareStrings(this.path.getFileName().toString(), other.path.getFileName().toString(), sortCaseInsensitive);
+        var fComp = compareStrings(this.path.getFileName().toString(), other.path.getFileName().toString(), sortCaseInsensitive);
         if (fComp == 0) {
             return compareStrings(this.path.getParent().toString(), other.path.getParent().toString(), sortCaseInsensitive);
         }
@@ -81,7 +47,7 @@ public class FileResult {
     }
 
     public int compareByType(final FileResult other, final boolean sortCaseInsensitive) {
-        int ftComp = this.getFileType().compareTo(other.getFileType());
+        var ftComp = this.fileType().compareTo(other.fileType());
         if (ftComp == 0) {
             return compareByPath(other, sortCaseInsensitive);
         }
@@ -92,7 +58,7 @@ public class FileResult {
         if (lastMod == null && other.lastMod == null) return 0;
         if (lastMod == null) return 1;
         if (other.lastMod == null) return -1;
-        int lmComp = this.lastMod.compareTo(other.lastMod);
+        var lmComp = this.lastMod.compareTo(other.lastMod);
         if (lmComp == 0) {
             return compareByPath(other, sortCaseInsensitive);
         }
@@ -102,7 +68,7 @@ public class FileResult {
     public String toString() {
         var sb = new StringBuilder();
         if (!containers.isEmpty()) {
-            for (int i = 0; i < containers.size(); i++) {
+            for (var i = 0; i < containers.size(); i++) {
                 if (i > 0) {
                     sb.append(CONTAINER_SEPARATOR);
                 }

@@ -157,7 +157,7 @@ public final class FileUtil {
     }
 
     public static List<String> getStreamLines(final InputStream is, final String enc) throws IllegalArgumentException {
-        List<String> lines = new ArrayList<>();
+        var lines = new ArrayList<String>();
         var scanner = new Scanner(is, enc).useDelimiter("\r?\n");
         while (scanner.hasNext()) {
             try {

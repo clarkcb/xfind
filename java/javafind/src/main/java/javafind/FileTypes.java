@@ -5,7 +5,6 @@ import org.json.JSONTokener;
 
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,26 +23,21 @@ public class FileTypes {
             var jsonObj = new JSONObject(new JSONTokener(fileTypesInputStream));
             var filetypesArray = jsonObj.getJSONArray("filetypes");
 
-            for (int i=0; i < filetypesArray.length(); i++) {
+            for (var i=0; i < filetypesArray.length(); i++) {
                 var filetypeObj = filetypesArray.getJSONObject(i);
                 var typeName = filetypeObj.getString("type");
                 fileTypeExtMap.put(typeName, filetypeObj.getJSONArray("extensions").toList().stream()
-                        .map(Object::toString).collect(Collectors.toCollection(HashSet::new)));
+                        .map(Object::toString).collect(Collectors.toSet()));
                 fileTypeNameMap.put(typeName, filetypeObj.getJSONArray("names").toList().stream()
-                        .map(Object::toString).collect(Collectors.toCollection(HashSet::new)));
+                        .map(Object::toString).collect(Collectors.toSet()));
             }
+            // Add CODE and XML to TEXT extensions
+            fileTypeExtMap.get(FileType.TEXT.toName()).addAll(fileTypeExtMap.get(FileType.CODE.toName()));
+            fileTypeExtMap.get(FileType.TEXT.toName()).addAll(fileTypeExtMap.get(FileType.XML.toName()));
 
-            var allTextExts = new HashSet<String>();
-            allTextExts.addAll(fileTypeExtMap.get(FileType.CODE.toName()));
-            allTextExts.addAll(fileTypeExtMap.get(FileType.TEXT.toName()));
-            allTextExts.addAll(fileTypeExtMap.get(FileType.XML.toName()));
-            fileTypeExtMap.put(FileType.TEXT.toName(), allTextExts);
-
-            var allTextNames = new HashSet<String>();
-            allTextNames.addAll(fileTypeNameMap.get(FileType.CODE.toName()));
-            allTextNames.addAll(fileTypeNameMap.get(FileType.TEXT.toName()));
-            allTextNames.addAll(fileTypeNameMap.get(FileType.XML.toName()));
-            fileTypeNameMap.put(FileType.TEXT.toName(), allTextNames);
+            // Add CODE and XML to TEXT names
+            fileTypeNameMap.get(FileType.TEXT.toName()).addAll(fileTypeNameMap.get(FileType.CODE.toName()));
+            fileTypeNameMap.get(FileType.TEXT.toName()).addAll(fileTypeNameMap.get(FileType.XML.toName()));
         } catch (AssertionError e) {
             e.printStackTrace();
         }

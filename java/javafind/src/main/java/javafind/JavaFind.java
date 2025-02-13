@@ -32,7 +32,7 @@ public class JavaFind {
 
     private static List<String> getMatchingDirs(final List<FileResult> fileResults) {
         return fileResults.stream()
-                .map(fr -> fr.getPath().getParent().toString()).distinct()
+                .map(fr -> fr.path().getParent().toString()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 

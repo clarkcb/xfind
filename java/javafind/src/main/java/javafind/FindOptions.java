@@ -124,7 +124,7 @@ public class FindOptions {
         var jsonObj = new JSONObject(new JSONTokener(findOptionsInputStream));
         var findOptionsArray = jsonObj.getJSONArray("findoptions");
 
-        for (int i=0; i<findOptionsArray.length(); i++) {
+        for (var i=0; i<findOptionsArray.length(); i++) {
             var findOptionObj = findOptionsArray.getJSONObject(i);
             var longArg = findOptionObj.getString("long");
             longArgMap.put(longArg, longArg);
@@ -150,7 +150,7 @@ public class FindOptions {
             if (obj instanceof String s) {
                 this.stringActionMap.get(arg).set(s, settings);
             } else if (obj instanceof JSONArray jsonArray) {
-                for (int i = 0; i < jsonArray.length(); i++) {
+                for (var i = 0; i < jsonArray.length(); i++) {
                     Object item = jsonArray.get(i);
                     if (item instanceof String) {
                         this.stringActionMap.get(arg).set((String)item, settings);
@@ -196,6 +196,12 @@ public class FindOptions {
                 applySetting(k, v, settings);
             }
         }
+    }
+
+    public final FindSettings settingsFromJson(final String json) throws FindException {
+        var settings = new FindSettings();
+        updateSettingsFromJson(json, settings);
+        return settings;
     }
 
     private void updateSettingsFromFilePath(final String filePath, FindSettings settings) throws FindException {
@@ -292,7 +298,7 @@ public class FindOptions {
             optDescs.add(opt.description());
         }
         final var format = " %1$-" + longest + "s  %2$s\n";
-        for (int i = 0; i < optStrings.size(); i++) {
+        for (var i = 0; i < optStrings.size(); i++) {
             sb.append(String.format(format, optStrings.get(i), optDescs.get(i)));
         }
         return sb.toString();

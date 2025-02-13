@@ -19,9 +19,9 @@ public enum FileType {
     }
 
     public static FileType forName(final String name) {
-        final String lname = name.trim().toLowerCase();
-        for (final FileType fileType : FileType.values()) {
-            if (fileType.name.equals(lname)) {
+        final var lName = name.trim().toLowerCase();
+        for (final var fileType : FileType.values()) {
+            if (fileType.name.equals(lName)) {
                 return fileType;
             }
         }

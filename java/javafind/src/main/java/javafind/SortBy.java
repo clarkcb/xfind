@@ -9,13 +9,13 @@ public enum SortBy {
 
     private final String name;
 
-    private SortBy(final String name) {
+    SortBy(final String name) {
         this.name = name;
     }
 
     public static SortBy forName(final String name) {
-        String lname = name.trim().toLowerCase();
-        return switch (lname) {
+        final var lName = name.trim().toLowerCase();
+        return switch (lName) {
             case "filename", "name" -> FILENAME;
             case "filesize", "size" -> FILESIZE;
             case "filetype", "type" -> FILETYPE;

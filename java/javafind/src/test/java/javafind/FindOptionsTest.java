@@ -73,8 +73,7 @@ public class FindOptionsTest {
 """;
         try {
             var findOptions = new FindOptions();
-            var settings = new FindSettings();
-            findOptions.settingsFromJson(json, settings);
+            var settings = findOptions.settingsFromJson(json);
 
             assertEquals(1, settings.getPaths().size());
             assertEquals(Paths.get("~/src/xfind/"), settings.getPaths().toArray()[0]);

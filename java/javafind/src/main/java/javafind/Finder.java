@@ -117,7 +117,7 @@ public class Finder {
 
     boolean hasMatchingExtension(final FileResult fr) {
         if (!settings.getInExtensions().isEmpty() || !settings.getOutExtensions().isEmpty()) {
-            var fileName = fr.getPath().getFileName().toString();
+            var fileName = fr.path().getFileName().toString();
             var ext = FileUtil.getExtension(fileName);
             return isMatchingExtension(ext);
         }
@@ -155,22 +155,22 @@ public class Finder {
     }
 
     boolean hasMatchingLastMod(final FileResult fr) {
-        var lastMod = fr.getLastMod() == null ? null : fr.getLastMod().toInstant();
+        var lastMod = fr.lastMod() == null ? null : fr.lastMod().toInstant();
         return isMatchingLastMod(lastMod);
     }
 
     boolean isMatchingFileResult(final FileResult fr) {
         return hasMatchingExtension(fr)
-                && isMatchingFileName(fr.getPath().getFileName().toString())
-                && isMatchingFileType(fr.getFileType())
-                && isMatchingFileSize(fr.getFileSize())
+                && isMatchingFileName(fr.path().getFileName().toString())
+                && isMatchingFileType(fr.fileType())
+                && isMatchingFileSize(fr.fileSize())
                 && hasMatchingLastMod(fr);
     }
 
     boolean isMatchingArchiveFile(final Path path) {
         var fileName = path.getFileName().toString();
         if (!settings.getInArchiveExtensions().isEmpty() || !settings.getOutArchiveExtensions().isEmpty()) {
-            String ext = FileUtil.getExtension(fileName);
+            var ext = FileUtil.getExtension(fileName);
             if ((!settings.getInArchiveExtensions().isEmpty() && !settings.getInArchiveExtensions().contains(ext))
                     ||
                     (!settings.getOutArchiveExtensions().isEmpty()
@@ -219,7 +219,7 @@ public class Finder {
         }
 
         FileResult fileResult = new FileResult(path, fileType, fileSize, lastMod);
-        if (fileResult.getFileType() == FileType.ARCHIVE) {
+        if (fileResult.fileType() == FileType.ARCHIVE) {
             if (isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult);
             }
@@ -249,8 +249,8 @@ public class Finder {
     }
 
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
-        List<FileResult> pathResults = new ArrayList<>();
-        boolean recurse = true;
+        var pathResults = new ArrayList<FileResult>();
+        var recurse = true;
         if (currentDepth == maxDepth) {
             recurse = false;
         } else if (maxDepth > -1 && currentDepth > maxDepth) {
@@ -258,18 +258,17 @@ public class Finder {
         }
         List<Path> pathDirs = new ArrayList<>();
         try (DirectoryStream<Path> pathContents = Files.newDirectoryStream(filePath)) {
-            for (Path path : pathContents) {
+            for (var path : pathContents) {
                 if (Files.isSymbolicLink(path) && !settings.getFollowSymlinks()) {
                     continue;
                 }
                 if (Files.isDirectory(path) && recurse && isMatchingDir(path)) {
                     pathDirs.add(path);
                 } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
-                    Optional<FileResult> optFileResult = filterToFileResult(path);
-                    optFileResult.ifPresent(pathResults::add);
+                    filterToFileResult(path).ifPresent(pathResults::add);
                 }
             }
-            for (Path pathDir : pathDirs) {
+            for (var pathDir : pathDirs) {
                 pathResults.addAll(recFindPath(pathDir, minDepth, maxDepth, currentDepth + 1));
             }
         } catch (IOException e) {
@@ -301,7 +300,7 @@ public class Finder {
             if (settings.getMinDepth() > 0) {
                 return Collections.emptyList();
             }
-            Optional<FileResult> optFileResult = filterToFileResult(filePath);
+            var optFileResult = filterToFileResult(filePath);
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get());
             } else {
@@ -313,7 +312,7 @@ public class Finder {
     }
 
     private List<FileResult> findAsync() throws FindException {
-        List<FileResult> fileResults = new ArrayList<>();
+        var fileResults = new ArrayList<FileResult>();
 
         // get thread pool the size of the number of paths to find
         ExecutorService executorService;
@@ -322,13 +321,13 @@ public class Finder {
         } else {
             executorService = Executors.newFixedThreadPool(settings.getPaths().size());
         }
-        List<Future<List<FileResult>>> futures = new ArrayList<>();
+        var futures = new ArrayList<Future<List<FileResult>>>();
 
         for (var path : settings.getPaths()) {
             futures.add(executorService.submit(() -> findPath(path)));
         }
 
-        for (Future<List<FileResult>> future : futures) {
+        for (var future : futures) {
             try {
                 fileResults.addAll(future.get());
             } catch (InterruptedException | ExecutionException e) {
@@ -343,7 +342,7 @@ public class Finder {
     }
 
     public final List<FileResult> find() throws FindException {
-        List<FileResult> fileResults = findAsync();
+        var fileResults = findAsync();
         sortFileResults(fileResults);
         return fileResults;
     }

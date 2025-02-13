@@ -151,7 +151,7 @@ public class FileUtilTest {
     public final void testSplitPathWithDot() {
         var path = "./path/to/somewhere/";
         var elems = FileUtil.splitPath(path);
-        assertEquals(elems.size(), 4);
+        assertEquals(4, elems.size());
         assertEquals(".", elems.get(0));
         assertEquals("path", elems.get(1));
     }
@@ -160,7 +160,7 @@ public class FileUtilTest {
     public final void testSplitPathWithDoubleDot() {
         var path = "../path/to/somewhere/";
         var elems = FileUtil.splitPath(path);
-        assertEquals(elems.size(), 4);
+        assertEquals(4, elems.size());
         assertEquals("..", elems.get(0));
         assertEquals("path", elems.get(1));
     }
@@ -169,7 +169,7 @@ public class FileUtilTest {
     public final void testSplitPathWithoutDot() {
         var path = "/path/to/somewhere/";
         var elems = FileUtil.splitPath(path);
-        assertEquals(elems.size(), 3);
+        assertEquals(3, elems.size());
         assertEquals("path", elems.get(0));
     }
 }
