@@ -418,7 +418,7 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
             return err;
         }
 
-    } else if (S_ISREG(st.st_mode)) {
+    } else {
         // if min_depth > zero, we can skip since the file is at depth zero
         if (finder->settings->min_depth > 0) {
             free(expanded);
@@ -432,8 +432,6 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
         } else {
             err = E_STARTPATH_NON_MATCHING;
         }
-    } else {
-        err = E_STARTPATH_UNSUPPORTED_FILETYPE;
     }
 
     destroy_path(expanded_path);

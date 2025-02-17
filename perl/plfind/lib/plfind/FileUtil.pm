@@ -28,7 +28,7 @@ sub is_dot_dir {
 sub expand_path {
     my ($file_path) = @_;
     if (!defined $file_path || chomp($file_path) eq '') {
-        return '';
+        return $file_path;
     }
     if (substr($file_path, 0, 1) eq '~') {
         my $user_path = dir($ENV{HOME});

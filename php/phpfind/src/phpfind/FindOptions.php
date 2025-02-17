@@ -140,7 +140,7 @@ class FindOptions
      * @param string $json
      * @param FindSettings $settings
      * @return void
-     * @throws FindException|\JsonException
+     * @throws FindException
      */
     public function update_settings_from_json(string $json, FindSettings $settings): void
     {
@@ -185,7 +185,7 @@ class FindOptions
                 }
             }
         } catch (\JsonException $e) {
-            throw $e;
+            throw new FindException($e->getMessage());
         }
     }
 

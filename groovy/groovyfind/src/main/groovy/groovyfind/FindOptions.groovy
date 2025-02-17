@@ -208,7 +208,8 @@ class FindOptions {
             throw new FindException("Invalid settings file (must be JSON): ${filePath}")
         }
         try {
-            updateSettingsFromJson(FileUtil.getFileContents(path, settings.textFileEncoding), settings)
+//            updateSettingsFromJson(FileUtil.getFileContents(path, settings.textFileEncoding), settings)
+            updateSettingsFromJson(FileUtil.getFileContents(path, "UTF-8"), settings)
         } catch (FileNotFoundException ignored) {
             throw new FindException("Settings file not found: ${filePath}")
         } catch (IOException ignored) {
@@ -228,7 +229,7 @@ class FindOptions {
                 while (arg.startsWith('-')) {
                     arg = arg.substring(1)
                 }
-                if (arg in longActionMap) {
+                if (longArgMap.containsKey(arg)) {
                     var longArg = longArgMap.get(arg)
                     if (longArg in this.boolActionMap) {
                         ((BooleanSetter)this.boolActionMap[longArg]).set(true, settings)

@@ -16,7 +16,7 @@
 - (NSArray<FileResult*>*) find:(NSError**)error;
 
 // private methods
-- (FileResult*) filterToFileResult:(NSString*)filePath;
+- (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error;
 - (BOOL) isMatchingArchiveFile:(NSString*)filePath;
 - (BOOL) isMatchingDir:(NSString*)dirPath;
 - (BOOL) isMatchingFile:(NSString*)filePath;

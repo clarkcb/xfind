@@ -262,8 +262,8 @@ defmodule ExFind.Finder do
     cond do
       Enum.empty?(settings.paths) ->
         {:error, "Startpath not defined"}
-        Enum.any?(settings.paths, fn p -> !File.exists?(p) && !File.exists?(FileUtil.expand_path(p)) end) ->
-          {:error, "Startpath not found"}
+      Enum.any?(settings.paths, fn p -> !File.exists?(p) && !File.exists?(FileUtil.expand_path(p)) end) ->
+        {:error, "Startpath not found"}
       # Enum.any?(settings.paths, fn p -> !readable?(p) end) ->
       #   {:error, "Startpath not readable"}
       settings.min_depth > -1 and settings.max_depth > -1

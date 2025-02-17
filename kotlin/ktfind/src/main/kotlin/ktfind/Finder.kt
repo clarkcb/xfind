@@ -32,19 +32,16 @@ class Finder(val settings: FindSettings) {
             throw FindException("Startpath not defined")
         }
         for (path in settings.paths) {
-            if (Files.exists(path)) {
-                if (!Files.isReadable(path)) {
+            var p = path
+            if (!Files.exists(p)) {
+                p = FileUtil.expandPath(p)
+            }
+            if (Files.exists(p)) {
+                if (!Files.isReadable(p)) {
                     throw FindException("Startpath not readable")
                 }
             } else {
-                var expandedPath = FileUtil.expandPath(path)
-                if (Files.exists(expandedPath)) {
-                    if (!Files.isReadable(expandedPath)) {
-                        throw FindException("Startpath not readable")
-                    }
-                } else {
-                    throw FindException("Startpath not found")
-                }
+                throw FindException("Startpath not found")
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
@@ -302,7 +299,7 @@ class Finder(val settings: FindSettings) {
             } else {
                 throw FindException("Startpath does not match find settings")
             }
-        } else if (Files.isRegularFile(fp)) {
+        } else {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (settings.minDepth > 0) {
                 return emptyList()
@@ -313,8 +310,6 @@ class Finder(val settings: FindSettings) {
             } else {
                 throw FindException("Startpath does not match find settings")
             }
-        } else {
-            throw FindException("Startpath is not a findable file type")
         }
     }
 

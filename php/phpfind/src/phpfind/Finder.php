@@ -35,19 +35,15 @@ class Finder
             throw new FindException('Startpath not defined');
         }
         foreach ($this->settings->paths as $p) {
+            if (!file_exists($p)) {
+                $p = FileUtil::expand_path($p);
+            }
             if (file_exists($p)) {
                 if (!is_readable($p)) {
                     throw new FindException('Startpath not readable');
                 }
             } else {
-                $expanded = FileUtil::expand_path($p);
-                if (file_exists($expanded)) {
-                    if (!is_readable($expanded)) {
-                        throw new FindException('Startpath not readable');
-                    }
-                } else {
-                    throw new FindException('Startpath not found');
-                }
+                throw new FindException('Startpath not found');
             }
         }
         if ($this->settings->max_depth > -1 && $this->settings->min_depth > -1
@@ -403,7 +399,7 @@ class Finder
             } else {
                 throw new FindException("Startpath does not match find settings");
             }
-        } elseif (is_file($file_path)) {
+        } else {
             # if min_depth > zero, we can skip since the file is at depth zero
             if ($this->settings->min_depth > 0) {
                 return [];

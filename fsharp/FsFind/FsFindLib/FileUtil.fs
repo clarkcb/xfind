@@ -38,11 +38,17 @@ module FileUtil =
                     Path.Join(homePath, filePath.Substring(1))
         | _ -> filePath
 
-    let Exists (filePath : string) : bool =
+    let IsDirectory (filePath : string) : bool =
         Directory.Exists(filePath) ||
-        Directory.Exists(ExpandPath(filePath)) ||
+        Directory.Exists(ExpandPath(filePath))
+
+    let IsFile (filePath : string) : bool =
         File.Exists(filePath) ||
         File.Exists(ExpandPath(filePath))
+
+    let Exists (filePath : string) : bool =
+        IsDirectory filePath ||
+        IsFile filePath
     
     let GetRelativePath (fullPath : string) (startPath : string) : string =
         let startFullPath = NormalizePath (DirectoryInfo startPath).FullName

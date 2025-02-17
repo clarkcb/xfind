@@ -111,6 +111,10 @@
             errorHandler:nil];
 }
 
++ (NSDictionary<NSFileAttributeKey, id> *) getFileAttributes:(NSString*)filePath error:(NSError**)error {
+    return [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:error];
+}
+
 + (BOOL) exists:(NSString*)filePath {
     return [[self getFileManager] fileExistsAtPath:filePath];
 }

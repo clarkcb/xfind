@@ -256,7 +256,7 @@ namespace cppfind {
                 const int max_depth = m_settings.recursive() ?  m_settings.max_depth() : 1;
                 return rec_get_file_results(fp, m_settings.min_depth(), max_depth, 1);
             }
-        } else if (is_regular_file(fp)) {
+        } else {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (m_settings.min_depth() > 0) {
                 return file_results;
@@ -265,8 +265,6 @@ namespace cppfind {
                 opt_file_result.has_value()) {
                 file_results.push_back(std::move(opt_file_result.value()));
             }
-        } else {
-            throw FindException("path is an unsupported file type");
         }
 
         return file_results;

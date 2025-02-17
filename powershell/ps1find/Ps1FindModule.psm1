@@ -863,11 +863,12 @@ class Finder {
             throw "Startpath not defined"
         }
         foreach ($p in $this.Settings.Paths) {
+            if (-not (Test-Path $p))
+            {
+                $p = ExpandPath($p)
+            }
             if (-not (Test-Path $p)) {
-                $expanded = ExpandPath($p)
-                if (-not (Test-Path $expanded)) {
-                    throw "Startpath not found"
-                }
+                throw "Startpath not found"
             }
         }
         if ($this.Settings.MaxDepth -gt -1 -and $this.Settings.MinDepth -gt -1 -and $this.Settings.MaxDepth -lt $this.Settings.MinDepth) {
@@ -1101,7 +1102,7 @@ class Finder {
             } else {
                 throw "Startpath does not match find settings"
             }
-        } elseif (Test-Path -Path $path -PathType Leaf) {
+        } else {
             # if min_depth > zero, we can skip since the file is at depth zero
             if ($this.Settings.MinDepth -gt 0) {
                 return @()

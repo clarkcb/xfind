@@ -35,9 +35,10 @@ class Finder:
         """Validate the required settings in the FindSettings instance."""
         assert len(self.settings.paths) > 0, 'Startpath not defined'
         for p in self.settings.paths:
-            assert p.exists() or p.expanduser().exists(), 'Startpath not found'
-            assert os.access(p, os.R_OK) or os.access(p.expanduser(), os.R_OK), \
-                'Startpath not readable'
+            if not p.exists():
+                p = p.expanduser()
+            assert p.exists(), 'Startpath not found'
+            assert os.access(p, os.R_OK), 'Startpath not readable'
         if self.settings.max_depth > -1 and self.settings.min_depth > -1:
             assert self.settings.max_depth >= self.settings.min_depth, \
                 'Invalid range for mindepth and maxdepth'
@@ -212,7 +213,7 @@ class Finder:
                                                            max_depth, 1)
             else:
                 raise FindException('Startpath does not match find settings')
-        elif file_path.is_file():
+        else:
             # if min_depth > zero, we can skip since the file is at depth zero
             if self.settings.min_depth > 0:
                 return []
@@ -228,10 +229,6 @@ class Finder:
         for p in self.settings.paths:
             file_results.extend(self.get_file_results_for_path(p))
         return file_results
-
-    async def find(self) -> list[FileResult]:
-        """Find matching files under paths."""
-        return self.sort_file_results(self.find_files())
 
     def case(self, s: str) -> str:
         if self.settings.sort_case_insensitive:
@@ -278,6 +275,10 @@ class Finder:
             case _:
                 return sorted(file_results, key=self.key_by_file_path,
                               reverse=self.settings.sort_descending)
+
+    async def find(self) -> list[FileResult]:
+        """Find matching files under paths."""
+        return self.sort_file_results(self.find_files())
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:

@@ -151,7 +151,7 @@
     [self filterByLastMod:[fileResult lastMod]];
 }
 
-- (FileResult*) filterToFileResult:(NSString*)filePath {
+- (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error {
     if (!self.settings.includeHidden && [FileUtil isHidden:filePath]) {
         return false;
     }
@@ -162,7 +162,10 @@
     unsigned long long fileSize = 0;
     NSDate *lastMod = nil;
     if ([self.settings needSize] || [self.settings needLastMod]) {
-        NSDictionary<NSFileAttributeKey, id> *stat = [[NSFileManager defaultManager] attributesOfItemAtPath:filePath error:nil];
+        NSDictionary<NSFileAttributeKey, id> *stat = [FileUtil getFileAttributes:filePath error:error];
+        if (*error) {
+            return nil;
+        }
         if ([self.settings needSize]) fileSize = stat.fileSize;
         if ([self.settings needLastMod]) lastMod = stat.fileModificationDate;
     }
@@ -218,7 +221,10 @@
                 [pathDirs addObject:path];
             }
         } else if (([FileUtil isReadableFile:path] || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth)) {
-            FileResult *fileResult = [self filterToFileResult:path];
+            FileResult *fileResult = [self filterToFileResult:path error:error];
+            if (*error) {
+                return nil;
+            }
             if (fileResult != nil) {
                 [fileResults addObject:fileResult];
             }
@@ -259,7 +265,10 @@
         if (self.settings.minDepth > 0) {
             return fileResults;
         }
-        FileResult *fileResult = [self filterToFileResult:fp];
+        FileResult *fileResult = [self filterToFileResult:fp error:error];
+        if (*error) {
+            return nil;
+        }
         if (fileResult != nil) {
             [fileResults addObject:fileResult];
         } else {

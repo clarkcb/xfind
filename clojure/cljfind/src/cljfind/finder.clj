@@ -263,20 +263,19 @@
 
 (defn get-file-results-for-path [^FindSettings settings, ^Path path]
   (let [expanded-path (expand-path path)]
-    (if (is-file-path? expanded-path)
+    (if (is-dir-path? expanded-path)
+      (if (= (:max-depth settings) 0)
+        []
+        (if (:recursive settings)
+          (get-file-results-under-path settings expanded-path (:min-depth settings) (:max-depth settings) 1)
+          (get-file-results-under-path settings expanded-path (:min-depth settings) 1 1)))
       (if
         (< (:min-depth settings) 1)
         (let [path-file-result (filter-to-file-result expanded-path settings)]
           (if (not (nil? path-file-result))
             [path-file-result]
             []))
-        [])
-      (if (= (:max-depth settings) 0)
-        []
-        (if (:recursive settings)
-          (get-file-results-under-path settings expanded-path (:min-depth settings) (:max-depth settings) 1)
-          (get-file-results-under-path settings expanded-path (:min-depth settings) 1 1))))))
-
+        []))))
 
 (defn get-file-results [^FindSettings settings]
   (sort-results (mapcat #(get-file-results-for-path settings %) (:paths settings)) settings))

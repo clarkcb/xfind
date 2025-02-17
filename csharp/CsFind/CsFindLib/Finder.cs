@@ -264,19 +264,18 @@ public class Finder
 
 			throw new FindException("Startpath does not match find settings");
 		}
-		if (filePath.IsFile)
+
+		// if MinDepth > zero, we can skip since the file is at depth zero
+		if (Settings.MinDepth <= 0)
 		{
-			// if MinDepth > zero, we can skip since the file is at depth zero
-			if (Settings.MinDepth <= 0)
+			var fileResult = FilterToFileResult(filePath);
+			if (fileResult != null)
 			{
-				var fileResult = FilterToFileResult(filePath);
-				if (fileResult != null)
-				{
-					return [fileResult];
-				}
-				throw new FindException("Startpath does not match find settings");
+				return [fileResult];
 			}
+			throw new FindException("Startpath does not match find settings");
 		}
+
 		return [];
 	}
 

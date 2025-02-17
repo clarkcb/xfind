@@ -245,7 +245,7 @@
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@".gitignore"] == nil);
+    XCTAssert([finder filterToFileResult:@".gitignore" error:&error] == nil);
 }
 
 - (void)testFilterToFindFile_IsHiddenIncludeHidden_True {
@@ -253,14 +253,14 @@
     [settings setIncludeHidden:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@".hidden.txt"] != nil);
+    XCTAssert([finder filterToFileResult:@".hidden.txt" error:&error] != nil);
 }
 
 - (void)testFilterToFindFile_ArchiveNoFindArchives_False {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"archive.zip"] == nil);
+    XCTAssert([finder filterToFileResult:@"archive.zip" error:&error] == nil);
 }
 
 - (void)testFilterToFindFile_ArchiveFindArchives_True {
@@ -268,7 +268,7 @@
     [settings setIncludeArchives:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"archive.zip"] != nil);
+    XCTAssert([finder filterToFileResult:@"archive.zip" error:&error] != nil);
 }
 
 - (void)testFilterToFindFile_IsArchiveFindFile_True {
@@ -277,7 +277,7 @@
     [settings addInArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"archive.zip"] != nil);
+    XCTAssert([finder filterToFileResult:@"archive.zip" error:&error] != nil);
 }
 
 - (void)testFilterToFindFile_NotIsArchiveFindFile_False {
@@ -286,7 +286,7 @@
     [settings addOutArchiveExtension:@"zip"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"archive.zip"] == nil);
+    XCTAssert([finder filterToFileResult:@"archive.zip" error:&error] == nil);
 }
 
 - (void)testFilterToFindFile_ArchiveFileArchivesOnly_True {
@@ -294,14 +294,14 @@
     [settings setArchivesOnly:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"archive.zip"] != nil);
+    XCTAssert([finder filterToFileResult:@"archive.zip" error:&error] != nil);
 }
 
 - (void)testFilterToFindFile_NoExtensionsNoPatterns_True {
     FindSettings *settings = [[FindSettings alloc] init];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"FileUtil.cs"] != nil);
+    XCTAssert([finder filterToFileResult:@"FileUtil.cs" error:&error] != nil);
 }
 
 - (void)testFilterToFindFile_IsFindFile_True {
@@ -309,7 +309,7 @@
     [settings addInExtension:@"cs"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"FileUtil.cs"] != nil);
+    XCTAssert([finder filterToFileResult:@"FileUtil.cs" error:&error] != nil);
 }
 
 - (void)testFilterToFindFile_NotIsFindFile_False {
@@ -317,7 +317,7 @@
     [settings addOutExtension:@"cs"];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"FileUtil.cs"] == nil);
+    XCTAssert([finder filterToFileResult:@"FileUtil.cs" error:&error] == nil);
 }
 
 - (void)testFilterToFindFile_NonArchiveFileArchivesOnly_False {
@@ -325,7 +325,7 @@
     [settings setArchivesOnly:true];
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
-    XCTAssert([finder filterToFileResult:@"FileUtil.cs"] == nil);
+    XCTAssert([finder filterToFileResult:@"FileUtil.cs" error:&error] == nil);
 }
 
 /*************************************************************

@@ -179,7 +179,7 @@ public class Finder {
         var lastMod: Date? = nil
         if self.settings.needSize() || self.settings.needLastMod() {
             do {
-                let stat: [FileAttributeKey: Any] = try FileManager.default.attributesOfItem(atPath: filePath)
+                let stat: [FileAttributeKey: Any] = try FileUtil.getFileAttributes(filePath)
                 if self.settings.needSize() { fileSize = stat[FileAttributeKey.size] as! UInt64 }
                 if self.settings.needLastMod() { lastMod = stat[FileAttributeKey.modificationDate] as? Date }
 

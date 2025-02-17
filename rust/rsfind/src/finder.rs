@@ -402,7 +402,7 @@ impl Finder {
                 let max_depth = if self.settings.recursive() { self.settings.max_depth() } else { 1 };
                 return self.rec_find_path(&path_buf, self.settings.min_depth(), max_depth, 1);
             }
-        } else if path_buf.is_file() {
+        } else {
             if self.settings.min_depth() > 0 {
                 return Ok(file_results);
             }

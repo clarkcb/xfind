@@ -28,19 +28,16 @@ class Finder {
             throw new FindException('Startpath not defined')
         }
         paths.each { path ->
-            if (Files.exists(path)) {
-                if (!Files.isReadable(path)) {
+            Path p = path
+            if (!Files.exists(p)) {
+                p = FileUtil.expandPath(p)
+            }
+            if (Files.exists(p)) {
+                if (!Files.isReadable(p)) {
                     throw new FindException('Startpath not readable')
                 }
             } else {
-                Path expandedPath = FileUtil.expandPath(path)
-                if (Files.exists(expandedPath)) {
-                    if (!Files.isReadable(expandedPath)) {
-                        throw new FindException('Startpath not readable')
-                    }
-                } else {
-                    throw new FindException('Startpath not found')
-                }
+                throw new FindException('Startpath not found')
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
@@ -283,7 +280,7 @@ class Finder {
             } else {
                 throw new FindException('Startpath does not match find settings')
             }
-        } else if (Files.isRegularFile(filePath)) {
+        } else {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (settings.minDepth > 0) {
                 return Collections.emptyList()
@@ -294,8 +291,6 @@ class Finder {
             } else {
                 throw new FindException('Startpath does not match find settings')
             }
-        } else {
-            throw new FindException("Startpath is not a findable file type")
         }
     }
 

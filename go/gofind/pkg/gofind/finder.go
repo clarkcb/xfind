@@ -273,7 +273,7 @@ func (f *Finder) setFileResultsForPath(path string) error {
 			}
 			f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
 		}
-	} else if fi.Mode().IsRegular() {
+	} else {
 		// if MinDepth > zero, we can skip since the file is at depth zero
 		if f.Settings.MinDepth() <= 0 {
 			f.checkAddFileResult(path, fi)

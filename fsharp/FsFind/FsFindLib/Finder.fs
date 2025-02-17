@@ -167,7 +167,7 @@ type Finder (settings : FindSettings) =
                     []
             else
                 []
-        else if File.Exists(fp) then
+        else
             // if MinDepth > zero, we can skip since the file is at depth zero
             if settings.MinDepth <= 0 then
                 let fileInfo = FileInfo(fp)
@@ -178,8 +178,6 @@ type Finder (settings : FindSettings) =
                     []
             else
                 []
-        else
-            []
 
     member this.SortByPath (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
         let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal

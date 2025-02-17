@@ -15,9 +15,9 @@ class Finder (settings: FindSettings) {
 
   private def validateSettings(): Unit = {
     settingsTests.foreach { t =>
-      t(settings) match {
-        case Some(err) => throw new FindException(err)
-        case _ =>
+      val res = t(settings)
+      if (res.isDefined) {
+        throw new FindException(res.get)
       }
     }
   }
@@ -90,7 +90,7 @@ class Finder (settings: FindSettings) {
       && isMatchingFileName(fr.path.getFileName.toString, settings.inArchiveFilePatterns, settings.outArchiveFilePatterns)
   }
 
-  def getFileSizeAndLastMod(p: Path): (Long, Option[FileTime]) = {
+  private def getFileSizeAndLastMod(p: Path): (Long, Option[FileTime]) = {
     if (settings.needLastMod || settings.needSize) {
       try {
         val stat = Files.readAttributes(p, classOf[BasicFileAttributes])
@@ -135,7 +135,7 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
+  private def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
     val sortedFileResults =
       if (settings.sortBy == SortBy.FileName) {
         fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2, settings.sortCaseInsensitive))
@@ -207,7 +207,7 @@ class Finder (settings: FindSettings) {
           throw new FindException("Startpath does not match find settings")
         }
       }
-    } else if (Files.isRegularFile(fp)) {
+    } else {
       if (settings.minDepth > 0) {
         Seq.empty[FileResult]
       } else {
@@ -218,8 +218,6 @@ class Finder (settings: FindSettings) {
             throw new FindException("Startpath does not match find settings")
         }
       }
-    } else {
-      throw new FindException("Startpath is not a findable file type")
     }
   }
 
@@ -233,7 +231,7 @@ class Finder (settings: FindSettings) {
 }
 
 object Finder {
-  def compareOptionLocalDateTimes(d1: Option[LocalDateTime], d2: Option[LocalDateTime]): Int = {
+  private def compareOptionLocalDateTimes(d1: Option[LocalDateTime], d2: Option[LocalDateTime]): Int = {
     if (d1.isEmpty || d2.isEmpty) {
       0
     } else {
@@ -241,7 +239,7 @@ object Finder {
     }
   }
 
-  val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
+  private val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
     ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
     ss => if (ss.paths.forall { p => Files.exists(p) || Files.exists(FileUtil.expandPath(p)) }) None else Some("Startpath not found"),
     ss => if (ss.paths.forall { p => Files.isReadable(p) || Files.isReadable(FileUtil.expandPath(p)) }) None else Some("Startpath not readable"),
@@ -250,14 +248,14 @@ object Finder {
     ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some("Invalid range for minsize and maxsize") else None,
   )
 
-  def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
+  private def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
     patterns exists (_.findFirstMatchIn(s).isDefined)
   }
 
-  def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]): Boolean = {
-    ((inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
+  private def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]): Boolean = {
+    (inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
       &&
-      (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)))
+      (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns))
   }
 }
 

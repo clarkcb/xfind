@@ -120,6 +120,10 @@ public enum FileUtil {
         return false
     }
 
+    public static func getFileAttributes(_ filePath: String) throws -> [FileAttributeKey: Any] {
+        return try getFileManager().attributesOfItem(atPath: filePath)
+    }
+
     public static func isReadableFile(_ filePath: String) -> Bool {
         getFileManager().isReadableFile(atPath: expandPath(filePath))
     }
@@ -134,7 +138,7 @@ public enum FileUtil {
         }
         return false
     }
-    
+
     public static func getSymlinkTarget(_ filePath: String) -> String? {
         return try? getFileManager().destinationOfSymbolicLink(atPath: expandPath(filePath))
     }

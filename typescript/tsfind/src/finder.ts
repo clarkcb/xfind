@@ -39,10 +39,6 @@ export class Finder {
                     p = FileUtil.expandPath(p);
                     fs.accessSync(p, fs.constants.F_OK | fs.constants.R_OK);
                 }
-                const stat = fs.lstatSync(p);
-                if (!stat.isDirectory() && !stat.isFile()) {
-                    assert.ok(false, 'Startpath is unsupported file type');
-                }
             }
             if (this._settings.maxDepth > -1 && this._settings.minDepth > -1) {
                 assert.ok(this._settings.maxDepth >= this._settings.minDepth,
@@ -251,7 +247,7 @@ export class Finder {
             } else {
                 throw new FindError("Startpath does not match find settings");
             }
-        } else if (stats.isFile()) {
+        } else {
             // if min_depth > zero, we can skip since the file is at depth zero
             if (this._settings.minDepth > 0) {
                 return [];
@@ -268,7 +264,6 @@ export class Finder {
                 throw new FindError("Startpath does not match find settings");
             }
         }
-        return [];
     }
 
     private cmpFileResultsByPath(fr1: FileResult, fr2: FileResult): number {

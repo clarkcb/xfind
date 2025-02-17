@@ -19,13 +19,14 @@ class Finder {
     if (settings.paths.isEmpty) {
       throw FindException('Startpath not defined');
     }
-    for (var p in settings.paths) {
-      if (FileSystemEntity.typeSync(p!) == FileSystemEntityType.notFound) {
-        var expandedPath = FileUtil.expandPath(p);
-        if (FileSystemEntity.typeSync(expandedPath) ==
-            FileSystemEntityType.notFound) {
-          throw FindException('Startpath not found');
-        }
+    for (var path in settings.paths) {
+      var p = path;
+      if (FileSystemEntity.typeSync(path!) == FileSystemEntityType.notFound) {
+        p = FileUtil.expandPath(path);
+      }
+      var pathType = FileSystemEntity.typeSync(p!);
+      if (pathType == FileSystemEntityType.notFound) {
+        throw FindException('Startpath not found');
       }
     }
     if (settings.maxDepth > -1 &&
@@ -246,7 +247,7 @@ class Finder {
           maxDepth = 1;
         }
         return _recGetFileResultsForDir(dir, settings.minDepth, maxDepth, 1);
-      } else if (fsType == FileSystemEntityType.file) {
+      } else {
         // if min_depth > zero, we can skip since the file is at depth zero
         if (settings.minDepth > 0) {
           return [];
@@ -273,8 +274,6 @@ class Finder {
           });
         }
         return [];
-      } else {
-        throw FindException('Startpath is not a findable file type');
       }
     });
   }

@@ -214,7 +214,7 @@ module RbFind
         else
           raise FindError, 'Startpath does not match find settings'
         end
-      elsif file_path.file?
+      else
         # if min_depth > zero, we can skip since the file is at depth zero
         if @settings.min_depth > 0
           return []
@@ -274,8 +274,9 @@ module RbFind
       raise FindError, 'Startpath not defined' if @settings.paths.empty?
       @settings.paths.each do |p|
         if p.instance_of?(Pathname)
-          raise FindError, 'Startpath not found' unless p.exist? || p.expand_path.exist?
-          raise FindError, 'Startpath not readable' unless p.readable? || p.expand_path.readable?
+          p = p.expand_path unless p.exist?
+          raise FindError, 'Startpath not found' unless p.exist?
+          raise FindError, 'Startpath not readable' unless p.readable?
         else
           raise FindError, 'Startpath not a Pathname instance'
         end

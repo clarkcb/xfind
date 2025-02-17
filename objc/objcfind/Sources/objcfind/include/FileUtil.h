@@ -24,6 +24,7 @@
 + (BOOL) hasExtension:(NSString*)fileName ext:(NSString*)ext;
 + (NSArray<NSString*>*) contentsForPath:(NSString*)filePath error:(NSError**)error;
 + (NSDirectoryEnumerator*) enumeratorForPath:(NSString*)filePath settings:(FindSettings*)settings;
++ (NSDictionary<NSFileAttributeKey, id>*) getFileAttributes:(NSString*)filePath error:(NSError**)error;
 + (BOOL) exists:(NSString*)filePath;
 + (BOOL) allExist:(NSArray<NSString*>*)filePaths;
 + (BOOL) isDirectory:(NSString*)filePath;

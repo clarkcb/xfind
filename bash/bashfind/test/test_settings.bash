@@ -111,11 +111,11 @@ test_settings_from_args_invalid_option () {
 
     result=$(settings_from_args "${args[@]}")
 
-    if [[ $result == *"ERROR: Invalid option: --invalid"* ]]
+    if [[ $result == *"ERROR: Invalid option: invalid"* ]]
     then
-        assertion_passed "\$result contains 'ERROR: Invalid option: --invalid'"
+        assertion_passed "\$result contains 'ERROR: Invalid option: invalid'"
     else
-        assertion_failed "\$result does not contain 'ERROR: Invalid option: --invalid'"
+        assertion_failed "\$result does not contain 'ERROR: Invalid option: invalid'"
     fi
 }
 
@@ -308,7 +308,7 @@ test_settings_from_json () {
         "printfiles": true
     }'
 
-    settings_from_json "$json"
+    update_settings_from_json "$json"
 
     assert_equals_string DEBUG $DEBUG true
     assert_equals_string FOLLOW_SYMLINKS $FOLLOW_SYMLINKS true
