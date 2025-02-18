@@ -71,6 +71,10 @@ namespace cppfind {
             {"sort-by", [](const std::string& s, FindSettings& ss) { ss.sort_by(FindSettings::sort_by_from_name(s)); }}
         };
 
+        m_arg_name_map = {
+            {"path", "path"},
+        };
+
         load_options();
     }
 
@@ -194,74 +198,58 @@ namespace cppfind {
     void FindOptions::update_settings_from_document(rapidjson::Document& document, FindSettings& settings) {
         assert(document.IsObject());
 
-        // create a map so we can sort the names
+        // Get the property names
         std::vector<std::string> names;
-        std::unordered_map<std::string, std::any> name_value_map;
         for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
             std::string name = it->name.GetString();
             names.push_back(name);
-            if (it->value.IsBool()) {
-                name_value_map.insert(std::make_pair(name, it->value.GetBool()));
-            } else if (it->value.IsString()) {
-                auto s = std::string(it->value.GetString());
-                name_value_map.insert(std::make_pair(name, s));
-            } else if (it->value.IsInt()) {
-                name_value_map.insert(std::make_pair(name, it->value.GetInt()));
-            } else if (it->value.IsUint64()) {
-                name_value_map.insert(std::make_pair(name, it->value.GetUint64()));
-            } else if (it->value.IsArray()) {
-                std::vector<std::string> vec;
-                const auto& arr = it->value.GetArray();
-                for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
-                    if (arr[i].IsString()) {
-                        auto s = std::string(arr[i].GetString());
-                        vec.emplace_back(s);
-                    } else {
-                        std::string msg{"Invalid value for option: " + name};
-                        throw FindException(msg);
-                    }
-                }
-                name_value_map.insert(std::make_pair(name, vec));
-            } else {
-                std::string msg{"Invalid value for option: " + name};
-                throw FindException(msg);
-            }
         }
 
         // Sort the names
         std::ranges::sort(names);
 
+        // Verify all names are valid options
         for (const auto& name : names) {
-            auto value = name_value_map[name];
+            if (!m_arg_name_map.contains(name)) {
+                const std::string msg = "Invalid option: " + name;
+                throw FindException(msg);
+            }
+        }
 
+        // Iterate through names and values, validating values and applying to settings
+        for (rapidjson::Value::ConstMemberIterator it=document.MemberBegin(); it != document.MemberEnd(); ++it) {
+            std::string name = it->name.GetString();
             if (m_bool_arg_map.contains(name)) {
-                if (value.type() == typeid(bool)) {
-                    const bool b = std::any_cast<bool>(value);
-                    // const bool b = value;
-                    m_bool_arg_map[name](b, settings);
+                if (it->value.IsBool()) {
+                    m_bool_arg_map[name](it->value.GetBool(), settings);
                 } else {
                     std::string msg{"Invalid value for option: " + name};
                     throw FindException(msg);
                 }
             } else if (m_str_arg_map.contains(name)) {
-                if (value.type() == typeid(std::string)) {
-                    auto s = std::any_cast<std::string>(value);
+                if (it->value.IsString()) {
+                    auto s = std::string(it->value.GetString());
                     m_str_arg_map[name](s, settings);
-                } else if (value.type() == typeid(std::vector<std::string>)) {
-                    for (auto vec = std::any_cast<std::vector<std::string>>(value);
-                         auto& s : vec) {
-                        m_str_arg_map[name](s, settings);
+                } else if (it->value.IsArray()) {
+                    const auto& arr = it->value.GetArray();
+                    for (rapidjson::SizeType i = 0; i < arr.Size(); ++i) {
+                        if (arr[i].IsString()) {
+                            auto s = std::string(arr[i].GetString());
+                            m_str_arg_map[name](s, settings);
+                        } else {
+                            std::string msg{"Invalid value for option: " + name};
+                            throw FindException(msg);
+                        }
                     }
                 } else {
                     std::string msg{"Invalid value for option: " + name};
                     throw FindException(msg);
                 }
             } else if (m_int_arg_map.contains(name)) {
-                if (value.type() == typeid(int)) {
-                    const int i = std::any_cast<int>(value);
-                    m_int_arg_map[name](i, settings);
-                } else if (value.type() == typeid(uint64_t)) {
-                    const auto l = std::any_cast<uint64_t>(value);
+                if (it->value.IsInt()) {
+                    m_int_arg_map[name](it->value.GetInt(), settings);
+                } else if (it->value.IsUint64()) {
+                    const auto l = it->value.GetUint64();
                     const int i = 0 + l;
                     m_int_arg_map[name](i, settings);
                 } else {
@@ -269,19 +257,19 @@ namespace cppfind {
                     throw FindException(msg);
                 }
             } else if (m_long_arg_map.contains(name)) {
-                if (value.type() == typeid(int)) {
-                    const int i = std::any_cast<int>(value);
-                    const uint64_t l = 0 + i;
+                if (it->value.IsInt()) {
+                    const auto i = it->value.GetInt();
+                    const long l = 0 + i;
                     m_long_arg_map[name](l, settings);
-                } else if (value.type() == typeid(uint64_t)) {
-                    const auto l = std::any_cast<uint64_t>(value);
-                    m_long_arg_map[name](l, settings);
+                } else if (it->value.IsUint64()) {
+                    m_long_arg_map[name](it->value.GetUint64(), settings);
                 } else {
                     std::string msg{"Invalid value for option: " + name};
                     throw FindException(msg);
                 }
             } else {
-                const std::string msg = "Invalid option: " + name;
+                // Shouldn't be able to get here since we already checked names
+                std::string msg{"Invalid option: " + name};
                 throw FindException(msg);
             }
         }
