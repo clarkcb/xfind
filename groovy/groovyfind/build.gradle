@@ -6,6 +6,7 @@ plugins {
 
 group = 'xfind'
 version = '0.1.0-SNAPSHOT'
+description = "groovyfind"
 
 repositories {
     mavenLocal()
@@ -13,8 +14,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.apache.groovy:groovy:4.0.24'
-    implementation 'org.apache.groovy:groovy-json:4.0.24'
+    implementation 'org.apache.groovy:groovy:4.0.25'
+    implementation 'org.apache.groovy:groovy-json:4.0.25'
     testImplementation platform('org.junit:junit-bom:5.11.4')
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
 }
@@ -27,8 +28,10 @@ application {
 // Apply a specific Java toolchain to ease working on different environments.
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(11)
+        languageVersion = JavaLanguageVersion.of(17)
     }
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 jar {

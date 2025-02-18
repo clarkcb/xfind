@@ -227,7 +227,6 @@ getRecursiveFilePaths settings dir = do
 
 getFileResults :: FindSettings -> IO [FileResult]
 getFileResults settings = do
-  -- TODO: need to handle case where paths are files, not just directories
   pathDirs <- filterDirectories (paths settings)
   pathFiles <- filterFiles (paths settings)
   pathLists <- forM pathDirs $ \path ->
