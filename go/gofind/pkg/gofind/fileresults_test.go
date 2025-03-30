@@ -1,7 +1,6 @@
 package gofind
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -16,7 +15,7 @@ func Test_FileResult_AbsPath(t *testing.T) {
 	fileType := fileTypes.GetFileType(file)
 	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	if fileResult.String() != path {
-		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
+		t.Errorf("fileResult.String() (%s) != path (%s)", fileResult.String(), path)
 	}
 }
 
@@ -27,7 +26,7 @@ func Test_FileResult_TildePath(t *testing.T) {
 	fileType := fileTypes.GetFileType(file)
 	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	if fileResult.String() != path {
-		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
+		t.Errorf("fileResult.String() (%s) != path (%s)", fileResult.String(), path)
 	}
 }
 
@@ -39,7 +38,7 @@ func Test_FileResult_RelPath1(t *testing.T) {
 	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	fileResultString := fileResult.String()
 	if fileResultString != path {
-		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
+		t.Errorf("fileResult.String() (%s) != path (%s)", fileResult.String(), path)
 	}
 }
 
@@ -50,6 +49,6 @@ func Test_FileResult_RelPath2(t *testing.T) {
 	fileType := fileTypes.GetFileType(file)
 	fileResult := NewFileResult(dir, file, fileType, 0, time.Time{})
 	if fileResult.String() != path {
-		t.Errorf(fmt.Sprintf("fileResult.String() (%s) != path (%s)", fileResult.String(), path))
+		t.Errorf("fileResult.String() (%s) != path (%s)", fileResult.String(), path)
 	}
 }
