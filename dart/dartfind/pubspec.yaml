@@ -5,7 +5,7 @@ description: A sample command-line application.
 # repository: https://github.com/clarkcb/xfind
 
 environment:
-  sdk: '>=2.18.0 <3.8.0'
+  sdk: '>=2.19.0 <3.8.0'
 
 dependencies:
   path: ^1.9.1

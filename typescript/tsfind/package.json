@@ -7,7 +7,7 @@
     "email": "clarkcb@gmail.com"
   },
   "engines": {
-    "node": ">=22.9.0"
+    "node": ">=23.10.0"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
     "clean": "rm -rf ./dist ./node_modules",
     "create": "npm run build && npm run test",
     "refresh": "npm run clean && npm install",
-    "lint": "eslint .",
+    "lint": "eslint . --ext .ts",
     "test": "jest",
     "coverage": "jest --coverage"
   },
@@ -36,14 +36,14 @@
   "license": "MIT",
   "devDependencies": {
     "@types/jest": "^29.5.14",
-    "@typescript-eslint/eslint-plugin": "^8.24.1",
-    "@typescript-eslint/parser": "^8.24.1",
-    "eslint": "^9.20.1",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
     "jest": "^29.7.0",
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.7.3"
+    "ts-jest": "^29.3.0",
+    "typescript": "^5.8.2"
   },
   "dependencies": {
-    "@types/node": "^22.13.4"
+    "@types/node": "^22.13.14"
   }
 }
