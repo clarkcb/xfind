@@ -2,7 +2,7 @@
 name = "rsfind"
 version = "0.1.0"
 authors = ["Cary Clark <clarkcb@gmail.com>"]
-edition = "2018"
+edition = "2024"
 
 [dependencies]
 chrono = "0.4.40"

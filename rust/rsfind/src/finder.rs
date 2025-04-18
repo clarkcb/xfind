@@ -235,7 +235,7 @@ impl Finder {
         path_cmp
     }
 
-    fn get_cmp_by_path(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+    fn get_cmp_by_path(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
         if self.settings.sort_case_insensitive() {
             Self::cmp_by_path_ci
         } else {
@@ -259,7 +259,7 @@ impl Finder {
         name_cmp
     }
 
-    fn get_cmp_by_name(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+    fn get_cmp_by_name(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
         if self.settings.sort_case_insensitive() {
             Self::cmp_by_name_ci
         } else {
@@ -283,7 +283,7 @@ impl Finder {
         size_cmp
     }
 
-    fn get_cmp_by_size(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+    fn get_cmp_by_size(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
         if self.settings.sort_case_insensitive() {
             Self::cmp_by_size_ci
         } else {
@@ -307,7 +307,7 @@ impl Finder {
         type_cmp
     }
 
-    fn get_cmp_by_type(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+    fn get_cmp_by_type(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
         if self.settings.sort_case_insensitive() {
             Self::cmp_by_type_ci
         } else {
@@ -331,7 +331,7 @@ impl Finder {
         last_mod_cmp
     }
 
-    fn get_cmp_by_last_mod(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering {
+    fn get_cmp_by_last_mod(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
         if self.settings.sort_case_insensitive() {
             Self::cmp_by_last_mod_ci
         } else {
