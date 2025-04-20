@@ -15,14 +15,14 @@ import unittest
 
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)[:-6]))
 
-from pyfind import FileType, FileResult, XFINDPATH
+from pyfind import FileType, FileResult, XFIND_PATH
 
 
 class FileResultTest(unittest.TestCase):
 
     def test_file_result_abs_path(self):
         file_name = 'fileresult.py'
-        path = Path(XFINDPATH, 'python/pyfind/pyfind', file_name)
+        path = Path(XFIND_PATH, 'python/pyfind/pyfind', file_name)
         file_result = FileResult(path=path, file_type=FileType.CODE)
         self.assertEqual(path, file_result.path)
         self.assertEqual(file_name, file_result.path.name)

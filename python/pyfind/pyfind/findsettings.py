@@ -190,10 +190,8 @@ class FindSettings:
     def add_paths(self, paths: list | set | Path | str):
         """Add one or more paths"""
         if isinstance(paths, (list, set)):
-            if all(isinstance(p, Path) for p in paths):
-                self.paths.update(paths)
-            else:  # assume all strings
-                self.paths.update({Path(p) for p in paths})
+            for p in paths:
+                self.add_paths(p)
         elif isinstance(paths, Path):
             self.paths.add(paths)
         elif isinstance(paths, str):

@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from .constants import *
 from .fileresult import FileResult
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
@@ -33,36 +34,38 @@ class Finder:
 
     def __validate_settings(self):
         """Validate the required settings in the FindSettings instance."""
-        assert len(self.settings.paths) > 0, 'Startpath not defined'
+        assert len(self.settings.paths) > 0, START_PATH_NOT_DEFINED
         for p in self.settings.paths:
             if not p.exists():
                 p = p.expanduser()
-            assert p.exists(), 'Startpath not found'
-            assert os.access(p, os.R_OK), 'Startpath not readable'
+            assert p.exists(), START_PATH_NOT_FOUND
+            assert os.access(p, os.R_OK), START_PATH_NOT_READABLE
         if self.settings.max_depth > -1 and self.settings.min_depth > -1:
             assert self.settings.max_depth >= self.settings.min_depth, \
-                'Invalid range for mindepth and maxdepth'
+                INVALID_RANGE_MINDEPTH_MAXDEPTH
         if self.settings.max_last_mod and self.settings.min_last_mod:
             assert self.settings.max_last_mod >= self.settings.min_last_mod, \
-                'Invalid range for minlastmod and maxlastmod'
+                INVALID_RANGE_MINLASTMOD_MAXLASTMOD
         if self.settings.max_size > 0 and self.settings.min_size > 0:
             assert self.settings.max_size >= self.settings.min_size, \
-                'Invalid range for minsize and maxsize'
+                INVALID_RANGE_MINSIZE_MAXSIZE
 
     def is_matching_dir(self, d: str | Path) -> bool:
         """Check whether the given directory matches find settings."""
         if isinstance(d, str):
             d = Path(d)
+        if not isinstance(d, Path):
+            raise FindException('Invalid directory type')
         if d in self.__matching_dir_cache:
             return True
         if not self.settings.include_hidden:
             if any(FileUtil.is_hidden(p) for p in d.parts):
                 return False
         if self.settings.in_dir_patterns and \
-                not any_matches_any_pattern(d.parts, self.settings.in_dir_patterns):
+                not any([matches_any_pattern(p, self.settings.in_dir_patterns) for p in d.parts]):
             return False
         if self.settings.out_dir_patterns and \
-                any_matches_any_pattern(d.parts, self.settings.out_dir_patterns):
+                any([matches_any_pattern(p, self.settings.out_dir_patterns) for p in d.parts]):
             return False
         self.__matching_dir_cache.add(d)
         return True
@@ -235,23 +238,23 @@ class Finder:
             return s.casefold()
         return s
 
-    def key_by_file_path(self, r: FileResult):
+    def key_by_file_path(self, r: FileResult) -> list:
         return [[self.case(str(c)) for c in r.containers],
                 self.case(str(r.path.parent)),
                 self.case(r.path.name)]
 
-    def key_by_file_name(self, r: FileResult):
+    def key_by_file_name(self, r: FileResult) -> list:
         return [self.case(r.path.name),
                 [self.case(str(c)) for c in r.containers],
                 self.case(str(r.path.parent))]
 
-    def key_by_file_size(self, r: FileResult):
+    def key_by_file_size(self, r: FileResult) -> list:
         return [r.file_size] + self.key_by_file_path(r)
 
-    def key_by_file_type(self, r: FileResult):
+    def key_by_file_type(self, r: FileResult) -> list:
         return [r.file_type] + self.key_by_file_path(r)
 
-    def key_by_last_mod(self, r: FileResult):
+    def key_by_last_mod(self, r: FileResult) -> list:
         return [r.last_mod] + self.key_by_file_path(r)
 
     def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
@@ -285,12 +288,3 @@ def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:
     """Return true if string s matches any pattern in pattern_set, else
        false."""
     return any(p.search(s) for p in pattern_set)
-
-
-def any_matches_any_pattern(slist, pattern_set: PatternSet) -> bool:
-    """Return true if any string in slist matches any pattern in
-       pattern_set, else false."""
-    for s in slist:
-        if matches_any_pattern(s, pattern_set):
-            return True
-    return False
