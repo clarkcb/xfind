@@ -19,13 +19,18 @@ import java.nio.file.attribute.FileTime;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.regex.Pattern;
 
 public class Finder {
+
+    public static final String STARTPATH_NOT_DEFINED = "Startpath not defined";
+    public static final String STARTPATH_NOT_FOUND = "Startpath not found";
+    public static final String STARTPATH_NOT_READABLE = "Startpath not readable";
+    public static final String INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH = "Invalid range for mindepth and maxdepth";
+    public static final String INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD = "Invalid range for minlastmod and maxlastmod";
+    public static final String INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE = "Invalid range for minsize and maxsize";
+    public static final String STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS = "Startpath does not match find settings";
 
     final private FindSettings settings;
     final private FileTypes fileTypes;
@@ -38,7 +43,7 @@ public class Finder {
     public final void validateSettings() throws FindException {
         var paths = settings.getPaths();
         if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
-            throw new FindException("Startpath not defined");
+            throw new FindException(STARTPATH_NOT_DEFINED);
         }
         for (var path : paths) {
             if (!Files.exists(path)) {
@@ -46,21 +51,22 @@ public class Finder {
             }
             if (Files.exists(path)) {
                 if (!Files.isReadable(path)) {
-                    throw new FindException("Startpath not readable");
+                    throw new FindException(STARTPATH_NOT_READABLE);
                 }
             } else {
-                throw new FindException("Startpath not found");
+                throw new FindException(STARTPATH_NOT_FOUND);
             }
         }
         if (settings.getMaxDepth() > -1 && settings.getMaxDepth() < settings.getMinDepth()) {
-            throw new FindException("Invalid range for mindepth and maxdepth");
+            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH);
         }
-        if (settings.getMaxLastMod() != null && settings.getMinLastMod() != null
-                && settings.getMaxLastMod().toInstant(ZoneOffset.UTC).compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) < 0) {
-            throw new FindException("Invalid range for minlastmod and maxlastmod");
+        if (settings.getMaxLastMod().isPresent() && settings.getMinLastMod().isPresent()
+                && settings.getMaxLastMod().get().toInstant(ZoneOffset.UTC)
+                .compareTo(settings.getMinLastMod().get().toInstant(ZoneOffset.UTC)) < 0) {
+            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD);
         }
         if (settings.getMaxSize() > 0 && settings.getMaxSize() < settings.getMinSize()) {
-            throw new FindException("Invalid range for minsize and maxsize");
+            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE);
         }
     }
 
@@ -69,8 +75,8 @@ public class Finder {
         return sList.stream().anyMatch(s -> matchesAnyPattern(s, patternSet));
     }
 
-    private boolean matchesAnyPattern(final String s,
-                                      final Set<Pattern> patternSet) {
+    private static boolean matchesAnyPattern(final String s,
+                                             final Set<Pattern> patternSet) {
         return null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find());
     }
 
@@ -143,11 +149,11 @@ public class Finder {
     }
 
     boolean isMatchingLastMod(final Instant lastMod) {
-        return ((settings.getMaxLastMod() == null
-                || lastMod.compareTo(settings.getMaxLastMod().toInstant(ZoneOffset.UTC)) <= 0
+        return ((settings.getMaxLastMod().isEmpty()
+                || lastMod.compareTo(settings.getMaxLastMod().get().toInstant(ZoneOffset.UTC)) <= 0
                 &&
-                (settings.getMinLastMod() == null
-                        || lastMod.compareTo(settings.getMinLastMod().toInstant(ZoneOffset.UTC)) >= 0)));
+                (settings.getMinLastMod().isEmpty()
+                        || lastMod.compareTo(settings.getMinLastMod().get().toInstant(ZoneOffset.UTC)) >= 0)));
     }
 
     boolean hasMatchingLastMod(final FileResult fr) {
@@ -185,20 +191,21 @@ public class Finder {
     }
 
     Optional<FileResult> filterToFileResult(final Path path) {
+        Optional<FileResult> emptyFileResult = Optional.empty();
         if (!settings.getIncludeHidden()) {
             try {
                 if (Files.isHidden(path)) {
-                    return Optional.empty();
+                    return emptyFileResult;
                 }
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
-                return Optional.empty();
+                return emptyFileResult;
             }
         }
 
         FileType fileType = fileTypes.getFileType(path);
         if (fileType == FileType.ARCHIVE && !settings.getIncludeArchives() && !settings.getArchivesOnly()) {
-            return Optional.empty();
+            return emptyFileResult;
         }
 
         long fileSize = 0L;
@@ -210,7 +217,7 @@ public class Finder {
                 if (settings.needLastMod()) lastMod = stat.lastModifiedTime();
             } catch (IOException e) {
                 Logger.logError(e.getMessage());
-                return Optional.empty();
+                return emptyFileResult;
             }
         }
 
@@ -219,29 +226,40 @@ public class Finder {
             if (isMatchingArchiveFile(path)) {
                 return Optional.of(fileResult);
             }
-            return Optional.empty();
+            return emptyFileResult;
         }
         if (!settings.getArchivesOnly() && isMatchingFileResult(fileResult)) {
             return Optional.of(fileResult);
         }
-        return Optional.empty();
+        return emptyFileResult;
+    }
+
+    public final Comparator<FileResult> getFileResultComparator() {
+        var sortBy = settings.getSortBy() == null ? SortBy.FILEPATH : settings.getSortBy();
+        if (settings.getSortDescending()) {
+            return switch (sortBy) {
+                case FILENAME -> (FileResult fr1, FileResult fr2) -> fr2.compareByName(fr1, settings.getSortCaseInsensitive());
+                case FILESIZE -> (FileResult fr1, FileResult fr2) -> fr2.compareBySize(fr1, settings.getSortCaseInsensitive());
+                case FILETYPE -> (FileResult fr1, FileResult fr2) -> fr2.compareByType(fr1, settings.getSortCaseInsensitive());
+                case LASTMOD -> (FileResult fr1, FileResult fr2) -> fr2.compareByLastMod(fr1, settings.getSortCaseInsensitive());
+                default -> (FileResult fr1, FileResult fr2) -> fr2.compareByPath(fr1, settings.getSortCaseInsensitive());
+            };
+        }
+        return switch (sortBy) {
+            case FILENAME -> (FileResult fr1, FileResult fr2) -> fr1.compareByName(fr2, settings.getSortCaseInsensitive());
+            case FILESIZE -> (FileResult fr1, FileResult fr2) -> fr1.compareBySize(fr2, settings.getSortCaseInsensitive());
+            case FILETYPE -> (FileResult fr1, FileResult fr2) -> fr1.compareByType(fr2, settings.getSortCaseInsensitive());
+            case LASTMOD -> (FileResult fr1, FileResult fr2) -> fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive());
+            default -> (FileResult fr1, FileResult fr2) -> fr1.compareByPath(fr2, settings.getSortCaseInsensitive());
+        };
     }
 
     public final void sortFileResults(List<FileResult> fileResults) {
-        if (settings.getSortBy().equals(SortBy.FILENAME)) {
-            fileResults.sort((fr1, fr2) -> fr1.compareByName(fr2, settings.getSortCaseInsensitive()));
-        } else if (settings.getSortBy().equals(SortBy.FILESIZE)) {
-            fileResults.sort((fr1, fr2) -> fr1.compareBySize(fr2, settings.getSortCaseInsensitive()));
-        } else if (settings.getSortBy().equals(SortBy.FILETYPE)) {
-            fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.getSortCaseInsensitive()));
-        } else if (settings.getSortBy().equals(SortBy.LASTMOD)) {
-            fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive()));
-        } else {
-            fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.getSortCaseInsensitive()));
+        if (fileResults.isEmpty()) {
+            return;
         }
-        if (settings.getSortDescending()) {
-            Collections.reverse(fileResults);
-        }
+        var fileResultComparator = getFileResultComparator();
+        fileResults.sort(fileResultComparator);
     }
 
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
@@ -289,7 +307,7 @@ public class Finder {
                 }
                 return recFindPath(filePath, settings.getMinDepth(), maxDepth, 1);
             } else {
-                throw new FindException("Startpath does not match find settings");
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -300,44 +318,46 @@ public class Finder {
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get());
             } else {
-                throw new FindException("Startpath does not match find settings");
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
             }
         }
     }
 
     private List<FileResult> findAsync() throws FindException {
-        var fileResults = new ArrayList<FileResult>();
+        var futures = settings.getPaths().stream()
+                .map(path -> CompletableFuture.supplyAsync(() -> {
+                    try {
+                        return findPath(path);
+                    } catch (FindException e) {
+                        throw new CompletionException(e);
+                    }
+                }))
+                .toList();
 
-        // get thread pool the size of the number of paths to find
-        ExecutorService executorService;
-        if (settings.getPaths().size() == 1) {
-            executorService = Executors.newSingleThreadExecutor();
-        } else {
-            executorService = Executors.newFixedThreadPool(settings.getPaths().size());
+        var allOfFuture = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+
+        try {
+            allOfFuture.join(); // Wait for all futures to complete
+            var fileResultComparator = getFileResultComparator();
+            return futures.stream()
+                    .map(CompletableFuture::join)
+                    .flatMap(List::stream)
+                    .sorted(fileResultComparator)
+                    .toList();
+        } catch (CompletionException e) {
+            throw new FindException(e.getCause().getMessage());
         }
-        var futures = new ArrayList<Future<List<FileResult>>>();
-
-        for (var path : settings.getPaths()) {
-            futures.add(executorService.submit(() -> findPath(path)));
-        }
-
-        for (var future : futures) {
-            try {
-                fileResults.addAll(future.get());
-            } catch (InterruptedException | ExecutionException e) {
-                throw new FindException(e.getCause().getMessage());
-            }
-        }
-
-        executorService.shutdown();
-
-        sortFileResults(fileResults);
-        return fileResults;
     }
 
     public final List<FileResult> find() throws FindException {
-        var fileResults = findAsync();
-        sortFileResults(fileResults);
+        List<FileResult> fileResults;
+        // Don't bother with async unless we have more than one path
+        if (settings.getPaths().size() == 1) {
+            fileResults = findPath(settings.getPaths().iterator().next());
+            sortFileResults(fileResults);
+        } else {
+            fileResults = findAsync();
+        }
         return fileResults;
     }
 }

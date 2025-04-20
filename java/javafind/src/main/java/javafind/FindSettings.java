@@ -16,10 +16,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 public class FindSettings {
@@ -38,10 +35,10 @@ public class FindSettings {
     private boolean includeArchives;
     private boolean includeHidden;
     private int maxDepth;
-    private LocalDateTime maxLastMod;
+    private Optional<LocalDateTime> maxLastMod;
     private long maxSize;
     private int minDepth;
-    private LocalDateTime minLastMod;
+    private Optional<LocalDateTime> minLastMod;
     private long minSize;
     private final Set<String> outArchiveExtensions;
     private final Set<Pattern> outArchiveFilePatterns;
@@ -73,10 +70,10 @@ public class FindSettings {
         this.includeArchives = DefaultFindSettings.INCLUDE_ARCHIVES;
         this.includeHidden = DefaultFindSettings.INCLUDE_HIDDEN;
         this.maxDepth = DefaultFindSettings.MAX_DEPTH;
-        this.maxLastMod = null;
+        this.maxLastMod = Optional.empty();
         this.maxSize = DefaultFindSettings.MAX_SIZE;
         this.minDepth = DefaultFindSettings.MIN_DEPTH;
-        this.minLastMod = null;
+        this.minLastMod = Optional.empty();
         this.minSize = DefaultFindSettings.MIN_SIZE;
         this.outArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
         this.outArchiveFilePatterns = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
@@ -105,11 +102,15 @@ public class FindSettings {
     }
 
     public final void addPath(final Path path) {
-        this.paths.add(path);
+        if (path != null) {
+            this.paths.add(path);
+        }
     }
 
     public final void addPath(final String path) {
-        this.paths.add(Paths.get(path));
+        if (path != null && !path.isEmpty()) {
+            this.addPath(Paths.get(path));
+        }
     }
 
     public final boolean getArchivesOnly() {
@@ -166,11 +167,11 @@ public class FindSettings {
         this.maxDepth = maxDepth;
     }
 
-    public LocalDateTime getMaxLastMod() {
+    public Optional<LocalDateTime> getMaxLastMod() {
         return maxLastMod;
     }
 
-    private LocalDateTime getLastModFromString(final String lastModString) {
+    private Optional<LocalDateTime> getLastModFromString(final String lastModString) {
         LocalDateTime lastMod = null;
         try {
             lastMod = LocalDateTime.parse(lastModString);
@@ -179,10 +180,13 @@ public class FindSettings {
                 var maxLastModDate = LocalDate.parse(lastModString, DateTimeFormatter.ISO_LOCAL_DATE);
                 lastMod = maxLastModDate.atTime(0, 0, 0);
             } catch (DateTimeParseException e2) {
-                System.out.println("Unable to parse lastModString");
+                Logger.logError("Unable to parse lastModString");
             }
         }
-        return lastMod;
+        if (lastMod == null) {
+            return Optional.empty();
+        }
+        return Optional.of(lastMod);
     }
 
     public void setMaxLastMod(final String maxLastModString) {
@@ -190,7 +194,7 @@ public class FindSettings {
     }
 
     public void setMaxLastMod(final LocalDateTime maxLastMod) {
-        this.maxLastMod = maxLastMod;
+        this.maxLastMod = Optional.of(maxLastMod);
     }
 
     public long getMaxSize() {
@@ -209,7 +213,7 @@ public class FindSettings {
         this.minDepth = minDepth;
     }
 
-    public LocalDateTime getMinLastMod() {
+    public Optional<LocalDateTime> getMinLastMod() {
         return minLastMod;
     }
 
@@ -218,7 +222,7 @@ public class FindSettings {
     }
 
     public void setMinLastMod(final LocalDateTime minLastMod) {
-        this.minLastMod = minLastMod;
+        this.minLastMod = Optional.of(minLastMod);
     }
 
     public long getMinSize() {
@@ -429,7 +433,7 @@ public class FindSettings {
 
     public boolean needLastMod() {
         return this.sortBy.equals(SortBy.LASTMOD) ||
-                this.maxLastMod != null || this.minLastMod != null;
+                this.maxLastMod.isPresent() || this.minLastMod.isPresent();
     }
 
     public boolean needSize() {
@@ -474,11 +478,8 @@ public class FindSettings {
         return setToString(stringSet, false);
     }
 
-    protected static String localDateTimeToString(final LocalDateTime dt) {
-        if (dt == null) {
-            return "0";
-        }
-        return String.format("\"%s\"", dt);
+    protected static String localDateTimeToString(final Optional<LocalDateTime> dt) {
+        return dt.map(localDateTime -> String.format("\"%s\"", localDateTime)).orElse("0");
     }
 
     public String toString() {

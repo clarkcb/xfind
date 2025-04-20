@@ -69,12 +69,14 @@ public class FindSettingsTest {
     public final void testSetLastModFromString() {
         var settings = new FindSettings();
         settings.setMaxLastMod("2023-01-01");
-        assertEquals(1, settings.getMaxLastMod().getDayOfMonth());
-        assertEquals(1, settings.getMaxLastMod().getMonth().getValue());
-        assertEquals(2023, settings.getMaxLastMod().getYear());
+        var maxLastMod = settings.getMaxLastMod().get();
+        assertEquals(1, maxLastMod.getDayOfMonth());
+        assertEquals(1, maxLastMod.getMonth().getValue());
+        assertEquals(2023, maxLastMod.getYear());
         settings.setMinLastMod("2022-06-01");
-        assertEquals(1, settings.getMinLastMod().getDayOfMonth());
-        assertEquals(6, settings.getMinLastMod().getMonth().getValue());
-        assertEquals(2022, settings.getMinLastMod().getYear());
+        var minLastMod = settings.getMinLastMod().get();
+        assertEquals(1, minLastMod.getDayOfMonth());
+        assertEquals(6, minLastMod.getMonth().getValue());
+        assertEquals(2022, minLastMod.getYear());
     }
 }
