@@ -9,6 +9,13 @@ namespace CsFindLib;
 
 public class Finder
 {
+	private const string StartpathNotDefined = "Startpath not defined";
+	private const string StartpathNotFound = "Startpath not found";
+	private const string InvalidRangeMinDepthMaxDepth = "Invalid range for mindepth and maxdepth";
+	private const string InvalidRangeMinLastModMaxLastMod = "Invalid range for minlastmod and maxlastmod";
+	private const string InvalidRangeMinSizeMaxSize = "Invalid range for minsize and maxsize";
+	private const string StartpathNotMatchFindSettings = "Startpath does not match find settings";
+
 	private readonly FileTypes _fileTypes;
 	private readonly EnumerationOptions _enumerationOptions;
 	private FindSettings Settings { get; }
@@ -23,23 +30,23 @@ public class Finder
 	private void ValidateSettings()
 	{
 		if (Settings.Paths.Count == 0)
-			throw new FindException("Startpath not defined");
+			throw new FindException(StartpathNotDefined);
 		if (Settings.Paths.Any(p => !p.Exists))
 		{
-			throw new FindException("Startpath not found");
+			throw new FindException(StartpathNotFound);
 		}
 		if (Settings is { MaxDepth: > -1, MinDepth: > -1 } && Settings.MaxDepth < Settings.MinDepth)
 		{
-			throw new FindException("Invalid range for mindepth and maxdepth");
+			throw new FindException(InvalidRangeMinDepthMaxDepth);
 		}
 		if (Settings is { MaxLastMod: not null, MinLastMod: not null }
 		    && Settings.MaxLastMod < Settings.MinLastMod)
 		{
-			throw new FindException("Invalid range for minlastmod and maxlastmod");
+			throw new FindException(InvalidRangeMinLastModMaxLastMod);
 		}
 		if (Settings is { MaxSize: > 0, MinSize: > 0 } && Settings.MaxSize < Settings.MinSize)
 		{
-			throw new FindException("Invalid range for minsize and maxsize");
+			throw new FindException(InvalidRangeMinSizeMaxSize);
 		}
 	}
 
@@ -262,7 +269,7 @@ public class Finder
 				return RecGetFileResults(filePath, Settings.MinDepth, maxDepth, 1);
 			}
 
-			throw new FindException("Startpath does not match find settings");
+			throw new FindException(StartpathNotMatchFindSettings);
 		}
 
 		// if MinDepth > zero, we can skip since the file is at depth zero
@@ -273,7 +280,7 @@ public class Finder
 			{
 				return [fileResult];
 			}
-			throw new FindException("Startpath does not match find settings");
+			throw new FindException(StartpathNotMatchFindSettings);
 		}
 
 		return [];
@@ -334,71 +341,34 @@ public class Finder
 		return fileResults;
 	}
 
-	private int CompareByPath(FileResult fr1, FileResult fr2)
-	{
-		// var cmp = Settings.SortCaseInsensitive ?
-		// 	StringComparison.InvariantCultureIgnoreCase :
-		// 	StringComparison.InvariantCulture;
-		var cmp = Settings.SortCaseInsensitive ?
-			StringComparison.OrdinalIgnoreCase :
-			StringComparison.Ordinal;
-		var dirNameCmp = string.Compare(fr1.FilePath.Parent?.ToString(), fr2.FilePath.Parent?.ToString(), cmp);
-		return dirNameCmp == 0 ? string.Compare(fr1.FilePath.Name, fr2.FilePath.Name, cmp) : dirNameCmp;
-	}
-	
-	private int CompareByName(FileResult fr1, FileResult fr2)
-	{
-		// var cmp = Settings.SortCaseInsensitive ?
-		// 	StringComparison.InvariantCultureIgnoreCase :
-		// 	StringComparison.InvariantCulture;
-		var cmp = Settings.SortCaseInsensitive ?
-			StringComparison.OrdinalIgnoreCase :
-			StringComparison.Ordinal;
-		var fileNameCmp = string.Compare(fr1.FilePath.Name, fr2.FilePath.Name, cmp);
-		return fileNameCmp == 0 ? string.Compare(fr1.FilePath.Parent?.ToString(), fr2.FilePath.Parent?.ToString(), cmp) : fileNameCmp;
-	}
-
-	private int CompareBySize(FileResult fr1, FileResult fr2)
-	{
-		return fr1.FilePath.Length == fr2.FilePath.Length ? CompareByPath(fr1, fr2) : fr1.FilePath.Length.CompareTo(fr2.FilePath.Length);
-	}
-
-	private int CompareByType(FileResult fr1, FileResult fr2)
-	{
-		return (int) fr1.Type == (int) fr2.Type ? CompareByPath(fr1, fr2) : ((int) fr1.Type).CompareTo((int) fr2.Type);
-	}
-
-	private int CompareByLastMod(FileResult fr1, FileResult fr2)
-	{
-		return fr1.FilePath.LastWriteTimeUtc == fr2.FilePath.LastWriteTimeUtc ? CompareByPath(fr1, fr2) : fr1.FilePath.LastWriteTimeUtc.CompareTo(fr2.FilePath.LastWriteTimeUtc);
-	}
-
 	public Comparison<FileResult> GetFileResultsComparison()
 	{
-		switch (Settings.SortBy)
+		if (Settings.SortDescending)
 		{
-			case SortBy.FileName:
-				return CompareByName;
-			case SortBy.FileSize:
-				return CompareBySize;
-			case SortBy.FileType:
-				return CompareByType;
-			case SortBy.LastMod:
-				return CompareByLastMod;
-			default:
-				return CompareByPath;
+			return Settings.SortBy switch
+			{
+				SortBy.FileName => (fr1, fr2) => fr2.CompareByName(fr1, Settings.SortCaseInsensitive),
+				SortBy.FileSize => (fr1, fr2) => fr2.CompareBySize(fr1, Settings.SortCaseInsensitive),
+				SortBy.FileType => (fr1, fr2) => fr2.CompareByType(fr1, Settings.SortCaseInsensitive),
+				SortBy.LastMod => (fr1, fr2) => fr2.CompareByLastMod(fr1, Settings.SortCaseInsensitive),
+				_ => (fr1, fr2) => fr2.CompareByPath(fr1, Settings.SortCaseInsensitive)
+			};
 		}
+
+		return Settings.SortBy switch
+		{
+			SortBy.FileName => (fr1, fr2) => fr1.CompareByName(fr2, Settings.SortCaseInsensitive),
+			SortBy.FileSize => (fr1, fr2) => fr1.CompareBySize(fr2, Settings.SortCaseInsensitive),
+			SortBy.FileType => (fr1, fr2) => fr1.CompareByType(fr2, Settings.SortCaseInsensitive),
+			SortBy.LastMod => (fr1, fr2) => fr1.CompareByLastMod(fr2, Settings.SortCaseInsensitive),
+			_ => (fr1, fr2) => fr1.CompareByPath(fr2, Settings.SortCaseInsensitive)
+		};
 	}
 
 	private void SortFileResults(List<FileResult> fileResults)
 	{
 		var comparison = GetFileResultsComparison();
 		fileResults.Sort(comparison);
-
-		if (Settings.SortDescending)
-		{
-			fileResults.Reverse();
-		}
 	}
 
 	private static List<FilePath> GetMatchingDirs(IEnumerable<FileResult> fileResults)
