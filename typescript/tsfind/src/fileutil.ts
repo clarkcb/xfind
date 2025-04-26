@@ -13,6 +13,9 @@ import * as path from 'path';
 import * as config from './config';
 import {StringUtil} from "./stringutil";
 
+export const ENOENT = 'ENOENT';
+export const EACCES = 'EACCES';
+
 export class FileUtil {
 
     public static expandPath(filePath: string): string {
