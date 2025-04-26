@@ -12,6 +12,13 @@ namespace phpfind;
  */
 class Finder
 {
+    const string STARTPATH_NOT_DEFINED = 'Startpath not defined';
+    const string STARTPATH_NOT_READABLE = 'Startpath not readable';
+    const string STARTPATH_NOT_FOUND = 'Startpath not found';
+    const string INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH = 'Invalid range for mindepth and maxdepth';
+    const string INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD = 'Invalid range for minlastmod and maxlastmod';
+    const string INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE = 'Invalid range for minsize and maxsize';
+    const string STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS = 'Startpath does not match find settings';
     private readonly FindSettings $settings;
     private readonly FileTypes $file_types;
 
@@ -32,7 +39,7 @@ class Finder
     private function validate_settings(): void
     {
         if (!$this->settings->paths) {
-            throw new FindException('Startpath not defined');
+            throw new FindException(self::STARTPATH_NOT_DEFINED);
         }
         foreach ($this->settings->paths as $p) {
             if (!file_exists($p)) {
@@ -40,22 +47,22 @@ class Finder
             }
             if (file_exists($p)) {
                 if (!is_readable($p)) {
-                    throw new FindException('Startpath not readable');
+                    throw new FindException(self::STARTPATH_NOT_READABLE);
                 }
             } else {
-                throw new FindException('Startpath not found');
+                throw new FindException(self::STARTPATH_NOT_FOUND);
             }
         }
         if ($this->settings->max_depth > -1 && $this->settings->min_depth > -1
             && $this->settings->max_depth < $this->settings->min_depth) {
-            throw new FindException('Invalid range for mindepth and maxdepth');
+            throw new FindException(self::INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH);
         }
         if ($this->settings->max_last_mod != null && $this->settings->min_last_mod != null
             && $this->settings->max_last_mod->getTimestamp() < $this->settings->min_last_mod->getTimestamp()) {
-            throw new FindException('Invalid range for minlastmod and maxlastmod');
+            throw new FindException(self::INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD);
         }
         if ($this->settings->max_size > 0 && $this->settings->max_size < $this->settings->min_size) {
-            throw new FindException('Invalid range for minsize and maxsize');
+            throw new FindException(self::INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE);
         }
     }
 
@@ -397,7 +404,7 @@ class Finder
                 $file_results = array_merge($file_results, $this->rec_get_file_results($file_path,
                     $this->settings->min_depth, $max_depth, 1));
             } else {
-                throw new FindException("Startpath does not match find settings");
+                throw new FindException(self::STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
             }
         } else {
             # if min_depth > zero, we can skip since the file is at depth zero
@@ -410,7 +417,7 @@ class Finder
             if ($file_result != null) {
                 $file_results[] = $file_result;
             } else {
-                throw new FindException("Startpath does not match find settings");
+                throw new FindException(self::STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
             }
         }
         return $file_results;
@@ -518,32 +525,43 @@ class Finder
         return ($fr1->last_mod < $fr2->last_mod) ? -1 : 1;
     }
 
+    private function get_cmp_function(): \Closure
+    {
+        if ($this->settings->sort_descending) {
+            return match ($this->settings->sort_by) {
+                SortBy::Filename => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_name(
+                    $fr2,
+                    $fr1
+                ),
+                SortBy::Filesize => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_size(
+                    $fr2,
+                    $fr1
+                ),
+                SortBy::Filetype => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_type(
+                    $fr2,
+                    $fr1
+                ),
+                SortBy::LastMod => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_last_mod($fr2, $fr1),
+                default => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr2, $fr1),
+            };
+        }
+        return match ($this->settings->sort_by) {
+            SortBy::Filename => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_name($fr1, $fr2),
+            SortBy::Filesize => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_size($fr1, $fr2),
+            SortBy::Filetype => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_type($fr1, $fr2),
+            SortBy::LastMod => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_last_mod($fr1, $fr2),
+            default => fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr1, $fr2),
+        };
+    }
+
     /**
      * @param FileResult[] $file_results
      * @return FileResult[]
      */
     private function sort_file_results(array $file_results): array
     {
-        switch ($this->settings->sort_by) {
-            case SortBy::Filename:
-                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_name($fr1, $fr2));
-                break;
-            case SortBy::Filesize:
-                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_size($fr1, $fr2));
-                break;
-            case SortBy::Filetype:
-                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_file_type($fr1, $fr2));
-                break;
-            case SortBy::LastMod:
-                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_last_mod($fr1, $fr2));
-                break;
-            default:
-                usort($file_results, fn(FileResult $fr1, FileResult $fr2) => $this->cmp_file_result_path($fr1, $fr2));
-                break;
-        }
-        if ($this->settings->sort_descending) {
-            return array_reverse($file_results);
-        }
+        $cmp_function = $this->get_cmp_function();
+        usort($file_results, $cmp_function);
         return $file_results;
     }
 
