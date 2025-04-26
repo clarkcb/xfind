@@ -1128,21 +1128,27 @@ class Finder {
 
     [FileResult[]]SortFileResults([FileResult[]]$fileResults) {
         $listToSort = @()
-        if ($this.Settings.SortBy -eq [SortBy]::FileName) {
-            $listToSort = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)}
-        } elseif ($this.Settings.SortBy -eq [SortBy]::FileSize) {
-            $listToSort = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.File.Length, $_.File.DirectoryName, $_.File.Name, $_)}
-        } elseif ($this.Settings.SortBy -eq [SortBy]::FileType) {
-            $listToSort = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)}
-        } elseif ($this.Settings.SortBy -eq [SortBy]::LastMod) {
-            $listToSort = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.File.LastWriteTimeUtc, $_.File.DirectoryName, $_.File.Name, $_)}
-        } else {
-            $listToSort = $fileResults |
-                ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)}
+        switch ($this.Settings.SortBy) {
+            [SortBy]::FileName {
+                $listToSort = $fileResults |
+                    ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)}
+            }
+            [SortBy]::FileSize {
+                $listToSort = $fileResults |
+                    ForEach-Object {[Tuple]::Create($_.File.Length, $_.File.DirectoryName, $_.File.Name, $_)}
+            }
+            [SortBy]::FileType {
+                $listToSort = $fileResults |
+                    ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)}
+            }
+            [SortBy]::LastMod {
+                $listToSort = $fileResults |
+                    ForEach-Object {[Tuple]::Create($_.File.LastWriteTimeUtc, $_.File.DirectoryName, $_.File.Name, $_)}
+            }
+            Default {
+                $listToSort = $fileResults |
+                    ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)}
+            }
         }
         $sorted = @()
         if ($this.Settings.SortCaseInsensitive -and $this.Settings.SortDescending) {
