@@ -135,24 +135,29 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  private def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
-    val sortedFileResults =
-      if (settings.sortBy == SortBy.FileName) {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2, settings.sortCaseInsensitive))
-      } else if (settings.sortBy == SortBy.FileSize) {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareBySize(fr2, settings.sortCaseInsensitive))
-      } else if (settings.sortBy == SortBy.FileType) {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2, settings.sortCaseInsensitive))
-      } else if (settings.sortBy == SortBy.LastMod) {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
-      } else {
-        fileResults.sortWith((fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2, settings.sortCaseInsensitive))
-      }
+  private def getFileResultComparator: (FileResult, FileResult) => Boolean = {
     if (settings.sortDescending) {
-      sortedFileResults.reverse
+      settings.sortBy match {
+        case SortBy.FileName => (fr1: FileResult, fr2: FileResult) => fr2.compareByName(fr1, settings.sortCaseInsensitive)
+        case SortBy.FileSize => (fr1: FileResult, fr2: FileResult) => fr2.compareBySize(fr1, settings.sortCaseInsensitive)
+        case SortBy.FileType => (fr1: FileResult, fr2: FileResult) => fr2.compareByType(fr1, settings.sortCaseInsensitive)
+        case SortBy.LastMod => (fr1: FileResult, fr2: FileResult) => fr2.compareByLastMod(fr1, settings.sortCaseInsensitive)
+        case _ => (fr1: FileResult, fr2: FileResult) => fr2.compareByPath(fr1, settings.sortCaseInsensitive)
+      }
     } else {
-      sortedFileResults
+      settings.sortBy match {
+        case SortBy.FileName => (fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2, settings.sortCaseInsensitive)
+        case SortBy.FileSize => (fr1: FileResult, fr2: FileResult) => fr1.compareBySize(fr2, settings.sortCaseInsensitive)
+        case SortBy.FileType => (fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2, settings.sortCaseInsensitive)
+        case SortBy.LastMod => (fr1: FileResult, fr2: FileResult) => fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
+        case _ => (fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2, settings.sortCaseInsensitive)
+      }
     }
+  }
+
+  private def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
+    val fileResultComparator = getFileResultComparator
+    fileResults.sortWith(fileResultComparator)
   }
 
   private final def recFindPath(filePath: Path, minDepth: Int, maxDepth: Int, currentDepth: Int): Seq[FileResult] = {
@@ -204,7 +209,7 @@ class Finder (settings: FindSettings) {
           val maxDepth = if (settings.recursive) settings.maxDepth else 1
           recFindPath(fp, settings.minDepth, maxDepth, 1)
         } else {
-          throw new FindException("Startpath does not match find settings")
+          throw new FindException(STARTPATH_DOES_NOT_MATCH)
         }
       }
     } else {
@@ -215,7 +220,7 @@ class Finder (settings: FindSettings) {
           case Some(fileResult) =>
             Seq(fileResult)
           case None =>
-            throw new FindException("Startpath does not match find settings")
+            throw new FindException(STARTPATH_DOES_NOT_MATCH)
         }
       }
     }
@@ -231,6 +236,14 @@ class Finder (settings: FindSettings) {
 }
 
 object Finder {
+  private val STARTPATH_NOT_DEFINED = "Startpath not defined"
+  private val STARTPATH_NOT_FOUND = "Startpath not found"
+  private val STARTPATH_NOT_READABLE = "Startpath not readable"
+  private val INVALID_RANGE_MINDEPTH_MAXDEPTH = "Invalid range for mindepth and maxdepth"
+  private val INVALID_RANGE_MINLASTMOD_MAXLASTMOD = "Invalid range for minlastmod and maxlastmod"
+  private val INVALID_RANGE_MINSIZE_MAXSIZE = "Invalid range for minsize and maxsize"
+  private val STARTPATH_DOES_NOT_MATCH = "Startpath does not match find settings"
+
   private def compareOptionLocalDateTimes(d1: Option[LocalDateTime], d2: Option[LocalDateTime]): Int = {
     if (d1.isEmpty || d2.isEmpty) {
       0
@@ -240,12 +253,12 @@ object Finder {
   }
 
   private val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
-    ss => if (ss.paths.nonEmpty) None else Some("Startpath not defined"),
-    ss => if (ss.paths.forall { p => Files.exists(p) || Files.exists(FileUtil.expandPath(p)) }) None else Some("Startpath not found"),
-    ss => if (ss.paths.forall { p => Files.isReadable(p) || Files.isReadable(FileUtil.expandPath(p)) }) None else Some("Startpath not readable"),
-    ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some("Invalid range for mindepth and maxdepth") else None,
-    ss => if (compareOptionLocalDateTimes(ss.maxLastMod, ss.minLastMod) < 0) Some("Invalid range for minlastmod and maxlastmod") else None,
-    ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some("Invalid range for minsize and maxsize") else None,
+    ss => if (ss.paths.nonEmpty) None else Some(STARTPATH_NOT_DEFINED),
+    ss => if (ss.paths.forall { p => Files.exists(p) || Files.exists(FileUtil.expandPath(p)) }) None else Some(STARTPATH_NOT_FOUND),
+    ss => if (ss.paths.forall { p => Files.isReadable(p) || Files.isReadable(FileUtil.expandPath(p)) }) None else Some(STARTPATH_NOT_READABLE),
+    ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some(INVALID_RANGE_MINDEPTH_MAXDEPTH) else None,
+    ss => if (compareOptionLocalDateTimes(ss.maxLastMod, ss.minLastMod) < 0) Some(INVALID_RANGE_MINLASTMOD_MAXLASTMOD) else None,
+    ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some(INVALID_RANGE_MINSIZE_MAXSIZE) else None,
   )
 
   private def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
