@@ -169,6 +169,50 @@ module RbFind
       nil
     end
 
+    def find
+      file_results = []
+      @settings.paths.each do |p|
+        file_results = file_results.concat(get_file_results_for_path(p))
+      end
+      sort_file_results(file_results)
+      file_results
+    end
+
+    private
+
+    def validate_settings
+      raise FindError, STARTPATH_NOT_DEFINED if @settings.paths.empty?
+      @settings.paths.each do |p|
+        if p.instance_of?(Pathname)
+          p = p.expand_path unless p.exist?
+          raise FindError, STARTPATH_NOT_FOUND unless p.exist?
+          raise FindError, STARTPATH_NOT_READABLE unless p.readable?
+        else
+          raise FindError, STARTPATH_NOT_PATHNAME
+        end
+      end
+      if @settings.max_depth > -1 && @settings.min_depth > -1 && @settings.max_depth < @settings.min_depth
+        raise FindError, INVALID_RANGE_MINDEPTH_MAXDEPTH
+      end
+      if @settings.max_last_mod && @settings.min_last_mod && @settings.max_last_mod <= @settings.min_last_mod
+        raise FindError, INVALID_RANGE_MINLASTMOD_MAXLASTMOD
+      end
+      if @settings.max_size > 0 && @settings.min_size > 0 && @settings.max_size <= @settings.min_size
+        raise FindError, INVALID_RANGE_MINSIZE_MAXSIZE
+      end
+    end
+
+    def matches_any_pattern?(str, pattern_set)
+      pattern_set.any? { |p| p.match(str) }
+    end
+
+    def any_matches_any_pattern?(str_list, pattern_set)
+      str_list.each do |s|
+        return true if matches_any_pattern?(s, pattern_set)
+      end
+      false
+    end
+
     def rec_get_file_results_for_path(dir_path, min_depth, max_depth, current_depth)
       file_results = []
       recurse = true
@@ -212,7 +256,7 @@ module RbFind
           end
           return rec_get_file_results_for_path(file_path, @settings.min_depth, max_depth, 1)
         else
-          raise FindError, 'Startpath does not match find settings'
+          raise FindError, STARTPATH_NOT_MATCH_SETTINGS
         end
       else
         # if min_depth > zero, we can skip since the file is at depth zero
@@ -223,84 +267,9 @@ module RbFind
         if file_result != nil
           return [file_result]
         else
-          raise FindError, 'Startpath does not match find settings'
+          raise FindError, STARTPATH_NOT_MATCH_SETTINGS
         end
       end
-    end
-
-    def find
-      file_results = []
-      @settings.paths.each do |p|
-        file_results = file_results.concat(get_file_results_for_path(p))
-      end
-      file_results = sort_file_results(file_results)
-      if @settings.sort_descending
-        file_results.reverse!
-      end
-      file_results
-    end
-
-    private
-
-    def sort_file_results(file_results)
-      if @settings.sort_case_insensitive
-        if @settings.sort_by == SortBy::FILENAME
-          file_results.sort_by {|r| [r.file_name.downcase, r.dir_name.downcase]}
-        elsif @settings.sort_by == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.file_size, r.dir_name.downcase, r.file_name.downcase]}
-        elsif @settings.sort_by == SortBy::FILETYPE
-          file_results.sort_by {|r| [r.file_type, r.dir_name.downcase, r.file_name.downcase]}
-        elsif @settings.sort_by == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.last_mod, r.dir_name.downcase, r.file_name.downcase]}
-        else
-          file_results.sort_by {|r| [r.dir_name.downcase, r.file_name.downcase]}
-        end
-      else
-        if @settings.sort_by == SortBy::FILENAME
-          file_results.sort_by {|r| [r.file_name, r.dir_name]}
-        elsif @settings.sort_by == SortBy::FILESIZE
-          file_results.sort_by {|r| [r.file_size, r.dir_name, r.file_name]}
-        elsif @settings.sort_by == SortBy::FILETYPE
-          file_results.sort_by {|r| [r.file_type, r.dir_name, r.file_name]}
-        elsif @settings.sort_by == SortBy::LASTMOD
-          file_results.sort_by {|r| [r.last_mod, r.dir_name, r.file_name]}
-        else
-          file_results.sort_by {|r| [r.dir_name, r.file_name]}
-        end
-      end
-    end
-
-    def validate_settings
-      raise FindError, 'Startpath not defined' if @settings.paths.empty?
-      @settings.paths.each do |p|
-        if p.instance_of?(Pathname)
-          p = p.expand_path unless p.exist?
-          raise FindError, 'Startpath not found' unless p.exist?
-          raise FindError, 'Startpath not readable' unless p.readable?
-        else
-          raise FindError, 'Startpath not a Pathname instance'
-        end
-      end
-      if @settings.max_depth > -1 && @settings.min_depth > -1 && @settings.max_depth < @settings.min_depth
-        raise FindError, 'Invalid range for mindepth and maxdepth'
-      end
-      if @settings.max_last_mod && @settings.min_last_mod && @settings.max_last_mod <= @settings.min_last_mod
-        raise FindError, 'Invalid range for minlastmod and maxlastmod'
-      end
-      if @settings.max_size > 0 && @settings.min_size > 0 && @settings.max_size <= @settings.min_size
-        raise FindError, 'Invalid range for minsize and maxsize'
-      end
-    end
-
-    def matches_any_pattern?(str, pattern_set)
-      pattern_set.any? { |p| p.match(str) }
-    end
-
-    def any_matches_any_pattern?(str_list, pattern_set)
-      str_list.each do |s|
-        return true if matches_any_pattern?(s, pattern_set)
-      end
-      false
     end
 
     def file_path_to_file_result(file_path)
@@ -317,6 +286,67 @@ module RbFind
         end
       end
       FileResult.new(file_path, file_type, file_size, last_mod)
+    end
+
+    def get_sort_comparator
+      if @settings.sort_descending
+        if @settings.sort_case_insensitive
+          if @settings.sort_by == SortBy::FILENAME
+            ->(fr1, fr2) { fr2.cmp_by_name_ci(fr1) }
+          elsif @settings.sort_by == SortBy::FILESIZE
+            ->(fr1, fr2) { fr2.cmp_by_size_ci(fr1) }
+          elsif @settings.sort_by == SortBy::FILETYPE
+            ->(fr1, fr2) { fr2.cmp_by_type_ci(fr1) }
+          elsif @settings.sort_by == SortBy::LASTMOD
+            ->(fr1, fr2) { fr2.cmp_by_last_mod_ci(fr1) }
+          else
+            ->(fr1, fr2) { fr2.cmp_by_path_ci(fr1) }
+          end
+        else
+          if @settings.sort_by == SortBy::FILENAME
+            ->(fr1, fr2) { fr2.cmp_by_name(fr1) }
+          elsif @settings.sort_by == SortBy::FILESIZE
+            ->(fr1, fr2) { fr2.cmp_by_size(fr1) }
+          elsif @settings.sort_by == SortBy::FILETYPE
+            ->(fr1, fr2) { fr2.cmp_by_type(fr1) }
+          elsif @settings.sort_by == SortBy::LASTMOD
+            ->(fr1, fr2) { fr2.cmp_by_last_mod(fr1) }
+          else
+            ->(fr1, fr2) { fr2.cmp_by_path(fr1) }
+          end
+        end
+      else
+        if @settings.sort_case_insensitive
+          if @settings.sort_by == SortBy::FILENAME
+            ->(fr1, fr2) { fr1.cmp_by_name_ci(fr2) }
+          elsif @settings.sort_by == SortBy::FILESIZE
+            ->(fr1, fr2) { fr1.cmp_by_size_ci(fr2) }
+          elsif @settings.sort_by == SortBy::FILETYPE
+            ->(fr1, fr2) { fr1.cmp_by_type_ci(fr2) }
+          elsif @settings.sort_by == SortBy::LASTMOD
+            ->(fr1, fr2) { fr1.cmp_by_last_mod_ci(fr2) }
+          else
+            ->(fr1, fr2) { fr1.cmp_by_path_ci(fr2) }
+          end
+        else
+          if @settings.sort_by == SortBy::FILENAME
+            ->(fr1, fr2) { fr1.cmp_by_name(fr2) }
+          elsif @settings.sort_by == SortBy::FILESIZE
+            ->(fr1, fr2) { fr1.cmp_by_size(fr2) }
+          elsif @settings.sort_by == SortBy::FILETYPE
+            ->(fr1, fr2) { fr1.cmp_by_type(fr2) }
+          elsif @settings.sort_by == SortBy::LASTMOD
+            ->(fr1, fr2) { fr1.cmp_by_last_mod(fr2) }
+          else
+            ->(fr1, fr2) { fr1.cmp_by_path(fr2) }
+          end
+        end
+      end
+    end
+
+    def sort_file_results(file_results)
+      sort_comparator = get_sort_comparator
+      file_results.sort!(&sort_comparator)
     end
   end
 end

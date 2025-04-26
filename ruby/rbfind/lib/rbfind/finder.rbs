@@ -48,20 +48,20 @@ module RbFind
 
     private
 
-    def sort_file_results: (Array[FileResult] file_results) -> void
-
     def validate_settings: () -> void
 
     def matches_any_pattern?: (String str, Set[Regexp] pattern_set) -> bool
 
     def any_matches_any_pattern?: (Array[String] str_list, Set[Regexp] pattern_set) -> bool
 
-    def file_path_to_file_result: (Pathname file_path) -> FileResult
-
     def rec_get_file_results_for_path: (Pathname dir_path, Integer min_depth, Integer max_depth, Integer current_depth) -> Array[FileResult]
 
     def get_file_results_for_path: (Pathname file_path) -> Array[FileResult]
 
-    def get_file_results: (Pathname file_path) -> Array[FileResult]
+    def file_path_to_file_result: (Pathname file_path) -> FileResult
+
+    def get_sort_comparator: -> Proc
+
+    def sort_file_results: (Array[FileResult] file_results) -> void
   end
 end

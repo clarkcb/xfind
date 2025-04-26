@@ -125,16 +125,16 @@ module RbFind
     end
 
     def get_usage_string
-      usage = "Usage:\n"
-      usage << " rbfind [options] <path> [<path> ...]\n\n"
-      usage << "Options:\n"
+      usage = ["Usage:\n", " rbfind [options] <path> [<path> ...]\n\n", "Options:\n"]
       opt_strings = []
       opt_descs = []
       longest = 0
       @options.each do |opt|
-        opt_string = ''
-        opt_string << "-#{opt.short_arg}," unless opt.short_arg.empty?
-        opt_string << "--#{opt.long_arg}"
+        if opt.short_arg.empty?
+          opt_string = "--#{opt.long_arg}"
+        else
+          opt_string = "-#{opt.short_arg},--#{opt.long_arg}"
+        end
         longest = opt_string.length > longest ? opt_string.length : longest
         opt_strings.push(opt_string)
         opt_descs.push(opt.desc)
@@ -145,7 +145,7 @@ module RbFind
         usage << format(format_string, opt_strings[i], opt_descs[i])
         i += 1
       end
-      usage
+      usage.join
     end
 
     def usage

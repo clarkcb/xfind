@@ -1,4 +1,13 @@
 module RbFind
+  INVALID_RANGE_MINDEPTH_MAXDEPTH: String
+  INVALID_RANGE_MINLASTMOD_MAXLASTMOD: String
+  INVALID_RANGE_MINSIZE_MAXSIZE: String
+  STARTPATH_NOT_DEFINED: String
+  STARTPATH_NOT_FOUND: String
+  STARTPATH_NOT_MATCH_SETTINGS: String
+  STARTPATH_NOT_PATHNAME: String
+  STARTPATH_NOT_READABLE: String
+
   # FindError - custom exception class
   class FindError < StandardError
     def initialize: (String msg) -> void
