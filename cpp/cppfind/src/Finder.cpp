@@ -19,32 +19,32 @@ namespace cppfind {
 
     void Finder::validate_settings(const FindSettings& settings) {
         if (settings.paths().empty()) {
-            throw FindException("Startpath not defined");
+            throw FindException(STARTPATH_NOT_DEFINED);
         }
         for (const auto& p : settings.paths()) {
             if (std::filesystem::exists(p)) {
                 if (access(p.c_str(), R_OK) != 0) {
-                    throw FindException("Startpath not readable");
+                    throw FindException(STARTPATH_NOT_READABLE);
                 }
              } else {
                  const std::filesystem::path expanded = FileUtil::expand_path(p);
                  if (std::filesystem::exists(expanded)) {
                      if (access(expanded.c_str(), R_OK) != 0) {
-                         throw FindException("Startpath not readable");
+                         throw FindException(STARTPATH_NOT_READABLE);
                      }
                  } else {
-                     throw FindException("Startpath not found");
+                     throw FindException(STARTPATH_NOT_FOUND);
                  }
              }
         }
         if (settings.max_depth() > -1 && settings.max_depth() < settings.min_depth()) {
-            throw FindException("Invalid range for mindepth and maxdepth");
+            throw FindException(INVALID_RANGE_MINDEPTH_MAXDEPTH);
         }
         if (settings.max_last_mod() > 0 && settings.max_last_mod() < settings.min_last_mod()) {
-            throw FindException("Invalid range for minlastmod and maxlastmod");
+            throw FindException(INVALID_RANGE_MINLASTMOD_MAXLASTMOD);
         }
         if (settings.max_size() > 0 && settings.max_size() < settings.min_size()) {
-            throw FindException("Invalid range for minsize and maxsize");
+            throw FindException(INVALID_RANGE_MINSIZE_MAXSIZE);
         }
     }
 
@@ -297,13 +297,6 @@ namespace cppfind {
         return path_cmp < 0;
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_path(const FindSettings& settings) {
-        if (settings.sort_case_insensitive()) {
-            return cmp_file_results_by_path_ci;
-        }
-        return cmp_file_results_by_path;
-    }
-
     bool cmp_file_results_by_name(const FileResult& fr1, const FileResult& fr2) {
         if (fr1.file_path().filename() == fr2.file_path().filename()) {
             return (fr1.file_path().parent_path() < fr2.file_path().parent_path());
@@ -317,13 +310,6 @@ namespace cppfind {
             return strcasecmp(fr1.file_path().parent_path().c_str(), fr2.file_path().parent_path().c_str()) < 0;
         }
         return file_cmp < 0;
-    }
-
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_name(const FindSettings& settings) {
-        if (settings.sort_case_insensitive()) {
-            return cmp_file_results_by_name_ci;
-        }
-        return cmp_file_results_by_name;
     }
 
     bool cmp_file_results_by_size(const FileResult& fr1, const FileResult& fr2) {
@@ -340,13 +326,6 @@ namespace cppfind {
         return (fr1.file_type() < fr2.file_type());
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_size(const FindSettings& settings) {
-        if (settings.sort_case_insensitive()) {
-            return cmp_file_results_by_size_ci;
-        }
-        return cmp_file_results_by_size;
-    }
-
     bool cmp_file_results_by_type(const FileResult& fr1, const FileResult& fr2) {
         if (fr1.file_type() == fr2.file_type()) {
             return cmp_file_results_by_path(fr1, fr2);
@@ -359,13 +338,6 @@ namespace cppfind {
             return cmp_file_results_by_path_ci(fr1, fr2);
         }
         return (fr1.file_type() < fr2.file_type());
-    }
-
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_type(const FindSettings& settings) {
-        if (settings.sort_case_insensitive()) {
-            return cmp_file_results_by_type_ci;
-        }
-        return cmp_file_results_by_type;
     }
 
     bool cmp_file_results_by_lastmod(const FileResult& fr1, const FileResult& fr2) {
@@ -382,27 +354,69 @@ namespace cppfind {
         return (fr1.last_mod() < fr2.last_mod());
     }
 
-    std::function<bool(FileResult&, FileResult&)> get_cmp_file_results_by_lastmod(const FindSettings& settings) {
-        if (settings.sort_case_insensitive()) {
-            return cmp_file_results_by_lastmod_ci;
+    std::function<bool(FileResult&, FileResult&)> get_sort_comparator(const FindSettings& settings) {
+        if (settings.sort_descending()) {
+            if (settings.sort_case_insensitive()) {
+                switch (settings.sort_by()) {
+                    case SortBy::FILENAME:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_name_ci(fr2, fr1); };
+                    case SortBy::FILEPATH:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_path_ci(fr2, fr1); };
+                    case SortBy::FILESIZE:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_size_ci(fr2, fr1); };
+                    case SortBy::FILETYPE:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_type_ci(fr2, fr1); };
+                    case SortBy::LASTMOD:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_lastmod_ci(fr2, fr1); };
+                }
+            } else {
+                switch (settings.sort_by()) {
+                    case SortBy::FILENAME:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_name(fr2, fr1); };
+                    case SortBy::FILEPATH:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_path(fr2, fr1); };
+                    case SortBy::FILESIZE:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_size(fr2, fr1); };
+                    case SortBy::FILETYPE:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_type(fr2, fr1); };
+                    case SortBy::LASTMOD:
+                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_lastmod(fr2, fr1); };
+                }
+            }
+        } else {
+            if (settings.sort_case_insensitive()) {
+                switch (settings.sort_by()) {
+                    case SortBy::FILENAME:
+                        return cmp_file_results_by_name_ci;
+                    case SortBy::FILEPATH:
+                        return cmp_file_results_by_path_ci;
+                    case SortBy::FILESIZE:
+                        return cmp_file_results_by_size_ci;
+                    case SortBy::FILETYPE:
+                        return cmp_file_results_by_type_ci;
+                    case SortBy::LASTMOD:
+                        return cmp_file_results_by_lastmod_ci;
+                }
+            } else {
+                switch (settings.sort_by()) {
+                    case SortBy::FILENAME:
+                        return cmp_file_results_by_name;
+                    case SortBy::FILEPATH:
+                        return cmp_file_results_by_path;
+                    case SortBy::FILESIZE:
+                        return cmp_file_results_by_size;
+                    case SortBy::FILETYPE:
+                        return cmp_file_results_by_type;
+                    case SortBy::LASTMOD:
+                        return cmp_file_results_by_lastmod;
+                }
+            }
         }
         return cmp_file_results_by_lastmod;
     }
 
     void Finder::sort_file_results(std::vector<FileResult>& file_results) const {
-        if (m_settings.sort_by() == SortBy::FILEPATH) {
-            std::ranges::sort(file_results, get_cmp_file_results_by_path(m_settings));
-        } else if (m_settings.sort_by() == SortBy::FILENAME) {
-            std::ranges::sort(file_results, get_cmp_file_results_by_name(m_settings));
-        } else if (m_settings.sort_by() == SortBy::FILESIZE) {
-            std::ranges::sort(file_results, get_cmp_file_results_by_size(m_settings));
-        } else if (m_settings.sort_by() == SortBy::FILETYPE) {
-            std::ranges::sort(file_results, get_cmp_file_results_by_type(m_settings));
-        } else if (m_settings.sort_by() == SortBy::LASTMOD) {
-            std::ranges::sort(file_results, get_cmp_file_results_by_lastmod(m_settings));
-        }
-        if (m_settings.sort_descending()) {
-            std::ranges::reverse(file_results);
-        }
+        const auto sort_comparator = get_sort_comparator(m_settings);
+        std::ranges::sort(file_results, sort_comparator);
     }
 }

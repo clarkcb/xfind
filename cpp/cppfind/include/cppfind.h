@@ -57,6 +57,18 @@
 namespace cppfind {
 
     // FileTypes.h
+#define FILE_TYPE_NAME_ARCHIVE "archive"
+#define FILE_TYPE_NAME_AUDIO "audio"
+#define FILE_TYPE_NAME_BINARY "binary"
+#define FILE_TYPE_NAME_CODE "code"
+#define FILE_TYPE_NAME_FONT "font"
+#define FILE_TYPE_NAME_IMAGE "image"
+#define FILE_TYPE_NAME_TEXT "text"
+#define FILE_TYPE_NAME_VIDEO "video"
+#define FILE_TYPE_NAME_XML "xml"
+#define FILE_TYPE_NAME_NOSEARCH "nosearch"
+#define FILE_TYPE_NAME_UNKNOWN "unknown"
+
     enum class FileType {UNKNOWN, ARCHIVE, AUDIO, BINARY, CODE, FONT, IMAGE, TEXT, VIDEO, XML};
 
     class FileTypes {
@@ -93,6 +105,13 @@ namespace cppfind {
     std::string xfindpath();
 
     // FindException.h
+#define INVALID_RANGE_MINDEPTH_MAXDEPTH "Invalid range for mindepth and maxdepth"
+#define INVALID_RANGE_MINSIZE_MAXSIZE "Invalid range for minsize and maxsize"
+#define INVALID_RANGE_MINLASTMOD_MAXLASTMOD "Invalid range for minlastmod and maxlastmod"
+#define STARTPATH_NOT_DEFINED "Startpath not defined"
+#define STARTPATH_NOT_FOUND "Startpath not found"
+#define STARTPATH_NOT_READABLE "Startpath not readable"
+
     class FindException : public std::exception {
     public:
         explicit FindException(std::string_view message);
@@ -162,6 +181,17 @@ namespace cppfind {
     void log_error(std::string_view msg);
 
     // FindSettings.h
+#define SORT_BY_NAME_FILEPATH "filepath"
+#define SORT_BY_NAME_PATH "path"
+#define SORT_BY_NAME_FILENAME "filename"
+#define SORT_BY_NAME_NAME "name"
+#define SORT_BY_NAME_FILESIZE "filesize"
+#define SORT_BY_NAME_SIZE "size"
+#define SORT_BY_NAME_FILETYPE "filetype"
+#define SORT_BY_NAME_TYPE "type"
+#define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_UNKNOWN "unknown"
+
     enum class SortBy {FILEPATH, FILENAME, FILESIZE, FILETYPE, LASTMOD};
 
     struct PathHash {
@@ -282,6 +312,8 @@ namespace cppfind {
     };
 
     // FileResult.h
+#define CONTAINER_SEPARATOR "!"
+
     class FileResult {
     public:
         FileResult(const std::filesystem::path& file_path, FileType file_type, uint64_t file_size,
