@@ -14,6 +14,14 @@ import java.util.regex.Pattern
 @CompileStatic
 class Finder {
 
+    public static final String STARTPATH_NOT_DEFINED = 'Startpath not defined'
+    public static final String STARTPATH_NOT_READABLE = 'Startpath not readable'
+    public static final String STARTPATH_NOT_FOUND = 'Startpath not found'
+    public static final String INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH = 'Invalid range for mindepth and maxdepth'
+    public static final String INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD = 'Invalid range for minlastmod and maxlastmod'
+    public static final String INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE = 'Invalid range for minsize and maxsize'
+    public static final String STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS = 'Startpath does not match find settings'
+
     final private FindSettings settings
     final private FileTypes fileTypes
 
@@ -25,7 +33,7 @@ class Finder {
     final void validateSettings() throws FindException {
         Set<Path> paths = settings.paths
         if (null == paths || paths.empty || paths.any { p -> p == null || p.empty }) {
-            throw new FindException('Startpath not defined')
+            throw new FindException(STARTPATH_NOT_DEFINED)
         }
         paths.each { path ->
             Path p = path
@@ -34,21 +42,21 @@ class Finder {
             }
             if (Files.exists(p)) {
                 if (!Files.isReadable(p)) {
-                    throw new FindException('Startpath not readable')
+                    throw new FindException(STARTPATH_NOT_READABLE)
                 }
             } else {
-                throw new FindException('Startpath not found')
+                throw new FindException(STARTPATH_NOT_FOUND)
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
-            throw new FindException('Invalid range for mindepth and maxdepth')
+            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH)
         }
         if (settings.maxLastMod != null && settings.minLastMod != null
                 && settings.maxLastMod.toInstant(ZoneOffset.UTC) < settings.minLastMod.toInstant(ZoneOffset.UTC)) {
-            throw new FindException('Invalid range for minlastmod and maxlastmod')
+            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD)
         }
         if (settings.maxSize > 0 && settings.minSize > 0 && settings.maxSize < settings.minSize) {
-            throw new FindException('Invalid range for minsize and maxsize')
+            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE)
         }
     }
 
@@ -210,26 +218,41 @@ class Finder {
         Optional.empty()
     }
 
-    final void sortFileResults(List<FileResult> fileResults) {
+    final Comparator<FileResult> getFileResultComparator() {
+        if (settings.sortDescending) {
+            switch (settings.sortBy) {
+                case SortBy.FILENAME:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByName(fr1, settings.sortCaseInsensitive)
+                case SortBy.FILESIZE:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareBySize(fr1, settings.sortCaseInsensitive)
+                case SortBy.FILETYPE:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByType(fr1, settings.sortCaseInsensitive)
+                case SortBy.LASTMOD:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByLastMod(fr1, settings.sortCaseInsensitive)
+                default:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByPath(fr1, settings.sortCaseInsensitive)
+            }
+        }
         switch (settings.sortBy) {
             case SortBy.FILENAME:
-                fileResults.sort((fr1, fr2) -> fr1.compareByName(fr2, settings.sortCaseInsensitive))
-                break
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByName(fr2, settings.sortCaseInsensitive)
             case SortBy.FILESIZE:
-                fileResults.sort((fr1, fr2) -> fr1.compareBySize(fr2, settings.sortCaseInsensitive))
-                break
+                return (FileResult fr1, FileResult fr2) -> fr1.compareBySize(fr2, settings.sortCaseInsensitive)
             case SortBy.FILETYPE:
-                fileResults.sort((fr1, fr2) -> fr1.compareByType(fr2, settings.sortCaseInsensitive))
-                break
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByType(fr2, settings.sortCaseInsensitive)
             case SortBy.LASTMOD:
-                fileResults.sort((fr1, fr2) -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive))
-                break
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
             default:
-                fileResults.sort((fr1, fr2) -> fr1.compareByPath(fr2, settings.sortCaseInsensitive))
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByPath(fr2, settings.sortCaseInsensitive)
         }
-        if (settings.sortDescending) {
-            Collections.reverse(fileResults)
+    }
+
+    final void sortFileResults(List<FileResult> fileResults) {
+        if (fileResults.empty) {
+            return
         }
+        def comparator = getFileResultComparator()
+        fileResults.sort(comparator)
     }
 
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
@@ -278,7 +301,7 @@ class Finder {
                 }
                 return recFindPath(filePath, settings.minDepth, maxDepth, 1)
             } else {
-                throw new FindException('Startpath does not match find settings')
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS)
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -289,7 +312,7 @@ class Finder {
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get())
             } else {
-                throw new FindException('Startpath does not match find settings')
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS)
             }
         }
     }
