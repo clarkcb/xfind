@@ -137,32 +137,41 @@ func GetDefaultFindSettings() *FindSettings {
 	}
 }
 
+const (
+	startPathNotDefined                    = "Startpath not defined"
+	startPathNotFound                      = "Startpath not found"
+	startPathNotReadable                   = "Startpath not readable"
+	invalidRangeForMinDepthAndMaxDepth     = "Invalid range for mindepth and maxdepth"
+	invalidRangeForMinLastModAndMaxLastMod = "Invalid range for minlastmod and maxlastmod"
+	invalidRangeForMinSizeAndMaxSize       = "Invalid range for minsize and maxsize"
+)
+
 func (f *FindSettings) Validate() error {
 	if len(f.Paths()) < 1 {
-		return fmt.Errorf("Startpath not defined")
+		return fmt.Errorf(startPathNotDefined)
 	}
 
 	for _, p := range f.Paths() {
 		_, err := os.Stat(ExpandPath(p))
 		if err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf("Startpath not found")
+				return fmt.Errorf(startPathNotFound)
 			}
 			if os.IsPermission(err) {
-				return fmt.Errorf("Startpath not readable")
+				return fmt.Errorf(startPathNotReadable)
 			}
 			return err
 		}
 	}
 
 	if f.maxDepth > -1 && f.maxDepth < f.minDepth {
-		return fmt.Errorf("Invalid range for mindepth and maxdepth")
+		return fmt.Errorf(invalidRangeForMinDepthAndMaxDepth)
 	}
 	if !f.maxLastMod.IsZero() && f.minLastMod.After(f.maxLastMod) {
-		return fmt.Errorf("Invalid range for minlastmod and maxlastmod")
+		return fmt.Errorf(invalidRangeForMinLastModAndMaxLastMod)
 	}
 	if f.maxSize > 0 && f.maxSize < f.minSize {
-		return fmt.Errorf("Invalid range for minsize and maxsize")
+		return fmt.Errorf(invalidRangeForMinSizeAndMaxSize)
 	}
 
 	return nil

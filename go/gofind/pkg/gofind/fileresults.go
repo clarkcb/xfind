@@ -162,7 +162,12 @@ func (frs *FileResults) CompareByPath(fr1, fr2 *FileResult, sortCaseInsensitive 
 	return pres
 }
 
-func (frs *FileResults) getSortByPath(sortCaseInsensitive bool) func(i, j int) bool {
+func (frs *FileResults) getSortByPath(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
+	if sortDescending {
+		return func(i, j int) bool {
+			return frs.CompareByPath(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
+		}
+	}
 	return func(i, j int) bool {
 		return frs.CompareByPath(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
 	}
@@ -176,7 +181,12 @@ func (frs *FileResults) CompareByName(fr1, fr2 *FileResult, sortCaseInsensitive 
 	return nres
 }
 
-func (frs *FileResults) getSortByName(sortCaseInsensitive bool) func(i, j int) bool {
+func (frs *FileResults) getSortByName(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
+	if sortDescending {
+		return func(i, j int) bool {
+			return frs.CompareByName(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
+		}
+	}
 	return func(i, j int) bool {
 		return frs.CompareByName(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
 	}
@@ -192,7 +202,12 @@ func (frs *FileResults) CompareBySize(fr1, fr2 *FileResult, sortCaseInsensitive 
 	return 1
 }
 
-func (frs *FileResults) getSortBySize(sortCaseInsensitive bool) func(i, j int) bool {
+func (frs *FileResults) getSortBySize(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
+	if sortDescending {
+		return func(i, j int) bool {
+			return frs.CompareBySize(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
+		}
+	}
 	return func(i, j int) bool {
 		return frs.CompareBySize(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
 	}
@@ -208,7 +223,12 @@ func (frs *FileResults) CompareByType(fr1, fr2 *FileResult, sortCaseInsensitive 
 	return 1
 }
 
-func (frs *FileResults) getSortByType(sortCaseInsensitive bool) func(i, j int) bool {
+func (frs *FileResults) getSortByType(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
+	if sortDescending {
+		return func(i, j int) bool {
+			return frs.CompareByType(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
+		}
+	}
 	return func(i, j int) bool {
 		return frs.CompareByType(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
 	}
@@ -224,34 +244,35 @@ func (frs *FileResults) CompareByLastMod(fr1, fr2 *FileResult, sortCaseInsensiti
 	return 1
 }
 
-func (frs *FileResults) getSortByLastMod(sortCaseInsensitive bool) func(i, j int) bool {
+func (frs *FileResults) getSortByLastMod(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
+	if sortDescending {
+		return func(i, j int) bool {
+			return frs.CompareByLastMod(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
+		}
+	}
 	return func(i, j int) bool {
 		return frs.CompareByLastMod(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
 	}
 }
 
-func (frs *FileResults) Sort(settings *FindSettings) {
+func (frs *FileResults) getSortComparator(settings *FindSettings) func(i, j int) bool {
 	switch settings.SortBy() {
 	case SortByFileName:
-		sort.Slice(frs.FileResults, frs.getSortByName(settings.SortCaseInsensitive()))
+		return frs.getSortByName(settings.SortCaseInsensitive(), settings.SortDescending())
 	case SortByFileSize:
-		sort.Slice(frs.FileResults, frs.getSortBySize(settings.SortCaseInsensitive()))
+		return frs.getSortBySize(settings.SortCaseInsensitive(), settings.SortDescending())
 	case SortByFileType:
-		sort.Slice(frs.FileResults, frs.getSortByType(settings.SortCaseInsensitive()))
+		return frs.getSortByType(settings.SortCaseInsensitive(), settings.SortDescending())
 	case SortByLastMod:
-		sort.Slice(frs.FileResults, frs.getSortByLastMod(settings.SortCaseInsensitive()))
+		return frs.getSortByLastMod(settings.SortCaseInsensitive(), settings.SortDescending())
 	default:
-		sort.Slice(frs.FileResults, frs.getSortByPath(settings.SortCaseInsensitive()))
-	}
-	if settings.SortDescending() {
-		frs.reverse()
+		return frs.getSortByPath(settings.SortCaseInsensitive(), settings.SortDescending())
 	}
 }
 
-func (frs *FileResults) reverse() {
-	for i, j := 0, len(frs.FileResults)-1; i < j; i, j = i+1, j-1 {
-		frs.FileResults[i], frs.FileResults[j] = frs.FileResults[j], frs.FileResults[i]
-	}
+func (frs *FileResults) Sort(settings *FindSettings) {
+	sortComparator := frs.getSortComparator(settings)
+	sort.Slice(frs.FileResults, sortComparator)
 }
 
 type FileResult struct {
