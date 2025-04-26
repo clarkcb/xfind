@@ -235,14 +235,6 @@ impl Finder {
         path_cmp
     }
 
-    fn get_cmp_by_path(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
-        if self.settings.sort_case_insensitive() {
-            Self::cmp_by_path_ci
-        } else {
-            Self::cmp_by_path
-        }
-    }
-
     fn cmp_by_name(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
         let name_cmp = fr1.file_name().cmp(&fr2.file_name());
         if name_cmp.is_eq() {
@@ -257,14 +249,6 @@ impl Finder {
             return fr1.parent().to_lowercase().cmp(&fr2.parent().to_lowercase());
         }
         name_cmp
-    }
-
-    fn get_cmp_by_name(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
-        if self.settings.sort_case_insensitive() {
-            Self::cmp_by_name_ci
-        } else {
-            Self::cmp_by_name
-        }
     }
 
     fn cmp_by_size(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
@@ -283,14 +267,6 @@ impl Finder {
         size_cmp
     }
 
-    fn get_cmp_by_size(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
-        if self.settings.sort_case_insensitive() {
-            Self::cmp_by_size_ci
-        } else {
-            Self::cmp_by_size
-        }
-    }
-
     fn cmp_by_type(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
         let type_cmp = fr1.file_type.cmp(&fr2.file_type);
         if type_cmp.is_eq() {
@@ -305,14 +281,6 @@ impl Finder {
             return Self::cmp_by_path_ci(fr1, fr2);
         }
         type_cmp
-    }
-
-    fn get_cmp_by_type(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
-        if self.settings.sort_case_insensitive() {
-            Self::cmp_by_type_ci
-        } else {
-            Self::cmp_by_type
-        }
     }
 
     fn cmp_by_last_mod(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
@@ -331,25 +299,34 @@ impl Finder {
         last_mod_cmp
     }
 
-    fn get_cmp_by_last_mod(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
-        if self.settings.sort_case_insensitive() {
-            Self::cmp_by_last_mod_ci
-        } else {
-            Self::cmp_by_last_mod
+    pub fn get_sort_comparator(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
+        match (self.settings.sort_by(), self.settings.sort_case_insensitive(), self.settings.sort_descending()) {
+            (SortBy::FileName, false, false) => Self::cmp_by_name,
+            (SortBy::FileName, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_name(fr2, fr1),
+            (SortBy::FileName, true, false) => Self::cmp_by_name_ci,
+            (SortBy::FileName, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_name_ci(fr2, fr1),
+            (SortBy::FilePath, false, false) => Self::cmp_by_path,
+            (SortBy::FilePath, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_path(fr2, fr1),
+            (SortBy::FilePath, true, false) => Self::cmp_by_path_ci,
+            (SortBy::FilePath, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_path_ci(fr2, fr1),
+            (SortBy::FileSize, false, false) => Self::cmp_by_size,
+            (SortBy::FileSize, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_size(fr2, fr1),
+            (SortBy::FileSize, true, false) => Self::cmp_by_size_ci,
+            (SortBy::FileSize, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_size_ci(fr2, fr1),
+            (SortBy::FileType, false, false) => Self::cmp_by_type,
+            (SortBy::FileType, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_type(fr2, fr1),
+            (SortBy::FileType, true, false) => Self::cmp_by_type_ci,
+            (SortBy::FileType, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_type_ci(fr2, fr1),
+            (SortBy::LastMod, false, false) => Self::cmp_by_last_mod,
+            (SortBy::LastMod, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_last_mod(fr2, fr1),
+            (SortBy::LastMod, true, false) => Self::cmp_by_last_mod_ci,
+            (SortBy::LastMod, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_last_mod_ci(fr2, fr1),
         }
     }
 
     pub fn sort_file_results(&self, file_results: &mut Vec<FileResult>) {
-        match self.settings.sort_by() {
-            SortBy::FileName => file_results.sort_by(self.get_cmp_by_name()),
-            SortBy::FileSize => file_results.sort_by(self.get_cmp_by_size()),
-            SortBy::FileType => file_results.sort_by(self.get_cmp_by_type()),
-            SortBy::LastMod => file_results.sort_by(self.get_cmp_by_last_mod()),
-            _ => file_results.sort_by(self.get_cmp_by_path()),
-        }
-        if self.settings.sort_descending() {
-            file_results.reverse();
-        }
+        let sort_comparator = self.get_sort_comparator();
+        file_results.sort_by(sort_comparator);
     }
 
     fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i32, max_depth: i32, current_depth: i32) -> Result<Vec<FileResult>, FindError> {
