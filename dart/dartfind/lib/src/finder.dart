@@ -4,6 +4,13 @@ import 'dart:io';
 import 'package:dartfind/dartfind.dart';
 import 'package:path/path.dart' as path;
 
+const String startPathNotDefined = 'Startpath not defined';
+const String startPathNotFound = 'Startpath not found';
+const String invalidRangeDepth = 'Invalid range for mindepth and maxdepth';
+const String invalidRangeLastMod =
+    'Invalid range for minlastmod and maxlastmod';
+const String invalidRangeSize = 'Invalid range for minsize and maxsize';
+
 class Finder {
   final FindSettings settings;
   final FileTypes _fileTypes = FileTypes();
@@ -17,7 +24,7 @@ class Finder {
 
   void _validateSettings() {
     if (settings.paths.isEmpty) {
-      throw FindException('Startpath not defined');
+      throw FindException(startPathNotDefined);
     }
     for (var path in settings.paths) {
       var p = path;
@@ -26,24 +33,24 @@ class Finder {
       }
       var pathType = FileSystemEntity.typeSync(p!);
       if (pathType == FileSystemEntityType.notFound) {
-        throw FindException('Startpath not found');
+        throw FindException(startPathNotFound);
       }
     }
     if (settings.maxDepth > -1 &&
         settings.minDepth > -1 &&
         (settings.maxDepth < settings.minDepth)) {
-      throw FindException('Invalid range for mindepth and maxdepth');
+      throw FindException(invalidRangeDepth);
     }
     if (settings.maxLastMod != null &&
         settings.minLastMod != null &&
         (settings.maxLastMod!.millisecondsSinceEpoch <
             settings.minLastMod!.millisecondsSinceEpoch)) {
-      throw FindException('Invalid range for minlastmod and maxlastmod');
+      throw FindException(invalidRangeLastMod);
     }
     if (settings.maxSize > 0 &&
         settings.minSize > 0 &&
         (settings.maxSize < settings.minSize)) {
-      throw FindException('Invalid range for minsize and maxsize');
+      throw FindException(invalidRangeSize);
     }
   }
 
@@ -351,21 +358,38 @@ class Finder {
     }
   }
 
-  void sortFileResults(List<FileResult> fileResults) {
-    if (settings.sortBy == SortBy.fileName) {
-      fileResults.sort(cmpByFileName);
-    } else if (settings.sortBy == SortBy.fileSize) {
-      fileResults.sort(cmpByFileSize);
-    } else if (settings.sortBy == SortBy.fileType) {
-      fileResults.sort(cmpByFileType);
-    } else if (settings.sortBy == SortBy.lastMod) {
-      fileResults.sort(cmpByLastMod);
-    } else {
-      fileResults.sort(cmpByFilePath);
-    }
+  int Function(FileResult, FileResult)? getSortComparator() {
     if (settings.sortDescending) {
-      reverseFileResults(fileResults);
+      switch (settings.sortBy) {
+        case SortBy.fileName:
+          return (FileResult fr1, FileResult fr2) => cmpByFileName(fr2, fr1);
+        case SortBy.fileSize:
+          return (FileResult fr1, FileResult fr2) => cmpByFileSize(fr2, fr1);
+        case SortBy.fileType:
+          return (FileResult fr1, FileResult fr2) => cmpByFileType(fr2, fr1);
+        case SortBy.lastMod:
+          return (FileResult fr1, FileResult fr2) => cmpByLastMod(fr2, fr1);
+        default:
+          return (FileResult fr1, FileResult fr2) => cmpByFilePath(fr2, fr1);
+      }
     }
+    switch (settings.sortBy) {
+      case SortBy.fileName:
+        return (FileResult fr1, FileResult fr2) => cmpByFileName(fr1, fr2);
+      case SortBy.fileSize:
+        return (FileResult fr1, FileResult fr2) => cmpByFileSize(fr1, fr2);
+      case SortBy.fileType:
+        return (FileResult fr1, FileResult fr2) => cmpByFileType(fr1, fr2);
+      case SortBy.lastMod:
+        return (FileResult fr1, FileResult fr2) => cmpByLastMod(fr1, fr2);
+      default:
+        return (FileResult fr1, FileResult fr2) => cmpByFilePath(fr1, fr2);
+    }
+  }
+
+  void sortFileResults(List<FileResult> fileResults) {
+    var sortComparator = getSortComparator();
+    fileResults.sort(sortComparator);
   }
 
   Future<List<FileResult>> _findFiles() async {
