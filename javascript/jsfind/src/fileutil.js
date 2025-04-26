@@ -10,6 +10,9 @@ const path = require('path');
 const common = require('./common');
 const { trimFromEnd } = require('./stringutil')
 
+const ENOENT = 'ENOENT';
+const EACCES = 'EACCES';
+
 class FileUtil {
     static expandPath(filePath) {
         filePath = trimFromEnd(filePath, '/\\');
@@ -74,3 +77,5 @@ class FileUtil {
 }
 
 exports.FileUtil = FileUtil;
+exports.EACCES = EACCES;
+exports.ENOENT = ENOENT;

@@ -13,9 +13,18 @@ const fsStatAsync = promisify(fs.stat);
 const {FileResult} = require('./fileresult');
 const {FileType} = require("./filetype");
 const {FileTypes} = require('./filetypes');
-const {FileUtil} = require('./fileutil');
+const {FileUtil, ENOENT, EACCES} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {SortBy} = require('./sortby');
+
+const startpathNotDefined = 'Startpath not defined';
+const invalidRangeForMindepthAndMaxdepth = 'Invalid range for mindepth and maxdepth';
+const invalidRangeForMinlastmodAndMaxlastmod = 'Invalid range for minlastmod and maxlastmod';
+const invalidRangeForMinsizeAndMaxsize = 'Invalid range for minsize and maxsize';
+const startpathNotFound = 'Startpath not found';
+const startpathNotReadable = 'Startpath not readable';
+const startpathDoesNotMatchFindSettings = 'Startpath does not match find settings';
+
 
 class Finder {
     settings;
@@ -28,8 +37,9 @@ class Finder {
     }
 
     validateSettings() {
+
         try {
-            assert.ok(this.settings.paths.length > 0, 'Startpath not defined');
+            assert.ok(this.settings.paths.length > 0, startpathNotDefined);
             this.settings.paths.forEach(p => {
                 // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 try {
@@ -41,23 +51,23 @@ class Finder {
             });
             if (this.settings.maxDepth > -1 && this.settings.minDepth > -1) {
                 assert.ok(this.settings.maxDepth >= this.settings.minDepth,
-                  'Invalid range for mindepth and maxdepth');
+                  invalidRangeForMindepthAndMaxdepth);
             }
             if (this.settings.maxLastMod > 0 && this.settings.minLastMod > 0) {
                 assert.ok(this.settings.maxLastMod >= this.settings.minLastMod,
-                  'Invalid range for minlastmod and maxlastmod');
+                  invalidRangeForMinlastmodAndMaxlastmod);
             }
             if (this.settings.maxSize > 0 && this.settings.minSize > 0) {
                 assert.ok(this.settings.maxSize >= this.settings.minSize,
-                  'Invalid range for minsize and maxsize');
+                  invalidRangeForMinsizeAndMaxsize);
             }
 
         } catch (err) {
             let msg = err.message;
-            if (err.code === 'ENOENT') {
-                msg = 'Startpath not found';
-            } else if (err.code === 'EACCES') {
-                msg = 'Startpath not readable';
+            if (err.code === ENOENT) {
+                msg = startpathNotFound;
+            } else if (err.code === EACCES) {
+                msg = startpathNotReadable;
             }
             throw new FindError(msg);
         }
@@ -240,7 +250,7 @@ class Finder {
                 }
                 return await this.recGetFileResults(filePath, this.settings.minDepth, maxDepth, 1);
             } else {
-                throw new FindError("Startpath does not match find settings");
+                throw new FindError(startpathDoesNotMatchFindSettings);
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -253,10 +263,10 @@ class Finder {
                 if (fr !== null) {
                     return [fr];
                 } else {
-                    throw new FindError("Startpath does not match find settings");
+                    throw new FindError(startpathDoesNotMatchFindSettings);
                 }
             } else {
-                throw new FindError("Startpath does not match find settings");
+                throw new FindError(startpathDoesNotMatchFindSettings);
             }
         }
     }
@@ -308,21 +318,38 @@ class Finder {
         return fr1.lastMod - fr2.lastMod;
     }
 
-    sortFileResults(fileResults) {
-        if (this.settings.sortBy === SortBy.FILENAME) {
-            fileResults.sort((a, b) => this.cmpFileResultsByName(a, b));
-        } else if (this.settings.sortBy === SortBy.FILESIZE) {
-            fileResults.sort((a, b) => this.cmpFileResultsBySize(a, b));
-        } else if (this.settings.sortBy === SortBy.FILETYPE) {
-            fileResults.sort((a, b) => this.cmpFileResultsByType(a, b));
-        } else if (this.settings.sortBy === SortBy.LASTMOD) {
-            fileResults.sort((a, b) => this.cmpFileResultsByLastMod(a, b));
-        } else {
-            fileResults.sort((a, b) => this.cmpFileResultsByPath(a, b));
-        }
+    getSortComparator() {
         if (this.settings.sortDescending) {
-            fileResults.reverse();
+            switch (this.settings.sortBy) {
+                case SortBy.FILENAME:
+                    return (a, b) => this.cmpFileResultsByName(b, a);
+                case SortBy.FILESIZE:
+                    return (a, b) => this.cmpFileResultsBySize(b, a);
+                case SortBy.FILETYPE:
+                    return (a, b) => this.cmpFileResultsByType(b, a);
+                case SortBy.LASTMOD:
+                    return (a, b) => this.cmpFileResultsByLastMod(b, a);
+                default:
+                    return (a, b) => this.cmpFileResultsByPath(b, a);
+            }
         }
+        switch (this.settings.sortBy) {
+            case SortBy.FILENAME:
+                return (a, b) => this.cmpFileResultsByName(a, b);
+            case SortBy.FILESIZE:
+                return (a, b) => this.cmpFileResultsBySize(a, b);
+            case SortBy.FILETYPE:
+                return (a, b) => this.cmpFileResultsByType(a, b);
+            case SortBy.LASTMOD:
+                return (a, b) => this.cmpFileResultsByLastMod(a, b);
+            default:
+                return (a, b) => this.cmpFileResultsByPath(a, b);
+        }
+    }
+
+    sortFileResults(fileResults) {
+        let sortComparator = this.getSortComparator();
+        fileResults.sort(sortComparator);
     }
 
     async find() {
