@@ -20,6 +20,14 @@ use plfind::FileType;
 use plfind::FileTypes;
 use plfind::FileUtil;
 
+use constant INVALID_RANGE_MINDEPTH_MAXDEPTH => 'Invalid range for mindepth and maxdepth';
+use constant INVALID_RANGE_MINLASTMOD_MAXLASTMOD => 'Invalid range for minlastmod and maxlastmod';
+use constant INVALID_RANGE_MINSIZE_MAXSIZE => 'Invalid range for minsize and maxsize';
+use constant STARTPATH_NOT_DEFINED => 'Startpath not defined';
+use constant STARTPATH_NOT_FOUND => 'Startpath not found';
+use constant STARTPATH_NOT_MATCH_FIND_SETTINGS => 'Startpath does not match find settings';
+use constant STARTPATH_NOT_READABLE => 'Startpath not readable';
+
 sub new {
     my $class = shift;
     my $self = {
@@ -36,37 +44,37 @@ sub validate_settings {
     my $settings = shift;
     my $errs = [];
     if (scalar @{$settings->{paths}} < 1) {
-        push(@$errs, 'Startpath not defined');
+        push(@$errs, STARTPATH_NOT_DEFINED);
     }
     foreach my $p (@{$settings->{paths}}) {
         unless (-e $p) {
             my $expanded = plfind::FileUtil::expand_path($p);
             unless (-e $expanded) {
-                push(@$errs, 'Startpath not found');
+                push(@$errs, STARTPATH_NOT_FOUND);
                 return $errs;
             }
         }
         unless (-r $p) {
             my $expanded = plfind::FileUtil::expand_path($p);
             unless (-r $expanded) {
-                push(@$errs, 'Startpath not readable');
+                push(@$errs, STARTPATH_NOT_READABLE);
                 return $errs;
             }
         }
     }
     if ($settings->{max_depth} > -1 && $settings->{min_depth} > -1
         && $settings->{max_depth} < $settings->{min_depth}) {
-        push(@$errs, 'Invalid range for mindepth and maxdepth');
+        push(@$errs, INVALID_RANGE_MINDEPTH_MAXDEPTH);
         return $errs;
     }
     if (blessed($settings->{max_last_mod}) && blessed($settings->{min_last_mod})
         && $settings->{max_last_mod} < $settings->{min_last_mod}) {
-        push(@$errs, 'Invalid range for minlastmod and maxlastmod');
+        push(@$errs, INVALID_RANGE_MINLASTMOD_MAXLASTMOD);
         return $errs;
     }
     if ($settings->{max_size} > 0 && $settings->{min_size} > 0
         && $settings->{max_size} < $settings->{min_size}) {
-        push(@$errs, 'Invalid range for minsize and maxsize');
+        push(@$errs, INVALID_RANGE_MINSIZE_MAXSIZE);
     }
     return $errs;
 }
@@ -286,7 +294,7 @@ sub get_file_results {
     unless (-e $file_path) {
         my $expanded = plfind::FileUtil::expand_path($file_path);
         unless (-e $expanded) {
-            plfind::common::log_err("Startpath not found");
+            plfind::common::log_err(STARTPATH_NOT_FOUND);
             return [];
         }
         if ($file_path->is_dir) {
@@ -309,7 +317,7 @@ sub get_file_results {
             push(@$file_results, @{$self->rec_get_file_results($file_path, $self->{settings}->{min_depth},
                 $max_depth, 1)});
         } else {
-            plfind::common::log_err("Startpath does not match find settings");
+            plfind::common::log_err(STARTPATH_NOT_MATCH_FIND_SETTINGS);
             return [];
         }
     } else {
@@ -321,7 +329,7 @@ sub get_file_results {
         if (defined $file_result) {
             push(@$file_results, $file_result);
         } else {
-            plfind::common::log_err("Startpath does not match find settings");
+            plfind::common::log_err(STARTPATH_NOT_MATCH_FIND_SETTINGS);
             return [];
         }
     }
@@ -392,19 +400,30 @@ sub cmp_file_results_by_last_mod {
 sub sort_file_results {
     my ($self, $file_results) = @_;
     my @sorted;
-    if ($self->{settings}->{sort_by} eq plfind::SortBy->FILENAME) {
-        @sorted = sort {$self->cmp_file_results_by_file_name($a, $b)} @$file_results;
-    } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILESIZE) {
-        @sorted = sort {$self->cmp_file_results_by_file_size($a, $b)} @$file_results;
-    } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILETYPE) {
-        @sorted = sort {$self->cmp_file_results_by_file_type($a, $b)} @$file_results;
-    } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->LASTMOD) {
-        @sorted = sort {$self->cmp_file_results_by_last_mod($a, $b)} @$file_results;
-    } else {
-        @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @$file_results;
-    }
     if ($self->{settings}->{sort_descending}) {
-        @sorted = reverse @sorted;
+        if ($self->{settings}->{sort_by} eq plfind::SortBy->FILENAME) {
+            @sorted = sort {$self->cmp_file_results_by_file_name($b, $a)} @$file_results;
+        } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILESIZE) {
+            @sorted = sort {$self->cmp_file_results_by_file_size($b, $a)} @$file_results;
+        } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILETYPE) {
+            @sorted = sort {$self->cmp_file_results_by_file_type($b, $a)} @$file_results;
+        } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->LASTMOD) {
+            @sorted = sort {$self->cmp_file_results_by_last_mod($b, $a)} @$file_results;
+        } else {
+            @sorted = sort {$self->cmp_file_results_by_path($b, $a)} @$file_results;
+        }
+    } else {
+        if ($self->{settings}->{sort_by} eq plfind::SortBy->FILENAME) {
+            @sorted = sort {$self->cmp_file_results_by_file_name($a, $b)} @$file_results;
+        } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILESIZE) {
+            @sorted = sort {$self->cmp_file_results_by_file_size($a, $b)} @$file_results;
+        } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->FILETYPE) {
+            @sorted = sort {$self->cmp_file_results_by_file_type($a, $b)} @$file_results;
+        } elsif ($self->{settings}->{sort_by} eq plfind::SortBy->LASTMOD) {
+            @sorted = sort {$self->cmp_file_results_by_last_mod($a, $b)} @$file_results;
+        } else {
+            @sorted = sort {$self->cmp_file_results_by_path($a, $b)} @$file_results;
+        }
     }
     return \@sorted;
 }
