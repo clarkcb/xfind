@@ -27,22 +27,22 @@
         setError(error, @"Settings not defined");
         return false;
     } else if ([settings.paths count] == 0) {
-        setError(error, @"Startpath not defined");
+        setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_DEFINED]);
         return false;
     } else if (![FileUtil allExist:settings.paths]) {
-        setError(error, @"Startpath not found");
+        setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_FOUND]);
         return false;
     } else if (![FileUtil allReadable:settings.paths]) {
-        setError(error, @"Startpath not readable");
+        setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_READABLE]);
         return false;
     } else if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
-        setError(error, @"Invalid range for mindepth and maxdepth");
+        setError(error, [NSString stringWithUTF8String:INVALID_RANGE_MINDEPTH_MAXDEPTH]);
         return false;
     } else if (settings.maxLastMod != nil && settings.minLastMod != nil && [settings.maxLastMod isEqualToDate:[settings.maxLastMod earlierDate:settings.minLastMod]]) {
-        setError(error, @"Invalid range for minlastmod and maxlastmod");
+        setError(error, [NSString stringWithUTF8String:INVALID_RANGE_MINLASTMOD_MAXLASTMOD]);
         return false;
     } else if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
-        setError(error, @"Invalid range for minsize and maxsize");
+        setError(error, [NSString stringWithUTF8String:INVALID_RANGE_MINSIZE_MAXSIZE]);
         return false;
     }
     return true;
@@ -257,7 +257,7 @@
             long maxDepth = self.settings.recursive ? self.settings.maxDepth : 1;
             return [self recGetFileResults:fp minDepth:self.settings.minDepth maxDepth:maxDepth currentDepth:1 error:error];
         } else {
-            setError(error, @"Startpath does not match find settings");
+            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
             return nil;
         }
     } else {
@@ -272,7 +272,7 @@
         if (fileResult != nil) {
             [fileResults addObject:fileResult];
         } else {
-            setError(error, @"Startpath does not match find settings");
+            setError(error, [NSString stringWithUTF8String:STARTPATH_NOT_MATCH_FIND_SETTINGS]);
             return nil;
         }
     }
@@ -280,33 +280,56 @@
     return [NSArray arrayWithArray:fileResults];
 }
 
-- (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults {
-    NSMutableArray<FileResult*> *sortedFileResults;
-    if (self.settings.sortBy == SortByFileName) {
-        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByName:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-        }]];
-    } else if (self.settings.sortBy == SortByFileSize) {
-        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareBySize:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-        }]];
-    } else if (self.settings.sortBy == SortByFileType) {
-        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByType:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-        }]];
-    } else if (self.settings.sortBy == SortByLastMod) {
-        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByLastMod:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-        }]];
-    } else {
-        sortedFileResults = [NSMutableArray arrayWithArray:[fileResults sortedArrayUsingComparator:^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-            return [fr1 compareByPath:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-        }]];
-    }
+- (NSComparisonResult (^)(FileResult*, FileResult*)) getSortComparator {
     if (self.settings.sortDescending) {
-        sortedFileResults = [NSMutableArray arrayWithArray:[[sortedFileResults reverseObjectEnumerator] allObjects]];
+        if (self.settings.sortBy == SortByFileName) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr2 compareByName:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else if (self.settings.sortBy == SortByFileSize) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr2 compareBySize:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else if (self.settings.sortBy == SortByFileType) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr2 compareByType:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else if (self.settings.sortBy == SortByLastMod) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr2 compareByLastMod:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr2 compareByPath:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        }
+    } else {
+        if (self.settings.sortBy == SortByFileName) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr1 compareByName:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else if (self.settings.sortBy == SortByFileSize) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr1 compareBySize:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else if (self.settings.sortBy == SortByFileType) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr1 compareByType:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else if (self.settings.sortBy == SortByLastMod) {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr1 compareByLastMod:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        } else {
+            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
+                return [fr1 compareByPath:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
+            };
+        }
     }
-    return [NSArray arrayWithArray:sortedFileResults];
+}
+
+- (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults {
+    return [fileResults sortedArrayUsingComparator:[self getSortComparator]];
 }
 
 - (NSArray<FileResult*>*) find:(NSError**)error {

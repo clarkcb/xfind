@@ -6,6 +6,14 @@
 #import "FileResult.h"
 #import "FindSettings.h"
 
+#define INVALID_RANGE_MINDEPTH_MAXDEPTH "Invalid range for mindepth and maxdepth"
+#define INVALID_RANGE_MINLASTMOD_MAXLASTMOD "Invalid range for minlastmod and maxlastmod"
+#define INVALID_RANGE_MINSIZE_MAXSIZE "Invalid range for minsize and maxsize"
+#define STARTPATH_NOT_DEFINED "Startpath not defined"
+#define STARTPATH_NOT_FOUND "Startpath not found"
+#define STARTPATH_NOT_READABLE "Startpath not readable"
+#define STARTPATH_NOT_MATCH_FIND_SETTINGS "Startpath does not match find settings"
+
 @interface Finder : NSObject
 
 @property FileTypes *fileTypes;
@@ -20,6 +28,7 @@
 - (BOOL) isMatchingArchiveFile:(NSString*)filePath;
 - (BOOL) isMatchingDir:(NSString*)dirPath;
 - (BOOL) isMatchingFile:(NSString*)filePath;
+- (NSComparisonResult (^)(FileResult*, FileResult*)) getSortComparator;
 - (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults;
 
 @end
