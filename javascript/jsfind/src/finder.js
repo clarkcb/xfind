@@ -17,13 +17,13 @@ const {FileUtil, ENOENT, EACCES} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {SortBy} = require('./sortby');
 
-const startpathNotDefined = 'Startpath not defined';
-const invalidRangeForMindepthAndMaxdepth = 'Invalid range for mindepth and maxdepth';
-const invalidRangeForMinlastmodAndMaxlastmod = 'Invalid range for minlastmod and maxlastmod';
-const invalidRangeForMinsizeAndMaxsize = 'Invalid range for minsize and maxsize';
-const startpathNotFound = 'Startpath not found';
-const startpathNotReadable = 'Startpath not readable';
-const startpathDoesNotMatchFindSettings = 'Startpath does not match find settings';
+const startPathNotDefined = 'Startpath not defined';
+const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';
+const invalidRangeForMinLastModAndMaxLastMod = 'Invalid range for minlastmod and maxlastmod';
+const invalidRangeForMinSizeAndMaxSize = 'Invalid range for minsize and maxsize';
+const startPathNotFound = 'Startpath not found';
+const startPathNotReadable = 'Startpath not readable';
+const startPathDoesNotMatchFindSettings = 'Startpath does not match find settings';
 
 
 class Finder {
@@ -39,7 +39,7 @@ class Finder {
     validateSettings() {
 
         try {
-            assert.ok(this.settings.paths.length > 0, startpathNotDefined);
+            assert.ok(this.settings.paths.length > 0, startPathNotDefined);
             this.settings.paths.forEach(p => {
                 // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 try {
@@ -51,23 +51,23 @@ class Finder {
             });
             if (this.settings.maxDepth > -1 && this.settings.minDepth > -1) {
                 assert.ok(this.settings.maxDepth >= this.settings.minDepth,
-                  invalidRangeForMindepthAndMaxdepth);
+                  invalidRangeForMinDepthAndMaxDepth);
             }
             if (this.settings.maxLastMod > 0 && this.settings.minLastMod > 0) {
                 assert.ok(this.settings.maxLastMod >= this.settings.minLastMod,
-                  invalidRangeForMinlastmodAndMaxlastmod);
+                  invalidRangeForMinLastModAndMaxLastMod);
             }
             if (this.settings.maxSize > 0 && this.settings.minSize > 0) {
                 assert.ok(this.settings.maxSize >= this.settings.minSize,
-                  invalidRangeForMinsizeAndMaxsize);
+                  invalidRangeForMinSizeAndMaxSize);
             }
 
         } catch (err) {
             let msg = err.message;
             if (err.code === ENOENT) {
-                msg = startpathNotFound;
+                msg = startPathNotFound;
             } else if (err.code === EACCES) {
-                msg = startpathNotReadable;
+                msg = startPathNotReadable;
             }
             throw new FindError(msg);
         }
@@ -250,7 +250,7 @@ class Finder {
                 }
                 return await this.recGetFileResults(filePath, this.settings.minDepth, maxDepth, 1);
             } else {
-                throw new FindError(startpathDoesNotMatchFindSettings);
+                throw new FindError(startPathDoesNotMatchFindSettings);
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -263,10 +263,10 @@ class Finder {
                 if (fr !== null) {
                     return [fr];
                 } else {
-                    throw new FindError(startpathDoesNotMatchFindSettings);
+                    throw new FindError(startPathDoesNotMatchFindSettings);
                 }
             } else {
-                throw new FindError(startpathDoesNotMatchFindSettings);
+                throw new FindError(startPathDoesNotMatchFindSettings);
             }
         }
     }
