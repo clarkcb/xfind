@@ -279,24 +279,29 @@ defmodule ExFind.Finder do
     end
   end
 
-  def sort_results(finder, results) do
-    direction = if finder.settings.sort_descending, do: :desc, else: :asc
+  def get_sort_mapper(finder) do
     if finder.settings.sort_case_insensitive do
       case finder.settings.sort_by do
-        :file_name -> Enum.sort_by(results, fn r -> {String.downcase(r.name), String.downcase(r.path)} end, direction)
-        :file_size -> Enum.sort_by(results, fn r -> {r.file_size, String.downcase(r.path), String.downcase(r.name)} end, direction)
-        :file_type -> Enum.sort_by(results, fn r -> {r.file_type, String.downcase(r.path), String.downcase(r.name)} end, direction)
-        :last_mod -> Enum.sort_by(results, fn r -> {r.last_mod, String.downcase(r.path), String.downcase(r.name)} end, direction)
-        _ -> Enum.sort_by(results, fn r -> {String.downcase(r.path), String.downcase(r.name)} end, direction)
+        :file_name -> fn r -> {String.downcase(r.name), String.downcase(r.path)} end
+        :file_size -> fn r -> {r.file_size, String.downcase(r.path), String.downcase(r.name)} end
+        :file_type -> fn r -> {r.file_type, String.downcase(r.path), String.downcase(r.name)} end
+        :last_mod  -> fn r -> {r.last_mod, String.downcase(r.path), String.downcase(r.name)} end
+        _          -> fn r -> {String.downcase(r.path), String.downcase(r.name)} end
       end
     else
       case finder.settings.sort_by do
-        :file_name -> Enum.sort_by(results, fn r -> {r.name, r.path} end, direction)
-        :file_size -> Enum.sort_by(results, fn r -> {r.file_size, r.path, r.name} end, direction)
-        :file_type -> Enum.sort_by(results, fn r -> {r.file_type, r.path, r.name} end, direction)
-        :last_mod -> Enum.sort_by(results, fn r -> {r.last_mod, r.path, r.name} end, direction)
-        _ -> Enum.sort_by(results, fn r -> {r.path, r.name} end, direction)
+        :file_name -> fn r -> {r.name, r.path} end
+        :file_size -> fn r -> {r.file_size, r.path, r.name} end
+        :file_type -> fn r -> {r.file_type, r.path, r.name} end
+        :last_mod  -> fn r -> {r.last_mod, r.path, r.name} end
+        _          -> fn r -> {r.path, r.name} end
       end
     end
+  end
+
+  def sort_results(finder, results) do
+    sort_mapper = get_sort_mapper(finder)
+    direction = if finder.settings.sort_descending, do: :desc, else: :asc
+    Enum.sort_by(results, sort_mapper, direction)
   end
 end
