@@ -324,14 +324,17 @@ sortFileResultsByLastMod settings fr1 fr2 =
   where m1 = fileLastMod fr1
         m2 = fileLastMod fr2
 
-doSortByFileResults :: FindSettings -> [FileResult] -> [FileResult]
-doSortByFileResults settings fileResults =
+getSortByFunc :: FindSettings -> FileResult -> FileResult -> Ordering
+getSortByFunc settings =
   case sortResultsBy settings of
-   SortByFileName -> sortBy (sortFileResultsByName settings) fileResults
-   SortByFileSize -> sortBy (sortFileResultsBySize settings) fileResults
-   SortByFileType -> sortBy (sortFileResultsByType settings) fileResults
-   SortByLastMod  -> sortBy (sortFileResultsByLastMod settings) fileResults
-   _              -> sortBy (sortFileResultsByPath settings) fileResults
+   SortByFileName -> sortFileResultsByName settings
+   SortByFileSize -> sortFileResultsBySize settings
+   SortByFileType -> sortFileResultsByType settings
+   SortByLastMod  -> sortFileResultsByLastMod settings
+   _              -> sortFileResultsByPath settings
+
+doSortByFileResults :: FindSettings -> [FileResult] -> [FileResult]
+doSortByFileResults settings = sortBy $ getSortByFunc settings
 
 sortFileResults :: FindSettings -> [FileResult] -> [FileResult]
 sortFileResults settings fileResults =
