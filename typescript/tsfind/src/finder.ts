@@ -19,13 +19,13 @@ import {FindError} from './finderror';
 import {FindSettings} from './findsettings';
 import {SortBy} from './sortby';
 
-const startpathNotDefined = 'Startpath not defined';
-const invalidRangeForMindepthAndMaxdepth = 'Invalid range for mindepth and maxdepth';
-const invalidRangeForMinlastmodAndMaxlastmod = 'Invalid range for minlastmod and maxlastmod';
-const invalidRangeForMinsizeAndMaxsize = 'Invalid range for minsize and maxsize';
-const startpathNotFound = 'Startpath not found';
-const startpathNotReadable = 'Startpath not readable';
-const startpathDoesNotMatchFindSettings = 'Startpath does not match find settings';
+const startPathNotDefined = 'Startpath not defined';
+const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';
+const invalidRangeForMinLastModAndMaxLastMod = 'Invalid range for minlastmod and maxlastmod';
+const invalidRangeForMinSizeAndMaxSize = 'Invalid range for minsize and maxsize';
+const startPathNotFound = 'Startpath not found';
+const startPathNotReadable = 'Startpath not readable';
+const startPathDoesNotMatchFindSettings = 'Startpath does not match find settings';
 
 
 export class Finder {
@@ -38,7 +38,7 @@ export class Finder {
 
     private validateSettings(): void {
         try {
-            assert.ok(this._settings.paths.length > 0, startpathNotDefined);
+            assert.ok(this._settings.paths.length > 0, startPathNotDefined);
             for (let p of this._settings.paths) {
                 // Validate existence, accessibility and "findability" of file path (directory or regular file)
                 try {
@@ -50,23 +50,23 @@ export class Finder {
             }
             if (this._settings.maxDepth > -1 && this._settings.minDepth > -1) {
                 assert.ok(this._settings.maxDepth >= this._settings.minDepth,
-                    invalidRangeForMindepthAndMaxdepth);
+                    invalidRangeForMinDepthAndMaxDepth);
             }
             if (this._settings.maxLastMod > 0 && this._settings.minLastMod > 0) {
                 assert.ok(this._settings.maxLastMod >= this._settings.minLastMod,
-                    invalidRangeForMinlastmodAndMaxlastmod);
+                    invalidRangeForMinLastModAndMaxLastMod);
             }
             if (this._settings.maxSize > 0 && this._settings.minSize > 0) {
                 assert.ok(this._settings.maxSize >= this._settings.minSize,
-                    invalidRangeForMinsizeAndMaxsize);
+                    invalidRangeForMinSizeAndMaxSize);
             }
 
         } catch (err: Error | any) {
             let msg = err.message;
             if (err.code === ENOENT) {
-                msg = startpathNotFound;
+                msg = startPathNotFound;
             } else if (err.code === EACCES) {
-                msg = startpathNotReadable;
+                msg = startPathNotReadable;
             }
             throw new FindError(msg);
         }
@@ -253,7 +253,7 @@ export class Finder {
                 }
                 return await this.recGetFileResults(filePath, this._settings.minDepth, maxDepth, 1);
             } else {
-                throw new FindError(startpathDoesNotMatchFindSettings);
+                throw new FindError(startPathDoesNotMatchFindSettings);
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -266,10 +266,10 @@ export class Finder {
                 if (fr !== null) {
                     return [fr];
                 } else {
-                    throw new FindError(startpathDoesNotMatchFindSettings);
+                    throw new FindError(startPathDoesNotMatchFindSettings);
                 }
             } else {
-                throw new FindError(startpathDoesNotMatchFindSettings);
+                throw new FindError(startPathDoesNotMatchFindSettings);
             }
         }
     }
@@ -351,7 +351,7 @@ export class Finder {
     }
 
     private sortFileResults(fileResults: FileResult[]): void {
-        let sortComparator = this.getSortComparator();
+        const sortComparator = this.getSortComparator();
         fileResults.sort(sortComparator);
     }
 
