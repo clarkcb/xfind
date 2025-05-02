@@ -201,19 +201,30 @@ type Finder (settings : FindSettings) =
         let lastModCmp = fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
         if lastModCmp = 0 then (this.SortByPath fr1 fr2) else lastModCmp
 
+    member this.GetSortComparator : FileResult.t -> FileResult.t -> int =
+        if settings.SortDescending then
+            match settings.SortBy with
+            | SortBy.FileName -> (fun fr1 fr2 -> this.SortByName fr2 fr1)
+            | SortBy.FileSize -> (fun fr1 fr2 -> this.SortBySize fr2 fr1)
+            | SortBy.FileType -> (fun fr1 fr2 -> this.SortByType fr2 fr1)
+            | SortBy.LastMod  -> (fun fr1 fr2 -> this.SortByLastMod fr2 fr1)
+            | _               -> (fun fr1 fr2 -> this.SortByPath fr2 fr1)
+        else
+            match settings.SortBy with
+            | SortBy.FileName -> this.SortByName
+            | SortBy.FileSize -> this.SortBySize
+            | SortBy.FileType -> this.SortByType
+            | SortBy.LastMod  -> this.SortByLastMod
+            | _               -> this.SortByPath
+
     member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
-        match settings.SortBy with
-        | SortBy.FileName -> List.sortWith this.SortByName fileResults
-        | SortBy.FileSize -> List.sortWith this.SortBySize fileResults
-        | SortBy.FileType -> List.sortWith this.SortByType fileResults
-        | SortBy.LastMod  -> List.sortWith this.SortByLastMod fileResults
-        | _               -> List.sortWith this.SortByPath fileResults
+        let sortComparator = this.GetSortComparator
+        List.sortWith sortComparator fileResults
 
     member this.Find () : FileResult.t list =
         this.SetEnumerationOptions()
         let fileResults = settings.Paths |> List.collect this.GetFileResults
-        if settings.SortDescending then this.SortFileResults fileResults |> List.rev
-        else this.SortFileResults fileResults
+        this.SortFileResults fileResults
 
     member this.GetMatchingDirs (fileResults : FileResult.t list) : DirectoryInfo list = 
         fileResults
