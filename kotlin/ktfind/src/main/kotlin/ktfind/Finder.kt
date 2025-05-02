@@ -225,23 +225,21 @@ class Finder(val settings: FindSettings) {
     }
 
     private fun getFileResultComparator(): Comparator<FileResult> {
-        return Comparator { fr1, fr2 ->
-            if (settings.sortDescending) {
-                when (settings.sortBy) {
-                    SortBy.FILENAME -> fr2.compareByName(fr1, settings.sortCaseInsensitive)
-                    SortBy.FILESIZE -> fr2.compareBySize(fr1, settings.sortCaseInsensitive)
-                    SortBy.FILETYPE -> fr2.compareByType(fr1, settings.sortCaseInsensitive)
-                    SortBy.LASTMOD -> fr2.compareByLastMod(fr1, settings.sortCaseInsensitive)
-                    else -> fr2.compareByPath(fr1, settings.sortCaseInsensitive)
-                }
-            } else {
-                when (settings.sortBy) {
-                    SortBy.FILENAME -> fr1.compareByName(fr2, settings.sortCaseInsensitive)
-                    SortBy.FILESIZE -> fr1.compareBySize(fr2, settings.sortCaseInsensitive)
-                    SortBy.FILETYPE -> fr1.compareByType(fr2, settings.sortCaseInsensitive)
-                    SortBy.LASTMOD -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
-                    else -> fr1.compareByPath(fr2, settings.sortCaseInsensitive)
-                }
+        return if (settings.sortDescending) {
+            when (settings.sortBy) {
+                SortBy.FILENAME -> Comparator { fr1, fr2 -> fr2.compareByName(fr1, settings.sortCaseInsensitive) }
+                SortBy.FILESIZE -> Comparator { fr1, fr2 ->fr2.compareBySize(fr1, settings.sortCaseInsensitive) }
+                SortBy.FILETYPE -> Comparator { fr1, fr2 -> fr2.compareByType(fr1, settings.sortCaseInsensitive) }
+                SortBy.LASTMOD -> Comparator { fr1, fr2 ->fr2.compareByLastMod(fr1, settings.sortCaseInsensitive) }
+                else -> Comparator { fr1, fr2 ->fr2.compareByPath(fr1, settings.sortCaseInsensitive) }
+            }
+        } else {
+            when (settings.sortBy) {
+                SortBy.FILENAME -> Comparator { fr1, fr2 -> fr1.compareByName(fr2, settings.sortCaseInsensitive) }
+                SortBy.FILESIZE -> Comparator { fr1, fr2 -> fr1.compareBySize(fr2, settings.sortCaseInsensitive) }
+                SortBy.FILETYPE -> Comparator { fr1, fr2 -> fr1.compareByType(fr2, settings.sortCaseInsensitive) }
+                SortBy.LASTMOD -> Comparator { fr1, fr2 -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive) }
+                else -> Comparator { fr1, fr2 -> fr1.compareByPath(fr2, settings.sortCaseInsensitive) }
             }
         }
     }
