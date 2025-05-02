@@ -257,27 +257,27 @@ class Finder:
     def key_by_last_mod(self, r: FileResult) -> list:
         return [r.last_mod] + self.key_by_file_path(r)
 
-    def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
-        """Sort the given list of FileResult instances."""
+    def get_sort_key_function(self) -> callable:
+        """Get the sort key function based on the settings."""
         match self.settings.sort_by:
             case SortBy.FILEPATH:
-                return sorted(file_results, key=self.key_by_file_path,
-                              reverse=self.settings.sort_descending)
+                return self.key_by_file_path
             case SortBy.FILENAME:
-                return sorted(file_results, key=self.key_by_file_name,
-                              reverse=self.settings.sort_descending)
+                return self.key_by_file_name
             case SortBy.FILESIZE:
-                return sorted(file_results, key=self.key_by_file_size,
-                              reverse=self.settings.sort_descending)
+                return self.key_by_file_size
             case SortBy.FILETYPE:
-                return sorted(file_results, key=self.key_by_file_type,
-                              reverse=self.settings.sort_descending)
+                return self.key_by_file_type
             case SortBy.LASTMOD:
-                return sorted(file_results, key=self.key_by_last_mod,
-                              reverse=self.settings.sort_descending)
+                return self.key_by_last_mod
             case _:
-                return sorted(file_results, key=self.key_by_file_path,
-                              reverse=self.settings.sort_descending)
+                return self.key_by_file_path
+
+    def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
+        """Sort the given list of FileResult instances."""
+        sort_key_func = self.get_sort_key_function()
+        return sorted(file_results, key=sort_key_func,
+                      reverse=self.settings.sort_descending)
 
     async def find(self) -> list[FileResult]:
         """Find matching files under paths."""
