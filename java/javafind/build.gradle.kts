@@ -4,14 +4,17 @@
 
 plugins {
     `java-library`
+    `kotlin-dsl`
     `maven-publish`
     application
 }
 
+apply<DependencyUpdatePlugin>()
+
 group = "xfind"
 version = "0.1.0-SNAPSHOT"
 description = "javafind"
-//java.sourceCompatibility = JavaVersion.VERSION_17
+
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))

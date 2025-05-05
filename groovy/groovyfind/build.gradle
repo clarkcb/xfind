@@ -4,6 +4,8 @@ plugins {
     id 'application'
 }
 
+apply plugin: DependencyUpdatePlugin
+
 group = 'xfind'
 version = '0.1.0-SNAPSHOT'
 description = "groovyfind"

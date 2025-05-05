@@ -6,8 +6,11 @@ plugins {
     `maven-publish`
 }
 
+apply<DependencyUpdatePlugin>()
+
 group = "xfind"
 version = "0.1.0-SNAPSHOT"
+description "ktfind"
 
 repositories {
     mavenLocal()
