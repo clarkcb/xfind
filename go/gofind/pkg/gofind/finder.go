@@ -7,8 +7,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"golang.org/x/text/encoding"
 )
 
 // Finder - the find executor
@@ -21,7 +19,6 @@ type Finder struct {
 	addResultsDoneChan chan bool
 	findDoneChan       chan bool
 	errChan            chan error
-	textDecoder        *encoding.Decoder
 }
 
 func NewFinder(settings *FindSettings) *Finder {
@@ -34,7 +31,6 @@ func NewFinder(settings *FindSettings) *Finder {
 		make(chan bool),        // addResultsDoneChan
 		make(chan bool, 1),     // findDoneChan
 		make(chan error, 1),    // errChan
-		nil,
 	}
 }
 

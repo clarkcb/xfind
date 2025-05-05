@@ -10,6 +10,8 @@ $javaFindVersion = '0.1.0-SNAPSHOT'
 $javaFindJarName = "javafind-$javaFindVersion.jar"
 $javaFindJar = Join-Path $javaFindJarPath $javaFindJarName
 
+$env:JAVA_HOME = /usr/libexec/java_home -v17
+
 if (Test-Path $javaFindJar)
 {
     & java -cp $javaFindJar 'javafind.JavaFind' $Args

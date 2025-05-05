@@ -7,9 +7,9 @@ gemspec
 
 gem 'rake', '~> 13.2.1'
 
-gem 'rbs', '~> 3.9.1'
+gem 'rbs', '~> 3.9.2'
 
-gem 'test-unit', '~> 3.6.7'
+gem 'test-unit', '~> 3.6.8'
 
 gem 'rubocop', '~> 1.75'
 
