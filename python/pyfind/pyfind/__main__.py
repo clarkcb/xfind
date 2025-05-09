@@ -9,20 +9,52 @@
 #
 ###############################################################################
 """
+from pathlib import Path
 import sys
 from typing import List
 
 from . import VERSION
 from .common import log, log_error
-from .fileresult import FileResult
+from .fileresult import FileResult, FileResultFormatter
 from .finder import Finder
 from .findexception import FindException
 from .findoptions import FindOptions
 
 
-def get_dir_results(file_results: List[FileResult]) -> list[str]:
+def get_dir_results(file_results: List[FileResult]) -> list[Path]:
     """Return unique list of directories from file results"""
-    return sorted(list({str(f.path.parent) for f in file_results if f.path and f.path.parent}))
+    return sorted(list({f.path.parent for f in file_results if f.path and f.path.parent}))
+
+
+def print_dir_results(file_results: List[FileResult], settings):
+    dirs = get_dir_results(file_results)
+    if dirs:
+        log(f'\nMatching directories ({len(dirs)}):')
+
+        if settings.colorize and (settings.in_dir_patterns or settings.in_file_patterns):
+            formatter = FileResultFormatter(settings)
+            for d in dirs:
+                log(formatter.format_path(d))
+        else:
+            for d in dirs:
+                log(str(d))
+    else:
+        log('\nMatching directories: 0')
+
+
+def print_file_results(file_results: List[FileResult], settings):
+    """Print the file results"""
+    if file_results:
+        log(f'Find results ({len(file_results)}):')
+        if settings.colorize and (settings.in_dir_patterns or settings.in_file_patterns):
+            formatter = FileResultFormatter(settings)
+            for f in file_results:
+                log(formatter.format_file_result(f))
+        else:
+            for f in file_results:
+                log(str(f))
+    else:
+        log('Find results: 0')
 
 
 async def main():
@@ -56,21 +88,10 @@ async def main():
         file_results = await finder.find()
 
         if settings.print_dirs:
-            dirs = get_dir_results(file_results)
-            if dirs:
-                log(f'\nMatching directories ({len(dirs)}):')
-                for d in dirs:
-                    log(d)
-            else:
-                log('\nMatching directories: 0')
+            print_dir_results(file_results, settings)
 
         if settings.print_files:
-            if file_results:
-                log(f'\nMatching files ({len(file_results)}):')
-                for f in file_results:
-                    log(str(f))
-            else:
-                log('\nMatching files: 0')
+            print_file_results(file_results, settings)
 
     except AssertionError as e:
         log('')

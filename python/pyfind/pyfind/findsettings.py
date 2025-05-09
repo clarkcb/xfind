@@ -54,7 +54,7 @@ class FindSettings:
     """a class to encapsulate find settings for a particular find session"""
 
     __slots__ = [
-        'archives_only', 'debug', 'follow_symlinks', 'in_archive_extensions',
+        'archives_only', 'colorize', 'debug', 'follow_symlinks', 'in_archive_extensions',
         'in_archive_file_patterns', 'in_dir_patterns', 'in_extensions', 'in_file_patterns',
         'in_file_types', 'include_archives', 'include_hidden', 'max_depth', 'max_last_mod',
         'max_size', 'min_depth', 'min_last_mod', 'min_size', 'out_archive_extensions',
@@ -66,6 +66,7 @@ class FindSettings:
 
     def __init__(self,
                  archives_only: bool = False,
+                 colorize: bool = True,
                  debug: bool = False,
                  follow_symlinks: bool = False,
                  in_archive_extensions: list[str] | set[str] | str = None,
@@ -99,6 +100,7 @@ class FindSettings:
                  sort_descending: bool = False,
                  verbose: bool = False):
         self.archives_only = archives_only
+        self.colorize = colorize
         self.debug = debug
         self.follow_symlinks = follow_symlinks
         self.in_archive_extensions: set[str] = set()

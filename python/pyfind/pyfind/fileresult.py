@@ -9,10 +9,13 @@
 #
 ###############################################################################
 """
+import os.path
 from io import StringIO
 from pathlib import Path
 
+from .color import Color
 from .filetypes import FileType
+from .findsettings import FindSettings
 
 
 class FileResult:
@@ -53,3 +56,31 @@ class FileResult:
 
     def __eq__(self, other):
         return self.path == other.path
+
+
+class FileResultFormatter(object):
+    """provides formatting of FileResult instances"""
+
+    def __init__(self, settings: FindSettings):
+        self.settings = settings
+
+    @staticmethod
+    def colorize(s: str, match_start_index: int, match_end_index: int) -> str:
+        return s[0:match_start_index] + Color.GREEN + \
+            s[match_start_index:match_end_index] + \
+            Color.RESET + s[match_end_index:]
+
+    def format_path(self, path: Path) -> str:
+        """format a path"""
+        file_name = path.name
+        for p in self.settings.in_file_patterns:
+            match = p.search(file_name)
+            if match:
+                file_name = FileResultFormatter.colorize(
+                    file_name, match.start(), match.end())
+                break
+        return os.path.join(str(path.parent), file_name)
+
+    def format_file_result(self, result: FileResult) -> str:
+        """format a FileResult instance"""
+        return self.format_path(result.path)
