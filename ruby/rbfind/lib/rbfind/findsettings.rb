@@ -31,6 +31,7 @@ module RbFind
   class FindSettings
 
     attr_reader :archives_only
+    attr_accessor :colorize
     attr_reader :debug
     attr_accessor :follow_symlinks
     attr_accessor :in_archive_extensions
@@ -66,6 +67,7 @@ module RbFind
 
     def initialize
       @archives_only = false
+      @colorize = true
       @debug = false
       @follow_symlinks = false
       @in_archive_extensions = Set::new
@@ -186,6 +188,7 @@ module RbFind
     def to_s
       'FindSettings(' +
         "archives_only=#{@archives_only}" +
+        ", colorize=#{@colorize}" +
         ", debug=#{@debug}" +
         ", follow_symlinks=#{@follow_symlinks}" +
         ', ' + set_to_s('in_archive_extensions', @in_archive_extensions) +

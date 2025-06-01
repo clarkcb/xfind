@@ -18,6 +18,7 @@ module RbFind
   # FindSettings - encapsulates find settings
   class FindSettings
     attr_reader archives_only: bool
+    attr_accessor colorize: bool
     attr_reader debug: bool
     attr_accessor follow_symlinks: bool
     attr_accessor in_archive_extensions: Set[String]

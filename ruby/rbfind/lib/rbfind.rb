@@ -11,6 +11,7 @@
 
 require_relative 'rbfind/common'
 require_relative 'rbfind/fileresult'
+require_relative 'rbfind/fileresultformatter'
 require_relative 'rbfind/filetypes'
 require_relative 'rbfind/fileutil'
 require_relative 'rbfind/finder'
@@ -59,15 +60,16 @@ def find(options, settings)
       handle_find_error(e, options)
     end
   file_results = finder.find
+  formatter = RbFind::FileResultFormatter.new(settings)
 
   if settings.print_dirs
-    find_dirs = file_results.map {|fr| fr.dir_name}.uniq.sort
+    find_dirs = file_results.map {|fr| fr.path.dirname}.uniq.sort
     if find_dirs.empty?
       RbFind::log("\nMatching directories: 0")
     else
       RbFind::log("\nMatching directories (#{find_dirs.size}):")
       find_dirs.each do |d|
-        RbFind::log("#{d}\n")
+        RbFind::log("#{formatter.format_dir_path(d)}\n")
       end
     end
   end
@@ -77,8 +79,8 @@ def find(options, settings)
       RbFind::log("\nMatching files: 0")
     else
       RbFind::log("\nMatching files (#{file_results.size}):")
-      file_results.each do |f|
-        RbFind::log("#{f}\n")
+      file_results.each do |fr|
+        RbFind::log("#{formatter.format_file_result(fr)}\n")
       end
     end
   end
