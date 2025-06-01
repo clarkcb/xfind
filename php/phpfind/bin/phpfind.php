@@ -5,6 +5,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../src/autoload.php';
 
+use phpfind\FileResultFormatter;
 use phpfind\Logger;
 use phpfind\FindOptions;
 use phpfind\Finder;
@@ -26,15 +27,16 @@ function main($argv): void
 
         $finder = new Finder($settings);
         $file_results = $finder->find();
+        $formatter = new FileResultFormatter($settings);
 
         // print matching dirs
         if ($settings->print_dirs) {
-            $finder->print_matching_dirs($file_results);
+            $finder->print_matching_dirs($file_results, $formatter);
         }
 
         // print matching files
         if ($settings->print_files) {
-            $finder->print_matching_files($file_results);
+            $finder->print_matching_files($file_results, $formatter);
         }
     } catch (FindException $e) {
         Logger::log_msg('');

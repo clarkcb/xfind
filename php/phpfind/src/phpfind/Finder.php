@@ -585,13 +585,13 @@ class Finder
      * @param FileResult[] $file_results
      * @return void
      */
-    public function print_matching_dirs(array $file_results): void
+    public function print_matching_dirs(array $file_results, FileResultFormatter $formatter): void
     {
         $dirs = $this->get_matching_dirs($file_results);
         if (count($dirs) > 0) {
             Logger::log_msg(sprintf("\nMatching directories (%d):", count($dirs)));
             foreach ($dirs as $d) {
-                Logger::log_msg($d);
+                Logger::log_msg($formatter->format_dir($d));
             }
         } else {
             Logger::log_msg("\nMatching directories: 0");
@@ -617,13 +617,12 @@ class Finder
      * @param FileResult[] $file_results
      * @return void
      */
-    public function print_matching_files(array $file_results): void
+    public function print_matching_files(array $file_results, FileResultFormatter $formatter): void
     {
-        $file_paths = $this->get_matching_files($file_results);
-        if (count($file_paths) > 0) {
-            Logger::log_msg(sprintf("\nMatching files (%d):", count($file_paths)));
-            foreach ($file_paths as $f) {
-                Logger::log_msg($f);
+        if (count($file_results) > 0) {
+            Logger::log_msg(sprintf("\nMatching files (%d):", count($file_results)));
+            foreach ($file_results as $fr) {
+                Logger::log_msg($formatter->format_file_result($fr));
             }
         } else {
             Logger::log_msg("\nMatching files: 0");
