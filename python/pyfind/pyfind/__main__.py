@@ -9,8 +9,8 @@
 #
 ###############################################################################
 """
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import List
 
 from . import VERSION
@@ -26,33 +26,22 @@ def get_dir_results(file_results: List[FileResult]) -> list[Path]:
     return sorted(list({f.path.parent for f in file_results if f.path and f.path.parent}))
 
 
-def print_dir_results(file_results: List[FileResult], settings):
+def print_dir_results(file_results: List[FileResult], formatter: FileResultFormatter):
     dirs = get_dir_results(file_results)
     if dirs:
         log(f'\nMatching directories ({len(dirs)}):')
-
-        if settings.colorize and (settings.in_dir_patterns or settings.in_file_patterns):
-            formatter = FileResultFormatter(settings)
-            for d in dirs:
-                log(formatter.format_path(d))
-        else:
-            for d in dirs:
-                log(str(d))
+        for d in dirs:
+            log(formatter.format_dir_path(d))
     else:
         log('\nMatching directories: 0')
 
 
-def print_file_results(file_results: List[FileResult], settings):
+def print_file_results(file_results: List[FileResult], formatter: FileResultFormatter):
     """Print the file results"""
     if file_results:
-        log(f'Find results ({len(file_results)}):')
-        if settings.colorize and (settings.in_dir_patterns or settings.in_file_patterns):
-            formatter = FileResultFormatter(settings)
-            for f in file_results:
-                log(formatter.format_file_result(f))
-        else:
-            for f in file_results:
-                log(str(f))
+        log(f'\nMatching files ({len(file_results)}):')
+        for f in file_results:
+            log(formatter.format_file_result(f))
     else:
         log('Find results: 0')
 
@@ -86,12 +75,13 @@ async def main():
     try:
         finder = Finder(settings)
         file_results = await finder.find()
+        formatter = FileResultFormatter(settings)
 
         if settings.print_dirs:
-            print_dir_results(file_results, settings)
+            print_dir_results(file_results, formatter)
 
         if settings.print_files:
-            print_file_results(file_results, settings)
+            print_file_results(file_results, formatter)
 
     except AssertionError as e:
         log('')

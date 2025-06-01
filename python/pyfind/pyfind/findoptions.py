@@ -36,6 +36,9 @@ class FindOptions:
             'archivesonly':
                 lambda b, settings:
                 settings.set_property('archives_only', b),
+            'colorize':
+                lambda b, settings:
+                settings.set_property('colorize', b),
             'debug':
                 lambda b, settings:
                 settings.set_property('debug', b),
@@ -57,6 +60,9 @@ class FindOptions:
             'includehidden':
                 lambda b, settings:
                 settings.set_property('include_hidden', b),
+            'nocolorize':
+                lambda b, settings:
+                settings.set_property('colorize', not b),
             'nofollowsymlinks':
                 lambda b, settings:
                 settings.set_property('follow_symlinks', not b),

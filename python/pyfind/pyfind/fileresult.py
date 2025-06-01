@@ -63,23 +63,74 @@ class FileResultFormatter(object):
 
     def __init__(self, settings: FindSettings):
         self.settings = settings
+        if settings.colorize:
+            if settings.in_dir_patterns:
+                self.format_dir_path = self.__format_dir_path_with_color
+            if settings.in_extensions or settings.in_file_patterns:
+                self.format_file_name = self.__format_file_name_with_color
 
     @staticmethod
     def colorize(s: str, match_start_index: int, match_end_index: int) -> str:
-        return s[0:match_start_index] + Color.GREEN + \
+        """colorize a string"""
+        prefix = ''
+        if match_start_index > 0:
+            prefix = s[0:match_start_index]
+        suffix = ''
+        if match_end_index < len(s):
+            suffix = s[match_end_index:]
+        return prefix + \
+            Color.GREEN + \
             s[match_start_index:match_end_index] + \
-            Color.RESET + s[match_end_index:]
+            Color.RESET + \
+            suffix
+
+    def __format_dir_path_with_color(self, dir_path: Path) -> str:
+        """format a dir path, highlighting matches with color"""
+        formatted_dir = str(dir_path)
+        for p in self.settings.in_dir_patterns:
+            match = p.search(formatted_dir)
+            if match:
+                formatted_dir = FileResultFormatter.colorize(
+                    formatted_dir, match.start(), match.end())
+                break
+        return formatted_dir
+
+    def format_dir_path(self, dir_path: Path) -> str:
+        """format a dir path, just returns the path as str by default but can be
+           redefined to point to __format_dir_path_with_color() if settings
+           require colorization"""
+        return str(dir_path)
+
+    def __format_file_name_with_color(self, file_name: str) -> str:
+        """format a file name, highlighting matches with color"""
+        formatted_file_name = file_name
+        for p in self.settings.in_file_patterns:
+            match = p.search(formatted_file_name)
+            if match:
+                formatted_file_name = FileResultFormatter.colorize(
+                    formatted_file_name, match.start(), match.end())
+                break
+        if len(self.settings.in_extensions):
+            # we know that file_name has a matching extension, no need to match
+            idx = formatted_file_name.rfind('.')
+            if 0 < idx < len(formatted_file_name) - 1:
+                formatted_file_name = FileResultFormatter.colorize(
+                    formatted_file_name, idx + 1, len(formatted_file_name))
+        return formatted_file_name
+
+    def format_file_name(self, file_name: str) -> str:
+        """format a file name, just returns the name by default but can be
+           redefined to point to __format_file_name_with_color() if settings
+           require colorization"""
+        return file_name
 
     def format_path(self, path: Path) -> str:
         """format a path"""
-        file_name = path.name
-        for p in self.settings.in_file_patterns:
-            match = p.search(file_name)
-            if match:
-                file_name = FileResultFormatter.colorize(
-                    file_name, match.start(), match.end())
-                break
-        return os.path.join(str(path.parent), file_name)
+        parent = '.'
+        if path.parent:
+            parent = self.format_dir_path(path.parent)
+        file_name = self.format_file_name(path.name)
+        return os.path.join(parent, file_name)
 
     def format_file_result(self, result: FileResult) -> str:
         """format a FileResult instance"""
