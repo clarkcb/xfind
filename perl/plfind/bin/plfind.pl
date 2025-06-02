@@ -18,6 +18,7 @@ BEGIN {
 
 use plfind::common;
 use plfind::config;
+use plfind::FileResultFormatter;
 use plfind::Finder;
 use plfind::FindOptions;
 
@@ -29,31 +30,24 @@ sub get_matching_dirs {
 }
 
 sub print_matching_dirs {
-    my ($file_results) = @_;
+    my ($file_results, $formatter) = @_;
     my $dirs = get_matching_dirs($file_results);
     if (scalar @$dirs) {
         plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @$dirs));
         foreach my $d (@$dirs) {
-            plfind::common::log_msg($d);
+            plfind::common::log_msg($formatter->format_dir($d));
         }
     } else {
         plfind::common::log_msg("\nMatching directories: 0");
     }
 }
 
-sub get_matching_files {
-    my ($file_results) = @_;
-    my @files = map {$_->to_string()} @$file_results;
-    return \@files;
-}
-
 sub print_matching_files {
-    my ($file_results) = @_;
-    my $files = get_matching_files($file_results);
-    if (scalar @$files) {
-        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @$files));
-        foreach my $f (@$files) {
-            plfind::common::log_msg($f);
+    my ($file_results, $formatter) = @_;
+    if (scalar @$file_results) {
+        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @$file_results));
+        foreach my $fr (@$file_results) {
+            plfind::common::log_msg($formatter->format_file_result($fr));
         }
     } else {
         plfind::common::log_msg("\nMatching files: 0");
@@ -96,15 +90,16 @@ sub main {
     }
 
     my $file_results = $finder->find();
+    my $formatter = plfind::FileResultFormatter->new($settings);
 
     # print matching dirs
     if ($settings->{print_dirs}) {
-        print_matching_dirs($file_results);
+        print_matching_dirs($file_results, $formatter);
     }
 
     # print matching files
     if ($settings->{print_files}) {
-        print_matching_files($file_results);
+        print_matching_files($file_results, $formatter);
     }
 }
 

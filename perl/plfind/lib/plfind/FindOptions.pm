@@ -27,6 +27,10 @@ my $bool_action_hash = {
         my ($bool, $settings) = @_;
         $settings->set_property('archives_only', $bool);
     },
+    'colorize' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('colorize', $bool);
+    },
     'debug' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('debug', $bool);
@@ -54,6 +58,10 @@ my $bool_action_hash = {
     'includehidden' => sub {
         my ($bool, $settings) = @_;
         $settings->set_property('include_hidden', $bool);
+    },
+    'nocolorize' => sub {
+        my ($bool, $settings) = @_;
+        $settings->set_property('colorize', !$bool);
     },
     'nofollowsymlinks' => sub {
         my ($bool, $settings) = @_;
