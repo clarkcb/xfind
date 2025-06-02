@@ -11,6 +11,7 @@ import {FindOptions} from './findoptions';
 import {FindSettings} from './findsettings';
 import {Finder} from './finder';
 import {FileResult} from "./fileresult";
+import {FileResultFormatter} from "./fileresultformatter";
 
 function handleError(err: Error | any, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
@@ -23,25 +24,20 @@ function getMatchingDirs(fileResults: FileResult[]): string[] {
     return common.setFromArray(dirs);
 }
 
-function printMatchingDirs(fileResults: FileResult[]): void {
+function printMatchingDirs(fileResults: FileResult[], formatter: FileResultFormatter): void {
     const dirs: string[] = getMatchingDirs(fileResults);
     if (dirs.length > 0) {
         common.log("\nMatching directories " + `(${dirs.length}):`);
-        dirs.forEach(d => common.log(d));
+        dirs.forEach(d => common.log(formatter.formatPath(d)));
     } else {
         common.log("\nMatching directories: 0");
     }
 }
 
-function getMatchingFiles(fileResults: FileResult[]): string[] {
-    return fileResults.map(f => f.relativePath());
-}
-
-function printMatchingFiles(fileResults: FileResult[]): void {
-    const files: string[] = getMatchingFiles(fileResults);
-    if (files.length > 0) {
-        common.log("\nMatching files " + `(${files.length}):`);
-        files.forEach(f => common.log(f));
+function printMatchingFiles(fileResults: FileResult[], formatter: FileResultFormatter): void {
+    if (fileResults.length > 0) {
+        common.log("\nMatching files " + `(${fileResults.length}):`);
+        fileResults.forEach(f => common.log(formatter.formatFileResult(f)));
     } else {
         common.log("\nMatching files: 0");
     }
@@ -72,12 +68,13 @@ function findMain() {
         try {
             const finder: Finder = new Finder(settings);
             const fileResults = await finder.find();
+            const formatter = new FileResultFormatter(settings);
 
             if (settings.printDirs) {
-                printMatchingDirs(fileResults);
+                printMatchingDirs(fileResults, formatter);
             }
             if (settings.printFiles) {
-                printMatchingFiles(fileResults);
+                printMatchingFiles(fileResults, formatter);
             }
 
         } catch (err2) {

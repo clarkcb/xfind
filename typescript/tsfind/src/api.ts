@@ -1,5 +1,7 @@
 
+export {COLORS} from './color';
 export {FileResult} from './fileresult';
+export {FileResultFormatter} from './fileresultformatter';
 export {FileType} from './filetype';
 export {FileTypes} from './filetypes';
 export {FileUtil} from './fileutil';

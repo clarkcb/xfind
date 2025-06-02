@@ -14,6 +14,7 @@ import {StringUtil} from "./stringutil";
 
 export class FindSettings {
     #archivesOnly = false;
+    colorize = true;
     #debug = false;
     followSymlinks = false;
     inArchiveExtensions: string[] = [];
@@ -165,6 +166,7 @@ export class FindSettings {
     public toString(): string {
         return 'FindSettings('
             + 'archivesOnly=' + this.archivesOnly
+            + ', colorize=' + this.colorize
             + ', debug=' + this.debug
             + ', followSymlinks=' + this.followSymlinks
             + ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions)
