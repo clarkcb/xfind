@@ -8,9 +8,9 @@
 'use strict';
 
 const common = require('./common');
+const {FileResultFormatter} = require('./fileresultformatter');
 const {Finder} = require('./finder');
 const {FindOptions} = require('./findoptions');
-//const {FindSettings} = require('./findsettings');
 
 function handleError(err, findOptions) {
     const errMsg = 'ERROR: ' + err.message;
@@ -23,25 +23,20 @@ function getMatchingDirs(fileResults) {
     return common.setFromArray(dirs);
 }
 
-function printMatchingDirs(fileResults) {
+function printMatchingDirs(fileResults, formatter) {
     const dirs = getMatchingDirs(fileResults);
     if (dirs.length > 0) {
         common.log(`\nMatching directories (${dirs.length}):`);
-        dirs.forEach(d => common.log(d));
+        dirs.forEach(d => common.log(formatter.formatPath(d)));
     } else {
         common.log('\nMatching directories: 0');
     }
 }
 
-function getMatchingFiles(fileResults) {
-    return fileResults.map(f => f.relativePath());
-}
-
-function printMatchingFiles(fileResults) {
-    const files = getMatchingFiles(fileResults);
-    if (files.length > 0) {
-        common.log(`\nMatching files (${files.length}):`);
-        files.forEach(f => common.log(f));
+function printMatchingFiles(fileResults, formatter) {
+    if (fileResults.length > 0) {
+        common.log(`\nMatching files (${fileResults.length}):`);
+        fileResults.forEach(fr => common.log(formatter.formatFileResult(fr)));
     } else {
         common.log('\nMatching files: 0');
     }
@@ -72,12 +67,13 @@ const findMain = async () => {
         try {
             const finder = new Finder(settings);
             let fileResults = await finder.find();
+            const formatter = new FileResultFormatter(settings);
 
             if (settings.printDirs) {
-                printMatchingDirs(fileResults);
+                printMatchingDirs(fileResults, formatter);
             }
             if (settings.printFiles) {
-                printMatchingFiles(fileResults);
+                printMatchingFiles(fileResults, formatter);
             }
 
         } catch (err2) {

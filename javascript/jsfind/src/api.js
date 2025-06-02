@@ -7,8 +7,10 @@
 // Requirements
 //-----------------------------------------------------------------------------
 
+const {COLORS} = require('./color');
 const common = require('./common');
 const {FileResult} = require('./fileresult');
+const {FileResultFormatter} = require('./fileresultformatter');
 const {FileType} = require('./filetype');
 const {FileTypes} = require('./filetypes');
 const {FileUtil} = require('./fileutil');
@@ -24,8 +26,10 @@ const {SortBy, nameToSortBy, sortByToName} = require('./sortby');
 //-----------------------------------------------------------------------------
 
 module.exports = {
+  COLORS,
   common,
   FileResult,
+  FileResultFormatter,
   FileType,
   FileTypes,
   FileUtil,

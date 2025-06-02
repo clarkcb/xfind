@@ -10,6 +10,7 @@ const StringUtil = require('./stringutil');
 
 class FindSettings {
     _archivesOnly = false;
+    colorize = true;
     _debug = false;
     followSymlinks = false;
     inArchiveExtensions = [];
@@ -160,6 +161,7 @@ class FindSettings {
     toString() {
         return 'FindSettings(' +
           'archivesOnly=' + this.archivesOnly +
+          ', colorize=' + this.colorize +
           ', debug=' + this.debug +
           ', followSymlinks=' + this.followSymlinks +
           ', ' + StringUtil.stringListToString('inArchiveExtensions', this.inArchiveExtensions) +

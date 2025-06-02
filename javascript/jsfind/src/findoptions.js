@@ -20,6 +20,8 @@ class FindOptions {
         this.boolActionMap = {
             'archivesonly':
               (b, settings) => { settings.archivesOnly = b; },
+            'colorize':
+              (b, settings) => { settings.colorize = b; },
             'debug':
               (b, settings) => { settings.debug = b; },
             'excludearchives':
@@ -34,6 +36,8 @@ class FindOptions {
               (b, settings) => { settings.includeArchives = b; },
             'includehidden':
               (b, settings) => { settings.includeHidden = b; },
+            'nocolorize':
+              (b, settings) => { settings.colorize = !b; },
             'nofollowsymlinks':
               (b, settings) => { settings.followSymlinks = !b; },
             'noprintdirs':
