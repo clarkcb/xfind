@@ -45,6 +45,7 @@ enum class SortBy(val value: String) {
 
 data class FindSettings(
     val archivesOnly: Boolean,
+    val colorize: Boolean,
     val debug: Boolean,
     val followSymlinks: Boolean,
     val inArchiveExtensions: Set<String>,
@@ -81,6 +82,7 @@ data class FindSettings(
     override fun toString(): String {
         return "FindSettings(" +
                 "archivesOnly=$archivesOnly, " +
+                "colorize=$colorize, " +
                 "debug=$debug, " +
                 "followSymlinks=$followSymlinks, " +
                 "inArchiveExtensions=${stringSetToString(inArchiveExtensions)}, " +
@@ -154,6 +156,7 @@ fun fileTypeSetToString(set: Set<FileType>): String {
 fun getDefaultSettings(): FindSettings {
     return FindSettings(
         archivesOnly = false,
+        colorize = true,
         debug = false,
         followSymlinks = false,
         inArchiveExtensions = linkedSetOf(),

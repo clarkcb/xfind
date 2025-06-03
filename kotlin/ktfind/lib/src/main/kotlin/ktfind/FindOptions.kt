@@ -59,6 +59,7 @@ class FindOptions {
             if (b) ss.copy(archivesOnly = true, includeArchives = true) else
                 ss.copy(archivesOnly = false)
         },
+        "colorize" to { b, ss -> ss.copy(colorize = b) },
         "debug" to { b, ss ->
             if (b) ss.copy(debug = true, verbose = true) else
                 ss.copy(debug = false)
@@ -69,6 +70,7 @@ class FindOptions {
         "help" to { b, ss -> ss.copy(printUsage = b) },
         "includearchives" to { b, ss -> ss.copy(includeArchives = b) },
         "includehidden" to { b, ss -> ss.copy(includeHidden = b) },
+        "nocolorize" to { b, ss -> ss.copy(colorize = !b) },
         "nofollowsymlinks" to { b, ss -> ss.copy(followSymlinks = !b) },
         "noprintdirs" to { b, ss -> ss.copy(printDirs = !b) },
         "noprintfiles" to { b, ss -> ss.copy(printFiles = !b) },
