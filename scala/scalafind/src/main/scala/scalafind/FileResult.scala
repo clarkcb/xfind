@@ -2,7 +2,7 @@ package scalafind
 
 import scalafind.FileResult.{CONTAINER_SEPARATOR, comparePaths}
 
-import java.nio.file.Path
+import java.nio.file.{Path, Paths}
 import java.nio.file.attribute.FileTime
 
 object FileResult {
@@ -91,5 +91,75 @@ class FileResult(val containers: List[Path],
     }
     sb.append(path.toString)
     sb.toString()
+  }
+}
+
+class FileResultFormatter(val settings: FindSettings) {
+
+  private def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
+    val prefix = if (matchStartIndex > 0) {
+      s.substring(0, matchStartIndex)
+    } else {
+      ""
+    }
+    val suffix = if (matchEndIndex < s.length) {
+      s.substring(matchEndIndex)
+    } else {
+      ""
+    }
+    prefix +
+      Color.GREEN +
+      s.substring(matchStartIndex, matchEndIndex) +
+      Color.RESET +
+      suffix
+  }
+
+  private def formatDirPathWithColor(dirPath: Path): String = {
+    var formattedDirPath = dirPath.toString
+    settings.inDirPatterns.flatMap(p => p.findFirstMatchIn(formattedDirPath)).take(1).foreach { m =>
+      formattedDirPath = colorize(formattedDirPath, m.start, m.end)
+    }
+    formattedDirPath
+  }
+
+  val formatDirPath: Path => String =
+    if (settings.colorize && settings.inDirPatterns.nonEmpty) {
+      formatDirPathWithColor
+    } else {
+      (dirPath: Path) => dirPath.toString
+    }
+
+  private def formatFileNameWithColor(fileName: String): String = {
+    var formattedFileName = fileName
+    settings.inFilePatterns.flatMap(p => p.findFirstMatchIn(formattedFileName)).take(1).foreach { m =>
+      formattedFileName = colorize(formattedFileName, m.start, m.end)
+    }
+    if (settings.inExtensions.nonEmpty) {
+      val idx = formattedFileName.lastIndexOf('.')
+      if (idx > 0 && idx < formattedFileName.length - 1) {
+        formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length)
+      }
+    }
+    formattedFileName
+  }
+
+  val formatFileName: String => String =
+    if (settings.colorize && (settings.inExtensions.nonEmpty || settings.inFilePatterns.nonEmpty)) {
+      formatFileNameWithColor
+    } else {
+      (fileName: String) => fileName
+    }
+
+  def formatPath(path: Path): String = {
+    var parent = "."
+    if (path.getParent != null) {
+      parent = formatDirPath(path.getParent)
+    }
+    val fileName = formatFileName(path.getFileName.toString)
+    Paths.get(parent, fileName).toString
+  }
+
+  def formatFileResult(result: FileResult): String = {
+    formatPath(result.path)
   }
 }

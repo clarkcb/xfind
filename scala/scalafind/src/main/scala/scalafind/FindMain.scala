@@ -11,27 +11,20 @@ object FindMain {
       .sortWith(_.toString < _.toString)
   }
 
-  private def getMatchingFiles(fileResults: Seq[FileResult]): Seq[String] = {
-    fileResults
-      .map(_.toString)
-      .distinct
-  }
-
-  private def printMatchingDirs(fileResults: Seq[FileResult]): Unit = {
+  private def printMatchingDirs(fileResults: Seq[FileResult], formatter: FileResultFormatter): Unit = {
     val dirs = getMatchingDirs(fileResults)
     if (dirs.nonEmpty) {
       Common.log("\nMatching directories (%d):".format(dirs.length))
-      dirs.foreach(d => Common.log(d.toString))
+      dirs.foreach(d => Common.log(formatter.formatDirPath(d)))
     } else {
       Common.log("\nMatching directories: 0")
     }
   }
 
-  private def printMatchingFiles(fileResults: Seq[FileResult]): Unit = {
-    val files = getMatchingFiles(fileResults)
-    if (files.nonEmpty) {
-      Common.log("\nMatching files (%d):".format(files.length))
-      files.foreach(f => Common.log(f))
+  private def printMatchingFiles(fileResults: Seq[FileResult], formatter: FileResultFormatter): Unit = {
+    if (fileResults.nonEmpty) {
+      Common.log("\nMatching files (%d):".format(fileResults.length))
+      fileResults.foreach(fr => Common.log(formatter.formatFileResult(fr)))
     } else {
       Common.log("\nMatching files: 0")
     }
@@ -52,9 +45,10 @@ object FindMain {
 
       val finder = new Finder(settings)
       val fileResults = finder.find()
+      val formatter = new FileResultFormatter(settings)
 
-      if (settings.printDirs) { printMatchingDirs(fileResults) }
-      if (settings.printFiles) { printMatchingFiles(fileResults) }
+      if (settings.printDirs) { printMatchingDirs(fileResults, formatter) }
+      if (settings.printFiles) { printMatchingFiles(fileResults, formatter) }
 
     } catch {
       case e: FindException =>

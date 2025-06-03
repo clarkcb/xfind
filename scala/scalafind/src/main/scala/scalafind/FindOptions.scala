@@ -72,6 +72,7 @@ object FindOptions {
   private val boolActionMap = Map[String, BoolAction](
     "archivesonly" -> ((b, ss) =>
       if (b) ss.copy(archivesOnly = b, includeArchives = b) else ss.copy(archivesOnly = b)),
+    "colorize" -> ((b, ss) => ss.copy(colorize = b)),
     "debug" -> ((b, ss) => if (b) ss.copy(debug = b, verbose = b) else ss.copy(debug = b)),
     "excludearchives" -> ((b, ss) => ss.copy(includeArchives = !b)),
     "excludehidden" -> ((b, ss) => ss.copy(includeHidden = !b)),
@@ -79,6 +80,7 @@ object FindOptions {
     "help" -> ((b, ss) => ss.copy(printUsage = b)),
     "includearchives" -> ((b, ss) => ss.copy(includeArchives = b)),
     "includehidden" -> ((b, ss) => ss.copy(includeHidden = b)),
+    "nocolorize" -> ((b, ss) => ss.copy(colorize = !b)),
     "nofollowsymlinks" -> ((b, ss) => ss.copy(followSymlinks = !b)),
     "noprintdirs" -> ((b, ss) => ss.copy(printDirs = !b)),
     "noprintfiles" -> ((b, ss) => ss.copy(printFiles = !b)),

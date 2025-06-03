@@ -32,6 +32,7 @@ object SortBy extends Enumeration {
 
 object DefaultFindSettings {
   val archivesOnly = false
+  val colorize = true
   val debug = false
   val followSymlinks = false
   var includeArchives = false
@@ -53,6 +54,7 @@ object DefaultFindSettings {
 }
 
 case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly,
+                        colorize: Boolean = DefaultFindSettings.colorize,
                         debug: Boolean = DefaultFindSettings.debug,
                         followSymlinks: Boolean = DefaultFindSettings.followSymlinks,
                         inArchiveExtensions: Set[String] = Set.empty[String],
@@ -132,6 +134,7 @@ case class FindSettings(archivesOnly: Boolean = DefaultFindSettings.archivesOnly
   override def toString: String = {
     "FindSettings(" +
       "archivesOnly=" + archivesOnly +
+      ", colorize=" + colorize +
       ", debug=" + debug +
       ", followSymlinks=" + followSymlinks +
       ", inArchiveExtensions=" + setToString(inArchiveExtensions) +
