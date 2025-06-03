@@ -24,6 +24,7 @@ public class FindSettings {
     private static final int INITIAL_SET_CAPACITY = 4;
 
     private boolean archivesOnly;
+    private boolean colorize;
     private boolean debug;
     private boolean followSymlinks;
     private final Set<String> inArchiveExtensions;
@@ -59,6 +60,7 @@ public class FindSettings {
 
     public FindSettings() {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY;
+        this.colorize = DefaultFindSettings.COLORIZE;
         this.debug = DefaultFindSettings.DEBUG;
         this.followSymlinks = DefaultFindSettings.FOLLOW_SYMLINKS;
         this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY);
@@ -122,6 +124,14 @@ public class FindSettings {
         if (archivesOnly) {
             this.includeArchives = true;
         }
+    }
+
+    public boolean getColorize() {
+        return colorize;
+    }
+
+    public void setColorize(boolean colorize) {
+        this.colorize = colorize;
     }
 
     public final boolean getDebug() {
@@ -485,6 +495,7 @@ public class FindSettings {
     public String toString() {
         return "FindSettings("
                 + "archivesOnly=" + this.archivesOnly
+                + ", colorize=" + this.colorize
                 + ", debug=" + this.debug
                 + ", followSymlinks=" + this.followSymlinks
                 + ", inArchiveExtensions=" + stringSetToString(this.inArchiveExtensions)

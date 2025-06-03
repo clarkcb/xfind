@@ -6,6 +6,7 @@ public final class DefaultFindSettings {
     }
 
     public static final boolean ARCHIVES_ONLY = false;
+    public static final boolean COLORIZE = true;
     public static final boolean DEBUG = false;
     public static final boolean FOLLOW_SYMLINKS = false;
     public static final boolean INCLUDE_ARCHIVES = false;

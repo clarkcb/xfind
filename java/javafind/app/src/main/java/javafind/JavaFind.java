@@ -11,6 +11,7 @@ Main class for initiating javafind from command line
 package javafind;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,34 +31,29 @@ public class JavaFind {
         options.usage(1);
     }
 
-    private static List<String> getMatchingDirs(final List<FileResult> fileResults) {
-        return fileResults.stream()
-                .map(fr -> fr.path().getParent().toString()).distinct()
+    private static List<Path> getMatchingDirs(final List<FileResult> results) {
+        return results.stream()
+                .map(fr -> fr.path().getParent()).distinct()
                 .sorted().collect(Collectors.toList());
     }
 
-    private static void printMatchingDirs(final List<FileResult> fileResults) {
-        var dirs = getMatchingDirs(fileResults);
+    private static void printMatchingDirs(final List<FileResult> results, final FileResultFormatter formatter) {
+        var dirs = getMatchingDirs(results);
         if (!dirs.isEmpty()) {
             log(String.format("\nMatching directories (%d):", dirs.size()));
             for (var d : dirs) {
-                log(d);
+                log(formatter.formatDirPath(d));
             }
         } else {
             log("\nMatching directories: 0");
         }
     }
 
-    private static List<String> getMatchingFiles(final List<FileResult> fileResults) {
-        return fileResults.stream().map(FileResult::toString).collect(Collectors.toList());
-    }
-
-    private static void printMatchingFiles(final List<FileResult> fileResults) {
-        var files = getMatchingFiles(fileResults);
-        if (!files.isEmpty()) {
-            log(String.format("\nMatching files (%d):", files.size()));
-            for (var f : files) {
-                log(f);
+    private static void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
+        if (!results.isEmpty()) {
+            log(String.format("\nMatching files (%d):", results.size()));
+            for (var f : results) {
+                log(formatter.formatFileResult(f));
             }
         } else {
             log("\nMatching files: 0");
@@ -83,12 +79,13 @@ public class JavaFind {
                 var finder = new Finder(settings);
                 finder.validateSettings();
                 var fileResults = finder.find();
+                var formatter = new FileResultFormatter(settings);
 
                 if (settings.getPrintDirs()) {
-                    printMatchingDirs(fileResults);
+                    printMatchingDirs(fileResults, formatter);
                 }
                 if (settings.getPrintFiles()) {
-                    printMatchingFiles(fileResults);
+                    printMatchingFiles(fileResults, formatter);
                 }
 
             } catch (FindException e) {
