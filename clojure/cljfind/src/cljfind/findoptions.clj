@@ -58,6 +58,7 @@
 
 (def bool-action-map
   { :archivesonly (fn [^FindSettings settings b] (set-archives-only settings b))
+    :colorize (fn [^FindSettings settings b] (assoc settings :colorize b))
     :debug (fn [^FindSettings settings b] (set-debug settings b))
     :excludearchives (fn [^FindSettings settings b] (assoc settings :include-archives (not b)))
     :excludehidden (fn [^FindSettings settings b] (assoc settings :include-hidden (not b)))
@@ -65,6 +66,7 @@
     :help (fn [^FindSettings settings b] (assoc settings :print-usage b))
     :includearchives (fn [^FindSettings settings b] (assoc settings :include-archives b))
     :includehidden (fn [^FindSettings settings b] (assoc settings :include-hidden b))
+    :nocolorize (fn [^FindSettings settings b] (assoc settings :colorize (not b)))
     :nofollowsymlinks (fn [^FindSettings settings b] (assoc settings :follow-symlinks (not b)))
     :noprintdirs (fn [^FindSettings settings b] (assoc settings :print-dirs (not b)))
     :noprintfiles (fn [^FindSettings settings b] (assoc settings :print-files (not b)))

@@ -21,7 +21,7 @@
            (cljfind.findsettings FindSettings))
   (:use [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only
-         (new-file-result file-result-path sort-results)]
+         (new-file-result file-result-path get-dir-path-formatter get-file-result-formatter sort-results)]
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only
           (exists-path? expand-path get-path-ext get-path-name get-parent-name hidden-dir-path? hidden-file-path?
@@ -287,23 +287,19 @@
       [[] errs])))
 
 (defn get-matching-dirs [file-results]
-  (sort (distinct (map #(get-parent-name (:path %)) file-results))))
+  (sort (distinct (filter #(not (nil? %)) (map #(.getParent (:path %)) file-results)))))
 
-(defn print-matching-dirs [file-results]
+(defn print-matching-dirs [file-results ^FindSettings settings]
   (let [dirs (get-matching-dirs file-results)]
     (if (empty? dirs)
       (log-msg "\nMatching directories: 0")
-      (do
+      (let [format-dir-path (get-dir-path-formatter settings)]
         (log-msg (format "\nMatching directories (%d):" (count dirs)))
-        (doseq [d dirs] (log-msg d))))))
+        (doseq [d dirs] (log-msg (format-dir-path d)))))))
 
-(defn get-matching-files [file-results]
-  (map #(file-result-path %) file-results))
-
-(defn print-matching-files [file-results]
-  (let [files (get-matching-files file-results)]
-    (if (empty? files)
-      (log-msg "\nMatching files: 0")
-      (do
-        (log-msg (format "\nMatching files (%d):" (count files)))
-        (doseq [f files] (log-msg f))))))
+(defn print-matching-files [file-results ^FindSettings settings]
+  (if (empty? file-results)
+    (log-msg "\nMatching files: 0")
+    (let [format-file-result (get-file-result-formatter settings)]
+      (log-msg (format "\nMatching files (%d):" (count file-results)))
+      (doseq [fr file-results] (log-msg (format-file-result fr))))))

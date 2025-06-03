@@ -13,6 +13,7 @@
   (:import (cljfind.findsettings FindSettings)
            (java.nio.file Paths Path Files))
   (:use [clojure.string :as string :only (join lower-case)]
+        [cljfind.color :only (GREEN RESET)]
         [cljfind.filetypes :only (to-name)]
         [cljfind.fileutil :only (get-path-name get-parent-name)]
         ))
@@ -112,3 +113,65 @@
     (if (:sort-descending settings)
       (reverse sorted-results)
       sorted-results)))
+
+(defn colorize-string ^String [^String s start-index end-index]
+  (let [prefix (if (> start-index 0) (subs s 0 start-index) "")
+        colorized (str GREEN (subs s start-index end-index) RESET)
+        suffix (if (< end-index (.length s)) (subs s end-index) "")]
+    (str prefix colorized suffix)))
+
+(defn colorize-dir-path ^String [^Path p ^FindSettings settings]
+  (let [dir-path (if (nil? p) "." (.toString p))
+        matching-dir-patterns (take 1 (filter #(re-find % dir-path) (:in-dir-patterns settings)))
+        dir-matcher (if (empty? matching-dir-patterns) nil (re-matcher (first matching-dir-patterns) dir-path))
+        color-dir-path (if (nil? dir-matcher) dir-path (do (.find dir-matcher 0) (colorize-string dir-path (.start dir-matcher) (.end dir-matcher))))]
+    color-dir-path))
+
+(defn get-dir-path-formatter [^FindSettings settings]
+(if
+  (and
+    (:colorize settings)
+    (not (empty? (:in-dir-patterns settings))))
+  (fn [^Path p]
+    (colorize-dir-path p settings))
+  (fn [^Path p]
+    (.toString p))))
+
+(defn colorize-file-name ^String [^String filename ^FindSettings settings]
+  (let [matching-file-patterns (take 1 (filter #(re-find % filename) (:in-file-patterns settings)))
+        file-matcher (if (empty? matching-file-patterns) nil (re-matcher (first matching-file-patterns) filename))
+        color-filename (if (nil? file-matcher) filename (do (.find file-matcher 0) (colorize-string filename (.start file-matcher) (.end file-matcher))))]
+    (if (empty? (:in-extensions settings))
+      color-filename
+      (let [idx (.lastIndexOf color-filename ".")
+            filename-len (.length color-filename)]
+        (if (and (> idx 0) (< idx (- filename-len 1)))
+          (colorize-string color-filename (+ idx 1) filename-len)
+          color-filename)))))
+
+(defn get-file-name-formatter [^FindSettings settings]
+  (if
+    (and
+     (:colorize settings)
+     (or
+      (not (empty? (:in-etensions settings)))
+      (not (empty? (:in-file-patterns settings)))))
+    (fn [^String filename]
+      (colorize-file-name filename settings))
+    (fn [^String filename]
+      filename)))
+
+(defn get-file-path-formatter [^FindSettings settings]
+  (let [format-dir-path (get-dir-path-formatter settings)
+        format-file-name (get-file-name-formatter settings)]
+    (fn [^Path p]
+      (let [parent (if (nil? (.getParent p)) "." (format-dir-path (.getParent p)))
+            filename (format-file-name (.toString (.getFileName p)))]
+        (str parent java.io.File/separator filename)))))
+
+(defn get-file-result-formatter [^FindSettings settings]
+  (let [format-file-path (get-file-path-formatter settings)]
+    (fn [^FileResult r]
+      (let [path (format-file-path (:path r))
+            containers (if (empty? (:containers r)) "" (str (string/join "!" (:containers r)) "!"))]
+        (str containers path)))))

@@ -18,8 +18,8 @@
         (let [[files errs] (find-files settings)]
           (if (empty? errs)
             (do
-              (if (:print-dirs settings) (print-matching-dirs files))
-              (if (:print-files settings) (print-matching-files files)))
+              (if (:print-dirs settings) (print-matching-dirs files settings))
+              (if (:print-files settings) (print-matching-files files settings)))
             (do
               (log-errors errs)
               (usage)))))

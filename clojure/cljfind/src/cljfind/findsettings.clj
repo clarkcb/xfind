@@ -50,6 +50,7 @@
 (defrecord FindSettings
   [
     ^Boolean archives-only
+    ^Boolean colorize
     ^Boolean debug
     ^Boolean follow-symlinks
     ^clojure.lang.PersistentHashSet in-archive-extensions
@@ -87,6 +88,7 @@
 (def ^:const DEFAULT-FIND-SETTINGS
   (->FindSettings
    false     ; archives-only
+   true      ; colorize
    false     ; debug
    false     ; follow-symlinks
    #{}       ; in-archive-extensions
@@ -239,6 +241,7 @@
   [^FindSettings settings ^java.io.Writer w]
   (.write w (str
              "FindSettings(archives-only=" (:archives-only settings)
+             ", colorize=" (:colorize settings)
              ", debug=" (:debug settings)
              ", follow-symlinks=" (:follow-symlinks settings)
              ", in-archive-extensions=" (string-set-to-string (:in-archive-extensions settings))
