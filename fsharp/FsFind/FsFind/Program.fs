@@ -1,5 +1,7 @@
 namespace FsFind
 
+open FsFindLib
+
 module Main =
 
     let HandleError (err : string) : unit =
@@ -15,12 +17,13 @@ module Main =
             HandleError errs.Head
 
         let files = finder.Find()
+        let formatter = FileResultFormatter(settings)
 
         if settings.PrintDirs then
-            finder.PrintMatchingDirs files
+            finder.PrintMatchingDirs files formatter
 
         if settings.PrintFiles then
-            finder.PrintMatchingFiles files
+            finder.PrintMatchingFiles files formatter
 
 
     [<EntryPoint>]

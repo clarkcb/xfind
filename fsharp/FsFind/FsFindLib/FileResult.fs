@@ -1,4 +1,4 @@
-﻿namespace FsFind
+﻿namespace FsFindLib
 
 open System.IO
 

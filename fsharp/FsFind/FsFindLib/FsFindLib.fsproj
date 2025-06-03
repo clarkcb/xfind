@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Color.fs" />
     <Compile Include="Common.fs" />
     <Compile Include="Logger.fs" />
     <Compile Include="EmbeddedResource.fs" />
@@ -15,6 +16,7 @@
     <Compile Include="SortBy.fs" />
     <Compile Include="FindSettings.fs" />
     <Compile Include="FileResult.fs" />
+    <Compile Include="FileResultFormatter.fs" />
     <Compile Include="FindOptions.fs" />
     <Compile Include="Finder.fs" />
     <None Remove="Resources\filetypes.json" />

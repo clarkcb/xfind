@@ -1,4 +1,4 @@
-namespace FsFind
+namespace FsFindLib
 
 type SortBy = 
     | FilePath = 0

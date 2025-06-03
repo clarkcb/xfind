@@ -1,4 +1,4 @@
-﻿namespace FsFind
+﻿namespace FsFindLib
 
 open System
 open System.IO
@@ -232,27 +232,20 @@ type Finder (settings : FindSettings) =
         |> Seq.distinctBy (fun d -> d.FullName)
         |> List.ofSeq
 
-    member this.PrintMatchingDirs (fileResults : FileResult.t list) : unit = 
+    member this.PrintMatchingDirs (fileResults : FileResult.t list) (formatter : FileResultFormatter) : unit = 
         let dirs = this.GetMatchingDirs fileResults
         if dirs.Length > 0 then
             Logger.Log $"\nMatching directories (%d{dirs.Length}):"
             for d in dirs do
-                printfn $"%s{d.FullName}"
+                printfn $"%s{formatter.FormatDirectory(d)}"
         else
             Logger.Log "\nMatching directories: 0"
 
-
-    member this.GetMatchingFiles (fileResults : FileResult.t list) : FileInfo list = 
-        fileResults
-        |> Seq.map (fun f -> f.File)
-        |> List.ofSeq
-
-    member this.PrintMatchingFiles (fileResults : FileResult.t list) : unit = 
-        let files = this.GetMatchingFiles fileResults
-        if files.Length > 0 then
-            Logger.Log $"\nMatching files (%d{files.Length}):"
-            for f in files do
-                printfn $"%s{f.FullName}"
+    member this.PrintMatchingFiles (fileResults : FileResult.t list) (formatter : FileResultFormatter) : unit = 
+        if fileResults.Length > 0 then
+            Logger.Log $"\nMatching files (%d{fileResults.Length}):"
+            for fr in fileResults do
+                printfn $"%s{formatter.FormatFileResult(fr)}"
         else
             Logger.Log "\nMatching files: 0"
 

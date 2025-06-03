@@ -3,7 +3,7 @@ namespace FsFindTests
 open System
 open System.IO
 open NUnit.Framework
-open FsFind
+open FsFindLib
 
 [<TestFixture>]
 type FinderTests () =

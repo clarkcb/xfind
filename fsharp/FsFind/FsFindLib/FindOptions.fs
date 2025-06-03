@@ -1,4 +1,4 @@
-﻿namespace FsFind
+﻿namespace FsFindLib
 
 open System
 open System.Collections.Generic
@@ -23,6 +23,7 @@ module FindOptions =
     let boolActionMap : Map<string, bool -> FindSettings -> Unit> =
         [
             ("archivesonly", (fun (b : bool) (settings : FindSettings) -> settings.ArchivesOnly <- b));
+            ("colorize", (fun (b : bool) (settings : FindSettings) -> settings.Colorize <- b));
             ("debug", (fun (b : bool) (settings : FindSettings) -> settings.Debug <- b));
             ("excludearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- not b));
             ("excludehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- not b));
@@ -30,6 +31,7 @@ module FindOptions =
             ("help", (fun (b : bool) (settings : FindSettings) -> settings.PrintUsage <- b));
             ("includearchives", (fun (b : bool) (settings : FindSettings) -> settings.IncludeArchives <- b));
             ("includehidden", (fun (b : bool) (settings : FindSettings) -> settings.IncludeHidden <- b));
+            ("nocolorize", (fun (b : bool) (settings : FindSettings) -> settings.Colorize <- not b));
             ("nofollowsymlinks", (fun (b : bool) (settings : FindSettings) -> settings.FollowSymlinks <- not b));
             ("noprintdirs", (fun (b : bool) (settings : FindSettings) -> settings.PrintDirs <- not b));
             ("noprintfiles", (fun (b : bool) (settings : FindSettings) -> settings.PrintFiles <- not b));

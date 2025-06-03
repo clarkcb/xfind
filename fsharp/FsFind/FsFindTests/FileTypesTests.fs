@@ -2,7 +2,7 @@ namespace FsFindTests
 
 open System.IO
 open NUnit.Framework
-open FsFind
+open FsFindLib
 
 [<TestFixture>]
 type FileTypesTests () =

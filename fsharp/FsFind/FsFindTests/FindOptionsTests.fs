@@ -1,7 +1,7 @@
 namespace FsFindTests
 
 open NUnit.Framework
-open FsFind
+open FsFindLib
 
 [<TestFixture>]
 type FindOptionsTests () =

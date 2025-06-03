@@ -1,4 +1,4 @@
-﻿namespace FsFind
+﻿namespace FsFindLib
 
 open System
 open System.Text.RegularExpressions
@@ -14,12 +14,13 @@ type FindSettings() =
             if value then
                 this.IncludeArchives <- value
 
+    member val Colorize : bool = true with get, set
+
     member this.Debug
         with get () = _debug
         and set value =
             _debug <- value
             this.Verbose <- value
-
 
     member val FollowSymlinks : bool = false with get, set
     member val InArchiveExtensions : string list = [] with get, set
@@ -89,6 +90,7 @@ type FindSettings() =
         String.concat "" [
             "FindSettings(";
             $"ArchivesOnly=%b{this.ArchivesOnly}";
+            $", Colorize: %b{this.Colorize}";
             $", Debug=%b{this.Debug}";
             $", FollowSymlinks=%b{this.FollowSymlinks}";
             $", InArchiveExtensions=%s{Common.ListToString(this.InArchiveExtensions)}";
