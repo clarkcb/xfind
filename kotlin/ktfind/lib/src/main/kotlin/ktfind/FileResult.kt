@@ -162,3 +162,72 @@ class FileResultFormatter(val settings: FindSettings) {
         return formatPath(result.path)
     }
 }
+
+class FileResultFormatter(val settings: FindSettings) {
+
+    private fun colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String {
+        val prefix = if (matchStartIndex > 0) s.substring(0, matchStartIndex) else ""
+        val suffix = if (matchEndIndex < s.length) s.substring(matchEndIndex) else ""
+        return prefix +
+                Color.GREEN +
+                s.substring(matchStartIndex, matchEndIndex) +
+                Color.RESET +
+                suffix
+    }
+
+    private fun formatDirPathWithColor(dirPath: Path): String {
+        var formattedDirPath = dirPath.toString()
+        for (p in settings.inDirPatterns) {
+            val m = p.find(formattedDirPath)
+            if (m != null) {
+                formattedDirPath = colorize(formattedDirPath, m.range.first, m.range.last + 1)
+                break
+            }
+        }
+        return formattedDirPath
+    }
+
+    val formatDirPath = if (settings.colorize && !settings.inDirPatterns.isEmpty()) {
+        this::formatDirPathWithColor
+    } else {
+        { dirPath: Path -> dirPath.toString() }
+    }
+
+    private fun formatFileNameWithColor(fileName: String): String {
+        var formattedFileName = fileName
+        for (p in settings.inFilePatterns) {
+            val m = p.find(formattedFileName)
+            if (m != null) {
+                formattedFileName = colorize(formattedFileName, m.range.first, m.range.last + 1)
+                break
+            }
+        }
+        if (!settings.inExtensions.isEmpty()) {
+            val idx = formattedFileName.lastIndexOf('.')
+            if (idx > 0 && idx < formattedFileName.length - 1) {
+                formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length)
+            }
+        }
+        return formattedFileName
+    }
+
+    val formatFileName = if (settings.colorize && (!settings.inFilePatterns.isEmpty() || !settings.inExtensions.isEmpty())) {
+        this::formatFileNameWithColor
+    } else {
+        { fileName: String -> fileName }
+    }
+
+    fun formatPath(path: Path): String {
+        var parent = "."
+        if (path.parent != null) {
+            parent = formatDirPath(path.parent)
+        }
+        val fileName = formatFileName(path.fileName.toString())
+
+        return Paths.get(parent, fileName).toString()
+    }
+
+    fun formatFileResult(result: FileResult): String {
+        return formatPath(result.path)
+    }
+}
