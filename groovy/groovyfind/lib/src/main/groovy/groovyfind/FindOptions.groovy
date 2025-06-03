@@ -47,12 +47,14 @@ class FindOptions {
 
     private final Map<String, BooleanSetter> boolActionMap = [
             archivesonly: { Boolean b, FindSettings settings -> settings.archivesOnly = b },
+            colorize: { Boolean b, FindSettings settings -> settings.colorize = b },
             debug: { Boolean b, FindSettings settings -> settings.debug = b },
             excludehidden: { Boolean b, FindSettings settings -> settings.includeHidden = !b },
             followsymlinks: { Boolean b, FindSettings settings -> settings.followSymlinks = b },
             help: { Boolean b, FindSettings settings -> settings.printUsage = b },
             includearchives: { Boolean b, FindSettings settings -> settings.includeArchives = b },
             includehidden: { Boolean b, FindSettings settings -> settings.includeHidden = b },
+            nocolorize: { Boolean b, FindSettings settings -> settings.colorize = !b },
             nofollowsymlinks: { Boolean b, FindSettings settings -> settings.followSymlinks = !b },
             noprintdirs: { Boolean b, FindSettings settings -> settings.printDirs = !b },
             noprintfiles: { Boolean b, FindSettings settings -> settings.printFiles = !b },

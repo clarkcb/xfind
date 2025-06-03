@@ -13,6 +13,7 @@ import java.util.regex.Pattern
 @CompileStatic
 class DefaultFindSettings {
     static final boolean ARCHIVES_ONLY = false
+    static final boolean COLORIZE = true
     static final boolean DEBUG = false
     static final boolean FOLLOW_SYMLINKS = false
     static final boolean INCLUDE_ARCHIVES = false
@@ -38,6 +39,7 @@ class FindSettings {
     static final int INITIAL_SET_CAPACITY = 4
 
     boolean archivesOnly
+    boolean colorize
     boolean debug
     boolean followSymlinks
     final Set<String> inArchiveExtensions
@@ -73,6 +75,7 @@ class FindSettings {
 
     FindSettings() {
         this.archivesOnly = DefaultFindSettings.ARCHIVES_ONLY
+        this.colorize = DefaultFindSettings.COLORIZE
         this.debug = DefaultFindSettings.DEBUG
         this.followSymlinks = DefaultFindSettings.FOLLOW_SYMLINKS
         this.inArchiveExtensions = new LinkedHashSet<>(INITIAL_SET_CAPACITY)
@@ -284,6 +287,7 @@ class FindSettings {
     String toString() {
         'FindSettings(' +
                 'archivesOnly=' + this.archivesOnly +
+                ', colorize=' + this.colorize +
                 ', debug=' + this.debug +
                 ', followSymlinks=' + this.followSymlinks +
                 ', inArchiveExtensions=' + stringSetToString(this.inArchiveExtensions) +

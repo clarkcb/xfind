@@ -3,6 +3,8 @@ package groovyfind
 
 import java.nio.file.Path
 import java.nio.file.attribute.FileTime
+import java.util.function.Function
+import java.util.regex.Matcher
 
 class FileResult {
 
@@ -100,5 +102,92 @@ class FileResult {
         sb.append(path.toString())
         sb.toString()
     }
+}
 
+class FileResultFormatter {
+
+    private final FindSettings settings
+    private final Function<Path, String> formatDirPathFunc
+    private final Function<String, String> formatFileNameFunc
+
+    FileResultFormatter(final FindSettings settings) {
+        this.settings = settings
+        if (settings.colorize && !settings.inDirPatterns.isEmpty()) {
+            this.formatDirPathFunc = this.&formatDirPathWithColor
+        } else {
+            this.formatDirPathFunc = Path::toString
+        }
+        if (settings.colorize && (!settings.inFilePatterns.isEmpty() || !settings.inExtensions.isEmpty())) {
+            this.formatFileNameFunc = this.&formatFileNameWithColor
+        } else {
+            this.formatFileNameFunc = String::toString
+        }
+    }
+
+    String colorize(final String s, final int matchStartIndex, final int matchEndIndex) {
+        String prefix = ''
+        if (matchStartIndex > 0) {
+            prefix = s.substring(0, matchStartIndex)
+        }
+        String suffix = ''
+        if (matchEndIndex < s.length()) {
+            suffix = s.substring(matchEndIndex)
+        }
+        return prefix +
+                Color.GREEN +
+                s.substring(matchStartIndex, matchEndIndex) +
+                Color.RESET +
+                suffix;
+    }
+
+    private String formatDirPathWithColor(final Path dirPath) {
+        String formattedDirPath = dirPath.toString()
+        for (var p : settings.getInDirPatterns()) {
+            Matcher m = p.matcher(formattedDirPath)
+            if (m.find()) {
+                formattedDirPath = colorize(formattedDirPath, m.start(), m.end())
+                break
+            }
+        }
+        return formattedDirPath
+    }
+
+    String formatDirPath(final Path dirPath) {
+        formatDirPathFunc.apply(dirPath)
+    }
+
+    private String formatFileNameWithColor(final String fileName) {
+        String formattedFileName = fileName
+        for (var p : settings.getInFilePatterns()) {
+            Matcher m = p.matcher(formattedFileName)
+            if (m.find()) {
+                formattedFileName = colorize(formattedFileName, m.start(), m.end())
+                break
+            }
+        }
+        if (!settings.getInExtensions().isEmpty()) {
+            var idx = formattedFileName.lastIndexOf('.')
+            if (idx > 0 && idx < formattedFileName.length() - 1) {
+                formattedFileName = colorize(formattedFileName, idx + 1, formattedFileName.length())
+            }
+        }
+        return formattedFileName
+    }
+
+    String formatFileName(final String fileName) {
+        formatFileNameFunc.apply(fileName)
+    }
+
+    String formatPath(final Path path) {
+        String parent = '.'
+        if (path.getParent() != null) {
+            parent = formatDirPath(path.getParent())
+        }
+        String fileName = formatFileName(path.fileName.toString())
+        return Path.of(parent, fileName).toString()
+    }
+
+    String formatFileResult(final FileResult result) {
+        formatPath(result.path)
+    }
 }
