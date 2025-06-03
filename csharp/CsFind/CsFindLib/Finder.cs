@@ -381,17 +381,16 @@ public class Finder
 		];
 	}
 
-	public static void PrintMatchingDirs(IEnumerable<FileResult> fileResults)
+	public void PrintMatchingDirs(IEnumerable<FileResult> fileResults, FileResultFormatter formatter)
 	{
 		var matchingDirs = GetMatchingDirs(fileResults)
-			.Select(d => d.ToString())
 			.ToList();
 		if (matchingDirs.Count != 0)
 		{
 			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
 			foreach (var d in matchingDirs)
 			{
-				Logger.Log(d);
+				Logger.Log(formatter.FormatDirPath(d));
 			}
 		}
 		else
@@ -400,26 +399,15 @@ public class Finder
 		}
 	}
 
-	private static List<FilePath> GetMatchingFiles(IEnumerable<FileResult> fileResults)
+	public void PrintMatchingFiles(IEnumerable<FileResult> fileResults, FileResultFormatter formatter)
 	{
-		return
-		[
-			..fileResults
-				.Select(fr => fr.FilePath)
-		];
-	}
-
-	public static void PrintMatchingFiles(IEnumerable<FileResult> fileResults)
-	{
-		var matchingFiles = GetMatchingFiles(fileResults)
-			.Select(f => f.ToString())
-			.ToList();
-		if (matchingFiles.Count != 0)
+		var fileResultsList = fileResults.ToList();
+		if (fileResultsList.Count != 0)
 		{
-			Logger.Log($"\nMatching files ({matchingFiles.Count}):");
-			foreach (var f in matchingFiles)
+			Logger.Log($"\nMatching files ({fileResultsList.Count}):");
+			foreach (var fileResult in fileResultsList)
 			{
-				Logger.Log(f);
+				Logger.Log(formatter.FormatFileResult(fileResult));
 			}
 		}
 		else

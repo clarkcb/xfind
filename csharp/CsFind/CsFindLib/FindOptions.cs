@@ -16,6 +16,7 @@ public class FindOptions
 		new()
 		{
 			{ "archivesonly", (b, settings) => settings.ArchivesOnly = b },
+			{ "colorize", (b, settings) => settings.Colorize = b },
 			{ "debug", (b, settings) => settings.Debug = b },
 			{ "excludearchives", (b, settings) => settings.IncludeArchives = !b },
 			{ "excludehidden", (b, settings) => settings.IncludeHidden = !b },
@@ -23,6 +24,7 @@ public class FindOptions
 			{ "help", (b, settings) => settings.PrintUsage = b },
 			{ "includearchives", (b, settings) => settings.IncludeArchives = b },
 			{ "includehidden", (b, settings) => settings.IncludeHidden = b },
+			{ "nocolorize", (b, settings) => settings.Colorize = !b },
 			{ "nofollowsymlinks", (b, settings) => settings.FollowSymlinks = !b },
 			{ "noprintdirs", (b, settings) => settings.PrintDirs = !b },
 			{ "noprintfiles", (b, settings) => settings.PrintFiles = !b },

@@ -20,6 +20,8 @@ public class FindSettings
 		}
 	}
 
+	public bool Colorize { get; set; }
+
 	private bool _debug;
 	public bool Debug
 	{
@@ -67,6 +69,7 @@ public class FindSettings
 	public FindSettings()
 	{
 		ArchivesOnly = false;
+		Colorize = true;
 		Debug = false;
 		FollowSymlinks = false;
 		InArchiveExtensions = new HashSet<string>();
@@ -225,6 +228,7 @@ public class FindSettings
 	{
 		return "FindSettings(" +
 		       "ArchivesOnly=" + ArchivesOnly +
+		       ", Colorize: " + Colorize +
 		       ", Debug=" + Debug +
 		       ", FollowSymlinks=" + FollowSymlinks +
 		       ", InArchiveExtensions=" + EnumerableToString(InArchiveExtensions) +
