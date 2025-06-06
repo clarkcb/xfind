@@ -1,6 +1,7 @@
 #import <Foundation/Foundation.h>
 #import "Finder.h"
 #import "FileResult.h"
+#import "FileResultFormatter.h"
 #import "FindOptions.h"
 #import "FindSettings.h"
 
@@ -71,13 +72,15 @@ int main(int argc, const char * argv[]) {
         if (error) {
             handleError(error, options);
         }
+        
+        FileResultFormatter *formatter = [[FileResultFormatter alloc] initWithSettings:settings];
 
         if (settings.printDirs) {
             NSArray<NSString*> *dirPaths = getMatchingDirs(fileResults);
             if ([dirPaths count] > 0) {
                 logMsg([NSString stringWithFormat:@"\nMatching directories (%lu):", [dirPaths count]]);
                 for (NSString *d in dirPaths) {
-                    logMsg(d);
+                    logMsg(formatter.formatDirPath(d));
                 }
             } else {
                 logMsg(@"\nMatching directories: 0");
@@ -85,11 +88,10 @@ int main(int argc, const char * argv[]) {
         }
 
         if (settings.printFiles) {
-            NSArray<NSString*> *filePaths = getMatchingFiles(fileResults);
-            if ([filePaths count] > 0) {
-                logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [filePaths count]]);
-                for (NSString *f in filePaths) {
-                    logMsg(f);
+            if ([fileResults count] > 0) {
+                logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [fileResults count]]);
+                for (FileResult *fr in fileResults) {
+                    logMsg([formatter formatFileResult:fr]);
                 }
             } else {
                 logMsg(@"\nMatching files: 0");

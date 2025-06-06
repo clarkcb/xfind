@@ -87,6 +87,7 @@ typedef void (^BoolActionBlockType)(BOOL, FindSettings*);
             ss.archivesOnly = b;
             if (b) ss.includeArchives = true;
         } copy],
+        @"colorize" : [^void (BOOL b, FindSettings *ss) { ss.colorize = b; } copy],
         @"debug" : [^void (BOOL b, FindSettings *ss) {
             ss.debug = b;
             if (b) ss.verbose = true;
@@ -97,6 +98,7 @@ typedef void (^BoolActionBlockType)(BOOL, FindSettings*);
         @"help" : [^void (BOOL b, FindSettings *ss) { ss.printUsage = b; } copy],
         @"includearchives" : [^void (BOOL b, FindSettings *ss) { ss.includeArchives = b; } copy],
         @"includehidden" : [^void (BOOL b, FindSettings *ss) { ss.includeHidden = b; } copy],
+        @"nocolorize" : [^void (BOOL b, FindSettings *ss) { ss.colorize = !b; } copy],
         @"nofollowsymlinks" : [^void (BOOL b, FindSettings *ss) { ss.followSymlinks = !b; } copy],
         @"noprintdirs" : [^void (BOOL b, FindSettings *ss) { ss.printDirs = !b; } copy],
         @"noprintfiles" : [^void (BOOL b, FindSettings *ss) { ss.printFiles = !b; } copy],

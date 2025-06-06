@@ -14,6 +14,7 @@
 //}
 
 @property(nonatomic) BOOL archivesOnly;
+@property(nonatomic) BOOL colorize;
 @property(nonatomic) BOOL debug;
 @property(nonatomic) BOOL followSymlinks;
 @property(nonatomic) BOOL includeArchives;
