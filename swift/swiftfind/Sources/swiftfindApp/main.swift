@@ -44,6 +44,7 @@ func main() {
         let finder = try Finder(settings: settings)
 
         let fileResults = try finder.find()
+        let formatter = FileResultFormatter(settings: settings)
 
         if settings.printDirs {
             let dirs = getMatchingDirs(fileResults)
@@ -52,23 +53,18 @@ func main() {
             } else {
                 logMsg("\nMatching directories (\(dirs.count)):")
                 for dir in dirs {
-                    // TODO: better way to format paths, probably create a FindPath class for this
-                    // logMsg(FileUtil.formatPath(dir, forPaths: Array(settings.paths)))
-                    logMsg(dir)
+                    logMsg(formatter.formatDirPath(dir))
                 }
             }
         }
 
         if settings.printFiles {
-            let files = getMatchingFiles(fileResults)
-            if files.isEmpty {
+            if fileResults.isEmpty {
                 logMsg("\nMatching files: 0")
             } else {
-                logMsg("\nMatching files (\(files.count)):")
-                for file in files {
-                    // TODO: better way to format paths, probably create a FindPath class for this
-                    // logMsg(FileUtil.formatPath(file, forPaths: Array(settings.paths)))
-                    logMsg(file)
+                logMsg("\nMatching files (\(fileResults.count)):")
+                for fileResult in fileResults {
+                    logMsg(formatter.formatFileResult(fileResult))
                 }
             }
         }

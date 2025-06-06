@@ -61,6 +61,9 @@ public class FindOptions {
         "archivesonly": { (bool: Bool, settings: FindSettings) in
             settings.archivesOnly = bool
         },
+        "colorize": { (bool: Bool, settings: FindSettings) in
+            settings.colorize = bool
+        },
         "debug": { (bool: Bool, settings: FindSettings) in
             settings.debug = bool
         },
@@ -81,6 +84,9 @@ public class FindOptions {
         },
         "includehidden": { (bool: Bool, settings: FindSettings) in
             settings.includeHidden = bool
+        },
+        "nocolorize": { (bool: Bool, settings: FindSettings) in
+            settings.colorize = !bool
         },
         "nofollowsymlinks": { (bool: Bool, settings: FindSettings) in
             settings.followSymlinks = !bool
