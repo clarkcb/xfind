@@ -104,35 +104,26 @@ func (frs *FileResults) GetMatchingDirs() []string {
 	return dirs
 }
 
-func (frs *FileResults) PrintMatchingDirs() {
+func (frs *FileResults) PrintMatchingDirs(formatter *FileResultFormatter) {
 	paths := frs.GetMatchingDirs()
 	if len(paths) > 0 {
 		Log(fmt.Sprintf("\nMatching directories (%d):", len(paths)))
 		for _, p := range paths {
-			Log(p)
+			Log(formatter.FormatPath(p))
 		}
 	} else {
 		Log("\nMatching directories: 0")
 	}
 }
 
-func (frs *FileResults) GetMatchingFiles() []string {
-	var files []string
-	for _, r := range frs.FileResults {
-		files = append(files, r.String())
-	}
-	return files
-}
-
-func (frs *FileResults) PrintMatchingFiles() {
-	files := frs.GetMatchingFiles()
-	if len(files) > 0 {
-		Log(fmt.Sprintf("\nMatching files (%d):", len(files)))
-		for _, f := range files {
-			Log(f)
-		}
-	} else {
+func (frs *FileResults) PrintMatchingFiles(formatter *FileResultFormatter) {
+	if frs.IsEmpty() {
 		Log("\nMatching files: 0")
+	} else {
+		Log(fmt.Sprintf("\nMatching files (%d):", frs.Len()))
+		for _, r := range frs.FileResults {
+			Log(formatter.FormatFileResult(r))
+		}
 	}
 }
 
@@ -314,4 +305,104 @@ func (fr *FileResult) String() string {
 		buffer.WriteString(filepath.Join(fr.Path, fr.Name))
 	}
 	return buffer.String()
+}
+
+type StringFormatter func(string) string
+
+type FileResultFormatter struct {
+	Settings       *FindSettings
+	FormatPath     StringFormatter
+	FormatFileName StringFormatter
+}
+
+func NewFileResultFormatter(settings *FindSettings) *FileResultFormatter {
+	formatPath := func(path string) string { return path }
+	formatFileName := func(fileName string) string { return fileName }
+	f := &FileResultFormatter{
+		settings,
+		formatPath,
+		formatFileName,
+	}
+	if settings.Colorize() {
+		if !settings.InDirPatterns().IsEmpty() {
+			formatPath = func(path string) string { return f.FormatPathWithColor(path) }
+		}
+		if len(settings.InExtensions()) > 0 || !settings.InFilePatterns().IsEmpty() {
+			formatFileName = func(fileName string) string { return f.FormatFileNameWithColor(fileName) }
+		}
+		return &FileResultFormatter{
+			settings,
+			formatPath,
+			formatFileName,
+		}
+	}
+	return f
+}
+
+func (f *FileResultFormatter) getFormatPath() StringFormatter {
+	if f.Settings.Colorize() && !f.Settings.InDirPatterns().IsEmpty() {
+		return func(p string) string {
+			return f.FormatPathWithColor(p)
+		}
+	}
+	return func(p string) string {
+		return p
+	}
+}
+
+func colorize(s string, matchStartIndex int, matchEndIndex int) string {
+	prefix := ""
+	if matchStartIndex > 0 {
+		prefix = s[0:matchStartIndex]
+	}
+	suffix := ""
+	if matchEndIndex < len(s) {
+		suffix = s[matchEndIndex:]
+	}
+	return prefix +
+		COLOR_GREEN +
+		s[matchStartIndex:matchEndIndex] +
+		COLOR_RESET +
+		suffix
+}
+
+func (f *FileResultFormatter) FormatPathWithColor(path string) string {
+	formattedPath := "."
+	if path != "" {
+		formattedPath = path
+		it := f.Settings.InDirPatterns().Iterator()
+		for it.Next() {
+			p := it.Value()
+			if match := p.FindStringIndex(formattedPath); match != nil {
+				formattedPath = colorize(formattedPath, match[0], match[1])
+				break
+			}
+		}
+	}
+	return formattedPath
+}
+
+func (f *FileResultFormatter) FormatFileNameWithColor(fileName string) string {
+	formattedFileName := fileName
+	it := f.Settings.InFilePatterns().Iterator()
+	for it.Next() {
+		p := it.Value()
+		if match := p.FindStringIndex(formattedFileName); match != nil {
+			formattedFileName = colorize(formattedFileName, match[0], match[1])
+			break
+		}
+	}
+	if len(f.Settings.InExtensions()) > 0 {
+		idx := strings.Index(formattedFileName, ".")
+		if idx > 0 && idx < len(formattedFileName)-1 {
+			formattedFileName = colorize(formattedFileName, idx+1, len(formattedFileName))
+		}
+	}
+	return formattedFileName
+}
+
+func (f *FileResultFormatter) FormatFileResult(r *FileResult) string {
+	path := f.FormatPath(r.Path)
+	fileName := f.FormatFileName(r.Name)
+	return filepath.Join(path, fileName)
 }

@@ -65,6 +65,7 @@ func NameForSortBy(sortBy SortBy) string {
 // FindSettings - the settings for the find session
 type FindSettings struct {
 	archivesOnly           bool
+	colorize               bool
 	debug                  bool
 	followSymlinks         bool
 	inArchiveExtensions    []string
@@ -102,6 +103,7 @@ type FindSettings struct {
 func GetDefaultFindSettings() *FindSettings {
 	return &FindSettings{
 		false,          // ArchivesOnly
+		true,           // Colorize
 		false,          // Debug
 		false,          // FollowSymlinks
 		[]string{},     // InArchiveExtensions
@@ -186,6 +188,14 @@ func (f *FindSettings) SetArchivesOnly(archivesOnly bool) {
 	if archivesOnly {
 		f.includeArchives = true
 	}
+}
+
+func (f *FindSettings) Colorize() bool {
+	return f.colorize
+}
+
+func (f *FindSettings) SetColorize(b bool) {
+	f.colorize = b
 }
 
 func (f *FindSettings) Debug() bool {
@@ -538,6 +548,7 @@ func addPattern(p string, sp *Patterns) {
 func (f *FindSettings) String() string {
 	const template = "FindSettings(" +
 		"ArchivesOnly=%t" +
+		", Colorize=%t" +
 		", Debug=%t" +
 		", FollowSymlinks=%t" +
 		", InArchiveExtensions=%s" +
@@ -572,6 +583,7 @@ func (f *FindSettings) String() string {
 		", Verbose=%t)"
 	return fmt.Sprintf(template,
 		f.ArchivesOnly(),
+		f.Colorize(),
 		f.Debug(),
 		f.FollowSymlinks(),
 		StringListToString(f.InArchiveExtensions()),

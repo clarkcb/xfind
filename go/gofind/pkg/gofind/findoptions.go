@@ -291,6 +291,9 @@ func (fo *FindOptions) getBoolActionMap() map[string]boolAction {
 		"archivesonly": func(b bool, settings *FindSettings) {
 			settings.SetArchivesOnly(b)
 		},
+		"colorize": func(b bool, settings *FindSettings) {
+			settings.SetColorize(b)
+		},
 		"debug": func(b bool, settings *FindSettings) {
 			settings.SetDebug(b)
 		},
@@ -311,6 +314,9 @@ func (fo *FindOptions) getBoolActionMap() map[string]boolAction {
 		},
 		"includehidden": func(b bool, settings *FindSettings) {
 			settings.SetIncludeHidden(b)
+		},
+		"nocolorize": func(b bool, settings *FindSettings) {
+			settings.SetColorize(!b)
 		},
 		"nofollowsymlinks": func(b bool, settings *FindSettings) {
 			settings.SetFollowSymlinks(!b)

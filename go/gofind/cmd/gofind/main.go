@@ -36,14 +36,15 @@ func main() {
 	if err != nil {
 		errorAndExit(err, findOptions)
 	}
+	formatter := gofind.NewFileResultFormatter(settings)
 
 	// print matching dirs
 	if settings.PrintDirs() {
-		fileResults.PrintMatchingDirs()
+		fileResults.PrintMatchingDirs(formatter)
 	}
 
 	// print matching files (should default to true)
 	if settings.PrintFiles() {
-		fileResults.PrintMatchingFiles()
+		fileResults.PrintMatchingFiles(formatter)
 	}
 }
