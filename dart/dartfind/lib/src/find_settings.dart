@@ -63,6 +63,8 @@ class FindSettings {
     }
   }
 
+  bool colorize = true;
+
   bool _debug = false;
   bool get debug => _debug;
   set debug(bool value) {
@@ -168,6 +170,7 @@ class FindSettings {
 
   @override
   String toString() => 'FindSettings(archivesOnly=$archivesOnly'
+      ', colorize=$colorize'
       ', debug=$debug'
       ', followSymlinks=$followSymlinks'
       ', inArchiveExtensions=${stringSetToString(inArchiveExtensions)}'

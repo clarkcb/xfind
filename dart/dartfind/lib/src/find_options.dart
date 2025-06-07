@@ -66,6 +66,7 @@ class FindOptions {
   void setActionMaps() {
     boolActionMap = {
       'archivesonly': (bool b, FindSettings ss) => ss.archivesOnly = b,
+      'colorize': (bool b, FindSettings ss) => ss.colorize = b,
       'debug': (bool b, FindSettings ss) => ss.debug = b,
       'excludearchives': (bool b, FindSettings ss) => ss.includeArchives = !b,
       'excludehidden': (bool b, FindSettings ss) => ss.includeHidden = !b,
@@ -73,6 +74,7 @@ class FindOptions {
       'help': (bool b, FindSettings ss) => ss.printUsage = b,
       'includearchives': (bool b, FindSettings ss) => ss.includeArchives = b,
       'includehidden': (bool b, FindSettings ss) => ss.includeHidden = b,
+      'nocolorize': (bool b, FindSettings ss) => ss.colorize = !b,
       'nofollowsymlinks': (bool b, FindSettings ss) => ss.followSymlinks = !b,
       'noprintdirs': (bool b, FindSettings ss) => ss.printDirs = !b,
       'noprintfiles': (bool b, FindSettings ss) => ss.printFiles = !b,

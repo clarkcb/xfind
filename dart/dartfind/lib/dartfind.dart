@@ -1,5 +1,6 @@
 export 'src/common.dart';
 export 'src/config.dart';
+export 'src/console_color.dart';
 export 'src/file_result.dart';
 export 'src/file_types.dart';
 export 'src/file_util.dart';
