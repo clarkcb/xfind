@@ -3,9 +3,11 @@ use std::env;
 use std::process;
 
 use crate::common::{log, log_err};
-use crate::finder::{get_matching_dirs, get_matching_files};
+use crate::fileresultformatter::FileResultFormatter;
+use crate::finder::get_matching_dir_paths;
 use crate::finderror::FindError;
 
+pub mod color;
 pub mod common;
 pub mod config;
 pub mod filetypes;
@@ -13,6 +15,7 @@ pub mod fileutil;
 pub mod finder;
 pub mod finderror;
 pub mod fileresult;
+pub mod fileresultformatter;
 pub mod findoptions;
 pub mod findsettings;
 pub mod sortby;
@@ -28,26 +31,25 @@ fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
     process::exit(1);
 }
 
-fn print_matching_dirs(file_results: &Vec<fileresult::FileResult>) {
-    let dirs = get_matching_dirs(file_results);
+fn print_matching_dirs(file_results: &Vec<fileresult::FileResult>, formatter: &FileResultFormatter) {
+    let dirs = get_matching_dir_paths(file_results);
     if dirs.is_empty() {
         log("\nMatching directories: 0");
     } else {
         log(format!("\nMatching directories ({}):", dirs.len()).as_str());
         for dir in dirs.iter() {
-            log(format!("{}", dir).as_str());
+            log(format!("{}", (&formatter.format_dir_path)(dir, &formatter.settings)).as_str());
         }
     }
 }
 
-fn print_matching_files(file_results: &Vec<fileresult::FileResult>) {
-    let files = get_matching_files(file_results);
-    if files.is_empty() {
+fn print_matching_files(file_results: &Vec<fileresult::FileResult>, formatter: &FileResultFormatter) {
+    if file_results.is_empty() {
         log("\nMatching files: 0");
     } else {
-        log(format!("\nMatching files ({}):", files.len()).as_str());
-        for file in files.iter() {
-            log(format!("{}", file).as_str());
+        log(format!("\nMatching files ({}):", file_results.len()).as_str());
+        for fr in file_results.iter() {
+            log(format!("{}", formatter.format_file_result(fr)).as_str());
         }
     }
 }
@@ -85,11 +87,13 @@ fn find(args: Iter<String>) {
 
             match finder.find() {
                 Ok(file_results) => {
+                    let formatter = FileResultFormatter::new(finder.settings.clone());
+
                     if finder.settings.print_dirs() {
-                        print_matching_dirs(&file_results);
+                        print_matching_dirs(&file_results, &formatter);
                     }
                     if finder.settings.print_files() {
-                        print_matching_files(&file_results);
+                        print_matching_files(&file_results, &formatter);
                     }
                 }
                 Err(error) => error_and_exit(error, &options),

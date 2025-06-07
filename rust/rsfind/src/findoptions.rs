@@ -444,6 +444,10 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_archives_only(b))),
     );
     bool_action_map.insert(
+        "colorize".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_colorize(b))),
+    );
+    bool_action_map.insert(
         "debug".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_debug(b))),
     );
@@ -470,6 +474,10 @@ fn get_bool_action_map() -> HashMap<String, BoolAction> {
     bool_action_map.insert(
         "includehidden".to_string(),
         Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_include_hidden(b))),
+    );
+    bool_action_map.insert(
+        "nocolorize".to_string(),
+        Box::new(|b: bool, settings: &mut FindSettings| Ok(settings.set_colorize(!b))),
     );
     bool_action_map.insert(
         "nofollowsymlinks".to_string(),

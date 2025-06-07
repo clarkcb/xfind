@@ -7,6 +7,7 @@ use crate::sortby::SortBy;
 #[derive(Clone)]
 pub struct FindSettings {
     _archives_only: bool,
+    _colorize: bool,
     _debug: bool,
     _follow_symlinks: bool,
     _in_archive_extensions: Vec<String>,
@@ -45,6 +46,7 @@ impl FindSettings {
     pub fn default() -> FindSettings {
         FindSettings {
             _archives_only: false,
+            _colorize: true,
             _debug: false,
             _follow_symlinks: false,
             _in_archive_extensions: Vec::new(),
@@ -89,6 +91,14 @@ impl FindSettings {
         if b {
             self._include_archives = b;
         }
+    }
+
+    pub fn colorize(&self) -> bool {
+        self._colorize
+    }
+
+    pub fn set_colorize(&mut self, b: bool) {
+        self._colorize = b
     }
 
     pub fn debug(&self) -> bool {
@@ -365,6 +375,7 @@ impl FindSettings {
     fn get_settings_string(&self) -> String {
         let mut s = String::from("FindSettings(");
         s.push_str(format!("archives_only={}", &self.archives_only()).as_str());
+        s.push_str(format!(", colorize={}", &self.colorize()).as_str());
         s.push_str(format!(", debug={}", &self.debug()).as_str());
         s.push_str(format!(", follow_symlinks={}", &self.follow_symlinks()).as_str());
         s.push_str(format!(", in_archive_extensions={:?}", &self.in_archive_extensions()).as_str());
@@ -442,6 +453,7 @@ mod tests {
     fn test_default() {
         let settings = FindSettings::default();
         assert_eq!(settings.archives_only(), false);
+        assert_eq!(settings.colorize(), true);
         assert_eq!(settings.debug(), false);
         assert_eq!(settings.follow_symlinks(), false);
         assert!(settings.in_archive_extensions().is_empty());

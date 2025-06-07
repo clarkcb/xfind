@@ -43,6 +43,10 @@ impl FileResult {
         }
     }
 
+    pub fn parent_path(&self) -> &Path {
+        self.file_path.parent().unwrap()
+    }
+
     pub fn parent(&self) -> &str {
         self.file_path.parent().unwrap().to_str().unwrap()
     }

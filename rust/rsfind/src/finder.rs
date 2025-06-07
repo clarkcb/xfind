@@ -403,26 +403,16 @@ impl Finder {
 }
 
 /// Get the unique list of directories for matching files
-pub fn get_matching_dirs(file_results: &[FileResult]) -> Vec<String> {
+pub fn get_matching_dir_paths(file_results: &[FileResult]) -> Vec<PathBuf> {
     let mut dir_set: HashSet<String> = HashSet::new();
-    let mut dirs: Vec<String> = Vec::new();
+    let mut dirs: Vec<PathBuf> = Vec::new();
     for f in file_results.iter() {
         if !dir_set.contains(f.parent()) {
-            dirs.push(String::from(f.parent()));
+            dirs.push(PathBuf::from(f.parent_path()));
             dir_set.insert(String::from(f.parent()));
         }
     }
     dirs
-}
-
-/// Get the unique list of filepaths for the matching files
-pub fn get_matching_files(file_results: &[FileResult]) -> Vec<String> {
-    let mut files: Vec<String> = Vec::new();
-    for f in file_results.iter() {
-        let file_path = f.file_path();
-        files.push(file_path);
-    }
-    files
 }
 
 #[cfg(test)]
