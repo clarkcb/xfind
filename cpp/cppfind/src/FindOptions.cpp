@@ -19,6 +19,7 @@ namespace cppfind {
     FindOptions::FindOptions() {
         m_bool_arg_map = {
             {"archivesonly", [](const bool b, FindSettings& ss) -> void { ss.archives_only(b); }},
+            {"colorize", [](const bool b, FindSettings& ss) { ss.colorize(b); }},
             {"debug", [](const bool b, FindSettings& ss) { ss.debug(b); }},
             {"excludearchives", [](const bool b, FindSettings& ss) { ss.include_archives(!b); }},
             {"excludehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(!b); }},
@@ -26,6 +27,7 @@ namespace cppfind {
             {"help", [](const bool b, FindSettings& ss) { ss.print_usage(b); }},
             {"includearchives", [](const bool b, FindSettings& ss) { ss.include_archives(b); }},
             {"includehidden", [](const bool b, FindSettings& ss) { ss.include_hidden(b); }},
+            {"nocolorize", [](const bool b, FindSettings& ss) { ss.colorize(!b); }},
             {"nofollowsymlinks", [](const bool b, FindSettings& ss) { ss.follow_symlinks(!b); }},
             {"noprintdirs", [](const bool b, FindSettings& ss) { ss.print_dirs(!b); }},
             {"noprintfiles", [](const bool b, FindSettings& ss) { ss.print_files(!b); }},
@@ -88,8 +90,8 @@ namespace cppfind {
         }
 
         uint64_t file_size = std::filesystem::file_size(find_options_path);
-        // current size is 4732, make sure it's not dramatically bigger than that
-        if (file_size > 5120) {
+        // current size is 5178, make sure it's not dramatically bigger than that
+        if (file_size > 5200) {
             throw FindException("Invalid findoptions file");
         }
 

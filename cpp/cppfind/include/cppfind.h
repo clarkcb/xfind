@@ -176,6 +176,17 @@ namespace cppfind {
         static std::string long_to_date_str(long time);
     };
 
+    // color.h
+#define COLOR_RESET  "\033[0m"
+#define COLOR_BLACK  "\033[30m"
+#define COLOR_RED    "\033[31m"
+#define COLOR_GREEN  "\033[32m"
+#define COLOR_YELLOW "\033[33m"
+#define COLOR_BLUE   "\033[34m"
+#define COLOR_PURPLE "\033[35m"
+#define COLOR_CYAN   "\033[36m"
+#define COLOR_WHITE  "\033[37m"
+
     // common.h
     void log_msg(std::string_view msg);
     void log_error(std::string_view msg);
@@ -211,6 +222,7 @@ namespace cppfind {
 
         // property getters
         [[nodiscard]] bool archives_only() const;
+        [[nodiscard]] bool colorize() const;
         [[nodiscard]] bool debug() const;
         [[nodiscard]] bool follow_symlinks() const;
         [[nodiscard]] bool include_archives() const;
@@ -247,6 +259,7 @@ namespace cppfind {
 
         // property setters
         void archives_only(bool archives_only);
+        void colorize(bool colorize);
         void debug(bool debug);
         void follow_symlinks(bool follow_symlinks);
         void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
@@ -326,6 +339,21 @@ namespace cppfind {
         [[nodiscard]] uint64_t file_size() const;
         [[nodiscard]] long last_mod() const;
         [[nodiscard]] std::string string() const;
+    };
+
+    // FileResultFormatter.h
+    class FileResultFormatter {
+    public:
+        explicit FileResultFormatter(const FindSettings& settings);
+        explicit FileResultFormatter(const std::unique_ptr<FindSettings>& settings_ptr);
+        FileResultFormatter(FileResultFormatter& other) = delete;
+        FileResultFormatter(FileResultFormatter&& other) = delete;
+        [[nodiscard]] FindSettings settings() const;
+        [[nodiscard]] std::string colorize(const std::string& s, unsigned long match_start_idx, unsigned long match_end_idx) const;
+        [[nodiscard]] std::string format_dir_path(const std::filesystem::path& dir_path) const;
+        [[nodiscard]] std::string format_file_name(const std::string& file_name) const;
+        [[nodiscard]] std::string format_file_path(const std::filesystem::path& file_path) const;
+        [[nodiscard]] std::string format_file_result(const FileResult& result) const;
     };
 
     // FindOptions.h

@@ -1,30 +1,22 @@
 #include "common.h"
+#include "FileResultFormatter.h"
 #include "FindException.h"
 #include "FindOptions.h"
 #include "Finder.h"
 
 using namespace cppfind;
 
-std::vector<std::string> get_matching_dirs(const std::vector<FileResult>& file_results) {
+std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results) {
     std::unordered_set<std::string> dir_set;
-    std::vector<std::string> matching_dirs;
+    std::vector<std::filesystem::path> matching_dir_paths;
     for (const auto& fr : file_results) {
         const std::string dir = fr.file_path().parent_path().string();
         if (!dir_set.contains(dir)) {
-            matching_dirs.push_back(dir);
+            matching_dir_paths.push_back(fr.file_path().parent_path());
         }
         dir_set.emplace(dir);
     }
-    return matching_dirs;
-}
-
-std::vector<std::string> get_matching_files(const std::vector<FileResult>& file_results) {
-    std::vector<std::string> matching_files;
-    matching_files.reserve(file_results.size());
-    for (const auto& fr : file_results) {
-        matching_files.push_back(fr.string());
-    }
-    return matching_files;
+    return matching_dir_paths;
 }
 
 int main(int argc, char *argv[]) {
@@ -49,38 +41,39 @@ int main(int argc, char *argv[]) {
             options->usage();
         }
 
-        const std::unique_ptr<FindSettings> settings_ptr = std::make_unique<FindSettings>(settings);
+        const auto settings_ptr = std::make_unique<FindSettings>(settings);
 
         const auto finder = Finder(settings_ptr);
 
         const std::vector<FileResult> file_results = finder.find();
 
+        const auto formatter = FileResultFormatter(settings_ptr);
+
         if (settings.print_dirs()) {
-            const std::vector<std::string> dirs = get_matching_dirs(file_results);
+            const std::vector<std::filesystem::path> dir_paths = get_matching_dir_paths(file_results);
             std::string msg{"\nMatching directories"};
-            if (dirs.empty()) {
+            if (dir_paths.empty()) {
                 msg.append(": 0");
                 log_msg(msg);
             } else {
-                msg.append(" (").append(std::to_string(dirs.size())).append("):");
+                msg.append(" (").append(std::to_string(dir_paths.size())).append("):");
                 log_msg(msg);
-                for (const auto& d : dirs) {
-                    log_msg(d);
+                for (const auto& d : dir_paths) {
+                    log_msg(formatter.format_dir_path(d));
                 }
             }
         }
 
         if (settings.print_files()) {
-            const std::vector<std::string> files = get_matching_files(file_results);
             std::string msg{"\nMatching files"};
-            if (files.empty()) {
+            if (file_results.empty()) {
                 msg.append(": 0");
                 log_msg(msg);
             } else {
-                msg.append(" (").append(std::to_string(files.size())).append("):");
+                msg.append(" (").append(std::to_string(file_results.size())).append("):");
                 log_msg(msg);
-                for (const auto& f : files) {
-                    log_msg(f);
+                for (const auto& fr : file_results) {
+                    log_msg(formatter.format_file_result(fr));
                 }
             }
         }

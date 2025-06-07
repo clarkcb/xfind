@@ -8,6 +8,7 @@ namespace cppfind {
 
     FindSettings::FindSettings() :
     m_archives_only{false},
+    m_colorize{true},
     m_debug{false},
     m_follow_symlinks{false},
     m_include_archives{false},
@@ -33,6 +34,14 @@ namespace cppfind {
     void FindSettings::archives_only(const bool archives_only) {
         m_archives_only = archives_only;
         if (archives_only) m_include_archives = true;
+    }
+
+    bool FindSettings::colorize() const {
+        return m_colorize;
+    }
+
+    void FindSettings::colorize(const bool colorize) {
+        m_colorize = colorize;
     }
 
     bool FindSettings::debug() const {
@@ -451,6 +460,7 @@ namespace cppfind {
     std::string FindSettings::string() const {
         return std::string("FindSettings(")
                 + "archives_only=" + StringUtil::bool_to_string(m_archives_only)
+                + ", colorize=" + StringUtil::bool_to_string(m_colorize)
                 + ", debug=" + StringUtil::bool_to_string(m_debug)
                 + ", follow_symlinks=" + StringUtil::bool_to_string(m_follow_symlinks)
                 + ", in_archive_extensions=" + StringUtil::unordered_string_set_to_string(m_in_archive_extensions)

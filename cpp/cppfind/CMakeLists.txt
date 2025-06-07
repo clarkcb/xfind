@@ -45,6 +45,7 @@ target_sources(${PROJECT_NAME}
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/cppfind.h>
         $<INSTALL_INTERFACE:include/cppfind.h>
         PRIVATE
+        include/color.h
         include/common.h src/common.cpp
         include/FindConfig.h src/FindConfig.cpp
         include/FileTypes.h src/FileTypes.cpp
@@ -53,6 +54,7 @@ target_sources(${PROJECT_NAME}
         include/FindException.h src/FindException.cpp
         include/FindSettings.h src/FindSettings.cpp
         include/FileResult.h src/FileResult.cpp
+        include/FileResultFormatter.h src/FileResultFormatter.cpp
         include/FindOption.h src/FindOption.cpp
         include/FindOptions.h src/FindOptions.cpp
         include/RegexPattern.h src/RegexPattern.cpp

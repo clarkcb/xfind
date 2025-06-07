@@ -39,6 +39,7 @@ namespace cppfind {
 
         // property getters
         [[nodiscard]] bool archives_only() const;
+        [[nodiscard]] bool colorize() const;
         [[nodiscard]] bool debug() const;
         [[nodiscard]] bool follow_symlinks() const;
         [[nodiscard]] bool include_archives() const;
@@ -75,6 +76,7 @@ namespace cppfind {
 
         // property setters
         void archives_only(bool archives_only);
+        void colorize(bool colorize);
         void debug(bool debug);
         void follow_symlinks(bool follow_symlinks);
         void in_archive_extensions(const std::unordered_set<std::string>& in_archive_extensions);
@@ -140,6 +142,7 @@ namespace cppfind {
 
     protected:
         bool m_archives_only;
+        bool m_colorize;
         bool m_debug;
         bool m_follow_symlinks;
 
