@@ -30,6 +30,7 @@ import HsFind.SortBy (SortBy(..), getSortByForName, sortByToString)
 
 data FindSettings = FindSettings {
                                    archivesOnly :: Bool
+                                 , colorize :: Bool
                                  , debug :: Bool
                                  , followSymlinks :: Bool
                                  , inArchiveExtensions :: [String]
@@ -67,6 +68,7 @@ data FindSettings = FindSettings {
 defaultFindSettings :: FindSettings
 defaultFindSettings = FindSettings {
                                      archivesOnly=False
+                                   , colorize=True
                                    , debug=False
                                    , followSymlinks=False
                                    , inArchiveExtensions=[]
@@ -111,6 +113,7 @@ findSettingsToString :: FindSettings -> String
 findSettingsToString settings = 
   "FindSettings(" ++
   "archivesOnly=" ++ show (archivesOnly settings) ++
+  ", colorize=" ++ show (colorize settings) ++
   ", debug=" ++ show (debug settings) ++
   ", followSymlinks=" ++ show (followSymlinks settings) ++
   ", inArchiveExtensions=" ++ listToString (inArchiveExtensions settings) ++
@@ -160,13 +163,13 @@ needLastMods settings = isJust (minLastMod settings) || isJust (maxLastMod setti
 
 -- JSON parsing stuff below here
 validKeys :: [Text]
-validKeys = ["archivesonly", "debug", "excludearchives", "excludehidden", "followsymlinks", "help",
-             "in-archiveext", "in-archivefilepattern", "in-dirpattern", "in-ext", "in-filepattern",
-             "in-filetype", "includearchives", "includehidden", "maxdepth", "maxlastmod", "maxsize",
-             "mindepth", "minlastmod", "minsize", "out-archiveextension", "out-archivefilepattern",
-             "out-dirpattern", "out-ext", "out-filepattern", "out-filetype", "path", "printdirs",
-             "printfiles", "recursive", "sort-caseinsensitive", "sort-descending", "sort-by",
-             "verbose", "version"]
+validKeys = ["archivesonly", "colorize", "debug", "excludearchives", "excludehidden",
+             "followsymlinks", "help", "in-archiveext", "in-archivefilepattern", "in-dirpattern",
+             "in-ext", "in-filepattern", "in-filetype", "includearchives", "includehidden",
+             "maxdepth", "maxlastmod", "maxsize", "mindepth", "minlastmod", "minsize",
+             "out-archiveextension", "out-archivefilepattern", "out-dirpattern", "out-ext",
+             "out-filepattern", "out-filetype", "path", "printdirs", "printfiles", "recursive",
+             "sort-caseinsensitive", "sort-descending", "sort-by", "verbose", "version"]
 
 instance FromJSON FindSettings where
   parseJSON = withObject "FindSettings" $ \obj -> do
@@ -179,6 +182,7 @@ instance FromJSON FindSettings where
 
     -- Parse known fields
     archivesOnly <- obj .:? "archivesonly" .!= False
+    colorize <- obj .:? "colorize" .!= True
     debug <- obj .:? "debug" .!= False
     followSymlinks <- obj .:? "followsymlinks" .!= False
     inArchiveExtensions <- obj .:? "in-archiveext" >>= parseStringOrArray
@@ -213,6 +217,7 @@ instance FromJSON FindSettings where
     verbose <- obj .:? "verbose" .!= False
     return FindSettings {
       archivesOnly=archivesOnly
+    , colorize=colorize
     , debug=debug
     , followSymlinks=followSymlinks
     , inArchiveExtensions=inArchiveExtensions
@@ -311,6 +316,7 @@ updateFindSettingsFromJsonValue settings json =
 mergeFindSettings :: FindSettings -> FindSettings -> FindSettings
 mergeFindSettings old new = FindSettings
   { archivesOnly = archivesOnly new || archivesOnly old
+  , colorize = colorize new || colorize old
   , debug = debug new || debug old
   , followSymlinks = followSymlinks new || followSymlinks old
   , inArchiveExtensions = inArchiveExtensions old ++ inArchiveExtensions new

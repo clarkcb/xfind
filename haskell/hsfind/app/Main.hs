@@ -5,7 +5,7 @@ import System.Environment (getArgs)
 import System.FilePath (takeDirectory)
 import System.IO (hPutStr, stderr)
 
-import HsFind.FileResult (FileResult, fileResultPath, fileResultToString)
+import HsFind.FileResult (FileResult, fileResultPath, formatDirectory, formatFileResult)
 import HsFind.FindOptions (getFindOptions, getUsage, ioSettingsFromArgs, settingsFromArgs)
 import HsFind.Finder (doFind, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
@@ -14,21 +14,21 @@ import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 getMatchingDirs :: [FileResult] -> [FilePath]
 getMatchingDirs = sort . nub . map (takeDirectory . fileResultPath)
 
-formatMatchingDirs :: [FileResult] -> String
-formatMatchingDirs fileResults =
+formatMatchingDirs :: FindSettings -> [FileResult] -> String
+formatMatchingDirs settings fileResults =
   if not (null matchingDirs) then
     "\nMatching directories (" ++ show (length matchingDirs) ++ "):\n" ++
     unlines matchingDirs
   else "\nMatching directories: 0\n"
-  where matchingDirs = getMatchingDirs fileResults
+  where matchingDirs = map (formatDirectory settings) $ getMatchingDirs fileResults
 
-formatMatchingFiles :: [FileResult] -> String
-formatMatchingFiles fileResults =
+formatMatchingFiles :: FindSettings -> [FileResult] -> String
+formatMatchingFiles settings fileResults =
   if not (null matchingFiles) then
     "\nMatching files (" ++ show (length matchingFiles) ++ "):\n" ++
     unlines matchingFiles
   else "\nMatching files: 0\n"
-  where matchingFiles = map fileResultToString fileResults
+  where matchingFiles = map (formatFileResult settings) fileResults
 
 logMsg :: String -> IO ()
 logMsg = putStr
@@ -72,9 +72,9 @@ main = do
                       logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                     Right fileResults -> do
                       logMsg $ if printDirs settings
-                                then formatMatchingDirs fileResults
+                                then formatMatchingDirs settings fileResults
                                 else ""
                       logMsg $ if printFiles settings
-                                then formatMatchingFiles fileResults
+                                then formatMatchingFiles settings fileResults
                                 else ""
                       logMsg ""

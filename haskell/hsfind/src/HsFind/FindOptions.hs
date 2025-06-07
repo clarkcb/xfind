@@ -106,6 +106,7 @@ type IntegerAction = FindSettings -> Integer -> FindSettings
 
 boolActions :: [(String, BoolAction)]
 boolActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b, includeArchives=b})
+              , ("colorize", \ss b -> ss {colorize=b})
               , ("debug", \ss b -> ss {debug=b, verbose=b})
               , ("excludearchives", \ss b -> ss {includeArchives=not b})
               , ("excludehidden", \ss b -> ss {includeHidden=not b})
@@ -113,6 +114,7 @@ boolActions = [ ("archivesonly", \ss b -> ss {archivesOnly=b, includeArchives=b}
               , ("help", \ss b -> ss {printUsage=b})
               , ("includearchives", \ss b -> ss {includeArchives=b})
               , ("includehidden", \ss b -> ss {includeHidden=b})
+              , ("nocolorize", \ss b -> ss {colorize=not b})
               , ("nofollowsymlinks", \ss b -> ss {followSymlinks=not b})
               , ("noprintdirs", \ss b -> ss {printDirs=b})
               , ("noprintfiles", \ss b -> ss {printFiles=not b})
