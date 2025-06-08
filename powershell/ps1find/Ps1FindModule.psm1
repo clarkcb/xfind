@@ -22,6 +22,24 @@ $findOptionsPath = Join-Path -Path $sharedPath -ChildPath 'findoptions.json'
 #endregion
 
 
+#region Color
+########################################
+# Color
+########################################
+#$esc = "`e" # Escape character
+$esc = [char]27
+$Reset =  "${esc}[0m";
+$Black =  "${esc}[30m";
+$Red =    "${esc}[31m";
+$Green =  "${esc}[32m";
+$Yellow = "${esc}[33m";
+$Blue =   "${esc}[34m";
+$Purple = "${esc}[35m";
+$Cyan =   "${esc}[36m";
+$White =  "${esc}[37m";
+#endregion
+
+
 #region Common
 ########################################
 # Common
@@ -30,7 +48,7 @@ function LogMsg {
     param([string]$msg)
 
     # Write-Output $msg
-    Write-Host $msg
+    Write-Host "$msg"
 }
 
 function LogError {
@@ -308,6 +326,7 @@ function SortByToName {
 
 class FindSettings {
     [bool]$ArchivesOnly
+    [bool]$Colorize
     [bool]$Debug
     [bool]$FollowSymlinks
     [string[]]$InArchiveExtensions
@@ -343,6 +362,7 @@ class FindSettings {
 
     FindSettings() {
 		$this.ArchivesOnly = $false
+		$this.Colorize = $true
 		$this.Debug = $false
 		$this.FollowSymlinks = $false
 		$this.InArchiveExtensions = @()
@@ -420,6 +440,7 @@ class FindSettings {
     [string]ToString() {
         return "FindSettings(" +
         "ArchivesOnly=$($this.ArchivesOnly)" +
+        ", Colorize=$($this.Colorize)" +
         ", Debug=$($this.Debug)" +
         ", FollowSymlinks=$($this.FollowSymlinks)" +
         ", InArchiveExtensions=$($this.StringArrayToString($this.InArchiveExtensions))" +
@@ -493,6 +514,10 @@ class FindOptions {
             param([bool]$b, [FindSettings]$settings)
             $settings.SetArchivesOnly($b)
         }
+        "colorize" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.Colorize = $b
+        }
         "debug" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.SetDebug($b)
@@ -520,6 +545,10 @@ class FindOptions {
         "includehidden" = {
             param([bool]$b, [FindSettings]$settings)
             $settings.IncludeHidden = $b
+        }
+        "nocolorize" = {
+            param([bool]$b, [FindSettings]$settings)
+            $settings.Colorize = !$b
         }
         "nofollowsymlinks" = {
             param([bool]$b, [FindSettings]$settings)
@@ -833,6 +862,111 @@ class FileResult {
         $this.Containers = @()
         $this.File = $File
         $this.Type = $Type
+    }
+}
+#endregion
+
+
+#region FileResultFormatter
+########################################
+# FileResultFormatter
+########################################
+class FileResultFormatter {
+    [FindSettings]$Settings
+    [Scriptblock]$FormatDirectoryBlock
+    [Scriptblock]$FormatFileNameBlock
+
+    FileResultFormatter([FindSettings]$settings) {
+        $this.Settings = $settings
+        if ($settings.Colorize -and $settings.InDirPatterns.Length -gt 0) {
+            $this.FormatDirectoryBlock = {
+                param([System.IO.DirectoryInfo]$dir)
+                return $this.FormatDirectoryWithColor($dir)
+            }
+        } else {
+            $this.FormatDirectoryBlock = {
+                param([System.IO.DirectoryInfo]$dir)
+                if ($null -eq $dir) {
+                    return "."
+                }
+                return $dir.ToString()
+            }
+        }
+        if ($settings.Colorize -and ($settings.InExtensions.Length -gt 0 -or $settings.InFilePatterns.Length -gt 0)) {
+            $this.FormatFileNameBlock = {
+                param([string]$fileName)
+                return $this.FormatFileNameColor($fileName)
+            }
+        } else {
+            $this.FormatFileNameBlock = {
+                param([string]$fileName)
+                return $fileName
+            }
+        }
+    }
+
+    [string]ColorizeString([string]$s, [int]$matchStartIdx, [int]$matchEndIdx) {
+        $prefix = ''
+        if ($matchStartIdx -gt 0) {
+            $prefix = $s.Substring(0, $matchStartIdx)
+        }
+        $match = $s.Substring($matchStartIdx, $matchEndIdx - $matchStartIdx)
+        $suffix = ''
+        if ($matchEndIdx -lt $s.Length) {
+            $suffix = $s.Substring($matchEndIdx)
+        }
+        return "$prefix${script:Green}$match${script:Reset}$suffix"
+    }
+
+    [string]FormatDirectoryWithColor([System.IO.DirectoryInfo]$dir) {
+        $formattedDir = "."
+        if ($null -ne $dir) {
+            $formattedDir = $dir.ToString();
+            foreach ($dirPattern in $this.Settings.InDirPatterns) {
+                $match = $dirPattern.Match($formattedDir)
+                if ($match.Success) {
+                    $formattedDir = $this.ColorizeString($formattedDir, $match.Index, $match.Index + $match.Length)
+                    break
+                }
+            }
+        }
+        return $formattedDir
+    }
+
+    [string]FormatDirectory([System.IO.DirectoryInfo]$dir) {
+        return $this.FormatDirectoryBlock.Invoke($dir)
+    }
+
+    [string]FormatFileNameColor([string]$fileName) {
+        $formattedFileName = $fileName
+        foreach ($filePattern in $this.Settings.InFilePatterns) {
+            $match = $filePattern.Match($formattedFileName)
+            if ($match.Success) {
+                $formattedFileName = $this.ColorizeString($formattedFileName, $match.Index, $match.Index + $match.Length)
+                break
+            }
+        }
+        if ($this.Settings.InExtensions.Count -gt 0) {
+            $idx = $formattedFileName.LastIndexOf('.')
+            if ($idx -gt 0 -and $idx -lt $formattedFileName.Length) {
+                $formattedFileName = $this.ColorizeString($formattedFileName, $idx + 1, $formattedFileName.Length)
+            }
+        }
+        return $formattedFileName
+    }
+
+    [string]FormatFileName([string]$fileName) {
+        return $this.FormatFileNameBlock.Invoke($fileName)
+    }
+
+    [string]FormatFile([System.IO.FileInfo]$file) {
+        $parent = $this.FormatDirectory($file.Directory)
+        $fileName = $this.FormatFileName($file.Name)
+        return $parent + [System.IO.Path]::DirectorySeparatorChar + $fileName
+    }
+
+    [string]FormatFileResult([FileResult]$result) {
+        return $this.FormatFile($result.File)
     }
 }
 #endregion

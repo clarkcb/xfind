@@ -11,38 +11,6 @@
 using module 'Ps1FindModule'
 
 
-function PrintMatchingDirs {
-    param([FileResult[]]$files)
-    $dirs = @()
-    if ($files.Count -gt 0) {
-        $dirs = $files |
-            ForEach-Object { if ($null -eq $_.File.Directory) {"."} else {$_.File.Directory.ToString()} } |
-            Select-Object -Unique
-    }
-    if ($dirs.Count -gt 0) {
-        LogMsg("`nMatching directories ($($dirs.Count)):")
-        foreach ($d in $dirs) {
-            # LogMsg($d.OriginalPath)
-            LogMsg($d)
-        }
-    } else {
-        LogMsg("`nMatching directories: 0")
-    }
-}
-
-function PrintMatchingFiles {
-    param([FileResult[]]$files)
-
-    if ($files.Count -gt 0) {
-        LogMsg("`nMatching files ($($files.Count)):")
-        foreach ($f in $files) {
-            LogMsg($f.File)
-        }
-    } else {
-        LogMsg("`nMatching files: 0")
-    }
-}
-
 function Main {
     param(
         [string[]]$_args
@@ -65,12 +33,34 @@ function Main {
         $finder = [Finder]::new($settings)
         $files = $finder.Find()
 
+        $formatter = [FileResultFormatter]::new($settings)
+
         if ($settings.PrintDirs) {
-            PrintMatchingDirs($files)
+            $dirs = @()
+            if ($files.Count -gt 0) {
+                $dirs = $files |
+                        ForEach-Object { $_.File.Directory } |
+                        Select-Object -Unique
+            }
+            if ($dirs.Count -gt 0) {
+                LogMsg("`nMatching directories ($($dirs.Count)):")
+                foreach ($d in $dirs) {
+                    LogMsg($formatter.FormatDirectory($d))
+                }
+            } else {
+                LogMsg("`nMatching directories: 0")
+            }
         }
 
         if ($settings.PrintFiles) {
-            PrintMatchingFiles($files)
+            if ($files.Count -gt 0) {
+                LogMsg("`nMatching files ($($files.Count)):")
+                foreach ($f in $files) {
+                    LogMsg($formatter.FormatFileResult($f))
+                }
+            } else {
+                LogMsg("`nMatching files: 0")
+            }
         }
     }
     catch {
