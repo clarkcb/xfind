@@ -1,0 +1,92 @@
+{
+    "ref": {
+        "common_out_dirpatterns": [
+            "pycache", "venv"
+        ],
+        "common_startpaths": ["~/src/xfind/python"],
+        "scriptpath": "$XFIND_PATH/scripts",
+        "sharedpath": "$XFIND_PATH/shared"
+    },
+    "scenarios": [
+        {
+            "group": "colorize",
+            "name": "colorize in usage",
+            "args": ["-h" ],
+            "replace_xfind_name": true,
+            "common_args": [
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize names by default in file listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize names in file listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-c", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize names in file listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-C", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize dirs and names in file listing",
+            "args": ["--maxdepth", "1", "-t", "code", "-d", "script", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize dirs and names in file listing",
+            "args": ["--maxdepth", "1", "-C", "-t", "code", "-d", "script", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize dirs and names in dir and file listings",
+            "args": ["--maxdepth", "1", "-t", "code", "-d", "cript", "--printdirs", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize dirs and names in dir and file listings",
+            "args": ["--maxdepth", "1", "-C", "-t", "code", "-d", "cript", "--printdirs", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "colorize dirs, names and exts in file listing",
+            "args": ["--maxdepth", "1", "-x", "sh", "-d", "script", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        },
+        {
+            "group": "colorize",
+            "name": "nocolorize dirs, names and exts in file listing",
+            "args": ["--maxdepth", "1", "-C", "-x", "sh", "-d", "script", "-f", "build", "~/src/xfind/scripts"],
+            "common_args": [
+                "common_out_dirpatterns"
+            ]
+        }
+    ]
+}

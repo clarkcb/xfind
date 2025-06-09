@@ -8,9 +8,11 @@
 #
 ################################################################################
 import argparse
+from io import StringIO
 import json
 import subprocess
 import sys
+from termcolor import colored, cprint
 
 from dataclasses import dataclass
 from datetime import datetime
@@ -357,6 +359,7 @@ class ScenarioResults(object):
 ########################################
 class Benchmarker(object):
     def __init__(self, **kwargs):
+        self.colorize = True
         self.xfind_names = []
         self.group_names = []
         self.scenario_names = []
@@ -438,8 +441,29 @@ class Benchmarker(object):
                     self.scenarios.extend(sg.scenarios)
 
     def __print_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
+        if self.colorize:
+            self.__print_colorized_data_table(title, hdr, data, col_types)
+        else:
+            print(f'\n{title}')
+            print(tabulate(data, headers=hdr))
+
+    def __print_colorized_data_table(self, title: str, hdr: list[str], data: list[list[Union[float, int]]], col_types: list[type]):
         print(f'\n{title}')
-        print(tabulate(data, headers=hdr))
+        sio = StringIO(tabulate(data, headers=hdr))
+        sio.seek(0)
+        lines = sio.readlines()
+        for hdr in lines[:2]:
+            print(colored(hdr.rstrip(), 'white', attrs=['bold']))
+        colors = [
+            'red', 'green', 'yellow', 'blue', 'magenta', 'cyan',
+            'light_red', 'light_green', 'light_yellow', 'light_blue', 'light_magenta', 'light_cyan'
+        ]
+        c = 0
+        for line in lines[2:]:
+            print(colored(line.strip(), colors[c]))
+            c += 1
+            if c >= len(colors):
+                c = 0
 
     def print_scenario_summary(self, scenario_results: ScenarioResults):
         title = "\nScenario results summary for {} out of {} scenarios with {} out of {} total runs\n".\
