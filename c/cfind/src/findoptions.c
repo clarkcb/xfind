@@ -12,10 +12,11 @@
 #include "fileutil.h"
 #include "findoptions.h"
 
-#define BOOL_OPTION_COUNT 21
+#define BOOL_OPTION_COUNT 23
 const size_t bool_option_count = BOOL_OPTION_COUNT;
 char **bool_option_names = (char *[]) {
     "archivesonly",
+    "colorize",
     "debug",
     "excludearchives",
     "excludehidden",
@@ -23,6 +24,7 @@ char **bool_option_names = (char *[]) {
     "includearchives",
     "includehidden",
     "help",
+    "nocolorize",
     "nofollowsymlinks",
     "noprintdirs",
     "noprintfiles",
@@ -40,6 +42,7 @@ char **bool_option_names = (char *[]) {
 
 char **bool_option_abbrs = (char *[]) {
     "a", // archivesonly
+    "c", // colorize
     "",  // debug
     "Z", // excludearchives
     "",  // excludehidden
@@ -47,7 +50,8 @@ char **bool_option_abbrs = (char *[]) {
     "z", // includearchives
     "",  // includehidden
     "h", // help
-    "",  // followsymlinks
+    "C", // nocolorize
+    "",  // nofollowsymlinks
     "",  // noprintdirs
     "",  // noprintfiles
     "R", // norecursive
@@ -239,7 +243,7 @@ error_t get_find_options(FindOptions *options)
     // load the file
     const long fsize = file_size(full_path);
     // current size is 4732, make sure it's not dramatically bigger than that
-    assert(fsize <= 5000);
+    assert(fsize <= 5200);
     char contents[fsize];
     contents[0] = '\0';
     FILE *fp = fopen(full_path, "r");
@@ -270,6 +274,9 @@ static error_t set_bool_setting(const int bool_idx, const bool bool_val, FindSet
         case ARCHIVES_ONLY:
             set_archives_only(settings, bool_val);
             break;
+        case COLORIZE:
+            settings->colorize = bool_val;
+            break;
         case DEBUG:
             set_debug(settings, bool_val);
             break;
@@ -290,6 +297,9 @@ static error_t set_bool_setting(const int bool_idx, const bool bool_val, FindSet
             break;
         case HELP:
             settings->print_usage = bool_val;
+            break;
+        case NO_COLORIZE:
+            settings->colorize = !bool_val;
             break;
         case NO_FOLLOW_SYMLINKS:
             settings->follow_symlinks = !bool_val;

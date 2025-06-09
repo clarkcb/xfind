@@ -38,8 +38,10 @@ error_t validate_settings(const FindSettings *settings)
             // expand the path and check again
             const size_t path_len = path_strlen(paths->path);
             char *path_s = malloc(path_len + 1);
+            if (path_s == NULL) return ENOMEM;
             path_s[0] = '\0';
             char *expanded_s = malloc(path_len * 2 + 1);
+            if (expanded_s == NULL) return ENOMEM;
             expanded_s[0] = '\0';
             path_to_string(paths->path, path_s);
             expand_path(path_s, &expanded_s);
@@ -86,8 +88,8 @@ bool is_matching_dir(const FindSettings *settings, const char *dir)
     if (dir_elems == NULL) return 1;
 
     const StringNode *d = dir_elems;
-    unsigned short matches = 1;
-    while (matches == 1 && d != NULL && d->string != NULL) {
+    unsigned short matches = 0;
+    while (matches == 0 && d != NULL && d->string != NULL) {
         if (!strncmp(d->string, ".", 5) || !strncmp(d->string, "..", 5)) {
             d = d->next;
             continue;
@@ -97,10 +99,10 @@ bool is_matching_dir(const FindSettings *settings, const char *dir)
             continue;
         }
         if ((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0
-             && string_matches_regex_node(d->string, settings->in_dir_patterns) == 0)
+             && string_matches_regex_node(d->string, settings->in_dir_patterns) == 1)
             || (is_null_or_empty_regex_node(settings->out_dir_patterns) == 0
-                && string_matches_regex_node(d->string, settings->out_dir_patterns) == 1)) {
-            matches = 0;
+                && string_matches_regex_node(d->string, settings->out_dir_patterns) == 0)) {
+            matches = 1;
         }
         d = d->next;
     }
@@ -377,9 +379,11 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
     // expand the path in case it has tilde, etc.
     const size_t path_len = path_strlen(path) + 1;
     char *path_s = malloc(path_len + 1);
+    if (path_s == NULL) return ENOMEM;
     path_s[0] = '\0';
     path_to_string(path, path_s);
     char *expanded = malloc(path_len * 2 + 1);
+    if (expanded == NULL) return ENOMEM;
     expanded[0] = '\0';
     expand_path(path_s, &expanded);
 
@@ -459,8 +463,7 @@ error_t find(const FindSettings *settings, FileResults *results)
     while (next_path != NULL) {
         err = find_path(finder, next_path->path, results);
         if (err != E_OK) {
-            destroy_finder(finder);
-            return err;
+            break;
         }
 
         next_path = next_path->next;

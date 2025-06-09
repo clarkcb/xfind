@@ -37,16 +37,15 @@ size_t file_results_count(const FileResults *results);
 
 void file_result_to_string(const FileResult *r, char *s);
 
-void print_file_results(const FileResults *results, SortBy sort_by, bool sort_case_insensitive,
-                        bool sort_descending);
-
 void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, bool case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 
 StringNode *dir_results(const FileResults *results);
 
-void print_dir_results(const FileResults *results);
+void print_dir_results(const FileResults *results, const FindSettings *settings);
+
+void print_file_results(const FileResults *results, const FindSettings *settings);
 
 void destroy_file_result(FileResult *r);
 

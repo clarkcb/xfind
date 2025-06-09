@@ -34,7 +34,7 @@ bool path_exists(const Path *path);
 
 bool path_readable(const Path *path);
 
-int path_stat(const Path *path, struct stat *);
+int path_stat(const Path *path, struct stat *pstat);
 
 size_t path_strlen(const Path *path);
 

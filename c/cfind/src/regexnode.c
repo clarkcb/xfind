@@ -79,6 +79,22 @@ bool string_matches_regex_node(const char *s, RegexNode *regex_node)
     return matches;
 }
 
+bool string_matches_regex_node_with_matches(const char *s, RegexNode *regex_node, size_t nmatch, regmatch_t *pmatches)
+{
+    RegexNode *temp = regex_node;
+    int matches = 0;
+    while (matches == 0 && temp != NULL) {
+        const int res = regexec(&temp->regex->compiled, s, nmatch, pmatches, 0);
+        if (res == 0) {
+            matches++;
+        } else if (res != REG_NOMATCH) {
+            printf("An error occurred trying to match \"%s\": %d\n", s, res);
+        }
+        temp = temp->next;
+    }
+    return matches;
+}
+
 size_t regex_node_count(RegexNode *regex_node)
 {
     size_t count = 0;

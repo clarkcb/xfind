@@ -57,7 +57,7 @@ void get_extension(const char *file_name, char *ext)
     // b.c is the shortest a file_name can be with ext, so skip if shorter than 3
     if (fnlen < 3) return;
     const int idx = last_index_of_char_in_string('.', file_name);
-    if (idx < 1 || (idx == 1 && file_name[0] == '.') || idx >= (fnlen - 1)) {
+    if (idx < 1 || (idx == 1 && file_name[0] == '.') || idx >= fnlen - 1) {
         ext = "";
     } else {
         int c = 0;
@@ -65,6 +65,28 @@ void get_extension(const char *file_name, char *ext)
             ext[c++] = file_name[i];
         }
         ext[c] = '\0';
+    }
+}
+
+/*
+ * get_file_name_without_extension - given a file name with an extension,
+ * return the name without the extension
+ */
+void get_file_name_without_extension(const char *file_name_with_ext, char *file_name)
+{
+    if (file_name_with_ext == NULL) return;
+    size_t fnlen = strnlen(file_name_with_ext, MAX_FILENAME_LENGTH);
+    // b.c is the shortest a file_name can be with ext, so skip if shorter than 3
+    if (fnlen < 3) return;
+    const int idx = last_index_of_char_in_string('.', file_name_with_ext);
+    if (idx < 1 || (idx == 1 && file_name_with_ext[0] == '.') || idx >= fnlen - 1) {
+        file_name = "";
+    } else {
+        int i;
+        for (i = 0; i < idx; i++) {
+            file_name[i] = file_name_with_ext[i];
+        }
+        file_name[i] = '\0';
     }
 }
 

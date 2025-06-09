@@ -131,6 +131,7 @@ bool path_exists(const Path *path)
     const size_t path_len = path_strlen(path);
     if (path_len == 0) return 0;
     char *path_s = malloc(path_len + 1);
+    if (path_s == NULL) return 0;
     path_s[0] = '\0';
     path_to_string(path, path_s);
     return dir_or_file_exists(path_s);
@@ -141,6 +142,7 @@ bool path_readable(const Path *path)
     const size_t path_len = path_strlen(path);
     if (path_len == 0) return 0;
     char *path_s = malloc(path_len + 1);
+    if (path_s == NULL) return 0;
     path_s[0] = '\0';
     path_to_string(path, path_s);
     return dir_or_file_readable(path_s);
@@ -285,6 +287,7 @@ void path_node_to_string(PathNode *path_node, char *s) {
         }
         strcat(s, "\"");
         char *path_s = malloc(path_strlen(temp->path) + 1);
+        if (path_s == NULL) return;
         path_to_string(temp->path, path_s);
         strcat(s, path_s);
         strcat(s, "\"");

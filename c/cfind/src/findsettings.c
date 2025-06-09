@@ -16,6 +16,7 @@ FindSettings *default_settings(void)
     assert(settings != NULL);
 
     settings->archives_only = false;
+    settings->colorize = true;
     settings->debug = false;
     settings->in_archive_extensions = NULL;
     settings->in_archive_file_patterns = NULL;
@@ -59,6 +60,7 @@ const int SETTINGS_TOTAL_FIELD_COUNT = SETTINGS_BOOL_FIELD_COUNT + SETTINGS_LONG
 	SETTINGS_STRING_NODE_FIELD_COUNT + SETTINGS_SORTBY_FIELD_COUNT;
 const char *SETTINGS_TEMPLATE = "FindSettings("
             "archives_only=%s"
+            ", colorize=%s"
             ", debug=%s"
             ", follow_symlinks=%s"
             ", in_archive_extensions=%s"
@@ -97,6 +99,7 @@ static size_t all_bools_strlen(const FindSettings *settings)
 {
     return
             (settings->archives_only == false ? 5 : 4) +
+            (settings->colorize == false ? 5 : 4) +
             (settings->debug == false ? 5 : 4) +
             (settings->follow_symlinks == false ? 5 : 4) +
             (settings->include_archives == false ? 5 : 4) +
@@ -158,6 +161,7 @@ void settings_to_string(const FindSettings *settings, char *s)
     char *in_archive_file_patterns_s = malloc(regex_node_strlen(settings->in_archive_file_patterns) + 1);
     in_archive_file_patterns_s[0] = '\0';
     regex_node_to_string(settings->in_archive_file_patterns, in_archive_file_patterns_s);
+    char *colorize_s = settings->colorize == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *debug_s = settings->debug == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *follow_symlinks_s = settings->follow_symlinks == false ? BOOLEAN_NAME_FALSE : BOOLEAN_NAME_TRUE;
     char *in_dir_patterns_s = malloc(regex_node_strlen(settings->in_dir_patterns) + 1);
@@ -232,6 +236,7 @@ void settings_to_string(const FindSettings *settings, char *s)
 
     sprintf(s, SETTINGS_TEMPLATE,
         archives_only_s,
+        colorize_s,
         debug_s,
         follow_symlinks_s,
         in_archive_extensions_s,

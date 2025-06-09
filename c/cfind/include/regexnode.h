@@ -29,6 +29,8 @@ bool is_null_or_empty_regex_node(const RegexNode *regex_node);
 
 bool string_matches_regex_node(const char *s, RegexNode *regex_node);
 
+bool string_matches_regex_node_with_matches(const char *s, RegexNode *regex_node, size_t nmatch, regmatch_t *pmatches);
+
 size_t regex_node_count(RegexNode *regex_node);
 
 size_t regex_node_strlen(RegexNode *regex_node);

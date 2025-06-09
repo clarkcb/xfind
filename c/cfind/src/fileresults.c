@@ -1,10 +1,12 @@
 #include <assert.h>
+#include <regex.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
+#include "color.h"
 #include "common.h"
 #include "fileresults.h"
+#include "fileutil.h"
 
 FileResult *new_file_result(const Path *path, const FileType file_type, const uint64_t file_size, const long last_mod)
 {
@@ -82,42 +84,6 @@ void file_result_to_string(const FileResult *r, char *s)
         // sprintf(s, "%s/%s (%llu)", r->dir, r->file_name, r->file_size);
         // sprintf(s, "%s/%s (%lu)", r->dir, r->file_name, r->mtime);
         s[path_strlen(r->path)] = '\0';
-    }
-}
-
-void print_file_results(const FileResults *results, const SortBy sort_by, const bool sort_case_insensitive,
-                        const bool sort_descending)
-{
-    const size_t results_count = file_results_count(results);
-    FileResult *results_array[results_count];
-    int i = 0;
-    FileResults *temp = results;
-    while (temp != NULL && temp->result != NULL) {
-        results_array[i++] = temp->result;
-        temp = temp->next;
-    }
-
-    if (results_count > 0) {
-        if (results_count > 1) {
-            sort_file_result_array(results_array, results_count, sort_by, sort_case_insensitive);
-        }
-
-        if (sort_descending > 0) {
-            reverse_file_result_array(results_array, 0, results_count - 1);
-        }
-
-        printf("\nMatching files (%zu):\n", results_count);
-
-        for (i = 0; i < results_count; i++) {
-            const size_t frlen = file_result_strlen(results_array[i]);
-            char resstr[frlen + 1];
-            resstr[0] = '\0';
-            file_result_to_string(results_array[i], resstr);
-            resstr[frlen] = '\0';
-            log_msg(resstr);
-        }
-    } else {
-        printf("\nMatching files: 0\n");
     }
 }
 
@@ -307,29 +273,272 @@ static int cmp_strings(const void *a, const void *b)
     return strcmp(*s1, *s2);
 }
 
-void print_dir_results(const FileResults *results)
+void colorize_string(const char *s, const size_t start_idx, const size_t end_idx, char *colorized) {
+    if (start_idx > 0) {
+        size_t prefix_len = start_idx;
+        char prefix[prefix_len + 1];
+        prefix[0] = '\0';
+        strncpy(prefix, s, prefix_len);
+        prefix[prefix_len] = '\0';
+        strcat(colorized, prefix);
+    }
+
+    size_t match_len = end_idx - start_idx;
+    char match[match_len + 1];
+    match[0] = '\0';
+    strncpy(match, s + start_idx, match_len);
+    match[match_len] = '\0';
+    strcat(colorized, COLOR_GREEN);
+    strcat(colorized, match);
+    strcat(colorized, COLOR_RESET);
+
+    const size_t s_len = strnlen(s, 1024);
+    // if (end_idx > 0) {
+    if (end_idx < s_len) {
+        size_t suffix_len = s_len - end_idx;
+        char suffix[suffix_len + 1];
+        suffix[0] = '\0';
+        strncpy(suffix, s + end_idx, suffix_len);
+        suffix[suffix_len] = '\0';
+        strcat(colorized, suffix);
+    }
+    colorized[s_len + 10] = '\0';
+}
+
+void format_dir(const char *dir, const FindSettings *settings, char *formatted) {
+    const size_t dir_len = strnlen(dir, 1024);
+
+    size_t nmatch = 1;
+    regmatch_t pmatch[nmatch];
+
+    if (settings->colorize
+        && string_matches_regex_node_with_matches(dir, settings->in_dir_patterns, nmatch, pmatch) > 0) {
+        colorize_string(dir, pmatch[0].rm_so, pmatch[0].rm_eo, formatted);
+    } else {
+        // no colorization
+        strncpy(formatted, dir, dir_len);
+        formatted[dir_len] = '\0';
+    }
+}
+
+void format_file_name(const char *file_name, const FindSettings *settings, char *formatted) {
+    const size_t file_name_len = strnlen(file_name, 1024);
+
+    size_t nmatch = 1;
+    regmatch_t pmatch[nmatch];
+
+    if (settings->colorize && (is_null_or_empty_string_node(settings->in_extensions) == 0
+        || is_null_or_empty_regex_node(settings->in_file_patterns) == 0)) {
+        char name_only[file_name_len + 1];
+        name_only[0] = '\0';
+        get_file_name_without_extension(file_name, name_only);
+        size_t name_only_len = strnlen(name_only, file_name_len);
+        char ext[file_name_len + 1];
+        ext[0] = '\0';
+        get_extension(file_name, ext);
+        size_t ext_len = strnlen(ext, file_name_len);
+
+        if (string_matches_regex_node_with_matches(name_only, settings->in_file_patterns, nmatch, pmatch) > 0) {
+            char colorized_name_only[file_name_len + 10];
+            colorized_name_only[0] = '\0';
+            colorize_string(name_only, pmatch[0].rm_so, pmatch[0].rm_eo, colorized_name_only);
+            name_only_len += 9;
+            colorized_name_only[name_only_len] = '\0';
+            strncat(formatted, colorized_name_only, name_only_len);
+        } else {
+            strncat(formatted, name_only, name_only_len);
+        }
+        strncat(formatted, ".", 1);
+        if (is_null_or_empty_string_node(settings->in_extensions) == 0) {
+            char colorized_ext[file_name_len + 10];
+            colorized_ext[0] = '\0';
+            colorize_string(ext, 0, ext_len, colorized_ext);
+            ext_len += 9;
+            colorized_ext[ext_len] = '\0';
+            strncat(formatted, colorized_ext, ext_len);
+        } else {
+            strncat(formatted, ext, ext_len);
+        }
+        formatted[name_only_len + ext_len + 1] = '\0';
+    } else {
+        // no colorization
+        strncpy(formatted, file_name, file_name_len);
+        formatted[file_name_len] = '\0';
+    }
+}
+
+void format_file_result(const FileResult *fr, const FindSettings *settings, char *formatted)
+{
+    const size_t path_len = path_strlen(fr->path);
+
+    // dir
+    const size_t dir_len = strnlen(fr->path->dir, path_len);
+
+    // colorized dir_len
+    size_t cdir_len = dir_len;
+    if (settings->colorize && is_null_or_empty_regex_node(settings->in_dir_patterns) == 0) {
+        cdir_len += 9;
+    }
+
+    char dir_str[cdir_len + 1];
+    dir_str[0] = '\0';
+
+    format_dir(fr->path->dir, settings, dir_str);
+    dir_str[cdir_len + 1] = '\0';
+
+    // file_name
+    const size_t file_name_len = strnlen(fr->path->file_name, path_len);
+
+    // colorized file_name_len
+    size_t cfile_name_len = file_name_len;
+    if (settings->colorize) {
+        if (is_null_or_empty_string_node(settings->in_extensions) == 0) {
+            cfile_name_len += 9;
+        }
+        if (is_null_or_empty_regex_node(settings->in_file_patterns) == 0) {
+            cfile_name_len += 9;
+        }
+    }
+
+    char file_name_str[cfile_name_len + 1];
+    file_name_str[0] = '\0';
+
+    format_file_name(fr->path->file_name, settings, file_name_str);
+
+    join_path(dir_str, file_name_str, formatted);
+}
+
+void print_dir_results(const FileResults *results, const FindSettings *settings)
 {
     StringNode *dir_node = dir_results(results);
     const size_t dir_count = string_node_count(dir_node);
-    char *dir_array[dir_count];
 
-    int i = 0;
-    StringNode *temp = dir_node;
-    while (temp != NULL) {
-        dir_array[i++] = (char *)temp->string;
-        temp = temp->next;
+    if (dir_count > 0) {
+        char *dir_array[dir_count];
+
+        int i = 0;
+        StringNode *temp = dir_node;
+        while (temp != NULL) {
+            dir_array[i++] = (char *)temp->string;
+            temp = temp->next;
+        }
+
+        if (dir_count > 1) {
+            qsort(dir_array, dir_count, sizeof(char *), cmp_strings);
+
+            if (settings->sort_descending > 0) {
+                // TODO: reverse the array
+            }
+        }
+
+        printf("\nMatching directories (%zu):\n", dir_count);
+
+        if (settings->colorize && is_null_or_empty_regex_node(settings->in_dir_patterns) == 0) {
+            for (i = 0; i < dir_count; i++) {
+                size_t dlen = strnlen(dir_array[i], MAX_PATH_LENGTH);
+                char dstr[dlen + 10];
+                dstr[0] = '\0';
+                format_dir(dir_array[i], settings, dstr);
+                dstr[dlen + 10] = '\0';
+                log_msg(dstr);
+            }
+
+        } else {
+            for (i = 0; i < dir_count; i++) {
+                size_t dlen = strnlen(dir_array[i], MAX_PATH_LENGTH);
+                char dstr[dlen + 1];
+                strncpy(dstr, dir_array[i], dlen);
+                dstr[dlen] = '\0';
+                log_msg(dstr);
+            }
+        }
+
+    } else {
+        printf("\nMatching directories: 0\n");
     }
 
-    qsort(dir_array, dir_count, sizeof(char *), cmp_strings);
+    destroy_string_node(dir_node);
+}
 
-    printf("\nMatching directories (%zu):\n", dir_count);
+void print_file_results(const FileResults *results, const FindSettings *settings)
+{
+    if (settings->debug) {
+        printf("DEBUG: print_file_results\n");
+    }
+    const size_t results_count = file_results_count(results);
 
-    for (i = 0; i < dir_count; i++) {
-        size_t dlen = strnlen(dir_array[i], MAX_PATH_LENGTH);
-        char dstr[dlen + 1];
-        strncpy(dstr, dir_array[i], dlen);
-        dstr[dlen] = '\0';
-        log_msg(dstr);
+    if (results_count > 0) {
+        FileResult *results_array[results_count];
+
+        int i = 0;
+        FileResults *temp = results;
+        while (temp != NULL && temp->result != NULL) {
+            results_array[i++] = temp->result;
+            temp = temp->next;
+        }
+
+        if (results_count > 1) {
+            sort_file_result_array(results_array, results_count, settings->sort_by, settings->sort_case_insensitive);
+
+            if (settings->sort_descending > 0) {
+                reverse_file_result_array(results_array, 0, results_count - 1);
+            }
+        }
+
+        printf("\nMatching files (%zu):\n", results_count);
+        if (settings->colorize && (is_null_or_empty_regex_node(settings->in_dir_patterns) == 0
+            || is_null_or_empty_string_node(settings->in_extensions) == 0
+            || is_null_or_empty_regex_node(settings->in_file_patterns) == 0)) {
+            for (i = 0; i < results_count; i++) {
+
+                const FileResult *fr = results_array[i];
+
+                const size_t path_len = path_strlen(fr->path);
+                const size_t dir_len = strnlen(fr->path->dir, path_len);
+                const size_t file_name_len = strnlen(fr->path->file_name, path_len);
+
+                if (settings->debug) {
+                    printf("DEBUG: path_len: %zu\n", path_len);
+                    printf("DEBUG: dir_len: %zu\n", dir_len);
+                    printf("DEBUG: file_name_len: %zu\n", file_name_len);
+                }
+
+                // colorized lengths (lengths + 9 for color+reset)
+                size_t cdir_len = dir_len;
+                if (is_null_or_empty_regex_node(settings->in_dir_patterns) == 0) {
+                    cdir_len += 9;
+                }
+                size_t cfile_name_len = file_name_len;
+                if (is_null_or_empty_string_node(settings->in_extensions) == 0) {
+                    cfile_name_len += 9;
+                }
+                if (is_null_or_empty_regex_node(settings->in_file_patterns) == 0) {
+                    cfile_name_len += 9;
+                }
+
+                if (settings->debug) {
+                    printf("DEBUG: cdir_len: %zu\n", cdir_len);
+                    printf("DEBUG: cfile_name_len: %zu\n", cfile_name_len);
+                }
+
+                char file_path_str[cdir_len + cfile_name_len + 1];
+                file_path_str[0] = '\0';
+
+                format_file_result(fr, settings, file_path_str);
+                log_msg(file_path_str);
+            }
+        } else {
+            for (i = 0; i < results_count; i++) {
+                const size_t frlen = file_result_strlen(results_array[i]);
+                char resstr[frlen + 1];
+                resstr[0] = '\0';
+                file_result_to_string(results_array[i], resstr);
+                resstr[frlen] = '\0';
+                log_msg(resstr);
+            }
+        }
+    } else {
+        printf("\nMatching files: 0\n");
     }
 }
 

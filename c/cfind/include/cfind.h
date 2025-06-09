@@ -64,6 +64,19 @@ void get_file_types_path(char *dest);
 void get_find_options_path(char *dest);
 
 
+// color.h
+
+#define COLOR_RESET  "\033[0m"
+#define COLOR_BLACK  "\033[30m"
+#define COLOR_RED    "\033[31m"
+#define COLOR_GREEN  "\033[32m"
+#define COLOR_YELLOW "\033[33m"
+#define COLOR_BLUE   "\033[34m"
+#define COLOR_PURPLE "\033[35m"
+#define COLOR_CYAN   "\033[36m"
+#define COLOR_WHITE  "\033[37m"
+
+
 // finderr.h
 
 /*
@@ -80,14 +93,16 @@ void get_find_options_path(char *dest);
 #define E_STARTPATH_UNSUPPORTED_FILETYPE 307 /* Startpath is an unsupported file type */
 #define E_INVALID_OPTION                 308 /* Invalid option */
 #define E_INVALID_ARG                    309 /* Invalid arg */
-#define E_MISSING_ARG_FOR_OPTION         310 /* Missing arg for arg option */
-#define E_DIRECTORY_NOT_FOUND            311 /* Directory not found */
-#define E_FILE_NOT_FOUND                 312 /* File not found */
-#define E_FILENAME_TOO_LONG              313 /* Filename is too long */
-#define E_INVALID_DATESTRING             314 /* Invalid date string (for max_last_mod/min_last_mod) */
-#define E_INVALID_DEPTH_RANGE            315 /* Invalid depth range (max_depth < min_depth) */
-#define E_INVALID_LASTMOD_RANGE          316 /* Invalid lastmod range (max_last_mod < min_last_mod) */
-#define E_INVALID_SIZE_RANGE             317 /* Invalid size range (max_size < min_size) */
+#define E_INVALID_ARG_FOR_OPTION         310 /* Missing arg for arg option */
+#define E_MISSING_ARG_FOR_OPTION         311 /* Missing arg for arg option */
+#define E_DIRECTORY_NOT_FOUND            312 /* Directory not found */
+#define E_FILE_NOT_FOUND                 313 /* File not found */
+#define E_FILENAME_TOO_LONG              314 /* Filename is too long */
+#define E_INVALID_DATESTRING             315 /* Invalid date string (for max_last_mod/min_last_mod) */
+#define E_INVALID_DEPTH_RANGE            316 /* Invalid depth range (max_depth < min_depth) */
+#define E_INVALID_LASTMOD_RANGE          317 /* Invalid lastmod range (max_last_mod < min_last_mod) */
+#define E_INVALID_SIZE_RANGE             318 /* Invalid size range (max_size < min_size) */
+#define E_JSON_PARSE_ERROR               319 /* JSON parsing error (invalid on non-JSON) */
 
 typedef unsigned int error_t;
 
@@ -99,9 +114,11 @@ void handle_error(error_t err);
 #if defined(_WIN32) || defined(_WIN64)
 #define OS_WINDOWS 1
 #define PATH_SEPARATOR '\\'
+#define PATH_SEPARATOR_S "\\"
 #else
 #define OS_WINDOWS 0
 #define PATH_SEPARATOR '/'
+#define PATH_SEPARATOR_S "/"
 #endif
 
 bool dir_or_file_exists(const char *file_path);
@@ -113,6 +130,8 @@ bool is_dot_dir(const char *file_path);
 long file_size(const char *file_path);
 
 void get_extension(const char *file_name, char *ext);
+
+void get_file_name_without_extension(const char *file_name_with_ext, char *file_name);
 
 bool is_hidden(const char *file_path);
 
@@ -179,7 +198,7 @@ bool path_exists(const Path *path);
 
 bool path_readable(const Path *path);
 
-int path_stat(const Path *path, struct stat *);
+int path_stat(const Path *path, struct stat *pstat);
 
 size_t path_strlen(const Path *path);
 
@@ -233,6 +252,8 @@ void add_string_to_regex_node(const char *pat, RegexNode *regex_node);
 bool is_null_or_empty_regex_node(const RegexNode *regex_node);
 
 bool string_matches_regex_node(const char *s, RegexNode *regex_node);
+
+bool string_matches_regex_node_with_matches(const char *s, RegexNode *regex_node, size_t nmatch, regmatch_t *pmatches);
 
 size_t regex_node_count(RegexNode *regex_node);
 
@@ -393,6 +414,20 @@ void destroy_file_types(FileTypes *file_types);
 
 // findsettings.h
 
+#define BOOLEAN_NAME_FALSE "false"
+#define BOOLEAN_NAME_TRUE "true"
+
+#define SORT_BY_NAME_FILEPATH "filepath"
+#define SORT_BY_NAME_PATH "path"
+#define SORT_BY_NAME_FILENAME "filename"
+#define SORT_BY_NAME_NAME "name"
+#define SORT_BY_NAME_FILESIZE "filesize"
+#define SORT_BY_NAME_SIZE "size"
+#define SORT_BY_NAME_FILETYPE "filetype"
+#define SORT_BY_NAME_TYPE "type"
+#define SORT_BY_NAME_LASTMOD "lastmod"
+#define SORT_BY_NAME_UNKNOWN "unknown"
+
 typedef enum {
     FILEPATH = 0,
     FILENAME = 1,
@@ -403,6 +438,7 @@ typedef enum {
 
 typedef struct FindSettings {
     bool archives_only : 1;
+    bool colorize : 1;
     bool debug : 1;
     bool follow_symlinks : 1;
     StringNode *in_archive_extensions;
@@ -488,16 +524,15 @@ size_t file_results_count(const FileResults *results);
 
 void file_result_to_string(const FileResult *r, char *s);
 
-void print_file_results(const FileResults *results, SortBy sort_by, bool sort_case_insensitive,
-                        bool sort_descending);
-
 void sort_file_result_array(FileResult **arr, size_t n, SortBy sort_by, bool case_insensitive);
 
 void reverse_file_result_array(FileResult *arr[], size_t low, size_t high);
 
 StringNode *dir_results(const FileResults *results);
 
-void print_dir_results(const FileResults *results);
+void print_dir_results(const FileResults *results, const FindSettings *settings);
+
+void print_file_results(const FileResults *results, const FindSettings *settings);
 
 void destroy_file_result(FileResult *r);
 
@@ -519,26 +554,28 @@ typedef struct FindOptions {
 
 typedef enum {
     ARCHIVES_ONLY         = 0,
-    DEBUG                 = 1,
-    EXCLUDE_ARCHIVES      = 2,
-    EXCLUDE_HIDDEN        = 3,
-    FOLLOW_SYMLINKS       = 4,
-    INCLUDE_ARCHIVES      = 5,
-    INCLUDE_HIDDEN        = 6,
-    HELP                  = 7,
-    NO_FOLLOW_SYMLINKS    = 8,
-    NO_PRINT_DIRS         = 9,
-    NO_PRINT_FILES        = 10,
-    NO_RECURSIVE          = 11,
-    PRINT_DIRS            = 12,
-    PRINT_FILES           = 13,
-    RECURSIVE             = 14,
-    SORT_ASCENDING        = 15,
-    SORT_CASE_INSENSITIVE = 16,
-    SORT_CASE_SENSITIVE   = 17,
-    SORT_DESCENDING       = 18,
-    VERBOSE               = 19,
-    VERSION               = 20
+    COLORIZE              = 1,
+    DEBUG                 = 2,
+    EXCLUDE_ARCHIVES      = 3,
+    EXCLUDE_HIDDEN        = 4,
+    FOLLOW_SYMLINKS       = 5,
+    INCLUDE_ARCHIVES      = 6,
+    INCLUDE_HIDDEN        = 7,
+    HELP                  = 8,
+    NO_COLORIZE           = 9,
+    NO_FOLLOW_SYMLINKS    = 10,
+    NO_PRINT_DIRS         = 11,
+    NO_PRINT_FILES        = 12,
+    NO_RECURSIVE          = 13,
+    PRINT_DIRS            = 14,
+    PRINT_FILES           = 15,
+    RECURSIVE             = 16,
+    SORT_ASCENDING        = 17,
+    SORT_CASE_INSENSITIVE = 18,
+    SORT_CASE_SENSITIVE   = 19,
+    SORT_DESCENDING       = 20,
+    VERBOSE               = 21,
+    VERSION               = 22
 } SettingsBoolType;
 
 typedef enum {
