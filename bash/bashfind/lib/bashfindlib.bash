@@ -57,6 +57,7 @@ SORT_BY_TYPES=(path name size type lastmod)
 
 # Settings
 ARCHIVES_ONLY=false
+COLORIZE=true
 DEBUG=false
 FOLLOW_SYMLINKS=false
 INCLUDE_ARCHIVES=false
@@ -106,10 +107,13 @@ FILE_RESULTS=()
 
 exit_with_error () {
     local error="$1"
-    local color="$RED"
-    # TODO: add COLORIZE option
-    # echo -e "\n${color}ERROR: $error${COLOR_RESET}"
-    echo -e "\nERROR: $error"
+    local color="$BRED"
+    if [ "$COLORIZE" == true ]
+    then
+        echo -e "\n${color}ERROR: $error${COLOR_RESET}"
+    else
+        echo -e "\nERROR: $error"
+    fi
     usage
 }
 
@@ -775,6 +779,68 @@ find_path () {
     fi
 }
 
+format_dir_path () {
+    local dir_path="$1"
+
+    formatted_dir_path="$dir_path"
+    if [[ "$COLORIZE" == true && ${#IN_DIR_PATTERNS[@]} -gt 0 ]]
+    then
+        for p in ${IN_DIR_PATTERNS[*]}
+        do
+            if [[ "$dir_path" =~ $p ]]
+            then
+                match="${BASH_REMATCH[0]}"
+                formatted_dir_path="${dir_path//$match/${GREEN}$match${COLOR_RESET}}"
+                break
+            fi
+        done
+    fi
+    echo "$formatted_dir_path"
+}
+
+format_file_name () {
+    local file_name="$1"
+    local formatted_file_name="$file_name"
+
+    if [[ "$COLORIZE" == true && (${#IN_EXTENSIONS[@]} -gt 0 || ${#IN_FILE_PATTERNS[@]} -gt 0) ]]
+    then
+        for p in ${IN_FILE_PATTERNS[*]}
+        do
+            if [[ "$file_name" =~ $p ]]
+            then
+                match="${BASH_REMATCH[0]}"
+                formatted_file_name="${file_name//$match/${GREEN}$match${COLOR_RESET}}"
+                break
+            fi
+        done
+
+        if [ ${#IN_EXTENSIONS[@]} -gt 0 ]
+        then
+            local file_ext="${formatted_file_name##*.}"
+            local formatted_no_ext="${formatted_file_name%.*}"
+            formatted_file_name="${formatted_no_ext}.${GREEN}$file_ext${COLOR_RESET}}"
+        fi
+    fi
+    echo "$formatted_file_name"
+}
+
+
+format_file_result () {
+    local r="$1"
+
+    ra=( $(IFS=","; echo $r) )
+
+    dir_path="${ra[0]}"
+    dir_path=$(format_dir_path "$dir_path")
+
+    file_name="${ra[1]}"
+    file_name=$(format_file_name "$file_name")
+
+    formatted_file_path="$dir_path/$file_name"
+    echo "$formatted_file_path"
+}
+
+
 file_results_to_string () {
     local s=""
     for r in ${FILE_RESULTS[*]}
@@ -859,6 +925,8 @@ usage () {
     FIND_OPTIONS_JSON=$(cat $FIND_OPTIONS_PATH)
     s="\nUsage:\n bashfind [options] <path> [<path> ...]\n\nOptions:"
     s+="\n --archivesonly            $(get_option_desc 'archivesonly')"
+    s+="\n -c,--colorize             $(get_option_desc 'colorize')"
+    s+="\n -C,--nocolorize           $(get_option_desc 'nocolorize')"
     s+="\n -d,--in-dirpattern        $(get_option_desc 'in-dirpattern')"
     s+="\n -D,--out-dirpattern       $(get_option_desc 'out-dirpattern')"
     s+="\n --debug                   $(get_option_desc 'debug')"
@@ -936,6 +1004,9 @@ settings_from_args () {
             --archivesonly)
                 ARCHIVES_ONLY=true
                 INCLUDE_ARCHIVES=true
+                ;;
+            -c | --colorize)
+                COLORIZE=true
                 ;;
             --debug)
                 DEBUG=true
@@ -1074,6 +1145,9 @@ settings_from_args () {
                 MIN_SIZE=$arg2
                 NEED_FILE_SIZE=true
                 i=$(($i + 1))
+                ;;
+            -C | --nocolorize)
+                COLORIZE=false
                 ;;
             --nodebug)
                 DEBUG=false
@@ -1341,6 +1415,7 @@ update_settings_from_file () {
 
 settings_to_string () {
     s="archives_only=$ARCHIVES_ONLY"
+    s+=", colorize=$COLORIZE"
     s+=", debug=$DEBUG"
     s+=", follow_symlinks=$FOLLOW_SYMLINKS"
     s+=", include_archives=$INCLUDE_ARCHIVES"

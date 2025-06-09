@@ -59,15 +59,15 @@ then
         do
             df=( $(IFS=","; echo $r) )
             d=${df[0]}
+            d=$(format_dir_path "$d")
             matching_dirs+=($d)
         done
-        # matching_dirs=($(echo "${matching_dirs[@]}" | tr ' ' '\n' | sort -u | tr '\n' ' '))
         matching_dirs=($(printf "%s\n" "${matching_dirs[@]}" | sort -u))
 
         echo -e "\nMatching directories (${#matching_dirs[@]}):"
         for d in ${matching_dirs[*]}
         do
-            echo "$d"
+            echo -e "$d"
         done
     fi
 fi
@@ -81,15 +81,14 @@ then
         matching_files=()
         for r in ${FILE_RESULTS[*]}
         do
-            ra=( $(IFS=","; echo $r) )
-            f="${ra[0]}/${ra[1]}"
+            f=$(format_file_result "$r")
             matching_files+=($f)
         done
         matching_files=($(printf "%s\n" "${matching_files[@]}"))
         echo -e "\nMatching files (${#matching_files[@]}):"
         for f in ${matching_files[@]}
         do
-            echo "$f"
+            echo -e "$f"
         done
     fi
 fi
