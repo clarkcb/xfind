@@ -63,6 +63,7 @@ defmodule ExFind.FindOptions do
   defp bool_arg_action_map() do
     %{
       archivesonly: fn b, settings -> FindSettings.set_archives_only(settings, b) end,
+      colorize: fn b, settings -> %{settings | colorize: b} end,
       debug: fn b, settings -> FindSettings.set_debug(settings, b) end,
       excludearchives: fn b, settings -> %{settings | include_archives: not b} end,
       excludehidden: fn b, settings -> %{settings | include_hidden: not b} end,
@@ -70,6 +71,7 @@ defmodule ExFind.FindOptions do
       help: fn b, settings -> %{settings | print_usage: b} end,
       includearchives: fn b, settings -> %{settings | include_archives: b} end,
       includehidden: fn b, settings -> %{settings | include_hidden: b} end,
+      nocolorize: fn b, settings -> %{settings | colorize: not b} end,
       nofollowsymlinks: fn b, settings -> %{settings | follow_symlinks: not b} end,
       noprintdirs: fn b, settings -> %{settings | print_dirs: not b} end,
       noprintfiles: fn b, settings -> %{settings | print_files: not b} end,

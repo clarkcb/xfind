@@ -6,6 +6,7 @@ defmodule ExFind.FindSettings do
   alias ExFind.FindError
 
   defstruct archives_only: false,
+            colorize: true,
             debug: false,
             follow_symlinks: false,
             in_archive_extensions: [],

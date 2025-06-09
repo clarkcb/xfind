@@ -35,4 +35,17 @@ defmodule ExFind.StringUtil do
   def any_matches_any_pattern(strings, patterns) do
     Enum.any?(strings, fn s -> Enum.any?(patterns, fn p -> Regex.match?(p, s) end) end)
   end
+
+  def last_index_of(string, pattern) do
+    rev_idx =
+      string
+      |> String.reverse()
+      |> :binary.match(pattern)
+
+    case rev_idx do
+      {idx, _len} -> String.length(string) - idx - 1
+      :nomatch -> -1
+    end
+  end
+
 end
