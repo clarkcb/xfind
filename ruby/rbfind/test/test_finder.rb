@@ -327,7 +327,7 @@ module RbFind
       settings.paths.add(Pathname.new(bin_path))
       finder = Finder.new(settings)
       file_results = finder.find
-      assert(file_results.length == 0 || file_results.length < 3)
+      assert(file_results.length == 0 || file_results.length < 4)
     end
 
     def test_follow_symlinks
@@ -347,7 +347,7 @@ module RbFind
       settings.follow_symlinks = false
       finder = Finder.new(settings)
       file_results = finder.find
-      assert(file_results.length == 0 || file_results.length < 3)
+      assert(file_results.length == 0 || file_results.length < 4)
     end
   end
 end

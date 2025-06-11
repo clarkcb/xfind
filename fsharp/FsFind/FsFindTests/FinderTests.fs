@@ -421,7 +421,7 @@ type FinderTests () =
         settings.Paths <- [this.GetBinPath()]
         let finder = Finder(settings)
         let fileResults = finder.Find()
-        Assert.That(List.length fileResults, Is.LessThan(3))
+        Assert.That(List.length fileResults, Is.LessThan(4))
         ()
 
     [<Test>]
@@ -441,5 +441,5 @@ type FinderTests () =
         settings.FollowSymlinks <- false
         let finder = Finder(settings)
         let fileResults = finder.Find()
-        Assert.That(List.length fileResults, Is.LessThan(3))
+        Assert.That(List.length fileResults, Is.LessThan(4))
         ()

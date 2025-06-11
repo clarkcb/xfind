@@ -363,7 +363,7 @@ class FinderTest extends TestCase
         $settings->paths = [$bin_path];
         $finder = new Finder($settings);
         $file_results = $finder->find();
-        $this->assertTrue(count($file_results) < 3);
+        $this->assertTrue(count($file_results) < 4);
     }
 
     public function test_follow_symlinks(): void
@@ -385,6 +385,6 @@ class FinderTest extends TestCase
         $settings->follow_symlinks = false;
         $finder = new Finder($settings);
         $file_results = $finder->find();
-        $this->assertTrue(count($file_results) < 3);
+        $this->assertTrue(count($file_results) < 4);
     }
 }

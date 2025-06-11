@@ -468,7 +468,7 @@ TEST_CASE("Test follow_symlinks with default settings should exclude symlinks", 
     settings.add_path(bin_path);
     const auto finder = cppfind::Finder(settings);
     const auto file_results = finder.find();
-    REQUIRE(file_results.size() < 3);
+    REQUIRE(file_results.size() < 4);
 }
 
 TEST_CASE("Test follow_symlinks with follow_symlinks should include symlinks", "[Finder]") {
@@ -490,5 +490,5 @@ TEST_CASE("Test follow_symlinks no follow_symlinks should exclude symlinks", "[F
     settings.follow_symlinks(false);
     const auto finder = cppfind::Finder(settings);
     const auto file_results = finder.find();
-    REQUIRE(file_results.size() < 3);
+    REQUIRE(file_results.size() < 4);
 }

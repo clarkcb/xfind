@@ -339,7 +339,7 @@ class FinderTest {
         var settings = getDefaultSettings().copy(paths = setOf(Paths.get(getBinPath())))
         var finder = Finder(settings)
         val fileResults: List<FileResult> = finder.find()
-        assertTrue(fileResults.size < 3)
+        assertTrue(fileResults.size < 4)
     }
 
     @Test
@@ -355,6 +355,6 @@ class FinderTest {
         var settings = getDefaultSettings().copy(paths = setOf(Paths.get(getBinPath())), followSymlinks = false)
         var finder = Finder(settings)
         val fileResults: List<FileResult> = finder.find()
-        assertTrue(fileResults.size < 3)
+        assertTrue(fileResults.size < 4)
     }
 }

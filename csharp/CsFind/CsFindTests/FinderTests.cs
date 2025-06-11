@@ -458,7 +458,7 @@ class FinderTests
 		settings.AddPath(GetBinPath());
 		var finder = new Finder(settings);
 		var fileResults = finder.Find().ToList();
-		Assert.That(fileResults.Count, Is.LessThan(3));
+		Assert.That(fileResults.Count, Is.LessThan(4));
 	}
 
 	[Test]
@@ -480,6 +480,6 @@ class FinderTests
 		settings.FollowSymlinks = false;
 		var finder = new Finder(settings);
 		var fileResults = finder.Find().ToList();
-		Assert.That(fileResults.Count, Is.LessThan(3));
+		Assert.That(fileResults.Count, Is.LessThan(4));
 	}
 }

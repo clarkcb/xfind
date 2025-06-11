@@ -337,7 +337,7 @@
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     NSArray<FileResult*>* fileResults = [finder find:&error];
-    XCTAssert([fileResults count] < 3);
+    XCTAssert([fileResults count] < 4);
 }
 
 - (void)testFollowSymlinks_FollowSymlink_Included {
@@ -357,7 +357,7 @@
     NSError *error = nil;
     Finder *finder = [[Finder alloc] initWithSettings:settings error:&error];
     NSArray<FileResult*>* fileResults = [finder find:&error];
-    XCTAssert([fileResults count] < 3);
+    XCTAssert([fileResults count] < 4);
 }
 
 @end

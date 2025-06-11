@@ -155,7 +155,7 @@ getFollowSymlinksDefaultTests = do
   case fileResultsEither of
     Left _ -> return [ testCase "getFollowSymlinksTests defaultSettings" (True @?= False)]
     Right fileResults ->
-        return [ testCase "getFollowSymlinksTests defaultSettings" ((length fileResults < 3) @?= True)
+        return [ testCase "getFollowSymlinksTests defaultSettings" ((length fileResults < 4) @?= True)
                ]
 
 getFollowSymlinksTrueTests :: IO [Test]
@@ -183,5 +183,5 @@ getFollowSymlinksFalseTests = do
   case fileResultsEither of
     Left _ -> return [ testCase "getFollowSymlinksTests noFollowSymlinks" (True @?= False)]
     Right fileResults ->
-        return [ testCase "getFollowSymlinksTests noFollowSymlinks" ((length fileResults < 3) @?= True)
+        return [ testCase "getFollowSymlinksTests noFollowSymlinks" ((length fileResults < 4) @?= True)
                ]

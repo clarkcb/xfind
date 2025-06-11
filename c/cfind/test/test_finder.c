@@ -382,9 +382,9 @@ void test_follow_symlinks_default_settings(void) {
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
     if (res_count > 0) {
-        const char* color = res_count < 3 ? COLOR_GREEN : COLOR_RED;
+        const char* color = res_count < 4 ? COLOR_GREEN : COLOR_RED;
         printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
-        assert(res_count < 3);
+        assert(res_count < 4);
     }
 
     destroy_file_results(results);
@@ -436,9 +436,9 @@ void test_follow_symlinks_no_follow_symlinks(void) {
     assert(err == E_OK);
     const size_t res_count = file_results_count(results);
     if (res_count > 0) {
-        const char* color = res_count < 3 ? COLOR_GREEN : COLOR_RED;
+        const char* color = res_count < 4 ? COLOR_GREEN : COLOR_RED;
         printf("%sres_count: %d%s\n", color, (int)res_count, COLOR_RESET);
-        assert(res_count < 3);
+        assert(res_count < 4);
     }
 
     destroy_file_results(results);

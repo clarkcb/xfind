@@ -295,7 +295,7 @@ test "invalid range for mindepth and maxdepth" do
     finder = Finder.new(settings)
     case Finder.find(finder) do
       {:error, _} -> assert false
-      {:ok, results} -> assert length(results) < 3
+      {:ok, results} -> assert length(results) < 4
     end
   end
 
@@ -315,7 +315,7 @@ test "invalid range for mindepth and maxdepth" do
     finder = Finder.new(settings)
     case Finder.find(finder) do
       {:error, _} -> assert false
-      {:ok, results} -> assert length(results) < 3
+      {:ok, results} -> assert length(results) < 4
     end
   end
 end

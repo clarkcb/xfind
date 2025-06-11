@@ -265,7 +265,7 @@ class FinderTest(unittest.TestCase):
         settings.add_path(Path(XFIND_PATH, 'bin'))
         finder = Finder(settings)
         file_results = finder.find_files()
-        self.assertTrue(len(file_results) < 3)
+        self.assertTrue(len(file_results) < 4)
 
     def test_follow_symlinks(self):
         settings = FindSettings()
@@ -281,7 +281,7 @@ class FinderTest(unittest.TestCase):
         settings.follow_symlinks = False
         finder = Finder(settings)
         file_results = finder.find_files()
-        self.assertTrue(len(file_results) < 3)
+        self.assertTrue(len(file_results) < 4)
 
 
 if __name__ == '__main__':

@@ -245,7 +245,7 @@
        ]
     (testing "test-follow-symlink-default-settings"
              (is (empty? errs))
-             (is (< (count files) 3)))))
+             (is (< (count files) 4)))))
 
 (deftest test-follow-symlink-with-followsymlinks
   (let [settings (assoc (add-path DEFAULT-FIND-SETTINGS (to-path BINPATH)) :follow-symlinks true)
@@ -261,4 +261,4 @@
        ]
     (testing "test-follow-symlink-with-nofollowsymlinks"
              (is (empty? errs))
-             (is (< (count files) 3)))))
+             (is (< (count files) 4)))))

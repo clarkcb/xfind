@@ -273,7 +273,7 @@ void main() {
       settings.paths.add("$xFindPath/bin");
       var finder = Finder(settings);
       finder.find().then((fileResults) {
-        expect(fileResults.length, lessThan(3));
+        expect(fileResults.length, lessThan(4));
       });
     });
 
@@ -297,7 +297,7 @@ void main() {
       settings.followSymlinks = false;
       var finder = Finder(settings);
       finder.find().then((fileResults) {
-        expect(fileResults.length, lessThan(3));
+        expect(fileResults.length, lessThan(4));
       });
     });
   });

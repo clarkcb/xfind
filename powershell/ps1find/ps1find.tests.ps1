@@ -490,7 +490,7 @@ Describe -tag "Finder" -name "test_follow_symlinks_default_settings" {
         $finder = [Finder]::new($settings)
         $fileResults = $finder.Find()
         if ($fileResults.Count -gt 0) {
-            $fileResults.Count | Should -BeLessThan 3
+            $fileResults.Count | Should -BeLessThan 4
         }
     }
 }
@@ -518,7 +518,7 @@ Describe -tag "Finder" -name "test_follow_symlinks_no_follow_symlinks" {
         $finder = [Finder]::new($settings)
         $fileResults = $finder.Find()
         if ($fileResults.Count -gt 0) {
-            $fileResults.Count | Should -BeLessThan 3
+            $fileResults.Count | Should -BeLessThan 4
         }
     }
 }

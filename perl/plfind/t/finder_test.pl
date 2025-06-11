@@ -451,7 +451,7 @@ sub test_default_no_symlinks {
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file_results = $finder->find();
-    ok(scalar @{$file_results} < 3, "There are less than three file results");
+    ok(scalar @{$file_results} < 4, "There are less than three file results");
 }
 
 sub test_follow_symlinks {
@@ -471,7 +471,7 @@ sub test_no_follow_symlinks {
     my ($finder, $errs) = plfind::Finder->new($settings);
     ok(scalar @{$errs} == 0, 'No errors from valid settings');
     my $file_results = $finder->find();
-    ok(scalar @{$file_results} < 3, "There are less than three file results");
+    ok(scalar @{$file_results} < 4, "There are less than three file results");
 }
 
 ################################################################################

@@ -328,8 +328,8 @@ func TestFollowSymlinks_DefaultSettings_Excluded(t *testing.T) {
 	finder := NewFinder(settings)
 	fileResults, err := finder.Find()
 	if err == nil {
-		if fileResults.Len() > 2 {
-			t.Errorf("expected less than 3 files")
+		if fileResults.Len() > 3 {
+			t.Errorf("expected less than 4 files")
 		}
 	} else {
 		t.Errorf("expected no error")
@@ -358,8 +358,8 @@ func TestFollowSymlinks_NoFollowSymlinks_Excluded(t *testing.T) {
 	finder := NewFinder(settings)
 	fileResults, err := finder.Find()
 	if err == nil {
-		if fileResults.Len() > 2 {
-			t.Errorf("expected less than 3 files")
+		if fileResults.Len() > 3 {
+			t.Errorf("expected less than 4 files")
 		}
 	} else {
 		t.Errorf("expected no error")

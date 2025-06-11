@@ -62,7 +62,9 @@ defmodule ExFindTest.FindSettingsTest do
   test "add a pattern" do
     settings = FindSettings.new()
     settings = FindSettings.add_pattern(settings, "find", :in_file_patterns)
-    assert settings.in_file_patterns == [~r/find/]
+    # assert settings.in_file_patterns == [~r/find/]
+    in_file_patterns_source = settings.in_file_patterns |> Enum.map(fn p -> p.source end)
+    assert in_file_patterns_source == [~r/find/.source]
   end
 
   test "add an invalid pattern" do
@@ -75,7 +77,9 @@ defmodule ExFindTest.FindSettingsTest do
   test "add list of patterns" do
     settings = FindSettings.new()
     settings = FindSettings.add_patterns(settings, ["find", "file"], :in_file_patterns)
-    assert settings.in_file_patterns == [~r/find/, ~r/file/]
+    # assert settings.in_file_patterns == [~r/find/, ~r/file/]
+    in_file_patterns_source = settings.in_file_patterns |> Enum.map(fn p -> p.source end)
+    assert in_file_patterns_source == [~r/find/.source, ~r/file/.source]
   end
 
   test "set archives_only sets include_archives" do

@@ -46,7 +46,9 @@ defmodule ExFindTest.FindOptionsTest do
     {:ok, settings} = FindOptions.get_settings_from_args(["-x", "ex,exs", "src", "-f", "find"], find_options.options)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["src"]
-    assert settings.in_file_patterns == [~r/find/]
+    # assert settings.in_file_patterns == [~r/find/]
+    in_file_patterns_source = settings.in_file_patterns |> Enum.map(fn p -> p.source end)
+    assert in_file_patterns_source == [~r/find/.source]
   end
 
   test "set archives_only" do
@@ -79,8 +81,14 @@ defmodule ExFindTest.FindOptionsTest do
     assert status == :ok
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
-    assert settings.out_dir_patterns == [~r/dep/]
-    assert settings.out_file_patterns == [~r/test/]
+    # assert settings.out_dir_patterns == [~r/dep/]
+    out_dir_patterns_source = settings.out_dir_patterns |> Enum.map(fn p -> p.source end)
+    assert out_dir_patterns_source == [~r/dep/.source]
+
+    # assert settings.out_file_patterns == [~r/test/]
+    out_file_patterns_source = settings.out_file_patterns |> Enum.map(fn p -> p.source end)
+    assert out_file_patterns_source == [~r/test/.source]
+
     assert settings.debug == true
     assert settings.verbose == true
     assert settings.follow_symlinks == true
@@ -116,8 +124,14 @@ defmodule ExFindTest.FindOptionsTest do
     settings = FindOptions.get_settings_from_json!(json)
     assert settings.in_extensions == ["ex", "exs"]
     assert settings.paths == ["~/src/xfind/elixir/exfind"]
-    assert settings.out_dir_patterns == [~r/dep/]
-    assert settings.out_file_patterns == [~r/test/]
+    # assert settings.out_dir_patterns == [~r/dep/]
+    out_dir_patterns_source = settings.out_dir_patterns |> Enum.map(fn p -> p.source end)
+    assert out_dir_patterns_source == [~r/dep/.source]
+
+    # assert settings.out_file_patterns == [~r/test/]
+    out_file_patterns_source = settings.out_file_patterns |> Enum.map(fn p -> p.source end)
+    assert out_file_patterns_source == [~r/test/.source]
+
     assert settings.debug == true
     assert settings.include_hidden == true
   end

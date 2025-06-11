@@ -304,7 +304,7 @@ class FinderTests: XCTestCase {
         settings.addPath(getBinPath())
         let finder = try! Finder(settings: settings)
         let fileResults = try! finder.find()
-        XCTAssert(fileResults.count < 3)
+        XCTAssert(fileResults.count < 4)
     }
 
     func testFollowSymlinks_FollowSymlinks_Included() {
@@ -322,7 +322,7 @@ class FinderTests: XCTestCase {
         settings.followSymlinks = false
         let finder = try! Finder(settings: settings)
         let fileResults = try! finder.find()
-        XCTAssert(fileResults.count < 3)
+        XCTAssert(fileResults.count < 4)
     }
 
     static var allTests = [

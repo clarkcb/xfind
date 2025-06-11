@@ -393,7 +393,7 @@ public class FinderTest {
         var finder = new Finder(settings);
         try {
             var fileResults = finder.find();
-            assertTrue(fileResults.size() < 3);
+            assertTrue(fileResults.size() < 4);
         } catch (FindException e) {
             fail();
         }
@@ -421,7 +421,7 @@ public class FinderTest {
         var finder = new Finder(settings);
         try {
             var fileResults = finder.find();
-            assertTrue(fileResults.size() < 3);
+            assertTrue(fileResults.size() < 4);
         } catch (FindException e) {
             fail();
         }

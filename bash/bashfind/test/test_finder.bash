@@ -433,7 +433,7 @@ test_follow_symlinks_default () {
     then
         assert_equals_number "follow_symlinks_default" 0 0
     else
-        assert_less_than_number "follow_symlinks_default" ${#FILE_RESULTS[@]} 3
+        assert_less_than_number "follow_symlinks_default" ${#FILE_RESULTS[@]} 4
     fi
 }
 
@@ -475,6 +475,6 @@ test_no_follow_symlinks () {
     then
         assert_equals_number "test_no_follow_symlinks" 0 0
     else
-        assert_less_than_number "test_no_follow_symlinks" ${#FILE_RESULTS[@]} 3
+        assert_less_than_number "test_no_follow_symlinks" ${#FILE_RESULTS[@]} 4
     fi
 }

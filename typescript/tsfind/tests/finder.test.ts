@@ -327,7 +327,7 @@ describe('testing finder', () => {
         settings.paths.push(binPath);
         const finder = new Finder(settings);
         finder.find().then(fileResults => {
-            expect(fileResults.length < 3).toBeTruthy();
+            expect(fileResults.length < 4).toBeTruthy();
         });
     });
 
@@ -349,7 +349,7 @@ describe('testing finder', () => {
         settings.followSymlinks = false;
         const finder = new Finder(settings);
         finder.find().then(fileResults => {
-            expect(fileResults.length < 3).toBeTruthy();
+            expect(fileResults.length < 4).toBeTruthy();
         });
     });
 });

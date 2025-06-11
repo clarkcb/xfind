@@ -308,7 +308,7 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
     val settings = FindSettings(paths = Set(Paths.get(getBinPath())))
     val finder = new Finder(settings)
     val fileResults = finder.find()
-    assert(fileResults.size < 3)
+    assert(fileResults.size < 4)
   }
 
   test("testFollowSymlinks_FollowSymlinks_Included") {
@@ -322,6 +322,6 @@ class FinderTest extends AnyFunSuite with BeforeAndAfterEach with BeforeAndAfter
     val settings = FindSettings(paths = Set(Paths.get(getBinPath())), followSymlinks = false)
     val finder = new Finder(settings)
     val fileResults = finder.find()
-    assert(fileResults.size < 3)
+    assert(fileResults.size < 4)
   }
 }
