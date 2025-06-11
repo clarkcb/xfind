@@ -32,8 +32,8 @@ repositories {
 
 dependencies {
     implementation("commons-io:commons-io:2.19.0")
-    implementation("org.json:json:20250107")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.12.2")
+    implementation("org.json:json:20250517")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.13.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
