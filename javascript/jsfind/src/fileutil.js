@@ -33,11 +33,10 @@ class FileUtil {
     static getExtension(filePath) {
         let f = path.basename(filePath);
         let idx = f.lastIndexOf('.');
-        if (idx > 0 && idx < f.length-1) {
+        if (idx > 0 && idx < f.length - 1) {
             return f.substring(idx+1);
-        } else {
-            return '';
         }
+        return '';
     }
 
     static getFileContentsSync(filePath, encoding) {

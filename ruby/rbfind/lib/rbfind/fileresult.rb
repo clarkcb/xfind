@@ -3,7 +3,7 @@
 require 'pathname'
 
 module RbFind
-  # FindFile - encapsulates a file to be found
+  # FileResult - encapsulates a file result
   class FileResult
 
     attr_accessor :containers

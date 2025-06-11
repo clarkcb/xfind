@@ -7,4 +7,4 @@ findoptions.xml
 
 # for cpanfile/carton
 local/
-
+blib/

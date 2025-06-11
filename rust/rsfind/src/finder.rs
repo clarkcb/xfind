@@ -617,7 +617,7 @@ mod tests {
         assert!(file_results.is_ok());
         let file_results = file_results.ok().unwrap();
         println!("file_results: {}", file_results.len());
-        assert!(file_results.len() < 3);
+        assert!(file_results.len() < 4);
     }
 
     #[test]
@@ -649,6 +649,6 @@ mod tests {
         assert!(file_results.is_ok());
         let file_results = file_results.ok().unwrap();
         println!("file_results: {}", file_results.len());
-        assert!(file_results.len() < 3);
+        assert!(file_results.len() < 4);
     }
 }

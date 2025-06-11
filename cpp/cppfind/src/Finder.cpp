@@ -63,18 +63,24 @@ namespace cppfind {
     }
 
     bool Finder::is_matching_dir_path(const std::filesystem::path& dir_path) const {
+        bool matches = false;
         for (auto it = dir_path.begin(); it != dir_path.end(); ++it) {
+            // if segment is hidden and !is_hidden, return false immediately
             if (!m_settings.include_hidden() && FileUtil::is_hidden(it->string())) {
                 return false;
             }
-            if ((!m_settings.in_dir_patterns().empty()
-                && !matches_any_pattern(it->string(), m_settings.in_dir_patterns()))
-                || (!m_settings.out_dir_patterns().empty()
-                    && matches_any_pattern(it->string(), m_settings.out_dir_patterns()))) {
+            // at least one segment has to be true for in_dir_patterns
+            if (m_settings.in_dir_patterns().empty()
+                || matches_any_pattern(it->string(), m_settings.in_dir_patterns())) {
+                matches = true;
+            }
+            // if segment matches out_dir_pattern, return false immediately
+            if (!m_settings.out_dir_patterns().empty()
+                    && matches_any_pattern(it->string(), m_settings.out_dir_patterns())) {
                 return false;
             }
         }
-        return true;
+        return matches;
     }
 
     bool Finder::is_matching_archive_extension(const std::string& file_ext) const {

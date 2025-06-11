@@ -724,6 +724,8 @@ class Benchmarker(object):
                         output_lines.append(error_line)
                     else:
                         error_lines.append(error_line)
+                else:
+                    break
             p.terminate()
             # output = '\n'.join(output_lines)
             # Temporary: sort output lines to reduce mismatches
@@ -826,7 +828,9 @@ class Benchmarker(object):
                         version_diffs[d[1]] = 0
                     version_diffs[d[0]] += 1
                     version_diffs[d[1]] += 1
-                for v, d in version_diffs.items():
+                versions = sorted(version_diffs.keys())
+                for v in versions:
+                    d = version_diffs[v]
                     if d > 1:
                         print(f'{v} had differences with {d} other versions')
         else:

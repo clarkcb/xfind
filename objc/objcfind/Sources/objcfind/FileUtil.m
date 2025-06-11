@@ -196,12 +196,10 @@
 }
 
 + (NSString*) joinPath:(NSString*)path childPath:(NSString*)childPath {
-    NSMutableString *joined = [NSMutableString stringWithString:path];
-    if (![joined hasSuffix:@"/"]) {
-        [joined appendString:@"/"];
-    }
-    [joined appendString:childPath];
-    return [NSString stringWithString:joined];
+    NSMutableArray<NSString*> *elems = [[NSMutableArray alloc] init];
+    [elems addObject:path];
+    [elems addObject:childPath];
+    return [NSString pathWithComponents:elems];
 }
 
 + (NSString*) normalizePath:(NSString*)path {

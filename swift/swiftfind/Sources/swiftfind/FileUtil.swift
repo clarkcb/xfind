@@ -157,14 +157,20 @@ public enum FileUtil {
     }
 
     public static func splitPath(_ filePath: String) -> (String, String) {
-        let pathElems = filePath.split { $0 == "/" }.map { String($0) }
-        if pathElems.count > 1 {
-            let path = pathElems.prefix(pathElems.count - 1).joined(separator: separator)
-            return (path, pathElems[pathElems.count - 1])
-        } else {
-            return ("", filePath)
+        var fp = filePath
+        if fp.hasSuffix(separator) {
+            fp = String(fp.dropLast())
         }
+        if let idx = fp.lastIndex(of: separator[separator.startIndex]) {
+            return (String(fp[..<idx]), String(fp[fp.index(after: idx)...]))
+        }
+        return ("", filePath)
     }
+
+//    public static func splitPathWithURL(_ filePath: String) -> (directory: String, fileName: String) {
+//      let url = URL(fileURLWithPath: filePath)
+//      return (url.deletingLastPathComponent().path, url.lastPathComponent)
+//    }
 
     public static func joinPath(_ path: String, childPath: String) -> String {
         if path.hasSuffix(separator) {

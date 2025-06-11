@@ -8,6 +8,7 @@ module HsFind.FileUtil
     , filterOutSymlinks
     , getDirectoryFiles
     , getExtension
+    , getExtensionIndex
     , getFileByteString
     , getFileLines
     , getFileSizes
@@ -54,17 +55,22 @@ expandPath filePath = do
         _ -> return $ homePath ++ drop 1 filePath
     else return filePath
 
+getExtensionIndex :: FilePath -> Int
+getExtensionIndex fp = case elemIndices '.' fileName of
+                          [] -> -1
+                          idxs -> maximum idxs
+  where fileName = takeFileName fp
+
 getExtension :: FilePath -> Maybe String
 getExtension "" = Nothing
-getExtension fp = case maxDotIndex (takeFileName fp) of
-                  0 -> Nothing
-                  i | i == lastIndex (takeFileName fp) -> Nothing
-                  _ -> Just $ trimToExt (takeFileName fp)
-  where maxDotIndex name = case elemIndices '.' name of
-                           [] -> 0
-                           idxs -> maximum idxs
+getExtension fp = case maxDotIndex of
+                  i | i < 1 -> Nothing
+                  i | i == lastIndex fileName -> Nothing
+                  _ -> Just $ trimToExt fileName
+  where fileName = takeFileName fp
+        maxDotIndex = getExtensionIndex fileName
         lastIndex name = length name - 1
-        trimToExt name = drop (maxDotIndex name + 1) name
+        trimToExt = drop (maxDotIndex + 1)
 
 normalizeExtension :: String -> String
 normalizeExtension x = case x of

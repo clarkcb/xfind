@@ -113,9 +113,9 @@ module RbFind
     end
 
     def add_patterns(patterns, pattern_set)
-      if patterns.instance_of?(String)
+      if patterns.is_a?(String)
         pattern_set.add(Regexp.new(patterns))
-      elsif patterns.instance_of?(Array) ||  patterns.instance_of?(Enumerable)
+      elsif patterns.is_a?(Enumerable)
         patterns.each do |p|
           pattern_set.add(Regexp.new(p))
         end
@@ -131,11 +131,11 @@ module RbFind
     end
 
     def add_file_types(file_types, file_types_set)
-      if file_types.instance_of?(String)
+      if file_types.is_a?(String)
         file_types.split(',').each do |t|
           file_types_set.add(FileType.from_name(t))
         end
-      elsif file_types.instance_of?(Array) || file_types.instance_of?(Enumerable)
+      elsif file_types.is_a?(Enumerable)
         file_types.each do |t|
           file_types_set.add(FileType.from_name(t))
         end
