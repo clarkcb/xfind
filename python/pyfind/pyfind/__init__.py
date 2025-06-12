@@ -3,7 +3,7 @@
 from .color import Color
 from .common import log, log_error, parse_datetime_str, get_text, list_to_str
 from .config import XFIND_PATH, SHARED_PATH
-from .fileresult import FileResult
+from .fileresult import FileResult, FileResultFormatter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
 from .finder import Finder
