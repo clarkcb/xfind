@@ -23,11 +23,6 @@ target/
 .gradle/
 build/
 
-# TODO: determine whether these should actually be added
-gradle/
-gradlew
-gradlew.bat
-
 # resource files that are copied from shared or unused
 config.json
 filetypes.json
