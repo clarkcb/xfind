@@ -6,11 +6,8 @@ then
 fi
 
 JAVAFIND_PATH="$XFIND_PATH/java/javafind"
-JAVAFIND_VERSION="0.1.0-SNAPSHOT"
-# JAVAFIND_JAR=$(find $JAVAFIND_PATH/target -name "javafind*.jar" | head -n 1)
-JAVAFIND_JAR="$JAVAFIND_PATH/build/libs/javafind-$JAVAFIND_VERSION.jar"
+JAVAFIND_APP_JAR="$JAVAFIND_PATH/app/build/libs/app.jar"
 
-JAVA_HOME=$(/usr/libexec/java_home -v17)
+JAVA_HOME_17=$(/usr/libexec/java_home -v17)
 
-# echo "java -cp $JAVAFIND_JAR javafind.JavaFind $@"
-java -cp "$JAVAFIND_JAR" javafind.JavaFind "$@"
+JAVA_HOME="$JAVA_HOME_17" java -jar "$JAVAFIND_APP_JAR" "$@"

@@ -5,16 +5,14 @@ if (-not (Test-Path Env:XFIND_PATH))
     $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
 }
 
-$javaFindJarPath = Join-Path $env:XFIND_PATH 'java' 'javafind' 'build' 'libs'
-$javaFindVersion = '0.1.0-SNAPSHOT'
-$javaFindJarName = "javafind-$javaFindVersion.jar"
-$javaFindJar = Join-Path $javaFindJarPath $javaFindJarName
+$javaFindPath = Join-Path $env:XFIND_PATH 'java' 'javafind'
+$javaFindAppJar = Join-Path $javaFindPath 'app' 'build' 'libs' 'app.jar'
 
 $env:JAVA_HOME = /usr/libexec/java_home -v17
 
-if (Test-Path $javaFindJar)
+if (Test-Path $javaFindAppJar)
 {
-    & java -cp $javaFindJar 'javafind.JavaFind' $Args
+    & java -jar $javaFindAppJar $Args
 }
 else
 {

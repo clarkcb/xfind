@@ -1,0 +1,46 @@
+Test file
+
+This is a file to test xsearch, which currently has the following 21 implementations:
+
+1. cljsearch for Clojure
+2. cppsearch for C++
+3. cssearch for C#
+4. dartsearch for Dart
+5. exsearch for Elixir
+6. fssearch for F#
+7. gosearch for Go
+8. hssearch for Haskell
+9. javasearch for Java
+10. jssearch for JavaScript (Node.js)
+11. ktsearch for Kotlin
+12. objcsearch for Objective-C
+13. phpsearch for PHP
+14. plsearch for Perl
+15. ps1search for PowerShell
+16. pysearch for Python
+17. rbsearch for Ruby
+18. rssearch for Rust
+19. scalasearch for Scala
+20. swiftsearch for Swift
+21. tssearch for TypeScript
+
+
+The basic code structure includes these elements:
+
+* Searcher - executes the file search based on the SearchSettings
+* SearchOptions - loads option data from XML, generates usage text, builds a
+  SearchSettings instance from command line arguments
+* SearchResult - encapsulates a single search result
+* SearchSettings - encapsulates the search settings, including what
+  directories or files to include/exclude, search patterns, lines before or
+  after, etc., used by Searcher
+
+
+Other possible implementations:
+
+* adasearch for Ada
+* erlsearch for Erlang
+* jlsearch for Julia
+
+
+This is the second-to-last line of the test file. The final line is blank.

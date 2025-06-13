@@ -9,7 +9,7 @@ class DependencyUpdatePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.tasks.register("checkForDependencyUpdates") {
             doLast {
-                val cacheDir = File(project.buildDir, "dependencyUpdateCache")
+                val cacheDir = File(project.layout.buildDirectory.asFile.get(), "dependencyUpdateCache")
                 val cacheTtlMinutes = 60L
 
                 project.configurations.forEach { config ->
