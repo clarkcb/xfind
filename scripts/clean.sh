@@ -286,9 +286,9 @@ clean_groovyfind () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
-    clean_json_resources "$GROOVYFIND_PATH/src/main/resources"
+    clean_json_resources "$GROOVYFIND_PATH/lib/src/main/resources"
 
-    clean_test_resources "$GROOVYFIND_PATH/src/test/resources"
+    clean_test_resources "$GROOVYFIND_PATH/lib/src/test/resources"
 
     cd -
 }
@@ -339,9 +339,9 @@ clean_javafind () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
-    clean_json_resources "$JAVAFIND_PATH/src/main/resources"
+    clean_json_resources "$JAVAFIND_PATH/lib/src/main/resources"
 
-    clean_test_resources "$JAVAFIND_PATH/src/test/resources"
+    clean_test_resources "$JAVAFIND_PATH/lib/src/test/resources"
 
     cd -
 }
@@ -392,9 +392,9 @@ clean_ktfind () {
     log "$GRADLE --warning-mode all clean"
     "$GRADLE" --warning-mode all clean
 
-    clean_json_resources "$KTFIND_PATH/src/main/resources"
+    clean_json_resources "$KTFIND_PATH/lib/src/main/resources"
 
-    clean_test_resources "$KTFIND_PATH/src/test/resources"
+    clean_test_resources "$KTFIND_PATH/lib/src/test/resources"
 
     cd -
 }

@@ -760,8 +760,8 @@ build_groovyfind () {
     JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
     log "JVM version: $JVM_VERSION"
 
-    RESOURCES_PATH="$GROOVYFIND_PATH/src/main/resources"
-    TEST_RESOURCES_PATH="$GROOVYFIND_PATH/src/test/resources"
+    RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/main/resources"
+    TEST_RESOURCES_PATH="$GROOVYFIND_PATH/lib/src/test/resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -778,9 +778,12 @@ build_groovyfind () {
     # gradle --warning-mode all clean jar publishToMavenLocal
     # GRADLE_ARGS="--info --warning-mode all"
     GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS="clean jar"
-    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
-    "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
+    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
+    for t in ${GRADLE_TASKS[*]}
+    do
+        log "$GRADLE $GRADLE_ARGS $t"
+        "$GRADLE" --warning-mode all $t
+    done
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -933,8 +936,8 @@ build_javafind () {
     JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
     log "JVM version: $JVM_VERSION"
 
-    RESOURCES_PATH="$JAVAFIND_PATH/src/main/resources"
-    TEST_RESOURCES_PATH="$JAVAFIND_PATH/src/test/resources"
+    RESOURCES_PATH="$JAVAFIND_PATH/lib/src/main/resources"
+    TEST_RESOURCES_PATH="$JAVAFIND_PATH/lib/src/test/resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -951,10 +954,12 @@ build_javafind () {
     # gradle --warning-mode all clean jar publishToMavenLocal
     # GRADLE_ARGS="--info --warning-mode all"
     GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS="clean jar publishToMavenLocal"
-    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
-    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
-    "$GRADLE" --warning-mode all clean jar publishToMavenLocal
+    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
+    for t in ${GRADLE_TASKS[*]}
+    do
+        log "$GRADLE $GRADLE_ARGS $t"
+        "$GRADLE" --warning-mode all $t
+    done
 
     # check for success/failure
     if [ "$?" -eq 0 ]
@@ -1084,8 +1089,8 @@ build_ktfind () {
     JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
     log "JVM version: $JVM_VERSION"
 
-    RESOURCES_PATH="$KTFIND_PATH/src/main/resources"
-    TEST_RESOURCES_PATH="$KTFIND_PATH/src/test/resources"
+    RESOURCES_PATH="$KTFIND_PATH/lib/src/main/resources"
+    TEST_RESOURCES_PATH="$KTFIND_PATH/lib/src/test/resources"
 
     # copy the shared json files to the local resource location
     mkdir -p "$RESOURCES_PATH"
@@ -1102,10 +1107,12 @@ build_ktfind () {
     # gradle --warning-mode all clean jar publishToMavenLocal
     # GRADLE_ARGS="--info --warning-mode all"
     GRADLE_ARGS="--warning-mode all"
-    GRADLE_TASKS="clean jar"
-    log "$GRADLE $GRADLE_ARGS $GRADLE_TASKS"
-    # "$GRADLE" $GRADLE_ARGS $GRADLE_TASKS
-    "$GRADLE" --warning-mode all clean jar
+    GRADLE_TASKS=(clean :lib:jar :lib:publishToMavenLocal :app:jar)
+    for t in ${GRADLE_TASKS[*]}
+    do
+        log "$GRADLE $GRADLE_ARGS $t"
+        "$GRADLE" --warning-mode all $t
+    done
 
     # check for success/failure
     if [ "$?" -eq 0 ]
