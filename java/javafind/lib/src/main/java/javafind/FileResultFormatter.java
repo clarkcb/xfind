@@ -29,7 +29,7 @@ public class FileResultFormatter {
             prefix = s.substring(0, matchStartIndex);
         }
         var suffix = "";
-        if (matchEndIndex < s.length() - 1) {
+        if (matchEndIndex < s.length()) {
             suffix = s.substring(matchEndIndex);
         }
         return prefix +
