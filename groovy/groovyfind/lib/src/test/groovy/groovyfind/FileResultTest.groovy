@@ -12,7 +12,7 @@ class FileResultTest {
 
     @Test
     final void testFileResultAbsPath() {
-        def dir = '~/src/xfind/groovy/groovyfind/src/main/groovy/groovyfind'
+        def dir = '~/src/xfind/groovy/groovyfind/lib/src/main/groovy/groovyfind'
         def fileName = 'FileResult.groovy'
         def path = Paths.get(dir + '/' + fileName)
         def fileResult = new FileResult(path, FileType.CODE)

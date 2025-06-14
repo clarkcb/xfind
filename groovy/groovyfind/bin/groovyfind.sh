@@ -6,10 +6,8 @@ then
 fi
 
 GROOVYFIND_PATH="$XFIND_PATH/groovy/groovyfind"
-GROOVYFIND_VERSION="0.1.0"
-#GROOVYFIND_APP_JAR="$GROOVYFIND_PATH/app/build/libs/app.jar"
-GROOVYFIND_JAR="$GROOVYFIND_PATH/build/libs/groovyfind-${GROOVYFIND_VERSION}-SNAPSHOT.jar"
+GROOVYFIND_APP_JAR="$GROOVYFIND_PATH/app/build/libs/app.jar"
 
-#java -jar "$GROOVYFIND_APP_JAR" "$@"
-#echo "java -cp $GROOVYFIND_JAR groovyfind.GroovyFind $@"
-java -cp "$GROOVYFIND_JAR" "groovyfind.GroovyFind" "$@"
+JAVA_HOME_17=$(/usr/libexec/java_home -v17)
+
+JAVA_HOME="$JAVA_HOME_17" java -jar "$GROOVYFIND_APP_JAR" "$@"

@@ -101,7 +101,7 @@ class FinderTest {
         def settings = getSettings()
         settings.addOutDirPattern('FindFiles')
         def finder = new Finder(settings)
-        def dir = Paths.get('/Users/cary/src/xfind/java/javafind/ssrc/main/java/javafind')
+        def dir = Paths.get('/Users/cary/src/xfind/java/javafind/src/main/java/javafind')
         assertTrue(finder.isMatchingDir(dir))
     }
 

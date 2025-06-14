@@ -5,13 +5,14 @@ if (-not (Test-Path Env:XFIND_PATH))
     $env:XFIND_PATH = Join-Path $HOME 'src' 'xfind'
 }
 
-$groovyFindVersion = '0.1.0'
-$groovyFindJarName = "groovyfind-$groovyFindVersion-SNAPSHOT.jar"
-$groovyFindJarPath = Join-Path $env:XFIND_PATH 'groovy' 'groovyfind' 'build' 'libs' $groovyFindJarName
+$groovyFindPath = Join-Path $env:XFIND_PATH 'groovy' 'groovyfind'
+$groovyFindAppJar = Join-Path $groovyFindPath 'app' 'build' 'libs' 'app.jar'
 
-if (Test-Path $groovyAppJar)
+$env:JAVA_HOME = /usr/libexec/java_home -v17
+
+if (Test-Path $groovyFindAppJar)
 {
-    & java -jar $groovyFindJarPath $Args
+    & java -jar $groovyFindAppJar $Args
 }
 else
 {
