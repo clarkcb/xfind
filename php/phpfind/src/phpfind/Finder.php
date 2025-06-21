@@ -600,21 +600,6 @@ class Finder
 
     /**
      * @param FileResult[] $file_results
-     * @return string[]
-     */
-    public function get_matching_files(array $file_results): array
-    {
-        $file_paths = [];
-        foreach ($file_results as $f) {
-            if (!in_array($f->file_name, $file_paths)) {
-                $file_paths[] = FileUtil::join_paths($f->path, $f->file_name);
-            }
-        }
-        return $file_paths;
-    }
-
-    /**
-     * @param FileResult[] $file_results
      * @return void
      */
     public function print_matching_files(array $file_results, FileResultFormatter $formatter): void
