@@ -4,7 +4,7 @@ use std::process;
 
 use crate::common::{log, log_err};
 use crate::fileresultformatter::FileResultFormatter;
-use crate::finder::get_matching_dir_paths;
+use crate::finder::{print_matching_dirs, print_matching_files};
 use crate::finderror::FindError;
 
 pub mod color;
@@ -29,29 +29,6 @@ fn print_error(error: FindError, options: &findoptions::FindOptions) {
 fn error_and_exit(error: FindError, options: &findoptions::FindOptions) {
     print_error(error, options);
     process::exit(1);
-}
-
-fn print_matching_dirs(file_results: &Vec<fileresult::FileResult>, formatter: &FileResultFormatter) {
-    let dirs = get_matching_dir_paths(file_results);
-    if dirs.is_empty() {
-        log("\nMatching directories: 0");
-    } else {
-        log(format!("\nMatching directories ({}):", dirs.len()).as_str());
-        for dir in dirs.iter() {
-            log(format!("{}", (&formatter.format_dir_path)(dir, &formatter.settings)).as_str());
-        }
-    }
-}
-
-fn print_matching_files(file_results: &Vec<fileresult::FileResult>, formatter: &FileResultFormatter) {
-    if file_results.is_empty() {
-        log("\nMatching files: 0");
-    } else {
-        log(format!("\nMatching files ({}):", file_results.len()).as_str());
-        for fr in file_results.iter() {
-            log(format!("{}", formatter.format_file_result(fr)).as_str());
-        }
-    }
 }
 
 fn find(args: Iter<String>) {

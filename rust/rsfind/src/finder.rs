@@ -4,14 +4,15 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-use regex::Regex;
-
+use crate::common::log;
 use crate::fileresult::FileResult;
+use crate::fileresultformatter::FileResultFormatter;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
 use crate::sortby::SortBy;
+use regex::Regex;
 
 pub struct Finder {
     pub file_types: FileTypes,
@@ -415,14 +416,37 @@ pub fn get_matching_dir_paths(file_results: &[FileResult]) -> Vec<PathBuf> {
     dirs
 }
 
+pub fn print_matching_dirs(file_results: &Vec<FileResult>, formatter: &FileResultFormatter) {
+    let dirs = get_matching_dir_paths(file_results);
+    if dirs.is_empty() {
+        log("\nMatching directories: 0");
+    } else {
+        log(format!("\nMatching directories ({}):", dirs.len()).as_str());
+        for dir in dirs.iter() {
+            log(format!("{}", (&formatter.format_dir_path)(dir, &formatter.settings)).as_str());
+        }
+    }
+}
+
+pub fn print_matching_files(file_results: &Vec<FileResult>, formatter: &FileResultFormatter) {
+    if file_results.is_empty() {
+        log("\nMatching files: 0");
+    } else {
+        log(format!("\nMatching files ({}):", file_results.len()).as_str());
+        for fr in file_results.iter() {
+            log(format!("{}", formatter.format_file_result(fr)).as_str());
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::path::Path;
     use std::time::SystemTime;
 
+    use super::*;
     use crate::config::Config;
     use crate::filetypes::FileType;
-    use super::*;
 
     fn get_default_test_settings() -> FindSettings {
         let mut settings = FindSettings::default();
