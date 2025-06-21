@@ -50,45 +50,10 @@ do_find
 
 if [ "$PRINT_DIRS" == true ]
 then
-    if [ ${#FILE_RESULTS[@]} == 0 ]
-    then
-        echo -e "\nMatching directories: 0"
-    else
-        matching_dirs=()
-        for r in ${FILE_RESULTS[*]}
-        do
-            df=( $(IFS=","; echo $r) )
-            d=${df[0]}
-            d=$(format_dir_path "$d")
-            matching_dirs+=($d)
-        done
-        matching_dirs=($(printf "%s\n" "${matching_dirs[@]}" | sort -u))
-
-        echo -e "\nMatching directories (${#matching_dirs[@]}):"
-        for d in ${matching_dirs[*]}
-        do
-            echo -e "$d"
-        done
-    fi
+    print_file_results_dirs
 fi
 
 if [ "$PRINT_FILES" == true ]
 then
-    if [ ${#FILE_RESULTS[@]} == 0 ]
-    then
-        echo -e "\nMatching files: 0"
-    else
-        matching_files=()
-        for r in ${FILE_RESULTS[*]}
-        do
-            f=$(format_file_result "$r")
-            matching_files+=($f)
-        done
-        matching_files=($(printf "%s\n" "${matching_files[@]}"))
-        echo -e "\nMatching files (${#matching_files[@]}):"
-        for f in ${matching_files[@]}
-        do
-            echo -e "$f"
-        done
-    fi
+    print_file_results
 fi
