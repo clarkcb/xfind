@@ -2,6 +2,8 @@ module HsFind.Finder
     (
       doFind
     , filterToFileResult
+    , formatMatchingDirs
+    , formatMatchingFiles
     , getFileResults
     , isMatchingArchiveFilePath
     , isMatchingDirPath
@@ -11,10 +13,10 @@ module HsFind.Finder
 
 import Control.Monad (forM, filterM)
 import Data.Char (toLower)
-import Data.List (partition, sortBy, zipWith4)
+import Data.List (nub, partition, sort, sortBy, zipWith4)
 import Data.Maybe (fromJust, isJust, isNothing)
 
-import System.FilePath (dropFileName, splitPath, takeFileName)
+import System.FilePath (dropFileName, splitPath, takeDirectory, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
@@ -24,7 +26,7 @@ import HsFind.FileUtil
     getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles,
     pathExists)
 import HsFind.FileResult
-    (FileResult(..), newFileResult, newFileResultWithSizeAndLastMod)
+    (FileResult(..), formatDirectory, formatFileResult, newFileResult, newFileResultWithSizeAndLastMod)
 import HsFind.FindSettings
 
 
@@ -363,3 +365,22 @@ doFind settings = do
       let settings' = settings { paths = foundPaths }
       fileResults <- getFileResults settings'
       return $ Right $ sortFileResults settings' fileResults
+
+getMatchingDirs :: [FileResult] -> [FilePath]
+getMatchingDirs = sort . nub . map (takeDirectory . fileResultPath)
+
+formatMatchingDirs :: FindSettings -> [FileResult] -> String
+formatMatchingDirs settings fileResults =
+  if not (null matchingDirs) then
+    "\nMatching directories (" ++ show (length matchingDirs) ++ "):\n" ++
+    unlines matchingDirs
+  else "\nMatching directories: 0\n"
+  where matchingDirs = map (formatDirectory settings) $ getMatchingDirs fileResults
+
+formatMatchingFiles :: FindSettings -> [FileResult] -> String
+formatMatchingFiles settings fileResults =
+  if not (null matchingFiles) then
+    "\nMatching files (" ++ show (length matchingFiles) ++ "):\n" ++
+    unlines matchingFiles
+  else "\nMatching files: 0\n"
+  where matchingFiles = map (formatFileResult settings) fileResults
