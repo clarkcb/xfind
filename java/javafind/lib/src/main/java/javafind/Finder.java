@@ -21,6 +21,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static javafind.Logger.log;
 
 public class Finder {
 
@@ -359,5 +362,34 @@ public class Finder {
             fileResults = findAsync();
         }
         return fileResults;
+    }
+
+    public static List<Path> getMatchingDirs(final List<FileResult> results) {
+        return results.stream()
+                .map(fr -> fr.path().getParent()).distinct()
+                .sorted().collect(Collectors.toList());
+    }
+
+    public static void printMatchingDirs(final List<FileResult> results, final FileResultFormatter formatter) {
+        var dirs = getMatchingDirs(results);
+        if (!dirs.isEmpty()) {
+            log(String.format("\nMatching directories (%d):", dirs.size()));
+            for (var d : dirs) {
+                log(formatter.formatDirPath(d));
+            }
+        } else {
+            log("\nMatching directories: 0");
+        }
+    }
+
+    public static void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
+        if (!results.isEmpty()) {
+            log(String.format("\nMatching files (%d):", results.size()));
+            for (var f : results) {
+                log(formatter.formatFileResult(f));
+            }
+        } else {
+            log("\nMatching files: 0");
+        }
     }
 }

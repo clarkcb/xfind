@@ -11,9 +11,6 @@ Main class for initiating javafind from command line
 package javafind;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
-import java.util.stream.Collectors;
 
 import static javafind.Logger.log;
 import static javafind.Logger.logError;
@@ -29,35 +26,6 @@ public class JavaFind {
         log("");
         logError(message + "\n");
         options.usage(1);
-    }
-
-    private static List<Path> getMatchingDirs(final List<FileResult> results) {
-        return results.stream()
-                .map(fr -> fr.path().getParent()).distinct()
-                .sorted().collect(Collectors.toList());
-    }
-
-    private static void printMatchingDirs(final List<FileResult> results, final FileResultFormatter formatter) {
-        var dirs = getMatchingDirs(results);
-        if (!dirs.isEmpty()) {
-            log(String.format("\nMatching directories (%d):", dirs.size()));
-            for (var d : dirs) {
-                log(formatter.formatDirPath(d));
-            }
-        } else {
-            log("\nMatching directories: 0");
-        }
-    }
-
-    private static void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
-        if (!results.isEmpty()) {
-            log(String.format("\nMatching files (%d):", results.size()));
-            for (var f : results) {
-                log(formatter.formatFileResult(f));
-            }
-        } else {
-            log("\nMatching files: 0");
-        }
     }
 
     public static void main(final String[] args) {
@@ -82,10 +50,10 @@ public class JavaFind {
                 var formatter = new FileResultFormatter(settings);
 
                 if (settings.getPrintDirs()) {
-                    printMatchingDirs(fileResults, formatter);
+                    Finder.printMatchingDirs(fileResults, formatter);
                 }
                 if (settings.getPrintFiles()) {
-                    printMatchingFiles(fileResults, formatter);
+                    Finder.printMatchingFiles(fileResults, formatter);
                 }
 
             } catch (FindException e) {
