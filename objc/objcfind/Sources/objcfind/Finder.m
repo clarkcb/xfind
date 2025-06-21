@@ -345,4 +345,38 @@
     return [self sortFileResults:[NSArray arrayWithArray:fileResults]];
 }
 
+- (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults {
+    NSMutableSet<NSString*> *dirSet = [NSMutableSet set];
+    for (FileResult *fr in fileResults) {
+        [dirSet addObject:[[fr description] stringByDeletingLastPathComponent]];
+    }
+    NSArray *dirArr = [NSArray arrayWithArray:[dirSet allObjects]];
+    return [dirArr sortedArrayUsingComparator:^NSComparisonResult(NSString *s1, NSString *s2) {
+        return [s1 compare:s2];
+    }];
+}
+
+- (void) printMatchingDirs:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter {
+    NSArray<NSString*> *dirs = [self getMatchingDirs:fileResults];
+    if ([dirs count] > 0) {
+        logMsg([NSString stringWithFormat:@"\nMatching directories (%lu):", [dirs count]]);
+        for (NSString *d in dirs) {
+            logMsg(formatter.formatDirPath(d));
+        }
+    } else {
+        logMsg(@"\nMatching directories: 0");
+    }
+}
+
+- (void) printMatchingFiles:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter {
+    if ([fileResults count] > 0) {
+        logMsg([NSString stringWithFormat:@"\nMatching files (%lu):", [fileResults count]]);
+        for (FileResult *fr in fileResults) {
+            logMsg([formatter formatFileResult:fr]);
+        }
+    } else {
+        logMsg(@"\nMatching files: 0");
+    }
+}
+
 @end

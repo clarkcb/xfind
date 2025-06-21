@@ -4,6 +4,7 @@
 #import <Foundation/Foundation.h>
 #import "FileTypes.h"
 #import "FileResult.h"
+#import "FileResultFormatter.h"
 #import "FindSettings.h"
 
 #define INVALID_RANGE_MINDEPTH_MAXDEPTH "Invalid range for mindepth and maxdepth"
@@ -22,6 +23,8 @@
 
 - (instancetype) initWithSettings:(FindSettings*)settings error:(NSError**)error;
 - (NSArray<FileResult*>*) find:(NSError**)error;
+- (void) printMatchingDirs:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter;
+- (void) printMatchingFiles:(NSArray<FileResult*>*)fileResults formatter:(FileResultFormatter*)formatter;
 
 // private methods
 - (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error;
@@ -30,6 +33,7 @@
 - (BOOL) isMatchingFile:(NSString*)filePath;
 - (NSComparisonResult (^)(FileResult*, FileResult*)) getSortComparator;
 - (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults;
+- (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults;
 
 @end
 
