@@ -233,6 +233,32 @@ class Finder (settings: FindSettings) {
     }
     sortFileResults(Seq.empty[FileResult] ++ fileResults)
   }
+
+  private def getMatchingDirs(fileResults: Seq[FileResult]): Seq[Path] = {
+    fileResults
+      .map(fr => FileUtil.pathOrCurrent(fr.path))
+      .distinct
+      .sortWith(_.toString < _.toString)
+  }
+
+  def printMatchingDirs(fileResults: Seq[FileResult], formatter: FileResultFormatter): Unit = {
+    val dirs = getMatchingDirs(fileResults)
+    if (dirs.nonEmpty) {
+      Common.log("\nMatching directories (%d):".format(dirs.length))
+      dirs.foreach(d => Common.log(formatter.formatDirPath(d)))
+    } else {
+      Common.log("\nMatching directories: 0")
+    }
+  }
+
+  def printMatchingFiles(fileResults: Seq[FileResult], formatter: FileResultFormatter): Unit = {
+    if (fileResults.nonEmpty) {
+      Common.log("\nMatching files (%d):".format(fileResults.length))
+      fileResults.foreach(fr => Common.log(formatter.formatFileResult(fr)))
+    } else {
+      Common.log("\nMatching files: 0")
+    }
+  }
 }
 
 object Finder {
