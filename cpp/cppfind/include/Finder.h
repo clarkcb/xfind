@@ -3,6 +3,7 @@
 
 #include <filesystem>
 #include "FileResult.h"
+#include "FileResultFormatter.h"
 #include "FindSettings.h"
 
 namespace cppfind {
@@ -37,6 +38,10 @@ namespace cppfind {
             int max_depth, int current_depth) const;
         void sort_file_results(std::vector<FileResult>& file_results) const;
     };
+
+    std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results);
+    void print_file_result_dirs(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter);
+    void print_file_results(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter);
 }
 
 #endif // CPPFIND_FINDER_H

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <sys/stat.h>
+#include "common.h"
 #include "FileUtil.h"
 #include "FindException.h"
 #include "StringUtil.h"
@@ -7,6 +8,8 @@
 
 #include <iostream>
 #include <unistd.h>
+
+#include "FileResultFormatter.h"
 
 namespace cppfind {
     Finder::Finder(const FindSettings& settings) : m_settings{settings} {
@@ -424,5 +427,47 @@ namespace cppfind {
     void Finder::sort_file_results(std::vector<FileResult>& file_results) const {
         const auto sort_comparator = get_sort_comparator(m_settings);
         std::ranges::sort(file_results, sort_comparator);
+    }
+
+    std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results) {
+        std::unordered_set<std::string> dir_set;
+        std::vector<std::filesystem::path> matching_dir_paths;
+        for (const auto& fr : file_results) {
+            const std::string dir = fr.file_path().parent_path().string();
+            if (!dir_set.contains(dir)) {
+                matching_dir_paths.push_back(fr.file_path().parent_path());
+            }
+            dir_set.emplace(dir);
+        }
+        return matching_dir_paths;
+    }
+
+    void print_file_result_dirs(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter) {
+        const std::vector<std::filesystem::path> dir_paths = get_matching_dir_paths(file_results);
+        std::string msg{"\nMatching directories"};
+        if (dir_paths.empty()) {
+            msg.append(": 0");
+            log_msg(msg);
+        } else {
+            msg.append(" (").append(std::to_string(dir_paths.size())).append("):");
+            log_msg(msg);
+            for (const auto& d : dir_paths) {
+                log_msg(formatter.format_dir_path(d));
+            }
+        }
+    }
+
+    void print_file_results(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter) {
+        std::string msg{"\nMatching files"};
+        if (file_results.empty()) {
+            msg.append(": 0");
+            log_msg(msg);
+        } else {
+            msg.append(" (").append(std::to_string(file_results.size())).append("):");
+            log_msg(msg);
+            for (const auto& fr : file_results) {
+                log_msg(formatter.format_file_result(fr));
+            }
+        }
     }
 }

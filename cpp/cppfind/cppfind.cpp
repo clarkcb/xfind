@@ -6,19 +6,6 @@
 
 using namespace cppfind;
 
-std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results) {
-    std::unordered_set<std::string> dir_set;
-    std::vector<std::filesystem::path> matching_dir_paths;
-    for (const auto& fr : file_results) {
-        const std::string dir = fr.file_path().parent_path().string();
-        if (!dir_set.contains(dir)) {
-            matching_dir_paths.push_back(fr.file_path().parent_path());
-        }
-        dir_set.emplace(dir);
-    }
-    return matching_dir_paths;
-}
-
 int main(int argc, char *argv[]) {
     std::unique_ptr<FindOptions> options;
 
@@ -50,32 +37,11 @@ int main(int argc, char *argv[]) {
         const auto formatter = FileResultFormatter(settings_ptr);
 
         if (settings.print_dirs()) {
-            const std::vector<std::filesystem::path> dir_paths = get_matching_dir_paths(file_results);
-            std::string msg{"\nMatching directories"};
-            if (dir_paths.empty()) {
-                msg.append(": 0");
-                log_msg(msg);
-            } else {
-                msg.append(" (").append(std::to_string(dir_paths.size())).append("):");
-                log_msg(msg);
-                for (const auto& d : dir_paths) {
-                    log_msg(formatter.format_dir_path(d));
-                }
-            }
+            print_file_result_dirs(file_results, formatter);
         }
 
         if (settings.print_files()) {
-            std::string msg{"\nMatching files"};
-            if (file_results.empty()) {
-                msg.append(": 0");
-                log_msg(msg);
-            } else {
-                msg.append(" (").append(std::to_string(file_results.size())).append("):");
-                log_msg(msg);
-                for (const auto& fr : file_results) {
-                    log_msg(formatter.format_file_result(fr));
-                }
-            }
+            print_file_results(file_results, formatter);
         }
     } catch (const FindException& e) {
         log_msg("");

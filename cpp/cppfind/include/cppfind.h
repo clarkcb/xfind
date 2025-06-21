@@ -390,6 +390,10 @@ namespace cppfind {
         [[nodiscard]] bool is_matching_file_result(const FileResult& file_result) const;
         [[nodiscard]] std::vector<FileResult> find() const;
     };
+
+    std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results);
+    void print_file_result_dirs(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter);
+    void print_file_results(const std::vector<FileResult>& file_results, const FileResultFormatter& formatter);
 }
 
 #endif // CPPFIND_H
