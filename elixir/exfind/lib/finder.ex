@@ -4,10 +4,12 @@ defmodule ExFind.Finder do
   """
 
   alias ExFind.FileResult
+  alias ExFind.FileResultFormatter
   alias ExFind.FileTypes
   alias ExFind.FileUtil
   alias ExFind.FindError
   alias ExFind.FindSettings
+  alias ExFind.Logging
   alias ExFind.StringUtil
 
   defstruct [:file_types, :settings]
@@ -303,5 +305,26 @@ defmodule ExFind.Finder do
     sort_mapper = get_sort_mapper(finder)
     direction = if finder.settings.sort_descending, do: :desc, else: :asc
     Enum.sort_by(results, sort_mapper, direction)
+  end
+
+  def print_dirs(results, formatter) do
+    dirs = Enum.map(results, fn r -> r.path end) |> Enum.uniq() |> Enum.sort()
+    if dirs == [] do
+      Logging.log("\nMatching directories: 0")
+    else
+      Logging.log("\nMatching directories (#{Enum.count(dirs)}):")
+      formatted_dirs = Enum.map(dirs, fn d -> FileResultFormatter.format_path(formatter, d) end)
+      Logging.log("#{Enum.join(formatted_dirs, "\n")}")
+    end
+  end
+
+  def print_files(results, formatter) do
+    if results == [] do
+      Logging.log("\nMatching files: 0")
+    else
+      Logging.log("\nMatching files (#{Enum.count(results)}):")
+      formatted_files = Enum.map(results, fn r -> FileResultFormatter.format_file_result(formatter, r) end)
+      Logging.log("#{Enum.join(formatted_files, "\n")}")
+    end
   end
 end

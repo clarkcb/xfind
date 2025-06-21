@@ -14,34 +14,13 @@ defmodule ExFind.App do
     FindOptions.usage(find_options.options)
   end
 
-  def print_dirs(results, formatter) do
-    dirs = Enum.map(results, fn r -> r.path end) |> Enum.uniq() |> Enum.sort()
-    if dirs == [] do
-      Logging.log("\nMatching directories: 0")
-    else
-      Logging.log("\nMatching directories (#{Enum.count(dirs)}):")
-      formatted_dirs = Enum.map(dirs, fn d -> FileResultFormatter.format_path(formatter, d) end)
-      Logging.log("#{Enum.join(formatted_dirs, "\n")}")
-    end
-  end
-
-  def print_files(results, formatter) do
-    if results == [] do
-      Logging.log("\nMatching files: 0")
-    else
-      Logging.log("\nMatching files (#{Enum.count(results)}):")
-      formatted_files = Enum.map(results, fn r -> FileResultFormatter.format_file_result(formatter, r) end)
-      Logging.log("#{Enum.join(formatted_files, "\n")}")
-    end
-  end
-
   def handle_results(results, settings) do
     formatter = FileResultFormatter.new(settings)
     if settings.print_dirs do
-      print_dirs(results, formatter)
+      Finder.print_dirs(results, formatter)
     end
     if settings.print_files do
-      print_files(results, formatter)
+      Finder.print_files(results, formatter)
     end
   end
 
