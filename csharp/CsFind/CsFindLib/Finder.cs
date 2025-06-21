@@ -381,10 +381,9 @@ public class Finder
 		];
 	}
 
-	public void PrintMatchingDirs(IEnumerable<FileResult> fileResults, FileResultFormatter formatter)
+	public static void PrintMatchingDirs(IEnumerable<FileResult> fileResults, FileResultFormatter formatter)
 	{
-		var matchingDirs = GetMatchingDirs(fileResults)
-			.ToList();
+		var matchingDirs = GetMatchingDirs(fileResults);
 		if (matchingDirs.Count != 0)
 		{
 			Logger.Log($"\nMatching directories ({matchingDirs.Count}):");
@@ -399,7 +398,7 @@ public class Finder
 		}
 	}
 
-	public void PrintMatchingFiles(IEnumerable<FileResult> fileResults, FileResultFormatter formatter)
+	public static void PrintMatchingFiles(IEnumerable<FileResult> fileResults, FileResultFormatter formatter)
 	{
 		var fileResultsList = fileResults.ToList();
 		if (fileResultsList.Count != 0)

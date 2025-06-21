@@ -27,12 +27,12 @@ static class Program
 
 			if (settings.PrintDirs)
 			{
-				finder.PrintMatchingDirs(fileResults, formatter);
+				Finder.PrintMatchingDirs(fileResults, formatter);
 			}
 
 			if (settings.PrintFiles)
 			{
-				finder.PrintMatchingFiles(fileResults, formatter);
+				Finder.PrintMatchingFiles(fileResults, formatter);
 			}
 		}
 		catch (FindException e)
