@@ -18,30 +18,6 @@ function handleError(err, findOptions) {
     findOptions.usageWithCode(1);
 }
 
-function getMatchingDirs(fileResults) {
-    const dirs = fileResults.map(f => f.path);
-    return common.setFromArray(dirs);
-}
-
-function printMatchingDirs(fileResults, formatter) {
-    const dirs = getMatchingDirs(fileResults);
-    if (dirs.length > 0) {
-        common.log(`\nMatching directories (${dirs.length}):`);
-        dirs.forEach(d => common.log(formatter.formatPath(d)));
-    } else {
-        common.log('\nMatching directories: 0');
-    }
-}
-
-function printMatchingFiles(fileResults, formatter) {
-    if (fileResults.length > 0) {
-        common.log(`\nMatching files (${fileResults.length}):`);
-        fileResults.forEach(fr => common.log(formatter.formatFileResult(fr)));
-    } else {
-        common.log('\nMatching files: 0');
-    }
-}
-
 const findMain = async () => {
     const findOptions = new FindOptions();
     const args = process.argv.slice(2);
@@ -70,10 +46,10 @@ const findMain = async () => {
             const formatter = new FileResultFormatter(settings);
 
             if (settings.printDirs) {
-                printMatchingDirs(fileResults, formatter);
+                finder.printMatchingDirs(fileResults, formatter);
             }
             if (settings.printFiles) {
-                printMatchingFiles(fileResults, formatter);
+                finder.printMatchingFiles(fileResults, formatter);
             }
 
         } catch (err2) {

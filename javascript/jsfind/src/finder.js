@@ -16,6 +16,7 @@ const {FileTypes} = require('./filetypes');
 const {FileUtil, ENOENT, EACCES} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {SortBy} = require('./sortby');
+const common = require('./common')
 
 const startPathNotDefined = 'Startpath not defined';
 const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';
@@ -364,6 +365,30 @@ class Finder {
 
         this.sortFileResults(fileResults);
         return fileResults;
+    }
+
+    getMatchingDirs(fileResults) {
+        const dirs = fileResults.map(f => f.path);
+        return common.setFromArray(dirs);
+    }
+
+    printMatchingDirs(fileResults, formatter) {
+        const dirs = this.getMatchingDirs(fileResults);
+        if (dirs.length > 0) {
+            common.log(`\nMatching directories (${dirs.length}):`);
+            dirs.forEach(d => common.log(formatter.formatPath(d)));
+        } else {
+            common.log('\nMatching directories: 0');
+        }
+    }
+
+    printMatchingFiles(fileResults, formatter) {
+        if (fileResults.length > 0) {
+            common.log(`\nMatching files (${fileResults.length}):`);
+            fileResults.forEach(fr => common.log(formatter.formatFileResult(fr)));
+        } else {
+            common.log('\nMatching files: 0');
+        }
     }
 }
 
