@@ -1300,5 +1300,33 @@ class Finder {
     [FileResult[]]Find() {
         return $this.SortFileResults($this.GetFileResults())
     }
+
+    [void]PrintMatchingDirs([FileResult[]]$fileResults, [FileResultFormatter]$formatter) {
+        $dirs = @()
+        if ($fileResults.Count -gt 0) {
+            $dirs = $fileResults |
+                    ForEach-Object { $_.File.Directory } |
+                    Select-Object -Unique
+        }
+        if ($dirs.Count -gt 0) {
+            LogMsg("`nMatching directories ($($dirs.Count)):")
+            foreach ($d in $dirs) {
+                LogMsg($formatter.FormatDirectory($d))
+            }
+        } else {
+            LogMsg("`nMatching directories: 0")
+        }
+    }
+
+    [void]PrintMatchingFiles([FileResult[]]$fileResults, [FileResultFormatter]$formatter) {
+        if ($fileResults.Count -gt 0) {
+            LogMsg("`nMatching files ($($fileResults.Count)):")
+            foreach ($f in $fileResults) {
+                LogMsg($formatter.FormatFileResult($f))
+            }
+        } else {
+            LogMsg("`nMatching files: 0")
+        }
+    }
 }
 #endregion

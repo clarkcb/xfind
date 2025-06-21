@@ -36,31 +36,11 @@ function Main {
         $formatter = [FileResultFormatter]::new($settings)
 
         if ($settings.PrintDirs) {
-            $dirs = @()
-            if ($files.Count -gt 0) {
-                $dirs = $files |
-                        ForEach-Object { $_.File.Directory } |
-                        Select-Object -Unique
-            }
-            if ($dirs.Count -gt 0) {
-                LogMsg("`nMatching directories ($($dirs.Count)):")
-                foreach ($d in $dirs) {
-                    LogMsg($formatter.FormatDirectory($d))
-                }
-            } else {
-                LogMsg("`nMatching directories: 0")
-            }
+            $finder.PrintMatchingDirs($files, $formatter)
         }
 
         if ($settings.PrintFiles) {
-            if ($files.Count -gt 0) {
-                LogMsg("`nMatching files ($($files.Count)):")
-                foreach ($f in $files) {
-                    LogMsg($formatter.FormatFileResult($f))
-                }
-            } else {
-                LogMsg("`nMatching files: 0")
-            }
+            $finder.PrintMatchingFiles($files, $formatter)
         }
     }
     catch {
