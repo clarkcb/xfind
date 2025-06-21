@@ -11,39 +11,16 @@ fun printErrorWithUsage(err: String, findOptions: FindOptions) {
     findOptions.usage()
 }
 
-fun printMatchingDirs(fileResults: List<FileResult>, formatter: FileResultFormatter) {
-    val dirs = fileResults.mapNotNull { f -> f.path.parent }.distinct().sorted()
-    if (dirs.isEmpty()) {
-        log("\nMatching directories: 0")
-    } else {
-        log("\nMatching directories (${dirs.size}):")
-        for (d in dirs) {
-            log(formatter.formatDirPath(d))
-        }
-    }
-}
-
-fun printMatchingFiles(fileResults: List<FileResult>, formatter: FileResultFormatter) {
-    if (fileResults.isEmpty()) {
-        log("\nMatching files: 0")
-    } else {
-        log("\nMatching files (${fileResults.size}):")
-        for (fr in fileResults) {
-            log(formatter.formatFileResult(fr))
-        }
-    }
-}
-
 fun find(settings: FindSettings) {
     val finder = Finder(settings)
     val fileResults: List<FileResult> = finder.find()
     val formatter = FileResultFormatter(settings)
 
     if (settings.printDirs) {
-        printMatchingDirs(fileResults, formatter)
+        finder.printMatchingDirs(fileResults, formatter)
     }
     if (settings.printFiles) {
-        printMatchingFiles(fileResults, formatter)
+        finder.printMatchingFiles(fileResults, formatter)
     }
 }
 
