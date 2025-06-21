@@ -46,6 +46,10 @@ module RbFind
 
     def find: () -> Array[FileResult]
 
+    def print_dir_results: (Array[FileResult] file_results, FileResultFormatter formatter) -> void
+
+    def print_file_results: (Array[FileResult] file_results, FileResultFormatter formatter) -> void
+
     private
 
     def validate_settings: () -> void

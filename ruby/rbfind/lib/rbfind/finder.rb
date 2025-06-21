@@ -178,6 +178,29 @@ module RbFind
       file_results
     end
 
+    def print_dir_results(file_results, formatter)
+      find_dirs = file_results.map {|fr| fr.path.dirname}.uniq.sort
+      if find_dirs.empty?
+        RbFind::log("\nMatching directories: 0")
+      else
+        RbFind::log("\nMatching directories (#{find_dirs.size}):")
+        find_dirs.each do |d|
+          RbFind::log("#{formatter.format_dir_path(d)}\n")
+        end
+      end
+    end
+
+    def print_file_results(file_results, formatter)
+      if file_results.empty?
+        RbFind::log("\nMatching files: 0")
+      else
+        RbFind::log("\nMatching files (#{file_results.size}):")
+        file_results.each do |fr|
+          RbFind::log("#{formatter.format_file_result(fr)}\n")
+        end
+      end
+    end
+
     private
 
     def validate_settings
