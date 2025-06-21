@@ -22,38 +22,6 @@ use plfind::FileResultFormatter;
 use plfind::Finder;
 use plfind::FindOptions;
 
-sub get_matching_dirs {
-    my ($file_results) = @_;
-    my @dirs = map {$_->{file_path}->parent} @$file_results;
-    my $uniq = plfind::common::uniq(\@dirs);
-    return $uniq;
-}
-
-sub print_matching_dirs {
-    my ($file_results, $formatter) = @_;
-    my $dirs = get_matching_dirs($file_results);
-    if (scalar @$dirs) {
-        plfind::common::log_msg(sprintf("\nMatching directories (%d):", scalar @$dirs));
-        foreach my $d (@$dirs) {
-            plfind::common::log_msg($formatter->format_dir($d));
-        }
-    } else {
-        plfind::common::log_msg("\nMatching directories: 0");
-    }
-}
-
-sub print_matching_files {
-    my ($file_results, $formatter) = @_;
-    if (scalar @$file_results) {
-        plfind::common::log_msg(sprintf("\nMatching files (%d):", scalar @$file_results));
-        foreach my $fr (@$file_results) {
-            plfind::common::log_msg($formatter->format_file_result($fr));
-        }
-    } else {
-        plfind::common::log_msg("\nMatching files: 0");
-    }
-}
-
 sub main {
     my $find_options = plfind::FindOptions->new();
     my ($settings, $errs) = $find_options->settings_from_args(\@ARGV);
@@ -94,12 +62,12 @@ sub main {
 
     # print matching dirs
     if ($settings->{print_dirs}) {
-        print_matching_dirs($file_results, $formatter);
+        plfind::Finder::print_matching_dirs($file_results, $formatter);
     }
 
     # print matching files
     if ($settings->{print_files}) {
-        print_matching_files($file_results, $formatter);
+        plfind::Finder::print_matching_files($file_results, $formatter);
     }
 }
 
