@@ -12,8 +12,9 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from .common import log
 from .constants import *
-from .fileresult import FileResult
+from .fileresult import FileResult, FileResultFormatter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
 from .findexception import FindException
@@ -288,3 +289,24 @@ def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:
     """Return true if string s matches any pattern in pattern_set, else
        false."""
     return any(p.search(s) for p in pattern_set)
+
+
+def print_dir_results(file_results: list[FileResult], formatter: FileResultFormatter):
+    dirs = sorted(list({f.path.parent for f in file_results if f.path and f.path.parent}))
+    if dirs:
+        log(f'\nMatching directories ({len(dirs)}):')
+        for d in dirs:
+            log(formatter.format_dir_path(d))
+    else:
+        log('\nMatching directories: 0')
+
+
+def print_file_results(file_results: list[FileResult], formatter: FileResultFormatter):
+    """Print the file results"""
+    if file_results:
+        log(f'\nMatching files ({len(file_results)}):')
+        for f in file_results:
+            log(formatter.format_file_result(f))
+    else:
+        log('Find results: 0')
+

@@ -6,7 +6,7 @@ from .config import XFIND_PATH, SHARED_PATH
 from .fileresult import FileResult, FileResultFormatter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
-from .finder import Finder
+from .finder import Finder, print_dir_results, print_file_results
 from .findexception import FindException
 from .findoption import FindOption
 from .findoptions import FindOptions

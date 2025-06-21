@@ -10,40 +10,13 @@
 ###############################################################################
 """
 import sys
-from pathlib import Path
-from typing import List
 
 from . import VERSION
 from .common import log, log_error
-from .fileresult import FileResult, FileResultFormatter
-from .finder import Finder
+from .fileresult import FileResultFormatter
+from .finder import Finder, print_dir_results, print_file_results
 from .findexception import FindException
 from .findoptions import FindOptions
-
-
-def get_dir_results(file_results: List[FileResult]) -> list[Path]:
-    """Return unique list of directories from file results"""
-    return sorted(list({f.path.parent for f in file_results if f.path and f.path.parent}))
-
-
-def print_dir_results(file_results: List[FileResult], formatter: FileResultFormatter):
-    dirs = get_dir_results(file_results)
-    if dirs:
-        log(f'\nMatching directories ({len(dirs)}):')
-        for d in dirs:
-            log(formatter.format_dir_path(d))
-    else:
-        log('\nMatching directories: 0')
-
-
-def print_file_results(file_results: List[FileResult], formatter: FileResultFormatter):
-    """Print the file results"""
-    if file_results:
-        log(f'\nMatching files ({len(file_results)}):')
-        for f in file_results:
-            log(formatter.format_file_result(f))
-    else:
-        log('Find results: 0')
 
 
 async def main():
