@@ -346,18 +346,6 @@ class Finder {
     return fr1.lastMod!.compareTo(fr2.lastMod!);
   }
 
-  void reverseFileResults(List<FileResult> fileResults) {
-    int i = 0;
-    int j = fileResults.length - 1;
-    while (i < j) {
-      var temp = fileResults[i];
-      fileResults[i] = fileResults[j];
-      fileResults[j] = temp;
-      i++;
-      j--;
-    }
-  }
-
   int Function(FileResult, FileResult)? getSortComparator() {
     if (settings.sortDescending) {
       switch (settings.sortBy) {

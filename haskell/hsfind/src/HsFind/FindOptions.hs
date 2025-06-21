@@ -9,7 +9,7 @@ module HsFind.FindOptions (
 
 import qualified Data.ByteString.Lazy.Char8 as BC
 import Data.Char (toLower)
-import Data.Either (isLeft, lefts, rights, Either (Left))
+import Data.Either (isLeft, lefts, rights)
 import Data.List (isPrefixOf, isSuffixOf, sortBy)
 import Data.Maybe (isJust)
 import Data.Time (UTCTime(..), parseTimeM, defaultTimeLocale)

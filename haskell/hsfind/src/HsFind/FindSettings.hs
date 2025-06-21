@@ -12,7 +12,7 @@ module HsFind.FindSettings
   , updateFindSettingsFromJsonValue
   ) where
 
-import Control.Monad (mzero, unless, MonadFail (fail))
+import Control.Monad (mzero, unless)
 import Data.Aeson
 import Data.Aeson.Types (Parser)
 import Data.List (intercalate, sort)

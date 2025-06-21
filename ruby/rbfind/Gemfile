@@ -11,6 +11,6 @@ gem 'rbs', '~> 3.9.4'
 
 gem 'test-unit', '~> 3.6.8'
 
-gem 'rubocop', '~> 1.75'
+gem 'rubocop', '~> 1.77'
 
 ruby '3.4.4'

@@ -6,12 +6,13 @@ module HsFind.Config
   ) where
 
 import System.Directory (getHomeDirectory)
-import System.Environment (getEnv, lookupEnv)
+-- import System.Environment (getEnv, lookupEnv)
+import System.Environment (lookupEnv)
 import System.FilePath ((</>))
-import System.Info (os)
+-- import System.Info (os)
 
-isWin :: Bool
-isWin = os == "mingw32"
+-- isWin :: Bool
+-- isWin = os == "mingw32"
 
 getHome :: IO FilePath
 -- getHome = getEnv homeName

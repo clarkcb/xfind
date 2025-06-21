@@ -14,7 +14,7 @@ class FileResult(
     val fileType: FileType,
     val fileSize: Long,
     val lastMod: FileTime? = null
-) {
+) : Comparable<FileResult> {
     companion object {
         const val CONTAINER_SEPARATOR = "!"
     }
@@ -84,5 +84,11 @@ class FileResult(
         }
         sb.append(path)
         return sb.toString()
+    }
+
+    override fun compareTo(other: FileResult): Int {
+        val cmpPath = compareByPath(other, false)
+        if (cmpPath != 0) return cmpPath
+        return compareByName(other, false)
     }
 }

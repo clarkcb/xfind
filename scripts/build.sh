@@ -587,6 +587,7 @@ build_fsfind () {
     if [ -z "$(which dotnet)" ]
     then
         log_error "You need to install dotnet"
+        FAILED_BUILDS+=("fsfind")
         return
     fi
 

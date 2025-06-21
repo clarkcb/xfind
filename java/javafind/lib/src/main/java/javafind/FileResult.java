@@ -5,7 +5,7 @@ import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public record FileResult(List<Path> containers, Path path, FileType fileType, long fileSize, FileTime lastMod) {
+public record FileResult(List<Path> containers, Path path, FileType fileType, long fileSize, FileTime lastMod) implements Comparable<FileResult> {
     public static final String CONTAINER_SEPARATOR = "!";
 
     public FileResult(final Path path, final FileType fileType) {
@@ -78,5 +78,14 @@ public record FileResult(List<Path> containers, Path path, FileType fileType, lo
         }
         sb.append(path.toString());
         return sb.toString();
+    }
+
+    @Override
+    public int compareTo(final FileResult other) {
+        var cmpPath = this.compareByPath(other, false);
+        if (cmpPath == 0) {
+            return this.compareByName(other, false);
+        }
+        return cmpPath;
     }
 }
