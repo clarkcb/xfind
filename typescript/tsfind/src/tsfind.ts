@@ -10,37 +10,12 @@ import * as common from './common';
 import {FindOptions} from './findoptions';
 import {FindSettings} from './findsettings';
 import {Finder} from './finder';
-import {FileResult} from "./fileresult";
 import {FileResultFormatter} from "./fileresultformatter";
 
 function handleError(err: Error | any, findOptions: FindOptions) {
     const errMsg: string = 'ERROR: ' + err.message;
     common.logError('\n' + errMsg + '\n');
     findOptions.usageWithCode(1);
-}
-
-function getMatchingDirs(fileResults: FileResult[]): string[] {
-    const dirs: string[] = fileResults.map(f => f.path);
-    return common.setFromArray(dirs);
-}
-
-function printMatchingDirs(fileResults: FileResult[], formatter: FileResultFormatter): void {
-    const dirs: string[] = getMatchingDirs(fileResults);
-    if (dirs.length > 0) {
-        common.log("\nMatching directories " + `(${dirs.length}):`);
-        dirs.forEach(d => common.log(formatter.formatPath(d)));
-    } else {
-        common.log("\nMatching directories: 0");
-    }
-}
-
-function printMatchingFiles(fileResults: FileResult[], formatter: FileResultFormatter): void {
-    if (fileResults.length > 0) {
-        common.log("\nMatching files " + `(${fileResults.length}):`);
-        fileResults.forEach(f => common.log(formatter.formatFileResult(f)));
-    } else {
-        common.log("\nMatching files: 0");
-    }
 }
 
 function findMain() {
@@ -71,10 +46,10 @@ function findMain() {
             const formatter = new FileResultFormatter(settings);
 
             if (settings.printDirs) {
-                printMatchingDirs(fileResults, formatter);
+                finder.printMatchingDirs(fileResults, formatter);
             }
             if (settings.printFiles) {
-                printMatchingFiles(fileResults, formatter);
+                finder.printMatchingFiles(fileResults, formatter);
             }
 
         } catch (err2) {

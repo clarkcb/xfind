@@ -18,6 +18,8 @@ import {FileUtil, ENOENT, EACCES} from './fileutil';
 import {FindError} from './finderror';
 import {FindSettings} from './findsettings';
 import {SortBy} from './sortby';
+import * as common from "./common";
+import {FileResultFormatter} from "./fileresultformatter";
 
 const startPathNotDefined = 'Startpath not defined';
 const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';
@@ -366,5 +368,29 @@ export class Finder {
 
         this.sortFileResults(fileResults);
         return fileResults;
+    }
+
+    getMatchingDirs(fileResults: FileResult[]): string[] {
+        const dirs: string[] = fileResults.map(f => f.path);
+        return common.setFromArray(dirs);
+    }
+
+    printMatchingDirs(fileResults: FileResult[], formatter: FileResultFormatter): void {
+        const dirs: string[] = this.getMatchingDirs(fileResults);
+        if (dirs.length > 0) {
+            common.log("\nMatching directories " + `(${dirs.length}):`);
+            dirs.forEach(d => common.log(formatter.formatPath(d)));
+        } else {
+            common.log("\nMatching directories: 0");
+        }
+    }
+
+    printMatchingFiles(fileResults: FileResult[], formatter: FileResultFormatter): void {
+        if (fileResults.length > 0) {
+            common.log("\nMatching files " + `(${fileResults.length}):`);
+            fileResults.forEach(f => common.log(formatter.formatFileResult(f)));
+        } else {
+            common.log("\nMatching files: 0");
+        }
     }
 }
