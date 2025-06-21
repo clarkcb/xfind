@@ -379,4 +379,37 @@ public class Finder {
         }
         return sortFileResults(fileResults)
     }
+
+    func getMatchingDirs(_ fileResults: [FileResult]) -> [String] {
+        fileResults.map {
+            URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
+        }.sorted().unique()
+    }
+
+    public func printMatchingDirs(_ fileResults: [FileResult], _ formatter: FileResultFormatter) -> Void {
+        let dirs = getMatchingDirs(fileResults)
+        if dirs.isEmpty {
+            logMsg("\nMatching directories: 0")
+        } else {
+            logMsg("\nMatching directories (\(dirs.count)):")
+            for dir in dirs {
+                logMsg(formatter.formatDirPath(dir))
+            }
+        }
+    }
+
+    func getMatchingFiles(_ fileResults: [FileResult]) -> [String] {
+        fileResults.map(\.filePath)
+    }
+
+    public func printMatchingFiles(_ fileResults: [FileResult], _ formatter: FileResultFormatter) -> Void {
+        if fileResults.isEmpty {
+            logMsg("\nMatching files: 0")
+        } else {
+            logMsg("\nMatching files (\(fileResults.count)):")
+            for fileResult in fileResults {
+                logMsg(formatter.formatFileResult(fileResult))
+            }
+        }
+    }
 }

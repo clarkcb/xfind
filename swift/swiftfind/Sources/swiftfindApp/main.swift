@@ -9,16 +9,6 @@
 import Foundation
 import swiftfind
 
-func getMatchingDirs(_ fileResults: [FileResult]) -> [String] {
-    fileResults.map {
-        URL(fileURLWithPath: $0.filePath).deletingLastPathComponent().path
-    }.sorted().unique()
-}
-
-func getMatchingFiles(_ fileResults: [FileResult]) -> [String] {
-    fileResults.map(\.filePath)
-}
-
 func handleError(_ error: FindError, _ options: FindOptions) {
     logMsg("")
     logError(error.msg)
@@ -47,26 +37,11 @@ func main() {
         let formatter = FileResultFormatter(settings: settings)
 
         if settings.printDirs {
-            let dirs = getMatchingDirs(fileResults)
-            if dirs.isEmpty {
-                logMsg("\nMatching directories: 0")
-            } else {
-                logMsg("\nMatching directories (\(dirs.count)):")
-                for dir in dirs {
-                    logMsg(formatter.formatDirPath(dir))
-                }
-            }
+            finder.printMatchingDirs(fileResults, formatter)
         }
 
         if settings.printFiles {
-            if fileResults.isEmpty {
-                logMsg("\nMatching files: 0")
-            } else {
-                logMsg("\nMatching files (\(fileResults.count)):")
-                for fileResult in fileResults {
-                    logMsg(formatter.formatFileResult(fileResult))
-                }
-            }
+            finder.printMatchingFiles(fileResults, formatter)
         }
     } catch let error as FindError {
         handleError(error, options)
