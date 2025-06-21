@@ -27,7 +27,7 @@ module RbFind
         end
         if settings.in_extensions || settings.in_file_patterns
           # override format_file_name method in instance with colorizing method
-          define_singleton_method(:format_file_name) { |dir_path| format_file_name_with_color(dir_path) }
+          define_singleton_method(:format_file_name) { |file_name| format_file_name_with_color(file_name) }
         end
       end
     end
@@ -45,6 +45,29 @@ module RbFind
       prefix + colorized + suffix
     end
 
+    def format_dir_path(dir_path)
+      dir_path.to_s
+    end
+
+    def format_file_name(file_name)
+      file_name.to_s
+    end
+
+    def format_path(path)
+      parent = '.'
+      unless path.parent.nil?
+        parent = format_dir_path(path.parent)
+      end
+      file_name = format_file_name(path.basename)
+      Pathname(parent).join(file_name).to_s
+    end
+
+    def format_file_result(file_result)
+      format_path(file_result.path)
+    end
+
+    private
+
     def format_dir_path_with_color(dir_path)
       formatted_dir = dir_path.to_s
       @settings.in_dir_patterns.each do |p|
@@ -55,10 +78,6 @@ module RbFind
         end
       end
       formatted_dir
-    end
-
-    def format_dir_path(dir_path)
-      dir_path.to_s
     end
 
     def format_file_name_with_color(file_name)
@@ -79,21 +98,5 @@ module RbFind
       formatted_file_name
     end
 
-    def format_file_name(file_name)
-      file_name.to_s
-    end
-
-    def format_path(path)
-      parent = '.'
-      unless path.parent.nil?
-        parent = format_dir_path(path.parent)
-      end
-      file_name = format_file_name(path.basename)
-      Pathname(parent).join(file_name).to_s
-    end
-
-    def format_file_result(file_result)
-      format_path(file_result.path)
-    end
   end
 end

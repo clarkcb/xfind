@@ -325,12 +325,12 @@ func NewFileResultFormatter(settings *FindSettings) *FileResultFormatter {
 	}
 	if settings.Colorize() {
 		if !settings.InDirPatterns().IsEmpty() {
-			formatPath = func(path string) string { return f.FormatPathWithColor(path) }
+			formatPath = func(path string) string { return f.formatPathWithColor(path) }
 		}
 		if len(settings.InExtensions()) > 0 || !settings.InFilePatterns().IsEmpty() {
-			formatFileName = func(fileName string) string { return f.FormatFileNameWithColor(fileName) }
+			formatFileName = func(fileName string) string { return f.formatFileNameWithColor(fileName) }
 		}
-		return &FileResultFormatter{
+		f = &FileResultFormatter{
 			settings,
 			formatPath,
 			formatFileName,
@@ -339,18 +339,7 @@ func NewFileResultFormatter(settings *FindSettings) *FileResultFormatter {
 	return f
 }
 
-func (f *FileResultFormatter) getFormatPath() StringFormatter {
-	if f.Settings.Colorize() && !f.Settings.InDirPatterns().IsEmpty() {
-		return func(p string) string {
-			return f.FormatPathWithColor(p)
-		}
-	}
-	return func(p string) string {
-		return p
-	}
-}
-
-func colorize(s string, matchStartIndex int, matchEndIndex int) string {
+func Colorize(s string, matchStartIndex int, matchEndIndex int) string {
 	prefix := ""
 	if matchStartIndex > 0 {
 		prefix = s[0:matchStartIndex]
@@ -366,7 +355,7 @@ func colorize(s string, matchStartIndex int, matchEndIndex int) string {
 		suffix
 }
 
-func (f *FileResultFormatter) FormatPathWithColor(path string) string {
+func (f *FileResultFormatter) formatPathWithColor(path string) string {
 	formattedPath := "."
 	if path != "" {
 		formattedPath = path
@@ -374,7 +363,7 @@ func (f *FileResultFormatter) FormatPathWithColor(path string) string {
 		for it.Next() {
 			p := it.Value()
 			if match := p.FindStringIndex(formattedPath); match != nil {
-				formattedPath = colorize(formattedPath, match[0], match[1])
+				formattedPath = Colorize(formattedPath, match[0], match[1])
 				break
 			}
 		}
@@ -382,20 +371,20 @@ func (f *FileResultFormatter) FormatPathWithColor(path string) string {
 	return formattedPath
 }
 
-func (f *FileResultFormatter) FormatFileNameWithColor(fileName string) string {
+func (f *FileResultFormatter) formatFileNameWithColor(fileName string) string {
 	formattedFileName := fileName
 	it := f.Settings.InFilePatterns().Iterator()
 	for it.Next() {
 		p := it.Value()
 		if match := p.FindStringIndex(formattedFileName); match != nil {
-			formattedFileName = colorize(formattedFileName, match[0], match[1])
+			formattedFileName = Colorize(formattedFileName, match[0], match[1])
 			break
 		}
 	}
 	if len(f.Settings.InExtensions()) > 0 {
 		idx := strings.Index(formattedFileName, ".")
 		if idx > 0 && idx < len(formattedFileName)-1 {
-			formattedFileName = colorize(formattedFileName, idx+1, len(formattedFileName))
+			formattedFileName = Colorize(formattedFileName, idx+1, len(formattedFileName))
 		}
 	}
 	return formattedFileName

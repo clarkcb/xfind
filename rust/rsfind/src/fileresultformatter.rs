@@ -9,7 +9,7 @@ pub struct FileResultFormatter {
     pub format_file_name: Box<dyn Fn(&str, &FindSettings) -> String>,
 }
 
-fn colorize(s: &str, match_start_index: usize, match_end_index: usize) -> String {
+pub fn colorize(s: &str, match_start_index: usize, match_end_index: usize) -> String {
     let mut prefix = String::from("");
     if match_start_index > 0 {
         prefix = String::from(&s[0..match_start_index]);

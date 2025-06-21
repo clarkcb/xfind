@@ -818,7 +818,7 @@ format_file_name () {
         then
             local file_ext="${formatted_file_name##*.}"
             local formatted_no_ext="${formatted_file_name%.*}"
-            formatted_file_name="${formatted_no_ext}.${GREEN}$file_ext${COLOR_RESET}}"
+            formatted_file_name="${formatted_no_ext}.${GREEN}$file_ext${COLOR_RESET}"
         fi
     fi
     echo "$formatted_file_name"

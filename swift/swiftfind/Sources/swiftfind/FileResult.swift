@@ -47,7 +47,7 @@ public class FileResultFormatter {
         }
     }
 
-    private func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int) -> String {
+    public func colorize(_ s: String, _ matchStartIndex: Int, _ matchEndIndex: Int) -> String {
         let strMatchStartIndex = s.index(s.startIndex, offsetBy: matchStartIndex)
         let strMatchEndIndex = s.index(s.startIndex, offsetBy: matchEndIndex)
         var prefix = ""

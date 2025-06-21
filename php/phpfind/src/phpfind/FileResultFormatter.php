@@ -17,16 +17,16 @@ class FileResultFormatter
         if ($settings->colorize && count($settings->in_dir_patterns) > 0) {
             $this->cl_format_dir = function (string $dir): string { return $this->format_dir_with_color($dir); };
         } else {
-            $this->cl_format_dir = function (string $dir): string { return $this->format_dir_default($dir); };
+            $this->cl_format_dir = function (string $dir): string { return $dir; };
         }
         if ($settings->colorize && (count($settings->in_extensions) > 0 || count($settings->in_file_patterns) > 0)) {
-            $this->cl_format_file_name = function (string $dir): string { return $this->format_file_name_with_color($dir); };
+            $this->cl_format_file_name = function (string $file_name): string { return $this->format_file_name_with_color($file_name); };
         } else {
-            $this->cl_format_file_name = function (string $dir): string { return $this->format_file_name_default($dir); };
+            $this->cl_format_file_name = function (string $file_name): string { return $file_name; };
         }
     }
 
-    private function colorize(string $s, int $match_start_index, int $match_end_index): string
+    public function colorize(string $s, int $match_start_index, int $match_end_index): string
     {
         $prefix = '';
         if ($match_start_index > 0) {
@@ -63,11 +63,6 @@ class FileResultFormatter
         return $formatted_dir;
     }
 
-    private function format_dir_default(string $dir): string
-    {
-        return $dir;
-    }
-
     public function format_dir(string $dir): string
     {
         // call the closure as defined in constructor
@@ -95,11 +90,6 @@ class FileResultFormatter
             }
         }
         return $formatted_file_name;
-    }
-
-    private function format_file_name_default(string $file_name): string
-    {
-        return $file_name;
     }
 
     public function format_file_name(string $file_name): string

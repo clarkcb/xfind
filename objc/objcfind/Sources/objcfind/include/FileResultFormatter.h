@@ -14,6 +14,8 @@
 
 - (instancetype) initWithSettings:(FindSettings*)settings;
 
+- (NSString *) colorize:(NSString*)s matchStartIndex:(long)matchStartIndex matchEndIndex:(long)matchEndIndex;
+
 - (NSString *) formatDirPathWithColor:(NSString*)dirPath;
 
 - (NSString *) formatFileNameWithColor:(NSString*)fileName;

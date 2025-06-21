@@ -29,7 +29,7 @@ public class FileResultFormatter
         }
     }
 
-    private static string Colorize(string s, int matchStartIndex, int matchEndIndex)
+    public static string Colorize(string s, int matchStartIndex, int matchEndIndex)
     {
         var prefix = "";
         if (matchStartIndex > 0)

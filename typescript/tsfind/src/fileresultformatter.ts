@@ -30,7 +30,7 @@ export class FileResultFormatter {
         }
     }
 
-    private colorize(s: string, matchStartIndex: number, matchEndIndex: number): string {
+    public colorize(s: string, matchStartIndex: number, matchEndIndex: number): string {
         let prefix = '';
         if (matchStartIndex > 0) {
             prefix = s.slice(0, matchStartIndex);

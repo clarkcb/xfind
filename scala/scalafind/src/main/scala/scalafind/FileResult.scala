@@ -96,7 +96,7 @@ class FileResult(val containers: List[Path],
 
 class FileResultFormatter(val settings: FindSettings) {
 
-  private def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
+  def colorize(s: String, matchStartIndex: Int, matchEndIndex: Int): String = {
     val prefix = if (matchStartIndex > 0) {
       s.substring(0, matchStartIndex)
     } else {

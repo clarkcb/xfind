@@ -10,17 +10,19 @@ module RbFind
 
     def colorize: (String str, Integer match_start_index, Integer match_end_index) -> String
 
-    def format_dir_path_with_color: (Pathname path) -> String
-
     def format_dir_path: (Pathname path) -> String
-
-    def format_file_name_with_color: (Pathname file_name) -> String
 
     def format_file_name: (Pathname file_name) -> String
 
     def format_path: (Pathname path) -> String
 
     def format_file_result: (FileResult file_result) -> String
+
+    private
+
+    def format_dir_path_with_color: (Pathname path) -> String
+
+    def format_file_name_with_color: (Pathname file_name) -> String
 
   end
 end
