@@ -16,50 +16,6 @@ class GroovyFind {
         options.usage(1)
     }
 
-    private static List<Path> getMatchingDirs(final List<FileResult> results) {
-        results.findAll { fr -> fr.path.parent != null }
-                .collect { fr -> fr.path.parent }.unique().sort()
-    }
-
-    private static void printMatchingDirs(final List<FileResult> results, final FindSettings settings) {
-        List<Path> dirs = getMatchingDirs(results)
-        if (!dirs.empty) {
-            Logger.log("\nMatching directories (${dirs.size()}):")
-            if (settings.getColorize() && !settings.getInDirPatterns().isEmpty()) {
-                var formatter = new FileResultFormatter(settings)
-                dirs.each { Logger.log(formatter.formatDirPath(it)) }
-            } else {
-                dirs.each { Logger.log(it.toString()) }
-            }
-        } else {
-            Logger.log('\nMatching directories: 0')
-        }
-    }
-
-    private static List<String> getMatchingFiles(final List<FileResult> results) {
-        results.stream().map(FileResult::toString).collect(Collectors.toList())
-    }
-
-    private static void printMatchingFiles(final List<FileResult> results, final FindSettings settings) {
-        if (!results.isEmpty()) {
-            Logger.log(String.format("\nMatching files (%d):", results.size()))
-            if (settings.getColorize() && (!settings.getInDirPatterns().isEmpty()
-                    || !settings.getInExtensions().isEmpty() || !settings.getInFilePatterns().isEmpty())) {
-                var formatter = new FileResultFormatter(settings)
-                for (var f : results) {
-                    Logger.log(formatter.formatFileResult(f))
-                }
-            } else {
-                var files = getMatchingFiles(results)
-                for (var f : files) {
-                    Logger.log(f)
-                }
-            }
-        } else {
-            Logger.log("\nMatching files: 0")
-        }
-    }
-
     static void main(final String[] args) {
         try {
             FindOptions options = new FindOptions()
@@ -79,12 +35,13 @@ class GroovyFind {
                 Finder finder = new Finder(settings)
                 finder.validateSettings()
                 List<FileResult> fileResults = finder.find()
+                var formatter = new FileResultFormatter(settings)
 
                 if (settings.printDirs) {
-                    printMatchingDirs(fileResults, settings)
+                    finder.printMatchingDirs(fileResults, formatter)
                 }
                 if (settings.printFiles) {
-                    printMatchingFiles(fileResults, settings)
+                    finder.printMatchingFiles(fileResults, formatter)
                 }
             } catch (FindException e) {
                 handleError(e.message, options)

@@ -10,6 +10,7 @@ import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.regex.Pattern
+import java.util.stream.Collectors
 
 @CompileStatic
 class Finder {
@@ -346,5 +347,47 @@ class Finder {
 
         sortFileResults(fileResults)
         fileResults
+    }
+
+    private static List<Path> getMatchingDirs(final List<FileResult> results) {
+        results.findAll { fr -> fr.path.parent != null }
+                .collect { fr -> fr.path.parent }.unique().sort()
+    }
+
+    void printMatchingDirs(final List<FileResult> results, final FileResultFormatter formatter) {
+        List<Path> dirs = getMatchingDirs(results)
+        if (!dirs.empty) {
+            Logger.log("\nMatching directories (${dirs.size()}):")
+            if (settings.getColorize() && !settings.getInDirPatterns().isEmpty()) {
+                dirs.each { Logger.log(formatter.formatDirPath(it)) }
+            } else {
+                dirs.each { Logger.log(it.toString()) }
+            }
+        } else {
+            Logger.log('\nMatching directories: 0')
+        }
+    }
+
+    private static List<String> getMatchingFiles(final List<FileResult> results) {
+        results.stream().map(FileResult::toString).collect(Collectors.toList())
+    }
+
+    void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
+        if (!results.isEmpty()) {
+            Logger.log(String.format("\nMatching files (%d):", results.size()))
+            if (settings.getColorize() && (!settings.getInDirPatterns().isEmpty()
+                    || !settings.getInExtensions().isEmpty() || !settings.getInFilePatterns().isEmpty())) {
+                for (var f : results) {
+                    Logger.log(formatter.formatFileResult(f))
+                }
+            } else {
+                var files = getMatchingFiles(results)
+                for (var f : files) {
+                    Logger.log(f)
+                }
+            }
+        } else {
+            Logger.log("\nMatching files: 0")
+        }
     }
 }
