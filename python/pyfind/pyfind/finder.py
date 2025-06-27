@@ -14,11 +14,11 @@ from typing import Optional
 
 from .common import log
 from .constants import *
-from .fileresult import FileResult, FileResultFormatter
+from .fileresult import FileResult, FileResultFormatter, FileResultSorter
 from .filetypes import FileType, FileTypes
 from .fileutil import FileUtil
 from .findexception import FindException
-from .findsettings import FindSettings, PatternSet, SortBy
+from .findsettings import FindSettings, PatternSet
 
 
 class Finder:
@@ -234,55 +234,11 @@ class Finder:
             file_results.extend(self.get_file_results_for_path(p))
         return file_results
 
-    def case(self, s: str) -> str:
-        if self.settings.sort_case_insensitive:
-            return s.casefold()
-        return s
-
-    def key_by_file_path(self, r: FileResult) -> list:
-        return [[self.case(str(c)) for c in r.containers],
-                self.case(str(r.path.parent)),
-                self.case(r.path.name)]
-
-    def key_by_file_name(self, r: FileResult) -> list:
-        return [self.case(r.path.name),
-                [self.case(str(c)) for c in r.containers],
-                self.case(str(r.path.parent))]
-
-    def key_by_file_size(self, r: FileResult) -> list:
-        return [r.file_size] + self.key_by_file_path(r)
-
-    def key_by_file_type(self, r: FileResult) -> list:
-        return [r.file_type] + self.key_by_file_path(r)
-
-    def key_by_last_mod(self, r: FileResult) -> list:
-        return [r.last_mod] + self.key_by_file_path(r)
-
-    def get_sort_key_function(self) -> callable:
-        """Get the sort key function based on the settings."""
-        match self.settings.sort_by:
-            case SortBy.FILEPATH:
-                return self.key_by_file_path
-            case SortBy.FILENAME:
-                return self.key_by_file_name
-            case SortBy.FILESIZE:
-                return self.key_by_file_size
-            case SortBy.FILETYPE:
-                return self.key_by_file_type
-            case SortBy.LASTMOD:
-                return self.key_by_last_mod
-            case _:
-                return self.key_by_file_path
-
-    def sort_file_results(self, file_results: list[FileResult]) -> list[FileResult]:
-        """Sort the given list of FileResult instances."""
-        sort_key_func = self.get_sort_key_function()
-        return sorted(file_results, key=sort_key_func,
-                      reverse=self.settings.sort_descending)
-
     async def find(self) -> list[FileResult]:
         """Find matching files under paths."""
-        return self.sort_file_results(self.find_files())
+        file_results = self.find_files()
+        file_result_sorter = FileResultSorter(self.settings)
+        return file_result_sorter.sort(file_results)
 
 
 def matches_any_pattern(s: str, pattern_set: PatternSet) -> bool:
