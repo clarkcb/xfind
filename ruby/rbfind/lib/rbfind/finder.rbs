@@ -63,9 +63,5 @@ module RbFind
     def get_file_results_for_path: (Pathname file_path) -> Array[FileResult]
 
     def file_path_to_file_result: (Pathname file_path) -> FileResult
-
-    def get_sort_comparator: -> Proc
-
-    def sort_file_results: (Array[FileResult] file_results) -> void
   end
 end

@@ -12,6 +12,7 @@
 require_relative 'rbfind/common'
 require_relative 'rbfind/fileresult'
 require_relative 'rbfind/fileresultformatter'
+require_relative 'rbfind/fileresultsorter'
 require_relative 'rbfind/filetypes'
 require_relative 'rbfind/fileutil'
 require_relative 'rbfind/finder'

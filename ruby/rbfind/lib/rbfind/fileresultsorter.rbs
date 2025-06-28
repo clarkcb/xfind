@@ -1,0 +1,17 @@
+module RbFind
+
+  class FileResultSorter
+    @settings: FindSettings
+
+    attr_reader settings: FindSettings
+
+    def initialize: (FindSettings settings) -> void
+
+    def sort: (Array[FileResult] file_results) -> void
+
+    private
+
+    def get_sort_comparator: -> Proc
+
+  end
+end
