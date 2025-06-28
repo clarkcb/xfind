@@ -14,7 +14,7 @@ namespace cppfind {
         FileResultFormatter(FileResultFormatter& other) = delete;
         FileResultFormatter(FileResultFormatter&& other) = delete;
         [[nodiscard]] FindSettings settings() const;
-        [[nodiscard]] std::string colorize(const std::string& s, unsigned long match_start_idx, unsigned long match_end_idx) const;
+        static std::string colorize(const std::string& s, unsigned long match_start_idx, unsigned long match_end_idx);
         [[nodiscard]] std::string format_dir_path(const std::filesystem::path& dir_path) const;
         [[nodiscard]] std::string format_file_name(const std::string& file_name) const;
         [[nodiscard]] std::string format_file_path(const std::filesystem::path& file_path) const;
