@@ -112,3 +112,65 @@ defmodule ExFind.FileResultFormatter do
     Path.join(parent, file_name)
   end
 end
+
+defmodule ExFind.FileResultSorter do
+  @moduledoc """
+  Documentation for `ExFind.FileResultSorter`.
+  """
+
+  def get_file_path_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {String.downcase(r.path), String.downcase(r.name)} end
+    else
+      fn r -> {r.path, r.name} end
+    end
+  end
+
+  def get_file_name_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {String.downcase(r.name), String.downcase(r.path)} end
+    else
+      fn r -> {r.name, r.path} end
+    end
+  end
+
+  def get_file_size_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {r.file_size, String.downcase(r.path), String.downcase(r.name)} end
+    else
+      fn r -> {r.file_size, r.path, r.name} end
+    end
+  end
+
+  def get_file_type_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {r.file_type, String.downcase(r.path), String.downcase(r.name)} end
+    else
+      fn r -> {r.file_type, r.path, r.name} end
+    end
+  end
+
+  def get_last_mod_mapper(settings) do
+    if settings.sort_case_insensitive do
+      fn r -> {r.last_mod, String.downcase(r.path), String.downcase(r.name)} end
+    else
+      fn r -> {r.last_mod, r.path, r.name} end
+    end
+  end
+
+  def get_file_result_mapper(settings) do
+    case settings.sort_by do
+      :file_name -> get_file_name_mapper(settings)
+      :file_size -> get_file_size_mapper(settings)
+      :file_type -> get_file_type_mapper(settings)
+      :last_mod  -> get_last_mod_mapper(settings)
+      _          -> get_file_path_mapper(settings)
+    end
+  end
+
+  def sort(settings, results) do
+    file_result_mapper = get_file_result_mapper(settings)
+    direction = if settings.sort_descending, do: :desc, else: :asc
+    Enum.sort_by(results, file_result_mapper, direction)
+  end
+end

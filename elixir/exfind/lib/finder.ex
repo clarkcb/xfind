@@ -5,6 +5,7 @@ defmodule ExFind.Finder do
 
   alias ExFind.FileResult
   alias ExFind.FileResultFormatter
+  alias ExFind.FileResultSorter
   alias ExFind.FileTypes
   alias ExFind.FileUtil
   alias ExFind.FindError
@@ -227,7 +228,7 @@ defmodule ExFind.Finder do
   #   # IO.puts("find_files()")
   #   results = Enum.map(finder.settings.paths, fn path -> find_path(finder, path) end)
   #             |> List.flatten()
-  #   {:ok, sort_results(finder, results)}
+  #   {:ok, FileResultSorter.sort(finder, results)}
   # end
 
   # This is the asynchronous version of find_files
@@ -236,7 +237,7 @@ defmodule ExFind.Finder do
     tasks = Enum.map(finder.settings.paths, fn p -> Task.async(fn -> send(self(), find_path(finder, p)) end) end)
     # # IO.puts("tasks: #{inspect(tasks)})")
     results = Task.await_many(tasks, 1000) |> List.flatten()
-    {:ok, sort_results(finder, results)}
+    {:ok, FileResultSorter.sort(finder.settings, results)}
   end
 
   def find(finder) do
@@ -279,32 +280,6 @@ defmodule ExFind.Finder do
         {:error, "Invalid range for minlastmod and maxlastmod"}
       true -> {:ok, "Settings are valid"}
     end
-  end
-
-  def get_sort_mapper(finder) do
-    if finder.settings.sort_case_insensitive do
-      case finder.settings.sort_by do
-        :file_name -> fn r -> {String.downcase(r.name), String.downcase(r.path)} end
-        :file_size -> fn r -> {r.file_size, String.downcase(r.path), String.downcase(r.name)} end
-        :file_type -> fn r -> {r.file_type, String.downcase(r.path), String.downcase(r.name)} end
-        :last_mod  -> fn r -> {r.last_mod, String.downcase(r.path), String.downcase(r.name)} end
-        _          -> fn r -> {String.downcase(r.path), String.downcase(r.name)} end
-      end
-    else
-      case finder.settings.sort_by do
-        :file_name -> fn r -> {r.name, r.path} end
-        :file_size -> fn r -> {r.file_size, r.path, r.name} end
-        :file_type -> fn r -> {r.file_type, r.path, r.name} end
-        :last_mod  -> fn r -> {r.last_mod, r.path, r.name} end
-        _          -> fn r -> {r.path, r.name} end
-      end
-    end
-  end
-
-  def sort_results(finder, results) do
-    sort_mapper = get_sort_mapper(finder)
-    direction = if finder.settings.sort_descending, do: :desc, else: :asc
-    Enum.sort_by(results, sort_mapper, direction)
   end
 
   def print_dirs(results, formatter) do
