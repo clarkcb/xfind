@@ -31,8 +31,6 @@
 - (BOOL) isMatchingArchiveFile:(NSString*)filePath;
 - (BOOL) isMatchingDir:(NSString*)dirPath;
 - (BOOL) isMatchingFile:(NSString*)filePath;
-- (NSComparisonResult (^)(FileResult*, FileResult*)) getSortComparator;
-- (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults;
 - (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults;
 
 @end

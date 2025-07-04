@@ -1,4 +1,5 @@
 #import "common.h"
+#import "FileResultSorter.h"
 #import "FileUtil.h"
 #import "Finder.h"
 
@@ -280,58 +281,6 @@
     return [NSArray arrayWithArray:fileResults];
 }
 
-- (NSComparisonResult (^)(FileResult*, FileResult*)) getSortComparator {
-    if (self.settings.sortDescending) {
-        if (self.settings.sortBy == SortByFileName) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr2 compareByName:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else if (self.settings.sortBy == SortByFileSize) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr2 compareBySize:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else if (self.settings.sortBy == SortByFileType) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr2 compareByType:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else if (self.settings.sortBy == SortByLastMod) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr2 compareByLastMod:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr2 compareByPath:fr1 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        }
-    } else {
-        if (self.settings.sortBy == SortByFileName) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr1 compareByName:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else if (self.settings.sortBy == SortByFileSize) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr1 compareBySize:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else if (self.settings.sortBy == SortByFileType) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr1 compareByType:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else if (self.settings.sortBy == SortByLastMod) {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr1 compareByLastMod:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        } else {
-            return ^NSComparisonResult(FileResult *fr1, FileResult *fr2) {
-                return [fr1 compareByPath:fr2 caseInsensitive:self.settings.sortCaseInsensitive];
-            };
-        }
-    }
-}
-
-- (NSArray<FileResult*>*) sortFileResults:(NSArray<FileResult*>*)fileResults {
-    return [fileResults sortedArrayUsingComparator:[self getSortComparator]];
-}
-
 - (NSArray<FileResult*>*) find:(NSError**)error {
     NSMutableArray<FileResult*> *fileResults = [NSMutableArray array];
     for (NSString *p in self.settings.paths) {
@@ -342,7 +291,8 @@
         [fileResults addObjectsFromArray:pathResults];
     }
 
-    return [self sortFileResults:[NSArray arrayWithArray:fileResults]];
+    FileResultSorter *fileResultSorter = [[FileResultSorter alloc] initWithSettings:self.settings];
+    return [fileResultSorter sort:[NSArray arrayWithArray:fileResults]];
 }
 
 - (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults {
