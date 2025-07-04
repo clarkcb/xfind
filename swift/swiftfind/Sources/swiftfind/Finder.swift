@@ -291,93 +291,14 @@ public class Finder {
         return fileResults
     }
 
-    private func sortByFilePath(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
-        let (fp1, fp2) = self.settings.sortCaseInsensitive
-                         ? (fr1.filePath.lowercased(), fr2.filePath.lowercased())
-                         : (fr1.filePath, fr2.filePath)
-        let (p1, f1) = FileUtil.splitPath(fp1)
-        let (p2, f2) = FileUtil.splitPath(fp2)
-        if p1 == p2 {
-            return f1 < f2
-        }
-        return p1 < p2
-    }
-
-    private func sortByFileName(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
-        let (fp1, fp2) = self.settings.sortCaseInsensitive
-                         ? (fr1.filePath.lowercased(), fr2.filePath.lowercased())
-                         : (fr1.filePath, fr2.filePath)
-        let (p1, f1) = FileUtil.splitPath(fp1)
-        let (p2, f2) = FileUtil.splitPath(fp2)
-        if f1 == f2 {
-            return p1 < p2
-        }
-        return f1 < f2
-    }
-
-    private func sortByFileSize(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
-        if fr1.fileSize == fr2.fileSize {
-            return sortByFilePath(fr1, fr2)
-        }
-        return fr1.fileSize < fr2.fileSize
-    }
-
-    private func sortByFileType(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
-        if fr1.fileType == fr2.fileType {
-            return sortByFilePath(fr1, fr2)
-        }
-        return FileTypes.toName(fr1.fileType) < FileTypes.toName(fr2.fileType)
-    }
-
-    private func sortByLastMod(_ fr1: FileResult, _ fr2: FileResult) -> Bool {
-        if fr1.lastMod == fr2.lastMod {
-            return sortByFilePath(fr1, fr2)
-        }
-        return fr1.lastMod < fr2.lastMod
-    }
-
-    private func getSortComparator() -> (FileResult, FileResult) -> Bool {
-        if settings.sortDescending {
-            switch settings.sortBy {
-            case SortBy.fileName:
-                return { (fr1: FileResult, fr2: FileResult) -> Bool in return self.sortByFileName(fr2, fr1) }
-            case SortBy.fileSize:
-                return { (fr1: FileResult, fr2: FileResult) -> Bool in return self.sortByFileSize(fr2, fr1) }
-            case SortBy.fileType:
-                return { (fr1: FileResult, fr2: FileResult) -> Bool in return self.sortByFileType(fr2, fr1) }
-            case SortBy.lastMod:
-                return { (fr1: FileResult, fr2: FileResult) -> Bool in return self.sortByLastMod(fr2, fr1) }
-            default:
-                return { (fr1: FileResult, fr2: FileResult) -> Bool in return self.sortByFilePath(fr2, fr1) }
-            }
-        } else {
-            switch settings.sortBy {
-            case SortBy.fileName:
-                return sortByFileName
-            case SortBy.fileSize:
-                return sortByFileSize
-            case SortBy.fileType:
-                return sortByFileType
-            case SortBy.lastMod:
-                return sortByLastMod
-            default:
-                return sortByFilePath
-            }
-        }
-    }
-
-    public func sortFileResults(_ fileResults: [FileResult]) -> [FileResult] {
-        let sortComparator = getSortComparator()
-        return fileResults.sorted(by: sortComparator)
-    }
-
     public func find() throws -> [FileResult] {
         var fileResults = [FileResult]()
         for p in settings.paths {
             let pathResults: [FileResult] = try getFileResults(p)
             fileResults.append(contentsOf: pathResults)
         }
-        return sortFileResults(fileResults)
+        let fileResultSorter = FileResultSorter(settings: settings)
+        return fileResultSorter.sort(fileResults)
     }
 
     func getMatchingDirs(_ fileResults: [FileResult]) -> [String] {
