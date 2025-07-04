@@ -179,52 +179,11 @@ type Finder (settings : FindSettings) =
             else
                 []
 
-    member this.SortByPath (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
-        let dirNameCmp = String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp)
-        if dirNameCmp = 0 then String.Compare(fr1.File.Name, fr2.File.Name, cmp) else dirNameCmp
-
-    member this.SortByName (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let cmp = if settings.SortCaseInsensitive then StringComparison.OrdinalIgnoreCase else StringComparison.Ordinal
-        let fileNameCmp = String.Compare(fr1.File.Name, fr2.File.Name, cmp)
-        if fileNameCmp = 0 then String.Compare(fr1.File.DirectoryName, fr2.File.DirectoryName, cmp) else fileNameCmp
-
-    member this.SortBySize (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let sizeCmp = fr1.File.Length.CompareTo(fr2.File.Length)
-        if sizeCmp = 0 then (this.SortByPath fr1 fr2) else sizeCmp
-
-    member this.SortByType (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let typeCmp = fr1.FileType.CompareTo(fr2.FileType)
-        if typeCmp = 0 then (this.SortByPath fr1 fr2) else typeCmp
-
-    member this.SortByLastMod (fr1 : FileResult.t) (fr2 : FileResult.t) : int =
-        let lastModCmp = fr1.File.LastWriteTimeUtc.CompareTo(fr2.File.LastWriteTimeUtc)
-        if lastModCmp = 0 then (this.SortByPath fr1 fr2) else lastModCmp
-
-    member this.GetSortComparator : FileResult.t -> FileResult.t -> int =
-        if settings.SortDescending then
-            match settings.SortBy with
-            | SortBy.FileName -> (fun fr1 fr2 -> this.SortByName fr2 fr1)
-            | SortBy.FileSize -> (fun fr1 fr2 -> this.SortBySize fr2 fr1)
-            | SortBy.FileType -> (fun fr1 fr2 -> this.SortByType fr2 fr1)
-            | SortBy.LastMod  -> (fun fr1 fr2 -> this.SortByLastMod fr2 fr1)
-            | _               -> (fun fr1 fr2 -> this.SortByPath fr2 fr1)
-        else
-            match settings.SortBy with
-            | SortBy.FileName -> this.SortByName
-            | SortBy.FileSize -> this.SortBySize
-            | SortBy.FileType -> this.SortByType
-            | SortBy.LastMod  -> this.SortByLastMod
-            | _               -> this.SortByPath
-
-    member this.SortFileResults (fileResults : FileResult.t list) : FileResult.t list =
-        let sortComparator = this.GetSortComparator
-        List.sortWith sortComparator fileResults
-
     member this.Find () : FileResult.t list =
         this.SetEnumerationOptions()
         let fileResults = settings.Paths |> List.collect this.GetFileResults
-        this.SortFileResults fileResults
+        let fileResultSorter = FileResultSorter(settings)
+        fileResultSorter.Sort fileResults
 
     member this.GetMatchingDirs (fileResults : FileResult.t list) : DirectoryInfo list = 
         fileResults

@@ -17,6 +17,7 @@
     <Compile Include="FindSettings.fs" />
     <Compile Include="FileResult.fs" />
     <Compile Include="FileResultFormatter.fs" />
+    <Compile Include="FileResultSorter.fs" />
     <Compile Include="FindOptions.fs" />
     <Compile Include="Finder.fs" />
     <None Remove="Resources\filetypes.json" />
