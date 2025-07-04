@@ -191,3 +191,49 @@ class FileResultFormatter {
         formatPath(result.path)
     }
 }
+
+class FileResultSorter {
+
+    private final FindSettings settings
+
+    FileResultSorter(final FindSettings settings) {
+        this.settings = settings
+    }
+
+    final Comparator<FileResult> getFileResultComparator() {
+        if (settings.sortDescending) {
+            switch (settings.sortBy) {
+                case SortBy.FILENAME:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByName(fr1, settings.sortCaseInsensitive)
+                case SortBy.FILESIZE:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareBySize(fr1, settings.sortCaseInsensitive)
+                case SortBy.FILETYPE:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByType(fr1, settings.sortCaseInsensitive)
+                case SortBy.LASTMOD:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByLastMod(fr1, settings.sortCaseInsensitive)
+                default:
+                    return (FileResult fr1, FileResult fr2) -> fr2.compareByPath(fr1, settings.sortCaseInsensitive)
+            }
+        }
+        switch (settings.sortBy) {
+            case SortBy.FILENAME:
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByName(fr2, settings.sortCaseInsensitive)
+            case SortBy.FILESIZE:
+                return (FileResult fr1, FileResult fr2) -> fr1.compareBySize(fr2, settings.sortCaseInsensitive)
+            case SortBy.FILETYPE:
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByType(fr2, settings.sortCaseInsensitive)
+            case SortBy.LASTMOD:
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
+            default:
+                return (FileResult fr1, FileResult fr2) -> fr1.compareByPath(fr2, settings.sortCaseInsensitive)
+        }
+    }
+
+    final void sort(List<FileResult> fileResults) {
+        if (fileResults.empty) {
+            return
+        }
+        def comparator = getFileResultComparator()
+        fileResults.sort(comparator)
+    }
+}
