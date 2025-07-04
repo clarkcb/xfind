@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 )
@@ -93,11 +93,11 @@ func (frs *FileResults) Iterator() *FileResultsIterator {
 }
 
 func (frs *FileResults) GetMatchingDirs() []string {
-	keys := make(map[string]bool)
+	dirMap := make(map[string]bool)
 	var dirs []string
 	for _, r := range frs.FileResults {
-		if _, value := keys[r.Path]; !value {
-			keys[r.Path] = true
+		if _, value := dirMap[r.Path]; !value {
+			dirMap[r.Path] = true
 			dirs = append(dirs, r.Path)
 		}
 	}
@@ -127,143 +127,9 @@ func (frs *FileResults) PrintMatchingFiles(formatter *FileResultFormatter) {
 	}
 }
 
-func compareStrings(str1, str2 string, sortCaseInsensitive bool) int {
-	s1 := str1
-	if sortCaseInsensitive {
-		s1 = strings.ToLower(s1)
-	}
-	s2 := str2
-	if sortCaseInsensitive {
-		s2 = strings.ToLower(s2)
-	}
-	if s1 == s2 {
-		return 0
-	}
-	if s1 < s2 {
-		return -1
-	}
-	return 1
-}
-
-func (frs *FileResults) CompareByPath(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	pres := compareStrings(fr1.Path, fr2.Path, sortCaseInsensitive)
-	if pres == 0 {
-		return compareStrings(fr1.Name, fr2.Name, sortCaseInsensitive)
-	}
-	return pres
-}
-
-func (frs *FileResults) getSortByPath(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
-	if sortDescending {
-		return func(i, j int) bool {
-			return frs.CompareByPath(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
-		}
-	}
-	return func(i, j int) bool {
-		return frs.CompareByPath(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
-	}
-}
-
-func (frs *FileResults) CompareByName(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	nres := compareStrings(fr1.Name, fr2.Name, sortCaseInsensitive)
-	if nres == 0 {
-		return compareStrings(fr1.Path, fr2.Path, sortCaseInsensitive)
-	}
-	return nres
-}
-
-func (frs *FileResults) getSortByName(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
-	if sortDescending {
-		return func(i, j int) bool {
-			return frs.CompareByName(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
-		}
-	}
-	return func(i, j int) bool {
-		return frs.CompareByName(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
-	}
-}
-
-func (frs *FileResults) CompareBySize(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	if fr1.FileSize == fr2.FileSize {
-		return frs.CompareByPath(fr1, fr2, sortCaseInsensitive)
-	}
-	if fr1.FileSize < fr2.FileSize {
-		return -1
-	}
-	return 1
-}
-
-func (frs *FileResults) getSortBySize(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
-	if sortDescending {
-		return func(i, j int) bool {
-			return frs.CompareBySize(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
-		}
-	}
-	return func(i, j int) bool {
-		return frs.CompareBySize(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
-	}
-}
-
-func (frs *FileResults) CompareByType(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	if fr1.FileType == fr2.FileType {
-		return frs.CompareByPath(fr1, fr2, sortCaseInsensitive)
-	}
-	if fr1.FileType < fr2.FileType {
-		return -1
-	}
-	return 1
-}
-
-func (frs *FileResults) getSortByType(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
-	if sortDescending {
-		return func(i, j int) bool {
-			return frs.CompareByType(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
-		}
-	}
-	return func(i, j int) bool {
-		return frs.CompareByType(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
-	}
-}
-
-func (frs *FileResults) CompareByLastMod(fr1, fr2 *FileResult, sortCaseInsensitive bool) int {
-	if fr1.LastMod.Equal(fr2.LastMod) {
-		return frs.CompareByPath(fr1, fr2, sortCaseInsensitive)
-	}
-	if fr1.LastMod.Before(fr2.LastMod) {
-		return -1
-	}
-	return 1
-}
-
-func (frs *FileResults) getSortByLastMod(sortCaseInsensitive, sortDescending bool) func(i, j int) bool {
-	if sortDescending {
-		return func(i, j int) bool {
-			return frs.CompareByLastMod(frs.FileResults[j], frs.FileResults[i], sortCaseInsensitive) < 0
-		}
-	}
-	return func(i, j int) bool {
-		return frs.CompareByLastMod(frs.FileResults[i], frs.FileResults[j], sortCaseInsensitive) < 0
-	}
-}
-
-func (frs *FileResults) getSortComparator(settings *FindSettings) func(i, j int) bool {
-	switch settings.SortBy() {
-	case SortByFileName:
-		return frs.getSortByName(settings.SortCaseInsensitive(), settings.SortDescending())
-	case SortByFileSize:
-		return frs.getSortBySize(settings.SortCaseInsensitive(), settings.SortDescending())
-	case SortByFileType:
-		return frs.getSortByType(settings.SortCaseInsensitive(), settings.SortDescending())
-	case SortByLastMod:
-		return frs.getSortByLastMod(settings.SortCaseInsensitive(), settings.SortDescending())
-	default:
-		return frs.getSortByPath(settings.SortCaseInsensitive(), settings.SortDescending())
-	}
-}
-
 func (frs *FileResults) Sort(settings *FindSettings) {
-	sortComparator := frs.getSortComparator(settings)
-	sort.Slice(frs.FileResults, sortComparator)
+	fileResultSorter := NewFileResultSorter(settings)
+	fileResultSorter.Sort(frs.FileResults)
 }
 
 type FileResult struct {
@@ -394,4 +260,159 @@ func (f *FileResultFormatter) FormatFileResult(r *FileResult) string {
 	path := f.FormatPath(r.Path)
 	fileName := f.FormatFileName(r.Name)
 	return filepath.Join(path, fileName)
+}
+
+// *****************************************************************************
+// FileResultSorter
+// *****************************************************************************
+
+type FileResultSorter struct {
+	Settings *FindSettings
+}
+
+func NewFileResultSorter(settings *FindSettings) *FileResultSorter {
+	f := &FileResultSorter{
+		settings,
+	}
+	return f
+}
+
+func compareStrings(str1, str2 string, sortCaseInsensitive bool) int {
+	s1 := str1
+	if sortCaseInsensitive {
+		s1 = strings.ToLower(s1)
+	}
+	s2 := str2
+	if sortCaseInsensitive {
+		s2 = strings.ToLower(s2)
+	}
+	if s1 == s2 {
+		return 0
+	}
+	if s1 < s2 {
+		return -1
+	}
+	return 1
+}
+
+func (frs *FileResultSorter) CompareByPath(fr1, fr2 *FileResult) int {
+	cmp := compareStrings(fr1.Path, fr2.Path, frs.Settings.sortCaseInsensitive)
+	if cmp == 0 {
+		return compareStrings(fr1.Name, fr2.Name, frs.Settings.sortCaseInsensitive)
+	}
+	return cmp
+}
+
+func (frs *FileResultSorter) getCompareByPath() func(fr1, fr2 *FileResult) int {
+	if frs.Settings.sortDescending {
+		return func(fr1, fr2 *FileResult) int {
+			return frs.CompareByPath(fr2, fr1)
+		}
+	}
+	return func(fr1, fr2 *FileResult) int {
+		return frs.CompareByPath(fr1, fr2)
+	}
+}
+
+func (frs *FileResultSorter) CompareByName(fr1, fr2 *FileResult) int {
+	cmp := compareStrings(fr1.Name, fr2.Name, frs.Settings.sortCaseInsensitive)
+	if cmp == 0 {
+		return compareStrings(fr1.Path, fr2.Path, frs.Settings.sortCaseInsensitive)
+	}
+	return cmp
+}
+
+func (frs *FileResultSorter) getCompareByName() func(fr1, fr2 *FileResult) int {
+	if frs.Settings.sortDescending {
+		return func(fr1, fr2 *FileResult) int {
+			return frs.CompareByName(fr2, fr1)
+		}
+	}
+	return func(fr1, fr2 *FileResult) int {
+		return frs.CompareByName(fr1, fr2)
+	}
+}
+
+func (frs *FileResultSorter) CompareBySize(fr1, fr2 *FileResult) int {
+	if fr1.FileSize == fr2.FileSize {
+		return frs.CompareByPath(fr1, fr2)
+	}
+	if fr1.FileSize < fr2.FileSize {
+		return -1
+	}
+	return 1
+}
+
+func (frs *FileResultSorter) getCompareBySize() func(fr1, fr2 *FileResult) int {
+	if frs.Settings.sortDescending {
+		return func(fr1, fr2 *FileResult) int {
+			return frs.CompareBySize(fr2, fr1)
+		}
+	}
+	return func(fr1, fr2 *FileResult) int {
+		return frs.CompareBySize(fr1, fr2)
+	}
+}
+
+func (frs *FileResultSorter) CompareByType(fr1, fr2 *FileResult) int {
+	if fr1.FileType == fr2.FileType {
+		return frs.CompareByPath(fr1, fr2)
+	}
+	if fr1.FileType < fr2.FileType {
+		return -1
+	}
+	return 1
+}
+
+func (frs *FileResultSorter) getCompareByType() func(fr1, fr2 *FileResult) int {
+	if frs.Settings.sortDescending {
+		return func(fr1, fr2 *FileResult) int {
+			return frs.CompareByType(fr2, fr1)
+		}
+	}
+	return func(fr1, fr2 *FileResult) int {
+		return frs.CompareByType(fr1, fr2)
+	}
+}
+
+func (frs *FileResultSorter) CompareByLastMod(fr1, fr2 *FileResult) int {
+	if fr1.LastMod.Equal(fr2.LastMod) {
+		return frs.CompareByPath(fr1, fr2)
+	}
+	if fr1.LastMod.Before(fr2.LastMod) {
+		return -1
+	}
+	return 1
+}
+
+func (frs *FileResultSorter) getCompareByLastMod() func(fr1, fr2 *FileResult) int {
+	if frs.Settings.sortDescending {
+		return func(fr1, fr2 *FileResult) int {
+			return frs.CompareByLastMod(fr2, fr1)
+		}
+	}
+	return func(fr1, fr2 *FileResult) int {
+		return frs.CompareByLastMod(fr1, fr2)
+	}
+}
+
+func (frs *FileResultSorter) getSortFunc() func(fr1, fr2 *FileResult) int {
+	settings := frs.Settings
+	switch settings.SortBy() {
+	case SortByFileName:
+		return frs.getCompareByName()
+	case SortByFileSize:
+		return frs.getCompareBySize()
+	case SortByFileType:
+		return frs.getCompareByType()
+	case SortByLastMod:
+		return frs.getCompareByLastMod()
+	default:
+		return frs.getCompareByPath()
+	}
+}
+
+func (frs *FileResultSorter) Sort(fileResults []*FileResult) {
+	sortFunc := frs.getSortFunc()
+	slices.SortFunc(fileResults, sortFunc)
 }
