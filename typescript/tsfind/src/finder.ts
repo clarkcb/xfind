@@ -20,6 +20,7 @@ import {FindSettings} from './findsettings';
 import {SortBy} from './sortby';
 import * as common from "./common";
 import {FileResultFormatter} from "./fileresultformatter";
+import {FileResultSorter} from "./fileresultsorter";
 
 const startPathNotDefined = 'Startpath not defined';
 const invalidRangeForMinDepthAndMaxDepth = 'Invalid range for mindepth and maxdepth';
@@ -276,87 +277,6 @@ export class Finder {
         }
     }
 
-    private cmpFileResultsByPath(fr1: FileResult, fr2: FileResult): number {
-        const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
-            [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
-            [fr1.path, fr2.path];
-        if (path1 === path2) {
-            const [filename1, filename2]: string[] = this._settings.sortCaseInsensitive ?
-                [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
-                [fr1.fileName, fr2.fileName];
-            return filename1 < filename2 ? -1 : 1;
-        }
-        return path1 < path2 ? -1 : 1;
-    }
-
-    private cmpFileResultsByName(fr1: FileResult, fr2: FileResult): number {
-        const [fileName1, fileName2]: string[] = this._settings.sortCaseInsensitive ?
-            [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
-            [fr1.fileName, fr2.fileName];
-        if (fileName1 === fileName2) {
-            const [path1, path2]: string[] = this._settings.sortCaseInsensitive ?
-                [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
-                [fr1.path, fr2.path];
-            return path1 < path2 ? -1 : 1;
-        }
-        return fileName1 < fileName2 ? -1 : 1;
-    }
-
-    private cmpFileResultsBySize(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.fileSize === fr2.fileSize) {
-            return this.cmpFileResultsByPath(fr1, fr2);
-        }
-        return fr1.fileSize - fr2.fileSize;
-    }
-
-    private cmpFileResultsByType(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.fileType === fr2.fileType) {
-            return this.cmpFileResultsByPath(fr1, fr2);
-        }
-        return fr1.fileType - fr2.fileType;
-    }
-
-    private cmpFileResultsByLastMod(fr1: FileResult, fr2: FileResult): number {
-        if (fr1.lastMod === fr2.lastMod) {
-            return this.cmpFileResultsByPath(fr1, fr2);
-        }
-        return fr1.lastMod - fr2.lastMod;
-    }
-
-    private getSortComparator(): (a: FileResult, b: FileResult) => number {
-        if (this._settings.sortDescending) {
-            switch (this._settings.sortBy) {
-                case SortBy.FileName:
-                    return (a, b) => this.cmpFileResultsByName(b, a);
-                case SortBy.FileSize:
-                    return (a, b) => this.cmpFileResultsBySize(b, a);
-                case SortBy.FileType:
-                    return (a, b) => this.cmpFileResultsByType(b, a);
-                case SortBy.LastMod:
-                    return (a, b) => this.cmpFileResultsByLastMod(b, a);
-                default:
-                    return (a, b) => this.cmpFileResultsByPath(b, a);
-            }
-        }
-        switch (this._settings.sortBy) {
-            case SortBy.FileName:
-                return (a, b) => this.cmpFileResultsByName(a, b);
-            case SortBy.FileSize:
-                return (a, b) => this.cmpFileResultsBySize(a, b);
-            case SortBy.FileType:
-                return (a, b) => this.cmpFileResultsByType(a, b);
-            case SortBy.LastMod:
-                return (a, b) => this.cmpFileResultsByLastMod(a, b);
-            default:
-                return (a, b) => this.cmpFileResultsByPath(a, b);
-        }
-    }
-
-    private sortFileResults(fileResults: FileResult[]): void {
-        const sortComparator = this.getSortComparator();
-        fileResults.sort(sortComparator);
-    }
-
     public async find(): Promise<FileResult[]> {
         // get the file results
         let fileResults: FileResult[] = [];
@@ -366,7 +286,8 @@ export class Finder {
             fileResults = fileResults.concat(pathFileResults);
         });
 
-        this.sortFileResults(fileResults);
+        let fileResultSorter = new FileResultSorter(this._settings);
+        fileResultSorter.sort(fileResults);
         return fileResults;
     }
 

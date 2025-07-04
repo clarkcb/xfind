@@ -4,6 +4,7 @@
 export {COLORS} from './color';
 export {FileResult} from './fileresult';
 export {FileResultFormatter} from './fileresultformatter';
+export {FileResultSorter} from './fileresultsorter';
 export {FileType} from "./filetype";
 export {FileTypes} from "./filetypes";
 export {FileUtil} from "./fileutil";
