@@ -148,43 +148,43 @@ class FileResultSorter(object):
             return s.casefold()
         return s
 
-    def _key_by_file_path(self, r: FileResult) -> list:
+    def key_by_file_path(self, r: FileResult) -> list:
         return [[self._case(str(c)) for c in r.containers],
                 self._case(str(r.path.parent)),
                 self._case(r.path.name)]
 
-    def _key_by_file_name(self, r: FileResult) -> list:
+    def key_by_file_name(self, r: FileResult) -> list:
         return [self._case(r.path.name),
                 [self._case(str(c)) for c in r.containers],
                 self._case(str(r.path.parent))]
 
-    def _key_by_file_size(self, r: FileResult) -> list:
-        return [r.file_size] + self._key_by_file_path(r)
+    def key_by_file_size(self, r: FileResult) -> list:
+        return [r.file_size] + self.key_by_file_path(r)
 
-    def _key_by_file_type(self, r: FileResult) -> list:
-        return [r.file_type] + self._key_by_file_path(r)
+    def key_by_file_type(self, r: FileResult) -> list:
+        return [r.file_type] + self.key_by_file_path(r)
 
-    def _key_by_last_mod(self, r: FileResult) -> list:
-        return [r.last_mod] + self._key_by_file_path(r)
+    def key_by_last_mod(self, r: FileResult) -> list:
+        return [r.last_mod] + self.key_by_file_path(r)
 
-    def _get_sort_key_function(self) -> callable:
+    def get_sort_key_function(self) -> callable:
         """Get the sort key function based on the settings."""
         match self.settings.sort_by:
             case SortBy.FILEPATH:
-                return self._key_by_file_path
+                return self.key_by_file_path
             case SortBy.FILENAME:
-                return self._key_by_file_name
+                return self.key_by_file_name
             case SortBy.FILESIZE:
-                return self._key_by_file_size
+                return self.key_by_file_size
             case SortBy.FILETYPE:
-                return self._key_by_file_type
+                return self.key_by_file_type
             case SortBy.LASTMOD:
-                return self._key_by_last_mod
+                return self.key_by_last_mod
             case _:
-                return self._key_by_file_path
+                return self.key_by_file_path
 
     def sort(self, file_results: list[FileResult]) -> list[FileResult]:
         """Sort the given list of FileResult instances."""
-        sort_key_func = self._get_sort_key_function()
+        sort_key_func = self.get_sort_key_function()
         return sorted(file_results, key=sort_key_func,
                       reverse=self.settings.sort_descending)
