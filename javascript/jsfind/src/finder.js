@@ -11,11 +11,11 @@ const { promisify } = require('util');
 const fsStatAsync = promisify(fs.stat);
 
 const {FileResult} = require('./fileresult');
+const {FileResultSorter} = require('./fileresultsorter');
 const {FileType} = require("./filetype");
 const {FileTypes} = require('./filetypes');
 const {FileUtil, ENOENT, EACCES} = require('./fileutil');
 const {FindError} = require('./finderror');
-const {SortBy} = require('./sortby');
 const common = require('./common')
 
 const startPathNotDefined = 'Startpath not defined';
@@ -272,87 +272,6 @@ class Finder {
         }
     }
 
-    cmpFileResultsByPath(fr1, fr2) {
-        const [path1, path2] = this.settings.sortCaseInsensitive ?
-            [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
-            [fr1.path, fr2.path];
-        if (path1 === path2) {
-            const [fileName1, fileName2] = this.settings.sortCaseInsensitive ?
-                [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
-                [fr1.fileName, fr2.fileName];
-            return fileName1 < fileName2 ? -1 : 1;
-        }
-        return path1 < path2 ? -1 : 1;
-    }
-
-    cmpFileResultsByName(fr1, fr2) {
-        const [fileName1, fileName2] = this.settings.sortCaseInsensitive ?
-            [fr1.fileName.toLowerCase(), fr2.fileName.toLowerCase()] :
-            [fr1.fileName, fr2.fileName];
-        if (fileName1 === fileName2) {
-            const [path1, path2] = this.settings.sortCaseInsensitive ?
-                [fr1.path.toLowerCase(), fr2.path.toLowerCase()] :
-                [fr1.path, fr2.path];
-            return path1 < path2 ? -1 : 1;
-        }
-        return fileName1 < fileName2 ? -1 : 1;
-    }
-
-    cmpFileResultsBySize(fr1, fr2) {
-        if (fr1.fileSize === fr2.fileSize) {
-            return this.cmpFileResultsByPath(fr1, fr2);
-        }
-        return fr1.fileSize - fr2.fileSize;
-    }
-
-    cmpFileResultsByType(fr1, fr2) {
-        if (fr1.fileType === fr2.fileType) {
-            return this.cmpFileResultsByPath(fr1, fr2);
-        }
-        return fr1.fileType - fr2.fileType;
-    }
-
-    cmpFileResultsByLastMod(fr1, fr2) {
-        if (fr1.lastMod === fr2.lastMod) {
-            return this.cmpFileResultsByPath(fr1, fr2);
-        }
-        return fr1.lastMod - fr2.lastMod;
-    }
-
-    getSortComparator() {
-        if (this.settings.sortDescending) {
-            switch (this.settings.sortBy) {
-                case SortBy.FILENAME:
-                    return (a, b) => this.cmpFileResultsByName(b, a);
-                case SortBy.FILESIZE:
-                    return (a, b) => this.cmpFileResultsBySize(b, a);
-                case SortBy.FILETYPE:
-                    return (a, b) => this.cmpFileResultsByType(b, a);
-                case SortBy.LASTMOD:
-                    return (a, b) => this.cmpFileResultsByLastMod(b, a);
-                default:
-                    return (a, b) => this.cmpFileResultsByPath(b, a);
-            }
-        }
-        switch (this.settings.sortBy) {
-            case SortBy.FILENAME:
-                return (a, b) => this.cmpFileResultsByName(a, b);
-            case SortBy.FILESIZE:
-                return (a, b) => this.cmpFileResultsBySize(a, b);
-            case SortBy.FILETYPE:
-                return (a, b) => this.cmpFileResultsByType(a, b);
-            case SortBy.LASTMOD:
-                return (a, b) => this.cmpFileResultsByLastMod(a, b);
-            default:
-                return (a, b) => this.cmpFileResultsByPath(a, b);
-        }
-    }
-
-    sortFileResults(fileResults) {
-        let sortComparator = this.getSortComparator();
-        fileResults.sort(sortComparator);
-    }
-
     async find() {
         // get the file results
         let fileResults = [];
@@ -363,7 +282,8 @@ class Finder {
             fileResults = fileResults.concat(pathFileResults);
         });
 
-        this.sortFileResults(fileResults);
+        const fileResultSorter = new FileResultSorter(this.settings);
+        fileResultSorter.sort(fileResults);
         return fileResults;
     }
 

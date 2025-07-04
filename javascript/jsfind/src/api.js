@@ -11,6 +11,7 @@ const {COLORS} = require('./color');
 const common = require('./common');
 const {FileResult} = require('./fileresult');
 const {FileResultFormatter} = require('./fileresultformatter');
+const {FileResultSorter} = require('./fileresultsorter');
 const {FileType} = require('./filetype');
 const {FileTypes} = require('./filetypes');
 const {FileUtil} = require('./fileutil');
@@ -30,6 +31,7 @@ module.exports = {
   common,
   FileResult,
   FileResultFormatter,
+  FileResultSorter,
   FileType,
   FileTypes,
   FileUtil,
