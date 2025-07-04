@@ -36,52 +36,77 @@ class FileResult(val containers: List[Path],
     this(List.empty[Path], path, fileType, fileSize, lastMod)
   }
 
-  def compareByPath(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+  def compareByPath(other: FileResult, sortCaseInsensitive: Boolean): Int = {
     val pComp = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
     if (pComp == 0) {
       val fComp = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
-      fComp < 0
+      fComp
     } else {
-      pComp < 0
+      pComp
     }
   }
 
-  def compareByName(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+  def beforeByPath(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByPath(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareByName(other: FileResult, sortCaseInsensitive: Boolean): Int = {
     val fComp = comparePaths(this.path.getFileName, other.path.getFileName, sortCaseInsensitive)
     if (fComp == 0) {
       val pComp = comparePaths(this.path.getParent, other.path.getParent, sortCaseInsensitive)
-      pComp < 0
+      pComp
     } else {
-      fComp < 0
+      fComp
     }
   }
 
-  def compareBySize(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+  def beforeByName(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByName(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareBySize(other: FileResult, sortCaseInsensitive: Boolean): Int = {
     if (this.fileSize == other.fileSize) {
       compareByPath(other, sortCaseInsensitive)
     } else {
-      this.fileSize < other.fileSize
+      if (this.fileSize < other.fileSize) -1 else 1
     }
   }
 
-  def compareByType(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+  def beforeBySize(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareBySize(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareByType(other: FileResult, sortCaseInsensitive: Boolean): Int = {
     if (this.fileType.equals(other.fileType)) {
       compareByPath(other, sortCaseInsensitive)
     } else {
-      this.fileType < other.fileType
+      if (this.fileType < other.fileType) -1 else 1
     }
   }
 
-  def compareByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+  def beforeByType(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByType(other, sortCaseInsensitive)
+    cmp < 0
+  }
+
+  def compareByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Int = {
     (this.lastMod, other.lastMod) match {
       case (Some(lastMod1), Some(lastMod2)) =>
         if (lastMod1 == lastMod2) {
           compareByPath(other, sortCaseInsensitive)
         } else {
-          lastMod1.compareTo(lastMod2) < 0
+          lastMod1.compareTo(lastMod2)
         }
-      case (_, _) => false
+      case (_, _) => 0
     }
+  }
+
+  def beforeByLastMod(other: FileResult, sortCaseInsensitive: Boolean): Boolean = {
+    val cmp = compareByLastMod(other, sortCaseInsensitive)
+    cmp < 0
   }
 
   override def toString : String = {
@@ -161,5 +186,32 @@ class FileResultFormatter(val settings: FindSettings) {
 
   def formatFileResult(result: FileResult): String = {
     formatPath(result.path)
+  }
+}
+
+class FileResultSorter(val settings: FindSettings) {
+  private def getFileResultComparator: (FileResult, FileResult) => Boolean = {
+    if (settings.sortDescending) {
+      settings.sortBy match {
+        case SortBy.FileName => (fr1: FileResult, fr2: FileResult) => fr2.beforeByName(fr1, settings.sortCaseInsensitive)
+        case SortBy.FileSize => (fr1: FileResult, fr2: FileResult) => fr2.beforeBySize(fr1, settings.sortCaseInsensitive)
+        case SortBy.FileType => (fr1: FileResult, fr2: FileResult) => fr2.beforeByType(fr1, settings.sortCaseInsensitive)
+        case SortBy.LastMod => (fr1: FileResult, fr2: FileResult) => fr2.beforeByLastMod(fr1, settings.sortCaseInsensitive)
+        case _ => (fr1: FileResult, fr2: FileResult) => fr2.beforeByPath(fr1, settings.sortCaseInsensitive)
+      }
+    } else {
+      settings.sortBy match {
+        case SortBy.FileName => (fr1: FileResult, fr2: FileResult) => fr1.beforeByName(fr2, settings.sortCaseInsensitive)
+        case SortBy.FileSize => (fr1: FileResult, fr2: FileResult) => fr1.beforeBySize(fr2, settings.sortCaseInsensitive)
+        case SortBy.FileType => (fr1: FileResult, fr2: FileResult) => fr1.beforeByType(fr2, settings.sortCaseInsensitive)
+        case SortBy.LastMod => (fr1: FileResult, fr2: FileResult) => fr1.beforeByLastMod(fr2, settings.sortCaseInsensitive)
+        case _ => (fr1: FileResult, fr2: FileResult) => fr1.beforeByPath(fr2, settings.sortCaseInsensitive)
+      }
+    }
+  }
+
+  def sort(fileResults: Seq[FileResult]): Seq[FileResult] = {
+    val fileResultComparator = getFileResultComparator
+    fileResults.sortWith(fileResultComparator)
   }
 }

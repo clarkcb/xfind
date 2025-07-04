@@ -135,31 +135,6 @@ class Finder (settings: FindSettings) {
     }
   }
 
-  private def getFileResultComparator: (FileResult, FileResult) => Boolean = {
-    if (settings.sortDescending) {
-      settings.sortBy match {
-        case SortBy.FileName => (fr1: FileResult, fr2: FileResult) => fr2.compareByName(fr1, settings.sortCaseInsensitive)
-        case SortBy.FileSize => (fr1: FileResult, fr2: FileResult) => fr2.compareBySize(fr1, settings.sortCaseInsensitive)
-        case SortBy.FileType => (fr1: FileResult, fr2: FileResult) => fr2.compareByType(fr1, settings.sortCaseInsensitive)
-        case SortBy.LastMod => (fr1: FileResult, fr2: FileResult) => fr2.compareByLastMod(fr1, settings.sortCaseInsensitive)
-        case _ => (fr1: FileResult, fr2: FileResult) => fr2.compareByPath(fr1, settings.sortCaseInsensitive)
-      }
-    } else {
-      settings.sortBy match {
-        case SortBy.FileName => (fr1: FileResult, fr2: FileResult) => fr1.compareByName(fr2, settings.sortCaseInsensitive)
-        case SortBy.FileSize => (fr1: FileResult, fr2: FileResult) => fr1.compareBySize(fr2, settings.sortCaseInsensitive)
-        case SortBy.FileType => (fr1: FileResult, fr2: FileResult) => fr1.compareByType(fr2, settings.sortCaseInsensitive)
-        case SortBy.LastMod => (fr1: FileResult, fr2: FileResult) => fr1.compareByLastMod(fr2, settings.sortCaseInsensitive)
-        case _ => (fr1: FileResult, fr2: FileResult) => fr1.compareByPath(fr2, settings.sortCaseInsensitive)
-      }
-    }
-  }
-
-  private def sortFileResults(fileResults: Seq[FileResult]): Seq[FileResult] = {
-    val fileResultComparator = getFileResultComparator
-    fileResults.sortWith(fileResultComparator)
-  }
-
   private final def recFindPath(filePath: Path, minDepth: Int, maxDepth: Int, currentDepth: Int): Seq[FileResult] = {
     val recurse =
       if (currentDepth == maxDepth) {
@@ -231,7 +206,8 @@ class Finder (settings: FindSettings) {
     settings.paths.foreach { path =>
       fileResults ++= findPath(path)
     }
-    sortFileResults(Seq.empty[FileResult] ++ fileResults)
+    val fileResultSorter = new FileResultSorter(settings)
+    fileResultSorter.sort(Seq.empty[FileResult] ++ fileResults)
   }
 
   private def getMatchingDirs(fileResults: Seq[FileResult]): Seq[Path] = {
