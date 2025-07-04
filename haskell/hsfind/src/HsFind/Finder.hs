@@ -12,11 +12,10 @@ module HsFind.Finder
     ) where
 
 import Control.Monad (forM, filterM)
-import Data.Char (toLower)
-import Data.List (nub, partition, sort, sortBy, zipWith4)
+import Data.List (nub, partition, sort, zipWith4)
 import Data.Maybe (fromJust, isJust, isNothing)
 
-import System.FilePath (dropFileName, splitPath, takeDirectory, takeFileName)
+import System.FilePath (takeDirectory, takeFileName)
 import Text.Regex.PCRE ( (=~) )
 import Data.Time (UTCTime)
 
@@ -26,7 +25,8 @@ import HsFind.FileUtil
     getNonDotDirectoryContents, getFileSizes, getModificationTimes, partitionDirsAndFiles,
     pathExists)
 import HsFind.FileResult
-    (FileResult(..), formatDirectory, formatFileResult, newFileResult, newFileResultWithSizeAndLastMod)
+    (FileResult(..), formatDirectory, formatFileResult, newFileResult, newFileResultWithSizeAndLastMod,
+     sortFileResults)
 import HsFind.FindSettings
 
 
@@ -263,86 +263,6 @@ getFileResults settings = do
   -- return $ traceFileResults "filteredArchiveFileResults" filteredArchiveFileResults ++
   --          traceFileResults "filteredNonArchiveFileResults" filteredNonArchiveFileResults
   return $  filteredArchiveFileResults ++ filteredNonArchiveFileResults
-
-compareStrings :: FindSettings -> String -> String -> Ordering
-compareStrings settings s1 s2 =
-  if sortCaseInsensitive settings
-  then compare (lower s1) (lower s2)
-  else compare s1 s2
-  where lower = map toLower
-
-comparePaths :: FindSettings -> String -> String -> Ordering
-comparePaths settings p1 p2 =
-  if sortCaseInsensitive settings
-  then compare (map lower elems1) (map lower elems2)
-  else compare elems1 elems2
-  where lower = map toLower
-        elems1 = splitPath p1
-        elems2 = splitPath p2
-
-sortFileResultsByPath :: FindSettings -> FileResult -> FileResult -> Ordering
-sortFileResultsByPath settings fr1 fr2 =
-  if pcmp == EQ
-  then compareStrings settings f1 f2
-  else comparePaths settings p1 p2
-  where p1 = dropFileName (fileResultPath fr1)
-        p2 = dropFileName (fileResultPath fr2)
-        f1 = takeFileName (fileResultPath fr1)
-        f2 = takeFileName (fileResultPath fr2)
-        pcmp = compareStrings settings p1 p2
-
-sortFileResultsByName :: FindSettings -> FileResult -> FileResult -> Ordering
-sortFileResultsByName settings fr1 fr2 =
-  if fcmp == EQ
-  then comparePaths settings p1 p2
-  else compareStrings settings f1 f2
-  where p1 = dropFileName (fileResultPath fr1)
-        p2 = dropFileName (fileResultPath fr2)
-        f1 = takeFileName (fileResultPath fr1)
-        f2 = takeFileName (fileResultPath fr2)
-        fcmp = compareStrings settings f1 f2
-
-sortFileResultsBySize :: FindSettings -> FileResult -> FileResult -> Ordering
-sortFileResultsBySize settings fr1 fr2 =
-  if s1 == s2
-  then sortFileResultsByPath settings fr1 fr2
-  else compare s1 s2
-  where s1 = fileResultSize fr1
-        s2 = fileResultSize fr2
-
-sortFileResultsByType :: FindSettings -> FileResult -> FileResult -> Ordering
-sortFileResultsByType settings fr1 fr2 =
-  if t1 == t2
-  then sortFileResultsByPath settings fr1 fr2
-  else compare t1 t2
-  where t1 = fileResultType fr1
-        t2 = fileResultType fr2
-
-sortFileResultsByLastMod :: FindSettings -> FileResult -> FileResult -> Ordering
-sortFileResultsByLastMod settings fr1 fr2 =
-  if m1 == m2
-  then sortFileResultsByPath settings fr1 fr2
-  else compare m1 m2
-  where m1 = fileLastMod fr1
-        m2 = fileLastMod fr2
-
-getSortByFunc :: FindSettings -> FileResult -> FileResult -> Ordering
-getSortByFunc settings =
-  case sortResultsBy settings of
-   SortByFileName -> sortFileResultsByName settings
-   SortByFileSize -> sortFileResultsBySize settings
-   SortByFileType -> sortFileResultsByType settings
-   SortByLastMod  -> sortFileResultsByLastMod settings
-   _              -> sortFileResultsByPath settings
-
-doSortByFileResults :: FindSettings -> [FileResult] -> [FileResult]
-doSortByFileResults settings = sortBy $ getSortByFunc settings
-
-sortFileResults :: FindSettings -> [FileResult] -> [FileResult]
-sortFileResults settings fileResults =
-  if sortDescending settings
-  then reverse $ doSortByFileResults settings fileResults
-  else doSortByFileResults settings fileResults
 
 getFoundPaths :: [FilePath] -> IO (Either String [FilePath])
 getFoundPaths allPaths = do

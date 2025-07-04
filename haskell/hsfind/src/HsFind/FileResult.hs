@@ -2,6 +2,11 @@ module HsFind.FileResult
   ( FileResult(..)
   , blankFileResult
   , colorizeString
+  , compareFileResultsByLastMod
+  , compareFileResultsByName
+  , compareFileResultsByPath
+  , compareFileResultsBySize
+  , compareFileResultsByType
   , fileResultToString
   , formatDirectory
   , formatFileName
@@ -10,10 +15,13 @@ module HsFind.FileResult
   , newFileResult
   , newFileResultWithSize
   , newFileResultWithSizeAndLastMod
+  , sortFileResults
   ) where
 
+import Data.Char (toLower)
+import Data.List (sortBy)
 import Data.Time (UTCTime)
-import System.FilePath ((</>), takeDirectory, takeFileName)
+import System.FilePath ((</>), dropFileName, splitPath, takeDirectory, takeFileName)
 import Text.Regex.PCRE
 
 import HsFind.Color (green, reset)
@@ -124,3 +132,83 @@ formatFilePath settings fp = formattedParent </> formattedFile
 
 formatFileResult :: FindSettings -> FileResult -> String
 formatFileResult settings result = formatFilePath settings (fileResultPath result)
+
+compareStrings :: FindSettings -> String -> String -> Ordering
+compareStrings settings s1 s2 =
+  if sortCaseInsensitive settings
+  then compare (lower s1) (lower s2)
+  else compare s1 s2
+  where lower = map toLower
+
+comparePaths :: FindSettings -> String -> String -> Ordering
+comparePaths settings p1 p2 =
+  if sortCaseInsensitive settings
+  then compare (map lower elems1) (map lower elems2)
+  else compare elems1 elems2
+  where lower = map toLower
+        elems1 = splitPath p1
+        elems2 = splitPath p2
+
+compareFileResultsByPath :: FindSettings -> FileResult -> FileResult -> Ordering
+compareFileResultsByPath settings fr1 fr2 =
+  if pcmp == EQ
+  then compareStrings settings f1 f2
+  else pcmp
+  where p1 = dropFileName (fileResultPath fr1)
+        p2 = dropFileName (fileResultPath fr2)
+        f1 = takeFileName (fileResultPath fr1)
+        f2 = takeFileName (fileResultPath fr2)
+        pcmp = comparePaths settings p1 p2
+
+compareFileResultsByName :: FindSettings -> FileResult -> FileResult -> Ordering
+compareFileResultsByName settings fr1 fr2 =
+  if fcmp == EQ
+  then comparePaths settings p1 p2
+  else fcmp
+  where p1 = dropFileName (fileResultPath fr1)
+        p2 = dropFileName (fileResultPath fr2)
+        f1 = takeFileName (fileResultPath fr1)
+        f2 = takeFileName (fileResultPath fr2)
+        fcmp = compareStrings settings f1 f2
+
+compareFileResultsBySize :: FindSettings -> FileResult -> FileResult -> Ordering
+compareFileResultsBySize settings fr1 fr2 =
+  if s1 == s2
+  then compareFileResultsByPath settings fr1 fr2
+  else compare s1 s2
+  where s1 = fileResultSize fr1
+        s2 = fileResultSize fr2
+
+compareFileResultsByType :: FindSettings -> FileResult -> FileResult -> Ordering
+compareFileResultsByType settings fr1 fr2 =
+  if t1 == t2
+  then compareFileResultsByPath settings fr1 fr2
+  else compare t1 t2
+  where t1 = fileResultType fr1
+        t2 = fileResultType fr2
+
+compareFileResultsByLastMod :: FindSettings -> FileResult -> FileResult -> Ordering
+compareFileResultsByLastMod settings fr1 fr2 =
+  if m1 == m2
+  then compareFileResultsByPath settings fr1 fr2
+  else compare m1 m2
+  where m1 = fileLastMod fr1
+        m2 = fileLastMod fr2
+
+getCompareFileResultsFunc :: FindSettings -> FileResult -> FileResult -> Ordering
+getCompareFileResultsFunc settings =
+  case sortResultsBy settings of
+   SortByFileName -> compareFileResultsByName settings
+   SortByFileSize -> compareFileResultsBySize settings
+   SortByFileType -> compareFileResultsByType settings
+   SortByLastMod  -> compareFileResultsByLastMod settings
+   _              -> compareFileResultsByPath settings
+
+doSortByFileResults :: FindSettings -> [FileResult] -> [FileResult]
+doSortByFileResults settings = sortBy $ getCompareFileResultsFunc settings
+
+sortFileResults :: FindSettings -> [FileResult] -> [FileResult]
+sortFileResults settings fileResults =
+  if sortDescending settings
+  then reverse $ doSortByFileResults settings fileResults
+  else doSortByFileResults settings fileResults
