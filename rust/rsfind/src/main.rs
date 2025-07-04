@@ -16,6 +16,7 @@ pub mod finder;
 pub mod finderror;
 pub mod fileresult;
 pub mod fileresultformatter;
+pub mod fileresultsorter;
 pub mod findoptions;
 pub mod findsettings;
 pub mod sortby;

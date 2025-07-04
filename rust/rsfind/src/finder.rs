@@ -7,11 +7,11 @@ use std::time::SystemTime;
 use crate::common::log;
 use crate::fileresult::FileResult;
 use crate::fileresultformatter::FileResultFormatter;
+use crate::fileresultsorter::FileResultSorter;
 use crate::filetypes::{FileType, FileTypes};
 use crate::fileutil::FileUtil;
 use crate::finderror::FindError;
 use crate::findsettings::FindSettings;
-use crate::sortby::SortBy;
 use regex::Regex;
 
 pub struct Finder {
@@ -220,116 +220,6 @@ impl Finder {
         Some(file_result)
     }
 
-    fn cmp_by_path(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let path_cmp = fr1.parent().cmp(&fr2.parent());
-        if path_cmp.is_eq() {
-            return fr1.file_name().cmp(&fr2.file_name());
-        }
-        path_cmp
-    }
-
-    fn cmp_by_path_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let path_cmp = fr1.parent().to_lowercase().cmp(&fr2.parent().to_lowercase());
-        if path_cmp.is_eq() {
-            return fr1.file_name().to_lowercase().cmp(&fr2.file_name().to_lowercase());
-        }
-        path_cmp
-    }
-
-    fn cmp_by_name(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let name_cmp = fr1.file_name().cmp(&fr2.file_name());
-        if name_cmp.is_eq() {
-            return fr1.parent().cmp(&fr2.parent());
-        }
-        name_cmp
-    }
-
-    fn cmp_by_name_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let name_cmp = fr1.file_name().to_lowercase().cmp(&fr2.file_name().to_lowercase());
-        if name_cmp.is_eq() {
-            return fr1.parent().to_lowercase().cmp(&fr2.parent().to_lowercase());
-        }
-        name_cmp
-    }
-
-    fn cmp_by_size(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let size_cmp = fr1.file_size.cmp(&fr2.file_size);
-        if size_cmp.is_eq() {
-            return Self::cmp_by_path(fr1, fr2);
-        }
-        size_cmp
-    }
-
-    fn cmp_by_size_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let size_cmp = fr1.file_size.cmp(&fr2.file_size);
-        if size_cmp.is_eq() {
-            return Self::cmp_by_path_ci(fr1, fr2);
-        }
-        size_cmp
-    }
-
-    fn cmp_by_type(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let type_cmp = fr1.file_type.cmp(&fr2.file_type);
-        if type_cmp.is_eq() {
-            return Self::cmp_by_path(fr1, fr2);
-        }
-        type_cmp
-    }
-
-    fn cmp_by_type_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let type_cmp = fr1.file_type.cmp(&fr2.file_type);
-        if type_cmp.is_eq() {
-            return Self::cmp_by_path_ci(fr1, fr2);
-        }
-        type_cmp
-    }
-
-    fn cmp_by_last_mod(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let last_mod_cmp = fr1.last_mod.cmp(&fr2.last_mod);
-        if last_mod_cmp.is_eq() {
-            return Self::cmp_by_path(fr1, fr2);
-        }
-        last_mod_cmp
-    }
-
-    fn cmp_by_last_mod_ci(fr1: &FileResult, fr2: &FileResult) -> std::cmp::Ordering {
-        let last_mod_cmp = fr1.last_mod.cmp(&fr2.last_mod);
-        if last_mod_cmp.is_eq() {
-            return Self::cmp_by_path_ci(fr1, fr2);
-        }
-        last_mod_cmp
-    }
-
-    pub fn get_sort_comparator(&self) -> impl Fn(&FileResult, &FileResult) -> std::cmp::Ordering + use<> {
-        match (self.settings.sort_by(), self.settings.sort_case_insensitive(), self.settings.sort_descending()) {
-            (SortBy::FileName, false, false) => Self::cmp_by_name,
-            (SortBy::FileName, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_name(fr2, fr1),
-            (SortBy::FileName, true, false) => Self::cmp_by_name_ci,
-            (SortBy::FileName, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_name_ci(fr2, fr1),
-            (SortBy::FilePath, false, false) => Self::cmp_by_path,
-            (SortBy::FilePath, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_path(fr2, fr1),
-            (SortBy::FilePath, true, false) => Self::cmp_by_path_ci,
-            (SortBy::FilePath, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_path_ci(fr2, fr1),
-            (SortBy::FileSize, false, false) => Self::cmp_by_size,
-            (SortBy::FileSize, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_size(fr2, fr1),
-            (SortBy::FileSize, true, false) => Self::cmp_by_size_ci,
-            (SortBy::FileSize, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_size_ci(fr2, fr1),
-            (SortBy::FileType, false, false) => Self::cmp_by_type,
-            (SortBy::FileType, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_type(fr2, fr1),
-            (SortBy::FileType, true, false) => Self::cmp_by_type_ci,
-            (SortBy::FileType, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_type_ci(fr2, fr1),
-            (SortBy::LastMod, false, false) => Self::cmp_by_last_mod,
-            (SortBy::LastMod, false, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_last_mod(fr2, fr1),
-            (SortBy::LastMod, true, false) => Self::cmp_by_last_mod_ci,
-            (SortBy::LastMod, true, true) => |fr1: &FileResult, fr2: &FileResult| Self::cmp_by_last_mod_ci(fr2, fr1),
-        }
-    }
-
-    pub fn sort_file_results(&self, file_results: &mut Vec<FileResult>) {
-        let sort_comparator = self.get_sort_comparator();
-        file_results.sort_by(sort_comparator);
-    }
-
     fn rec_find_path(&self, dir_path: &PathBuf, min_depth: i32, max_depth: i32, current_depth: i32) -> Result<Vec<FileResult>, FindError> {
         let mut file_results: Vec<FileResult> = Vec::new();
         if max_depth > -1 && current_depth > max_depth {
@@ -398,7 +288,8 @@ impl Finder {
         for p in self.settings.paths().iter() {
             file_results.extend(self.find_path(p).unwrap_or(Vec::new()));
         }
-        self.sort_file_results(&mut file_results);
+        let file_result_sorter = FileResultSorter::new(self.settings.clone());
+        file_result_sorter.sort(&mut file_results);
         Ok(file_results)
     }
 }
