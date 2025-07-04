@@ -67,7 +67,7 @@ function LogError {
 $dotPaths = @('.', '..')
 
 function GetHomePath {
-    return [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile);
+    return [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
 }
 
 function ExpandPath {
@@ -972,6 +972,87 @@ class FileResultFormatter {
 #endregion
 
 
+#region FileResultSorter
+########################################
+# FileResultSorter
+########################################
+class FileResultSorter
+{
+    [FindSettings]$Settings
+
+    FileResultSorter([FindSettings]$settings)
+    {
+        $this.Settings = $settings
+    }
+
+    [Hashtable[]]GetOrderByPath() {
+        return @(
+            @{ Expression = { $_.File.DirectoryName } },
+            @{ Expression = { $_.File.Name } }
+        );
+    }
+
+    [Hashtable[]]GetOrderByName() {
+        return @(
+            @{ Expression = { $_.File.Name } },
+            @{ Expression = { $_.File.DirectoryName } }
+        );
+    }
+
+    [Hashtable[]]GetOrderBySize() {
+        return @( @{ Expression = { $_.File.Length } } ) + $this.GetOrderByPath()
+    }
+
+    [Hashtable[]]GetOrderByType() {
+        return @( @{ Expression = { $_.Type } } ) + $this.GetOrderByPath()
+    }
+
+    [Hashtable[]]GetOrderByLastMod() {
+        return @( @{ Expression = { $_.File.LastWriteTimeUtc } } ) + $this.GetOrderByPath()
+    }
+
+    [FileResult[]]Sort([FileResult[]]$fileResults) {
+        $order = @()
+        switch (SortByToName($this.Settings.SortBy)) {
+            'filename' {
+                $order = $this.GetOrderByName()
+            }
+            'filepath' {
+                $order = $this.GetOrderByPath()
+            }
+            'filesize' {
+                $order = $this.GetOrderBySize()
+            }
+            'filetype' {
+                $order = $this.GetOrderByType()
+            }
+            'lastmod' {
+                $order = $this.GetOrderByLastMod()
+            }
+            Default {
+                $order = $this.GetOrderByPath()
+            }
+        }
+
+        if ($this.Settings.SortDescending) {
+            if ($this.Settings.SortCaseInsensitive) {
+                return $fileResults |
+                        Sort-Object -Descending -Property $order
+            }
+            return $fileResults |
+                    Sort-Object -CaseSensitive -Descending -Property $order
+        }
+
+        if ($this.Settings.SortCaseInsensitive) {
+            return $fileResults |
+                    Sort-Object -Property $order
+        }
+        return $fileResults |
+                Sort-Object -CaseSensitive -Property $order
+    }
+}
+
+
 #region Finder
 ########################################
 # Finder
@@ -1257,48 +1338,12 @@ class Finder {
         foreach ($path in $this.Settings.Paths) {
             $fileResults += $this.GetPathResults($path)
         }
-        return $fileResults
-    }
-
-    [FileResult[]]SortFileResults([FileResult[]]$fileResults) {
-        $listToSort = @()
-        switch ($this.Settings.SortBy) {
-            [SortBy]::FileName {
-                $listToSort = $fileResults |
-                    ForEach-Object {[Tuple]::Create($_.File.Name, $_.File.DirectoryName, $_)}
-            }
-            [SortBy]::FileSize {
-                $listToSort = $fileResults |
-                    ForEach-Object {[Tuple]::Create($_.File.Length, $_.File.DirectoryName, $_.File.Name, $_)}
-            }
-            [SortBy]::FileType {
-                $listToSort = $fileResults |
-                    ForEach-Object {[Tuple]::Create($_.Type, $_.File.DirectoryName, $_.File.Name, $_)}
-            }
-            [SortBy]::LastMod {
-                $listToSort = $fileResults |
-                    ForEach-Object {[Tuple]::Create($_.File.LastWriteTimeUtc, $_.File.DirectoryName, $_.File.Name, $_)}
-            }
-            Default {
-                $listToSort = $fileResults |
-                    ForEach-Object {[Tuple]::Create($_.File.DirectoryName, $_.File.Name, $_)}
-            }
-        }
-        $sorted = @()
-        if ($this.Settings.SortCaseInsensitive -and $this.Settings.SortDescending) {
-            $sorted = $listToSort | Sort-Object -Descending | ForEach-Object {$_[-1]}
-        } elseif ($this.Settings.SortCaseInsensitive) {
-            $sorted = $listToSort | Sort-Object | ForEach-Object {$_[-1]}
-        } elseif ($this.Settings.SortDescending) {
-            $sorted = $listToSort | Sort-Object -Descending | ForEach-Object {$_[-1]}
-        } else {
-            $sorted = $listToSort | Sort-Object -CaseSensitive | ForEach-Object {$_[-1]}
-        }
-        return $sorted
+        $fileResultSorter = [FileResultSorter]::new($this.Settings)
+        return $fileResultSorter.Sort($fileResults)
     }
 
     [FileResult[]]Find() {
-        return $this.SortFileResults($this.GetFileResults())
+        return $this.GetFileResults()
     }
 
     [void]PrintMatchingDirs([FileResult[]]$fileResults, [FileResultFormatter]$formatter) {
