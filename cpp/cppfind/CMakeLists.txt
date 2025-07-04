@@ -55,6 +55,7 @@ target_sources(${PROJECT_NAME}
         include/FindSettings.h src/FindSettings.cpp
         include/FileResult.h src/FileResult.cpp
         include/FileResultFormatter.h src/FileResultFormatter.cpp
+        include/FileResultSorter.h src/FileResultSorter.cpp
         include/FindOption.h src/FindOption.cpp
         include/FindOptions.h src/FindOptions.cpp
         include/RegexPattern.h src/RegexPattern.cpp

@@ -356,6 +356,28 @@ namespace cppfind {
         [[nodiscard]] std::string format_file_result(const FileResult& result) const;
     };
 
+    // FileResultSorter.h
+    class FileResultSorter {
+    public:
+        explicit FileResultSorter(const FindSettings& settings);
+        explicit FileResultSorter(const std::unique_ptr<FindSettings>& settings_ptr);
+        FileResultSorter(FileResultSorter& other) = delete;
+        FileResultSorter(FileResultSorter&& other) = delete;
+        [[nodiscard]] FindSettings settings() const;
+        void sort(std::vector<FileResult>& file_results) const;
+    };
+
+    int cmp_file_results_by_path(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_path_ci(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_name(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_name_ci(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_size(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_size_ci(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_type(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_type_ci(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_lastmod(const FileResult& fr1, const FileResult& fr2);
+    int cmp_file_results_by_lastmod_ci(const FileResult& fr1, const FileResult& fr2);
+
     // FindOptions.h
     class FindOptions {
     public:

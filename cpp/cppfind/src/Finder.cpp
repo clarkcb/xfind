@@ -10,6 +10,7 @@
 #include <unistd.h>
 
 #include "FileResultFormatter.h"
+#include "FileResultSorter.h"
 
 namespace cppfind {
     Finder::Finder(const FindSettings& settings) : m_settings{settings} {
@@ -287,146 +288,9 @@ namespace cppfind {
             file_results.insert(file_results.end(), p_files.begin(), p_files.end());
         }
 
-        sort_file_results(file_results);
+        const auto file_result_sorter = FileResultSorter(m_settings);
+        file_result_sorter.sort(file_results);
         return file_results;
-    }
-
-    bool cmp_file_results_by_path(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.file_path().parent_path() == fr2.file_path().parent_path()) {
-            return (fr1.file_path().filename().compare(fr2.file_path().filename()) < 0);
-        }
-        return (fr1.file_path().parent_path().compare(fr2.file_path().parent_path()) < 0);
-    }
-
-    bool cmp_file_results_by_path_ci(const FileResult& fr1, const FileResult& fr2) {
-        const int path_cmp = strcasecmp(fr1.file_path().parent_path().c_str(), fr2.file_path().parent_path().c_str());
-        if (path_cmp == 0) {
-            return strcasecmp(fr1.file_path().filename().c_str(), fr2.file_path().filename().c_str()) < 0;
-        }
-        return path_cmp < 0;
-    }
-
-    bool cmp_file_results_by_name(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.file_path().filename() == fr2.file_path().filename()) {
-            return (fr1.file_path().parent_path() < fr2.file_path().parent_path());
-        }
-        return (fr1.file_path().filename() < fr2.file_path().filename());
-    }
-
-    bool cmp_file_results_by_name_ci(const FileResult& fr1, const FileResult& fr2) {
-        const int file_cmp = strcasecmp(fr1.file_path().filename().c_str(), fr2.file_path().filename().c_str());
-        if (file_cmp == 0) {
-            return strcasecmp(fr1.file_path().parent_path().c_str(), fr2.file_path().parent_path().c_str()) < 0;
-        }
-        return file_cmp < 0;
-    }
-
-    bool cmp_file_results_by_size(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.file_size() == fr2.file_size()) {
-            return cmp_file_results_by_path(fr1, fr2);
-        }
-        return (fr1.file_size() < fr2.file_size());
-    }
-
-    bool cmp_file_results_by_size_ci(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.file_type() == fr2.file_type()) {
-            return cmp_file_results_by_path_ci(fr1, fr2);
-        }
-        return (fr1.file_type() < fr2.file_type());
-    }
-
-    bool cmp_file_results_by_type(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.file_type() == fr2.file_type()) {
-            return cmp_file_results_by_path(fr1, fr2);
-        }
-        return (fr1.file_type() < fr2.file_type());
-    }
-
-    bool cmp_file_results_by_type_ci(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.file_type() == fr2.file_type()) {
-            return cmp_file_results_by_path_ci(fr1, fr2);
-        }
-        return (fr1.file_type() < fr2.file_type());
-    }
-
-    bool cmp_file_results_by_lastmod(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.last_mod() == fr2.last_mod()) {
-            return cmp_file_results_by_path(fr1, fr2);
-        }
-        return (fr1.last_mod() < fr2.last_mod());
-    }
-
-    bool cmp_file_results_by_lastmod_ci(const FileResult& fr1, const FileResult& fr2) {
-        if (fr1.last_mod() == fr2.last_mod()) {
-            return cmp_file_results_by_path_ci(fr1, fr2);
-        }
-        return (fr1.last_mod() < fr2.last_mod());
-    }
-
-    std::function<bool(FileResult&, FileResult&)> get_sort_comparator(const FindSettings& settings) {
-        if (settings.sort_descending()) {
-            if (settings.sort_case_insensitive()) {
-                switch (settings.sort_by()) {
-                    case SortBy::FILENAME:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_name_ci(fr2, fr1); };
-                    case SortBy::FILEPATH:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_path_ci(fr2, fr1); };
-                    case SortBy::FILESIZE:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_size_ci(fr2, fr1); };
-                    case SortBy::FILETYPE:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_type_ci(fr2, fr1); };
-                    case SortBy::LASTMOD:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_lastmod_ci(fr2, fr1); };
-                }
-            } else {
-                switch (settings.sort_by()) {
-                    case SortBy::FILENAME:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_name(fr2, fr1); };
-                    case SortBy::FILEPATH:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_path(fr2, fr1); };
-                    case SortBy::FILESIZE:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_size(fr2, fr1); };
-                    case SortBy::FILETYPE:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_type(fr2, fr1); };
-                    case SortBy::LASTMOD:
-                        return [](const FileResult& fr1, const FileResult& fr2) { return cmp_file_results_by_lastmod(fr2, fr1); };
-                }
-            }
-        } else {
-            if (settings.sort_case_insensitive()) {
-                switch (settings.sort_by()) {
-                    case SortBy::FILENAME:
-                        return cmp_file_results_by_name_ci;
-                    case SortBy::FILEPATH:
-                        return cmp_file_results_by_path_ci;
-                    case SortBy::FILESIZE:
-                        return cmp_file_results_by_size_ci;
-                    case SortBy::FILETYPE:
-                        return cmp_file_results_by_type_ci;
-                    case SortBy::LASTMOD:
-                        return cmp_file_results_by_lastmod_ci;
-                }
-            } else {
-                switch (settings.sort_by()) {
-                    case SortBy::FILENAME:
-                        return cmp_file_results_by_name;
-                    case SortBy::FILEPATH:
-                        return cmp_file_results_by_path;
-                    case SortBy::FILESIZE:
-                        return cmp_file_results_by_size;
-                    case SortBy::FILETYPE:
-                        return cmp_file_results_by_type;
-                    case SortBy::LASTMOD:
-                        return cmp_file_results_by_lastmod;
-                }
-            }
-        }
-        return cmp_file_results_by_lastmod;
-    }
-
-    void Finder::sort_file_results(std::vector<FileResult>& file_results) const {
-        const auto sort_comparator = get_sort_comparator(m_settings);
-        std::ranges::sort(file_results, sort_comparator);
     }
 
     std::vector<std::filesystem::path> get_matching_dir_paths(const std::vector<FileResult>& file_results) {
