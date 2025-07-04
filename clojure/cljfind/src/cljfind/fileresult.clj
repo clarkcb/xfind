@@ -34,37 +34,50 @@
   (str (if (empty? (:containers fr)) "" (str (string/join "!" (:containers fr)) "!"))
        (.toString (:path fr))))
 
-(defn cmp-strings [^String str1 ^String str2 ^FindSettings settings]
-  (let [s1 (if (nil? str1) "" str1)
-        s2 (if (nil? str2) "" str2)]
-    (if (:sort-case-insensitive settings)
-      (compare (lower-case s1) (lower-case s2))
-      (compare s1 s2))))
+(defn get-cmp-elems [^FindSettings settings]
+  "get an elem comparator"
+  [^FindSettings settings]
+  (let [rev-factor (if (:sort-descending settings) -1 1)]
+    (fn [elem1 elem2]
+      (* rev-factor (compare elem1 elem2)))))
+
+(defn get-cmp-strings [^FindSettings settings]
+  "get a filepath comparator"
+  [^FindSettings settings]
+  (let [to-case (if (:sort-case-insensitive settings) lower-case identity)
+        cmp-elems (get-cmp-elems settings)]
+    (fn [^String str1 ^String str2]
+      (let [s1 (if (nil? str1) "" str1)
+            s2 (if (nil? str2) "" str2)]
+        (cmp-elems (to-case s1) (to-case s2))))))
 
 (defn get-comp-by-path
   "get a filepath comparator"
   [^FindSettings settings]
-  (fn [^FileResult fr1 ^FileResult fr2]
-    (let [pathcmp (cmp-strings (get-parent-name (:path fr1)) (get-parent-name (:path fr2)) settings)]
-      (if (= 0 pathcmp)
-        (cmp-strings (get-path-name (:path fr1)) (get-path-name (:path fr2)) settings)
-        pathcmp))))
+  (let [cmp-strings (get-cmp-strings settings)]
+    (fn [^FileResult fr1 ^FileResult fr2]
+      (let [pathcmp (cmp-strings (get-parent-name (:path fr1)) (get-parent-name (:path fr2)))]
+        (if (= 0 pathcmp)
+          (cmp-strings (get-path-name (:path fr1)) (get-path-name (:path fr2)))
+          pathcmp)))))
 
 (defn get-comp-by-name
   "get a filename comparator"
   [^FindSettings settings]
-  (fn [^FileResult fr1 ^FileResult fr2]
-    (let [namecmp (cmp-strings (get-path-name (:path fr1)) (get-path-name (:path fr2)) settings)]
-      (if (= 0 namecmp)
-        (cmp-strings (get-parent-name (:path fr1)) (get-parent-name (:path fr2)) settings)
-        namecmp))))
+  (let [cmp-strings (get-cmp-strings settings)]
+    (fn [^FileResult fr1 ^FileResult fr2]
+      (let [namecmp (cmp-strings (get-path-name (:path fr1)) (get-path-name (:path fr2)))]
+        (if (= 0 namecmp)
+          (cmp-strings (get-parent-name (:path fr1)) (get-parent-name (:path fr2)))
+          namecmp)))))
 
 (defn get-comp-by-size
   "get a filesize comparator"
   [^FindSettings settings]
-  (let [comp-by-path (get-comp-by-path settings)]
+  (let [comp-by-path (get-comp-by-path settings)
+        cmp-elems (get-cmp-elems settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [sizecmp (compare (:file-size fr1) (:file-size fr2))]
+      (let [sizecmp (cmp-elems (:file-size fr1) (:file-size fr2))]
         (if (= 0 sizecmp)
           (comp-by-path fr1 fr2)
           sizecmp)))))
@@ -72,9 +85,10 @@
 (defn get-comp-by-type
   "get a file-type comparator"
   [^FindSettings settings]
-  (let [comp-by-path (get-comp-by-path settings)]
+  (let [comp-by-path (get-comp-by-path settings)
+        cmp-elems (get-cmp-elems settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [typecmp (compare (to-name (:file-type fr1)) (to-name (:file-type fr2)))]
+      (let [typecmp (cmp-elems (to-name (:file-type fr1)) (to-name (:file-type fr2)))]
         (if (= 0 typecmp)
           (comp-by-path fr1 fr2)
           typecmp)))))
@@ -82,15 +96,16 @@
 (defn get-comp-by-lastmod
   "get a lastmod comparator"
   [^FindSettings settings]
-  (let [comp-by-path (get-comp-by-path settings)]
+  (let [comp-by-path (get-comp-by-path settings)
+        cmp-elems (get-cmp-elems settings)]
     (fn [^FileResult fr1 ^FileResult fr2]
-      (let [res (compare (.toMillis (:last-mod fr1)) (.toMillis (:last-mod fr2)))]
+      (let [res (cmp-elems (.toMillis (:last-mod fr1)) (.toMillis (:last-mod fr2)))]
         (if (= 0 res)
           (comp-by-path fr1 fr2)
           res)))))
 
-(defn get-comparator
-  "get a comparator for sorting"
+(defn get-file-result-comparator
+  "get a comparator for sorting file results"
   [^FindSettings settings]
   (let [sort-by (:sort-by settings)]
     (cond
@@ -105,14 +120,11 @@
       :else
       (get-comp-by-path settings))))
 
-(defn sort-results
+(defn sort-file-results
   "sorts file results according to settings"
   [results ^FindSettings settings]
-  (let [sort-fn (get-comparator settings)
-        sorted-results (sort sort-fn results)]
-    (if (:sort-descending settings)
-      (reverse sorted-results)
-      sorted-results)))
+  (let [file-result-comparator (get-file-result-comparator settings)]
+    (sort file-result-comparator results)))
 
 (defn colorize-string ^String [^String s start-index end-index]
   (let [prefix (if (> start-index 0) (subs s 0 start-index) "")

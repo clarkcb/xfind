@@ -2,7 +2,7 @@
   (:use [clojure.java.io :only (file reader)])
   (:require [clojure.test :refer :all])
   (:use [clojure.string :as str :only (join)]
-        [cljfind.fileresult :only (new-file-result file-result-path sort-results)]
+        [cljfind.fileresult :only (new-file-result file-result-path sort-file-results)]
         [cljfind.fileutil :only (get-path-name to-path)]
         [cljfind.findsettings :only (DEFAULT-FIND-SETTINGS)]))
 
@@ -31,7 +31,7 @@
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
         settings (assoc DEFAULT-FIND-SETTINGS :sort-by :filepath)
-        sorted-results (sort-results results settings)
+        sorted-results (sort-file-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path"
              (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 0)))))
@@ -47,7 +47,7 @@
                  ]
         with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filepath)
         settings (assoc with-sort-by :sort-case-insensitive true)
-        sorted-results (sort-results results settings)
+        sorted-results (sort-file-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path-case-insensitive"
              (is (= "abc.txt" (get-path-name (:path (nth sorted-results 0)))))
@@ -63,7 +63,7 @@
                  ]
         with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filepath)
         settings (assoc with-sort-by :sort-descending true)
-        sorted-results (sort-results results settings)
+        sorted-results (sort-file-results results settings)
         ]
     (testing "test-file-result-sort-results-by-path-sort-descending"
              (is (= "tuv.txt" (get-path-name (:path (nth sorted-results 0)))))
@@ -78,7 +78,7 @@
                  (new-file-result (to-path "hello/tuv.txt") :text 0 nil)
                  ]
         settings (assoc DEFAULT-FIND-SETTINGS :sort-by :filename)
-        sorted-results (sort-results results settings)
+        sorted-results (sort-file-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename"
              (is (= "PQR.txt" (get-path-name (:path (nth sorted-results 0)))))
@@ -94,7 +94,7 @@
                  ]
         with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filename)
         settings (assoc with-sort-by :sort-case-insensitive true)
-        sorted-results (sort-results results settings)
+        sorted-results (sort-file-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename-case-insensitive"
              (is (= "abc.txt" (get-path-name (:path (nth sorted-results 0)))))
@@ -110,7 +110,7 @@
                  ]
         with-sort-by (assoc DEFAULT-FIND-SETTINGS :sort-by :filename)
         settings (assoc with-sort-by :sort-descending true)
-        sorted-results (sort-results results settings)
+        sorted-results (sort-file-results results settings)
         ]
     (testing "test-file-result-sort-results-by-filename-sort-descending"
              (is (= "xyz.txt" (get-path-name (:path (nth sorted-results 0)))))

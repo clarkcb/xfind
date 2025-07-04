@@ -21,7 +21,7 @@
            (cljfind.findsettings FindSettings))
   (:use [cljfind.common :only (log-msg)]
         [cljfind.fileresult :only
-         (new-file-result file-result-path get-dir-path-formatter get-file-result-formatter sort-results)]
+         (new-file-result file-result-path get-dir-path-formatter get-file-result-formatter sort-file-results)]
         [cljfind.filetypes :only (get-file-type)]
         [cljfind.fileutil :only
           (exists-path? expand-path get-path-ext get-path-name get-parent-name hidden-dir-path? hidden-file-path?
@@ -278,7 +278,8 @@
         []))))
 
 (defn get-file-results [^FindSettings settings]
-  (sort-results (mapcat #(get-file-results-for-path settings %) (:paths settings)) settings))
+  (sort-file-results
+    (mapcat #(get-file-results-for-path settings %) (:paths settings)) settings))
 
 (defn find-files [^FindSettings settings]
   (let [errs (validate-settings settings)]
