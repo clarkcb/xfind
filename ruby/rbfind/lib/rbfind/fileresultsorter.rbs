@@ -11,7 +11,7 @@ module RbFind
 
     private
 
-    def get_sort_comparator: -> Proc
+    def get_file_result_comparator: -> Proc
 
   end
 end
