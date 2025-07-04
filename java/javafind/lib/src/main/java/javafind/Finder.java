@@ -237,34 +237,6 @@ public class Finder {
         return emptyFileResult;
     }
 
-    public final Comparator<FileResult> getFileResultComparator() {
-        var sortBy = settings.getSortBy() == null ? SortBy.FILEPATH : settings.getSortBy();
-        if (settings.getSortDescending()) {
-            return switch (sortBy) {
-                case FILENAME -> (FileResult fr1, FileResult fr2) -> fr2.compareByName(fr1, settings.getSortCaseInsensitive());
-                case FILESIZE -> (FileResult fr1, FileResult fr2) -> fr2.compareBySize(fr1, settings.getSortCaseInsensitive());
-                case FILETYPE -> (FileResult fr1, FileResult fr2) -> fr2.compareByType(fr1, settings.getSortCaseInsensitive());
-                case LASTMOD -> (FileResult fr1, FileResult fr2) -> fr2.compareByLastMod(fr1, settings.getSortCaseInsensitive());
-                default -> (FileResult fr1, FileResult fr2) -> fr2.compareByPath(fr1, settings.getSortCaseInsensitive());
-            };
-        }
-        return switch (sortBy) {
-            case FILENAME -> (FileResult fr1, FileResult fr2) -> fr1.compareByName(fr2, settings.getSortCaseInsensitive());
-            case FILESIZE -> (FileResult fr1, FileResult fr2) -> fr1.compareBySize(fr2, settings.getSortCaseInsensitive());
-            case FILETYPE -> (FileResult fr1, FileResult fr2) -> fr1.compareByType(fr2, settings.getSortCaseInsensitive());
-            case LASTMOD -> (FileResult fr1, FileResult fr2) -> fr1.compareByLastMod(fr2, settings.getSortCaseInsensitive());
-            default -> (FileResult fr1, FileResult fr2) -> fr1.compareByPath(fr2, settings.getSortCaseInsensitive());
-        };
-    }
-
-    public final void sortFileResults(List<FileResult> fileResults) {
-        if (fileResults.isEmpty()) {
-            return;
-        }
-        var fileResultComparator = getFileResultComparator();
-        fileResults.sort(fileResultComparator);
-    }
-
     private List<FileResult> recFindPath(final Path filePath, int minDepth, int maxDepth, int currentDepth) {
         var pathResults = new ArrayList<FileResult>();
         var recurse = true;
@@ -341,11 +313,9 @@ public class Finder {
 
         try {
             allOfFuture.join(); // Wait for all futures to complete
-            var fileResultComparator = getFileResultComparator();
             return futures.stream()
                     .map(CompletableFuture::join)
                     .flatMap(List::stream)
-                    .sorted(fileResultComparator)
                     .toList();
         } catch (CompletionException e) {
             throw new FindException(e.getCause().getMessage());
@@ -357,10 +327,11 @@ public class Finder {
         // Don't bother with async unless we have more than one path
         if (settings.getPaths().size() == 1) {
             fileResults = findPath(settings.getPaths().iterator().next());
-            sortFileResults(fileResults);
         } else {
             fileResults = findAsync();
         }
+        var fileResultSorter = new FileResultSorter(settings);
+        fileResultSorter.sort(fileResults);
         return fileResults;
     }
 
