@@ -1,6 +1,7 @@
 use std::fmt;
 use regex::Regex;
 
+use crate::common::get_regex_vec_string;
 use crate::filetypes;
 use crate::sortby::SortBy;
 
@@ -430,20 +431,20 @@ pub fn add_pattern(pattern: String, patterns: &mut Vec<Regex>) {
     patterns.push(Regex::new(pattern.as_str()).unwrap());
 }
 
-fn get_regex_vec_string(vec: &Vec<Regex>) -> String {
-    let patterns: Vec<String> = vec.iter().map(|r| r.to_string()).collect();
-    let mut s = String::from("[");
-    let mut i = 0;
-    for pattern in patterns.iter() {
-        if i > 0 {
-            s.push_str(", ");
-        }
-        s.push_str(format!("{:?}", pattern).as_str());
-        i += 1;
-    }
-    s.push_str("]");
-    s
-}
+// fn get_regex_vec_string(vec: &Vec<Regex>) -> String {
+//     let patterns: Vec<String> = vec.iter().map(|r| r.to_string()).collect();
+//     let mut s = String::from("[");
+//     let mut i = 0;
+//     for pattern in patterns.iter() {
+//         if i > 0 {
+//             s.push_str(", ");
+//         }
+//         s.push_str(format!("{:?}", pattern).as_str());
+//         i += 1;
+//     }
+//     s.push_str("]");
+//     s
+// }
 
 #[cfg(test)]
 mod tests {
