@@ -1,9 +1,6 @@
 use chrono::NaiveDate;
 use chrono::format::ParseResult;
-use encoding::EncodingRef;
-use encoding::label::encoding_from_whatwg_label;
 use regex::Regex;
-use crate::finderror::FindError;
 
 // logging
 pub fn log(message: &str) {
@@ -34,11 +31,4 @@ pub fn get_regex_vec_string(vec: &Vec<Regex>) -> String {
     }
     s.push_str("]");
     s
-}
-
-pub fn encoding_for_name(enc_name: &str) -> Result<EncodingRef, FindError> {
-    match encoding_from_whatwg_label(enc_name) {
-        Some(enc) => Ok(enc),
-        None => Err(FindError::new(format!("Invalid text encoding: {}", enc_name).as_str()))
-    }
 }
