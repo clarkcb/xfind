@@ -11,6 +11,16 @@ module RbFind
 
     private
 
+    def get_file_name_comparator: -> Proc
+
+    def get_file_path_comparator: -> Proc
+
+    def get_file_size_comparator: -> Proc
+
+    def get_file_type_comparator: -> Proc
+
+    def get_last_mod_comparator: -> Proc
+
     def get_file_result_comparator: -> Proc
 
   end
