@@ -12,6 +12,7 @@ module HsFind.FileResult
   , formatFileName
   , formatFilePath
   , formatFileResult
+  , getCompareFileResultsFunc
   , newFileResult
   , newFileResultWithSize
   , newFileResultWithSizeAndLastMod
