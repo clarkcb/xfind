@@ -15,6 +15,7 @@ import os
 import sys
 from collections import deque
 from io import StringIO
+from typing import Any
 
 from .common import parse_datetime_str
 from .findexception import FindException
@@ -207,46 +208,64 @@ class FindOptions:
             if short_arg:
                 self.__long_arg_dict[short_arg] = long_arg
 
-    def update_settings_from_json(self, settings: FindSettings, json_str: str):
-        """Read settings from a JSON string"""
-        json_dict = json.loads(json_str)
+    def update_arg_dict_from_dict(self, arg_dict: dict[str, Any], other_dict: dict[str, Any]):
+        """Update arg_dict from another dict"""
         # keys are sorted so that output is consistent across all versions
-        keys = sorted(json_dict.keys())
-        invalid_keys = [k for k in keys if k not in self.__long_arg_dict]
+        key_dict = {self.__long_arg_dict[k]: k for k in sorted(other_dict.keys())}
+        invalid_keys = [k for k in key_dict.keys() if k not in self.__long_arg_dict]
         if invalid_keys:
             raise FindException(f'Invalid option: {invalid_keys[0]}')
-        for arg in keys:
+        for arg in key_dict.keys():
+            orig_arg = key_dict[arg]
             if arg in self.__bool_action_dict:
-                if json_dict[arg] is True or json_dict[arg] is False:
-                    self.__bool_action_dict[arg](json_dict[arg], settings)
+                if other_dict[arg] is True or other_dict[arg] is False:
+                    arg_dict[arg] = other_dict[arg]
                 else:
-                    raise FindException(f'Invalid value for option: {arg}')
+                    raise FindException(f'Invalid value for option: {orig_arg}')
             elif arg in self.__str_action_dict:
-                if type(json_dict[arg]) == str:
-                    self.__str_action_dict[arg](json_dict[arg], settings)
-                elif type(json_dict[arg]) == list:
-                    for item in json_dict[arg]:
+                if arg not in arg_dict:
+                    arg_dict[arg] = []
+                if type(other_dict[arg]) == str:
+                    arg_dict[arg].append(other_dict[arg])
+                elif type(other_dict[arg]) == list:
+                    for item in other_dict[arg]:
                         if type(item) == str:
-                            self.__str_action_dict[arg](item, settings)
+                            arg_dict[arg].append(item)
                         else:
-                            raise FindException(f'Invalid value for option: {arg}')
+                            raise FindException(f'Invalid value for option: {orig_arg}')
                 else:
-                    raise FindException(f'Invalid value for option: {arg}')
+                    raise FindException(f'Invalid value for option: {orig_arg}')
             elif arg in self.__dt_action_dict:
-                if type(json_dict[arg]) == str:
-                    self.__dt_action_dict[arg](parse_datetime_str(json_dict[arg]), settings)
+                if type(other_dict[arg]) == str:
+                    arg_dict[arg] = parse_datetime_str(other_dict[arg])
                 else:
-                    raise FindException(f'Invalid value for option: {arg}')
+                    raise FindException(f'Invalid value for option: {orig_arg}')
             elif arg in self.__int_action_dict:
-                if type(json_dict[arg]) == int:
-                    self.__int_action_dict[arg](json_dict[arg], settings)
+                if type(other_dict[arg]) == int:
+                    arg_dict[arg] = other_dict[arg]
                 else:
-                    raise FindException(f'Invalid value for option: {arg}')
+                    raise FindException(f'Invalid value for option: {orig_arg}')
             else:
-                raise FindException(f'Invalid option: {arg}')
+                raise FindException(f'Invalid option: {orig_arg}')
 
-    def update_settings_from_file(self, settings: FindSettings, file_path: str):
-        """Read settings from a JSON file"""
+    def arg_dict_from_dict(self, other_dict: dict[str, Any]):
+        arg_dict = {}
+        self.update_arg_dict_from_dict(arg_dict, other_dict)
+        return arg_dict
+
+    def update_arg_dict_from_json(self, arg_dict: dict[str, Any], json_str: str):
+        """Update arg dict from a JSON string"""
+        json_dict = json.loads(json_str)
+        self.update_arg_dict_from_dict(arg_dict, json_dict)
+
+    def arg_dict_from_json(self, json_str: str) -> dict[str, Any]:
+        """Read args from a JSON string into dict"""
+        arg_dict = {}
+        self.update_arg_dict_from_json(arg_dict, json_str)
+        return arg_dict
+
+    def update_arg_dict_from_file(self, arg_dict: dict[str, Any], file_path: str):
+        """Read arg dict from a JSON file"""
         expanded_path = os.path.expanduser(file_path)
         if not os.path.exists(expanded_path):
             raise FindException(f'Settings file not found: {file_path}')
@@ -255,12 +274,18 @@ class FindOptions:
         with open(expanded_path, encoding='UTF-8') as f:
             json_str = f.read()
         try:
-            self.update_settings_from_json(settings, json_str)
+            self.update_arg_dict_from_json(arg_dict, json_str)
         except json.JSONDecodeError:
             raise FindException(f'Unable to parse JSON in settings file: {file_path}')
 
-    def update_settings_from_args(self, settings: FindSettings, args: list[str]):
-        """Updates a FindSettings instance from a given list of args"""
+    def arg_dict_from_file(self, file_path: str) -> dict[str, Any]:
+        """Read args from a JSON file into dict"""
+        arg_dict = {}
+        self.update_arg_dict_from_file(arg_dict, file_path)
+        return arg_dict
+
+    def update_arg_dict_from_args(self, arg_dict: dict[str, Any], args: list[str]):
+        """Update arg dict from a given list of args"""
         arg_deque = deque(args)
         while arg_deque:
             arg = arg_deque.popleft()
@@ -274,55 +299,122 @@ class FindOptions:
                             arg_name = arg_nv[0]
                             if arg_nv[1]:
                                 arg_deque.appendleft(arg_nv[1])
-                        arg_names.append(arg_name)
-                elif len(arg) > 1:
-                    arg_names.extend(list(arg[1:]))
-                for a in arg_names:
-                    if a in self.__long_arg_dict:
-                        long_arg = self.__long_arg_dict[a]
-                        if long_arg in self.__bool_action_dict:
-                            self.__bool_action_dict[long_arg](True, settings)
-                            if long_arg in ('help', 'version'):
-                                return
-                        elif long_arg in self.__str_action_dict or \
-                                long_arg in self.__dt_action_dict or \
-                                long_arg in self.__int_action_dict or \
-                                long_arg == 'settings-file':
-                            if arg_deque:
-                                arg_val = arg_deque.popleft()
-                                if long_arg in self.__str_action_dict:
-                                    self.__str_action_dict[long_arg](
-                                        arg_val, settings)
-                                elif long_arg in self.__dt_action_dict:
-                                    self.__dt_action_dict[long_arg](
-                                        parse_datetime_str(arg_val), settings)
-                                elif long_arg in self.__int_action_dict:
-                                    invalid_int = False
-                                    i = 0
-                                    try:
-                                        i = int(arg_val)
-                                    except ValueError:
-                                        invalid_int = True
-                                    else:
-                                        if i < 0:
-                                            invalid_int = True
-                                    if invalid_int:
-                                        err = f'Invalid value for option {arg}: {arg_val}'
-                                        raise FindException(err)
-                                    self.__int_action_dict[long_arg](i, settings)
-                                elif long_arg == 'settings-file':
-                                    self.update_settings_from_file(settings, arg_val)
-                            else:
-                                raise FindException(f'Missing value for option {a}')
+                        if arg_name in self.__long_arg_dict:
+                            arg_names.append(arg_name)
                         else:
-                            raise FindException(f'Invalid option: {a}')
+                            raise FindException(f'Invalid option: {arg_name}')
                     else:
-                        raise FindException(f'Invalid option: {a}')
+                        raise FindException(f'Invalid option: {arg}')
+                elif len(arg) > 1:
+                    for c in arg[1:]:
+                        if c in self.__long_arg_dict:
+                            arg_names.append(self.__long_arg_dict[c])
+                        else:
+                            raise FindException(f'Invalid option: {c}')
+                else:
+                    raise FindException(f'Invalid option: {arg}')
+                for arg_name in arg_names:
+                    if arg_name in self.__bool_action_dict:
+                        arg_dict[arg_name] = True
+                        if arg_name in ('help', 'version'):
+                            return
+                    elif arg_name in self.__str_action_dict or \
+                            arg_name in self.__dt_action_dict or \
+                            arg_name in self.__int_action_dict or \
+                            arg_name == 'settings-file':
+                        if arg_deque:
+                            arg_val = arg_deque.popleft()
+                            if arg_name in self.__str_action_dict:
+                                if arg_name not in arg_dict:
+                                    arg_dict[arg_name] = []
+                                arg_dict[arg_name].append(arg_val)
+                            elif arg_name in self.__dt_action_dict:
+                                arg_dict[arg_name] = parse_datetime_str(arg_val)
+                            elif arg_name in self.__int_action_dict:
+                                invalid_int = False
+                                i = 0
+                                try:
+                                    i = int(arg_val)
+                                except ValueError:
+                                    invalid_int = True
+                                else:
+                                    if i < 0:
+                                        invalid_int = True
+                                if invalid_int:
+                                    err = f'Invalid value for option {arg}: {arg_val}'
+                                    raise FindException(err)
+                                arg_dict[arg_name] = i
+                            elif arg_name == 'settings-file':
+                                self.update_arg_dict_from_file(arg_dict, arg_val)
+                        else:
+                            raise FindException(f'Missing value for option {arg_name}')
+                    else:
+                        raise FindException(f'Invalid option: {arg_name}')
             else:
-                settings.add_path(arg)
+                # if not an option, then it is a path
+                if 'path' not in arg_dict:
+                    arg_dict['path'] = []
+                arg_dict['path'].append(arg)
+
+    def arg_dict_from_args(self, args: list[str]) -> dict[str, Any]:
+        """Return a dict of arguments from a given list of args"""
+        arg_dict = {}
+        self.update_arg_dict_from_args(arg_dict, args)
+        return arg_dict
+
+    def update_settings_from_arg_dict(self, settings: FindSettings, arg_dict: dict[str, Any]):
+        """Update settings from a dict"""
+        for arg in arg_dict.keys():
+            if arg in self.__bool_action_dict:
+                self.__bool_action_dict[arg](arg_dict[arg], settings)
+            elif arg in self.__str_action_dict:
+                for item in arg_dict[arg]:
+                    self.__str_action_dict[arg](item, settings)
+            elif arg in self.__dt_action_dict:
+                self.__dt_action_dict[arg](arg_dict[arg], settings)
+            elif arg in self.__int_action_dict:
+                self.__int_action_dict[arg](arg_dict[arg], settings)
+            elif arg == 'settingsfile':
+                self.update_settings_from_file(settings, arg_dict[arg])
+            else:
+                raise FindException(f'Invalid option: {arg}')
+
+    def find_settings_from_arg_dict(self, arg_dict: dict[str, Any]) -> FindSettings:
+        """Read settings from a dict"""
+        settings = FindSettings()
+        self.update_settings_from_arg_dict(settings, arg_dict)
+        return settings
+
+    def update_settings_from_json(self, settings: FindSettings, json_str: str):
+        """Update settings from a JSON string"""
+        json_dict = json.loads(json_str)
+        arg_dict = self.arg_dict_from_dict(json_dict)
+        self.update_settings_from_arg_dict(settings, arg_dict)
+
+    def find_settings_from_json(self, json_str: str) -> FindSettings:
+        """Read settings from a JSON string"""
+        settings = FindSettings()
+        self.update_settings_from_json(settings, json_str)
+        return settings
+
+    def update_settings_from_file(self, settings: FindSettings, file_path: str):
+        """Update settings from a JSON file"""
+        arg_dict = self.arg_dict_from_file(file_path)
+        self.update_settings_from_arg_dict(settings, arg_dict)
+
+    def find_settings_from_file(self, file_path: str) -> FindSettings:
+        """Read settings from a JSON file"""
+        settings = FindSettings()
+        self.update_settings_from_file(settings, file_path)
+        return settings
+
+    def update_settings_from_args(self, settings: FindSettings, args: list[str]):
+        """Update settings from a given list of args"""
+        arg_dict = self.arg_dict_from_args(args)
+        self.update_settings_from_arg_dict(settings, arg_dict)
 
     def find_settings_from_args(self, args: list[str]) -> FindSettings:
-        """Returns a FindSettings instance for a given list of args"""
+        """Read settings from a given list of args"""
         # default print_files to True since running from command line
         settings = FindSettings(print_files=True)
         self.update_settings_from_args(settings, args)
