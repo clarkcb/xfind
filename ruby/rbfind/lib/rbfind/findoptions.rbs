@@ -11,11 +11,17 @@ module RbFind
 
     def initialize: () -> void
 
+    def arg_hash_from_args:(Array[String] args) -> Hash[Symbol, untyped]
+
+    def update_settings_from_arg_hash: (FindSettings settings, Hash[Symbol, untyped] args_hash) -> void
+
+    def update_settings_from_args: (FindSettings settings, Array[String] args) -> void
+
     def find_settings_from_args: (Array[String] args) -> FindSettings
 
-    def update_settings_from_json: (String json, FindSettings settings) -> void
+    def update_settings_from_json: (FindSettings settings, String json) -> void
 
-    def update_settings_from_file: (String file_path, FindSettings settings) -> void
+    def update_settings_from_file: (FindSettings settings, String file_path) -> void
 
     def get_usage_string: () -> String
 
