@@ -15,11 +15,10 @@ class FindOption:
 
     __slots__ = ['short_arg', 'long_arg', 'desc', 'func']
 
-    def __init__(self, short_arg: str, long_arg: str, desc: str, func):
+    def __init__(self, short_arg: str, long_arg: str, desc: str):
         self.short_arg = short_arg
         self.long_arg = long_arg
         self.desc = desc
-        self.func = func
 
     @property
     def sort_arg(self):

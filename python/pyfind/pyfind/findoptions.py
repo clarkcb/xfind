@@ -15,7 +15,6 @@ import os
 import sys
 from collections import deque
 from io import StringIO
-from typing import List
 
 from .common import parse_datetime_str
 from .findexception import FindException
@@ -197,24 +196,18 @@ class FindOptions:
             if 'short' in find_option_obj:
                 short_arg = find_option_obj['short']
             desc = find_option_obj['desc']
-            if long_arg in self.__bool_action_dict:
-                func = self.__bool_action_dict[long_arg]
-            elif long_arg in self.__str_action_dict:
-                func = self.__str_action_dict[long_arg]
-            elif long_arg in self.__dt_action_dict:
-                func = self.__dt_action_dict[long_arg]
-            elif long_arg in self.__int_action_dict:
-                func = self.__int_action_dict[long_arg]
-            elif long_arg == 'settings-file':
-                func = self.update_settings_from_file
-            else:
+            if long_arg not in self.__bool_action_dict and \
+                    long_arg not in self.__str_action_dict and \
+                    long_arg not in self.__dt_action_dict and \
+                    long_arg not in self.__int_action_dict and \
+                    long_arg != 'settings-file':
                 raise FindException(f'Unknown find option: {long_arg}')
-            self.options.append(FindOption(short_arg, long_arg, desc, func))
+            self.options.append(FindOption(short_arg, long_arg, desc))
             self.__long_arg_dict[long_arg] = long_arg
             if short_arg:
                 self.__long_arg_dict[short_arg] = long_arg
 
-    def update_settings_from_json(self, json_str: str, settings: FindSettings):
+    def update_settings_from_json(self, settings: FindSettings, json_str: str):
         """Read settings from a JSON string"""
         json_dict = json.loads(json_str)
         # keys are sorted so that output is consistent across all versions
@@ -252,7 +245,7 @@ class FindOptions:
             else:
                 raise FindException(f'Invalid option: {arg}')
 
-    def update_settings_from_file(self, file_path: str, settings: FindSettings):
+    def update_settings_from_file(self, settings: FindSettings, file_path: str):
         """Read settings from a JSON file"""
         expanded_path = os.path.expanduser(file_path)
         if not os.path.exists(expanded_path):
@@ -262,11 +255,11 @@ class FindOptions:
         with open(expanded_path, encoding='UTF-8') as f:
             json_str = f.read()
         try:
-            self.update_settings_from_json(json_str, settings)
+            self.update_settings_from_json(settings, json_str)
         except json.JSONDecodeError:
             raise FindException(f'Unable to parse JSON in settings file: {file_path}')
 
-    def update_settings_from_args(self, settings: FindSettings, args: List[str]) -> FindSettings:
+    def update_settings_from_args(self, settings: FindSettings, args: list[str]):
         """Updates a FindSettings instance from a given list of args"""
         arg_deque = deque(args)
         while arg_deque:
@@ -281,7 +274,7 @@ class FindOptions:
                             arg_name = arg_nv[0]
                             if arg_nv[1]:
                                 arg_deque.appendleft(arg_nv[1])
-                        arg_names.append(arg[2:])
+                        arg_names.append(arg_name)
                 elif len(arg) > 1:
                     arg_names.extend(list(arg[1:]))
                 for a in arg_names:
@@ -290,7 +283,7 @@ class FindOptions:
                         if long_arg in self.__bool_action_dict:
                             self.__bool_action_dict[long_arg](True, settings)
                             if long_arg in ('help', 'version'):
-                                return settings
+                                return
                         elif long_arg in self.__str_action_dict or \
                                 long_arg in self.__dt_action_dict or \
                                 long_arg in self.__int_action_dict or \
@@ -318,7 +311,7 @@ class FindOptions:
                                         raise FindException(err)
                                     self.__int_action_dict[long_arg](i, settings)
                                 elif long_arg == 'settings-file':
-                                    self.update_settings_from_file(arg_val, settings)
+                                    self.update_settings_from_file(settings, arg_val)
                             else:
                                 raise FindException(f'Missing value for option {a}')
                         else:
@@ -327,13 +320,13 @@ class FindOptions:
                         raise FindException(f'Invalid option: {a}')
             else:
                 settings.add_path(arg)
-        return settings
 
-    def find_settings_from_args(self, args: List[str]) -> FindSettings:
+    def find_settings_from_args(self, args: list[str]) -> FindSettings:
         """Returns a FindSettings instance for a given list of args"""
         # default print_files to True since running from command line
         settings = FindSettings(print_files=True)
-        return self.update_settings_from_args(settings, args)
+        self.update_settings_from_args(settings, args)
+        return settings
 
     def __get_usage_string(self):
         sio = StringIO()

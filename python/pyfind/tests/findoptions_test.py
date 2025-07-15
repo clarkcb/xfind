@@ -90,7 +90,7 @@ class FindOptionsTest(unittest.TestCase):
   "followsymlinks": true,
   "includehidden": true
 }'''
-        self.find_options.update_settings_from_json(json, settings)
+        self.find_options.update_settings_from_json(settings, json)
         self.assertEqual(1, len(settings.paths))
         self.assertIn(Path('~/src/xfind/'), settings.paths)
         for x in {'js', 'ts'}:
