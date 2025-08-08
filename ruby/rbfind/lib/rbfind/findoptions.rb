@@ -119,7 +119,7 @@ module RbFind
     end
 
     def update_settings_from_json(settings, json)
-      json_hash = JSON.parse(json)
+      json_hash = JSON.parse(json).transform_keys(&:to_sym)
       update_settings_from_arg_hash(settings, json_hash)
     end
 
@@ -234,7 +234,7 @@ module RbFind
         'out-filepattern': ->(s, settings) { settings.add_patterns(s, settings.out_file_patterns) },
         'out-filetype': ->(s, settings) { settings.add_file_types(s, settings.out_file_types) },
         path: ->(s, settings) { settings.add_path(s) },
-        'settings-file': ->(s, settings) { update_settings_from_file(s, settings) },
+        'settings-file': ->(s, settings) { update_settings_from_file(settings, s) },
         'sort-by': ->(s, settings) { settings.set_sort_by_for_name(s) }
       }
       @int_action_dict = {
