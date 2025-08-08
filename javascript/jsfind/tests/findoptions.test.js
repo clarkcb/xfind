@@ -110,7 +110,7 @@ describe('testing findoptions', () => {
             '  "followsymlinks": true,\n' +
             '  "includehidden": true\n' +
             '}';
-        const err = findOptions.updateSettingsFromJson(json, settings);
+        const err = findOptions.updateSettingsFromJson(settings, json);
         expect(err).toBeNull();
         expect(settings.paths.length).toEqual(1);
         expect(settings.paths[0]).toEqual('~/src/xfind/');
