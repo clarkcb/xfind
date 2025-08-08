@@ -87,7 +87,7 @@ class FindOptions
                 fn(string $s, FindSettings $fs) => $fs->add_patterns($s, $fs->out_file_patterns),
             'out-filetype' => fn(string $s, FindSettings $fs) => $fs->add_file_types($s, $fs->out_file_types),
             'path' => fn(string $s, FindSettings $fs) => $fs->paths[] = $s,
-            'settings-file' => fn(string $s, FindSettings $fs) => $this->update_settings_from_file($s, $fs),
+            'settings-file' => fn(string $s, FindSettings $fs) => $this->update_settings_from_file($fs, $s),
             'sort-by' => fn(string $s, FindSettings $fs) => $fs->set_sort_by($s),
         ];
 
@@ -139,6 +139,130 @@ class FindOptions
     }
 
     /**
+     * @param string[] $args
+     * @return array
+     * @throws FindException
+     */
+    public function arg_map_from_args(array $args): array
+    {
+        $arg_map = [];
+        while (count($args) > 0) {
+            $arg = array_shift($args);
+            if ($arg[0] == '-') {
+                $arg_names = array();
+                if (strlen($arg) > 1) {
+                    if ($arg[1] == '-') {
+                        # it's a long arg
+                        if (strlen($arg) > 2) {
+                            $arg = substr($arg, 2);
+                            if (str_contains($arg, '=')) {
+                                $elems = explode('=', $arg);
+                                $arg = $elems[0];
+                                $arg_value = $elems[1];
+                                array_unshift($args, $arg_value);
+                            }
+                            if (!array_key_exists($arg, $this->long_arg_map)) {
+                                throw new FindException("Invalid option: $arg");
+                            }
+                            $arg_names[] = $arg;
+                        } else {
+                            throw new FindException("Invalid option: $arg");
+                        }
+                    } else {
+                        # it's a short arg, with possibly multiple args
+                        $arg = substr($arg, 1);
+                        foreach (str_split($arg) as $c) {
+                            if (!array_key_exists($c, $this->long_arg_map)) {
+                                throw new FindException("Invalid option: $c");
+                            }
+                            $arg_names[] = $this->long_arg_map[$c];
+                        }
+                    }
+                } else {
+                    throw new FindException("Invalid option: $arg");
+                }
+
+                foreach ($arg_names as $arg_name) {
+                    if (array_key_exists($arg_name, $this->bool_action_map)) {
+                        $arg_map[$arg_name] = true;
+                        if (in_array($arg_name, array("help", "version"))) {
+                            return $arg_map;
+                        }
+                    } elseif (array_key_exists($arg_name, $this->str_action_map)
+                        || array_key_exists($arg_name, $this->int_action_map)) {
+                        if (count($args) > 0) {
+                            $val = array_shift($args);
+                            if (array_key_exists($arg_name, $this->str_action_map)) {
+                                if (!array_key_exists($arg_name, $arg_map)) {
+                                    $arg_map[$arg_name] = [];
+                                }
+                                $arg_map[$arg_name][] = $val;
+                            } elseif (array_key_exists($arg_name, $this->int_action_map)) {
+                                $arg_map[$arg_name] = intval($val);
+                            }
+                        } else {
+                            throw new FindException("Missing value for $arg");
+                        }
+                    } else {
+                        throw new FindException("Invalid option: $arg");
+                    }
+                }
+            } else {
+                if (!array_key_exists('path', $arg_map)) {
+                    $arg_map['path'] = [];
+                }
+                $arg_map['path'][] = $arg;
+            }
+        }
+        return $arg_map;
+    }
+
+    /**
+     * @param FindSettings $settings
+     * @param array $arg_map
+     * @return void
+     * @throws FindException
+     */
+    public function update_settings_from_arg_map(FindSettings $settings, array $arg_map): void
+    {
+        $arg_names = array_keys($arg_map);
+        # keys are sorted so that output is consistent across all versions
+        sort($arg_names);
+        $is_invalid_key = fn (string $k) => !array_key_exists($k, $this->long_arg_map);
+        $invalid_keys = array_filter($arg_names, $is_invalid_key);
+        if ($invalid_keys) {
+            throw new FindException("Invalid option: " . array_values($invalid_keys)[0]);
+        }
+        foreach ($arg_names as $arg_name) {
+            $arg_value = $arg_map[$arg_name];
+            $long_arg = $this->long_arg_map[$arg_name];
+            if (array_key_exists($long_arg, $this->bool_action_map)) {
+                $this->bool_action_map[$long_arg]($arg_value, $settings);
+                if (in_array($long_arg, array("help", "version"))) {
+                    return;
+                }
+            } elseif (array_key_exists($long_arg, $this->str_action_map)
+                || array_key_exists($long_arg, $this->int_action_map)) {
+                if (array_key_exists($long_arg, $this->str_action_map)) {
+                    if (is_array($arg_value)) {
+                        foreach ($arg_value as $val) {
+                            $this->str_action_map[$long_arg]($val, $settings);
+                        }
+                    } elseif (is_string($arg_value)) {
+                        $this->str_action_map[$long_arg]($arg_value, $settings);
+                    } else {
+                        throw new FindException("Invalid value for option: $long_arg");
+                    }
+                } elseif (array_key_exists($long_arg, $this->int_action_map)) {
+                    $this->int_action_map[$long_arg](intval($arg_value), $settings);
+                }
+            } else {
+                throw new FindException("Invalid option: $arg_name");
+            }
+        }
+    }
+
+    /**
      * @param string $json
      * @param FindSettings $settings
      * @return void
@@ -151,53 +275,19 @@ class FindOptions
         }
         try {
             $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
-            $keys = array_keys($json_obj);
-            # keys are sorted so that output is consistent across all versions
-            sort($keys);
-            $is_invalid_key = fn (string $k) => !array_key_exists($k, $this->long_arg_map);
-            $invalid_keys = array_filter($keys, $is_invalid_key);
-            if ($invalid_keys) {
-                throw new FindException("Invalid option: " . array_values($invalid_keys)[0]);
-            }
-            foreach ($keys as $k) {
-                if (array_key_exists($k, $this->bool_action_map)) {
-                    if (gettype($json_obj[$k]) == 'boolean') {
-                        $this->bool_action_map[$k]($json_obj[$k], $settings);
-                    } else {
-                        throw new FindException("Invalid value for option: $k");
-                    }
-                } elseif (array_key_exists($k, $this->str_action_map)) {
-                    if (gettype($json_obj[$k]) == 'string') {
-                        $this->str_action_map[$k]($json_obj[$k], $settings);
-                    } elseif (gettype($json_obj[$k]) == 'array') {
-                        foreach ($json_obj[$k] as $s) {
-                            $this->str_action_map[$k]($s, $settings);
-                        }
-                    } else {
-                        throw new FindException("Invalid value for option: $k");
-                    }
-                } elseif (array_key_exists($k, $this->int_action_map)) {
-                    if (gettype($json_obj[$k]) == 'integer') {
-                        $this->int_action_map[$k]($json_obj[$k], $settings);
-                    } else {
-                        throw new FindException("Invalid value for option: $k");
-                    }
-                } else {
-                    throw new FindException("Invalid option: $k");
-                }
-            }
+            $this->update_settings_from_arg_map($settings, $json_obj);
         } catch (\JsonException $e) {
             throw new FindException($e->getMessage());
         }
     }
 
     /**
-     * @param string $file_path
      * @param FindSettings $settings
+     * @param string $file_path
      * @return void
      * @throws FindException
      */
-    private function update_settings_from_file(string $file_path, FindSettings $settings): void
+    private function update_settings_from_file(FindSettings $settings, string $file_path): void
     {
         $expanded_path = FileUtil::expand_path($file_path);
         if (!file_exists($expanded_path)) {
@@ -213,6 +303,18 @@ class FindOptions
     }
 
     /**
+     * @param FindSettings $settings
+     * @param string[] $args
+     * @return void
+     * @throws FindException
+     */
+    public function update_settings_from_args(FindSettings $settings, array $args): void
+    {
+        $arg_map = $this->arg_map_from_args($args);
+        $this->update_settings_from_arg_map($settings, $arg_map);
+    }
+
+    /**
      * @param string[] $args
      * @return FindSettings
      * @throws FindException
@@ -222,40 +324,7 @@ class FindOptions
         $settings = new FindSettings();
         // default print_files to true since running as cli
         $settings->print_files = true;
-        while (count($args) > 0) {
-            $arg = array_shift($args);
-            if ($arg[0] == '-') {
-                while ($arg[0] == '-') {
-                    $arg = substr($arg, 1);
-                }
-                if (!array_key_exists($arg, $this->long_arg_map)) {
-                    throw new FindException("Invalid option: $arg");
-                }
-                $long_arg = $this->long_arg_map[$arg];
-                if (array_key_exists($long_arg, $this->bool_action_map)) {
-                    $this->bool_action_map[$long_arg](true, $settings);
-                    if (in_array($long_arg, array("help", "version"))) {
-                        break;
-                    }
-                } elseif (array_key_exists($long_arg, $this->str_action_map)
-                          || array_key_exists($long_arg, $this->int_action_map)) {
-                    if (count($args) > 0) {
-                        $val = array_shift($args);
-                        if (array_key_exists($long_arg, $this->str_action_map)) {
-                            $this->str_action_map[$long_arg]($val, $settings);
-                        } elseif (array_key_exists($long_arg, $this->int_action_map)) {
-                            $this->int_action_map[$long_arg](intval($val), $settings);
-                        }
-                    } else {
-                        throw new FindException("Missing value for $arg");
-                    }
-                } else {
-                    throw new FindException("Invalid option: $arg");
-                }
-            } else {
-                $settings->paths[] = $arg;
-            }
-        }
+        $this->update_settings_from_args($settings, $args);
         return $settings;
     }
 
