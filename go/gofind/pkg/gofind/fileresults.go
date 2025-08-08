@@ -248,7 +248,7 @@ func (f *FileResultFormatter) formatFileNameWithColor(fileName string) string {
 		}
 	}
 	if len(f.Settings.InExtensions()) > 0 {
-		idx := strings.Index(formattedFileName, ".")
+		idx := strings.LastIndex(formattedFileName, ".")
 		if idx > 0 && idx < len(formattedFileName)-1 {
 			formattedFileName = Colorize(formattedFileName, idx+1, len(formattedFileName))
 		}

@@ -20,6 +20,8 @@ type FindOptions struct {
 	FindOptions []*FindOption
 }
 
+type ArgMap map[string]interface{}
+
 func FindOptionsFromJson() (*FindOptions, error) {
 	config := NewFindConfig()
 	data, err := os.ReadFile(config.FINDOPTIONSPATH)
@@ -57,30 +59,21 @@ func (fo *FindOptions) isValidOption(opt string) bool {
 	return false
 }
 
-func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSettings) error {
+func (fo *FindOptions) UpdateSettingsFromArgMap(settings *FindSettings, argMap ArgMap) error {
 	boolActionMap := fo.getBoolActionMap()
 	stringActionMap := fo.getStringActionMap()
 	intActionMap := fo.getIntActionMap()
 	longActionMap := fo.getLongActionMap()
-	type JsonSettings map[string]interface{}
-	var jsonSettings JsonSettings
-	if err := json.Unmarshal(data, &jsonSettings); err != nil {
-		return fmt.Errorf("Unable to parse JSON")
-	}
-	for k := range jsonSettings {
-		if !fo.isValidOption(k) {
-			return fmt.Errorf("Invalid option: %v", k)
-		}
-	}
-	for k := range jsonSettings {
+
+	for k := range argMap {
 		if bf, isBool := boolActionMap[k]; isBool {
-			if v, hasVal := jsonSettings[k]; hasVal {
+			if v, hasVal := argMap[k]; hasVal {
 				bf(v.(bool), settings)
 			} else {
 				return fmt.Errorf("Invalid value for option: %v", k)
 			}
 		} else if sf, isString := stringActionMap[k]; isString {
-			if v, hasVal := jsonSettings[k]; hasVal {
+			if v, hasVal := argMap[k]; hasVal {
 				switch v := v.(type) {
 				case string:
 					sf(v, settings)
@@ -88,14 +81,14 @@ func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSetting
 					sf(strconv.Itoa(v), settings)
 				case float32, float64:
 					sf(fmt.Sprintf("%v", v.(float64)), settings)
-				case []interface{}:
+				case []string:
 					for i := range v {
-						sf(v[i].(string), settings)
+						sf(v[i], settings)
 					}
 				default:
 					Log(fmt.Sprintf("k: %v", k))
 					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					const errMsg = "Unknown data type in settings file"
+					const errMsg = "Unknown data type in ArgMap"
 					Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
@@ -103,7 +96,7 @@ func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSetting
 				return fmt.Errorf("Invalid value for option: %v", k)
 			}
 		} else if iff, isInt := intActionMap[k]; isInt {
-			if v, hasVal := jsonSettings[k]; hasVal {
+			if v, hasVal := argMap[k]; hasVal {
 				switch v := v.(type) {
 				case int:
 					iff(v, settings)
@@ -112,13 +105,13 @@ func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSetting
 				default:
 					Log(fmt.Sprintf("k: %v", k))
 					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					return fmt.Errorf("Unknown data type in settings file")
+					return fmt.Errorf("Unknown data type in ArgMap")
 				}
 			} else {
 				return fmt.Errorf("Invalid value for option: %v", k)
 			}
 		} else if lff, isLong := longActionMap[k]; isLong {
-			if v, hasVal := jsonSettings[k]; hasVal {
+			if v, hasVal := argMap[k]; hasVal {
 				switch v := v.(type) {
 				case int64:
 					lff(v, settings)
@@ -127,12 +120,18 @@ func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSetting
 				default:
 					Log(fmt.Sprintf("k: %v", k))
 					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
-					const errMsg = "Unknown data type in settings file"
+					const errMsg = "Unknown data type in ArgMap"
 					Log(errMsg)
 					return fmt.Errorf(errMsg)
 				}
 			} else {
 				return fmt.Errorf("Invalid value for option: %v", k)
+			}
+		} else if k == "settings-file" {
+			settingsFile := argMap[k].(string)
+			err := fo.UpdateSettingsFromFile(settings, settingsFile)
+			if err != nil {
+				return err
 			}
 		} else {
 			return fmt.Errorf("Invalid option: %v", k)
@@ -141,7 +140,15 @@ func (fo *FindOptions) UpdateSettingsFromJson(data []byte, settings *FindSetting
 	return nil
 }
 
-func (fo *FindOptions) UpdateSettingsFromFile(filePath string, settings *FindSettings) error {
+func (fo *FindOptions) UpdateSettingsFromJson(settings *FindSettings, data []byte) error {
+	var argMap ArgMap
+	if err := json.Unmarshal(data, &argMap); err != nil {
+		return fmt.Errorf("Unable to parse JSON")
+	}
+	return fo.UpdateSettingsFromArgMap(settings, argMap)
+}
+
+func (fo *FindOptions) UpdateSettingsFromFile(settings *FindSettings, filePath string) error {
 	expandedPath := ExpandPath(filePath)
 	if data, err := os.ReadFile(expandedPath); err != nil {
 		if strings.HasSuffix(err.Error(), "no such file or directory") {
@@ -149,9 +156,9 @@ func (fo *FindOptions) UpdateSettingsFromFile(filePath string, settings *FindSet
 		}
 		return err
 	} else {
-		if err := fo.UpdateSettingsFromJson(data, settings); err != nil {
+		if err := fo.UpdateSettingsFromJson(settings, data); err != nil {
 			if err.Error() == "Unable to parse JSON" {
-				return fmt.Errorf("Invalid settings file (must be JSON): %v", filePath)
+				return fmt.Errorf("Invalid JSON settings file: %v", filePath)
 			}
 			return err
 		}
@@ -159,10 +166,9 @@ func (fo *FindOptions) UpdateSettingsFromFile(filePath string, settings *FindSet
 	}
 }
 
-func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
-	settings := GetDefaultFindSettings()
-	// default printFiles to true since running as cli
-	settings.SetPrintFiles(true)
+func (fo *FindOptions) argMapFromArgs(args []string) (ArgMap, error) {
+	argMap := make(ArgMap)
+
 	boolActionMap := fo.getBoolActionMap()
 	stringActionMap := fo.getStringActionMap()
 	intActionMap := fo.getIntActionMap()
@@ -170,51 +176,100 @@ func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error
 
 	for i := 0; i < len(args); {
 		if strings.HasPrefix(args[i], "-") {
-			k := strings.TrimLeft(args[i], "-")
-			if fo.isValidOption(k) {
-				if bf, isBool := boolActionMap[k]; isBool {
-					bf(true, settings)
-				} else {
-					i++
-					if len(args) < i+1 {
-						return nil, fmt.Errorf("Missing value for option: %s", k)
+			argNames := []string{}
+			argVal := ""
+			if strings.HasPrefix(args[i], "--") && len(args[i]) > 2 {
+				// Process long arg
+				longArg := strings.TrimLeft(args[i], "-")
+				if strings.Index(longArg, "=") > -1 {
+					parts := strings.Split(longArg, "=")
+					if len(parts) > 0 {
+						longArg = parts[0]
 					}
-					val := args[i]
-
-					if sf, isString := stringActionMap[k]; isString {
-						sf(val, settings)
-					} else if iff, isInt := intActionMap[k]; isInt {
-						intVal, err := strconv.Atoi(val)
-						if err != nil {
-							return nil, fmt.Errorf("Invalid value for option %s", k)
-						}
-						iff(intVal, settings)
-					} else if lff, isLong := longActionMap[k]; isLong {
-						longVal, err := strconv.ParseInt(val, 0, 64)
-						if err != nil {
-							return nil, fmt.Errorf("Invalid value for option %s", k)
-						}
-						lff(longVal, settings)
-					} else if k == "settings-file" {
-						err := fo.UpdateSettingsFromFile(val, settings)
-						if err != nil {
-							return nil, err
-						}
-					} else {
-						return nil, fmt.Errorf("Invalid option: %s", k)
+					if len(parts) > 1 {
+						argVal = parts[1]
 					}
 				}
+				argNames = append(argNames, longArg)
+			} else if len(args[i]) > 1 {
+				// Process short arg(s)
+				shortArgs := strings.TrimLeft(args[i], "-")
+				for _, c := range shortArgs {
+					argNames = append(argNames, string(c))
+				}
 			} else {
-				return nil, fmt.Errorf("Invalid option: %s", k)
+				return nil, fmt.Errorf("Invalid option: %s", args[i])
+			}
+
+			for _, argName := range argNames {
+				if fo.isValidOption(argName) {
+					if _, isBool := boolActionMap[argName]; isBool {
+						argMap[argName] = true
+					} else {
+						if argVal == "" {
+							i++
+							if len(args) < i+1 {
+								return nil, fmt.Errorf("Missing value for option: %s", argName)
+							}
+							argVal = args[i]
+						}
+
+						if _, isString := stringActionMap[argName]; isString {
+							if _, hasArg := argMap[argName]; !hasArg {
+								argMap[argName] = []string{argVal}
+							} else {
+								argMap[argName] = append(argMap[argName].([]string), argVal)
+							}
+						} else if _, isInt := intActionMap[argName]; isInt {
+							intVal, err := strconv.Atoi(argVal)
+							if err != nil {
+								return nil, fmt.Errorf("Invalid value for option %s", argName)
+							}
+							argMap[argName] = intVal
+						} else if _, isLong := longActionMap[argName]; isLong {
+							longVal, err := strconv.ParseInt(argVal, 0, 64)
+							if err != nil {
+								return nil, fmt.Errorf("Invalid value for option %s", argName)
+							}
+							argMap[argName] = longVal
+						} else if argName == "settings-file" {
+							argMap[argName] = argVal
+						} else {
+							return nil, fmt.Errorf("Invalid option: %s", argName)
+						}
+					}
+				} else {
+					return nil, fmt.Errorf("Invalid option: %s", argName)
+				}
 			}
 		} else {
-			settings.AddPath(args[i])
+			path := "path"
+			if _, hasArg := argMap[path]; !hasArg {
+				argMap[path] = []string{args[i]}
+			} else {
+				argMap[path] = append(argMap[path].([]string), args[i])
+			}
 		}
 		i++
 	}
-	if settings.Debug() {
-		settings.SetVerbose(true)
+	return argMap, nil
+}
+
+func (fo *FindOptions) FindSettingsFromArgs(args []string) (*FindSettings, error) {
+	argMap, err := fo.argMapFromArgs(args)
+	if err != nil {
+		return nil, err
 	}
+
+	settings := GetDefaultFindSettings()
+	// default printFiles to true since running as cli
+	settings.SetPrintFiles(true)
+
+	err = fo.UpdateSettingsFromArgMap(settings, argMap)
+	if err != nil {
+		return nil, err
+	}
+
 	return settings, nil
 }
 

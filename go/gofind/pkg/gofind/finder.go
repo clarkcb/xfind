@@ -279,9 +279,9 @@ func (f *Finder) setFileResultsForPath(path string) error {
 }
 
 func (f *Finder) setFileResults() error {
-	if f.Settings.Verbose() {
-		Log("\nBuilding file result list")
-	}
+	//if f.Settings.Verbose() {
+	//	Log("\nBuilding file result list")
+	//}
 
 	for _, p := range f.Settings.Paths() {
 		if err := f.setFileResultsForPath(p); err != nil {
