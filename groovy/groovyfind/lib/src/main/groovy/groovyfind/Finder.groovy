@@ -12,16 +12,10 @@ import java.time.ZoneOffset
 import java.util.regex.Pattern
 import java.util.stream.Collectors
 
+import static groovyfind.FindError.*;
+
 @CompileStatic
 class Finder {
-
-    public static final String STARTPATH_NOT_DEFINED = 'Startpath not defined'
-    public static final String STARTPATH_NOT_READABLE = 'Startpath not readable'
-    public static final String STARTPATH_NOT_FOUND = 'Startpath not found'
-    public static final String INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH = 'Invalid range for mindepth and maxdepth'
-    public static final String INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD = 'Invalid range for minlastmod and maxlastmod'
-    public static final String INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE = 'Invalid range for minsize and maxsize'
-    public static final String STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS = 'Startpath does not match find settings'
 
     final private FindSettings settings
     final private FileTypes fileTypes
@@ -34,7 +28,7 @@ class Finder {
     final void validateSettings() throws FindException {
         Set<Path> paths = settings.paths
         if (null == paths || paths.empty || paths.any { p -> p == null || p.empty }) {
-            throw new FindException(STARTPATH_NOT_DEFINED)
+            throw new FindException(STARTPATH_NOT_DEFINED.getMessage())
         }
         paths.each { path ->
             Path p = path
@@ -43,21 +37,21 @@ class Finder {
             }
             if (Files.exists(p)) {
                 if (!Files.isReadable(p)) {
-                    throw new FindException(STARTPATH_NOT_READABLE)
+                    throw new FindException(STARTPATH_NOT_READABLE.getMessage())
                 }
             } else {
-                throw new FindException(STARTPATH_NOT_FOUND)
+                throw new FindException(STARTPATH_NOT_FOUND.getMessage())
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
-            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH)
+            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH.getMessage())
         }
         if (settings.maxLastMod != null && settings.minLastMod != null
                 && settings.maxLastMod.toInstant(ZoneOffset.UTC) < settings.minLastMod.toInstant(ZoneOffset.UTC)) {
-            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD)
+            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD.getMessage())
         }
         if (settings.maxSize > 0 && settings.minSize > 0 && settings.maxSize < settings.minSize) {
-            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE)
+            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE.getMessage())
         }
     }
 
@@ -265,7 +259,7 @@ class Finder {
                 }
                 return recFindPath(filePath, settings.minDepth, maxDepth, 1)
             } else {
-                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS)
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage())
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -276,7 +270,7 @@ class Finder {
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get())
             } else {
-                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS)
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage())
             }
         }
     }

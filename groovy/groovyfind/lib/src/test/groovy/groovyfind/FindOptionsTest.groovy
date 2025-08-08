@@ -70,7 +70,7 @@ class FindOptionsTest {
         try {
             def findOptions = new FindOptions()
             def settings = new FindSettings()
-            findOptions.updateSettingsFromJson(json.toString(), settings)
+            findOptions.updateSettingsFromJson(settings, json.toString())
 
             assertEquals(1, settings.paths.size())
             assertEquals(Paths.get('~/src/xfind/'), settings.paths.toArray()[0])
