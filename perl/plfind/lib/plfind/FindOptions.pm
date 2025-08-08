@@ -229,43 +229,148 @@ sub set_options_from_json {
     return $options_hash;
 }
 
-sub update_settings_from_json {
-    my ($self, $json, $settings) = @_;
+sub arg_hash_from_args {
+    my ($self, $args) = @_;
+    my %arg_hash;
+    my @errs;
+    while (scalar @$args && !(scalar @errs)) {
+        my $arg = shift @$args;
+        if ($arg =~ /^\-+/) {
+            my @arg_names;
+            if ($arg =~ /^\-{2}/) {
+                if (length($arg) > 2) {
+                    $arg =~ s/^\-+//;
+                    if ($arg =~ /\=/) {
+                        my @elems = split('=', $arg);
+                        $arg = $elems[0];
+                        unshift(@$args, $elems[1]);
+                    }
+                    if (exists $self->{options}->{$arg}) {
+                        my $long_arg = $self->{options}->{$arg}->{long_arg};
+                        push(@arg_names, $long_arg);
+                    } else {
+                        push(@errs, "Invalid option: $arg");
+                        last;
+                    }
+                } else {
+                    push(@errs, "Invalid option: $arg");
+                    last;
+                }
+            } elsif (length($arg) > 1) {
+                $arg =~ s/^\-+//;
+                for my $c (split //, $arg) {
+                    if (exists $self->{options}->{$c}) {
+                        my $long_arg = $self->{options}->{$c}->{long_arg};
+                        push(@arg_names, $long_arg);
+                    } else {
+                        push(@errs, "Invalid option: $c");
+                        last;
+                    }
+                }
+            } else {
+                push(@errs, "Invalid option: $arg");
+                last;
+            }
+
+            foreach my $arg_name (@arg_names) {
+                if (exists $bool_action_hash->{$arg_name}) {
+                    # &{$bool_action_hash->{$arg_name}}(1, $settings);
+                    $arg_hash{$arg_name} = 1;
+                } elsif (exists $str_action_hash->{$arg_name}
+                    || exists $int_action_hash->{$arg_name}
+                    || $arg_name eq 'settings-file') {
+                    if (scalar @$args) {
+                        my $val = shift @$args;
+                        if (exists $str_action_hash->{$arg_name}) {
+                            if (!(exists $arg_hash{$arg_name})) {
+                                $arg_hash{$arg_name} = [];
+                            }
+                            push(@{$arg_hash{$arg_name}}, $val);
+                        } elsif (exists $int_action_hash->{$arg_name}) {
+                            if ($val =~ /^\d+$/) {
+                                $arg_hash{$arg_name} = int($val);
+                            } else {
+                                push(@errs, 'Invalid value for option: ' . $arg_name);
+                            }
+                        } else {
+                            $arg_hash{'settings-file'} = $val;
+
+                        }
+                    } else {
+                        push(@errs, "Missing value for $arg");
+                    }
+                }
+            }
+        } else {
+            if (!(exists $arg_hash{'path'})) {
+                $arg_hash{'path'} = [];
+            }
+            push(@{$arg_hash{'path'}}, $arg);
+        }
+    }
+    return (\%arg_hash, \@errs);
+}
+
+sub update_settings_from_arg_hash {
+    my ($self, $settings, $arg_hash) = @_;
     my $errs = [];
-    my $json_hash = decode_json $json;
     # keys are sorted so that output is consistent across all versions
-    my @keys = sort (keys %{$json_hash});
-    my @invalid_keys = grep { $_ ne 'path' && !exists($self->{options}->{$_}) } @keys;
+    my @arg_names = sort (keys %{$arg_hash});
+    my @invalid_keys = grep { $_ ne 'path' && !exists($self->{options}->{$_}) } @arg_names;
     if (scalar @invalid_keys) {
         push(@$errs, 'Invalid option: ' . $invalid_keys[0]);
         return $errs;
     }
-    foreach my $k (@keys) {
-        if (exists $bool_action_hash->{$k}) {
-            if (plfind::common::is_bool($json_hash->{$k})) {
-                &{$bool_action_hash->{$k}}($json_hash->{$k}, $settings);
+    foreach my $arg_name (@arg_names) {
+        my $arg_value = $arg_hash->{$arg_name};
+        if (exists $bool_action_hash->{$arg_name}) {
+            if (plfind::common::is_bool($arg_value)) {
+                &{$bool_action_hash->{$arg_name}}($arg_value, $settings);
             } else {
-                push(@$errs, 'Invalid value for option: ' . $k);
+                push(@$errs, 'Invalid value for option: ' . $arg_name);
             }
-        } elsif (exists $str_action_hash->{$k}) {
-            &{$str_action_hash->{$k}}($json_hash->{$k}, $settings);
-        } elsif (exists $int_action_hash->{$k}) {
-            if ($json_hash->{$k} =~ /^\d+$/) {
-                &{$int_action_hash->{$k}}($json_hash->{$k}, $settings);
+        } elsif (exists $str_action_hash->{$arg_name}) {
+            if (ref $arg_value eq 'ARRAY') {
+                foreach my $val (@$arg_value) {
+                    &{$str_action_hash->{$arg_name}}($val, $settings);
+                }
             } else {
-                push(@$errs, 'Invalid value for option: ' . $k);
+                # assume scalar
+                &{$str_action_hash->{$arg_name}}($arg_value, $settings);
             }
+        } elsif (exists $int_action_hash->{$arg_name}) {
+            if ($arg_value =~ /^\d+$/) {
+                &{$int_action_hash->{$arg_name}}($arg_value, $settings);
+            } else {
+                push(@$errs, 'Invalid value for option: ' . $arg_name);
+            }
+        } elsif ($arg_name eq 'settings-file') {
+            my $file_path = file($arg_value);
+            my $settings_file_errors = $self->update_settings_from_file($settings, $file_path);
+            push(@$errs, @$settings_file_errors);
         } else {
             # should never reach here
-            push(@$errs, 'Invalid option: ' . $k);
+            push(@$errs, 'Invalid option: ' . $arg_name);
         }
     }
     return $errs;
 }
 
+sub update_settings_from_json {
+    my ($self, $settings, $json) = @_;
+    my $errs = [];
+    my $json_hash = {};
+    my $rc = eval { $json_hash = decode_json $json; 1; };
+    if ($rc != 1) {
+        push(@$errs, 'Unable to decode json');
+        return $errs;
+    }
+    return $self->update_settings_from_arg_hash($settings, $json_hash);
+}
+
 sub update_settings_from_file {
     # $file_path is instance of Path::Class::File
-    my ($self, $file_path, $settings) = @_;
+    my ($self, $settings, $file_path) = @_;
     my $errs = [];
     my $expanded_path = file(plfind::FileUtil::expand_path($file_path));
     unless (-e $expanded_path) {
@@ -277,11 +382,21 @@ sub update_settings_from_file {
         return $errs;
     }
     my $json = $expanded_path->slurp;
-    my $rc = eval { $errs = $self->update_settings_from_json($json, $settings); 1; };
-    if (!$rc) {
+    $errs = $self->update_settings_from_json($settings, $json);
+    if (scalar @$errs && $errs->[0] eq 'Unable to decode json') {
+        shift(@$errs);
         push(@$errs, 'Unable to parse JSON in settings file: ' . $file_path);
     }
     return $errs;
+}
+
+sub update_settings_from_args {
+    my ($self, $settings, $args) = @_;
+    my ($arg_hash, $errs) = $self->arg_hash_from_args($args);
+    if (scalar @$errs) {
+        return $errs;
+    }
+    $errs = $self->update_settings_from_arg_hash($settings, $arg_hash);
 }
 
 sub settings_from_args {
@@ -289,42 +404,8 @@ sub settings_from_args {
     my $settings = plfind::FindSettings->new();
     # default print_files to true since running as cli
     $settings->set_property('print_files', 1);
-    my @errs;
-    while (scalar @$args && !(scalar @errs)) {
-        my $arg = shift @$args;
-        if ($arg =~ /^\-+/) {
-            $arg =~ s/^\-+//;
-            if (exists $self->{options}->{$arg}) {
-                my $opt = $self->{options}->{$arg};
-                my $long_arg = $opt->{long_arg};
-                if (exists $bool_action_hash->{$long_arg}) {
-                    &{$bool_action_hash->{$long_arg}}(1, $settings);
-                } elsif (exists $str_action_hash->{$long_arg}
-                         || exists $int_action_hash->{$long_arg}
-                         || $long_arg eq 'settings-file') {
-                    if (scalar @$args) {
-                        my $val = shift @$args;
-                        if (exists $str_action_hash->{$long_arg}) {
-                            &{$str_action_hash->{$long_arg}}($val, $settings);
-                        } elsif (exists $int_action_hash->{$long_arg}) {
-                            &{$int_action_hash->{$long_arg}}(int($val), $settings);
-                        } else {
-                            my $file_path = file($val);
-                            my $settings_file_errors = $self->update_settings_from_file($file_path, $settings);
-                            push(@errs, @$settings_file_errors);
-                        }
-                    } else {
-                        push(@errs, "Missing value for $arg");
-                    }
-                }
-            } else {
-                push(@errs, "Invalid option: $arg");
-            }
-        } else {
-            $settings->add_path($arg);
-        }
-    }
-    return ($settings, \@errs);
+    my $errs = $self->update_settings_from_args($settings, $args);
+    return ($settings, $errs);
 }
 
 sub usage {
