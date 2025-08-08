@@ -23,17 +23,10 @@ import java.util.concurrent.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static javafind.FindError.*;
 import static javafind.Logger.log;
 
 public class Finder {
-
-    public static final String STARTPATH_NOT_DEFINED = "Startpath not defined";
-    public static final String STARTPATH_NOT_FOUND = "Startpath not found";
-    public static final String STARTPATH_NOT_READABLE = "Startpath not readable";
-    public static final String INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH = "Invalid range for mindepth and maxdepth";
-    public static final String INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD = "Invalid range for minlastmod and maxlastmod";
-    public static final String INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE = "Invalid range for minsize and maxsize";
-    public static final String STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS = "Startpath does not match find settings";
 
     final private FindSettings settings;
     final private FileTypes fileTypes;
@@ -46,7 +39,7 @@ public class Finder {
     public final void validateSettings() throws FindException {
         var paths = settings.getPaths();
         if (null == paths || paths.isEmpty() || paths.stream().anyMatch(p -> p == null || p.toString().isEmpty())) {
-            throw new FindException(STARTPATH_NOT_DEFINED);
+            throw new FindException(STARTPATH_NOT_DEFINED.getMessage());
         }
         for (var path : paths) {
             if (!Files.exists(path)) {
@@ -54,22 +47,22 @@ public class Finder {
             }
             if (Files.exists(path)) {
                 if (!Files.isReadable(path)) {
-                    throw new FindException(STARTPATH_NOT_READABLE);
+                    throw new FindException(STARTPATH_NOT_READABLE.getMessage());
                 }
             } else {
-                throw new FindException(STARTPATH_NOT_FOUND);
+                throw new FindException(STARTPATH_NOT_FOUND.getMessage());
             }
         }
         if (settings.getMaxDepth() > -1 && settings.getMaxDepth() < settings.getMinDepth()) {
-            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH);
+            throw new FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH.getMessage());
         }
         if (settings.getMaxLastMod().isPresent() && settings.getMinLastMod().isPresent()
                 && settings.getMaxLastMod().get().toInstant(ZoneOffset.UTC)
                 .compareTo(settings.getMinLastMod().get().toInstant(ZoneOffset.UTC)) < 0) {
-            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD);
+            throw new FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD.getMessage());
         }
         if (settings.getMaxSize() > 0 && settings.getMaxSize() < settings.getMinSize()) {
-            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE);
+            throw new FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE.getMessage());
         }
     }
 
@@ -282,7 +275,7 @@ public class Finder {
                 }
                 return recFindPath(filePath, settings.getMinDepth(), maxDepth, 1);
             } else {
-                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -293,7 +286,7 @@ public class Finder {
             if (optFileResult.isPresent()) {
                 return List.of(optFileResult.get());
             } else {
-                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS);
+                throw new FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.getMessage());
             }
         }
     }
@@ -330,8 +323,13 @@ public class Finder {
         } else {
             fileResults = findAsync();
         }
-        var fileResultSorter = new FileResultSorter(settings);
-        fileResultSorter.sort(fileResults);
+        if (fileResults.size() > 2) {
+            if (!(fileResults instanceof ArrayList<FileResult>)) {
+                fileResults = new ArrayList<>(fileResults);
+            }
+            var fileResultSorter = new FileResultSorter(settings);
+            fileResultSorter.sort(fileResults);
+        }
         return fileResults;
     }
 

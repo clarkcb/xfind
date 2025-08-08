@@ -35,7 +35,7 @@ public class FileResultSorter {
     }
 
     public final void sort(List<FileResult> fileResults) {
-        if (fileResults.isEmpty()) {
+        if (fileResults.size() < 2) {
             return;
         }
         var fileResultComparator = getFileResultComparator();
