@@ -2,7 +2,7 @@ use core::slice::Iter;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::{fs, io};
-
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -302,70 +302,107 @@ impl FindOptions {
         mut args: Iter<String>,
     ) -> Result<(), FindError> {
 
-        loop {
-            if settings.print_usage() || settings.print_version() {
-                return Ok(());
-            }
-            match args.next() {
-                // if it ends with rsfind, it's the executable arg, skip it
-                Some(next_arg) if next_arg.ends_with("rsfind") => {},
-                Some(next_arg) if next_arg.starts_with("-") => {
-                    let arg = next_arg.trim_start_matches('-');
-                    match self.long_arg_map.get(arg) {
-                        Some(long_arg) if self.bool_action_map.contains_key(long_arg) => {
-                            if let Err(error) = self.apply_bool_arg(long_arg, true, settings) {
-                                return Err(error);
-                            }
-                        },
-                        Some(long_arg) => match args.next() {
-                            Some(arg_val) => {
-                                if self.string_action_map.contains_key(long_arg) {
-                                    if let Err(error) = self.apply_string_arg(long_arg, &arg_val, settings) {
-                                        return Err(error);
-                                    }
-                                } else if self.int_action_map.contains_key(long_arg) {
-                                    let i = arg_val.parse::<i32>().unwrap_or(0);
-                                    if let Err(error) = self.apply_int_arg(long_arg, i, settings) {
-                                        return Err(error);
-                                    }
-                                } else if self.long_action_map.contains_key(long_arg) {
-                                    let l = arg_val.parse::<u64>().unwrap_or(0);
-                                    if let Err(error) = self.apply_long_arg(long_arg, l, settings) {
-                                        return Err(error);
-                                    }
-                                } else if long_arg == "settings-file" {
-                                    if let Err(error) = self.update_settings_from_file(settings, &arg_val) {
-                                        return Err(error);
-                                    }
-                                } else {
-                                    return Err(FindError::new(
-                                        format!("Invalid option: {}", &arg).as_str(),
-                                    ))
+        let long_arg_with_val_regex = Regex::new("^--([a-zA-Z0-9-]+)=(.+)$").unwrap();
+        let long_arg_regex = Regex::new("^--([a-zA-Z0-9-]+)$").unwrap();
+        let short_args_regex = Regex::new("^-([a-zA-Z0-9-]{2,})$").unwrap();
+        let short_arg_regex = Regex::new("^-([a-zA-Z0-9-])$").unwrap();
+
+        match args.next() {
+            // if it ends with rsfind, it's the executable arg, skip it
+            Some(next_arg) if next_arg.ends_with("rsfind") =>
+                self.update_settings_from_args(settings, args),
+            Some(next_arg) if long_arg_with_val_regex.is_match(&next_arg) => {
+                // TODO: handle long arg with val - create new args and recall
+                let caps = long_arg_with_val_regex.captures(&next_arg).unwrap();
+                let new_arg = format!("--{}", caps.get(1).unwrap().as_str());
+                let new_val = String::from(caps.get(2).unwrap().as_str());
+                let new_args = vec![new_arg, new_val];
+                let next_args = new_args.iter().chain(args).cloned().collect::<Vec<String>>();
+                self.update_settings_from_args(settings, next_args.iter())
+            },
+            Some(next_arg) if long_arg_regex.is_match(&next_arg) => {
+                // Handle long arg - this is where most of the processing happens
+                let arg = next_arg.trim_start_matches('-');
+                match self.long_arg_map.get(arg) {
+                    Some(long_arg) if self.bool_action_map.contains_key(long_arg) => {
+                        if let Err(error) = self.apply_bool_arg(long_arg, true, settings) {
+                            return Err(error);
+                        }
+                        self.update_settings_from_args(settings, args)
+                    },
+                    Some(long_arg) => match args.next() {
+                        Some(arg_val) => {
+                            if self.string_action_map.contains_key(long_arg) {
+                                if let Err(error) = self.apply_string_arg(long_arg, &arg_val, settings) {
+                                    return Err(error);
                                 }
-                            }
-                            None => {
+                                self.update_settings_from_args(settings, args)
+                            } else if self.int_action_map.contains_key(long_arg) {
+                                let i = arg_val.parse::<i32>().unwrap_or(0);
+                                if let Err(error) = self.apply_int_arg(long_arg, i, settings) {
+                                    return Err(error);
+                                }
+                                self.update_settings_from_args(settings, args)
+                            } else if self.long_action_map.contains_key(long_arg) {
+                                let l = arg_val.parse::<u64>().unwrap_or(0);
+                                if let Err(error) = self.apply_long_arg(long_arg, l, settings) {
+                                    return Err(error);
+                                }
+                                self.update_settings_from_args(settings, args)
+                            } else if long_arg == "settings-file" {
+                                if let Err(error) = self.update_settings_from_file(settings, &arg_val) {
+                                    return Err(error);
+                                }
+                                self.update_settings_from_args(settings, args)
+                            } else {
                                 return Err(FindError::new(
-                                    format!("Missing value for option {}", &next_arg).as_str(),
-                                ));
+                                    format!("Invalid option: {}", &arg).as_str(),
+                                ))
                             }
-                        },
-                        _ => {
-                            return Err(FindError::new(
-                                format!("Invalid option: {}", &arg).as_str(),
+                        }
+                        None => {
+                            Err(FindError::new(
+                                format!("Missing value for option {}", &next_arg).as_str(),
                             ))
                         }
+                    },
+                    _ => {
+                        Err(FindError::new(
+                            format!("Invalid option: {}", &arg).as_str(),
+                        ))
                     }
                 }
-                Some(next_arg) => {
-                    if let Err(error) = self.apply_string_arg("path", &next_arg, settings) {
-                        return Err(error);
-                    }
-                },
-                None => break,
-            }
+            },
+            Some(next_arg) if short_args_regex.is_match(&next_arg) => {
+                // Handle short args
+                let next_arg = next_arg.trim_start_matches('-');
+                let new_args = next_arg.chars().map(|c| format!("-{}", c)).collect::<Vec<String>>();
+                let next_args = new_args.iter().chain(args).cloned().collect::<Vec<String>>();
+                self.update_settings_from_args(settings, next_args.iter())
+            },
+            Some(next_arg) if short_arg_regex.is_match(&next_arg) => {
+                // Handle short arg
+                let next_arg = next_arg.trim_start_matches('-');
+                if self.long_arg_map.contains_key(next_arg) {
+                    let long_arg = self.long_arg_map.get(next_arg).unwrap();
+                    let long_arg = format!("--{}", long_arg);
+                    let new_args = vec![long_arg];
+                    let next_args = new_args.iter().chain(args).cloned().collect::<Vec<String>>();
+                    self.update_settings_from_args(settings, next_args.iter())
+                } else {
+                    Err(FindError::new(
+                        format!("Invalid option: {}", &next_arg).as_str(),
+                    ))
+                }
+            },
+            Some(next_arg) => {
+                if let Err(error) = self.apply_string_arg("path", &next_arg, settings) {
+                    return Err(error);
+                }
+                self.update_settings_from_args(settings, args)
+            },
+            None => Ok(())
         }
-
-        Ok(())
     }
 
     pub fn settings_from_args(
