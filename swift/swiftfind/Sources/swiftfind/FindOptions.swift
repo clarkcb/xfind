@@ -198,59 +198,66 @@ public class FindOptions {
         },
     ]
 
-    public func updateSettingsFromJson(_ jsonString: String, settings: FindSettings) throws {
+    public func updateSettingsFromArgMap(_ settings: FindSettings, argMap: [String: Any]) throws {
+        // keys are sorted so that output is consistent across all versions
+        let keys = argMap.keys.sorted()
+        let invalidKeys = keys.filter { longArgDict.index(forKey: $0) == nil }
+        if !invalidKeys.isEmpty {
+            throw FindError(msg: "Invalid option: \(invalidKeys[0])")
+        }
+        for key in keys {
+            if longArgDict.index(forKey: key) != nil {
+                let longArg = longArgDict[key]
+                if boolActionDict.index(forKey: longArg!) != nil {
+                    let value = argMap[key]
+                    if let bool = value as? Bool {
+                        boolActionDict[longArg!]!(bool, settings)
+                    } else {
+                        throw FindError(msg: "Invalid value for option: \(key)")
+                    }
+                } else if stringActionDict.index(forKey: longArg!) != nil {
+                    let value = argMap[key]
+                    if let string = value as? String {
+                        stringActionDict[longArg!]!(string, settings)
+                    } else if let stringArray = value as? [String] {
+                        for s in stringArray {
+                            stringActionDict[longArg!]!(s, settings)
+                        }
+                    } else {
+                        throw FindError(msg: "Invalid value for option: \(key)")
+                    }
+                } else if intActionDict.index(forKey: longArg!) != nil {
+                    let value = argMap[key]
+                    if let intVal = value as? Int32 {
+                        intActionDict[longArg!]!(intVal, settings)
+                    } else {
+                        throw FindError(msg: "Invalid value for option: \(key)")
+                    }
+                } else if longActionDict.index(forKey: longArg!) != nil {
+                    let value = argMap[key]
+                    if let longVal = value as? UInt64 {
+                        longActionDict[longArg!]!(longVal, settings)
+                    } else {
+                        throw FindError(msg: "Invalid value for option: \(key)")
+                    }
+                } else if key == "settings-file" {
+                    let value = argMap[key] as? String
+                    try updateSettingsFromFile(settings, filePath: value!)
+                } else {
+                    throw FindError(msg: "Invalid option: \(key)")
+                }
+            } else {
+                throw FindError(msg: "Invalid option: \(key)")
+            }
+        }
+    }
+
+    public func updateSettingsFromJson(_ settings: FindSettings, jsonString: String) throws {
         do {
             if let json = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!,
                                                            options: []) as? [String: Any]
             {
-                // keys are sorted so that output is consistent across all versions
-                let keys = json.keys.sorted()
-                let invalidKeys = keys.filter { longArgDict.index(forKey: $0) == nil }
-                if !invalidKeys.isEmpty {
-                    throw FindError(msg: "Invalid option: \(invalidKeys[0])")
-                }
-                for key in keys {
-                    if longArgDict.index(forKey: key) != nil {
-                        let longArg = longArgDict[key]
-                        if boolActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let bool = value as? Bool {
-                                boolActionDict[longArg!]!(bool, settings)
-                            } else {
-                                throw FindError(msg: "Invalid value for option: \(key)")
-                            }
-                        } else if stringActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let string = value as? String {
-                                stringActionDict[longArg!]!(string, settings)
-                            } else if let stringArray = value as? [String] {
-                                for s in stringArray {
-                                    stringActionDict[longArg!]!(s, settings)
-                                }
-                            } else {
-                                throw FindError(msg: "Invalid value for option: \(key)")
-                            }
-                        } else if intActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let intVal = value as? Int32 {
-                                intActionDict[longArg!]!(intVal, settings)
-                            } else {
-                                throw FindError(msg: "Invalid value for option: \(key)")
-                            }
-                        } else if longActionDict.index(forKey: longArg!) != nil {
-                            let value = json[key]
-                            if let longVal = value as? UInt64 {
-                                longActionDict[longArg!]!(longVal, settings)
-                            } else {
-                                throw FindError(msg: "Invalid value for option: \(key)")
-                            }
-                        } else {
-                            throw FindError(msg: "Invalid option: \(key)")
-                        }
-                    } else {
-                        throw FindError(msg: "Invalid option: \(key)")
-                    }
-                }
+                try updateSettingsFromArgMap(settings, argMap: json)
             }
         } catch let error as FindError {
             throw error
@@ -261,11 +268,11 @@ public class FindOptions {
 
     public func settingsFromJson(_ jsonString: String) throws -> FindSettings {
         let settings = FindSettings()
-        try updateSettingsFromJson(jsonString, settings: settings)
+        try updateSettingsFromJson(settings, jsonString: jsonString)
         return settings
     }
 
-    public func updateSettingsFromFile(_ filePath: String, settings: FindSettings) throws {
+    public func updateSettingsFromFile(_ settings: FindSettings, filePath: String) throws {
         let expandedPath = FileUtil.expandPath(filePath)
         if !FileUtil.exists(expandedPath) {
             throw FindError(msg: "Settings file not found: \(filePath)")
@@ -276,7 +283,7 @@ public class FindOptions {
         do {
             let fileUrl = URL(fileURLWithPath: expandedPath)
             let jsonString = try String(contentsOf: fileUrl, encoding: .utf8)
-            try updateSettingsFromJson(jsonString, settings: settings)
+            try updateSettingsFromJson(settings, jsonString: jsonString)
         } catch let error as FindError {
             throw error
         } catch let error {
@@ -286,60 +293,108 @@ public class FindOptions {
 
     public func settingsFromFile(_ filePath: String) throws -> FindSettings {
         let settings = FindSettings()
-        try updateSettingsFromFile(filePath, settings: settings)
+        try updateSettingsFromFile(settings, filePath: filePath)
         return settings
     }
 
-    public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
+    private func argMapFromArgs(_ args: [String]) throws -> [String: Any] {
         var i = 0
-        let settings = FindSettings()
+        var argMap: [String: Any] = [:]
         // default printFiles to true since running as cli
-        settings.printFiles = true
         while i < args.count {
             var arg = args[i]
             if arg.hasPrefix("-") {
-                while arg.hasPrefix("-"), arg.lengthOfBytes(using: String.Encoding.utf8) > 1 {
-                    arg = String(arg[arg.index(arg.startIndex, offsetBy: 1)...])
-                }
-                if longArgDict.index(forKey: arg) != nil {
-                    let longArg = longArgDict[arg]
-                    if boolActionDict.index(forKey: longArg!) != nil {
-                        boolActionDict[longArg!]!(true, settings)
-                    } else {
-                        var argVal = ""
-                        if args.count > i + 1 {
-                            i += 1
-                            argVal = args[i]
-                        } else {
-                            throw FindError(msg: "Missing argument for option \(arg)")
-                        }
-                        
-                        if stringActionDict.index(forKey: longArg!) != nil {
-                            stringActionDict[longArg!]!(argVal, settings)
-                        } else if intActionDict.index(forKey: longArg!) != nil {
-                            let intVal = Int32(argVal) ?? 0
-                            intActionDict[longArg!]!(intVal, settings)
-                        } else if longActionDict.index(forKey: longArg!) != nil {
-                            let longVal = UInt64(argVal) ?? 0
-                            longActionDict[longArg!]!(longVal, settings)
-                        } else if longArg == "settings-file" {
-                            do {
-                                try updateSettingsFromFile(argVal, settings: settings)
-                            } catch let err as FindError {
-                                throw err
+                var argNames: [String] = []
+                var argVal: String? = nil
+                if arg.hasPrefix("--") {
+                    if arg.count > 2 {
+                        // Process long arg
+                        arg = String(arg[arg.index(arg.startIndex, offsetBy: 2)...])
+                        if arg.contains("=") {
+                            let parts = arg.split(separator: "=")
+                            if parts.count > 0 {
+                                arg = String(parts[0])
                             }
+                            if parts.count > 1 {
+                                argVal = String(parts[1])
+                            }
+                        }
+                        if longArgDict.index(forKey: arg) != nil {
+                            let longArg = longArgDict[arg]!
+                            argNames.append(longArg)
                         } else {
                             throw FindError(msg: "Invalid option: \(arg)")
+                        }
+                    } else {
+                        throw FindError(msg: "Invalid option: \(arg)")
+                    }
+                } else if arg.count > 1 {
+                    // Process short arg(s)
+                    arg = String(arg[arg.index(arg.startIndex, offsetBy: 1)...])
+                    for c in arg {
+                        let cs = String(c)
+                        if longArgDict.index(forKey: cs) != nil {
+                            let longArg = longArgDict[cs]!
+                            argNames.append(longArg)
+                        } else {
+                            throw FindError(msg: "Invalid option: \(cs)")
                         }
                     }
                 } else {
                     throw FindError(msg: "Invalid option: \(arg)")
                 }
+                
+                for argName in argNames {
+                    if boolActionDict.index(forKey: argName) != nil {
+                        argMap[argName] = true
+                    } else {
+                        if argVal == nil {
+                            if args.count > i + 1 {
+                                i += 1
+                                argVal = args[i]
+                            } else {
+                                throw FindError(msg: "Missing argument for option \(arg)")
+                            }
+                        }
+                        if stringActionDict.index(forKey: argName) != nil {
+                            var strVals: [String] = []
+                            if argMap.index(forKey: argName) != nil {
+                                strVals = (argMap[argName] as! Array<String>)
+                            }
+                            strVals.append(argVal!)
+                            argMap[argName] = strVals
+                        } else if intActionDict.index(forKey: argName) != nil {
+                            let intVal = Int32(argVal!) ?? 0
+                            argMap[argName] = intVal
+                        } else if longActionDict.index(forKey: argName) != nil {
+                            let longVal = UInt64(argVal!) ?? 0
+                            argMap[argName] = longVal
+                        } else if argName == "settings-file" {
+                            argMap[argName] = argVal!
+                        } else {
+                            throw FindError(msg: "Invalid option: \(arg)")
+                        }
+                    }
+                }
             } else {
-                settings.addPath(args[i])
+                var paths: [String] = []
+                if argMap.index(forKey: "path") != nil {
+                    paths = (argMap["path"] as! Array<String>)
+                }
+                paths.append(arg)
+                argMap["path"] = paths
             }
             i += 1
         }
+        return argMap
+    }
+
+    public func settingsFromArgs(_ args: [String]) throws -> FindSettings {
+        let settings = FindSettings()
+        // default printFiles to true since running as cli
+        settings.printFiles = true
+        let argMap = try argMapFromArgs(args)
+        try updateSettingsFromArgMap(settings, argMap: argMap)
         return settings
     }
 
