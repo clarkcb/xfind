@@ -167,7 +167,7 @@ public class FindOptions
 		}
 	}
 
-	public void UpdateSettingsFromJson(string jsonString, FindSettings settings)
+	private void UpdateSettingsFromJson(FindSettings settings, string jsonString)
 	{
 		var settingsDict = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString);
 		if (settingsDict == null) throw new FindException($"Unable to parse json");
@@ -185,7 +185,7 @@ public class FindOptions
 		}
 	}
 
-	private void UpdateSettingsFromFile(string filePath, FindSettings settings)
+	private void UpdateSettingsFromFile(FindSettings settings, string filePath)
 	{
 		var expandedPath = FileUtil.ExpandPath(filePath);
 		var fileInfo = new FileInfo(expandedPath);
@@ -194,20 +194,34 @@ public class FindOptions
 		if (!fileInfo.Extension.Equals(".json"))
 			throw new FindException($"Invalid settings file (must be JSON): {filePath}");
 		var contents = FileUtil.GetFileContents(expandedPath, Encoding.Default);
-		UpdateSettingsFromJson(contents, settings);
+		try
+		{
+			UpdateSettingsFromJson(settings, contents);
+		}
+		catch (JsonException e)
+		{
+			throw new FindException($"Invalid JSON: {e.Message}");
+		}
 	}
 
 	public FindSettings SettingsFromJson(string jsonString)
 	{
 		var settings = new FindSettings();
-		UpdateSettingsFromJson(jsonString, settings);
+		try
+		{
+			UpdateSettingsFromJson(settings, jsonString);
+		}
+		catch (JsonException e)
+		{
+			throw new FindException($"Invalid JSON: {e.Message}");
+		}
 		return settings;
 	}
 
 	public FindSettings SettingsFromFile(string filePath)
 	{
 		var settings = new FindSettings();
-		UpdateSettingsFromFile(filePath, settings);
+		UpdateSettingsFromFile(settings, filePath);
 		return settings;
 	}
 
@@ -222,63 +236,93 @@ public class FindOptions
 			var arg = queue.Dequeue();
 			if (arg.StartsWith('-'))
 			{
-				try
+				var argNames = new List<string>();
+				if (arg.StartsWith("--") && arg.Length > 2)
 				{
-					while (arg.StartsWith('-'))
+					// Process long arg
+					arg = arg[2..];
+					// TODO: if = in arg, split
+					if (arg.Contains('='))
 					{
-						arg = arg[1..];
+						var parts = arg.Split('=');
+						if (parts.Length > 0 && !string.IsNullOrEmpty(parts[0]))
+						{
+							arg = parts[0];
+						}
+						if (parts.Length > 1 && !string.IsNullOrEmpty(parts[1]))
+						{
+							queue = new Queue<string>(queue.Prepend(parts[1]));
+						}
+					}
+					if (LongArgDictionary.TryGetValue(arg, out var outArg))
+					{
+						argNames.Add(outArg);
+					}
+					else
+					{
+						throw new FindException($"Invalid option: {arg}");
 					}
 				}
-				catch (InvalidOperationException e)
+				else if (arg.Length > 1)
 				{
-					throw new FindException(e.Message);
-				}
-				if (string.IsNullOrWhiteSpace(arg))
-				{
-					throw new FindException("Invalid option: -");
+					// Process short arg(s)
+					arg = arg[1..];
+					foreach (var c in arg)
+					{
+						if (LongArgDictionary.TryGetValue(c.ToString(), out var outArg))
+						{
+							argNames.Add(outArg);
+						} 
+						else
+						{
+							throw new FindException($"Invalid option: {c}");
+						}
+					}
 				}
 
-				var longArg = LongArgDictionary.GetValueOrDefault(arg, arg);
-				if (BoolActionDictionary.TryGetValue(longArg, out var boolAction))
+				foreach (var argName in argNames)
 				{
-					boolAction(true, settings);
-				}
-				else if (StringActionDictionary.TryGetValue(longArg, out var stringAction))
-				{
-					try
+					if (BoolActionDictionary.TryGetValue(argName, out var boolAction))
 					{
-						stringAction(queue.Dequeue(), settings);
+						boolAction(true, settings);
 					}
-					catch (InvalidOperationException)
+					else if (StringActionDictionary.TryGetValue(argName, out var stringAction))
 					{
-						throw new FindException($"Missing value for option {arg}");
+						try
+						{
+							stringAction(queue.Dequeue(), settings);
+						}
+						catch (InvalidOperationException)
+						{
+							throw new FindException($"Missing value for option {arg}");
+						}
 					}
-				}
-				else if (IntActionDictionary.TryGetValue(longArg, out var intAction))
-				{
-					try
+					else if (IntActionDictionary.TryGetValue(argName, out var intAction))
 					{
-						intAction(int.Parse(queue.Dequeue()), settings);
+						try
+						{
+							intAction(int.Parse(queue.Dequeue()), settings);
+						}
+						catch (InvalidOperationException)
+						{
+							throw new FindException($"Missing value for option {arg}");
+						}
 					}
-					catch (InvalidOperationException)
+					else if (argName.Equals("settings-file"))
 					{
-						throw new FindException($"Missing value for option {arg}");
+						try
+						{
+							UpdateSettingsFromFile(settings, queue.Dequeue());
+						}
+						catch (InvalidOperationException)
+						{
+							throw new FindException($"Missing value for option {arg}");
+						}
 					}
-				}
-				else if (longArg.Equals("settings-file"))
-				{
-					try
+					else
 					{
-						UpdateSettingsFromFile(queue.Dequeue(), settings);
+						throw new FindException($"Invalid option: {arg}");
 					}
-					catch (InvalidOperationException)
-					{
-						throw new FindException($"Missing value for option {arg}");
-					}
-				}
-				else
-				{
-					throw new FindException($"Invalid option: {arg}");
 				}
 			}
 			else
