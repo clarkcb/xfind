@@ -2,6 +2,7 @@ package scalafind
 
 import scalafind.FileType.FileType
 import scalafind.FileUtil.{getExtension, isHidden}
+import scalafind.FindError.{INVALID_RANGE_MINDEPTH_MAXDEPTH, INVALID_RANGE_MINLASTMOD_MAXLASTMOD, INVALID_RANGE_MINSIZE_MAXSIZE, STARTPATH_DOES_NOT_MATCH, STARTPATH_NOT_DEFINED, STARTPATH_NOT_FOUND, STARTPATH_NOT_READABLE}
 
 import java.io.IOException
 import java.nio.file.attribute.{BasicFileAttributes, FileTime}
@@ -184,7 +185,7 @@ class Finder (settings: FindSettings) {
           val maxDepth = if (settings.recursive) settings.maxDepth else 1
           recFindPath(fp, settings.minDepth, maxDepth, 1)
         } else {
-          throw new FindException(STARTPATH_DOES_NOT_MATCH)
+          throw new FindException(STARTPATH_DOES_NOT_MATCH.toString)
         }
       }
     } else {
@@ -195,7 +196,7 @@ class Finder (settings: FindSettings) {
           case Some(fileResult) =>
             Seq(fileResult)
           case None =>
-            throw new FindException(STARTPATH_DOES_NOT_MATCH)
+            throw new FindException(STARTPATH_DOES_NOT_MATCH.toString)
         }
       }
     }
@@ -238,14 +239,6 @@ class Finder (settings: FindSettings) {
 }
 
 object Finder {
-  private val STARTPATH_NOT_DEFINED = "Startpath not defined"
-  private val STARTPATH_NOT_FOUND = "Startpath not found"
-  private val STARTPATH_NOT_READABLE = "Startpath not readable"
-  private val INVALID_RANGE_MINDEPTH_MAXDEPTH = "Invalid range for mindepth and maxdepth"
-  private val INVALID_RANGE_MINLASTMOD_MAXLASTMOD = "Invalid range for minlastmod and maxlastmod"
-  private val INVALID_RANGE_MINSIZE_MAXSIZE = "Invalid range for minsize and maxsize"
-  private val STARTPATH_DOES_NOT_MATCH = "Startpath does not match find settings"
-
   private def compareOptionLocalDateTimes(d1: Option[LocalDateTime], d2: Option[LocalDateTime]): Int = {
     if (d1.isEmpty || d2.isEmpty) {
       0
@@ -255,12 +248,12 @@ object Finder {
   }
 
   private val settingsTests: Seq[FindSettings => Option[String]] = Seq[FindSettings => Option[String]](
-    ss => if (ss.paths.nonEmpty) None else Some(STARTPATH_NOT_DEFINED),
-    ss => if (ss.paths.forall { p => Files.exists(p) || Files.exists(FileUtil.expandPath(p)) }) None else Some(STARTPATH_NOT_FOUND),
-    ss => if (ss.paths.forall { p => Files.isReadable(p) || Files.isReadable(FileUtil.expandPath(p)) }) None else Some(STARTPATH_NOT_READABLE),
-    ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some(INVALID_RANGE_MINDEPTH_MAXDEPTH) else None,
-    ss => if (compareOptionLocalDateTimes(ss.maxLastMod, ss.minLastMod) < 0) Some(INVALID_RANGE_MINLASTMOD_MAXLASTMOD) else None,
-    ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some(INVALID_RANGE_MINSIZE_MAXSIZE) else None,
+    ss => if (ss.paths.nonEmpty) None else Some(STARTPATH_NOT_DEFINED.toString),
+    ss => if (ss.paths.forall { p => Files.exists(p) || Files.exists(FileUtil.expandPath(p)) }) None else Some(STARTPATH_NOT_FOUND.toString),
+    ss => if (ss.paths.forall { p => Files.isReadable(p) || Files.isReadable(FileUtil.expandPath(p)) }) None else Some(STARTPATH_NOT_READABLE.toString),
+    ss => if (ss.maxDepth > -1 && ss.minDepth > ss.maxDepth) Some(INVALID_RANGE_MINDEPTH_MAXDEPTH.toString) else None,
+    ss => if (compareOptionLocalDateTimes(ss.maxLastMod, ss.minLastMod) < 0) Some(INVALID_RANGE_MINLASTMOD_MAXLASTMOD.toString) else None,
+    ss => if (ss.maxSize > 0 && ss.minSize > ss.maxSize) Some(INVALID_RANGE_MINSIZE_MAXSIZE.toString) else None,
   )
 
   private def matchesAnyPattern(s: String, patterns: Set[Regex]): Boolean = {
