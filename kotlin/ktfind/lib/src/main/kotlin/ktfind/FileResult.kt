@@ -100,9 +100,9 @@ class FileResultFormatter(val settings: FindSettings) {
         val prefix = if (matchStartIndex > 0) s.substring(0, matchStartIndex) else ""
         val suffix = if (matchEndIndex < s.length) s.substring(matchEndIndex) else ""
         return prefix +
-                Color.GREEN +
+                Color.GREEN.value +
                 s.substring(matchStartIndex, matchEndIndex) +
-                Color.RESET +
+                Color.RESET.value +
                 suffix
     }
 

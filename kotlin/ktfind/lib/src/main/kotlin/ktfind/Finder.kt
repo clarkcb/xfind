@@ -10,15 +10,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import kotlin.io.path.extension
 import kotlin.io.path.name
-import kotlin.streams.toList
-
-private const val STARTPATH_NOT_DEFINED = "Startpath not defined"
-private const val STARTPATH_NOT_READABLE = "Startpath not readable"
-private const val STARTPATH_NOT_FOUND = "Startpath not found"
-private const val INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH = "Invalid range for mindepth and maxdepth"
-private const val INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD = "Invalid range for minlastmod and maxlastmod"
-private const val INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE = "Invalid range for minsize and maxsize"
-private const val STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS = "Startpath does not match find settings"
 
 /**
  * @author cary on 7/23/16.
@@ -37,7 +28,7 @@ class Finder(val settings: FindSettings) {
 
     private fun validateSettings(settings: FindSettings) {
         if (settings.paths.isEmpty()) {
-            throw FindException(STARTPATH_NOT_DEFINED)
+            throw FindException(FindError.STARTPATH_NOT_DEFINED.message)
         }
         for (path in settings.paths) {
             var p = path
@@ -46,20 +37,20 @@ class Finder(val settings: FindSettings) {
             }
             if (Files.exists(p)) {
                 if (!Files.isReadable(p)) {
-                    throw FindException(STARTPATH_NOT_READABLE)
+                    throw FindException(FindError.STARTPATH_NOT_READABLE.message)
                 }
             } else {
-                throw FindException(STARTPATH_NOT_FOUND)
+                throw FindException(FindError.STARTPATH_NOT_FOUND.message)
             }
         }
         if (settings.maxDepth > -1 && settings.maxDepth < settings.minDepth) {
-            throw FindException(INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH)
+            throw FindException(FindError.INVALID_RANGE_FOR_MINDEPTH_AND_MAXDEPTH.message)
         }
         if (settings.maxLastMod != null && settings.minLastMod != null && settings.maxLastMod < settings.minLastMod) {
-            throw FindException(INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD)
+            throw FindException(FindError.INVALID_RANGE_FOR_MINLASTMOD_AND_MAXLASTMOD.message)
         }
         if (settings.maxSize > 0 && settings.maxSize < settings.minSize) {
-            throw FindException(INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE)
+            throw FindException(FindError.INVALID_RANGE_FOR_MINSIZE_AND_MAXSIZE.message)
         }
     }
 
@@ -269,7 +260,7 @@ class Finder(val settings: FindSettings) {
                 val maxDepth = if (settings.recursive) settings.maxDepth else 1
                 return recFindPath(fp, settings.minDepth, maxDepth, 1)
             } else {
-                throw FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS)
+                throw FindException(FindError.STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
             }
         } else {
             // if min_depth > zero, we can skip since the file is at depth zero
@@ -280,7 +271,7 @@ class Finder(val settings: FindSettings) {
             if (fr != null) {
                 return listOf(fr)
             } else {
-                throw FindException(STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS)
+                throw FindException(FindError.STARTPATH_DOES_NOT_MATCH_FIND_SETTINGS.message)
             }
         }
     }

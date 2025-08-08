@@ -118,7 +118,7 @@ class FindOptions {
         "path" to
                 { s, ss -> ss.copy(paths = addPath(s, ss.paths)) },
         "settings-file" to
-                { s, ss -> updateSettingsFromFile(s, ss) },
+                { s, ss -> updateSettingsFromFile(ss, s) },
         "sort-by" to
                 { s, ss -> ss.copy(sortBy = SortBy.forName(s)) },
     )
@@ -133,10 +133,10 @@ class FindOptions {
         "minsize" to { l, ss -> ss.copy(minSize = l) }
     )
 
-    private fun applySettings(key: String, lst: List<Any>, settings: FindSettings): FindSettings {
+    private fun applySettings(key: String, lst: List<Any?>, settings: FindSettings): FindSettings {
         return if (lst.isEmpty()) settings
         else {
-            applySettings(key, lst.drop(1), applySetting(key, lst.first(), settings))
+            applySettings(key, lst.drop(1), applySetting(key, lst.first()!!, settings))
         }
     }
 
@@ -150,6 +150,8 @@ class FindOptions {
         } else if (stringActionMap.containsKey(key)) {
             return if (obj is String) {
                 this.stringActionMap[key]!!.invoke(obj, settings)
+            } else if (obj is Collection<Any?>) {
+                applySettings(key, obj.filter {o -> o != null}.toList(), settings)
             } else if (obj is JSONArray) {
                 applySettings(key, obj.toList(), settings)
             } else {
@@ -176,7 +178,7 @@ class FindOptions {
         }
     }
 
-    fun updateSettingsFromJson(json: String, settings: FindSettings): FindSettings {
+    fun updateSettingsFromJson(settings: FindSettings, json: String): FindSettings {
         val jsonObject = JSONObject(JSONTokener(json))
         fun recSettingsFromJson(keys: List<String>, settings: FindSettings): FindSettings {
             return if (keys.isEmpty()) settings
@@ -199,7 +201,7 @@ class FindOptions {
         return recSettingsFromJson(keys, settings)
     }
 
-    private fun updateSettingsFromFile(filePath: String, settings: FindSettings): FindSettings {
+    private fun updateSettingsFromFile(settings: FindSettings, filePath: String): FindSettings {
         val path = FileUtil.expandPath(Paths.get(filePath));
         if (!Files.exists(path)) {
             throw FindException("Settings file not found: $filePath")
@@ -209,7 +211,7 @@ class FindOptions {
         }
         try {
             val json = path.toFile().readText()
-            return updateSettingsFromJson(json, settings)
+            return updateSettingsFromJson(settings, json)
         } catch (_: FileNotFoundException) {
             throw FindException("Settings file not found: $filePath")
         } catch (_: IOException) {
@@ -219,43 +221,129 @@ class FindOptions {
         }
     }
 
-    fun settingsFromArgs(args: Array<String>): FindSettings {
-        fun recSettingsFromArgs(args: List<String>, settings: FindSettings): FindSettings {
-            if (args.isEmpty()) return settings
-            val nextArg = args.first()
-            if (nextArg.startsWith("-")) {
-                val arg = nextArg.dropWhile { it == '-' }
-                val longArg = longArgMap[arg]
-                return if (boolActionMap.containsKey(longArg)) {
-                    val ss = boolActionMap[longArg]!!.invoke(true, settings)
-                    recSettingsFromArgs(args.drop(1), ss)
-                } else if (stringActionMap.containsKey(longArg)
-                    || intActionMap.containsKey(longArg)
-                    || longActionMap.containsKey(longArg)) {
-                    if (args.size > 1) {
-                        val argVal = args.drop(1).first()
-                        val ss = if (stringActionMap.containsKey(longArg)) {
-                            stringActionMap[longArg]!!.invoke(argVal, settings)
-                        } else if (intActionMap.containsKey(longArg)) {
-                            intActionMap[longArg]!!.invoke(argVal.toInt(), settings)
-                        } else if (longActionMap.containsKey(longArg)) {
-                            longActionMap[longArg]!!.invoke(argVal.toLong(), settings)
-                        } else {
-                            throw FindException("Unhandled option $arg")
-                        }
-                        recSettingsFromArgs(args.drop(2), ss)
+    fun argMapFromArgs(args: Array<String>): Map<String, Any> {
+        val longArgWithValRegex = Regex("^--([a-zA-Z0-9-]+)=(.*)$")
+        val longArgWithoutValRegex = Regex("^--([a-zA-Z0-9-]+)$")
+        val shortArgsRegex = Regex("^-([a-zA-Z0-9]{2,})$")
+        val shortArgRegex = Regex("^-([a-zA-Z0-9])$")
+        fun updateArgMap(argName: String, argVal: String?, argMap: Map<String, Any>): Map<String, Any> {
+            if (!longArgMap.containsKey(argName)) {
+                throw FindException("Invalid option: $argName")
+            }
+            val longArg = longArgMap[argName]!!
+            return if (boolActionMap.containsKey(longArg)) {
+                argMap + Pair(longArg, true)
+            } else if (stringActionMap.containsKey(longArg)) {
+                if (argVal != null) {
+                    if (argMap.containsKey(longArg) && argMap[longArg] is List<*>) {
+                        val existingVal = argMap[longArg] as List<*>
+                        argMap + Pair(longArg, existingVal + listOf(argVal))
                     } else {
-                        throw FindException("Missing value for option $arg")
+                        argMap + Pair(longArg, listOf(argVal))
                     }
                 } else {
-                    throw FindException("Invalid option: $arg")
+                    throw FindException("Missing value for option $argName")
+                }
+            } else if (intActionMap.containsKey(longArg)) {
+                if (argVal != null) {
+                    argMap + Pair(longArg, argVal.toInt())
+                } else {
+                    throw FindException("Missing value for option $argName")
+                }
+            } else if (longActionMap.containsKey(longArg)) {
+                if (argVal != null) {
+                    argMap + Pair(longArg, argVal.toLong())
+                } else {
+                    throw FindException("Missing value for option $argName")
                 }
             } else {
-                return recSettingsFromArgs(args.drop(1), settings.copy(paths = addPath(nextArg, settings.paths)))
+                throw FindException("Unhandled option $argName")
             }
         }
-        // default printFiles to true since running as cli
-        return recSettingsFromArgs(args.toList(), getDefaultSettings().copy(printFiles = true))
+        fun recArgMapFromArgs(args: List<String>, argMap: Map<String, Any>): Map<String, Any> {
+            if (args.isEmpty()) return argMap
+            val nextArg = args.first()
+            if (nextArg matches longArgWithValRegex) {
+                val match = longArgWithValRegex.matchEntire(nextArg)
+                val longArg = match!!.groupValues[1]
+                val argVal = match.groupValues[2]
+                return recArgMapFromArgs(args.drop(1), updateArgMap(longArg, argVal, argMap))
+            }
+            if (nextArg matches longArgWithoutValRegex) {
+                val match = longArgWithoutValRegex.matchEntire(nextArg)
+                val longArg = match!!.groupValues[1]
+                val argVal: String? =
+                    if ((stringActionMap.containsKey(longArg)
+                                || intActionMap.containsKey(longArg)
+                                || longActionMap.containsKey(longArg))
+                        && args.size > 1) {
+                        args[1]
+                    } else {
+                        null
+                    }
+                val nextArgs =
+                    if (argVal != null) {
+                        args.drop(2)
+                    } else {
+                        args.drop(1)
+                    }
+                return recArgMapFromArgs(nextArgs, updateArgMap(longArg, argVal, argMap))
+            }
+            if (nextArg matches shortArgsRegex) {
+                val match = shortArgsRegex.matchEntire(nextArg)
+                val shortArgs = match!!.groupValues[1]
+                val shortArgList = shortArgs.map { c -> "-$c" }
+                val nextArgs = shortArgList + args.drop(1)
+                return recArgMapFromArgs(nextArgs, argMap)
+            }
+            if (nextArg matches shortArgRegex) {
+                val match = shortArgRegex.matchEntire(nextArg)
+                val shortArg = match!!.groupValues[1]
+                if (!longArgMap.containsKey(shortArg)) {
+                    throw FindException("Invalid option: $shortArg")
+                }
+                val longArg = longArgMap[shortArg]!!
+                val argVal: String? =
+                    if ((stringActionMap.containsKey(longArg)
+                                || intActionMap.containsKey(longArg)
+                                || longActionMap.containsKey(longArg))
+                        && args.size > 1) {
+                        args[1]
+                    } else {
+                        null
+                    }
+                val nextArgs =
+                    if (argVal != null) {
+                        args.drop(2)
+                    } else {
+                        args.drop(1)
+                    }
+                return recArgMapFromArgs(nextArgs, updateArgMap(longArg, argVal, argMap))
+            }
+            return recArgMapFromArgs(args.drop(1), argMap + Pair("path", listOf(nextArg)))
+        }
+        return recArgMapFromArgs(args.toList(), mapOf())
+    }
+
+    fun settingsFromArgs(args: Array<String>): FindSettings {
+        if (args.isEmpty()) {
+            throw FindException(FindError.STARTPATH_NOT_DEFINED.message)
+        }
+        var settings = getDefaultSettings().copy(printFiles = true)
+        val argMap = argMapFromArgs(args)
+        if (argMap.containsKey("help")) {
+            return settings.copy(printUsage = true)
+        }
+        if (argMap.containsKey("version")) {
+            return settings.copy(printVersion = true)
+        }
+        for ((key, value) in argMap) {
+            settings = applySetting(key, value, settings)
+        }
+        if (settings.paths.isEmpty()) {
+            throw FindException(FindError.STARTPATH_NOT_DEFINED.message)
+        }
+        return settings
     }
 
     fun usage() {
@@ -273,7 +361,7 @@ class FindOptions {
 
         val optPairs = findOptions.map { Pair(getOptString(it), it.desc) }
         val longest = optPairs.maxOfOrNull { it.first.length }
-        val format = " %1${'$'}-${longest}s  %2${'$'}s\n"
+        val format = " %1$-${longest}s  %2${'$'}s\n"
         for (o in optPairs) {
             sb.append(String.format(format, o.first, o.second))
         }
