@@ -134,11 +134,10 @@ class FindOptions {
     };
   }
 
-  Future<void> updateSettingsFromJson(
-      String jsonString, FindSettings settings) async {
-    await ready.then((_) {
-      Map jsonMap = json.decode(jsonString);
-      var keys = jsonMap.keys.toList();
+  Future<void> updateSettingsFromArgMap(
+      FindSettings settings, Map<String, dynamic> argMap) async {
+    await ready.then((_) async {
+      var keys = argMap.keys.toList();
       // keys are sorted so that output is consistent across all versions
       keys.sort();
       // first check for invalid options
@@ -148,7 +147,7 @@ class FindOptions {
         }
       }
       for (var key in keys) {
-        var value = jsonMap[key];
+        var value = argMap[key];
         if (boolActionMap.containsKey(key)) {
           if (value is bool) {
             boolActionMap[key](value, settings);
@@ -175,6 +174,20 @@ class FindOptions {
           } else {
             throw FindException('Invalid value for option: $key');
           }
+        } else if (key == 'settings-file') {
+          if (value is String) {
+            await updateSettingsFromFile(settings, value);
+          } else if (value is List) {
+            for (var item in value) {
+              if (item is String) {
+                await updateSettingsFromFile(settings, item);
+              } else {
+                throw FindException('Invalid value for option: $key');
+              }
+            }
+          } else {
+            throw FindException('Invalid value for option: $key');
+          }
         } else {
           throw FindException('Invalid option: $key');
         }
@@ -182,8 +195,14 @@ class FindOptions {
     });
   }
 
+  Future<void> updateSettingsFromJson(
+      FindSettings settings, String jsonString) async {
+    Map jsonMap = json.decode(jsonString);
+    await updateSettingsFromArgMap(settings, jsonMap.cast<String, dynamic>());
+  }
+
   Future<void> updateSettingsFromFile(
-      String filePath, FindSettings settings) async {
+      FindSettings settings, String filePath) async {
     var expandedPath = FileUtil.expandPath(filePath);
     if (FileSystemEntity.typeSync(expandedPath) ==
         FileSystemEntityType.notFound) {
@@ -191,57 +210,91 @@ class FindOptions {
     }
     if (expandedPath.endsWith('.json')) {
       var contents = await File(expandedPath).readAsString();
-      await updateSettingsFromJson(contents, settings);
+      await updateSettingsFromJson(settings, contents);
     } else {
       throw FindException('Invalid settings file (must be JSON): $filePath');
     }
   }
 
-  Future<FindSettings> settingsFromArgs(List<String> args) async {
+  Future<Map<String, dynamic>> argMapFromArgs(List<String> args) async {
     return await ready.then((_) async {
-      var settings = FindSettings();
-      // default printFiles to true since running as cli
-      settings.printFiles = true;
+      var argMap = {};
       var it = args.iterator;
       while (it.moveNext()) {
         var arg = it.current;
         if (arg.startsWith('-')) {
-          while (arg.startsWith('-')) {
-            arg = arg.substring(1);
-          }
-          if (longArgMap.containsKey(arg)) {
-            var longArg = longArgMap[arg];
-            if (boolActionMap.containsKey(longArg)) {
-              boolActionMap[longArg](true, settings);
-            } else if (stringActionMap.containsKey(longArg) ||
-                intActionMap.containsKey(longArg)) {
-              if (it.moveNext()) {
-                var s = it.current;
-                if (stringActionMap.containsKey(longArg)) {
-                  stringActionMap[longArg](s, settings);
-                } else {
-                  intActionMap[longArg](int.parse(s), settings);
-                }
-              } else {
-                throw FindException('Missing value for option $arg');
+          var argNames = <String>[];
+          String? argVal;
+          if (arg.startsWith('--') && arg.length > 2) {
+            var argName = arg.substring(2);
+            if (argName.contains('=')) {
+              var parts = argName.split('=');
+              argName = parts[0];
+              if (parts.length > 1) {
+                argVal = parts.sublist(1).join('=');
               }
-            } else if (longArg == 'settings-file') {
-              if (it.moveNext()) {
-                var s = it.current;
-                await updateSettingsFromFile(s, settings);
-              } else {
-                throw FindException('Missing value for option $arg');
-              }
+            }
+            if (longArgMap.containsKey(argName)) {
+              argNames.add(argName);
             } else {
               throw FindException('Invalid option: $arg');
+            }
+          } else if (arg.length > 1) {
+            for (var i = 1; i < arg.length; i++) {
+              if (longArgMap.containsKey(arg[i])) {
+                argNames.add(longArgMap[arg[i]]!);
+              } else {
+                throw FindException('Invalid option: $arg');
+              }
             }
           } else {
             throw FindException('Invalid option: $arg');
           }
+
+          for (var argName in argNames) {
+            if (boolActionMap.containsKey(argName)) {
+              argMap[argName] = true;
+            } else if (stringActionMap.containsKey(argName) ||
+                intActionMap.containsKey(argName) ||
+                argName == 'settings-file') {
+              if (argVal == null) {
+                if (it.moveNext()) {
+                  argVal = it.current;
+                } else {
+                  throw FindException('Missing value for option $arg');
+                }
+              }
+              if (stringActionMap.containsKey(argName) ||
+                  argName == 'settings-file') {
+                if (!argMap.containsKey(argName)) {
+                  argMap[argName] = [];
+                }
+                argMap[argName].add(argVal);
+              } else {
+                argMap[argName] = int.parse(argVal);
+              }
+            } else {
+              throw FindException('Invalid option: $arg');
+            }
+          }
         } else {
-          settings.paths.add(arg);
+          var path = 'path';
+          if (!argMap.containsKey(path)) {
+            argMap[path] = [];
+          }
+          argMap[path].add(arg);
         }
       }
+      return argMap.cast<String, dynamic>();
+    });
+  }
+
+  Future<FindSettings> settingsFromArgs(List<String> args) async {
+    return await ready.then((_) async {
+      var settings = FindSettings();
+      settings.printFiles = true; // default to printing files
+      var argMap = await argMapFromArgs(args);
+      await updateSettingsFromArgMap(settings, argMap);
       return settings;
     });
   }

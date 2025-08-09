@@ -41,7 +41,7 @@ void main() {
         '}';
     var options = FindOptions();
     var settings = FindSettings();
-    await options.updateSettingsFromJson(json, settings);
+    await options.updateSettingsFromJson(settings, json);
 
     expect(settings.paths.length, 1);
     expect(settings.paths.first, '~/src/xfind/');
