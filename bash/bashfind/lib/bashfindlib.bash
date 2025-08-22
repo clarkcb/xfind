@@ -1031,6 +1031,78 @@ array_to_string () {
     echo $s
 }
 
+arg_wants_val () {
+    local arg="$1"
+
+    case "$arg" in
+        --in-archiveext)
+            return 1
+            ;;
+        --in-archivefilepattern)
+            return 1
+            ;;
+        -d | --in-dirpattern)
+            return 1
+            ;;
+        -x | --in-ext)
+            return 1
+            ;;
+        -f | --in-filepattern)
+            return 1
+            ;;
+        =t | --in-filetype)
+            return 1
+            ;;
+        --maxdepth)
+            return 1
+            ;;
+        --maxlastmod)
+            return 1
+            ;;
+        --maxsize)
+            return 1
+            ;;
+        --mindepth)
+            return 1
+            ;;
+        --minlastmod)
+            return 1
+            ;;
+        --minsize)
+            return 1
+            ;;
+        --out-archiveext)
+            return 1
+            ;;
+        --out-archivefilepattern)
+            return 1
+            ;;
+        -D | --out-dirpattern)
+            return 1
+            ;;
+        -X | --out-ext)
+            return 1
+            ;;
+        -F | --out-filepattern)
+            return 1
+            ;;
+        -T | --out-filetype)
+            return 1
+            ;;
+        --path)
+            return 1
+            ;;
+        --settings-file)
+            return 1
+            ;;
+        --sort-by)
+            return 1
+            ;;
+    esac
+
+    return 0
+}
+
 settings_from_args () {
     local args=("$@")
     local i=0
@@ -1067,7 +1139,7 @@ settings_from_args () {
             -h | --help)
                 PRINT_USAGE=true
                 ;;
-            --includearchives)
+            -z | --includearchives)
                 INCLUDE_ARCHIVES=true
                 ;;
             --includehidden)
@@ -1310,21 +1382,57 @@ settings_from_args () {
             --sort-descending)
                 SORT_DESCENDING=true
                 ;;
-            --verbose)
+            -v | --verbose)
                 VERBOSE=true
                 ;;
             -V | --version)
                 PRINT_VERSION=true
                 ;;
-            *)
-                if [[ "${arg:0:1}" == "-" ]]
+            --*)
+                no_dash_arg=${arg:2}
+                # If arg contains = then split into arg and arg2
+                if [[ "$arg" == *=* ]]
                 then
-                    while [[ "${arg:0:1}" == "-" ]]
-                    do
-                        arg=${arg:1}
-                    done
+                    IFS='=' read -ra ARG_VAL <<< "$arg"
+                    if [ ${#ARG_VAL[@]} -eq 2 ]
+                    then
+                        settings_from_args ${ARG_VAL[*]}
+                    else
+                        exit_with_error "Invalid option: $no_dash_arg"
+                    fi
+                else
+                    exit_with_error "Invalid option: $no_dash_arg"
+                fi
+                ;;
+            -*)
+                arg=${arg:1}
+                if [ ${#arg} -eq 1 ]
+                then
                     exit_with_error "Invalid option: $arg"
                 fi
+                SHORT_ARGS=()
+                while [ ${#arg} -gt 0 ]
+                do
+                    local short_arg="-${arg:0:1}"
+                    SHORT_ARGS+=($short_arg)
+                    arg=${arg:1}
+                done
+                # Check last elem with arg_wants_val
+                last_elem="${SHORT_ARGS[@]: -1}"
+                arg_wants_val $last_elem
+                wants_val=$?
+                if [ $wants_val -eq 1 ]
+                then
+                    if [ -z "$arg2" ]
+                    then
+                        exit_with_error "Missing argument for option $last_elem"
+                    fi
+                    SHORT_ARGS+=($arg2)
+                    i=$(($i + 1))
+                fi
+                settings_from_args ${SHORT_ARGS[*]}
+                ;;
+            *)
                 PATHS+=($arg)
                 ;;
         esac
