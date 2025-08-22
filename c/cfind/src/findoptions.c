@@ -531,69 +531,129 @@ error_t settings_from_args(const int argc, char *argv[], FindSettings *settings)
             if (c == arglen) {
                 return E_INVALID_ARG;
             }
-            char arg_name[arglen - c + 1];
-            strncpy(arg_name, argv[i] + c, arglen - c);
-            arg_name[arglen - c] = '\0';
 
-            int bool_idx = index_of_string_in_array(arg_name, bool_option_names, bool_option_count);
-            if (bool_idx == -1) {
-                bool_idx = index_of_string_in_array(arg_name, bool_option_abbrs, bool_option_count);
+            // Adjust arg_name in case it includes '=' + val
+            size_t arg_name_len = arglen - c + 1;
+            const char *eq_ptr = strchr(argv[i], '=');
+            if (eq_ptr != NULL) {
+                arg_name_len = eq_ptr - argv[i] - c;
             }
-            if (bool_idx > -1) {
-                const error_t e = set_bool_setting(bool_idx, true, settings);
-                if (e != E_OK) return e;
-                i++;
-            } else {
-                char *arg_val = NULL;
-                if (i < argc - 1) {
-                    if (strnlen(argv[i+1], MAX_STRING_LENGTH) > 0) {
-                        arg_val = argv[i+1];
-                        i += 2;
-                    } else {
-                        return E_INVALID_ARG;
-                    }
-                }
+            char arg_name[arg_name_len];
+            strncpy(arg_name, argv[i] + c, arg_name_len);
+            arg_name[arg_name_len] = '\0';
 
-                int str_idx = index_of_string_in_array(arg_name, string_option_names, string_option_count);
-                if (str_idx == -1) {
-                    str_idx = index_of_string_in_array(arg_name, string_option_abbrs, string_option_count);
-                }
-                if (str_idx > -1) {
-                    if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
-                    error_t e = set_string_setting(str_idx, arg_val, settings);
+            // If c == 2 then it's a long arg, else short arg
+            if (c == 2) {
+                const int bool_idx = index_of_string_in_array(arg_name, bool_option_names, bool_option_count);
+                if (bool_idx > -1) {
+                    const error_t e = set_bool_setting(bool_idx, true, settings);
                     if (e != E_OK) return e;
+                    i++;
                 } else {
-                    // check int options
-                    int int_idx = index_of_string_in_array(arg_name, int_option_names, int_option_count);
-                    if (int_idx == -1) {
-                        int_idx = index_of_string_in_array(arg_name, int_option_abbrs, int_option_count);
+                    // If eq_ptr != NULL, get arg_val from end of argv[i], else from argv[i+1]
+                    size_t arg_val_len = 0;
+                    char *arg_val = NULL;
+                    if (eq_ptr != NULL) {
+                        arg_val_len = strnlen(eq_ptr, MAX_STRING_LENGTH);
+                        char argv_val[arg_val_len];
+                        strncpy(argv_val, eq_ptr + 1, arg_val_len);
+                        argv_val[arg_val_len] = '\0';
+                        arg_val = strdup(argv_val);
+                        i += 1;
+                    } else if (i < argc - 1) {
+                        arg_val_len = strnlen(argv[i+1], MAX_STRING_LENGTH);
+                        if (arg_val_len > 0) {
+                            arg_val = strdup(argv[i+1]);
+                            i += 2;
+                        } else {
+                            return E_INVALID_ARG;
+                        }
                     }
-                    if (int_idx > -1) {
-                        if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
-                        // const int int_val = atoi(arg_val);
-                        char *end_ptr = NULL;
-                        const int int_val = (int)strtol(arg_val, &end_ptr, 10);
-                        const error_t e = set_int_setting(int_idx, int_val, settings);
+
+                    // check str options
+                    const int str_idx = index_of_string_in_array(arg_name, string_option_names, string_option_count);
+                    if (str_idx > -1) {
+                        if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
+                        error_t e = set_string_setting(str_idx, arg_val, settings);
                         if (e != E_OK) return e;
                     } else {
-                        // check long options
-                        int long_idx = index_of_string_in_array(arg_name, long_option_names, long_option_count);
-                        if (long_idx == -1) {
-                            long_idx = index_of_string_in_array(arg_name, long_option_abbrs, long_option_count);
-                        }
-                        if (long_idx > -1) {
-                            if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                        // check int options
+                        const int int_idx = index_of_string_in_array(arg_name, int_option_names, int_option_count);
+                        if (int_idx > -1) {
+                            if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
                             char *end_ptr = NULL;
-                            const unsigned long long_val = strtoul(arg_val, &end_ptr, 10);
-                            const error_t e = set_long_setting(long_idx, long_val, settings);
+                            const int int_val = (int)strtol(arg_val, &end_ptr, 10);
+                            const error_t e = set_int_setting(int_idx, int_val, settings);
                             if (e != E_OK) return e;
                         } else {
-                            return E_INVALID_OPTION;
+                            // check long options
+                            const int long_idx = index_of_string_in_array(arg_name, long_option_names, long_option_count);
+                            if (long_idx > -1) {
+                                if (arg_val_len == 0) return E_MISSING_ARG_FOR_OPTION;
+                                char *end_ptr = NULL;
+                                const unsigned long long_val = strtoul(arg_val, &end_ptr, 10);
+                                const error_t e = set_long_setting(long_idx, long_val, settings);
+                                if (e != E_OK) return e;
+                            } else {
+                                return E_INVALID_OPTION;
+                            }
                         }
                     }
                 }
-            }
+            } else {
+                // Process short args, each char separately
+                for (int j = 1; j < arg_name_len; j++) {
+                    char short_arg[2];
+                    short_arg[0] = argv[i][j];
+                    short_arg[1] = '\0';
 
+                    const int bool_idx = index_of_string_in_array(short_arg, bool_option_abbrs, bool_option_count);
+                    if (bool_idx > -1) {
+                        const error_t e = set_bool_setting(bool_idx, true, settings);
+                        if (e != E_OK) return e;
+                    } else {
+                        char *arg_val = NULL;
+                        if (i < argc - 1) {
+                            if (strnlen(argv[i+1], MAX_STRING_LENGTH) > 0) {
+                                arg_val = argv[i+1];
+                                i += 1;
+                            } else {
+                                return E_INVALID_ARG;
+                            }
+                        }
+
+                        const int str_idx = index_of_string_in_array(short_arg, string_option_abbrs, string_option_count);
+                        if (str_idx > -1) {
+                            if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                            error_t e = set_string_setting(str_idx, arg_val, settings);
+                            if (e != E_OK) return e;
+                        } else {
+                            // check int options
+                            const int int_idx = index_of_string_in_array(short_arg, int_option_abbrs, int_option_count);
+                            if (int_idx > -1) {
+                                if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                                char *end_ptr = NULL;
+                                const int int_val = (int)strtol(arg_val, &end_ptr, 10);
+                                const error_t e = set_int_setting(int_idx, int_val, settings);
+                                if (e != E_OK) return e;
+                            } else {
+                                // check long options
+                                const int long_idx = index_of_string_in_array(short_arg, long_option_abbrs, long_option_count);
+                                if (long_idx > -1) {
+                                    if (arg_val == NULL) return E_MISSING_ARG_FOR_OPTION;
+                                    char *end_ptr = NULL;
+                                    const unsigned long long_val = strtoul(arg_val, &end_ptr, 10);
+                                    const error_t e = set_long_setting(long_idx, long_val, settings);
+                                    if (e != E_OK) return e;
+                                } else {
+                                    return E_INVALID_OPTION;
+                                }
+                            }
+                        }
+                    }
+                }
+                i++;
+            }
         } else {
             Path *path = new_path(argv[i]);
             if (settings->paths == NULL) {
