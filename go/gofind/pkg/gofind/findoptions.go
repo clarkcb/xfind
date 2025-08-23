@@ -85,6 +85,10 @@ func (fo *FindOptions) UpdateSettingsFromArgMap(settings *FindSettings, argMap A
 					for i := range v {
 						sf(v[i], settings)
 					}
+				case []interface{}:
+					for i := range v {
+						sf(v[i].(string), settings)
+					}
 				default:
 					Log(fmt.Sprintf("k: %v", k))
 					Log(fmt.Sprintf("reflect.TypeOf(v).Kind(): %v", reflect.TypeOf(v).Kind()))
