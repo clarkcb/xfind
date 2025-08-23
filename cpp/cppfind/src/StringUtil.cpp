@@ -94,6 +94,21 @@ namespace cppfind {
         return ss_string;
     }
 
+    std::vector<std::string> StringUtil::split_string(const std::string& str, char delimiter) {
+        std::vector<std::string> tokens;
+        size_t start = 0;
+        size_t end = str.find(delimiter);
+
+        while (end != std::string::npos) {
+            tokens.push_back(str.substr(start, end - start));
+            start = end + 1;
+            end = str.find(delimiter, start);
+        }
+        tokens.push_back(str.substr(start)); // Add the last token
+
+        return tokens;
+    }
+
     long StringUtil::date_str_to_long(const std::string_view date_str) {
         std::tm tm{};
         if (strptime(std::string{date_str}.c_str(), "%Y-%m-%d", &tm) == nullptr) {

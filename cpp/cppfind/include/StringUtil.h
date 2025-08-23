@@ -26,6 +26,7 @@ namespace cppfind {
                                                              const std::function<bool(const std::string&)>& predicate);
         static std::string bool_to_string(bool b);
         static std::string unordered_string_set_to_string(const std::unordered_set<std::string>& set);
+        static std::vector<std::string> split_string(const std::string& str, char delimiter);
         static long date_str_to_long(std::string_view date_str);
         static std::string long_to_date_str(long time);
 

@@ -69,7 +69,7 @@ namespace cppfind {
             {"out-filepattern", [](const std::string& s, FindSettings& ss) { ss.add_out_file_pattern(s); }},
             {"out-filetype", [](const std::string& s, FindSettings& ss) { ss.add_out_file_type(FileTypes::from_name(s)); }},
             {"path", [](const std::string& s, FindSettings& ss) { ss.add_path(s); }},
-            {"settings-file", [this](const std::string& s, FindSettings& ss) { this->update_settings_from_file(s, ss); }},
+            {"settings-file", [this](const std::string& s, FindSettings& ss) { this->update_settings_from_file(ss, s); }},
             {"sort-by", [](const std::string& s, FindSettings& ss) { ss.sort_by(FindSettings::sort_by_from_name(s)); }}
         };
 
@@ -134,12 +134,7 @@ namespace cppfind {
     }
 
     // TODO: try using https://github.com/CLIUtils/CLI11 for CLI arg parsing
-    FindSettings FindOptions::settings_from_args(int &argc, char **argv) {
-        auto settings = FindSettings();
-
-        // set print_files to true since we are running the executable
-        settings.print_files(true);
-
+    void FindOptions::update_settings_from_args(FindSettings& settings, int &argc, char **argv) {
         std::deque<std::string> arg_deque;
         unsigned int i;
 
@@ -152,52 +147,97 @@ namespace cppfind {
             next_arg = arg_deque.front();
             arg_deque.pop_front();
 
-            if (next_arg[0] == '-') {
-                while (!next_arg.empty() && next_arg[0] == '-') {
+            if (next_arg.rfind('-', 0) == 0) {
+                std::deque<std::string> next_arg_deque;
+                std::string next_val;
+                if (next_arg.rfind("--", 0) == 0) {
+                    if (next_arg.size() < 3) {
+                        std::string msg{"Invalid option: " + next_arg};
+                        msg.append(next_arg);
+                        throw FindException(msg);
+                    }
+                    next_arg = next_arg.substr(2);
+                    std::vector<std::string> parts = StringUtil::split_string(next_arg, '=');
+                    if (!parts.empty()) {
+                        next_arg = parts[0];
+                    }
+                    if (parts.size() > 1) {
+                        next_val = parts[1];
+                    }
+                    next_arg_deque.emplace_back(next_arg);
+
+                } else if (next_arg.size() > 1) {
                     next_arg = next_arg.substr(1);
+                    for (const char & c : next_arg) {
+                        std::string cs(1, c);
+                        next_arg_deque.emplace_back(cs);
+                    }
+
+                } else {
+                    std::string msg{"Invalid option: " + next_arg};
+                    msg.append(next_arg);
+                    throw FindException(msg);
                 }
 
-                if (m_arg_name_map.contains(next_arg)) {
-                    if (auto long_arg = m_arg_name_map[next_arg];
-                        m_bool_arg_map.contains(long_arg)) {
-                        m_bool_arg_map[long_arg](true, settings);
-                    } else if (m_str_arg_map.contains(long_arg)
-                        || m_int_arg_map.contains(long_arg)
-                        || m_long_arg_map.contains(long_arg)) {
-                        if (arg_deque.empty()) {
-                            std::string msg{"Missing value for option "};
-                            msg.append(next_arg);
-                            throw FindException(msg);
-                        }
-                        auto arg_val = std::string(arg_deque.front());
-                        arg_deque.pop_front();
-                        if (m_str_arg_map.contains(long_arg)) {
-                            m_str_arg_map[long_arg](arg_val, settings);
-                        } else if (m_int_arg_map.contains(long_arg)) {
-                            const int int_val = std::stoi(arg_val);
-                            m_int_arg_map[long_arg](int_val, settings);
-                        } else if (m_long_arg_map.contains(long_arg)) {
-                            const long long_val = std::stol(arg_val);
-                            m_long_arg_map[long_arg](long_val, settings);
-                        }
-                    } else [[unlikely]] { // shouldn't be possible to get here
+                while (!next_arg_deque.empty()) {
+                    next_arg = next_arg_deque.front();
+                    next_arg_deque.pop_front();
+
+                    if (m_arg_name_map.contains(next_arg)) {
+                        if (auto long_arg = m_arg_name_map[next_arg];
+                            m_bool_arg_map.contains(long_arg)) {
+                            m_bool_arg_map[long_arg](true, settings);
+                            } else if (m_str_arg_map.contains(long_arg)
+                                || m_int_arg_map.contains(long_arg)
+                                || m_long_arg_map.contains(long_arg)) {
+                                if (next_val.empty()) {
+                                    if (arg_deque.empty()) {
+                                        std::string msg{"Missing value for option "};
+                                        msg.append(next_arg);
+                                        throw FindException(msg);
+                                    }
+                                    next_val = std::string(arg_deque.front());
+                                    arg_deque.pop_front();
+                                }
+                                if (m_str_arg_map.contains(long_arg)) {
+                                    m_str_arg_map[long_arg](next_val, settings);
+                                } else if (m_int_arg_map.contains(long_arg)) {
+                                    const int int_val = std::stoi(next_val);
+                                    m_int_arg_map[long_arg](int_val, settings);
+                                } else if (m_long_arg_map.contains(long_arg)) {
+                                    const long long_val = std::stol(next_val);
+                                    m_long_arg_map[long_arg](long_val, settings);
+                                }
+                                } else [[unlikely]] { // shouldn't be possible to get here
+                                    std::string msg{"Invalid option: "};
+                                    msg.append(next_arg);
+                                    throw FindException(msg);
+                                }
+                    } else {
                         std::string msg{"Invalid option: "};
                         msg.append(next_arg);
                         throw FindException(msg);
                     }
-                } else {
-                    std::string msg{"Invalid option: "};
-                    msg.append(next_arg);
-                    throw FindException(msg);
                 }
             } else {
                 settings.add_path(next_arg);
             }
         }
+    }
+
+    // TODO: try using https://github.com/CLIUtils/CLI11 for CLI arg parsing
+    FindSettings FindOptions::settings_from_args(int &argc, char **argv) {
+        auto settings = FindSettings();
+
+        // set print_files to true since we are running the executable
+        settings.print_files(true);
+
+        update_settings_from_args(settings, argc, argv);
+
         return settings;
     }
 
-    void FindOptions::update_settings_from_document(rapidjson::Document& document, FindSettings& settings) {
+    void FindOptions::update_settings_from_document(FindSettings& settings, rapidjson::Document& document) {
         assert(document.IsObject());
 
         // Get the property names
@@ -277,13 +317,13 @@ namespace cppfind {
         }
     }
 
-    void FindOptions::update_settings_from_json(const std::string_view json, FindSettings& settings) {
+    void FindOptions::update_settings_from_json(FindSettings& settings, const std::string_view json) {
         rapidjson::Document document;
         document.Parse(std::string{json}.c_str());
-        update_settings_from_document(document, settings);
+        update_settings_from_document(settings, document);
     }
 
-    void FindOptions::update_settings_from_file(const std::filesystem::path& file_path, FindSettings& settings) {
+    void FindOptions::update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path) {
         std::filesystem::path expanded_path = FileUtil::expand_path(file_path);
         if (!std::filesystem::exists(expanded_path)) {
             std::string msg{"Settings file not found: "};
@@ -310,7 +350,7 @@ namespace cppfind {
         document.ParseStream(is);
         fclose(fp);
 
-        update_settings_from_document(document, settings);
+        update_settings_from_document(settings, document);
     }
 
     std::string FindOptions::get_usage_string() {
