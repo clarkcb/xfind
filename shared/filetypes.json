@@ -124,7 +124,7 @@
     },
     {
       "type": "font",
-      "extensions": ["eot", "otf", "tte", "ttf", "woff", "woff2"],
+      "extensions": ["eot", "otf", "pbf", "tte", "ttf", "woff", "woff2"],
       "names": []
     },
     {

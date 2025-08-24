@@ -12,7 +12,7 @@ lazy val scalaFind = (project in file("."))
 
     libraryDependencies ++= Seq(
       "org.json" % "json" % "20250517",
-      "org.apache.commons" % "commons-compress" % "1.27.1",
+      "org.apache.commons" % "commons-compress" % "1.28.0",
       "org.scalactic" %% "scalactic" % "3.2.19",
       "org.scalatest" %% "scalatest" % "3.2.19" % Test,
       "com.github.sbt" % "junit-interface" % "0.13.3" % Test

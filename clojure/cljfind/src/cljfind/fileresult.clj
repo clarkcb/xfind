@@ -166,7 +166,7 @@
     (and
      (:colorize settings)
      (or
-      (not (empty? (:in-etensions settings)))
+      (not (empty? (:in-extensions settings)))
       (not (empty? (:in-file-patterns settings)))))
     (fn [^String filename]
       (colorize-file-name filename settings))
