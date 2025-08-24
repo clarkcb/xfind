@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <boost/format.hpp>
 
 #include "rapidjson/filereadstream.h"
 
@@ -380,9 +379,14 @@ namespace cppfind {
             opt_descs.push_back(option.description());
         }
 
-        const std::string format = std::string(" %1$-") + std::to_string(longest_len) + "s  %2$s\n";
         for (int i = 0; i < opt_strings.size(); ++i) {
-            usage_string.append(boost::str(boost::format(format) % opt_strings[i] % opt_descs[i]));
+            usage_string.append(" ");
+            usage_string.append(opt_strings[i]);
+            for (int j = 0; j <= longest_len - opt_strings[i].length() + 1; ++j) {
+                usage_string.append(" ");
+            }
+            usage_string.append(opt_descs[i]);
+            usage_string.append("\n");
         }
         return usage_string;
     }
