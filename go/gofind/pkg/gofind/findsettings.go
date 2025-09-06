@@ -140,40 +140,40 @@ func GetDefaultFindSettings() *FindSettings {
 }
 
 const (
-	startPathNotDefined                    = "Startpath not defined"
-	startPathNotFound                      = "Startpath not found"
-	startPathNotReadable                   = "Startpath not readable"
-	invalidRangeForMinDepthAndMaxDepth     = "Invalid range for mindepth and maxdepth"
-	invalidRangeForMinLastModAndMaxLastMod = "Invalid range for minlastmod and maxlastmod"
-	invalidRangeForMinSizeAndMaxSize       = "Invalid range for minsize and maxsize"
+	StartPathNotDefined                    = "Startpath not defined"
+	StartPathNotFound                      = "Startpath not found"
+	StartPathNotReadable                   = "Startpath not readable"
+	InvalidRangeForMinDepthAndMaxDepth     = "Invalid range for mindepth and maxdepth"
+	InvalidRangeForMinLastModAndMaxLastMod = "Invalid range for minlastmod and maxlastmod"
+	InvalidRangeForMinSizeAndMaxSize       = "Invalid range for minsize and maxsize"
 )
 
 func (f *FindSettings) Validate() error {
 	if len(f.Paths()) < 1 {
-		return fmt.Errorf(startPathNotDefined)
+		return fmt.Errorf(StartPathNotDefined)
 	}
 
 	for _, p := range f.Paths() {
 		_, err := os.Stat(ExpandPath(p))
 		if err != nil {
 			if os.IsNotExist(err) {
-				return fmt.Errorf(startPathNotFound)
+				return fmt.Errorf(StartPathNotFound)
 			}
 			if os.IsPermission(err) {
-				return fmt.Errorf(startPathNotReadable)
+				return fmt.Errorf(StartPathNotReadable)
 			}
 			return err
 		}
 	}
 
 	if f.maxDepth > -1 && f.maxDepth < f.minDepth {
-		return fmt.Errorf(invalidRangeForMinDepthAndMaxDepth)
+		return fmt.Errorf(InvalidRangeForMinDepthAndMaxDepth)
 	}
 	if !f.maxLastMod.IsZero() && f.minLastMod.After(f.maxLastMod) {
-		return fmt.Errorf(invalidRangeForMinLastModAndMaxLastMod)
+		return fmt.Errorf(InvalidRangeForMinLastModAndMaxLastMod)
 	}
 	if f.maxSize > 0 && f.maxSize < f.minSize {
-		return fmt.Errorf(invalidRangeForMinSizeAndMaxSize)
+		return fmt.Errorf(InvalidRangeForMinSizeAndMaxSize)
 	}
 
 	return nil
