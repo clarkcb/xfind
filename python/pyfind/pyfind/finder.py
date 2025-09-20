@@ -209,7 +209,7 @@ class Finder:
             if f.is_symlink() and not self.settings.follow_symlinks:
                 continue
             # if f.is_dir(follow_symlinks=self.settings.follow_symlinks) and recurse and self.is_matching_dir(f):
-            if f.is_dir() and recurse and self.is_matching_dir_path(f):
+            if f.is_dir() and recurse and self.filter_dir_path_by_hidden(f) and self.filter_dir_path_by_out_patterns(f):
                 dirs.append(f)
             elif f.is_file() and (min_depth < 0 or current_depth >= min_depth):
                 fr = self.filter_to_file_result(f)
@@ -228,7 +228,7 @@ class Finder:
             # if max_depth is zero, we can skip since a directory cannot be a result
             if self.settings.max_depth == 0:
                 return []
-            if self.is_matching_dir_path(file_path):
+            if self.filter_dir_path_by_hidden(file_path) and self.filter_dir_path_by_out_patterns(file_path):
                 max_depth = self.settings.max_depth
                 if not self.settings.recursive:
                     max_depth = 1
