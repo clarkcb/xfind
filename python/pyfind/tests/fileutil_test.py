@@ -108,23 +108,23 @@ class FileUtilTest(unittest.TestCase):
         self.assertFalse(FileUtil.is_dot_dir_path(file_path))
 
     ############################################################################
-    # is_hidden tests
+    # is_hidden_name tests
     ############################################################################
     def test_is_hidden_hidden_file(self):
         file_name = '.filename.txt'
-        self.assertTrue(FileUtil.is_hidden(file_name))
+        self.assertTrue(FileUtil.is_hidden_name(file_name))
 
     def test_is_hidden_not_hidden_file(self):
         file_name = 'filename.txt'
-        self.assertFalse(FileUtil.is_hidden(file_name))
+        self.assertFalse(FileUtil.is_hidden_name(file_name))
 
     def test_is_hidden_single_dot(self):
         file_name = '.'
-        self.assertFalse(FileUtil.is_hidden(file_name))
+        self.assertFalse(FileUtil.is_hidden_name(file_name))
 
     def test_is_hidden_double_dot(self):
         file_name = '..'
-        self.assertFalse(FileUtil.is_hidden(file_name))
+        self.assertFalse(FileUtil.is_hidden_name(file_name))
 
     ############################################################################
     # is_hidden_path tests

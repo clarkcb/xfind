@@ -51,22 +51,39 @@ class Finder:
             assert self.settings.max_size >= self.settings.min_size, \
                 INVALID_RANGE_MINSIZE_MAXSIZE
 
-    def is_matching_dir(self, d: str | Path) -> bool:
-        """Check whether the given directory matches find settings."""
-        if isinstance(d, str):
-            d = Path(d)
-        if not isinstance(d, Path):
-            raise FindException('Invalid directory type')
+    def filter_dir_path_by_hidden(self, d: Path) -> bool:
+        """Check whether the given directory matches hidden settings."""
         if d in self.__matching_dir_cache:
             return True
         if not self.settings.include_hidden:
-            if any(FileUtil.is_hidden(p) for p in d.parts):
-                return False
+            return not FileUtil.is_hidden_path(d)
+        return True
+
+    def filter_dir_path_by_in_patterns(self, d: Path) -> bool:
+        """Check whether the given directory matches the "in" patterns."""
+        if d in self.__matching_dir_cache:
+            return True
         if self.settings.in_dir_patterns and \
                 not any([matches_any_pattern(p, self.settings.in_dir_patterns) for p in d.parts]):
             return False
+        return True
+
+    def filter_dir_path_by_out_patterns(self, d: Path) -> bool:
+        """Check whether the given directory does not match the "out" patterns."""
+        if d in self.__matching_dir_cache:
+            return True
         if self.settings.out_dir_patterns and \
                 any([matches_any_pattern(p, self.settings.out_dir_patterns) for p in d.parts]):
+            return False
+        return True
+
+    def is_matching_dir_path(self, d: Path) -> bool:
+        """Check whether the given directory matches find settings."""
+        if not self.filter_dir_path_by_hidden(d):
+            return False
+        if not self.filter_dir_path_by_in_patterns(d):
+            return False
+        if not self.filter_dir_path_by_out_patterns(d):
             return False
         self.__matching_dir_cache.add(d)
         return True
@@ -149,7 +166,9 @@ class Finder:
 
     def filter_to_file_result(self, file_path: Path) -> Optional[FileResult]:
         """Return a FileResult instance if the given file_path matches find settings, else None."""
-        if not self.settings.include_hidden and FileUtil.is_hidden(file_path.name):
+        if not self.settings.include_hidden and FileUtil.is_hidden_name(file_path.name):
+            return None
+        if file_path.parent is not None and not self.is_matching_dir_path(file_path.parent):
             return None
         file_type = self.file_types.get_file_type_for_path(file_path)
         if file_type == FileType.ARCHIVE \
@@ -190,7 +209,7 @@ class Finder:
             if f.is_symlink() and not self.settings.follow_symlinks:
                 continue
             # if f.is_dir(follow_symlinks=self.settings.follow_symlinks) and recurse and self.is_matching_dir(f):
-            if f.is_dir() and recurse and self.is_matching_dir(f):
+            if f.is_dir() and recurse and self.is_matching_dir_path(f):
                 dirs.append(f)
             elif f.is_file() and (min_depth < 0 or current_depth >= min_depth):
                 fr = self.filter_to_file_result(f)
@@ -209,7 +228,7 @@ class Finder:
             # if max_depth is zero, we can skip since a directory cannot be a result
             if self.settings.max_depth == 0:
                 return []
-            if self.is_matching_dir(file_path):
+            if self.is_matching_dir_path(file_path):
                 max_depth = self.settings.max_depth
                 if not self.settings.recursive:
                     max_depth = 1
