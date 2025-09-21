@@ -87,26 +87,49 @@ describe('testing fileutil', () => {
     });
 
     /***************************************************************************
-     * isHidden tests
+     * isHiddenName tests
      **************************************************************************/
-    it('testIsHiddenSingleDot', () => {
+    it('testIsHiddenNameSingleDot', () => {
+        const fileName = '.';
+        expect(FileUtil.isHiddenName(fileName)).toBeFalsy();
+    });
+
+    it('testIsHiddenNameDoubleDot', () => {
+        const fileName = '..';
+        expect(FileUtil.isHiddenName(fileName)).toBeFalsy();
+    });
+
+    it('testIsHiddenNameHiddenFile', () => {
+        const fileName = '.gitignore';
+        expect(FileUtil.isHiddenName(fileName)).toBeTruthy();
+    });
+
+    it('testIsHiddenNameNotHiddenFile', () => {
+        const fileName = 'file.txt';
+        expect(FileUtil.isHiddenName(fileName)).toBeFalsy();
+    });
+
+    /***************************************************************************
+     * isHiddenPath tests
+     **************************************************************************/
+    it('testIsHiddenPathSingleDot', () => {
         const filepath = '.';
-        expect(FileUtil.isHidden(filepath)).toBeFalsy();
+        expect(FileUtil.isHiddenPath(filepath)).toBeFalsy();
     });
 
-    it('testIsHiddenDoubleDot', () => {
+    it('testIsHiddenPathDoubleDot', () => {
         const filepath = '..';
-        expect(FileUtil.isHidden(filepath)).toBeFalsy();
+        expect(FileUtil.isHiddenPath(filepath)).toBeFalsy();
     });
 
-    it('testIsHiddenHiddenFile', () => {
+    it('testIsHiddenPathHiddenFile', () => {
         const filepath = '.gitignore';
-        expect(FileUtil.isHidden(filepath)).toBeTruthy();
+        expect(FileUtil.isHiddenPath(filepath)).toBeTruthy();
     });
 
-    it('testIsHiddenNotHiddenFile', () => {
+    it('testIsHiddenPathNotHiddenFile', () => {
         const filepath = 'file.txt';
-        expect(FileUtil.isHidden(filepath)).toBeFalsy();
+        expect(FileUtil.isHiddenPath(filepath)).toBeFalsy();
     });
 
     /***************************************************************************

@@ -16,6 +16,8 @@ import {StringUtil} from "./stringutil";
 export const ENOENT = 'ENOENT';
 export const EACCES = 'EACCES';
 
+const DOT_DIRS = ['.', '..', './', '../'];
+
 export class FileUtil {
 
     public static expandPath(filePath: string): string {
@@ -70,11 +72,15 @@ export class FileUtil {
     }
 
     public static isDotDir(filePath: string): boolean {
-        return ['.', './', '..', '../'].indexOf(filePath) > -1;
+        return DOT_DIRS.indexOf(filePath) > -1;
     }
 
-    public static isHidden(filePath: string): boolean {
-        const f: string = path.basename(filePath);
-        return f.length > 1 && f.charAt(0) == '.' && !FileUtil.isDotDir(f);
+    public static isHiddenName(fileName: string): boolean {
+        return fileName.length > 1 && fileName.charAt(0) === '.' && !FileUtil.isDotDir(fileName);
+    }
+
+    public static isHiddenPath(filePath: string): boolean {
+        const elems = filePath.split(path.sep).filter(p => p !== '');
+        return (elems.some((p) => FileUtil.isHiddenName(p)));
     }
 }
