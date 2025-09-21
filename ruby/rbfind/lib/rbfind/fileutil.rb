@@ -4,14 +4,12 @@ module RbFind
 
   # FileUtil - file utility functions
   module FileUtil
+    DOT_DIRS = %w[. .. ./ ../].freeze
+
     module_function
 
-    def dot_dirs
-      %w[. .. ./ ../]
-    end
-
     def dot_dir?(file_path)
-      dot_dirs.include?(file_path.to_s)
+      DOT_DIRS.include?(file_path.to_s)
     end
 
     def get_extension(file_path)
@@ -28,9 +26,16 @@ module RbFind
       ext
     end
 
-    def hidden?(file_path)
+    def hidden_name?(file_name)
+      if file_name.length > 1 && file_name[0] == '.' && !DOT_DIRS.include?(file_name)
+        return true
+      end
+      false
+    end
+
+    def hidden_path?(file_path)
       file_path.each_filename do |f|
-        if f.length > 1 && f[0] == '.' && !dot_dirs.include?(f)
+        if hidden_name?(f)
           return true
         end
       end

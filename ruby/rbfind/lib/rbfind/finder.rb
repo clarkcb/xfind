@@ -23,7 +23,7 @@ module RbFind
     end
 
     def matching_dir?(dir_path)
-      if !@settings.include_hidden && FileUtil.hidden?(dir_path)
+      if !@settings.include_hidden && FileUtil.hidden_path?(dir_path)
         return false
       end
       path_elems = FileUtil.path_elems(dir_path)
@@ -139,7 +139,7 @@ module RbFind
     end
 
     def filter_to_file_result(file_path)
-      if !@settings.include_hidden && FileUtil.hidden?(file_path)
+      if !@settings.include_hidden && FileUtil.hidden_path?(file_path)
         return nil
       end
       file_type = @file_types.get_file_type(file_path)

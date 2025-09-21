@@ -1,13 +1,15 @@
 module RbFind
   # FileUtil - file utility functions
   module FileUtil
-    def self?.dot_dirs: () -> ::Array["." | ".." | "./" | "../"]
+    DOT_DIRS: Array["." | ".." | "./" | "../"]
 
     def self?.dot_dir?: (Pathname file_path) -> bool
 
     def self?.get_extension: (Pathname | String file_path) -> String
 
-    def self?.hidden?: (Pathname file_path) -> bool
+    def self?.hidden_name?: (String file_name) -> bool
+
+    def self?.hidden_path?: (Pathname file_path) -> bool
 
     def self?.path_elems: (Pathname file_path) -> Array[String]
 

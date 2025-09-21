@@ -46,7 +46,7 @@ module RbFind
     end
 
     ################################################################################
-    # is_dot_dir tests
+    # dot_dir? tests
     ################################################################################
     def test_is_dot_dir_single_dot
       filename = '.'
@@ -64,26 +64,49 @@ module RbFind
     end
 
     ################################################################################
-    # is_hidden tests
+    # hidden_name? tests
     ################################################################################
-    def test_is_hidden_hidden_file
+    def test_hidden_name_hidden_file
+      filename = '.filename.txt'
+      assert(FileUtil.hidden_name?(filename))
+    end
+
+    def test_hidden_name_not_hidden_file
+      filename = 'filename.txt'
+      assert(!FileUtil.hidden_name?(filename))
+    end
+
+    def test_hidden_name_single_dot
+      filename = '.'
+      assert(!FileUtil.hidden_name?(filename))
+    end
+
+    def test_hidden_name_double_dot
+      filename = '..'
+      assert(!FileUtil.hidden_name?(filename))
+    end
+
+    ################################################################################
+    # hidden_path? tests
+    ################################################################################
+    def test_hidden_path_hidden_file
       filepath = Pathname.new('.filename.txt')
-      assert(FileUtil.hidden?(filepath))
+      assert(FileUtil.hidden_path?(filepath))
     end
 
-    def test_is_hidden_not_hidden_file
+    def test_hidden_path_not_hidden_file
       filepath = Pathname.new('filename.txt')
-      assert(!FileUtil.hidden?(filepath))
+      assert(!FileUtil.hidden_path?(filepath))
     end
 
-    def test_is_hidden_single_dot
+    def test_hidden_path_single_dot
       filepath = Pathname.new('.')
-      assert(!FileUtil.hidden?(filepath))
+      assert(!FileUtil.hidden_path?(filepath))
     end
 
-    def test_is_hidden_double_dot
+    def test_hidden_path_double_dot
       filepath = Pathname.new('..')
-      assert(!FileUtil.hidden?(filepath))
+      assert(!FileUtil.hidden_path?(filepath))
     end
   end
 end
