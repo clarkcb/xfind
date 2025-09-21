@@ -82,25 +82,27 @@ class Finder {
         return patterns.some((p) => s.search(p) > -1);
     }
 
-    isMatchingDir(dir) {
-        if (FileUtil.isDotDir(dir)) {
-            return true;
-        }
+    filterDirByHidden(dir) {
         if (!this.settings.includeHidden) {
-            let nonDotElems = dir.split(path.sep).filter(p => !this.matchesAnyElement(p, ['.','..']));
-            if (nonDotElems.length === 0) {
-                return true;
-            }
-            if (nonDotElems.some((p) => FileUtil.isHidden(p))) {
-                return false;
-            }
+            return !FileUtil.isHiddenPath(dir);
         }
-        if (this.settings.inDirPatterns.length && !this.matchesAnyPattern(dir,
-            this.settings.inDirPatterns)) {
-            return false;
-        }
-        return !(this.settings.outDirPatterns.length && this.matchesAnyPattern(dir,
-            this.settings.outDirPatterns));
+        return true;
+    }
+
+    filterDirByInPatterns(dir) {
+        return this.settings.inDirPatterns.length === 0
+            || this.matchesAnyPattern(dir, this.settings.inDirPatterns);
+    }
+
+    filterDirByOutPatterns(dir) {
+        return this.settings.outDirPatterns.length === 0
+            || !this.matchesAnyPattern(dir, this.settings.outDirPatterns);
+    }
+
+    isMatchingDir(dir) {
+        return this.filterDirByHidden(dir)
+            && this.filterDirByInPatterns(dir)
+            && this.filterDirByOutPatterns(dir);
     }
 
     isMatchingExtension(ext, inExtensions, outExtensions) {
@@ -168,12 +170,15 @@ class Finder {
             this.isMatchingLastMod(fr.lastMod);
     }
 
-    filterToFileResult(fp, stat) {
-        if (!this.settings.includeHidden && FileUtil.isHidden(fp)) {
+    filterToFileResult(filePath, stat) {
+        const dirname = path.dirname(filePath) || '.';
+        if (!this.isMatchingDir(dirname)) {
             return null;
         }
-        const dirname = path.dirname(fp) || '.';
-        const fileName = path.basename(fp);
+        const fileName = path.basename(filePath);
+        if (!this.settings.includeHidden && FileUtil.isHiddenName(fileName)) {
+            return null;
+        }
         const fileType = this.fileTypes.getFileType(fileName);
         if (fileType === FileType.ARCHIVE && !this.settings.includeArchives && !this.settings.archivesOnly) {
             return null;
@@ -181,7 +186,7 @@ class Finder {
         let fileSize = 0;
         let lastMod = 0;
         if (this.settings.needLastMod() || this.settings.needSize()) {
-            stat = stat || fs.statSync(fp);
+            stat = stat || fs.statSync(filePath);
             if (this.settings.needSize()) fileSize = stat.size;
             if (this.settings.needLastMod()) lastMod = stat.mtime.getTime();
         }
@@ -215,7 +220,7 @@ class Finder {
                 continue;
             }
             stats = fs.statSync(filePath);
-            if (stats.isDirectory() && recurse && this.isMatchingDir(filePath)) {
+            if (stats.isDirectory() && recurse && this.filterDirByHidden(filePath) && this.filterDirByOutPatterns(filePath)) {
                 findDirs.push(filePath);
             } else if (stats.isFile() && (minDepth < 0 || currentDepth >= minDepth)) {
                 const fr = this.filterToFileResult(filePath, stats);
@@ -244,7 +249,7 @@ class Finder {
             if (this.settings.maxDepth === 0) {
                 return [];
             }
-            if (this.isMatchingDir(filePath)) {
+            if (this.filterDirByHidden(filePath) && this.filterDirByOutPatterns(filePath)) {
                 let maxDepth = this.settings.maxDepth;
                 if (!this.settings.recursive) {
                     maxDepth = 1;
@@ -258,14 +263,9 @@ class Finder {
             if (this.settings.minDepth > 0) {
                 return [];
             }
-            const dirname = path.dirname(filePath) || '.';
-            if (this.isMatchingDir(dirname)) {
-                const fr = this.filterToFileResult(filePath, stats);
-                if (fr !== null) {
-                    return [fr];
-                } else {
-                    throw new FindError(startPathDoesNotMatchFindSettings);
-                }
+            const fr = this.filterToFileResult(filePath, stats);
+            if (fr !== null) {
+                return [fr];
             } else {
                 throw new FindError(startPathDoesNotMatchFindSettings);
             }

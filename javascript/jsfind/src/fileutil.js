@@ -13,6 +13,8 @@ const { trimFromEnd } = require('./stringutil')
 const ENOENT = 'ENOENT';
 const EACCES = 'EACCES';
 
+const DOT_DIRS = ['.', '..', './', '../'];
+
 class FileUtil {
     static expandPath(filePath) {
         filePath = trimFromEnd(filePath, '/\\');
@@ -66,12 +68,16 @@ class FileUtil {
     }
 
     static isDotDir(filePath) {
-        return ['.', '..', './', '../'].indexOf(filePath) > -1;
+        return DOT_DIRS.indexOf(filePath) > -1;
     }
 
-    static isHidden(filePath) {
-        let f = path.basename(filePath);
-        return f.length > 1 && f.charAt(0) === '.' && !FileUtil.isDotDir(f);
+    static isHiddenName(fileName) {
+        return fileName.length > 1 && fileName.charAt(0) === '.' && !FileUtil.isDotDir(fileName);
+    }
+
+    static isHiddenPath(filePath) {
+        let elems = filePath.split(path.sep).filter(p => p !== '');
+        return (elems.some((p) => FileUtil.isHiddenName(p)));
     }
 }
 
