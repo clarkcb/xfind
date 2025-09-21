@@ -64,13 +64,28 @@ class FileUtil
     }
 
     /**
+     * @param string $file_name
+     * @return bool
+     */
+    public static function is_hidden_name(string $file_name): bool
+    {
+        return strlen($file_name) > 1 && $file_name[0] ==='.' && !self::is_dot_dir($file_name);
+    }
+
+    /**
      * @param string $file_path
      * @return bool
      */
-    public static function is_hidden(string $file_path): bool
+    public static function is_hidden_path(string $file_path): bool
     {
         $f = basename($file_path);
-        return strlen($f) > 1 && $f[0] ==='.' && !self::is_dot_dir($f);
+        $path_elems = FileUtil::split_path($file_path);
+        foreach ($path_elems as $elem) {
+            if (self::is_hidden_name($elem)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

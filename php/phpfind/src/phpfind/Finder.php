@@ -101,25 +101,55 @@ class Finder
      * @param string $dir
      * @return bool
      */
-    public function is_matching_dir(string $dir): bool
+    public function filter_dir_by_hidden(string $dir): bool
     {
-        // empty or dot dir is a match
-        if ($dir == '' || FileUtil::is_dot_dir($dir)) {
+        // null or empty dir is a match
+        if ($dir == NULL || $dir == '') {
             return true;
         }
-        if (!$this->settings->include_hidden && FileUtil::is_hidden($dir)) {
+        if (!$this->settings->include_hidden && FileUtil::is_hidden_path($dir)) {
             return false;
         }
+        return true;
+    }
+
+    /**
+     * @param string $dir
+     * @return bool
+     */
+    public function filter_dir_by_in_patterns(string $dir): bool
+    {
         $path_elems = FileUtil::split_path($dir);
         if ($this->settings->in_dir_patterns &&
             !$this->any_matches_any_pattern($path_elems, $this->settings->in_dir_patterns)) {
             return false;
         }
+        return true;
+    }
+
+    /**
+     * @param string $dir
+     * @return bool
+     */
+    public function filter_dir_by_out_patterns(string $dir): bool
+    {
+        $path_elems = FileUtil::split_path($dir);
         if ($this->settings->out_dir_patterns &&
             $this->any_matches_any_pattern($path_elems, $this->settings->out_dir_patterns)) {
             return false;
         }
         return true;
+    }
+
+    /**
+     * @param string $dir
+     * @return bool
+     */
+    public function is_matching_dir(string $dir): bool
+    {
+        return $this->filter_dir_by_hidden($dir) &&
+            $this->filter_dir_by_in_patterns($dir) &&
+            $this->filter_dir_by_out_patterns($dir);
     }
 
     /**
@@ -303,7 +333,10 @@ class Finder
      */
     public function filter_to_file_result(string $dir, string $file_name): ?FileResult
     {
-        if (!$this->settings->include_hidden && FileUtil::is_hidden($file_name)) {
+        if (!$this->settings->include_hidden && FileUtil::is_hidden_name($file_name)) {
+            return null;
+        }
+        if (!$this->is_matching_dir($dir)) {
             return null;
         }
         $file_type = $this->file_types->get_file_type($file_name);
@@ -365,7 +398,7 @@ class Finder
             if (is_link($entry_path) && !$this->settings->follow_symlinks) {
                 continue;
             }
-            if (is_dir($entry_path) && $recurse && $this->is_matching_dir($entry)) {
+            if (is_dir($entry_path) && $recurse && $this->filter_dir_by_hidden($entry) && $this->filter_dir_by_out_patterns($entry)) {
                 $dir_results[] = $entry_path;
             } else if (is_file($entry_path) && ($min_depth < 0 || $current_depth >= $min_depth)) {
                 $file_result = $this->filter_to_file_result($dir, $entry);
@@ -396,7 +429,7 @@ class Finder
             if ($this->settings->max_depth == 0) {
                 return [];
             }
-            if ($this->is_matching_dir($file_path)) {
+            if ($this->filter_dir_by_hidden($file_path) && $this->filter_dir_by_out_patterns($file_path)) {
                 $max_depth = $this->settings->max_depth;
                 if (!$this->settings->recursive) {
                     $max_depth = 1;
