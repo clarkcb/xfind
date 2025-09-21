@@ -58,7 +58,7 @@ sub format_dir_with_color {
     if (defined $dir && length($dir) > 0) {
         $formatted_dir = $dir->stringify;
         foreach my $p (@{$self->{settings}->{in_dir_patterns}}) {
-            if ($formatted_dir =~ /$p/go) {
+            if ($formatted_dir =~ /$p/) {
                 my $start_index = $-[0];
                 my $end_index = $+[0];
                 $formatted_dir = colorize($formatted_dir, $start_index, $end_index);
@@ -84,7 +84,7 @@ sub format_file_name_with_color {
     my ($self, $file_name) = @_;
     my $formatted_file_name = $file_name;
     foreach my $p (@{$self->{settings}->{in_file_patterns}}) {
-        if ($formatted_file_name =~ /$p/go) {
+        if ($formatted_file_name =~ /$p/) {
             my $start_index = $-[0];
             my $end_index = $+[0];
             $formatted_file_name = colorize($formatted_file_name, $start_index, $end_index);

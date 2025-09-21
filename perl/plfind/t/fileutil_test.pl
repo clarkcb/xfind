@@ -8,6 +8,7 @@ use warnings;
 
 use Cwd 'abs_path';
 use File::Basename;
+use Path::Class;
 
 my $lib_path;
 
@@ -17,7 +18,7 @@ BEGIN {
     unshift @INC, $lib_path;
 }
 
-use Test::Simple tests => 16;
+use Test::Simple tests => 20;
 
 use plfind::FileUtil;
 
@@ -106,30 +107,57 @@ sub test_is_dot_dir_non_dot_dir {
 }
 
 ################################################################################
-# is_hidden tests
+# is_hidden_name tests
 ################################################################################
-sub test_is_hidden_hidden_file {
+sub test_is_hidden_name_hidden_file {
     my $file_name = '.filename.txt';
-    my $ok = plfind::FileUtil::is_hidden($file_name);
+    my $ok = plfind::FileUtil::is_hidden_name($file_name);
     ok($ok > 0, "$file_name is hidden file");
 }
 
-sub test_is_hidden_not_hidden_file {
+sub test_is_hidden_name_not_hidden_file {
     my $file_name = 'filename.txt';
-    my $ok = plfind::FileUtil::is_hidden($file_name);
+    my $ok = plfind::FileUtil::is_hidden_name($file_name);
     ok($ok == 0, "$file_name is not hidden file");
 }
 
-sub test_is_hidden_single_dot {
+sub test_is_hidden_name_single_dot {
     my $file_name = '.';
-    my $ok = plfind::FileUtil::is_hidden($file_name);
+    my $ok = plfind::FileUtil::is_hidden_name($file_name);
     ok($ok == 0, "$file_name is not hidden file");
 }
 
-sub test_is_hidden_double_dot {
+sub test_is_hidden_name_double_dot {
     my $file_name = '..';
-    my $ok = plfind::FileUtil::is_hidden($file_name);
+    my $ok = plfind::FileUtil::is_hidden_name($file_name);
     ok($ok == 0, "$file_name is not hidden file");
+}
+
+################################################################################
+# is_hidden_path tests
+################################################################################
+sub test_is_hidden_path_hidden_file {
+    my $file_path = file('.filename.txt');
+    my $ok = plfind::FileUtil::is_hidden_path($file_path);
+    ok($ok > 0, "$file_path is hidden file");
+}
+
+sub test_is_hidden_path_not_hidden_file {
+    my $file_path = file('filename.txt');
+    my $ok = plfind::FileUtil::is_hidden_path($file_path);
+    ok($ok == 0, "$file_path is not hidden file");
+}
+
+sub test_is_hidden_path_single_dot {
+    my $file_path = dir('.');
+    my $ok = plfind::FileUtil::is_hidden_path($file_path);
+    ok($ok == 0, "$file_path is not hidden file");
+}
+
+sub test_is_hidden_path_double_dot {
+    my $file_path = dir('..');
+    my $ok = plfind::FileUtil::is_hidden_path($file_path);
+    ok($ok == 0, "$file_path is not hidden file");
 }
 
 ################################################################################
@@ -148,10 +176,14 @@ sub main {
     test_is_dot_dir_single_dot();
     test_is_dot_dir_double_dot();
     test_is_dot_dir_non_dot_dir();
-    test_is_hidden_hidden_file();
-    test_is_hidden_not_hidden_file();
-    test_is_hidden_single_dot();
-    test_is_hidden_double_dot();
+    test_is_hidden_name_hidden_file();
+    test_is_hidden_name_not_hidden_file();
+    test_is_hidden_name_single_dot();
+    test_is_hidden_name_double_dot();
+    test_is_hidden_path_hidden_file();
+    test_is_hidden_path_not_hidden_file();
+    test_is_hidden_path_single_dot();
+    test_is_hidden_path_double_dot();
 }
 
 main();

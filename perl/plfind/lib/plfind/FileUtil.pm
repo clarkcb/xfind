@@ -59,7 +59,7 @@ sub get_extension_for_path {
     return get_extension($path->basename);
 }
 
-sub is_hidden {
+sub is_hidden_name {
     my ($file_name) = @_;
     if (length($file_name) > 1 && substr($file_name, 0, 1) eq '.' && !is_dot_dir($file_name)) {
         return 1;
@@ -70,7 +70,19 @@ sub is_hidden {
 sub is_hidden_path {
     # $path is a Path::Class instance
     my ($path) = @_;
-    return is_hidden($path->basename);
+    # split into parent and file_name since they will work for both Dir and File
+    my $parent = $path->parent;
+    my $file_name = $path->basename;
+    my @path_elems = grep {$_ ne ''} $parent->dir_list;
+    foreach my $p (@path_elems) {
+        if (is_hidden_name($p)) {
+            return 1;
+        }
+    }
+    if (is_hidden_name($file_name)) {
+        return 1;
+    }
+    return 0;
 }
 
 sub join_paths {

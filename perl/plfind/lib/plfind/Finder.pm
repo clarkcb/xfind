@@ -100,24 +100,37 @@ sub any_matches_any_pattern {
     return 0;
 }
 
+sub filter_dir_by_hidden {
+    # $d is an instance of Path::Class::Dir
+    my ($self, $d) = @_;
+    if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden_path($d)) {
+        return 0;
+    }
+    return 1;
+}
+
+sub filter_dir_by_in_patterns {
+    # $d is an instance of Path::Class::Dir
+    my ($self, $d) = @_;
+    my @path_elems = grep {$_ ne ''} $d->dir_list;
+    return scalar @{$self->{settings}->{in_dir_patterns}} == 0
+        || any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns});
+}
+
+sub filter_dir_by_out_patterns {
+    # $d is an instance of Path::Class::Dir
+    my ($self, $d) = @_;
+    my @path_elems = grep {$_ ne ''} $d->dir_list;
+    return scalar @{$self->{settings}->{out_dir_patterns}} == 0
+        || !any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns});
+}
+
 sub is_matching_dir {
     # $d is an instance of Path::Class::Dir
     my ($self, $d) = @_;
-    if (plfind::FileUtil::is_dot_dir($d)) {
-        return 1;
-    }
-    my @path_elems = grep {$_ ne ''} $d->dir_list;
-    if (!$self->{settings}->{include_hidden}) {
-        foreach my $p (@path_elems) {
-            if (plfind::FileUtil::is_hidden($p)) {
-                return 0;
-            }
-        }
-    }
-    return ((scalar @{$self->{settings}->{in_dir_patterns}} == 0
-        || any_matches_any_pattern(\@path_elems, $self->{settings}->{in_dir_patterns}))
-        && (scalar @{$self->{settings}->{out_dir_patterns}} == 0
-        || !any_matches_any_pattern(\@path_elems, $self->{settings}->{out_dir_patterns})));
+    return $self->filter_dir_by_hidden($d)
+        && $self->filter_dir_by_in_patterns($d)
+        && $self->filter_dir_by_out_patterns($d);
 }
 
 sub is_matching_archive_extension {
@@ -209,8 +222,12 @@ sub is_matching_file_result {
 
 sub filter_to_file_result {
     my ($self, $file_path) = @_;
+    my $dir = $file_path->dir;
+    if (!$self->is_matching_dir($dir)) {
+        return;
+    }
     my $file_name = $file_path->basename;
-    if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden($file_name)) {
+    if (!$self->{settings}->{include_hidden} && plfind::FileUtil::is_hidden_name($file_name)) {
         return;
     }
     my $file_type = $self->{file_types}->get_file_type($file_name);
@@ -271,7 +288,7 @@ sub rec_get_file_results {
             if (plfind::FileUtil::is_dot_dir($f->basename)) {
                 next;
             }
-            if ($recurse && $self->is_matching_dir($f)) {
+            if ($recurse && $self->filter_dir_by_hidden($f) && $self->filter_dir_by_out_patterns($f)) {
                 push(@$dir_results, $f);
             }
         } elsif ($min_depth < 0 || $current_depth >= $min_depth) {
@@ -310,7 +327,7 @@ sub get_file_results {
         if ($self->{settings}->{max_depth} == 0) {
             return [];
         }
-        if ($self->is_matching_dir($file_path)) {
+        if ($self->filter_dir_by_hidden($file_path) && $self->filter_dir_by_out_patterns($file_path)) {
             my $max_depth = $self->{settings}->{max_depth};
             if (!$self->{settings}->{recursive}) {
                 $max_depth = 1;
