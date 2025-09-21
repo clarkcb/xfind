@@ -8,6 +8,12 @@ module RbFind
 
     def initialize: (FindSettings settings) -> void
 
+    def filter_dir_by_hidden?: (Pathname dir_path) -> bool
+
+    def filter_dir_by_in_patterns?: (Pathname dir_path) -> bool
+
+    def filter_dir_by_out_patterns?: (Pathname dir_path) -> bool
+
     def matching_dir?: (Pathname dir_path) -> bool
 
     def has_matching_archive_ext?: (FileResult file_result) -> bool

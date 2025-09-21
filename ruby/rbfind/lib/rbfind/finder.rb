@@ -22,20 +22,35 @@ module RbFind
       @file_types = FileTypes.new
     end
 
-    def matching_dir?(dir_path)
+    def filter_dir_by_hidden?(dir_path)
       if !@settings.include_hidden && FileUtil.hidden_path?(dir_path)
         return false
       end
+      true
+    end
+
+    def filter_dir_by_in_patterns?(dir_path)
       path_elems = FileUtil.path_elems(dir_path)
       if !@settings.in_dir_patterns.empty? &&
         !any_matches_any_pattern?(path_elems, @settings.in_dir_patterns)
         return false
       end
+      true
+    end
+
+    def filter_dir_by_out_patterns?(dir_path)
+      path_elems = FileUtil.path_elems(dir_path)
       if !@settings.out_dir_patterns.empty? &&
         any_matches_any_pattern?(path_elems, @settings.out_dir_patterns)
         return false
       end
       true
+    end
+
+    def matching_dir?(dir_path)
+      filter_dir_by_hidden?(dir_path) &&
+        filter_dir_by_in_patterns?(dir_path) &&
+        filter_dir_by_out_patterns?(dir_path)
     end
 
     def has_matching_archive_ext?(file_result)
@@ -140,6 +155,9 @@ module RbFind
 
     def filter_to_file_result(file_path)
       if !@settings.include_hidden && FileUtil.hidden_path?(file_path)
+        return nil
+      end
+      unless matching_dir?(file_path.parent)
         return nil
       end
       file_type = @file_types.get_file_type(file_path)
@@ -249,7 +267,7 @@ module RbFind
       dirs = []
       dir_path.each_child do |f|
         unless f.symlink? && !@settings.follow_symlinks
-          if f.directory? && recurse && matching_dir?(f)
+          if f.directory? && recurse && filter_dir_by_hidden?(f) && filter_dir_by_out_patterns?(f)
             dirs << f
           elsif f.file? && (min_depth < 0 || current_depth >= min_depth)
             file_result = filter_to_file_result(f)
@@ -274,7 +292,7 @@ module RbFind
         if @settings.max_depth == 0
           return []
         end
-        if matching_dir?(file_path)
+        if filter_dir_by_hidden?(file_path) && filter_dir_by_out_patterns?(file_path)
           max_depth = @settings.max_depth
           unless @settings.recursive
             max_depth = 1
