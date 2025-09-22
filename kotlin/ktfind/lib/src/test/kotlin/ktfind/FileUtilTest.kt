@@ -102,56 +102,56 @@ class FileUtilTest {
     }
 
     /***************************************************************************
-     * isHidden Path tests
+     * isHiddenPath tests
      **************************************************************************/
     @Test
     fun testIsHiddenPathSingleDot() {
         val path = Paths.get(".")
-        assertFalse(FileUtil.isHidden(path))
+        assertFalse(FileUtil.isHiddenPath(path))
     }
 
     @Test
     fun testIsHiddenPathDoubleDot() {
         val path = Paths.get("..")
-        assertFalse(FileUtil.isHidden(path))
+        assertFalse(FileUtil.isHiddenPath(path))
     }
 
     @Test
     fun testIsHiddenPathHidden() {
         val path = Paths.get("./.gitignore")
-        assertTrue(FileUtil.isHidden(path))
+        assertTrue(FileUtil.isHiddenPath(path))
     }
 
     @Test
     fun testIsHiddenPathNotHidden() {
         val path = Paths.get("./file.txt")
-        assertFalse(FileUtil.isHidden(path))
+        assertFalse(FileUtil.isHiddenPath(path))
     }
 
     /***************************************************************************
-     * isHidden fileName tests
+     * isHiddenName tests
      **************************************************************************/
     @Test
     fun testIsHiddenFileNameSingleDot() {
         val fileName = "."
-        assertFalse(FileUtil.isHidden(fileName))
+        assertFalse(FileUtil.isHiddenName(fileName))
     }
 
     @Test
     fun testIsHiddenFileNameDoubleDot() {
         val fileName = ".."
-        assertFalse(FileUtil.isHidden(fileName))
+        assertFalse(FileUtil.isHiddenName(fileName))
     }
 
     @Test
     fun testIsHiddenFileNameHidden() {
         val fileName = ".gitignore"
-        assertTrue(FileUtil.isHidden(fileName))
+        assertTrue(FileUtil.isHiddenName(fileName))
     }
 
     @Test
     fun testIsHiddenFileNameNotHidden() {
         val fileName = "file.txt"
-        assertFalse(FileUtil.isHidden(fileName))
+        assertFalse(FileUtil.isHiddenName(fileName))
     }
 }

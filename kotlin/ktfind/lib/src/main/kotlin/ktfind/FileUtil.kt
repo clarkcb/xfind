@@ -8,16 +8,19 @@ import java.nio.file.Paths
  * @author cary on 7/24/16.
  */
 object FileUtil {
-    private val dotDirs: Set<String> = setOf(".", "..", "./", "../")
+    private const val DOT = "."
+    private const val DOT_DOT = ".."
+    private val dotDirs: Set<String> = setOf(DOT, DOT_DOT, "./", "../")
     //private val DEFAULT_ENCODING = "UTF-8"
+    private const val TILDE = "~"
 
     fun expandPath(path: Path): Path {
-        var pathString = path.toString()
-        if (pathString.startsWith("~")) {
-            var userPath = Paths.get(System.getProperty("user.home"))
-            if (pathString == "~" || pathString == "~" + File.separator) {
+        val pathString = path.toString()
+        if (pathString.startsWith(TILDE)) {
+            val userPath = Paths.get(System.getProperty("user.home"))
+            if (pathString == TILDE || pathString == TILDE + File.separator) {
                 return userPath
-            } else if (pathString.startsWith("~" + File.separator)) {
+            } else if (pathString.startsWith(TILDE + File.separator)) {
                 return Paths.get(userPath.toString(), pathString.substring(2))
             }
             // Another user's home directory
@@ -37,13 +40,13 @@ object FileUtil {
         return dotDirs.contains(f)
     }
 
-    fun isHidden(p: Path): Boolean {
-        p.forEach { elem -> if (isHidden(elem.toString())) return true }
-        return false
+    fun isHiddenName(f: String): Boolean {
+        return f.isNotEmpty() && f[0] == '.' && !isDotDir(f)
     }
 
-    fun isHidden(f: String): Boolean {
-        return f.isNotEmpty() && f[0] == '.' && !isDotDir(f)
+    fun isHiddenPath(p: Path): Boolean {
+        p.forEach { elem -> if (isHiddenName(elem.toString())) return true }
+        return false
     }
 
     fun splitPath(p: Path): List<String> {

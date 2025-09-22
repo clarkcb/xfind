@@ -84,27 +84,43 @@ class Finder(val settings: FindSettings) {
         return patternSet.any { p -> p.containsMatchIn(s) }
     }
 
-    fun isMatchingDir(path: Path?): Boolean {
+    fun filterDirByHidden(path: Path?): Boolean {
         // null or empty path is a match
         if (path == null || path.toString().isEmpty()) {
             return true
         }
         if (!settings.includeHidden) {
-            try {
-                if (FileUtil.isHidden(path)) {
-                    return false
-                }
-            } catch (e: Exception) {
-                logError(e.message!!)
-                return false
-            }
+            return !FileUtil.isHiddenPath(path)
+        }
+        return true
+    }
+
+    fun filterDirByInPatterns(path: Path?): Boolean {
+        // null or empty path is a match
+        if (path == null || path.toString().isEmpty()) {
+            return true
         }
         val pathElems = FileUtil.splitPath(path)
         return (settings.inDirPatterns.isEmpty()
                 || anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
-                &&
-                (settings.outDirPatterns.isEmpty()
-                        || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
+    }
+
+    fun filterDirByOutPatterns(path: Path?): Boolean {
+        // null or empty path is a match
+        if (path == null || path.toString().isEmpty()) {
+            return true
+        }
+        val pathElems = FileUtil.splitPath(path)
+        return (settings.outDirPatterns.isEmpty()
+                || !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
+    }
+
+    fun isMatchingDir(path: Path?): Boolean {
+        // null or empty path is a match
+        if (path == null || path.toString().isEmpty()) {
+            return true
+        }
+        return filterDirByHidden(path) && filterDirByInPatterns(path) && filterDirByOutPatterns(path)
     }
 
     fun isMatchingArchiveExtension(ext: String): Boolean {
@@ -173,15 +189,12 @@ class Finder(val settings: FindSettings) {
     }
 
     fun filterToFileResult(p: Path): FileResult? {
-        if (!settings.includeHidden) {
-            try {
-                if (Files.isHidden(p)) {
-                    return null
-                }
-            } catch (e: Exception) {
-                logError(e.message!!)
-                return null
-            }
+        if (!isMatchingDir(p.parent)) {
+            return null
+        }
+
+        if (!settings.includeHidden && FileUtil.isHiddenName(p.name)) {
+            return null
         }
 
         val fileType = fileTypes.getFileType(p)
@@ -228,7 +241,7 @@ class Finder(val settings: FindSettings) {
             Files.newDirectoryStream(filePath).use { stream ->
                 stream.forEach {
                     if (!Files.isSymbolicLink(it) || settings.followSymlinks) {
-                        if (Files.isDirectory(it) && recurse && isMatchingDir(it)) {
+                        if (Files.isDirectory(it) && recurse && filterDirByHidden(it) && filterDirByOutPatterns(it)) {
                             pathDirs.add(it)
                         } else if (Files.isRegularFile(it) && (minDepth < 0 || currentDepth >= minDepth)) {
                             val fr = filterToFileResult(it)
@@ -256,7 +269,7 @@ class Finder(val settings: FindSettings) {
             if (settings.maxDepth == 0) {
                 return emptyList()
             }
-            if (isMatchingDir(fp)) {
+            if (filterDirByHidden(fp) && filterDirByOutPatterns(fp)) {
                 val maxDepth = if (settings.recursive) settings.maxDepth else 1
                 return recFindPath(fp, settings.minDepth, maxDepth, 1)
             } else {
@@ -287,8 +300,11 @@ class Finder(val settings: FindSettings) {
     fun find(): List<FileResult> {
         val fileResults: MutableList<FileResult> = mutableListOf()
         findAsync(fileResults)
-        val fileResultSorter = FileResultSorter(settings)
-        return fileResultSorter.sort(fileResults.toList())
+        if (fileResults.size > 1) {
+            val fileResultSorter = FileResultSorter(settings)
+            return fileResultSorter.sort(fileResults.toList())
+        }
+        return fileResults.toList()
     }
 
     fun printMatchingDirs(fileResults: List<FileResult>, formatter: FileResultFormatter) {
