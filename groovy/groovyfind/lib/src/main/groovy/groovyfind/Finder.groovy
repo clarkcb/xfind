@@ -10,7 +10,6 @@ import java.nio.file.attribute.FileTime
 import java.time.Instant
 import java.time.ZoneOffset
 import java.util.regex.Pattern
-import java.util.stream.Collectors
 
 import static groovyfind.FindError.*;
 
@@ -65,33 +64,33 @@ class Finder {
         null != s && patternSet.stream().anyMatch(p -> p.matcher(s).find())
     }
 
+    boolean filterDirByHidden(final Path path) {
+        if (!settings.includeHidden) {
+            return !FileUtil.isHiddenPath(path)
+        }
+        true
+    }
+
+    boolean filterDirByInPatterns(final Path path) {
+        List<String> pathElems = FileUtil.splitPath(path)
+        (settings.inDirPatterns.empty
+                ||
+                anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
+    }
+
+    boolean filterDirByOutPatterns(final Path path) {
+        List<String> pathElems = FileUtil.splitPath(path)
+        (settings.outDirPatterns.empty
+                ||
+                !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
+    }
+
     boolean isMatchingDir(final Path path) {
         // null or empty path is a match
         if (null == path || path.toString().isEmpty()) {
             return true
         }
-        if (!settings.includeHidden) {
-            try {
-                // This erroneously returns true for . and ..
-//                if (Files.isHidden(path)) {
-//                    return false;
-//                }
-                if (FileUtil.isHidden(path)) {
-                    return false
-                }
-            } catch (Exception e) {
-                Logger.logError(e.message)
-                return false
-            }
-        }
-        List<String> pathElems = FileUtil.splitPath(path)
-        (settings.inDirPatterns.empty
-                ||
-                anyMatchesAnyPattern(pathElems, settings.inDirPatterns))
-                &&
-                (settings.outDirPatterns.empty
-                        ||
-                        !anyMatchesAnyPattern(pathElems, settings.outDirPatterns))
+        filterDirByHidden(path) && filterDirByInPatterns(path) && filterDirByOutPatterns(path)
     }
 
     boolean isMatchingExtension(final String ext) {
@@ -171,15 +170,12 @@ class Finder {
     }
 
     Optional<FileResult> filterToFileResult(final Path path) {
-        if (!settings.includeHidden) {
-            try {
-                if (Files.isHidden(path)) {
-                    return Optional.empty()
-                }
-            } catch (IOException e) {
-                Logger.logError(e.message)
-                return Optional.empty()
-            }
+        if (!isMatchingDir(path.parent)) {
+            return Optional.empty()
+        }
+
+        if (!settings.includeHidden && FileUtil.isHiddenName(path.fileName.toString())) {
+            return Optional.empty()
         }
 
         FileType fileType = fileTypes.getFileType(path)
@@ -227,11 +223,10 @@ class Finder {
                 if (Files.isSymbolicLink(path) && !settings.followSymlinks) {
                     continue
                 }
-                if (Files.isDirectory(path) && recurse && isMatchingDir(path)) {
+                if (Files.isDirectory(path) && recurse && filterDirByHidden(path) && filterDirByOutPatterns(path)) {
                     pathDirs.add(path)
                 } else if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
-                    Optional<FileResult> optFileResult = filterToFileResult(path)
-                    optFileResult.ifPresent(pathResults::add)
+                    filterToFileResult(path).ifPresent(pathResults::add)
                 }
             }
             for (Path pathDir : pathDirs) {
@@ -252,7 +247,7 @@ class Finder {
             if (settings.maxDepth == 0) {
                 return Collections.emptyList()
             }
-            if (isMatchingDir(filePath)) {
+            if (filterDirByHidden(filePath) && filterDirByOutPatterns(filePath)) {
                 int maxDepth = settings.maxDepth
                 if (!settings.getRecursive()) {
                     maxDepth = 1
@@ -302,8 +297,10 @@ class Finder {
 //
 //        executorService.shutdown()
 
-        FileResultSorter fileResultSorter = new FileResultSorter(settings)
-        fileResultSorter.sort(fileResults)
+        if (fileResults.size() > 1) {
+            FileResultSorter fileResultSorter = new FileResultSorter(settings)
+            fileResultSorter.sort(fileResults)
+        }
         fileResults
     }
 
@@ -312,38 +309,20 @@ class Finder {
                 .collect { fr -> fr.path.parent }.unique().sort()
     }
 
-    void printMatchingDirs(final List<FileResult> results, final FileResultFormatter formatter) {
+    static void printMatchingDirs(final List<FileResult> results, final FileResultFormatter formatter) {
         List<Path> dirs = getMatchingDirs(results)
         if (!dirs.empty) {
             Logger.log("\nMatching directories (${dirs.size()}):")
-            if (settings.getColorize() && !settings.getInDirPatterns().isEmpty()) {
-                dirs.each { Logger.log(formatter.formatDirPath(it)) }
-            } else {
-                dirs.each { Logger.log(it.toString()) }
-            }
+            dirs.each { Logger.log(formatter.formatDirPath(it)) }
         } else {
             Logger.log('\nMatching directories: 0')
         }
     }
 
-    private static List<String> getMatchingFiles(final List<FileResult> results) {
-        results.stream().map(FileResult::toString).collect(Collectors.toList())
-    }
-
-    void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
+    static void printMatchingFiles(final List<FileResult> results, final FileResultFormatter formatter) {
         if (!results.isEmpty()) {
             Logger.log(String.format("\nMatching files (%d):", results.size()))
-            if (settings.getColorize() && (!settings.getInDirPatterns().isEmpty()
-                    || !settings.getInExtensions().isEmpty() || !settings.getInFilePatterns().isEmpty())) {
-                for (var f : results) {
-                    Logger.log(formatter.formatFileResult(f))
-                }
-            } else {
-                var files = getMatchingFiles(results)
-                for (var f : files) {
-                    Logger.log(f)
-                }
-            }
+            results.each { Logger.log(formatter.formatFileResult(it)) }
         } else {
             Logger.log("\nMatching files: 0")
         }

@@ -124,7 +124,7 @@ class FileResultFormatter {
         }
     }
 
-    String colorize(final String s, final int matchStartIndex, final int matchEndIndex) {
+    static String colorize(final String s, final int matchStartIndex, final int matchEndIndex) {
         String prefix = ''
         if (matchStartIndex > 0) {
             prefix = s.substring(0, matchStartIndex)

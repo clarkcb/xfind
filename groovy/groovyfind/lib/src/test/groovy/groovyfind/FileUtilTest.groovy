@@ -107,42 +107,57 @@ class FileUtilTest {
     }
 
     /***************************************************************************
-     * isHidden tests
+     * isHiddenName tests
      **************************************************************************/
     @Test
-    final void testIsHiddenSingleDot() {
+    final void testIsHiddenNameSingleDot() {
         var filename = '.'
-        assertFalse(FileUtil.isHidden(filename))
+        assertFalse(FileUtil.isHiddenName(filename))
     }
 
     @Test
-    final void testIsHiddenDoubleDot() {
+    final void testIsHiddenNameDoubleDot() {
         var filename = '..'
-        assertFalse(FileUtil.isHidden(filename))
+        assertFalse(FileUtil.isHiddenName(filename))
     }
 
     @Test
-    final void testIsHiddenHiddenFileName() {
+    final void testIsHiddenNameHiddenFileName() {
         var filename = '.gitignore'
-        assertTrue(FileUtil.isHidden(filename))
+        assertTrue(FileUtil.isHiddenName(filename))
     }
 
     @Test
-    final void testIsHiddenNotHiddenFileName() {
+    final void testIsHiddenNameNotHiddenFileName() {
         var filename = 'file.txt'
-        assertFalse(FileUtil.isHidden(filename))
+        assertFalse(FileUtil.isHiddenName(filename))
+    }
+
+    /***************************************************************************
+     * isHiddenPath tests
+     **************************************************************************/
+    @Test
+    final void testIsHiddenPathSingleDot() {
+        var path = Paths.get('.')
+        assertFalse(FileUtil.isHiddenPath(path))
     }
 
     @Test
-    final void testIsHiddenHiddenFile() {
+    final void testIsHiddenPathDoubleDot() {
+        var path = Paths.get('..')
+        assertFalse(FileUtil.isHiddenPath(path))
+    }
+
+    @Test
+    final void testIsHiddenPathHiddenFile() {
         var path = Paths.get('.gitignore')
-        assertTrue(FileUtil.isHidden(path))
+        assertTrue(FileUtil.isHiddenPath(path))
     }
 
     @Test
-    final void testIsHiddenNotHiddenFile() {
+    final void testIsHiddenPathNotHiddenFile() {
         var path = Paths.get('./file.txt')
-        assertFalse(FileUtil.isHidden(path))
+        assertFalse(FileUtil.isHiddenPath(path))
     }
 
     /***************************************************************************

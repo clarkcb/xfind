@@ -18,6 +18,7 @@ final class FileUtil {
     private static final String DOT_DOT = '..'
     private static final Set<String> DOT_DIRS = new HashSet<>(Arrays.asList(DOT, DOT_DOT))
     private static final String DEFAULT_ENCODING = 'UTF-8'
+    private static final String TILDE = '~'
     private static final String Z_EXT = 'Z'
 
     static Path expandPath(Path path) {
@@ -26,11 +27,11 @@ final class FileUtil {
         }
 
         String pathString = path.toString()
-        if (pathString.startsWith("~")) {
+        if (pathString.startsWith(TILDE)) {
             Path userPath = Paths.get(System.getProperty('user.home'))
-            if (pathString == "~" || pathString == "~" + File.separator) {
+            if (pathString == TILDE || pathString == TILDE + File.separator) {
                 return userPath
-            } else if (pathString.startsWith("~" + File.separator)) {
+            } else if (pathString.startsWith(TILDE + File.separator)) {
                 return Paths.get(userPath.toString(), pathString.substring(2));
             }
             // Another user's home directory
@@ -65,16 +66,8 @@ final class FileUtil {
         getExtension(fileName) == ext
     }
 
-    static boolean isDotDir(final String f) {
-        f in DOT_DIRS
-    }
-
-    static boolean isHidden(final Path path) {
-        isHidden(path.fileName.toString())
-    }
-
-    static boolean isHidden(final String f) {
-        f.length() > 1 && f.take(1) == DOT && !isDotDir(f)
+    static boolean isDotDir(final String name) {
+        name in DOT_DIRS
     }
 
     // NOTE: if the first item in the returned list is not a dotDir, it should be
@@ -97,6 +90,20 @@ final class FileUtil {
         } else {
             splitPath(Paths.get(path))
         }
+    }
+
+    static boolean isHiddenName(final String name) {
+        name.length() > 1 && name.startsWith(DOT) && !isDotDir(name)
+    }
+
+    static boolean isHiddenPath(final Path path) {
+        var elems = splitPath(path)
+        for (var elem : elems) {
+            if (isHiddenName(elem)) {
+                return true
+            }
+        }
+        false
     }
 
     static String getFileContents(final Path path) throws IOException {
