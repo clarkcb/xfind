@@ -23,7 +23,7 @@ public class FileResultFormatter {
         }
     }
 
-    public String colorize(final String s, final int matchStartIndex, final int matchEndIndex) {
+    public static String colorize(final String s, final int matchStartIndex, final int matchEndIndex) {
         var prefix = "";
         if (matchStartIndex > 0) {
             prefix = s.substring(0, matchStartIndex);

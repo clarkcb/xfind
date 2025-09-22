@@ -26,8 +26,12 @@ public final class FileUtil {
         // inaccessible constructor for utility class
     }
 
-    private static final Set<String> dotDirs = new HashSet<>(Arrays.asList(".", ".."));
+    private static final String DOT = ".";
+    private static final String DOT_DOT = "..";
+    private static final Set<String> DOT_DIRS = new HashSet<>(Arrays.asList(DOT, DOT_DOT));
     private static final String DEFAULT_ENCODING = "UTF-8";
+    private static final String TILDE = "~";
+    private static final String Z_EXT = "Z";
 
     public static Path expandPath(Path path) {
         if (path == null) {
@@ -35,11 +39,11 @@ public final class FileUtil {
         }
 
         var pathString = path.toString();
-        if (pathString.startsWith("~")) {
+        if (pathString.startsWith(TILDE)) {
             var userPath = Paths.get(System.getProperty("user.home"));
-            if (pathString.equals("~") || pathString.equals("~" + File.separator)) {
+            if (pathString.equals(TILDE) || pathString.equals(TILDE + File.separator)) {
                 return userPath;
-            } else if (pathString.startsWith("~" + File.separator)) {
+            } else if (pathString.startsWith(TILDE + File.separator)) {
                 return Paths.get(userPath.toString(), pathString.substring(2));
             }
             // Another user's home directory
@@ -57,10 +61,10 @@ public final class FileUtil {
 
     public static String getExtension(final String fileName) {
         var ext = "";
-        var lastIndex = fileName.lastIndexOf(".");
+        var lastIndex = fileName.lastIndexOf(DOT);
         if (lastIndex > 0 && lastIndex < fileName.length() - 1) {
             ext = fileName.substring(lastIndex + 1);
-            if (!ext.equals("Z")) { // the only always-uppercase ext
+            if (!ext.equals(Z_EXT)) { // the only always-uppercase ext
                 ext = ext.toLowerCase();
             }
         }
@@ -68,22 +72,14 @@ public final class FileUtil {
     }
 
     public static boolean hasExtension(final String fileName, String ext) {
-        if (!ext.equals("Z")) { // the only always-uppercase ext
+        if (!ext.equals(Z_EXT)) { // the only always-uppercase ext
             ext = ext.toLowerCase();
         }
         return getExtension(fileName).equals(ext);
     }
 
-    public static boolean isDotDir(final String f) {
-        return dotDirs.contains(f);
-    }
-
-    public static boolean isHidden(final Path path) {
-        return isHidden(path.getFileName().toString());
-    }
-
-    public static boolean isHidden(final String f) {
-        return f.length() > 1 && f.charAt(0) == '.' && !isDotDir(f);
+    public static boolean isDotDir(final String name) {
+        return DOT_DIRS.contains(name);
     }
 
     // NOTE: if the first item in the returned list is not a dotDir, it should be
@@ -104,6 +100,20 @@ public final class FileUtil {
             return Collections.emptyList();
         }
         return splitPath(Paths.get(path));
+    }
+
+    public static boolean isHiddenName(final String name) {
+        return name.length() > 1 && name.startsWith(DOT) && !isDotDir(name);
+    }
+
+    public static boolean isHiddenPath(final Path path) {
+        var elems = splitPath(path);
+        for (var elem : elems) {
+            if (isHiddenName(elem)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static String getFileContents(final Path path) throws IOException {
