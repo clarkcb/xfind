@@ -77,20 +77,34 @@
        ]
     (take 1 (filter #(not (nil? %)) (map #(% settings) tests)))))
 
-(defn is-matching-dir? [^Path d ^FindSettings settings]
+(defn filter-dir-by-hidden? [^Path d ^FindSettings settings]
+  (or
+    (nil? d)
+    (:include-hidden settings)
+    (not (hidden-dir-path? d))))
+
+(defn filter-dir-by-in-patterns? [^Path d ^FindSettings settings]
   (or
     (nil? d)
     (is-dot-dir? (get-path-name d))
-    (and
-      (or
-        (:include-hidden settings)
-        (not (hidden-dir-path? d)))
-      (or
-        (empty? (:in-dir-patterns settings))
-        (some #(re-find % (path-str d)) (:in-dir-patterns settings)))
-      (or
-        (empty? (:out-dir-patterns settings))
-        (not-any? #(re-find % (path-str d)) (:out-dir-patterns settings))))))
+    (empty? (:in-dir-patterns settings))
+    (some #(re-find % (path-str d)) (:in-dir-patterns settings))))
+
+(defn filter-dir-by-out-patterns? [^Path d ^FindSettings settings]
+  (or
+    (nil? d)
+    (is-dot-dir? (get-path-name d))
+    (empty? (:out-dir-patterns settings))
+    (not-any? #(re-find % (path-str d)) (:out-dir-patterns settings))))
+
+(defn is-matching-dir? [^Path d ^FindSettings settings]
+  (or
+   (nil? d)
+   (is-dot-dir? (get-path-name d))
+   (and
+     (filter-dir-by-hidden? d settings)
+     (filter-dir-by-in-patterns? d settings)
+     (filter-dir-by-out-patterns? d settings))))
 
 (defn is-matching-ext?
   ([^String ext ^FindSettings settings]
@@ -211,9 +225,11 @@
 
 (defn filter-to-file-result [^Path p ^FindSettings settings]
   (if
-    (and
-      (not (:include-hidden settings))
-      (hidden-file-path? p))
+    (or
+      (not (is-matching-dir? (.getParent p) settings))
+      (and
+        (not (:include-hidden settings))
+        (hidden-file-path? p)))
     nil
     (let [file-type (get-file-type p)]
       (if (and (= :archive file-type) (not (:include-archives settings)) (not (:archives-only settings)))
@@ -252,7 +268,7 @@
     []
     (let [path-elems (filter #(or (not (is-symlink-path? %)) (:follow-symlinks settings)) (list-paths-under-dir-path path))
           recurse (or (= max-depth -1) (< current-depth max-depth))
-          path-dirs (if recurse (filter #(is-matching-dir? % settings) (filter #(is-dir-path? %) path-elems)) [])
+          path-dirs (if recurse (filter #(filter-dir-by-out-patterns? % settings) (filter #(filter-dir-by-hidden? % settings) (filter #(is-dir-path? %) path-elems))) [])
           path-files (if (and (> min-depth -1) (< current-depth min-depth)) [] (filter #(is-file-path? %) path-elems))
           path-results (filter #(not (nil? %)) (map #(filter-to-file-result % settings) path-files))
           next-depth (inc current-depth)]
