@@ -7,19 +7,20 @@ import scala.io.{Codec, Source}
 object FileUtil {
   val CURRENT_PATH = "."
   val PARENT_PATH = ".."
+  val DOT_DIRS = Set(CURRENT_PATH, PARENT_PATH)
   val DEFAULT_ENCODING = "UTF-8"
+  val TILDE = "~"
 
   def expandPath(path: Path): Path = {
     if (path == null) throw new IllegalArgumentException("Path cannot be null")
-    val tilde = "~"
     path match {
-      case p if p.toString.startsWith(tilde) =>
+      case p if p.toString.startsWith(TILDE) =>
         val pathString = path.toString
         val userPath = System.getProperty("user.home")
-        if (pathString == tilde || pathString == tilde + File.separator) {
+        if (pathString == TILDE || pathString == TILDE + File.separator) {
           // Current user's home directory
           Paths.get(userPath)
-        } else if (pathString.startsWith(tilde + File.separator)) {
+        } else if (pathString.startsWith(TILDE + File.separator)) {
           // Under current user's home directory
           Paths.get(userPath, pathString.substring(1))
         } else {
@@ -68,12 +69,17 @@ object FileUtil {
   }
 
   def isDotDir(name: String): Boolean = {
-    Set(CURRENT_PATH, PARENT_PATH).contains(name)
+    DOT_DIRS.contains(name)
   }
 
-  def isHidden(name: String): Boolean = {
+  def isHiddenName(name: String): Boolean = {
     val n = new File(name).getName
     n.length > 1 && n.startsWith(CURRENT_PATH) && !isDotDir(n)
+  }
+
+  def isHiddenPath(path: Path): Boolean = {
+    val pathElems = FileUtil.splitPath(path)
+    pathElems.exists(p => isHiddenName(p))
   }
 
   def pathOrCurrent(p: Path): Path = {

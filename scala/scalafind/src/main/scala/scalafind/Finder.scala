@@ -1,7 +1,7 @@
 package scalafind
 
 import scalafind.FileType.FileType
-import scalafind.FileUtil.{getExtension, isHidden}
+import scalafind.FileUtil.{getExtension, isHiddenName, isHiddenPath}
 import scalafind.FindError.{INVALID_RANGE_MINDEPTH_MAXDEPTH, INVALID_RANGE_MINLASTMOD_MAXLASTMOD, INVALID_RANGE_MINSIZE_MAXSIZE, STARTPATH_DOES_NOT_MATCH, STARTPATH_NOT_DEFINED, STARTPATH_NOT_FOUND, STARTPATH_NOT_READABLE}
 
 import java.io.IOException
@@ -24,17 +24,43 @@ class Finder (settings: FindSettings) {
   }
   validateSettings()
 
+  def filterDirByHidden(path: Path): Boolean = {
+    // null or empty path is a match
+    if (path == null || path.toString.isEmpty) {
+      true
+    } else {
+      if (!settings.includeHidden && isHiddenPath(path)) {
+        false
+      } else {
+        true
+      }
+    }
+  }
+
+  def filterDirByInPatterns(path: Path): Boolean = {
+    // null or empty path is a match
+    if (path == null || path.toString.isEmpty) {
+      true
+    } else {
+      filterByInPatterns(path.toString, settings.inDirPatterns)
+    }
+  }
+
+  def filterDirByOutPatterns(path: Path): Boolean = {
+    // null or empty path is a match
+    if (path == null || path.toString.isEmpty) {
+      true
+    } else {
+      filterByOutPatterns(path.toString, settings.outDirPatterns)
+    }
+  }
+
   def isMatchingDir(path: Path): Boolean = {
     // null or empty path is a match
     if (path == null || path.toString.isEmpty) {
       true
     } else {
-      val pathElems = FileUtil.splitPath(path)
-      if (!settings.includeHidden && pathElems.exists(p => isHidden(p))) {
-        false
-      } else {
-        filterByPatterns(path.toString, settings.inDirPatterns, settings.outDirPatterns)
-      }
+      filterDirByHidden(path) && filterDirByInPatterns(path) && filterDirByOutPatterns(path)
     }
   }
 
@@ -107,7 +133,9 @@ class Finder (settings: FindSettings) {
   }
 
   def filterToFileResult(p: Path): Option[FileResult] = {
-    if (!settings.includeHidden && Files.isHidden(p)) {
+    if (!isMatchingDir(p.getParent)) {
+      None
+    } else if (!settings.includeHidden && isHiddenName(p.getFileName.toString)) {
       None
     } else {
       val fileType = FileTypes.getFileType(p)
@@ -156,7 +184,7 @@ class Finder (settings: FindSettings) {
         while (iterator.hasNext) {
           val path = iterator.next
           if (!Files.isSymbolicLink(path) || settings.followSymlinks) {
-            if (Files.isDirectory(path) && recurse == RecursionType.Recurse && isMatchingDir(path)) {
+            if (Files.isDirectory(path) && recurse == RecursionType.Recurse && filterDirByHidden(path) && filterDirByOutPatterns(path)) {
               pathDirs += path
             } else {
               if (Files.isRegularFile(path) && (minDepth < 0 || currentDepth >= minDepth)) {
@@ -181,7 +209,7 @@ class Finder (settings: FindSettings) {
       if (settings.maxDepth == 0) {
         Seq.empty[FileResult]
       } else {
-        if (isMatchingDir(fp)) {
+        if (filterDirByHidden(fp) && filterDirByOutPatterns(fp)) {
           val maxDepth = if (settings.recursive) settings.maxDepth else 1
           recFindPath(fp, settings.minDepth, maxDepth, 1)
         } else {
@@ -207,8 +235,12 @@ class Finder (settings: FindSettings) {
     settings.paths.foreach { path =>
       fileResults ++= findPath(path)
     }
-    val fileResultSorter = new FileResultSorter(settings)
-    fileResultSorter.sort(Seq.empty[FileResult] ++ fileResults)
+    if (fileResults.size > 1) {
+      val fileResultSorter = new FileResultSorter(settings)
+      fileResultSorter.sort(Seq.empty[FileResult] ++ fileResults)
+    } else {
+      Seq.empty[FileResult] ++ fileResults
+    }
   }
 
   private def getMatchingDirs(fileResults: Seq[FileResult]): Seq[Path] = {
@@ -260,10 +292,16 @@ object Finder {
     patterns exists (_.findFirstMatchIn(s).isDefined)
   }
 
+  private def filterByInPatterns(s: String, inPatterns: Set[Regex]): Boolean = {
+    inPatterns.isEmpty || matchesAnyPattern(s, inPatterns)
+  }
+
+  private def filterByOutPatterns(s: String, outPatterns: Set[Regex]): Boolean = {
+    outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns)
+  }
+
   private def filterByPatterns(s: String, inPatterns: Set[Regex], outPatterns: Set[Regex]): Boolean = {
-    (inPatterns.isEmpty || matchesAnyPattern(s, inPatterns))
-      &&
-      (outPatterns.isEmpty || !matchesAnyPattern(s, outPatterns))
+    filterByInPatterns(s, inPatterns) && filterByOutPatterns(s, outPatterns)
   }
 }
 

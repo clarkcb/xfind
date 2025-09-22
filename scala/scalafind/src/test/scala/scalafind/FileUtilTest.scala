@@ -73,26 +73,49 @@ class FileUtilTest extends AnyFunSuite {
   }
 
   /***************************************************************************
-    * isHidden tests
+    * isHiddenName tests
     **************************************************************************/
-  test("test isHidden single dot") {
-    assert(!FileUtil.isHidden("."))
+  test("test isHiddenName single dot") {
+    assert(!FileUtil.isHiddenName("."))
   }
 
-  test("test isHidden double dot") {
-    assert(!FileUtil.isHidden(".."))
+  test("test isHiddenName double dot") {
+    assert(!FileUtil.isHiddenName(".."))
   }
 
-  test("test isHidden hidden file name") {
-    assert(FileUtil.isHidden(".gitignore"))
+  test("test isHiddenName hidden file name") {
+    assert(FileUtil.isHiddenName(".gitignore"))
   }
 
-  test("test isHidden non-hidden file name") {
-    assert(!FileUtil.isHidden("filename.txt"))
+  test("test isHiddenName non-hidden file name") {
+    assert(!FileUtil.isHiddenName("filename.txt"))
   }
 
-  test("test isHidden non-hidden file path with dot") {
-    assert(!FileUtil.isHidden("./filename.txt"))
+  test("test isHiddenName non-hidden file path with dot") {
+    assert(!FileUtil.isHiddenName("./filename.txt"))
+  }
+
+  /***************************************************************************
+    * isHiddenPath tests
+    **************************************************************************/
+  test("test isHiddenPath single dot") {
+    assert(!FileUtil.isHiddenPath(Paths.get(".")))
+  }
+
+  test("test isHiddenPath double dot") {
+    assert(!FileUtil.isHiddenPath(Paths.get("..")))
+  }
+
+  test("test isHiddenPath hidden file name") {
+    assert(FileUtil.isHiddenPath(Paths.get(".gitignore")))
+  }
+
+  test("test isHiddenPath non-hidden file name") {
+    assert(!FileUtil.isHiddenPath(Paths.get("filename.txt")))
+  }
+
+  test("test isHiddenPath non-hidden file path with dot") {
+    assert(!FileUtil.isHiddenPath(Paths.get("./filename.txt")))
   }
 
   /***************************************************************************
