@@ -41,17 +41,25 @@ type Finder (settings : FindSettings) =
     member this.AnyMatchesAnyPattern (slist : string seq) (patterns : Regex list) : bool =
         Seq.exists (fun s -> this.MatchesAnyPattern s patterns) slist
 
+    member this.FilterDirByHidden (d : DirectoryInfo) : bool =
+        (settings.IncludeHidden ||
+         not (FileUtil.IsHiddenDirectory d))
+
+    member this.FilterDirByInPatterns (d : DirectoryInfo) : bool =
+        let elems = FileUtil.GetDirElems(d)
+        (Seq.isEmpty settings.InDirPatterns ||
+         this.AnyMatchesAnyPattern elems settings.InDirPatterns)
+
+    member this.FilterDirByOutPatterns (d : DirectoryInfo) : bool =
+        let elems = FileUtil.GetDirElems(d)
+        (Seq.isEmpty settings.OutDirPatterns ||
+         not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
+
     member this.IsMatchingDir (d : DirectoryInfo) : bool =
         if not settings.FollowSymlinks && d.Exists && d.Attributes.HasFlag(FileAttributes.ReparsePoint) then
             false
         else
-            let elems = FileUtil.GetDirElems(d)
-            (settings.IncludeHidden ||
-             not (Seq.exists FileUtil.IsHidden elems)) &&
-            (Seq.isEmpty settings.InDirPatterns ||
-             this.AnyMatchesAnyPattern elems settings.InDirPatterns) &&
-            (Seq.isEmpty settings.OutDirPatterns ||
-             not (this.AnyMatchesAnyPattern elems settings.OutDirPatterns))
+            this.FilterDirByHidden(d) && this.FilterDirByInPatterns(d) && this.FilterDirByOutPatterns(d)
 
     member this.IsMatchingArchiveExtension (ext : string) : bool =
         (List.isEmpty settings.InArchiveExtensions ||
@@ -105,21 +113,21 @@ type Finder (settings : FindSettings) =
     member this.FilterToFileResult (f: FileInfo) : FileResult.t Option =
         if not settings.FollowSymlinks && f.Exists && f.Attributes.HasFlag(FileAttributes.ReparsePoint) then
             None
+        elif not (this.IsMatchingDir(f.Directory)) then
+            None
+        elif not settings.IncludeHidden && FileUtil.IsHiddenName f.Name then
+            None
         else
-            if not settings.IncludeHidden && FileUtil.IsHiddenFile f then
-                None
-            else
-                let fr = FileResult.Create f (_fileTypes.GetFileType f)
-                if fr.FileType = FileType.Archive then
-                    if settings.IncludeArchives && this.IsMatchingArchiveFileResult fr then
-                        Some fr
-                    else
-                        None
+            let fr = FileResult.Create f (_fileTypes.GetFileType f)
+            if fr.FileType = FileType.Archive then
+                if settings.IncludeArchives && this.IsMatchingArchiveFileResult fr then
+                    Some fr
                 else
-                    if not settings.ArchivesOnly && this.IsMatchingFileResult fr then
-                        Some fr
-                    else
-                        None
+                    None
+            elif not settings.ArchivesOnly && this.IsMatchingFileResult fr then
+                Some fr
+            else
+                None
 
     member this.MatchFile (f : FileInfo) (startPathSepCount : int) : bool =
         if f.Directory = null then
@@ -144,7 +152,7 @@ type Finder (settings : FindSettings) =
             let dirResults =
                 if maxDepth < 0 || currentDepth < maxDepth then
                     dir.EnumerateDirectories()
-                    |> Seq.filter this.IsMatchingDir
+                    |> Seq.filter (fun d -> this.FilterDirByHidden(d) && this.FilterDirByOutPatterns(d))
                     |> Seq.map (fun d -> this.RecGetFileResults d minDepth maxDepth (currentDepth + 1))
                     |> Seq.collect id
                     |> List.ofSeq
@@ -160,7 +168,7 @@ type Finder (settings : FindSettings) =
             // if MaxDepth is zero, we can skip since a directory cannot be a result
             if settings.MaxDepth <> 0 then
                 let dir = DirectoryInfo(fp)
-                if this.IsMatchingDir dir then
+                if (this.FilterDirByHidden dir) && (this.FilterDirByOutPatterns dir) then
                     let maxDepth = if settings.Recursive then settings.MaxDepth else 1
                     this.RecGetFileResults dir settings.MinDepth maxDepth 1
                 else

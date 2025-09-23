@@ -68,10 +68,13 @@ module FileUtil =
 
     let IsDotDir (filePath : string): bool = dotDirs.Contains(NormalizePath filePath)
 
-    let IsHidden (filePath : string) : bool = 
-        let startsWithDot = filePath[0] = '.' && not (IsDotDir filePath)
+    let IsHiddenName (name : string) : bool = 
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
-        startsWithDot
+        name.Length > 1 && name[0] = '.' && not (IsDotDir name)
+
+    let IsHiddenDirectory (d : DirectoryInfo) : bool = 
+        let elems = GetDirElems(d)
+        Seq.exists IsHiddenName elems
 
     let IsHiddenFile (f : FileSystemInfo) : bool = 
         (f.Name[0] = '.' && not (IsDotDir f.Name)) ||
