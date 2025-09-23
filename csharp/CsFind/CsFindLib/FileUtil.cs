@@ -63,9 +63,9 @@ public static class FileUtil
 		return DotDirs.Contains(NormalizePath(fileName));
 	}
 
-	public static bool IsHidden(string fileName)
+	public static bool IsHiddenName(string fileName)
 	{
-		return fileName.StartsWith(CurrentPath) && !IsDotDir(fileName);
+		return fileName.Length > 1 && fileName.StartsWith(CurrentPath) && !IsDotDir(fileName);
 	}
 
 	public static bool IsHiddenFile(FileSystemInfo f)
@@ -75,9 +75,10 @@ public static class FileUtil
 		       || (f.Exists && (f.Attributes & FileAttributes.Hidden) != 0);
 	}
 
-	public static bool IsHiddenFilePath(FilePath filePath)
+	public static bool IsHiddenFilePath(FilePath d)
 	{
-		return IsHiddenFile(filePath.File);
+		var elems = GetPathElems(d).ToList();
+		return elems.Where(IsHiddenName).Any();
 	}
 
 	public static string GetFileContents(string filePath, Encoding encoding)

@@ -82,34 +82,62 @@ public class Finder
 	{
 		return slist.Any(s => MatchesAnyPattern(s, patterns));
 	}
-	
-	public bool IsMatchingDirectory(FilePath d)
+
+	public bool FilterDirectoryByHidden(FilePath d)
 	{
 		if (string.IsNullOrEmpty(d.Path))
 		{
 			return true;
 		}
 
-		// Detect and filter out symlinked directories if !Settings.FollowSymlinks
-		if (!Settings.FollowSymlinks && d.IsSymlink)
+		if (!Settings.IncludeHidden)
+		{
+			return !FileUtil.IsHiddenFilePath(d);
+		}
+
+		return true;
+	}
+
+	public bool FilterDirectoryByInPatterns(FilePath d)
+	{
+		if (string.IsNullOrEmpty(d.Path))
+		{
+			return true;
+		}
+
+		var elems = FileUtil.GetPathElems(d).ToList();
+
+		return Settings.InDirPatterns.Count == 0
+		       || AnyMatchesAnyPattern(elems, Settings.InDirPatterns);
+	}
+
+	public bool FilterDirectoryByOutPatterns(FilePath d)
+	{
+		if (string.IsNullOrEmpty(d.Path))
 		{
 			return false;
 		}
 
 		var elems = FileUtil.GetPathElems(d).ToList();
 
-		if (!Settings.IncludeHidden)
-		{
-			if (elems.Any(FileUtil.IsHidden))
-			{
-				return false;
-			}
-		}
+		return Settings.OutDirPatterns.Count == 0
+		       || !AnyMatchesAnyPattern(elems, Settings.OutDirPatterns);
+	}
 
-		return (Settings.InDirPatterns.Count == 0 ||
-		        AnyMatchesAnyPattern(elems, Settings.InDirPatterns)) &&
-		       (Settings.OutDirPatterns.Count == 0 ||
-		        !AnyMatchesAnyPattern(elems, Settings.OutDirPatterns));
+	public bool IsMatchingDirectory(FilePath d)
+	{
+		if (string.IsNullOrEmpty(d.Path))
+		{
+			return true;
+		}
+		
+		// Detect and filter out symlinked directories if !Settings.FollowSymlinks
+		if (!Settings.FollowSymlinks && d.IsSymlink)
+		{
+			return false;
+		}
+		
+		return FilterDirectoryByHidden(d) && FilterDirectoryByInPatterns(d) && FilterDirectoryByOutPatterns(d);
 	}
 
 	private bool IsMatchingArchiveFileExtension(string ext)
@@ -204,7 +232,9 @@ public class Finder
 		// Detect and filter out symlinked files unless Settings.FollowSymlinks
 		if (!Settings.FollowSymlinks && filePath.IsSymlink)
 			return null;
-		if (!Settings.IncludeHidden && FileUtil.IsHiddenFilePath(filePath))
+		if (filePath.Parent != null && !IsMatchingDirectory(filePath.Parent))
+			return null;
+		if (!Settings.IncludeHidden && FileUtil.IsHiddenName(filePath.Name))
 			return null;
 		var fr = new FileResult(filePath, _fileTypes.GetFileType(filePath));
 		if (fr.Type.Equals(FileType.Archive))
@@ -244,7 +274,8 @@ public class Finder
 
 		if (recurse)
 		{
-			var pathDirs = dirPath.EnumerateDirectories().Where(IsMatchingDirectory);
+			var pathDirs = dirPath.EnumerateDirectories()
+				.Where(d => FilterDirectoryByHidden(d) && FilterDirectoryByOutPatterns(d));
 			foreach (var pathDir in pathDirs)
 			{
 				pathResults.AddRange(RecGetFileResults(pathDir, minDepth, maxDepth, currentDepth + 1));
@@ -263,7 +294,7 @@ public class Finder
 			{
 				return [];
 			}
-			if (IsMatchingDirectory(filePath))
+			if (FilterDirectoryByHidden(filePath) && FilterDirectoryByOutPatterns(filePath))
 			{
 				var maxDepth = Settings.Recursive ? Settings.MaxDepth : 1;
 				return RecGetFileResults(filePath, Settings.MinDepth, maxDepth, 1);
@@ -273,17 +304,15 @@ public class Finder
 		}
 
 		// if MinDepth > zero, we can skip since the file is at depth zero
-		if (Settings.MinDepth <= 0)
+		if (Settings.MinDepth > 0)
 		{
-			var fileResult = FilterToFileResult(filePath);
-			if (fileResult != null)
-			{
-				return [fileResult];
-			}
-			throw new FindException(StartpathNotMatchFindSettings);
+			return [];
 		}
 
-		return [];
+		var fileResult = FilterToFileResult(filePath);
+		return fileResult == null
+			? throw new FindException(StartpathNotMatchFindSettings)
+			: [fileResult];
 	}
 
 	// private IEnumerable<FileResult> GetAllFileResultsTasks()
