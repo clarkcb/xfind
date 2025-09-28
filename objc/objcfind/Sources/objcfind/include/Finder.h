@@ -29,6 +29,9 @@
 // private methods
 - (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error;
 - (BOOL) isMatchingArchiveFile:(NSString*)filePath;
+- (BOOL) filterDirByHidden:(NSString*)dirPath;
+- (BOOL) filterDirByInPatterns:(NSString*)dirPath;
+- (BOOL) filterDirByOutPatterns:(NSString*)dirPath;
 - (BOOL) isMatchingDir:(NSString*)dirPath;
 - (BOOL) isMatchingFile:(NSString*)filePath;
 - (NSArray<NSString*>*) getMatchingDirs:(NSArray<FileResult*>*)fileResults;

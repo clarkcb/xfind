@@ -209,38 +209,38 @@
 }
 
 /***************************************************************************
- * isHidden tests
+ * isHiddenName tests
  **************************************************************************/
-- (void)testIsHiddenSingleDot {
-    XCTAssert(![FileUtil isHidden:@"."]);
+- (void)testIsHiddenNameSingleDot {
+    XCTAssert(![FileUtil isHiddenName:@"."]);
 }
 
-- (void)testIsHiddenDoubleDot {
-    XCTAssert(![FileUtil isHidden:@".."]);
+- (void)testIsHiddenNameDoubleDot {
+    XCTAssert(![FileUtil isHiddenName:@".."]);
 }
 
-- (void)testIsHiddenSingleDotSlash {
-    XCTAssert(![FileUtil isHidden:@"./"]);
+- (void)testIsHiddenNameSingleDotSlash {
+    XCTAssert(![FileUtil isHiddenName:@"./"]);
 }
 
-- (void)testIsHiddenDoubleDotSlash {
-    XCTAssert(![FileUtil isHidden:@"../"]);
+- (void)testIsHiddenNameDoubleDotSlash {
+    XCTAssert(![FileUtil isHiddenName:@"../"]);
 }
 
-- (void)testIsHiddenHiddenFile {
-    XCTAssert([FileUtil isHidden:@".gitignore"]);
+- (void)testIsHiddenNameHiddenFile {
+    XCTAssert([FileUtil isHiddenName:@".gitignore"]);
 }
 
-- (void)testIsHiddenNotHiddenFile {
-    XCTAssert(![FileUtil isHidden:@"filename.txt"]);
+- (void)testIsHiddenNameNotHiddenFile {
+    XCTAssert(![FileUtil isHiddenName:@"filename.txt"]);
 }
 
-- (void)testIsHiddenHiddenFilePath {
-    XCTAssert([FileUtil isHidden:@"./.gitignore"]);
+- (void)testIsHiddenNameHiddenFilePath {
+    XCTAssert([FileUtil isHiddenName:@"./.gitignore"]);
 }
 
-- (void)testIsHiddenNotHiddenFilePath {
-    XCTAssert(![FileUtil isHidden:@"./filename.txt"]);
+- (void)testIsHiddenNameNotHiddenFilePath {
+    XCTAssert(![FileUtil isHiddenName:@"./filename.txt"]);
 }
 
 /***************************************************************************

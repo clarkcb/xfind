@@ -29,8 +29,8 @@
 + (BOOL) allExist:(NSArray<NSString*>*)filePaths;
 + (BOOL) isDirectory:(NSString*)filePath;
 + (BOOL) isDotDir:(NSString*)filePath;
-+ (BOOL) isHidden:(NSString*)filePath;
-+ (BOOL) isHiddenFile:(NSString*)fileName;
++ (BOOL) isHiddenName:(NSString*)name;
++ (BOOL) isHiddenPath:(NSString*)filePath;
 + (BOOL) isReadableFile:(NSString*)filePath;
 + (BOOL) allReadable:(NSArray<NSString*>*)filePaths;
 + (BOOL) isSymlink:(NSString*)filePath;

@@ -142,18 +142,18 @@
     return false;
 }
 
-+ (BOOL) isHidden:(NSString*)filePath {
++ (BOOL) isHiddenName:(NSString*)name {
+    return [name length] > 1 && [name hasPrefix:@"."] && ![self isDotDir:name];
+}
+
++ (BOOL) isHiddenPath:(NSString*)filePath {
     NSArray<NSString*> *elems = [filePath componentsSeparatedByString:@"/"];
     for (NSString *elem in elems) {
-        if ([self isHiddenFile:elem]) {
+        if ([self isHiddenName:elem]) {
             return true;
         }
     }
     return false;
-}
-
-+ (BOOL) isHiddenFile:(NSString*)fileName {
-    return [fileName hasPrefix:@"."] && ![self isDotDir:fileName];
 }
 
 + (BOOL) isReadableFile:(NSString*)filePath {

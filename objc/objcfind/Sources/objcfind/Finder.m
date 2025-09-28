@@ -100,13 +100,22 @@
     return true;
 }
 
+- (BOOL) filterDirByHidden:(NSString*)dirPath {
+    return self.settings.includeHidden || ![FileUtil isHiddenPath:dirPath];
+}
+
+- (BOOL) filterDirByInPatterns:(NSString*)dirPath {
+    return ([self.settings.inDirPatterns count] == 0
+            || [self matchesAnyPattern:dirPath patterns:self.settings.inDirPatterns]);
+}
+
+- (BOOL) filterDirByOutPatterns:(NSString*)dirPath {
+    return ([self.settings.outDirPatterns count] == 0
+            || ![self matchesAnyPattern:dirPath patterns:self.settings.outDirPatterns]);
+}
+
 - (BOOL) isMatchingDir:(NSString*)dirPath {
-    if (!self.settings.includeHidden && [FileUtil isHidden:dirPath]) {
-        return false;
-    }
-    return [self filterByPatterns:dirPath
-                       inPatterns:self.settings.inDirPatterns
-                      outPatterns:self.settings.outDirPatterns];
+    return [self filterDirByHidden:dirPath] && [self filterDirByInPatterns:dirPath] && [self filterDirByOutPatterns:dirPath];
 }
 
 - (BOOL) isMatchingFile:(NSString*)filePath {
@@ -153,8 +162,12 @@
 }
 
 - (FileResult*) filterToFileResult:(NSString*)filePath error:(NSError**)error {
-    if (!self.settings.includeHidden && [FileUtil isHidden:filePath]) {
-        return false;
+    NSString *dir = [filePath stringByDeletingLastPathComponent];
+    if (![self isMatchingDir:dir]) {
+        return nil;
+    }
+    if (!self.settings.includeHidden && [FileUtil isHiddenPath:filePath]) {
+        return nil;
     }
     FileType fileType = [self.fileTypes getFileType:[filePath lastPathComponent]];
     if (fileType == FileTypeArchive && ![self.settings includeArchives] && ![self.settings archivesOnly]) {
@@ -218,7 +231,7 @@
             }
         }
         if ([FileUtil isDirectory:path] || linkIsDir) {
-            if (recurse && [self isMatchingDir:pathElem]) {
+            if (recurse && [self filterDirByHidden:pathElem] && [self filterDirByOutPatterns:pathElem]) {
                 [pathDirs addObject:path];
             }
         } else if (([FileUtil isReadableFile:path] || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth)) {
@@ -254,7 +267,7 @@
         if (self.settings.maxDepth == 0) {
             return fileResults;
         }
-        if ([self isMatchingDir:fp]) {
+        if ([self filterDirByHidden:fp] && [self filterDirByOutPatterns:fp]) {
             long maxDepth = self.settings.recursive ? self.settings.maxDepth : 1;
             return [self recGetFileResults:fp minDepth:self.settings.minDepth maxDepth:maxDepth currentDepth:1 error:error];
         } else {
