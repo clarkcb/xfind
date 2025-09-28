@@ -89,12 +89,20 @@ public class Finder {
         (minLastMod == nil || lastMod! >= minLastMod!)
     }
 
+    public func filterDirByHidden(_ dirPath: String) -> Bool {
+        settings.includeHidden || !FileUtil.isHiddenPath(dirPath)
+    }
+
+    public func filterDirByInPatterns(_ dirPath: String) -> Bool {
+        (settings.inDirPatterns.isEmpty || matchesAnyPattern(dirPath, settings.inDirPatterns))
+    }
+
+    public func filterDirByOutPatterns(_ dirPath: String) -> Bool {
+        (settings.outDirPatterns.isEmpty || !matchesAnyPattern(dirPath, settings.outDirPatterns))
+    }
+
     public func isMatchingDir(_ dirPath: String) -> Bool {
-        if !settings.includeHidden, FileUtil.isHidden(dirPath) {
-            return false
-        }
-        return filterByPatterns(dirPath, inPatterns: settings.inDirPatterns,
-                                outPatterns: settings.outDirPatterns)
+        filterDirByHidden(dirPath) && filterDirByInPatterns(dirPath) && filterDirByOutPatterns(dirPath)
     }
 
     public func isMatchingFile(_ fileName: String) -> Bool {
@@ -102,7 +110,7 @@ public class Finder {
     }
 
     public func isMatchingFile(_ fileName: String, fileType: FileType) -> Bool {
-        if !settings.includeHidden, FileUtil.isHiddenFile(fileName) {
+        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
             return false
         }
         if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
@@ -122,8 +130,13 @@ public class Finder {
     }
 
     public func isMatchingFileResult(_ fileResult: FileResult) -> Bool {
-        let fileName = URL(fileURLWithPath: fileResult.filePath).lastPathComponent
-        if !settings.includeHidden, FileUtil.isHiddenFile(fileName) {
+        let filePathUrl = URL(fileURLWithPath: fileResult.filePath)
+        let parent = filePathUrl.deletingLastPathComponent()
+        if !isMatchingDir(parent.absoluteString) {
+            return false
+        }
+        let fileName = filePathUrl.lastPathComponent
+        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
             return false
         }
         if !settings.inExtensions.isEmpty || !settings.outExtensions.isEmpty {
@@ -145,7 +158,7 @@ public class Finder {
     }
 
     public func isMatchingArchiveFile(_ fileName: String) -> Bool {
-        if !settings.includeHidden, FileUtil.isHidden(fileName) {
+        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
             return false
         }
         if !settings.inArchiveExtensions.isEmpty || !settings.outArchiveExtensions.isEmpty {
@@ -162,7 +175,7 @@ public class Finder {
 
     public func isMatchingArchiveFileResult(_ fileResult: FileResult) -> Bool {
         let fileName = URL(fileURLWithPath: fileResult.filePath).lastPathComponent
-        if !settings.includeHidden, FileUtil.isHidden(fileName) {
+        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
             return false
         }
         if !settings.inArchiveExtensions.isEmpty || !settings.outArchiveExtensions.isEmpty {
@@ -178,10 +191,18 @@ public class Finder {
     }
 
     public func filterToFileResult(_ filePath: String) -> FileResult? {
-        let fileName = URL(fileURLWithPath: filePath).lastPathComponent
-        if !settings.includeHidden, FileUtil.isHidden(fileName) {
+        let (parent, fileName) = FileUtil.splitPath(filePath)
+        return filterToFileResult(parent, fileName)
+    }
+
+    public func filterToFileResult(_ dirPath: String, _ fileName: String) -> FileResult? {
+        if !isMatchingDir(dirPath) {
             return nil
         }
+        if !settings.includeHidden, FileUtil.isHiddenName(fileName) {
+            return nil
+        }
+        let filePath = FileUtil.joinPath(dirPath, childPath: fileName)
         let fileType = fileTypes.getFileType(fileName)
         var fileSize: UInt64 = 0
         var lastMod: Date? = nil
@@ -240,11 +261,11 @@ public class Finder {
                 }
             }
             if FileUtil.isDirectory(path) || linkIsDir {
-                if recurse && isMatchingDir(pathElem) {
+                if recurse && filterDirByHidden(pathElem) && filterDirByOutPatterns(pathElem) {
                     pathDirs.append(path)
                 }
             } else if (FileUtil.isReadableFile(path) || linkIsFile) && (minDepth < 0 || currentDepth >= minDepth) {
-                let fileResult = filterToFileResult(path)
+                let fileResult = filterToFileResult(dirPath, pathElem)
                 if fileResult != nil {
                     fileResults.append(fileResult!)
                 }
@@ -270,7 +291,7 @@ public class Finder {
             if settings.maxDepth == 0 {
                 return fileResults
             }
-            if self.isMatchingDir(fp) {
+            if self.filterDirByHidden(fp) && self.filterDirByOutPatterns(fp) {
                 let maxDepth = settings.recursive ? settings.maxDepth : 1
                 let pathResults = recGetFileResults(fp, minDepth: settings.minDepth, maxDepth: maxDepth, currentDepth: 1)
                 fileResults.append(contentsOf: pathResults)

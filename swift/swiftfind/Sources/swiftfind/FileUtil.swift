@@ -147,13 +147,12 @@ public enum FileUtil {
         dotDirs.contains(filePath)
     }
 
-    public static func isHidden(_ filePath: String) -> Bool {
-        let pathElems = filePath.split { $0 == "/" }.map { String($0) }
-        return pathElems.filter { isHiddenFile($0) }.count > 0
+    public static func isHiddenName(_ name: String) -> Bool {
+        name.count > 1 && name.hasPrefix(".") && !isDotDir(name)
     }
 
-    public static func isHiddenFile(_ fileName: String) -> Bool {
-        fileName.hasPrefix(".") && !isDotDir(fileName)
+    public static func isHiddenPath(_ filePath: String) -> Bool {
+        filePath.split { $0 == "/" }.map { String($0) }.contains { isHiddenName($0) }
     }
 
     public static func splitPath(_ filePath: String) -> (String, String) {

@@ -154,26 +154,26 @@ class FileUtilTests: XCTestCase {
     }
 
     /* ==========================================================================
-     * isHidden tests
+     * isHiddenName tests
      ========================================================================= */
-    func testIsHiddenSingleDot() {
+    func testIsHiddenNameSingleDot() {
         let filename = "."
-        XCTAssertFalse(FileUtil.isHidden(filename))
+        XCTAssertFalse(FileUtil.isHiddenName(filename))
     }
 
-    func testIsHiddenDoubleDot() {
+    func testIsHiddenNameDoubleDot() {
         let filename = ".."
-        XCTAssertFalse(FileUtil.isHidden(filename))
+        XCTAssertFalse(FileUtil.isHiddenName(filename))
     }
 
-    func testIsHiddenHiddenFileName() {
+    func testIsHiddenNameHiddenFileName() {
         let filename = ".gitignore"
-        XCTAssertTrue(FileUtil.isHidden(filename))
+        XCTAssertTrue(FileUtil.isHiddenName(filename))
     }
 
-    func testIsHiddenNotHiddenFileName() {
+    func testIsHiddenNameNotHiddenFileName() {
         let filename = "./file.txt"
-        XCTAssertFalse(FileUtil.isHidden(filename))
+        XCTAssertFalse(FileUtil.isHiddenName(filename))
     }
 
     /* ==========================================================================
