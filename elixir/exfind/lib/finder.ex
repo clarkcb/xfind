@@ -21,13 +21,28 @@ defmodule ExFind.Finder do
     __struct__([file_types: file_types, settings: settings])
   end
 
+  def filter_dir_by_hidden?(finder, dir) do
+    # IO.puts("filter_dir_by_hidden?(#{dir})")
+    (finder.settings.include_hidden or not FileUtil.hidden_path?(dir))
+  end
+
+  def filter_dir_by_in_patterns?(finder, dir) do
+    # IO.puts("filter_dir_by_in_patterns?(#{dir})")
+    (Enum.empty?(finder.settings.in_dir_patterns)
+     or StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.in_dir_patterns))
+  end
+
+  def filter_dir_by_out_patterns?(finder, dir) do
+    # IO.puts("filter_dir_by_out_patterns?(#{dir})")
+    (Enum.empty?(finder.settings.out_dir_patterns)
+     or !StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.out_dir_patterns))
+  end
+
   def matching_dir?(finder, dir) do
     # IO.puts("matching_dir?(#{dir})")
-    (finder.settings.include_hidden or not FileUtil.hidden?(dir))
-    and (Enum.empty?(finder.settings.in_dir_patterns)
-         or StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.in_dir_patterns))
-    and (Enum.empty?(finder.settings.out_dir_patterns)
-         or !StringUtil.any_matches_any_pattern(Path.split(dir), finder.settings.out_dir_patterns))
+    filter_dir_by_hidden?(finder, dir)
+    and filter_dir_by_in_patterns?(finder, dir)
+    and filter_dir_by_out_patterns?(finder, dir)
   end
 
   defp matching_extension?(ext, in_extensions, out_extensions) do
@@ -111,7 +126,7 @@ defmodule ExFind.Finder do
   def matching_archive_file?(finder, file_path, _file_size, _last_mod) do
     # IO.puts("matching_archive_file?(#{file_path})")
     file_name = Path.basename(file_path)
-    (finder.settings.include_hidden or not FileUtil.hidden?(Path.basename(file_name)))
+    (finder.settings.include_hidden or not FileUtil.hidden_name?(Path.basename(file_name)))
     and has_matching_archive_extension?(finder, file_name)
     and matching_archive_file_name?(finder, file_name)
   end
@@ -119,7 +134,7 @@ defmodule ExFind.Finder do
   def matching_file?(finder, file_path, file_type, file_size, last_mod) do
     # IO.puts("matching_file?(#{file_path})")
     file_name = Path.basename(file_path)
-    (finder.settings.include_hidden or not FileUtil.hidden?(Path.basename(file_name)))
+    (finder.settings.include_hidden or not FileUtil.hidden_name?(Path.basename(file_name)))
     and has_matching_extension?(finder, file_name)
     and matching_file_name?(finder, file_name)
     and matching_file_type?(finder, file_type)
@@ -139,31 +154,35 @@ defmodule ExFind.Finder do
         []
       end
     else
-      if not finder.settings.include_hidden and FileUtil.hidden?(Path.basename(file_path)) do
+      if not matching_dir?(finder, Path.dirname(file_path)) do
         []
       else
-        file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
-        if file_type == :archive and not finder.settings.include_archives and not finder.settings.archives_only do
+        if not finder.settings.include_hidden and FileUtil.hidden_name?(Path.basename(file_path)) do
           []
         else
-          {file_size, last_mod} =
-            if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
-              file_stat = File.stat!(file_path, [time: :posix])
-              {file_stat.size, file_stat.mtime}
-            else
-              {0, 0}
-            end
-          if file_type == :archive do
-            if matching_archive_file?(finder, file_path, file_size, last_mod) do
-              [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
-            else
-              []
-            end
+          file_type = FileTypes.get_file_type_for_file_name(finder.file_types, Path.basename(file_path))
+          if file_type == :archive and not finder.settings.include_archives and not finder.settings.archives_only do
+            []
           else
-            if matching_file?(finder, file_path, file_type, file_size, last_mod) do
-              [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+            {file_size, last_mod} =
+              if FindSettings.need_size?(finder.settings) or FindSettings.need_last_mod?(finder.settings) do
+                file_stat = File.stat!(file_path, [time: :posix])
+                {file_stat.size, file_stat.mtime}
+              else
+                {0, 0}
+              end
+            if file_type == :archive do
+              if matching_archive_file?(finder, file_path, file_size, last_mod) do
+                [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+              else
+                []
+              end
             else
-              []
+              if matching_file?(finder, file_path, file_type, file_size, last_mod) do
+                [FileResult.new(Path.dirname(file_path), Path.basename(file_path), file_type, file_size, last_mod)]
+              else
+                []
+              end
             end
           end
         end
@@ -182,14 +201,13 @@ defmodule ExFind.Finder do
                       |> Enum.split_with(fn f -> File.dir?(f) end)
       recurse = max_depth == -1 or current_depth < max_depth
       dirs = if recurse, do: dirs, else: []
+      dirs = Enum.filter(dirs, fn d -> filter_dir_by_hidden?(finder, d) and filter_dir_by_out_patterns?(finder, d) end)
       file_results = if min_depth < 0 or current_depth >= min_depth do
         Enum.map(files, fn f -> filter_to_file_results(finder, f) end) |> List.flatten()
       else
         []
       end
-      # dir_results = if Enum.empty?(dirs), do: [], else: process_dirs(finder, dirs, current_depth + 1)
       dir_results = dirs
-                    |> Enum.filter(fn d -> matching_dir?(finder, d) end)
                     |> Enum.map(fn d -> rec_find_path(finder, d, min_depth, max_depth, current_depth + 1) end)
                     |> List.flatten()
       file_results ++ dir_results
@@ -207,7 +225,7 @@ defmodule ExFind.Finder do
       if finder.settings.max_depth == 0 do
         []
       else
-        if matching_dir?(finder, p) do
+        if filter_dir_by_hidden?(finder, p) and filter_dir_by_out_patterns?(finder, p) do
           max_depth = if finder.settings.recursive, do: finder.settings.max_depth, else: 1
           rec_find_path(finder, p, finder.settings.min_depth, max_depth, 1)
         else

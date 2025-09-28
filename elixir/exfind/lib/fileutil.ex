@@ -18,10 +18,13 @@ defmodule ExFind.FileUtil do
     end
   end
 
-  def hidden?(file_path) do
+  def hidden_name?(name) do
+    String.length(name) > 1 and String.starts_with?(name, ".") and !dot_dir?(name)
+  end
+
+  def hidden_path?(file_path) do
     Path.split(file_path)
-    |> Enum.filter(fn p -> !dot_dir?(p) end)
-    |> Enum.any?(fn p -> String.starts_with?(p, ".") end)
+    |> Enum.any?(fn p -> hidden_name?(p) end)
   end
 
   def get_extension(file_path) do
