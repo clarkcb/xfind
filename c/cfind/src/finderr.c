@@ -2,7 +2,7 @@
 #include "errno.h"
 #include "finderr.h"
 
-void handle_error(error_t err)
+void handle_error(const error_t err)
 {
     switch (err) {
     case EPERM:

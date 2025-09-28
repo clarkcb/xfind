@@ -25,7 +25,9 @@ void get_extension(const char *file_name, char *ext);
 
 void get_file_name_without_extension(const char *file_name_with_ext, char *file_name);
 
-bool is_hidden(const char *file_path);
+bool is_hidden_name(const char *name);
+
+bool is_hidden_path(const char *path);
 
 void expand_path(const char *file_path, char **expanded);
 

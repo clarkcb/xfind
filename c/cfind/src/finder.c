@@ -76,12 +76,22 @@ error_t validate_settings(const FindSettings *settings)
     return E_OK;
 }
 
-bool is_matching_dir(const FindSettings *settings, const char *dir)
+bool filter_dir_by_hidden(const FindSettings *settings, const char *dir)
+{
+    return settings->include_hidden || !is_hidden_path(dir);
+}
+
+bool filter_dir_by_in_patterns(const FindSettings *settings, const char *dir)
 {
     // null or empty dir is a match
     if (dir == NULL) return 1;
     const size_t dir_len = strnlen(dir, MAX_PATH_LENGTH);
     if (dir_len == 0) return 1;
+
+    // empty in_dir_patterns is a match
+    if (is_null_or_empty_regex_node(settings->in_dir_patterns) == 1) {
+        return 1;
+    }
 
     // Split into dir elements to match against
     StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir);
@@ -90,24 +100,48 @@ bool is_matching_dir(const FindSettings *settings, const char *dir)
     const StringNode *d = dir_elems;
     unsigned short matches = 0;
     while (matches == 0 && d != NULL && d->string != NULL) {
-        if (!strncmp(d->string, ".", 5) || !strncmp(d->string, "..", 5)) {
-            d = d->next;
-            continue;
-        }
-        if (!settings->include_hidden && is_hidden(d->string)) {
-            matches = 0;
-            continue;
-        }
-        if ((is_null_or_empty_regex_node(settings->in_dir_patterns) == 0
-             && string_matches_regex_node(d->string, settings->in_dir_patterns) == 1)
-            || (is_null_or_empty_regex_node(settings->out_dir_patterns) == 0
-                && string_matches_regex_node(d->string, settings->out_dir_patterns) == 0)) {
+        if (string_matches_regex_node(d->string, settings->in_dir_patterns) == 1) {
             matches = 1;
         }
         d = d->next;
     }
     destroy_string_node(dir_elems);
     return matches;
+}
+
+bool filter_dir_by_out_patterns(const FindSettings *settings, const char *dir)
+{
+    // null or empty dir is a match
+    if (dir == NULL) return 1;
+    const size_t dir_len = strnlen(dir, MAX_PATH_LENGTH);
+    if (dir_len == 0) return 1;
+
+    // empty in_dir_patterns is a match
+    if (is_null_or_empty_regex_node(settings->out_dir_patterns) == 1) {
+        return 1;
+    }
+
+    // Split into dir elements to match against
+    StringNode *dir_elems = new_string_node_from_char_split(PATH_SEPARATOR, dir);
+    if (dir_elems == NULL) return 1;
+
+    const StringNode *d = dir_elems;
+    unsigned short matches = 1;
+    while (matches == 1 && d != NULL && d->string != NULL) {
+        if (string_matches_regex_node(d->string, settings->out_dir_patterns) == 1) {
+            matches = 0;
+        }
+        d = d->next;
+    }
+    destroy_string_node(dir_elems);
+    return matches;
+}
+
+bool is_matching_dir(const FindSettings *settings, const char *dir)
+{
+    return filter_dir_by_hidden(settings, dir)
+        && filter_dir_by_in_patterns(settings, dir)
+        && filter_dir_by_out_patterns(settings, dir);
 }
 
 bool is_matching_archive_extension(const FindSettings *settings, const char *ext)
@@ -221,7 +255,7 @@ bool is_matching_path(const FindSettings *settings, const Path *path,
 
 bool filter_path(const FindSettings *settings, const Path *path, const FileType *file_type,
                  const uint64_t file_size, const long last_mod) {
-    if (settings->include_hidden == 0 && is_hidden(path->file_name))
+    if (settings->include_hidden == 0 && is_hidden_name(path->file_name))
         return 0;
     if (is_matching_dir(settings, path->dir) == 0)
         return 0;
@@ -244,8 +278,14 @@ error_t filter_to_file_results(const Finder *finder, const PathNode *file_paths,
             return E_UNKNOWN_ERROR;
         }
 
+        // Skip unless is_matching_dir
+        if (!is_matching_dir(finder->settings, path->dir)) {
+            next_path = next_path->next;
+            continue;
+        }
+
         // Skip hidden unless include_hidden
-        if (finder->settings->include_hidden == 0 && is_hidden_path(path)) {
+        if (finder->settings->include_hidden == 0 && is_hidden_name(path->file_name)) {
             next_path = next_path->next;
             continue;
         }
@@ -345,9 +385,12 @@ static error_t rec_find_path(const Finder *finder, const Path *dir_path, FileRes
                 continue;
             }
         }
-        if ((dent->d_type == DT_DIR || link_to_dir == true) && recurse == 1 && is_matching_dir(finder->settings, dent->d_name)) {
+        if ((dent->d_type == DT_DIR || link_to_dir == true) && recurse == 1
+            && filter_dir_by_hidden(finder->settings, dent->d_name) == 1
+            && filter_dir_by_out_patterns(finder->settings, dent->d_name) == 1) {
             add_path_to_path_node(path, path_dirs);
-        } else if ((dent->d_type == DT_REG || link_to_file == true) && (min_depth < 0 || current_depth >= min_depth)) {
+        } else if ((dent->d_type == DT_REG || link_to_file == true)
+            && (min_depth < 0 || current_depth >= min_depth)) {
             add_path_to_path_node(path, path_files);
         }
     }
@@ -408,7 +451,8 @@ static error_t find_path(const Finder *finder, const Path *path, FileResults *re
         if (finder->settings->max_depth == 0) {
             return E_OK;
         }
-        if (is_matching_dir(finder->settings, expanded) == 1) {
+        if (filter_dir_by_hidden(finder->settings, expanded) == 1
+            && filter_dir_by_out_patterns(finder->settings, expanded) == 1) {
             const int max_depth = finder->settings->recursive ? finder->settings->max_depth : 1;
             err = rec_find_path(finder, expanded_path, results, finder->settings->min_depth,
                 max_depth, 1);

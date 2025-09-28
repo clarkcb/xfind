@@ -8,8 +8,14 @@
 
 #include "common.h"
 #include "fileutil.h"
+#include "stringnode.h"
 
-const char *DOT_DIRS[] = {".", "..", "./", "../"};
+#define DOT "."
+#define DOT_DOT ".."
+#define DOT_SLASH "./"
+#define DOT_DOT_SLASH "../"
+
+const char *DOT_DIRS[] = {DOT, DOT_DOT, DOT_SLASH, DOT_DOT_SLASH};
 
 bool dir_or_file_exists(const char *file_path)
 {
@@ -90,52 +96,48 @@ void get_file_name_without_extension(const char *file_name_with_ext, char *file_
     }
 }
 
-bool is_hidden(const char *file_path)
+bool is_hidden_name(const char *name)
 {
     // if NULL or empty, return false
-    if (file_path == NULL) return 0;
-    size_t fplen = strnlen(file_path, MAX_PATH_LENGTH);
-    if (fplen < 1) return 0;
+    if (name == NULL) return 0;
+    size_t namelen = strnlen(name, MAX_PATH_LENGTH);
+    if (namelen < 1) return 0;
+    if (name[0] != '.') return 0;
+    if (is_dot_dir(name)) return 0;
+    // if it starts with a dot and isn't a dot dir, it must be a hidden dir/file
+    return 1;
+}
 
-    // if file_path has any path separators, call is_hidden on each path segment
-    const int sep_count = char_count_in_string(PATH_SEPARATOR, file_path);
-    if (sep_count > 0) {
-        int startidx = 0;
-        int nextidx = 0;
-        while (nextidx < strnlen(file_path, MAX_PATH_LENGTH)) {
-            if (file_path[nextidx] == PATH_SEPARATOR) {
-                int seglen = nextidx - startidx;
-                char seg[seglen + 1];
-                memcpy(seg, &file_path[startidx], seglen);
-                seg[seglen] = '\0';
-                // printf("seg: \"%s\"\n", seg);
-                if (is_hidden(seg)) {
-                    return 1;
-                }
-                startidx += seglen + 1;
-            } else if (nextidx == strnlen(file_path, MAX_PATH_LENGTH) - 1) {
-                int seglen = nextidx - startidx + 1;
-                char seg[seglen + 1];
-                memcpy(seg, &file_path[startidx], seglen);
-                seg[seglen] = '\0';
-                // printf("seg: \"%s\"\n", seg);
-                if (is_hidden(seg)) {
-                    return 1;
-                }
-                startidx += seglen + 1;
-            }
-            nextidx++;
-        }
+bool is_hidden_path(const char *path)
+{
+    // if NULL or empty, return false
+    if (path == NULL) return 0;
+    const size_t path_len = strnlen(path, MAX_PATH_LENGTH);
+    if (path_len == 0) return 0;
 
-    } else {
-        // check the string as an individual path element
-        if (file_path[0] != '.') return 0;
-        if (is_dot_dir(file_path)) return 0;
-        // if it starts with a dot and isn't a dot dir, it must be a hidden dir/file
-        return 1;
+    const int sep_count = char_count_in_string(PATH_SEPARATOR, path);
+    if (sep_count == 0) {
+        return is_hidden_name(path);
     }
 
-    return 0;
+    // Split into dir elements to match against
+    StringNode *elems = new_string_node_from_char_split(PATH_SEPARATOR, path);
+    if (elems == NULL) return 1;
+
+    const StringNode *elem = elems;
+    unsigned short matches = 0;
+    while (matches == 0 && elem != NULL && elem->string != NULL) {
+        if (is_dot_dir(elem->string)) {
+            elem = elem->next;
+            continue;
+        }
+        if (is_hidden_name(elem->string)) {
+            matches = 1;
+        }
+        elem = elem->next;
+    }
+    destroy_string_node(elems);
+    return matches;
 }
 
 void expand_path(const char *file_path, char **expanded)

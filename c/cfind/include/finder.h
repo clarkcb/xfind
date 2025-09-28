@@ -17,6 +17,10 @@ Finder *new_finder(const FindSettings *s, const FileTypes *ft);
 
 error_t validate_settings(const FindSettings *settings);
 
+bool filter_dir_by_in_patterns(const FindSettings *settings, const char *dir);
+
+bool filter_dir_by_out_patterns(const FindSettings *settings, const char *dir);
+
 bool is_matching_dir(const FindSettings *settings, const char *dir);
 
 bool is_matching_path(const FindSettings *settings, const Path *path,

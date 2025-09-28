@@ -20,8 +20,6 @@ Path *new_path_from_dir_and_file_name(const char *dir, const char *file_name);
 
 Path *copy_path(const Path *path);
 
-bool is_hidden_path(const Path *path);
-
 int path_cmp(const Path *p1, const Path *p2);
 
 int path_case_cmp(const Path *p1, const Path *p2);

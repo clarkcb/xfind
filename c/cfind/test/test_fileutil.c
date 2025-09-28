@@ -127,7 +127,7 @@ void test_is_hidden(void)
 {
     printf("\ntest_is_hidden()\n");
 
-    char **filenames = (char *[]) {
+    char **file_paths = (char *[]) {
         NULL,
         "",
         ".",
@@ -147,7 +147,7 @@ void test_is_hidden(void)
         "/path/to/a/.file_name.txt"
     };
     const size_t arrlen = 17;
-    int expected[17] = {
+    const int expected[17] = {
         0,
         0,
         0,
@@ -168,8 +168,8 @@ void test_is_hidden(void)
     };
 
     for (int i=0; i < arrlen; i++) {
-        printf("file_name: \"%s\"\n", filenames[i]);
-        const int res = is_hidden(filenames[i]);
+        printf("file_path: \"%s\"\n", file_paths[i]);
+        const int res = is_hidden_path(file_paths[i]);
         const char* color = res == expected[i] ? COLOR_GREEN : COLOR_RED;
         printf("%sexpected res: %d%s\n", color, expected[i], COLOR_RESET);
         printf("%sactual res:   %d%s\n", color, res, COLOR_RESET);

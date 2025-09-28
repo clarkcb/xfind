@@ -51,17 +51,6 @@ Path *copy_path(const Path *path)
     return p;
 }
 
-bool is_hidden_path(const Path *path) {
-    if (path == NULL) return 0;
-    if (path->dir != NULL && is_hidden(path->dir)) {
-       return 1;
-    }
-    if (path->file_name != NULL && is_hidden(path->file_name)) {
-       return 1;
-    }
-    return 0;
-}
-
 int path_cmp(const Path *p1, const Path *p2)
 {
     if (p1 == NULL && p2 == NULL) return 0;
