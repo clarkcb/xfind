@@ -38,7 +38,15 @@ getFileUtilTests = do
          , testCase "isDotDir .." (isDotDir ".." @?= True)
          , testCase "isDotDir .git" (isDotDir ".git" @?= False)
 
-         , testCase "isHiddenFilePath file.txt" (isHiddenFilePath "file.txt" @?= False)
-         , testCase "isHiddenFilePath .file.txt" (isHiddenFilePath ".file.txt" @?= True)
-         , testCase "isHiddenFilePath .git" (isHiddenFilePath ".git" @?= True)
+         , testCase "isHiddenName ." (isHiddenName "." @?= False)
+         , testCase "isHiddenName .." (isHiddenName ".." @?= False)
+         , testCase "isHiddenName file.txt" (isHiddenName "file.txt" @?= False)
+         , testCase "isHiddenName .file.txt" (isHiddenName ".file.txt" @?= True)
+         , testCase "isHiddenName .git" (isHiddenName ".git" @?= True)
+
+         , testCase "isHiddenFilePath ./" (isHiddenFilePath "./" @?= False)
+         , testCase "isHiddenFilePath ../" (isHiddenFilePath "../" @?= False)
+         , testCase "isHiddenFilePath ./file.txt" (isHiddenFilePath "./file.txt" @?= False)
+         , testCase "isHiddenFilePath ./.file.txt" (isHiddenFilePath "./.file.txt" @?= True)
+         , testCase "isHiddenFilePath ./.git" (isHiddenFilePath "./.git" @?= True)
          ]

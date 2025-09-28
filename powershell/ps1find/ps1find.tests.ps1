@@ -150,26 +150,55 @@ Describe -tag "FileUtil" -name "test_expand_path_with_tilde_and_name" {
     }
 }
 
-Describe -tag "FileUtil" -name "test_is_hidden_hidden_dir" {
-    It ".git is hidden dir" {
-        $fileInfo = [System.IO.FileInfo]::new('.git')
-        IsHiddenFile($fileInfo) | Should -BeTrue
+#Describe -tag "FileUtil" -name "test_is_hidden_hidden_dir" {
+#    It ".git is hidden dir" {
+#        $fileInfo = [System.IO.FileInfo]::new('.git')
+#        IsHiddenFile($fileInfo) | Should -BeTrue
+#    }
+#}
+
+Describe -tag "FileUtil" -name "test_is_hidden_name_dot_dir" {
+    It ". is not hidden name" {
+        IsHiddenName('.') | Should -BeFalse
     }
 }
 
-Describe -tag "FileUtil" -name "test_is_hidden_dot_dir" {
+Describe -tag "FileUtil" -name "test_is_hidden_name_double_dot_dir" {
+    It ".. is not hidden name" {
+        IsHiddenName('..') | Should -BeFalse
+    }
+}
+
+Describe -tag "FileUtil" -name "test_is_hidden_name_hidden_file_name" {
+    It ".gitignore is hidden name" {
+        IsHiddenName('.gitignore') | Should -BeTrue
+    }
+}
+
+Describe -tag "FileUtil" -name "test_is_hidden_name_non_hidden_file_name" {
+    It "file.txt is not hidden name" {
+        IsHiddenName('file.txt') | Should -BeFalse
+    }
+}
+
+Describe -tag "FileUtil" -name "test_is_hidden_directory_dot_dir" {
     It ". is not hidden dir" {
-        # $fileInfo = [System.IO.FileInfo]::new('.')
-        # IsHiddenFile($fileInfo) | Should -BeFalse
-        IsHiddenFileName('.') | Should -BeFalse
+        $dir = [System.IO.DirectoryInfo]::new('.')
+        IsHiddenDirectory($dir) | Should -BeFalse
     }
 }
 
-Describe -tag "FileUtil" -name "test_is_hidden_double_dot_dir" {
+Describe -tag "FileUtil" -name "test_is_hidden_directory_double_dot_dir" {
     It ".. is not hidden dir" {
-        # $fileInfo = [System.IO.FileInfo]::new('..')
-        # IsHiddenFile($fileInfo) | Should -BeFalse
-        IsHiddenFileName('..') | Should -BeFalse
+        $dir = [System.IO.DirectoryInfo]::new('..')
+        IsHiddenDirectory($dir) | Should -BeFalse
+    }
+}
+
+Describe -tag "FileUtil" -name "test_is_hidden_directory_dot_git_dir" {
+    It ".git is hidden dir" {
+        $dir = [System.IO.DirectoryInfo]::new('./.git')
+        IsHiddenDirectory($dir) | Should -BeTrue
     }
 }
 #endregion

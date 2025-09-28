@@ -67,7 +67,8 @@ function LogError {
 $dotPaths = @('.', '..')
 
 function GetHomePath {
-    return [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
+#    return [Environment]::GetFolderPath([Environment+SpecialFolder]::UserProfile)
+    return $HOME
 }
 
 function ExpandPath {
@@ -99,12 +100,12 @@ function IsHiddenName {
     return ($name.Length -gt 1 -and $name.StartsWith('.') -and (-not ($dotPaths.Contains($name))))
 }
 
-function IsHiddenFile {
-    [OutputType([bool])]
-    param([System.IO.FileSystemInfo]$f)
-    return ($f.Attributes.HasFlag([System.IO.FileAttributes]::Hidden)) -or
-            (IsHiddenName $f.Name)
-}
+#function IsHiddenFile {
+#    [OutputType([bool])]
+#    param([System.IO.FileSystemInfo]$f)
+#    return ($f.Attributes.HasFlag([System.IO.FileAttributes]::Hidden)) -or
+#            (IsHiddenName $f.Name)
+#}
 
 function IsHiddenDirectory {
     [OutputType([bool])]
@@ -1132,6 +1133,7 @@ class FileResultSorter
                 Sort-Object -CaseSensitive -Property $order
     }
 }
+#endregion
 
 
 #region Finder

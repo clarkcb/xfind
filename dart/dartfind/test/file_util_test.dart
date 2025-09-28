@@ -79,23 +79,44 @@ void main() {
   });
 
   /***************************************************************************
-   * isHidden tests
+   * isHiddenName tests
    **************************************************************************/
-  group('isHidden tests', () {
-    test('test isHidden single dot', () {
-      expect(FileUtil.isHidden('.'), false);
+  group('isHiddenName tests', () {
+    test('test isHiddenName single dot', () {
+      expect(FileUtil.isHiddenName('.'), false);
     });
 
-    test('test isHidden double dot', () {
-      expect(FileUtil.isHidden('..'), false);
+    test('test isHiddenName double dot', () {
+      expect(FileUtil.isHiddenName('..'), false);
     });
 
-    test('test isHidden hidden file', () {
-      expect(FileUtil.isHidden('.gitignore'), true);
+    test('test isHiddenName hidden file', () {
+      expect(FileUtil.isHiddenName('.gitignore'), true);
     });
 
-    test('test isHidden not-hidden file', () {
-      expect(FileUtil.isHidden('filename.txt'), false);
+    test('test isHiddenName not-hidden file', () {
+      expect(FileUtil.isHiddenName('filename.txt'), false);
+    });
+  });
+
+  /***************************************************************************
+   * isHiddenPath tests
+   **************************************************************************/
+  group('isHiddenPath tests', () {
+    test('test isHiddenPath single dot', () {
+      expect(FileUtil.isHiddenPath('.'), false);
+    });
+
+    test('test isHiddenPath double dot', () {
+      expect(FileUtil.isHiddenPath('..'), false);
+    });
+
+    test('test isHiddenPath hidden file', () {
+      expect(FileUtil.isHiddenPath('./.gitignore'), true);
+    });
+
+    test('test isHiddenPath not-hidden file', () {
+      expect(FileUtil.isHiddenPath('./filename.txt'), false);
     });
   });
 }

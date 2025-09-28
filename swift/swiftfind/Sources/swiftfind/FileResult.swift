@@ -92,8 +92,11 @@ public class FileResultFormatter {
         }
         if !settings.inExtensions.isEmpty {
             let idx = formattedFileName.lastIndex(of: ".")
-            if idx != nil && idx!.encodedOffset > 0 && idx!.encodedOffset < formattedFileName.count - 1 {
-                formattedFileName = colorize(formattedFileName, idx!.encodedOffset + 1, formattedFileName.count)
+            if idx != nil {
+                let utf16Offset = idx!.utf16Offset(in: formattedFileName)
+                if utf16Offset > 0 && utf16Offset < formattedFileName.count - 1 {
+                    formattedFileName = colorize(formattedFileName, utf16Offset + 1, formattedFileName.count)
+                }
             }
         }
 

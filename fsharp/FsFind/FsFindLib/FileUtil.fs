@@ -72,9 +72,13 @@ module FileUtil =
         //let hasHiddenAttribute = f.Exists && (f.Attributes &&& FileAttributes.Hidden) <> 0
         name.Length > 1 && name[0] = '.' && not (IsDotDir name)
 
-    let IsHiddenDirectory (d : DirectoryInfo) : bool = 
-        let elems = GetDirElems(d)
-        Seq.exists IsHiddenName elems
+    let rec IsHiddenDirectory (d : DirectoryInfo) : bool = 
+        if IsHiddenName d.Name then
+            true
+        elif null <> d.Parent then
+            IsHiddenDirectory d.Parent
+        else
+            false
 
     let IsHiddenFile (f : FileSystemInfo) : bool = 
         (f.Name[0] = '.' && not (IsDotDir f.Name)) ||

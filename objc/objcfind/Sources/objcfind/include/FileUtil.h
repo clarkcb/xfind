@@ -13,6 +13,12 @@
 #import "FindConfig.h"
 #import "FindSettings.h"
 
+#define DOT                @"."
+#define DOT_DOT            @".."
+#define SEPARATOR          @"/"
+#define DOT_SEPARATOR      @"./"
+#define DOT_DOT_SEPARATOR  @"../"
+
 @interface FileUtil : NSObject
 
 + (NSSet<NSString*>*) dotDirs;

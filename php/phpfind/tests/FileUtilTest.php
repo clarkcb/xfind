@@ -93,30 +93,57 @@ class FileUtilTest extends TestCase
     }
 
     /***************************************************************************
-     * is_hidden tests
+     * is_hidden_name tests
      **************************************************************************/
-    public function test_is_hidden_hidden_file(): void
-    {
-        $file_name = '.filename.txt';
-        $this->assertTrue(FileUtil::is_hidden($file_name));
-    }
-
-    public function test_is_hidden_not_hidden_file(): void
-    {
-        $file_name = 'filename.txt';
-        $this->assertFalse(FileUtil::is_hidden($file_name));
-    }
-
     public function test_is_hidden_single_dot(): void
     {
         $file_name = '.';
-        $this->assertFalse(FileUtil::is_hidden($file_name));
+        $this->assertFalse(FileUtil::is_hidden_name($file_name));
     }
 
-    public function test_is_hidden_double_dot(): void
+    public function test_is_hidden_name_double_dot(): void
     {
         $file_name = '..';
-        $this->assertFalse(FileUtil::is_hidden($file_name));
+        $this->assertFalse(FileUtil::is_hidden_name($file_name));
+    }
+
+    public function test_is_hidden_name_hidden_file(): void
+    {
+        $file_name = '.filename.txt';
+        $this->assertTrue(FileUtil::is_hidden_name($file_name));
+    }
+
+    public function test_is_hidden_name_not_hidden_file(): void
+    {
+        $file_name = 'filename.txt';
+        $this->assertFalse(FileUtil::is_hidden_name($file_name));
+    }
+
+    /***************************************************************************
+     * is_hidden_path tests
+     **************************************************************************/
+    public function test_is_hidden_path_single_dot(): void
+    {
+        $file_path = './';
+        $this->assertFalse(FileUtil::is_hidden_path($file_path));
+    }
+
+    public function test_is_hidden_path_double_dot(): void
+    {
+        $file_path = '../';
+        $this->assertFalse(FileUtil::is_hidden_path($file_path));
+    }
+
+    public function test_is_hidden_path_hidden_file(): void
+    {
+        $file_path = './.filename.txt';
+        $this->assertTrue(FileUtil::is_hidden_path($file_path));
+    }
+
+    public function test_is_hidden_path_not_hidden_file(): void
+    {
+        $file_path = './filename.txt';
+        $this->assertFalse(FileUtil::is_hidden_path($file_path));
     }
 
     /***************************************************************************

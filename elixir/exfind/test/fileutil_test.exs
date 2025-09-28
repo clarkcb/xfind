@@ -75,21 +75,40 @@ defmodule ExFindTest.FileUtilTest do
   end
 
   ############################################################################
-  # hidden? tests
+  # hidden_name? tests
   ############################################################################
-  test "hidden file is hidden" do
-    assert FileUtil.hidden?(".filename.txt")
-  end
-
-  test "non-hidden file is not hidden" do
-    assert !FileUtil.hidden?("filename.txt")
-  end
-
   test "single dot is not hidden" do
-    assert !FileUtil.hidden?(".")
+    assert !FileUtil.hidden_name?(".")
   end
 
   test "double dot is not hidden" do
-    assert !FileUtil.hidden?("..")
+    assert !FileUtil.hidden_name?("..")
+  end
+
+  test "hidden file is hidden" do
+    assert FileUtil.hidden_name?(".gitignore")
+  end
+
+  test "non-hidden file is not hidden" do
+    assert !FileUtil.hidden_name?("filename.txt")
+  end
+
+  ############################################################################
+  # hidden_path? tests
+  ############################################################################
+  test "single dot path is not hidden" do
+    assert !FileUtil.hidden_path?("./")
+  end
+
+  test "double dot path is not hidden" do
+    assert !FileUtil.hidden_path?("../")
+  end
+
+  test "hidden file path is hidden" do
+    assert FileUtil.hidden_path?("./.gitignore")
+  end
+
+  test "non-hidden file path is not hidden" do
+    assert !FileUtil.hidden_path?("./filename.txt")
   end
 end

@@ -81,7 +81,7 @@ func TestIsDotDir(t *testing.T) {
 	}
 }
 
-func TestIsHidden(t *testing.T) {
+func TestIsHiddenName(t *testing.T) {
 	expected := map[string]bool{
 		".":          false,
 		"..":         false,
@@ -92,8 +92,25 @@ func TestIsHidden(t *testing.T) {
 	}
 
 	for k, v := range expected {
-		if h := IsHidden(k); h != v {
-			t.Errorf("IsHidden(\"%s\")=%v, expected=%v", k, h, v)
+		if h := IsHiddenName(k); h != v {
+			t.Errorf("IsHiddenName(\"%s\")=%v, expected=%v", k, h, v)
+		}
+	}
+}
+
+func TestIsHiddenPath(t *testing.T) {
+	expected := map[string]bool{
+		"./":           false,
+		"../":          false,
+		"./lib.a":      false,
+		"./noext":      false,
+		"./.git":       true,
+		"./.gitignore": true,
+	}
+
+	for k, v := range expected {
+		if h := IsHiddenPath(k); h != v {
+			t.Errorf("IsHiddenPath(\"%s\")=%v, expected=%v", k, h, v)
 		}
 	}
 }

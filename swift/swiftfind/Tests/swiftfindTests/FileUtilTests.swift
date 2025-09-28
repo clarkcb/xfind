@@ -172,8 +172,46 @@ class FileUtilTests: XCTestCase {
     }
 
     func testIsHiddenNameNotHiddenFileName() {
-        let filename = "./file.txt"
+        let filename = "file.txt"
         XCTAssertFalse(FileUtil.isHiddenName(filename))
+    }
+
+    /* ==========================================================================
+     * isHiddenPath tests
+     ========================================================================= */
+    func testIsHiddenPathSingleDot() {
+        let filename = "."
+        XCTAssertFalse(FileUtil.isHiddenPath(filename))
+    }
+
+    func testIsHiddenPathDoubleDot() {
+        let filename = ".."
+        XCTAssertFalse(FileUtil.isHiddenPath(filename))
+    }
+
+    func testIsHiddenPathHiddenFileName() {
+        let filename = ".gitignore"
+        XCTAssertTrue(FileUtil.isHiddenPath(filename))
+    }
+
+    func testIsHiddenPathNotHiddenFileName() {
+        let filename = "./file.txt"
+        XCTAssertFalse(FileUtil.isHiddenPath(filename))
+    }
+
+    func testIsHiddenPathDotGit() {
+        let filepath = "./.git"
+        XCTAssertTrue(FileUtil.isHiddenPath(filepath))
+    }
+
+    func testIsHiddenPathDotGitConfig() {
+        let filepath = "./.git/config"
+        XCTAssertTrue(FileUtil.isHiddenPath(filepath))
+    }
+
+    func testIsHiddenPathDotGitignore() {
+        let filepath = "./.gitignore"
+        XCTAssertTrue(FileUtil.isHiddenPath(filepath))
     }
 
     /* ==========================================================================
@@ -228,10 +266,17 @@ class FileUtilTests: XCTestCase {
         ("testIsDotDirNotDotDir", testIsDotDirNotDotDir),
         ("testIsDotDirPathWithDot", testIsDotDirPathWithDot),
         ("testIsDotDirHiddenFile", testIsDotDirHiddenFile),
-        ("testIsHiddenSingleDot", testIsHiddenSingleDot),
-        ("testIsHiddenDoubleDot", testIsHiddenDoubleDot),
-        ("testIsHiddenHiddenFileName", testIsHiddenHiddenFileName),
-        ("testIsHiddenNotHiddenFileName", testIsHiddenNotHiddenFileName),
+        ("testIsHiddenNameSingleDot", testIsHiddenNameSingleDot),
+        ("testIsHiddenNameDoubleDot", testIsHiddenNameDoubleDot),
+        ("testIsHiddenNameHiddenFileName", testIsHiddenNameHiddenFileName),
+        ("testIsHiddenNameNotHiddenFileName", testIsHiddenNameNotHiddenFileName),
+        ("testIsHiddenPathSingleDot", testIsHiddenPathSingleDot),
+        ("testIsHiddenPathDoubleDot", testIsHiddenPathDoubleDot),
+        ("testIsHiddenPathHiddenFileName", testIsHiddenPathHiddenFileName),
+        ("testIsHiddenPathNotHiddenFileName", testIsHiddenPathNotHiddenFileName),
+        ("testIsHiddenPathDotGit", testIsHiddenPathDotGit),
+        ("testIsHiddenPathDotGitConfig", testIsHiddenPathDotGitConfig),
+        ("testIsHiddenPathDotGitignore", testIsHiddenPathDotGitignore),
         ("testJoinPathDir", testJoinPathDir),
         ("testJoinPathFile", testJoinPathFile),
         ("testSplitPathDir", testSplitPathDir),

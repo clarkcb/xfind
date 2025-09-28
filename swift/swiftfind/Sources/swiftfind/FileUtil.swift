@@ -9,27 +9,30 @@
 import Foundation
 
 public enum FileUtil {
-    fileprivate static let dotDirs = Set<String>([".", "..", "./", "../"])
-    fileprivate static let separator = "/"
+    static let dot = "."
+    static let dotDot = ".."
+    static let separator = "/"
+    static let dotDirs = Set<String>([dot, dotDot, dot + separator, dotDot + separator])
+    static let tilde = "~"
 
     public static func contractPath(_ filePath: String) -> String {
         // NOTE: I get this error for the following line when trying to build on linux:
         //       value of type 'NSString' has no member 'abbreviatingWithTildeInPath'
         // (filePath as NSString).abbreviatingWithTildeInPath
         if filePath.hasPrefix(NSHomeDirectory()) {
-            return filePath.replacingOccurrences(of: NSHomeDirectory(), with: "~")
+            return filePath.replacingOccurrences(of: NSHomeDirectory(), with: tilde)
         }
         return filePath
     }
 
     public static func relativePath(_ filePath: String, forPath: String) -> String {
-        if forPath == "." || forPath.hasPrefix("./") {
-            let fullForPath = URL(fileURLWithPath: ".").path
-            return filePath.replacingOccurrences(of: fullForPath, with: ".")
+        if forPath == dot || forPath.hasPrefix(dot + separator) {
+            let fullForPath = URL(fileURLWithPath: dot).path
+            return filePath.replacingOccurrences(of: fullForPath, with: dot)
         }
-        if forPath == ".." || forPath.hasPrefix("../") {
-            let fullForPath = URL(fileURLWithPath: "..").path
-            return filePath.replacingOccurrences(of: fullForPath, with: "..")
+        if forPath == dotDot || forPath.hasPrefix(dotDot + separator) {
+            let fullForPath = URL(fileURLWithPath: dotDot).path
+            return filePath.replacingOccurrences(of: fullForPath, with: dotDot)
         }
         return filePath
     }
@@ -37,7 +40,7 @@ public enum FileUtil {
     // this formats filePath according to forPath, which means that it will become relative
     // if forPath is, or the the HOME prefix will be replaced with tilde if forPath.hasPrefix("~")
     public static func formatPath(_ filePath: String, forPath: String) -> String {
-        if forPath.hasPrefix("~") {
+        if forPath.hasPrefix(tilde) {
             return contractPath(filePath)
         }
         return relativePath(filePath, forPath: forPath)
@@ -148,11 +151,11 @@ public enum FileUtil {
     }
 
     public static func isHiddenName(_ name: String) -> Bool {
-        name.count > 1 && name.hasPrefix(".") && !isDotDir(name)
+        name.count > 1 && name.hasPrefix(dot) && !isDotDir(name)
     }
 
     public static func isHiddenPath(_ filePath: String) -> Bool {
-        filePath.split { $0 == "/" }.map { String($0) }.contains { isHiddenName($0) }
+        filePath.components(separatedBy: separator).map { String($0) }.contains { isHiddenName($0) }
     }
 
     public static func splitPath(_ filePath: String) -> (String, String) {

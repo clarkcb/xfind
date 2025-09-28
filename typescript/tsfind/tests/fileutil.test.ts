@@ -123,12 +123,12 @@ describe('testing fileutil', () => {
     });
 
     it('testIsHiddenPathHiddenFile', () => {
-        const filepath = '.gitignore';
+        const filepath = './.gitignore';
         expect(FileUtil.isHiddenPath(filepath)).toBeTruthy();
     });
 
     it('testIsHiddenPathNotHiddenFile', () => {
-        const filepath = 'file.txt';
+        const filepath = './file.txt';
         expect(FileUtil.isHiddenPath(filepath)).toBeFalsy();
     });
 

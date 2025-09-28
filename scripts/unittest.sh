@@ -480,6 +480,8 @@ unittest_javafind () {
         log "java version: $JAVA_VERSION"
     fi
 
+    cd "$JAVAFIND_PATH"
+
     GRADLE=
     # check for gradle wrapper
     if [ -f "gradlew" ]
@@ -505,10 +507,8 @@ unittest_javafind () {
     JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
     log "JVM version: $JVM_VERSION"
 
-    cd "$JAVAFIND_PATH"
-
     # run tests via gradle
-    log "Unit-testing ktfind"
+    log "Unit-testing javafind"
     log "$GRADLE --warning-mode all test"
     "$GRADLE" --warning-mode all test
 
@@ -569,6 +569,8 @@ unittest_ktfind () {
     echo
     hdr "unittest_ktfind"
 
+    cd "$KTFIND_PATH"
+
     GRADLE=
     # check for gradle wrapper
     if [ -f "gradlew" ]
@@ -593,8 +595,6 @@ unittest_ktfind () {
 
     JVM_VERSION=$(echo "$GRADLE_OUTPUT" | grep '^Launcher' | awk '{print $3}')
     log "JVM version: $JVM_VERSION"
-
-    cd "$KTFIND_PATH"
 
     # run tests via gradle
     log "Unit-testing ktfind"
