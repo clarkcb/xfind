@@ -383,8 +383,8 @@ namespace cppfind {
     public:
         FindOptions();
         FindSettings settings_from_args(int &argc, char **argv);
-        void update_settings_from_file(const std::filesystem::path& file_path, FindSettings& settings);
-        void update_settings_from_json(std::string_view json_str, FindSettings& settings);
+        void update_settings_from_file(FindSettings& settings, const std::filesystem::path& file_path);
+        void update_settings_from_json(FindSettings& settings, std::string_view json_str);
         void usage();
         std::string get_usage_string();
     };
@@ -399,6 +399,9 @@ namespace cppfind {
         Finder(Finder&& other) = delete;
         [[nodiscard]] std::optional<FileResult> filter_to_file_result(const std::filesystem::path& file_path) const;
         [[nodiscard]] bool is_matching_archive_file_result(const FileResult& file_result) const;
+        [[nodiscard]] bool filter_dir_path_by_hidden(const std::filesystem::path& dir_path) const;
+        [[nodiscard]] bool filter_dir_path_by_in_patterns(const std::filesystem::path& dir_path) const;
+        [[nodiscard]] bool filter_dir_path_by_out_patterns(const std::filesystem::path& dir_path) const;
         [[nodiscard]] bool is_matching_dir_path(const std::filesystem::path& dir_path) const;
         [[nodiscard]] bool is_matching_archive_extension(const std::string& file_ext) const;
         [[nodiscard]] bool has_matching_archive_extension(const FileResult& file_result) const;

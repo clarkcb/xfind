@@ -66,13 +66,15 @@ namespace cppfind {
     }
 
     bool FileUtil::is_hidden(const std::string_view file_name) {
-        return !file_name.empty() && file_name[0] == '.' && !is_dot_dir(file_name);
+        return file_name.length() > 1 && file_name[0] == '.' && !is_dot_dir(file_name);
     }
 
     bool FileUtil::is_hidden_path(const std::filesystem::path& file_path) {
         if (file_path.empty()) return false;
         for (auto it = file_path.begin(); it != file_path.end(); ++it) {
-            if (it->string().at(0) == '.' && !is_dot_dir(it->string())) return true;
+            if (is_hidden(it->string())) {
+                return true;
+            }
         }
         return false;
     }

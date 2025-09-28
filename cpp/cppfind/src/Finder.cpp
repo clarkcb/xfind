@@ -66,25 +66,43 @@ namespace cppfind {
         });
     }
 
-    bool Finder::is_matching_dir_path(const std::filesystem::path& dir_path) const {
-        bool matches = false;
+    bool Finder::filter_dir_path_by_hidden(const std::filesystem::path& dir_path) const {
+        if (!m_settings.include_hidden() && FileUtil::is_hidden_path(dir_path)) {
+            return false;
+        }
+        return true;
+    }
+
+    bool Finder::filter_dir_path_by_in_patterns(const std::filesystem::path& dir_path) const {
+        if (m_settings.in_dir_patterns().empty()) {
+            return true;
+        }
         for (auto it = dir_path.begin(); it != dir_path.end(); ++it) {
-            // if segment is hidden and !is_hidden, return false immediately
-            if (!m_settings.include_hidden() && FileUtil::is_hidden(it->string())) {
-                return false;
-            }
             // at least one segment has to be true for in_dir_patterns
-            if (m_settings.in_dir_patterns().empty()
-                || matches_any_pattern(it->string(), m_settings.in_dir_patterns())) {
-                matches = true;
+            if (matches_any_pattern(it->string(), m_settings.in_dir_patterns())) {
+                return true;
             }
+        }
+        return false;
+    }
+
+    bool Finder::filter_dir_path_by_out_patterns(const std::filesystem::path& dir_path) const {
+        if (m_settings.out_dir_patterns().empty()) {
+            return true;
+        }
+        for (auto it = dir_path.begin(); it != dir_path.end(); ++it) {
             // if segment matches out_dir_pattern, return false immediately
-            if (!m_settings.out_dir_patterns().empty()
-                    && matches_any_pattern(it->string(), m_settings.out_dir_patterns())) {
+            if (matches_any_pattern(it->string(), m_settings.out_dir_patterns())) {
                 return false;
             }
         }
-        return matches;
+        return true;
+    }
+
+    bool Finder::is_matching_dir_path(const std::filesystem::path& dir_path) const {
+        return filter_dir_path_by_hidden(dir_path)
+            && filter_dir_path_by_in_patterns(dir_path)
+            && filter_dir_path_by_out_patterns(dir_path);
     }
 
     bool Finder::is_matching_archive_extension(const std::string& file_ext) const {
@@ -166,6 +184,9 @@ namespace cppfind {
     }
 
     std::optional<FileResult> Finder::filter_to_file_result(const std::filesystem::path& file_path) const {
+        if (!is_matching_dir_path(file_path.parent_path())) {
+            return std::nullopt;
+        }
         if (!m_settings.include_hidden() && FileUtil::is_hidden_path(file_path.filename())) {
             return std::nullopt;
         }
@@ -227,7 +248,7 @@ namespace cppfind {
                         continue;
                     }
                 }
-                if (std::filesystem::is_directory(entry_path) && recurse && is_matching_dir_path(entry.path().filename())) {
+                if (std::filesystem::is_directory(entry_path) && recurse && filter_dir_path_by_hidden(entry_path) && filter_dir_path_by_out_patterns(entry_path)) {
                     path_dirs.push_back(entry.path());
                 } else if (std::filesystem::is_regular_file(entry_path) && (min_depth < 0 || current_depth >= min_depth)) {
                     if (auto opt_file_result = filter_to_file_result(entry.path());
@@ -262,7 +283,7 @@ namespace cppfind {
             if (m_settings.max_depth() == 0) {
                 return file_results;
             }
-            if (is_matching_dir_path(fp)) {
+            if (filter_dir_path_by_hidden(fp) && filter_dir_path_by_out_patterns(fp)) {
                 const int max_depth = m_settings.recursive() ?  m_settings.max_depth() : 1;
                 return rec_get_file_results(fp, m_settings.min_depth(), max_depth, 1);
             }
