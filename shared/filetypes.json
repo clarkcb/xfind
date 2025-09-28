@@ -18,8 +18,9 @@
     {
       "type": "audio",
       "extensions": [
-        "aac", "adt", "adts", "aif", "aifc", "aiff", "cda", "m4a", "mid",
-        "midi", "mp3", "oga", "opus", "wav", "weba"
+        "3ga", "aa", "aac", "adt", "adts", "aif", "aifc", "aiff", "alaw", "amr",
+        "cda", "flac", "m4a", "m4b", "mid", "midi", "mp3", "mulaw", "oga",
+        "ogg", "opus", "pcm", "raw", "vox", "wav", "weba", "wma"
       ],
       "names": []
     },
@@ -178,7 +179,10 @@
     },
     {
       "type": "video",
-      "extensions": ["avi", "mov", "mp4", "mpeg", "ogv", "webm", "3gp", "3g2"],
+      "extensions": [
+        "asf", "avc", "avi", "f4v", "m2v", "m4v", "mka", "mks", "mkv", "mov",
+        "mp4", "mpeg", "mpg", "ogv", "qt", "vob", "webm", "264", "3gp", "3g2"
+      ],
       "names": []
     },
     {

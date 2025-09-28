@@ -193,7 +193,7 @@ class FindOptions {
         try {
             JsonSlurper jsonSlurper = new JsonSlurper()
             def jsonObj = jsonSlurper.parseText(json)
-            assert jsonObj instanceof Map<String, Object>
+            assert jsonObj instanceof Map
             // keys are sorted so that output is consistent across all versions
             var keys = jsonObj.keySet().stream().sorted().collect(Collectors.toList())
             var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).collect(Collectors.toList())

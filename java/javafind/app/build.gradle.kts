@@ -17,7 +17,7 @@ dependencies {
 
 application {
     // Define the main class for the application.
-    mainClass.set("javafind.JavaFind")
+    mainClass = "javafind.JavaFind"
 }
 
 tasks.jar {
@@ -30,6 +30,8 @@ tasks.jar {
             )
         )
     }
+
+    dependsOn(":lib:jar")
 
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 

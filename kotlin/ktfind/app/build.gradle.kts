@@ -31,6 +31,8 @@ tasks.jar {
         )
     }
 
+    dependsOn(":lib:jar")
+
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     from({
