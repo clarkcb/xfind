@@ -93,17 +93,33 @@ function IsDotDir {
     return $dotPaths.Contains($dirName)
 }
 
-function IsHiddenFileName {
+function IsHiddenName {
     [OutputType([bool])]
-    param([string]$fileName)
-    return ($fileName.StartsWith('.') -and (-not ($dotPaths.Contains($fileName))))
+    param([string]$name)
+    return ($name.Length -gt 1 -and $name.StartsWith('.') -and (-not ($dotPaths.Contains($name))))
 }
 
 function IsHiddenFile {
     [OutputType([bool])]
     param([System.IO.FileSystemInfo]$f)
     return ($f.Attributes.HasFlag([System.IO.FileAttributes]::Hidden)) -or
-        (IsHiddenFileName $f.Name)
+            (IsHiddenName $f.Name)
+}
+
+function IsHiddenDirectory {
+    [OutputType([bool])]
+    param([System.IO.DirectoryInfo]$d)
+    if (isHiddenName($d.Name)) {
+        return $true
+    }
+    $parent = $d.Parent
+    while ($null -ne $parent) {
+        if (isHiddenName($parent.Name)) {
+            return $true
+        }
+        $parent = $parent.Parent
+    }
+    return $false
 }
 
 function IsReadableFile {
@@ -1125,17 +1141,21 @@ class FileResultSorter
 class Finder {
     [FindSettings]$Settings
     [FileTypes]$FileTypes
-    [Scriptblock[]]$DirTests
-    [Scriptblock[]]$FileTests
-    [Scriptblock[]]$ArchiveFileTests
+    [Scriptblock[]]$FilterDirByHiddenTests
+    [Scriptblock[]]$FilterDirByInPatternsTests
+    [Scriptblock[]]$FilterDirByOutPatternsTests
+    [Scriptblock[]]$FileResultTests
+    [Scriptblock[]]$ArchiveFileResultTests
 
     Finder([FindSettings]$settings) {
         $this.Settings = $settings
         $this.ValidateSettings()
         $this.FileTypes = [FileTypes]::new()
-        $this.DirTests = $this.GetMatchingDirTests()
-        $this.FileTests = $this.GetMatchingFileTests()
-        $this.ArchiveFileTests = $this.GetMatchingArchiveFileTests()
+        $this.FilterDirByHiddenTests = $this.GetFilterDirByHiddenTests()
+        $this.FilterDirByInPatternsTests = $this.GetFilterDirByInPatternsTests()
+        $this.FilterDirByOutPatternsTests = $this.GetFilterDirByOutPatternsTests()
+        $this.FileResultTests = $this.GetMatchingFileResultTests()
+        $this.ArchiveFileResultTests = $this.GetMatchingArchiveFileResultTests()
     }
 
     [void]ValidateSettings() {
@@ -1166,20 +1186,49 @@ class Finder {
         return @($patterns | Where-Object { $s -match $_ }).Count -gt 0
     }
 
-    [Scriptblock[]]GetMatchingDirTests() {
+    [Scriptblock[]]GetFilterDirByHiddenTests() {
         $tests = @()
         if (-not $this.Settings.IncludeHidden) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
-                return !(IsHiddenFile $d)
+                return !(IsHiddenDirectory $d)
             }
         }
+        return $tests
+    }
+
+    [bool]FilterDirByHidden([System.IO.DirectoryInfo]$d) {
+        foreach ($t in $this.FilterDirByHiddenTests) {
+            if (-not $t.Invoke($d)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetFilterDirByInPatternsTests() {
+        $tests = @()
         if ($this.Settings.InDirPatterns.Count -gt 0) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
                 return $this.MatchesAnyPattern($d.FullName, $this.Settings.InDirPatterns)
             }
-        } elseif ($this.Settings.OutDirPatterns.Count -gt 0) {
+        }
+        return $tests
+    }
+
+    [bool]FilterDirByInPatterns([System.IO.DirectoryInfo]$d) {
+        foreach ($t in $this.FilterDirByInPatternsTests) {
+            if (-not $t.Invoke($d)) {
+                return $false
+            }
+        }
+        return $true
+    }
+
+    [Scriptblock[]]GetFilterDirByOutPatternsTests() {
+        $tests = @()
+        if ($this.Settings.OutDirPatterns.Count -gt 0) {
             $tests += {
                 param([System.IO.DirectoryInfo]$d)
                 return !$this.MatchesAnyPattern($d.FullName, $this.Settings.OutDirPatterns)
@@ -1188,11 +1237,20 @@ class Finder {
         return $tests
     }
 
-    [bool]IsMatchingDir([System.IO.DirectoryInfo]$d) {
-        return @($this.DirTests | Where-Object { $_.Invoke($d) }).Count -eq $this.DirTests.Count
+    [bool]FilterDirByOutPatterns([System.IO.DirectoryInfo]$d) {
+        foreach ($t in $this.FilterDirByOutPatternsTests) {
+            if (-not $t.Invoke($d)) {
+                return $false
+            }
+        }
+        return $true
     }
 
-    [Scriptblock[]]GetMatchingArchiveFileTests() {
+    [bool]IsMatchingDir([System.IO.DirectoryInfo]$d) {
+        return $this.FilterDirByHidden($d) -and $this.FilterDirByInPatterns($d) -and $this.FilterDirByOutPatterns($d)
+    }
+
+    [Scriptblock[]]GetMatchingArchiveFileResultTests() {
         $tests = @()
         if ($this.Settings.InArchiveExtensions.Count -gt 0) {
             $tests += {
@@ -1220,10 +1278,15 @@ class Finder {
     }
 
     [bool]IsMatchingArchiveFileResult([FileResult]$f) {
-        return @($this.ArchiveFileTests | Where-Object { $_.Invoke($f) }).Count -eq $this.ArchiveFileTests.Count
+        foreach ($t in $this.ArchiveFileResultTests) {
+            if (-not $t.Invoke($f)) {
+                return $false
+            }
+        }
+        return $true
     }
 
-    [Scriptblock[]]GetMatchingFileTests() {
+    [Scriptblock[]]GetMatchingFileResultTests() {
         $tests = @()
         if ($this.Settings.InExtensions.Count -gt 0) {
             $tests += {
@@ -1286,7 +1349,7 @@ class Finder {
     }
 
     [bool]IsMatchingFileResult([FileResult]$f) {
-        foreach ($t in $this.FileTests) {
+        foreach ($t in $this.FileResultTests) {
             if (-not $t.Invoke($f)) {
                 # Write-Host "$f did not pass test: $t"
                 return $false
@@ -1296,8 +1359,10 @@ class Finder {
     }
 
     [FileResult]FilterToFileResult([System.IO.FileInfo]$file) {
-        # Write-Host "FilterToFileResult($file)"
-        if ((-not $this.Settings.IncludeHidden) -and (IsHiddenFile($file))) {
+        if (-not $this.IsMatchingDir($file.Directory)) {
+            return $null
+        }
+        if ((-not $this.Settings.IncludeHidden) -and (IsHiddenName($file.Name))) {
             return $null
         }
         $fileResult = [FileResult]::new($file, $this.FileTypes.GetFileType($file))
@@ -1338,7 +1403,7 @@ class Finder {
         $fileResults = @()
         if ($recurse) {
             # Force is needed to get hidden dirs
-            $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.IsMatchingDir($_) }
+            $pathDirs = Get-ChildItem -Force -Recurse:$false -Path $dirPath -Directory | Where-Object { $this.FilterDirByHidden($_) -and $this.FilterDirByOutPatterns($_) }
             if (-not $this.Settings.FollowSymlinks) {
                 # filter out symlinks
                 $pathDirs = $pathDirs | Where-Object { -not $_.Attributes.HasFlag([System.IO.FileAttributes]::ReparsePoint) }
@@ -1373,7 +1438,7 @@ class Finder {
                 return $fileResults
             }
             $pathDir = [System.IO.DirectoryInfo]::new($path)
-            if ($this.IsMatchingDir($pathDir)) {
+            if ($this.FilterDirByHidden($pathDir) -and $this.FilterDirByOutPatterns($pathDir)) {
                 $maxDepth = $this.Settings.MaxDepth
                 if (-not $this.Settings.Recursive) {
                     $maxDepth = 1
