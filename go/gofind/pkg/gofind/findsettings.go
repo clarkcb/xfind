@@ -143,6 +143,7 @@ const (
 	StartPathNotDefined                    = "Startpath not defined"
 	StartPathNotFound                      = "Startpath not found"
 	StartPathNotReadable                   = "Startpath not readable"
+	StartPathNotMatchFindSettings          = "Startpath does not match find settings"
 	InvalidRangeForMinDepthAndMaxDepth     = "Invalid range for mindepth and maxdepth"
 	InvalidRangeForMinLastModAndMaxLastMod = "Invalid range for minlastmod and maxlastmod"
 	InvalidRangeForMinSizeAndMaxSize       = "Invalid range for minsize and maxsize"

@@ -34,12 +34,20 @@ func NewFinder(settings *FindSettings) *Finder {
 	}
 }
 
+func (f *Finder) filterDirByHidden(d string) bool {
+	return f.Settings.IncludeHidden() || !IsHiddenPath(d)
+}
+
+func (f *Finder) filterDirByInPatterns(d string) bool {
+	return f.Settings.InDirPatterns().IsEmpty() || f.Settings.InDirPatterns().MatchesAny(d)
+}
+
+func (f *Finder) filterDirByOutPatterns(d string) bool {
+	return f.Settings.OutDirPatterns().IsEmpty() || !f.Settings.OutDirPatterns().MatchesAny(d)
+}
+
 func (f *Finder) isMatchingDir(d string) bool {
-	if !f.Settings.IncludeHidden() && IsHidden(d) {
-		return false
-	}
-	return (f.Settings.InDirPatterns().IsEmpty() || f.Settings.InDirPatterns().MatchesAny(d)) &&
-		(f.Settings.OutDirPatterns().IsEmpty() || !f.Settings.OutDirPatterns().MatchesAny(d))
+	return f.filterDirByHidden(d) && f.filterDirByInPatterns(d) && f.filterDirByOutPatterns(d)
 }
 
 func (f *Finder) isMatchingArchiveExtension(ext string) bool {
@@ -107,16 +115,19 @@ func (f *Finder) isMatchingFileResult(fr *FileResult) bool {
 }
 
 func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult {
-	if !f.Settings.IncludeHidden() && IsHidden(filePath) {
-		return nil
-	}
-	dir, file := filepath.Split(filePath)
+	dir, fileName := filepath.Split(filePath)
 	if dir == "" {
-		dir = "."
+		dir = Dot
 	} else {
 		dir = normalizePath(dir)
 	}
-	fileType := f.fileTypes.GetFileType(file)
+	if !f.isMatchingDir(dir) {
+		return nil
+	}
+	if !f.Settings.IncludeHidden() && IsHiddenName(fileName) {
+		return nil
+	}
+	fileType := f.fileTypes.GetFileType(fileName)
 	if fileType == FileTypeArchive && !f.Settings.includeArchives && !f.Settings.archivesOnly {
 		return nil
 	}
@@ -126,7 +137,7 @@ func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult
 		fileSize = fi.Size()
 		lastMod = fi.ModTime()
 	}
-	fr := NewFileResult(dir, file, fileType, fileSize, lastMod)
+	fr := NewFileResult(dir, fileName, fileType, fileSize, lastMod)
 	if fr.FileType == FileTypeArchive {
 		if f.isMatchingArchiveFileResult(fr) {
 			return fr
@@ -140,13 +151,9 @@ func (f *Finder) filterToFileResult(filePath string, fi os.FileInfo) *FileResult
 }
 
 func (f *Finder) checkAddFileResult(filePath string, fi os.FileInfo) {
-	path, _ := filepath.Split(filePath)
-	// TODO: I think the dir has already been checked at this point
-	if f.isMatchingDir(path) {
-		fileResult := f.filterToFileResult(filePath, fi)
-		if fileResult != nil {
-			f.addResultChan <- fileResult
-		}
+	fileResult := f.filterToFileResult(filePath, fi)
+	if fileResult != nil {
+		f.addResultChan <- fileResult
 	}
 }
 
@@ -156,7 +163,7 @@ func (f *Finder) checkAddFindWalkFile(filePath string, entry fs.DirEntry, err er
 		fmt.Printf("an error occurred accessing path %q: %v\n", filePath, err)
 		return err
 	}
-	if entry.IsDir() && !f.isMatchingDir(entry.Name()) {
+	if entry.IsDir() && (!f.filterDirByHidden(entry.Name()) || !f.filterDirByOutPatterns(entry.Name())) {
 		return filepath.SkipDir
 	} else if entry.Type().IsRegular() {
 		fi, err := entry.Info()
@@ -228,7 +235,7 @@ func (f *Finder) recSetFileResultsForPath(path string, minDepth int, maxDepth in
 				continue
 			}
 		}
-		if fileInfo.IsDir() && recurse && f.isMatchingDir(entry.Name()) {
+		if fileInfo.IsDir() && recurse && f.filterDirByHidden(entry.Name()) && f.filterDirByOutPatterns(entry.Name()) {
 			dirs = append(dirs, filepath.Join(path, entry.Name()))
 		} else if fileInfo.Mode().IsRegular() && (minDepth < 0 || currentDepth >= minDepth) {
 			f.checkAddFileResult(filepath.Join(path, entry.Name()), fileInfo)
@@ -257,23 +264,22 @@ func (f *Finder) setFileResultsForPath(path string) error {
 		if f.Settings.MaxDepth() == 0 {
 			return nil
 		}
-		if f.isMatchingDir(path) {
+		if f.filterDirByHidden(path) && f.filterDirByOutPatterns(path) {
 			maxDepth := f.Settings.MaxDepth()
 			if !f.Settings.Recursive() {
 				maxDepth = 1
 			}
 			return f.recSetFileResultsForPath(path, f.Settings.MinDepth(), maxDepth, 1)
-		} else if fi.Mode().Type().IsRegular() {
-			if f.Settings.minDepth > 0 {
-				return nil
-			}
-			f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
+		} else {
+			return fmt.Errorf(StartPathNotMatchFindSettings)
 		}
+	} else if fi.Mode().Type().IsRegular() {
+		if f.Settings.minDepth > 0 {
+			return nil
+		}
+		f.checkAddFileResult(filepath.Join(path, fi.Name()), fi)
 	} else {
-		// if MinDepth > zero, we can skip since the file is at depth zero
-		if f.Settings.MinDepth() <= 0 {
-			f.checkAddFileResult(path, fi)
-		}
+		// TODO: handle symlinks, etc.?
 	}
 	return nil
 }
