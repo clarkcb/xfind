@@ -46,14 +46,23 @@ class FileUtil {
     return filePath;
   }
 
+  static List<String> splitPath(String filePath) {
+    return path.split(filePath).where((e) => e.isNotEmpty).toList();
+  }
+
+  static Set<String> pathElems(String filePath) {
+    return path.split(filePath).where((e) => e.isNotEmpty).toSet();
+  }
+
   static bool isDotDir(String filePath) => dotDirs.contains(filePath);
 
-  static bool isHidden(String filePath) {
-    var elems = filePath
-        .split(Platform.pathSeparator)
-        .where((e) => e.isNotEmpty)
-        .toSet();
-    return elems.any((elem) => elem.startsWith('.') && !isDotDir(elem));
+  static bool isHiddenName(String name) {
+    return name.length > 1 && name.startsWith('.') && !isDotDir(name);
+  }
+
+  static bool isHiddenPath(String filePath) {
+    var elems = pathElems(filePath);
+    return elems.any((elem) => isHiddenName(elem));
   }
 
   static String normalizePath(String filePath) {

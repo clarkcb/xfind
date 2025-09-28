@@ -62,16 +62,26 @@ class Finder {
     return patterns.any((p) => p.allMatches(s).isNotEmpty);
   }
 
-  bool isMatchingDir(Directory dir) {
-    var elems = path.split(dir.path).where((e) => e.isNotEmpty).toSet();
-    if (!settings.includeHidden &&
-        elems.any((elem) => FileUtil.isHidden(elem))) {
-      return false;
-    }
+  bool filterDirByHidden(Directory dir) {
+    return settings.includeHidden || !FileUtil.isHiddenPath(dir.path);
+  }
+
+  bool filterDirByInPatterns(Directory dir) {
+    var elems = FileUtil.pathElems(dir.path);
     return (settings.inDirPatterns.isEmpty ||
-            _anyMatchesAnyPattern(elems, settings.inDirPatterns)) &&
-        (settings.outDirPatterns.isEmpty ||
-            !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
+        _anyMatchesAnyPattern(elems, settings.inDirPatterns));
+  }
+
+  bool filterDirByOutPatterns(Directory dir) {
+    var elems = FileUtil.pathElems(dir.path);
+    return (settings.outDirPatterns.isEmpty ||
+        !_anyMatchesAnyPattern(elems, settings.outDirPatterns));
+  }
+
+  bool isMatchingDir(Directory dir) {
+    return filterDirByHidden(dir) &&
+        filterDirByInPatterns(dir) &&
+        filterDirByOutPatterns(dir);
   }
 
   bool isMatchingExtension(
@@ -151,8 +161,11 @@ class Finder {
   }
 
   Future<FileResult?> filterToFileResult(File f) async {
+    if (!isMatchingDir(f.parent)) {
+      return Future.value(null);
+    }
     var fileName = path.basename(f.path);
-    if (!settings.includeHidden && FileUtil.isHidden(fileName)) {
+    if (!settings.includeHidden && FileUtil.isHiddenName(fileName)) {
       return Future.value(null);
     }
     int fileSize = 0;
@@ -216,7 +229,8 @@ class Finder {
       }
       if ((entry is Directory || linkIsDir) &&
           recurse &&
-          isMatchingDir(entry as Directory)) {
+          filterDirByHidden(entry as Directory) &&
+          filterDirByOutPatterns(entry as Directory)) {
         pathDirs.add(entry);
       } else if ((entry is File || linkIsFile) &&
           (minDepth < 0 || currentDepth >= minDepth)) {
@@ -260,7 +274,8 @@ class Finder {
           return [];
         }
         var startFile = File(filePath);
-        if (isMatchingDir(startFile.parent)) {
+        if (filterDirByHidden(startFile.parent) &&
+            filterDirByOutPatterns(startFile.parent)) {
           int fileSize = 0;
           DateTime? lastMod;
           if (settings.needSize() || settings.needLastMod()) {
