@@ -81,15 +81,24 @@ impl Finder {
         patterns.iter().any(|p| p.is_match(s))
     }
 
+    fn filter_dir_by_hidden(&self, dir: &str) -> bool {
+        self.settings.include_hidden() || !FileUtil::is_hidden(&dir)
+    }
+
+    fn filter_dir_by_in_patterns(&self, dir: &str) -> bool {
+        self.settings.in_dir_patterns().is_empty()
+            || self.matches_any_pattern(&dir, &self.settings.in_dir_patterns())
+    }
+
+    fn filter_dir_by_out_patterns(&self, dir: &str) -> bool {
+        self.settings.out_dir_patterns().is_empty()
+            || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns())
+    }
+
     fn is_matching_dir(&self, dir: &str) -> bool {
-        // TODO: verify check for hidden elsewhere
-        if !self.settings.include_hidden() && FileUtil::is_hidden(&dir) {
-            return false;
-        }
-        (self.settings.in_dir_patterns().is_empty()
-            || self.matches_any_pattern(&dir, &self.settings.in_dir_patterns()))
-            && (self.settings.out_dir_patterns().is_empty()
-                || !self.matches_any_pattern(&dir, &self.settings.out_dir_patterns()))
+        self.filter_dir_by_hidden(dir)
+            && self.filter_dir_by_in_patterns(dir)
+            && self.filter_dir_by_out_patterns(dir)
     }
 
     fn is_matching_archive_extension(&self, ext: &str) -> bool {
@@ -149,7 +158,12 @@ impl Finder {
     }
 
     fn filter_path_to_file_result(&self, file_path: &Path) -> Option<FileResult> {
-        if !self.settings.include_hidden() && FileUtil::is_hidden_path(file_path) {
+        if file_path.parent().is_some() {
+            if !self.is_matching_dir(file_path.parent().unwrap().to_str().unwrap()) {
+                return None;
+            }
+        }
+        if !self.settings.include_hidden() && FileUtil::is_hidden_name(file_path.file_name().unwrap().to_str().unwrap()) {
             return None;
         }
         let file_type = self.file_types.get_file_type_for_path(&file_path);
@@ -182,14 +196,12 @@ impl Finder {
     }
 
     fn filter_to_file_result(&self, file_path: &Path, file_type: &FileType, file_size: u64, last_mod: u64) -> Option<FileResult> {
-        if !self.settings.include_hidden() && FileUtil::is_hidden_path(file_path) {
-            return None;
+        if file_path.parent().is_some() {
+            if !self.is_matching_dir(file_path.parent().unwrap().to_str().unwrap()) {
+                return None;
+            }
         }
-        let parent = match file_path.parent() {
-            Some(p) => String::from(p.to_str()?),
-            None => String::from(".")
-        };
-        if !self.is_matching_dir(&parent) {
+        if !self.settings.include_hidden() && FileUtil::is_hidden_name(file_path.file_name().unwrap().to_str().unwrap()) {
             return None;
         }
         let extension = match file_path.extension() {
@@ -234,7 +246,9 @@ impl Finder {
             if dir_entry.path().is_symlink() && !self.settings.follow_symlinks() {
                 continue;
             }
-            if dir_entry.path().is_dir() && recurse && self.is_matching_dir(dir_entry.file_name().to_str().unwrap()) {
+            if dir_entry.path().is_dir() && recurse
+                && self.filter_dir_by_hidden(dir_entry.file_name().to_str().unwrap())
+                && self.filter_dir_by_out_patterns(dir_entry.file_name().to_str().unwrap()) {
                 path_dirs.push(dir_entry.path());
             } else if dir_entry.path().is_file() && (min_depth < 0 || current_depth >= min_depth) {
                 path_files.push(dir_entry.path());
@@ -266,7 +280,7 @@ impl Finder {
             if self.settings.max_depth() == 0 {
                 return Ok(file_results);
             }
-            if self.is_matching_dir(path) {
+            if self.filter_dir_by_hidden(path) && self.filter_dir_by_out_patterns(path) {
                 let max_depth = if self.settings.recursive() { self.settings.max_depth() } else { 1 };
                 return self.rec_find_path(&path_buf, self.settings.min_depth(), max_depth, 1);
             }

@@ -72,11 +72,16 @@ impl FileUtil {
         dir_name == "." || dir_name == "./" || dir_name == ".." || dir_name == "../"
     }
 
+    /// Check whether a name is for a hidden dir/file (no path, just name)
+    pub fn is_hidden_name(name: &str) -> bool {
+        name.len() > 1 && name.starts_with('.') && !FileUtil::is_dot_dir(&name)
+    }
+
     /// Check whether a Path is for a hidden dir/file
     pub fn is_hidden_path(file_path: &Path) -> bool {
         for elem in file_path.iter() {
             let elem_string = elem.to_str().unwrap().to_string();
-            if elem_string.starts_with('.') && !FileUtil::is_dot_dir(&elem_string) {
+            if Self::is_hidden_name(&elem_string) {
                 return true;
             }
         }
@@ -90,7 +95,7 @@ impl FileUtil {
     /// ```
     /// assert!(FileUtil::is_hidden(".git"));
     /// assert!(FileUtil::is_hidden(".gitignore"));
-    /// assert!(!FileUtil::is_dot_dir("temp"));
+    /// assert!(!FileUtil::is_hidden("temp"));
     /// ```
     pub fn is_hidden(file_path: &str) -> bool {
         Self::is_hidden_path(Path::new(file_path))
