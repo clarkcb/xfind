@@ -242,7 +242,6 @@ validate_settings () {
 
 is_dot_dir () {
     local dir_path="$1"
-    local dir_name=$(basename $dir_path)
     if [[ "$dir_path" =~ ^\.{1,2}[/\\]?$ ]]
     then
         return 1
@@ -250,27 +249,39 @@ is_dot_dir () {
     return 0
 }
 
-is_hidden () {
+is_hidden_name () {
+    local name="$1"
+
+    if [[ "${name:0:1}" == "." ]]
+    then
+        is_dot_dir "$elem"
+        if [ $? == 0 ]
+        then
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+is_hidden_path () {
     local file_path="$1"
 
     IFS="/" read -ra elems <<< "$file_path"
 
     for elem in "${elems[@]}"; do
         # echo "$elem"
-        if [[ "${elem:0:1}" == "." ]]
+        is_hidden_name "$elem"
+        if [ $? == 1 ]
         then
-            is_dot_dir "$elem"
-            if [ $? == 0 ]
-            then
-                return 1
-            fi
+            return 1
         fi
     done
 
     return 0
 }
 
-is_matching_dir () {
+filter_dir_by_hidden () {
     local dir_path="$1"
 
     if [ "$dir_path" == "" -o "$dir_path" == "." -o "$dir_path" == ".." ]
@@ -280,12 +291,18 @@ is_matching_dir () {
 
     if [ $INCLUDE_HIDDEN == false ]
     then
-        is_hidden "$dir_path"
+        is_hidden_path "$dir_path"
         if [ $? == 1 ]
         then
             return 0
         fi
     fi
+
+    return 1
+}
+
+filter_dir_by_in_patterns () {
+    local dir_path="$1"
 
     if [ ${#IN_DIR_PATTERNS[@]} -gt 0 ]
     then
@@ -299,6 +316,12 @@ is_matching_dir () {
         return 0
     fi
 
+    return 1
+}
+
+filter_dir_by_out_patterns () {
+    local dir_path="$1"
+
     if [ ${#OUT_DIR_PATTERNS[@]} -gt 0 ]
     then
         for p in ${OUT_DIR_PATTERNS[*]}
@@ -308,7 +331,31 @@ is_matching_dir () {
                 return 0
             fi
         done
-        return 1
+        # return 0
+    fi
+
+    return 1
+}
+
+is_matching_dir () {
+    local dir_path="$1"
+
+    filter_dir_by_hidden "$dir_path"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    filter_dir_by_in_patterns "$dir_path"
+    if [ $? == 0 ]
+    then
+        return 0
+    fi
+
+    filter_dir_by_out_patterns "$dir_path"
+    if [ $? == 0 ]
+    then
+        return 0
     fi
 
     return 1
@@ -391,15 +438,6 @@ is_matching_archive_file_name () {
 is_matching_archive_file () {
     local file_path="$1"
     local file_name=$(basename $file_path)
-
-    if [ $INCLUDE_HIDDEN == false ]
-    then
-        is_hidden "$file_name"
-        if [ $? == 1 ]
-        then
-            return 0
-        fi
-    fi
 
     has_matching_archive_ext "$file_name"
     if [ $? == 0 ]
@@ -574,15 +612,6 @@ is_matching_file () {
     local last_mod=$4
     local file_name=$(basename $file_path)
 
-    if [ $INCLUDE_HIDDEN == false ]
-    then
-        is_hidden "$file_name"
-        if [ $? == 1 ]
-        then
-            return 0
-        fi
-    fi
-
     has_matching_ext "$file_name"
     if [ $? == 0 ]
     then
@@ -618,10 +647,26 @@ is_matching_file () {
 
 filter_to_file_result () {
     local file_path="$1"
+    local dir_path=$(dirname $file_path)
     local file_name=$(basename $file_path)
     local file_type='unknown'
     local file_size=0
     local last_mod=0
+
+    is_matching_dir "$dir_path"
+    if [ $? == 0 ]
+    then
+        return
+    fi
+
+    if [ $INCLUDE_HIDDEN == false ]
+    then
+        is_hidden_name "$file_name"
+        if [ $? == 1 ]
+        then
+            return
+        fi
+    fi
 
     is_file_type 'archive' "$file_name"
     local archive_match=$?
@@ -634,7 +679,6 @@ filter_to_file_result () {
             local file_match=$?
             if [ "$file_match" == 1 ]
             then
-                local dir_path=$(dirname $file_path)
                 FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
             fi
         fi
@@ -654,7 +698,6 @@ filter_to_file_result () {
         is_matching_file "$file_name" "$file_type" $file_size $last_mod
         if [ $? == 1 ]
         then
-            local dir_path=$(dirname $file_path)
             FILE_RESULTS+=("$dir_path,$file_name,$file_type,$file_size,$last_mod")
         fi
     fi
@@ -721,12 +764,19 @@ rec_find_path () {
 
     for d in ${path_dirs[*]}
     do
-        is_matching_dir "$d"
-        local dir_match=$?
-        if [ "$dir_match" == 1 ]
+        filter_dir_by_hidden "$d"
+        if [ $? == 0 ]
         then
-            rec_find_path $d $(($current_depth + 1))
+            continue
         fi
+
+        filter_dir_by_out_patterns "$d"
+        if [ $? == 0 ]
+        then
+            continue
+        fi
+
+        rec_find_path $d $(($current_depth + 1))
     done
 }
 
@@ -745,16 +795,28 @@ find_path () {
         then
             return
         fi
+
         if [ $RECURSIVE == false ]
         then
             MAX_DEPTH=1
         fi
-        is_matching_dir "$path"
-        local dir_match=$?
-        if [ "$dir_match" == 1 ]
+
+        filter_dir_by_hidden "$d"
+        if [ $? == 0 ]
         then
-            rec_find_path $path 1
+            # TODO: report error that path does not match settings
+            return
         fi
+
+        filter_dir_by_out_patterns "$d"
+        if [ $? == 0 ]
+        then
+            # TODO: report error that path does not match settings
+            return
+        fi
+
+        rec_find_path $path 1
+
     else
         if [ -f "$path" ]
         then
@@ -762,11 +824,13 @@ find_path () {
             local file_type='unknown'
             local file_size=0
             local last_mod=0
+
             need_file_type
             if [ $? == 1 ]
             then
                 file_type=$(get_file_type $path)
             fi
+
             is_matching_file "$path" "$file_type" $file_size $last_mod
             local file_match=$?
             if [ "$file_match" == 1 ]
