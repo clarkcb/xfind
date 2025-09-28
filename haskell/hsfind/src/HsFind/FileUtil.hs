@@ -22,9 +22,11 @@ module HsFind.FileUtil
     , isDirectory
     , isDotDir
     , isFile
+    , isHiddenName
     , isHiddenFilePath
     , normalizeExtension
     , partitionDirsAndFiles
+    , partitionExisting
     , pathExists
     , pathsExist
     ) where
@@ -102,10 +104,17 @@ partitionDirsAndFiles filePaths = do
   files <- filterFiles filePaths
   return (dirs, files)
 
+partitionExisting :: [FilePath] -> IO ([FilePath], [FilePath])
+partitionExisting filePaths = do
+  existingPaths <- filterM pathExists filePaths
+  let nonExistingPaths = filter (`notElem` existingPaths) filePaths
+  return (existingPaths, nonExistingPaths)
+
+isHiddenName :: String -> Bool
+isHiddenName n = isPrefixOf "." n && notElem n dotDirs
+
 isHiddenFilePath :: FilePath -> Bool
-isHiddenFilePath f = any isHidden pathElems
-  where isHidden = isPrefixOf "."
-        pathElems = filter (`notElem` dotDirs) $ splitPath f
+isHiddenFilePath f = any isHiddenName $ splitPath f
 
 getDirectoryFiles :: FilePath -> IO [FilePath]
 getDirectoryFiles dir = do

@@ -4,7 +4,7 @@ import System.Environment (getArgs)
 import System.IO (hPutStr, stderr)
 
 import HsFind.FindOptions (getFindOptions, getUsage, ioSettingsFromArgs)
-import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, validateFindSettings)
+import HsFind.Finder (doFind, formatMatchingDirs, formatMatchingFiles, getFinder, validateFindSettings)
 import HsFind.FindSettings (FindSettings(..), findSettingsToString)
 
 
@@ -42,7 +42,8 @@ main = do
               if printUsage settings
                 then logMsg $ "\n" ++ getUsage findOptions ++ "\n"
                 else do
-                  findResultsEither <- doFind settings
+                  let finder = getFinder settings
+                  findResultsEither <- doFind finder
                   case findResultsEither of
                     Left errMsg -> do
                       logMsg "\n"

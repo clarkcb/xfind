@@ -34,6 +34,7 @@ library
       HsFind.FileResult
       HsFind.FileTypes
       HsFind.FileUtil
+      HsFind.FilterTests
       HsFind.Finder
       HsFind.FindOptions
       HsFind.FindSettings
