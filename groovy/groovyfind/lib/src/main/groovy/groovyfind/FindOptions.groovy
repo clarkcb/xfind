@@ -3,12 +3,6 @@ package groovyfind
 import groovy.json.JsonSlurper
 import groovy.transform.CompileStatic
 
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
-import java.util.stream.Collectors
-
-
 @CompileStatic
 class FindOption {
     final String shortArg
@@ -33,16 +27,22 @@ class FindOption {
 class FindOptions {
     private static final String FIND_OPTIONS_JSON_PATH = '/findoptions.json'
     private final List<FindOption> options
-    private final Map<String, String> longArgMap = [path: 'path']
+    private Map<String, String> boolMap = new HashMap<>()
+    private Map<String, String> strMap = new HashMap<>()
+    private Map<String, String> intMap = new HashMap<>()
+    private Map<String, String> longMap = new HashMap<>()
+    private ArgTokenizer argTokenizer
 
     FindOptions() throws IOException {
         options = []
+        strMap.put('path', 'path')
         setOptionsFromJson()
+        argTokenizer = new ArgTokenizer(boolMap, strMap, intMap, longMap)
     }
 
     @FunctionalInterface
     private interface BooleanSetter {
-        void set(Boolean b, FindSettings settings);
+        void set(Boolean b, FindSettings settings)
     }
 
     private final Map<String, BooleanSetter> boolActionMap = [
@@ -72,7 +72,7 @@ class FindOptions {
 
     @FunctionalInterface
     private interface StringSetter {
-        void set(String s, FindSettings settings);
+        void set(String s, FindSettings settings)
     }
 
     private final Map<String, StringSetter> stringActionMap = [
@@ -96,7 +96,7 @@ class FindOptions {
 
     @FunctionalInterface
     private interface IntegerSetter {
-        void set(Integer i, FindSettings settings);
+        void set(Integer i, FindSettings settings)
     }
 
     private final Map<String, IntegerSetter> intActionMap = [
@@ -106,7 +106,7 @@ class FindOptions {
 
     @FunctionalInterface
     private interface LongSetter {
-        void set(Long l, FindSettings settings);
+        void set(Long l, FindSettings settings)
     }
 
     private final Map<String, LongSetter> longActionMap = [
@@ -128,87 +128,90 @@ class FindOptions {
         for (int i = 0; i < findOptionsArray.size(); i++) {
             Map findOptionObj = (Map)findOptionsArray[i]
             String longArg = findOptionObj.long
-            longArgMap.put(longArg, longArg)
+            if (longArg in this.boolActionMap) {
+                boolMap.put(longArg, longArg)
+            } else if (longArg in this.stringActionMap) {
+                strMap.put(longArg, longArg)
+            } else if (longArg in this.intActionMap) {
+                intMap.put(longArg, longArg)
+            } else if (longArg in this.longActionMap) {
+                longMap.put(longArg, longArg)
+            }
             String desc = findOptionObj.desc
             String shortArg = ''
             if ('short' in findOptionObj) {
                 shortArg = findOptionObj.short
-                longArgMap.put(shortArg, longArg)
+                if (longArg in this.boolActionMap) {
+                    boolMap.put(shortArg, longArg)
+                } else if (longArg in this.stringActionMap) {
+                    strMap.put(shortArg, longArg)
+                } else if (longArg in this.intActionMap) {
+                    intMap.put(shortArg, longArg)
+                } else if (longArg in this.longActionMap) {
+                    longMap.put(shortArg, longArg)
+                }
             }
             options.add(new FindOption(shortArg, longArg, desc))
         }
     }
 
-    private void applySetting(final String arg, final Object obj, FindSettings settings)
+    private void applyArgTokenToSetting(final ArgToken argToken, FindSettings settings)
             throws FindException {
-        if (arg in this.boolActionMap) {
-            if (obj instanceof Boolean) {
-                ((BooleanSetter)this.boolActionMap[arg]).set((Boolean)obj, settings)
+        if (argToken.type == ArgTokenType.BOOL) {
+            if (argToken.value instanceof Boolean) {
+                ((BooleanSetter)this.boolActionMap[argToken.name]).set((Boolean)argToken.value, settings)
             } else {
-                throw new FindException("Invalid value for option: ${arg}")
+                throw new FindException("Invalid value for option: ${argToken.name}")
             }
-        } else if (arg in this.stringActionMap) {
-            if (obj instanceof String) {
-                ((StringSetter)this.stringActionMap[arg]).set((String)obj, settings)
-            } else if (obj instanceof List) {
-                for (int i = 0; i < ((List) obj).size(); i++) {
-                    Object item = ((List) obj)[i]
+        } else if (argToken.type == ArgTokenType.STR) {
+            if (argToken.value instanceof String) {
+                if (argToken.name == 'settings-file') {
+                    updateSettingsFromFilePath(settings, argToken.value as String)
+                } else {
+                    ((StringSetter)this.stringActionMap[argToken.name]).set((String)argToken.value, settings)
+                }
+            } else if (argToken.value instanceof List) {
+                for (int i = 0; i < ((List) argToken.value).size(); i++) {
+                    Object item = ((List) argToken.value)[i]
                     if (item instanceof String) {
-                        ((StringSetter) this.stringActionMap[arg]).set((String) item, settings)
+                        ((StringSetter) this.stringActionMap[argToken.name]).set((String) item, settings)
                     } else {
-                        throw new FindException("Invalid value for option: ${arg}")
+                        throw new FindException("Invalid value for option: ${argToken.name}")
                     }
                 }
             } else {
-                throw new FindException("Invalid value for option: ${arg}")
+                throw new FindException("Invalid value for option: ${argToken.name}")
             }
-        } else if (arg in this.intActionMap) {
-            if (obj instanceof Integer) {
-                ((IntegerSetter)this.intActionMap[arg]).set((Integer)obj, settings)
-            } else if (obj instanceof Long) {
-                ((IntegerSetter)this.intActionMap[arg]).set(((Long)obj).intValue(), settings)
+        } else if (argToken.type == ArgTokenType.INT) {
+            if (argToken.value instanceof Integer) {
+                ((IntegerSetter)this.intActionMap[argToken.name]).set((Integer)argToken.value, settings)
+            } else if (argToken.value instanceof Long) {
+                ((IntegerSetter)this.intActionMap[argToken.name]).set(((Long)argToken.value).intValue(), settings)
             } else {
-                throw new FindException("Invalid value for option: ${arg}")
+                throw new FindException("Invalid value for option: ${argToken.name}")
             }
-        } else if (arg in this.longActionMap) {
-            if (obj instanceof Integer) {
-                ((LongSetter)this.longActionMap[arg]).set(((Integer)obj).longValue(), settings)
-            } else if (obj instanceof Long) {
-                ((LongSetter)this.longActionMap[arg]).set((Long)obj, settings)
+        } else if (argToken.type == ArgTokenType.LONG) {
+            if (argToken.value instanceof Integer) {
+                ((LongSetter)this.longActionMap[argToken.name]).set(((Integer)argToken.value).longValue(), settings)
+            } else if (argToken.value instanceof Long) {
+                ((LongSetter)this.longActionMap[argToken.name]).set((Long)argToken.value, settings)
             } else {
-                throw new FindException("Invalid value for option: ${arg}")
-            }
-        } else if (arg == 'settings-file') {
-            if (obj instanceof String) {
-                updateSettingsFromFilePath(settings, obj as String)
-            } else {
-                throw new FindException("Invalid value for option: ${arg}")
+                throw new FindException("Invalid value for option: ${argToken.name}")
             }
         } else {
-            throw new FindException("Invalid option: ${arg}")
+            throw new FindException("Invalid option: ${argToken.name}")
         }
     }
 
-    void updateSettingsFromJson(FindSettings settings, final String json) {
-        try {
-            JsonSlurper jsonSlurper = new JsonSlurper()
-            def jsonObj = jsonSlurper.parseText(json)
-            assert jsonObj instanceof Map
-            // keys are sorted so that output is consistent across all versions
-            var keys = jsonObj.keySet().stream().sorted().collect(Collectors.toList())
-            var invalidKeys = keys.stream().filter(k -> !longArgMap.containsKey(k)).collect(Collectors.toList())
-            if (!invalidKeys.isEmpty()) {
-                throw new FindException("Invalid option: " + invalidKeys.get(0))
-            }
-            keys.each { ko ->
-                def vo = jsonObj.get(ko)
-                if (vo != null) {
-                    applySetting(ko, vo, settings)
-                }
-            }
-        } catch (Exception e) {
-            throw new FindException("Error parsing JSON settings: ${e.message}")
+    private void updateSettingsFromArgTokens(FindSettings settings, final List<ArgToken> argTokens) {
+        for (var argToken : argTokens) {
+            applyArgTokenToSetting(argToken, settings)
         }
+    }
+
+    final void updateSettingsFromJson(FindSettings settings, final String json) {
+        var argTokens = argTokenizer.tokenizeJson(json)
+        updateSettingsFromArgTokens(settings, argTokens)
     }
 
     final FindSettings settingsFromJson(final String json) throws FindException {
@@ -217,110 +220,20 @@ class FindOptions {
         return settings
     }
 
-    private void updateSettingsFromFilePath(FindSettings settings, final String filePath) {
-        Path path = FileUtil.expandPath(Paths.get(filePath))
-        if (!Files.exists(path)) {
-            throw new FindException("Settings file not found: ${filePath}")
-        }
-        if (!filePath.endsWith('.json')) {
-            throw new FindException("Invalid settings file (must be JSON): ${filePath}")
-        }
-        try {
-            updateSettingsFromJson(settings, FileUtil.getFileContents(path, "UTF-8"))
-        } catch (FileNotFoundException ignored) {
-            throw new FindException("Settings file not found: ${filePath}")
-        } catch (IOException ignored) {
-            throw new FindException("IOException reading settings file: ${filePath}")
-        }
+    final void updateSettingsFromFilePath(FindSettings settings, final String filePath) {
+        var argTokens = argTokenizer.tokenizeFilePath(filePath)
+        updateSettingsFromArgTokens(settings, argTokens)
     }
 
-    FindSettings settingsFromFilePath(final String filePath) throws FindException {
+    final FindSettings settingsFromFilePath(final String filePath) throws FindException {
         var settings = new FindSettings()
         updateSettingsFromFilePath(settings, filePath)
         return settings
     }
 
-    private Map<String, Object> argMapFromArgs(final String[] args) throws FindException {
-        Map<String, Object> argMap = new HashMap<>()
-        Deque<String> deque = new ArrayDeque<>(Arrays.asList(args))
-        var stop = false
-        while (!deque.isEmpty() && !stop) {
-            var arg = deque.removeFirst()
-            if (arg.startsWith("-")) {
-                var argNames = new ArrayList<String>()
-                if (arg.startsWith("--")) {
-                    if (arg.length() < 3) {
-                        throw new FindException("Invalid option: " + arg)
-                    }
-                    arg = arg.substring(2)
-                    if (arg.contains("=")) {
-                        var parts = arg.split("=", 2)
-                        if (parts.length != 2) {
-                            throw new FindException("Invalid option: " + arg)
-                        }
-                        arg = parts[0]
-                        var value = parts[1]
-                        deque.addFirst(value)
-                    }
-                    if (!longArgMap.containsKey(arg)) {
-                        throw new FindException("Invalid option: " + arg)
-                    }
-                    argNames.add(longArgMap.get(arg))
-                } else if (arg.length() > 1) {
-                    arg = arg.substring(1)
-                    for (char c : arg.toCharArray()) {
-                        if (!longArgMap.containsKey(String.valueOf(c))) {
-                            throw new FindException("Invalid option: -" + c)
-                        }
-                        argNames.add(longArgMap.get(String.valueOf(c)))
-                    }
-                } else {
-                    throw new FindException("Invalid option: " + arg)
-                }
-
-                for (String argName : argNames) {
-                    if (this.boolActionMap.containsKey(argName)) {
-                        argMap.put(argName, true)
-                    } else if (this.stringActionMap.containsKey(argName)
-                            || this.intActionMap.containsKey(argName)
-                            || this.longActionMap.containsKey(argName)
-                            || argName.equals("settings-file")) {
-                        if (!deque.isEmpty()) {
-                            String argVal = deque.remove()
-                            if (this.stringActionMap.containsKey(argName)) {
-                                if (!argMap.containsKey(argName)) {
-                                    argMap.put(argName, new ArrayList<String>())
-                                }
-                                ((ArrayList<String>)argMap.get(argName)).add(argVal)
-                            } else if (this.intActionMap.containsKey(argName)) {
-                                argMap.put(argName, Integer.parseInt(argVal))
-                            } else if (this.longActionMap.containsKey(argName)) {
-                                argMap.put(argName, Long.parseLong(argVal))
-                            } else if (argName.equals("settings-file")) {
-                                argMap.put(argName, argVal)
-                            } else {
-                                throw new FindException("Invalid option: " + arg)
-                            }
-                        } else {
-                            throw new FindException("Missing value for option " + arg)
-                        }
-                    } else {
-                        throw new FindException("Invalid option: " + arg)
-                    }
-                }
-            } else {
-                // treat as a path
-                var path = 'path'
-                if (!argMap.containsKey(path)) {
-                    argMap.put(path, new ArrayList<String>())
-                }
-                ((ArrayList<String>)argMap.get(path)).add(arg)
-            }
-            if (argMap.containsKey('help') || argMap.containsKey(('version'))) {
-                stop = true
-            }
-        }
-        return argMap
+    final void updateSettingsFromArgs(FindSettings settings, final String[] args) throws FindException {
+        var argTokens = argTokenizer.tokenizeArgs(args)
+        updateSettingsFromArgTokens(settings, argTokens)
     }
 
     final FindSettings settingsFromArgs(final String[] args) throws FindException {
@@ -331,20 +244,12 @@ class FindOptions {
         // default printFiles to true since running from command line
         settings.setPrintFiles(true)
 
-        var argMap = argMapFromArgs(args)
-        for (var entry : argMap.entrySet()) {
-            applySetting(entry.getKey(), entry.getValue(), settings)
-        }
+        updateSettingsFromArgs(settings, args)
 
         return settings
     }
 
-    final void usage(final int exitStatus) {
-        System.out.println(this.getUsageString())
-        System.exit(exitStatus)
-    }
-
-    final String getUsageString() {
+    private String getUsageString() {
         StringBuilder sb = new StringBuilder()
         sb.append('Usage:\n')
         sb.append(' groovyfind [options] <path> [<path> ...]\n\n')
@@ -373,5 +278,10 @@ class FindOptions {
             sb.append(String.format(format, optStrings.get(i), optDescs.get(i)))
         }
         sb.toString()
+    }
+
+    final void usage(final int exitStatus) {
+        System.out.println(this.getUsageString())
+        System.exit(exitStatus)
     }
 }
