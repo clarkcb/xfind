@@ -4,9 +4,9 @@
  * defines the set of find options and provides functionality to define find settings from them
  */
 
-const fs = require('fs');
-
 const config = require('./config');
+const {ArgTokenizer} = require('./argtokenizer');
+const {ArgTokenType} = require('./argtokentype')
 const {FileUtil} = require('./fileutil');
 const {FindError} = require('./finderror');
 const {FindOption} = require('./findoption');
@@ -112,6 +112,11 @@ class FindOptions {
 
         // the list of FindOption objects (populated from JSON)
         this.options = [];
+        this.boolMap = {};
+        this.strMap = {'path': 'path'};
+        this.intMap = {};
+
+        // populate options from JSON file
         (() => {
             let json = FileUtil.getFileContentsSync(config.FIND_OPTIONS_JSON_PATH, 'utf-8');
             let obj = JSON.parse(json);
@@ -119,10 +124,24 @@ class FindOptions {
                 obj.findoptions.forEach(fo => {
                     let longArg = fo.long;
                     this.argNameMap[longArg] = longArg;
+                    if (this.boolActionMap[longArg]) {
+                        this.boolMap[longArg] = longArg;
+                    } else if (this.stringActionMap[longArg]) {
+                        this.strMap[longArg] = longArg;
+                    } else if (this.intActionMap[longArg]) {
+                        this.intMap[longArg] = longArg;
+                    }
                     let shortArg = '';
                     if (Object.prototype.hasOwnProperty.call(fo, 'short')) {
                         shortArg = fo.short;
                         this.argNameMap[shortArg] = longArg;
+                        if (this.boolActionMap[longArg]) {
+                            this.boolMap[shortArg] = longArg;
+                        } else if (this.stringActionMap[longArg]) {
+                            this.strMap[shortArg] = longArg;
+                        } else if (this.intActionMap[longArg]) {
+                            this.intMap[shortArg] = longArg;
+                        }
                     }
                     let desc = fo.desc;
                     const option = new FindOption(shortArg, longArg, desc);
@@ -130,6 +149,7 @@ class FindOptions {
                 });
             } else throw new FindError(`Invalid findoptions file: ${config.FIND_OPTIONS_JSON_PATH}`);
             this.options.sort(this.optCmp);
+            this.argTokenizer = new ArgTokenizer(this.boolMap, this.strMap, this.intMap);
         })();
     }
 
@@ -139,182 +159,74 @@ class FindOptions {
         return a.localeCompare(b);
     }
 
-    updateSettingsFromArgMap(settings, argMap) {
+    updateSettingsFromArgTokens(settings, argTokens) {
         let err = null;
-        // keys are sorted so that output is consistent across all versions
-        const argNames = Object.keys(argMap).sort();
-        const invalidNames = argNames.filter(k => !Object.prototype.hasOwnProperty.call(this.argNameMap, k));
-        if (invalidNames.length > 0) {
-            return new FindError(`Invalid option: ${invalidNames[0]}`);
-        }
-        for (const argName of argNames) {
+        for (const argToken of argTokens) {
             if (err) break;
-            if (Object.prototype.hasOwnProperty.call(argMap, argName)) {
-                if (argMap[argName] !== undefined && argMap[argName] !== null) {
-                    let longArg = this.argNameMap[argName];
-                    if (this.boolActionMap[longArg]) {
-                        if (typeof argMap[argName] === 'boolean') {
-                            this.boolActionMap[longArg](argMap[argName], settings);
-                        } else {
-                            err = new FindError(`Invalid value for option: ${argName}`);
-                        }
-                    } else if (this.stringActionMap[longArg]) {
-                        if (typeof argMap[argName] === 'string') {
-                            this.stringActionMap[longArg](argMap[argName], settings);
-                        } else if (typeof argMap[argName] === 'object' && Array.isArray(argMap[argName])) {
-                            argMap[argName].forEach(s => {
-                                if (typeof s === 'string') {
-                                    this.stringActionMap[longArg](s, settings);
-                                } else {
-                                    err = new FindError(`Invalid value for option: ${argName}`);
-                                }
-                            });
-                        } else {
-                            err = new FindError(`Invalid value for option: ${argName}`);
-                        }
-                    } else if (this.intActionMap[longArg]) {
-                        if (typeof argMap[argName] === 'number') {
-                            this.intActionMap[longArg](argMap[argName], settings);
-                        } else {
-                            err = new FindError(`Invalid value for option: ${argName}`);
-                        }
-                    } else if (longArg === 'settings-file') {
-                        err = this.updateSettingsFromFile(settings, argMap[argName]);
-                    } else {
-                        err = new FindError(`Invalid option: ${argName}`);
-                    }
+            if (argToken.type === ArgTokenType.Bool) {
+                if (typeof argToken.value === 'boolean') {
+                    this.boolActionMap[argToken.name](argToken.value, settings);
                 } else {
-                    err = new FindError(`Missing value for option ${argName}`);
+                    err = new FindError(`Invalid value for option: ${argToken}`);
                 }
+            } else if (argToken.type === ArgTokenType.Str) {
+                if (argToken.name === 'settings-file') {
+                    err = this.updateSettingsFromFile(settings, argToken.value);
+                } else if (typeof argToken.value === 'string') {
+                    this.stringActionMap[argToken.name](argToken.value, settings);
+                } else if (typeof argToken.value === 'object' && Array.isArray(argToken.value)) {
+                    argToken.value.forEach(s => {
+                        if (typeof s === 'string') {
+                            this.stringActionMap[argToken.name](s, settings);
+                        } else {
+                            err = new FindError(`Invalid value for option: ${argToken}`);
+                        }
+                    });
+                } else {
+                    err = new FindError(`Invalid value for option: ${argToken}`);
+                }
+            } else if (argToken.type === ArgTokenType.Int) {
+                if (typeof argToken.value === 'number') {
+                    this.intActionMap[argToken.name](argToken.value, settings);
+                } else {
+                    err = new FindError(`Invalid value for option: ${argToken}`);
+                }
+            } else {
+                err = new FindError(`Invalid option: ${argToken}`);
             }
         }
         return err;
     }
 
     updateSettingsFromJson(settings, json) {
-        try {
-            const obj = JSON.parse(json);
-            return this.updateSettingsFromArgMap(settings, obj);
-        } catch (e) {
-            if (e instanceof SyntaxError) {
-                return new FindError(`Invalid JSON in settings: ${e.message}`);
-            } else {
-                return new FindError(`Error parsing settings JSON: ${e.message}`);
-            }
+        let { err, argTokens } = this.argTokenizer.tokenizeJson(json);
+        if (!err) {
+            err = this.updateSettingsFromArgTokens(settings, argTokens);
         }
+        return err;
     }
 
     updateSettingsFromFile(settings, filePath) {
-        const expandedPath = FileUtil.expandPath(filePath);
-        if (fs.existsSync(expandedPath)) {
-            if (expandedPath.endsWith('.json')) {
-                let json = FileUtil.getFileContentsSync(expandedPath, 'utf-8');
-                return this.updateSettingsFromJson(settings, json);
-            }
-            return new FindError(`Invalid settings file (must be JSON): ${filePath}`);
-        } else {
-            return new FindError(`Settings file not found: ${filePath}`);
+        let { err, argTokens } = this.argTokenizer.tokenizeFile(filePath);
+        if (!err) {
+            err = this.updateSettingsFromArgTokens(settings, argTokens);
         }
+        return err;
     }
 
-    argMapFromArgs(args) {
-        let err = null;
-        let argMap = {};
-
-        while(args && !err) {
-            let arg = args.shift();
-            if (!arg) {
-                break;
-            }
-            if (arg.charAt(0) === '-') {
-                let argNames = [];
-                if (arg.length > 1) {
-                    if (arg.charAt(1) === '-') {
-                        if (arg.length > 2) {
-                            arg = arg.substring(2);
-                            if (arg.indexOf('=') > -1) {
-                                let parts = arg.split('=');
-                                if (parts.length > 0) {
-                                    arg = parts[0];
-                                }
-                                if (parts.length > 1) {
-                                    args.unshift(parts[1]);
-                                }
-                            }
-                            if (this.argNameMap[arg]) {
-                                let longArg = this.argNameMap[arg];
-                                argNames.push(longArg);
-                            } else {
-                                err = new Error(`Invalid option: ${arg}`);
-                                break;
-                            }
-                        } else {
-                            err = new Error(`Invalid option: ${arg}`);
-                            break;
-                        }
-                    } else {
-                        arg = arg.substring(1);
-                        for (const c of arg) {
-                            if (this.argNameMap[c]) {
-                                let longArg = this.argNameMap[c];
-                                argNames.push(longArg);
-                            } else {
-                                err = new Error(`Invalid option: ${c}`);
-                                break;
-                            }
-                        }
-                    }
-                } else {
-                    err = new Error(`Invalid option: ${arg}`);
-                }
-                for (const argName of argNames) {
-                    if (this.boolActionMap[argName]) {
-                        // this.boolActionMap[argName](true, settings);
-                        argMap[argName] = true;
-                    } else if (this.stringActionMap[argName] || this.intActionMap[argName] || argName === 'settings-file') {
-                        if (args.length > 0) {
-                            const argValue = args.shift();
-                            if (this.stringActionMap[argName]) {
-                                // err = this.stringActionMap[argName](args.shift(), settings);
-                                if (!argMap[argName]) {
-                                    argMap[argName] = [];
-                                }
-                                argMap[argName].push(argValue);
-                            } else if (this.intActionMap[argName]) {
-                                // err = this.intActionMap[argName](parseInt(args.shift(), 10), settings);
-                                argMap[argName] = parseInt(argValue, 10);
-                            } else {
-                                // err = this.updateSettingsFromFile(args.shift(), settings);
-                                argMap['settings-file'] = argValue;
-                            }
-                        } else {
-                            err = new Error(`Missing argument for option ${arg}`);
-                            break;
-                        }
-                    } else {
-                        err = new Error(`Invalid option: ${arg}`);
-                        break;
-                    }
-                }
-
-            } else {
-                if (!argMap['path']) {
-                    argMap['path'] = [];
-                }
-                argMap['path'].push(arg);
-            }
+    updateSettingsFromArgs(settings, args) {
+        let { err, argTokens } = this.argTokenizer.tokenizeArgs(args);
+        if (!err) {
+            err = this.updateSettingsFromArgTokens(settings, argTokens);
         }
-        return { err, argMap };
+        return err;
     }
 
     settingsFromArgs(args, cb) {
         let settings = new FindSettings();
         // default printFiles to true since running as cli
         settings.printFiles = true;
-        let { err, argMap } = this.argMapFromArgs(args);
-        if (!err) {
-            err = this.updateSettingsFromArgMap(settings, argMap);
-        }
+        let err = this.updateSettingsFromArgs(settings, args);
         cb(err, settings);
     }
 
