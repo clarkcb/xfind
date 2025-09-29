@@ -1,14 +1,12 @@
 package scalafind
 
 import org.json.{JSONArray, JSONException, JSONObject, JSONTokener}
-import scalafind.FindError.STARTPATH_NOT_DEFINED
 
 import java.io.{IOException, InputStreamReader}
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.Paths
 import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.jdk.CollectionConverters.*
-import scala.util.matching.Regex
 
 case class FindOption(shortArg: Option[String], longArg: String, desc: String) {
   val sortArg: String = shortArg match {
@@ -42,6 +40,42 @@ object FindOptions {
       _longArgMap = longOpts ++ shortOpts ++ Map("path" -> "path")
     }
     _longArgMap
+  }
+
+  private var _boolMap = Map.empty[String, String]
+
+  private def boolMap: Map[String, String] = {
+    if (_boolMap.isEmpty) {
+      _boolMap = longArgMap.filter((k, v) => boolActionMap.contains(v))
+    }
+    _boolMap
+  }
+
+  private var _strMap = Map.empty[String, String]
+
+  private def strMap: Map[String, String] = {
+    if (_strMap.isEmpty) {
+      _strMap = longArgMap.filter((k, v) => stringActionMap.contains(v))
+    }
+    _strMap
+  }
+
+  private var _intMap = Map.empty[String, String]
+
+  private def intMap: Map[String, String] = {
+    if (_intMap.isEmpty) {
+      _intMap = longArgMap.filter((k, v) => intActionMap.contains(v))
+    }
+    _intMap
+  }
+
+  private var _longMap = Map.empty[String, String]
+
+  private def longMap: Map[String, String] = {
+    if (_longMap.isEmpty) {
+      _longMap = longArgMap.filter((k, v) => longActionMap.contains(v))
+    }
+    _longMap
   }
 
   private def loadFindOptionsFromJson(): Unit = {
@@ -194,154 +228,41 @@ object FindOptions {
     }
   }
 
-  def updateSettingsFromJson(ss: FindSettings, json: String): FindSettings = {
-    val jsonObject = new JSONObject(new JSONTokener(json))
+  private def updateSettingsFromArgTokens(settings: FindSettings, argTokens: List[ArgToken]): FindSettings = {
     @tailrec
-    def recSettingsFromJson(keys: List[String], settings: FindSettings): FindSettings = keys match {
+    def recSettingsFromArgTokens(argTokens: List[ArgToken], settings: FindSettings): FindSettings = argTokens match {
       case Nil => settings
-      case k :: ks =>
-        val v = jsonObject.get(k)
-        recSettingsFromJson(ks, applySetting(k, v, settings))
+      case a :: as =>
+        recSettingsFromArgTokens(as, applySetting(a.name, a.value, settings))
     }
 
-    // keys are sorted so that output is consistent across all versions
-    val keys = jsonObject.keySet().asScala.toList.sorted
-    val invalidKeys = keys.filter(k => !longArgMap.contains(k))
-    if (invalidKeys.nonEmpty) {
-      throw new FindException("Invalid option: %s".format(invalidKeys.head))
-    }
-    recSettingsFromJson(keys, ss)
+    recSettingsFromArgTokens(argTokens, settings)
   }
 
-  private def updateSettingsFromFile(ss: FindSettings, filePath: String): FindSettings = {
-    val path: Path = FileUtil.expandPath(Paths.get(filePath))
-    if (!Files.exists(path)) {
-      throw new FindException("Settings file not found: %s".format(filePath))
-    }
-    if (!filePath.endsWith(".json")) {
-      throw new FindException("Invalid settings file (must be JSON): %s".format(filePath))
-    }
+  def updateSettingsFromJson(settings: FindSettings, json: String): FindSettings = {
     try {
-      val json: String = FileUtil.getPathContents(path)
-      updateSettingsFromJson(ss, json)
+      val argTokens = argTokenizer.tokenizeJson(json)
+      updateSettingsFromArgTokens(settings, argTokens)
     } catch {
-      case e: IOException =>
-        throw new FindException("Error reading settings file: %s".format(filePath))
       case e: JSONException =>
-        throw new FindException("Error parsing JSON file: %s".format(filePath))
+        throw new FindException("Error parsing JSON")
     }
   }
 
-  private def argMapFromArgs(args: Array[String]): Map[String, Any] = {
-    val longArgWithValRegex: Regex = "^--([a-zA-Z0-9-]+)=(.+)$".r
-    val longArgWithoutValRegex: Regex = "^--([a-zA-Z0-9-]+)$".r
-    val shortArgsRegex: Regex = "^-([a-zA-Z0-9]{2,})$".r
-    val shortArgRegex: Regex = "^-([a-zA-Z0-9])$".r
-    def updateArgMap(argName: String, argVal: Option[String], argMap: Map[String, Any]): Map[String, Any] = {
-      if (!longArgMap.contains(argName)) {
-        throw new FindException("Invalid option: %s".format(argName))
-      }
-      if (boolActionMap.contains(argName)) {
-        argMap + (argName -> true)
-      } else if (stringActionMap.contains(argName)) {
-        argVal match {
-          case Some(value) =>
-            if (argMap.contains(argName)) {
-              argMap + (argName -> (argMap(argName).asInstanceOf[List[String]] :+ value))
-            } else {
-              argMap + (argName -> List(value))
-            }
-          case None => throw new FindException("Missing value for option: %s".format(argName))
-        }
-      } else if (intActionMap.contains(argName)) {
-        argVal match {
-          case Some(value) => argMap + (argName -> value.toInt)
-          case None => throw new FindException("Missing value for option: %s".format(argName))
-        }
-      } else if (longActionMap.contains(argName)) {
-        argVal match {
-          case Some(value) => argMap + (argName -> value.toLong)
-          case None => throw new FindException("Missing value for option: %s".format(argName))
-        }
-      } else {
-        throw new FindException("Invalid option: %s".format(argName))
-      }
-    }
-    @tailrec
-    def recArgMapFromArgs(args: List[String], argMap: Map[String, Any]): Map[String, Any] = args match {
-      case Nil => argMap
-      case longArgWithValRegex(argName, argVal) :: tail =>
-        recArgMapFromArgs(tail, updateArgMap(argName, Some(argVal), argMap))
-      case longArgWithoutValRegex(argName) :: tail =>
-        val argVal =
-          if ((stringActionMap.contains(argName) || intActionMap.contains(argName)
-            || longActionMap.contains(argName)) && tail.nonEmpty) {
-            Some(tail.head)
-        } else {
-          None
-        }
-        val nextArgs = if (argVal.isDefined) tail.tail else tail
-        recArgMapFromArgs(nextArgs, updateArgMap(argName, argVal, argMap))
-      case shortArgsRegex(shortArgs) :: tail =>
-        val shortArgsList = shortArgs.toList.map(c => "-%s".format(c))
-        recArgMapFromArgs(shortArgsList ++ tail, argMap)
-      case shortArgRegex(shortArg) :: tail =>
-        val longArg =
-          if (longArgMap.contains(shortArg)) {
-            longArgMap(shortArg)
-          } else {
-            throw new FindException("Invalid option: %s".format(shortArg))
-          }
-        val argVal =
-          if ((stringActionMap.contains(longArg) || intActionMap.contains(longArg)
-            || longActionMap.contains(longArg)) && tail.nonEmpty) {
-            Some(tail.head)
-          } else {
-            None
-          }
-        val nextArgs = if (argVal.isDefined) tail.tail else tail
-        recArgMapFromArgs(nextArgs, updateArgMap(longArg, argVal, argMap))
-      case arg :: tail =>
-        recArgMapFromArgs(tail, updateArgMap("path", Some(arg), argMap))
-    }
-    recArgMapFromArgs(args.toList, Map.empty[String, Any])
+  def updateSettingsFromFile(settings: FindSettings, filePath: String): FindSettings = {
+    val argTokens = argTokenizer.tokenizeFile(filePath)
+    updateSettingsFromArgTokens(settings, argTokens)
   }
 
-  private def updateSettingsFromArgMap(settings: FindSettings, argMap: Map[String, Any]): FindSettings = {
-    @tailrec
-    def recSettingsFromArgMap(keys: List[String], settings: FindSettings): FindSettings = keys match {
-      case Nil => settings
-      case k :: ks =>
-        val v = argMap(k)
-        recSettingsFromArgMap(ks, applySetting(k, v, settings))
-    }
+  private val argTokenizer: ArgTokenizer = new ArgTokenizer(boolMap, strMap, intMap, longMap)
 
-    // keys are sorted so that output is consistent across all versions
-    val keys = argMap.keySet.toList.sorted
-    val invalidKeys = keys.filter(k => !longArgMap.contains(k))
-    if (invalidKeys.nonEmpty) {
-      throw new FindException("Invalid option: %s".format(invalidKeys.head))
-    }
-    recSettingsFromArgMap(keys, settings)
+  def updateSettingsFromArgs(settings: FindSettings, args: Array[String]): FindSettings = {
+    val argTokens = argTokenizer.tokenizeArgs(args)
+    updateSettingsFromArgTokens(settings, argTokens)
   }
 
   def settingsFromArgs(args: Array[String]): FindSettings = {
-    if (args.isEmpty) {
-      throw new FindException(STARTPATH_NOT_DEFINED.toString)
-    }
-    val argMap = argMapFromArgs(args)
-    if (argMap.contains("help")) {
-      FindSettings(printUsage = true)
-    } else if (argMap.contains("version")) {
-      FindSettings(printVersion = true)
-    } else {
-      updateSettingsFromArgMap(FindSettings(printFiles = true), argMap)
-    }
-  }
-
-  def usage(status: Int): Unit = {
-    Common.log(getUsageString)
-    sys.exit(status)
+    updateSettingsFromArgs(FindSettings(printFiles = true), args)
   }
 
   private def getUsageString: String = {
@@ -362,5 +283,10 @@ object FindOptions {
       sb.append(format.format(op._1, op._2))
     }
     sb.toString()
+  }
+
+  def usage(status: Int): Unit = {
+    Common.log(getUsageString)
+    sys.exit(status)
   }
 }
