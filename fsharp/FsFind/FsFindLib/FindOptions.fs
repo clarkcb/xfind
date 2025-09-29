@@ -2,10 +2,7 @@
 
 open System
 open System.Collections.Generic
-open System.IO
-open System.Text
 open System.Text.Json
-open System.Text.RegularExpressions
 
 module FindOptions =   
 
@@ -97,143 +94,87 @@ module FindOptions =
         |> Map.ofSeq
 
     let optionNameMap = GetOptionNameMap
+    
+    let argTokenizer : ArgTokenizer =
+        let boolMap = optionNameMap |> Map.filter (fun (_k : string) (v : string) -> boolActionMap.ContainsKey(v))
+        let strMap = optionNameMap
+                     |> Map.filter (fun (_k : string) (v : string) -> stringActionMap.ContainsKey(v))
+                     |> Map.add "path" "path"
+        let intMap = optionNameMap |> Map.filter (fun (_k : string) (v : string) -> intActionMap.ContainsKey(v))
+        ArgTokenizer(boolMap, strMap, intMap)
 
-    let rec ApplySetting (arg : string) (elem : JsonElement) (settings : FindSettings) : Result<FindSettings, string> =
-        if boolActionMap.ContainsKey(arg) then
-            if elem.ValueKind = JsonValueKind.False then
-                boolActionMap[arg] false settings
-                Ok settings
-            elif elem.ValueKind = JsonValueKind.True then
-                boolActionMap[arg] true settings
-                Ok settings
-            else
-                Error $"Invalid value for option: {arg}"
-        elif stringActionMap.ContainsKey(arg) then
-            if elem.ValueKind = JsonValueKind.String then
-                let s = elem.GetString()
-                if s = null then
-                    Error $"Invalid value for option: {arg}"
-                else
-                    stringActionMap[arg] s settings
+    let rec ApplyArgTokenToSettings (argToken : ArgToken) (settings : FindSettings) : Result<FindSettings, string> =
+        if argToken.Type = ArgTokenType.Bool then
+            if boolActionMap.ContainsKey(argToken.Name) then
+                match argToken.Value with
+                | :? Boolean as b ->
+                    boolActionMap[argToken.Name] b settings
                     Ok settings
-            elif elem.ValueKind = JsonValueKind.Array then
-                let rec recApplySettings (elems : JsonElement list) (settings : FindSettings) : Result<FindSettings, string> =
-                    match elems with
-                    | [] -> Ok settings
-                    | elem :: tail ->
-                        match ApplySetting arg elem settings with
-                        | Ok nextSettings -> recApplySettings tail nextSettings
-                        | Error e -> Error e
-                let elems = elem.EnumerateArray() |> List.ofSeq
-                recApplySettings elems settings
+                | _ -> Error $"Invalid value for option: {argToken.Name}"
             else
-                Error $"Invalid value for option: {arg}"
-        elif intActionMap.ContainsKey(arg) then
-            if elem.ValueKind = JsonValueKind.Number then
-                intActionMap[arg] (elem.GetInt32()) settings
-                Ok settings
+                Error $"Invalid value for option: {argToken.Name}"
+        elif argToken.Type = ArgTokenType.Str then
+            if stringActionMap.ContainsKey(argToken.Name) then
+                match argToken.Value with
+                | :? string as s ->
+                    stringActionMap[argToken.Name] s settings
+                    Ok settings
+                | _ -> Error $"Invalid value for option: {argToken.Name}"
             else
-                Error $"Invalid value for option: {arg}"
+                Error $"Invalid value for option: {argToken.Name}"
+        elif argToken.Type = ArgTokenType.Int then
+            if intActionMap.ContainsKey(argToken.Name) then
+                match argToken.Value with
+                | :? int as i ->
+                    intActionMap[argToken.Name] i settings
+                    Ok settings
+                | _ -> Error $"Invalid value for option: {argToken.Name}"
+            else
+                Error $"Invalid value for option: {argToken.Name}"
         else
-            Error $"Invalid option: {arg}"
+            Error $"Invalid option: {argToken.Name}"
+
+    let UpdateSettingsFromArgTokens (settings : FindSettings) (argTokens : ArgToken list) : Result<FindSettings, string> =
+        let rec recSettingsFromArgTokens (tokens : ArgToken list) (settings : FindSettings) : Result<FindSettings, string> =
+            match tokens with
+            | [] -> Ok settings
+            | token :: tail ->
+                match ApplyArgTokenToSettings token settings with
+                | Ok settings ->
+                    if token.Name = "help" then
+                        Ok settings
+                    else
+                        recSettingsFromArgTokens tail settings
+                | Error e -> Error e
+        recSettingsFromArgTokens argTokens settings
+
+    let UpdateSettingsFromDictionary (settings : FindSettings) (dict : Dictionary<string, obj>) : Result<FindSettings, string> =
+        match argTokenizer.TokenizeDictionary(dict) with
+        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Error e -> Error e
 
     let UpdateSettingsFromJson (settings : FindSettings) (jsonString : string) : Result<FindSettings, string> =
-        match JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(jsonString) with
-        | null -> Error "Unable to parse json"
-        | settingsDict ->
-            let rec recSettingsFromArgs (argList : string list) (settings : FindSettings) : Result<FindSettings, string> =
-                match argList with
-                | [] -> Ok settings
-                | arg :: tail ->
-                    match ApplySetting arg settingsDict[arg] settings with
-                    | Ok settings -> recSettingsFromArgs tail settings
-                    | Error e -> Error e
-            // keys are sorted so that output is consistent across all versions
-            let keys = settingsDict.Keys |> List.ofSeq |> List.sort
-            let invalidKeys = keys |> List.filter (fun k -> not (optionNameMap.ContainsKey(k)))
-            match invalidKeys with
-            | [] -> recSettingsFromArgs keys settings
-            | k :: _ -> Error $"Invalid option: {k}"
-
-    let UpdateSettingsFromFile (settings : FindSettings) (filePath : string) : Result<FindSettings, string> =
-        let expandedPath = FileUtil.ExpandPath(filePath)
-        let fileInfo = FileInfo(expandedPath)
-        if fileInfo.Exists then
-            if fileInfo.Extension.Equals(".json") then
-                let contents = FileUtil.GetFileContents expandedPath Encoding.Default
-                UpdateSettingsFromJson settings contents
-            else
-                Error $"Invalid settings file (must be JSON): {filePath}"
-        else
-            Error $"Settings file not found: {filePath}"
+        match argTokenizer.TokenizeJson(jsonString) with
+        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Error e -> Error e
 
     let SettingsFromJson (jsonString : string) : Result<FindSettings, string> =
         let settings = FindSettings()
         UpdateSettingsFromJson settings jsonString
+
+    let UpdateSettingsFromFile (settings : FindSettings) (filePath : string) : Result<FindSettings, string> =
+        match argTokenizer.TokenizeFile(filePath) with
+        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Error e -> Error e
 
     let SettingsFromFile (filePath : string) : Result<FindSettings, string> =
         let settings = FindSettings()
         UpdateSettingsFromFile settings filePath
 
     let UpdateSettingsFromArgs (settings : FindSettings) (args : string[]) : Result<FindSettings, string> =
-        let longArgWithValRegex = Regex("^--([a-zA-Z0-9-]+)=(.*)$")
-        let longArgWithoutValRegex = Regex("^--([a-zA-Z0-9-]+)$")
-        let shortArgsRegex = Regex("^-([a-zA-Z0-9]{2,})$")
-        let shortArgRegex = Regex("^-([a-zA-Z0-9])$")
-
-        let (|RegexMatch|_|) (regex:Regex) (arg:string) =            
-            let m = regex.Match(arg)
-            if m.Success then Some(m) else None
-        
-        let rec recSettingsFromArgs (argList : string list) (settings : FindSettings) : Result<FindSettings, string> =
-            match argList with
-            | [] -> Ok settings
-            | head :: tail ->
-                match head with
-                | RegexMatch longArgWithValRegex m ->
-                    let longArg = m.Groups[1].Value
-                    let argVal = m.Groups[2].Value
-                    recSettingsFromArgs (List.append ["--" + longArg; argVal] tail) settings
-                | RegexMatch longArgWithoutValRegex m ->
-                    let longArg = m.Groups[1].Value
-                    if boolActionMap.ContainsKey(longArg) then
-                        boolActionMap[longArg] true settings
-                        if longArg = "help" then
-                            recSettingsFromArgs [] settings
-                        else
-                            recSettingsFromArgs tail settings
-                    elif stringActionMap.ContainsKey(longArg) || intActionMap.ContainsKey(longArg) || longArg.Equals("settings-file") then
-                        match tail with
-                        | [] ->
-                            Error $"Missing value for option: %s{longArg}"
-                        | aHead :: aTail ->
-                            if stringActionMap.ContainsKey(longArg) then
-                                stringActionMap[longArg] aHead settings
-                                recSettingsFromArgs aTail settings
-                            elif intActionMap.ContainsKey(longArg) then
-                                intActionMap[longArg] (int aHead) settings
-                                recSettingsFromArgs aTail settings
-                            else
-                                match UpdateSettingsFromFile settings aHead with
-                                | Ok fileSettings -> recSettingsFromArgs aTail fileSettings
-                                | Error e -> Error e
-                    else
-                        Error $"Invalid option: %s{longArg}"
-                | RegexMatch shortArgsRegex m ->
-                    let shortArgs = m.Groups[1].Value
-                    let shortArgsList = shortArgs |> Seq.map (fun c -> "-" + string c) |> List.ofSeq
-                    recSettingsFromArgs (List.append shortArgsList tail) settings
-                | RegexMatch shortArgRegex m ->
-                    let shortArg = m.Groups[1].Value
-                    if optionNameMap.ContainsKey(shortArg) then
-                        let longArg = optionNameMap[shortArg]
-                        recSettingsFromArgs (List.append ["--" + longArg] tail) settings
-                    else
-                        Error $"Invalid option: %s{shortArg}"
-                | _ ->
-                    settings.Paths <- settings.AddPath head settings.Paths
-                    recSettingsFromArgs tail settings
-        recSettingsFromArgs (Array.toList args) settings
+        match argTokenizer.TokenizeArgs(args) with
+        | Ok argTokens -> UpdateSettingsFromArgTokens settings argTokens
+        | Error e -> Error e
 
     let SettingsFromArgs (args : string[]) : Result<FindSettings, string> =
         let settings = FindSettings(PrintFiles=true)

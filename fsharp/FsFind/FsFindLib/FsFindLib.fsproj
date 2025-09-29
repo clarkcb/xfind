@@ -12,6 +12,7 @@
     <Compile Include="EmbeddedResource.fs" />
     <Compile Include="FindException.fs" />
     <Compile Include="FileUtil.fs" />
+    <Compile Include="ArgTokenizer.fs" />
     <Compile Include="FileTypes.fs" />
     <Compile Include="SortBy.fs" />
     <Compile Include="FindSettings.fs" />
