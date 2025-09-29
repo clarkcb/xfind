@@ -1,0 +1,35 @@
+module RbFind
+  module ArgTokenType
+    BOOL: 0
+    STR:  1
+    INT:  2
+  end
+
+  class ArgToken
+    @name: Symbol
+    @type: ArgTokenType
+    @value: untyped
+
+    attr_reader name: Symbol
+    attr_reader type: ArgTokenType
+    attr_reader value: untyped
+
+    def initialize: (Symbol name, ArgTokenType type, untyped value) -> void
+  end
+
+  class ArgTokenizer
+    @bool_dict: Hash[Symbol, Symbol]
+    @str_dict: Hash[Symbol, Symbol]
+    @int_dict: Hash[Symbol, Symbol]
+
+    def initialize: (Hash[Symbol, Symbol] bool_dict, Hash[Symbol, Symbol] str_dict, Hash[Symbol, Symbol] int_dict) -> void
+
+    def tokenize_args: (Array[String] args) -> Array[ArgToken]
+
+    def tokenize_arg_hash: (Hash[Symbol, untyped] arg_hash) -> Array[ArgToken]
+
+    def tokenize_json: (String json) -> Array[ArgToken]
+
+    def tokenize_file: (String file_path) -> Array[ArgToken]
+  end
+end

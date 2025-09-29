@@ -5,32 +5,34 @@ module RbFind
     @bool_action_dict: Hash[Symbol, Proc]
     @str_action_dict: Hash[Symbol, Proc]
     @int_action_dict: Hash[Symbol, Proc]
-    @long_arg_dict: Hash[String, Symbol]
+    @long_arg_dict: Hash[Symbol, Symbol]
+    @bool_dict: Hash[Symbol, Symbol]
+    @str_dict: Hash[Symbol, Symbol]
+    @int_dict: Hash[Symbol, Symbol]
+    @arg_tokenizer: ArgTokenizer
 
     attr_reader options: Array[FindOption]
 
     def initialize: () -> void
 
-    def arg_hash_from_args:(Array[String] args) -> Hash[Symbol, untyped]
+    def update_settings_from_json: (FindSettings settings, String json) -> void
 
-    def update_settings_from_arg_hash: (FindSettings settings, Hash[Symbol, untyped] args_hash) -> void
+    def update_settings_from_file: (FindSettings settings, String file_path) -> void
 
     def update_settings_from_args: (FindSettings settings, Array[String] args) -> void
 
     def find_settings_from_args: (Array[String] args) -> FindSettings
 
-    def update_settings_from_json: (FindSettings settings, String json) -> void
-
-    def update_settings_from_file: (FindSettings settings, String file_path) -> void
-
-    def get_usage_string: () -> String
-
     def usage: () -> void
 
     private
 
+    def get_usage_string: () -> String
+
     def set_actions: () -> void
 
     def set_options_from_json: () -> void
+
+    def update_settings_from_arg_tokens: (FindSettings settings, Array[ArgToken] arg_tokens) -> void
   end
 end

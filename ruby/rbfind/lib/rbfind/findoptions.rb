@@ -3,6 +3,7 @@ require 'date'
 require 'json'
 require 'pathname'
 
+require_relative 'arg_tokenizer'
 require_relative 'common'
 require_relative 'finderror'
 require_relative 'findoption'
@@ -19,145 +20,44 @@ module RbFind
       @bool_action_dict = {}
       @str_action_dict = {}
       @int_action_dict = {}
-      @long_arg_dict = {}
+      @bool_dict = {}
+      @str_dict = {}
+      @int_dict = {}
       set_actions
       set_options_from_json
       @options.sort! { |a, b| a.sort_arg <=> b.sort_arg }
-    end
-
-    def arg_hash_from_args(args)
-      arg_hash = {}
-      until args.empty?
-        arg = args.shift
-        if arg.start_with?('-')
-          arg_names = []
-          if arg.start_with?('--')
-            if arg.length > 2
-              arg_name = arg.slice(2..arg.length)
-              if arg_name.include?('=')
-                # TODO: split the string and save the 2nd elem back to the front of the args list
-                kv = arg_name.split('=')
-                arg_name = kv[0]
-                args.unshift(kv[1])
-              end
-              arg_names << arg_name.to_sym
-            else
-              raise FindError, "Invalid option: #{arg}"
-            end
-          elsif arg.length > 1
-            arg_name = arg.slice(1..arg.length)
-            arg_name.each_char do |c|
-              if @long_arg_dict.key?(c)
-                arg_names << @long_arg_dict[c].to_sym
-              else
-                raise FindError, "Invalid option: #{c}"
-              end
-            end
-          else
-            raise FindError, "Invalid option: #{arg}"
-          end
-
-          arg_names.each do |arg_name|
-            if @bool_action_dict.key?(arg_name)
-              arg_hash[arg_name] = true
-            elsif @str_action_dict.key?(arg_name) || @int_action_dict.key?(arg_name)
-              raise FindError, "Missing value for option #{arg_name}" if args.empty?
-              arg_val = args.shift
-              if @str_action_dict.key?(arg_name)
-                arg_hash[arg_name] = [] unless arg_hash.key?(arg_name)
-                arg_hash[arg_name] << arg_val
-              else
-                arg_hash[arg_name] = arg_val.to_i
-              end
-            else
-              raise FindError, "Invalid option: #{arg_name}"
-            end
-          end
-        else
-          arg_hash[:path] = [] unless arg_hash.key?(arg_name)
-          arg_hash[:path] << arg
-        end
-      end
-      arg_hash
-    end
-
-    def update_settings_from_arg_hash(settings, args_hash)
-      # keys are sorted so that output is consistent across all versions
-      arg_names = args_hash.keys.sort
-      arg_names.each do |arg_name|
-        if @bool_action_dict.key?(arg_name)
-          if args_hash[arg_name] == true || args_hash[arg_name] == false
-            @bool_action_dict[arg_name].call(args_hash[arg_name], settings)
-            return if [:help, :version].include?(arg_name)
-          else
-            raise FindError, "Invalid value for option: #{arg_name}"
-          end
-        elsif @str_action_dict.key?(arg_name)
-          if args_hash[arg_name].is_a?(String)
-            @str_action_dict[arg_name].call(args_hash[arg_name], settings)
-          elsif args_hash[arg_name].is_a?(Array)
-            args_hash[arg_name].each do |v|
-              if v.is_a?(String)
-                @str_action_dict[arg_name].call(v, settings)
-              else
-                raise FindError, "Invalid value for option: #{arg_name}"
-              end
-            end
-          else
-            raise FindError, "Invalid value for option: #{arg_name}"
-          end
-        elsif @int_action_dict.key?(arg_name)
-          if args_hash[arg_name].is_a?(Numeric)
-            @int_action_dict[arg_name].call(args_hash[arg_name], settings)
-          else
-            raise FindError, "Invalid value for option: #{arg_name}"
-          end
-        else
-          raise FindError, "Invalid option: #{arg_name}"
-        end
-      end
+      @arg_tokenizer = ArgTokenizer.new(@bool_dict, @str_dict, @int_dict)
     end
 
     def update_settings_from_json(settings, json)
-      json_hash = JSON.parse(json).transform_keys(&:to_sym)
-      update_settings_from_arg_hash(settings, json_hash)
+      arg_tokens = @arg_tokenizer.tokenize_json(json)
+      update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
     def update_settings_from_file(settings, file_path)
-      expanded_path = Pathname.new(file_path).expand_path
-      unless expanded_path.exist?
-        raise FindError, "Settings file not found: #{file_path}"
-      end
-      unless expanded_path.extname == '.json'
-        raise FindError, "Invalid settings file (must be JSON): #{file_path}"
-      end
-      f = File.open(expanded_path.to_s, mode: 'r')
-      json = f.read
-      update_settings_from_json(settings, json)
-    rescue IOError => e
-      raise FindError, e.to_s
-    rescue ArgumentError => e
-      raise FindError, e.to_s
-    rescue FindError => e
-      raise FindError, e.to_s
-    rescue JSON::ParserError => e
-      raise FindError, "Unable to parse JSON in settings file: #{file_path}"
-    ensure
-      f&.close
+      arg_tokens = @arg_tokenizer.tokenize_file(file_path)
+      update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
     def update_settings_from_args(settings, args)
-      # default print_files to true since running as cli
-      settings.print_files = true
-      args_hash = arg_hash_from_args(args)
-      update_settings_from_arg_hash(settings, args_hash)
+      arg_tokens = @arg_tokenizer.tokenize_args(args)
+      update_settings_from_arg_tokens(settings, arg_tokens)
     end
 
     def find_settings_from_args(args)
       settings = FindSettings.new
+      # default print_files to true since running as cli
+      settings.print_files = true
       update_settings_from_args(settings, args)
       settings
     end
+
+    def usage
+      puts "#{get_usage_string}\n"
+      abort
+    end
+
+    private
 
     def get_usage_string
       usage = ["Usage:\n", " rbfind [options] <path> [<path> ...]\n\n", "Options:\n"]
@@ -182,13 +82,6 @@ module RbFind
       end
       usage.join
     end
-
-    def usage
-      puts "#{get_usage_string}\n"
-      abort
-    end
-
-    private
 
     def set_actions
       @bool_action_dict = {
@@ -243,7 +136,7 @@ module RbFind
         mindepth: ->(i, settings) { settings.min_depth = i },
         minsize: ->(i, settings) { settings.min_size = i },
       }
-      @long_arg_dict = {"path" => :path}
+      @str_dict = {path: :path}
     end
 
     def set_options_from_json
@@ -260,15 +153,58 @@ module RbFind
             ''
           end
         desc = so['desc']
-        long_sym = long.to_sym
         @options.push(FindOption.new(short, long, desc))
-        @long_arg_dict[long] = long_sym
-        @long_arg_dict[short] = long_sym if short
+        long_sym = long.to_sym
+        if @bool_action_dict.key?(long_sym)
+          @bool_dict[long_sym] = long_sym
+          @bool_dict[short.to_sym] = long_sym if short
+        elsif @str_action_dict.key?(long_sym)
+          @str_dict[long_sym] = long_sym
+          @str_dict[short.to_sym] = long_sym if short
+        elsif @int_action_dict.key?(long_sym)
+          @int_dict[long_sym] = long_sym
+          @int_dict[short.to_sym] = long_sym if short
+        end
       end
     rescue StandardError => e
       raise FindError, "#{e} (file: #{find_options_json_path})"
     ensure
       f&.close
+    end
+
+    def update_settings_from_arg_tokens(settings, arg_tokens)
+      arg_tokens.each do |arg_token|
+        if arg_token.type == ArgTokenType::BOOL
+          if arg_token.value == true || arg_token.value == false
+            @bool_action_dict[arg_token.name].call(arg_token.value, settings)
+            return if [:help, :version].include?(arg_token.name)
+          else
+            raise FindError, "Invalid value for option: #{arg_token.name}"
+          end
+        elsif arg_token.type == ArgTokenType::STR
+          if arg_token.value.is_a?(String)
+            @str_action_dict[arg_token.name].call(arg_token.value, settings)
+          elsif arg_token.value.is_a?(Array)
+            arg_token.value.each do |v|
+              if v.is_a?(String)
+                @str_action_dict[arg_token.name].call(v, settings)
+              else
+                raise FindError, "Invalid value for option: #{arg_token.name}"
+              end
+            end
+          else
+            raise FindError, "Invalid value for option: #{arg_token.name}"
+          end
+        elsif arg_token.type == ArgTokenType::INT
+          if arg_token.value.is_a?(Numeric)
+            @int_action_dict[arg_token.name].call(arg_token.value, settings)
+          else
+            raise FindError, "Invalid value for option: #{arg_token.name}"
+          end
+        else
+          raise FindError, "Invalid option: #{arg_token.name}"
+        end
+      end
     end
   end
 end
