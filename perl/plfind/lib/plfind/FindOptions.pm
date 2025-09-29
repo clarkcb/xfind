@@ -16,6 +16,7 @@ use DateTime::Format::DateParse;
 use JSON::PP qw(decode_json);
 use Path::Class;
 
+use plfind::ArgTokenizer;
 use plfind::common;
 use plfind::config;
 use plfind::FileUtil;
@@ -205,8 +206,26 @@ my $int_action_hash = {
 
 sub new {
     my $class = shift;
+    my $options_hash = set_options_from_json();
+    my $bool_hash = {};
+    my $str_hash = {'path' => 'path'};
+    my $int_hash = {};
+    foreach my $opt_key (keys %{$options_hash}) {
+        if (exists $bool_action_hash->{$options_hash->{$opt_key}->{long_arg}}) {
+            $bool_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
+        } elsif (exists $str_action_hash->{$options_hash->{$opt_key}->{long_arg}}) {
+            $str_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
+        } elsif (exists $int_action_hash->{$options_hash->{$opt_key}->{long_arg}}) {
+            $int_hash->{$opt_key} = $options_hash->{$opt_key}->{long_arg};
+        }
+    }
+    my $arg_tokenizer = plfind::ArgTokenizer->new($bool_hash, $str_hash, $int_hash);
     my $self = {
-        options => set_options_from_json(),
+        options => $options_hash,
+        bool_hash => $bool_hash,
+        str_hash => $str_hash,
+        int_hash => $int_hash,
+        arg_tokenizer => $arg_tokenizer,
     };
     bless $self, $class;
     return $self;
@@ -229,174 +248,89 @@ sub set_options_from_json {
     return $options_hash;
 }
 
-sub arg_hash_from_args {
-    my ($self, $args) = @_;
-    my %arg_hash;
+sub update_settings_from_arg_tokens {
+    my ($self, $settings, $arg_tokens) = @_;
     my @errs;
-    while (scalar @$args && !(scalar @errs)) {
-        my $arg = shift @$args;
-        if ($arg =~ /^\-+/) {
-            my @arg_names;
-            if ($arg =~ /^\-{2}/) {
-                if (length($arg) > 2) {
-                    $arg =~ s/^\-+//;
-                    if ($arg =~ /\=/) {
-                        my @elems = split('=', $arg);
-                        $arg = $elems[0];
-                        unshift(@$args, $elems[1]);
-                    }
-                    if (exists $self->{options}->{$arg}) {
-                        my $long_arg = $self->{options}->{$arg}->{long_arg};
-                        push(@arg_names, $long_arg);
-                    } else {
-                        push(@errs, "Invalid option: $arg");
-                        last;
-                    }
-                } else {
-                    push(@errs, "Invalid option: $arg");
-                    last;
-                }
-            } elsif (length($arg) > 1) {
-                $arg =~ s/^\-+//;
-                for my $c (split //, $arg) {
-                    if (exists $self->{options}->{$c}) {
-                        my $long_arg = $self->{options}->{$c}->{long_arg};
-                        push(@arg_names, $long_arg);
-                    } else {
-                        push(@errs, "Invalid option: $c");
-                        last;
-                    }
-                }
-            } else {
-                push(@errs, "Invalid option: $arg");
-                last;
-            }
-
-            foreach my $arg_name (@arg_names) {
-                if (exists $bool_action_hash->{$arg_name}) {
-                    # &{$bool_action_hash->{$arg_name}}(1, $settings);
-                    $arg_hash{$arg_name} = 1;
-                } elsif (exists $str_action_hash->{$arg_name}
-                    || exists $int_action_hash->{$arg_name}
-                    || $arg_name eq 'settings-file') {
-                    if (scalar @$args) {
-                        my $val = shift @$args;
-                        if (exists $str_action_hash->{$arg_name}) {
-                            if (!(exists $arg_hash{$arg_name})) {
-                                $arg_hash{$arg_name} = [];
-                            }
-                            push(@{$arg_hash{$arg_name}}, $val);
-                        } elsif (exists $int_action_hash->{$arg_name}) {
-                            if ($val =~ /^\d+$/) {
-                                $arg_hash{$arg_name} = int($val);
-                            } else {
-                                push(@errs, 'Invalid value for option: ' . $arg_name);
-                            }
-                        } else {
-                            $arg_hash{'settings-file'} = $val;
-
-                        }
-                    } else {
-                        push(@errs, "Missing value for $arg");
-                    }
-                }
-            }
-        } else {
-            if (!(exists $arg_hash{'path'})) {
-                $arg_hash{'path'} = [];
-            }
-            push(@{$arg_hash{'path'}}, $arg);
+    foreach my $arg_token (@$arg_tokens) {
+        if (scalar @errs) {
+            return \@errs;
         }
-    }
-    return (\%arg_hash, \@errs);
-}
-
-sub update_settings_from_arg_hash {
-    my ($self, $settings, $arg_hash) = @_;
-    my $errs = [];
-    # keys are sorted so that output is consistent across all versions
-    my @arg_names = sort (keys %{$arg_hash});
-    my @invalid_keys = grep { $_ ne 'path' && !exists($self->{options}->{$_}) } @arg_names;
-    if (scalar @invalid_keys) {
-        push(@$errs, 'Invalid option: ' . $invalid_keys[0]);
-        return $errs;
-    }
-    foreach my $arg_name (@arg_names) {
-        my $arg_value = $arg_hash->{$arg_name};
-        if (exists $bool_action_hash->{$arg_name}) {
+        my $arg_value = $arg_token->{value};
+        if ($arg_token->{type} eq plfind::ArgTokenType->BOOL) {
             if (plfind::common::is_bool($arg_value)) {
-                &{$bool_action_hash->{$arg_name}}($arg_value, $settings);
+                &{$bool_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             } else {
-                push(@$errs, 'Invalid value for option: ' . $arg_name);
+                push(@errs, 'Invalid value for option: ' . $arg_token->{name});
             }
-        } elsif (exists $str_action_hash->{$arg_name}) {
-            if (ref $arg_value eq 'ARRAY') {
+        } elsif ($arg_token->{type} eq plfind::ArgTokenType->STR) {
+            if ($arg_token->{name} eq 'settings-file') {
+                my $file_path = file($arg_value);
+                my $settings_file_errors = $self->update_settings_from_file($settings, $file_path);
+                push(@errs, @$settings_file_errors);
+            } elsif (ref $arg_value eq 'ARRAY') {
                 foreach my $val (@$arg_value) {
-                    &{$str_action_hash->{$arg_name}}($val, $settings);
+                    &{$str_action_hash->{$arg_token->{name}}}($val, $settings);
                 }
             } else {
                 # assume scalar
-                &{$str_action_hash->{$arg_name}}($arg_value, $settings);
+                &{$str_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             }
-        } elsif (exists $int_action_hash->{$arg_name}) {
+        } elsif ($arg_token->{type} eq plfind::ArgTokenType->INT) {
             if ($arg_value =~ /^\d+$/) {
-                &{$int_action_hash->{$arg_name}}($arg_value, $settings);
+                &{$int_action_hash->{$arg_token->{name}}}($arg_value, $settings);
             } else {
-                push(@$errs, 'Invalid value for option: ' . $arg_name);
+                push(@errs, 'Invalid value for option: ' . $arg_token->{name});
             }
-        } elsif ($arg_name eq 'settings-file') {
-            my $file_path = file($arg_value);
-            my $settings_file_errors = $self->update_settings_from_file($settings, $file_path);
-            push(@$errs, @$settings_file_errors);
         } else {
             # should never reach here
-            push(@$errs, 'Invalid option: ' . $arg_name);
+            push(@errs, 'Invalid option: ' . $arg_token->{name});
         }
     }
-    return $errs;
+    return \@errs;
 }
 
 sub update_settings_from_json {
     my ($self, $settings, $json) = @_;
-    my $errs = [];
-    my $json_hash = {};
-    my $rc = eval { $json_hash = decode_json $json; 1; };
-    if ($rc != 1) {
-        push(@$errs, 'Unable to decode json');
+    my ($arg_tokens, $errs) = $self->{arg_tokenizer}->tokenize_json($json);
+    if (scalar @$errs) {
         return $errs;
     }
-    return $self->update_settings_from_arg_hash($settings, $json_hash);
+    return $self->update_settings_from_arg_tokens($settings, $arg_tokens);
+}
+
+sub settings_from_json {
+    # $json is a string with json contents
+    my ($self, $json) = @_;
+    my $settings = plfind::FindSettings->new();
+    my $errs = $self->update_settings_from_json($settings, $json);
+    return ($settings, $errs);
 }
 
 sub update_settings_from_file {
     # $file_path is instance of Path::Class::File
     my ($self, $settings, $file_path) = @_;
-    my $errs = [];
-    my $expanded_path = file(plfind::FileUtil::expand_path($file_path));
-    unless (-e $expanded_path) {
-        push(@$errs, 'Settings file not found: ' . $file_path);
+    my ($arg_tokens, $errs) = $self->{arg_tokenizer}->tokenize_file($file_path);
+    if (scalar @$errs) {
         return $errs;
     }
-    unless ($expanded_path =~ /\.json$/) {
-        push(@$errs, 'Invalid settings file (must be JSON): ' . $file_path);
-        return $errs;
-    }
-    my $json = $expanded_path->slurp;
-    $errs = $self->update_settings_from_json($settings, $json);
-    if (scalar @$errs && $errs->[0] eq 'Unable to decode json') {
-        shift(@$errs);
-        push(@$errs, 'Unable to parse JSON in settings file: ' . $file_path);
-    }
-    return $errs;
+    return $self->update_settings_from_arg_tokens($settings, $arg_tokens);
+}
+
+sub settings_from_file {
+    # $file_path is instance of Path::Class::File
+    my ($self, $file_path) = @_;
+    my $settings = plfind::FindSettings->new();
+    my $errs = $self->update_settings_from_file($settings, $file_path);
+    return ($settings, $errs);
 }
 
 sub update_settings_from_args {
     my ($self, $settings, $args) = @_;
-    my ($arg_hash, $errs) = $self->arg_hash_from_args($args);
+    my ($arg_tokens, $errs) = $self->{arg_tokenizer}->tokenize_args($args);
     if (scalar @$errs) {
         return $errs;
     }
-    $errs = $self->update_settings_from_arg_hash($settings, $arg_hash);
+    return $self->update_settings_from_arg_tokens($settings, $arg_tokens);
 }
 
 sub settings_from_args {
@@ -406,11 +340,6 @@ sub settings_from_args {
     $settings->set_property('print_files', 1);
     my $errs = $self->update_settings_from_args($settings, $args);
     return ($settings, $errs);
-}
-
-sub usage {
-    my $self = shift;
-    print $self->get_usage_string();
 }
 
 sub get_usage_string {
@@ -451,6 +380,11 @@ sub get_usage_string {
         $opt_descs_with_key->{$sort_arg});
     }
     return $usage;
+}
+
+sub usage {
+    my $self = shift;
+    print $self->get_usage_string();
 }
 
 1;

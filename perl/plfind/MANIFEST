@@ -6,6 +6,10 @@ README
 bin/plfind
 bin/plfind.bat
 lib/plfind.pm
+lib/plfind/ArgToken.pm
+lib/plfind/ArgTokenizer.pm
+lib/plfind/ArgTokenType.pm
+lib/plfind/Color.pm
 lib/plfind/common.pm
 lib/plfind/config.pm
 lib/plfind/FileResult.pm
