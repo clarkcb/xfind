@@ -1,13 +1,7 @@
 package ktfind
 
-import org.json.JSONArray
-import org.json.JSONException
 import org.json.JSONObject
 import org.json.JSONTokener
-import java.io.FileNotFoundException
-import java.io.IOException
-import java.nio.file.Files
-import java.nio.file.Paths
 
 /**
  * @author cary on 7/23/16.
@@ -25,34 +19,12 @@ class FindOptions {
     private val findOptionsJsonPath = "/findoptions.json"
     private val findOptions: List<FindOption>
     // We add path manually since it's not an option in findoptions.json
-    private var longArgMap = mutableMapOf<String, String>("path" to "path")
-
-    init {
-        findOptions = loadFindOptionsFromJson()
-    }
-
-    private fun loadFindOptionsFromJson(): List<FindOption> {
-        val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
-        val jsonObj = JSONObject(JSONTokener(findOptionsInputStream))
-        val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
-        val options: MutableList<FindOption> = mutableListOf()
-        while (findOptionsArray.hasNext()) {
-            val findOptionObj = findOptionsArray.next() as JSONObject
-            val longArg = findOptionObj.getString("long")
-            longArgMap[longArg] = longArg
-            val shortArg =
-                if (findOptionObj.has("short")) {
-                    val sArg = findOptionObj.getString("short")
-                    longArgMap[sArg] = longArg
-                    sArg
-                } else {
-                    null
-                }
-            val desc = findOptionObj.getString("desc")
-            options.add(FindOption(shortArg, longArg, desc))
-        }
-        return options.toList().sortedBy { it.sortArg }
-    }
+    private var longArgs = mutableSetOf<String>("path")
+    private var boolMap = mutableMapOf<String, String>()
+    private var strMap = mutableMapOf<String, String>()
+    private var intMap = mutableMapOf<String, String>()
+    private var longMap = mutableMapOf<String, String>()
+    private var argTokenizer: ArgTokenizer
 
     private val boolActionMap: Map<String, ((Boolean, FindSettings) -> FindSettings)> = mapOf(
         "archivesonly" to { b, ss ->
@@ -133,221 +105,137 @@ class FindOptions {
         "minsize" to { l, ss -> ss.copy(minSize = l) }
     )
 
-    private fun applySettings(key: String, lst: List<Any?>, settings: FindSettings): FindSettings {
-        return if (lst.isEmpty()) settings
-        else {
-            applySettings(key, lst.drop(1), applySetting(key, lst.first()!!, settings))
+    private fun loadFindOptionsFromJson(): List<FindOption> {
+        val findOptionsInputStream = javaClass.getResourceAsStream(findOptionsJsonPath)
+        val jsonObj = JSONObject(JSONTokener(findOptionsInputStream))
+        val findOptionsArray = jsonObj.getJSONArray("findoptions").iterator()
+        val options: MutableList<FindOption> = mutableListOf()
+        while (findOptionsArray.hasNext()) {
+            val findOptionObj = findOptionsArray.next() as JSONObject
+            val longArg = findOptionObj.getString("long")
+            longArgs.add(longArg)
+            if (boolActionMap.containsKey(longArg)) {
+                boolMap[longArg] = longArg
+            } else if (stringActionMap.containsKey(longArg)) {
+                strMap[longArg] = longArg
+            } else if (intActionMap.containsKey(longArg)) {
+                intMap[longArg] = longArg
+            } else if (longActionMap.containsKey(longArg)) {
+                longMap[longArg] = longArg
+            }
+            val shortArg =
+                if (findOptionObj.has("short")) {
+                    val sArg = findOptionObj.getString("short")
+                    if (boolActionMap.containsKey(longArg)) {
+                        boolMap[sArg] = longArg
+                    } else if (stringActionMap.containsKey(longArg)) {
+                        strMap[sArg] = longArg
+                    } else if (intActionMap.containsKey(longArg)) {
+                        intMap[sArg] = longArg
+                    } else if (longActionMap.containsKey(longArg)) {
+                        longMap[sArg] = longArg
+                    }
+                    sArg
+                } else {
+                    null
+                }
+            val desc = findOptionObj.getString("desc")
+            options.add(FindOption(shortArg, longArg, desc))
+        }
+        return options.toList().sortedBy { it.sortArg }
+    }
+
+    init {
+        strMap["path"] = "path"
+        findOptions = loadFindOptionsFromJson()
+        argTokenizer = ArgTokenizer(boolMap, strMap, intMap, longMap)
+    }
+
+    private fun applyArgTokenToSettings(argToken: ArgToken, settings: FindSettings): FindSettings {
+        if (argToken.type == ArgTokenType.BOOL) {
+            if (argToken.value is Boolean) {
+                return this.boolActionMap[argToken.name]!!.invoke(argToken.value, settings)
+            } else {
+                throw FindException("Invalid value for option: ${argToken.name}")
+            }
+        } else if (argToken.type == ArgTokenType.STR) {
+            return when (argToken.value) {
+                is String -> {
+                    this.stringActionMap[argToken.name]!!.invoke(argToken.value, settings)
+                }
+                is Iterable<Any?> -> {
+                    var updatedSettings: FindSettings = settings
+                    for (v in argToken.value) {
+                        if (v is String) {
+                            updatedSettings = this.stringActionMap[argToken.name]!!.invoke(v, updatedSettings)
+                        } else {
+                            throw FindException("Invalid value for option: ${argToken.name}")
+                        }
+                    }
+                    updatedSettings
+                }
+                else -> {
+                    throw FindException("Invalid value for option: ${argToken.name}")
+                }
+            }
+        } else if (argToken.type == ArgTokenType.INT) {
+            return when (argToken.value) {
+                is Int -> {
+                    this.intActionMap[argToken.name]!!.invoke(argToken.value, settings)
+                }
+                is Long -> {
+                    this.intActionMap[argToken.name]!!.invoke(argToken.value.toInt(), settings)
+                }
+                else -> {
+                    throw FindException("Invalid value for option: ${argToken.name}")
+                }
+            }
+        } else if (argToken.type == ArgTokenType.LONG) {
+            return when (argToken.value) {
+                is Int -> {
+                    this.longActionMap[argToken.name]!!.invoke(argToken.value.toLong(), settings)
+                }
+                is Long -> {
+                    this.longActionMap[argToken.name]!!.invoke(argToken.value, settings)
+                }
+                else -> {
+                    throw FindException("Invalid value for option: ${argToken.name}")
+                }
+            }
+        } else {
+            throw FindException("Invalid option: ${argToken.name}")
         }
     }
 
-    private fun applySetting(key: String, obj: Any, settings: FindSettings): FindSettings {
-        if (boolActionMap.containsKey(key)) {
-            if (obj is Boolean) {
-                return this.boolActionMap[key]!!.invoke(obj, settings)
-            } else {
-                throw FindException("Invalid value for option: $key")
-            }
-        } else if (stringActionMap.containsKey(key)) {
-            return if (obj is String) {
-                this.stringActionMap[key]!!.invoke(obj, settings)
-            } else if (obj is Collection<Any?>) {
-                applySettings(key, obj.filter {o -> o != null}.toList(), settings)
-            } else if (obj is JSONArray) {
-                applySettings(key, obj.toList(), settings)
-            } else {
-                throw FindException("Invalid value for option: $key")
-            }
-        } else if (intActionMap.containsKey(key)) {
-            return if (obj is Int) {
-                this.intActionMap[key]!!.invoke(obj, settings)
-            } else if (obj is Long) {
-                this.intActionMap[key]!!.invoke(obj.toInt(), settings)
-            } else {
-                throw FindException("Invalid value for option: $key")
-            }
-        } else if (longActionMap.containsKey(key)) {
-            return if (obj is Int) {
-                this.longActionMap[key]!!.invoke(obj.toLong(), settings)
-            } else if (obj is Long) {
-                this.longActionMap[key]!!.invoke(obj, settings)
-            } else {
-                throw FindException("Invalid value for option: $key")
-            }
-        } else {
-            throw FindException("Invalid option: $key")
+    private fun updateSettingsFromArgTokens(settings: FindSettings, argTokens: List<ArgToken>): FindSettings {
+        var updatedSettings: FindSettings = settings
+        for (argToken in argTokens) {
+            updatedSettings = applyArgTokenToSettings(argToken, updatedSettings)
         }
+        return updatedSettings
     }
 
     fun updateSettingsFromJson(settings: FindSettings, json: String): FindSettings {
-        val jsonObject = JSONObject(JSONTokener(json))
-        fun recSettingsFromJson(keys: List<String>, settings: FindSettings): FindSettings {
-            return if (keys.isEmpty()) settings
-            else {
-                val ko = keys.first()
-                val vo = jsonObject.get(ko)
-                if (vo != null) {
-                    recSettingsFromJson(keys.drop(1), applySetting(ko, vo, settings))
-                } else {
-                    recSettingsFromJson(keys.drop(1), settings)
-                }
-            }
-        }
-        // keys are sorted so that output is consistent across all versions
-        val keys = jsonObject.keySet().toList().sorted()
-        val invalidKeys = keys.filter { !longArgMap.containsKey(it) }
-        if (invalidKeys.isNotEmpty()) {
-            throw FindException("Invalid option: ${invalidKeys[0]}")
-        }
-        return recSettingsFromJson(keys, settings)
+        val argTokens = argTokenizer.tokenizeJson(json)
+        return updateSettingsFromArgTokens(settings, argTokens)
     }
 
-    private fun updateSettingsFromFile(settings: FindSettings, filePath: String): FindSettings {
-        val path = FileUtil.expandPath(Paths.get(filePath));
-        if (!Files.exists(path)) {
-            throw FindException("Settings file not found: $filePath")
-        }
-        if (!filePath.endsWith(".json")) {
-            throw FindException("Invalid settings file (must be JSON): $filePath")
-        }
-        try {
-            val json = path.toFile().readText()
-            return updateSettingsFromJson(settings, json)
-        } catch (_: FileNotFoundException) {
-            throw FindException("Settings file not found: $filePath")
-        } catch (_: IOException) {
-            throw FindException("IOException reading settings file: $filePath")
-        } catch (_: JSONException) {
-            throw FindException("Unable to parse JSON in settings file: $filePath")
-        }
+    fun updateSettingsFromFile(settings: FindSettings, filePath: String): FindSettings {
+        val argTokens = argTokenizer.tokenizeFile(filePath)
+        return updateSettingsFromArgTokens(settings, argTokens)
     }
 
-    fun argMapFromArgs(args: Array<String>): Map<String, Any> {
-        val longArgWithValRegex = Regex("^--([a-zA-Z0-9-]+)=(.*)$")
-        val longArgWithoutValRegex = Regex("^--([a-zA-Z0-9-]+)$")
-        val shortArgsRegex = Regex("^-([a-zA-Z0-9]{2,})$")
-        val shortArgRegex = Regex("^-([a-zA-Z0-9])$")
-        fun updateArgMap(argName: String, argVal: String?, argMap: Map<String, Any>): Map<String, Any> {
-            if (!longArgMap.containsKey(argName)) {
-                throw FindException("Invalid option: $argName")
-            }
-            val longArg = longArgMap[argName]!!
-            return if (boolActionMap.containsKey(longArg)) {
-                argMap + Pair(longArg, true)
-            } else if (stringActionMap.containsKey(longArg)) {
-                if (argVal != null) {
-                    if (argMap.containsKey(longArg) && argMap[longArg] is List<*>) {
-                        val existingVal = argMap[longArg] as List<*>
-                        argMap + Pair(longArg, existingVal + listOf(argVal))
-                    } else {
-                        argMap + Pair(longArg, listOf(argVal))
-                    }
-                } else {
-                    throw FindException("Missing value for option $argName")
-                }
-            } else if (intActionMap.containsKey(longArg)) {
-                if (argVal != null) {
-                    argMap + Pair(longArg, argVal.toInt())
-                } else {
-                    throw FindException("Missing value for option $argName")
-                }
-            } else if (longActionMap.containsKey(longArg)) {
-                if (argVal != null) {
-                    argMap + Pair(longArg, argVal.toLong())
-                } else {
-                    throw FindException("Missing value for option $argName")
-                }
-            } else {
-                throw FindException("Unhandled option $argName")
-            }
-        }
-        fun recArgMapFromArgs(args: List<String>, argMap: Map<String, Any>): Map<String, Any> {
-            if (args.isEmpty()) return argMap
-            val nextArg = args.first()
-            if (nextArg matches longArgWithValRegex) {
-                val match = longArgWithValRegex.matchEntire(nextArg)
-                val longArg = match!!.groupValues[1]
-                val argVal = match.groupValues[2]
-                return recArgMapFromArgs(args.drop(1), updateArgMap(longArg, argVal, argMap))
-            }
-            if (nextArg matches longArgWithoutValRegex) {
-                val match = longArgWithoutValRegex.matchEntire(nextArg)
-                val longArg = match!!.groupValues[1]
-                val argVal: String? =
-                    if ((stringActionMap.containsKey(longArg)
-                                || intActionMap.containsKey(longArg)
-                                || longActionMap.containsKey(longArg))
-                        && args.size > 1) {
-                        args[1]
-                    } else {
-                        null
-                    }
-                val nextArgs =
-                    if (argVal != null) {
-                        args.drop(2)
-                    } else {
-                        args.drop(1)
-                    }
-                return recArgMapFromArgs(nextArgs, updateArgMap(longArg, argVal, argMap))
-            }
-            if (nextArg matches shortArgsRegex) {
-                val match = shortArgsRegex.matchEntire(nextArg)
-                val shortArgs = match!!.groupValues[1]
-                val shortArgList = shortArgs.map { c -> "-$c" }
-                val nextArgs = shortArgList + args.drop(1)
-                return recArgMapFromArgs(nextArgs, argMap)
-            }
-            if (nextArg matches shortArgRegex) {
-                val match = shortArgRegex.matchEntire(nextArg)
-                val shortArg = match!!.groupValues[1]
-                if (!longArgMap.containsKey(shortArg)) {
-                    throw FindException("Invalid option: $shortArg")
-                }
-                val longArg = longArgMap[shortArg]!!
-                val argVal: String? =
-                    if ((stringActionMap.containsKey(longArg)
-                                || intActionMap.containsKey(longArg)
-                                || longActionMap.containsKey(longArg))
-                        && args.size > 1) {
-                        args[1]
-                    } else {
-                        null
-                    }
-                val nextArgs =
-                    if (argVal != null) {
-                        args.drop(2)
-                    } else {
-                        args.drop(1)
-                    }
-                return recArgMapFromArgs(nextArgs, updateArgMap(longArg, argVal, argMap))
-            }
-            return recArgMapFromArgs(args.drop(1), argMap + Pair("path", listOf(nextArg)))
-        }
-        return recArgMapFromArgs(args.toList(), mapOf())
+    fun updateSettingsFromArgs(settings: FindSettings, args: Array<String>): FindSettings {
+        val argTokens = argTokenizer.tokenizeArgs(args)
+        return updateSettingsFromArgTokens(settings, argTokens)
     }
 
     fun settingsFromArgs(args: Array<String>): FindSettings {
         if (args.isEmpty()) {
             throw FindException(FindError.STARTPATH_NOT_DEFINED.message)
         }
-        var settings = getDefaultSettings().copy(printFiles = true)
-        val argMap = argMapFromArgs(args)
-        if (argMap.containsKey("help")) {
-            return settings.copy(printUsage = true)
-        }
-        if (argMap.containsKey("version")) {
-            return settings.copy(printVersion = true)
-        }
-        for ((key, value) in argMap) {
-            settings = applySetting(key, value, settings)
-        }
-        if (settings.paths.isEmpty()) {
-            throw FindException(FindError.STARTPATH_NOT_DEFINED.message)
-        }
-        return settings
-    }
-
-    fun usage() {
-        log(getUsageString())
+        val settings = getDefaultSettings().copy(printFiles = true)
+        return updateSettingsFromArgs(settings, args)
     }
 
     private fun getUsageString(): String {
@@ -366,5 +254,9 @@ class FindOptions {
             sb.append(String.format(format, o.first, o.second))
         }
         return sb.toString()
+    }
+
+    fun usage() {
+        log(getUsageString())
     }
 }
