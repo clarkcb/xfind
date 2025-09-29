@@ -29,9 +29,21 @@ class FindOptions
      */
     private readonly array $int_action_map;
     /**
-     * @var array<string, string> $long_arg_map
+     * @var array<string, string> $bool_map
      */
-    private array $long_arg_map;
+    private array $bool_map;
+    /**
+     * @var array<string, string> $str_map
+     */
+    private array $str_map;
+    /**
+     * @var array<string, string> $int_map
+     */
+    private array $int_map;
+    /**
+     * @var ArgTokenizer $arg_tokenizer
+     */
+    private ArgTokenizer $arg_tokenizer;
 
     /**
      * @throws FindException
@@ -97,8 +109,30 @@ class FindOptions
             'mindepth' => fn(int $i, FindSettings $fs) => $fs->min_depth = $i,
             'minsize' => fn(int $i, FindSettings $fs) => $fs->min_size = $i,
         ];
-        $this->long_arg_map = ['path' => 'path'];
+        $this->str_map = ['path' => 'path'];
         $this->set_options_from_json();
+        $this->arg_tokenizer = new ArgTokenizer($this->bool_map, $this->str_map, $this->int_map);
+    }
+
+    private function add_option(FindOption $opt): void
+    {
+        $this->options[] = $opt;
+        if (array_key_exists($opt->long_arg, $this->bool_action_map)) {
+            $this->bool_map[$opt->long_arg] = $opt->long_arg;
+            if ($opt->short_arg != '') {
+                $this->bool_map[$opt->short_arg] = $opt->long_arg;
+            }
+        } elseif (array_key_exists($opt->long_arg, $this->str_action_map)) {
+            $this->str_map[$opt->long_arg] = $opt->long_arg;
+            if ($opt->short_arg != '') {
+                $this->str_map[$opt->short_arg] = $opt->long_arg;
+            }
+        } elseif (array_key_exists($opt->long_arg, $this->int_action_map)) {
+            $this->int_map[$opt->long_arg] = $opt->long_arg;
+            if ($opt->short_arg != '') {
+                $this->int_map[$opt->short_arg] = $opt->long_arg;
+            }
+        }
     }
 
     /**
@@ -121,12 +155,10 @@ class FindOptions
                         $short = '';
                         $long = (string)$fo['long'];
                         $desc = (string)$fo['desc'];
-                        $this->long_arg_map[$long] = $long;
                         if (array_key_exists('short', $fo)) {
                             $short = (string)$fo['short'];
-                            $this->long_arg_map[$short] = $long;
                         }
-                        $this->options[] = new FindOption($short, $long, $desc);
+                        $this->add_option(new FindOption($short, $long, $desc));
                     }
                     usort($this->options, array('phpfind\FindOptions', 'cmp_find_options'));
                 }
@@ -139,125 +171,45 @@ class FindOptions
     }
 
     /**
-     * @param string[] $args
-     * @return array
-     * @throws FindException
-     */
-    public function arg_map_from_args(array $args): array
-    {
-        $arg_map = [];
-        while (count($args) > 0) {
-            $arg = array_shift($args);
-            if ($arg[0] == '-') {
-                $arg_names = array();
-                if (strlen($arg) > 1) {
-                    if ($arg[1] == '-') {
-                        # it's a long arg
-                        if (strlen($arg) > 2) {
-                            $arg = substr($arg, 2);
-                            if (str_contains($arg, '=')) {
-                                $elems = explode('=', $arg);
-                                $arg = $elems[0];
-                                $arg_value = $elems[1];
-                                array_unshift($args, $arg_value);
-                            }
-                            if (!array_key_exists($arg, $this->long_arg_map)) {
-                                throw new FindException("Invalid option: $arg");
-                            }
-                            $arg_names[] = $arg;
-                        } else {
-                            throw new FindException("Invalid option: $arg");
-                        }
-                    } else {
-                        # it's a short arg, with possibly multiple args
-                        $arg = substr($arg, 1);
-                        foreach (str_split($arg) as $c) {
-                            if (!array_key_exists($c, $this->long_arg_map)) {
-                                throw new FindException("Invalid option: $c");
-                            }
-                            $arg_names[] = $this->long_arg_map[$c];
-                        }
-                    }
-                } else {
-                    throw new FindException("Invalid option: $arg");
-                }
-
-                foreach ($arg_names as $arg_name) {
-                    if (array_key_exists($arg_name, $this->bool_action_map)) {
-                        $arg_map[$arg_name] = true;
-                        if (in_array($arg_name, array("help", "version"))) {
-                            return $arg_map;
-                        }
-                    } elseif (array_key_exists($arg_name, $this->str_action_map)
-                        || array_key_exists($arg_name, $this->int_action_map)) {
-                        if (count($args) > 0) {
-                            $val = array_shift($args);
-                            if (array_key_exists($arg_name, $this->str_action_map)) {
-                                if (!array_key_exists($arg_name, $arg_map)) {
-                                    $arg_map[$arg_name] = [];
-                                }
-                                $arg_map[$arg_name][] = $val;
-                            } elseif (array_key_exists($arg_name, $this->int_action_map)) {
-                                $arg_map[$arg_name] = intval($val);
-                            }
-                        } else {
-                            throw new FindException("Missing value for $arg");
-                        }
-                    } else {
-                        throw new FindException("Invalid option: $arg");
-                    }
-                }
-            } else {
-                if (!array_key_exists('path', $arg_map)) {
-                    $arg_map['path'] = [];
-                }
-                $arg_map['path'][] = $arg;
-            }
-        }
-        return $arg_map;
-    }
-
-    /**
      * @param FindSettings $settings
-     * @param array $arg_map
+     * @param array $arg_tokens
      * @return void
      * @throws FindException
      */
-    public function update_settings_from_arg_map(FindSettings $settings, array $arg_map): void
+    private function update_settings_from_arg_tokens(FindSettings $settings, array $arg_tokens): void
     {
-        $arg_names = array_keys($arg_map);
-        # keys are sorted so that output is consistent across all versions
-        sort($arg_names);
-        $is_invalid_key = fn (string $k) => !array_key_exists($k, $this->long_arg_map);
-        $invalid_keys = array_filter($arg_names, $is_invalid_key);
-        if ($invalid_keys) {
-            throw new FindException("Invalid option: " . array_values($invalid_keys)[0]);
-        }
-        foreach ($arg_names as $arg_name) {
-            $arg_value = $arg_map[$arg_name];
-            $long_arg = $this->long_arg_map[$arg_name];
-            if (array_key_exists($long_arg, $this->bool_action_map)) {
-                $this->bool_action_map[$long_arg]($arg_value, $settings);
-                if (in_array($long_arg, array("help", "version"))) {
-                    return;
-                }
-            } elseif (array_key_exists($long_arg, $this->str_action_map)
-                || array_key_exists($long_arg, $this->int_action_map)) {
-                if (array_key_exists($long_arg, $this->str_action_map)) {
-                    if (is_array($arg_value)) {
-                        foreach ($arg_value as $val) {
-                            $this->str_action_map[$long_arg]($val, $settings);
-                        }
-                    } elseif (is_string($arg_value)) {
-                        $this->str_action_map[$long_arg]($arg_value, $settings);
-                    } else {
-                        throw new FindException("Invalid value for option: $long_arg");
+        foreach ($arg_tokens as $arg_token) {
+            if ($arg_token->type == ArgTokenType::Bool) {
+                if (is_bool($arg_token->value)) {
+                    $this->bool_action_map[$arg_token->name]($arg_token->value, $settings);
+                    if (in_array($arg_token->name, array("help", "version"))) {
+                        return;
                     }
-                } elseif (array_key_exists($long_arg, $this->int_action_map)) {
-                    $this->int_action_map[$long_arg](intval($arg_value), $settings);
+                } else {
+                    throw new FindException("Invalid value for option: $arg_token->name");
+                }
+            } elseif ($arg_token->type == ArgTokenType::Str) {
+                if (is_array($arg_token->value)) {
+                    foreach ($arg_token->value as $val) {
+                        if (is_string($val)) {
+                            $this->str_action_map[$arg_token->name]($val, $settings);
+                        } else {
+                            throw new FindException("Invalid value for option: $arg_token->name");
+                        }
+                    }
+                } elseif (is_string($arg_token->value)) {
+                    $this->str_action_map[$arg_token->name]($arg_token->value, $settings);
+                } else {
+                    throw new FindException("Invalid value for option: $arg_token->name");
+                }
+            } elseif ($arg_token->type == ArgTokenType::Int) {
+                if (is_int($arg_token->value)) {
+                    $this->int_action_map[$arg_token->name]($arg_token->value, $settings);
+                } else {
+                    throw new FindException("Invalid value for option: $arg_token->name");
                 }
             } else {
-                throw new FindException("Invalid option: $arg_name");
+                throw new FindException("Invalid option: $arg_token->name");
             }
         }
     }
@@ -268,17 +220,10 @@ class FindOptions
      * @return void
      * @throws FindException
      */
-    public function update_settings_from_json(string $json, FindSettings $settings): void
+    public function update_settings_from_json(FindSettings $settings, string $json): void
     {
-        if (trim($json) === '') {
-            return;
-        }
-        try {
-            $json_obj = (array)json_decode(trim($json), true, 512, JSON_THROW_ON_ERROR);
-            $this->update_settings_from_arg_map($settings, $json_obj);
-        } catch (\JsonException $e) {
-            throw new FindException($e->getMessage());
-        }
+        $arg_tokens = $this->arg_tokenizer->tokenize_json($json);
+        $this->update_settings_from_arg_tokens($settings, $arg_tokens);
     }
 
     /**
@@ -289,17 +234,8 @@ class FindOptions
      */
     private function update_settings_from_file(FindSettings $settings, string $file_path): void
     {
-        $expanded_path = FileUtil::expand_path($file_path);
-        if (!file_exists($expanded_path)) {
-            throw new FindException('Settings file not found: ' . $file_path);
-        }
-        if (!str_ends_with($expanded_path, '.json')) {
-            throw new FindException('Invalid settings file (must be JSON): ' . $file_path);
-        }
-        $json = file_get_contents($expanded_path);
-        if ($json) {
-            $this->update_settings_from_json($json, $settings);
-        }
+        $arg_tokens = $this->arg_tokenizer->tokenize_file($file_path);
+        $this->update_settings_from_arg_tokens($settings, $arg_tokens);
     }
 
     /**
@@ -310,8 +246,8 @@ class FindOptions
      */
     public function update_settings_from_args(FindSettings $settings, array $args): void
     {
-        $arg_map = $this->arg_map_from_args($args);
-        $this->update_settings_from_arg_map($settings, $arg_map);
+        $arg_tokens = $this->arg_tokenizer->tokenize_args($args);
+        $this->update_settings_from_arg_tokens($settings, $arg_tokens);
     }
 
     /**
