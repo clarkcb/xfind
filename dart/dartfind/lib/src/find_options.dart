@@ -1,6 +1,7 @@
 import 'dart:convert' show json;
 import 'dart:io';
 
+import 'package:dartfind/src/arg_tokenizer.dart';
 import 'package:dartfind/src/common.dart';
 import 'package:dartfind/src/config.dart' show findOptionsPath;
 import 'package:dartfind/src/file_types.dart';
@@ -38,10 +39,13 @@ class FindOptions {
   var stringActionMap = {};
   var intActionMap = {};
   var longArgMap = {'path': 'path'};
+  ArgTokenizer? argTokenizer;
   late Future ready;
 
   FindOptions() {
-    ready = loadFindOptionsFromJson().then((f) => setActionMaps());
+    ready = loadFindOptionsFromJson()
+        .then((f) => setActionMaps())
+        .then((f) => setArgTokenizer());
   }
 
   Future<void> loadFindOptionsFromJson() async {
@@ -134,62 +138,57 @@ class FindOptions {
     };
   }
 
-  Future<void> updateSettingsFromArgMap(
-      FindSettings settings, Map<String, dynamic> argMap) async {
-    await ready.then((_) async {
-      var keys = argMap.keys.toList();
-      // keys are sorted so that output is consistent across all versions
-      keys.sort();
-      // first check for invalid options
-      for (var key in keys) {
-        if (!longArgMap.containsKey(key)) {
-          throw FindException('Invalid option: $key');
+  void setArgTokenizer() {
+    Map<String, String> boolMap = {};
+    Map<String, String> stringMap = {'path': 'path'};
+    Map<String, String> intMap = {};
+    for (var o in findOptions) {
+      if (boolActionMap.containsKey(o.longArg)) {
+        boolMap[o.longArg] = o.longArg;
+        if (o.shortArg != null) {
+          boolMap[o.shortArg!] = o.longArg;
+        }
+      } else if (stringActionMap.containsKey(o.longArg)) {
+        stringMap[o.longArg] = o.longArg;
+        if (o.shortArg != null) {
+          stringMap[o.shortArg!] = o.longArg;
+        }
+      } else if (intActionMap.containsKey(o.longArg)) {
+        intMap[o.longArg] = o.longArg;
+        if (o.shortArg != null) {
+          intMap[o.shortArg!] = o.longArg;
         }
       }
-      for (var key in keys) {
-        var value = argMap[key];
-        if (boolActionMap.containsKey(key)) {
-          if (value is bool) {
-            boolActionMap[key](value, settings);
+    }
+    argTokenizer = ArgTokenizer(boolMap, stringMap, intMap);
+  }
+
+  Future<void> updateSettingsFromArgTokens(
+      FindSettings settings, List<ArgToken> argTokens) async {
+    await ready.then((_) async {
+      for (var argToken in argTokens) {
+        if (argToken.tokenType == ArgTokenType.boolType) {
+          if (boolActionMap.containsKey(argToken.name)) {
+            boolActionMap[argToken.name](argToken.value, settings);
           } else {
-            throw FindException('Invalid value for option: $key');
+            throw FindException('Invalid option: ${argToken.name}');
           }
-        } else if (stringActionMap.containsKey(key)) {
-          if (value is String) {
-            stringActionMap[key](value, settings);
-          } else if (value is List) {
-            for (var item in value) {
-              if (item is String) {
-                stringActionMap[key](item, settings);
-              } else {
-                throw FindException('Invalid value for option: $key');
-              }
-            }
+        } else if (argToken.tokenType == ArgTokenType.stringType) {
+          if (stringActionMap.containsKey(argToken.name)) {
+            stringActionMap[argToken.name](argToken.value, settings);
+          } else if (argToken.name == 'settings-file') {
+            await updateSettingsFromFile(settings, argToken.value);
           } else {
-            throw FindException('Invalid value for option: $key');
+            throw FindException('Invalid option: ${argToken.name}');
           }
-        } else if (intActionMap.containsKey(key)) {
-          if (value is int) {
-            intActionMap[key](value, settings);
+        } else if (argToken.tokenType == ArgTokenType.intType) {
+          if (intActionMap.containsKey(argToken.name)) {
+            intActionMap[argToken.name](argToken.value, settings);
           } else {
-            throw FindException('Invalid value for option: $key');
-          }
-        } else if (key == 'settings-file') {
-          if (value is String) {
-            await updateSettingsFromFile(settings, value);
-          } else if (value is List) {
-            for (var item in value) {
-              if (item is String) {
-                await updateSettingsFromFile(settings, item);
-              } else {
-                throw FindException('Invalid value for option: $key');
-              }
-            }
-          } else {
-            throw FindException('Invalid value for option: $key');
+            throw FindException('Invalid option: ${argToken.name}');
           }
         } else {
-          throw FindException('Invalid option: $key');
+          throw FindException('Invalid option: ${argToken.name}');
         }
       }
     });
@@ -197,8 +196,10 @@ class FindOptions {
 
   Future<void> updateSettingsFromJson(
       FindSettings settings, String jsonString) async {
-    Map jsonMap = json.decode(jsonString);
-    await updateSettingsFromArgMap(settings, jsonMap.cast<String, dynamic>());
+    await ready.then((_) async {
+      List<ArgToken> argTokens = argTokenizer!.tokenizeJson(jsonString);
+      await updateSettingsFromArgTokens(settings, argTokens);
+    });
   }
 
   Future<void> updateSettingsFromFile(
@@ -216,87 +217,20 @@ class FindOptions {
     }
   }
 
-  Future<Map<String, dynamic>> argMapFromArgs(List<String> args) async {
-    return await ready.then((_) async {
-      var argMap = {};
-      var it = args.iterator;
-      while (it.moveNext()) {
-        var arg = it.current;
-        if (arg.startsWith('-')) {
-          var argNames = <String>[];
-          String? argVal;
-          if (arg.startsWith('--') && arg.length > 2) {
-            var argName = arg.substring(2);
-            if (argName.contains('=')) {
-              var parts = argName.split('=');
-              argName = parts[0];
-              if (parts.length > 1) {
-                argVal = parts.sublist(1).join('=');
-              }
-            }
-            if (longArgMap.containsKey(argName)) {
-              argNames.add(argName);
-            } else {
-              throw FindException('Invalid option: $arg');
-            }
-          } else if (arg.length > 1) {
-            for (var i = 1; i < arg.length; i++) {
-              if (longArgMap.containsKey(arg[i])) {
-                argNames.add(longArgMap[arg[i]]!);
-              } else {
-                throw FindException('Invalid option: $arg');
-              }
-            }
-          } else {
-            throw FindException('Invalid option: $arg');
-          }
-
-          for (var argName in argNames) {
-            if (boolActionMap.containsKey(argName)) {
-              argMap[argName] = true;
-            } else if (stringActionMap.containsKey(argName) ||
-                intActionMap.containsKey(argName) ||
-                argName == 'settings-file') {
-              if (argVal == null) {
-                if (it.moveNext()) {
-                  argVal = it.current;
-                } else {
-                  throw FindException('Missing value for option $arg');
-                }
-              }
-              if (stringActionMap.containsKey(argName) ||
-                  argName == 'settings-file') {
-                if (!argMap.containsKey(argName)) {
-                  argMap[argName] = [];
-                }
-                argMap[argName].add(argVal);
-              } else {
-                argMap[argName] = int.parse(argVal);
-              }
-            } else {
-              throw FindException('Invalid option: $arg');
-            }
-          }
-        } else {
-          var path = 'path';
-          if (!argMap.containsKey(path)) {
-            argMap[path] = [];
-          }
-          argMap[path].add(arg);
-        }
-      }
-      return argMap.cast<String, dynamic>();
+  Future<void> updateSettingsFromArgs(
+      FindSettings settings, List<String> args) async {
+    await ready.then((_) async {
+      var argTokens = argTokenizer!.tokenizeArgs(args);
+      await updateSettingsFromArgTokens(settings, argTokens);
+      return settings;
     });
   }
 
   Future<FindSettings> settingsFromArgs(List<String> args) async {
-    return await ready.then((_) async {
-      var settings = FindSettings();
-      settings.printFiles = true; // default to printing files
-      var argMap = await argMapFromArgs(args);
-      await updateSettingsFromArgMap(settings, argMap);
-      return settings;
-    });
+    var settings = FindSettings();
+    settings.printFiles = true; // default to printing files
+    await updateSettingsFromArgs(settings, args);
+    return settings;
   }
 
   Future<String> getUsageString() async {
