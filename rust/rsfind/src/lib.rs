@@ -1,6 +1,7 @@
 #![crate_name = "rsfind"]
 #![crate_type = "rlib"]
 
+pub mod argtokenizer;
 pub mod color;
 pub mod common;
 pub mod config;

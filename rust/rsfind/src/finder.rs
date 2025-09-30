@@ -228,7 +228,7 @@ impl Finder {
             return None;
         }
         let file_result = FileResult::with_path(file_path, file_type.clone(),
-                                          file_size, last_mod);
+                                                file_size, last_mod);
         Some(file_result)
     }
 

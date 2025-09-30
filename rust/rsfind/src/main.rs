@@ -7,6 +7,7 @@ use crate::fileresultformatter::FileResultFormatter;
 use crate::finder::{print_matching_dirs, print_matching_files};
 use crate::finderror::FindError;
 
+pub mod argtokenizer;
 pub mod color;
 pub mod common;
 pub mod config;
